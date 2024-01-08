@@ -1,12 +1,11 @@
 {
   "name": "isomer-components",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.0.1",
+  "description": "Isomer component library",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "rollup": "rollup -c"
   },
-  "author": "",
+  "author": "Alex Eagleson",
   "license": "ISC",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
@@ -17,5 +16,11 @@
     "rollup": "^4.9.4",
     "rollup-plugin-dts": "^6.1.0",
     "typescript": "^5.3.3"
-  }
+  },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts"
 }
