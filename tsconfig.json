@@ -25,8 +25,11 @@
     "emitDeclarationOnly": true
   },
   "include": [
+    ".storybook/**/*.ts",
+    ".storybook/**/*.tsx",
     "src/**/*.ts",
     "src/**/*.tsx",
+    "src/**/*.stories.tsx",
   ],
   "exclude": ["node_modules"],
 }
