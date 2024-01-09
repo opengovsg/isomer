@@ -13,5 +13,5 @@ const InfopicTemplate: StoryFn<InfopicProps> = (args) => <Infopic {...args} />
 
 export const Default = InfopicTemplate.bind({})
 Default.args = {
-  title: "test"
+  title: 'test'
 }

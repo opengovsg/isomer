@@ -19,9 +19,7 @@ export const Infopic = ({
   alt,
   image,
   button,
-  url
+  url,
 }: InfopicProps): JSX.Element => {
-  return <Box>
-    {title}
-  </Box>
+  return <Box>{title}</Box>
 }
