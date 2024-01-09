@@ -26,5 +26,10 @@
   "files": [
     "dist"
   ],
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@chakra-ui/react": "^2.8.2",
+    "@govtechsg/sgds-react": "^2.2.2",
+    "@opengovsg/design-system-react": "^1.15.0"
+  }
 }
