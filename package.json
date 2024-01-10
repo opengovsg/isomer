@@ -6,7 +6,9 @@
   "version": "0.0.1",
   "description": "Isomer component library",
   "scripts": {
-    "rollup": "rollup -c"
+    "rollup": "rollup -c",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "author": "isoengineers",
   "license": "ISC",
@@ -14,10 +16,26 @@
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.5",
+    "@storybook/addon-essentials": "^7.6.7",
+    "@storybook/addon-interactions": "^7.6.7",
+    "@storybook/addon-links": "^7.6.7",
+    "@storybook/addon-onboarding": "^1.0.10",
+    "@storybook/blocks": "^7.6.7",
+    "@storybook/react": "^7.6.7",
+    "@storybook/react-vite": "^7.6.7",
+    "@storybook/test": "^7.6.7",
     "@types/react": "^18.2.47",
+    "@typescript-eslint/eslint-plugin": "^6.18.1",
+    "@typescript-eslint/parser": "^6.18.1",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.33.2",
+    "prettier": "3.1.1",
     "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "rollup": "^4.9.4",
     "rollup-plugin-dts": "^6.1.0",
+    "storybook": "^7.6.7",
     "tslib": "^2.6.2",
     "typescript": "^5.3.3"
   },
@@ -26,5 +44,10 @@
   "files": [
     "dist"
   ],
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@chakra-ui/react": "^2.8.2",
+    "@govtechsg/sgds-react": "^2.2.2",
+    "@opengovsg/design-system-react": "^1.15.0"
+  }
 }
