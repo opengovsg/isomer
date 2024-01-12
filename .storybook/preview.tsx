@@ -2,7 +2,7 @@ import type { Preview } from "@storybook/react"
 
 import { ThemeProvider } from "../src/theme/ThemeProvider"
 
-import { theme } from "../src/theme/theme"
+import { INITIAL_VIEWPORTS } from "@storybook/addon-viewport"
 
 const preview: Preview = {
   parameters: {
@@ -13,12 +13,16 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
+    viewport: {
+      viewports: INITIAL_VIEWPORTS,
+    },
   },
   decorators: [
     (Story) => (
       <ThemeProvider
         primaryColour="#6031b6"
         secondaryColour="#4372d6"
+        secondaryHover="#0094ff"
         mediaColourOne="#49759a"
         mediaColourTwo="#744d9f"
         mediaColourThree="#00838f"
