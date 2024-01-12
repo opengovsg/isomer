@@ -1,7 +1,7 @@
 import { extendTheme } from "@chakra-ui/react"
 
 import { breakpoints } from "./foundations/breakpoints"
-import { colors } from "./foundations/colors"
+import { colors } from "./foundations/classic/colors"
 import { textStyles } from "./textStyles"
 
 export const theme = extendTheme({
