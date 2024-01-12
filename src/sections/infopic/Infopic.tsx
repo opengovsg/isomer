@@ -1,8 +1,11 @@
-import { HStack, Image, Text, VStack } from "@chakra-ui/react"
-import { Button } from "@govtechsg/sgds-react"
+import { HStack, Link, Image, Text, VStack } from "@chakra-ui/react"
+import type { FlexProps } from "@chakra-ui/react"
+import { useIsMobile, Button } from "@opengovsg/design-system-react"
 import { HomepageSectionWrapper } from "../../components/HomepageSectionWrapper"
 
-export interface InfopicProps {
+import { BiRightArrowAlt } from "react-icons/bi"
+
+export interface InfopicProps extends FlexProps {
   sectionIndex: number
   title?: string
   subtitle?: string
@@ -21,7 +24,7 @@ const TextComponent = ({
   url,
 }: Omit<InfopicProps, "sectionIndex" | "image" | "alt">) => {
   return (
-    <VStack alignSelf="start" alignItems="start" w="50%">
+    <VStack alignSelf="center" alignItems="start" gap="1rem" w="100%" h="100%">
       {subtitle && (
         <Text textStyle="subtitle-2" textColor={"content.base"}>
           {subtitle}
@@ -38,25 +41,32 @@ const TextComponent = ({
         </Text>
       )}
       {button && (
-        <Button href={url}>
-          <Text textStyle="link-button" textColor={"secondaryColour"}>
-            {button}
-          </Text>
+        <Button
+          pl="0"
+          textStyle={"link-button"}
+          as={Link}
+          href={url}
+          aria-label={button}
+          variant="clear"
+          textColor={"secondaryColour"}
+          _hover={{ textColor: "secondaryHover" }}
+          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+        >
+          {button}
         </Button>
       )}
     </VStack>
   )
 }
 
-const ImageComponent = ({
-  image,
-  alt,
-}: {
+interface ImageComponentProps extends FlexProps {
   image?: InfopicProps["image"]
   alt?: InfopicProps["alt"]
-}) => {
+}
+
+const ImageComponent = ({ image, alt }: ImageComponentProps) => {
   return (
-    <VStack w="50%">
+    <VStack w="100%">
       <Image src={image} alt={alt} maxW="100%"></Image>
     </VStack>
   )
@@ -72,33 +82,53 @@ export const Infopic = ({
   button,
   url,
 }: InfopicProps): JSX.Element => {
+  const isMobile = useIsMobile({ ssr: false })
+  const MobileView = () => {
+    return (
+      <VStack gap="2rem">
+        <TextComponent
+          title={title}
+          subtitle={subtitle}
+          description={description}
+          button={button}
+          url={url}
+        />
+        <ImageComponent image={image} alt={alt} />
+      </VStack>
+    )
+  }
   return (
     <HomepageSectionWrapper sectionIndex={sectionIndex}>
-      <HStack gap="3rem">
-        {sectionIndex % 2 === 0 ? (
-          <>
-            <TextComponent
-              title={title}
-              subtitle={subtitle}
-              description={description}
-              button={button}
-              url={url}
-            />
-            <ImageComponent image={image} alt={alt} />
-          </>
-        ) : (
-          <>
-            <ImageComponent image={image} alt={alt} />
-            <TextComponent
-              title={title}
-              subtitle={subtitle}
-              description={description}
-              button={button}
-              url={url}
-            />
-          </>
-        )}
-      </HStack>
+      {isMobile ? (
+        <MobileView />
+      ) : (
+        <HStack gap="3rem">
+          {sectionIndex % 2 === 0 ? (
+            <>
+              <TextComponent
+                title={title}
+                subtitle={subtitle}
+                description={description}
+                button={button}
+                url={url}
+                w="50%"
+              />
+              <ImageComponent image={image} alt={alt} w="50%" />
+            </>
+          ) : (
+            <>
+              <ImageComponent image={image} alt={alt} />
+              <TextComponent
+                title={title}
+                subtitle={subtitle}
+                description={description}
+                button={button}
+                url={url}
+              />
+            </>
+          )}
+        </HStack>
+      )}
     </HomepageSectionWrapper>
   )
 
