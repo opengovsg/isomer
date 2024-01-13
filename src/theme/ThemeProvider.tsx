@@ -7,6 +7,7 @@ import { theme } from "./theme"
 interface ThemeProviderProps extends ChakraProviderProps {
   primaryColour: string
   secondaryColour: string
+  secondaryHover: string
   mediaColourOne: string
   mediaColourTwo: string
   mediaColourThree: string
@@ -21,6 +22,7 @@ interface ThemeProviderProps extends ChakraProviderProps {
 export const ThemeProvider: FC<ThemeProviderProps> = ({
   primaryColour,
   secondaryColour,
+  secondaryHover,
   mediaColourOne,
   mediaColourTwo,
   mediaColourThree,
@@ -33,6 +35,7 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
       colors: {
         primaryColour,
         secondaryColour,
+        secondaryHover,
         mediaColourOne,
         mediaColourTwo,
         mediaColourThree,

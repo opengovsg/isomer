@@ -2,7 +2,8 @@ export const colors = {
   canvas: {
     base: "#ffffff",
     inverse: "#000000",
-    translucentGrey: "#0000080",
+    translucentGrey: "#000080",
+    grey: "#f0f4f6",
   },
   content: {
     base: "#344054",
