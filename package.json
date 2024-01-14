@@ -8,7 +8,8 @@
   "scripts": {
     "rollup": "rollup -c",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "publish": "rollup -c && npm run publish"
   },
   "author": "isoengineers",
   "license": "ISC",
