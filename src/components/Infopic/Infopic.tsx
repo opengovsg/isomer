@@ -1,7 +1,7 @@
 import { HStack, Link, Image, Text, VStack } from "@chakra-ui/react"
 import type { FlexProps } from "@chakra-ui/react"
 import { useIsMobile, Button } from "@opengovsg/design-system-react"
-import { HomepageSectionWrapper } from "../../components/HomepageSectionWrapper"
+import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 
 import { BiRightArrowAlt } from "react-icons/bi"
 
@@ -132,3 +132,5 @@ export const Infopic = ({
     </HomepageSectionWrapper>
   )
 }
+
+export default Infopic
