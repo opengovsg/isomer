@@ -1,13 +1,15 @@
 {
   "compilerOptions": {
+    "rootDir": "src",
     "target": "es2017" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-    "lib": ["es2017", "dom"],                                        /* Specify a set of bundled library declaration files that describe the target runtime environment. */
+    "lib": ["es2017", "dom"],
+    /* Specify a set of bundled library declaration files that describe the target runtime environment. */
 
     /* Modules */
     "module": "ESNext" /* Specify what module code is generated. */,
-    "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
-    "resolveJsonModule": true,                        /* Enable importing .json files. */
-    
+    "baseUrl": "./" /* Specify the base directory to resolve non-relative module names. */,
+    "resolveJsonModule": true /* Enable importing .json files. */,
+
     "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
 
@@ -29,7 +31,7 @@
     ".storybook/**/*.tsx",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/**/*.stories.tsx",
+    "src/**/*.stories.tsx"
   ],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules"]
 }

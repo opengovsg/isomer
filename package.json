@@ -4,6 +4,7 @@
     "registry": "https://npm.pkg.github.com/isomerpages"
   },
   "version": "0.0.5",
+  "type": "module",
   "description": "Isomer component library",
   "scripts": {
     "rollup": "rollup -c",
