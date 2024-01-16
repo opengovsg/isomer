@@ -3,7 +3,7 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/isomerpages"
   },
-  "version": "0.0.8",
+  "version": "0.0.9",
   "type": "module",
   "description": "Isomer component library",
   "scripts": {
