@@ -47,3 +47,5 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({
   )
   return <ChakraProvider portalZIndex={40} theme={updatedTheme} {...rest} />
 }
+
+export default ThemeProvider

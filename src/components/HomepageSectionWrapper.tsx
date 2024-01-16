@@ -17,9 +17,10 @@ export const HomepageSectionWrapper = ({
       px={["1.5rem", null, null, null, "3.25rem"]}
       w="100%"
       justifyContent={"center"}
-      {...rest}
     >
-      <Flex maxW={["", null, null, "60rem", "76rem", "80rem"]}>{children}</Flex>
+      <Flex maxW={["", null, null, "60rem", "76rem", "80rem"]} {...rest}>
+        {children}
+      </Flex>
     </Flex>
   )
 }

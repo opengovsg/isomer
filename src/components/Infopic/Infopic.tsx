@@ -42,6 +42,8 @@ const TextComponent = ({
       )}
       {button && (
         <Button
+          whiteSpace={"initial"}
+          h="100%"
           pl="0"
           textStyle={"link-button"}
           as={Link}
