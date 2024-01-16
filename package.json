@@ -47,6 +47,10 @@
     "dist"
   ],
   "types": "dist/index.d.ts",
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
   "dependencies": {
     "@chakra-ui/react": "^2.8.2",
     "@govtechsg/sgds-react": "^2.2.2",
