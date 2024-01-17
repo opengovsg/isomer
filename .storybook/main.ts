@@ -1,20 +1,29 @@
-import type { StorybookConfig } from "@storybook/react-vite"
+import { mergeConfig } from "vite"
 
-const config: StorybookConfig = {
-  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
+export default {
+  stories: ["../src/**/*.stories.tsx"],
   addons: [
     "@storybook/addon-links",
     "@storybook/addon-essentials",
-    "@storybook/addon-onboarding",
-    "@storybook/addon-interactions",
-    "@storybook/addon-viewport",
+    "@storybook/addon-themes"
   ],
+
+  async viteFinal(config: any) {
+    // Merge custom configuration into the default config
+    return mergeConfig(config, {
+      // Add dependencies to pre-optimization
+      optimizeDeps: {
+        include: ["storybook-dark-mode"],
+      },
+    })
+  },
+
   framework: {
     name: "@storybook/react-vite",
     options: {},
   },
+
   docs: {
-    autodocs: "tag",
+    autodocs: true,
   },
 }
-export default config
