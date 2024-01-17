@@ -1,37 +1,57 @@
 {
   "compilerOptions": {
-    "rootDir": "src",
-    "target": "es2017" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-    "lib": ["es2017", "dom"],
-    /* Specify a set of bundled library declaration files that describe the target runtime environment. */
-
-    /* Modules */
-    "module": "ESNext" /* Specify what module code is generated. */,
-    "baseUrl": "./" /* Specify the base directory to resolve non-relative module names. */,
-    "resolveJsonModule": true /* Enable importing .json files. */,
-
-    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
-
-    /* Type Checking */
-    "strict": true /* Enable all strict type-checking options. */,
-
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
-    "jsx": "react-jsx",
-    "declaration": true,
-    "declarationDir": "types",
-    "sourceMap": true,
-    "outDir": "dist",
+    "incremental": true,
+    "target": "es2017",
+    "outDir": "dist/cjs",
+    "rootDirs": ["src"],
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "emitDeclarationOnly": true
+    "module": "commonjs",
+    "declaration": true,
+    "jsx": "react-jsx",
+    "esModuleInterop": true /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */,
+    "resolveJsonModule": true /* Include modules imported with .json extension. */,
+    "strictBindCallApply": true /* Enable strict 'bind', 'call', and 'apply' methods on functions. */,
+    "strict": true /* Enable all strict type-checking options. */,
+    "skipLibCheck": true,
+    /* Strict Type-Checking Options */
+    // "noImplicitAny": true,
+    // "strictNullChecks": true /* Enable strict null checks. */,
+    // "strictFunctionTypes": true /* Enable strict checking of function types. */,
+    // "strictPropertyInitialization": true /* Enable strict checking of property initialization in classes. */,
+    // "noImplicitThis": true /* Raise error on 'this' expressions with an implied 'any' type. */,
+    // "alwaysStrict": true /* Parse in strict mode and emit "use strict" for each source file. */,
+
+    /* Additional Checks */
+    "noUnusedLocals": false /* Report errors on unused locals. */,
+    "noUnusedParameters": true /* Report errors on unused parameters. */,
+    // "noImplicitReturns": true /* Report error when not all code paths in function return a value. */,
+    "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement. */,
+
+    /* Debugging Options */
+    "traceResolution": false /* Report module resolution log messages. */,
+    "listEmittedFiles": false /* Print names of generated files part of the compilation. */,
+    "listFiles": false /* Print names of files part of the compilation. */,
+    "pretty": true /* Stylize errors and messages using color and context. */,
+
+    /* Experimental Options */
+    // "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */,
+    // "emitDecoratorMetadata": true /* Enables experimental support for emitting type metadata for decorators. */,
+
+    "typeRoots": ["node_modules/@types", "src/types"],
+    "lib": ["es2017", "dom"],
+    "baseUrl": "./",
+    "paths": {
+      "~/*": ["./src/*"]
+    }
   },
   "include": [
     ".storybook/**/*.ts",
     ".storybook/**/*.tsx",
     "src/**/*.ts",
     "src/**/*.tsx",
+    "src/**/*.test.tsx",
     "src/**/*.stories.tsx"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "compileOnSave": false
 }
