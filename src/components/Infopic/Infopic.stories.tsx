@@ -13,6 +13,7 @@ const Template: Story<InfopicProps> = (args) => <Infopic {...args} />
 // Default scenario
 export const Default = Template.bind({})
 Default.args = {
+  sectionIndex: 1,
   title: "Thank you for attending the roadshows!",
   subtitle: "Coming soon to your hood",
   description: "Catch the highlights from the roadshows here.",

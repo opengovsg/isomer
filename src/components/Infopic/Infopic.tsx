@@ -1,7 +1,9 @@
 import "@govtechsg/sgds/css/sgds.css"
 import { BiRightArrowAlt } from "react-icons/bi"
+import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 
 export interface InfopicProps {
+  sectionIndex: number
   title?: string
   subtitle?: string
   description?: string
@@ -12,6 +14,7 @@ export interface InfopicProps {
 }
 
 const Infopic = ({
+  sectionIndex,
   title,
   subtitle,
   description,
@@ -21,7 +24,7 @@ const Infopic = ({
   url,
 }: InfopicProps) => {
   return (
-    <div className="bg-white">
+    <HomepageSectionWrapper sectionIndex={sectionIndex}>
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:grid lg:max-w-7xl lg:grid-cols-2 lg:gap-x-8 lg:px-8">
         {/* Product details */}
         <div className="lg:max-w-lg lg:self-end">
@@ -42,10 +45,10 @@ const Infopic = ({
 
           <p>
             <a
-              href="#"
+              href={url}
               className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline"
             >
-              Read their stories
+              {button}
               <BiRightArrowAlt />
             </a>
           </p>
@@ -62,7 +65,7 @@ const Infopic = ({
           </div>
         </div>
       </div>
-    </div>
+    </HomepageSectionWrapper>
   )
 }
 
