@@ -4,6 +4,7 @@ import {
   withThemeByClassName,
   withThemeByDataAttribute,
 } from "@storybook/addon-themes"
+import "bootstrap-icons/font/bootstrap-icons.css"
 
 import "../src/index.css"
 

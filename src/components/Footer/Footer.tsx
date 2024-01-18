@@ -1,54 +1,40 @@
 import { Footer } from "@govtechsg/sgds-react/Footer"
 
-const IsomerFooter = () => {
+export interface FooterProps {
+  agencyName: string
+  lastUpdated: Date
+  items?: FooterItem[]
+}
+
+export interface FooterItem {
+  title: string
+  subitems?: FooterSubitem[]
+  link?: string
+}
+
+export interface FooterSubitem {
+  title: string
+  link: string
+}
+
+const IsomerFooter = ({ agencyName, lastUpdated, items }: FooterProps) => {
   return (
     <Footer>
       <Footer.Top>
-        <Footer.Top.Header headerTitle="Singapore Government Design System">
-          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Earum illo
-          delectus laborum libero id ratione quibusdam tempora assumenda quas,
-          pariatur cum minus, aliquid molestiae et nisi dolorem vitae molestias!
-          Voluptate commodi aliquid iusto sequi sit eligendi, quod numquam nihil
-          consectetur eaque error earum laudantium! Temporibus accusamus
-          pariatur quod totam quia.
-        </Footer.Top.Header>
+        <Footer.Top.Header headerTitle={agencyName} />
         <Footer.Top.ItemGroup>
-          <Footer.Top.Item itemTitle="Column 1">
-            <a href="">About Us</a>
-            <a href="">This is a super long link</a>
-            <a href="">Test</a>
-            <a href="">Test</a>
-          </Footer.Top.Item>
-          <Footer.Top.Item itemTitle="Column 2">
-            <a href="">About Us</a>
-            <a href="">This is a super long link</a>
-            <a href="">Test</a>
-            <a href="">Test</a>
-          </Footer.Top.Item>
-          <Footer.Top.Item itemTitle="Column 3">
-            <a href="">About Us</a>
-            <a href="">This is a super long link</a>
-            <a href="">Test</a>
-            <a href="">Test</a>
-          </Footer.Top.Item>
-          <Footer.Top.Item itemTitle="Column 4">
-            <a href="">About Us</a>
-            <a href="">This is a super long link</a>
-            <a href="">Test</a>
-            <a href="">Test</a>
-          </Footer.Top.Item>
-          <Footer.Top.Item itemTitle="Column 5">
-            <a href="">About Us</a>
-            <a href="">This is a super long link</a>
-            <a href="">Test</a>
-            <a href="">Test</a>
-          </Footer.Top.Item>
-          <Footer.Top.Item itemTitle="Column 6">
-            <a href="">About Us</a>
-            <a href="">This is a super long link</a>
-            <a href="">Test</a>
-            <a href="">Test</a>
-          </Footer.Top.Item>
+          {items?.map((item) => {
+            return (
+              <Footer.Top.Item>
+                <a href={item.link} className="-mt-8 font-bold">
+                  {item.title}
+                </a>
+                {item.subitems?.map((subItem) => {
+                  return <a href={subItem.link}>{subItem.title}</a>
+                })}
+              </Footer.Top.Item>
+            )
+          })}
         </Footer.Top.ItemGroup>
         <Footer.Top.ContactLinks>
           <a href="">Contact</a>
@@ -75,7 +61,12 @@ const IsomerFooter = () => {
           <a href="">Terms of use</a>
         </Footer.Bottom.Links>
         <Footer.Bottom.Copyrights>
-          © 2022 Government of Singapore. Last Updated 08 Feb 2022
+          © {`${new Date().getFullYear()}`} {`${agencyName}`}. Last Updated{" "}
+          {`${lastUpdated.toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}`}
         </Footer.Bottom.Copyrights>
       </Footer.Bottom>
     </Footer>
