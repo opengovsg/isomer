@@ -21,6 +21,7 @@ const Template: Story<InfoCardsProps> = (args) => <InfoCards {...args} />
 // Default scenario
 export const Default = Template.bind({})
 Default.args = {
+  sectionIdx: 0,
   count: 2,
   cards: [
     {
@@ -39,9 +40,13 @@ Default.args = {
 // Custom scenario
 export const CustomCard = Template.bind({})
 CustomCard.args = {
-  // Provide custom values for props here
-  // For example:
-  imageUrl: "https://picsum.photos/200/300",
-  title: "Custom Title",
-  text: "Custom text for the card.",
+  sectionIdx: 1,
+  count: 1,
+  cards: [
+    {
+      imageUrl: "https://picsum.photos/200/300",
+      title: "Custom Title",
+      text: "Custom text here.",
+    },
+  ],
 }

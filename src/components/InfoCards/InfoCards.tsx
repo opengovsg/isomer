@@ -1,5 +1,6 @@
 import { Card, CardImg, Col } from "@govtechsg/sgds-react"
 import "@govtechsg/sgds/css/sgds.css"
+import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 
 export interface SingleCardProps {
   title: string
@@ -8,6 +9,7 @@ export interface SingleCardProps {
 }
 
 export interface InfoCardsProps {
+  sectionIdx: number
   count: number
   cards: SingleCardProps[]
 }
@@ -23,22 +25,24 @@ const SingleCard = ({ title, imageUrl, text }: SingleCardProps) => (
   </Card>
 )
 
-const InfoCards = ({ count, cards }: InfoCardsProps) => {
+const InfoCards = ({ sectionIdx, count, cards }: InfoCardsProps) => {
   return (
-    <Col lg="4" xs="12">
-      {cards.map((card) => {
-        const elementKey = `info-card-${count}-${card.title}`
-        const { title, text, imageUrl } = card
-        return (
-          <SingleCard
-            key={elementKey}
-            title={title}
-            text={text}
-            imageUrl={imageUrl}
-          />
-        )
-      })}
-    </Col>
+    <HomepageSectionWrapper sectionIndex={sectionIdx}>
+      <Col lg="4" xs="12">
+        {cards.map((card) => {
+          const elementKey = `info-card-${count}-${card.title}`
+          const { title, text, imageUrl } = card
+          return (
+            <SingleCard
+              key={elementKey}
+              title={title}
+              text={text}
+              imageUrl={imageUrl}
+            />
+          )
+        })}
+      </Col>
+    </HomepageSectionWrapper>
   )
 }
 
