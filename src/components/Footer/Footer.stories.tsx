@@ -16,11 +16,11 @@ const Template: StoryFn<FooterProps> = (args) => <Footer {...args} />
 export const Default = Template.bind({})
 Default.args = {
   agencyName: "Isomer Next",
-  lastUpdated: new Date(),
+  lastUpdated: "2024-01-28",
   items: [
     {
       title: "Column 1",
-      subitems: [
+      subItems: [
         {
           title: "link",
           link: "",
@@ -38,7 +38,7 @@ Default.args = {
     },
     {
       title: "Column 2",
-      subitems: [
+      subItems: [
         {
           title: "link",
           link: "",
@@ -55,7 +55,7 @@ Default.args = {
     },
     {
       title: "Column 3",
-      subitems: [
+      subItems: [
         {
           title: "link",
           link: "",

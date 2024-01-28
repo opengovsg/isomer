@@ -8,9 +8,9 @@ export interface InfopicProps {
   subtitle?: string
   description?: string
   alt?: string
-  image?: string
-  button?: string
-  url?: string
+  imageUrl?: string
+  buttonLabel?: string
+  buttonUrl?: string
 }
 
 const InfopicContentWrapper = ({
@@ -33,8 +33,8 @@ const TextComponent = ({
   title,
   subtitle,
   description,
-  button,
-  url,
+  buttonLabel: button,
+  buttonUrl: url,
 }: Omit<InfopicProps, "sectionIndex" | "image" | "alt">) => {
   return (
     <div className="lg:max-w-lg">
@@ -70,7 +70,7 @@ const ImageComponent = ({
   image,
   alt,
 }: {
-  image: InfopicProps["image"]
+  image: InfopicProps["imageUrl"]
   alt: InfopicProps["alt"]
 }) => {
   return (
@@ -86,15 +86,15 @@ const ImageComponent = ({
   )
 }
 
-const Infopic = ({
+const InfoPic = ({
   sectionIndex,
   title,
   subtitle,
   description,
   alt,
-  image,
-  button,
-  url,
+  imageUrl: image,
+  buttonLabel: button,
+  buttonUrl: url,
 }: InfopicProps) => {
   return (
     <HomepageSectionWrapper sectionIndex={sectionIndex}>
@@ -104,8 +104,8 @@ const Infopic = ({
             title={title}
             subtitle={subtitle}
             description={description}
-            button={button}
-            url={url}
+            buttonLabel={button}
+            buttonUrl={url}
           />
           <ImageComponent image={image} alt={alt} />
         </InfopicContentWrapper>
@@ -116,8 +116,8 @@ const Infopic = ({
             title={title}
             subtitle={subtitle}
             description={description}
-            button={button}
-            url={url}
+            buttonLabel={button}
+            buttonUrl={url}
           />
         </InfopicContentWrapper>
       )}
@@ -126,8 +126,8 @@ const Infopic = ({
           title={title}
           subtitle={subtitle}
           description={description}
-          button={button}
-          url={url}
+          buttonLabel={button}
+          buttonUrl={url}
         />
         <ImageComponent image={image} alt={alt} />
       </InfopicContentWrapper>
@@ -135,4 +135,4 @@ const Infopic = ({
   )
 }
 
-export default Infopic
+export default InfoPic

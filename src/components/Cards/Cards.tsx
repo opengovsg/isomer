@@ -21,7 +21,7 @@ const posts = [
   // More posts...
 ]
 
-interface Post {
+interface SingleCard {
   id: number
   title: string
   href: string
@@ -29,7 +29,7 @@ interface Post {
   imageUrl: string
   date: string
   datetime: string
-  category: {
+  category?: {
     title: string
     href: string
   }
@@ -42,9 +42,10 @@ interface Post {
 }
 
 export interface CardProps {
+  sectionIdx: number
   sectionTitle: string
   sectionCaption: string
-  cards: Post[]
+  cards: SingleCard[]
 }
 
 function Cards({ sectionTitle, sectionCaption, cards }: CardProps) {
@@ -79,12 +80,16 @@ function Cards({ sectionTitle, sectionCaption, cards }: CardProps) {
                   <time dateTime={post.datetime} className="text-gray-500">
                     {post.date}
                   </time>
-                  <a
-                    href={post.category.href}
-                    className="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100"
-                  >
-                    {post.category.title}
-                  </a>
+                  {post.category &&
+                    post.category.href &&
+                    post.category.title && (
+                      <a
+                        href={post.category.href}
+                        className="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100"
+                      >
+                        {post.category.title}
+                      </a>
+                    )}
                 </div>
                 <div className="group relative">
                   <h3 className="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">

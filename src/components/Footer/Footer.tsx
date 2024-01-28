@@ -1,14 +1,15 @@
 import { Footer } from "@govtechsg/sgds-react/Footer"
 
 export interface FooterProps {
+  sectionIdx: number
   agencyName: string
-  lastUpdated: Date
+  lastUpdated: string
   items?: FooterItem[]
 }
 
 export interface FooterItem {
   title: string
-  subitems?: FooterSubitem[]
+  subItems?: FooterSubitem[]
   link?: string
 }
 
@@ -29,7 +30,7 @@ const IsomerFooter = ({ agencyName, lastUpdated, items }: FooterProps) => {
                 <a href={item.link} className="-mt-8 font-bold">
                   {item.title}
                 </a>
-                {item.subitems?.map((subItem) => {
+                {item.subItems?.map((subItem) => {
                   return <a href={subItem.link}>{subItem.title}</a>
                 })}
               </Footer.Top.Item>
@@ -62,7 +63,7 @@ const IsomerFooter = ({ agencyName, lastUpdated, items }: FooterProps) => {
         </Footer.Bottom.Links>
         <Footer.Bottom.Copyrights>
           © {`${new Date().getFullYear()}`} {`${agencyName}`}. Last Updated{" "}
-          {`${lastUpdated.toLocaleDateString(undefined, {
+          {`${new Date(lastUpdated).toLocaleDateString(undefined, {
             year: "numeric",
             month: "long",
             day: "numeric",

@@ -10,7 +10,6 @@ export interface SingleCardProps {
 
 export interface InfoCardsProps {
   sectionIdx: number
-  count: number
   cards: SingleCardProps[]
 }
 
@@ -25,12 +24,12 @@ const SingleCard = ({ title, imageUrl, text }: SingleCardProps) => (
   </Card>
 )
 
-const InfoCards = ({ sectionIdx, count, cards }: InfoCardsProps) => {
+const InfoCards = ({ sectionIdx, cards }: InfoCardsProps) => {
   return (
     <HomepageSectionWrapper sectionIndex={sectionIdx}>
       <Col lg="4" xs="12">
-        {cards.map((card) => {
-          const elementKey = `info-card-${count}-${card.title}`
+        {cards.map((card, idx) => {
+          const elementKey = `info-card-${idx}-${card.title}`
           const { title, text, imageUrl } = card
           return (
             <SingleCard
