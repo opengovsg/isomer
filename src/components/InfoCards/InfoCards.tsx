@@ -1,5 +1,4 @@
 import { Card, CardImg, Col } from "@govtechsg/sgds-react"
-import "@govtechsg/sgds/css/sgds.css"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 
 export interface SingleCardProps {

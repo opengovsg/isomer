@@ -24,9 +24,9 @@ const IsomerFooter = ({ agencyName, lastUpdated, items }: FooterProps) => {
       <Footer.Top>
         <Footer.Top.Header headerTitle={agencyName} />
         <Footer.Top.ItemGroup>
-          {items?.map((item) => {
+          {items?.map((item, idx) => {
             return (
-              <Footer.Top.Item>
+              <Footer.Top.Item key={`footer-item-${idx}`}>
                 <a href={item.link} className="-mt-8 font-bold">
                   {item.title}
                 </a>
@@ -61,14 +61,10 @@ const IsomerFooter = ({ agencyName, lastUpdated, items }: FooterProps) => {
           <a href="">Privacy</a>
           <a href="">Terms of use</a>
         </Footer.Bottom.Links>
-        <Footer.Bottom.Copyrights>
+        {/* <Footer.Bottom.Copyrights>
           © {`${new Date().getFullYear()}`} {`${agencyName}`}. Last Updated{" "}
-          {`${new Date(lastUpdated).toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}`}
-        </Footer.Bottom.Copyrights>
+          {lastUpdated}`
+        </Footer.Bottom.Copyrights> */}
       </Footer.Bottom>
     </Footer>
   )

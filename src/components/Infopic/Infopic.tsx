@@ -1,4 +1,3 @@
-import "@govtechsg/sgds/css/sgds.css"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 
