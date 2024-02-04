@@ -1,5 +1,5 @@
 import React, { ReactElement } from "react"
-import { Button, Cards, Footer, Hero, InfoPic } from "../components"
+import { Button, Cards, Footer, Hero, InfoPic, Content } from "../components"
 
 interface IsomerComponent {
   id: string
@@ -28,7 +28,7 @@ const RenderEngine = ({
           return <Button label={component.props.label} />
         }
         if (component.id === "Hero") {
-          const { heroTitle, heroCaption, buttonLabel, logoUrl, nav } =
+          const { heroTitle, heroCaption, buttonLabel, logoUrl, nav, bgUrl } =
             component.props
           return (
             <Hero
@@ -38,6 +38,7 @@ const RenderEngine = ({
               heroCaption={heroCaption}
               buttonLabel={buttonLabel}
               nav={nav}
+              bgUrl={bgUrl}
             />
           )
         }
@@ -85,6 +86,10 @@ const RenderEngine = ({
               buttonUrl={buttonUrl}
             />
           )
+        }
+        if (component.id === "Content") {
+          const { markdown } = component.props
+          return <Content markdown={markdown} />
         }
         return <div key={idx}>Component not found</div>
       },
