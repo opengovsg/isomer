@@ -30,4 +30,5 @@ CustomCard.args = {
     { name: "About", href: "#" },
     { name: "Contact", href: "#" },
   ],
+  bgUrl: "https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8",
 }
