@@ -1,5 +1,6 @@
 import React from "react"
 import { Story, Meta } from "@storybook/react"
+import { encode } from "js-base64"
 
 import Content, { ContentProps } from "./Content"
 
@@ -15,7 +16,7 @@ const Template: Story<ContentProps> = (args) => <Content {...args} />
 // Default scenario
 export const Default = Template.bind({})
 Default.args = {
-  markdown: `# h1 Heading 8-)
+  markdown: encode(`# h1 Heading 8-)
   ## h2 Heading
   ### h3 Heading
   #### h4 Heading
@@ -91,11 +92,11 @@ Default.args = {
   Start numbering with offset:
   
   57. foo
-  1. bar`,
+  1. bar`),
 }
 
 // Custom scenario
 export const CustomContent = Template.bind({})
 CustomContent.args = {
-  markdown: ``,
+  markdown: encode(``),
 }
