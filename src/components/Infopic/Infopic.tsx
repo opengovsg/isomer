@@ -1,4 +1,4 @@
-import { BiRightArrowAlt } from "react-icons/bi"
+import { ArrowRightIcon } from "@heroicons/react/24/outline"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 
 export interface InfopicProps {
@@ -39,26 +39,27 @@ const TextComponent = ({
     <div className="lg:max-w-lg">
       <div className="mt-4">
         <div>
-          <p className="text-base text-gray-500 uppercase">{subtitle}</p>
+          <p className="text-subtitle pb-4 uppercase bg-gray-100">{subtitle}</p>
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+        <h1 className="text-secondary text-5xl font-bold pb-4 bg-gray-100">
           {title}
         </h1>
       </div>
 
       <section aria-labelledby="information-heading" className="mt-4">
         <div className="mt-4 space-y-6">
-          <p className="text-base ">{description}</p>
+          <p className="text-paragraph text-xl bg-gray-100">{description}</p>
         </div>
       </section>
 
       <p>
         <a
           href={url}
-          className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline"
+          className="inline-flex text-secondary font-semibold text-center underline uppercase bg-gray-100 pt-4"
         >
           {button}
-          <BiRightArrowAlt />
+
+          <ArrowRightIcon className="text-secondary h-5 w-5 ml-1" />
         </a>
       </p>
     </div>
