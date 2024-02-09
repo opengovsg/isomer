@@ -8,6 +8,9 @@ export default {
       subtitle: "#344054",
       paragraph: "#344054",
     },
+    fontFamily: {
+      sans: ["Lato", "ui-sans-serif", "system-ui"],
+    },
     extend: {},
   },
   plugins: [
