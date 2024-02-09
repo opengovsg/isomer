@@ -8,6 +8,7 @@ export default {
         secondary: "#4372d6",
         subtitle: "#344054",
         paragraph: "#344054",
+        dark: "#6d58bb",
       },
       fontFamily: {
         sans: ["Lato", "ui-sans-serif", "system-ui"],
