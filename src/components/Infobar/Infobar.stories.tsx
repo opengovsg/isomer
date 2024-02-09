@@ -13,6 +13,7 @@ const Template: Story<InfobarProps> = (args) => <Infobar {...args} />
 // Default scenario
 export const Default = Template.bind({})
 Default.args = {
+  sectionIdx: 1,
   title: "Infobar title",
   subtitle: "subtitle",
   description: "About a sentence worth of description here",

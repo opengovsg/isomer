@@ -1,6 +1,8 @@
 import { ArrowRightIcon } from "@heroicons/react/24/outline"
+import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 
 export interface InfobarProps {
+  sectionIdx: number
   title?: string
   subtitle?: string
   description?: string
@@ -9,6 +11,7 @@ export interface InfobarProps {
 }
 
 const Infobar = ({
+  sectionIdx,
   title,
   subtitle,
   description,
@@ -16,8 +19,8 @@ const Infobar = ({
   buttonUrl,
 }: InfobarProps) => {
   return (
-    <section className="text-slate-600 py-12 px-6 bg-gray-100">
-      <div>
+    <HomepageSectionWrapper sectionIndex={sectionIdx}>
+      <section className="py-12 px-6">
         <div className="flex justify-center">
           <div className="pb-3 px-3 pt-16 text-center">
             <p className="text-subtitle pb-4 uppercase tracking-widest">
@@ -30,7 +33,7 @@ const Infobar = ({
             <div className="pb-4 text-lg font-semibold uppercase">
               <div className="p-3">
                 <a
-                  className="inline-flex text-secondary font-semibold text-center underline uppercase bg-gray-100 pt-4 tracking-wide"
+                  className="inline-flex text-secondary font-semibold text-center underline uppercase pt-4 tracking-wide"
                   href={buttonUrl}
                 >
                   {buttonLabel}
@@ -40,8 +43,8 @@ const Infobar = ({
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </HomepageSectionWrapper>
   )
 }
 
