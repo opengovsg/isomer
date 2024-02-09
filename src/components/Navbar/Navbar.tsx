@@ -61,7 +61,6 @@ export const IsomerNav = ({ logo, links }: IsomerNavProps) => {
       <Nav>
         <Nav.Item>
           <Nav.Link eventKey={"search"}>
-            {" "}
             <MagnifyingGlassIcon className="text-secondary h-5 w-5 ml-1 mt-1" />
           </Nav.Link>
         </Nav.Item>

@@ -7,6 +7,7 @@ import {
   InfoPic,
   Content,
   Infobar,
+  Navbar,
 } from "../components"
 
 interface IsomerComponent {
@@ -45,7 +46,6 @@ const RenderEngine = ({
               heroTitle={heroTitle}
               heroCaption={heroCaption}
               buttonLabel={buttonLabel}
-              nav={nav}
               bgUrl={bgUrl}
             />
           )
@@ -112,6 +112,10 @@ const RenderEngine = ({
               buttonUrl={buttonUrl}
             />
           )
+        }
+        if (component.id === "Navbar") {
+          const { logo, links } = component.props
+          return <Navbar logo={logo} links={links} />
         }
         return <div key={idx}>Component not found</div>
       },
