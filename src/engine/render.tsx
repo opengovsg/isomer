@@ -1,5 +1,13 @@
 import React, { ReactElement } from "react"
-import { Button, Cards, Footer, Hero, InfoPic, Content } from "../components"
+import {
+  Button,
+  Cards,
+  Footer,
+  Hero,
+  InfoPic,
+  Content,
+  Infobar,
+} from "../components"
 
 interface IsomerComponent {
   id: string
@@ -90,6 +98,20 @@ const RenderEngine = ({
         if (component.id === "Content") {
           const { markdown } = component.props
           return <Content markdown={markdown} />
+        }
+        if (component.id === "Infobar") {
+          const { title, subtitle, description, buttonLabel, buttonUrl } =
+            component.props
+          return (
+            <Infobar
+              sectionIdx={component.sectionIdx}
+              title={title}
+              subtitle={subtitle}
+              description={description}
+              buttonLabel={buttonLabel}
+              buttonUrl={buttonUrl}
+            />
+          )
         }
         return <div key={idx}>Component not found</div>
       },
