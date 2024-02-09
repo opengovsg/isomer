@@ -9,14 +9,23 @@ export default {
         subtitle: "#344054",
         paragraph: "#344054",
         dark: "#6d58bb",
+        prose: "#484848",
+        headings: "#6d58bb",
       },
       fontFamily: {
         sans: ["Lato", "ui-sans-serif", "system-ui"],
       },
+      typography: ({ theme }) => ({
+        isomer: {
+          css: {
+            "--tw-prose-body": theme("colors.prose"),
+            "--tw-prose-headings": theme("colors.headings"),
+            "--tw-prose-bullets": theme("colors.prose"),
+            "--tw-prose-links": theme("colors.secondary"),
+          },
+        },
+      }),
     },
   },
-  plugins: [
-    require("@tailwindcss/forms"), // ? tailwinds form added here.
-    require("@tailwindcss/typography"),
-  ],
+  plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography")],
 }
