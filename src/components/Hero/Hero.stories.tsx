@@ -1,6 +1,3 @@
-// InfoCards.stories.tsx
-
-import React from "react"
 import { Story, Meta } from "@storybook/react"
 import Hero, { HeroProps } from "./Hero"
 

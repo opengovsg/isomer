@@ -1,7 +1,7 @@
-import { Navbar, Nav, NavDropdown } from "@govtechsg/sgds-react/Nav"
+import { useState } from "react"
+import { Navbar, Nav, NavDropdown } from "@govtechsg/sgds-react"
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline"
 
-import { useState } from "react"
 type NavbarLink = {
   type: "single" | "dropdown"
   name: string
