@@ -32,8 +32,8 @@ const TextComponent = ({
   title,
   subtitle,
   description,
-  buttonLabel: button,
-  buttonUrl: url,
+  buttonLabel,
+  buttonUrl,
 }: Omit<InfopicProps, "sectionIndex" | "image" | "alt">) => {
   return (
     <div className="lg:max-w-lg">
@@ -54,16 +54,16 @@ const TextComponent = ({
         </div>
       </section>
 
-      <p>
+      <div className="pb-4 text-lg font-semibold uppercase tracking-wide">
         <a
-          href={url}
           className="inline-flex text-secondary font-semibold text-center underline uppercase bg-gray-100 pt-4"
+          href={buttonUrl}
         >
-          {button}
+          {buttonLabel}
 
-          <ArrowRightIcon className="text-secondary h-5 w-5 ml-1" />
+          <ArrowRightIcon className="text-secondary h-5 w-5 ml-1 mt-1" />
         </a>
-      </p>
+      </div>
     </div>
   )
 }
