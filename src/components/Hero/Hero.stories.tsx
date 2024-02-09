@@ -23,12 +23,7 @@ CustomCard.args = {
   heroTitle: "Custom title",
   heroCaption: "Custom title with some text and other stuff",
   buttonLabel: "Custom button",
+  buttonUrl: "https://google.com",
   logoUrl: "https://picsum.photos/200",
-  nav: [
-    { name: "Product", href: "#" },
-    { name: "Features", href: "#" },
-    { name: "About", href: "#" },
-    { name: "Contact", href: "#" },
-  ],
   bgUrl: "https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8",
 }
