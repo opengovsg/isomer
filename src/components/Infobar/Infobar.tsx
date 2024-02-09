@@ -2,7 +2,7 @@ import { ArrowRightIcon } from "@heroicons/react/24/outline"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 
 export interface InfobarProps {
-  sectionIdx: number
+  sectionIdx?: number
   title?: string
   subtitle?: string
   description?: string

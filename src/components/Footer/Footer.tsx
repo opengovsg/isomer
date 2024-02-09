@@ -1,7 +1,7 @@
 import { Footer } from "@govtechsg/sgds-react/Footer"
 
 export interface FooterProps {
-  sectionIdx: number
+  sectionIdx?: number
   agencyName: string
   lastUpdated: string
   items?: FooterItem[]
@@ -19,6 +19,7 @@ export interface FooterSubitem {
 }
 
 const IsomerFooter = ({ agencyName, lastUpdated, items }: FooterProps) => {
+  console.log(lastUpdated)
   return (
     <Footer>
       <Footer.Top>

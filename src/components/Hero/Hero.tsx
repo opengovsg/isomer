@@ -1,5 +1,5 @@
 export interface HeroProps {
-  sectionIdx: number
+  sectionIdx?: number
   logoUrl?: string
   heroTitle?: string
   heroCaption?: string

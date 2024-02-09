@@ -2,7 +2,7 @@ import { ArrowRightIcon } from "@heroicons/react/24/outline"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 
 export interface InfopicProps {
-  sectionIndex: number
+  sectionIndex?: number
   title?: string
   subtitle?: string
   description?: string
@@ -98,7 +98,7 @@ const InfoPic = ({
 }: InfopicProps) => {
   return (
     <HomepageSectionWrapper sectionIndex={sectionIndex}>
-      {sectionIndex % 2 === 0 ? (
+      {sectionIndex && sectionIndex % 2 === 0 ? (
         <InfopicContentWrapper shouldShowMobile={false}>
           <TextComponent
             title={title}

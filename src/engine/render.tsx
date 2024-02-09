@@ -9,17 +9,18 @@ import {
   Infobar,
   Navbar,
 } from "../components"
+import DefaultLayout from "../layouts/Default"
 
 interface IsomerComponent {
   id: string
-  sectionIdx: number
+  sectionIdx?: number
   props: any
 }
 
 interface IsomerBaseSchema {
   id: string
-  layout: string
-  path: string
+  layout?: string
+  path?: string
   components: IsomerComponent[]
 }
 
@@ -120,9 +121,13 @@ const RenderEngine = ({
         return <div key={idx}>Component not found</div>
       },
     )
+
+    if (layout) {
+      return <DefaultLayout>{collatedComponents}</DefaultLayout>
+    }
     return <>{collatedComponents}</>
   }
-  return <h1>Hello World</h1>
+  return <></>
 }
 
 export default RenderEngine

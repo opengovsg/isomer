@@ -1,5 +1,5 @@
 interface HomepageSectionWrapperProps {
-  sectionIndex: number
+  sectionIndex?: number
   children: JSX.Element | JSX.Element[]
 }
 
@@ -10,7 +10,9 @@ export const HomepageSectionWrapper = ({
 }: HomepageSectionWrapperProps) => {
   return (
     <div
-      className={sectionIndex % 2 === 0 ? "bg-white" : "bg-gray-100"}
+      className={
+        sectionIndex && sectionIndex % 2 === 0 ? "bg-white" : "bg-gray-100"
+      }
       {...rest}
     >
       {children}
