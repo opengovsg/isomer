@@ -41,7 +41,7 @@ const TextComponent = ({
         <div>
           <p className="text-subtitle pb-4 uppercase bg-gray-100">{subtitle}</p>
         </div>
-        <h1 className="text-secondary text-5xl font-bold pb-4 bg-gray-100">
+        <h1 className="text-secondary text-5xl font-medium pb-4 bg-gray-100">
           {title}
         </h1>
       </div>
