@@ -39,24 +39,22 @@ const TextComponent = ({
     <div className="lg:max-w-lg">
       <div className="mt-4">
         <div>
-          <p className="text-subtitle pb-4 uppercase bg-gray-100 tracking-widest">
+          <p className="text-subtitle pb-4 uppercase tracking-widest">
             {subtitle}
           </p>
         </div>
-        <h1 className="text-secondary text-5xl font-semibold pb-4 bg-gray-100">
-          {title}
-        </h1>
+        <h1 className="text-secondary text-5xl font-semibold pb-4">{title}</h1>
       </div>
 
       <section aria-labelledby="information-heading" className="mt-4">
         <div className="mt-4 space-y-6">
-          <p className="text-paragraph text-xl bg-gray-100">{description}</p>
+          <p className="text-paragraph text-xl">{description}</p>
         </div>
       </section>
 
-      <div className="pb-4 text-lg font-semibold uppercase tracking-wide">
+      <div className="pb-4 text-lg font-semibold uppercase tracking-wid">
         <a
-          className="inline-flex text-secondary font-semibold text-center underline uppercase bg-gray-100 pt-4"
+          className="inline-flex text-secondary font-semibold text-center underline uppercase pt-4"
           href={buttonUrl}
         >
           {buttonLabel}
@@ -76,7 +74,7 @@ const ImageComponent = ({
   alt: InfopicProps["alt"]
 }) => {
   return (
-    <div className="mt-10  lg:row-span-2 lg:mt-0">
+    <div className="mt-10 lg:row-span-2 lg:mt-0">
       <div className="aspect-h-1 aspect-w-1 overflow-hidden rounded-lg">
         <img
           src={image}
