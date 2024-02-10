@@ -25,14 +25,21 @@ const IsomerFooter = ({ agencyName, lastUpdated, items }: FooterProps) => {
       <Footer.Top>
         <Footer.Top.Header headerTitle={agencyName} />
         <Footer.Top.ItemGroup>
-          {items?.map((item, idx) => {
+          {items?.map((item) => {
             return (
-              <Footer.Top.Item key={`footer-item-${idx}`}>
+              <Footer.Top.Item key={`footer-item-${item.title}`}>
                 <a href={item.link} className="-mt-8 font-bold">
                   {item.title}
                 </a>
                 {item.subItems?.map((subItem) => {
-                  return <a href={subItem.link}>{subItem.title}</a>
+                  return (
+                    <a
+                      href={subItem.link}
+                      key={`footer-subitem-${subItem.title}`}
+                    >
+                      {subItem.title}
+                    </a>
+                  )
                 })}
               </Footer.Top.Item>
             )
