@@ -65,8 +65,11 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
       className="flex flex-col bg-header p-10 h-full"
       aria-label="Breadcrumb"
     >
-      <div className="container max-w-5xl">
-        <ol role="list" className="flex items-center text-white">
+      <div className="max-w-5xl">
+        <ol
+          role="list"
+          className="flex items-center text-white overflow-scroll"
+        >
           {breadcrumbs.map((breadcrumb, idx) => (
             <li key={idx}>
               <div className="flex items-center">
@@ -91,7 +94,7 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
             </li>
           ))}
         </ol>
-        <h1 className="pt-5 text-white text-3xl font-medium leading-7 sm:text-5xl sm:truncate">
+        <h1 className="pt-5 text-white text-xl font-medium leading-7 sm:text-5xl xs:text-3xl truncate">
           {title}
         </h1>
       </div>

@@ -13,7 +13,7 @@ const HtmlElement = ({ children, ...props }: any) => (
 const Content: React.FC<ContentProps> = ({ markdown }) => {
   const decodedMarkdown = decode(markdown)
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center p-5">
       <article className="prose prose-isomer md:prose-lg lg:prose-xl">
         <Markdown>{decodedMarkdown}</Markdown>
       </article>
