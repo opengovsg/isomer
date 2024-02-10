@@ -13,19 +13,21 @@ const Template: Story<HeaderProps> = (args) => <Header {...args} />
 // Default scenario
 export const Default = Template.bind({})
 Default.args = {
-  title: "Header section",
-  breadcrumbs: [
-    {
-      name: "Home",
-      href: "https://google.com",
+  permalink: "/hello/world",
+  sitemap: {
+    "/": {
+      title: "Home",
+      paths: {
+        "/hello": {
+          title: "Hello",
+          paths: {
+            "/hello/world": {
+              title: "World",
+              paths: {},
+            },
+          },
+        },
+      },
     },
-    {
-      name: "About",
-      href: "https://google.com",
-    },
-    {
-      name: "Contact",
-      href: "https://google.com",
-    },
-  ],
+  },
 }
