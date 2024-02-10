@@ -1,16 +1,21 @@
 import { RenderEngine } from ".."
-import { Navbar } from "../config/navbar"
-import { Footer } from "../config/footer"
+import { IsomerBaseSchema } from "../engine/render"
 
 export interface DefaultLayoutProps {
-  children: JSX.Element[]
+  navbar: IsomerBaseSchema
+  footer: IsomerBaseSchema
+  children: React.ReactNode
 }
-export const DefaultLayout = ({ children }: DefaultLayoutProps) => {
+export const DefaultLayout = ({
+  navbar,
+  footer,
+  children,
+}: DefaultLayoutProps) => {
   return (
     <>
-      <RenderEngine id={Navbar.id} components={Navbar.components} />
-      {...children}
-      <RenderEngine id={Footer.id} components={Footer.components} />
+      <RenderEngine id={navbar.id} components={navbar.components} />
+      {children}
+      <RenderEngine id={footer.id} components={footer.components} />
     </>
   )
 }

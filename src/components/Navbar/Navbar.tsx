@@ -22,7 +22,7 @@ export const IsomerNav = ({ logo, links }: IsomerNavProps) => {
     setActive(eventKey)
   }
   return (
-    <Navbar>
+    <Navbar expand="md">
       <Navbar.Brand href="#">
         <img src={logo.url} alt={logo.alt} />
       </Navbar.Brand>
