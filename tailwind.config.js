@@ -11,6 +11,7 @@ export default {
         dark: "#6d58bb",
         prose: "#484848",
         headings: "#6d58bb",
+        header: "#2164da",
       },
       fontFamily: {
         sans: ["Lato", "ui-sans-serif", "system-ui"],
