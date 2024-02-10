@@ -23,7 +23,7 @@ export const IsomerNav = ({ logo, links }: IsomerNavProps) => {
   }
   return (
     <Navbar expand="md">
-      <Navbar.Brand href="#">
+      <Navbar.Brand href="/">
         <img src={logo.url} alt={logo.alt} />
       </Navbar.Brand>
       <Navbar.Toggle aria-controls="basic-navbar-nav" />
