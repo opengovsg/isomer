@@ -19,25 +19,16 @@ export interface IsomerComponent {
 
 export interface IsomerBaseSchema {
   id: string
-  layout?: LayoutType
+  layout?: string
+  config?: Config
   path?: string
   components: IsomerComponent[]
 }
 
-export type DefaultLayout = {
-  type: "default"
-  props: {
-    navbar: IsomerBaseSchema
-    footer: IsomerBaseSchema
-  }
+export interface Config {
+  navbar: IsomerBaseSchema
+  footer: IsomerBaseSchema
 }
-
-export type SimpleLayout = {
-  type: "simple"
-  props: {}
-}
-
-export type LayoutType = SimpleLayout | DefaultLayout
 
 const getComponent = (component: IsomerComponent): ReactElement | null => {
   if (component.id === "Button") {
@@ -128,17 +119,16 @@ const getComponent = (component: IsomerComponent): ReactElement | null => {
 }
 
 const renderLayout = (
-  layout: LayoutType,
+  layout: string,
+  config: Config,
   collatedComponents: React.ReactNode,
 ) => {
-  if (layout) {
-    switch (layout.type) {
+  console.log(`config`, config)
+  if (layout && config) {
+    switch (layout) {
       case "default":
         return (
-          <DefaultLayout
-            navbar={layout.props.navbar}
-            footer={layout.props.footer}
-          >
+          <DefaultLayout navbar={config.navbar} footer={config.footer}>
             {collatedComponents}
           </DefaultLayout>
         )
@@ -150,6 +140,7 @@ const renderLayout = (
 
 const RenderEngine = ({
   layout,
+  config,
   components,
 }: IsomerBaseSchema): React.ReactNode => {
   if (components && components.length > 0) {
@@ -159,7 +150,8 @@ const RenderEngine = ({
       },
     )
 
-    if (layout) return renderLayout(layout, collatedComponents)
+    if (layout && config)
+      return renderLayout(layout, config, collatedComponents)
     return collatedComponents
   }
 }
