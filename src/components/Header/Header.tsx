@@ -1,36 +1,80 @@
-import { HomeIcon } from "@heroicons/react/20/solid"
-
-const pages = [
-  { name: "Projects", href: "#", current: false },
-  { name: "Project Nero", href: "#", current: true },
-]
+import React from "react" // Import React
+import { Sitemap } from "~/engine/render"
 
 type Breadcrumb = {
   name: string
   href: string
   current?: boolean
 }
+
 export interface HeaderProps {
-  title: string
-  breadcrumbs: Breadcrumb[]
+  permalink: string
+  sitemap: Sitemap
 }
 
-const Header = ({ title, breadcrumbs }: HeaderProps) => {
+const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
+  console.log(`Received`, permalink, sitemap)
+  function findPageDetailsByPermalink(
+    permalink: string,
+    sitemap: Sitemap,
+  ): { title: string; breadcrumbs: Breadcrumb[] } {
+    let title = ""
+    let breadcrumbs: Breadcrumb[] = [{ name: "Home", href: "/" }]
+
+    function traverse(currentSitemap: Sitemap) {
+      for (const key in currentSitemap) {
+        const fullPath = key
+        const { title: pathTitle, paths: subPaths } = currentSitemap[key]
+
+        // Check if the current path segment is part of the permalink
+        if (permalink.startsWith(fullPath)) {
+          console.log(`Comparing`, fullPath, permalink)
+          // If exact match, set title and mark current page in breadcrumbs
+          if (permalink === fullPath) {
+            title = pathTitle
+            breadcrumbs.push({ name: pathTitle, href: fullPath, current: true })
+          } else if (fullPath !== "/") {
+            // Prevent adding "Home" again for root
+            breadcrumbs.push({ name: pathTitle, href: fullPath })
+          }
+
+          if (subPaths && Object.keys(subPaths).length > 0) {
+            traverse(subPaths) // Continue traversing subPaths
+          }
+        }
+      }
+    }
+
+    // Start traversing from root, adjusting initial path as empty
+    traverse(sitemap["/"].paths)
+
+    // Remove 'current' flag from all but the last breadcrumb
+    breadcrumbs.forEach((crumb, idx) => {
+      if (idx < breadcrumbs.length - 1) {
+        delete crumb.current
+      }
+    })
+
+    return { title, breadcrumbs }
+  }
+
+  const { title, breadcrumbs } = findPageDetailsByPermalink(permalink, sitemap)
+
   return (
     <nav
       className="flex flex-col bg-header p-10 h-full"
       aria-label="Breadcrumb"
     >
       <ol role="list" className="flex items-center text-white">
-        {breadcrumbs.map((page, idx) => (
-          <li key={page.name}>
+        {breadcrumbs.map((breadcrumb, idx) => (
+          <li key={idx}>
             <div className="flex items-center">
               <a
-                href={page.href}
+                href={breadcrumb.href}
                 className="text-sm font-light uppercase tracking-wider"
-                aria-current={page.current ? "page" : undefined}
+                aria-current={breadcrumb.current ? "page" : undefined}
               >
-                {page.name}
+                {breadcrumb.name}
               </a>
               {idx !== breadcrumbs.length - 1 && (
                 <svg
@@ -46,7 +90,6 @@ const Header = ({ title, breadcrumbs }: HeaderProps) => {
           </li>
         ))}
       </ol>
-
       <h1 className="pt-5 text-white text-3xl font-medium leading-7 sm:text-5xl sm:truncate">
         {title}
       </h1>

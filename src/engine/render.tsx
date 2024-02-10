@@ -9,7 +9,7 @@ import {
   Infobar,
   Navbar,
 } from "../components"
-import DefaultLayout from "../layouts/Default"
+import { DefaultLayout, HomeLayout } from "../layouts"
 
 export interface IsomerComponent {
   id: string
@@ -17,12 +17,21 @@ export interface IsomerComponent {
   props: any
 }
 
+export type Sitemap = {
+  [key: string]: {
+    title: string
+    paths: Sitemap
+  }
+}
+
 export interface IsomerBaseSchema {
   id: string
   layout?: string
+  title?: string
   config?: Config
-  path?: string
+  permalink?: string
   components: IsomerComponent[]
+  sitemap?: Sitemap
 }
 
 export interface Config {
@@ -122,15 +131,27 @@ const renderLayout = (
   layout: string,
   config: Config,
   collatedComponents: React.ReactNode,
+  permalink?: string,
+  sitemap?: Sitemap,
 ) => {
-  console.log(`config`, config)
-  if (layout && config) {
+  if (layout && config && sitemap) {
     switch (layout) {
       case "default":
         return (
-          <DefaultLayout navbar={config.navbar} footer={config.footer}>
+          <DefaultLayout
+            navbar={config.navbar}
+            footer={config.footer}
+            sitemap={sitemap}
+            permalink={permalink}
+          >
             {collatedComponents}
           </DefaultLayout>
+        )
+      case "home":
+        return (
+          <HomeLayout navbar={config.navbar} footer={config.footer}>
+            {collatedComponents}
+          </HomeLayout>
         )
       default:
         return collatedComponents
@@ -140,7 +161,9 @@ const renderLayout = (
 
 const RenderEngine = ({
   layout,
+  permalink,
   config,
+  sitemap,
   components,
 }: IsomerBaseSchema): React.ReactNode => {
   if (components && components.length > 0) {
@@ -151,7 +174,13 @@ const RenderEngine = ({
     )
 
     if (layout && config)
-      return renderLayout(layout, config, collatedComponents)
+      return renderLayout(
+        layout,
+        config,
+        collatedComponents,
+        permalink,
+        sitemap,
+      )
     return collatedComponents
   }
 }
