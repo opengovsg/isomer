@@ -65,34 +65,36 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
       className="flex flex-col bg-header p-10 h-full"
       aria-label="Breadcrumb"
     >
-      <ol role="list" className="flex items-center text-white">
-        {breadcrumbs.map((breadcrumb, idx) => (
-          <li key={idx}>
-            <div className="flex items-center">
-              <a
-                href={breadcrumb.href}
-                className="text-sm font-light uppercase tracking-wider"
-                aria-current={breadcrumb.current ? "page" : undefined}
-              >
-                {breadcrumb.name}
-              </a>
-              {idx !== breadcrumbs.length - 1 && (
-                <svg
-                  className="h-5 w-5 mx-2 flex-shrink-0 text-gray-300"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  aria-hidden="true"
+      <div className="container max-w-5xl">
+        <ol role="list" className="flex items-center text-white">
+          {breadcrumbs.map((breadcrumb, idx) => (
+            <li key={idx}>
+              <div className="flex items-center">
+                <a
+                  href={breadcrumb.href}
+                  className="text-sm font-light uppercase tracking-wider"
+                  aria-current={breadcrumb.current ? "page" : undefined}
                 >
-                  <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
-                </svg>
-              )}
-            </div>
-          </li>
-        ))}
-      </ol>
-      <h1 className="pt-5 text-white text-3xl font-medium leading-7 sm:text-5xl sm:truncate">
-        {title}
-      </h1>
+                  {breadcrumb.name}
+                </a>
+                {idx !== breadcrumbs.length - 1 && (
+                  <svg
+                    className="h-5 w-5 mx-2 flex-shrink-0 text-gray-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                  >
+                    <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
+                  </svg>
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
+        <h1 className="pt-5 text-white text-3xl font-medium leading-7 sm:text-5xl sm:truncate">
+          {title}
+        </h1>
+      </div>
     </nav>
   )
 }
