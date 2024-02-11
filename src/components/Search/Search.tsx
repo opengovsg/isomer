@@ -66,13 +66,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
   }
 
   return (
-    <div className="overflow-hidden bg-white shadow sm:rounded-md">
-      <label
-        htmlFor="search"
-        className="block text-md font-medium leading-6 text-gray-900"
-      >
-        Quick search
-      </label>
+    <div className="container max-w-5xl overflow-hidden bg-white shadow sm:rounded-md">
       <div className="relative mt-2 flex items-center">
         <input
           type="text"
@@ -82,7 +76,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
             performSearch(e.target.value)
           }}
           placeholder="Enter search term..."
-          className="block w-full rounded-md border-0 py-1.5 pr-14 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-lg sm:leading-6"
+          className="block w-full rounded-md border-0 py-3 pr-14 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-lg sm:leading-6"
         />
       </div>
       {results.length > 0 && (
