@@ -31,6 +31,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
 
   // Initialize the MiniSearch index
   useEffect(() => {
+    miniSearchRef.current.removeAll()
     miniSearchRef.current.addAll(index)
   }, [index]) // Rebuild the index whenever the index prop changes
 
