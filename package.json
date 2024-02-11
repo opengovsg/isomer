@@ -79,8 +79,8 @@
     "@vitejs/plugin-react": "^4.2.1",
     "bootstrap-icons": "^1.11.3",
     "js-base64": "^3.7.6",
-    "lunr": "^2.3.9",
     "markdown-to-jsx": "^7.4.1",
+    "minisearch": "^6.3.0",
     "react-icons": "^5.0.1",
     "vite": "^4.5.1"
   }
