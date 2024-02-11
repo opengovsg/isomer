@@ -33,7 +33,7 @@ export default function Hero({
         <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
           <div className="text-center">
             <h1
-              className={`text-8xl font-bold ${
+              className={`text-4xl font-bold ${
                 bgUrl ? "text-white" : "text-gray-900"
               } sm:text-6xl`}
             >

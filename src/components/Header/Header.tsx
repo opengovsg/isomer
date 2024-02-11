@@ -13,7 +13,6 @@ export interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
-  console.log(`Received`, permalink, sitemap)
   function findPageDetailsByPermalink(
     permalink: string,
     sitemap: Sitemap,
@@ -28,7 +27,6 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
 
         // Check if the current path segment is part of the permalink
         if (permalink.startsWith(fullPath)) {
-          console.log(`Comparing`, fullPath, permalink)
           // If exact match, set title and mark current page in breadcrumbs
           if (permalink === fullPath) {
             title = pathTitle
@@ -65,7 +63,7 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
       className="flex flex-col bg-header p-10 h-full"
       aria-label="Breadcrumb"
     >
-      <div className="max-w-5xl">
+      <div className="container max-w-5xl">
         <ol
           role="list"
           className="flex items-center text-white overflow-scroll"
@@ -94,7 +92,7 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
             </li>
           ))}
         </ol>
-        <h1 className="pt-5 text-white text-xl font-medium leading-7 sm:text-5xl xs:text-3xl truncate">
+        <h1 className="pt-5 text-white text-3xl font-medium leading-7 md:text-5xl truncate">
           {title}
         </h1>
       </div>
