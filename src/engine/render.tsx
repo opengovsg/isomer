@@ -8,6 +8,7 @@ import {
   Content,
   Infobar,
   Navbar,
+  Search,
 } from "../components"
 import { DefaultLayout, HomeLayout } from "../layouts"
 
@@ -15,6 +16,7 @@ export interface IsomerComponent {
   id: string
   sectionIdx?: number
   props: any
+  indexable?: string[]
 }
 
 export type Sitemap = {
@@ -32,6 +34,7 @@ export interface IsomerBaseSchema {
   permalink?: string
   components: IsomerComponent[]
   sitemap?: Sitemap
+  indexable?: string[] // specifies which keys are indexable
 }
 
 export interface Config {
@@ -123,6 +126,11 @@ const getComponent = (component: IsomerComponent): ReactElement | null => {
   if (component.id === "Navbar") {
     const { logo, links } = component.props
     return <Navbar logo={logo} links={links} />
+  }
+
+  if (component.id === "Search") {
+    const { index } = component.props
+    return <Search index={index} />
   }
   return null
 }

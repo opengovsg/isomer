@@ -12,6 +12,7 @@ export default {
         prose: "#484848",
         headings: "#6d58bb",
         header: "#2164da",
+        subtleLink: "#767676",
       },
       fontFamily: {
         sans: ["Lato", "ui-sans-serif", "system-ui"],
