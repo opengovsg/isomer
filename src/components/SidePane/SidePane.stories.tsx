@@ -69,7 +69,7 @@ Default.args = {
         permalink: "/contact-us/",
         title: "Contact Us",
         paths: [],
-
+      },
     ],
   },
 }
