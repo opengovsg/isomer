@@ -22,7 +22,7 @@ Default.args = {
           title: "Hello",
           paths: {
             "/hello/world": {
-              title: "World",
+              title: "DJAOJDWOIJWADOIJWDAIOJWAO",
               paths: {},
             },
           },

@@ -1,5 +1,5 @@
 import React from "react" // Import React
-import { Sitemap } from "~/engine/render"
+import { Sitemap, SitemapEntry } from "~/engine/render"
 
 type Breadcrumb = {
   name: string
@@ -17,13 +17,13 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
     permalink: string,
     sitemap: Sitemap,
   ): { title: string; breadcrumbs: Breadcrumb[] } {
-    let title = ""
-    let breadcrumbs: Breadcrumb[] = [{ name: "Home", href: "/" }]
+    let title: string = ""
+    let breadcrumbs: Breadcrumb[] = []
 
-    function traverse(currentSitemap: Sitemap) {
-      for (const key in currentSitemap) {
-        const fullPath = key
-        const { title: pathTitle, paths: subPaths } = currentSitemap[key]
+    function traverse(currentSitemap: SitemapEntry[], permalink: string) {
+      for (const entry of currentSitemap) {
+        const fullPath = entry.permalink
+        const pathTitle = entry.title
 
         // Check if the current path segment is part of the permalink
         if (permalink.startsWith(fullPath)) {
@@ -31,20 +31,20 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
           if (permalink === fullPath) {
             title = pathTitle
             breadcrumbs.push({ name: pathTitle, href: fullPath, current: true })
-          } else if (fullPath !== "/") {
-            // Prevent adding "Home" again for root
+          } else {
             breadcrumbs.push({ name: pathTitle, href: fullPath })
           }
 
-          if (subPaths && Object.keys(subPaths).length > 0) {
-            traverse(subPaths) // Continue traversing subPaths
+          if (entry.paths && entry.paths.length > 0) {
+            traverse(entry.paths, permalink) // Continue traversing subPaths
           }
+          break // Stop the loop if a match is found
         }
       }
     }
 
     // Start traversing from root, adjusting initial path as empty
-    traverse(sitemap["/"].paths)
+    traverse(sitemap.paths, permalink)
 
     // Remove 'current' flag from all but the last breadcrumb
     breadcrumbs.forEach((crumb, idx) => {
