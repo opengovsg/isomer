@@ -1,5 +1,4 @@
-import { Header, RenderEngine } from ".."
-import { IsomerBaseSchema, Sitemap } from "../engine/render"
+import { IsomerBaseSchema, RenderEngine } from "../../engine/render"
 
 export interface DefaultLayoutProps {
   navbar: IsomerBaseSchema

@@ -20,10 +20,14 @@ export interface IsomerComponent {
 }
 
 export type Sitemap = {
-  [key: string]: {
-    title: string
-    paths: Sitemap
-  }
+  title: string
+  paths: SitemapEntry[]
+}
+
+export type SitemapEntry = {
+  permalink: string
+  title: string
+  paths?: SitemapEntry[] // Optional to handle leaf nodes with no further paths
 }
 
 export interface IsomerBaseSchema {
@@ -194,3 +198,4 @@ const RenderEngine = ({
 }
 
 export default RenderEngine
+export { RenderEngine }
