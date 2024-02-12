@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react"
 import MiniSearch from "minisearch"
 import {
-  ArrowLongLeftIcon,
-  ArrowLongRightIcon,
+  ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon,
 } from "@heroicons/react/24/outline"
 
 export type SearchRecord = {
@@ -20,9 +20,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [results, setResults] = useState<SearchRecord[]>([])
   const [currentPage, setCurrentPage] = useState(1)
-  const [resultsPerPage, setResultsPerPage] = useState(1)
-
-  console.log(results)
+  const [resultsPerPage, setResultsPerPage] = useState(10)
 
   // Use useRef to persist the MiniSearch instance
   const miniSearchRef = useRef(
@@ -138,6 +136,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
           onChange={(e) => {
             setSearchTerm(e.target.value)
             performSearch(e.target.value)
+            setCurrentPage(1)
           }}
           placeholder="Enter search term..."
           className="block w-full rounded-md border-0 p-3 pr-14 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-lg sm:leading-6"
@@ -169,7 +168,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
             onClick={() => setCurrentPage(1)}
             className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
           >
-            <ArrowLongLeftIcon
+            <ChevronDoubleLeftIcon
               className="mr-3 h-5 w-5 text-gray-400"
               aria-hidden="true"
             />
@@ -183,7 +182,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
             className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
           >
             Last
-            <ArrowLongRightIcon
+            <ChevronDoubleRightIcon
               className="ml-3 h-5 w-5 text-gray-400"
               aria-hidden="true"
             />
