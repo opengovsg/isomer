@@ -14,9 +14,13 @@ export interface IsomerNavProps {
   logo: { url: string; alt: string }
 
   links: NavbarLink[]
+  search: {
+    isEnabled: boolean
+    searchUrl: string
+  }
 }
 
-export const IsomerNav = ({ logo, links }: IsomerNavProps) => {
+export const IsomerNav = ({ logo, links, search }: IsomerNavProps) => {
   const [active, setActive] = useState("home")
   const clickNavbarItem = (eventKey: string) => {
     setActive(eventKey)
@@ -58,13 +62,17 @@ export const IsomerNav = ({ logo, links }: IsomerNavProps) => {
           })}
         </Nav>
       </Navbar.Collapse>
-      <Nav>
-        <Nav.Item>
-          <Nav.Link eventKey={"search"}>
-            <MagnifyingGlassIcon className="text-secondary h-5 w-5 ml-1 mt-1" />
-          </Nav.Link>
-        </Nav.Item>
-      </Nav>
+      {search.isEnabled && (
+        <Nav>
+          <Nav.Item>
+            <Nav.Link eventKey={"search"}>
+              <a href={search.searchUrl}>
+                <MagnifyingGlassIcon className="text-secondary h-5 w-5 ml-1 mt-1" />
+              </a>
+            </Nav.Link>
+          </Nav.Item>
+        </Nav>
+      )}
     </Navbar>
   )
 }

@@ -47,7 +47,6 @@ const Search: React.FC<SearchProps> = ({ index }) => {
 
     // Perform the search using the ref
     const searchResults = miniSearchRef.current.search(term)
-    console.log(searchResults)
 
     // Assuming miniSearch is configured to store 'title', 'content', and 'url'
     const mappedResults = searchResults

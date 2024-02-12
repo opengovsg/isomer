@@ -128,8 +128,8 @@ const getComponent = (component: IsomerComponent): ReactElement | null => {
     )
   }
   if (component.id === "Navbar") {
-    const { logo, links } = component.props
-    return <Navbar logo={logo} links={links} />
+    const { logo, links, search } = component.props
+    return <Navbar logo={logo} links={links} search={search} />
   }
 
   if (component.id === "Search") {

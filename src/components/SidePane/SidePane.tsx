@@ -20,13 +20,11 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
     for (const section of paths) {
       // Check if this is the parent section
       if (section.paths) {
-        console.log(`Checking `, section.paths)
         const match = section.paths.find(
           (child) => child.permalink === currentPermalink,
         )
         if (match) {
           // Exact match found, return the current section's siblings and parent title
-          console.log(`Exact match`)
           return {
             parentTitle: section.title,
             parentPermalink: section.permalink, // This is the title of the dropdown
@@ -50,8 +48,6 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
     sitemap.paths,
     sectionWithSiblings?.parentPermalink || "",
   )
-  console.log("Section with siblings", sectionWithSiblings)
-  console.log(`parent`, parentNodeSiblings)
 
   return (
     <aside className="w-64">
