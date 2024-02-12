@@ -11,16 +11,21 @@ type NavbarLink = {
 }
 
 export interface IsomerNavProps {
+  id?: string
   logo: { url: string; alt: string }
 
   links: NavbarLink[]
-  search: {
+  search?: {
     isEnabled: boolean
-    searchUrl: string
+    searchUrl?: string
   }
 }
 
-export const IsomerNav = ({ logo, links, search }: IsomerNavProps) => {
+export const IsomerNav = ({
+  logo,
+  links,
+  search = { isEnabled: false },
+}: IsomerNavProps) => {
   const [active, setActive] = useState("home")
   const clickNavbarItem = (eventKey: string) => {
     setActive(eventKey)
