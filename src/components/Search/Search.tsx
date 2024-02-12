@@ -76,24 +76,58 @@ const Search: React.FC<SearchProps> = ({ index }) => {
   const currentResults = results.slice(indexOfFirstResult, indexOfLastResult)
 
   // Pagination controls
-  const pageNumbers = []
+  const pageNumbers: number[] = []
   for (let i = 1; i <= Math.ceil(results.length / resultsPerPage); i++) {
     pageNumbers.push(i)
   }
 
-  const renderPageNumbers = pageNumbers.map((number) => (
-    <a
-      key={number}
-      onClick={() => setCurrentPage(number)}
-      className={`inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium cursor-pointer ${
-        currentPage === number
-          ? "border-indigo-500 text-indigo-600"
-          : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-      }`}
-    >
-      {number}
-    </a>
-  ))
+  const renderPageNumbers = () => {
+    const totalItems = results.length
+    const totalPages = Math.ceil(totalItems / resultsPerPage)
+    const pagesToShow = 5 // Max pages to show at once
+    let startPage = 1
+    let endPage = 1
+
+    if (totalPages <= pagesToShow) {
+      // Total pages less than pages to show, display all pages
+      startPage = 1
+      endPage = totalPages
+    } else {
+      // Calculate start and end pages
+      const maxPagesBeforeCurrentPage = Math.floor(pagesToShow / 2)
+      const maxPagesAfterCurrentPage = Math.ceil(pagesToShow / 2) - 1
+      if (currentPage <= maxPagesBeforeCurrentPage) {
+        // Near the beginning; show first pages
+        startPage = 1
+        endPage = pagesToShow
+      } else if (currentPage + maxPagesAfterCurrentPage >= totalPages) {
+        // Near the end; show last pages
+        startPage = totalPages - pagesToShow + 1
+        endPage = totalPages
+      } else {
+        // Somewhere in the middle; show some pages before and after current page
+        startPage = currentPage - maxPagesBeforeCurrentPage
+        endPage = currentPage + maxPagesAfterCurrentPage
+      }
+    }
+
+    return Array.from(
+      { length: endPage - startPage + 1 },
+      (_, idx) => startPage + idx,
+    ).map((page) => (
+      <button
+        key={page}
+        onClick={() => setCurrentPage(page)}
+        className={`inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium cursor-pointer ${
+          currentPage === page
+            ? "border-indigo-500 text-indigo-600"
+            : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+        }`}
+      >
+        {page}
+      </button>
+    ))
+  }
 
   return (
     <div className="container max-w-5xl my-10 overflow-hidden bg-white shadow sm:rounded-md">
@@ -132,25 +166,23 @@ const Search: React.FC<SearchProps> = ({ index }) => {
       <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0 py-5">
         <div className="-mt-px flex w-0 flex-1">
           <button
-            onClick={() => setCurrentPage(currentPage - 1)}
+            onClick={() => setCurrentPage(1)}
             className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-            disabled={currentPage === 1}
           >
             <ArrowLongLeftIcon
               className="mr-3 h-5 w-5 text-gray-400"
               aria-hidden="true"
             />
-            Previous
+            First
           </button>
         </div>
-        <div className="hidden md:-mt-px md:flex">{renderPageNumbers}</div>
+        <div className="hidden md:-mt-px md:flex">{renderPageNumbers()}</div>
         <div className="-mt-px flex w-0 flex-1 justify-end">
           <button
-            onClick={() => setCurrentPage(currentPage + 1)}
+            onClick={() => setCurrentPage(pageNumbers.length)}
             className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-            disabled={currentPage === pageNumbers.length}
           >
-            Next
+            Last
             <ArrowLongRightIcon
               className="ml-3 h-5 w-5 text-gray-400"
               aria-hidden="true"
