@@ -1,5 +1,9 @@
 import React, { useEffect, useRef, useState } from "react"
 import MiniSearch from "minisearch"
+import {
+  ArrowLongLeftIcon,
+  ArrowLongRightIcon,
+} from "@heroicons/react/24/outline"
 
 export type SearchRecord = {
   id: string
@@ -15,6 +19,8 @@ export interface SearchProps {
 const Search: React.FC<SearchProps> = ({ index }) => {
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [results, setResults] = useState<SearchRecord[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [resultsPerPage, setResultsPerPage] = useState(1)
 
   console.log(results)
 
@@ -65,8 +71,32 @@ const Search: React.FC<SearchProps> = ({ index }) => {
     return content.replace(searchTermRegex, "<strong>$1</strong>")
   }
 
+  const indexOfLastResult = currentPage * resultsPerPage
+  const indexOfFirstResult = indexOfLastResult - resultsPerPage
+  const currentResults = results.slice(indexOfFirstResult, indexOfLastResult)
+
+  // Pagination controls
+  const pageNumbers = []
+  for (let i = 1; i <= Math.ceil(results.length / resultsPerPage); i++) {
+    pageNumbers.push(i)
+  }
+
+  const renderPageNumbers = pageNumbers.map((number) => (
+    <a
+      key={number}
+      onClick={() => setCurrentPage(number)}
+      className={`inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium cursor-pointer ${
+        currentPage === number
+          ? "border-indigo-500 text-indigo-600"
+          : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+      }`}
+    >
+      {number}
+    </a>
+  ))
+
   return (
-    <div className="container max-w-5xl overflow-hidden bg-white shadow sm:rounded-md">
+    <div className="container max-w-5xl my-10 overflow-hidden bg-white shadow sm:rounded-md">
       <div className="relative mt-2 flex items-center">
         <input
           type="text"
@@ -76,12 +106,12 @@ const Search: React.FC<SearchProps> = ({ index }) => {
             performSearch(e.target.value)
           }}
           placeholder="Enter search term..."
-          className="block w-full rounded-md border-0 py-3 pr-14 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-lg sm:leading-6"
+          className="block w-full rounded-md border-0 p-3 pr-14 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-lg sm:leading-6"
         />
       </div>
-      {results.length > 0 && (
+      {currentResults.length > 0 && (
         <ul>
-          {results.map((result) => (
+          {currentResults.map((result) => (
             <li key={String(result.id)} className="px-4 py-4 sm:px-6">
               <a className="text-secondary text-xl underline" href={result.url}>
                 {result.title}
@@ -98,6 +128,36 @@ const Search: React.FC<SearchProps> = ({ index }) => {
           ))}
         </ul>
       )}
+
+      <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0 py-5">
+        <div className="-mt-px flex w-0 flex-1">
+          <button
+            onClick={() => setCurrentPage(currentPage - 1)}
+            className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            disabled={currentPage === 1}
+          >
+            <ArrowLongLeftIcon
+              className="mr-3 h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
+            Previous
+          </button>
+        </div>
+        <div className="hidden md:-mt-px md:flex">{renderPageNumbers}</div>
+        <div className="-mt-px flex w-0 flex-1 justify-end">
+          <button
+            onClick={() => setCurrentPage(currentPage + 1)}
+            className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            disabled={currentPage === pageNumbers.length}
+          >
+            Next
+            <ArrowLongRightIcon
+              className="ml-3 h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+      </nav>
     </div>
   )
 }
