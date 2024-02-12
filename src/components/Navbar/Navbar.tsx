@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Navbar, Nav, NavDropdown } from "@govtechsg/sgds-react"
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline"
 
-type NavbarLink = {
+export type NavbarLink = {
   type: "single" | "dropdown"
   name: string
   eventKey?: string
@@ -27,9 +27,7 @@ export const IsomerNav = ({
   search = { isEnabled: false },
 }: IsomerNavProps) => {
   const [active, setActive] = useState("home")
-  const clickNavbarItem = (eventKey: string) => {
-    setActive(eventKey)
-  }
+
   return (
     <Navbar expand="md">
       <Navbar.Brand href="/">
@@ -70,10 +68,8 @@ export const IsomerNav = ({
       {search.isEnabled && (
         <Nav>
           <Nav.Item>
-            <Nav.Link eventKey={"search"}>
-              <a href={search.searchUrl}>
-                <MagnifyingGlassIcon className="text-secondary h-5 w-5 ml-1 mt-1" />
-              </a>
+            <Nav.Link eventKey={"search"} href={search.searchUrl}>
+              <MagnifyingGlassIcon className="text-secondary h-5 w-5 ml-1 mt-1" />
             </Nav.Link>
           </Nav.Item>
         </Nav>
