@@ -10,7 +10,7 @@ import {
   Navbar,
   Search,
 } from "../components"
-import { DefaultLayout, HomeLayout } from "../layouts"
+import { DefaultLayout, HomeLayout, ContentLayout } from "../layouts"
 
 export interface IsomerComponent {
   id: string
@@ -158,6 +158,17 @@ const renderLayout = (
           >
             {collatedComponents}
           </DefaultLayout>
+        )
+      case "content":
+        return (
+          <ContentLayout
+            navbar={config.navbar}
+            footer={config.footer}
+            sitemap={sitemap}
+            permalink={permalink}
+          >
+            {collatedComponents}
+          </ContentLayout>
         )
       case "home":
         return (
