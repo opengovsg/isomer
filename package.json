@@ -10,7 +10,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "publish-package": "rollup -c && npm run publish",
-    "clean": "rimraf build",
+    "clean": "rimraf dist",
     "build": "npm run clean && run-p build:*",
     "build:main": "tsc -p tsconfig.build.json",
     "build:module": "tsc -p tsconfig.module.build.json"
