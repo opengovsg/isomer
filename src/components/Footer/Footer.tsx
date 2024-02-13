@@ -18,8 +18,7 @@ export interface FooterSubitem {
   link: string
 }
 
-const IsomerFooter = ({ agencyName, lastUpdated, items }: FooterProps) => {
-  console.log(lastUpdated)
+const IsomerFooter = ({ agencyName, items }: FooterProps) => {
   return (
     <Footer>
       <Footer.Top>
