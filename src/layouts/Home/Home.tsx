@@ -1,20 +1,32 @@
+import { useEffect, useState } from "react"
 import { IsomerBaseSchema, RenderEngine } from "../../engine/render"
 
-export interface DefaultLayoutProps {
+export interface HomeLayoutProps {
   navbar: IsomerBaseSchema
   footer: IsomerBaseSchema
+
+  LinkComponent: any
   children: React.ReactNode
 }
 export const HomeLayout = ({
   navbar,
   footer,
+  LinkComponent,
   children,
-}: DefaultLayoutProps) => {
+}: HomeLayoutProps) => {
   return (
     <>
-      <RenderEngine id={navbar.id} components={navbar.components} />
+      <RenderEngine
+        id={navbar.id}
+        components={navbar.components}
+        LinkComponent={LinkComponent}
+      />
       {children}
-      <RenderEngine id={footer.id} components={footer.components} />
+      <RenderEngine
+        id={footer.id}
+        components={footer.components}
+        LinkComponent={LinkComponent}
+      />
     </>
   )
 }
