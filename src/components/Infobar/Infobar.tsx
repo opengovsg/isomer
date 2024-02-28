@@ -21,7 +21,7 @@ const Infobar = ({
   return (
     <HomepageSectionWrapper sectionIndex={sectionIdx}>
       <section className="py-12 px-6 ">
-        <div className="flex flex-col gap-3 items-center mx-auto md:w-1/2 pt-16 px-3 text-center">
+        <div className="flex flex-col gap-3 items-center mx-auto md:w-1/2 pt-10 px-3 text-center">
           <div className="flex flex-col gap-4">
             {subtitle && (
               <p className="text-subtitle uppercase tracking-widest">
