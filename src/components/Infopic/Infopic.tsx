@@ -20,8 +20,8 @@ const InfopicContentWrapper = ({
   shouldShowMobile: boolean
 }) => (
   <div
-    className={`mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:grid lg:max-w-7xl lg:grid-cols-2 lg:gap-x-8 lg:px-8 ${
-      shouldShowMobile ? "block lg:!hidden" : "hidden lg:!grid"
+    className={`mx-auto px-6 py-12 md:grid md:grid-cols-2 md:gap-x-16 md:p-16 xl:max-w-7xl ${
+      shouldShowMobile ? "md:hidden" : "sm: hidden"
     }`}
   >
     {children}
@@ -36,25 +36,17 @@ const TextComponent = ({
   buttonUrl,
 }: Omit<InfopicProps, "sectionIndex" | "image" | "alt">) => {
   return (
-    <div className="lg:max-w-lg">
-      <div className="mt-4">
-        <div>
-          <p className="text-subtitle pb-4 uppercase tracking-widest">
-            {subtitle}
-          </p>
-        </div>
-        <h1 className="text-secondary text-5xl font-semibold pb-4">{title}</h1>
-      </div>
+    <div className="flex flex-col gap-4 lg:px-8">
+      <p className="text-subtitle uppercase tracking-widest">{subtitle}</p>
+      <h1 className="text-secondary text-5xl font-semibold">{title}</h1>
 
-      <section aria-labelledby="information-heading" className="mt-4">
-        <div className="mt-4 space-y-6">
-          <p className="text-paragraph text-xl">{description}</p>
-        </div>
+      <section aria-labelledby="information-heading">
+        <p className="text-paragraph text-xl">{description}</p>
       </section>
 
-      <div className="pb-4 text-lg font-semibold uppercase tracking-wid">
+      <div className="text-lg font-semibold uppercase tracking-wid">
         <a
-          className="inline-flex text-secondary font-semibold text-center underline uppercase pt-4"
+          className="inline-flex items-center text-secondary font-semibold underline uppercase"
           href={buttonUrl}
         >
           {buttonLabel}
@@ -74,7 +66,7 @@ const ImageComponent = ({
   alt: InfopicProps["alt"]
 }) => {
   return (
-    <div className="mt-10 lg:row-span-2 lg:mt-0">
+    <div className="mt-12 md:row-span-2 md:mt-0">
       <div className="aspect-h-1 aspect-w-1 overflow-hidden rounded-lg">
         <img
           src={image}
@@ -98,29 +90,31 @@ const InfoPic = ({
 }: InfopicProps) => {
   return (
     <HomepageSectionWrapper sectionIndex={sectionIndex}>
-      {sectionIndex && sectionIndex % 2 === 0 ? (
-        <InfopicContentWrapper shouldShowMobile={false}>
-          <TextComponent
-            title={title}
-            subtitle={subtitle}
-            description={description}
-            buttonLabel={button}
-            buttonUrl={url}
-          />
-          <ImageComponent image={image} alt={alt} />
-        </InfopicContentWrapper>
-      ) : (
-        <InfopicContentWrapper shouldShowMobile={false}>
-          <ImageComponent image={image} alt={alt} />
-          <TextComponent
-            title={title}
-            subtitle={subtitle}
-            description={description}
-            buttonLabel={button}
-            buttonUrl={url}
-          />
-        </InfopicContentWrapper>
-      )}
+      <InfopicContentWrapper shouldShowMobile={false}>
+        {(sectionIndex ?? 0) % 2 === 0 ? (
+          <>
+            <TextComponent
+              title={title}
+              subtitle={subtitle}
+              description={description}
+              buttonLabel={button}
+              buttonUrl={url}
+            />
+            <ImageComponent image={image} alt={alt} />
+          </>
+        ) : (
+          <>
+            <ImageComponent image={image} alt={alt} />
+            <TextComponent
+              title={title}
+              subtitle={subtitle}
+              description={description}
+              buttonLabel={button}
+              buttonUrl={url}
+            />
+          </>
+        )}
+      </InfopicContentWrapper>
       <InfopicContentWrapper shouldShowMobile>
         <TextComponent
           title={title}
