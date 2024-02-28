@@ -2,7 +2,7 @@ import { Story, Meta } from "@storybook/react"
 import Search, { SearchProps } from "./Search"
 
 export default {
-  title: "Isomer/Search",
+  title: "Components/Search",
   component: Search,
   argTypes: {},
 } as Meta
