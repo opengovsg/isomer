@@ -13,9 +13,12 @@
     "clean": "rimraf build",
     "build": "npm run clean && run-p build:*",
     "build:main": "tsc -p tsconfig.build.json",
-    "build:module": "tsc -p tsconfig.module.build.json"
+    "build:module": "tsc -p tsconfig.module.build.json",
+    "chromatic": "npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN"
   },
-  "author": "isoengineers",
+  "author": {
+    "name": "isoengineers"
+  },
   "license": "ISC",
   "devDependencies": {
     "@storybook/addon-essentials": "^7.6.7",
@@ -34,6 +37,7 @@
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
     "autoprefixer": "^10.4.16",
+    "chromatic": "^11.0.0",
     "eslint": "^8.56.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^17.1.0",

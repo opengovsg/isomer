@@ -3,7 +3,7 @@ import Header, { HeaderProps } from "./Header"
 import Sitemap from "../../sitemap.json"
 
 export default {
-  title: "Isomer/Header",
+  title: "Components/Header",
   component: Header,
   argTypes: {},
 } as Meta
