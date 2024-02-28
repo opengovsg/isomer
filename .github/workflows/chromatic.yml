@@ -116,6 +116,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          onlyChanged: true
+          # onlyChanged: true
           branchName: ${{ env.ISOMER_BRANCH_NAME }}
           autoAcceptChanges: main
