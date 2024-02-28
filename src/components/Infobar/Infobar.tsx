@@ -21,7 +21,7 @@ const Infobar = ({
   return (
     <HomepageSectionWrapper sectionIndex={sectionIdx}>
       <section className="py-12 px-6 ">
-        <div className="flex flex-col gap-3 mx-auto md:w-1/2 pt-16 px-3 text-center">
+        <div className="flex flex-col gap-3 items-center mx-auto md:w-1/2 pt-16 px-3 text-center">
           <div className="flex flex-col gap-4">
             {subtitle && (
               <p className="text-subtitle uppercase tracking-widest">
@@ -38,16 +38,16 @@ const Infobar = ({
             )}
           </div>
           {buttonLabel && buttonUrl && (
-            <div className="text-lg font-semibold uppercase">
-              <div className="p-3">
-                <a
-                  className="inline-flex items-center text-secondary font-semibold text-center underline uppercase tracking-wide"
-                  href={buttonUrl}
-                >
-                  {buttonLabel}
-                  <ArrowRightIcon className="text-secondary h-5 w-5 ml-1 mt-1" />
-                </a>
-              </div>
+            <div className="p-3 text-lg font-semibold uppercase">
+              <a
+                className="flex gap-2 text-secondary font-semibold text-center underline uppercase tracking-wide"
+                href={buttonUrl}
+              >
+                {buttonLabel}
+                <div className="my-auto">
+                  <ArrowRightIcon className="text-secondary size-5" />
+                </div>
+              </a>
             </div>
           )}
         </div>
