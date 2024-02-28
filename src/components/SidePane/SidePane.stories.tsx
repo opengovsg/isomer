@@ -2,7 +2,7 @@ import { Story, Meta } from "@storybook/react"
 import SidePane, { SidePaneProps } from "./SidePane"
 import Sitemap from "../../sitemap.json"
 export default {
-  title: "Isomer/SidePane",
+  title: "Components/SidePane",
   component: SidePane,
   argTypes: {},
 } as Meta

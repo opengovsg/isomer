@@ -2,7 +2,7 @@ import { Story, Meta } from "@storybook/react"
 import InfoPic, { InfopicProps } from "./Infopic"
 
 export default {
-  title: "Isomer/Infopic",
+  title: "Components/Infopic",
   component: InfoPic,
   argTypes: {},
 } as Meta
