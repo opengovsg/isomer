@@ -118,4 +118,4 @@ jobs:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           onlyChanged: true
           branchName: ${{ env.ISOMER_BRANCH_NAME }}
-          autoAcceptChanges: develop
+          autoAcceptChanges: main
