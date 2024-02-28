@@ -37,23 +37,31 @@ const TextComponent = ({
 }: Omit<InfopicProps, "sectionIndex" | "image" | "alt">) => {
   return (
     <div className="flex flex-col gap-4 lg:px-8">
-      <p className="text-subtitle uppercase tracking-widest">{subtitle}</p>
-      <h1 className="text-secondary text-5xl font-semibold">{title}</h1>
+      {subtitle && (
+        <p className="text-subtitle uppercase tracking-widest">{subtitle}</p>
+      )}
+      {title && (
+        <h1 className="text-secondary text-5xl font-semibold">{title}</h1>
+      )}
+      {title && (
+        <section aria-labelledby="information-heading">
+          <p className="text-paragraph text-xl">{description}</p>
+        </section>
+      )}
+      {buttonLabel && buttonUrl && (
+        <div className="text-lg font-semibold uppercase tracking-wid">
+          <a
+            className="flex gap-2 text-secondary font-semibold underline uppercase"
+            href={buttonUrl}
+          >
+            {buttonLabel}
 
-      <section aria-labelledby="information-heading">
-        <p className="text-paragraph text-xl">{description}</p>
-      </section>
-
-      <div className="text-lg font-semibold uppercase tracking-wid">
-        <a
-          className="inline-flex items-center text-secondary font-semibold underline uppercase"
-          href={buttonUrl}
-        >
-          {buttonLabel}
-
-          <ArrowRightIcon className="text-secondary h-5 w-5 ml-1 mt-1" />
-        </a>
-      </div>
+            <div className="my-auto">
+              <ArrowRightIcon className="text-secondary size-5" />
+            </div>
+          </a>
+        </div>
+      )}
     </div>
   )
 }
