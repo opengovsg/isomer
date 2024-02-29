@@ -25,12 +25,12 @@ Default.args = {
   count: 2,
   cards: [
     {
-      imageUrl: "https://picsum.photos/200/300",
+      imageUrl: "https://placehold.co/200x300",
       title: "Default Title",
       text: "Default text here.",
     },
     {
-      imageUrl: "https://picsum.photos/200/300",
+      imageUrl: "https://placehold.co/200x300",
       title: "Default Title",
       text: "Default text here.",
     },
@@ -44,7 +44,7 @@ CustomCard.args = {
   count: 1,
   cards: [
     {
-      imageUrl: "https://picsum.photos/200/300",
+      imageUrl: "https://placehold.co/200x300",
       title: "Custom Title",
       text: "Custom text here.",
     },
