@@ -10,6 +10,7 @@ export interface InfopicProps {
   imageUrl?: string
   buttonLabel?: string
   buttonUrl?: string
+  isLeftVariant?: boolean
 }
 
 const InfopicContentWrapper = ({
@@ -95,11 +96,12 @@ const InfoPic = ({
   imageUrl: image,
   buttonLabel: button,
   buttonUrl: url,
+  isLeftVariant = true,
 }: InfopicProps) => {
   return (
     <HomepageSectionWrapper sectionIndex={sectionIndex}>
       <InfopicContentWrapper shouldShowMobile={false}>
-        {(sectionIndex ?? 0) % 2 === 0 ? (
+        {isLeftVariant ? (
           <>
             <TextComponent
               title={title}
