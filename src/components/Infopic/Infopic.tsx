@@ -44,11 +44,7 @@ const TextComponent = ({
       {title && (
         <h1 className="text-secondary text-5xl font-semibold">{title}</h1>
       )}
-      {description && (
-        <section aria-labelledby="information-heading">
-          <p className="text-paragraph text-xl">{description}</p>
-        </section>
-      )}
+      {description && <p className="text-paragraph text-xl">{description}</p>}
       {buttonLabel && buttonUrl && (
         <div className="text-lg font-semibold uppercase tracking-wid">
           <a
