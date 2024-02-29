@@ -18,7 +18,7 @@ Default.args = {
   subtitle: "Coming soon to your hood",
   description: "Catch the highlights from the roadshows here.",
   alt: "alt",
-  imageUrl: "https://picsum.photos/200/200",
+  imageUrl: "https://placehold.co/200x200",
   buttonLabel: "View more resources",
   buttonUrl: "www.google.com",
 }
@@ -30,7 +30,7 @@ DefaultGrayBackground.args = {
   subtitle: "Coming soon to your hood",
   description: "Catch the highlights from the roadshows here.",
   alt: "alt",
-  imageUrl: "https://picsum.photos/200/200",
+  imageUrl: "https://placehold.co/200x200",
   buttonLabel: "View more resources",
   buttonUrl: "www.google.com",
 }
@@ -43,7 +43,7 @@ DefaultRight.args = {
   subtitle: "Coming soon to your hood",
   description: "Catch the highlights from the roadshows here.",
   alt: "alt",
-  imageUrl: "https://picsum.photos/200/200",
+  imageUrl: "https://placehold.co/200x200",
   buttonLabel: "View more resources",
   buttonUrl: "www.google.com",
 }
@@ -54,7 +54,7 @@ TitleAndDescriptionOnly.args = {
   title: "Thank you for attending the roadshows!",
   description: "Catch the highlights from the roadshows here.",
   alt: "alt",
-  imageUrl: "https://picsum.photos/200/200",
+  imageUrl: "https://placehold.co/200x200",
 }
 
 export const InvalidImage = Template.bind({})
