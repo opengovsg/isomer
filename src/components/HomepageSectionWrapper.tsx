@@ -10,9 +10,7 @@ export const HomepageSectionWrapper = ({
 }: HomepageSectionWrapperProps) => {
   return (
     <div
-      className={
-        sectionIndex && sectionIndex % 2 === 0 ? "bg-white" : "bg-gray-100"
-      }
+      className={(sectionIndex ?? 0) % 2 === 0 ? "bg-white" : "bg-gray-100"}
       {...rest}
     >
       {children}

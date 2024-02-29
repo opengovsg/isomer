@@ -20,28 +20,36 @@ const Infobar = ({
 }: InfobarProps) => {
   return (
     <HomepageSectionWrapper sectionIndex={sectionIdx}>
-      <section className="py-12 px-6">
-        <div className="flex justify-center">
-          <div className="pb-3 px-3 pt-16 text-center">
-            <p className="text-subtitle pb-4 uppercase tracking-widest">
-              {subtitle}
-            </p>
-            <h1 className="text-secondary text-5xl pb-4">
-              <b className="font-semibold">{title}</b>
-            </h1>
-            <p className="text-paragraph text-xl">{description}</p>
-            <div className="pb-4 text-lg font-semibold uppercase">
-              <div className="p-3">
-                <a
-                  className="inline-flex text-secondary font-semibold text-center underline uppercase pt-4 tracking-wide"
-                  href={buttonUrl}
-                >
-                  {buttonLabel}
-                  <ArrowRightIcon className="text-secondary h-5 w-5 ml-1 mt-1" />
-                </a>
-              </div>
-            </div>
+      <section className="py-12 px-6 ">
+        <div className="flex flex-col gap-3 items-center mx-auto md:w-1/2 pt-10 px-3 text-center">
+          <div className="flex flex-col gap-4">
+            {subtitle && (
+              <p className="text-subtitle uppercase tracking-widest">
+                {subtitle}
+              </p>
+            )}
+            {title && (
+              <h1 className="text-secondary text-5xl">
+                <b className="font-semibold">{title}</b>
+              </h1>
+            )}
+            {description && (
+              <p className="text-paragraph text-xl">{description}</p>
+            )}
           </div>
+          {buttonLabel && buttonUrl && (
+            <div className="p-3 text-lg font-semibold uppercase">
+              <a
+                className="flex gap-2 text-secondary font-semibold text-center underline uppercase tracking-wide"
+                href={buttonUrl}
+              >
+                {buttonLabel}
+                <div className="my-auto">
+                  <ArrowRightIcon className="text-secondary size-5" />
+                </div>
+              </a>
+            </div>
+          )}
         </div>
       </section>
     </HomepageSectionWrapper>
