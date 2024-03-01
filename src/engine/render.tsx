@@ -103,8 +103,8 @@ const getComponent = (component: IsomerComponent): ReactElement | null => {
         title={title}
         subtitle={subtitle}
         description={description}
-        alt={alt}
-        imageUrl={imageUrl}
+        imageAlt={alt}
+        imageSrc={imageUrl}
         buttonLabel={buttonLabel}
         buttonUrl={buttonUrl}
       />

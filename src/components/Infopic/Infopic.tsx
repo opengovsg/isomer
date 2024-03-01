@@ -3,13 +3,14 @@ import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 
 export interface InfopicProps {
   sectionIndex?: number
-  title?: string
+  title: string
   subtitle?: string
   description?: string
-  alt?: string
-  imageUrl?: string
+  imageAlt?: string
+  imageSrc: string
   buttonLabel?: string
   buttonUrl?: string
+  isLeftVariant?: boolean
 }
 
 const InfopicContentWrapper = ({
@@ -20,8 +21,8 @@ const InfopicContentWrapper = ({
   shouldShowMobile: boolean
 }) => (
   <div
-    className={`mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:grid lg:max-w-7xl lg:grid-cols-2 lg:gap-x-8 lg:px-8 ${
-      shouldShowMobile ? "block lg:!hidden" : "hidden lg:!grid"
+    className={`mx-auto px-6 py-12 md:grid md:grid-cols-2 md:gap-x-16 md:p-16 xl:max-w-7xl ${
+      shouldShowMobile ? "md:hidden" : "sm: hidden"
     }`}
   >
     {children}
@@ -34,50 +35,44 @@ const TextComponent = ({
   description,
   buttonLabel,
   buttonUrl,
-}: Omit<InfopicProps, "sectionIndex" | "image" | "alt">) => {
+}: Omit<InfopicProps, "sectionIndex" | "imageSrc" | "imageAlt">) => {
   return (
-    <div className="lg:max-w-lg">
-      <div className="mt-4">
-        <div>
-          <p className="text-subtitle pb-4 uppercase tracking-widest">
-            {subtitle}
-          </p>
+    <div className="flex flex-col gap-4 lg:px-8">
+      {subtitle && (
+        <p className="text-subtitle uppercase tracking-widest">{subtitle}</p>
+      )}
+      <h1 className="text-secondary text-5xl font-semibold">{title}</h1>
+      {description && <p className="text-paragraph text-xl">{description}</p>}
+      {buttonLabel && buttonUrl && (
+        <div className="text-lg font-semibold uppercase tracking-wid">
+          <a
+            className="flex gap-2 text-secondary font-semibold underline uppercase"
+            href={buttonUrl}
+          >
+            {buttonLabel}
+
+            <div className="my-auto">
+              <ArrowRightIcon className="text-secondary size-5" />
+            </div>
+          </a>
         </div>
-        <h1 className="text-secondary text-5xl font-semibold pb-4">{title}</h1>
-      </div>
-
-      <section aria-labelledby="information-heading" className="mt-4">
-        <div className="mt-4 space-y-6">
-          <p className="text-paragraph text-xl">{description}</p>
-        </div>
-      </section>
-
-      <div className="pb-4 text-lg font-semibold uppercase tracking-wid">
-        <a
-          className="inline-flex text-secondary font-semibold text-center underline uppercase pt-4"
-          href={buttonUrl}
-        >
-          {buttonLabel}
-
-          <ArrowRightIcon className="text-secondary h-5 w-5 ml-1 mt-1" />
-        </a>
-      </div>
+      )}
     </div>
   )
 }
 
 const ImageComponent = ({
-  image,
+  src,
   alt,
 }: {
-  image: InfopicProps["imageUrl"]
-  alt: InfopicProps["alt"]
+  src: InfopicProps["imageSrc"]
+  alt: InfopicProps["imageAlt"]
 }) => {
   return (
-    <div className="mt-10 lg:row-span-2 lg:mt-0">
+    <div className="mt-12 md:row-span-2 md:mt-0">
       <div className="aspect-h-1 aspect-w-1 overflow-hidden rounded-lg">
         <img
-          src={image}
+          src={src}
           alt={alt}
           className="h-full w-full object-cover object-center"
         />
@@ -91,36 +86,39 @@ const InfoPic = ({
   title,
   subtitle,
   description,
-  alt,
-  imageUrl: image,
+  imageAlt: alt,
+  imageSrc: src,
   buttonLabel: button,
   buttonUrl: url,
+  isLeftVariant = true,
 }: InfopicProps) => {
   return (
     <HomepageSectionWrapper sectionIndex={sectionIndex}>
-      {sectionIndex && sectionIndex % 2 === 0 ? (
-        <InfopicContentWrapper shouldShowMobile={false}>
-          <TextComponent
-            title={title}
-            subtitle={subtitle}
-            description={description}
-            buttonLabel={button}
-            buttonUrl={url}
-          />
-          <ImageComponent image={image} alt={alt} />
-        </InfopicContentWrapper>
-      ) : (
-        <InfopicContentWrapper shouldShowMobile={false}>
-          <ImageComponent image={image} alt={alt} />
-          <TextComponent
-            title={title}
-            subtitle={subtitle}
-            description={description}
-            buttonLabel={button}
-            buttonUrl={url}
-          />
-        </InfopicContentWrapper>
-      )}
+      <InfopicContentWrapper shouldShowMobile={false}>
+        {isLeftVariant ? (
+          <>
+            <TextComponent
+              title={title}
+              subtitle={subtitle}
+              description={description}
+              buttonLabel={button}
+              buttonUrl={url}
+            />
+            <ImageComponent src={src} alt={alt} />
+          </>
+        ) : (
+          <>
+            <ImageComponent src={src} alt={alt} />
+            <TextComponent
+              title={title}
+              subtitle={subtitle}
+              description={description}
+              buttonLabel={button}
+              buttonUrl={url}
+            />
+          </>
+        )}
+      </InfopicContentWrapper>
       <InfopicContentWrapper shouldShowMobile>
         <TextComponent
           title={title}
@@ -129,7 +127,7 @@ const InfoPic = ({
           buttonLabel={button}
           buttonUrl={url}
         />
-        <ImageComponent image={image} alt={alt} />
+        <ImageComponent src={src} alt={alt} />
       </InfopicContentWrapper>
     </HomepageSectionWrapper>
   )
