@@ -24,10 +24,18 @@ HalfWidth.args = {
   width: 50,
 }
 
-export const ImageWithLink = Template.bind({})
-ImageWithLink.args = {
+export const ImageWithExternalLink = Template.bind({})
+ImageWithExternalLink.args = {
   src: "https://placehold.co/200x200",
   alt: "alt",
   href: "https://www.google.com",
+  openInNewTab: false,
+}
+
+export const ImageWithInternalLink = Template.bind({})
+ImageWithInternalLink.args = {
+  src: "https://placehold.co/200x200",
+  alt: "alt",
+  href: "/faq",
   openInNewTab: false,
 }
