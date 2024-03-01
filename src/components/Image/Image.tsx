@@ -1,8 +1,8 @@
 import { HTMLAttributeAnchorTarget } from "react"
 
 export interface ImageProps {
-  src?: string
-  alt?: string
+  src: string
+  alt: string
   width?: number
   href?: string
   openInNewTab?: boolean
