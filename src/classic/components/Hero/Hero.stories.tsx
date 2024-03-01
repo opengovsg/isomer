@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from "@storybook/react"
+import type { StoryFn, Meta } from "@storybook/react"
 import Hero from "./Hero"
 import { HeroProps } from "~/common"
 
@@ -15,13 +15,44 @@ const Template: StoryFn<HeroProps> = (args) => <Hero {...args} />
 export const Default = Template.bind({})
 Default.args = {}
 
-// Custom scenario
-export const CustomCard = Template.bind({})
-CustomCard.args = {
-  heroTitle: "Custom title",
-  heroCaption: "Custom title with some text and other stuff",
-  buttonLabel: "Custom button",
-  buttonUrl: "https://google.com",
-  logoUrl: "https://picsum.photos/200",
-  bgUrl: "https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8",
+// Side layout
+export const SideButton = Template.bind({})
+SideButton.args = {
+  variant: "side",
+  backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
+  alignment: "left",
+  backgroundColor: "white",
+  size: "md",
+  title: "Easily set up good government websites",
+  subtitle: "Free, fast, easy",
+  buttonLabel: "Find out if I'm a good fit",
+  buttonUrl: "/contact",
+}
+
+export const SideDropdown = Template.bind({})
+SideDropdown.args = {
+  variant: "side",
+  backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
+  alignment: "left",
+  backgroundColor: "white",
+  size: "md",
+  title: "Easily set up good government websites",
+  subtitle: "Free, fast, easy",
+  dropdown: {
+    options: [
+      {
+        title: "Option 1",
+        url: "/option-1",
+      },
+      {
+        title: "Option 2",
+        url: "/option-2",
+      },
+      {
+        title:
+          "Some super long option that it should overflow on small screens",
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      },
+    ],
+  },
 }

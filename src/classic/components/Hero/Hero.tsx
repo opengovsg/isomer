@@ -1,15 +1,30 @@
-import { HeroProps } from "~/common"
+import {
+  type HeroCommonProps,
+  type HeroSideProps,
+  type HeroProps,
+} from "~/common/Hero"
+import { HeroInfobox } from "./HeroInfobox"
 
-export default function Hero({
-  heroTitle,
-  heroCaption,
-  buttonLabel,
-  buttonUrl,
-  bgUrl,
-}: HeroProps) {
+const HeroSide = (props: Omit<HeroSideProps, keyof HeroCommonProps>) => {
   return (
-    <div className="bg-white">
-      <div
+    // TODO: Check if padding top/bottom is correct
+    // Ref: https://github.com/isomerpages/isomerpages-template/blob/next-gen/assets/css/blueprint.css#L9080-L9105
+    <div className="grow shrink-0">
+      <HeroInfobox {...props} />
+    </div>
+  )
+}
+
+export const Hero = (props: HeroProps) => {
+  return (
+    <section
+      className={`flex flex-col items-stretch justify-between bg-cover bg-center bg-no-repeat`}
+      style={{
+        backgroundImage: `url('${props.backgroundUrl}')`,
+      }}
+    >
+      {props.variant === "side" && <HeroSide {...props} />}
+      {/* <div
         className="relative isolate px-6 pt-14 lg:px-8"
         style={{
           background: bgUrl
@@ -51,7 +66,9 @@ export default function Hero({
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </div> */}
+    </section>
   )
 }
+
+export default Hero
