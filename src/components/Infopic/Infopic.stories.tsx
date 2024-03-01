@@ -17,8 +17,8 @@ Default.args = {
   title: "Thank you for attending the roadshows!",
   subtitle: "Coming soon to your hood",
   description: "Catch the highlights from the roadshows here.",
-  alt: "alt",
-  imageUrl: "https://placehold.co/200x200",
+  imageAlt: "alt",
+  imageSrc: "https://placehold.co/200x200",
   buttonLabel: "View more resources",
   buttonUrl: "www.google.com",
 }
@@ -29,8 +29,8 @@ DefaultGrayBackground.args = {
   title: "Thank you for attending the roadshows!",
   subtitle: "Coming soon to your hood",
   description: "Catch the highlights from the roadshows here.",
-  alt: "alt",
-  imageUrl: "https://placehold.co/200x200",
+  imageAlt: "alt",
+  imageSrc: "https://placehold.co/200x200",
   buttonLabel: "View more resources",
   buttonUrl: "www.google.com",
 }
@@ -42,8 +42,8 @@ DefaultRight.args = {
   title: "Thank you for attending the roadshows!",
   subtitle: "Coming soon to your hood",
   description: "Catch the highlights from the roadshows here.",
-  alt: "alt",
-  imageUrl: "https://placehold.co/200x200",
+  imageAlt: "alt",
+  imageSrc: "https://placehold.co/200x200",
   buttonLabel: "View more resources",
   buttonUrl: "www.google.com",
 }
@@ -53,8 +53,8 @@ TitleAndDescriptionOnly.args = {
   sectionIndex: 0,
   title: "Thank you for attending the roadshows!",
   description: "Catch the highlights from the roadshows here.",
-  alt: "alt",
-  imageUrl: "https://placehold.co/200x200",
+  imageAlt: "alt",
+  imageSrc: "https://placehold.co/200x200",
 }
 
 export const InvalidImage = Template.bind({})
@@ -63,8 +63,8 @@ InvalidImage.args = {
   title: "Thank you for attending the roadshows!",
   subtitle: "Coming soon to your hood",
   description: "Catch the highlights from the roadshows here.",
-  alt: "alt",
-  imageUrl: "",
+  imageAlt: "alt",
+  imageSrc: "",
   buttonLabel: "View more resources",
   buttonUrl: "www.google.com",
 }
