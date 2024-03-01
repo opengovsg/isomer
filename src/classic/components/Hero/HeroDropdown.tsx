@@ -11,7 +11,7 @@ export const HeroDropdown = ({ title, options }: HeroDropdownProps) => {
     <div className="block relative border-light w-full">
       <div className="w-full">
         <a
-          className={`${BP_BUTTON_CLASSES} flex px-6 py-7 box-border justify-between bg-white border-0 border-b border-solid border-border-light m-auto w-[calc(100%-3rem)] text-xl font-semibold`}
+          className={`${BP_BUTTON_CLASSES} flex px-6 py-7 box-border justify-between bg-white border-0 border-b border-solid border-border-light m-auto w-[calc(100%-3rem)] text-xl text-prose font-semibold`}
           aria-haspopup
           aria-controls="hero-dropdown-menu"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -30,7 +30,7 @@ export const HeroDropdown = ({ title, options }: HeroDropdownProps) => {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="currentColor"
-              viewBox="0 0 16 16"
+              viewBox="0 0 20 20"
               width="20"
               height="20"
               className="text-2xl -mt-0.5"
