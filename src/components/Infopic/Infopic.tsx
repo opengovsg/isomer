@@ -6,7 +6,7 @@ export interface InfopicProps {
   title: string
   subtitle?: string
   description?: string
-  imageAlt: string
+  imageAlt?: string
   imageSrc: string
   buttonLabel?: string
   buttonUrl?: string
