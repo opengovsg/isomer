@@ -5,7 +5,7 @@ import { encode } from "js-base64"
 import Content, { ContentProps } from "./Content"
 
 export default {
-  title: "Components/Content",
+  title: "Classic/Components/Content",
   component: Content,
   argTypes: {},
 } as Meta

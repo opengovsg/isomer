@@ -2,7 +2,7 @@ import type { StoryFn, Meta } from "@storybook/react"
 import Masthead, { MastheadProps } from "./Masthead"
 
 export default {
-  title: "Components/Masthead",
+  title: "Classic/Components/Masthead",
   component: Masthead,
   argTypes: {},
 } as Meta

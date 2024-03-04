@@ -3,7 +3,7 @@ import Header, { HeaderProps } from "./Header"
 import Sitemap from "../../../sitemap.json"
 
 export default {
-  title: "Components/Header",
+  title: "Classic/Components/Header",
   component: Header,
   argTypes: {},
 } as Meta

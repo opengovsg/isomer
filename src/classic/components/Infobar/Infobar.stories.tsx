@@ -2,7 +2,7 @@ import { Story, Meta } from "@storybook/react"
 import Infobar, { InfobarProps } from "./Infobar"
 
 export default {
-  title: "Components/Infobar",
+  title: "Classic/Components/Infobar",
   component: Infobar,
   argTypes: {},
 } as Meta

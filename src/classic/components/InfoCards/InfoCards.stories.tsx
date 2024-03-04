@@ -5,7 +5,7 @@ import { Story, Meta } from "@storybook/react"
 import { InfoCards, InfoCardsProps } from "./InfoCards"
 
 export default {
-  title: "Components/InfoCards",
+  title: "Classic/Components/InfoCards",
   component: InfoCards,
   argTypes: {
     // Define the prop types and control options here
