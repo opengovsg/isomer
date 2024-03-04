@@ -73,7 +73,7 @@ export const Masthead = ({ isStaging }: MastheadProps) => {
         <div
           id="sgds-masthead-content"
           className={`lg:container lg:px-6 px-3 pt-4 pb-8 lg:pt-10 lg:pb-12 ${
-            isMastheadContentVisible ? "visible block" : "invisible hidden"
+            isMastheadContentVisible ? "block" : "hidden"
           }`}
         >
           <div className="grid grid-cols-[1fr] lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))] gap-6 lg:gap-40">

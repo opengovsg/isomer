@@ -76,7 +76,7 @@ export const HeroInfoboxDesktop = ({
             </h1>
             {subtitle && (
               <p
-                className={`invisible lg:visible text-lg not-italic font-normal ${textColor[backgroundColor]}`}
+                className={`hidden lg:block text-lg not-italic font-normal ${textColor[backgroundColor]}`}
               >
                 {subtitle}
               </p>

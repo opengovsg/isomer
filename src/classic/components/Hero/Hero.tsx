@@ -20,12 +20,12 @@ const HeroSide = (props: Omit<HeroSideProps, keyof HeroCommonProps>) => {
   return (
     <div className="grow shrink-0">
       {/* Desktop view 768 above */}
-      <div className="invisible md:visible hidden md:block">
+      <div className="hidden md:block">
         <HeroInfoboxDesktop {...props} />
       </div>
 
       {/* Mobile view below 768 */}
-      <div className="visible md:invisible block md:hidden">
+      <div className="block md:hidden">
         <HeroInfoboxMobile {...props} />
       </div>
     </div>
@@ -56,17 +56,17 @@ const HeroFloating = (
   return (
     <div className="md:p-12">
       {/* Desktop view 1024 above */}
-      <div className="invisible lg:visible hidden lg:block max-w-screen-xl mx-auto my-0">
+      <div className="hidden lg:block max-w-screen-xl mx-auto my-0">
         <HeroInfoboxDesktop {...props} />
       </div>
 
       {/* Tablet view 769 to 1023 */}
-      <div className="invisible md:visible lg:invisible hidden md:block lg:hidden mb-0">
+      <div className="hidden md:block lg:hidden mb-0">
         <HeroInfoboxTablet {...props} />
       </div>
 
       {/* Mobile view below 768 */}
-      <div className="visible md:invisible block md:hidden">
+      <div className="block md:hidden">
         <HeroInfoboxMobile {...props} />
       </div>
     </div>
@@ -89,9 +89,7 @@ const HeroCenter = ({
               {title}
             </h1>
             {subtitle && (
-              <p className="invisible md:visible hidden md:block pb-8 text-xl">
-                {subtitle}
-              </p>
+              <p className="hidden md:block pb-8 text-xl">{subtitle}</p>
             )}
             {dropdown && !buttonLabel && !buttonUrl && (
               <HeroDropdown {...dropdown} />
