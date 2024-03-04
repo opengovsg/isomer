@@ -1,6 +1,6 @@
 import { Story, Meta } from "@storybook/react"
 import SidePane, { SidePaneProps } from "./SidePane"
-import Sitemap from "../../sitemap.json"
+import Sitemap from "../../../sitemap.json"
 export default {
   title: "Components/SidePane",
   component: SidePane,

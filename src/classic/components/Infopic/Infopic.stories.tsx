@@ -2,7 +2,7 @@ import { Story, Meta } from "@storybook/react"
 import InfoPic, { InfopicProps } from "./Infopic"
 
 export default {
-  title: "Components/Infopic",
+  title: "Classic/Components/Infopic",
   component: InfoPic,
   argTypes: {},
 } as Meta
@@ -68,4 +68,3 @@ InvalidImage.args = {
   buttonLabel: "View more resources",
   buttonUrl: "www.google.com",
 }
-
