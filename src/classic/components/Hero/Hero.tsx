@@ -85,7 +85,7 @@ const HeroCenter = ({
       <div className="mx-auto mt-8 mb-0 relative">
         <div className="flex lg:min-h-80 lg:h-96 items-center justify-center">
           <div className="flex-none w-3/4 text-center text-white">
-            <h1 className="text-[5.25rem] leading-[5.25rem] font-bold -tracking-[0.09375rem] m-0 pb-8 text-balance">
+            <h1 className="text-6xl md:text-[5.25rem] md:leading-[5.25rem] font-bold -tracking-[0.09375rem] m-0 pb-8 text-balance">
               {title}
             </h1>
             {subtitle && (

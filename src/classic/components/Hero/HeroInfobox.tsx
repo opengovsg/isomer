@@ -43,6 +43,21 @@ const width: {
   },
 }
 
+const padding: {
+  [key in HeroInfoboxVariants]: {
+    [key in NonNullable<HeroInfoboxProps["size"]>]: string
+  }
+} = {
+  side: {
+    sm: "p-16",
+    md: "p-16",
+  },
+  floating: {
+    sm: "p-8 xl:p-16",
+    md: "p-16",
+  },
+}
+
 export const HeroInfoboxDesktop = ({
   variant,
   title,
@@ -61,7 +76,7 @@ export const HeroInfoboxDesktop = ({
       }`}
     >
       <div
-        className={`flex flex-col p-16 ${bgColor[backgroundColor]} ${width[variant][size]}`}
+        className={`flex flex-col ${padding[variant][size]} ${bgColor[backgroundColor]} ${width[variant][size]}`}
       >
         <div
           className={`flex flex-col ${
