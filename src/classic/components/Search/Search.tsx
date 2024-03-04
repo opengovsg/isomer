@@ -4,17 +4,8 @@ import {
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
 } from "@heroicons/react/24/outline"
-
-export type SearchRecord = {
-  id: string
-  title: string
-  content: string
-  url: string
-}
-
-export interface SearchProps {
-  index: SearchRecord[]
-}
+import { SearchProps } from "~/common"
+import { SearchRecord } from "~/common/Search"
 
 const Search: React.FC<SearchProps> = ({ index }) => {
   const [searchTerm, setSearchTerm] = useState<string>("")

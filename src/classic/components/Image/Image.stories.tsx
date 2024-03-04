@@ -1,5 +1,6 @@
-import { Story, Meta } from "@storybook/react"
-import Image, { ImageProps } from "./Image"
+import { Meta, StoryFn } from "@storybook/react"
+import Image from "./Image"
+import { ImageProps } from "~/common"
 
 export default {
   title: "Classic/Components/Image",
@@ -8,7 +9,7 @@ export default {
 } as Meta
 
 // Template for stories
-const Template: Story<ImageProps> = (args) => <Image {...args} />
+const Template: StoryFn<ImageProps> = (args) => <Image {...args} />
 
 // Default scenario
 export const Default = Template.bind({})

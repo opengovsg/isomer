@@ -1,7 +1,6 @@
-// InfoCards.stories.tsx
-
 import { StoryFn, Meta } from "@storybook/react"
-import Footer, { FooterProps } from "./Footer"
+import Footer from "./Footer"
+import { FooterProps } from "~/common"
 
 export default {
   title: "Classic/Components/Footer",

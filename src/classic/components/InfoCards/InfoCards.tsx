@@ -1,16 +1,7 @@
 import { Card, CardImg, Col } from "@govtechsg/sgds-react"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
-
-export interface SingleCardProps {
-  title: string
-  imageUrl: string
-  text: string
-}
-
-export interface InfoCardsProps {
-  sectionIdx: number
-  cards: SingleCardProps[]
-}
+import { InfoCardsProps } from "~/common"
+import { SingleCardProps } from "~/common/InfoCards"
 
 const SingleCard = ({ title, imageUrl, text }: SingleCardProps) => (
   <Card>
@@ -45,4 +36,3 @@ const InfoCards = ({ sectionIdx, cards }: InfoCardsProps) => {
 }
 
 export default InfoCards
-export { InfoCards }

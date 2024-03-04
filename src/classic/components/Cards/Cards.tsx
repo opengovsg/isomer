@@ -1,31 +1,6 @@
-interface SingleCard {
-  id: number
-  title: string
-  href: string
-  description: string
-  imageUrl: string
-  date: string
-  datetime: string
-  category?: {
-    title: string
-    href: string
-  }
-  author: {
-    name: string
-    role: string
-    href: string
-    imageUrl: string
-  }
-}
+import { CardsProps } from "~/common"
 
-export interface CardProps {
-  sectionIdx?: number
-  sectionTitle: string
-  sectionCaption: string
-  cards: SingleCard[]
-}
-
-function Cards({ sectionTitle, sectionCaption, cards }: CardProps) {
+function Cards({ sectionTitle, sectionCaption, cards }: CardsProps) {
   return (
     <div className="bg-white py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">

@@ -1,8 +1,5 @@
 import { useState } from "react"
-
-export interface MastheadProps {
-  isStaging?: boolean
-}
+import { MastheadProps } from "~/common"
 
 export const Masthead = ({ isStaging }: MastheadProps) => {
   const [isMastheadContentVisible, setIsMastheadContentVisible] =

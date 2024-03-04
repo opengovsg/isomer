@@ -1,22 +1,5 @@
 import { Footer } from "@govtechsg/sgds-react/Footer"
-
-export interface FooterProps {
-  sectionIdx?: number
-  agencyName: string
-  lastUpdated: string
-  items?: FooterItem[]
-}
-
-export interface FooterItem {
-  title: string
-  subItems?: FooterSubitem[]
-  link?: string
-}
-
-export interface FooterSubitem {
-  title: string
-  link: string
-}
+import { FooterProps } from "~/common"
 
 const IsomerFooter = ({ agencyName, lastUpdated, items }: FooterProps) => {
   console.log(lastUpdated)

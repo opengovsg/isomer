@@ -1,17 +1,6 @@
 import { ArrowRightIcon } from "@heroicons/react/24/outline"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
-
-export interface InfopicProps {
-  sectionIndex?: number
-  title: string
-  subtitle?: string
-  description?: string
-  imageAlt?: string
-  imageSrc: string
-  buttonLabel?: string
-  buttonUrl?: string
-  isLeftVariant?: boolean
-}
+import { InfopicProps } from "~/common"
 
 const InfopicContentWrapper = ({
   children,

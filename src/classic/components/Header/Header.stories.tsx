@@ -1,6 +1,7 @@
-import { Story, Meta } from "@storybook/react"
-import Header, { HeaderProps } from "./Header"
+import { Meta, StoryFn } from "@storybook/react"
+import Header from "./Header"
 import Sitemap from "../../../sitemap.json"
+import { HeaderProps } from "~/common"
 
 export default {
   title: "Classic/Components/Header",
@@ -9,7 +10,7 @@ export default {
 } as Meta
 
 // Template for stories
-const Template: Story<HeaderProps> = (args) => <Header {...args} />
+const Template: StoryFn<HeaderProps> = (args) => <Header {...args} />
 
 // Default scenario
 export const Default = Template.bind({})

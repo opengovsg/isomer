@@ -1,5 +1,6 @@
 import type { StoryFn, Meta } from "@storybook/react"
-import Masthead, { MastheadProps } from "./Masthead"
+import Masthead from "./Masthead"
+import { MastheadProps } from "~/common"
 
 export default {
   title: "Classic/Components/Masthead",

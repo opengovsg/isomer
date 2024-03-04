@@ -1,31 +1,13 @@
 import { useState } from "react"
 import { Navbar, Nav, NavDropdown } from "@govtechsg/sgds-react"
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline"
-
-type NavbarLink = {
-  type: "single" | "dropdown"
-  name: string
-  eventKey?: string
-  url?: string
-  links?: NavbarLink[]
-}
-
-export interface IsomerNavProps {
-  id?: string
-  logo: { url: string; alt: string }
-
-  links: NavbarLink[]
-  search?: {
-    isEnabled: boolean
-    searchUrl?: string
-  }
-}
+import { NavbarProps } from "~/common"
 
 export const IsomerNav = ({
   logo,
   links,
   search = { isEnabled: false },
-}: IsomerNavProps) => {
+}: NavbarProps) => {
   const [active, setActive] = useState("home")
   const clickNavbarItem = (eventKey: string) => {
     setActive(eventKey)

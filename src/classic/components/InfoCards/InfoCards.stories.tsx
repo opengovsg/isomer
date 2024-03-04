@@ -1,8 +1,6 @@
-// InfoCards.stories.tsx
-
-import React from "react"
-import { Story, Meta } from "@storybook/react"
-import { InfoCards, InfoCardsProps } from "./InfoCards"
+import { Meta, StoryFn } from "@storybook/react"
+import InfoCards from "./InfoCards"
+import { InfoCardsProps } from "~/common"
 
 export default {
   title: "Classic/Components/InfoCards",
@@ -16,13 +14,12 @@ export default {
 } as Meta
 
 // Template for stories
-const Template: Story<InfoCardsProps> = (args) => <InfoCards {...args} />
+const Template: StoryFn<InfoCardsProps> = (args) => <InfoCards {...args} />
 
 // Default scenario
 export const Default = Template.bind({})
 Default.args = {
   sectionIdx: 0,
-  count: 2,
   cards: [
     {
       imageUrl: "https://placehold.co/200x300",
@@ -41,7 +38,6 @@ Default.args = {
 export const CustomCard = Template.bind({})
 CustomCard.args = {
   sectionIdx: 1,
-  count: 1,
   cards: [
     {
       imageUrl: "https://placehold.co/200x300",

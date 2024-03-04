@@ -1,10 +1,6 @@
 import { ChevronDownIcon } from "@heroicons/react/24/outline"
+import { SidePaneProps } from "~/common"
 import { Sitemap, SitemapEntry } from "~/engine/render"
-
-export interface SidePaneProps {
-  sitemap: Sitemap
-  currentPermalink: string
-}
 
 export type SectionWithSiblings = {
   parentTitle?: string

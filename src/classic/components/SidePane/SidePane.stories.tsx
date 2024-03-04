@@ -1,6 +1,7 @@
-import { Story, Meta } from "@storybook/react"
-import SidePane, { SidePaneProps } from "./SidePane"
+import { Meta, StoryFn } from "@storybook/react"
+import SidePane from "./SidePane"
 import Sitemap from "../../../sitemap.json"
+import { SidePaneProps } from "~/common"
 export default {
   title: "Classic/Components/SidePane",
   component: SidePane,
@@ -8,7 +9,7 @@ export default {
 } as Meta
 
 // Template for stories
-const Template: Story<SidePaneProps> = (args) => <SidePane {...args} />
+const Template: StoryFn<SidePaneProps> = (args) => <SidePane {...args} />
 
 // Default scenario
 export const Default = Template.bind({})

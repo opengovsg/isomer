@@ -1,6 +1,6 @@
-import React from "react"
-import { Story, Meta } from "@storybook/react"
-import Cards, { CardProps } from "./Cards"
+import { Meta, StoryFn } from "@storybook/react"
+import Cards from "./Cards"
+import { CardsProps } from "~/common"
 
 export default {
   title: "Classic/Components/Cards",
@@ -9,7 +9,7 @@ export default {
 } as Meta
 
 // Template for stories
-const Template: Story<CardProps> = (args) => <Cards {...args} />
+const Template: StoryFn<CardsProps> = (args) => <Cards {...args} />
 
 // Default scenario
 export const Default = Template.bind({})

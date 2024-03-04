@@ -1,5 +1,6 @@
-import { Story, Meta } from "@storybook/react"
-import Hero, { HeroProps } from "./Hero"
+import { Meta, StoryFn } from "@storybook/react"
+import Hero from "./Hero"
+import { HeroProps } from "~/common"
 
 export default {
   title: "Classic/Components/Hero",
@@ -8,7 +9,7 @@ export default {
 } as Meta
 
 // Template for stories
-const Template: Story<HeroProps> = (args) => <Hero {...args} />
+const Template: StoryFn<HeroProps> = (args) => <Hero {...args} />
 
 // Default scenario
 export const Default = Template.bind({})

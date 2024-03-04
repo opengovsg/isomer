@@ -1,12 +1,5 @@
 import { HTMLAttributeAnchorTarget } from "react"
-
-export interface ImageProps {
-  src: string
-  alt: string
-  width?: number
-  href?: string
-  openInNewTab?: boolean
-}
+import { ImageProps } from "~/common"
 
 const Image = ({ src, alt, width }: ImageProps) => (
   <img src={src} alt={alt} width={`${width ?? 100}%`} />

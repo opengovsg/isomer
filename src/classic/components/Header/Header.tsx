@@ -1,15 +1,11 @@
 import React from "react" // Import React
+import { HeaderProps } from "~/common"
 import { Sitemap, SitemapEntry } from "~/engine/render"
 
 type Breadcrumb = {
   name: string
   href: string
   current?: boolean
-}
-
-export interface HeaderProps {
-  permalink: string
-  sitemap: Sitemap
 }
 
 const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {

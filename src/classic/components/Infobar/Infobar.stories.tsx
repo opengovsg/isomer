@@ -1,5 +1,6 @@
-import { Story, Meta } from "@storybook/react"
-import Infobar, { InfobarProps } from "./Infobar"
+import { Meta, StoryFn } from "@storybook/react"
+import Infobar from "./Infobar"
+import { InfobarProps } from "~/common"
 
 export default {
   title: "Classic/Components/Infobar",
@@ -8,7 +9,7 @@ export default {
 } as Meta
 
 // Template for stories
-const Template: Story<InfobarProps> = (args) => <Infobar {...args} />
+const Template: StoryFn<InfobarProps> = (args) => <Infobar {...args} />
 
 // Default scenario
 export const Default = Template.bind({})

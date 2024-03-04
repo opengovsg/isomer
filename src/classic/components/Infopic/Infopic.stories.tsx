@@ -1,5 +1,6 @@
-import { Story, Meta } from "@storybook/react"
-import InfoPic, { InfopicProps } from "./Infopic"
+import { Meta, StoryFn } from "@storybook/react"
+import InfoPic from "./Infopic"
+import { InfopicProps } from "~/common"
 
 export default {
   title: "Classic/Components/Infopic",
@@ -8,7 +9,7 @@ export default {
 } as Meta
 
 // Template for stories
-const Template: Story<InfopicProps> = (args) => <InfoPic {...args} />
+const Template: StoryFn<InfopicProps> = (args) => <InfoPic {...args} />
 
 // Default scenario
 export const Default = Template.bind({})
