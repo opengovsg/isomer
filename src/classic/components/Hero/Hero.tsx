@@ -118,6 +118,81 @@ const HeroCenter = ({
   )
 }
 
+const HeroKeyHighlights = ({
+  keyHighlights,
+}: Pick<HeroCommonProps, "keyHighlights">) => {
+  if (!keyHighlights || keyHighlights.length === 0) {
+    return null
+  }
+
+  return (
+    <section id="key-highlights" className="p-0 lg:px-6 bg-primary text-white">
+      <div className="mx-auto my-0 relative lg:max-w-[60rem] xl:max-w-[76rem] 2xl:max-w-[84rem]">
+        <div className={`m-0 text-center justify-center flex-none md:flex`}>
+          {keyHighlights
+            .slice(0, 4)
+            .map(
+              ({
+                url: highlightUrl,
+                title: highlightTitle,
+                description: highlightDescription,
+              }) => (
+                <div
+                  className={`transition-colors hover:bg-primaryHover cursor-pointer grow basis-0`}
+                >
+                  <a
+                    href={highlightUrl}
+                    rel={
+                      highlightUrl.startsWith("http")
+                        ? "noopener noreferrer nofollow"
+                        : ""
+                    }
+                    target={highlightUrl.startsWith("http") ? "_blank" : ""}
+                  >
+                    <div className="block px-8 py-5">
+                      {highlightTitle && (
+                        <p className="font-semibold text-white tracking-[0.0125rem] uppercase pt-1">
+                          {highlightTitle}
+                          {highlightUrl.startsWith("http") && (
+                            <>
+                              &ensp;
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                fill="currentColor"
+                                className="text-2xl -mt-0.5 inline-block"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"
+                                />
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"
+                                />
+                              </svg>
+                            </>
+                          )}
+                        </p>
+                      )}
+                      {highlightDescription && (
+                        <p className="color-[#ffffffb3] pb-2">
+                          {highlightDescription}
+                        </p>
+                      )}
+                    </div>
+                  </a>
+                </div>
+              ),
+            )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export const Hero = (props: HeroProps) => {
   return (
     <section
@@ -132,6 +207,9 @@ export const Hero = (props: HeroProps) => {
       {props.variant !== "side" &&
         props.variant !== "image" &&
         props.variant !== "floating" && <HeroCenter {...props} />}
+      {props.keyHighlights && (
+        <HeroKeyHighlights keyHighlights={props.keyHighlights} />
+      )}
     </section>
   )
 }

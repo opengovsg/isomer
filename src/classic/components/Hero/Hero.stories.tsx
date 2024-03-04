@@ -20,6 +20,28 @@ Default.args = {
   subtitle: "Free, fast, easy",
   buttonLabel: "Find out if I'm a good fit",
   buttonUrl: "/contact",
+  keyHighlights: [
+    {
+      title: "Key highlight 1",
+      description: "This is a key highlight",
+      url: "/key-highlight-1",
+    },
+    {
+      title: "Key highlight 2",
+      description: "This is another key highlight 1",
+      url: "/key-highlight-2",
+    },
+    {
+      title: "Key highlight 3",
+      description: "This is another key highlight 2",
+      url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    },
+    {
+      title: "Key highlight 4",
+      description: "This is another key highlight 3",
+      url: "/key-highlight-4",
+    },
+  ],
 }
 
 // Side layout

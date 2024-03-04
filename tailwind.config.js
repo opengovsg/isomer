@@ -5,6 +5,7 @@ export default {
     extend: {
       colors: {
         primary: "#6031b6",
+        primaryHover: "#4b268e",
         secondary: "#4372d6",
         subtitle: "#344054",
         paragraph: "#344054",
