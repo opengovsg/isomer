@@ -1,2 +1,2 @@
-export * from "./components"
+export * from "./classic/components"
 export * from "./engine"
