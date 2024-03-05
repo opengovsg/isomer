@@ -11,7 +11,7 @@ const InfopicContentWrapper = ({
 }) => (
   <div
     className={`mx-auto px-6 py-12 md:grid md:grid-cols-2 md:gap-x-16 md:p-16 xl:max-w-7xl ${
-      shouldShowMobile ? "md:hidden" : "sm: hidden"
+      shouldShowMobile ? "md:hidden" : "hidden"
     }`}
   >
     {children}
@@ -37,6 +37,12 @@ const TextComponent = ({
           <a
             className="flex gap-2 text-secondary font-semibold underline uppercase"
             href={buttonUrl}
+            target={buttonUrl.startsWith("http") ? "_blank" : undefined}
+            rel={
+              buttonUrl.startsWith("http")
+                ? "noopener noreferrer nofollow"
+                : undefined
+            }
           >
             {buttonLabel}
 
