@@ -21,7 +21,7 @@ Default.args = {
   imageAlt: "alt",
   imageSrc: "https://placehold.co/200x200",
   buttonLabel: "View more resources",
-  buttonUrl: "www.google.com",
+  buttonUrl: "https://www.google.com",
 }
 
 export const DefaultGrayBackground = Template.bind({})
@@ -33,7 +33,7 @@ DefaultGrayBackground.args = {
   imageAlt: "alt",
   imageSrc: "https://placehold.co/200x200",
   buttonLabel: "View more resources",
-  buttonUrl: "www.google.com",
+  buttonUrl: "https://www.google.com",
 }
 
 export const DefaultRight = Template.bind({})
@@ -46,7 +46,7 @@ DefaultRight.args = {
   imageAlt: "alt",
   imageSrc: "https://placehold.co/200x200",
   buttonLabel: "View more resources",
-  buttonUrl: "www.google.com",
+  buttonUrl: "https://www.google.com",
 }
 
 export const TitleAndDescriptionOnly = Template.bind({})
@@ -67,5 +67,5 @@ InvalidImage.args = {
   imageAlt: "alt",
   imageSrc: "",
   buttonLabel: "View more resources",
-  buttonUrl: "www.google.com",
+  buttonUrl: "https://www.google.com",
 }
