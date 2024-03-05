@@ -10,7 +10,7 @@ import {
   Navbar,
   Search,
   Image,
-} from "../components"
+} from "../classic/components"
 import { DefaultLayout, HomeLayout, ContentLayout } from "../layouts"
 
 export interface IsomerComponent {
@@ -52,18 +52,7 @@ const getComponent = (component: IsomerComponent): ReactElement | null => {
     return <Button label={component.props.label} />
   }
   if (component.id === "Hero") {
-    const { heroTitle, heroCaption, buttonLabel, logoUrl, nav, bgUrl } =
-      component.props
-    return (
-      <Hero
-        sectionIdx={component.sectionIdx}
-        logoUrl={logoUrl}
-        heroTitle={heroTitle}
-        heroCaption={heroCaption}
-        buttonLabel={buttonLabel}
-        bgUrl={bgUrl}
-      />
-    )
+    return <Hero {...component.props} />
   }
   if (component.id === "Footer") {
     const { agencyName, lastUpdated, items } = component.props
@@ -140,15 +129,7 @@ const getComponent = (component: IsomerComponent): ReactElement | null => {
 
   if (component.id === "Image") {
     const { src, alt, width, href, openInNewTab } = component.props
-    return (
-      <Image
-        src={src}
-        alt={alt}
-        width={width}
-        href={href}
-        openInNewTab={openInNewTab}
-      />
-    )
+    return <Image src={src} alt={alt} width={width} href={href} />
   }
   return null
 }
