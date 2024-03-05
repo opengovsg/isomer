@@ -20,11 +20,9 @@ const Infobar = ({
                 {subtitle}
               </p>
             )}
-            {title && (
-              <h1 className="text-secondary text-5xl">
-                <b className="font-semibold">{title}</b>
-              </h1>
-            )}
+            <h1 className="text-secondary text-5xl">
+              <b className="font-semibold">{title}</b>
+            </h1>
             {description && (
               <p className="text-paragraph text-xl">{description}</p>
             )}
@@ -34,6 +32,12 @@ const Infobar = ({
               <a
                 className="flex gap-2 text-secondary font-semibold text-center underline uppercase tracking-wide"
                 href={buttonUrl}
+                target={buttonUrl.startsWith("http") ? "_blank" : undefined}
+                rel={
+                  buttonUrl.startsWith("http")
+                    ? "noopener noreferrer nofollow"
+                    : undefined
+                }
               >
                 {buttonLabel}
                 <div className="my-auto">

@@ -1,6 +1,6 @@
 export interface InfobarProps {
   sectionIdx?: number
-  title?: string
+  title: string
   subtitle?: string
   description?: string
   buttonLabel?: string
