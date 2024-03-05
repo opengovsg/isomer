@@ -52,18 +52,7 @@ const getComponent = (component: IsomerComponent): ReactElement | null => {
     return <Button label={component.props.label} />
   }
   if (component.id === "Hero") {
-    const { heroTitle, heroCaption, buttonLabel, logoUrl, nav, bgUrl } =
-      component.props
-    return (
-      <Hero
-        sectionIdx={component.sectionIdx}
-        logoUrl={logoUrl}
-        heroTitle={heroTitle}
-        heroCaption={heroCaption}
-        buttonLabel={buttonLabel}
-        bgUrl={bgUrl}
-      />
-    )
+    return <Hero {...component.props} />
   }
   if (component.id === "Footer") {
     const { agencyName, lastUpdated, items } = component.props
