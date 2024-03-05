@@ -1,10 +1,6 @@
 import { ButtonProps } from "~/common"
-import { SUPPORTED_ICONS_MAP } from "~/common/Button"
+import { NextButtonColorVariant, SUPPORTED_ICONS_MAP } from "~/common/Button"
 
-// Theme specific config
-const NEXT_BUTTON_COLOR_VARIANTS = ["black", "white"] as const
-export type NextButtonColorVariant = (typeof NEXT_BUTTON_COLOR_VARIANTS)[number]
-// https://tailwindcss.com/docs/content-configuration#dynamic-class-names
 const colorVariantToClassMap: Record<NextButtonColorVariant, string> = {
   black: "bg-[#333333] text-white",
   white: "bg-white text-[#333333]",
