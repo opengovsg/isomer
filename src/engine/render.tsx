@@ -49,7 +49,18 @@ export interface Config {
 
 const getComponent = (component: IsomerComponent): ReactElement | null => {
   if (component.id === "Button") {
-    return <Button label={component.props.label} />
+    const { label, href, colorVariant, rounded, leftIcon, rightIcon } =
+      component.props
+    return (
+      <Button
+        label={label}
+        href={href}
+        colorVariant={colorVariant}
+        rounded={rounded}
+        leftIcon={leftIcon}
+        rightIcon={rightIcon}
+      />
+    )
   }
   if (component.id === "Hero") {
     return <Hero {...component.props} />
