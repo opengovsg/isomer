@@ -1,8 +1,9 @@
-import { Story, Meta, StoryFn } from "@storybook/react"
-import InfoCols, { InfoColsProps } from "./InfoCols"
+import { Meta, StoryFn } from "@storybook/react"
+import InfoCols from "./InfoCols"
+import { InfoColsProps } from "~/common"
 
 export default {
-  title: "Components/InfoCols",
+  title: "Classic/Components/InfoCols",
   component: InfoCols,
   argTypes: {},
 } as Meta

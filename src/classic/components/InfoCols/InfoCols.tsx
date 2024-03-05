@@ -1,19 +1,6 @@
 import { ArrowRightIcon } from "@heroicons/react/24/outline"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
-
-interface InfoBox {
-  title: string
-  description?: string
-}
-
-export interface InfoColsProps {
-  sectionIdx?: number
-  title: string
-  subtitle?: string
-  buttonLabel?: string
-  buttonUrl?: string
-  infoBoxes: InfoBox[] // 1-4 info boxes
-}
+import InfoColsProps from "~/common/InfoCols"
 
 const InfoColsHeader = ({
   title,
@@ -30,13 +17,21 @@ const InfoColsHeader = ({
 )
 
 const InfoBoxes = ({ infoBoxes }: Pick<InfoColsProps, "infoBoxes">) => {
-  const mdCols = Math.min(infoBoxes.length, 2)
+  const mdColsClass =
+    infoBoxes.length === 1 ? "md:grid-cols-1" : "md:grid-cols-2"
+
   // Follows current behaviour: if there are 4 info boxes, xl screen should stay at 2 columns instead of going up to 3
-  const xlCols = infoBoxes.length === 4 ? 2 : Math.min(infoBoxes.length, 3)
+  const xlColsClass =
+    infoBoxes.length === 1
+      ? "xl:grid-cols-1"
+      : infoBoxes.length % 2 === 0
+        ? "xl:grid-cols-2"
+        : "xl:grid-cols-3"
+
   return (
     <div>
       <div
-        className={`grid grid-cols-1 gap-4 justify-between md:grid-cols-${mdCols} xl:grid-cols-${xlCols}`}
+        className={`grid grid-cols-1 gap-4 justify-between ${mdColsClass} ${xlColsClass}`}
       >
         {infoBoxes.map((infoBox, idx) => (
           <div
@@ -53,6 +48,7 @@ const InfoBoxes = ({ infoBoxes }: Pick<InfoColsProps, "infoBoxes">) => {
     </div>
   )
 }
+
 const InfoColsFooter = ({
   buttonLabel,
   buttonUrl,
