@@ -3,7 +3,6 @@ export interface ImageProps {
   alt: string
   width?: number
   href?: string
-  openInNewTab?: boolean
 }
 
 export default ImageProps

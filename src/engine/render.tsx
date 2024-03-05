@@ -140,15 +140,7 @@ const getComponent = (component: IsomerComponent): ReactElement | null => {
 
   if (component.id === "Image") {
     const { src, alt, width, href, openInNewTab } = component.props
-    return (
-      <Image
-        src={src}
-        alt={alt}
-        width={width}
-        href={href}
-        openInNewTab={openInNewTab}
-      />
-    )
+    return <Image src={src} alt={alt} width={width} href={href} />
   }
   return null
 }
