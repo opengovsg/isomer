@@ -1,6 +1,11 @@
+import { SupportedIconName } from "./Icons"
+
 export interface InfoBox {
+  icon?: SupportedIconName
   title: string
   description?: string
+  buttonLabel?: string
+  buttonUrl?: string
 }
 
 export interface InfoColsProps {
