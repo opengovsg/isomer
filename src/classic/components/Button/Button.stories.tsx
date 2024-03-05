@@ -3,7 +3,7 @@ import Button from "./Button"
 import { ButtonProps } from "~/common"
 
 export default {
-  title: "Components/Button",
+  title: "Classic/Components/Button",
   component: Button,
   argTypes: {},
 } as Meta
@@ -18,24 +18,14 @@ Default.args = {
   href: "/faq",
 }
 
-export const Rounded = Template.bind({})
-Rounded.args = {
-  label: "Button text",
-  href: "/faq",
-  rounded: true,
-}
-
-export const GrayButton = Template.bind({})
-GrayButton.args = {
-  label: "Button text",
-  href: "/faq",
-  buttonColour: "gray-500",
-  textColour: "white",
-}
-
 export const ExternalLinkButton = Template.bind({})
 ExternalLinkButton.args = {
   label: "Button text",
   href: "https://www.google.com",
-  openInNewTab: true,
+}
+
+export const LongerButtonText = Template.bind({})
+LongerButtonText.args = {
+  label: "slightly longer button text",
+  href: "/faq",
 }

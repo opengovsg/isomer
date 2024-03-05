@@ -1,31 +1,18 @@
 import { ButtonProps } from "~/common"
 
-const isExternalLink = (href: string) => {
-  return !href.startsWith("/")
-}
-
-const Button = ({
-  label,
-  buttonColour,
-  textColour,
-  rounded,
-  href,
-  openInNewTab,
-}: ButtonProps) => {
-  const buttonColourClass = `bg-${buttonColour ?? "secondary"}`
-  const textColourClass = `text-${textColour ?? "white"}`
-  const roundedClass = rounded ? "rounded" : ""
-  const className = `${buttonColourClass} ${textColourClass} ${roundedClass} px-6 py-2`
+// Classic Button does not use much from ButtonProps, e.g bg colour is always site's secondary colour
+const Button = ({ label, href }: ButtonProps) => {
+  const Label = () => <span className="uppercase text-white text-center tracking-wider">{label}</span>
 
   return (
     <a
       href={href}
-      target={openInNewTab ? "_blank" : undefined}
-      rel={isExternalLink(href) ? "noopener noreferrer nofollow" : undefined}
+      target={href.startsWith("http") ? "_blank" : undefined}
+      rel={href.startsWith("http") ? "noopener noreferrer nofollow" : undefined}
       type="button"
-      className={className}
+      className="px-6 py-4 bg-secondary"
     >
-      {label}
+      <Label />
     </a>
   )
 }
