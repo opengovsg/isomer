@@ -1,49 +1,111 @@
-import { HeroProps } from "~/common"
+import {
+  type HeroCommonProps,
+  type HeroSideProps,
+  type HeroProps,
+  type HeroCenterProps,
+  type HeroFloatingProps,
+  type HeroImageProps,
+} from "~/common/Hero"
+import { HeroDropdown } from "./HeroDropdown"
+import {
+  HeroInfoboxDesktop,
+  HeroInfoboxMobile,
+  HeroInfoboxTablet,
+} from "./HeroInfobox"
 
-export default function Hero({
-  heroTitle,
-  heroCaption,
+const BP_BUTTON_CLASSES =
+  "rounded-none box-content appearance-none items-center border border-solid border-[#f0f0f0] shadow-none inline-flex text-base h-9 justify-center px-3 py-[calc(0.375rem-1px)] relative align-top select-none cursor-pointer text-center whitespace-nowrap focus:outline-none active:outline-none disabled:cursor-not-allowed"
+
+const HeroSide = (props: Omit<HeroSideProps, keyof HeroCommonProps>) => {
+  return (
+    <div className="grow shrink-0">
+      {/* Desktop view 768 above */}
+      <div className="hidden md:block">
+        <HeroInfoboxDesktop {...props} />
+      </div>
+
+      {/* Mobile view below 768 */}
+      <div className="block md:hidden">
+        <HeroInfoboxMobile {...props} />
+      </div>
+    </div>
+  )
+}
+
+const HeroImage = ({
+  dropdown,
+}: Omit<HeroImageProps, keyof HeroCommonProps>) => {
+  return (
+    <div className="grow shrink-0 px-6 py-12">
+      <div className="mx-auto mt-8 mb-0">
+        <div className="flex min-h-[398px] w-11/12 md:w-5/6 lg:w-2/3 mx-auto items-center justify-center">
+          {dropdown && (
+            <div className="block basis-0 grow shrink p-3 max-w-full">
+              <HeroDropdown {...dropdown} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const HeroFloating = (
+  props: Omit<HeroFloatingProps, keyof HeroCommonProps>,
+) => {
+  return (
+    <div className="md:p-12">
+      {/* Desktop view 1024 above */}
+      <div className="hidden lg:block max-w-screen-xl mx-auto my-0">
+        <HeroInfoboxDesktop {...props} />
+      </div>
+
+      {/* Tablet view 769 to 1023 */}
+      <div className="hidden md:block lg:hidden mb-0">
+        <HeroInfoboxTablet {...props} />
+      </div>
+
+      {/* Mobile view below 768 */}
+      <div className="block md:hidden">
+        <HeroInfoboxMobile {...props} />
+      </div>
+    </div>
+  )
+}
+
+const HeroCenter = ({
+  title,
+  subtitle,
+  dropdown,
   buttonLabel,
   buttonUrl,
-  bgUrl,
-}: HeroProps) {
+}: Omit<HeroCenterProps, keyof HeroCommonProps>) => {
   return (
-    <div className="bg-white">
-      <div
-        className="relative isolate px-6 pt-14 lg:px-8"
-        style={{
-          background: bgUrl
-            ? `linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)), url(${bgUrl})`
-            : "",
-          backgroundSize: "cover",
-        }}
-      >
-        <div
-          className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
-          aria-hidden="true"
-        ></div>
-        <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-          <div className="text-center">
-            <h1
-              className={`text-4xl font-bold ${
-                bgUrl ? "text-white" : "text-gray-900"
-              } sm:text-6xl`}
-            >
-              {heroTitle || "Supercharge your sites like never before"}
+    <div className="grow shrink-0 bg-[##00000040] px-6 py-12">
+      <div className="mx-auto mt-8 mb-0 relative">
+        <div className="flex lg:min-h-80 lg:h-96 items-center justify-center">
+          <div className="flex-none w-3/4 text-center text-white">
+            <h1 className="text-6xl md:text-[5.25rem] md:leading-[5.25rem] font-bold -tracking-[0.09375rem] m-0 pb-8 text-balance">
+              {title}
             </h1>
-            <p
-              className={`mt-6 text-lg leading-8 ${
-                bgUrl ? "text-white" : "text-gray-600"
-              }`}
-            >
-              {heroCaption ||
-                "Isomer Next is here to create fast and beautiful informational static sites. Embrace the power of simplicity combined with creativity now."}
-            </p>
-            {buttonLabel && buttonUrl && (
-              <div className="mt-10 flex items-center justify-center">
+            {subtitle && (
+              <p className="hidden md:block pb-8 text-xl">{subtitle}</p>
+            )}
+            {dropdown && !buttonLabel && !buttonUrl && (
+              <HeroDropdown {...dropdown} />
+            )}
+            {buttonLabel && buttonUrl && !dropdown && (
+              <div>
+                {/* <Button label={buttonLabel} /> */}
                 <a
                   href={buttonUrl}
-                  className="px-4 py-3 text-sm font-medium shadow-sm bg-primary text-white tracking-wide uppercase"
+                  rel={
+                    buttonUrl.startsWith("http")
+                      ? "noopener noreferrer nofollow"
+                      : ""
+                  }
+                  target={buttonUrl.startsWith("http") ? "_blank" : ""}
+                  className={`${BP_BUTTON_CLASSES} bg-secondary text-content-inverse border-transparent uppercase px-6 py-[7px] text-base tracking-wider font-semibold h-[2.4rem]`}
                 >
                   {buttonLabel}
                 </a>
@@ -55,3 +117,101 @@ export default function Hero({
     </div>
   )
 }
+
+const HeroKeyHighlights = ({
+  keyHighlights,
+}: Pick<HeroCommonProps, "keyHighlights">) => {
+  if (!keyHighlights || keyHighlights.length === 0) {
+    return null
+  }
+
+  return (
+    <section id="key-highlights" className="p-0 lg:px-6 bg-primary text-white">
+      <div className="mx-auto my-0 relative lg:max-w-[60rem] xl:max-w-[76rem] 2xl:max-w-[84rem]">
+        <div className={`m-0 text-center justify-center flex-none md:flex`}>
+          {keyHighlights
+            .slice(0, 4)
+            .map(
+              ({
+                url: highlightUrl,
+                title: highlightTitle,
+                description: highlightDescription,
+              }) => (
+                <div
+                  className={`transition-colors hover:bg-primaryHover cursor-pointer grow basis-0`}
+                >
+                  <a
+                    href={highlightUrl}
+                    rel={
+                      highlightUrl.startsWith("http")
+                        ? "noopener noreferrer nofollow"
+                        : ""
+                    }
+                    target={highlightUrl.startsWith("http") ? "_blank" : ""}
+                  >
+                    <div className="block px-8 py-5">
+                      {highlightTitle && (
+                        <p className="font-semibold text-white tracking-[0.0125rem] uppercase pt-1">
+                          {highlightTitle}
+                          {highlightUrl.startsWith("http") && (
+                            <>
+                              &ensp;
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                fill="currentColor"
+                                className="text-2xl -mt-0.5 inline-block"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"
+                                />
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"
+                                />
+                              </svg>
+                            </>
+                          )}
+                        </p>
+                      )}
+                      {highlightDescription && (
+                        <p className="color-[#ffffffb3] pb-2">
+                          {highlightDescription}
+                        </p>
+                      )}
+                    </div>
+                  </a>
+                </div>
+              ),
+            )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export const Hero = (props: HeroProps) => {
+  return (
+    <section
+      className={`flex flex-col items-stretch justify-between bg-cover bg-center bg-no-repeat`}
+      style={{
+        backgroundImage: `url('${props.backgroundUrl}')`,
+      }}
+    >
+      {props.variant === "side" && <HeroSide {...props} />}
+      {props.variant === "image" && <HeroImage {...props} />}
+      {props.variant === "floating" && <HeroFloating {...props} />}
+      {props.variant !== "side" &&
+        props.variant !== "image" &&
+        props.variant !== "floating" && <HeroCenter {...props} />}
+      {props.keyHighlights && (
+        <HeroKeyHighlights keyHighlights={props.keyHighlights} />
+      )}
+    </section>
+  )
+}
+
+export default Hero

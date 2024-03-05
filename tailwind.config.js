@@ -5,6 +5,7 @@ export default {
     extend: {
       colors: {
         primary: "#6031b6",
+        primaryHover: "#4b268e",
         secondary: "#4372d6",
         subtitle: "#344054",
         paragraph: "#344054",
@@ -14,6 +15,31 @@ export default {
         header: "#2164da",
         subtleLink: "#767676",
         navItems: "#323232",
+        border: {
+          light: "#d6d6d6",
+        },
+        canvas: {
+          base: "#ffffff",
+          inverse: "#000000",
+          translucentGrey: "#00000080",
+        },
+        content: {
+          base: "#344054",
+          body: "#484848",
+          inverse: "#ffffff",
+        },
+        interaction: {
+          hover: "#f9f9f9",
+          linkDefault: "#4372d6",
+          linkHover: "#3a79ff",
+        },
+        stroke: {
+          default: "#d0d5dd",
+        },
+        utility: {
+          themeColor: "var(--color-primary)",
+          secondaryColor: "var(--color-secondary)",
+        },
       },
       fontFamily: {
         sans: ["Lato", "ui-sans-serif", "system-ui"],
