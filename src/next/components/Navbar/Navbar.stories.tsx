@@ -3,7 +3,7 @@ import Navbar, { IsomerNavProps, NavbarLink } from "./Navbar"
 import { Navbar as NavbarConfig } from "~/config/navbar"
 
 export default {
-  title: "Isomer/Navbar",
+  title: "Next/Components/Navbar",
   component: Navbar,
   argTypes: {},
 } as Meta
