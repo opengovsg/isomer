@@ -1,2 +1,4 @@
 node_modules
 dist
+build-storybook.log
+**/.DS_Store

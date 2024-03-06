@@ -9,7 +9,8 @@ import {
   Infobar,
   Navbar,
   Search,
-} from "../components"
+  Image,
+} from "../classic/components"
 import { DefaultLayout, HomeLayout, ContentLayout } from "../layouts"
 
 export interface IsomerComponent {
@@ -52,21 +53,21 @@ const getComponent = (
   LinkComponent: any,
 ): ReactElement | null => {
   if (component.id === "Button") {
-    return <Button label={component.props.label} />
-  }
-  if (component.id === "Hero") {
-    const { heroTitle, heroCaption, buttonLabel, logoUrl, nav, bgUrl } =
+    const { label, href, colorVariant, rounded, leftIcon, rightIcon } =
       component.props
     return (
-      <Hero
-        sectionIdx={component.sectionIdx}
-        logoUrl={logoUrl}
-        heroTitle={heroTitle}
-        heroCaption={heroCaption}
-        buttonLabel={buttonLabel}
-        bgUrl={bgUrl}
+      <Button
+        label={label}
+        href={href}
+        colorVariant={colorVariant}
+        rounded={rounded}
+        leftIcon={leftIcon}
+        rightIcon={rightIcon}
       />
     )
+  }
+  if (component.id === "Hero") {
+    return <Hero {...component.props} />
   }
   if (component.id === "Footer") {
     const { agencyName, lastUpdated, items } = component.props
@@ -106,8 +107,8 @@ const getComponent = (
         title={title}
         subtitle={subtitle}
         description={description}
-        alt={alt}
-        imageUrl={imageUrl}
+        imageAlt={alt}
+        imageSrc={imageUrl}
         buttonLabel={buttonLabel}
         buttonUrl={buttonUrl}
       />
@@ -146,6 +147,11 @@ const getComponent = (
   if (component.id === "Search") {
     const { index } = component.props
     return <Search index={index} />
+  }
+
+  if (component.id === "Image") {
+    const { src, alt, width, href, openInNewTab } = component.props
+    return <Image src={src} alt={alt} width={width} href={href} />
   }
   return null
 }

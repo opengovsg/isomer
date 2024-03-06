@@ -5,7 +5,7 @@ import { Footer } from "~/config/footer"
 import Sitemap from "../../sitemap.json"
 
 export default {
-  title: "Isomer/Layouts/Default",
+  title: "Layouts/Default",
   component: DefaultLayout,
   argTypes: {},
 } as Meta

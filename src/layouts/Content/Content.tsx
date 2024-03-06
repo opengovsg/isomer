@@ -1,4 +1,4 @@
-import { Header, SidePane } from "../../components"
+import { Header, SidePane } from "../../classic/components"
 import { IsomerBaseSchema, Sitemap, RenderEngine } from "../../engine/render"
 
 export interface ContentLayoutProps {
