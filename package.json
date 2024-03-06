@@ -3,7 +3,7 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/isomerpages"
   },
-  "version": "0.0.15",
+  "version": "0.0.14",
   "description": "Isomer component library",
   "scripts": {
     "rollup": "rollup -c",
