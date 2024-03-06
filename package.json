@@ -61,6 +61,20 @@
   },
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./templates/classic": {
+      "import": "./dist/esm/templates/classic/index.js",
+      "require": "./dist/cjs/templates/classic/index.js"
+    },
+    "./templates/next": {
+      "import": "./dist/esm/templates/next/index.js",
+      "require": "./dist/cjs/templates/next/index.js"
+    }
+  },
   "files": [
     "dist/cjs",
     "dist/esm",
