@@ -10,7 +10,7 @@ import {
   Navbar,
   Search,
   Image,
-} from "../classic/components"
+} from "../templates/classic/components"
 import { DefaultLayout, HomeLayout, ContentLayout } from "../layouts"
 
 export interface IsomerComponent {
