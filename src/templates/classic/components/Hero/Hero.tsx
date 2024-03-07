@@ -1,7 +1,7 @@
 import {
-  type HeroCommonProps,
+  type HeroBackgroundImageProps,
+  type HeroKeyHighlightProps,
   type HeroSideProps,
-  type HeroProps,
   type HeroCenterProps,
   type HeroFloatingProps,
   type HeroImageProps,
@@ -13,10 +13,21 @@ import {
   HeroInfoboxTablet,
 } from "./HeroInfobox"
 
+export type HeroProps =
+  | HeroSideProps
+  | HeroImageProps
+  | HeroFloatingProps
+  | HeroCenterProps
+
 const BP_BUTTON_CLASSES =
   "rounded-none box-content appearance-none items-center border border-solid border-[#f0f0f0] shadow-none inline-flex text-base h-9 justify-center px-3 py-[calc(0.375rem-1px)] relative align-top select-none cursor-pointer text-center whitespace-nowrap focus:outline-none active:outline-none disabled:cursor-not-allowed"
 
-const HeroSide = (props: Omit<HeroSideProps, keyof HeroCommonProps>) => {
+const HeroSide = (
+  props: Omit<
+    HeroSideProps,
+    keyof HeroBackgroundImageProps | keyof HeroKeyHighlightProps
+  >,
+) => {
   return (
     <div className="grow shrink-0">
       {/* Desktop view 768 above */}
@@ -34,7 +45,10 @@ const HeroSide = (props: Omit<HeroSideProps, keyof HeroCommonProps>) => {
 
 const HeroImage = ({
   dropdown,
-}: Omit<HeroImageProps, keyof HeroCommonProps>) => {
+}: Omit<
+  HeroImageProps,
+  keyof HeroBackgroundImageProps | keyof HeroKeyHighlightProps
+>) => {
   return (
     <div className="grow shrink-0 px-6 py-12">
       <div className="mx-auto mt-8 mb-0">
@@ -51,7 +65,10 @@ const HeroImage = ({
 }
 
 const HeroFloating = (
-  props: Omit<HeroFloatingProps, keyof HeroCommonProps>,
+  props: Omit<
+    HeroFloatingProps,
+    keyof HeroBackgroundImageProps | keyof HeroKeyHighlightProps
+  >,
 ) => {
   return (
     <div className="md:p-12">
@@ -79,7 +96,10 @@ const HeroCenter = ({
   dropdown,
   buttonLabel,
   buttonUrl,
-}: Omit<HeroCenterProps, keyof HeroCommonProps>) => {
+}: Omit<
+  HeroCenterProps,
+  keyof HeroBackgroundImageProps | keyof HeroKeyHighlightProps
+>) => {
   return (
     <div className="grow shrink-0 bg-[##00000040] px-6 py-12">
       <div className="mx-auto mt-8 mb-0 relative">
@@ -118,9 +138,7 @@ const HeroCenter = ({
   )
 }
 
-const HeroKeyHighlights = ({
-  keyHighlights,
-}: Pick<HeroCommonProps, "keyHighlights">) => {
+const HeroKeyHighlights = ({ keyHighlights }: HeroKeyHighlightProps) => {
   if (!keyHighlights || keyHighlights.length === 0) {
     return null
   }
