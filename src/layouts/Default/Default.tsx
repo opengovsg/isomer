@@ -1,4 +1,4 @@
-import { Header } from "../../classic/components"
+import { Header } from "../../templates/classic/components"
 import { IsomerBaseSchema, Sitemap, RenderEngine } from "../../engine/render"
 
 export interface DefaultLayoutProps {

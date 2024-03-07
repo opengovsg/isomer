@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from "@storybook/react"
 import Header from "./Header"
-import Sitemap from "../../../sitemap.json"
+import Sitemap from "../../../../sitemap.json"
 import { HeaderProps } from "~/common"
 
 export default {
