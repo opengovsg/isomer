@@ -1,7 +1,6 @@
 import { BiRightArrowAlt } from "react-icons/bi"
 import { InfoColsProps } from "~/common"
 import { SUPPORTED_ICONS_MAP, SupportedIconName } from "~/common/Icons"
-import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 
 const InfoColsHeader = ({
   title,
@@ -59,20 +58,19 @@ const InfoBoxes = ({ infoBoxes }: Pick<InfoColsProps, "infoBoxes">) => {
 }
 
 const InfoCols = ({
-  sectionIdx,
+  backgroundColor,
   title,
   subtitle,
   infoBoxes,
 }: InfoColsProps) => {
+  const bgColor = backgroundColor === "gray" ? "bg-gray-100" : "bg-white"
   return (
-    <HomepageSectionWrapper sectionIndex={sectionIdx}>
-      <section className="py-24 px-8 sm:px-16 lg:px-24">
-        <div className="flex flex-col gap-16">
-          <InfoColsHeader title={title} subtitle={subtitle} />
-          <InfoBoxes infoBoxes={infoBoxes} />
-        </div>
-      </section>
-    </HomepageSectionWrapper>
+    <section className={`py-24 px-8 sm:px-16 lg:px-24 ${bgColor}`}>
+      <div className="flex flex-col gap-16">
+        <InfoColsHeader title={title} subtitle={subtitle} />
+        <InfoBoxes infoBoxes={infoBoxes} />
+      </div>
+    </section>
   )
 }
 

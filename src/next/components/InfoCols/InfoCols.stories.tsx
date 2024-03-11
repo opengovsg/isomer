@@ -66,6 +66,7 @@ Default.args = {
 export const GrayBackground = Template.bind({})
 GrayBackground.args = {
   sectionIdx: 1,
+  backgroundColor: "gray",
   title: "Highlights",
   subtitle: "Some of the things that we are working on",
   infoBoxes: [

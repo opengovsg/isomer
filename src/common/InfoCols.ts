@@ -10,6 +10,7 @@ export interface InfoBox {
 
 export interface InfoColsProps {
   sectionIdx?: number
+  backgroundColor?: "white" | "gray"
   title: string
   subtitle?: string
   buttonLabel?: string
