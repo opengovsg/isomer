@@ -155,9 +155,7 @@ const HeroKeyHighlights = ({ keyHighlights }: HeroKeyHighlightProps) => {
                 title: highlightTitle,
                 description: highlightDescription,
               }) => (
-                <div
-                  className={`transition-colors hover:bg-primaryHover cursor-pointer grow basis-0`}
-                >
+                <div className="transition-colors hover:bg-primaryHover cursor-pointer grow basis-0 border-solid border-l first:border-l-0 border-l-subtitle">
                   <a
                     href={highlightUrl}
                     rel={
