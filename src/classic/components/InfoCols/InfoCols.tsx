@@ -29,22 +29,18 @@ const InfoBoxes = ({ infoBoxes }: Pick<InfoColsProps, "infoBoxes">) => {
         : "xl:grid-cols-3"
 
   return (
-    <div>
-      <div
-        className={`grid grid-cols-1 gap-4 justify-between ${mdColsClass} ${xlColsClass}`}
-      >
-        {infoBoxes.map((infoBox, idx) => (
-          <div
-            key={idx}
-            className="flex flex-col gap-4 p-6 items-center text-center md:items-start md:text-left"
-          >
-            <h3 className="text-3xl font-bold text-subtitle">
-              {infoBox.title}
-            </h3>
-            <p className="text-paragraph text-xl">{infoBox.description}</p>
-          </div>
-        ))}
-      </div>
+    <div
+      className={`grid grid-cols-1 gap-4 justify-between ${mdColsClass} ${xlColsClass}`}
+    >
+      {infoBoxes.map((infoBox, idx) => (
+        <div
+          key={idx}
+          className="flex flex-col gap-4 p-6 items-center text-center md:items-start md:text-left"
+        >
+          <h3 className="text-3xl font-bold text-subtitle">{infoBox.title}</h3>
+          <p className="text-paragraph text-xl">{infoBox.description}</p>
+        </div>
+      ))}
     </div>
   )
 }

@@ -27,35 +27,33 @@ const InfoBoxIcon = ({ icon }: { icon?: SupportedIconName }) => {
 
 const InfoBoxes = ({ infoBoxes }: Pick<InfoColsProps, "infoBoxes">) => {
   return (
-    <div className="w-full">
-      <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
-        {infoBoxes.map((infoBox, idx) => (
-          <div key={idx} className="flex flex-col gap-4 items-start text-left">
-            <InfoBoxIcon icon={infoBox.icon} />
-            <div className="flex flex-col gap-1 items-start text-[#2C2E34]">
-              <h3 className="font-bold">{infoBox.title}</h3>
-              <p>{infoBox.description}</p>
-            </div>
-            {infoBox.buttonLabel && infoBox.buttonUrl && (
-              <a
-                className="flex flex-row gap-1 items-center underline underline-offset-2 text-secondary text-sm"
-                href={infoBox.buttonUrl}
-                target={
-                  infoBox.buttonUrl?.startsWith("http") ? "_blank" : undefined
-                }
-                rel={
-                  infoBox.buttonUrl?.startsWith("http")
-                    ? "noopener noreferrer nofollow"
-                    : undefined
-                }
-              >
-                {infoBox.buttonLabel}
-                <BiRightArrowAlt className="size-6" />
-              </a>
-            )}
+    <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
+      {infoBoxes.map((infoBox, idx) => (
+        <div key={idx} className="flex flex-col gap-4 items-start text-left">
+          <InfoBoxIcon icon={infoBox.icon} />
+          <div className="flex flex-col gap-1 items-start text-[#2C2E34]">
+            <h3 className="font-bold">{infoBox.title}</h3>
+            <p>{infoBox.description}</p>
           </div>
-        ))}
-      </div>
+          {infoBox.buttonLabel && infoBox.buttonUrl && (
+            <a
+              className="flex flex-row gap-1 items-center underline underline-offset-2 text-secondary text-sm"
+              href={infoBox.buttonUrl}
+              target={
+                infoBox.buttonUrl?.startsWith("http") ? "_blank" : undefined
+              }
+              rel={
+                infoBox.buttonUrl?.startsWith("http")
+                  ? "noopener noreferrer nofollow"
+                  : undefined
+              }
+            >
+              {infoBox.buttonLabel}
+              <BiRightArrowAlt className="size-6" />
+            </a>
+          )}
+        </div>
+      ))}
     </div>
   )
 }
