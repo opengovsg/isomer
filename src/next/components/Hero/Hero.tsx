@@ -37,13 +37,15 @@ const HeroGradient = ({
         } from-[rgba(0,0,0,85%)] md:from-[rgba(0,0,0,75%)] xl:from-[rgba(0,0,0,65%)]`}
       >
         <div
-          className={`text-white p-6 flex flex-row items-end h-full ${
+          className={`text-white p-10 flex flex-row items-end h-full ${
             alignment === "left" ? "justify-start" : "justify-end"
           } ${alignment === "left" ? "text-start" : "text-end"}`}
         >
-          <div className="flex flex-col w-3/5 xl:w-2/5 gap-6">
-            <h1 className="text-6xl font-medium">{title}</h1>
-            {subtitle && <p>{subtitle}</p>}
+          <div className="flex flex-col w-full sm:w-3/5 xl:w-2/5 gap-6">
+            <h1 className="text-4xl xl:text-6xl font-medium">{title}</h1>
+            {subtitle && (
+              <p className="text-lg xl:text-2xl leading-9">{subtitle}</p>
+            )}
             {buttonLabel && buttonUrl && (
               <div
                 className={`flex flex-row gap-4 ${
@@ -82,7 +84,7 @@ const HeroSplit = ({
   secondaryButtonUrl,
   backgroundUrl,
 }: HeroSplitProps) => {
-  const bgColor = backgroundColor === "black" ? "bg-black" : "bg-white"
+  const bgColor = backgroundColor === "black" ? "bg-canvas-black" : "bg-white"
   const textColor = backgroundColor === "black" ? "text-white" : "text-black"
 
   return (
@@ -94,7 +96,7 @@ const HeroSplit = ({
       >
         <div className={`h-full w-1/2 ${bgColor}`}>
           <div
-            className={`flex flex-row p-6 items-center h-full ${
+            className={`flex flex-row p-10 items-center h-full ${
               alignment === "left"
                 ? "justify-start text-start"
                 : "justify-end text-end"
@@ -102,7 +104,7 @@ const HeroSplit = ({
           >
             <div className="flex flex-col gap-6">
               <h1 className="text-6xl font-medium">{title}</h1>
-              {subtitle && <p>{subtitle}</p>}
+              {subtitle && <p className="text-2xl leading-9">{subtitle}</p>}
               {buttonLabel && buttonUrl && (
                 <div
                   className={`flex flex-row gap-4 ${
@@ -162,7 +164,7 @@ const HeroFloating = ({
   secondaryButtonUrl,
   backgroundUrl,
 }: Omit<HeroFloatingProps, "variant">) => {
-  const bgColor = backgroundColor === "black" ? "bg-black" : "bg-white"
+  const bgColor = backgroundColor === "black" ? "bg-canvas-black" : "bg-white"
   const textColor = backgroundColor === "black" ? "text-white" : "text-black"
 
   return (
@@ -174,14 +176,14 @@ const HeroFloating = ({
         }}
       >
         <div
-          className={`flex flex-row p-8 items-center justify-center text-center h-full w-full ${
+          className={`flex flex-row px-28 py-16 items-center justify-center text-center h-full w-full ${
             alignment === "left"
               ? "md:justify-start md:text-start"
               : "md:justify-end md:text-end"
           }`}
         >
           <div
-            className={`p-8 flex flex-col gap-6 ${bgColor} ${textColor} md:w-2/3 lg:w-1/2`}
+            className={`p-10 flex flex-col gap-6 ${bgColor} ${textColor} md:w-2/3 lg:w-1/2`}
           >
             <h1 className="text-6xl font-medium">{title}</h1>
             {subtitle && <p>{subtitle}</p>}
@@ -227,8 +229,8 @@ const HeroCopyLed = ({
     <section className="h-[32rem]">
       <div className="bg-[#ffeec2] w-full flex flex-row justify-center">
         <div className="w-4/5 lg:w-3/4 py-16 flex flex-col items-center text-center md:items-start md:text-start gap-6">
-          <h1 className="text-6xl font-medium">{title}</h1>
-          {subtitle && <p>{subtitle}</p>}
+          <h1 className="text-6xl font-normal">{title}</h1>
+          {subtitle && <p className="text-2xl leading-9">{subtitle}</p>}
           {buttonLabel && buttonUrl && (
             <div className="flex flex-row gap-4">
               <Button
@@ -272,7 +274,7 @@ const HeroFloatingImage = ({
     <>
       <section className="hidden md:block h-[32rem]">
         <div className="bg-[#ffeec2] w-full flex flex-row justify-center">
-          <div className="w-4/5 lg:w-3/4 py-16 flex flex-row gap-4">
+          <div className="w-4/5 lg:w-3/4 py-16 flex flex-row gap-24">
             <div className="flex flex-col w-1/2 gap-6">
               <h1 className="text-6xl font-medium">{title}</h1>
               {subtitle && <p>{subtitle}</p>}

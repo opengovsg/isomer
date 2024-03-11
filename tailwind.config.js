@@ -22,6 +22,7 @@ export default {
           base: "#ffffff",
           inverse: "#000000",
           translucentGrey: "#00000080",
+          black: "#2B2313",
         },
         content: {
           base: "#344054",
