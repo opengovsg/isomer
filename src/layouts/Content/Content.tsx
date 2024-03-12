@@ -1,4 +1,4 @@
-import { Header, SidePane } from "../../classic/components"
+import { Header, SidePane } from "../../templates/classic/components"
 import { IsomerBaseSchema, Sitemap, RenderEngine } from "../../engine/render"
 
 export interface ContentLayoutProps {
@@ -7,6 +7,7 @@ export interface ContentLayoutProps {
   sitemap?: Sitemap
   permalink?: string
   children: React.ReactNode
+  LinkComponent: any
 }
 export const ContentLayout = ({
   navbar,
@@ -14,10 +15,15 @@ export const ContentLayout = ({
   permalink,
   sitemap,
   children,
+  LinkComponent,
 }: ContentLayoutProps) => {
   return (
     <>
-      <RenderEngine id={navbar.id} components={navbar.components} />
+      <RenderEngine
+        id={navbar.id}
+        components={navbar.components}
+        LinkComponent={LinkComponent}
+      />
       {permalink && sitemap && (
         <Header permalink={permalink} sitemap={sitemap} />
       )}
@@ -27,7 +33,11 @@ export const ContentLayout = ({
         )}
         <div className="px-5 py-3">{children}</div>
       </div>
-      <RenderEngine id={footer.id} components={footer.components} />
+      <RenderEngine
+        id={footer.id}
+        components={footer.components}
+        LinkComponent={LinkComponent}
+      />
     </>
   )
 }

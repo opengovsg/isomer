@@ -10,7 +10,7 @@ import {
   Navbar,
   Search,
   Image,
-} from "../classic/components"
+} from "../templates/classic/components"
 import { DefaultLayout, HomeLayout, ContentLayout } from "../layouts"
 
 export interface IsomerComponent {
@@ -40,6 +40,7 @@ export interface IsomerBaseSchema {
   components: IsomerComponent[]
   sitemap?: Sitemap
   indexable?: string[] // specifies which keys are indexable
+  LinkComponent?: any // Next.js Link
 }
 
 export interface Config {
@@ -47,7 +48,10 @@ export interface Config {
   footer: IsomerBaseSchema
 }
 
-const getComponent = (component: IsomerComponent): ReactElement | null => {
+const getComponent = (
+  component: IsomerComponent,
+  LinkComponent: any,
+): ReactElement | null => {
   if (component.id === "Button") {
     const { label, href, colorVariant, rounded, leftIcon, rightIcon } =
       component.props
@@ -130,7 +134,14 @@ const getComponent = (component: IsomerComponent): ReactElement | null => {
   }
   if (component.id === "Navbar") {
     const { logo, links, search } = component.props
-    return <Navbar logo={logo} links={links} search={search} />
+    return (
+      <Navbar
+        logo={logo}
+        links={links}
+        search={search}
+        LinkComponent={LinkComponent}
+      />
+    )
   }
 
   if (component.id === "Search") {
@@ -151,8 +162,9 @@ const renderLayout = (
   collatedComponents: React.ReactNode,
   permalink?: string,
   sitemap?: Sitemap,
+  LinkComponent?: any,
 ) => {
-  if (layout && config && sitemap) {
+  if (layout && config) {
     switch (layout) {
       case "default":
         return (
@@ -161,6 +173,7 @@ const renderLayout = (
             footer={config.footer}
             sitemap={sitemap}
             permalink={permalink}
+            LinkComponent={LinkComponent}
           >
             {collatedComponents}
           </DefaultLayout>
@@ -172,13 +185,18 @@ const renderLayout = (
             footer={config.footer}
             sitemap={sitemap}
             permalink={permalink}
+            LinkComponent={LinkComponent}
           >
             {collatedComponents}
           </ContentLayout>
         )
       case "home":
         return (
-          <HomeLayout navbar={config.navbar} footer={config.footer}>
+          <HomeLayout
+            navbar={config.navbar}
+            footer={config.footer}
+            LinkComponent={LinkComponent}
+          >
             {collatedComponents}
           </HomeLayout>
         )
@@ -194,11 +212,12 @@ const RenderEngine = ({
   config,
   sitemap,
   components,
+  LinkComponent,
 }: IsomerBaseSchema): React.ReactNode => {
   if (components && components.length > 0) {
     const collatedComponents = components.map(
       (component: IsomerComponent, idx: number) => {
-        return <div key={idx}>{getComponent(component)}</div>
+        return <div key={idx}>{getComponent(component, LinkComponent)}</div>
       },
     )
 
@@ -209,6 +228,7 @@ const RenderEngine = ({
         collatedComponents,
         permalink,
         sitemap,
+        LinkComponent,
       )
     return collatedComponents
   }
