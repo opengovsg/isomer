@@ -16,6 +16,7 @@ export interface InfoColsProps {
   buttonLabel?: string
   buttonUrl?: string
   infoBoxes: InfoBox[] // 1-4 info boxes
+  LinkComponent?: any
 }
 
 export default InfoColsProps

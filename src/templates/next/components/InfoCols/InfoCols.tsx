@@ -24,7 +24,10 @@ const InfoBoxIcon = ({ icon }: { icon?: SupportedIconName }) => {
   )
 }
 
-const InfoBoxes = ({ infoBoxes }: Pick<InfoColsProps, "infoBoxes">) => {
+const InfoBoxes = ({
+  infoBoxes,
+  LinkComponent,
+}: Pick<InfoColsProps, "infoBoxes" | "LinkComponent">) => {
   return (
     <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
       {infoBoxes.map((infoBox, idx) => (
@@ -35,7 +38,7 @@ const InfoBoxes = ({ infoBoxes }: Pick<InfoColsProps, "infoBoxes">) => {
             <p>{infoBox.description}</p>
           </div>
           {infoBox.buttonLabel && infoBox.buttonUrl && (
-            <a
+            <LinkComponent
               className="flex flex-row gap-1 items-center underline underline-offset-2 text-secondary text-sm"
               href={infoBox.buttonUrl}
               target={
@@ -49,7 +52,7 @@ const InfoBoxes = ({ infoBoxes }: Pick<InfoColsProps, "infoBoxes">) => {
             >
               {infoBox.buttonLabel}
               <BiRightArrowAlt className="size-6" />
-            </a>
+            </LinkComponent>
           )}
         </div>
       ))}
@@ -62,13 +65,14 @@ const InfoCols = ({
   title,
   subtitle,
   infoBoxes,
+  LinkComponent = "a",
 }: InfoColsProps) => {
   const bgColor = backgroundColor === "gray" ? "bg-gray-100" : "bg-white"
   return (
     <section className={`py-24 px-8 sm:px-16 lg:px-24 ${bgColor}`}>
       <div className="flex flex-col gap-16">
         <InfoColsHeader title={title} subtitle={subtitle} />
-        <InfoBoxes infoBoxes={infoBoxes} />
+        <InfoBoxes infoBoxes={infoBoxes} LinkComponent={LinkComponent} />
       </div>
     </section>
   )
