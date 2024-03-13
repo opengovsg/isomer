@@ -1,11 +1,16 @@
 import type { StoryFn, Meta } from "@storybook/react"
 import Masthead from "./Masthead"
-import { MastheadProps } from "~/common"
+import type { MastheadProps } from "~/common"
 
 export default {
   title: "Classic/Components/Masthead",
   component: Masthead,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Classic",
+    },
+  },
 } as Meta
 
 // Template for stories

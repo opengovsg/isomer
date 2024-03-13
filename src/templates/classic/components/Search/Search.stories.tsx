@@ -1,11 +1,16 @@
-import { StoryFn, Meta } from "@storybook/react"
+import type { StoryFn, Meta } from "@storybook/react"
 import Search from "./Search"
-import { SearchProps } from "~/common"
+import type { SearchProps } from "~/common"
 
 export default {
   title: "Classic/Components/Search",
   component: Search,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Classic",
+    },
+  },
 } as Meta
 
 // Template for stories

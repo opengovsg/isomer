@@ -91,20 +91,12 @@ const preview: Preview = {
 }
 
 export const decorators: any = [
-  withThemeByClassName({
-    themes: {
-      light: "light",
-      dark: "dark",
-    },
-    defaultTheme: "light",
-  }),
   withThemeByDataAttribute({
     themes: {
-      light: "light",
-      dark: "dark",
+      "Isomer Classic": "isomer-classic",
+      "Isomer Next": "isomer-next",
     },
-    defaultTheme: "light",
-    attributeName: "data-mode",
+    defaultTheme: "Isomer Next",
   }),
 ]
 
