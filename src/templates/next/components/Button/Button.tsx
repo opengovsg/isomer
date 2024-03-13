@@ -4,14 +4,14 @@ import { SUPPORTED_ICONS_MAP } from "~/common/Icons"
 
 const colorClassMap: Record<NextButtonTextColors, string> = {
   white: "text-white",
-  black: "text-[#333333]",
+  black: "text-content-default",
 }
 const borderColorClassMap: Record<NextButtonTextColors, string> = {
   white: "border-white",
-  black: "border-[#333333]",
+  black: "border-content-default",
 }
 const textColorToBgColorMap: Record<NextButtonTextColors, string> = {
-  white: "bg-[#333333] hover:bg-secondary",
+  white: "bg-content-default hover:bg-secondary",
   black: "bg-white hover:bg-secondary",
 }
 
