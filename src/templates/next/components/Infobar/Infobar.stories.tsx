@@ -6,6 +6,11 @@ export default {
   title: "Next/Components/Infobar",
   component: Infobar,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+  },
 } as Meta
 
 // Template for stories

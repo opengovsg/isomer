@@ -6,6 +6,11 @@ export default {
   title: "Next/Components/Infopic",
   component: InfoPic,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+  },
 } as Meta
 
 // Template for stories
