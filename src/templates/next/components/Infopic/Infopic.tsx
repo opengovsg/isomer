@@ -13,11 +13,13 @@ const TextComponent = ({
   return (
     <div className={`flex flex-col gap-10 ${className ?? ""}`}>
       <div className="flex flex-col gap-4 sm:gap-6">
-        <h1 className="text-[#333333] text-2xl font-semibold sm:text-4xl">
+        <h1 className="text-content-default text-2xl font-semibold sm:text-4xl">
           {title}
         </h1>
         {description && (
-          <p className="text-[#333333] text-sm sm:text-lg">{description}</p>
+          <p className="text-content-default text-sm sm:text-lg">
+            {description}
+          </p>
         )}
       </div>
       {buttonLabel && buttonUrl && (
