@@ -84,7 +84,7 @@ const HeroSplit = ({
   secondaryButtonUrl,
   backgroundUrl,
 }: HeroSplitProps) => {
-  const bgColor = backgroundColor === "black" ? "bg-canvas-black" : "bg-white"
+  const bgColor = backgroundColor === "black" ? "bg-canvas-dark" : "bg-white"
   const textColor = backgroundColor === "black" ? "text-white" : "text-black"
 
   return (
