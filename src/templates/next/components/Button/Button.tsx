@@ -55,7 +55,7 @@ const Button = ({
       target={href.startsWith("http") ? "_blank" : undefined}
       rel={href.startsWith("http") ? "noopener noreferrer nofollow" : undefined}
       type="button"
-      className={`${textColorClass} ${bgColorClass} ${outlinedClass} inline-flex items-center gap-1 px-5 py-4 active:underline active:underline-offset-2`}
+      className={`${textColorClass} ${bgColorClass} ${outlinedClass} w-fit inline-flex items-center gap-1 px-5 py-4 active:underline active:underline-offset-2`}
     >
       <Label />
       <RightIcon />
