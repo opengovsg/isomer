@@ -3,15 +3,19 @@ export interface HeroHeadingProps {
   subtitle?: string
 }
 
-export interface HeroButtonProps {
+export interface HeroButtonsProps {
   buttonLabel?: string
   buttonUrl?: string
+  secondaryButtonLabel?: string
+  secondaryButtonUrl?: string
 }
 
 export interface HeroKeyHighlightProps {
-  title: string
-  description: string
-  url: string
+  keyHighlights?: Array<{
+    title: string
+    description: string
+    url: string
+  }>
 }
 
 export interface HeroDropdownProps {
@@ -22,43 +26,76 @@ export interface HeroDropdownProps {
   }>
 }
 
-export interface HeroInfoboxProps extends HeroHeadingProps, HeroButtonProps {
+export interface HeroBackgroundImageProps {
+  backgroundUrl: string
+}
+
+export interface HeroInfoboxProps extends HeroHeadingProps, HeroButtonsProps {
   alignment?: "left" | "right"
   backgroundColor?: "black" | "white" | "gray"
   size?: "sm" | "md"
   dropdown?: HeroDropdownProps
 }
 
-export interface HeroCommonProps {
-  backgroundUrl: string
-  keyHighlights?: Array<HeroKeyHighlightProps>
-}
-
-export interface HeroSideProps extends HeroInfoboxProps, HeroCommonProps {
+export interface HeroSideProps
+  extends HeroInfoboxProps,
+    HeroBackgroundImageProps,
+    HeroKeyHighlightProps {
   variant: "side"
 }
 
-export interface HeroImageProps extends HeroCommonProps {
+export interface HeroImageProps
+  extends HeroBackgroundImageProps,
+    HeroKeyHighlightProps {
   variant: "image"
   dropdown?: HeroDropdownProps
 }
 
-export interface HeroFloatingProps extends HeroInfoboxProps, HeroCommonProps {
+export interface HeroFloatingProps
+  extends HeroInfoboxProps,
+    HeroBackgroundImageProps,
+    HeroKeyHighlightProps {
   variant: "floating"
 }
 
 export interface HeroCenterProps
   extends HeroHeadingProps,
-    HeroButtonProps,
-    HeroCommonProps {
+    HeroButtonsProps,
+    HeroBackgroundImageProps,
+    HeroKeyHighlightProps {
   variant: "center"
   dropdown?: HeroDropdownProps
 }
 
-export type HeroProps =
-  | HeroSideProps
-  | HeroImageProps
-  | HeroFloatingProps
-  | HeroCenterProps
+export interface HeroGradientProps
+  extends HeroHeadingProps,
+    HeroButtonsProps,
+    HeroBackgroundImageProps {
+  variant: "gradient"
+  alignment?: "left" | "right"
+}
 
-export default HeroProps
+export interface HeroSplitProps
+  extends HeroHeadingProps,
+    HeroButtonsProps,
+    HeroBackgroundImageProps {
+  variant: "split"
+  alignment?: "left" | "right"
+  backgroundColor?: "black" | "white"
+}
+
+export interface HeroCopyLedProps
+  extends HeroHeadingProps,
+    HeroButtonsProps,
+    Partial<HeroBackgroundImageProps>,
+    HeroKeyHighlightProps {
+  variant: "copyled"
+}
+
+export interface HeroFloatingImageProps
+  extends HeroHeadingProps,
+    HeroButtonsProps,
+    HeroBackgroundImageProps,
+    HeroKeyHighlightProps {
+  variant: "floatingimage"
+}
