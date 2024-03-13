@@ -1,11 +1,16 @@
-import { Meta, StoryFn } from "@storybook/react"
+import type { Meta, StoryFn } from "@storybook/react"
 import Button from "./Button"
-import { ButtonProps } from "~/common"
+import type { ButtonProps } from "~/common"
 
 export default {
   title: "Classic/Components/Button",
   component: Button,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Classic",
+    },
+  },
 } as Meta
 
 // Template for stories

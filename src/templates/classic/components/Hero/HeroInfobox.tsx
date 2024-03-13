@@ -24,7 +24,7 @@ const textColor: {
   [key in NonNullable<HeroInfoboxProps["backgroundColor"]>]: string
 } = {
   black: "text-content-inverse",
-  white: "text-content-base",
+  white: "text-content-default",
   gray: "text-content-inverse",
 }
 

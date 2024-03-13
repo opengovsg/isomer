@@ -1,11 +1,16 @@
-import { Meta, StoryFn } from "@storybook/react"
+import type { Meta, StoryFn } from "@storybook/react"
 import Image from "./Image"
-import { ImageProps } from "~/common"
+import type { ImageProps } from "~/common"
 
 export default {
   title: "Classic/Components/Image",
   component: Image,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Classic",
+    },
+  },
 } as Meta
 
 // Template for stories

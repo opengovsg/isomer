@@ -1,11 +1,16 @@
-import { Meta, StoryFn } from "@storybook/react"
+import type { Meta, StoryFn } from "@storybook/react"
 import InfoPic from "./Infopic"
-import { InfopicProps } from "~/common"
+import type { InfopicProps } from "~/common"
 
 export default {
   title: "Classic/Components/Infopic",
   component: InfoPic,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Classic",
+    },
+  },
 } as Meta
 
 // Template for stories
@@ -39,7 +44,7 @@ DefaultGrayBackground.args = {
 export const DefaultRight = Template.bind({})
 DefaultRight.args = {
   sectionIndex: 0,
-  isLeftVariant: false,
+  isTextOnRight: true,
   title: "Thank you for attending the roadshows!",
   subtitle: "Coming soon to your hood",
   description: "Catch the highlights from the roadshows here.",
