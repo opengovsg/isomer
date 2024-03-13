@@ -1,13 +1,18 @@
-import { StoryFn, Meta } from "@storybook/react"
+import type { StoryFn, Meta } from "@storybook/react"
 import { encode } from "js-base64"
 
 import Content from "./Content"
-import { ContentProps } from "~/common"
+import type { ContentProps } from "~/common"
 
 export default {
   title: "Classic/Components/Content",
   component: Content,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Classic",
+    },
+  },
 } as Meta
 
 // Template for stories

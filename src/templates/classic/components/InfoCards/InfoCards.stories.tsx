@@ -1,6 +1,6 @@
-import { Meta, StoryFn } from "@storybook/react"
+import type { Meta, StoryFn } from "@storybook/react"
 import InfoCards from "./InfoCards"
-import { InfoCardsProps } from "~/common"
+import type { InfoCardsProps } from "~/common"
 
 export default {
   title: "Classic/Components/InfoCards",
@@ -10,6 +10,11 @@ export default {
     imageUrl: { control: "text" },
     title: { control: "text" },
     text: { control: "text" },
+  },
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Classic",
+    },
   },
 } as Meta
 

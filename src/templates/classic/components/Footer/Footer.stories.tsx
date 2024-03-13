@@ -1,11 +1,16 @@
-import { StoryFn, Meta } from "@storybook/react"
+import type { StoryFn, Meta } from "@storybook/react"
 import Footer from "./Footer"
-import { FooterProps } from "~/common"
+import type { FooterProps } from "~/common"
 
 export default {
   title: "Classic/Components/Footer",
   component: Footer,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Classic",
+    },
+  },
 } as Meta
 
 // Template for stories

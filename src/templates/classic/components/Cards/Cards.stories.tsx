@@ -1,11 +1,16 @@
-import { Meta, StoryFn } from "@storybook/react"
+import type { Meta, StoryFn } from "@storybook/react"
 import Cards from "./Cards"
-import { CardsProps } from "~/common"
+import type { CardsProps } from "~/common"
 
 export default {
   title: "Classic/Components/Cards",
   component: Cards,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Classic",
+    },
+  },
 } as Meta
 
 // Template for stories

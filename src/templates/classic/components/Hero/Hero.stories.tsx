@@ -5,6 +5,11 @@ export default {
   title: "Classic/Components/Hero",
   component: Hero,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Classic",
+    },
+  },
 } as Meta
 
 // Template for stories
