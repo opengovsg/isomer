@@ -1,11 +1,16 @@
-import { Meta, StoryFn } from "@storybook/react"
+import type { Meta, StoryFn } from "@storybook/react"
 import Infobar from "./Infobar"
-import { InfobarProps } from "~/common"
+import type { InfobarProps } from "~/common"
 
 export default {
   title: "Classic/Components/Infobar",
   component: Infobar,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Classic",
+    },
+  },
 } as Meta
 
 // Template for stories

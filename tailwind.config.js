@@ -43,8 +43,8 @@ export default {
           secondaryColor: "var(--color-secondary)",
         },
       },
-      fontFamily: {
-        sans: ["Lato", "ui-sans-serif", "system-ui"],
+      screens: {
+        xs: "576px",
       },
       typography: ({ theme }) => ({
         isomer: {
