@@ -1,5 +1,6 @@
 import { ButtonProps } from "~/common"
-import { NextButtonColorVariant, SUPPORTED_ICONS_MAP } from "~/common/Button"
+import { NextButtonColorVariant } from "~/common/Button"
+import { SUPPORTED_ICONS_MAP } from "~/common/Icons"
 
 const colorVariantToClassMap: Record<NextButtonColorVariant, string> = {
   black: "bg-[#333333] text-white",

@@ -25,8 +25,9 @@ export default {
           dark: "#2B2313",
         },
         content: {
-          base: "#344054",
-          body: "#484848",
+          default: "#333333",
+          strong: "#2c2e34",
+          medium: "#5d5d5d",
           inverse: "#ffffff",
         },
         interaction: {
