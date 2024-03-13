@@ -19,7 +19,7 @@ const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
           .slice(0, variant === "side" ? 3 : 4)
           .map(({ label, value }) => (
             <div className="flex flex-col gap-3">
-              <h3 className="text-5xl leading-[3.5rem] text-[#2c2e34] font-semibold">
+              <h3 className="text-4xl xs:text-5xl leading-[2.75rem] xs:leading-[3.5rem] text-[#2c2e34] font-semibold">
                 {value}
               </h3>
               <p className="text-sm text-[#5d5d5d]">{label}</p>
