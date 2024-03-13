@@ -7,7 +7,7 @@ const InfoColsHeader = ({
   subtitle,
 }: Pick<InfoColsProps, "title" | "subtitle">) => (
   <div className="w-full flex flex-col gap-7 items-start text-left">
-    <h1 className="text-[#333333] text-4xl font-normal leading-tight">
+    <h1 className="text-content-default text-4xl font-normal leading-tight">
       {title}
     </h1>
     {subtitle && <p className="text-xl font-normal">{subtitle}</p>}
@@ -33,7 +33,7 @@ const InfoBoxes = ({
       {infoBoxes.map((infoBox, idx) => (
         <div key={idx} className="flex flex-col gap-4 items-start text-left">
           <InfoBoxIcon icon={infoBox.icon} />
-          <div className="flex flex-col gap-1 items-start text-[#2C2E34]">
+          <div className="flex flex-col gap-1 items-start text-content-strong">
             <h3 className="font-bold">{infoBox.title}</h3>
             <p>{infoBox.description}</p>
           </div>
