@@ -18,36 +18,67 @@ Default.args = {
   href: "/faq",
 }
 
+export const White = Template.bind({})
+White.args = {
+  label: "Work with us",
+  href: "/faq",
+  textColor: "black",
+}
+White.parameters = {
+  backgrounds: {
+    default: "dark",
+  },
+}
+
+export const GhostWhiteText = Template.bind({})
+GhostWhiteText.args = {
+  label: "Work with us",
+  href: "/faq",
+  textColor: "white",
+  clear: true,
+}
+GhostWhiteText.parameters = {
+  backgrounds: {
+    default: "dark",
+  },
+}
+
+export const GhostBlackText = Template.bind({})
+GhostBlackText.args = {
+  label: "Work with us",
+  href: "/faq",
+  textColor: "black",
+  clear: true,
+}
+
+export const OutlineWhiteText = Template.bind({})
+OutlineWhiteText.args = {
+  label: "Work with us",
+  href: "/faq",
+  textColor: "white",
+  clear: true,
+  outlined: true,
+}
+OutlineWhiteText.parameters = {
+  backgrounds: {
+    default: "dark",
+  },
+}
+
+export const OutlineBlackText = Template.bind({})
+OutlineBlackText.args = {
+  label: "Work with us",
+  href: "/faq",
+  textColor: "black",
+  clear: true,
+  outlined: true,
+}
+
 export const WithRightIcon = Template.bind({})
 WithRightIcon.args = {
   label: "Work with us",
   href: "/faq",
   rightIcon: "right-arrow",
-}
-
-export const WhiteButton = Template.bind({})
-WhiteButton.args = {
-  label: "Work with us",
-  href: "/faq",
-  colorVariant: "white",
-}
-WhiteButton.parameters = {
-  backgrounds: {
-    default: "dark",
-  },
-}
-
-export const WhiteButtonWithRightIcon = Template.bind({})
-WhiteButtonWithRightIcon.args = {
-  label: "Work with us",
-  href: "/faq",
-  rightIcon: "right-arrow",
-  colorVariant: "white",
-}
-WhiteButtonWithRightIcon.parameters = {
-  backgrounds: {
-    default: "dark",
-  },
 }
 
 export const ExternalLinkButton = Template.bind({})

@@ -12,16 +12,18 @@ export const SUPPORTED_ICONS_MAP: Record<SupportedIconName, SupportedIconType> =
   }
 
 // Theme specific config
-const NEXT_BUTTON_COLOR_VARIANTS = ["black", "white"] as const
-export type NextButtonColorVariant = (typeof NEXT_BUTTON_COLOR_VARIANTS)[number]
+const NEXT_BUTTON_TEXT_COLORS = ["black", "white"] as const
+export type NextButtonTextColors = (typeof NEXT_BUTTON_TEXT_COLORS)[number]
 
 // extend this with union types when there are more themes in the future
-export type ButtonColorVariant = NextButtonColorVariant
+export type ButtonTextColors = NextButtonTextColors
 
 export interface ButtonProps {
   label: string
   href: string
-  colorVariant?: ButtonColorVariant
+  textColor?: ButtonTextColors
+  clear?: boolean
+  outlined?: boolean
   rounded?: boolean
   leftIcon?: SupportedIconName
   rightIcon?: SupportedIconName
