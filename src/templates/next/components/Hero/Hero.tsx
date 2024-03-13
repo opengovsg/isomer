@@ -53,13 +53,15 @@ const HeroGradient = ({
                 }`}
               >
                 <Button
-                  colorVariant="white"
+                  textColor="black"
                   label={buttonLabel}
                   href={buttonUrl}
                 />
                 {secondaryButtonLabel && secondaryButtonUrl && (
                   <Button
-                    colorVariant="black"
+                    textColor="white"
+                    outlined
+                    clear
                     label={secondaryButtonLabel}
                     href={secondaryButtonUrl}
                   />
@@ -112,13 +114,15 @@ const HeroSplit = ({
                   }`}
                 >
                   <Button
-                    colorVariant="white"
+                    textColor="black"
                     label={buttonLabel}
                     href={buttonUrl}
                   />
                   {secondaryButtonLabel && secondaryButtonUrl && (
                     <Button
-                      colorVariant="black"
+                      textColor="white"
+                      outlined
+                      clear
                       label={secondaryButtonLabel}
                       href={secondaryButtonUrl}
                     />
@@ -196,13 +200,13 @@ const HeroFloating = ({
                 }`}
               >
                 <Button
-                  colorVariant="white"
+                  textColor="black"
                   label={buttonLabel}
                   href={buttonUrl}
                 />
                 {secondaryButtonLabel && secondaryButtonUrl && (
                   <Button
-                    colorVariant="black"
+                    textColor="white"
                     label={secondaryButtonLabel}
                     href={secondaryButtonUrl}
                   />
@@ -233,14 +237,12 @@ const HeroCopyLed = ({
           {subtitle && <p className="text-2xl leading-9">{subtitle}</p>}
           {buttonLabel && buttonUrl && (
             <div className="flex flex-row gap-4">
-              <Button
-                colorVariant="white"
-                label={buttonLabel}
-                href={buttonUrl}
-              />
+              <Button textColor="white" label={buttonLabel} href={buttonUrl} />
               {secondaryButtonLabel && secondaryButtonUrl && (
                 <Button
-                  colorVariant="black"
+                  textColor="black"
+                  clear
+                  outlined
                   label={secondaryButtonLabel}
                   href={secondaryButtonUrl}
                 />
@@ -281,13 +283,15 @@ const HeroFloatingImage = ({
               {buttonLabel && buttonUrl && (
                 <div className="flex flex-row gap-4">
                   <Button
-                    colorVariant="white"
+                    textColor="white"
                     label={buttonLabel}
                     href={buttonUrl}
                   />
                   {secondaryButtonLabel && secondaryButtonUrl && (
                     <Button
-                      colorVariant="black"
+                      textColor="black"
+                      outlined
+                      clear
                       label={secondaryButtonLabel}
                       href={secondaryButtonUrl}
                     />
