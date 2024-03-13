@@ -5,7 +5,7 @@ import {
   type HeroCopyLedProps,
   type HeroFloatingImageProps,
 } from "~/common/Hero"
-import Button from "~/next/components/Button"
+import Button from "../Button"
 
 export type HeroProps =
   | HeroGradientProps
