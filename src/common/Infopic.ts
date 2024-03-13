@@ -7,7 +7,8 @@ export interface InfopicProps {
   imageSrc: string
   buttonLabel?: string
   buttonUrl?: string
-  isLeftVariant?: boolean
+  isTextOnRight?: boolean
+  variant?: "side-by-side" | "side-part"
 }
 
 export default InfopicProps

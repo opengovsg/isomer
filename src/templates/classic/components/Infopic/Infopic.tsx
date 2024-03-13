@@ -85,13 +85,14 @@ const InfoPic = ({
   imageSrc: src,
   buttonLabel: button,
   buttonUrl: url,
-  isLeftVariant = true,
+  isTextOnRight,
 }: InfopicProps) => {
   return (
     <HomepageSectionWrapper sectionIndex={sectionIndex}>
       <InfopicContentWrapper shouldShowMobile={false}>
-        {isLeftVariant ? (
+        {isTextOnRight ? (
           <>
+            <ImageComponent src={src} alt={alt} />
             <TextComponent
               title={title}
               subtitle={subtitle}
@@ -99,11 +100,9 @@ const InfoPic = ({
               buttonLabel={button}
               buttonUrl={url}
             />
-            <ImageComponent src={src} alt={alt} />
           </>
         ) : (
           <>
-            <ImageComponent src={src} alt={alt} />
             <TextComponent
               title={title}
               subtitle={subtitle}
@@ -111,6 +110,7 @@ const InfoPic = ({
               buttonLabel={button}
               buttonUrl={url}
             />
+            <ImageComponent src={src} alt={alt} />
           </>
         )}
       </InfopicContentWrapper>

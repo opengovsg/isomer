@@ -1,5 +1,6 @@
 import { ButtonProps } from "~/common"
-import { NextButtonColorVariant, SUPPORTED_ICONS_MAP } from "~/common/Button"
+import { NextButtonColorVariant } from "~/common/Button"
+import { SUPPORTED_ICONS_MAP } from "~/common/Icons"
 
 const colorVariantToClassMap: Record<NextButtonColorVariant, string> = {
   black: "bg-[#333333] text-white",
@@ -33,7 +34,7 @@ const Button = ({ label, colorVariant, href, rightIcon }: ButtonProps) => {
       target={href.startsWith("http") ? "_blank" : undefined}
       rel={href.startsWith("http") ? "noopener noreferrer nofollow" : undefined}
       type="button"
-      className={`${colorVariantClass} inline-flex items-center gap-1 px-5 py-4`}
+      className={`${colorVariantClass} inline-flex items-center gap-1 px-5 py-4 w-fit`}
     >
       <Label />
       <RightIcon />
