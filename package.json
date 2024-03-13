@@ -10,7 +10,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "publish-package": "rollup -c && npm run publish",
-    "clean": "rimraf build",
+    "clean": "rimraf dist",
     "build": "npm run clean && run-p build:*",
     "build:main": "tsc -p tsconfig.build.json",
     "build:module": "tsc -p tsconfig.module.build.json",
@@ -61,6 +61,20 @@
   },
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./templates/classic": {
+      "import": "./dist/esm/templates/classic/index.js",
+      "require": "./dist/cjs/templates/classic/index.js"
+    },
+    "./templates/next": {
+      "import": "./dist/esm/templates/next/index.js",
+      "require": "./dist/cjs/templates/next/index.js"
+    }
+  },
   "files": [
     "dist/cjs",
     "dist/esm",

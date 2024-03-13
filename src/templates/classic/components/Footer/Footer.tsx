@@ -1,8 +1,7 @@
 import { Footer } from "@govtechsg/sgds-react/Footer"
 import { FooterProps } from "~/common"
 
-const IsomerFooter = ({ agencyName, lastUpdated, items }: FooterProps) => {
-  console.log(lastUpdated)
+const IsomerFooter = ({ agencyName, items }: FooterProps) => {
   return (
     <Footer>
       <Footer.Top>
