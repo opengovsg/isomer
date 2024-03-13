@@ -8,7 +8,7 @@ const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
       }`}
     >
       <h2
-        className={`text-2xl xs:text-4xl xs:leading-[2.75rem] text-[#333333] font-semibold w-full ${
+        className={`text-2xl xs:text-4xl xs:leading-[2.75rem] text-content-default font-semibold w-full ${
           variant === "side" ? "lg:w-1/3" : ""
         }`}
       >
@@ -19,10 +19,10 @@ const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
           .slice(0, variant === "side" ? 3 : 4)
           .map(({ label, value }) => (
             <div className="flex flex-col gap-3">
-              <h3 className="text-4xl xs:text-5xl leading-[2.75rem] xs:leading-[3.5rem] text-[#2c2e34] font-semibold">
+              <h3 className="text-4xl xs:text-5xl leading-[2.75rem] xs:leading-[3.5rem] text-content-strong font-semibold">
                 {value}
               </h3>
-              <p className="text-sm text-[#5d5d5d]">{label}</p>
+              <p className="text-sm text-content-medium">{label}</p>
             </div>
           ))}
       </div>
