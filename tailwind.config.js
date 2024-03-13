@@ -43,6 +43,9 @@ export default {
           secondaryColor: "var(--color-secondary)",
         },
       },
+      screens: {
+        xs: "576px",
+      },
       typography: ({ theme }) => ({
         isomer: {
           css: {
