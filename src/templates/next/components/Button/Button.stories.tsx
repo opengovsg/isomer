@@ -27,7 +27,7 @@ export const White = Template.bind({})
 White.args = {
   label: "Work with us",
   href: "/faq",
-  textColor: "black",
+  colorScheme: "white",
 }
 White.parameters = {
   backgrounds: {
@@ -35,48 +35,67 @@ White.parameters = {
   },
 }
 
-export const GhostWhiteText = Template.bind({})
-GhostWhiteText.args = {
+export const OutlineBlack = Template.bind({})
+OutlineBlack.args = {
   label: "Work with us",
   href: "/faq",
-  textColor: "white",
-  clear: true,
+  colorScheme: "black",
+  variant: "outline",
 }
-GhostWhiteText.parameters = {
+
+export const OutlineWhite = Template.bind({})
+OutlineWhite.args = {
+  label: "Work with us",
+  href: "/faq",
+  colorScheme: "white",
+  variant: "outline",
+}
+OutlineWhite.parameters = {
   backgrounds: {
     default: "dark",
   },
 }
 
-export const GhostBlackText = Template.bind({})
-GhostBlackText.args = {
+export const GhostBlack = Template.bind({})
+GhostBlack.args = {
   label: "Work with us",
   href: "/faq",
-  textColor: "black",
-  clear: true,
+  colorScheme: "black",
+  variant: "ghost",
 }
 
-export const OutlineWhiteText = Template.bind({})
-OutlineWhiteText.args = {
+export const GhostWhite = Template.bind({})
+GhostWhite.args = {
   label: "Work with us",
   href: "/faq",
-  textColor: "white",
-  clear: true,
-  outlined: true,
+  colorScheme: "white",
+  variant: "ghost",
 }
-OutlineWhiteText.parameters = {
+GhostWhite.parameters = {
   backgrounds: {
     default: "dark",
   },
 }
 
-export const OutlineBlackText = Template.bind({})
-OutlineBlackText.args = {
+export const LinkBlack = Template.bind({})
+LinkBlack.args = {
   label: "Work with us",
   href: "/faq",
-  textColor: "black",
-  clear: true,
-  outlined: true,
+  colorScheme: "black",
+  variant: "link",
+}
+
+export const LinkWhite = Template.bind({})
+LinkWhite.args = {
+  label: "Work with us",
+  href: "/faq",
+  colorScheme: "white",
+  variant: "link",
+}
+LinkWhite.parameters = {
+  backgrounds: {
+    default: "dark",
+  },
 }
 
 export const WithRightIcon = Template.bind({})
