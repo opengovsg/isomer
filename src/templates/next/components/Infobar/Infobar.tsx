@@ -29,7 +29,8 @@ const Infobar = ({
             <Button
               label={secondaryButtonLabel}
               href={secondaryButtonUrl}
-              colorVariant="white"
+              colorScheme="black"
+              variant="ghost"
             />
           )}
         </div>
