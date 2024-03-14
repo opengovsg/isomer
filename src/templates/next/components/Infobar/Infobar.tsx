@@ -21,7 +21,7 @@ const Infobar = ({
             <p className="text-content-default text-xl">{description}</p>
           )}
         </div>
-        <div className="flex flex-row gap-6">
+        <div className="flex flex-col gap-6 items-center sm:flex-row">
           {buttonLabel && buttonUrl && (
             <Button label={buttonLabel} href={buttonUrl} />
           )}

@@ -28,6 +28,15 @@ Default.args = {
   secondaryButtonUrl: "https://google.com",
 }
 
+export const OneButton = Template.bind({})
+OneButton.args = {
+  sectionIdx: 0,
+  title: "This is a place where you can put nice content",
+  description: "About a sentence worth of description here",
+  buttonLabel: "Primary CTA",
+  buttonUrl: "https://google.com",
+}
+
 export const LongText = Template.bind({})
 LongText.args = {
   sectionIdx: 0,
