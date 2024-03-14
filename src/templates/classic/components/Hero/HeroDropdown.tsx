@@ -56,7 +56,7 @@ export const HeroDropdown = ({ title, options }: HeroDropdownProps) => {
               optionUrl &&
               optionTitle && (
                 <a
-                  className="block relative text-prose hover:text-secondary text-xl px-6 py-3"
+                  className="block relative text-prose hover:text-site-secondary text-xl px-6 py-3"
                   href={optionUrl}
                   rel={
                     optionUrl.startsWith("http")

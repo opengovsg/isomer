@@ -1,61 +1,25 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  presets: [
+    require("./src/presets/next.js"),
+    // Note: This is here temporarily until we can figure out how to load the
+    // presets dynamically depending on the template being used.
+    require("./src/presets/classic.js"),
+  ],
   theme: {
     extend: {
       colors: {
-        primary: "#6031b6",
-        primaryHover: "#4b268e",
-        secondary: "#4372d6",
-        subtitle: "#344054",
-        paragraph: "#344054",
-        dark: "#6d58bb",
-        prose: "#484848",
-        headings: "#6d58bb",
-        header: "#2164da",
-        subtleLink: "#767676",
-        navItems: "#323232",
-        border: {
-          light: "#d6d6d6",
-        },
-        canvas: {
-          base: "#ffffff",
-          inverse: "#000000",
-          translucentGrey: "#00000080",
-          dark: "#2B2313",
-        },
-        content: {
-          default: "#333333",
-          strong: "#2c2e34",
-          medium: "#5d5d5d",
-          inverse: "#ffffff",
-        },
-        interaction: {
-          hover: "#f9f9f9",
-          linkDefault: "#4372d6",
-          linkHover: "#3a79ff",
-        },
-        stroke: {
-          default: "#d0d5dd",
-        },
-        utility: {
-          themeColor: "var(--color-primary)",
-          secondaryColor: "var(--color-secondary)",
-        },
-      },
-      screens: {
-        xs: "576px",
-      },
-      typography: ({ theme }) => ({
-        isomer: {
-          css: {
-            "--tw-prose-body": theme("colors.prose"),
-            "--tw-prose-headings": theme("colors.headings"),
-            "--tw-prose-bullets": theme("colors.prose"),
-            "--tw-prose-links": theme("colors.secondary"),
+        // Site-specific colors, will be overwritten by individual sites
+        site: {
+          primary: {
+            DEFAULT: "#f78f1e",
+          },
+          secondary: {
+            DEFAULT: "#877664",
           },
         },
-      }),
+      },
     },
   },
   plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography")],

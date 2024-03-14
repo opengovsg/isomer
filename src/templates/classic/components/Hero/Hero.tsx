@@ -125,7 +125,7 @@ const HeroCenter = ({
                       : ""
                   }
                   target={buttonUrl.startsWith("http") ? "_blank" : ""}
-                  className={`${BP_BUTTON_CLASSES} bg-secondary text-content-inverse border-transparent uppercase px-6 py-[7px] text-base tracking-wider font-semibold h-[2.4rem]`}
+                  className={`${BP_BUTTON_CLASSES} bg-site-secondary text-content-inverse border-transparent uppercase px-6 py-[7px] text-base tracking-wider font-semibold h-[2.4rem]`}
                 >
                   {buttonLabel}
                 </a>
@@ -144,7 +144,10 @@ const HeroKeyHighlights = ({ keyHighlights }: HeroKeyHighlightProps) => {
   }
 
   return (
-    <section id="key-highlights" className="p-0 lg:px-6 bg-primary text-white">
+    <section
+      id="key-highlights"
+      className="p-0 lg:px-6 bg-site-primary text-white"
+    >
       <div className="mx-auto my-0 relative lg:max-w-[60rem] xl:max-w-[76rem] 2xl:max-w-[84rem]">
         <div className={`m-0 text-center justify-center flex-none md:flex`}>
           {keyHighlights
@@ -155,7 +158,7 @@ const HeroKeyHighlights = ({ keyHighlights }: HeroKeyHighlightProps) => {
                 title: highlightTitle,
                 description: highlightDescription,
               }) => (
-                <div className="transition-colors hover:bg-primaryHover cursor-pointer grow basis-0 border-solid border-l first:border-l-0 border-l-subtitle">
+                <div className="transition-colors hover:bg-site-primary-hover cursor-pointer grow basis-0 border-solid border-l first:border-l-0 border-l-subtitle">
                   <a
                     href={highlightUrl}
                     rel={

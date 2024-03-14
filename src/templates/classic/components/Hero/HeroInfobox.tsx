@@ -113,7 +113,7 @@ export const HeroInfoboxDesktop = ({
                     : ""
                 }
                 target={buttonUrl.startsWith("http") ? "_blank" : ""}
-                className={`${BP_BUTTON_CLASSES} bg-secondary text-content-inverse border-transparent uppercase px-6 py-[7px] text-base tracking-wider font-semibold h-[2.4rem]`}
+                className={`${BP_BUTTON_CLASSES} bg-site-secondary text-content-inverse border-transparent uppercase px-6 py-[7px] text-base tracking-wider font-semibold h-[2.4rem]`}
               >
                 {buttonLabel}
               </a>
@@ -168,7 +168,7 @@ export const HeroInfoboxTablet = ({
                       : ""
                   }
                   target={buttonUrl.startsWith("http") ? "_blank" : ""}
-                  className={`${BP_BUTTON_CLASSES} bg-secondary text-content-inverse border-transparent uppercase px-6 py-[7px] text-base tracking-wider font-semibold h-[2.4rem]`}
+                  className={`${BP_BUTTON_CLASSES} bg-site-secondary text-content-inverse border-transparent uppercase px-6 py-[7px] text-base tracking-wider font-semibold h-[2.4rem]`}
                 >
                   {buttonLabel}
                 </a>
@@ -213,7 +213,7 @@ export const HeroInfoboxMobile = ({
                     : ""
                 }
                 target={buttonUrl.startsWith("http") ? "_blank" : ""}
-                className={`${BP_BUTTON_CLASSES} bg-secondary text-content-inverse border-transparent uppercase px-6 py-[7px] text-base tracking-wider font-semibold h-[2.4rem]`}
+                className={`${BP_BUTTON_CLASSES} bg-site-secondary text-content-inverse border-transparent uppercase px-6 py-[7px] text-base tracking-wider font-semibold h-[2.4rem]`}
               >
                 {buttonLabel}
               </a>
