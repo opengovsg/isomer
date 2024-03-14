@@ -15,6 +15,7 @@ export interface ButtonProps {
   rounded?: boolean
   leftIcon?: SupportedIconName
   rightIcon?: SupportedIconName
+  LinkComponent?: any
 }
 
 export default ButtonProps
