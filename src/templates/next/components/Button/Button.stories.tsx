@@ -1,6 +1,9 @@
-import type { Meta, StoryFn } from "@storybook/react"
+import { type Meta, StoryObj, StoryFn } from "@storybook/react"
+import ButtonProps, {
+  BUTTON_COLOR_SCHEMES,
+  BUTTON_VARIANTS,
+} from "~/common/Button"
 import Button from "./Button"
-import type { ButtonProps } from "~/common"
 
 export default {
   title: "Next/Components/Button",
@@ -30,39 +33,39 @@ WithRightIcon.args = {
   rightIcon: "right-arrow",
 }
 
-export const WhiteButton = Template.bind({})
-WhiteButton.args = {
-  label: "Work with us",
-  href: "/faq",
-  colorVariant: "white",
-}
-WhiteButton.parameters = {
-  backgrounds: {
-    default: "dark",
-  },
-}
-
-export const WhiteButtonWithRightIcon = Template.bind({})
-WhiteButtonWithRightIcon.args = {
-  label: "Work with us",
-  href: "/faq",
-  rightIcon: "right-arrow",
-  colorVariant: "white",
-}
-WhiteButtonWithRightIcon.parameters = {
-  backgrounds: {
-    default: "dark",
-  },
-}
-
-export const ExternalLinkButton = Template.bind({})
-ExternalLinkButton.args = {
-  label: "Button text",
-  href: "https://www.google.com",
-}
-
 export const LongerButtonText = Template.bind({})
 LongerButtonText.args = {
   label: "slightly longer button text",
   href: "/faq",
+}
+
+const Buttons = () => {
+  return (
+    <div className="flex flex-col items-center gap-4">
+      {BUTTON_COLOR_SCHEMES.flatMap((colorScheme) => {
+        return (
+          <div
+            className={`${
+              colorScheme === "black" ? "bg-white" : "bg-gray-900"
+            } w-full flex flex-row gap-4 justify-center p-10`}
+          >
+            {BUTTON_VARIANTS.map((variant) => {
+              return (
+                <Button
+                  label="Work with us"
+                  href="/faq"
+                  colorScheme={colorScheme}
+                  variant={variant}
+                />
+              )
+            })}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+export const ColorsAndVariants: StoryObj<ButtonProps> = {
+  render: () => <Buttons />,
 }

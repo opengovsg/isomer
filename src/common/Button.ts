@@ -1,16 +1,17 @@
 import { SupportedIconName } from "./Icons"
 
 // Theme specific config
-const NEXT_BUTTON_COLOR_VARIANTS = ["black", "white"] as const
-export type NextButtonColorVariant = (typeof NEXT_BUTTON_COLOR_VARIANTS)[number]
+export const BUTTON_COLOR_SCHEMES = ["black", "white"] as const
+export type ButtonColorScheme = (typeof BUTTON_COLOR_SCHEMES)[number]
 
-// extend this with union types when there are more themes in the future
-export type ButtonColorVariant = NextButtonColorVariant
+export const BUTTON_VARIANTS = ["solid", "outline", "ghost", "link"] as const
+export type ButtonVariant = (typeof BUTTON_VARIANTS)[number]
 
 export interface ButtonProps {
   label: string
   href: string
-  colorVariant?: ButtonColorVariant
+  colorScheme?: ButtonColorScheme
+  variant?: ButtonVariant
   rounded?: boolean
   leftIcon?: SupportedIconName
   rightIcon?: SupportedIconName

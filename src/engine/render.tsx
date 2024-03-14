@@ -53,13 +53,14 @@ const getComponent = (
   LinkComponent: any,
 ): ReactElement | null => {
   if (component.id === "Button") {
-    const { label, href, colorVariant, rounded, leftIcon, rightIcon } =
+    const { label, href, colorScheme, variant, rounded, leftIcon, rightIcon } =
       component.props
     return (
       <Button
         label={label}
         href={href}
-        colorVariant={colorVariant}
+        colorScheme={colorScheme}
+        variant={variant}
         rounded={rounded}
         leftIcon={leftIcon}
         rightIcon={rightIcon}
