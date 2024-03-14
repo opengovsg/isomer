@@ -6,6 +6,11 @@ export default {
   title: "Next/Components/InfoCols",
   component: InfoCols,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+  },
 } as Meta
 
 // Template for stories

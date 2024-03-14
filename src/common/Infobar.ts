@@ -5,6 +5,8 @@ export interface InfobarProps {
   description?: string
   buttonLabel?: string
   buttonUrl?: string
+  secondaryButtonLabel?: string
+  secondaryButtonUrl?: string
 }
 
 export default InfobarProps

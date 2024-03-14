@@ -5,6 +5,11 @@ export default {
   title: "Next/Components/Hero",
   component: Hero,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+  },
 } as Meta
 
 // Template for stories
