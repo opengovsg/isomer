@@ -13,11 +13,7 @@ const RightIcon = ({ rightIcon }: Pick<ButtonProps, "rightIcon">) => {
     return null
   }
   const Icon = SUPPORTED_ICONS_MAP[rightIcon]
-  return (
-    <div>
-      <Icon className="size-6" />
-    </div>
-  )
+  return <Icon className="min-w-6 h-auto" />
 }
 
 const BaseButton = ({
