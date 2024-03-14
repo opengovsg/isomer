@@ -1,5 +1,5 @@
 import { ButtonProps } from "~/common"
-import { NextButtonColorScheme } from "~/common/Button"
+import { ButtonColorScheme } from "~/common/Button"
 import { SUPPORTED_ICONS_MAP } from "~/common/Icons"
 
 const Label = ({ label }: Pick<ButtonProps, "label">) => (
@@ -40,7 +40,7 @@ const BaseButton = ({
 }
 
 const SolidButton = (props: ButtonProps) => {
-  const colorSchemeClassMap: Record<NextButtonColorScheme, string> = {
+  const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
     white: "bg-white hover:bg-secondary text-content-default",
     black: "bg-content-default hover:bg-secondary text-white",
   }
@@ -53,7 +53,7 @@ const SolidButton = (props: ButtonProps) => {
 }
 
 const OutlineButton = (props: ButtonProps) => {
-  const colorSchemeClassMap: Record<NextButtonColorScheme, string> = {
+  const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
     white: "text-white border border-white",
     black: "text-content-default border border-content-default",
   }
@@ -69,7 +69,7 @@ const OutlineButton = (props: ButtonProps) => {
 }
 
 const GhostButton = (props: ButtonProps) => {
-  const colorSchemeClassMap: Record<NextButtonColorScheme, string> = {
+  const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
     white: "text-white",
     black: "text-content-default",
   }
@@ -85,7 +85,7 @@ const GhostButton = (props: ButtonProps) => {
 }
 
 const LinkButton = (props: ButtonProps) => {
-  const colorSchemeClassMap: Record<NextButtonColorScheme, string> = {
+  const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
     white: "text-white",
     black: "text-content-default",
   }
