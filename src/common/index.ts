@@ -1,4 +1,5 @@
 export { default as ButtonProps } from "./Button"
+export { default as CalloutProps } from "./Callout"
 export { default as CardsProps } from "./Cards"
 export { default as ContentProps } from "./Content"
 export { default as FooterProps } from "./Footer"

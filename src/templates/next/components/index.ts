@@ -1,4 +1,5 @@
 export { default as Button } from "./Button"
+export { default as Callout } from "./Callout"
 export { default as Infobar } from "./Infobar"
 export { default as InfoCols } from "./InfoCols"
 export { default as Infopic } from "./Infopic"
