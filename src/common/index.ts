@@ -1,3 +1,4 @@
+export { default as BreadcrumbProps } from "./Breadcrumb"
 export { default as ButtonProps } from "./Button"
 export { default as CardsProps } from "./Cards"
 export { default as ContentProps } from "./Content"
