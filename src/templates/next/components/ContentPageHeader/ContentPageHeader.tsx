@@ -1,6 +1,7 @@
 import { ContentPageHeaderProps } from "~/common"
 import Button from "../Button"
 import Breadcrumb from "../Breadcrumb"
+import Paragraph from "../Paragraph"
 
 const ContentPageHeader = ({
   title,
@@ -17,9 +18,9 @@ const ContentPageHeader = ({
           <h1 className="text-[2.75rem] leading-tight lg:text-[3.75rem] font-semibold text-content-strong">
             {title}
           </h1>
-          <p className="lg:text-xl lg:leading-8 text-content-default ">
-            {summary}
-          </p>
+          <div className="lg:text-xl lg:leading-8 text-content-default ">
+            <Paragraph content={summary} />
+          </div>
         </div>
         {buttonLabel && buttonUrl && (
           <Button
