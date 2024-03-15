@@ -15,7 +15,7 @@ const Breadcrumb = ({ links }: BreadcrumbProps) => {
               href={link.url}
               className={`${
                 isCurr
-                  ? "text-content-default font-semibold"
+                  ? "text-content font-semibold"
                   : "underline underline-offset-2"
               }`}
             >
