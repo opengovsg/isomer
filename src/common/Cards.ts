@@ -19,6 +19,7 @@ export interface SingleCard {
 }
 
 export interface CardsProps {
+  type: "cards"
   sectionIdx?: number
   sectionTitle: string
   sectionCaption: string

@@ -1,4 +1,5 @@
 export interface InfopicProps {
+  type: "infopic"
   sectionIndex?: number
   title: string
   subtitle?: string

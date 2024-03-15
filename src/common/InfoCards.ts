@@ -5,6 +5,7 @@ export interface SingleCardProps {
 }
 
 export interface InfoCardsProps {
+  type: "infocards"
   sectionIdx: number
   cards: SingleCardProps[]
 }

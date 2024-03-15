@@ -1,4 +1,5 @@
 export interface ParagraphProps {
+  type: "paragraph"
   content: string
 }
 
