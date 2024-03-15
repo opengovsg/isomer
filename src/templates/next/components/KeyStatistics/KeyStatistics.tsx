@@ -8,7 +8,7 @@ const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
       }`}
     >
       <h2
-        className={`text-2xl xs:text-4xl xs:leading-[2.75rem] text-content-default font-semibold w-full ${
+        className={`text-2xl xs:text-4xl xs:leading-[2.75rem] text-content font-semibold w-full ${
           variant === "side" ? "lg:w-1/3" : ""
         }`}
       >

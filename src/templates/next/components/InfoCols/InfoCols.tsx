@@ -7,9 +7,7 @@ const InfoColsHeader = ({
   subtitle,
 }: Pick<InfoColsProps, "title" | "subtitle">) => (
   <div className="w-full flex flex-col gap-7 items-start text-left">
-    <h1 className="text-content-default text-4xl font-normal leading-tight">
-      {title}
-    </h1>
+    <h1 className="text-content text-4xl font-normal leading-tight">{title}</h1>
     {subtitle && <p className="text-xl font-normal">{subtitle}</p>}
   </div>
 )

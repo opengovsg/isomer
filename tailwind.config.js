@@ -1,11 +1,14 @@
 /** @type {import('tailwindcss').Config} */
+import classicPreset from "./src/presets/classic"
+import nextPreset from "./src/presets/next"
+
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   presets: [
-    require("./src/presets/next.js"),
+    nextPreset,
     // Note: This is here temporarily until we can figure out how to load the
     // presets dynamically depending on the template being used.
-    require("./src/presets/classic.js"),
+    classicPreset,
   ],
   theme: {
     extend: {
