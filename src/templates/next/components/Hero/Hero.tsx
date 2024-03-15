@@ -204,7 +204,8 @@ const HeroFloating = ({
                 />
                 {secondaryButtonLabel && secondaryButtonUrl && (
                   <Button
-                    colorScheme="black"
+                    colorScheme="white"
+                    variant="outline"
                     label={secondaryButtonLabel}
                     href={secondaryButtonUrl}
                   />

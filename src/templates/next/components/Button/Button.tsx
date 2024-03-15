@@ -31,7 +31,7 @@ const BaseButton = ({
       rel={href.startsWith("http") ? "noopener noreferrer nofollow" : undefined}
       type="button"
       className={`${className} w-fit inline-flex items-center gap-1 ${
-        isLinkVariant ? "" : "px-5 py-4"
+        isLinkVariant ? "h-fit" : "px-5 py-4"
       } active:underline active:underline-offset-2`}
     >
       <Label label={label} />
@@ -42,21 +42,23 @@ const BaseButton = ({
 
 const SolidButton = (props: ButtonProps) => {
   const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
-    white: "bg-white hover:bg-secondary text-content-default",
-    black: "bg-content-default hover:bg-secondary text-white",
+    white: "bg-content-inverse text-content",
+    black: "bg-interaction-main text-content-inverse",
   }
   return (
     <BaseButton
       {...props}
-      className={colorSchemeClassMap[props.colorScheme ?? "black"]}
+      className={`${
+        colorSchemeClassMap[props.colorScheme ?? "black"]
+      } hover:bg-interaction-main-hover active:bg-interaction-main-active`}
     />
   )
 }
 
 const OutlineButton = (props: ButtonProps) => {
   const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
-    white: "text-white border border-white",
-    black: "text-content-default border border-content-default",
+    white: "text-content-inverse border-content-inverse",
+    black: "text-content border-interaction-main",
   }
 
   return (
@@ -64,15 +66,15 @@ const OutlineButton = (props: ButtonProps) => {
       {...props}
       className={`${
         colorSchemeClassMap[props.colorScheme ?? "black"]
-      } bg-transparent hover:bg-secondary/50`}
+      } bg-transparent border hover:bg-site-primary-100`}
     />
   )
 }
 
 const GhostButton = (props: ButtonProps) => {
   const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
-    white: "text-white",
-    black: "text-content-default",
+    white: "text-content-inverse",
+    black: "text-content",
   }
 
   return (
@@ -80,15 +82,15 @@ const GhostButton = (props: ButtonProps) => {
       {...props}
       className={`${
         colorSchemeClassMap[props.colorScheme ?? "black"]
-      } bg-transparent hover:bg-secondary/50`}
+      } bg-transparent hover:bg-site-primary-100`}
     />
   )
 }
 
 const LinkButton = (props: ButtonProps) => {
   const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
-    white: "text-white",
-    black: "text-content-default",
+    white: "text-content-inverse",
+    black: "text-content",
   }
 
   return (
