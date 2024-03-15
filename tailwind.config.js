@@ -14,6 +14,8 @@ export default {
         site: {
           primary: {
             DEFAULT: "#f78f1e",
+            100: "#fef4e8",
+            200: "#ffeec2",
           },
           secondary: {
             DEFAULT: "#877664",
