@@ -47,7 +47,7 @@ const Buttons = () => {
           <div
             className={`${
               colorScheme === "black" ? "bg-white" : "bg-gray-900"
-            } w-full flex flex-row gap-4 justify-center p-10`}
+            } w-full flex flex-row gap-4 justify-center items-center p-10`}
           >
             {BUTTON_VARIANTS.map((variant) => {
               return (
