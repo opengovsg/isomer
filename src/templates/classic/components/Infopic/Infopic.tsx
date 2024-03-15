@@ -30,12 +30,12 @@ const TextComponent = ({
       {subtitle && (
         <p className="text-subtitle uppercase tracking-widest">{subtitle}</p>
       )}
-      <h1 className="text-secondary text-5xl font-semibold">{title}</h1>
+      <h1 className="text-site-secondary text-5xl font-semibold">{title}</h1>
       {description && <p className="text-paragraph text-xl">{description}</p>}
       {buttonLabel && buttonUrl && (
         <div className="text-lg font-semibold uppercase tracking-wid">
           <a
-            className="flex gap-2 text-secondary font-semibold underline uppercase"
+            className="flex gap-2 text-site-secondary font-semibold underline uppercase"
             href={buttonUrl}
             target={buttonUrl.startsWith("http") ? "_blank" : undefined}
             rel={
@@ -47,7 +47,7 @@ const TextComponent = ({
             {buttonLabel}
 
             <div className="my-auto">
-              <ArrowRightIcon className="text-secondary size-5" />
+              <ArrowRightIcon className="text-site-secondary size-5" />
             </div>
           </a>
         </div>

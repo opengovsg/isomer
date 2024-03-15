@@ -166,7 +166,7 @@ const HeroFloating = ({
   secondaryButtonUrl,
   backgroundUrl,
 }: Omit<HeroFloatingProps, "variant">) => {
-  const bgColor = backgroundColor === "black" ? "bg-canvas-black" : "bg-white"
+  const bgColor = backgroundColor === "black" ? "bg-canvas-dark" : "bg-white"
   const textColor = backgroundColor === "black" ? "text-white" : "text-black"
 
   return (
@@ -229,7 +229,7 @@ const HeroCopyLed = ({
 }: Omit<HeroCopyLedProps, "variant">) => {
   return (
     <section className="h-[32rem]">
-      <div className="bg-[#ffeec2] w-full flex flex-row justify-center">
+      <div className="bg-site-primary-200 w-full flex flex-row justify-center">
         <div className="w-4/5 lg:w-3/4 py-16 flex flex-col items-center text-center md:items-start md:text-start gap-6">
           <h1 className="text-6xl font-normal">{title}</h1>
           {subtitle && <p className="text-2xl leading-9">{subtitle}</p>}
@@ -276,7 +276,7 @@ const HeroFloatingImage = ({
   return (
     <>
       <section className="hidden md:block h-[32rem]">
-        <div className="bg-[#ffeec2] w-full flex flex-row justify-center">
+        <div className="bg-site-primary-200 w-full flex flex-row justify-center">
           <div className="w-4/5 lg:w-3/4 py-16 flex flex-row gap-24">
             <div className="flex flex-col w-1/2 gap-6">
               <h1 className="text-6xl font-medium">{title}</h1>

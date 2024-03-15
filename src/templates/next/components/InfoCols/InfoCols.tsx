@@ -19,7 +19,7 @@ const InfoBoxIcon = ({ icon }: { icon?: SupportedIconName }) => {
   const Icon = SUPPORTED_ICONS_MAP[icon]
   return (
     <div>
-      <Icon className="w-10 h-auto text-secondary" />
+      <Icon className="w-10 h-auto text-site-primary" />
     </div>
   )
 }

@@ -136,7 +136,10 @@ const Search: React.FC<SearchProps> = ({ index }) => {
         <ul>
           {currentResults.map((result) => (
             <li key={String(result.id)} className="px-4 py-4 sm:px-6">
-              <a className="text-secondary text-xl underline" href={result.url}>
+              <a
+                className="text-site-secondary text-xl underline"
+                href={result.url}
+              >
                 {result.title}
               </a>
               <p className="text-md text-subtleLink">{result.url}</p>

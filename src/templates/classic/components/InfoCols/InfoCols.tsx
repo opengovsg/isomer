@@ -10,7 +10,7 @@ const InfoColsHeader = ({
     {subtitle && (
       <p className="text-subtitle uppercase tracking-widest">{subtitle}</p>
     )}
-    <h1 className="text-secondary text-5xl font-semibold leading-tight">
+    <h1 className="text-site-secondary text-5xl font-semibold leading-tight">
       {title}
     </h1>
   </div>
@@ -54,7 +54,7 @@ const InfoColsFooter = ({
     buttonUrl && (
       <div className="text-lg font-semibold uppercase">
         <a
-          className="flex gap-2 text-secondary font-semibold text-center underline uppercase tracking-wide"
+          className="flex gap-2 text-site-secondary font-semibold text-center underline uppercase tracking-wide"
           href={buttonUrl}
           target={buttonUrl.startsWith("http") ? "_blank" : undefined}
           rel={
@@ -65,7 +65,7 @@ const InfoColsFooter = ({
         >
           {buttonLabel}
           <div className="my-auto">
-            <ArrowRightIcon className="text-secondary size-5" />
+            <ArrowRightIcon className="text-site-secondary size-5" />
           </div>
         </a>
       </div>
