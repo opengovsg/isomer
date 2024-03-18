@@ -15,9 +15,11 @@ import type {
   KeyStatisticsProps,
   MastheadProps,
   NavbarProps,
+  OrderedListProps,
   ParagraphProps,
   SearchProps,
   SidePaneProps,
+  UnorderedListProps,
 } from "~/common"
 
 type IsomerComponentProps =
@@ -37,9 +39,11 @@ type IsomerComponentProps =
   | KeyStatisticsProps
   | MastheadProps
   | NavbarProps
+  | OrderedListProps
   | ParagraphProps
   | SearchProps
   | SidePaneProps
+  | UnorderedListProps
 
 export type IsomerComponent = IsomerComponentProps & {
   sectionIdx?: number
@@ -57,8 +61,8 @@ interface IsomerSiteProps {
   siteMap: IsomerSitemap[]
   theme: "classic" | "next"
   language: "en"
-  isGovernment: boolean
   logoUrl: string
+  isGovernment?: boolean
 }
 
 interface IsomerPageProps {

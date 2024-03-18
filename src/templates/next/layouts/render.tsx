@@ -4,6 +4,7 @@ import ContentLayout from "./Content"
 import {
   Button,
   Callout,
+  ContentPageHeader,
   Hero,
   InfoCols,
   Infobar,
@@ -11,6 +12,8 @@ import {
   KeyStatistics,
   Paragraph,
 } from "../components"
+import OrderedList from "../components/OrderedList"
+import UnorderedList from "../components/UnorderedList"
 
 interface RenderComponentProps {
   component: IsomerComponent
@@ -26,20 +29,26 @@ export const renderComponent = ({
       return <Button {...component} LinkComponent={LinkComponent} />
     case "callout":
       return <Callout {...component} />
+    case "contentpageheader":
+      return <ContentPageHeader {...component} />
     case "hero":
       return <Hero {...component} />
     case "infobar":
       return <Infobar {...component} />
     case "infocols":
-      return <InfoCols {...component} />
+      return <InfoCols {...component} LinkComponent={LinkComponent} />
     case "infopic":
       return <Infopic {...component} />
     case "keystatistics":
       return <KeyStatistics {...component} />
     // case "navbar":
     //   return <Navbar {...component} />
+    case "orderedlist":
+      return <OrderedList {...component} />
     case "paragraph":
       return <Paragraph {...component} />
+    case "unorderedlist":
+      return <UnorderedList {...component} />
   }
 }
 
