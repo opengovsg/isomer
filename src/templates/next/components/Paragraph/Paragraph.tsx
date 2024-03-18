@@ -1,7 +1,7 @@
 import { ParagraphProps } from "~/common"
 import { getSanitizedInlineContent } from "~/utils/getSanitizedInlineContent"
 
-const Paragraph = ({ content }: ParagraphProps) => {
+const Paragraph = ({ content }: Omit<ParagraphProps, "type">) => {
   const sanitizedContent = getSanitizedInlineContent(content)
   return (
     <p

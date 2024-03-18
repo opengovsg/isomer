@@ -7,6 +7,7 @@ export const CalloutVariants = [
 export type CalloutVariant = (typeof CalloutVariants)[number]
 
 export interface CalloutProps {
+  type: "callout"
   content: string
   variant: CalloutVariant
 }

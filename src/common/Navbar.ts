@@ -7,6 +7,7 @@ export interface NavbarLink {
 }
 
 export interface IsomerNavProps {
+  type: "navbar"
   id?: string
   logo: { url: string; alt: string }
 

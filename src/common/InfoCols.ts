@@ -9,6 +9,7 @@ export interface InfoBox {
 }
 
 export interface InfoColsProps {
+  type: "infocols"
   sectionIdx?: number
   backgroundColor?: "white" | "gray"
   title: string

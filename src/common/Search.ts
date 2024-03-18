@@ -6,6 +6,7 @@ export type SearchRecord = {
 }
 
 export interface SearchProps {
+  type: "search"
   index: SearchRecord[]
 }
 

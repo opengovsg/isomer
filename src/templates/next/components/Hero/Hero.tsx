@@ -1,18 +1,12 @@
-import {
-  type HeroGradientProps,
-  type HeroSplitProps,
-  type HeroFloatingProps,
-  type HeroCopyLedProps,
-  type HeroFloatingImageProps,
+import type {
+  HeroProps,
+  HeroCopyLedProps,
+  HeroFloatingProps,
+  HeroFloatingImageProps,
+  HeroGradientProps,
+  HeroSplitProps,
 } from "~/common/Hero"
 import Button from "../Button"
-
-export type HeroProps =
-  | HeroGradientProps
-  | HeroSplitProps
-  | HeroFloatingProps
-  | HeroCopyLedProps
-  | HeroFloatingImageProps
 
 const HeroGradient = ({
   alignment = "left",

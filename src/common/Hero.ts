@@ -99,3 +99,18 @@ export interface HeroFloatingImageProps
     HeroKeyHighlightProps {
   variant: "floatingimage"
 }
+
+export type HeroProps = {
+  type: "hero"
+} & (
+  | HeroSideProps
+  | HeroImageProps
+  | HeroFloatingProps
+  | HeroCenterProps
+  | HeroGradientProps
+  | HeroSplitProps
+  | HeroCopyLedProps
+  | HeroFloatingImageProps
+)
+
+export default HeroProps

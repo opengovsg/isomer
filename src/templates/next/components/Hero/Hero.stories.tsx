@@ -1,5 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
-import Hero, { type HeroProps } from "./Hero"
+import type { HeroProps } from "~/common"
+import Hero from "./Hero"
 
 export default {
   title: "Next/Components/Hero",

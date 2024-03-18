@@ -8,6 +8,7 @@ export const BUTTON_VARIANTS = ["solid", "outline", "ghost", "link"] as const
 export type ButtonVariant = (typeof BUTTON_VARIANTS)[number]
 
 export interface ButtonProps {
+  type: "button"
   label: string
   href: string
   colorScheme?: ButtonColorScheme

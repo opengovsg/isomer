@@ -10,6 +10,7 @@ export interface FooterSubitem {
 }
 
 export interface FooterProps {
+  type: "footer"
   sectionIdx?: number
   agencyName: string
   lastUpdated: string
