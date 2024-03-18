@@ -23,7 +23,10 @@ const BaseButton = ({
   className = "",
   isLinkVariant = false,
   LinkComponent = "a",
-}: ButtonProps & { className?: string; isLinkVariant?: boolean }) => {
+}: Omit<ButtonProps, "type"> & {
+  className?: string
+  isLinkVariant?: boolean
+}) => {
   return (
     <LinkComponent
       href={href}
@@ -40,7 +43,7 @@ const BaseButton = ({
   )
 }
 
-const SolidButton = (props: ButtonProps) => {
+const SolidButton = (props: Omit<ButtonProps, "type">) => {
   const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
     white: "bg-content-inverse text-content",
     black: "bg-interaction-main text-content-inverse",
@@ -55,7 +58,7 @@ const SolidButton = (props: ButtonProps) => {
   )
 }
 
-const OutlineButton = (props: ButtonProps) => {
+const OutlineButton = (props: Omit<ButtonProps, "type">) => {
   const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
     white: "text-content-inverse border-content-inverse",
     black: "text-content border-interaction-main",
@@ -71,7 +74,7 @@ const OutlineButton = (props: ButtonProps) => {
   )
 }
 
-const GhostButton = (props: ButtonProps) => {
+const GhostButton = (props: Omit<ButtonProps, "type">) => {
   const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
     white: "text-content-inverse",
     black: "text-content",
@@ -87,7 +90,7 @@ const GhostButton = (props: ButtonProps) => {
   )
 }
 
-const LinkButton = (props: ButtonProps) => {
+const LinkButton = (props: Omit<ButtonProps, "type">) => {
   const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
     white: "text-content-inverse",
     black: "text-content",
@@ -104,7 +107,7 @@ const LinkButton = (props: ButtonProps) => {
   )
 }
 
-const Button = (props: ButtonProps) => {
+const Button = (props: Omit<ButtonProps, "type">) => {
   if (props.variant === "outline") {
     return <OutlineButton {...props} />
   } else if (props.variant === "ghost") {
@@ -114,6 +117,5 @@ const Button = (props: ButtonProps) => {
   }
   return <SolidButton {...props} />
 }
-
 
 export default Button

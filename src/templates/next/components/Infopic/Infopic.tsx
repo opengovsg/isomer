@@ -7,7 +7,7 @@ const TextComponent = ({
   buttonLabel,
   buttonUrl,
   className,
-}: Omit<InfopicProps, "sectionIndex" | "imageSrc" | "imageAlt"> & {
+}: Omit<InfopicProps, "type" | "sectionIndex" | "imageSrc" | "imageAlt"> & {
   className?: string
 }) => {
   return (
