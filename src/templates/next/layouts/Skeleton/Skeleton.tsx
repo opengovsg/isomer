@@ -1,10 +1,19 @@
 import type { IsomerPageSchema } from "~/engine"
+import { renderComponent } from "../render"
 
 export const Skeleton = ({
   site,
   page,
+  LinkComponent,
   children,
-}: React.PropsWithChildren<Pick<IsomerPageSchema, "site" | "page">>) => {
+}: React.PropsWithChildren<
+  Pick<IsomerPageSchema, "site" | "page" | "LinkComponent">
+>) => {
+  const isStaging =
+    (process.env.ISOMER_NEXT_ENV &&
+      process.env.ISOMER_NEXT_ENV === "staging") ||
+    false
+
   return (
     <html lang={site.language} data-theme={`isomer-${site.theme}`}>
       <head>
@@ -20,7 +29,37 @@ export const Skeleton = ({
 
         <title>{page.title}</title>
       </head>
-      <body>{children}</body>
+      <body>
+        {site.isGovernment &&
+          renderComponent({
+            component: { type: "masthead", isStaging },
+            LinkComponent,
+          })}
+
+        {renderComponent({
+          component: {
+            type: "navbar",
+            logo: {
+              url: site.logoUrl,
+              alt: site.siteName,
+            },
+            links: [],
+          },
+          LinkComponent,
+        })}
+
+        {children}
+
+        {renderComponent({
+          component: {
+            type: "footer",
+            agencyName: site.siteName,
+            lastUpdated: new Date().toISOString(),
+            items: [],
+          },
+          LinkComponent,
+        })}
+      </body>
     </html>
   )
 }

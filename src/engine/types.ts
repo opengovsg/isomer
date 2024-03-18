@@ -13,6 +13,7 @@ import type {
   InfopicProps,
   KeyStatisticsProps,
   MastheadProps,
+  NavbarProps,
   ParagraphProps,
   SearchProps,
   SidePaneProps,
@@ -33,6 +34,7 @@ type IsomerComponentProps =
   | InfopicProps
   | KeyStatisticsProps
   | MastheadProps
+  | NavbarProps
   | ParagraphProps
   | SearchProps
   | SidePaneProps
@@ -53,6 +55,8 @@ interface IsomerSiteProps {
   siteMap: IsomerSitemap[]
   theme: "classic" | "next"
   language: "en"
+  isGovernment: boolean
+  logoUrl: string
 }
 
 interface IsomerPageProps {

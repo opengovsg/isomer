@@ -23,6 +23,8 @@ Default.args = {
     siteMap: [],
     theme: "next",
     language: "en",
+    isGovernment: true,
+    logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.png",
   },
   page: {
     layout: "content",
