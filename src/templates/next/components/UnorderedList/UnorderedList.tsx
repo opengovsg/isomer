@@ -12,7 +12,7 @@ const UnorderedList = ({ items }: UnorderedListProps) => {
               <Paragraph content={item} />
             </li>
           )
-        } else if (item._kind === "OrderedList") {
+        } else if (item.type === "orderedlist") {
           return <OrderedList key={Math.random()} {...item} />
         } else {
           return <UnorderedList key={Math.random()} {...item} />

@@ -39,13 +39,13 @@ Nested.args = {
     "Item 1",
     "Item 2",
     {
-      _kind: "OrderedList",
+      type: "orderedlist",
       start: 10,
       items: [
         "Item 3",
         "Item 4",
         {
-          _kind: "UnorderedList",
+          type: "unorderedlist",
           items: ["Item 5", "Item 6"],
         },
         "Item 7",
