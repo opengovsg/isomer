@@ -12,6 +12,7 @@ import {
   KeyStatistics,
   OrderedList,
   Paragraph,
+  TableOfContents,
   UnorderedList,
 } from "../components"
 
@@ -47,6 +48,8 @@ export const renderComponent = ({
       return <OrderedList {...component} />
     case "paragraph":
       return <Paragraph {...component} />
+    case "tableofcontents":
+      return <TableOfContents {...component} />
     case "unorderedlist":
       return <UnorderedList {...component} />
   }
