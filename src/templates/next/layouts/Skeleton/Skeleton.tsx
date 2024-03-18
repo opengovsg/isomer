@@ -6,7 +6,7 @@ export const Skeleton = ({
   children,
 }: React.PropsWithChildren<Pick<IsomerPageSchema, "site" | "page">>) => {
   return (
-    <html lang={site.language} data-theme={site.theme}>
+    <html lang={site.language} data-theme={`isomer-${site.theme}`}>
       <head>
         <meta charSet="utf-8" />
         <meta

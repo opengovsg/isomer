@@ -2,6 +2,7 @@ import type {
   ButtonProps,
   CalloutProps,
   CardsProps,
+  ContentPageHeaderProps,
   ContentProps,
   FooterProps,
   HeaderProps,
@@ -22,6 +23,7 @@ type IsomerComponentProps =
   | CalloutProps
   | CardsProps
   | ContentProps
+  | ContentPageHeaderProps
   | FooterProps
   | HeaderProps
   | ImageProps
