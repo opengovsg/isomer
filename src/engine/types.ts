@@ -6,6 +6,7 @@ import type {
   ContentProps,
   FooterProps,
   HeaderProps,
+  HeroProps,
   ImageProps,
   InfoCardsProps,
   InfoColsProps,
@@ -27,6 +28,7 @@ type IsomerComponentProps =
   | ContentPageHeaderProps
   | FooterProps
   | HeaderProps
+  | HeroProps
   | ImageProps
   | InfobarProps
   | InfoCardsProps

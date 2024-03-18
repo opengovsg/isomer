@@ -1,10 +1,11 @@
-import {
-  type HeroBackgroundImageProps,
-  type HeroKeyHighlightProps,
-  type HeroSideProps,
-  type HeroCenterProps,
-  type HeroFloatingProps,
-  type HeroImageProps,
+import type {
+  HeroProps,
+  HeroBackgroundImageProps,
+  HeroKeyHighlightProps,
+  HeroSideProps,
+  HeroCenterProps,
+  HeroFloatingProps,
+  HeroImageProps,
 } from "~/common/Hero"
 import { HeroDropdown } from "./HeroDropdown"
 import {
@@ -12,12 +13,6 @@ import {
   HeroInfoboxMobile,
   HeroInfoboxTablet,
 } from "./HeroInfobox"
-
-export type HeroProps =
-  | HeroSideProps
-  | HeroImageProps
-  | HeroFloatingProps
-  | HeroCenterProps
 
 const BP_BUTTON_CLASSES =
   "rounded-none box-content appearance-none items-center border border-solid border-[#f0f0f0] shadow-none inline-flex text-base h-9 justify-center px-3 py-[calc(0.375rem-1px)] relative align-top select-none cursor-pointer text-center whitespace-nowrap focus:outline-none active:outline-none disabled:cursor-not-allowed"
@@ -223,12 +218,14 @@ export const Hero = (props: HeroProps) => {
       {props.variant === "side" && <HeroSide {...props} />}
       {props.variant === "image" && <HeroImage {...props} />}
       {props.variant === "floating" && <HeroFloating {...props} />}
-      {props.variant !== "side" &&
-        props.variant !== "image" &&
-        props.variant !== "floating" && <HeroCenter {...props} />}
-      {props.keyHighlights && (
-        <HeroKeyHighlights keyHighlights={props.keyHighlights} />
-      )}
+      {props.variant === "center" && <HeroCenter {...props} />}
+      {(props.variant === "side" ||
+        props.variant === "image" ||
+        props.variant === "floating" ||
+        props.variant === "center") &&
+        props.keyHighlights && (
+          <HeroKeyHighlights keyHighlights={props.keyHighlights} />
+        )}
     </section>
   )
 }

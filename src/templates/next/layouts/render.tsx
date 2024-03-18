@@ -11,15 +11,9 @@ import {
   KeyStatistics,
   Paragraph,
 } from "../components"
-import { HeroProps } from "../components/Hero/Hero"
 
 interface RenderComponentProps {
-  component:
-    | IsomerComponent
-    | (HeroProps & { type: "hero" } & {
-        sectionIdx?: number
-        indexable?: string[]
-      })
+  component: IsomerComponent
   LinkComponent: any // Next.js link
 }
 

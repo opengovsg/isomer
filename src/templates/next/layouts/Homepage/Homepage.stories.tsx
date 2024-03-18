@@ -31,19 +31,19 @@ Default.args = {
     description: "A Next.js starter for Isomer",
   },
   content: [
-    // {
-    //   type: "Hero",
-    //   variant: "gradient",
-    //   alignment: "left",
-    //   backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
-    //   title: "Ministry of Trade and Industry",
-    //   subtitle:
-    //     "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
-    //   buttonLabel: "Main CTA",
-    //   buttonUrl: "/",
-    //   secondaryButtonLabel: "Sub CTA",
-    //   secondaryButtonUrl: "/",
-    // },
+    {
+      type: "hero",
+      variant: "gradient",
+      alignment: "left",
+      backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
+      title: "Ministry of Trade and Industry",
+      subtitle:
+        "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
+      buttonLabel: "Main CTA",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Sub CTA",
+      secondaryButtonUrl: "/",
+    },
     {
       type: "infopic",
       title: "Infopic",
