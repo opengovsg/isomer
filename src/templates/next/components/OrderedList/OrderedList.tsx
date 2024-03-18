@@ -4,11 +4,11 @@ import Paragraph from "../Paragraph"
 
 const OrderedList = ({ start, items }: OrderedListProps) => {
   return (
-    <ol className="list-decimal ps-8 my-1" start={start}>
+    <ol className="list-decimal ps-8 my-2.5" start={start}>
       {items.map((item) => {
         if (typeof item === "string") {
           return (
-            <li key={Math.random()} className="[&_p]:inline pl-2 my-1">
+            <li key={Math.random()} className="[&_p]:inline pl-2 my-2.5">
               <Paragraph content={item} />
             </li>
           )

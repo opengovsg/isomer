@@ -4,11 +4,11 @@ import Paragraph from "../Paragraph"
 
 const UnorderedList = ({ items }: UnorderedListProps) => {
   return (
-    <ul className="list-disc ps-8 my-1">
+    <ul className="list-disc ps-8 my-2.5">
       {items.map((item) => {
         if (typeof item === "string") {
           return (
-            <li key={Math.random()} className="[&_p]:inline pl-2 my-1">
+            <li key={Math.random()} className="[&_p]:inline pl-2 my-2.5">
               <Paragraph content={item} />
             </li>
           )
