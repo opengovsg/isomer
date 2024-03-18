@@ -10,10 +10,10 @@ import {
   Infobar,
   Infopic,
   KeyStatistics,
+  OrderedList,
   Paragraph,
+  UnorderedList,
 } from "../components"
-import OrderedList from "../components/OrderedList"
-import UnorderedList from "../components/UnorderedList"
 
 interface RenderComponentProps {
   component: IsomerComponent
