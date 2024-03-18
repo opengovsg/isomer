@@ -8,11 +8,6 @@ const ContentLayout = ({
   content,
   LinkComponent,
 }: IsomerPageSchema) => {
-  if (content.length < 2) {
-    // Content layout requires at least 2 components
-    return null
-  }
-
   return (
     <Skeleton site={site} page={page}>
       {content.map((component) =>

@@ -8,11 +8,6 @@ const HomepageLayout = ({
   content,
   LinkComponent,
 }: IsomerPageSchema) => {
-  if (content.length < 3) {
-    // Homepage layout requires at least 3 components
-    return null
-  }
-
   return (
     <Skeleton site={site} page={page}>
       {content.map((component) =>
