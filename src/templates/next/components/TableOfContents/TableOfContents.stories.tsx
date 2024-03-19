@@ -25,17 +25,14 @@ Default.args = {
     {
       content: "What does the New Idea Scheme proposal support?",
       anchorLink: "#introduction",
-      level: 1,
     },
     {
       content: "What does the New Idea Scheme proposal support?",
       anchorLink: "#first-paragraph",
-      level: 1,
     },
     {
       content: "Something else",
       anchorLink: "#second-paragraph",
-      level: 1,
     },
   ],
 }

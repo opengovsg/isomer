@@ -1,7 +1,6 @@
 export interface HeadingLink {
   content: string
   anchorLink: string
-  level: number
 }
 
 export interface TableOfContentsProps {
