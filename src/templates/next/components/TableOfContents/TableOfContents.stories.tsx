@@ -21,7 +21,7 @@ const Template: StoryFn<TableOfContentsProps> = (args) => (
 // Default scenario
 export const Default = Template.bind({})
 Default.args = {
-  headings: [
+  items: [
     {
       content: "What does the New Idea Scheme proposal support?",
       anchorLink: "#introduction",
