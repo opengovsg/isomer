@@ -20,16 +20,21 @@ const Navbar = ({
 }: NavbarProps) => {
   const [navItemOpen, setNavItemOpen] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   const currentPathName =
     typeof window !== "undefined" ? window.location.pathname : ""
 
   return (
     <div className="flex flex-col w-full">
-      <div className="flex flex-row gap-5 px-14 xl:px-0 py-6 mx-auto w-full xl:max-w-screen-xl">
+      <div className="flex flex-row gap-5 px-14 xl:px-0 py-6 mx-auto max-h-24 w-full xl:max-w-screen-xl">
         {/* Logo */}
         <LinkComponent href="/">
-          <img src={logoUrl} alt={logoAlt} />
+          <img
+            src={logoUrl}
+            alt={logoAlt}
+            className="h-full w-3/4 xs:w-2/3 md:w-1/2 object-cover object-center"
+          />
         </LinkComponent>
 
         {/* Spacer */}
@@ -37,13 +42,38 @@ const Navbar = ({
 
         {/* Search */}
         {search && search.type === "localSearch" && !isHamburgerOpen && (
-          <button aria-label="Search this site">
-            <BiSearch className="text-2xl" />
-          </button>
+          <form
+            action={search.searchUrl}
+            method="get"
+            className={`flex flex-row gap-2 h-10 ${
+              isSearchOpen ? "hidden lg:flex" : ""
+            }`}
+          >
+            {isSearchOpen && (
+              <input
+                type="search"
+                name="q"
+                placeholder="Search this site"
+                className="w-96 px-4 py-2 border border-divider-medium focus:border-site-primary focus:ring-site-primary focus:outline-none hidden lg:block"
+              />
+            )}
+            <button
+              onClick={(e) => {
+                if (!isSearchOpen) {
+                  e.preventDefault()
+                  setIsSearchOpen(true)
+                }
+              }}
+              type="submit"
+              aria-label="Search this site"
+            >
+              <BiSearch className="text-2xl mt-0.5" />
+            </button>
+          </form>
         )}
 
         {/* Hamburger menu for small screens */}
-        <button className="block xl:hidden">
+        <button className="block xl:hidden h-10">
           {isHamburgerOpen ? (
             <button
               onClick={() => {
@@ -60,10 +90,29 @@ const Navbar = ({
               onClick={() => setIsHamburgerOpen(!isHamburgerOpen)}
               aria-label="Open navigation menu"
             >
-              <BiMenu className="text-2xl" />
+              <BiMenu className="text-2xl mt-1.5" />
             </button>
           )}
         </button>
+      </div>
+
+      {/* Search bar (for mobile/tablet) */}
+      <div className="block lg:hidden">
+        {isSearchOpen && search && search.type === "localSearch" && (
+          <form action={search.searchUrl} method="get">
+            <div className="flex flex-row gap-4 h-10 px-14">
+              <input
+                type="search"
+                name="q"
+                placeholder="Search this site"
+                className="w-full px-4 py-2 border border-divider-medium focus:border-site-primary focus:ring-site-primary focus:outline-none"
+              />
+              <button type="submit" aria-label="Search this site">
+                <BiSearch className="text-2xl" />
+              </button>
+            </div>
+          </form>
+        )}
       </div>
 
       {/* Navigation items (for desktop) */}
