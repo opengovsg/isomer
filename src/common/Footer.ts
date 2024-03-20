@@ -1,20 +1,39 @@
-export interface FooterItem {
+export interface Link {
   title: string
-  subItems?: FooterSubitem[]
-  link?: string
+  url: string
 }
 
-export interface FooterSubitem {
-  title: string
-  link: string
+export const SocialMediaTypes = [
+  "facebook",
+  "twitter",
+  "instagram",
+  "linkedin",
+  "telegram",
+  "youtube",
+  "github",
+  "tiktok",
+] as const
+
+export type SocialMediaType = (typeof SocialMediaTypes)[number]
+
+export interface SocialMediaLink {
+  type: SocialMediaType
+  url: string
 }
 
 export interface FooterProps {
   type: "footer"
-  sectionIdx?: number
+  isGovernment: boolean
+  siteName: string
   agencyName: string
   lastUpdated: string
-  items?: FooterItem[]
+  siteNavItems: Link[]
+  customNavItems?: Link[]
+  socialMediaLinks?: SocialMediaLink[]
+  contactUsLink?: string
+  feedbackFormLink?: string
+  privacyStatementLink: string
+  termsOfUseLink: string
 }
 
 export default FooterProps
