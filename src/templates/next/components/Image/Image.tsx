@@ -1,7 +1,7 @@
-import type { ImageProps } from "~/common"
+import { ImageProps } from "~/common"
 
 const Image = ({ src, alt, width }: Omit<ImageProps, "type">) => (
-  <img src={src} alt={alt} width={`${width ?? 100}%`} height={"auto"} />
+  <img src={src} alt={alt} width={`${width ?? 100}%`} height="auto" />
 )
 
 const ImageComponent = ({ src, alt, width, href }: ImageProps) => {
