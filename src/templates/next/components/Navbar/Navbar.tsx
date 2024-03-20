@@ -33,7 +33,7 @@ const Navbar = ({
           <img
             src={logoUrl}
             alt={logoAlt}
-            className="h-full w-3/4 xs:w-2/3 md:w-1/2 object-cover object-center"
+            className="h-full w-full max-w-48 object-cover object-center"
           />
         </LinkComponent>
 
