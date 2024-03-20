@@ -4,13 +4,19 @@ export default {
     extend: {
       colors: {
         canvas: {
+          DEFAULT: "#ffffff",
+          overlay: "#00000066",
           dark: "#2B2313",
+          inverse: "#2c2c2c",
         },
         content: {
           DEFAULT: "#333333",
           medium: "#5d5d5d",
           strong: "#2c2e34",
-          inverse: "#ffffff",
+          inverse: {
+            DEFAULT: "#ffffff",
+            light: "#c1c1c1",
+          },
         },
         hyperlink: {
           DEFAULT: "#1361f0",
