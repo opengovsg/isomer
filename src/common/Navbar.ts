@@ -1,21 +1,26 @@
-export interface NavbarLink {
-  type: "single" | "dropdown"
+interface NavbarLocalSearchProps {
+  type: "localSearch"
+  searchUrl: string
+}
+
+interface NavbarSearchSGProps {
+  type: "searchSG"
+}
+
+export interface NavbarItem {
   name: string
-  eventKey?: string
-  url?: string
-  links?: NavbarLink[]
+  url: string
+  description?: string
+  items?: Omit<NavbarItem, "items">[]
 }
 
-export interface IsomerNavProps {
+export interface NavbarProps {
   type: "navbar"
-  id?: string
-  logo: { url: string; alt: string }
-
-  links: NavbarLink[]
-  search?: {
-    isEnabled: boolean
-    searchUrl?: string
-  }
+  logoUrl: string
+  logoAlt: string
+  search?: NavbarLocalSearchProps | NavbarSearchSGProps
+  items: NavbarItem[]
+  LinkComponent?: any
 }
 
-export default IsomerNavProps
+export default NavbarProps
