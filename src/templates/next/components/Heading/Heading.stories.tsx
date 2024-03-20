@@ -22,7 +22,11 @@ const Headings = () => {
       {HeadingLevels.map((level) => {
         return (
           <div className="mb-4">
-            <Heading level={level} content={`This is a heading-${level}`} />
+            <Heading
+              id={Math.random().toString()}
+              level={level}
+              content={`This is a heading-${level}`}
+            />
           </div>
         )
       })}
