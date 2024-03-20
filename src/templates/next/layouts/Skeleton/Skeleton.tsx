@@ -39,11 +39,13 @@ export const Skeleton = ({
         {renderComponent({
           component: {
             type: "navbar",
-            logo: {
-              url: site.logoUrl,
-              alt: site.siteName,
+            logoUrl: site.logoUrl,
+            logoAlt: site.siteName,
+            search: {
+              type: "localSearch",
+              searchUrl: "/search",
             },
-            links: [],
+            items: [],
           },
           LinkComponent,
         })}
