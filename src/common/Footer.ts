@@ -21,13 +21,7 @@ export interface SocialMediaLink {
   url: string
 }
 
-export interface FooterProps {
-  type: "footer"
-  LinkComponent?: any
-  isGovernment: boolean
-  siteName: string
-  agencyName: string
-  lastUpdated: string
+export interface SiteConfigFooterProps {
   siteNavItems: FooterItem[]
   customNavItems?: FooterItem[]
   socialMediaLinks?: SocialMediaLink[]
@@ -35,7 +29,16 @@ export interface FooterProps {
   feedbackFormLink?: string
   privacyStatementLink: string
   termsOfUseLink: string
-  siteMapLink: string
+  siteMapLink?: string
+}
+
+export interface FooterProps extends SiteConfigFooterProps {
+  type: "footer"
+  LinkComponent?: any
+  isGovernment?: boolean
+  siteName: string
+  agencyName: string
+  lastUpdated: string
 }
 
 export default FooterProps

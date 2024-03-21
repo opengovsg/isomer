@@ -10,9 +10,16 @@ export const Skeleton = ({
   Pick<IsomerPageSchema, "site" | "page" | "LinkComponent">
 >) => {
   const isStaging = site.environment === "staging"
+  const timeNow = new Date()
+  const lastUpdated =
+    timeNow.getDate().toString().padStart(2, "0") +
+    " " +
+    timeNow.toLocaleString("default", { month: "short" }) +
+    " " +
+    timeNow.getFullYear()
 
   return (
-    <html lang={site.language} data-theme={`isomer-${site.theme}`}>
+    <html lang={page.language || "en"} data-theme={`isomer-${site.theme}`}>
       <head>
         <meta charSet="utf-8" />
         <meta
@@ -42,7 +49,7 @@ export const Skeleton = ({
               type: "localSearch",
               searchUrl: "/search",
             },
-            items: [],
+            items: site.navBarItems,
           },
           LinkComponent,
         })}
@@ -52,9 +59,11 @@ export const Skeleton = ({
         {renderComponent({
           component: {
             type: "footer",
-            agencyName: site.siteName,
-            lastUpdated: new Date().toISOString(),
-            items: [],
+            isGovernment: site.isGovernment,
+            siteName: site.siteName,
+            agencyName: site.agencyName || site.siteName,
+            lastUpdated,
+            ...site.footerItems,
           },
           LinkComponent,
         })}
