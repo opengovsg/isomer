@@ -53,6 +53,9 @@ export default {
             hover: "#333333",
             active: "#333333",
           },
+          sub: {
+            DEFAULT: "#f3f3f3",
+          },
         },
         site: {
           primary: {
