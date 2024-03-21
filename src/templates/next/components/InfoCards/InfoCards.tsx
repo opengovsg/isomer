@@ -4,7 +4,7 @@ import Card from "../shared/Card"
 const TitleSection = ({
   title,
   subtitle,
-  className,
+  className = "",
 }: {
   title: InfoCardsProps["title"]
   subtitle: InfoCardsProps["subtitle"]
@@ -22,16 +22,9 @@ const TitleSection = ({
   )
 }
 
-const InfoCards = ({
-  sectionIdx,
-  cards,
-  title,
-  subtitle,
-  variant,
-}: InfoCardsProps) => {
-  const bgColor = sectionIdx % 2 === 1 ? "bg-gray-100" : "bg-white"
+const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
   return (
-    <section className={`py-24 px-5 lg:px-10 ${bgColor}`}>
+    <section className={`py-12 px-5 lg:py-24 lg:px-10`}>
       {variant === "side" ? (
         <div
           className={`flex flex-col lg:flex-row gap-12 items-center mx-auto lg:max-w-5xl`}
@@ -56,9 +49,7 @@ const InfoCards = ({
               ></Card>
             ))}
           </div>
-          <div
-            className={`hidden grid-cols-1 lg:grid-cols-3 gap-8 md:grid lg:hidden`}
-          >
+          <div className={`hidden grid-cols-1 gap-8 md:grid lg:hidden`}>
             {cards.map((card) => (
               <Card
                 title={card.title}
@@ -92,9 +83,7 @@ const InfoCards = ({
               ></Card>
             ))}
           </div>
-          <div
-            className={`hidden grid-cols-1 md:grid-cols-3 gap-8 sm:grid md:hidden`}
-          >
+          <div className={`hidden grid-cols-1 gap-8 sm:grid md:hidden`}>
             {cards.map((card) => (
               <Card
                 title={card.title}
