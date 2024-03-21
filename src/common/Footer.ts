@@ -23,6 +23,7 @@ export interface SocialMediaLink {
 
 export interface FooterProps {
   type: "footer"
+  LinkComponent?: any
   isGovernment: boolean
   siteName: string
   agencyName: string
