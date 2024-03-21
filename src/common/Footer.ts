@@ -34,6 +34,7 @@ export interface FooterProps {
   feedbackFormLink?: string
   privacyStatementLink: string
   termsOfUseLink: string
+  siteMapLink: string
 }
 
 export default FooterProps

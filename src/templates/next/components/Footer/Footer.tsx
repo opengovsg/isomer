@@ -139,6 +139,7 @@ const LegalSection = ({
   lastUpdated,
   privacyStatementLink,
   termsOfUseLink,
+  siteMapLink,
 }: Pick<
   FooterProps,
   | "agencyName"
@@ -146,6 +147,7 @@ const LegalSection = ({
   | "lastUpdated"
   | "privacyStatementLink"
   | "termsOfUseLink"
+  | "siteMapLink"
 >) => {
   return (
     <div className="flex flex-col gap-8 lg:gap-2">
@@ -215,6 +217,7 @@ const FooterMobile = ({
   feedbackFormLink,
   privacyStatementLink,
   termsOfUseLink,
+  siteMapLink,
 }: FooterProps) => {
   return (
     <div className="flex flex-col gap-16 py-16 px-6 md:p-20 lg:hidden ">
@@ -232,6 +235,7 @@ const FooterMobile = ({
           lastUpdated={lastUpdated}
           privacyStatementLink={privacyStatementLink}
           termsOfUseLink={termsOfUseLink}
+          siteMapLink={siteMapLink}
         />
         <CreditsSection />
       </div>
@@ -252,6 +256,7 @@ const FooterDesktop = ({
   feedbackFormLink,
   privacyStatementLink,
   termsOfUseLink,
+  siteMapLink,
 }: FooterProps) => {
   return (
     <div className="hidden lg:block py-[6.75rem] px-[4rem]">
@@ -275,6 +280,7 @@ const FooterDesktop = ({
               lastUpdated={lastUpdated}
               privacyStatementLink={privacyStatementLink}
               termsOfUseLink={termsOfUseLink}
+              siteMapLink={siteMapLink}
             />
           </div>
           <div>

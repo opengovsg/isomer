@@ -104,6 +104,7 @@ Default.args = {
   feedbackFormLink: "https://www.google.com",
   privacyStatementLink: "/",
   termsOfUseLink: "/",
+  siteMapLink: "/",
 }
 
 export const NonGovernment = Template.bind({})
@@ -194,4 +195,5 @@ NonGovernment.args = {
   feedbackFormLink: "https://www.google.com",
   privacyStatementLink: "/",
   termsOfUseLink: "/",
+  siteMapLink: "/",
 }
