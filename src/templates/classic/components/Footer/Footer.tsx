@@ -1,19 +1,19 @@
 import { Footer } from "@govtechsg/sgds-react/Footer"
 import { FooterProps } from "~/common"
 
-const IsomerFooter = ({ agencyName, items }: FooterProps) => {
+const IsomerFooter = ({ agencyName, siteNavItems }: FooterProps) => {
   return (
     <Footer>
       <Footer.Top>
         <Footer.Top.Header headerTitle={agencyName} />
         <Footer.Top.ItemGroup>
-          {items?.map((item) => {
+          {siteNavItems?.map((item) => {
             return (
               <Footer.Top.Item key={`footer-item-${item.title}`}>
-                <a href={item.link} className="-mt-8 font-bold">
+                <a href={item.url} className="-mt-8 font-bold">
                   {item.title}
                 </a>
-                {item.subItems?.map((subItem) => {
+                {/* {item.subItems?.map((subItem) => {
                   return (
                     <a
                       href={subItem.link}
@@ -22,7 +22,7 @@ const IsomerFooter = ({ agencyName, items }: FooterProps) => {
                       {subItem.title}
                     </a>
                   )
-                })}
+                })} */}
               </Footer.Top.Item>
             )
           })}

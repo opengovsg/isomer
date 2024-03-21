@@ -22,6 +22,7 @@ import type {
   TableOfContentsProps,
   UnorderedListProps,
 } from "~/common"
+import { SiteConfigFooterProps } from "~/common/Footer"
 
 type IsomerComponentProps =
   | ButtonProps
@@ -60,16 +61,19 @@ interface IsomerSitemap {
 
 interface IsomerSiteProps {
   siteName: string
+  agencyName?: string
   siteMap: IsomerSitemap[]
   theme: "classic" | "next"
-  language: "en"
   logoUrl: string
   isGovernment?: boolean
   environment?: "staging" | "production"
+  navBarItems: NavbarProps["items"]
+  footerItems: SiteConfigFooterProps
 }
 
 interface IsomerPageProps {
   layout: "homepage" | "content"
+  language?: "en"
   title?: string
   description?: string
   noIndex?: boolean
