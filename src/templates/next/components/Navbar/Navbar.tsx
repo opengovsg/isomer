@@ -73,27 +73,28 @@ const Navbar = ({
         )}
 
         {/* Hamburger menu for small screens */}
-        <button className="block xl:hidden h-10">
+        <div className="block xl:hidden h-10">
           {isHamburgerOpen ? (
             <button
               onClick={() => {
-                setIsHamburgerOpen(!isHamburgerOpen)
+                setIsHamburgerOpen(false)
                 setNavItemOpen(-1)
               }}
               aria-label="Close navigation menu"
+              className="mt-2"
             >
               Close
               <BiX className="inline ml-1 -mt-0.5 text-2xl" />
             </button>
           ) : (
             <button
-              onClick={() => setIsHamburgerOpen(!isHamburgerOpen)}
+              onClick={() => setIsHamburgerOpen(true)}
               aria-label="Open navigation menu"
             >
-              <BiMenu className="text-2xl mt-1.5" />
+              <BiMenu className="text-2xl mt-2" />
             </button>
           )}
-        </button>
+        </div>
       </div>
 
       {/* Search bar (for mobile/tablet) */}
@@ -105,6 +106,8 @@ const Navbar = ({
                 type="search"
                 name="q"
                 placeholder="Search this site"
+                title="Search this site"
+                aria-label="Search this site"
                 className="w-full px-4 py-2 border border-divider-medium focus:border-site-primary focus:ring-site-primary focus:outline-none"
               />
               <button type="submit" aria-label="Search this site">
