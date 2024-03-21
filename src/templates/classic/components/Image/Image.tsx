@@ -1,10 +1,8 @@
-import { HTMLAttributeAnchorTarget } from "react"
-import { ImageProps } from "~/common"
+import type { ImageProps } from "~/common"
 
-const Image = ({ src, alt, width }: ImageProps) => (
+const Image = ({ src, alt, width }: Omit<ImageProps, "type">) => (
   <img src={src} alt={alt} width={`${width ?? 100}%`} />
 )
-
 
 const ImageComponent = ({ src, alt, width, href }: ImageProps) => {
   return (

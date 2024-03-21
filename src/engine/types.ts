@@ -65,6 +65,7 @@ interface IsomerSiteProps {
   language: "en"
   logoUrl: string
   isGovernment?: boolean
+  environment?: "staging" | "production"
 }
 
 interface IsomerPageProps {

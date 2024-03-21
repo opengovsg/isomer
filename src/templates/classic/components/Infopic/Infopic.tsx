@@ -1,6 +1,6 @@
 import { ArrowRightIcon } from "@heroicons/react/24/outline"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
-import { InfopicProps } from "~/common"
+import type { InfopicProps } from "~/common"
 
 const InfopicContentWrapper = ({
   children,
@@ -24,7 +24,7 @@ const TextComponent = ({
   description,
   buttonLabel,
   buttonUrl,
-}: Omit<InfopicProps, "sectionIndex" | "imageSrc" | "imageAlt">) => {
+}: Omit<InfopicProps, "sectionIndex" | "imageSrc" | "imageAlt" | "type">) => {
   return (
     <div className="flex flex-col gap-4 lg:px-8">
       {subtitle && (

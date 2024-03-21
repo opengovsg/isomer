@@ -9,10 +9,7 @@ export const Skeleton = ({
 }: React.PropsWithChildren<
   Pick<IsomerPageSchema, "site" | "page" | "LinkComponent">
 >) => {
-  const isStaging =
-    (process.env.ISOMER_NEXT_ENV &&
-      process.env.ISOMER_NEXT_ENV === "staging") ||
-    false
+  const isStaging = site.environment === "staging"
 
   return (
     <html lang={site.language} data-theme={`isomer-${site.theme}`}>

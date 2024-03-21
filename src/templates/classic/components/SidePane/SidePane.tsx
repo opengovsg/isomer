@@ -1,23 +1,22 @@
 import { ChevronDownIcon } from "@heroicons/react/24/outline"
 import { SidePaneProps } from "~/common"
-import { Sitemap, SitemapEntry } from "~/engine/render"
 
 export type SectionWithSiblings = {
   parentTitle?: string
   parentPermalink?: string
-  siblings: SitemapEntry[]
+  siblings: any[]
 }
 
 const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
   function findSectionAndSiblings(
-    paths: SitemapEntry[],
+    paths: any[],
     currentPermalink: string,
   ): SectionWithSiblings | null {
     for (const section of paths) {
       // Check if this is the parent section
       if (section.paths) {
         const match = section.paths.find(
-          (child) => child.permalink === currentPermalink,
+          (child: any) => child.permalink === currentPermalink,
         )
         if (match) {
           // Exact match found, return the current section's siblings and parent title
@@ -72,7 +71,8 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
                     </a>
                     {sibling.permalink ===
                       sectionWithSiblings?.parentPermalink &&
-                      sectionWithSiblings.siblings.length > 0 && (
+                      sectionWithSiblings?.siblings &&
+                      sectionWithSiblings?.siblings.length > 0 && (
                         <a className="cursor-pointer">
                           <ChevronDownIcon className="mx-3 mt-2.5 h-5 w-5 text-headings" />
                         </a>

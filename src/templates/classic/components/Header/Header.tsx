@@ -1,6 +1,5 @@
 import React from "react" // Import React
-import { HeaderProps } from "~/common"
-import { Sitemap, SitemapEntry } from "~/engine/render"
+import type { HeaderProps } from "~/common"
 
 type Breadcrumb = {
   name: string
@@ -11,12 +10,12 @@ type Breadcrumb = {
 const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
   function findPageDetailsByPermalink(
     permalink: string,
-    sitemap: Sitemap,
+    sitemap: any,
   ): { title: string; breadcrumbs: Breadcrumb[] } {
     let title: string = ""
     let breadcrumbs: Breadcrumb[] = []
 
-    function traverse(currentSitemap: SitemapEntry[], permalink: string) {
+    function traverse(currentSitemap: any[], permalink: string) {
       for (const entry of currentSitemap) {
         const fullPath = entry.permalink
         const pathTitle = entry.title
