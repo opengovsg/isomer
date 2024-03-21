@@ -36,7 +36,7 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
             className="lg:max-w-60"
           />
           <div
-            className={`grid grid-cols-1 lg:grid-cols-3 gap-8 md:hidden lg:grid`}
+            className={`grid grid-cols-1 lg:grid-cols-3 gap-8 md:max-lg:hidden`}
           >
             {cards.map((card) => (
               <Card
@@ -50,7 +50,7 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
               ></Card>
             ))}
           </div>
-          <div className={`hidden grid-cols-1 gap-8 md:grid lg:hidden`}>
+          <div className={`hidden grid-cols-1 gap-8 md:max-lg:grid`}>
             {cards.map((card) => (
               <Card
                 title={card.title}
@@ -70,7 +70,7 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
         >
           <TitleSection title={title} subtitle={subtitle} />
           <div
-            className={`grid grid-cols-1 md:grid-cols-3 gap-8 sm:hidden md:grid`}
+            className={`grid grid-cols-1 md:grid-cols-3 gap-8 sm:max-md:hidden`}
           >
             {cards.map((card) => (
               <Card
@@ -84,7 +84,7 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
               ></Card>
             ))}
           </div>
-          <div className={`hidden grid-cols-1 gap-8 sm:grid md:hidden`}>
+          <div className={`hidden grid-cols-1 gap-8 sm:max-md:grid`}>
             {cards.map((card) => (
               <Card
                 title={card.title}
