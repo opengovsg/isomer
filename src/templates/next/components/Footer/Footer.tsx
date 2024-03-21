@@ -12,7 +12,7 @@ import { IoLogoGithub } from "react-icons/io"
 import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
 import { FooterProps } from "~/common"
-import { SocialMediaType } from "~/common/Footer"
+import { FooterItem as FooterItemType, SocialMediaType } from "~/common/Footer"
 import { Caption } from "../../typography/Caption"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"
@@ -32,7 +32,7 @@ const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
   return <h3 className={Heading[3]}>{siteName}</h3>
 }
 
-const Link = ({ title, url }: { title: string; url: string }) => {
+const FooterItem = ({ title, url }: FooterItemType) => {
   if (url.startsWith("http")) {
     return (
       <a
@@ -63,12 +63,12 @@ const NavSection = ({
     >
       <div className="flex flex-col gap-5">
         {siteNavItems.map((item) => (
-          <Link title={item.title} url={item.url} />
+          <FooterItem title={item.title} url={item.url} />
         ))}
       </div>
       <div className="flex flex-col gap-5">
         {customNavItems?.map((item) => (
-          <Link title={item.title} url={item.url} />
+          <FooterItem title={item.title} url={item.url} />
         ))}
       </div>
     </div>
@@ -106,9 +106,9 @@ const ContactUsSection = ({
 }: Pick<FooterProps, "contactUsLink" | "feedbackFormLink">) => {
   return (
     <div className={`flex flex-col gap-3 ${Paragraph[2]}`}>
-      {contactUsLink && <Link title="Contact Us" url={contactUsLink} />}
+      {contactUsLink && <FooterItem title="Contact Us" url={contactUsLink} />}
       {feedbackFormLink && (
-        <Link title="Feedback Form" url={feedbackFormLink} />
+        <FooterItem title="Feedback Form" url={feedbackFormLink} />
       )}
     </div>
   )
@@ -160,17 +160,19 @@ const LegalSection = ({
         className={`flex flex-col gap-3 lg:flex-row lg:gap-8 ${Paragraph[2]}`}
       >
         {isGovernment && (
-          <Link
+          <FooterItem
             title="Report Vulnerability"
             url="https://tech.gov.sg/report_vulnerability"
           />
         )}
         {privacyStatementLink && (
-          <Link title="Privacy Statement" url={privacyStatementLink} />
+          <FooterItem title="Privacy Statement" url={privacyStatementLink} />
         )}
-        {termsOfUseLink && <Link title="Terms of Use" url={termsOfUseLink} />}
+        {termsOfUseLink && (
+          <FooterItem title="Terms of Use" url={termsOfUseLink} />
+        )}
         {isGovernment && (
-          <Link title="Reach" url={"https://www.reach.gov.sg"} />
+          <FooterItem title="Reach" url={"https://www.reach.gov.sg"} />
         )}
       </div>
     </div>

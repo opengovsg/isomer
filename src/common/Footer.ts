@@ -1,4 +1,4 @@
-export interface Link {
+export interface FooterItem {
   title: string
   url: string
 }
@@ -27,8 +27,8 @@ export interface FooterProps {
   siteName: string
   agencyName: string
   lastUpdated: string
-  siteNavItems: Link[]
-  customNavItems?: Link[]
+  siteNavItems: FooterItem[]
+  customNavItems?: FooterItem[]
   socialMediaLinks?: SocialMediaLink[]
   contactUsLink?: string
   feedbackFormLink?: string
