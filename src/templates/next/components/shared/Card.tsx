@@ -1,5 +1,6 @@
 import { SingleCardProps } from "~/common/InfoCards"
 import { BiRightArrowAlt } from "react-icons/bi"
+import Button from "../Button"
 
 interface KeyStatisticsProps extends SingleCardProps {
   variant?: "horizontal" | "vertical"
@@ -50,19 +51,12 @@ const TextComponent = ({
         {text}
       </div>
       {buttonLabel && buttonUrl && (
-        <a
-          className="flex flex-row gap-1 items-center font-semibold text-secondary text-md sm:text-lg"
+        <Button
+          label={buttonLabel}
           href={buttonUrl}
-          target={buttonUrl?.startsWith("http") ? "_blank" : undefined}
-          rel={
-            buttonUrl?.startsWith("http")
-              ? "noopener noreferrer nofollow"
-              : undefined
-          }
-        >
-          {buttonLabel}
-          <BiRightArrowAlt className="size-6" />
-        </a>
+          variant="link"
+          rightIcon="right-arrow"
+        />
       )}
     </div>
   )
