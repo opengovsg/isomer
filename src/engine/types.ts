@@ -20,6 +20,7 @@ import type {
   ParagraphProps,
   SearchProps,
   SidePaneProps,
+  SiderailProps,
   TableOfContentsProps,
   UnorderedListProps,
 } from "~/common"
@@ -47,6 +48,7 @@ type IsomerComponentProps =
   | ParagraphProps
   | SearchProps
   | SidePaneProps
+  | SiderailProps
   | TableOfContentsProps
   | UnorderedListProps
 
