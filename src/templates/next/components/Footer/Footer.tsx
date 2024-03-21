@@ -91,7 +91,7 @@ const SocialMediaSection = ({
               target="_blank"
               rel="noopener noreferrer nofollow"
             >
-              <Icon size={26} />
+              <Icon className="w-[1.625rem] h-auto" />
             </a>
           )
         })}
@@ -152,7 +152,7 @@ const LegalSection = ({
   return (
     <div className="flex flex-col gap-8 lg:gap-2">
       <p className={`text-content-inverse-light ${Paragraph[2]}`}>
-        © {new Date().getFullYear()}{" "}
+        &copy; {new Date().getFullYear()}{" "}
         {isGovernment ? "Government of Singapore" : agencyName}, last updated{" "}
         {lastUpdated}
       </p>
@@ -191,7 +191,7 @@ const CreditsSection = () => {
         className="flex flex-col gap-4"
       >
         <p>Made with</p>
-        <IsomerLogo />
+        <IsomerLogo aria-label="isomer-logo" />
       </a>
       <a
         href="https://www.open.gov.sg"
@@ -200,7 +200,7 @@ const CreditsSection = () => {
         className="flex flex-col gap-4"
       >
         <p>Built by</p>
-        <OgpLogo />
+        <OgpLogo aria-label="ogp-logo" />
       </a>
     </div>
   )
