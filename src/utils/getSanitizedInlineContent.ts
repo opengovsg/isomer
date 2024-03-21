@@ -1,4 +1,4 @@
-import DOMPurify from "dompurify"
+import DOMPurify from "isomorphic-dompurify"
 
 // Sanitize content to only allow paragraph marks and inline elements, and
 // to remove any potentially harmful content
