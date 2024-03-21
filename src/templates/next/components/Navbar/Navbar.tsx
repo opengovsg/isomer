@@ -18,12 +18,12 @@ const Navbar = ({
   items,
   LinkComponent = "a",
 }: NavbarProps) => {
-  const [navItemOpen, setNavItemOpen] = useState(-1)
+  const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   const currentPathName =
-    typeof window !== "undefined" ? window.location.pathname : ""
+    typeof window === "undefined" ? "" : window.location.pathname
 
   return (
     <div className="flex flex-col w-full">
@@ -78,7 +78,7 @@ const Navbar = ({
             <button
               onClick={() => {
                 setIsHamburgerOpen(false)
-                setNavItemOpen(-1)
+                setOpenNavItemIdx(-1)
               }}
               aria-label="Close navigation menu"
               className="mt-2"
@@ -144,29 +144,29 @@ const Navbar = ({
                 <li key={Math.random()} className="inline">
                   <button
                     className={`px-3 py-4 text-lg text-content-medium transition ease-in-out duration-300 hover:bg-interaction-sub active:bg-interaction-sub ${
-                      currentPathName.startsWith(url) || navItemOpen === idx
+                      currentPathName.startsWith(url) || openNavItemIdx === idx
                         ? "border-b-site-primary border-b-4 bg-interaction-sub"
                         : ""
                     }`}
                     onClick={() => {
-                      if (navItemOpen === idx) {
-                        setNavItemOpen(-1)
+                      if (openNavItemIdx === idx) {
+                        setOpenNavItemIdx(-1)
                       } else {
-                        setNavItemOpen(idx)
+                        setOpenNavItemIdx(idx)
                       }
                     }}
                   >
                     {name}
-                    {navItemOpen !== idx && (
+                    {openNavItemIdx !== idx && (
                       <BiChevronDown className="inline ml-1 -mt-1 text-2xl" />
                     )}
-                    {navItemOpen === idx && (
+                    {openNavItemIdx === idx && (
                       <BiChevronUp className="inline ml-1 -mt-1 text-2xl" />
                     )}
                   </button>
                   <div
                     className={`${
-                      navItemOpen === idx ? "absolute" : "hidden"
+                      openNavItemIdx === idx ? "absolute" : "hidden"
                     } bg-white left-0 w-full px-4`}
                   >
                     <div className="flex flex-col mx-auto w-full max-w-screen-xl py-12 max-h-[32rem] overflow-auto">
@@ -179,7 +179,7 @@ const Navbar = ({
                         </div>
 
                         <button
-                          onClick={() => setNavItemOpen(-1)}
+                          onClick={() => setOpenNavItemIdx(-1)}
                           aria-label="Close navigation item"
                         >
                           Close
@@ -215,7 +215,7 @@ const Navbar = ({
       {/* Navigation items, first level (for mobile/tablet) */}
       <div
         className={`${
-          isHamburgerOpen && navItemOpen === -1 ? "block" : "hidden"
+          isHamburgerOpen && openNavItemIdx === -1 ? "block" : "hidden"
         } xl:hidden`}
       >
         <ul className="px-14 pt-4">
@@ -235,7 +235,10 @@ const Navbar = ({
 
             return (
               <li key={Math.random()} className="w-full py-2">
-                <button onClick={() => setNavItemOpen(idx)} className="w-full">
+                <button
+                  onClick={() => setOpenNavItemIdx(idx)}
+                  className="w-full"
+                >
                   <div className="flex flex-row justify-between w-full text-content hover:text-content-medium">
                     <p className="text-lg ">{name}</p>
                     <BiChevronRight className="text-2xl" />
@@ -248,35 +251,37 @@ const Navbar = ({
       </div>
 
       {/* Navigation items, second level (for mobile/tablet) */}
-      {isHamburgerOpen && navItemOpen !== -1 && (
+      {isHamburgerOpen && openNavItemIdx !== -1 && (
         <div className="block xl:hidden">
           <div className="px-14 pt-4">
             <button
               className="flex flex-row gap-3 py-4"
-              onClick={() => setNavItemOpen(-1)}
+              onClick={() => setOpenNavItemIdx(-1)}
               aria-label="Return to main navigation menu"
             >
               <BiLeftArrowAlt className="text-2xl" />
               <h5 className="text-xl leading-6 font-semibold">
-                {items[navItemOpen].name}
+                {items[openNavItemIdx].name}
               </h5>
             </button>
 
             <ul className="flex flex-row flex-wrap px-9 py-4 gap-x-36 gap-y-[1.125rem] md:gap-y-8">
-              {items[navItemOpen].items?.map(({ name, url, description }) => (
-                <li key={name} className="w-full md:w-1/3">
-                  <div className="flex flex-col gap-1">
-                    <LinkComponent
-                      href={url}
-                      className="underline font-normal md:font-medium text-xl leading-8"
-                    >
-                      {name}
-                      <BiRightArrowAlt className="hidden md:inline ml-1 -mt-0.5 text-xl" />
-                    </LinkComponent>
-                    <p className="hidden md:block">{description}</p>
-                  </div>
-                </li>
-              ))}
+              {items[openNavItemIdx].items?.map(
+                ({ name, url, description }) => (
+                  <li key={name} className="w-full md:w-1/3">
+                    <div className="flex flex-col gap-1">
+                      <LinkComponent
+                        href={url}
+                        className="underline font-normal md:font-medium text-xl leading-8"
+                      >
+                        {name}
+                        <BiRightArrowAlt className="hidden md:inline ml-1 -mt-0.5 text-xl" />
+                      </LinkComponent>
+                      <p className="hidden md:block">{description}</p>
+                    </div>
+                  </li>
+                ),
+              )}
             </ul>
           </div>
         </div>
