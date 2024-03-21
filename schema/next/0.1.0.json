@@ -1,0 +1,1093 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schema.isomer.gov.sg/next/0.1.0.json",
+  "title": "Isomer Next Page JSON",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "page", "content"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "The version of the Isomer Next schema to use",
+      "default": "0.1.0"
+    },
+    "page": {
+      "type": "object",
+      "title": "Page metadata",
+      "required": ["layout"],
+      "properties": {
+        "layout": {
+          "type": "string",
+          "description": "The layout of the page to use",
+          "enum": ["homepage", "content"]
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the page"
+        },
+        "description": {
+          "type": "string",
+          "description": "The summary of the page for SEO purposes"
+        },
+        "noIndex": {
+          "type": "boolean",
+          "description": "Whether to exclude the page from search results"
+        }
+      }
+    },
+    "content": {
+      "type": "array",
+      "title": "Page content",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/definitions/button"
+          },
+          {
+            "$ref": "#/definitions/callout"
+          },
+          {
+            "$ref": "#/definitions/contentpageheader"
+          },
+          {
+            "$ref": "#/definitions/heading"
+          },
+          {
+            "$ref": "#/definitions/hero"
+          },
+          {
+            "$ref": "#/definitions/infobar"
+          },
+          {
+            "$ref": "#/definitions/infocols"
+          },
+          {
+            "$ref": "#/definitions/infopic"
+          },
+          {
+            "$ref": "#/definitions/keystatistics"
+          },
+          {
+            "$ref": "#/definitions/masthead"
+          },
+          {
+            "$ref": "#/definitions/orderedlist"
+          },
+          {
+            "$ref": "#/definitions/paragraph"
+          },
+          {
+            "$ref": "#/definitions/unorderedlist"
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "button": {
+      "type": "object",
+      "title": "Button component",
+      "required": ["type", "label", "href"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["button"],
+          "default": "button"
+        },
+        "label": {
+          "type": "string",
+          "title": "Button label",
+          "description": "The text to display on the button"
+        },
+        "href": {
+          "type": "string",
+          "title": "Button URL",
+          "description": "The URL to link the button to"
+        },
+        "colorScheme": {
+          "type": "string",
+          "title": "Button color scheme",
+          "description": "The color scheme of the button to use",
+          "enum": ["black", "white"]
+        },
+        "variant": {
+          "type": "string",
+          "title": "Button variant",
+          "description": "The variant of the button to use",
+          "enum": ["link", "solid", "outline", "ghost"]
+        },
+        "rounded": {
+          "type": "boolean",
+          "title": "Button rounded",
+          "description": "Whether to have the button corners be rounded"
+        },
+        "leftIcon": {
+          "type": "string",
+          "title": "Button left icon",
+          "description": "The icon to display on the left of the button's text",
+          "enum": ["right-arrow", "bar-chart"]
+        },
+        "rightIcon": {
+          "type": "string",
+          "title": "Button right icon",
+          "description": "The icon to display on the right of the button's text",
+          "enum": ["right-arrow", "bar-chart"]
+        }
+      }
+    },
+    "callout": {
+      "type": "object",
+      "title": "Callout component",
+      "required": ["type", "content", "variant"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["callout"],
+          "default": "callout"
+        },
+        "content": {
+          "type": "string",
+          "title": "Callout content",
+          "description": "The content to display in the callout"
+        },
+        "variant": {
+          "type": "string",
+          "title": "Callout variant",
+          "description": "The variant of the callout to use",
+          "enum": ["info", "success", "warning", "critical"]
+        }
+      }
+    },
+    "contentpageheader": {
+      "type": "object",
+      "title": "Content page header component",
+      "description": "The content page header component is used to display the title, summary, and breadcrumbs of a content page.",
+      "required": ["type", "title", "summary", "breadcrumb"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["contentpageheader"],
+          "default": "contentpageheader"
+        },
+        "title": {
+          "type": "string",
+          "title": "Page title",
+          "description": "The page title"
+        },
+        "summary": {
+          "type": "string",
+          "title": "Page summary",
+          "description": "The summary of the page's content"
+        },
+        "breadcrumb": {
+          "type": "object",
+          "title": "Breadcrumbs",
+          "properties": {
+            "links": {
+              "type": "array",
+              "title": "Breadcrumb links",
+              "items": {
+                "type": "object",
+                "required": ["title", "url"],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "title": "Breadcrumb label",
+                    "description": "The label of the breadcrumb"
+                  },
+                  "url": {
+                    "type": "string",
+                    "title": "Breadcrumb URL",
+                    "description": "The URL to link the breadcrumb to"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "buttonLabel": {
+          "type": "string",
+          "title": "Button label",
+          "description": "The label of the button to display"
+        },
+        "buttonUrl": {
+          "type": "string",
+          "title": "Button URL",
+          "description": "The URL to link the button to"
+        }
+      }
+    },
+    "heading": {
+      "type": "object",
+      "title": "Heading component",
+      "required": ["type", "content", "level"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["heading"],
+          "default": "heading"
+        },
+        "content": {
+          "type": "string",
+          "title": "Heading content",
+          "description": "The content of the heading"
+        },
+        "level": {
+          "type": "integer",
+          "title": "Heading level",
+          "description": "The level of the heading to use",
+          "enum": [1, 2, 3, 4, 5, 6]
+        }
+      }
+    },
+    "hero": {
+      "type": "object",
+      "title": "Hero component",
+      "description": "The hero component is used to display a large banner at the top of the homepage.",
+      "required": ["type", "variant"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["hero"],
+          "default": "hero"
+        },
+        "variant": {
+          "type": "string",
+          "title": "Hero variant",
+          "description": "The variant of the hero to use",
+          "enum": [
+            "side",
+            "image",
+            "floating",
+            "center",
+            "gradient",
+            "split",
+            "copyled",
+            "floatingimage"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "variant": {
+                "const": "side"
+              }
+            }
+          },
+          "then": {
+            "required": ["title", "backgroundUrl"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "title": "Hero title",
+                "description": "The title of the hero banner"
+              },
+              "subtitle": {
+                "type": "string",
+                "title": "Hero content",
+                "description": "The content of the hero banner"
+              },
+              "buttonLabel": {
+                "type": "string",
+                "title": "Button label",
+                "description": "The label of the main CTA button to display"
+              },
+              "buttonUrl": {
+                "type": "string",
+                "title": "Button URL",
+                "description": "The URL to link the main CTA button to"
+              },
+              "secondaryButtonLabel": {
+                "type": "string",
+                "title": "Secondary Button label",
+                "description": "The label of the secondary button to display"
+              },
+              "secondaryButtonUrl": {
+                "type": "string",
+                "title": "Secondary Button URL",
+                "description": "The URL to link the secondary button to"
+              },
+              "alignment": {
+                "type": "string",
+                "title": "Hero alignment",
+                "description": "The position to align the hero content to",
+                "enum": ["left", "right"]
+              },
+              "backgroundColor": {
+                "type": "string",
+                "title": "Hero background color",
+                "description": "The background color of the hero banner",
+                "enum": ["black", "white", "gray"]
+              },
+              "size": {
+                "type": "string",
+                "title": "Hero size",
+                "description": "The size of the hero banner",
+                "enum": ["sm", "md"]
+              },
+              "dropdown": {
+                "$ref": "#/definitions/hero-dropdown"
+              },
+              "backgroundUrl": {
+                "type": "string",
+                "title": "Hero background image URL",
+                "description": "The URL to the background image"
+              },
+              "keyHighlights": {
+                "$ref": "#/definitions/hero-key-highlights"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "variant": {
+                "const": "image"
+              }
+            }
+          },
+          "then": {
+            "required": ["backgroundUrl"],
+            "properties": {
+              "backgroundUrl": {
+                "type": "string",
+                "title": "Hero background image URL",
+                "description": "The URL to the background image"
+              },
+              "keyHighlights": {
+                "$ref": "#/definitions/hero-key-highlights"
+              },
+              "dropdown": {
+                "$ref": "#/definitions/hero-dropdown"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "variant": {
+                "const": "floating"
+              }
+            }
+          },
+          "then": {
+            "required": ["title", "backgroundUrl"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "title": "Hero title",
+                "description": "The title of the hero banner"
+              },
+              "subtitle": {
+                "type": "string",
+                "title": "Hero content",
+                "description": "The content of the hero banner"
+              },
+              "buttonLabel": {
+                "type": "string",
+                "title": "Button label",
+                "description": "The label of the main CTA button to display"
+              },
+              "buttonUrl": {
+                "type": "string",
+                "title": "Button URL",
+                "description": "The URL to link the main CTA button to"
+              },
+              "secondaryButtonLabel": {
+                "type": "string",
+                "title": "Secondary Button label",
+                "description": "The label of the secondary button to display"
+              },
+              "secondaryButtonUrl": {
+                "type": "string",
+                "title": "Secondary Button URL",
+                "description": "The URL to link the secondary button to"
+              },
+              "alignment": {
+                "type": "string",
+                "title": "Hero alignment",
+                "description": "The position to align the hero content to",
+                "enum": ["left", "right"]
+              },
+              "backgroundColor": {
+                "type": "string",
+                "title": "Hero background color",
+                "description": "The background color of the hero banner",
+                "enum": ["black", "white", "gray"]
+              },
+              "size": {
+                "type": "string",
+                "title": "Hero size",
+                "description": "The size of the hero banner",
+                "enum": ["sm", "md"]
+              },
+              "dropdown": {
+                "$ref": "#/definitions/hero-dropdown"
+              },
+              "backgroundUrl": {
+                "type": "string",
+                "title": "Hero background image URL",
+                "description": "The URL to the background image"
+              },
+              "keyHighlights": {
+                "$ref": "#/definitions/hero-key-highlights"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "variant": {
+                "const": "center"
+              }
+            }
+          },
+          "then": {
+            "required": ["title", "backgroundUrl"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "title": "Hero title",
+                "description": "The title of the hero banner"
+              },
+              "subtitle": {
+                "type": "string",
+                "title": "Hero content",
+                "description": "The content of the hero banner"
+              },
+              "buttonLabel": {
+                "type": "string",
+                "title": "Button label",
+                "description": "The label of the main CTA button to display"
+              },
+              "buttonUrl": {
+                "type": "string",
+                "title": "Button URL",
+                "description": "The URL to link the main CTA button to"
+              },
+              "secondaryButtonLabel": {
+                "type": "string",
+                "title": "Secondary Button label",
+                "description": "The label of the secondary button to display"
+              },
+              "secondaryButtonUrl": {
+                "type": "string",
+                "title": "Secondary Button URL",
+                "description": "The URL to link the secondary button to"
+              },
+              "backgroundUrl": {
+                "type": "string",
+                "title": "Hero background image URL",
+                "description": "The URL to the background image"
+              },
+              "keyHighlights": {
+                "$ref": "#/definitions/hero-key-highlights"
+              },
+              "dropdown": {
+                "$ref": "#/definitions/hero-dropdown"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "variant": {
+                "const": "gradient"
+              }
+            }
+          },
+          "then": {
+            "required": ["title", "backgroundUrl"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "title": "Hero title",
+                "description": "The title of the hero banner"
+              },
+              "subtitle": {
+                "type": "string",
+                "title": "Hero content",
+                "description": "The content of the hero banner"
+              },
+              "buttonLabel": {
+                "type": "string",
+                "title": "Button label",
+                "description": "The label of the main CTA button to display"
+              },
+              "buttonUrl": {
+                "type": "string",
+                "title": "Button URL",
+                "description": "The URL to link the main CTA button to"
+              },
+              "secondaryButtonLabel": {
+                "type": "string",
+                "title": "Secondary Button label",
+                "description": "The label of the secondary button to display"
+              },
+              "secondaryButtonUrl": {
+                "type": "string",
+                "title": "Secondary Button URL",
+                "description": "The URL to link the secondary button to"
+              },
+              "backgroundUrl": {
+                "type": "string",
+                "title": "Hero background image URL",
+                "description": "The URL to the background image"
+              },
+              "alignment": {
+                "type": "string",
+                "title": "Hero alignment",
+                "description": "The position to align the hero content to",
+                "enum": ["left", "right"]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "variant": {
+                "const": "split"
+              }
+            }
+          },
+          "then": {
+            "required": ["title", "backgroundUrl"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "title": "Hero title",
+                "description": "The title of the hero banner"
+              },
+              "subtitle": {
+                "type": "string",
+                "title": "Hero content",
+                "description": "The content of the hero banner"
+              },
+              "buttonLabel": {
+                "type": "string",
+                "title": "Button label",
+                "description": "The label of the main CTA button to display"
+              },
+              "buttonUrl": {
+                "type": "string",
+                "title": "Button URL",
+                "description": "The URL to link the main CTA button to"
+              },
+              "secondaryButtonLabel": {
+                "type": "string",
+                "title": "Secondary Button label",
+                "description": "The label of the secondary button to display"
+              },
+              "secondaryButtonUrl": {
+                "type": "string",
+                "title": "Secondary Button URL",
+                "description": "The URL to link the secondary button to"
+              },
+              "backgroundUrl": {
+                "type": "string",
+                "title": "Hero background image URL",
+                "description": "The URL to the background image"
+              },
+              "alignment": {
+                "type": "string",
+                "title": "Hero alignment",
+                "description": "The position to align the hero content to",
+                "enum": ["left", "right"]
+              },
+              "backgroundColor": {
+                "type": "string",
+                "title": "Hero background color",
+                "description": "The background color of the hero banner",
+                "enum": ["black", "white"]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "variant": {
+                "const": "copyled"
+              }
+            }
+          },
+          "then": {
+            "required": ["title"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "title": "Hero title",
+                "description": "The title of the hero banner"
+              },
+              "subtitle": {
+                "type": "string",
+                "title": "Hero content",
+                "description": "The content of the hero banner"
+              },
+              "buttonLabel": {
+                "type": "string",
+                "title": "Button label",
+                "description": "The label of the main CTA button to display"
+              },
+              "buttonUrl": {
+                "type": "string",
+                "title": "Button URL",
+                "description": "The URL to link the main CTA button to"
+              },
+              "secondaryButtonLabel": {
+                "type": "string",
+                "title": "Secondary Button label",
+                "description": "The label of the secondary button to display"
+              },
+              "secondaryButtonUrl": {
+                "type": "string",
+                "title": "Secondary Button URL",
+                "description": "The URL to link the secondary button to"
+              },
+              "backgroundUrl": {
+                "type": "string",
+                "title": "Hero background image URL",
+                "description": "The URL to the background image"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "variant": {
+                "const": "floatingimage"
+              }
+            }
+          },
+          "then": {
+            "required": ["title", "backgroundUrl"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "title": "Hero title",
+                "description": "The title of the hero banner"
+              },
+              "subtitle": {
+                "type": "string",
+                "title": "Hero content",
+                "description": "The content of the hero banner"
+              },
+              "buttonLabel": {
+                "type": "string",
+                "title": "Button label",
+                "description": "The label of the main CTA button to display"
+              },
+              "buttonUrl": {
+                "type": "string",
+                "title": "Button URL",
+                "description": "The URL to link the main CTA button to"
+              },
+              "secondaryButtonLabel": {
+                "type": "string",
+                "title": "Secondary Button label",
+                "description": "The label of the secondary button to display"
+              },
+              "secondaryButtonUrl": {
+                "type": "string",
+                "title": "Secondary Button URL",
+                "description": "The URL to link the secondary button to"
+              },
+              "backgroundUrl": {
+                "type": "string",
+                "title": "Hero background image URL",
+                "description": "The URL to the background image"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "hero-dropdown": {
+      "type": "object",
+      "title": "Hero dropdown component",
+      "required": ["options"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "Dropdown label",
+          "description": "The label of the dropdown"
+        },
+        "options": {
+          "type": "array",
+          "title": "Dropdown options",
+          "items": {
+            "type": "object",
+            "required": ["title", "url"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "title": "Dropdown item label",
+                "description": "The label of the dropdown item"
+              },
+              "url": {
+                "type": "string",
+                "title": "Dropdown item URL",
+                "description": "The URL to link the dropdown item to"
+              }
+            }
+          }
+        }
+      }
+    },
+    "hero-key-highlights": {
+      "type": "array",
+      "title": "Hero key highlights component",
+      "required": ["title", "url"],
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["title", "url"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Key highlight label",
+            "description": "The label of the key highlight"
+          },
+          "description": {
+            "type": "string",
+            "title": "Key highlight description",
+            "description": "The description of the key highlight"
+          },
+          "url": {
+            "type": "string",
+            "title": "Key highlight URL",
+            "description": "The URL to link the key highlight to"
+          }
+        }
+      }
+    },
+    "infobar": {
+      "type": "object",
+      "title": "Infobar component",
+      "required": ["type", "title"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["infobar"],
+          "default": "infobar"
+        },
+        "title": {
+          "type": "string",
+          "title": "Infobar title",
+          "description": "The title of the Infobar"
+        },
+        "subtitle": {
+          "type": "string",
+          "title": "Infobar content",
+          "description": "The subtitle of the Infobar"
+        },
+        "description": {
+          "type": "string",
+          "title": "Infobar description",
+          "description": "The content of the Infobar"
+        },
+        "buttonLabel": {
+          "type": "string",
+          "title": "Button label",
+          "description": "The label of the button to display"
+        },
+        "buttonUrl": {
+          "type": "string",
+          "title": "Button URL",
+          "description": "The URL to link the button to"
+        },
+        "secondaryButtonLabel": {
+          "type": "string",
+          "title": "Secondary Button label",
+          "description": "The label of the secondary button to display"
+        },
+        "secondaryButtonUrl": {
+          "type": "string",
+          "title": "Secondary Button URL",
+          "description": "The URL to link the secondary button to"
+        }
+      }
+    },
+    "infocols": {
+      "type": "object",
+      "title": "Infocols component",
+      "required": ["type", "title", "infoBoxes"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["infocols"],
+          "default": "infocols"
+        },
+        "title": {
+          "type": "string",
+          "title": "Infocols title",
+          "description": "The title of the Infocols component"
+        },
+        "subtitle": {
+          "type": "string",
+          "title": "Infocols content",
+          "description": "The subtitle of the Infocols component"
+        },
+        "backgroundColor": {
+          "type": "string",
+          "title": "Infocols background color",
+          "description": "The background color to use for the Infocols component"
+        },
+        "buttonLabel": {
+          "type": "string",
+          "title": "Button label",
+          "description": "The label of the button to display"
+        },
+        "buttonUrl": {
+          "type": "string",
+          "title": "Button URL",
+          "description": "The URL to link the button to"
+        },
+        "infoBoxes": {
+          "type": "array",
+          "title": "Infocols columns",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["title"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "title": "Column title",
+                "description": "The title of the column"
+              },
+              "description": {
+                "type": "string",
+                "title": "Column content",
+                "description": "The content of the column"
+              },
+              "icon": {
+                "type": "string",
+                "title": "Column icon",
+                "description": "The icon to display for the column",
+                "enum": ["right-arrow", "bar-chart"]
+              },
+              "buttonLabel": {
+                "type": "string",
+                "title": "Button label",
+                "description": "The label of the button to display"
+              },
+              "buttonUrl": {
+                "type": "string",
+                "title": "Button URL",
+                "description": "The URL to link the button to"
+              }
+            }
+          }
+        }
+      }
+    },
+    "infopic": {
+      "type": "object",
+      "title": "Infopic component",
+      "required": ["type", "title", "imageSrc"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["infopic"],
+          "default": "infopic"
+        },
+        "title": {
+          "type": "string",
+          "title": "Infopic title",
+          "description": "The title of the Infopic component"
+        },
+        "subtitle": {
+          "type": "string",
+          "title": "Infopic subtitle",
+          "description": "The subtitle of the Infopic component"
+        },
+        "description": {
+          "type": "string",
+          "title": "Infopic description",
+          "description": "The content of the Infopic component"
+        },
+        "imageSrc": {
+          "type": "string",
+          "title": "Infopic image URL",
+          "description": "The URL to the image to display"
+        },
+        "imageAlt": {
+          "type": "string",
+          "title": "Infopic image alt text",
+          "description": "The alt text for the image"
+        },
+        "buttonLabel": {
+          "type": "string",
+          "title": "Button label",
+          "description": "The label of the button to display"
+        },
+        "buttonUrl": {
+          "type": "string",
+          "title": "Button URL",
+          "description": "The URL to link the button to"
+        },
+        "isTextOnRight": {
+          "type": "boolean",
+          "title": "Infopic text position",
+          "description": "Whether to display the text on the right of the image"
+        },
+        "variant": {
+          "type": "string",
+          "title": "Infopic variant",
+          "description": "The variant of the Infopic component to use",
+          "enum": ["side-by-side", "side-part"]
+        }
+      }
+    },
+    "keystatistics": {
+      "type": "object",
+      "title": "Keystatistics component",
+      "required": ["type", "variant", "title", "statistics"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["keystatistics"],
+          "default": "keystatistics"
+        },
+        "variant": {
+          "type": "string",
+          "title": "KeyStatistics variant",
+          "description": "The variant of the KeyStatistics component to use",
+          "enum": ["side", "top"]
+        },
+        "title": {
+          "type": "string",
+          "title": "KeyStatistics title",
+          "description": "The title of the KeyStatistics component"
+        },
+        "statistics": {
+          "type": "array",
+          "title": "KeyStatistics statistics",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["label", "value"],
+            "properties": {
+              "label": {
+                "type": "string",
+                "title": "Statistic label",
+                "description": "The label of the statistic"
+              },
+              "value": {
+                "type": "string",
+                "title": "Statistic value",
+                "description": "The value of the statistic"
+              }
+            }
+          }
+        }
+      }
+    },
+    "masthead": {
+      "type": "object",
+      "title": "Masthead component",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["masthead"],
+          "default": "masthead"
+        }
+      }
+    },
+    "orderedlist": {
+      "type": "object",
+      "title": "Ordered list component",
+      "required": ["type", "items"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["orderedlist"],
+          "default": "orderedlist"
+        },
+        "start": {
+          "type": "integer",
+          "title": "Starting number",
+          "description": "The number to start the ordered list from"
+        },
+        "items": {
+          "type": "array",
+          "title": "List items",
+          "minItems": 1,
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/definitions/orderedlist"
+              },
+              {
+                "$ref": "#/definitions/unorderedlist"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "paragraph": {
+      "type": "object",
+      "title": "Paragraph component",
+      "required": ["type", "content"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["paragraph"],
+          "default": "paragraph"
+        },
+        "content": {
+          "type": "string",
+          "title": "Paragraph content",
+          "description": "The content of the paragraph"
+        }
+      }
+    },
+    "unorderedlist": {
+      "type": "object",
+      "title": "Unordered list component",
+      "required": ["type", "items"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["unorderedlist"],
+          "default": "unorderedlist"
+        },
+        "items": {
+          "type": "array",
+          "title": "List items",
+          "minItems": 1,
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/definitions/orderedlist"
+              },
+              {
+                "$ref": "#/definitions/unorderedlist"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
