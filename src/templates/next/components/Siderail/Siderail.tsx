@@ -9,6 +9,7 @@ const SiderailMobile = ({
   parentTitle,
   parentUrl,
   items,
+  LinkComponent = "a",
 }: Omit<SiderailProps, "type">) => {
   const [isExpanded, setIsExpanded] = useState(false)
   return (
@@ -33,26 +34,26 @@ const SiderailMobile = ({
             <div
               className={`border-b border-divider-medium ${Paragraph[3]} text-content`}
             >
-              <a
+              <LinkComponent
                 href={item.url}
                 className={`${
                   item.isCurrent ? "font-bold" : ""
                 } block py-4 px-5 hover:bg-interaction-sub active:underline active:underline-offset-2 `}
               >
                 {item.title}
-              </a>
+              </LinkComponent>
               {item.isCurrent &&
                 item.children &&
                 item.children.map((child, index) => {
                   return (
-                    <a
+                    <LinkComponent
                       href={child.url}
                       className={`block py-1.5 pl-12 hover:bg-interaction-sub active:underline active:underline-offset-2 ${
                         index === item.children!.length - 1 && "pb-4"
                       }`}
                     >
                       {child.title}
-                    </a>
+                    </LinkComponent>
                   )
                 })}
             </div>
@@ -66,10 +67,11 @@ const SiderailDesktop = ({
   parentTitle,
   parentUrl,
   items,
+  LinkComponent = "a",
 }: Omit<SiderailProps, "type">) => {
   return (
     <div className="hidden lg:flex flex-col max-w-60">
-      <a
+      <LinkComponent
         href={parentUrl}
         className="flex gap-2 items-start pb-2 border-b-2 border-black"
       >
@@ -77,7 +79,7 @@ const SiderailDesktop = ({
         <h4 className={`${Heading["4-medium"]} text-content-strong`}>
           {parentTitle}
         </h4>
-      </a>
+      </LinkComponent>
 
       {items.map((item, index) => {
         return (
@@ -86,26 +88,26 @@ const SiderailDesktop = ({
               index !== items.length - 1 && "border-b border-divider-medium"
             } text-content`}
           >
-            <a
+            <LinkComponent
               href={item.url}
               className={`${
                 item.isCurrent ? "font-bold" : ""
               } block py-3 hover:bg-interaction-sub active:underline active:underline-offset-2`}
             >
               {item.title}
-            </a>
+            </LinkComponent>
             {item.isCurrent &&
               item.children &&
               item.children.map((child, index) => {
                 return (
-                  <a
+                  <LinkComponent
                     href={child.url}
                     className={`block py-2.5 pl-10 hover:bg-interaction-sub active:underline active:underline-offset-2 ${
                       index === item.children!.length - 1 && "pb-3"
                     }`}
                   >
                     {child.title}
-                  </a>
+                  </LinkComponent>
                 )
               })}
           </div>

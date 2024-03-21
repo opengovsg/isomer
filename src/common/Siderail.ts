@@ -10,6 +10,7 @@ export interface SiderailProps {
   parentTitle: string
   parentUrl: string
   items: SiderailItem[]
+  LinkComponent?: any
 }
 
 export default SiderailProps
