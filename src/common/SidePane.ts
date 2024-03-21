@@ -1,8 +1,6 @@
-import { Sitemap } from "~/engine/render"
-
 export interface SidePaneProps {
   type: "sidepane"
-  sitemap: Sitemap
+  sitemap: any
   currentPermalink: string
 }
 
