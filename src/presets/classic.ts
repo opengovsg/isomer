@@ -28,7 +28,7 @@ export default {
           },
         },
       },
-      typography: ({ theme }) => ({
+      typography: ({ theme }: any) => ({
         isomer: {
           css: {
             "--tw-prose-body": theme("colors.prose"),

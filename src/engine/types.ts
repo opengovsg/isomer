@@ -6,6 +6,7 @@ import type {
   ContentProps,
   FooterProps,
   HeaderProps,
+  HeadingProps,
   HeroProps,
   ImageProps,
   InfoCardsProps,
@@ -31,6 +32,7 @@ type IsomerComponentProps =
   | ContentProps
   | ContentPageHeaderProps
   | FooterProps
+  | HeadingProps
   | HeaderProps
   | HeroProps
   | ImageProps
@@ -66,7 +68,7 @@ interface IsomerSiteProps {
   theme: "classic" | "next"
   logoUrl: string
   isGovernment?: boolean
-  environment?: "staging" | "production"
+  environment?: string
   navBarItems: NavbarProps["items"]
   footerItems: SiteConfigFooterProps
 }

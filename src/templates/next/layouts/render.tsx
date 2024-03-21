@@ -6,6 +6,7 @@ import {
   Callout,
   ContentPageHeader,
   Footer,
+  Heading,
   Hero,
   InfoCols,
   Infobar,
@@ -37,6 +38,8 @@ export const renderComponent = ({
       return <ContentPageHeader {...component} />
     case "footer":
       return <Footer {...component} />
+    case "heading":
+      return <Heading {...component} />
     case "hero":
       return <Hero {...component} />
     case "infobar":
