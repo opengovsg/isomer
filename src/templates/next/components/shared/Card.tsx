@@ -1,6 +1,6 @@
 import { SingleCardProps } from "~/common/InfoCards"
-import { BiRightArrowAlt } from "react-icons/bi"
 import Button from "../Button"
+import { Heading } from "../../typography/Heading"
 
 interface KeyStatisticsProps extends SingleCardProps {
   variant?: "horizontal" | "vertical"
@@ -42,11 +42,7 @@ const TextComponent = ({
 }) => {
   return (
     <div className={`p-7 flex flex-col flex-grow gap-3 h-fit ${className}`}>
-      {title && (
-        <h4 className="text-content text-left text-lg font-semibold sm:text-2xl">
-          {title}
-        </h4>
-      )}
+      {title && <h4 className={Heading[4]}>{title}</h4>}
       <div className="text-content text-left text-base sm:text-lg grow">
         {text}
       </div>

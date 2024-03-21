@@ -1,5 +1,6 @@
 import { InfoCardsProps } from "~/common"
 import Card from "../shared/Card"
+import { Heading } from "../../typography/Heading"
 
 const TitleSection = ({
   title,
@@ -12,9 +13,7 @@ const TitleSection = ({
 }) => {
   return (
     <div className={`flex flex-col gap-8 self-start max-w-3xl ${className}`}>
-      <h3 className="text-content text-2xl leading-tight font-semibold sm:text-4xl ">
-        {title}
-      </h3>
+      <h3 className={Heading[3]}>{title}</h3>
       {subtitle && (
         <p className="text-content text-sm sm:text-lg">{subtitle}</p>
       )}
