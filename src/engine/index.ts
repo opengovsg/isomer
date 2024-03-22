@@ -1,2 +1,2 @@
-export { default as RenderEngine } from "./render"
+export { RenderEngine, RenderMetaHead } from "./render"
 export * from "./types"

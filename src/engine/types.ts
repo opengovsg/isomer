@@ -15,6 +15,7 @@ import type {
   InfopicProps,
   KeyStatisticsProps,
   MastheadProps,
+  MetaHeadProps,
   NavbarProps,
   OrderedListProps,
   ParagraphProps,
@@ -42,6 +43,7 @@ type IsomerComponentProps =
   | InfopicProps
   | KeyStatisticsProps
   | MastheadProps
+  | MetaHeadProps
   | NavbarProps
   | OrderedListProps
   | ParagraphProps
@@ -55,6 +57,8 @@ export type IsomerComponent = IsomerComponentProps & {
   indexable?: string[]
 }
 
+export type IsomerLayout = "homepage" | "content"
+
 interface IsomerSitemap {
   title: string
   permalink: string
@@ -65,25 +69,32 @@ interface IsomerSiteProps {
   siteName: string
   agencyName?: string
   siteMap: IsomerSitemap[]
-  theme: "classic" | "next"
+  theme: "isomer-classic" | "isomer-next"
   logoUrl: string
   isGovernment?: boolean
   environment?: string
+  favicon?: MetaHeadProps["favicon"]
   navBarItems: NavbarProps["items"]
   footerItems: SiteConfigFooterProps
 }
 
 interface IsomerPageProps {
-  layout: "homepage" | "content"
+  layout: IsomerLayout
   language?: "en"
-  title?: string
-  description?: string
-  noIndex?: boolean
+  title?: MetaHeadProps["title"]
+  description?: MetaHeadProps["description"]
+  noIndex?: MetaHeadProps["noIndex"]
 }
 
 export interface IsomerPageSchema {
   site: IsomerSiteProps
   page: IsomerPageProps
   content: IsomerComponent[]
+  LinkComponent?: any // Next.js link
+}
+
+export interface IsomerMetaHeadSchema {
+  site: Pick<IsomerSiteProps, "theme" | "favicon" | "siteName">
+  page: Pick<IsomerPageProps, "title" | "description" | "noIndex" | "layout">
   LinkComponent?: any // Next.js link
 }
