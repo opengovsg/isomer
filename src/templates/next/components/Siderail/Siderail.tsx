@@ -16,6 +16,9 @@ const SiderailMobile = ({
       <button
         className="w-full flex gap-2 px-5 py-4 justify-between items-center border-b-2 border-black"
         onClick={() => setIsExpanded(!isExpanded)}
+        aria-label={`${
+          isExpanded ? "Collapse" : "Expand"
+        } local navigation menu`}
       >
         <h4 className={`${Heading["4-medium"]} text-content-strong`}>
           {parentTitle}
