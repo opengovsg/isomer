@@ -21,7 +21,7 @@ export const Default = Template.bind({})
 Default.args = {
   parentTitle: "Alice and Peter Tan Research Grant",
   parentUrl: "/",
-  items: [
+  pages: [
     {
       title: "Learn about the research grant",
       url: "/item-1",
@@ -29,7 +29,7 @@ Default.args = {
     {
       title: "Apply for the research grant",
       url: "/item-2",
-      children: [
+      childPages: [
         {
           title: "Child that will not be shown",
           url: "/item-2-1",
@@ -48,7 +48,7 @@ Default.args = {
       title: "Are you eligible for the research grant?",
       url: "/item-3",
       isCurrent: true,
-      children: [
+      childPages: [
         {
           title: "Eligibility criteria",
           url: "/item-3-1",
@@ -74,7 +74,7 @@ export const NoChildren = Template.bind({})
 NoChildren.args = {
   parentTitle: "Alice and Peter Tan Research Grant",
   parentUrl: "/",
-  items: [
+  pages: [
     {
       title: "Learn about the research grant",
       url: "/item-1",

@@ -1,7 +1,7 @@
-export interface SiderailItem {
+export interface Page {
   title: string
   url: string
-  children?: SiderailItem[]
+  childPages?: Page[]
   isCurrent?: boolean
 }
 
@@ -9,7 +9,7 @@ export interface SiderailProps {
   type: "siderail"
   parentTitle: string
   parentUrl: string
-  items: SiderailItem[]
+  pages: Page[]
   LinkComponent?: any
 }
 

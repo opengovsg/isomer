@@ -7,8 +7,7 @@ import { MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md"
 
 const SiderailMobile = ({
   parentTitle,
-  parentUrl,
-  items,
+  pages,
   LinkComponent = "a",
 }: Omit<SiderailProps, "type">) => {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -29,30 +28,29 @@ const SiderailMobile = ({
       </button>
 
       {isExpanded &&
-        items.map((item) => {
+        pages.map(({ url, title, isCurrent, childPages }) => {
           return (
             <div
               className={`border-b border-divider-medium ${Paragraph[3]} text-content`}
             >
               <LinkComponent
-                href={item.url}
+                href={url}
                 className={`${
-                  item.isCurrent ? "font-bold" : ""
+                  isCurrent ? "font-bold" : ""
                 } block py-4 px-5 hover:bg-interaction-sub active:underline active:underline-offset-2 `}
               >
-                {item.title}
+                {title}
               </LinkComponent>
-              {item.isCurrent &&
-                item.children &&
-                item.children.map((child, index) => {
+              {isCurrent &&
+                childPages?.map(({ title, url }, index) => {
                   return (
                     <LinkComponent
-                      href={child.url}
+                      href={url}
                       className={`block py-1.5 pl-12 hover:bg-interaction-sub active:underline active:underline-offset-2 ${
-                        index === item.children!.length - 1 && "pb-4"
+                        index === childPages.length - 1 && "pb-4"
                       }`}
                     >
-                      {child.title}
+                      {title}
                     </LinkComponent>
                   )
                 })}
@@ -66,7 +64,7 @@ const SiderailMobile = ({
 const SiderailDesktop = ({
   parentTitle,
   parentUrl,
-  items,
+  pages,
   LinkComponent = "a",
 }: Omit<SiderailProps, "type">) => {
   return (
@@ -81,32 +79,31 @@ const SiderailDesktop = ({
         </h4>
       </LinkComponent>
 
-      {items.map((item, index) => {
+      {pages.map(({ url, title, isCurrent, childPages }, index) => {
         return (
           <div
             className={`${Paragraph[3]} ${
-              index !== items.length - 1 && "border-b border-divider-medium"
+              index !== pages.length - 1 && "border-b border-divider-medium"
             } text-content`}
           >
             <LinkComponent
-              href={item.url}
+              href={url}
               className={`${
-                item.isCurrent ? "font-bold" : ""
+                isCurrent ? "font-bold" : ""
               } block py-3 hover:bg-interaction-sub active:underline active:underline-offset-2`}
             >
-              {item.title}
+              {title}
             </LinkComponent>
-            {item.isCurrent &&
-              item.children &&
-              item.children.map((child, index) => {
+            {isCurrent &&
+              childPages?.map(({ url, title }, index) => {
                 return (
                   <LinkComponent
-                    href={child.url}
+                    href={url}
                     className={`block py-2.5 pl-10 hover:bg-interaction-sub active:underline active:underline-offset-2 ${
-                      index === item.children!.length - 1 && "pb-3"
+                      index === childPages.length - 1 && "pb-3"
                     }`}
                   >
-                    {child.title}
+                    {title}
                   </LinkComponent>
                 )
               })}
