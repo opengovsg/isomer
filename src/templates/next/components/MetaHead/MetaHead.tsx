@@ -1,8 +1,14 @@
 import { MetaHeadProps } from "~/common"
 
-const MetaHead = ({ title, description, noIndex, favicon }: MetaHeadProps) => {
+const MetaHead = ({
+  title,
+  description,
+  noIndex,
+  favicon,
+  HeadComponent = "head",
+}: MetaHeadProps) => {
   return (
-    <>
+    <HeadComponent>
       <meta charSet="utf-8" />
       <meta
         name="viewport"
@@ -32,7 +38,7 @@ const MetaHead = ({ title, description, noIndex, favicon }: MetaHeadProps) => {
         href={favicon || "https://www.isomer.gov.sg/images/favicon-isomer.ico"}
         type="image/x-icon"
       />
-    </>
+    </HeadComponent>
   )
 }
 

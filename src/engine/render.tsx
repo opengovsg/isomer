@@ -22,8 +22,8 @@ export const RenderMetaHead = (props: IsomerMetaHeadSchema) => {
         description: props.page.description,
         noIndex: props.page.noIndex,
         layout: props.page.layout,
+        HeadComponent: props.HeadComponent,
       },
-      LinkComponent: props.LinkComponent,
     })
   }
 

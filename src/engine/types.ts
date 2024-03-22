@@ -96,5 +96,5 @@ export interface IsomerPageSchema {
 export interface IsomerMetaHeadSchema {
   site: Pick<IsomerSiteProps, "theme" | "favicon" | "siteName">
   page: Pick<IsomerPageProps, "title" | "description" | "noIndex" | "layout">
-  LinkComponent?: any // Next.js link
+  HeadComponent?: any // Next.js head
 }
