@@ -1,10 +1,10 @@
 import { Meta, StoryFn } from "@storybook/react"
-import ArticleCard from "./ArticleCard"
-import ArticleCardProps from "~/common/ArticleCard"
+import CollectionCard from "./CollectionCard"
+import { CollectionCardProps } from "~/common"
 
 export default {
-  title: "Next/Components/ArticleCard",
-  component: ArticleCard,
+  title: "Next/Components/CollectionCard",
+  component: CollectionCard,
   argTypes: {},
   parameters: {
     themes: {
@@ -14,7 +14,9 @@ export default {
 } as Meta
 
 // Template for stories
-const Template: StoryFn<ArticleCardProps> = (args) => <ArticleCard {...args} />
+const Template: StoryFn<CollectionCardProps> = (args) => (
+  <CollectionCard {...args} />
+)
 
 export const Default = Template.bind({})
 Default.args = {
