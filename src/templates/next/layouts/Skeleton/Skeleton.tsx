@@ -5,9 +5,10 @@ export const Skeleton = ({
   site,
   page,
   LinkComponent,
+  HeadComponent,
   children,
 }: React.PropsWithChildren<
-  Pick<IsomerPageSchema, "site" | "page" | "LinkComponent">
+  Pick<IsomerPageSchema, "site" | "page" | "HeadComponent" | "LinkComponent">
 >) => {
   const isStaging = site.environment === "staging"
   const timeNow = new Date()
@@ -19,55 +20,50 @@ export const Skeleton = ({
     timeNow.getFullYear()
 
   return (
-    <html lang={page.language || "en"} data-theme={`isomer-${site.theme}`}>
-      <head>
-        <meta charSet="utf-8" />
-        <meta
-          name="viewport"
-          content="width=device-width, user-scalable=yes, initial-scale=1.0"
-        />
-        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-
-        <meta property="og:title" content={page.title} />
-        {page.noIndex && <meta name="robots" content="noindex" />}
-
-        <title>{page.title}</title>
-      </head>
-      <body>
-        {site.isGovernment &&
-          renderComponent({
-            component: { type: "masthead", isStaging },
-            LinkComponent,
-          })}
-
-        {renderComponent({
-          component: {
-            type: "navbar",
-            logoUrl: site.logoUrl,
-            logoAlt: site.siteName,
-            search: {
-              type: "localSearch",
-              searchUrl: "/search",
-            },
-            items: site.navBarItems,
-          },
+    <>
+      {renderComponent({
+        component: {
+          type: "metahead",
+          title: page.title || site.siteName,
+          description: page.description,
+          noIndex: page.noIndex,
+          favicon: site.favicon,
+          HeadComponent,
+        },
+      })}
+      {site.isGovernment &&
+        renderComponent({
+          component: { type: "masthead", isStaging },
           LinkComponent,
         })}
 
-        {children}
-
-        {renderComponent({
-          component: {
-            type: "footer",
-            isGovernment: site.isGovernment,
-            siteName: site.siteName,
-            agencyName: site.agencyName || site.siteName,
-            lastUpdated,
-            ...site.footerItems,
+      {renderComponent({
+        component: {
+          type: "navbar",
+          logoUrl: site.logoUrl,
+          logoAlt: site.siteName,
+          search: {
+            type: "localSearch",
+            searchUrl: "/search",
           },
-          LinkComponent,
-        })}
-      </body>
-    </html>
+          items: site.navBarItems,
+        },
+        LinkComponent,
+      })}
+
+      {children}
+
+      {renderComponent({
+        component: {
+          type: "footer",
+          isGovernment: site.isGovernment,
+          siteName: site.siteName,
+          agencyName: site.agencyName || site.siteName,
+          lastUpdated,
+          ...site.footerItems,
+        },
+        LinkComponent,
+      })}
+    </>
   )
 }

@@ -13,6 +13,7 @@ import {
   Infopic,
   KeyStatistics,
   Masthead,
+  MetaHead,
   Navbar,
   OrderedList,
   Paragraph,
@@ -23,7 +24,7 @@ import {
 
 interface RenderComponentProps {
   component: IsomerComponent
-  LinkComponent: any // Next.js link
+  LinkComponent?: any // Next.js link
 }
 
 export const renderComponent = ({
@@ -53,6 +54,8 @@ export const renderComponent = ({
       return <KeyStatistics {...component} />
     case "masthead":
       return <Masthead {...component} />
+    case "metahead":
+      return <MetaHead {...component} />
     case "navbar":
       return <Navbar {...component} />
     case "orderedlist":
@@ -68,7 +71,7 @@ export const renderComponent = ({
   }
 }
 
-const renderLayout = (props: IsomerPageSchema) => {
+export const renderLayout = (props: IsomerPageSchema) => {
   switch (props.page.layout) {
     case "homepage":
       return <HomepageLayout {...props} />
@@ -76,5 +79,3 @@ const renderLayout = (props: IsomerPageSchema) => {
       return <ContentLayout {...props} />
   }
 }
-
-export default renderLayout
