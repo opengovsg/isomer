@@ -805,7 +805,7 @@
         },
         "href": {
           "type": "string",
-          "title": "Image URL",
+          "title": "URL Link",
           "description": "The URL to link the image to"
         }
       }
