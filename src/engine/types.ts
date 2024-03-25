@@ -87,14 +87,10 @@ interface IsomerPageProps {
 }
 
 export interface IsomerPageSchema {
+  version: string
   site: IsomerSiteProps
   page: IsomerPageProps
   content: IsomerComponent[]
   LinkComponent?: any // Next.js link
-}
-
-export interface IsomerMetaHeadSchema {
-  site: Pick<IsomerSiteProps, "theme" | "favicon" | "siteName">
-  page: Pick<IsomerPageProps, "title" | "description" | "noIndex" | "layout">
   HeadComponent?: any // Next.js head
 }

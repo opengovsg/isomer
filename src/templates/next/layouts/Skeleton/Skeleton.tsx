@@ -5,9 +5,10 @@ export const Skeleton = ({
   site,
   page,
   LinkComponent,
+  HeadComponent,
   children,
 }: React.PropsWithChildren<
-  Pick<IsomerPageSchema, "site" | "page" | "LinkComponent">
+  Pick<IsomerPageSchema, "site" | "page" | "HeadComponent" | "LinkComponent">
 >) => {
   const isStaging = site.environment === "staging"
   const timeNow = new Date()
@@ -20,6 +21,16 @@ export const Skeleton = ({
 
   return (
     <>
+      {renderComponent({
+        component: {
+          type: "metahead",
+          title: page.title || site.siteName,
+          description: page.description,
+          noIndex: page.noIndex,
+          favicon: site.favicon,
+          HeadComponent,
+        },
+      })}
       {site.isGovernment &&
         renderComponent({
           component: { type: "masthead", isStaging },
