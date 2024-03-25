@@ -2,6 +2,7 @@ import type {
   ButtonProps,
   CalloutProps,
   CardsProps,
+  CollectionCardProps,
   ContentPageHeaderProps,
   ContentProps,
   FooterProps,
@@ -59,7 +60,7 @@ export type IsomerComponent = IsomerComponentProps & {
   indexable?: string[]
 }
 
-export type IsomerLayout = "homepage" | "content"
+export type IsomerLayout = "homepage" | "content" | "collection"
 
 interface IsomerSitemap {
   title: string
@@ -80,19 +81,41 @@ interface IsomerSiteProps {
   footerItems: SiteConfigFooterProps
 }
 
-interface IsomerPageProps {
-  layout: IsomerLayout
-  language?: "en"
-  title?: MetaHeadProps["title"]
-  description?: MetaHeadProps["description"]
-  noIndex?: MetaHeadProps["noIndex"]
+interface HomePageProps {}
+interface ContentPageProps {}
+interface CollectionPageProps {
+  defaultSort: "date-asc" | "date-desc"
+  items: CollectionCardProps[]
+  title: string
+  subtitle: string
+  // TODO: add in props for filter
 }
 
-export interface IsomerPageSchema {
+export interface BasePageSchema {
   version: string
   site: IsomerSiteProps
-  page: IsomerPageProps
+  meta: MetaHeadProps
   content: IsomerComponent[]
   LinkComponent?: any // Next.js link
   HeadComponent?: any // Next.js head
 }
+
+export interface HomePageSchema extends BasePageSchema {
+  layout: "homepage"
+  props: HomePageProps
+}
+
+export interface ContentPageSchema extends BasePageSchema {
+  layout: "content"
+  props: ContentPageProps
+}
+
+export interface CollectionPageSchema extends BasePageSchema {
+  layout: "collection"
+  props: CollectionPageProps
+}
+
+export type IsomerPageSchema =
+  | HomePageSchema
+  | ContentPageSchema
+  | CollectionPageSchema

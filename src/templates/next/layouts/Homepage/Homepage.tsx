@@ -1,15 +1,16 @@
-import type { IsomerPageSchema } from "~/engine"
+import type { HomePageSchema } from "~/engine"
 import { Skeleton } from "../Skeleton"
 import { renderComponent } from "../render"
 
 const HomepageLayout = ({
   site,
-  page,
+  props,
+  meta,
   content,
   LinkComponent,
-}: IsomerPageSchema) => {
+}: HomePageSchema) => {
   return (
-    <Skeleton site={site} page={page}>
+    <Skeleton site={site} meta={meta}>
       {content.map((component) =>
         renderComponent({ component, LinkComponent }),
       )}

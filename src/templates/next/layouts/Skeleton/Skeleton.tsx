@@ -3,12 +3,12 @@ import { renderComponent } from "../render"
 
 export const Skeleton = ({
   site,
-  page,
+  meta,
   LinkComponent,
   HeadComponent,
   children,
 }: React.PropsWithChildren<
-  Pick<IsomerPageSchema, "site" | "page" | "HeadComponent" | "LinkComponent">
+  Pick<IsomerPageSchema, "site" | "meta" | "HeadComponent" | "LinkComponent">
 >) => {
   const isStaging = site.environment === "staging"
   const timeNow = new Date()
@@ -24,9 +24,9 @@ export const Skeleton = ({
       {renderComponent({
         component: {
           type: "metahead",
-          title: page.title || site.siteName,
-          description: page.description,
-          noIndex: page.noIndex,
+          title: meta.title || site.siteName,
+          description: meta.description,
+          noIndex: meta.noIndex,
           favicon: site.favicon,
           HeadComponent,
         },

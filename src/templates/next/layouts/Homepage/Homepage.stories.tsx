@@ -1,6 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import Homepage from "./Homepage"
-import { IsomerPageSchema } from "~/engine"
+import { HomePageSchema } from "~/engine"
 
 export default {
   title: "Next/Layouts/Homepage",
@@ -14,20 +14,27 @@ export default {
 } as Meta
 
 // Template for stories
-const Template: StoryFn<IsomerPageSchema> = (args) => <Homepage {...args} />
+const Template: StoryFn<HomePageSchema> = (args) => <Homepage {...args} />
 
 export const Default = Template.bind({})
 Default.args = {
+  layout: "homepage",
   site: {
     siteName: "Isomer Next",
     siteMap: [],
-    theme: "next",
-    language: "en",
+    theme: "isomer-next",
     isGovernment: true,
-    logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.png",
+    logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+    navBarItems: [],
+    footerItems: {
+      privacyStatementLink: "https://www.isomer.gov.sg/privacy",
+      termsOfUseLink: "https://www.isomer.gov.sg/terms",
+      siteNavItems: [],
+    },
   },
-  page: {
-    layout: "homepage",
+  meta: {
+    type: "metahead",
+    title: "Home page",
     description: "A Next.js starter for Isomer",
   },
   content: [
