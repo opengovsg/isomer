@@ -57,7 +57,13 @@
             "$ref": "#/definitions/hero"
           },
           {
+            "$ref": "#/definitions/image"
+          },
+          {
             "$ref": "#/definitions/infobar"
+          },
+          {
+            "$ref": "#/definitions/infocards"
           },
           {
             "$ref": "#/definitions/infocols"
@@ -770,6 +776,40 @@
         }
       }
     },
+    "image": {
+      "type": "object",
+      "title": "Image component",
+      "required": ["type", "src", "alt"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["image"],
+          "default": "image"
+        },
+        "src": {
+          "type": "string",
+          "title": "Image URL",
+          "description": "The URL to the image to display"
+        },
+        "alt": {
+          "type": "string",
+          "title": "Image alt text",
+          "description": "The alt text for the image"
+        },
+        "width": {
+          "type": "number",
+          "title": "Image width",
+          "description": "The width of the image",
+          "exclusiveMinimum": 0,
+          "maximum": 100
+        },
+        "href": {
+          "type": "string",
+          "title": "Image URL",
+          "description": "The URL to link the image to"
+        }
+      }
+    },
     "infobar": {
       "type": "object",
       "title": "Infobar component",
@@ -814,6 +854,75 @@
           "type": "string",
           "title": "Secondary Button URL",
           "description": "The URL to link the secondary button to"
+        }
+      }
+    },
+    "infocards": {
+      "type": "object",
+      "title": "Infocards component",
+      "required": ["type", "variant", "cards"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["infocards"],
+          "default": "infocards"
+        },
+        "variant": {
+          "type": "string",
+          "title": "Infocards variant",
+          "description": "The variant of the Infocards component to use",
+          "enum": ["side", "top"]
+        },
+        "title": {
+          "type": "string",
+          "title": "Infocards title",
+          "description": "The title of the Infocards component"
+        },
+        "subtitle": {
+          "type": "string",
+          "title": "Infocards content",
+          "description": "The subtitle of the Infocards component"
+        },
+        "cards": {
+          "type": "array",
+          "title": "Infocards cards",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["title", "imageUrl"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "title": "Card title",
+                "description": "The title of the card"
+              },
+              "imageUrl": {
+                "type": "string",
+                "title": "Card image URL",
+                "description": "The URL to the image to display for the card"
+              },
+              "imageAlt": {
+                "type": "string",
+                "title": "Card image alt text",
+                "description": "The alt text for the image"
+              },
+              "text": {
+                "type": "string",
+                "title": "Card content",
+                "description": "The content of the card"
+              },
+              "buttonLabel": {
+                "type": "string",
+                "title": "Button label",
+                "description": "The label of the button to display"
+              },
+              "buttonUrl": {
+                "type": "string",
+                "title": "Button URL",
+                "description": "The URL to link the button to"
+              }
+            }
+          }
         }
       }
     },
