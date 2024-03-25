@@ -103,6 +103,7 @@ const SocialMediaSection = ({
               href={link.url}
               target="_blank"
               rel="noopener noreferrer nofollow"
+              aria-label={`${link.type} page`}
             >
               <Icon className="w-[1.625rem] h-auto" />
             </a>
