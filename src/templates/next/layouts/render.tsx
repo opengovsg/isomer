@@ -4,10 +4,13 @@ import ContentLayout from "./Content"
 import {
   Button,
   Callout,
+  CollectionCard,
   ContentPageHeader,
   Footer,
   Heading,
   Hero,
+  Image,
+  InfoCards,
   InfoCols,
   Infobar,
   Infopic,
@@ -36,6 +39,8 @@ export const renderComponent = ({
       return <Button {...component} LinkComponent={LinkComponent} />
     case "callout":
       return <Callout {...component} />
+    case "collectionCard":
+      return <CollectionCard {...component} />
     case "contentpageheader":
       return <ContentPageHeader {...component} />
     case "footer":
@@ -44,8 +49,12 @@ export const renderComponent = ({
       return <Heading {...component} />
     case "hero":
       return <Hero {...component} />
+    case "image":
+      return <Image {...component} />
     case "infobar":
       return <Infobar {...component} />
+    case "infocards":
+      return <InfoCards {...component} />
     case "infocols":
       return <InfoCols {...component} LinkComponent={LinkComponent} />
     case "infopic":

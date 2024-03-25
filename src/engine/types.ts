@@ -2,6 +2,7 @@ import type {
   ButtonProps,
   CalloutProps,
   CardsProps,
+  CollectionCardProps,
   ContentPageHeaderProps,
   ContentProps,
   FooterProps,
@@ -30,6 +31,7 @@ import { SiteConfigFooterProps } from "~/common/Footer"
 type IsomerComponentProps =
   | ButtonProps
   | CalloutProps
+  | CollectionCardProps
   | CardsProps
   | ContentProps
   | ContentPageHeaderProps
