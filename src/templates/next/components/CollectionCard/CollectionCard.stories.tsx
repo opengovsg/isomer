@@ -28,7 +28,7 @@ Default.args = {
   description:
     "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year.",
   image: {
-    src: "https://picsum.photos/500/500",
+    src: "https://placehold.co/500x500",
     alt: "placeholder",
   },
   variant: "article",
@@ -56,7 +56,7 @@ File.args = {
   description:
     "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year.",
   image: {
-    src: "https://picsum.photos/1000/1000",
+    src: "https://placehold.co/500x500",
     alt: "placeholder",
   },
   variant: "file",
