@@ -20,6 +20,7 @@ const Template: StoryFn<CollectionPageSchema> = (args) => (
 
 export const Default = Template.bind({})
 Default.args = {
+  layout: "collection",
   site: {
     siteName: "Isomer Next",
     siteMap: [],
@@ -33,13 +34,9 @@ Default.args = {
       siteNavItems: [],
     },
   },
-  meta: {
-    type: "metahead",
+  page: {
     title: "Publications and other press releases",
     description: "A Next.js starter for Isomer",
-  },
-  props: {
-    title: "Publications and other press releases",
     subtitle:
       "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
     defaultSort: "date-asc",

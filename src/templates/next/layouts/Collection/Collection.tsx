@@ -1,26 +1,25 @@
 import type { CollectionPageSchema } from "~/engine"
-import { Skeleton } from "../Skeleton"
+import { CollectionCard } from "../../components"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"
-import { CollectionCard } from "../../components"
+import { Skeleton } from "../Skeleton"
 
 const CollectionLayout = ({
   site,
-  meta,
-  props,
+  page,
   content,
   LinkComponent,
 }: CollectionPageSchema) => {
   return (
-    <Skeleton site={site} meta={meta}>
+    <Skeleton site={site} page={page}>
       <div className="max-w-[1136px] flex flex-col gap-16 mx-auto my-20 items-center">
         <div className="flex flex-col gap-12">
           <h1
             className={`flex flex-col gap-16 text-content-strong ${Heading[1]}`}
           >
-            {props.title}
+            {page.title}
           </h1>
-          <p className={`${Paragraph[1]} text-content`}>{props.subtitle}</p>
+          <p className={`${Paragraph[1]} text-content`}>{page.subtitle}</p>
         </div>
         <div>Search placeholder</div>
         <div className="flex gap-10 justify-between w-full">
@@ -28,7 +27,7 @@ const CollectionLayout = ({
           <div className="flex flex-col gap-6">
             <div className="flex justify-between w-full items-end">
               <p className={`${Paragraph[1]} text-content`}>
-                {props.items.length} articles
+                {page.items.length} articles
               </p>
               <div className="flex flex-col gap-2">
                 <p className={`${Paragraph[2]} text-content-strong`}>Sort by</p>
@@ -36,7 +35,7 @@ const CollectionLayout = ({
               </div>
             </div>
             <div className="flex flex-col gap-0">
-              {props.items.map((item) => (
+              {page.items.map((item) => (
                 <CollectionCard {...item} LinkComponent={LinkComponent} />
               ))}
             </div>

@@ -81,12 +81,17 @@ interface IsomerSiteProps {
   footerItems: SiteConfigFooterProps
 }
 
-interface HomePageProps {}
-interface ContentPageProps {}
-interface CollectionPageProps {
+interface BasePageProps {
+  title: string
+  language?: "en"
+  description?: string
+  noIndex?: boolean
+}
+export interface HomePageProps extends BasePageProps {}
+export interface ContentPageProps extends BasePageProps {}
+export interface CollectionPageProps extends BasePageProps {
   defaultSort: "date-asc" | "date-desc"
   items: CollectionCardProps[]
-  title: string
   subtitle: string
   // TODO: add in props for filter
 }
@@ -94,7 +99,6 @@ interface CollectionPageProps {
 export interface BasePageSchema {
   version: string
   site: IsomerSiteProps
-  meta: MetaHeadProps
   content: IsomerComponent[]
   LinkComponent?: any // Next.js link
   HeadComponent?: any // Next.js head
@@ -102,17 +106,16 @@ export interface BasePageSchema {
 
 export interface HomePageSchema extends BasePageSchema {
   layout: "homepage"
-  props: HomePageProps
+  page: HomePageProps
 }
-
 export interface ContentPageSchema extends BasePageSchema {
   layout: "content"
-  props: ContentPageProps
+  page: ContentPageProps
 }
 
 export interface CollectionPageSchema extends BasePageSchema {
   layout: "collection"
-  props: CollectionPageProps
+  page: CollectionPageProps
 }
 
 export type IsomerPageSchema =

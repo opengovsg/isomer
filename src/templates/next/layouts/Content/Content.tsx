@@ -1,16 +1,15 @@
-import type { ContentPageSchema } from "~/engine"
+import { ContentPageSchema } from "~/engine"
 import { Skeleton } from "../Skeleton"
 import { renderComponent } from "../render"
 
 const ContentLayout = ({
   site,
-  meta,
-  props,
+  page,
   content,
   LinkComponent,
 }: ContentPageSchema) => {
   return (
-    <Skeleton site={site} meta={meta}>
+    <Skeleton site={site} page={page}>
       {content.map((component) =>
         renderComponent({ component, LinkComponent }),
       )}

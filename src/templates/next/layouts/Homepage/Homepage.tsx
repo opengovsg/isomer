@@ -1,16 +1,15 @@
-import type { HomePageSchema } from "~/engine"
+import { HomePageSchema } from "~/engine"
 import { Skeleton } from "../Skeleton"
 import { renderComponent } from "../render"
 
 const HomepageLayout = ({
   site,
-  props,
-  meta,
+  page,
   content,
   LinkComponent,
 }: HomePageSchema) => {
   return (
-    <Skeleton site={site} meta={meta}>
+    <Skeleton site={site} page={page}>
       {content.map((component) =>
         renderComponent({ component, LinkComponent }),
       )}
