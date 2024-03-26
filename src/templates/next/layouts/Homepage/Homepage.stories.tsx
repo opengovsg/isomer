@@ -32,8 +32,7 @@ Default.args = {
       siteNavItems: [],
     },
   },
-  meta: {
-    type: "metahead",
+  page: {
     title: "Home page",
     description: "A Next.js starter for Isomer",
   },
