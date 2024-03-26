@@ -18,6 +18,8 @@ const CollectionSearch = ({
         type="text"
         name="search"
         value={search}
+        role="search"
+        aria-label={placeholder}
         onChange={(e) => setSearch(e.target.value)}
       />
     </label>
