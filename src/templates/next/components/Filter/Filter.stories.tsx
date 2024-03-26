@@ -37,10 +37,10 @@ Default.args = {
       id: "type",
       label: "Type",
       items: [
-        { id: "article", label: "Article" },
-        { id: "speech", label: "Speech" },
-        { id: "press-release", label: "Press Release" },
-        { id: "blog", label: "Blog" },
+        { id: "article", label: "Article", count: 1204 },
+        { id: "speech", label: "Speech", count: 888 },
+        { id: "press-release", label: "Press Release", count: 560 },
+        { id: "blog", label: "Blog", count: 120 },
       ],
     },
     {

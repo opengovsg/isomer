@@ -62,7 +62,7 @@ const Filter = ({
               showFilter[id] ? "block" : "hidden"
             }`}
           >
-            {items.map(({ id: itemId, label: itemLabel }) => (
+            {items.map(({ id: itemId, label: itemLabel, count }) => (
               <label
                 htmlFor={itemId}
                 className="flex flex-row align-middle w-full px-1 py-2 hover:bg-interaction-main-subtle-hover has-[:focus]:ring-2 has-[:focus]:ring-focus-outline"
@@ -77,7 +77,10 @@ const Filter = ({
                     ?.items.some((item) => item.id === itemId)}
                   onChange={() => updateAppliedFilters(id, itemId)}
                 />
-                <p className="ml-4 inline-block">{itemLabel}</p>
+                <p className="ml-4 inline-block">
+                  {itemLabel}
+                  {count && ` (${count.toLocaleString()})`}
+                </p>
               </label>
             ))}
           </div>
