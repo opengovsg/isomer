@@ -60,8 +60,6 @@ export type IsomerComponent = IsomerComponentProps & {
   indexable?: string[]
 }
 
-export type IsomerLayout = "homepage" | "content" | "collection"
-
 interface IsomerSitemap {
   title: string
   permalink: string

@@ -1,6 +1,5 @@
 export interface MetaHeadProps {
   type: "metahead"
-  language?: "en"
   title: string
   description?: string
   noIndex?: boolean
