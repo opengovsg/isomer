@@ -61,8 +61,6 @@ export type IsomerComponent = IsomerComponentProps & {
   indexable?: string[]
 }
 
-export type IsomerLayout = "homepage" | "content"
-
 interface IsomerSitemap {
   title: string
   permalink: string
@@ -82,19 +80,44 @@ interface IsomerSiteProps {
   footerItems: SiteConfigFooterProps
 }
 
-interface IsomerPageProps {
-  layout: IsomerLayout
+interface BasePageProps {
+  title: string
   language?: "en"
-  title?: MetaHeadProps["title"]
-  description?: MetaHeadProps["description"]
-  noIndex?: MetaHeadProps["noIndex"]
+  description?: string
+  noIndex?: boolean
+}
+export interface HomePageProps extends BasePageProps {}
+export interface ContentPageProps extends BasePageProps {}
+export interface CollectionPageProps extends BasePageProps {
+  defaultSort: "date-asc" | "date-desc"
+  items: CollectionCardProps[]
+  subtitle: string
+  // TODO: add in props for filter
 }
 
-export interface IsomerPageSchema {
+export interface BasePageSchema {
   version: string
   site: IsomerSiteProps
-  page: IsomerPageProps
   content: IsomerComponent[]
   LinkComponent?: any // Next.js link
   HeadComponent?: any // Next.js head
 }
+
+export interface HomePageSchema extends BasePageSchema {
+  layout: "homepage"
+  page: HomePageProps
+}
+export interface ContentPageSchema extends BasePageSchema {
+  layout: "content"
+  page: ContentPageProps
+}
+
+export interface CollectionPageSchema extends BasePageSchema {
+  layout: "collection"
+  page: CollectionPageProps
+}
+
+export type IsomerPageSchema =
+  | HomePageSchema
+  | ContentPageSchema
+  | CollectionPageSchema

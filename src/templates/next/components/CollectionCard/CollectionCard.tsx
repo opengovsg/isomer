@@ -99,9 +99,10 @@ const ArticleCard = ({
   title,
   description,
   image,
+  LinkComponent = "a",
 }: Omit<ArticleCardProps, "type">) => {
   return (
-    <a href={url}>
+    <LinkComponent href={url}>
       <div className="flex flex-col sm:flex-row gap-6 py-6 px-3 sm:px-6 border-y border-divider-medium text-content hover:text-hyperlink-hover">
         <ArticleTextComponent
           lastUpdated={lastUpdated}
@@ -111,7 +112,7 @@ const ArticleCard = ({
         />
         <ImageComponent image={image} />
       </div>
-    </a>
+    </LinkComponent>
   )
 }
 

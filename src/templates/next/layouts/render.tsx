@@ -1,6 +1,7 @@
 import type { IsomerComponent, IsomerPageSchema } from "~/engine"
 import HomepageLayout from "./Homepage"
 import ContentLayout from "./Content"
+import CollectionLayout from "./Collection"
 import {
   Button,
   Callout,
@@ -81,10 +82,12 @@ export const renderComponent = ({
 }
 
 export const renderLayout = (props: IsomerPageSchema) => {
-  switch (props.page.layout) {
+  switch (props.layout) {
     case "homepage":
       return <HomepageLayout {...props} />
     case "content":
       return <ContentLayout {...props} />
+    case "collection":
+      return <CollectionLayout {...props} />
   }
 }
