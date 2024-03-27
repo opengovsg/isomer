@@ -41,7 +41,7 @@ const Filter = ({
 
   return (
     <div className="flex flex-col divide-y divide-divider-medium last:border-b last:border-b-divider-medium">
-      <h5 className={`${Heading[5]} py-4`}>Filter by</h5>
+      <h5 className={`${Heading[5]} text-content py-4`}>Filter by</h5>
       {filters.map(({ id, label, items }) => (
         <div className="py-4" key={id}>
           <button
@@ -65,11 +65,11 @@ const Filter = ({
             {items.map(({ id: itemId, label: itemLabel, count }) => (
               <label
                 htmlFor={itemId}
-                className="flex flex-row align-middle w-full px-1 py-2 hover:bg-interaction-main-subtle-hover has-[:focus]:ring-2 has-[:focus]:ring-focus-outline"
+                className="flex flex-row align-middle w-full px-1 py-2 rounded hover:bg-interaction-main-subtle-hover has-[:focus]:ring-2 has-[:focus]:ring-focus-outline"
               >
                 <input
                   type="checkbox"
-                  className="h-6 w-6 rounded-sm border-2 border-divider-medium text-interaction-main group-focus:ring-2 group-focus:ring-focus-outline focus:ring-0"
+                  className="h-6 w-6 rounded border-2 border-divider-medium text-interaction-main group-focus:ring-2 group-focus:ring-focus-outline focus:ring-0"
                   id={itemId}
                   name={itemId}
                   checked={appliedFilters
