@@ -48,6 +48,9 @@ const CollectionSort = ({
         <p className={`${Paragraph[2]} text-content-strong`}>Sort by</p>
         <button
           className="flex gap-6 justify-between border border-divider-medium py-2.5 px-4"
+          aria-label={
+            showSortOptions ? "Hide sort options" : "Show sort options"
+          }
           onClick={() => setShowSortOptions(!showSortOptions)}
         >
           {selectedSortOption}
