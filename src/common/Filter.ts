@@ -1,7 +1,7 @@
 interface FilterItem {
   id: string
   label: string
-  count?: number
+  count: number
 }
 
 interface Filter {

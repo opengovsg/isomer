@@ -78,8 +78,7 @@ const Filter = ({
                   onChange={() => updateAppliedFilters(id, itemId)}
                 />
                 <p className="ml-4 inline-block">
-                  {itemLabel}
-                  {count && ` (${count.toLocaleString()})`}
+                  {itemLabel} ({count.toLocaleString()})
                 </p>
               </label>
             ))}
