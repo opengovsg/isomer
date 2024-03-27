@@ -1,12 +1,12 @@
 import { ParagraphProps } from "~/common"
-import { getSanitizedInlineContent } from "~/utils/getSanitizedInlineContent"
+import BaseParagraph from "../shared/Paragraph"
+import { Paragraph as ParagraphStyle } from "../../typography/Paragraph"
 
 const Paragraph = ({ content }: Omit<ParagraphProps, "type">) => {
-  const sanitizedContent = getSanitizedInlineContent(content)
   return (
-    <p
-      className="[&_a]:underline [&_a]:text-blue-500 hover:[&_a]:text-blue-700 visited:[&_a]:text-purple-600 after:[&_a[target=\_blank]]:content-['_↗']"
-      dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+    <BaseParagraph
+      content={content}
+      className={`${ParagraphStyle[1]} text-content-strong`}
     />
   )
 }
