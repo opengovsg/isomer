@@ -3,6 +3,7 @@ import { Paragraph } from "../../typography/Paragraph"
 import { useState } from "react"
 import { MdKeyboardArrowDown } from "react-icons/md"
 import { SortDirection, SortKey } from "~/common/CollectionSort"
+import { IoMdCheckmark } from "react-icons/io"
 
 interface SortConfig {
   sortBy: SortKey
@@ -47,7 +48,9 @@ const CollectionSort = ({
       <div className="flex flex-col gap-2">
         <p className={`${Paragraph[2]} text-content-strong`}>Sort by</p>
         <button
-          className="flex gap-6 justify-between border border-divider-medium py-2.5 px-4"
+          className={`flex gap-6 justify-between border border-divider-medium py-2.5 px-4 rounded-[4px] ${
+            showSortOptions && "border-2 border-focus-outline"
+          }`}
           aria-label={
             showSortOptions ? "Hide sort options" : "Show sort options"
           }
@@ -62,22 +65,25 @@ const CollectionSort = ({
         </button>
       </div>
       {showSortOptions && (
-        <div className="absolute w-full bg-white">
-          {SortOptions.filter((option) => option !== selectedSortOption).map(
-            (option) => (
-              <button
-                key={option}
-                className="w-full border border-t-0 border-divider-medium py-2.5 px-4 text-left hover:bg-hyperlink-hover-inverse"
-                onClick={() => {
-                  setSortBy(SortOptionToConfigMap[option].sortBy)
-                  setSortDirection(SortOptionToConfigMap[option].sortDirection)
-                  setShowSortOptions(false)
-                }}
-              >
-                {option}
-              </button>
-            ),
-          )}
+        <div className="absolute w-full bg-white flex flex-col gap-0 rounded-[4px] py-3">
+          {SortOptions.map((option) => (
+            <button
+              key={option}
+              className={`flex justify-between items-center w-full rounded-[4px] py-2.5 px-4 text-left hover:bg-interaction-mainSubtle-hover ${
+                option === selectedSortOption && "border-2 border-focus-outline"
+              }`}
+              onClick={() => {
+                setSortBy(SortOptionToConfigMap[option].sortBy)
+                setSortDirection(SortOptionToConfigMap[option].sortDirection)
+                setShowSortOptions(false)
+              }}
+            >
+              {option}
+              {option === selectedSortOption && (
+                <IoMdCheckmark className="w-5 h-auto flex-shrink-0" />
+              )}
+            </button>
+          ))}
         </div>
       )}
     </div>

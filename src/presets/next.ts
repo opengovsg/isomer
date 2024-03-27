@@ -51,6 +51,9 @@ export default {
               hover: "#F4F9FF",
             },
           },
+          mainSubtle: {
+            hover: "#F4F9FF",
+          },
           link: {
             DEFAULT: "#333333",
             hover: "#333333",
