@@ -30,36 +30,46 @@ const SiderailMobile = ({
         )}
       </button>
 
-      {isExpanded &&
-        pages.map(({ url, title, isCurrent, childPages }) => {
-          return (
-            <div
-              className={`border-b border-divider-medium ${Paragraph[3]} text-content`}
-            >
-              <LinkComponent
-                href={url}
-                className={`${
-                  isCurrent ? "font-bold" : ""
-                } block py-4 px-5 hover:bg-interaction-sub active:underline active:underline-offset-2 `}
+      {isExpanded && (
+        <ul>
+          {pages.map(({ url, title, isCurrent, childPages }) => {
+            return (
+              <li
+                className={`border-b border-divider-medium ${Paragraph[3]} text-content`}
               >
-                {title}
-              </LinkComponent>
-              {isCurrent &&
-                childPages?.map(({ title, url }, index) => {
-                  return (
-                    <LinkComponent
-                      href={url}
-                      className={`block py-1.5 pl-12 hover:bg-interaction-sub active:underline active:underline-offset-2 ${
-                        index === childPages.length - 1 && "pb-4"
-                      }`}
-                    >
-                      {title}
-                    </LinkComponent>
-                  )
-                })}
-            </div>
-          )
-        })}
+                {isCurrent ? (
+                  <p className="font-bold block py-4 px-5">{title}</p>
+                ) : (
+                  <LinkComponent
+                    href={url}
+                    className="block py-4 px-5 hover:bg-interaction-sub active:underline active:underline-offset-2"
+                  >
+                    {title}
+                  </LinkComponent>
+                )}
+                {isCurrent && (
+                  <ul>
+                    {childPages?.map(({ title, url }, index) => {
+                      return (
+                        <li>
+                          <LinkComponent
+                            href={url}
+                            className={`block py-3 pl-12 pr-5 hover:bg-interaction-sub active:underline active:underline-offset-2 ${
+                              index === childPages.length - 1 && "pb-4"
+                            }`}
+                          >
+                            {title}
+                          </LinkComponent>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      )}
     </div>
   )
 }
@@ -82,37 +92,46 @@ const SiderailDesktop = ({
         </h4>
       </LinkComponent>
 
-      {pages.map(({ url, title, isCurrent, childPages }, index) => {
-        return (
-          <div
-            className={`${Paragraph[3]} ${
-              index !== pages.length - 1 && "border-b border-divider-medium"
-            } text-content`}
-          >
-            <LinkComponent
-              href={url}
-              className={`${
-                isCurrent ? "font-bold" : ""
-              } block py-3 hover:bg-interaction-sub active:underline active:underline-offset-2`}
+      <ul>
+        {pages.map(({ url, title, isCurrent, childPages }, index) => {
+          return (
+            <li
+              className={`${Paragraph[3]} ${
+                index !== pages.length - 1 && "border-b border-divider-medium"
+              } text-content`}
             >
-              {title}
-            </LinkComponent>
-            {isCurrent &&
-              childPages?.map(({ url, title }, index) => {
-                return (
-                  <LinkComponent
-                    href={url}
-                    className={`block py-2.5 pl-10 hover:bg-interaction-sub active:underline active:underline-offset-2 ${
-                      index === childPages.length - 1 && "pb-3"
-                    }`}
-                  >
-                    {title}
-                  </LinkComponent>
-                )
-              })}
-          </div>
-        )
-      })}
+              {isCurrent ? (
+                <p className="font-bold block py-3 px-2">{title}</p>
+              ) : (
+                <LinkComponent
+                  href={url}
+                  className="block py-3 hover:bg-interaction-sub active:underline active:underline-offset-2"
+                >
+                  <p className="px-2">{title}</p>
+                </LinkComponent>
+              )}
+              {isCurrent && (
+                <ul>
+                  {childPages?.map(({ url, title }, index) => {
+                    return (
+                      <li>
+                        <LinkComponent
+                          href={url}
+                          className={`block py-2.5 pl-10 hover:bg-interaction-sub active:underline active:underline-offset-2 ${
+                            index === childPages.length - 1 && "pb-3"
+                          }`}
+                        >
+                          {title}
+                        </LinkComponent>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }
