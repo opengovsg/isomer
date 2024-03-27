@@ -1,8 +1,9 @@
 import { SingleCardProps } from "~/common/InfoCards"
-import Button from "../Button"
-import { getHeadingStyles } from "../../typography/Heading"
+import { Heading } from "../../typography/Heading"
+import { BiRightArrowAlt } from "react-icons/bi"
+import { ButtonLink } from "../../typography/ButtonLink"
 
-interface KeyStatisticsProps extends SingleCardProps {
+interface CardProps extends SingleCardProps {
   variant?: "horizontal" | "vertical"
   className?: string
 }
@@ -31,32 +32,34 @@ const TextComponent = ({
   title,
   text,
   buttonLabel,
-  buttonUrl,
   className,
 }: {
-  text: SingleCardProps["text"]
+  text: SingleCardProps["description"]
   title: SingleCardProps["title"]
   buttonLabel: SingleCardProps["buttonLabel"]
-  buttonUrl: SingleCardProps["buttonUrl"]
   className?: string
 }) => {
   return (
-    <div className={`p-7 flex flex-col flex-grow gap-3 h-fit ${className}`}>
-      {title && (
-        <h4 className={`${getHeadingStyles(4, "md")} text-content-strong`}>
-          {title}
-        </h4>
-      )}
-      <div className="text-content text-left text-base sm:text-lg grow">
-        {text}
+    <div
+      className={`py-6 px-5 sm:p-7 flex flex-col flex-grow gap-6 justify-between ${className}`}
+    >
+      <div className="flex flex-col gap-3">
+        {title && (
+          <h4 className={`${Heading[4]} text-content-strong`}>{title}</h4>
+        )}
+        {text && (
+          <p className="text-content text-left text-base sm:text-lg grow">
+            {text}
+          </p>
+        )}
       </div>
-      {buttonLabel && buttonUrl && (
-        <Button
-          label={buttonLabel}
-          href={buttonUrl}
-          variant="link"
-          rightIcon="right-arrow"
-        />
+      {buttonLabel && (
+        <div className={`flex items-center gap-1`}>
+          <p className={`text-interaction-link ${ButtonLink[1]}`}>
+            {buttonLabel}
+          </p>
+          <BiRightArrowAlt className="w-6 h-auto flex-shrink-0" />
+        </div>
       )}
     </div>
   )
@@ -64,18 +67,25 @@ const TextComponent = ({
 
 const Card = ({
   title,
+  url: cardUrl,
   imageUrl,
   imageAlt,
-  text,
+  description: text,
   className,
   buttonLabel,
-  buttonUrl,
   variant,
-}: KeyStatisticsProps) => {
+}: CardProps) => {
   if (variant === "horizontal")
     return (
-      <div
-        className={`flex flex-row gap-1 border-2 border-divider-medium ${className}`}
+      <a
+        className={`flex flex-row gap-1 border border-divider-medium ${className}`}
+        href={cardUrl}
+        target={cardUrl.startsWith("http") ? "_blank" : undefined}
+        rel={
+          cardUrl.startsWith("http")
+            ? "noopener noreferrer nofollow"
+            : undefined
+        }
       >
         <ImageComponent
           src={imageUrl}
@@ -86,27 +96,26 @@ const Card = ({
           text={text}
           title={title}
           buttonLabel={buttonLabel}
-          buttonUrl={buttonUrl}
           className="h-full w-1/2"
         />
-      </div>
+      </a>
     )
   return (
-    <div
-      className={`flex flex-col gap-1 border-2 border-divider-medium ${className}`}
+    <a
+      className={`flex flex-col gap-1 border border-divider-medium ${className}`}
+      href={cardUrl}
+      target={cardUrl.startsWith("http") ? "_blank" : undefined}
+      rel={
+        cardUrl.startsWith("http") ? "noopener noreferrer nofollow" : undefined
+      }
     >
       <ImageComponent
         src={imageUrl}
         alt={imageAlt || title}
         className="max-h-52"
       />
-      <TextComponent
-        text={text}
-        title={title}
-        buttonLabel={buttonLabel}
-        buttonUrl={buttonUrl}
-      />
-    </div>
+      <TextComponent text={text} title={title} buttonLabel={buttonLabel} />
+    </a>
   )
 }
 

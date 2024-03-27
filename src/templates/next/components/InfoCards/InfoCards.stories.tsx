@@ -27,33 +27,35 @@ Default.args = {
   cards: [
     {
       title: "A yummy, tipsy evening at Duxton",
-      text: "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
+      description:
+        "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
       imageUrl: "https://placehold.co/200x300",
       imageAlt: "alt text",
       buttonLabel: "Explore with us",
-      buttonUrl: "https://www.google.com",
+      url: "https://www.google.com",
     },
     {
       title: "A yummy, tipsy evening at Duxton",
-      text: "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
+      description:
+        "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
       imageUrl: "https://placehold.co/200x300",
       imageAlt: "alt text",
       buttonLabel: "Explore with us",
-      buttonUrl: "https://www.google.com",
-    },
-    {
-      title: "A yummy, tipsy evening at Duxton",
-      imageUrl: "https://placehold.co/200x300",
-      imageAlt: "alt text",
-      buttonLabel: "Explore with us",
-      buttonUrl: "https://www.google.com",
+      url: "/",
     },
     {
       title: "A yummy, tipsy evening at Duxton",
       imageUrl: "https://placehold.co/200x300",
       imageAlt: "alt text",
       buttonLabel: "Explore with us",
-      buttonUrl: "https://www.google.com",
+      url: "https://www.google.com",
+    },
+    {
+      title: "A yummy, tipsy evening at Duxton",
+      imageUrl: "https://placehold.co/200x300",
+      imageAlt: "alt text",
+      buttonLabel: "Explore with us",
+      url: "https://www.google.com",
     },
   ],
 }
@@ -69,33 +71,35 @@ GrayBackground.args = {
   cards: [
     {
       title: "A yummy, tipsy evening at Duxton",
-      text: "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
+      description:
+        "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
       imageUrl: "https://placehold.co/200x300",
       imageAlt: "alt text",
       buttonLabel: "Explore with us",
-      buttonUrl: "https://www.google.com",
+      url: "https://www.google.com",
     },
     {
       title: "A yummy, tipsy evening at Duxton",
-      text: "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
+      description:
+        "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
       imageUrl: "https://placehold.co/200x300",
       imageAlt: "alt text",
       buttonLabel: "Explore with us",
-      buttonUrl: "https://www.google.com",
-    },
-    {
-      title: "A yummy, tipsy evening at Duxton",
-      imageUrl: "https://placehold.co/200x300",
-      imageAlt: "alt text",
-      buttonLabel: "Explore with us",
-      buttonUrl: "https://www.google.com",
+      url: "/",
     },
     {
       title: "A yummy, tipsy evening at Duxton",
       imageUrl: "https://placehold.co/200x300",
       imageAlt: "alt text",
       buttonLabel: "Explore with us",
-      buttonUrl: "https://www.google.com",
+      url: "https://www.google.com",
+    },
+    {
+      title: "A yummy, tipsy evening at Duxton",
+      imageUrl: "https://placehold.co/200x300",
+      imageAlt: "alt text",
+      buttonLabel: "Explore with us",
+      url: "https://www.google.com",
     },
   ],
 }
@@ -111,33 +115,35 @@ Side.args = {
   cards: [
     {
       title: "A yummy, tipsy evening at Duxton",
-      text: "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
+      description:
+        "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
       imageUrl: "https://placehold.co/200x300",
       imageAlt: "alt text",
       buttonLabel: "Explore with us",
-      buttonUrl: "https://www.google.com",
+      url: "https://www.google.com",
     },
     {
       title: "A yummy, tipsy evening at Duxton",
-      text: "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
+      description:
+        "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
       imageUrl: "https://placehold.co/200x300",
       imageAlt: "alt text",
       buttonLabel: "Explore with us",
-      buttonUrl: "https://www.google.com",
-    },
-    {
-      title: "A yummy, tipsy evening at Duxton",
-      imageUrl: "https://placehold.co/200x300",
-      imageAlt: "alt text",
-      buttonLabel: "Explore with us",
-      buttonUrl: "https://www.google.com",
+      url: "/",
     },
     {
       title: "A yummy, tipsy evening at Duxton",
       imageUrl: "https://placehold.co/200x300",
       imageAlt: "alt text",
       buttonLabel: "Explore with us",
-      buttonUrl: "https://www.google.com",
+      url: "https://www.google.com",
+    },
+    {
+      title: "A yummy, tipsy evening at Duxton",
+      imageUrl: "https://placehold.co/200x300",
+      imageAlt: "alt text",
+      buttonLabel: "Explore with us",
+      url: "https://www.google.com",
     },
   ],
 }

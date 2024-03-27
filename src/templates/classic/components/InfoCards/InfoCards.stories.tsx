@@ -28,13 +28,17 @@ Default.args = {
   cards: [
     {
       imageUrl: "https://placehold.co/200x300",
+      imageAlt: "alt text",
       title: "Default Title",
-      text: "Default text here.",
+      description: "Default text here.",
+      url: "https://www.google.com",
     },
     {
       imageUrl: "https://placehold.co/200x300",
+      imageAlt: "alt text",
       title: "Default Title",
-      text: "Default text here.",
+      description: "Default text here.",
+      url: "/",
     },
   ],
 }
@@ -46,8 +50,10 @@ CustomCard.args = {
   cards: [
     {
       imageUrl: "https://placehold.co/200x300",
+      imageAlt: "alt text",
       title: "Custom Title",
-      text: "Custom text here.",
+      description: "Custom text here.",
+      url: "https://www.google.com",
     },
   ],
 }

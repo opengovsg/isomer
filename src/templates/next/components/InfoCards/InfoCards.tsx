@@ -1,6 +1,6 @@
 import { InfoCardsProps } from "~/common"
 import Card from "../shared/Card"
-import { getHeadingStyles } from "../../typography/Heading"
+import { Heading } from "../../typography/Heading"
 
 const TitleSection = ({
   title,
@@ -13,9 +13,7 @@ const TitleSection = ({
 }) => {
   return (
     <div className={`flex flex-col gap-8 self-start max-w-3xl ${className}`}>
-      <h3 className={`${getHeadingStyles(3, "md")} text-content-strong`}>
-        {title}
-      </h3>
+      <h3 className={`${Heading[3]} text-content-strong`}>{title}</h3>
       {subtitle && (
         <p className="text-content text-sm sm:text-lg">{subtitle}</p>
       )}
@@ -41,11 +39,11 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
             {cards.map((card) => (
               <Card
                 title={card.title}
+                url={card.url}
                 imageUrl={card.imageUrl}
-                text={card.text}
+                description={card.description}
                 imageAlt={card.imageAlt}
                 buttonLabel={card.buttonLabel}
-                buttonUrl={card.buttonLabel}
                 variant="vertical"
               ></Card>
             ))}
@@ -54,11 +52,11 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
             {cards.map((card) => (
               <Card
                 title={card.title}
+                url={card.url}
                 imageUrl={card.imageUrl}
-                text={card.text}
+                description={card.description}
                 imageAlt={card.imageAlt}
                 buttonLabel={card.buttonLabel}
-                buttonUrl={card.buttonLabel}
                 variant="horizontal"
               ></Card>
             ))}
@@ -70,29 +68,29 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
         >
           <TitleSection title={title} subtitle={subtitle} />
           <div
-            className={`grid grid-cols-1 md:grid-cols-3 gap-8 sm:max-md:hidden`}
+            className={`grid grid-cols-1 lg:grid-cols-3 gap-8 sm:max-lg:hidden`}
           >
             {cards.map((card) => (
               <Card
                 title={card.title}
+                url={card.url}
                 imageUrl={card.imageUrl}
-                text={card.text}
+                description={card.description}
                 imageAlt={card.imageAlt}
                 buttonLabel={card.buttonLabel}
-                buttonUrl={card.buttonLabel}
                 variant="vertical"
               ></Card>
             ))}
           </div>
-          <div className={`hidden grid-cols-1 gap-8 sm:max-md:grid`}>
+          <div className={`hidden grid-cols-1 gap-8 sm:max-lg:grid`}>
             {cards.map((card) => (
               <Card
                 title={card.title}
+                url={card.url}
                 imageUrl={card.imageUrl}
-                text={card.text}
+                description={card.description}
                 imageAlt={card.imageAlt}
                 buttonLabel={card.buttonLabel}
-                buttonUrl={card.buttonLabel}
                 variant="horizontal"
               ></Card>
             ))}

@@ -1,15 +1,15 @@
 export interface SingleCardProps {
   title: string
+  url: string
   imageUrl: string
-  imageAlt?: string
-  text?: string
+  imageAlt: string
+  description?: string
   buttonLabel?: string
-  buttonUrl?: string
 }
 
 export interface InfoCardsProps {
   type: "infocards"
-  sectionIdx: number
+  sectionIdx?: number
   title?: string
   subtitle?: string
   variant: "side" | "top"
