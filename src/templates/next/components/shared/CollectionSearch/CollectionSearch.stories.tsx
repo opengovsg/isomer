@@ -4,7 +4,7 @@ import type { CollectionSearchProps } from "../../../types/CollectionSearch"
 import { useState } from "react"
 
 export default {
-  title: "Next/Components/CollectionSearch",
+  title: "Next/Internal Components/CollectionSearch",
   component: CollectionSearch,
   argTypes: {},
   parameters: {
