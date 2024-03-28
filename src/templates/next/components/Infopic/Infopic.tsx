@@ -75,30 +75,19 @@ const SideBySideInfoPic = ({
       </div>
       {/* Desktop */}
       <div className="hidden lg:block">
-        <div className={`${ComponentContent} flex flex-row gap-14 px-10 py-24`}>
-          {isTextOnRight ? (
-            <>
-              <ImageComponent src={src} alt={alt} className="w-1/3" />
-              <TextComponent
-                title={title}
-                description={description}
-                buttonLabel={button}
-                buttonUrl={url}
-                className="w-2/3"
-              />
-            </>
-          ) : (
-            <>
-              <TextComponent
-                title={title}
-                description={description}
-                buttonLabel={button}
-                buttonUrl={url}
-                className="w-2/3"
-              />
-              <ImageComponent src={src} alt={alt} className="w-1/3" />
-            </>
-          )}
+        <div
+          className={`${ComponentContent} flex ${
+            isTextOnRight ? "flex-row" : "flex-row-reverse"
+          } gap-14 px-10 py-24`}
+        >
+          <ImageComponent src={src} alt={alt} className="w-1/3" />
+          <TextComponent
+            title={title}
+            description={description}
+            buttonLabel={button}
+            buttonUrl={url}
+            className="w-2/3"
+          />
         </div>
       </div>
     </>
@@ -132,32 +121,20 @@ const SidePartInfoPic = ({
       </div>
       {/* Desktop */}
       <div className="hidden lg:block">
-        <div className={`${ComponentContent} flex flex-row gap-10 px-10`}>
-          {isTextOnRight ? (
-            <>
-              <ImageComponent src={src} alt={alt} className="w-1/2" />
-              <div className="w-1/2 py-24 my-auto">
-                <TextComponent
-                  title={title}
-                  description={description}
-                  buttonLabel={button}
-                  buttonUrl={url}
-                />
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="w-1/2 py-24 my-auto">
-                <TextComponent
-                  title={title}
-                  description={description}
-                  buttonLabel={button}
-                  buttonUrl={url}
-                />
-              </div>
-              <ImageComponent src={src} alt={alt} className="w-1/2" />
-            </>
-          )}
+        <div
+          className={`${ComponentContent} flex ${
+            isTextOnRight ? "flex-row" : "flex-row-reverse"
+          } gap-10 px-10`}
+        >
+          <ImageComponent src={src} alt={alt} className="w-1/2" />
+          <div className="w-1/2 py-24 my-auto">
+            <TextComponent
+              title={title}
+              description={description}
+              buttonLabel={button}
+              buttonUrl={url}
+            />
+          </div>
         </div>
       </div>
     </>
