@@ -7,7 +7,7 @@ import type {
   HeroSplitProps,
 } from "~/common/Hero"
 import Button from "../Button"
-import { ComponentContent } from "../shared/CustomCssClass"
+import { ComponentContent } from "../shared/customCssClass"
 
 const HeroGradient = ({
   alignment = "left",

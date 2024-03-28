@@ -1,7 +1,7 @@
 import { InfoCardsProps } from "~/common"
 import Card from "../shared/Card"
 import { Heading } from "../../typography/Heading"
-import { ComponentContent } from "../shared/CustomCssClass"
+import { ComponentContent } from "../shared/customCssClass"
 
 const TitleSection = ({
   title,

@@ -1,6 +1,6 @@
 import { InfopicProps } from "~/common"
 import Button from "../Button"
-import { ComponentContent } from "../shared/CustomCssClass"
+import { ComponentContent } from "../shared/customCssClass"
 
 const TextComponent = ({
   title,

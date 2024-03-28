@@ -1,5 +1,5 @@
 import { type KeyStatisticsProps } from "~/common"
-import { ComponentContent } from "../shared/CustomCssClass"
+import { ComponentContent } from "../shared/customCssClass"
 
 const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
   return (

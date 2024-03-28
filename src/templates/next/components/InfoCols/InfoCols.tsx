@@ -3,7 +3,7 @@ import { InfoColsProps } from "~/common"
 import { SUPPORTED_ICONS_MAP, SupportedIconName } from "~/common/Icons"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"
-import { ComponentContent } from "../shared/CustomCssClass"
+import { ComponentContent } from "../shared/customCssClass"
 
 const InfoColsHeader = ({
   title,
