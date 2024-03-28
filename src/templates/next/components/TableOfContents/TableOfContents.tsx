@@ -9,7 +9,10 @@ const TableOfContents = ({ items }: TableOfContentsProps) => {
         {items.map(({ anchorLink, content }) => (
           <div className="flex flex-row gap-2 items-start">
             <BiRightArrowAlt className="size-6 shrink-0 text-interaction-main" />
-            <a href={anchorLink} className="text-hyperlink underline w-fit">
+            <a
+              href={anchorLink}
+              className="w-fit text-hyperlink underline underline-offset-2 hover:text-hyperlink-hover active:text-hyperlink"
+            >
               {content}
             </a>
           </div>

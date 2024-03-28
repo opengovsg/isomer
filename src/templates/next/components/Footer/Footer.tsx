@@ -29,7 +29,7 @@ const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
 }
 
 const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
-  return <h3 className={Heading[3]}>{siteName}</h3>
+  return <h2 className={Heading[3]}>{siteName}</h2>
 }
 
 const FooterItem = ({
@@ -93,7 +93,7 @@ const SocialMediaSection = ({
 }: Pick<FooterProps, "socialMediaLinks">) => {
   return (
     <div className="flex flex-col gap-5">
-      <h5 className={Heading[5]}>Reach us</h5>
+      <h3 className={Heading[5]}>Reach us</h3>
       <div className="flex flex-row gap-7 flex-wrap">
         {socialMediaLinks?.map((link) => {
           const Icon = SocialMediaTypeToIconMap[link.type]
@@ -103,6 +103,7 @@ const SocialMediaSection = ({
               href={link.url}
               target="_blank"
               rel="noopener noreferrer nofollow"
+              aria-label={`${link.type} page`}
             >
               <Icon className="w-[1.625rem] h-auto" />
             </a>

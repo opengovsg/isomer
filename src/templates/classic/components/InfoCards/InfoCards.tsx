@@ -3,7 +3,11 @@ import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 import { InfoCardsProps } from "~/common"
 import { SingleCardProps } from "~/common/InfoCards"
 
-const SingleCard = ({ title, imageUrl, text }: SingleCardProps) => (
+const SingleCard = ({
+  title,
+  imageUrl,
+  description: text,
+}: Omit<SingleCardProps, "imageAlt" | "url">) => (
   <Card>
     <CardImg alt={title} src={imageUrl} variant="top" />
     <Card.Body>
@@ -20,12 +24,12 @@ const InfoCards = ({ sectionIdx, cards }: InfoCardsProps) => {
       <Col lg="4" xs="12">
         {cards.map((card, idx) => {
           const elementKey = `info-card-${idx}-${card.title}`
-          const { title, text, imageUrl } = card
+          const { title, description: text, imageUrl } = card
           return (
             <SingleCard
               key={elementKey}
               title={title}
-              text={text}
+              description={text}
               imageUrl={imageUrl}
             />
           )

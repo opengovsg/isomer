@@ -1,6 +1,7 @@
 import type { OrderedListProps } from "~/common"
 import UnorderedList from "../UnorderedList"
-import Paragraph from "../Paragraph"
+import { BaseParagraph } from "../shared/Paragraph"
+import { Paragraph } from "../../typography/Paragraph"
 
 const OrderedList = ({ start, items }: OrderedListProps) => {
   return (
@@ -9,7 +10,10 @@ const OrderedList = ({ start, items }: OrderedListProps) => {
         if (typeof item === "string") {
           return (
             <li key={Math.random()} className="[&_p]:inline pl-2 my-2.5">
-              <Paragraph content={item} />
+              <BaseParagraph
+                content={item}
+                className={`text-content ${Paragraph[1]}`}
+              />
             </li>
           )
         } else if (item.type === "orderedlist") {
