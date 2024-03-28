@@ -8,6 +8,8 @@ import type {
 } from "~/common/Hero"
 import Button from "../Button"
 import { ComponentContent } from "../shared/customCssClass"
+import { Heading } from "../../typography/Heading"
+import { Paragraph } from "../../typography/Paragraph"
 
 const HeroGradient = ({
   alignment = "left",
