@@ -1,14 +1,17 @@
 import { BiRightArrowAlt } from "react-icons/bi"
 import { InfoColsProps } from "~/common"
 import { SUPPORTED_ICONS_MAP, SupportedIconName } from "~/common/Icons"
+import { Heading } from "../../typography/Heading"
+import { Paragraph } from "../../typography/Paragraph"
+import { ComponentContent } from "../shared/customCssClass"
 
 const InfoColsHeader = ({
   title,
   subtitle,
 }: Pick<InfoColsProps, "title" | "subtitle">) => (
   <div className="w-full flex flex-col gap-7 items-start text-left">
-    <h1 className="text-content text-4xl font-normal leading-tight">{title}</h1>
-    {subtitle && <p className="text-xl font-normal">{subtitle}</p>}
+    <h2 className={`text-content-strong ${Heading[3]}`}>{title}</h2>
+    {subtitle && <p className={`text-content ${Paragraph[2]}`}>{subtitle}</p>}
   </div>
 )
 
@@ -67,10 +70,12 @@ const InfoCols = ({
 }: InfoColsProps) => {
   const bgColor = backgroundColor === "gray" ? "bg-gray-100" : "bg-white"
   return (
-    <section className={`py-24 px-8 sm:px-16 lg:px-24 ${bgColor}`}>
-      <div className="flex flex-col gap-16">
-        <InfoColsHeader title={title} subtitle={subtitle} />
-        <InfoBoxes infoBoxes={infoBoxes} LinkComponent={LinkComponent} />
+    <section className={bgColor}>
+      <div className={`${ComponentContent} py-24 px-8 sm:px-16 lg:px-24`}>
+        <div className="flex flex-col gap-16">
+          <InfoColsHeader title={title} subtitle={subtitle} />
+          <InfoBoxes infoBoxes={infoBoxes} LinkComponent={LinkComponent} />
+        </div>
       </div>
     </section>
   )

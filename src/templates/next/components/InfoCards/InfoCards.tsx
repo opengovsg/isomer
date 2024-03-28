@@ -1,6 +1,7 @@
 import { InfoCardsProps } from "~/common"
 import Card from "../shared/Card"
 import { Heading } from "../../typography/Heading"
+import { ComponentContent } from "../shared/customCssClass"
 
 const TitleSection = ({
   title,
@@ -23,10 +24,10 @@ const TitleSection = ({
 
 const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
   return (
-    <section className={`py-12 px-5 lg:py-24 lg:px-10`}>
+    <section>
       {variant === "side" ? (
         <div
-          className={`flex flex-col lg:flex-row gap-12 items-center mx-auto lg:max-w-screen-2xl`}
+          className={`${ComponentContent} py-12 px-5 lg:py-24 lg:px-10 flex flex-col lg:flex-row gap-12 items-center mx-auto`}
         >
           <TitleSection
             title={title}
@@ -64,7 +65,7 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
         </div>
       ) : (
         <div
-          className={`flex flex-col gap-12 items-center mx-auto lg:max-w-5xl`}
+          className={`${ComponentContent} py-12 px-5 lg:py-24 lg:px-10 flex flex-col gap-12 items-center mx-auto`}
         >
           <TitleSection title={title} subtitle={subtitle} />
           <div

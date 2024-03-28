@@ -51,19 +51,140 @@ Default.args = {
       secondaryButtonUrl: "/",
     },
     {
+      type: "infobar",
+      title: "This is a place where you can put nice content",
+      description: "About a sentence worth of description here",
+      buttonLabel: "Primary CTA",
+      buttonUrl: "https://google.com",
+      secondaryButtonLabel: "Secondary CTA",
+      secondaryButtonUrl: "https://google.com",
+    },
+    {
       type: "infopic",
-      title: "Infopic",
-      imageSrc: "https://ohno.isomer.gov.sg/images/hero-banner.png",
-      imageAlt: "Infopic",
-      description: "This is an infopic component",
+      title:
+        "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
+      description:
+        "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
+      imageAlt: "alt",
+      imageSrc: "https://placehold.co/200x200",
+      buttonLabel: "Primary CTA",
+      buttonUrl: "https://www.google.com",
     },
     {
-      type: "paragraph",
-      content: "This is another text component",
+      type: "infopic",
+      title:
+        "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
+      description:
+        "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
+      imageAlt: "alt",
+      imageSrc: "https://placehold.co/200x200",
+      buttonLabel: "Primary CTA",
+      buttonUrl: "https://www.google.com",
+      isTextOnRight: true,
     },
     {
-      type: "paragraph",
-      content: "This is yet another text component",
+      type: "infocards",
+      title:
+        "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
+      subtitle:
+        "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
+      variant: "top",
+      cards: [
+        {
+          title: "A yummy, tipsy evening at Duxton",
+          url: "https://www.google.com",
+          description:
+            "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
+          imageUrl: "https://placehold.co/200x300",
+          imageAlt: "alt text",
+          buttonLabel: "Explore with us",
+        },
+        {
+          title: "A yummy, tipsy evening at Duxton",
+          url: "https://www.google.com",
+          description:
+            "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
+          imageUrl: "https://placehold.co/200x300",
+          imageAlt: "alt text",
+          buttonLabel: "Explore with us",
+        },
+        {
+          title: "A yummy, tipsy evening at Duxton",
+          url: "https://www.google.com",
+          imageUrl: "https://placehold.co/200x300",
+          imageAlt: "alt text",
+          buttonLabel: "Explore with us",
+        },
+        {
+          title: "A yummy, tipsy evening at Duxton",
+          url: "https://www.google.com",
+          imageUrl: "https://placehold.co/200x300",
+          imageAlt: "alt text",
+          buttonLabel: "Explore with us",
+        },
+      ],
+    },
+    {
+      type: "infocols",
+      title: "Highlights",
+      subtitle: "Some of the things that we are working on",
+      infoBoxes: [
+        {
+          title: "Committee of Supply (COS) 2023",
+          description: "Building a Vibrant Economy, Nurturing Enterprises",
+          buttonLabel: "Read article",
+          buttonUrl: "/faq",
+          icon: "bar-chart",
+        },
+        {
+          title: "Committee of Supply (COS) 2023",
+          description: "Building a Vibrant Economy, Nurturing Enterprises",
+          buttonLabel: "Read article",
+          buttonUrl: "https://google.com",
+          icon: "bar-chart",
+        },
+        {
+          title: "Committee of Supply (COS) 2023",
+          description: "Building a Vibrant Economy, Nurturing Enterprises",
+          buttonLabel: "Read article",
+          buttonUrl: "/faq",
+          icon: "bar-chart",
+        },
+        {
+          title: "Committee of Supply (COS) 2023",
+          description: "Building a Vibrant Economy, Nurturing Enterprises",
+          buttonLabel: "Read article",
+          buttonUrl: "https://google.com",
+          icon: "bar-chart",
+        },
+        {
+          title: "Committee of Supply (COS) 2023",
+          description: "Building a Vibrant Economy, Nurturing Enterprises",
+          buttonLabel: "Read article",
+          buttonUrl: "/faq",
+          icon: "bar-chart",
+        },
+        {
+          title: "Committee of Supply (COS) 2023",
+          description: "Building a Vibrant Economy, Nurturing Enterprises",
+          buttonLabel: "Read article",
+          buttonUrl: "https://google.com",
+          icon: "bar-chart",
+        },
+      ],
+    },
+    {
+      type: "keystatistics",
+      variant: "side",
+      title: "Key economic indicators",
+      statistics: [
+        {
+          label: "Advance GDP Estimates, 4Q 2023 (YoY)",
+          value: "+2.8%",
+        },
+        { label: "Total Merchandise Trade, Dec 2023 (YoY)", value: "-6.8%" },
+        { label: "Industrial Production, Dec 2023 (YoY)", value: "-2.5%" },
+      ],
     },
   ],
 }

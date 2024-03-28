@@ -1,5 +1,6 @@
 import { InfobarProps } from "~/common"
 import Button from "../Button"
+import { ComponentContent } from "../shared/customCssClass"
 
 const Infobar = ({
   sectionIdx,
@@ -11,8 +12,10 @@ const Infobar = ({
   secondaryButtonUrl,
 }: InfobarProps) => {
   return (
-    <section className="py-16 px-5 sm:px-14 lg:py-24">
-      <div className="flex flex-col gap-12 items-center mx-auto text-center lg:max-w-3xl">
+    <section>
+      <div
+        className={`${ComponentContent} flex flex-col gap-12 items-center mx-auto text-center lg:max-w-3xl px-5 py-16 lg:py-24`}
+      >
         <div className="flex flex-col gap-7">
           <h1 className="text-content text-4xl leading-tight font-semibold lg:text-5xl lg:leading-tight">
             {title}
