@@ -1,9 +1,11 @@
-import { CollectionSortProps } from "~/common"
-import { Paragraph } from "../../typography/Paragraph"
+import { Paragraph } from "../../../typography/Paragraph"
 import { useState } from "react"
 import { MdKeyboardArrowDown } from "react-icons/md"
-import { SortDirection, SortKey } from "~/common/CollectionSort"
-import { IoMdCheckmark } from "react-icons/io"
+import CollectionSortProps, {
+  SortDirection,
+  SortKey,
+} from "~/templates/next/types/CollectionSort"
+import { BiCheck } from "react-icons/bi"
 
 interface SortConfig {
   sortBy: SortKey
@@ -80,7 +82,7 @@ const CollectionSort = ({
             >
               {option}
               {option === selectedSortOption && (
-                <IoMdCheckmark className="w-5 h-auto flex-shrink-0" />
+                <BiCheck className="w-5 h-auto flex-shrink-0" />
               )}
             </button>
           ))}

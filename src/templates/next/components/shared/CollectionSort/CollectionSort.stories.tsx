@@ -1,11 +1,12 @@
 import { Meta, StoryFn } from "@storybook/react"
 import CollectionSort from "./CollectionSort"
-import { CollectionSortProps } from "~/common"
-import { SortKey } from "~/common/CollectionSort"
+import CollectionSortProps, {
+  SortKey,
+} from "~/templates/next/types/CollectionSort"
 import { useState } from "react"
 
 export default {
-  title: "Next/Components/CollectionSort",
+  title: "Next/Internal Components/CollectionSort",
   component: CollectionSort,
   argTypes: {},
   parameters: {

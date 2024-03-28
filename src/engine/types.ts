@@ -26,7 +26,7 @@ import type {
   TableOfContentsProps,
   UnorderedListProps,
 } from "~/common"
-import { SortDirection, SortKey } from "~/common/CollectionSort"
+import { SortDirection, SortKey } from "~/templates/next/types/CollectionSort"
 import { SiteConfigFooterProps } from "~/common/Footer"
 
 type IsomerComponentProps =
