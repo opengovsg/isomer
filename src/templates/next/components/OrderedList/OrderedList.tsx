@@ -5,11 +5,11 @@ import { Paragraph } from "../../typography/Paragraph"
 
 const OrderedList = ({ start, items }: OrderedListProps) => {
   return (
-    <ol className="list-decimal ps-8 my-2.5" start={start}>
+    <ol className="list-decimal ps-8 mt-6" start={start}>
       {items.map((item) => {
         if (typeof item === "string") {
           return (
-            <li key={Math.random()} className="[&_p]:inline pl-2 my-2.5">
+            <li key={Math.random()} className="[&_p]:inline pl-2 my-5">
               <BaseParagraph
                 content={item}
                 className={`text-content ${Paragraph[1]}`}
