@@ -69,7 +69,7 @@ const CollectionSort = ({
           {SortOptions.map((option) => (
             <button
               key={option}
-              className={`flex justify-between items-center w-full rounded-[4px] py-2.5 px-4 text-left hover:bg-interaction-mainSubtle-hover ${
+              className={`flex justify-between items-center w-full rounded-[4px] py-2.5 px-4 text-left hover:bg-interaction-main-subtle-hover ${
                 option === selectedSortOption && "border-2 border-focus-outline"
               }`}
               onClick={() => {
