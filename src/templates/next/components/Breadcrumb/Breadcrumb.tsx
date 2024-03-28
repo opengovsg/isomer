@@ -1,7 +1,7 @@
 import BreadcrumbProps from "~/common/Breadcrumb"
 import { MdChevronRight } from "react-icons/md"
 
-const Breadcrumb = ({ links }: BreadcrumbProps) => {
+const Breadcrumb = ({ links, LinkComponent = "a" }: BreadcrumbProps) => {
   return (
     <div className="flex flex-row flex-wrap gap-1">
       {links.map((link, index) => {
@@ -11,16 +11,16 @@ const Breadcrumb = ({ links }: BreadcrumbProps) => {
             key={index}
             className="flex flex-row gap-1 items-center text-content-medium"
           >
-            <a
-              href={link.url}
-              className={`${
-                isCurr
-                  ? "text-content font-semibold"
-                  : "underline underline-offset-2"
-              }`}
-            >
-              {link.title}
-            </a>
+            {isCurr ? (
+              <p className="text-content font-semibold">{link.title}</p>
+            ) : (
+              <LinkComponent
+                href={link.url}
+                className="underline underline-offset-2 hover:text-hyperlink-hover active:text-hyperlink"
+              >
+                {link.title}
+              </LinkComponent>
+            )}
             {!isCurr && <MdChevronRight className="min-w-6 h-auto" />}
           </div>
         )

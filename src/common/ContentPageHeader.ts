@@ -7,6 +7,7 @@ export interface ContentPageHeaderProps {
   breadcrumb: BreadcrumbProps
   buttonLabel?: string
   buttonUrl?: string
+  LinkComponent?: any
 }
 
 export default ContentPageHeaderProps

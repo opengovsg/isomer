@@ -4,6 +4,7 @@ export interface BreadcrumbLink {
 }
 export interface BreadcrumbProps {
   links: BreadcrumbLink[]
+  LinkComponent?: any
 }
 
 export default BreadcrumbProps
