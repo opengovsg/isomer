@@ -6,7 +6,6 @@ import {
   Button,
   Callout,
   CollectionCard,
-  CollectionSearch,
   ContentPageHeader,
   Footer,
   Heading,
@@ -43,8 +42,6 @@ export const renderComponent = ({
       return <Callout {...component} />
     case "collectionCard":
       return <CollectionCard {...component} />
-    case "collectionSearch":
-      return <CollectionSearch {...component} />
     case "contentpageheader":
       return <ContentPageHeader {...component} />
     case "footer":

@@ -1,6 +1,6 @@
 import type { StoryFn, Meta } from "@storybook/react"
 import CollectionSearch from "./CollectionSearch"
-import type { CollectionSearchProps } from "~/common"
+import type { CollectionSearchProps } from "../../../types/CollectionSearch"
 import { useState } from "react"
 
 export default {

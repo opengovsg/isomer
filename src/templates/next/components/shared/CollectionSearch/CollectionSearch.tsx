@@ -1,5 +1,5 @@
 import { BiSearch } from "react-icons/bi"
-import { CollectionSearchProps } from "~/common"
+import type { CollectionSearchProps } from "../../../types/CollectionSearch"
 
 const CollectionSearch = ({
   placeholder,

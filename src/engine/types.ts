@@ -3,7 +3,6 @@ import type {
   CalloutProps,
   CardsProps,
   CollectionCardProps,
-  CollectionSearchProps,
   ContentPageHeaderProps,
   ContentProps,
   FooterProps,
@@ -33,7 +32,6 @@ type IsomerComponentProps =
   | ButtonProps
   | CalloutProps
   | CollectionCardProps
-  | CollectionSearchProps
   | CardsProps
   | ContentProps
   | ContentPageHeaderProps
