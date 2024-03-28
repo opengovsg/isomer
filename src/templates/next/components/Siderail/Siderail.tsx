@@ -36,6 +36,7 @@ const SiderailMobile = ({
             return (
               <li
                 className={`border-b border-divider-medium ${Paragraph[3]} text-content`}
+                aria-current={isCurrent ? "page" : undefined}
               >
                 {isCurrent ? (
                   <p className="font-bold block py-4 px-5">{title}</p>
@@ -99,15 +100,16 @@ const SiderailDesktop = ({
               className={`${Paragraph[3]} ${
                 index !== pages.length - 1 && "border-b border-divider-medium"
               } text-content`}
+              aria-current={isCurrent ? "page" : undefined}
             >
               {isCurrent ? (
                 <p className="font-bold block py-3 px-2">{title}</p>
               ) : (
                 <LinkComponent
                   href={url}
-                  className="block py-3 hover:bg-interaction-sub active:underline active:underline-offset-2"
+                  className="block py-3 px-2 hover:bg-interaction-sub active:underline active:underline-offset-2"
                 >
-                  <p className="px-2">{title}</p>
+                  <p className="">{title}</p>
                 </LinkComponent>
               )}
               {isCurrent && (
@@ -117,7 +119,7 @@ const SiderailDesktop = ({
                       <li>
                         <LinkComponent
                           href={url}
-                          className={`block py-2.5 pl-10 hover:bg-interaction-sub active:underline active:underline-offset-2 ${
+                          className={`block py-2.5 pl-10 pr-2 hover:bg-interaction-sub active:underline active:underline-offset-2 ${
                             index === childPages.length - 1 && "pb-3"
                           }`}
                         >

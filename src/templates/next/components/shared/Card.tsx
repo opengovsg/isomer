@@ -67,7 +67,7 @@ const TextComponent = ({
 
 const Card = ({
   title,
-  url: cardUrl,
+  url,
   imageUrl,
   imageAlt,
   description: text,
@@ -75,46 +75,39 @@ const Card = ({
   buttonLabel,
   variant,
 }: CardProps) => {
-  if (variant === "horizontal")
-    return (
-      <a
-        className={`flex flex-row gap-1 border border-divider-medium ${className}`}
-        href={cardUrl}
-        target={cardUrl.startsWith("http") ? "_blank" : undefined}
-        rel={
-          cardUrl.startsWith("http")
-            ? "noopener noreferrer nofollow"
-            : undefined
-        }
-      >
-        <ImageComponent
-          src={imageUrl}
-          alt={imageAlt || title}
-          className="w-1/2"
-        />
-        <TextComponent
-          text={text}
-          title={title}
-          buttonLabel={buttonLabel}
-          className="h-full w-1/2"
-        />
-      </a>
-    )
   return (
     <a
-      className={`flex flex-col gap-1 border border-divider-medium ${className}`}
-      href={cardUrl}
-      target={cardUrl.startsWith("http") ? "_blank" : undefined}
-      rel={
-        cardUrl.startsWith("http") ? "noopener noreferrer nofollow" : undefined
-      }
+      className={`flex ${
+        variant === "horizontal" ? "flex-row" : "flex-col"
+      }  gap-1 border border-divider-medium ${className}`}
+      href={url}
+      target={url.startsWith("http") ? "_blank" : undefined}
+      rel={url.startsWith("http") ? "noopener noreferrer nofollow" : undefined}
     >
-      <ImageComponent
-        src={imageUrl}
-        alt={imageAlt || title}
-        className="max-h-52"
-      />
-      <TextComponent text={text} title={title} buttonLabel={buttonLabel} />
+      {variant === "horizontal" ? (
+        <>
+          <ImageComponent
+            src={imageUrl}
+            alt={imageAlt || title}
+            className="w-1/2"
+          />
+          <TextComponent
+            text={text}
+            title={title}
+            buttonLabel={buttonLabel}
+            className="h-full w-1/2"
+          />
+        </>
+      ) : (
+        <>
+          <ImageComponent
+            src={imageUrl}
+            alt={imageAlt || title}
+            className="max-h-52"
+          />
+          <TextComponent text={text} title={title} buttonLabel={buttonLabel} />
+        </>
+      )}
     </a>
   )
 }

@@ -3,7 +3,7 @@ export interface BaseParagraphProps {
   className?: string
 }
 
-export interface ParagraphProps extends BaseParagraphProps {
+export interface ParagraphProps extends Omit<BaseParagraphProps, "className"> {
   type: "paragraph"
 }
 
