@@ -59,6 +59,9 @@ export default {
           sub: {
             DEFAULT: "#f3f3f3",
           },
+          support: {
+            placeholder: "#838894",
+          },
         },
         site: {
           primary: {
