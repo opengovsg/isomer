@@ -19,7 +19,6 @@ import type {
   MetaHeadProps,
   NavbarProps,
   OrderedListProps,
-  PaginationProps,
   ParagraphProps,
   SearchProps,
   SidePaneProps,
@@ -50,7 +49,6 @@ type IsomerComponentProps =
   | MetaHeadProps
   | NavbarProps
   | OrderedListProps
-  | PaginationProps
   | ParagraphProps
   | SearchProps
   | SidePaneProps

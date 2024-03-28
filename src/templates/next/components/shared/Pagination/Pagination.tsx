@@ -1,5 +1,5 @@
 import { BiLeftArrowAlt, BiRightArrowAlt } from "react-icons/bi"
-import { PaginationProps } from "~/common"
+import type { PaginationProps } from "../../../types/Pagination"
 
 export const Pagination = ({
   totalItems,

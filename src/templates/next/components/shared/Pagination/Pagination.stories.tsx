@@ -1,10 +1,10 @@
 import type { StoryFn, Meta } from "@storybook/react"
 import Pagination from "./Pagination"
-import type { PaginationProps } from "~/common"
+import type { PaginationProps } from "../../../types/Pagination"
 import { useState } from "react"
 
 export default {
-  title: "Next/Components/Pagination",
+  title: "Next/Internal Components/Pagination",
   component: Pagination,
   argTypes: {},
   parameters: {

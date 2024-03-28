@@ -20,7 +20,6 @@ import {
   MetaHead,
   Navbar,
   OrderedList,
-  Pagination,
   Paragraph,
   Siderail,
   TableOfContents,
@@ -71,8 +70,6 @@ export const renderComponent = ({
       return <Navbar {...component} />
     case "orderedlist":
       return <OrderedList {...component} />
-    case "pagination":
-      return <Pagination {...component} />
     case "paragraph":
       return <Paragraph {...component} />
     case "siderail":
