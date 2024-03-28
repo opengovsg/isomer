@@ -1,6 +1,7 @@
 import { HomePageSchema } from "~/engine"
 import { Skeleton } from "../Skeleton"
 import { renderComponent } from "../render"
+import { ComponentContent } from "../../components/shared/CustomCssClass"
 
 const HomepageLayout = ({
   site,
@@ -10,9 +11,13 @@ const HomepageLayout = ({
 }: HomePageSchema) => {
   return (
     <Skeleton site={site} page={page}>
-      {content.map((component) =>
-        renderComponent({ component, LinkComponent }),
-      )}
+      <div
+        className={`[&_.${ComponentContent}]:max-w-[1240px] [&_.${ComponentContent}]:px-6 [&_.${ComponentContent}]:md:px-10 [&_.${ComponentContent}]:mx-auto`}
+      >
+        {content.map((component) =>
+          renderComponent({ component, LinkComponent }),
+        )}
+      </div>
     </Skeleton>
   )
 }

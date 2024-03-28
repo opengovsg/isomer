@@ -7,6 +7,7 @@ import type {
   HeroSplitProps,
 } from "~/common/Hero"
 import Button from "../Button"
+import { ComponentContent } from "../shared/CustomCssClass"
 
 const HeroGradient = ({
   alignment = "left",
@@ -31,7 +32,7 @@ const HeroGradient = ({
         } from-[rgba(0,0,0,85%)] md:from-[rgba(0,0,0,75%)] xl:from-[rgba(0,0,0,65%)]`}
       >
         <div
-          className={`text-white p-10 flex flex-row items-end h-full ${
+          className={`${ComponentContent} text-white p-10 flex flex-row items-end h-full ${
             alignment === "left" ? "justify-start" : "justify-end"
           } ${alignment === "left" ? "text-start" : "text-end"}`}
         >
@@ -172,7 +173,7 @@ const HeroFloating = ({
         }}
       >
         <div
-          className={`flex flex-row px-28 py-16 items-center justify-center text-center h-full w-full ${
+          className={`${ComponentContent} flex flex-row px-28 py-16 items-center justify-center text-center h-full w-full ${
             alignment === "left"
               ? "md:justify-start md:text-start"
               : "md:justify-end md:text-end"
@@ -225,7 +226,9 @@ const HeroCopyLed = ({
   return (
     <section className="h-[32rem]">
       <div className="bg-site-primary-200 w-full flex flex-row justify-center">
-        <div className="w-4/5 lg:w-3/4 py-16 flex flex-col items-center text-center md:items-start md:text-start gap-6">
+        <div
+          className={`${ComponentContent} w-4/5 lg:w-3/4 py-16 flex flex-col items-center text-center md:items-start md:text-start gap-6`}
+        >
           <h1 className="text-6xl font-normal">{title}</h1>
           {subtitle && <p className="text-2xl leading-9">{subtitle}</p>}
           {buttonLabel && buttonUrl && (
@@ -272,7 +275,9 @@ const HeroFloatingImage = ({
     <>
       <section className="hidden md:block h-[32rem]">
         <div className="bg-site-primary-200 w-full flex flex-row justify-center">
-          <div className="w-4/5 lg:w-3/4 py-16 flex flex-row gap-24">
+          <div
+            className={`${ComponentContent} w-4/5 lg:w-3/4 py-16 flex flex-row gap-24`}
+          >
             <div className="flex flex-col w-1/2 gap-6">
               <h1 className="text-6xl font-medium">{title}</h1>
               {subtitle && <p>{subtitle}</p>}
