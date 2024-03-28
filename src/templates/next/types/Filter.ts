@@ -20,7 +20,6 @@ export interface AppliedFilter {
 }
 
 export interface FilterProps {
-  type: "filter"
   filters: Filter[]
   appliedFilters: AppliedFilter[]
   setAppliedFilters: (filters: AppliedFilter[]) => void

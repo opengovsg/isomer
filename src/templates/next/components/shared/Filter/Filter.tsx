@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { BiChevronDown } from "react-icons/bi"
-import { FilterProps } from "../../../types/Filter"
+import type { FilterProps } from "../../../types/Filter"
 import { Heading } from "../../../typography/Heading"
 
 const Filter = ({

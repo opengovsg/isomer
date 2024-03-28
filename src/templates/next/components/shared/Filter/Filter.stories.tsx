@@ -1,8 +1,7 @@
 import type { StoryFn, Meta } from "@storybook/react"
 import Filter from "./Filter"
-import type { FilterProps } from "~/common"
+import type { FilterProps, AppliedFilter } from "../../../types/Filter"
 import { useState } from "react"
-import { AppliedFilter } from "~/common/Filter"
 
 export default {
   title: "Next/Components/Filter",
