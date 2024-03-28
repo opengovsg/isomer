@@ -4,7 +4,7 @@ import type { FilterProps, AppliedFilter } from "../../../types/Filter"
 import { useState } from "react"
 
 export default {
-  title: "Next/Components/Filter",
+  title: "Next/Internal Components/Filter",
   component: Filter,
   argTypes: {},
   parameters: {
