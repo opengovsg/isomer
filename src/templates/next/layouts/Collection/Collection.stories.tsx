@@ -33,6 +33,7 @@ Default.args = {
       termsOfUseLink: "https://www.isomer.gov.sg/terms",
       siteNavItems: [],
     },
+    lastUpdated: "1 Jan 2021",
   },
   page: {
     title: "Publications and other press releases",

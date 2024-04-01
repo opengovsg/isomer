@@ -11,13 +11,6 @@ export const Skeleton = ({
   Pick<IsomerPageSchema, "site" | "page" | "HeadComponent" | "LinkComponent">
 >) => {
   const isStaging = site.environment === "staging"
-  const timeNow = new Date()
-  const lastUpdated =
-    timeNow.getDate().toString().padStart(2, "0") +
-    " " +
-    timeNow.toLocaleString("default", { month: "short" }) +
-    " " +
-    timeNow.getFullYear()
 
   return (
     <>
@@ -59,7 +52,7 @@ export const Skeleton = ({
           isGovernment: site.isGovernment,
           siteName: site.siteName,
           agencyName: site.agencyName || site.siteName,
-          lastUpdated,
+          lastUpdated: site.lastUpdated,
           ...site.footerItems,
         },
         LinkComponent,
