@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { CollectionCardProps } from "~/common"
-import { SortDirection, SortKey } from "~/templates/next/types/CollectionSort"
+import { SortDirection, SortKey } from "~/common/CollectionSort"
 import type { CollectionPageSchema } from "~/engine"
 import { CollectionCard } from "../../components"
 import CollectionSort from "../../components/shared/CollectionSort"
@@ -13,7 +13,7 @@ const sortItems = (
   sortBy: SortKey,
   sortDirection: SortDirection,
 ) => {
-  return items.sort((a, b) => {
+  return [...items].sort((a, b) => {
     if (sortBy === "date") {
       const dateA = new Date(a.lastUpdated)
       const dateB = new Date(b.lastUpdated)
