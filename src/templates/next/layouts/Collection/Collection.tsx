@@ -1,8 +1,29 @@
+import { useState } from "react"
+import { CollectionCardProps } from "~/common"
+import { SortDirection, SortKey } from "~/common/CollectionSort"
 import type { CollectionPageSchema } from "~/engine"
 import { CollectionCard } from "../../components"
+import CollectionSort from "../../components/shared/CollectionSort"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"
 import { Skeleton } from "../Skeleton"
+
+const sortItems = (
+  items: CollectionCardProps[],
+  sortBy: SortKey,
+  sortDirection: SortDirection,
+) => {
+  return [...items].sort((a, b) => {
+    if (sortBy === "date") {
+      const dateA = new Date(a.lastUpdated)
+      const dateB = new Date(b.lastUpdated)
+      return sortDirection === "asc"
+        ? dateA.getTime() - dateB.getTime()
+        : dateB.getTime() - dateA.getTime()
+    }
+    return 0
+  })
+}
 
 const CollectionLayout = ({
   site,
@@ -10,9 +31,14 @@ const CollectionLayout = ({
   content,
   LinkComponent,
 }: CollectionPageSchema) => {
+  const [sortBy, setSortBy] = useState<SortKey>(page.defaultSortBy)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(
+    page.defaultSortDirection,
+  )
+  const sortedItems = sortItems(page.items, sortBy, sortDirection)
   return (
     <Skeleton site={site} page={page}>
-      <div className="max-w-[1136px] flex flex-col gap-16 mx-auto my-20 items-center">
+      <div className="max-w-[1140px] flex flex-col gap-16 mx-auto my-20 items-center">
         <div className="flex flex-col gap-12">
           <h1
             className={`flex flex-col gap-16 text-content-strong ${Heading[1]}`}
@@ -29,13 +55,17 @@ const CollectionLayout = ({
               <p className={`${Paragraph[1]} text-content`}>
                 {page.items.length} articles
               </p>
-              <div className="flex flex-col gap-2">
-                <p className={`${Paragraph[2]} text-content-strong`}>Sort by</p>
-                <div>Sort dropdown placeholder</div>
+              <div className="w-[260px]">
+                <CollectionSort
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  sortDirection={sortDirection}
+                  setSortDirection={setSortDirection}
+                />
               </div>
             </div>
             <div className="flex flex-col gap-0">
-              {page.items.map((item) => (
+              {sortedItems.map((item) => (
                 <CollectionCard {...item} LinkComponent={LinkComponent} />
               ))}
             </div>

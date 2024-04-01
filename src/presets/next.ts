@@ -48,7 +48,7 @@ export default {
             hover: "#f78d1b",
             active: "#f78d1b",
             subtle: {
-              hover: "#F4F9FF",
+              hover: "#f4f9ff",
             },
           },
           link: {

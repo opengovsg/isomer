@@ -26,6 +26,7 @@ import type {
   TableOfContentsProps,
   UnorderedListProps,
 } from "~/common"
+import { SortDirection, SortKey } from "~/common/CollectionSort"
 import { SiteConfigFooterProps } from "~/common/Footer"
 
 type IsomerComponentProps =
@@ -89,10 +90,10 @@ interface BasePageProps {
 export interface HomePageProps extends BasePageProps {}
 export interface ContentPageProps extends BasePageProps {}
 export interface CollectionPageProps extends BasePageProps {
-  defaultSort: "date-asc" | "date-desc"
+  defaultSortBy: SortKey
+  defaultSortDirection: SortDirection
   items: CollectionCardProps[]
   subtitle: string
-  // TODO: add in props for filter
 }
 
 export interface BasePageSchema {
