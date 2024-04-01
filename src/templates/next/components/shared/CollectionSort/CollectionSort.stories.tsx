@@ -1,9 +1,8 @@
 import { Meta, StoryFn } from "@storybook/react"
-import CollectionSort from "./CollectionSort"
-import CollectionSortProps, {
-  SortKey,
-} from "~/templates/next/types/CollectionSort"
 import { useState } from "react"
+import { SortKey } from "~/common/CollectionSort"
+import CollectionSortProps from "~/templates/next/types/CollectionSort"
+import CollectionSort from "./CollectionSort"
 
 export default {
   title: "Next/Internal Components/CollectionSort",

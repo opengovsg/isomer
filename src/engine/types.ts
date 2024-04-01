@@ -26,7 +26,7 @@ import type {
   TableOfContentsProps,
   UnorderedListProps,
 } from "~/common"
-import { SortDirection, SortKey } from "~/templates/next/types/CollectionSort"
+import { SortDirection, SortKey } from "~/common/CollectionSort"
 import { SiteConfigFooterProps } from "~/common/Footer"
 
 type IsomerComponentProps =
@@ -94,7 +94,6 @@ export interface CollectionPageProps extends BasePageProps {
   defaultSortDirection: SortDirection
   items: CollectionCardProps[]
   subtitle: string
-  // TODO: add in props for filter
 }
 
 export interface BasePageSchema {

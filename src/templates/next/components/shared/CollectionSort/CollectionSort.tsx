@@ -1,11 +1,9 @@
-import { Paragraph } from "../../../typography/Paragraph"
 import { useState } from "react"
-import { MdKeyboardArrowDown } from "react-icons/md"
-import CollectionSortProps, {
-  SortDirection,
-  SortKey,
-} from "~/templates/next/types/CollectionSort"
 import { BiCheck } from "react-icons/bi"
+import { MdKeyboardArrowDown } from "react-icons/md"
+import { SortDirection, SortKey } from "~/common/CollectionSort"
+import CollectionSortProps from "~/templates/next/types/CollectionSort"
+import { Paragraph } from "../../../typography/Paragraph"
 
 interface SortConfig {
   sortBy: SortKey
