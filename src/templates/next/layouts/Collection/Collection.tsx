@@ -7,7 +7,7 @@ import CollectionSort from "../../components/shared/CollectionSort"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"
 import { Skeleton } from "../Skeleton"
-import type { AppliedFilter } from "../../types/Filter"
+import type { Filter as FilterType, AppliedFilter } from "../../types/Filter"
 import { CollectionSearch, Filter, Pagination } from "../../components/shared"
 
 const sortItems = (
@@ -27,6 +27,34 @@ const sortItems = (
   })
 }
 
+const extractCategories = (
+  items: CollectionPageSchema["page"]["items"],
+): Record<string, number> => {
+  const categories: Record<string, number> = {}
+  items.forEach((item) => {
+    if (item.category in categories) {
+      categories[item.category] += 1
+    } else {
+      categories[item.category] = 1
+    }
+  })
+  return categories
+}
+
+const getFilters = (categories: Record<string, number>): FilterType[] => {
+  return [
+    {
+      id: "category",
+      label: "Category",
+      items: Object.entries(categories).map(([label, count]) => ({
+        id: label.toLowerCase(),
+        label,
+        count,
+      })),
+    },
+  ]
+}
+
 const CollectionLayout = ({
   site,
   page,
@@ -41,6 +69,8 @@ const CollectionLayout = ({
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([])
   const [search, setSearch] = useState<string>("")
   const [currPage, setCurrPage] = useState<number>(1)
+
+  const filters = getFilters(extractCategories(page.items))
 
   return (
     <Skeleton site={site} page={page}>
@@ -60,15 +90,15 @@ const CollectionLayout = ({
             setSearch={setSearch}
           />
         </div>
-        <div className="flex gap-10 justify-between w-full">
-          <div className="max-w-[260px]">
+        <div className="flex flex-col sm:flex-row gap-10 justify-between w-full">
+          <div className="w-full sm:w-1/6">
             <Filter
-              filters={[]} // TODO: Add filters here
+              filters={filters} // TODO: Add filters here
               appliedFilters={appliedFilters}
               setAppliedFilters={setAppliedFilters}
             />
           </div>
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 w-full sm:w-5/6">
             <div className="flex justify-between w-full items-end">
               <p className={`${Paragraph[1]} text-content`}>
                 {page.items.length} articles
@@ -90,7 +120,7 @@ const CollectionLayout = ({
           </div>
         </div>
         <div className="w-full">
-          <div className="max-w-96 ml-auto">
+          <div className="sm:max-w-96 sm:ml-auto">
             <Pagination
               totalItems={page.items.length}
               itemsPerPage={6}

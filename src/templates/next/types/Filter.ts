@@ -4,7 +4,7 @@ interface FilterItem {
   count: number
 }
 
-interface Filter {
+export interface Filter {
   id: string
   label: string
   items: FilterItem[]
