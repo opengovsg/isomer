@@ -8,6 +8,8 @@ import type {
 } from "~/common/Hero"
 import Button from "../Button"
 import { ComponentContent } from "../shared/customCssClass"
+import { Heading } from "../../typography/Heading"
+import { Paragraph } from "../../typography/Paragraph"
 
 const HeroGradient = ({
   alignment = "left",
@@ -36,11 +38,9 @@ const HeroGradient = ({
             alignment === "left" ? "justify-start" : "justify-end"
           } ${alignment === "left" ? "text-start" : "text-end"}`}
         >
-          <div className="flex flex-col w-full sm:w-3/5 xl:w-2/5 gap-6">
-            <h1 className="text-4xl xl:text-6xl font-medium">{title}</h1>
-            {subtitle && (
-              <p className="text-lg xl:text-2xl leading-9">{subtitle}</p>
-            )}
+          <div className="flex flex-col w-full sm:w-3/5 xl:max-w-[520px] gap-6">
+            <h1 className={Heading[1]}>{title}</h1>
+            {subtitle && <p className={Paragraph[1]}>{subtitle}</p>}
             {buttonLabel && buttonUrl && (
               <div
                 className={`flex flex-row gap-4 ${

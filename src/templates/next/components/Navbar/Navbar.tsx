@@ -128,9 +128,7 @@ const Navbar = ({
                   <li key={Math.random()} className="inline">
                     <LinkComponent
                       className={`px-3 py-4 text-lg text-content-medium transition ease-in-out duration-300 hover:bg-interaction-sub active:bg-interaction-sub ${
-                        currentPathName === url
-                          ? "border-b-site-primary border-b-4 bg-interaction-sub"
-                          : ""
+                        currentPathName === url ? "bg-interaction-sub" : ""
                       }`}
                       href={url}
                     >
@@ -145,7 +143,7 @@ const Navbar = ({
                   <button
                     className={`px-3 py-4 text-lg text-content-medium transition ease-in-out duration-300 hover:bg-interaction-sub active:bg-interaction-sub ${
                       currentPathName.startsWith(url) || openNavItemIdx === idx
-                        ? "border-b-site-primary border-b-4 bg-interaction-sub"
+                        ? "bg-interaction-sub"
                         : ""
                     }`}
                     onClick={() => {

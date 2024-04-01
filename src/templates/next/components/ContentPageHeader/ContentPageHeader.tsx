@@ -10,11 +10,12 @@ const ContentPageHeader = ({
   breadcrumb,
   buttonLabel,
   buttonUrl,
+  LinkComponent,
 }: ContentPageHeaderProps) => {
   return (
     <div className="bg-site-primary-100 px-5 py-16">
       <div className="max-w-[848px] flex flex-col gap-8 lg:gap-12 mx-auto">
-        <Breadcrumb links={breadcrumb.links} />
+        <Breadcrumb links={breadcrumb.links} LinkComponent={LinkComponent} />
         <div className="flex flex-col gap-4 lg:gap-8">
           <h1 className="text-[2.75rem] leading-tight lg:text-[3.75rem] font-semibold text-content-strong">
             {title}
@@ -29,6 +30,7 @@ const ContentPageHeader = ({
             label={buttonLabel}
             href={buttonUrl}
             rightIcon="right-arrow"
+            LinkComponent={LinkComponent}
           />
         )}
       </div>

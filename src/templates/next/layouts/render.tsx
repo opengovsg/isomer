@@ -41,11 +41,11 @@ export const renderComponent = ({
     case "callout":
       return <Callout {...component} />
     case "collectionCard":
-      return <CollectionCard {...component} />
+      return <CollectionCard {...component} LinkComponent={LinkComponent} />
     case "contentpageheader":
-      return <ContentPageHeader {...component} />
+      return <ContentPageHeader {...component} LinkComponent={LinkComponent} />
     case "footer":
-      return <Footer {...component} />
+      return <Footer {...component} LinkComponent={LinkComponent} />
     case "heading":
       return <Heading {...component} />
     case "hero":
@@ -67,13 +67,13 @@ export const renderComponent = ({
     case "metahead":
       return <MetaHead {...component} />
     case "navbar":
-      return <Navbar {...component} />
+      return <Navbar {...component} LinkComponent={LinkComponent} />
     case "orderedlist":
       return <OrderedList {...component} />
     case "paragraph":
       return <Paragraph {...component} />
     case "siderail":
-      return <Siderail {...component} />
+      return <Siderail {...component} LinkComponent={LinkComponent} />
     case "tableofcontents":
       return <TableOfContents {...component} />
     case "unorderedlist":
