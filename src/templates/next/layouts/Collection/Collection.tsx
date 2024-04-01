@@ -35,17 +35,62 @@ const getFilters = (categories: Record<string, number>): FilterType[] => {
   ]
 }
 
+const getFilteredResults = (
+  items: CollectionPageSchema["page"]["items"],
+  appliedFilters: AppliedFilter[],
+  search: string,
+  itemsPerPage: number,
+  currPage: number,
+): CollectionPageSchema["page"]["items"] => {
+  const filteredItems = items.filter((item) => {
+    if (
+      search !== "" &&
+      !item.title.toLowerCase().includes(search.toLowerCase()) &&
+      !item.description.toLowerCase().includes(search.toLowerCase())
+    ) {
+      return false
+    }
+
+    for (const filter of appliedFilters) {
+      if (filter.id === "category") {
+        if (
+          !filter.items.some(
+            (appliedFilterItem) =>
+              appliedFilterItem.id === item.category.toLowerCase(),
+          )
+        ) {
+          return false
+        }
+      }
+    }
+    return true
+  })
+
+  return filteredItems.slice(
+    (currPage - 1) * itemsPerPage,
+    currPage * itemsPerPage,
+  )
+}
+
 const CollectionLayout = ({
   site,
   page,
   content,
   LinkComponent,
 }: CollectionPageSchema) => {
+  const ITEMS_PER_PAGE = 6
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([])
   const [search, setSearch] = useState<string>("")
   const [currPage, setCurrPage] = useState<number>(1)
 
   const filters = getFilters(extractCategories(page.items))
+  const filteredResults = getFilteredResults(
+    page.items,
+    appliedFilters,
+    search,
+    ITEMS_PER_PAGE,
+    currPage,
+  )
 
   return (
     <Skeleton site={site} page={page}>
@@ -76,7 +121,13 @@ const CollectionLayout = ({
           <div className="flex flex-col gap-6 w-full sm:w-5/6">
             <div className="flex justify-between w-full items-end">
               <p className={`${Paragraph[1]} text-content`}>
-                {page.items.length} articles
+                {appliedFilters.length > 0 || search !== ""
+                  ? `${filteredResults.length} search ${
+                      filteredResults.length === 1 ? "result" : "results"
+                    }`
+                  : `${page.items.length} ${
+                      page.items.length === 1 ? "article" : "articles"
+                    }`}
               </p>
               <div className="flex flex-col gap-2">
                 <p className={`${Paragraph[2]} text-content-strong`}>Sort by</p>
@@ -84,7 +135,7 @@ const CollectionLayout = ({
               </div>
             </div>
             <div className="flex flex-col gap-0">
-              {page.items.map((item) => (
+              {filteredResults.map((item) => (
                 <CollectionCard {...item} LinkComponent={LinkComponent} />
               ))}
             </div>
@@ -94,7 +145,7 @@ const CollectionLayout = ({
           <div className="sm:max-w-96 sm:ml-auto">
             <Pagination
               totalItems={page.items.length}
-              itemsPerPage={6}
+              itemsPerPage={ITEMS_PER_PAGE}
               currPage={currPage}
               setCurrPage={setCurrPage}
             />
