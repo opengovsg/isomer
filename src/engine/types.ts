@@ -77,6 +77,7 @@ interface IsomerSiteProps {
   isGovernment?: boolean
   environment?: string
   favicon?: MetaHeadProps["favicon"]
+  lastUpdated: string
   navBarItems: NavbarProps["items"]
   footerItems: SiteConfigFooterProps
 }
