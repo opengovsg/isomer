@@ -7,7 +7,7 @@ export const Pagination = ({
   currPage,
   setCurrPage,
 }: Omit<PaginationProps, "type">) => {
-  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const totalPages = Math.ceil(totalItems / Math.max(1, itemsPerPage))
 
   return (
     <nav className="flex flex-row w-full" aria-label="Pagination">
@@ -15,9 +15,9 @@ export const Pagination = ({
       <button
         className="flex flex-row p-1 gap-1 align-middle cursor-pointer disabled:cursor-not-allowed disabled:text-interaction-sub disabled:hover:bg-transparent hover:bg-interaction-main-subtle-hover"
         aria-label="Previous page"
-        disabled={currPage === 1}
+        disabled={currPage <= 1}
         onClick={() => {
-          if (currPage !== 1) {
+          if (currPage > 1) {
             setCurrPage(currPage - 1)
           }
         }}
@@ -41,9 +41,9 @@ export const Pagination = ({
       <button
         className="flex flex-row p-1 gap-1 align-middle cursor-pointer disabled:cursor-not-allowed disabled:text-interaction-sub disabled:hover:bg-transparent hover:bg-interaction-main-subtle-hover"
         aria-label="Next page"
-        disabled={currPage === totalPages}
+        disabled={currPage >= totalPages}
         onClick={() => {
-          if (currPage !== totalPages) {
+          if (currPage < totalPages) {
             setCurrPage(currPage + 1)
           }
         }}
