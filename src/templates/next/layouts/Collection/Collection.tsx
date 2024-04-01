@@ -7,6 +7,8 @@ import CollectionSort from "../../components/shared/CollectionSort"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"
 import { Skeleton } from "../Skeleton"
+import type { AppliedFilter } from "../../types/Filter"
+import { CollectionSearch, Filter, Pagination } from "../../components/shared"
 
 const sortItems = (
   items: CollectionCardProps[],
@@ -36,6 +38,10 @@ const CollectionLayout = ({
     page.defaultSortDirection,
   )
   const sortedItems = sortItems(page.items, sortBy, sortDirection)
+  const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([])
+  const [search, setSearch] = useState<string>("")
+  const [currPage, setCurrPage] = useState<number>(1)
+
   return (
     <Skeleton site={site} page={page}>
       <div className="max-w-[1140px] flex flex-col gap-16 mx-auto my-20 items-center">
@@ -47,9 +53,21 @@ const CollectionLayout = ({
           </h1>
           <p className={`${Paragraph[1]} text-content`}>{page.subtitle}</p>
         </div>
-        <div>Search placeholder</div>
+        <div className="w-3/4 ml-auto mr-auto">
+          <CollectionSearch
+            placeholder="Search for a publication" // TODO: Use collection name
+            search={search}
+            setSearch={setSearch}
+          />
+        </div>
         <div className="flex gap-10 justify-between w-full">
-          <div className="max-w-[260px]">Filter placeholder</div>
+          <div className="max-w-[260px]">
+            <Filter
+              filters={[]} // TODO: Add filters here
+              appliedFilters={appliedFilters}
+              setAppliedFilters={setAppliedFilters}
+            />
+          </div>
           <div className="flex flex-col gap-6">
             <div className="flex justify-between w-full items-end">
               <p className={`${Paragraph[1]} text-content`}>
@@ -69,6 +87,16 @@ const CollectionLayout = ({
                 <CollectionCard {...item} LinkComponent={LinkComponent} />
               ))}
             </div>
+          </div>
+        </div>
+        <div className="w-full">
+          <div className="max-w-96 ml-auto">
+            <Pagination
+              totalItems={page.items.length}
+              itemsPerPage={6}
+              currPage={currPage}
+              setCurrPage={setCurrPage}
+            />
           </div>
         </div>
       </div>
