@@ -26,11 +26,13 @@ import {
 interface RenderComponentProps {
   component: IsomerComponent
   LinkComponent?: any // Next.js link
+  ScriptComponent?: any // Next.js script
 }
 
 export const renderComponent = ({
   component,
   LinkComponent,
+  ScriptComponent,
 }: RenderComponentProps) => {
   switch (component.type) {
     case "button":
@@ -62,7 +64,13 @@ export const renderComponent = ({
     case "metahead":
       return <MetaHead {...component} />
     case "navbar":
-      return <Navbar {...component} LinkComponent={LinkComponent} />
+      return (
+        <Navbar
+          {...component}
+          LinkComponent={LinkComponent}
+          ScriptComponent={ScriptComponent}
+        />
+      )
     case "orderedlist":
       return <OrderedList {...component} />
     case "paragraph":
