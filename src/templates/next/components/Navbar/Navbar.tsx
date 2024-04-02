@@ -195,7 +195,7 @@ const Navbar = ({
                             <div className="flex flex-col gap-1">
                               <LinkComponent
                                 href={subItem.url}
-                                className={`${Heading[5]} underline underline-offset-2 text-content`}
+                                className={`${Paragraph["1-medium"]} underline underline-offset-2 text-content`}
                               >
                                 {subItem.name}
                                 <BiRightArrowAlt className="inline ml-1 -mt-0.5 w-6 h-auto" />
@@ -274,7 +274,7 @@ const Navbar = ({
                     <div className="flex flex-col gap-1">
                       <LinkComponent
                         href={url}
-                        className={`${Heading[5]} underline text-content`}
+                        className={`${Paragraph["1-medium"]} underline text-content`}
                       >
                         {name}
                         <BiRightArrowAlt className="hidden md:inline ml-1 -mt-0.5 text-xl" />
