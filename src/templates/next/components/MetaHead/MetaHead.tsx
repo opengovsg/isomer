@@ -14,7 +14,7 @@ const MetaHead = ({
         name="viewport"
         content="width=device-width, user-scalable=yes, initial-scale=1.0"
       />
-      <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+      <meta httpEquiv="X-UA-Compatible" content="ie=edge" />
       <meta name="twitter:card" content="summary_large_image" />
 
       {/* Title */}

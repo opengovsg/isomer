@@ -95,7 +95,7 @@ Default.args = {
       {
         type: "collectionCard",
         lastUpdated: "December 3, 2023",
-        category: "Research",
+        category: "Opinion",
         title:
           "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
         url: "/",
