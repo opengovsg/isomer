@@ -1,6 +1,7 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import Homepage from "./Homepage"
 import { HomePageSchema } from "~/engine"
+import { useEffect } from "react"
 
 export default {
   title: "Next/Layouts/Homepage",
@@ -14,7 +15,18 @@ export default {
 } as Meta
 
 // Template for stories
-const Template: StoryFn<HomePageSchema> = (args) => <Homepage {...args} />
+const Template: StoryFn<HomePageSchema> = (args) => {
+  const TEST_CLIENT_ID = "7946e346-993e-41c7-bd81-26a3999dc3f4"
+
+  // Note: This is needed because the script tag is not rendered in the storybook
+  useEffect(() => {
+    const scriptTag = document.createElement("script")
+    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${TEST_CLIENT_ID}`
+    scriptTag.setAttribute("defer", "")
+    document.body.appendChild(scriptTag)
+  }, [])
+  return <Homepage {...args} />
+}
 
 export const Default = Template.bind({})
 Default.args = {
@@ -32,6 +44,10 @@ Default.args = {
       siteNavItems: [],
     },
     lastUpdated: "1 Jan 2021",
+    search: {
+      type: "searchSG",
+      clientId: "7946e346-993e-41c7-bd81-26a3999dc3f4",
+    },
   },
   page: {
     title: "Home page",

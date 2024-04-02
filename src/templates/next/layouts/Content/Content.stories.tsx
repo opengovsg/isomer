@@ -32,6 +32,10 @@ Default.args = {
       siteNavItems: [],
     },
     lastUpdated: "1 Jan 2021",
+    search: {
+      type: "localSearch",
+      searchUrl: "/search",
+    },
   },
   page: {
     title: "Content page",

@@ -5,6 +5,7 @@ interface NavbarLocalSearchProps {
 
 interface NavbarSearchSGProps {
   type: "searchSG"
+  clientId: string
 }
 
 export interface NavbarItem {
@@ -21,6 +22,7 @@ export interface NavbarProps {
   search?: NavbarLocalSearchProps | NavbarSearchSGProps
   items: NavbarItem[]
   LinkComponent?: any
+  ScriptComponent?: any
 }
 
 export default NavbarProps

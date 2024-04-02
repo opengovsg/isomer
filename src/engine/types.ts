@@ -75,6 +75,7 @@ interface IsomerSiteProps {
   environment?: string
   favicon?: MetaHeadProps["favicon"]
   lastUpdated: string
+  search: NavbarProps["search"]
   navBarItems: NavbarProps["items"]
   footerItems: SiteConfigFooterProps
 }
@@ -104,6 +105,7 @@ export interface BasePageSchema {
   content: IsomerComponent[]
   LinkComponent?: any // Next.js link
   HeadComponent?: any // Next.js head
+  ScriptComponent?: any // Next.js script
 }
 
 export interface HomePageSchema extends BasePageSchema {
