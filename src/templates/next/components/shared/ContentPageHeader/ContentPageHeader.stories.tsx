@@ -3,7 +3,7 @@ import type { ContentPageHeaderProps } from "~/common"
 import ContentPageHeader from "./ContentPageHeader"
 
 export default {
-  title: "Next/Components/ContentPageHeader",
+  title: "Next/Internal Components/ContentPageHeader",
   component: ContentPageHeader,
   argTypes: {},
   parameters: {

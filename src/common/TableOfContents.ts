@@ -4,7 +4,6 @@ export interface HeadingLink {
 }
 
 export interface TableOfContentsProps {
-  type: "tableofcontents"
   items: HeadingLink[]
 }
 

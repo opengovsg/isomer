@@ -35,7 +35,6 @@ type IsomerComponentProps =
   | CollectionCardProps
   | CardsProps
   | ContentProps
-  | ContentPageHeaderProps
   | FooterProps
   | HeadingProps
   | HeaderProps
@@ -53,8 +52,6 @@ type IsomerComponentProps =
   | ParagraphProps
   | SearchProps
   | SidePaneProps
-  | SiderailProps
-  | TableOfContentsProps
   | UnorderedListProps
 
 export type IsomerComponent = IsomerComponentProps & {
@@ -89,7 +86,11 @@ interface BasePageProps {
   noIndex?: boolean
 }
 export interface HomePageProps extends BasePageProps {}
-export interface ContentPageProps extends BasePageProps {}
+export interface ContentPageProps extends BasePageProps {
+  contentPageHeader: ContentPageHeaderProps
+  sideRail?: SiderailProps // unlinked pages will not have a siderail
+  tableOfContents: TableOfContentsProps
+}
 export interface CollectionPageProps extends BasePageProps {
   defaultSortBy: SortKey
   defaultSortDirection: SortDirection

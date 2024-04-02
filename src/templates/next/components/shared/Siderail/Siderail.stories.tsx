@@ -3,7 +3,7 @@ import Siderail from "./Siderail"
 import { SiderailProps } from "~/common"
 
 export default {
-  title: "Next/Components/Siderail",
+  title: "Next/Internal Components/Siderail",
   component: Siderail,
   argTypes: {},
   parameters: {
