@@ -7,8 +7,8 @@ const Filter = ({
   filters,
   appliedFilters,
   setAppliedFilters,
-}: Omit<FilterProps, "type">) => {
   const [showFilter, setShowFilter] = useState<Record<string, boolean>>({})
+}: FilterProps) => {
 
   const updateAppliedFilters = (filterId: string, itemId: string) => {
     const filterIndex = appliedFilters.findIndex(
@@ -64,6 +64,7 @@ const Filter = ({
           >
             {items.map(({ id: itemId, label: itemLabel, count }) => (
               <label
+                key={itemId}
                 htmlFor={itemId}
                 className="flex flex-row align-middle w-full px-1 py-2 rounded hover:bg-interaction-main-subtle-hover has-[:focus]:ring-2 has-[:focus]:ring-focus-outline"
               >

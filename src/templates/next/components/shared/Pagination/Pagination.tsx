@@ -6,7 +6,7 @@ export const Pagination = ({
   itemsPerPage,
   currPage,
   setCurrPage,
-}: Omit<PaginationProps, "type">) => {
+}: PaginationProps) => {
   const totalPages = Math.ceil(totalItems / Math.max(1, itemsPerPage))
 
   return (

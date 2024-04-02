@@ -5,7 +5,7 @@ const CollectionSearch = ({
   placeholder,
   search,
   setSearch,
-}: Omit<CollectionSearchProps, "type">) => {
+}: CollectionSearchProps) => {
   return (
     <label className="relative block">
       <span className="sr-only">{placeholder}</span>
