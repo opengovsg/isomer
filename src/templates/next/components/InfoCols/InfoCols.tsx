@@ -1,8 +1,8 @@
-import { BiRightArrowAlt } from "react-icons/bi"
 import { InfoColsProps } from "~/common"
 import { SUPPORTED_ICONS_MAP, SupportedIconName } from "~/common/Icons"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"
+import Button from "../Button"
 import { ComponentContent } from "../shared/customCssClass"
 
 const InfoColsHeader = ({
@@ -30,30 +30,27 @@ const InfoBoxes = ({
   LinkComponent,
 }: Pick<InfoColsProps, "infoBoxes" | "LinkComponent">) => {
   return (
-    <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-x-8 gap-y-9 md:grid-cols-2 xl:grid-cols-3">
       {infoBoxes.map((infoBox, idx) => (
-        <div key={idx} className="flex flex-col gap-4 items-start text-left">
+        <div key={idx} className="flex flex-col gap-5 items-start text-left">
           <InfoBoxIcon icon={infoBox.icon} />
-          <div className="flex flex-col gap-1 items-start text-content-strong">
-            <h3 className="font-bold">{infoBox.title}</h3>
-            <p>{infoBox.description}</p>
+          <div className="flex flex-col gap-4 items-start text-left">
+            <div className="flex flex-col gap-4 items-start text-content-strong">
+              <h3 className={`${Heading[5]} text-content-strong`}>
+                {infoBox.title}
+              </h3>
+              <p className={`${Paragraph[2]} text-content`}>
+                {infoBox.description}
+              </p>
+            </div>
           </div>
           {infoBox.buttonLabel && infoBox.buttonUrl && (
-            <LinkComponent
-              className="flex flex-row gap-1 items-center underline underline-offset-2 text-secondary text-sm"
+            <Button
+              label={infoBox.buttonLabel}
               href={infoBox.buttonUrl}
-              target={
-                infoBox.buttonUrl?.startsWith("http") ? "_blank" : undefined
-              }
-              rel={
-                infoBox.buttonUrl?.startsWith("http")
-                  ? "noopener noreferrer nofollow"
-                  : undefined
-              }
-            >
-              {infoBox.buttonLabel}
-              <BiRightArrowAlt className="size-6" />
-            </LinkComponent>
+              variant="link"
+              rightIcon="right-arrow"
+            />
           )}
         </div>
       ))}
@@ -72,7 +69,7 @@ const InfoCols = ({
   return (
     <section className={bgColor}>
       <div className={`${ComponentContent} py-24 px-8 sm:px-16 lg:px-24`}>
-        <div className="flex flex-col gap-16">
+        <div className="flex flex-col gap-12">
           <InfoColsHeader title={title} subtitle={subtitle} />
           <InfoBoxes infoBoxes={infoBoxes} LinkComponent={LinkComponent} />
         </div>
