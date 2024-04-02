@@ -7,8 +7,10 @@ const Filter = ({
   filters,
   appliedFilters,
   setAppliedFilters,
-  const [showFilter, setShowFilter] = useState<Record<string, boolean>>({})
 }: FilterProps) => {
+  const [showFilter, setShowFilter] = useState<Record<string, boolean>>(
+    filters.reduce((acc, { id }) => ({ ...acc, [id]: true }), {}),
+  )
 
   const updateAppliedFilters = (filterId: string, itemId: string) => {
     const filterIndex = appliedFilters.findIndex(
@@ -21,6 +23,11 @@ const Filter = ({
       if (itemIndex > -1) {
         const newAppliedFilters = [...appliedFilters]
         newAppliedFilters[filterIndex].items.splice(itemIndex, 1)
+
+        if (newAppliedFilters[filterIndex].items.length === 0) {
+          newAppliedFilters.splice(filterIndex, 1)
+        }
+
         setAppliedFilters(newAppliedFilters)
       } else {
         const newAppliedFilters = [...appliedFilters]
@@ -73,9 +80,11 @@ const Filter = ({
                   className="h-6 w-6 rounded border-2 border-divider-medium text-interaction-main group-focus:ring-2 group-focus:ring-focus-outline focus:ring-0"
                   id={itemId}
                   name={itemId}
-                  checked={appliedFilters
-                    .find((filter) => filter.id === id)
-                    ?.items.some((item) => item.id === itemId)}
+                  checked={
+                    !!appliedFilters
+                      .find((filter) => filter.id === id)
+                      ?.items.some((item) => item.id === itemId)
+                  }
                   onChange={() => updateAppliedFilters(id, itemId)}
                 />
                 <p className="ml-4 inline-block">

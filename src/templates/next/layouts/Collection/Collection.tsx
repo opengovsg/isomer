@@ -10,25 +10,8 @@ import { Skeleton } from "../Skeleton"
 import type { Filter as FilterType, AppliedFilter } from "../../types/Filter"
 import { CollectionSearch, Filter, Pagination } from "../../components/shared"
 
-const sortItems = (
-  items: CollectionCardProps[],
-  sortBy: SortKey,
-  sortDirection: SortDirection,
-) => {
-  return [...items].sort((a, b) => {
-    if (sortBy === "date") {
-      const dateA = new Date(a.lastUpdated)
-      const dateB = new Date(b.lastUpdated)
-      return sortDirection === "asc"
-        ? dateA.getTime() - dateB.getTime()
-        : dateB.getTime() - dateA.getTime()
-    }
-    return 0
-  })
-}
-
 const extractCategories = (
-  items: CollectionPageSchema["page"]["items"],
+  items: CollectionCardProps[],
 ): Record<string, number> => {
   const categories: Record<string, number> = {}
   items.forEach((item) => {
@@ -55,67 +38,114 @@ const getFilters = (categories: Record<string, number>): FilterType[] => {
   ]
 }
 
-const getFilteredResults = (
-  items: CollectionPageSchema["page"]["items"],
+const getFilteredItems = (
+  items: CollectionCardProps[],
   appliedFilters: AppliedFilter[],
-  search: string,
-  itemsPerPage: number,
-  currPage: number,
-): CollectionPageSchema["page"]["items"] => {
-  const filteredItems = items.filter((item) => {
+  searchValue: string,
+): CollectionCardProps[] => {
+  return items.filter((item) => {
+    // Step 1: Filter based on search value
     if (
-      search !== "" &&
-      !item.title.toLowerCase().includes(search.toLowerCase()) &&
-      !item.description.toLowerCase().includes(search.toLowerCase())
+      searchValue !== "" &&
+      !item.title.toLowerCase().includes(searchValue.toLowerCase()) &&
+      !item.description.toLowerCase().includes(searchValue.toLowerCase())
     ) {
       return false
     }
 
+    // Step 2: Filter based on applied filters
     for (const filter of appliedFilters) {
-      if (filter.id === "category") {
-        if (
-          !filter.items.some(
-            (appliedFilterItem) =>
-              appliedFilterItem.id === item.category.toLowerCase(),
-          )
-        ) {
-          return false
-        }
+      if (
+        filter.id === "category" &&
+        filter.items.length > 0 &&
+        !filter.items.some(
+          (appliedFilterItem) =>
+            appliedFilterItem.id === item.category.toLowerCase(),
+        )
+      ) {
+        return false
       }
     }
+
     return true
   })
+}
 
-  return filteredItems.slice(
-    (currPage - 1) * itemsPerPage,
-    currPage * itemsPerPage,
+const getSortedItems = (
+  items: CollectionCardProps[],
+  sortBy: SortKey,
+  sortDirection: SortDirection,
+) => {
+  return [...items].sort((a, b) => {
+    if (sortBy === "date") {
+      const dateA = new Date(a.lastUpdated)
+      const dateB = new Date(b.lastUpdated)
+      return sortDirection === "asc"
+        ? dateA.getTime() - dateB.getTime()
+        : dateB.getTime() - dateA.getTime()
+    }
+    return 0
+  })
+}
+
+const getPaginatedItems = (
+  items: CollectionCardProps[],
+  itemsPerPage: number,
+  currPage: number,
+) => {
+  const normalizedCurrPage = Math.max(1, currPage)
+
+  return items.slice(
+    (normalizedCurrPage - 1) * itemsPerPage,
+    normalizedCurrPage * itemsPerPage,
   )
+}
+
+const getOutput = (
+  items: CollectionCardProps[],
+  appliedFilters: AppliedFilter[],
+  searchValue: string,
+  itemsPerPage: number,
+  currPage: number,
+  sortBy: SortKey,
+  sortDirection: SortDirection,
+) => {
+  // Step 1: Filter items based on applied filters and search value
+  const filteredItems = getFilteredItems(items, appliedFilters, searchValue)
+
+  // Step 2: Sort items based on sort key and sort direction
+  const sortedItems = getSortedItems(filteredItems, sortBy, sortDirection)
+
+  // Step 3: Paginate the sorted items
+  const paginatedItems = getPaginatedItems(sortedItems, itemsPerPage, currPage)
+
+  return paginatedItems
 }
 
 const CollectionLayout = ({
   site,
   page,
-  content,
   LinkComponent,
 }: CollectionPageSchema) => {
   const ITEMS_PER_PAGE = 6
+  const { defaultSortBy, defaultSortDirection, items, subtitle, title } = page
 
-  const [sortBy, setSortBy] = useState<SortKey>(page.defaultSortBy)
-  const [sortDirection, setSortDirection] = useState<SortDirection>(
-    page.defaultSortDirection,
-  )
+  const [sortBy, setSortBy] = useState<SortKey>(defaultSortBy)
+  const [sortDirection, setSortDirection] =
+    useState<SortDirection>(defaultSortDirection)
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([])
-  const [search, setSearch] = useState<string>("")
+  const [searchValue, setSearchValue] = useState<string>("")
   const [currPage, setCurrPage] = useState<number>(1)
 
-  const sortedItems = sortItems(page.items, sortBy, sortDirection)
-  const filters = getFilters(extractCategories(page.items))
-  const filteredResults = getFilteredResults(
-    page.items,
+  const filters = getFilters(extractCategories(items))
+  const output = getOutput(
+    items,
     appliedFilters,
-    search,
+    searchValue,
     ITEMS_PER_PAGE,
     currPage,
+    sortBy,
+    sortDirection,
   )
 
   return (
@@ -125,21 +155,21 @@ const CollectionLayout = ({
           <h1
             className={`flex flex-col gap-16 text-content-strong ${Heading[1]}`}
           >
-            {page.title}
+            {title}
           </h1>
-          <p className={`${Paragraph[1]} text-content`}>{page.subtitle}</p>
+          <p className={`${Paragraph[1]} text-content`}>{subtitle}</p>
         </div>
-        <div className="w-3/4 ml-auto mr-auto">
+        <div className="w-3/4 mx-auto">
           <CollectionSearch
             placeholder="Search for a publication" // TODO: Use collection name
-            search={search}
-            setSearch={setSearch}
+            search={searchValue}
+            setSearch={setSearchValue}
           />
         </div>
         <div className="flex flex-col sm:flex-row gap-10 justify-between w-full">
           <div className="w-full sm:w-1/6">
             <Filter
-              filters={filters} // TODO: Add filters here
+              filters={filters}
               appliedFilters={appliedFilters}
               setAppliedFilters={setAppliedFilters}
             />
@@ -147,12 +177,12 @@ const CollectionLayout = ({
           <div className="flex flex-col gap-6 w-full sm:w-5/6">
             <div className="flex justify-between w-full items-end">
               <p className={`${Paragraph[1]} text-content`}>
-                {appliedFilters.length > 0 || search !== ""
-                  ? `${filteredResults.length} search ${
-                      filteredResults.length === 1 ? "result" : "results"
+                {appliedFilters.length > 0 || searchValue !== ""
+                  ? `${output.length} search ${
+                      output.length === 1 ? "result" : "results"
                     }`
-                  : `${page.items.length} ${
-                      page.items.length === 1 ? "article" : "articles"
+                  : `${items.length} ${
+                      items.length === 1 ? "article" : "articles"
                     }`}
               </p>
               <div className="w-[260px]">
@@ -165,7 +195,7 @@ const CollectionLayout = ({
               </div>
             </div>
             <div className="flex flex-col gap-0">
-              {sortedItems.map((item) => (
+              {output.map((item) => (
                 <CollectionCard {...item} LinkComponent={LinkComponent} />
               ))}
             </div>
@@ -174,7 +204,7 @@ const CollectionLayout = ({
         <div className="w-full">
           <div className="sm:max-w-96 sm:ml-auto">
             <Pagination
-              totalItems={page.items.length}
+              totalItems={items.length}
               itemsPerPage={ITEMS_PER_PAGE}
               currPage={currPage}
               setCurrPage={setCurrPage}
