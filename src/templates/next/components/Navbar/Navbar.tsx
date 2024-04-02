@@ -10,6 +10,9 @@ import {
   BiX,
 } from "react-icons/bi"
 import type { NavbarProps } from "~/common"
+import { ButtonLink } from "../../typography/ButtonLink"
+import { Heading } from "../../typography/Heading"
+import { Paragraph } from "../../typography/Paragraph"
 
 const Navbar = ({
   logoUrl,
@@ -96,7 +99,6 @@ const Navbar = ({
           )}
         </div>
       </div>
-
       {/* Search bar (for mobile/tablet) */}
       <div className="block lg:hidden">
         {isSearchOpen && search && search.type === "localSearch" && (
@@ -117,7 +119,6 @@ const Navbar = ({
           </form>
         )}
       </div>
-
       {/* Navigation items (for desktop) */}
       <div className="hidden xl:block bg-[#fbfbfb] w-full">
         <div className="flex flex-row mx-auto w-full max-w-screen-xl">
@@ -170,15 +171,18 @@ const Navbar = ({
                     <div className="flex flex-col mx-auto w-full max-w-screen-xl py-12 max-h-[32rem] overflow-auto">
                       <div className="flex flex-row justify-between items-start pb-4 border-b-divider-medium border-b">
                         <div className="flex flex-col gap-1">
-                          <h6 className="text-lg font-medium uppercase">
+                          <h6
+                            className={`${Heading[6]} text-content-medium uppercase`}
+                          >
                             {name}
                           </h6>
-                          <p>{description}</p>
+                          <p className="text-content">{description}</p>
                         </div>
 
                         <button
                           onClick={() => setOpenNavItemIdx(-1)}
                           aria-label="Close navigation item"
+                          className={`${ButtonLink[1]} text-content`}
                         >
                           Close
                           <BiX className="inline ml-1 -mt-0.5 text-2xl" />
@@ -191,12 +195,16 @@ const Navbar = ({
                             <div className="flex flex-col gap-1">
                               <LinkComponent
                                 href={subItem.url}
-                                className="underline font-medium text-xl leading-8"
+                                className={`${Heading[5]} underline underline-offset-2 text-content`}
                               >
                                 {subItem.name}
-                                <BiRightArrowAlt className="inline ml-1 -mt-0.5 text-xl" />
+                                <BiRightArrowAlt className="inline ml-1 -mt-0.5 w-6 h-auto" />
                               </LinkComponent>
-                              <p>{subItem.description}</p>
+                              <p
+                                className={`${Paragraph[2]} text-content-medium`}
+                              >
+                                {subItem.description}
+                              </p>
                             </div>
                           </li>
                         ))}
@@ -209,7 +217,6 @@ const Navbar = ({
           </ul>
         </div>
       </div>
-
       {/* Navigation items, first level (for mobile/tablet) */}
       <div
         className={`${
@@ -222,7 +229,7 @@ const Navbar = ({
               return (
                 <li key={Math.random()} className="w-full py-2">
                   <LinkComponent
-                    className="text-lg text-content block w-full hover:text-content-medium"
+                    className={`${Paragraph[2]} text-content block w-full hover:text-content-medium`}
                     href={url}
                   >
                     {name}
@@ -238,7 +245,7 @@ const Navbar = ({
                   className="w-full"
                 >
                   <div className="flex flex-row justify-between w-full text-content hover:text-content-medium">
-                    <p className="text-lg ">{name}</p>
+                    <p className={`${Paragraph[2]}`}>{name}</p>
                     <BiChevronRight className="text-2xl" />
                   </div>
                 </button>
@@ -247,20 +254,17 @@ const Navbar = ({
           })}
         </ul>
       </div>
-
       {/* Navigation items, second level (for mobile/tablet) */}
       {isHamburgerOpen && openNavItemIdx !== -1 && (
         <div className="block xl:hidden">
           <div className="px-14 pt-4">
             <button
-              className="flex flex-row gap-3 py-4"
+              className="flex flex-row gap-3 py-4 text-content"
               onClick={() => setOpenNavItemIdx(-1)}
               aria-label="Return to main navigation menu"
             >
               <BiLeftArrowAlt className="text-2xl" />
-              <h5 className="text-xl leading-6 font-semibold">
-                {items[openNavItemIdx].name}
-              </h5>
+              <h5 className={Heading[5]}>{items[openNavItemIdx].name}</h5>
             </button>
 
             <ul className="flex flex-row flex-wrap px-9 py-4 gap-x-36 gap-y-[1.125rem] md:gap-y-8">
@@ -270,12 +274,16 @@ const Navbar = ({
                     <div className="flex flex-col gap-1">
                       <LinkComponent
                         href={url}
-                        className="underline font-normal md:font-medium text-xl leading-8"
+                        className={`${Heading[5]} underline text-content`}
                       >
                         {name}
                         <BiRightArrowAlt className="hidden md:inline ml-1 -mt-0.5 text-xl" />
                       </LinkComponent>
-                      <p className="hidden md:block">{description}</p>
+                      <p
+                        className={`hidden md:block ${Paragraph[2]} text-content-medium`}
+                      >
+                        {description}
+                      </p>
                     </div>
                   </li>
                 ),
