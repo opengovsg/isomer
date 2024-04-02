@@ -10,32 +10,66 @@ import { Skeleton } from "../Skeleton"
 import type { Filter as FilterType, AppliedFilter } from "../../types/Filter"
 import { CollectionSearch, Filter, Pagination } from "../../components/shared"
 
-const extractCategories = (
-  items: CollectionCardProps[],
-): Record<string, number> => {
+const getAvailableFilters = (items: CollectionCardProps[]): FilterType[] => {
   const categories: Record<string, number> = {}
-  items.forEach((item) => {
-    if (item.category in categories) {
-      categories[item.category] += 1
+  const variants: Record<string, number> = {}
+  const years: Record<string, number> = {}
+
+  items.forEach(({ category, variant, lastUpdated }) => {
+    // Step 1: Get all available categories
+    if (category in categories) {
+      categories[category] += 1
     } else {
-      categories[item.category] = 1
+      categories[category] = 1
+    }
+
+    // Step 2: Get all available variants
+    if (variant in variants) {
+      variants[variant] += 1
+    } else {
+      variants[variant] = 1
+    }
+
+    // Step 3: Get all available years
+    const year = new Date(lastUpdated).getFullYear().toString()
+    if (year in years) {
+      years[year] += 1
+    } else {
+      years[year] = 1
     }
   })
-  return categories
-}
 
-const getFilters = (categories: Record<string, number>): FilterType[] => {
-  return [
+  const availableFilters: FilterType[] = [
     {
       id: "category",
       label: "Category",
       items: Object.entries(categories).map(([label, count]) => ({
+        id: label.toLowerCase(),
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+        count,
+      })),
+    },
+    {
+      id: "variant",
+      label: "Type",
+      items: Object.entries(variants).map(([label, count]) => ({
+        id: label.toLowerCase(),
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+        count,
+      })),
+    },
+    {
+      id: "year",
+      label: "Year",
+      items: Object.entries(years).map(([label, count]) => ({
         id: label.toLowerCase(),
         label,
         count,
       })),
     },
   ]
+
+  return availableFilters
 }
 
 const getFilteredItems = (
@@ -53,18 +87,42 @@ const getFilteredItems = (
       return false
     }
 
-    // Step 2: Filter based on applied filters
-    for (const filter of appliedFilters) {
-      if (
-        filter.id === "category" &&
-        filter.items.length > 0 &&
-        !filter.items.some(
-          (appliedFilterItem) =>
-            appliedFilterItem.id === item.category.toLowerCase(),
-        )
-      ) {
-        return false
-      }
+    // Step 2: Remove items that do not match the applied category filters
+    const categoryFilter = appliedFilters.find(
+      (filter) => filter.id === "category",
+    )
+    if (
+      categoryFilter &&
+      !categoryFilter.items.some(
+        (filterItem) => filterItem.id === item.category.toLowerCase(),
+      )
+    ) {
+      return false
+    }
+
+    // Step 3: Remove items that do not match the applied variant filters
+    const variantFilter = appliedFilters.find(
+      (filter) => filter.id === "variant",
+    )
+    if (
+      variantFilter &&
+      !variantFilter.items.some(
+        (filterItem) => filterItem.id === item.variant.toLowerCase(),
+      )
+    ) {
+      return false
+    }
+
+    // Step 4: Remove items that do not match the applied year filters
+    const yearFilter = appliedFilters.find((filter) => filter.id === "year")
+    if (
+      yearFilter &&
+      !yearFilter.items.some(
+        (filterItem) =>
+          new Date(item.lastUpdated).getFullYear().toString() === filterItem.id,
+      )
+    ) {
+      return false
     }
 
     return true
@@ -137,7 +195,7 @@ const CollectionLayout = ({
   const [searchValue, setSearchValue] = useState<string>("")
   const [currPage, setCurrPage] = useState<number>(1)
 
-  const filters = getFilters(extractCategories(items))
+  const filters = getAvailableFilters(items)
   const output = getOutput(
     items,
     appliedFilters,
@@ -161,7 +219,7 @@ const CollectionLayout = ({
         </div>
         <div className="w-3/4 mx-auto">
           <CollectionSearch
-            placeholder="Search for a publication" // TODO: Use collection name
+            placeholder={`Search for ${page.title.toLowerCase()}`}
             search={searchValue}
             setSearch={setSearchValue}
           />
