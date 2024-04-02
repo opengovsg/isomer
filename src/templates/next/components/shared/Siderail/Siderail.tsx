@@ -1,7 +1,7 @@
 import { BiLeftArrowAlt } from "react-icons/bi"
 import { SiderailProps } from "~/common"
-import { Heading } from "../../typography/Heading"
-import { Paragraph } from "../../typography/Paragraph"
+import { Heading } from "../../../typography/Heading"
+import { Paragraph } from "../../../typography/Paragraph"
 import { useState } from "react"
 import { MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md"
 
@@ -12,7 +12,7 @@ const SiderailMobile = ({
 }: Omit<SiderailProps, "type">) => {
   const [isExpanded, setIsExpanded] = useState(false)
   return (
-    <div className="lg:hidden">
+    <div className="lg:hidden relative">
       <button
         className="w-full flex gap-2 px-5 py-4 justify-between items-center border-b-2 border-black"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -31,7 +31,7 @@ const SiderailMobile = ({
       </button>
 
       {isExpanded && (
-        <ul>
+        <ul className="absolute w-full bg-white">
           {pages.map(({ url, title, isCurrent, childPages }) => {
             return (
               <li
@@ -82,7 +82,7 @@ const SiderailDesktop = ({
   LinkComponent = "a",
 }: Omit<SiderailProps, "type">) => {
   return (
-    <div className="hidden lg:flex flex-col max-w-60">
+    <div className="hidden lg:flex flex-col w-full">
       <LinkComponent
         href={parentUrl}
         className="flex gap-2 items-start pb-2 border-b-2 border-black"

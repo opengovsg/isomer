@@ -6,7 +6,6 @@ export interface Page {
 }
 
 export interface SiderailProps {
-  type: "siderail"
   parentTitle: string
   parentUrl: string
   pages: Page[]

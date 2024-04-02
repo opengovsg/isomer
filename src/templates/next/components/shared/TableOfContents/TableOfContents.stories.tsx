@@ -3,7 +3,7 @@ import TableOfContents from "./TableOfContents"
 import { TableOfContentsProps } from "~/common"
 
 export default {
-  title: "Next/Components/TableOfContents",
+  title: "Next/Internal Components/TableOfContents",
   component: TableOfContents,
   argTypes: {},
   parameters: {

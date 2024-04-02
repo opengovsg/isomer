@@ -6,7 +6,6 @@ import {
   Button,
   Callout,
   CollectionCard,
-  ContentPageHeader,
   Footer,
   Heading,
   Hero,
@@ -21,8 +20,6 @@ import {
   Navbar,
   OrderedList,
   Paragraph,
-  Siderail,
-  TableOfContents,
   UnorderedList,
 } from "../components"
 
@@ -42,8 +39,6 @@ export const renderComponent = ({
       return <Callout {...component} />
     case "collectionCard":
       return <CollectionCard {...component} LinkComponent={LinkComponent} />
-    case "contentpageheader":
-      return <ContentPageHeader {...component} LinkComponent={LinkComponent} />
     case "footer":
       return <Footer {...component} LinkComponent={LinkComponent} />
     case "heading":
@@ -72,10 +67,6 @@ export const renderComponent = ({
       return <OrderedList {...component} />
     case "paragraph":
       return <Paragraph {...component} />
-    case "siderail":
-      return <Siderail {...component} LinkComponent={LinkComponent} />
-    case "tableofcontents":
-      return <TableOfContents {...component} />
     case "unorderedlist":
       return <UnorderedList {...component} />
   }

@@ -35,7 +35,6 @@ type IsomerComponentProps =
   | CollectionCardProps
   | CardsProps
   | ContentProps
-  | ContentPageHeaderProps
   | FooterProps
   | HeadingProps
   | HeaderProps
@@ -53,8 +52,6 @@ type IsomerComponentProps =
   | ParagraphProps
   | SearchProps
   | SidePaneProps
-  | SiderailProps
-  | TableOfContentsProps
   | UnorderedListProps
 
 export type IsomerComponent = IsomerComponentProps & {
