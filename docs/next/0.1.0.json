@@ -936,7 +936,7 @@
           "minItems": 1,
           "items": {
             "type": "object",
-            "required": ["title", "imageUrl"],
+            "required": ["title", "url", "imageUrl", "imageAlt"],
             "properties": {
               "title": {
                 "type": "string",
