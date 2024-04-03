@@ -943,6 +943,11 @@
                 "title": "Card title",
                 "description": "The title of the card"
               },
+              "url": {
+                "type": "string",
+                "title": "Card URL",
+                "description": "The URL to link the card to"
+              },
               "imageUrl": {
                 "type": "string",
                 "title": "Card image URL",
@@ -962,11 +967,6 @@
                 "type": "string",
                 "title": "Button label",
                 "description": "The label of the button to display"
-              },
-              "buttonUrl": {
-                "type": "string",
-                "title": "Button URL",
-                "description": "The URL to link the button to"
               }
             }
           }
