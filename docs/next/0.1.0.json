@@ -11,16 +11,16 @@
       "description": "The version of the Isomer Next schema to use",
       "default": "0.1.0"
     },
+    "layout": {
+      "type": "string",
+      "description": "The layout of the page to use",
+      "enum": ["homepage", "content", "collection"]
+    },
     "page": {
       "type": "object",
       "title": "Page metadata",
-      "required": ["layout"],
+      "required": ["title"],
       "properties": {
-        "layout": {
-          "type": "string",
-          "description": "The layout of the page to use",
-          "enum": ["homepage", "content"]
-        },
         "title": {
           "type": "string",
           "description": "The title of the page"
@@ -46,9 +46,6 @@
           },
           {
             "$ref": "#/definitions/callout"
-          },
-          {
-            "$ref": "#/definitions/contentpageheader"
           },
           {
             "$ref": "#/definitions/heading"
@@ -90,6 +87,61 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "layout": {
+            "const": "content"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "page": {
+            "required": ["contentPageHeader"],
+            "properties": {
+              "contentPageHeader": {
+                "$ref": "#/definitions/contentpageheader"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "layout": {
+            "const": "collection"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "page": {
+            "required": ["defaultSortBy", "defaultSortDirection", "subtitle"],
+            "properties": {
+              "defaultSortBy": {
+                "type": "string",
+                "description": "The default field to sort the collection items by",
+                "enum": ["date"]
+              },
+              "defaultSortDirection": {
+                "type": "string",
+                "description": "The default direction to sort the collection items by",
+                "enum": ["asc", "desc"]
+              },
+              "subtitle": {
+                "type": "string",
+                "description": "The subtitle of the collection"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "definitions": {
     "button": {
       "type": "object",
@@ -169,13 +221,8 @@
       "type": "object",
       "title": "Content page header component",
       "description": "The content page header component is used to display the title, summary, and breadcrumbs of a content page.",
-      "required": ["type", "title", "summary", "breadcrumb"],
+      "required": ["title", "summary", "breadcrumb"],
       "properties": {
-        "type": {
-          "type": "string",
-          "enum": ["contentpageheader"],
-          "default": "contentpageheader"
-        },
         "title": {
           "type": "string",
           "title": "Page title",
