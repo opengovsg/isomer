@@ -86,9 +86,9 @@ const getSiderailFromSiteMap = (
   }
 }
 
-const getTableOfContentsFromContent = ({
-  content,
-}: Pick<ContentPageSchema, "content">) => {
+const getTableOfContentsFromContent = (
+  content: ContentPageSchema["content"],
+) => {
   const items = []
   for (const block of content) {
     if (block.type === "heading" && block.level === 2) {
@@ -111,14 +111,18 @@ const ContentLayout = ({
     site.siteMap,
     page.permalink.split("/").slice(1),
   )
-  const tableOfContents = getTableOfContentsFromContent({ content })
+  const tableOfContents = getTableOfContentsFromContent(content)
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
   )
   return (
     <Skeleton site={site} page={page} LinkComponent={LinkComponent}>
-      <div className="lg:hidden">{sideRail && <Siderail {...sideRail} />}</div>
+      {sideRail && (
+        <div className="lg:hidden">
+          <Siderail {...sideRail} LinkComponent={LinkComponent} />
+        </div>
+      )}
       <ContentPageHeader
         {...page.contentPageHeader}
         title={page.title}
