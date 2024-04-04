@@ -1,6 +1,6 @@
 import type { StoryFn, Meta } from "@storybook/react"
 import LocalSearchInputBox from "./LocalSearchInputBox"
-import type { LocalSearchInputBoxProps } from "../../../types/LocalSearchInputBox"
+import type { LocalSearchInputBoxProps } from "~/common/LocalSearchInputBox"
 
 export default {
   title: "Next/Internal Components/LocalSearchInputBox",

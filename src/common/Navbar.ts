@@ -1,12 +1,5 @@
-interface NavbarLocalSearchProps {
-  type: "localSearch"
-  searchUrl: string
-}
-
-interface NavbarSearchSGProps {
-  type: "searchSG"
-  clientId: string
-}
+import type { LocalSearchProps } from "./LocalSearchInputBox"
+import type { SearchSGProps } from "./SearchSGInputBox"
 
 export interface NavbarItem {
   name: string
@@ -19,7 +12,7 @@ export interface NavbarProps {
   type: "navbar"
   logoUrl: string
   logoAlt: string
-  search?: NavbarLocalSearchProps | NavbarSearchSGProps
+  search?: LocalSearchProps | SearchSGProps
   items: NavbarItem[]
   LinkComponent?: any
   ScriptComponent?: any

@@ -1,6 +1,6 @@
 import type { StoryFn, Meta } from "@storybook/react"
 import SearchSGInputBox from "./SearchSGInputBox"
-import type { SearchSGInputBoxProps } from "../../../types/SearchSGInputBox"
+import type { SearchSGInputBoxProps } from "~/common/SearchSGInputBox"
 import { useEffect } from "react"
 
 export default {
