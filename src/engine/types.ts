@@ -1,4 +1,5 @@
 import type {
+  AccordionProps,
   ButtonProps,
   CalloutProps,
   CardsProps,
@@ -30,6 +31,7 @@ import { SortDirection, SortKey } from "~/common/CollectionSort"
 import { SiteConfigFooterProps } from "~/common/Footer"
 
 type IsomerComponentProps =
+  | AccordionProps
   | ButtonProps
   | CalloutProps
   | CollectionCardProps
