@@ -207,7 +207,7 @@ const CollectionLayout = ({
   )
 
   return (
-    <Skeleton site={site} page={page}>
+    <Skeleton site={site} page={page} LinkComponent={LinkComponent}>
       <div className="max-w-[1140px] flex flex-col gap-16 mx-auto my-20 items-center">
         <div className="flex flex-col gap-12">
           <h1

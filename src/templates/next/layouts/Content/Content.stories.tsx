@@ -21,7 +21,46 @@ Default.args = {
   layout: "content",
   site: {
     siteName: "Isomer Next",
-    siteMap: [],
+    siteMap: {
+      title: "Isomer Next",
+      permalink: "/",
+      children: [
+        {
+          title: "Parent page",
+          permalink: "/parent",
+          children: [
+            {
+              title: "Irrationality",
+              permalink: "/parent/rationality",
+              children: [
+                {
+                  title: "For Individuals",
+                  permalink: "/parent/rationality/child-page-2",
+                },
+                {
+                  title: "Steven Pinker's Rationality",
+                  permalink: "/parent/rationality/child-page-2",
+                },
+              ],
+            },
+            {
+              title: "Sibling",
+              permalink: "/parent/sibling",
+              children: [
+                {
+                  title: "Child that should not appear",
+                  permalink: "/parent/sibling/child-page-2",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          title: "Aunt/Uncle that should not appear",
+          permalink: "/aunt-uncle",
+        },
+      ],
+    },
     theme: "isomer-next",
     isGovernment: true,
     logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
@@ -34,6 +73,7 @@ Default.args = {
     lastUpdated: "1 Jan 2021",
   },
   page: {
+    permalink: "/parent/rationality",
     title: "Content page",
     description: "A Next.js starter for Isomer",
     contentPageHeader: {
@@ -58,41 +98,6 @@ Default.args = {
       },
       buttonLabel: "Submit a proposal",
       buttonUrl: "/submit-proposal",
-    },
-    sideRail: {
-      parentTitle: "Parent page",
-      parentUrl: "/parent",
-      pages: [
-        {
-          title: "Sibling 1",
-          url: "/link1",
-        },
-        {
-          title: "Steven Pinker's Rationality",
-          url: "/link2",
-          isCurrent: true,
-        },
-        {
-          title: "Sibling 2",
-          url: "/link3",
-        },
-      ],
-    },
-    tableOfContents: {
-      items: [
-        {
-          content: "What does the Irrationality Principle support?",
-          anchorLink: "#section1",
-        },
-        {
-          content: "Checklist for sheer irrationality",
-          anchorLink: "#section2",
-        },
-        {
-          content: "Section 3",
-          anchorLink: "#section3",
-        },
-      ],
     },
   },
   content: [

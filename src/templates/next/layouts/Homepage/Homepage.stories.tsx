@@ -21,7 +21,7 @@ Default.args = {
   layout: "homepage",
   site: {
     siteName: "Isomer Next",
-    siteMap: [],
+    siteMap: { title: "Home", permalink: "/", children: [] },
     theme: "isomer-next",
     isGovernment: true,
     logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
@@ -34,6 +34,7 @@ Default.args = {
     lastUpdated: "1 Jan 2021",
   },
   page: {
+    permalink: "/",
     title: "Home page",
     description: "A Next.js starter for Isomer",
   },

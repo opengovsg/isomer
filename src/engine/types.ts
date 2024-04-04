@@ -59,7 +59,7 @@ export type IsomerComponent = IsomerComponentProps & {
   indexable?: string[]
 }
 
-interface IsomerSitemap {
+export interface IsomerSitemap {
   title: string
   permalink: string
   children?: IsomerSitemap[]
@@ -68,7 +68,7 @@ interface IsomerSitemap {
 interface IsomerSiteProps {
   siteName: string
   agencyName?: string
-  siteMap: IsomerSitemap[]
+  siteMap: IsomerSitemap
   theme: "isomer-classic" | "isomer-next"
   logoUrl: string
   isGovernment?: boolean
@@ -80,6 +80,7 @@ interface IsomerSiteProps {
 }
 
 interface BasePageProps {
+  permalink: string
   title: string
   language?: "en"
   description?: string
@@ -88,8 +89,6 @@ interface BasePageProps {
 export interface HomePageProps extends BasePageProps {}
 export interface ContentPageProps extends BasePageProps {
   contentPageHeader: ContentPageHeaderProps
-  sideRail?: SiderailProps // unlinked pages will not have a siderail
-  tableOfContents: TableOfContentsProps
 }
 export interface CollectionPageProps extends BasePageProps {
   defaultSortBy: SortKey
