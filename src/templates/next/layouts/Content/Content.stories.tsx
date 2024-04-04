@@ -43,8 +43,21 @@ Default.args = {
                 },
               ],
             },
-            { title: "Sibling", permalink: "/sibling" },
+            {
+              title: "Sibling",
+              permalink: "/parent/sibling",
+              children: [
+                {
+                  title: "Child that should not appear",
+                  permalink: "/parent/sibling/child-page-2",
+                },
+              ],
+            },
           ],
+        },
+        {
+          title: "Aunt/Uncle that should not appear",
+          permalink: "/aunt-uncle",
         },
       ],
     },
