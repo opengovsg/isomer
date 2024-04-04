@@ -59,7 +59,7 @@ export type IsomerComponent = IsomerComponentProps & {
   indexable?: string[]
 }
 
-interface IsomerSitemap {
+export interface IsomerSitemap {
   title: string
   permalink: string
   children?: IsomerSitemap[]

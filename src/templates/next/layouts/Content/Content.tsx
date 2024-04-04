@@ -1,17 +1,28 @@
-import { ContentPageSchema } from "~/engine"
+import { ContentPageSchema, IsomerSitemap } from "~/engine"
 import ContentPageHeader from "../../components/shared/ContentPageHeader"
 import Siderail from "../../components/shared/Siderail"
 import TableOfContents from "../../components/shared/TableOfContents"
 import { Skeleton } from "../Skeleton"
 import { renderComponent } from "../render"
+import { BreadcrumbProps, SiderailProps } from "~/common"
 
-const getBreadcrumbFromSiteMap = (sitemap: any, permalink: string[]) => {
+const getBreadcrumbFromSiteMap = (
+  sitemap: IsomerSitemap,
+  permalink: string[],
+): BreadcrumbProps => {
   const breadcrumb = []
   let node = sitemap
   let currentPath = ""
   for (const pathSegment of permalink) {
     currentPath += "/" + pathSegment
-    node = node.children.find((node: any) => node.permalink === currentPath)
+    const nextNode = node.children?.find(
+      (node) => node.permalink === currentPath,
+    )
+    if (!nextNode) {
+      // TODO: handle this unexpected case where cannot traverse to permalink in the sitemap
+      break
+    }
+    node = nextNode
     breadcrumb.push({
       title: node.title,
       url: node.permalink,
@@ -20,15 +31,29 @@ const getBreadcrumbFromSiteMap = (sitemap: any, permalink: string[]) => {
   return { links: breadcrumb }
 }
 
-const getSiderailFromSiteMap = (sitemap: any, permalink: string[]) => {
+const getSiderailFromSiteMap = (
+  sitemap: IsomerSitemap,
+  permalink: string[],
+): SiderailProps | null => {
   let node = sitemap
   let currentPath = ""
 
   let i = 0
   while (i < permalink.length - 1) {
     currentPath += "/" + permalink[i]
-    node = node.children.find((node: any) => node.permalink === currentPath)
+    const nextNode = node.children?.find(
+      (node) => node.permalink === currentPath,
+    )
+    if (!nextNode) {
+      // TODO: handle this unexpected case where cannot traverse to parent in the sitemap
+      return null
+    }
+    node = nextNode
     i++
+  }
+  if (!node.children) {
+    // TODO: handle this unexpected case where parent does not contain current page
+    return null
   }
   const parentTitle = node.title
   const parentUrl = node.permalink
@@ -42,11 +67,10 @@ const getSiderailFromSiteMap = (sitemap: any, permalink: string[]) => {
         title: sibling.title,
         url: sibling.permalink,
         isCurrent: true,
-        childPages:
-          sibling.children?.map((child: any) => ({
-            url: child.permalink,
-            title: child.title,
-          })) ?? null,
+        childPages: sibling.children?.map((child) => ({
+          url: child.permalink,
+          title: child.title,
+        })),
       })
     } else {
       pages.push({
@@ -65,13 +89,16 @@ const getSiderailFromSiteMap = (sitemap: any, permalink: string[]) => {
 const getTableOfContentsFromContent = ({
   content,
 }: Pick<ContentPageSchema, "content">) => {
-  const tableOfContents = content
-    .filter((block) => block.type === "heading" && block.level === 2)
-    .map((block: any) => ({
-      content: block.content,
-      anchorLink: "#" + block.id,
-    }))
-  return { items: tableOfContents }
+  const items = []
+  for (const block of content) {
+    if (block.type === "heading" && block.level === 2) {
+      items.push({
+        content: block.content,
+        anchorLink: "#" + block.id,
+      })
+    }
+  }
+  return { items }
 }
 
 const ContentLayout = ({
