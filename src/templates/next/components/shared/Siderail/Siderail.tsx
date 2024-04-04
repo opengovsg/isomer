@@ -138,7 +138,7 @@ const SiderailDesktop = ({
   )
 }
 
-export const Siderail = (props: Omit<SiderailProps, "type">) => {
+export const Siderail = (props: SiderailProps) => {
   return (
     <>
       <SiderailMobile {...props} />
