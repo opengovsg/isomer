@@ -1,9 +1,9 @@
-import SearchSGInputBoxProps from "~/templates/next/types/SearchSGInputBox"
+import type SearchSGInputBoxProps from "~/common/SearchSGInputBox"
 
 const SearchSGInputBox = ({
   clientId,
   ScriptComponent = "script",
-}: SearchSGInputBoxProps) => {
+}: Omit<SearchSGInputBoxProps, "type">) => {
   return (
     <>
       <ScriptComponent

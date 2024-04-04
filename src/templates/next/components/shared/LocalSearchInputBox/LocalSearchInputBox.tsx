@@ -1,7 +1,9 @@
 import { BiSearch } from "react-icons/bi"
 import LocalSearchInputBoxProps from "~/common/LocalSearchInputBox"
 
-const LocalSearchInputBox = ({ searchUrl }: LocalSearchInputBoxProps) => {
+const LocalSearchInputBox = ({
+  searchUrl,
+}: Omit<LocalSearchInputBoxProps, "type">) => {
   return (
     <form action={searchUrl} method="get" className="flex flex-row gap-2">
       <input
