@@ -7,9 +7,17 @@ const HomepageLayout = ({
   page,
   content,
   LinkComponent,
+  HeadComponent,
+  ScriptComponent,
 }: HomePageSchema) => {
   return (
-    <Skeleton site={site} page={page} LinkComponent={LinkComponent}>
+    <Skeleton
+      site={site}
+      page={page}
+      LinkComponent={LinkComponent}
+      HeadComponent={HeadComponent}
+      ScriptComponent={ScriptComponent}
+    >
       <div
         // ComponentContent = "component-content" (customCssClass.ts) is imported by all Homepage components,
         // but cannot be used here as tailwind does not support dynamic class names

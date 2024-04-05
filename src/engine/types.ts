@@ -97,6 +97,7 @@ export interface CollectionPageProps extends BasePageProps {
   items: CollectionCardProps[]
   subtitle: string
 }
+export interface SearchSGPageProps extends BasePageProps {}
 
 export interface BasePageSchema {
   version: string
@@ -121,7 +122,13 @@ export interface CollectionPageSchema extends BasePageSchema {
   page: CollectionPageProps
 }
 
+export interface SearchSGPageSchema extends BasePageSchema {
+  layout: "searchsg"
+  page: SearchSGPageProps
+}
+
 export type IsomerPageSchema =
   | HomePageSchema
   | ContentPageSchema
   | CollectionPageSchema
+  | SearchSGPageSchema
