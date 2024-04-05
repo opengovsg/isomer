@@ -2,6 +2,8 @@ import type { IsomerComponent, IsomerPageSchema } from "~/engine"
 import HomepageLayout from "./Homepage"
 import ContentLayout from "./Content"
 import CollectionLayout from "./Collection"
+import NotFoundLayout from "./NotFound"
+import SearchSGLayout from "./SearchSG"
 import {
   Button,
   Callout,
@@ -50,7 +52,7 @@ export const renderComponent = ({
     case "image":
       return <Image {...component} />
     case "infobar":
-      return <Infobar {...component} />
+      return <Infobar {...component} LinkComponent={LinkComponent} />
     case "infocards":
       return <InfoCards {...component} />
     case "infocols":
@@ -88,5 +90,9 @@ export const renderLayout = (props: IsomerPageSchema) => {
       return <ContentLayout {...props} />
     case "collection":
       return <CollectionLayout {...props} />
+    case "notfound":
+      return <NotFoundLayout {...props} />
+    case "searchsg":
+      return <SearchSGLayout {...props} />
   }
 }
