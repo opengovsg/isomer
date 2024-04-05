@@ -106,6 +106,8 @@ const ContentLayout = ({
   page,
   content,
   LinkComponent,
+  HeadComponent,
+  ScriptComponent,
 }: ContentPageSchema) => {
   const sideRail = getSiderailFromSiteMap(
     site.siteMap,
@@ -117,7 +119,13 @@ const ContentLayout = ({
     page.permalink.split("/").slice(1),
   )
   return (
-    <Skeleton site={site} page={page} LinkComponent={LinkComponent}>
+    <Skeleton
+      site={site}
+      page={page}
+      LinkComponent={LinkComponent}
+      HeadComponent={HeadComponent}
+      ScriptComponent={ScriptComponent}
+    >
       {sideRail && (
         <div className="lg:hidden">
           <Siderail {...sideRail} LinkComponent={LinkComponent} />
