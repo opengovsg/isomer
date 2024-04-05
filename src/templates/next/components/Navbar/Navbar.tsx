@@ -13,6 +13,8 @@ import type { NavbarProps } from "~/common"
 import { ButtonLink } from "../../typography/ButtonLink"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"
+import { SearchSGInputBox } from "../shared"
+import LocalSearchInputBox from "../shared/LocalSearchInputBox"
 
 const Navbar = ({
   logoUrl,
@@ -20,6 +22,7 @@ const Navbar = ({
   search,
   items,
   LinkComponent = "a",
+  ScriptComponent = "script",
 }: NavbarProps) => {
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
@@ -29,96 +32,83 @@ const Navbar = ({
     typeof window === "undefined" ? "" : window.location.pathname
 
   return (
-    <div className="flex flex-col w-full">
-      <div className="flex flex-row gap-5 px-14 xl:px-0 py-6 mx-auto max-h-24 w-full xl:max-w-screen-xl">
-        {/* Logo */}
-        <LinkComponent href="/">
-          <img
-            src={logoUrl}
-            alt={logoAlt}
-            className="h-full w-full max-w-48 object-cover object-center"
-          />
-        </LinkComponent>
+    <div className="flex flex-col w-full max-w-[1240px] mx-auto px-6 md:px-10">
+      <div className="flex flex-col gap-8 py-6 mx-auto w-full xl:max-w-screen-xl">
+        <div className="flex flex-row gap-5 max-h-24 w-full">
+          {/* Logo */}
+          <LinkComponent href="/">
+            <img
+              src={logoUrl}
+              alt={logoAlt}
+              className="h-full w-full max-w-48 object-cover object-center"
+            />
+          </LinkComponent>
 
-        {/* Spacer */}
-        <div className="flex-1" />
+          {/* Spacer */}
+          <div className="flex-1" />
 
-        {/* Search */}
-        {search && search.type === "localSearch" && !isHamburgerOpen && (
-          <form
-            action={search.searchUrl}
-            method="get"
-            className={`flex flex-row gap-2 h-10 ${
-              isSearchOpen ? "hidden lg:flex" : ""
-            }`}
-          >
-            {isSearchOpen && (
-              <input
-                type="search"
-                name="q"
-                placeholder="Search this site"
-                className="w-96 px-4 py-2 border border-divider-medium focus:border-site-primary focus:ring-site-primary focus:outline-none hidden lg:block"
+          {/* Search icon */}
+          {search && !isHamburgerOpen && (
+            <div className="block my-auto">
+              {isSearchOpen ? (
+                <button
+                  onClick={() => setIsSearchOpen(!isSearchOpen)}
+                  aria-label="Close search bar"
+                >
+                  <BiX className="text-2xl" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsSearchOpen(!isSearchOpen)}
+                  aria-label="Open search bar"
+                >
+                  <BiSearch className="text-2xl mt-0.5" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Hamburger menu for small screens */}
+          <div className="block xl:hidden my-auto">
+            {isHamburgerOpen ? (
+              <button
+                onClick={() => {
+                  setIsHamburgerOpen(false)
+                  setOpenNavItemIdx(-1)
+                }}
+                aria-label="Close navigation menu"
+              >
+                Close
+                <BiX className="inline ml-1 -mt-0.5 text-2xl" />
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsHamburgerOpen(true)}
+                aria-label="Open navigation menu"
+              >
+                <BiMenu className="text-2xl" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Search bar */}
+        {search && (
+          <div className={isSearchOpen ? "block" : "hidden"}>
+            {search.type === "localSearch" && (
+              <LocalSearchInputBox searchUrl={search.searchUrl} />
+            )}
+
+            {search.type === "searchSG" && (
+              <SearchSGInputBox
+                clientId={search.clientId}
+                ScriptComponent={ScriptComponent}
               />
             )}
-            <button
-              onClick={(e) => {
-                if (!isSearchOpen) {
-                  e.preventDefault()
-                  setIsSearchOpen(true)
-                }
-              }}
-              type="submit"
-              aria-label="Search this site"
-            >
-              <BiSearch className="text-2xl mt-0.5" />
-            </button>
-          </form>
+          </div>
         )}
+      </div>
 
-        {/* Hamburger menu for small screens */}
-        <div className="block xl:hidden h-10">
-          {isHamburgerOpen ? (
-            <button
-              onClick={() => {
-                setIsHamburgerOpen(false)
-                setOpenNavItemIdx(-1)
-              }}
-              aria-label="Close navigation menu"
-              className="mt-2"
-            >
-              Close
-              <BiX className="inline ml-1 -mt-0.5 text-2xl" />
-            </button>
-          ) : (
-            <button
-              onClick={() => setIsHamburgerOpen(true)}
-              aria-label="Open navigation menu"
-            >
-              <BiMenu className="text-2xl mt-2" />
-            </button>
-          )}
-        </div>
-      </div>
-      {/* Search bar (for mobile/tablet) */}
-      <div className="block lg:hidden">
-        {isSearchOpen && search && search.type === "localSearch" && (
-          <form action={search.searchUrl} method="get">
-            <div className="flex flex-row gap-4 h-10 px-14">
-              <input
-                type="search"
-                name="q"
-                placeholder="Search this site"
-                title="Search this site"
-                aria-label="Search this site"
-                className="w-full px-4 py-2 border border-divider-medium focus:border-site-primary focus:ring-site-primary focus:outline-none"
-              />
-              <button type="submit" aria-label="Search this site">
-                <BiSearch className="text-2xl" />
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
       {/* Navigation items (for desktop) */}
       <div className="hidden xl:block bg-[#fbfbfb] w-full">
         <div className="flex flex-row mx-auto w-full max-w-screen-xl">
@@ -217,6 +207,7 @@ const Navbar = ({
           </ul>
         </div>
       </div>
+
       {/* Navigation items, first level (for mobile/tablet) */}
       <div
         className={`${
@@ -254,6 +245,7 @@ const Navbar = ({
           })}
         </ul>
       </div>
+
       {/* Navigation items, second level (for mobile/tablet) */}
       {isHamburgerOpen && openNavItemIdx !== -1 && (
         <div className="block xl:hidden">

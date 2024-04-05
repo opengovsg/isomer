@@ -6,9 +6,13 @@ export const Skeleton = ({
   page,
   LinkComponent,
   HeadComponent,
+  ScriptComponent,
   children,
 }: React.PropsWithChildren<
-  Pick<IsomerPageSchema, "site" | "page" | "HeadComponent" | "LinkComponent">
+  Pick<
+    IsomerPageSchema,
+    "site" | "page" | "HeadComponent" | "LinkComponent" | "ScriptComponent"
+  >
 >) => {
   const isStaging = site.environment === "staging"
 
@@ -35,13 +39,11 @@ export const Skeleton = ({
           type: "navbar",
           logoUrl: site.logoUrl,
           logoAlt: site.siteName,
-          search: {
-            type: "localSearch",
-            searchUrl: "/search",
-          },
+          search: site.search,
           items: site.navBarItems,
         },
         LinkComponent,
+        ScriptComponent,
       })}
 
       {children}
