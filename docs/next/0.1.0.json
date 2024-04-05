@@ -221,43 +221,12 @@
       "type": "object",
       "title": "Content page header component",
       "description": "The content page header component is used to display the title, summary, and breadcrumbs of a content page.",
-      "required": ["title", "summary", "breadcrumb"],
+      "required": ["summary"],
       "properties": {
-        "title": {
-          "type": "string",
-          "title": "Page title",
-          "description": "The page title"
-        },
         "summary": {
           "type": "string",
           "title": "Page summary",
           "description": "The summary of the page's content"
-        },
-        "breadcrumb": {
-          "type": "object",
-          "title": "Breadcrumbs",
-          "properties": {
-            "links": {
-              "type": "array",
-              "title": "Breadcrumb links",
-              "items": {
-                "type": "object",
-                "required": ["title", "url"],
-                "properties": {
-                  "title": {
-                    "type": "string",
-                    "title": "Breadcrumb label",
-                    "description": "The label of the breadcrumb"
-                  },
-                  "url": {
-                    "type": "string",
-                    "title": "Breadcrumb URL",
-                    "description": "The URL to link the breadcrumb to"
-                  }
-                }
-              }
-            }
-          }
         },
         "buttonLabel": {
           "type": "string",
