@@ -3,6 +3,7 @@ import HomepageLayout from "./Homepage"
 import ContentLayout from "./Content"
 import CollectionLayout from "./Collection"
 import {
+  Accordion,
   Button,
   Callout,
   CollectionCard,
@@ -35,6 +36,8 @@ export const renderComponent = ({
   ScriptComponent,
 }: RenderComponentProps) => {
   switch (component.type) {
+    case "accordion":
+      return <Accordion {...component} />
     case "button":
       return <Button {...component} LinkComponent={LinkComponent} />
     case "callout":
