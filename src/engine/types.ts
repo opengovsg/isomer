@@ -23,8 +23,6 @@ import type {
   ParagraphProps,
   SearchProps,
   SidePaneProps,
-  SiderailProps,
-  TableOfContentsProps,
   UnorderedListProps,
 } from "~/common"
 import { SortDirection, SortKey } from "~/common/CollectionSort"

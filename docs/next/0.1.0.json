@@ -42,6 +42,9 @@
       "items": {
         "oneOf": [
           {
+            "$ref": "#/definitions/accordion"
+          },
+          {
             "$ref": "#/definitions/button"
           },
           {
@@ -143,6 +146,46 @@
     }
   ],
   "definitions": {
+    "accordion": {
+      "type": "object",
+      "title": "Accordion component",
+      "required": ["type", "summary", "details"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["accordion"],
+          "default": "accordion"
+        },
+        "summary": {
+          "type": "string",
+          "title": "Accordion summary",
+          "description": "The summary for the accordion"
+        },
+        "details": {
+          "type": "array",
+          "title": "Accordion contents",
+          "description": "The contents inside the accordion",
+          "minItems": 1,
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "title": "Paragraph content"
+              },
+              {
+                "$ref": "#/definitions/image"
+              },
+              {
+                "$ref": "#/definitions/orderedlist"
+              },
+              {
+                "$ref": "#/definitions/unorderedlist"
+              }
+            ]
+          }
+        }
+      }
+    },
     "button": {
       "type": "object",
       "title": "Button component",
@@ -1154,7 +1197,8 @@
           "items": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "title": "Paragraph content"
               },
               {
                 "$ref": "#/definitions/orderedlist"
@@ -1201,7 +1245,8 @@
           "items": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "title": "Paragraph content"
               },
               {
                 "$ref": "#/definitions/orderedlist"
