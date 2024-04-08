@@ -8,6 +8,7 @@ export interface InfobarProps {
   buttonUrl?: string
   secondaryButtonLabel?: string
   secondaryButtonUrl?: string
+  LinkComponent?: any // Next.js link
 }
 
 export default InfobarProps

@@ -1,6 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
+import type { ContentPageSchema } from "~/engine"
 import Content from "./Content"
-import { ContentPageSchema } from "~/engine"
 
 export default {
   title: "Next/Layouts/Content",

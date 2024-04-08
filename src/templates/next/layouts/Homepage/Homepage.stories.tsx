@@ -1,7 +1,7 @@
 import type { Meta, StoryFn } from "@storybook/react"
-import Homepage from "./Homepage"
-import { HomePageSchema } from "~/engine"
 import { useEffect } from "react"
+import type { HomePageSchema } from "~/engine"
+import Homepage from "./Homepage"
 
 export default {
   title: "Next/Layouts/Homepage",

@@ -1,5 +1,5 @@
 import type { Meta, StoryFn } from "@storybook/react"
-import { CollectionPageSchema } from "~/engine"
+import type { CollectionPageSchema } from "~/engine"
 import CollectionLayout from "./Collection"
 
 export default {
@@ -23,7 +23,7 @@ Default.args = {
   layout: "collection",
   site: {
     siteName: "Isomer Next",
-    siteMap: [],
+    siteMap: { title: "Home", permalink: "/", children: [] },
     theme: "isomer-next",
     isGovernment: true,
     logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
@@ -42,6 +42,7 @@ Default.args = {
   page: {
     title: "Publications and other press releases",
     description: "A Next.js starter for Isomer",
+    permalink: "/publications",
     subtitle:
       "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
     defaultSortBy: "date",

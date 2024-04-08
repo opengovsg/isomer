@@ -1,5 +1,5 @@
 import type { Meta, StoryFn } from "@storybook/react"
-import { SearchSGPageSchema } from "~/engine"
+import type { SearchSGPageSchema } from "~/engine"
 import SearchSGLayout from "./SearchSG"
 import { useEffect } from "react"
 
@@ -33,7 +33,7 @@ Default.args = {
   layout: "searchsg",
   site: {
     siteName: "Isomer Next",
-    siteMap: [],
+    siteMap: { title: "Home", permalink: "/", children: [] },
     theme: "isomer-next",
     isGovernment: true,
     logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
@@ -52,5 +52,6 @@ Default.args = {
   page: {
     title: "Search",
     description: "Search results",
+    permalink: "/search",
   },
 }

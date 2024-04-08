@@ -99,6 +99,7 @@ export interface CollectionPageProps extends BasePageProps {
   items: CollectionCardProps[]
   subtitle: string
 }
+export interface NotFoundPageProps extends BasePageProps {}
 export interface SearchSGPageProps extends BasePageProps {}
 
 export interface BasePageSchema {
@@ -129,8 +130,14 @@ export interface SearchSGPageSchema extends BasePageSchema {
   page: SearchSGPageProps
 }
 
+export interface NotFoundPageSchema extends BasePageSchema {
+  layout: "notfound"
+  page: NotFoundPageProps
+}
+
 export type IsomerPageSchema =
   | HomePageSchema
   | ContentPageSchema
   | CollectionPageSchema
+  | NotFoundPageSchema
   | SearchSGPageSchema

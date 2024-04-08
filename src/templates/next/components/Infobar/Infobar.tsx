@@ -10,6 +10,7 @@ const Infobar = ({
   buttonUrl,
   secondaryButtonLabel,
   secondaryButtonUrl,
+  LinkComponent,
 }: InfobarProps) => {
   return (
     <section>
@@ -24,7 +25,11 @@ const Infobar = ({
         </div>
         <div className="flex flex-col gap-6 items-center sm:flex-row">
           {buttonLabel && buttonUrl && (
-            <Button label={buttonLabel} href={buttonUrl} />
+            <Button
+              label={buttonLabel}
+              href={buttonUrl}
+              LinkComponent={LinkComponent}
+            />
           )}
           {secondaryButtonLabel && secondaryButtonUrl && (
             <Button
@@ -32,6 +37,7 @@ const Infobar = ({
               href={secondaryButtonUrl}
               colorScheme="black"
               variant="outline"
+              LinkComponent={LinkComponent}
             />
           )}
         </div>
