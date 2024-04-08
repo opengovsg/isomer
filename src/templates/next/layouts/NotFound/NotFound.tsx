@@ -31,7 +31,6 @@ const NotFoundLayout = ({
             buttonUrl: "/",
           },
           LinkComponent,
-          ScriptComponent,
         })}
       </div>
     </Skeleton>
