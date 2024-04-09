@@ -32,7 +32,7 @@ const Table = ({ rows, caption }: TableProps) => {
   }, [])
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-6">
       <BaseParagraph
         content={caption}
         className={`text-content text-balance ${Caption["1"]}`}
