@@ -1,4 +1,4 @@
-import { getSanitizedInlineContent } from "~/utils/getSanitizedInlineContent"
+import { getSanitizedInlineContent } from "~/utils"
 import { BaseParagraphProps } from "~/common/Paragraph"
 
 export const BaseParagraph = ({

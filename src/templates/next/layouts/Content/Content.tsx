@@ -4,32 +4,8 @@ import Siderail from "../../components/shared/Siderail"
 import TableOfContents from "../../components/shared/TableOfContents"
 import { Skeleton } from "../Skeleton"
 import { renderComponent } from "../render"
-import { BreadcrumbProps, SiderailProps } from "~/common"
-
-const getBreadcrumbFromSiteMap = (
-  sitemap: IsomerSitemap,
-  permalink: string[],
-): BreadcrumbProps => {
-  const breadcrumb = []
-  let node = sitemap
-  let currentPath = ""
-  for (const pathSegment of permalink) {
-    currentPath += "/" + pathSegment
-    const nextNode = node.children?.find(
-      (node) => node.permalink === currentPath,
-    )
-    if (!nextNode) {
-      // TODO: handle this unexpected case where cannot traverse to permalink in the sitemap
-      break
-    }
-    node = nextNode
-    breadcrumb.push({
-      title: node.title,
-      url: node.permalink,
-    })
-  }
-  return { links: breadcrumb }
-}
+import { SiderailProps } from "~/common"
+import { getBreadcrumbFromSiteMap } from "~/utils"
 
 const getSiderailFromSiteMap = (
   sitemap: IsomerSitemap,

@@ -1,4 +1,5 @@
 export { default as AccordionProps } from "./Accordion"
+export { default as ArticlePageHeaderProps } from "./ArticlePageHeader"
 export { default as BreadcrumbProps } from "./Breadcrumb"
 export { default as ButtonProps } from "./Button"
 export { default as CalloutProps } from "./Callout"

@@ -1,5 +1,6 @@
 import type {
   AccordionProps,
+  ArticlePageHeaderProps,
   ButtonProps,
   CalloutProps,
   CardsProps,
@@ -89,9 +90,11 @@ interface BasePageProps {
   description?: string
   noIndex?: boolean
 }
-export interface HomePageProps extends BasePageProps {}
-export interface ContentPageProps extends BasePageProps {
-  contentPageHeader: ContentPageHeaderProps
+
+export interface ArticlePageProps extends BasePageProps {
+  category: ArticlePageHeaderProps["category"]
+  date: ArticlePageHeaderProps["date"]
+  articlePageHeader: Pick<ArticlePageHeaderProps, "summary">
 }
 export interface CollectionPageProps extends BasePageProps {
   defaultSortBy: SortKey
@@ -99,6 +102,13 @@ export interface CollectionPageProps extends BasePageProps {
   items: CollectionCardProps[]
   subtitle: string
 }
+export interface ContentPageProps extends BasePageProps {
+  contentPageHeader: Pick<
+    ContentPageHeaderProps,
+    "summary" | "buttonLabel" | "buttonUrl"
+  >
+}
+export interface HomePageProps extends BasePageProps {}
 export interface NotFoundPageProps extends BasePageProps {}
 export interface SearchSGPageProps extends BasePageProps {}
 
@@ -111,13 +121,9 @@ export interface BasePageSchema {
   ScriptComponent?: any // Next.js script
 }
 
-export interface HomePageSchema extends BasePageSchema {
-  layout: "homepage"
-  page: HomePageProps
-}
-export interface ContentPageSchema extends BasePageSchema {
-  layout: "content"
-  page: ContentPageProps
+export interface ArticlePageSchema extends BasePageSchema {
+  layout: "article"
+  page: ArticlePageProps
 }
 
 export interface CollectionPageSchema extends BasePageSchema {
@@ -125,9 +131,14 @@ export interface CollectionPageSchema extends BasePageSchema {
   page: CollectionPageProps
 }
 
-export interface SearchSGPageSchema extends BasePageSchema {
-  layout: "searchsg"
-  page: SearchSGPageProps
+export interface ContentPageSchema extends BasePageSchema {
+  layout: "content"
+  page: ContentPageProps
+}
+
+export interface HomePageSchema extends BasePageSchema {
+  layout: "homepage"
+  page: HomePageProps
 }
 
 export interface NotFoundPageSchema extends BasePageSchema {
@@ -135,9 +146,15 @@ export interface NotFoundPageSchema extends BasePageSchema {
   page: NotFoundPageProps
 }
 
+export interface SearchSGPageSchema extends BasePageSchema {
+  layout: "searchsg"
+  page: SearchSGPageProps
+}
+
 export type IsomerPageSchema =
-  | HomePageSchema
-  | ContentPageSchema
+  | ArticlePageSchema
   | CollectionPageSchema
+  | ContentPageSchema
+  | HomePageSchema
   | NotFoundPageSchema
   | SearchSGPageSchema

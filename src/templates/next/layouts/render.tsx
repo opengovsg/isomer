@@ -1,7 +1,8 @@
 import type { IsomerComponent, IsomerPageSchema } from "~/engine"
-import HomepageLayout from "./Homepage"
-import ContentLayout from "./Content"
+import ArticleLayout from "./Article"
 import CollectionLayout from "./Collection"
+import ContentLayout from "./Content"
+import HomepageLayout from "./Homepage"
 import NotFoundLayout from "./NotFound"
 import SearchSGLayout from "./SearchSG"
 import {
@@ -90,12 +91,14 @@ export const renderComponent = ({
 
 export const renderLayout = (props: IsomerPageSchema) => {
   switch (props.layout) {
-    case "homepage":
-      return <HomepageLayout {...props} />
-    case "content":
-      return <ContentLayout {...props} />
+    case "article":
+      return <ArticleLayout {...props} />
     case "collection":
       return <CollectionLayout {...props} />
+    case "content":
+      return <ContentLayout {...props} />
+    case "homepage":
+      return <HomepageLayout {...props} />
     case "notfound":
       return <NotFoundLayout {...props} />
     case "searchsg":
