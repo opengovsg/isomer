@@ -1,7 +1,8 @@
 import { NotificationProps } from "~/common/Notification"
-import BaseParagraph from "../shared/Paragraph"
+
 import { BiX } from "react-icons/bi"
 import { useState } from "react"
+import BaseParagraph from "../Paragraph"
 
 const Notification = ({ content: title }: NotificationProps) => {
   const [isShown, setIsShown] = useState(true)
