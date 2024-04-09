@@ -37,14 +37,14 @@ const ArticleLayout = ({
 
         <hr className="border-divider-medium" />
 
-        <div className="flex flex-col md:flex-row gap-10 pb-16 max-w-[960px] mx-auto">
-          <div className="w-full max-w-[660px]">
+        <div className="flex flex-col lg:flex-row gap-10 pb-16 mx-auto">
+          <div className="overflow-x-auto w-full lg:max-w-[660px]">
             {content.map((component) =>
               renderComponent({ component, LinkComponent }),
             )}
           </div>
 
-          <div className="w-full max-w-[260px]">
+          <div className="w-full lg:max-w-[260px]">
             <p>Placeholder for related articles component</p>
           </div>
         </div>
