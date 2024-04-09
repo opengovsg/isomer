@@ -5,7 +5,8 @@ export default {
   addons: [
     "@storybook/addon-links",
     "@storybook/addon-essentials",
-    "@storybook/addon-themes"
+    "@storybook/addon-themes",
+    "@storybook/addon-a11y",
   ],
 
   async viteFinal(config: any) {
