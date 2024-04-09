@@ -28,7 +28,6 @@ export interface TableProps {
   type: "table"
   caption: string
   rows: [TableHeaderRow, ...(TableHeaderRow | TableContentRow)[]]
-  LinkComponent?: any // Next.js link
 }
 
 export default TableProps
