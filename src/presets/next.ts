@@ -35,11 +35,16 @@ export default {
         },
         divider: {
           medium: "#d0d0d0",
+          subtle: "#f2f2f2",
         },
         utility: {
           info: {
             DEFAULT: "#87bdff",
             subtle: "#e0eeff",
+          },
+          neutral: {
+            DEFAULT: "#f3f2f1",
+            subtle: "#fcfcfc",
           },
         },
         interaction: {
