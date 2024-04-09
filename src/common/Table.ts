@@ -3,17 +3,18 @@ import type OrderedListProps from "./OrderedList"
 import type UnorderedListProps from "./UnorderedList"
 
 interface TableBaseCell {
-  value: (string | ImageProps | OrderedListProps | UnorderedListProps)[]
   colSpan?: number
   rowSpan?: number
 }
 
 interface TableCell extends TableBaseCell {
-  type: "tableCell"
+  variant: "tableCell"
+  value: (string | ImageProps | OrderedListProps | UnorderedListProps)[]
 }
 
 interface TableHeaderCell extends TableBaseCell {
-  type: "tableHeader"
+  variant: "tableHeader"
+  value: string
 }
 interface TableContentRow {
   cells: [TableCell, ...TableCell[]]
@@ -26,7 +27,7 @@ interface TableHeaderRow {
 export interface TableProps {
   type: "table"
   caption: string
-  items: [TableHeaderRow, ...(TableHeaderRow | TableContentRow)[]]
+  rows: [TableHeaderRow, ...(TableHeaderRow | TableContentRow)[]]
   LinkComponent?: any // Next.js link
 }
 

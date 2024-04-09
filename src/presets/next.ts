@@ -2,14 +2,6 @@
 export default {
   theme: {
     extend: {
-      typography: {
-        "caption-1": {
-          css: {
-            fontSize: "0.75rem",
-            lineHeight: "1.25rem",
-          },
-        },
-      },
       colors: {
         canvas: {
           DEFAULT: "#ffffff",

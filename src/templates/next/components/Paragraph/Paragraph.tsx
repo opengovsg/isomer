@@ -2,7 +2,7 @@ import { ParagraphProps } from "~/common"
 import BaseParagraph from "../shared/Paragraph"
 import { Paragraph as ParagraphStyle } from "../../typography/Paragraph"
 
-const Paragraph = ({ content }: Omit<ParagraphProps, "type">) => {
+const Paragraph = ({ content }: Pick<ParagraphProps, "content">) => {
   return (
     <BaseParagraph
       content={content}

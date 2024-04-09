@@ -12,7 +12,7 @@ const getIsTableOverflowing = (tableRef: React.RefObject<HTMLTableElement>) => {
   return tableRight > window.innerWidth
 }
 
-const Table = ({ items, caption, LinkComponent = "a" }: TableProps) => {
+const Table = ({ rows, caption }: TableProps) => {
   const [isTableOverflowing, setIsTableOverflowing] = useState(false)
   const tableRef = useRef<HTMLTableElement>(null)
   // Generate a random ID for the caption that is sufficiently unique
@@ -43,50 +43,59 @@ const Table = ({ items, caption, LinkComponent = "a" }: TableProps) => {
           aria-describedby={captionId}
         >
           <tbody>
-            {items.map((item, index) => {
+            {rows.map((row, index) => {
               const TableCellTag =
-                item.cells[0].type === "tableHeader" ? "th" : "td"
+                row.cells[0].variant === "tableHeader" ? "th" : "td"
 
               return (
                 <tr
                   key={index}
                   className="*:first:border-t *:first:border-divide-subtle"
                 >
-                  {item.cells.map((cell, cellIndex) => {
+                  {row.cells.map((cell, cellIndex) => {
                     return (
                       <TableCellTag
                         key={cellIndex}
                         colSpan={cell.colSpan}
                         rowSpan={cell.rowSpan}
-                        className={`border-divide-subtle border-r border-b first:border-l first:sticky first:left-0 min-w-40 [&_ul]:mt-0 [&_ol]:mt-0 [&_li]:my-0 [&_a]:no-underline px-4 ${
-                          cell.type === "tableHeader"
-                            ? `bg-utility-neutral py-[1.125rem] text-content-strong text-left text-balance ${Caption["1-medium-lg"]}`
-                            : `bg-utility-neutral-subtle py-3.5 ${Caption["1"]}`
+                        className={`border-divide-subtle border-r border-b first:border-l first:sticky first:left-0 min-w-40 align-top [&_ul]:mt-0 [&_ul]:ps-5 [&_ol]:mt-0 [&_ol]:ps-5 [&_ol]:text-sm [&_li]:my-0 [&_li]:pl-1 px-4 ${
+                          cell.variant === "tableHeader"
+                            ? "bg-utility-neutral py-[1.125rem]"
+                            : "bg-utility-neutral-subtle py-3.5 [&_p]:text-sm"
                         } ${
                           cellIndex === 0 && isTableOverflowing
                             ? "shadow-[rgba(191,191,191,0.4)_5px_0px_3px_-3px]"
                             : ""
                         }`}
                       >
-                        {cell.value.map((value, valueIndex) => {
-                          if (typeof value === "string") {
-                            return (
-                              <BaseParagraph
-                                content={value}
-                                key={valueIndex}
-                                className={`text-content text-balance ${Paragraph[1]}`}
-                              />
-                            )
-                          } else if (value.type === "image") {
-                            return <Image key={valueIndex} {...value} />
-                          } else if (value.type === "orderedlist") {
-                            return <OrderedList key={valueIndex} {...value} />
-                          } else if (value.type === "unorderedlist") {
-                            return <UnorderedList key={valueIndex} {...value} />
-                          } else {
-                            return <></>
-                          }
-                        })}
+                        {cell.variant === "tableHeader" ? (
+                          <BaseParagraph
+                            content={cell.value}
+                            className={`text-content-string text-left text-balance ${Caption["1-medium-lg"]}`}
+                          />
+                        ) : (
+                          cell.value.map((value, valueIndex) => {
+                            if (typeof value === "string") {
+                              return (
+                                <BaseParagraph
+                                  content={value}
+                                  key={valueIndex}
+                                  className={`text-content text-balance`}
+                                />
+                              )
+                            } else if (value.type === "image") {
+                              return <Image key={valueIndex} {...value} />
+                            } else if (value.type === "orderedlist") {
+                              return <OrderedList key={valueIndex} {...value} />
+                            } else if (value.type === "unorderedlist") {
+                              return (
+                                <UnorderedList key={valueIndex} {...value} />
+                              )
+                            } else {
+                              return <></>
+                            }
+                          })
+                        )}
                       </TableCellTag>
                     )
                   })}
