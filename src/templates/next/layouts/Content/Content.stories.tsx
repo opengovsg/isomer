@@ -75,6 +75,7 @@ Default.args = {
       type: "localSearch",
       searchUrl: "/search",
     },
+    notification: "This is a notification",
   },
   page: {
     permalink: "/parent/rationality",

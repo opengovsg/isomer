@@ -4,6 +4,7 @@ import ContentLayout from "./Content"
 import CollectionLayout from "./Collection"
 import NotFoundLayout from "./NotFound"
 import SearchSGLayout from "./SearchSG"
+import Notification from "../components/shared/Notification"
 import {
   Accordion,
   Button,
@@ -85,6 +86,8 @@ export const renderComponent = ({
       return <Table {...component} />
     case "unorderedlist":
       return <UnorderedList {...component} />
+    case "notification":
+      return <Notification {...component} />
   }
 }
 
