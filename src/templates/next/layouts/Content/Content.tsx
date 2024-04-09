@@ -143,7 +143,7 @@ const ContentLayout = ({
             <Siderail {...sideRail} LinkComponent={LinkComponent} />
           </div>
         )}
-        <div className="flex flex-col gap-[90px] w-full max-w-[800px]">
+        <div className="flex flex-col gap-[90px] overflow-x-auto w-full max-w-[800px]">
           {tableOfContents.items.length > 0 && (
             <TableOfContents {...tableOfContents} />
           )}
