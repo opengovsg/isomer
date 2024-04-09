@@ -1,7 +1,6 @@
 import { IconType } from "react-icons"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { LiaChartBar } from "react-icons/lia"
-import { RxCross2 } from "react-icons/rx"
 
 export const SUPPORTED_ICON_NAMES = ["right-arrow", "bar-chart"] as const
 
