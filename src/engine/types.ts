@@ -23,6 +23,7 @@ import type {
   ParagraphProps,
   SearchProps,
   SidePaneProps,
+  TableProps,
   UnorderedListProps,
 } from "~/common"
 import { SortDirection, SortKey } from "~/common/CollectionSort"
@@ -52,6 +53,7 @@ type IsomerComponentProps =
   | ParagraphProps
   | SearchProps
   | SidePaneProps
+  | TableProps
   | UnorderedListProps
 
 export type IsomerComponent = IsomerComponentProps & {

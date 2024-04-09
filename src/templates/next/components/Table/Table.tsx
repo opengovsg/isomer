@@ -9,7 +9,9 @@ import { Caption } from "../../typography/Caption"
 
 const getIsTableOverflowing = (tableRef: React.RefObject<HTMLTableElement>) => {
   const tableRight = tableRef.current?.getBoundingClientRect().right || 0
-  return tableRight > window.innerWidth
+  const parentRight =
+    tableRef.current?.parentElement?.getBoundingClientRect().right || 0
+  return tableRight > parentRight
 }
 
 const Table = ({ rows, caption }: TableProps) => {

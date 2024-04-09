@@ -23,6 +23,7 @@ import {
   Navbar,
   OrderedList,
   Paragraph,
+  Table,
   UnorderedList,
 } from "../components"
 
@@ -80,6 +81,8 @@ export const renderComponent = ({
       return <OrderedList {...component} />
     case "paragraph":
       return <Paragraph {...component} />
+    case "table":
+      return <Table {...component} />
     case "unorderedlist":
       return <UnorderedList {...component} />
   }
