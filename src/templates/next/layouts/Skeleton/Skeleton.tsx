@@ -33,7 +33,13 @@ export const Skeleton = ({
           component: { type: "masthead", isStaging },
           LinkComponent,
         })}
-
+      {site.notification &&
+        renderComponent({
+          component: {
+            type: "notification",
+            content: site.notification,
+          },
+        })}
       {renderComponent({
         component: {
           type: "navbar",

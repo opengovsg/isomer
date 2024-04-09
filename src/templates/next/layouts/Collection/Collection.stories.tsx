@@ -38,6 +38,7 @@ Default.args = {
       type: "localSearch",
       searchUrl: "/search",
     },
+    notification: "This is a notification",
   },
   page: {
     title: "Publications and other press releases",

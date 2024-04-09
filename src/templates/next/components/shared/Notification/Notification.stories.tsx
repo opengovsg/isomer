@@ -1,10 +1,10 @@
 import { Meta, StoryFn } from "@storybook/react"
-import Notification from "./Notification"
-import { NotificationProps } from "~/common/Notification"
+import NotificationBanner from "./Notification"
+import { NotificationProps } from "~/common"
 
 export default {
-  title: "Next/Components/Notification",
-  component: Notification,
+  title: "Next/Internal Components/Notification",
+  component: NotificationBanner,
   argTypes: {},
   parameters: {
     themes: {
@@ -14,7 +14,7 @@ export default {
 } as Meta
 
 const Template: StoryFn<NotificationProps> = (args) => (
-  <Notification {...args} />
+  <NotificationBanner {...args} />
 )
 
 export const Default = Template.bind({})

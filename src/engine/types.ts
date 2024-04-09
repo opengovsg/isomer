@@ -19,6 +19,7 @@ import type {
   MastheadProps,
   MetaHeadProps,
   NavbarProps,
+  NotificationProps,
   OrderedListProps,
   ParagraphProps,
   SearchProps,
@@ -53,6 +54,7 @@ type IsomerComponentProps =
   | SearchProps
   | SidePaneProps
   | UnorderedListProps
+  | NotificationProps
 
 export type IsomerComponent = IsomerComponentProps & {
   sectionIdx?: number
@@ -78,6 +80,7 @@ interface IsomerSiteProps {
   search: NavbarProps["search"]
   navBarItems: NavbarProps["items"]
   footerItems: SiteConfigFooterProps
+  notification?: string
 }
 
 interface BasePageProps {

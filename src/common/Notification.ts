@@ -1,3 +1,4 @@
-export interface NotificationProps {
+export default interface NotificationProps {
   content: string
+  type: "notification"
 }
