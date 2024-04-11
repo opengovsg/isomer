@@ -4,7 +4,7 @@ import CollectionLayout from "./Collection"
 import ContentLayout from "./Content"
 import HomepageLayout from "./Homepage"
 import NotFoundLayout from "./NotFound"
-import SearchSGLayout from "./SearchSG"
+import SearchLayout from "./Search"
 import Notification from "../components/shared/Notification"
 import {
   Accordion,
@@ -104,7 +104,7 @@ export const renderLayout = (props: IsomerPageSchema) => {
       return <HomepageLayout {...props} />
     case "notfound":
       return <NotFoundLayout {...props} />
-    case "searchsg":
-      return <SearchSGLayout {...props} />
+    case "search":
+      return <SearchLayout {...props} />
   }
 }
