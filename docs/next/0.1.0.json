@@ -84,6 +84,9 @@
             "$ref": "#/definitions/paragraph"
           },
           {
+            "$ref": "#/definitions/table"
+          },
+          {
             "$ref": "#/definitions/unorderedlist"
           }
         ]
@@ -1225,6 +1228,155 @@
           "type": "string",
           "title": "Paragraph content",
           "description": "The content of the paragraph"
+        }
+      }
+    },
+    "table": {
+      "type": "object",
+      "title": "Table component",
+      "required": ["type", "caption", "rows"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["table"],
+          "default": "table"
+        },
+        "caption": {
+          "type": "string",
+          "title": "Table caption",
+          "description": "The caption of the table"
+        },
+        "rows": {
+          "type": "array",
+          "title": "Table rows",
+          "minItems": 1,
+          "items": [
+            {
+              "type": "object",
+              "title": "Table header row",
+              "required": ["cells"],
+              "properties": {
+                "cells": {
+                  "type": "array",
+                  "title": "Table header cells",
+                  "minItems": 1,
+                  "items": {
+                    "$ref": "#/definitions/table-header-cell"
+                  }
+                }
+              }
+            }
+          ],
+          "additionalItems": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "Table header row",
+                "required": ["cells"],
+                "properties": {
+                  "cells": {
+                    "type": "array",
+                    "title": "Table header cells",
+                    "minItems": 1,
+                    "items": {
+                      "$ref": "#/definitions/table-header-cell"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "title": "Table row",
+                "required": ["cells"],
+                "properties": {
+                  "cells": {
+                    "type": "array",
+                    "title": "Table cells",
+                    "minItems": 1,
+                    "items": {
+                      "$ref": "#/definitions/table-cell"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "table-cell": {
+      "type": "object",
+      "title": "Table cell",
+      "required": ["variant", "value"],
+      "properties": {
+        "variant": {
+          "type": "string",
+          "enum": ["tableCell"],
+          "default": "tableCell"
+        },
+        "value": {
+          "type": "array",
+          "title": "Table cell contents",
+          "description": "The contents of the table cell",
+          "minItems": 1,
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "title": "Paragraph content"
+              },
+              {
+                "$ref": "#/definitions/image"
+              },
+              {
+                "$ref": "#/definitions/orderedlist"
+              },
+              {
+                "$ref": "#/definitions/unorderedlist"
+              }
+            ]
+          }
+        },
+        "colSpan": {
+          "type": "integer",
+          "title": "Table cell column span",
+          "description": "The number of columns the cell spans",
+          "minimum": 1
+        },
+        "rowSpan": {
+          "type": "integer",
+          "title": "Table cell row span",
+          "description": "The number of rows the cell spans",
+          "minimum": 1
+        }
+      }
+    },
+    "table-header-cell": {
+      "type": "object",
+      "title": "Table header cell",
+      "required": ["variant", "value"],
+      "properties": {
+        "variant": {
+          "type": "string",
+          "enum": ["tableHeader"],
+          "default": "tableHeader"
+        },
+        "value": {
+          "type": "string",
+          "title": "Table header cell contents",
+          "description": "The contents of the table header cell"
+        },
+        "colSpan": {
+          "type": "integer",
+          "title": "Table header cell column span",
+          "description": "The number of columns the header cell spans",
+          "minimum": 1
+        },
+        "rowSpan": {
+          "type": "integer",
+          "title": "Table header cell row span",
+          "description": "The number of rows the header cell spans",
+          "minimum": 1
         }
       }
     },
