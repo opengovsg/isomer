@@ -14,10 +14,10 @@ export default {
   },
 } as Meta
 
+const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
+
 // Template for stories
 const Template: StoryFn<HomePageSchema> = (args) => {
-  const TEST_CLIENT_ID = "7946e346-993e-41c7-bd81-26a3999dc3f4"
-
   // Note: This is needed because the script tag is not rendered in the storybook
   useEffect(() => {
     const scriptTag = document.createElement("script")
@@ -46,7 +46,7 @@ Default.args = {
     lastUpdated: "1 Jan 2021",
     search: {
       type: "searchSG",
-      clientId: "7946e346-993e-41c7-bd81-26a3999dc3f4",
+      clientId: TEST_CLIENT_ID,
     },
   },
   page: {
