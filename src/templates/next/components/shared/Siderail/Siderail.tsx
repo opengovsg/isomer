@@ -32,9 +32,10 @@ const SiderailMobile = ({
 
       {isExpanded && (
         <ul className="absolute w-full bg-white">
-          {pages.map(({ url, title, isCurrent, childPages }) => {
+          {pages.map(({ url, title, isCurrent, childPages }, index) => {
             return (
               <li
+                key={index}
                 className={`border-b border-divider-medium ${Paragraph[3]} text-content`}
                 aria-current={isCurrent ? "page" : undefined}
               >
@@ -50,13 +51,13 @@ const SiderailMobile = ({
                 )}
                 {isCurrent && (
                   <ul>
-                    {childPages?.map(({ title, url }, index) => {
+                    {childPages?.map(({ title, url }, childIndex) => {
                       return (
-                        <li>
+                        <li key={childIndex}>
                           <LinkComponent
                             href={url}
                             className={`block py-3 pl-12 pr-5 hover:bg-interaction-sub active:underline active:underline-offset-2 ${
-                              index === childPages.length - 1 && "pb-4"
+                              childIndex === childPages.length - 1 && "pb-4"
                             }`}
                           >
                             {title}
@@ -97,6 +98,7 @@ const SiderailDesktop = ({
         {pages.map(({ url, title, isCurrent, childPages }, index) => {
           return (
             <li
+              key={index}
               className={`${Paragraph[3]} ${
                 index !== pages.length - 1 && "border-b border-divider-medium"
               } text-content`}
@@ -109,18 +111,18 @@ const SiderailDesktop = ({
                   href={url}
                   className="block py-3 px-2 hover:bg-interaction-sub active:underline active:underline-offset-2"
                 >
-                  <p className="">{title}</p>
+                  {title}
                 </LinkComponent>
               )}
               {isCurrent && (
                 <ul>
-                  {childPages?.map(({ url, title }, index) => {
+                  {childPages?.map(({ url, title }, childIndex) => {
                     return (
-                      <li>
+                      <li key={childIndex}>
                         <LinkComponent
                           href={url}
                           className={`block py-2.5 pl-10 pr-2 hover:bg-interaction-sub active:underline active:underline-offset-2 ${
-                            index === childPages.length - 1 && "pb-3"
+                            childIndex === childPages.length - 1 && "pb-3"
                           }`}
                         >
                           {title}
