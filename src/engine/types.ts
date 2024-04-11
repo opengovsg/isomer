@@ -113,7 +113,7 @@ export interface ContentPageProps extends BasePageProps {
 }
 export interface HomePageProps extends BasePageProps {}
 export interface NotFoundPageProps extends BasePageProps {}
-export interface SearchSGPageProps extends BasePageProps {}
+export interface SearchPageProps extends BasePageProps {}
 
 export interface BasePageSchema {
   version: string
@@ -149,9 +149,9 @@ export interface NotFoundPageSchema extends BasePageSchema {
   page: NotFoundPageProps
 }
 
-export interface SearchSGPageSchema extends BasePageSchema {
-  layout: "searchsg"
-  page: SearchSGPageProps
+export interface SearchPageSchema extends BasePageSchema {
+  layout: "search"
+  page: SearchPageProps
 }
 
 export type IsomerPageSchema =
@@ -160,4 +160,4 @@ export type IsomerPageSchema =
   | ContentPageSchema
   | HomePageSchema
   | NotFoundPageSchema
-  | SearchSGPageSchema
+  | SearchPageSchema

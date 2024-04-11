@@ -1,11 +1,11 @@
 import type { Meta, StoryFn } from "@storybook/react"
-import type { SearchSGPageSchema } from "~/engine"
-import SearchSGLayout from "./SearchSG"
+import type { SearchPageSchema } from "~/engine"
+import SearchLayout from "./Search"
 import { useEffect } from "react"
 
 export default {
-  title: "Next/Layouts/SearchSG",
-  component: SearchSGLayout,
+  title: "Next/Layouts/Search",
+  component: SearchLayout,
   argTypes: {},
   parameters: {
     themes: {
@@ -17,21 +17,28 @@ export default {
 const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
 
 // Template for stories
-const Template: StoryFn<SearchSGPageSchema> = (args) => {
+const Template: StoryFn<SearchPageSchema> = (args) => {
   // Note: This is needed because the script tag is not rendered in the storybook
   useEffect(() => {
+    if (args.site.search && args.site.search.type !== "searchSG") return
+
     const scriptTag = document.createElement("script")
     scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${TEST_CLIENT_ID}&page=result`
     scriptTag.setAttribute("defer", "")
     document.body.appendChild(scriptTag)
+
+    return () => {
+      document.body.removeChild(scriptTag)
+    }
   }, [])
 
-  return <SearchSGLayout {...args} />
+  return <SearchLayout {...args} />
 }
 
-export const Default = Template.bind({})
-Default.args = {
-  layout: "searchsg",
+export const SearchSG = Template.bind({})
+SearchSG.storyName = "SearchSG"
+SearchSG.args = {
+  layout: "search",
   site: {
     siteName: "Isomer Next",
     siteMap: { title: "Home", permalink: "/", children: [] },
