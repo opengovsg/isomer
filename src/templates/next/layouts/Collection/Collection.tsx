@@ -4,14 +4,14 @@ import { useState } from "react"
 import { CollectionCardProps } from "~/common"
 import { SortDirection, SortKey } from "~/common/CollectionSort"
 import type { CollectionPageSchema, IsomerSitemap } from "~/engine"
+import { getSitemapAsArray } from "~/utils"
 import { CollectionCard } from "../../components"
+import { CollectionSearch, Filter, Pagination } from "../../components/shared"
 import CollectionSort from "../../components/shared/CollectionSort"
+import type { AppliedFilter, Filter as FilterType } from "../../types/Filter"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"
 import { Skeleton } from "../Skeleton"
-import type { Filter as FilterType, AppliedFilter } from "../../types/Filter"
-import { CollectionSearch, Filter, Pagination } from "../../components/shared"
-import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
 const getCollectionItems = (
   siteMap: IsomerSitemap,
