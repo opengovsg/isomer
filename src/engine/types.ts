@@ -18,7 +18,6 @@ import type {
   InfopicProps,
   KeyStatisticsProps,
   MastheadProps,
-  MetaHeadProps,
   NavbarProps,
   NotificationProps,
   OrderedListProps,
@@ -49,7 +48,6 @@ type IsomerComponentProps =
   | InfopicProps
   | KeyStatisticsProps
   | MastheadProps
-  | MetaHeadProps
   | NavbarProps
   | OrderedListProps
   | ParagraphProps
@@ -66,19 +64,22 @@ export type IsomerComponent = IsomerComponentProps & {
 
 export interface IsomerSitemap {
   title: string
+  summary: string
+  lastModified: string
   permalink: string
   children?: IsomerSitemap[]
 }
 
 interface IsomerSiteProps {
   siteName: string
+  url?: string
   agencyName?: string
   siteMap: IsomerSitemap
   theme: "isomer-classic" | "isomer-next"
   logoUrl: string
   isGovernment?: boolean
   environment?: string
-  favicon?: MetaHeadProps["favicon"]
+  favicon?: string
   lastUpdated: string
   search: NavbarProps["search"]
   navBarItems: NavbarProps["items"]
@@ -120,7 +121,6 @@ export interface BasePageSchema {
   site: IsomerSiteProps
   content: IsomerComponent[]
   LinkComponent?: any // Next.js link
-  HeadComponent?: any // Next.js head
   ScriptComponent?: any // Next.js script
 }
 

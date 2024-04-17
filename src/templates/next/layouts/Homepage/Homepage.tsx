@@ -7,7 +7,6 @@ const HomepageLayout = ({
   page,
   content,
   LinkComponent,
-  HeadComponent,
   ScriptComponent,
 }: HomePageSchema) => {
   return (
@@ -15,7 +14,6 @@ const HomepageLayout = ({
       site={site}
       page={page}
       LinkComponent={LinkComponent}
-      HeadComponent={HeadComponent}
       ScriptComponent={ScriptComponent}
     >
       <div

@@ -5,29 +5,15 @@ export const Skeleton = ({
   site,
   page,
   LinkComponent,
-  HeadComponent,
   ScriptComponent,
   children,
 }: React.PropsWithChildren<
-  Pick<
-    IsomerPageSchema,
-    "site" | "page" | "HeadComponent" | "LinkComponent" | "ScriptComponent"
-  >
+  Pick<IsomerPageSchema, "site" | "page" | "LinkComponent" | "ScriptComponent">
 >) => {
   const isStaging = site.environment === "staging"
 
   return (
     <>
-      {renderComponent({
-        component: {
-          type: "metahead",
-          title: page.title || site.siteName,
-          description: page.description,
-          noIndex: page.noIndex,
-          favicon: site.favicon,
-          HeadComponent,
-        },
-      })}
       {site.isGovernment &&
         renderComponent({
           component: { type: "masthead", isStaging },

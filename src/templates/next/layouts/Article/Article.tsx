@@ -9,7 +9,6 @@ const ArticleLayout = ({
   page,
   content,
   LinkComponent,
-  HeadComponent,
   ScriptComponent,
 }: ArticlePageSchema) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
@@ -22,7 +21,6 @@ const ArticleLayout = ({
       site={site}
       page={page}
       LinkComponent={LinkComponent}
-      HeadComponent={HeadComponent}
       ScriptComponent={ScriptComponent}
     >
       <div className="flex flex-col gap-20 px-6 md:px-10 max-w-[1240px] mx-auto">

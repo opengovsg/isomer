@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import { CollectionCardProps } from "~/common"
 import { SortDirection, SortKey } from "~/common/CollectionSort"
@@ -184,7 +186,6 @@ const CollectionLayout = ({
   site,
   page,
   LinkComponent,
-  HeadComponent,
   ScriptComponent,
 }: CollectionPageSchema) => {
   const ITEMS_PER_PAGE = 6
@@ -213,7 +214,6 @@ const CollectionLayout = ({
       site={site}
       page={page}
       LinkComponent={LinkComponent}
-      HeadComponent={HeadComponent}
       ScriptComponent={ScriptComponent}
     >
       <div className="max-w-[1140px] flex flex-col gap-16 mx-auto my-20 items-center">

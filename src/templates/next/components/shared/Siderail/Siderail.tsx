@@ -1,3 +1,5 @@
+"use client"
+
 import { BiLeftArrowAlt } from "react-icons/bi"
 import { SiderailProps } from "~/common"
 import { Heading } from "../../../typography/Heading"

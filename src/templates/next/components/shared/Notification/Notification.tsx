@@ -1,3 +1,5 @@
+"use client"
+
 import { BiX } from "react-icons/bi"
 import { useState } from "react"
 import BaseParagraph from "../Paragraph"

@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import { BiChevronDown } from "react-icons/bi"
 import type { FilterProps } from "../../../types/Filter"

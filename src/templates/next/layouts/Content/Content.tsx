@@ -82,7 +82,6 @@ const ContentLayout = ({
   page,
   content,
   LinkComponent,
-  HeadComponent,
   ScriptComponent,
 }: ContentPageSchema) => {
   const sideRail = getSiderailFromSiteMap(
@@ -99,7 +98,6 @@ const ContentLayout = ({
       site={site}
       page={page}
       LinkComponent={LinkComponent}
-      HeadComponent={HeadComponent}
       ScriptComponent={ScriptComponent}
     >
       {sideRail && (

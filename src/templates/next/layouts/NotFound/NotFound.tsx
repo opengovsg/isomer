@@ -6,7 +6,6 @@ const NotFoundLayout = ({
   site,
   page,
   LinkComponent = "a",
-  HeadComponent = "head",
   ScriptComponent = "script",
 }: NotFoundPageSchema) => {
   return (
@@ -14,7 +13,6 @@ const NotFoundLayout = ({
       site={site}
       page={page}
       LinkComponent={LinkComponent}
-      HeadComponent={HeadComponent}
       ScriptComponent={ScriptComponent}
     >
       <div

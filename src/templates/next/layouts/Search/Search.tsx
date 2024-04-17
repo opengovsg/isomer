@@ -5,7 +5,6 @@ const SearchLayout = ({
   site,
   page,
   LinkComponent = "a",
-  HeadComponent = "head",
   ScriptComponent = "script",
 }: SearchPageSchema) => {
   const clientId =
@@ -17,7 +16,6 @@ const SearchLayout = ({
       site={site}
       page={page}
       LinkComponent={LinkComponent}
-      HeadComponent={HeadComponent}
       ScriptComponent={ScriptComponent}
     >
       {/* Local search */}

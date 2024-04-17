@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import { BiCheck } from "react-icons/bi"
 import { MdKeyboardArrowDown } from "react-icons/md"

@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useRef, useState } from "react"
 import type { TableProps } from "~/common"
 import BaseParagraph from "../shared/Paragraph"
