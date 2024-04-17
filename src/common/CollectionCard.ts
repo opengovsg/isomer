@@ -1,3 +1,5 @@
+import type ImageProps from "./Image"
+
 export interface Tag {
   title: string
 }
@@ -6,21 +8,19 @@ export interface FileDetails {
   type: string
   size: string
 }
-
-interface Image {
-  src: string
-  alt: string
-}
-
-export interface BaseCardProps {
+interface BaseCardProps {
   type: "collectionCard"
   lastUpdated: string
   category: string
   title: string
   url: string
   description: string
-  image?: Image
+  image?: Pick<ImageProps, "src" | "alt">
   LinkComponent?: any
+}
+
+export interface ArticleCardProps extends BaseCardProps {
+  variant: "article"
 }
 
 export interface FileCardProps extends BaseCardProps {
@@ -28,10 +28,13 @@ export interface FileCardProps extends BaseCardProps {
   fileDetails: FileDetails
 }
 
-export interface ArticleCardProps extends BaseCardProps {
-  variant: "article"
+export interface LinkCardProps extends BaseCardProps {
+  variant: "link"
 }
 
-export type CollectionCardProps = FileCardProps | ArticleCardProps
+export type CollectionCardProps =
+  | ArticleCardProps
+  | FileCardProps
+  | LinkCardProps
 
 export default CollectionCardProps

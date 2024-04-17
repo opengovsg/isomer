@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { CollectionCardProps } from "~/common"
 import { SortDirection, SortKey } from "~/common/CollectionSort"
-import type { CollectionPageSchema } from "~/engine"
+import type { CollectionPageSchema, IsomerSitemap } from "~/engine"
 import { CollectionCard } from "../../components"
 import CollectionSort from "../../components/shared/CollectionSort"
 import { Heading } from "../../typography/Heading"
@@ -11,6 +11,81 @@ import { Paragraph } from "../../typography/Paragraph"
 import { Skeleton } from "../Skeleton"
 import type { Filter as FilterType, AppliedFilter } from "../../types/Filter"
 import { CollectionSearch, Filter, Pagination } from "../../components/shared"
+import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
+
+const getCollectionItems = (
+  siteMap: IsomerSitemap,
+  permalink: string,
+): CollectionCardProps[] => {
+  let currSitemap = siteMap
+  const permalinkParts = permalink.split("/")
+
+  for (let i = 2; i <= permalinkParts.length; i++) {
+    const currPermalink = permalinkParts.slice(0, i).join("/")
+
+    if (!currSitemap.children) {
+      return []
+    }
+
+    const child = currSitemap.children.find(
+      (child) => child.permalink === currPermalink,
+    )
+
+    if (!child) {
+      return []
+    }
+
+    currSitemap = child
+  }
+
+  if (!currSitemap.children) {
+    return []
+  }
+
+  const items = currSitemap.children.flatMap((child) =>
+    getSitemapAsArray(child),
+  )
+
+  return items.map((item) => {
+    const date = new Date(item.date || item.lastModified)
+    const lastUpdated =
+      date.getDate().toString().padStart(2, "0") +
+      " " +
+      date.toLocaleString("default", { month: "long" }) +
+      " " +
+      date.getFullYear()
+
+    const baseItem = {
+      type: "collectionCard" as const,
+      lastUpdated,
+      category: item.category || "Others",
+      title: item.title,
+      description: item.summary,
+      image: item.image,
+    }
+
+    if (item.type === "file") {
+      return {
+        ...baseItem,
+        variant: "file",
+        url: item.ref,
+        fileDetails: item.fileDetails,
+      }
+    } else if (item.type === "link") {
+      return {
+        ...baseItem,
+        variant: "link",
+        url: item.ref,
+      }
+    }
+
+    return {
+      ...baseItem,
+      variant: "article",
+      url: item.permalink,
+    }
+  })
+}
 
 const getAvailableFilters = (items: CollectionCardProps[]): FilterType[] => {
   const categories: Record<string, number> = {}
@@ -189,7 +264,9 @@ const CollectionLayout = ({
   ScriptComponent,
 }: CollectionPageSchema) => {
   const ITEMS_PER_PAGE = 6
-  const { defaultSortBy, defaultSortDirection, items, subtitle, title } = page
+  const { defaultSortBy, defaultSortDirection, subtitle, title, permalink } =
+    page
+  const { siteMap } = site
 
   const [sortBy, setSortBy] = useState<SortKey>(defaultSortBy)
   const [sortDirection, setSortDirection] =
@@ -198,6 +275,7 @@ const CollectionLayout = ({
   const [searchValue, setSearchValue] = useState<string>("")
   const [currPage, setCurrPage] = useState<number>(1)
 
+  const items = getCollectionItems(siteMap, permalink)
   const filters = getAvailableFilters(items)
   const output = getOutput(
     items,
@@ -216,8 +294,8 @@ const CollectionLayout = ({
       LinkComponent={LinkComponent}
       ScriptComponent={ScriptComponent}
     >
-      <div className="max-w-[1140px] flex flex-col gap-16 mx-auto my-20 items-center">
-        <div className="flex flex-col gap-12">
+      <div className="max-w-[1240px] flex flex-col gap-16 mx-auto my-20 px-6 md:px-10 py-16 items-center">
+        <div className="flex flex-col gap-12 w-full">
           <h1
             className={`flex flex-col gap-16 text-content-strong ${Heading[1]}`}
           >
