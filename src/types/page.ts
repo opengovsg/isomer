@@ -35,7 +35,6 @@ export interface ArticlePageProps extends BasePageProps {
 export interface CollectionPageProps extends BasePageProps {
   defaultSortBy: SortKey
   defaultSortDirection: SortDirection
-  items: CollectionCardProps[]
   subtitle: string
 }
 export interface ContentPageProps extends BasePageProps {
