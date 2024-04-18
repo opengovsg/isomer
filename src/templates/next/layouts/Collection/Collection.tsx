@@ -236,27 +236,6 @@ const getPaginatedItems = (
   )
 }
 
-const getOutput = (
-  items: CollectionCardProps[],
-  appliedFilters: AppliedFilter[],
-  searchValue: string,
-  itemsPerPage: number,
-  currPage: number,
-  sortBy: SortKey,
-  sortDirection: SortDirection,
-) => {
-  // Step 1: Filter items based on applied filters and search value
-  const filteredItems = getFilteredItems(items, appliedFilters, searchValue)
-
-  // Step 2: Sort items based on sort key and sort direction
-  const sortedItems = getSortedItems(filteredItems, sortBy, sortDirection)
-
-  // Step 3: Paginate the sorted items
-  const paginatedItems = getPaginatedItems(sortedItems, itemsPerPage, currPage)
-
-  return paginatedItems
-}
-
 const CollectionLayout = ({
   site,
   page,
@@ -277,14 +256,18 @@ const CollectionLayout = ({
 
   const items = getCollectionItems(siteMap, permalink)
   const filters = getAvailableFilters(items)
-  const output = getOutput(
-    items,
-    appliedFilters,
-    searchValue,
+
+  // Step 1: Filter items based on applied filters and search value
+  const filteredItems = getFilteredItems(items, appliedFilters, searchValue)
+
+  // Step 2: Sort items based on sort key and sort direction
+  const sortedItems = getSortedItems(filteredItems, sortBy, sortDirection)
+
+  // Step 3: Paginate the sorted items
+  const paginatedItems = getPaginatedItems(
+    sortedItems,
     ITEMS_PER_PAGE,
     currPage,
-    sortBy,
-    sortDirection,
   )
 
   return (
@@ -322,8 +305,8 @@ const CollectionLayout = ({
             <div className="flex justify-between w-full items-end">
               <p className={`${Paragraph[1]} text-content`}>
                 {appliedFilters.length > 0 || searchValue !== ""
-                  ? `${output.length} search ${
-                      output.length === 1 ? "result" : "results"
+                  ? `${filteredItems.length} search ${
+                      filteredItems.length === 1 ? "result" : "results"
                     }`
                   : `${items.length} ${
                       items.length === 1 ? "article" : "articles"
@@ -339,7 +322,7 @@ const CollectionLayout = ({
               </div>
             </div>
             <div className="flex flex-col gap-0">
-              {output.map((item) => (
+              {paginatedItems.map((item) => (
                 <CollectionCard {...item} LinkComponent={LinkComponent} />
               ))}
             </div>
@@ -348,7 +331,7 @@ const CollectionLayout = ({
         <div className="w-full">
           <div className="sm:max-w-96 sm:ml-auto">
             <Pagination
-              totalItems={items.length}
+              totalItems={filteredItems.length}
               itemsPerPage={ITEMS_PER_PAGE}
               currPage={currPage}
               setCurrPage={setCurrPage}
