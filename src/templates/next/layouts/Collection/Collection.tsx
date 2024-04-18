@@ -64,14 +64,14 @@ const getCollectionItems = (
       image: item.image,
     }
 
-    if (item.type === "file") {
+    if (item.layout === "file") {
       return {
         ...baseItem,
         variant: "file",
         url: item.ref,
         fileDetails: item.fileDetails,
       }
-    } else if (item.type === "link") {
+    } else if (item.layout === "link") {
       return {
         ...baseItem,
         variant: "link",

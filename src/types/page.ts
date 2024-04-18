@@ -12,7 +12,6 @@ interface BaseItemProps {
 }
 
 interface BasePageProps extends BaseItemProps {
-  type: "page"
   language?: "en"
   noIndex?: boolean
 }
@@ -24,13 +23,8 @@ interface BaseRefProps extends BaseItemProps {
   image?: CollectionCardProps["image"]
 }
 
-export interface FileRefProps extends BaseRefProps {
-  type: "file"
-}
-
-export interface LinkRefProps extends BaseRefProps {
-  type: "link"
-}
+export interface FileRefProps extends BaseRefProps {}
+export interface LinkRefProps extends BaseRefProps {}
 
 export interface ArticlePageProps extends BasePageProps {
   category: CollectionCardProps["category"]

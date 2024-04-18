@@ -11,7 +11,10 @@ export const getMetadata = (props: IsomerPageSchema) => {
     metadataBase: props.site.url ? new URL(props.site.url) : undefined,
     description: props.page.description || undefined,
     robots: {
-      index: !(props.page.type === "page" && props.page.noIndex),
+      index:
+        props.layout !== "file" &&
+        props.layout !== "link" &&
+        !props.page.noIndex,
     },
     icons: {
       shortcut:
@@ -23,7 +26,7 @@ export const getMetadata = (props: IsomerPageSchema) => {
     },
   }
 
-  if (props.page.type === "page" && props.page.permalink === "/") {
+  if (props.page.permalink === "/") {
     return metadata
   }
 
@@ -55,7 +58,7 @@ export const getRobotsTxt = (props: IsomerPageSchema) => {
 
 export const getSitemapXml = (sitemap: IsomerSitemap) => {
   return getSitemapAsArray(sitemap)
-    .filter((item) => item.type === "page")
+    .filter((item) => item.layout !== "file" && item.layout !== "link")
     .map(
       ({ permalink, lastModified }): SitemapXmlItem => ({
         url: permalink,

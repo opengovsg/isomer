@@ -1,5 +1,6 @@
 import type { CollectionCardProps } from "~/common"
 import type { FileCardProps } from "~/common/CollectionCard"
+import type { IsomerPageSchema } from "./schema"
 
 interface IsomerBaseSitemap {
   title: string
@@ -12,20 +13,20 @@ interface IsomerBaseSitemap {
   children?: IsomerSitemap[]
 }
 
-interface IsomerArticleSitemap extends IsomerBaseSitemap {
-  type: "page"
+interface IsomerPageSitemap extends IsomerBaseSitemap {
+  layout: Exclude<IsomerPageSchema["layout"], "file" | "link">
 }
 interface IsomerFileSitemap extends IsomerBaseSitemap {
-  type: "file"
+  layout: "file"
   ref: string
   fileDetails: FileCardProps["fileDetails"]
 }
 interface IsomerLinkSitemap extends IsomerBaseSitemap {
-  type: "link"
+  layout: "link"
   ref: string
 }
 
 export type IsomerSitemap =
-  | IsomerArticleSitemap
+  | IsomerPageSitemap
   | IsomerFileSitemap
   | IsomerLinkSitemap
