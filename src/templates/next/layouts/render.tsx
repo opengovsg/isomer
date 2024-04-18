@@ -103,5 +103,9 @@ export const renderLayout = (props: IsomerPageSchema) => {
       return <NotFoundLayout {...props} />
     case "search":
       return <SearchLayout {...props} />
+    // These are references that we should not render to the user
+    case "file":
+    case "link":
+      return <></>
   }
 }

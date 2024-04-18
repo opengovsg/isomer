@@ -1,9 +1,9 @@
-import {
+import type {
   ArticleCardProps,
   CollectionCardProps,
   FileCardProps,
+  LinkCardProps,
 } from "~/common/CollectionCard"
-
 import { Caption } from "../../typography/Caption"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"
@@ -71,10 +71,9 @@ const FileTextComponent = ({
           </p>
           <p className={`${Caption[1]} text-content-strong`}>{category}</p>
         </div>
-        <h4
-          className={`${Heading[4]} line-clamp-3 sm:line-clamp-2`}
-        >{`(${fileDetails.type.toUpperCase()}) 
-         ${title}`}</h4>
+        <h4 className={`${Heading[4]} line-clamp-3 sm:line-clamp-2`}>
+          {`(${fileDetails.type.toUpperCase()}) ${title}`}
+        </h4>
         <p
           className={`${Paragraph[2]} text-content-medium line-clamp-3 sm:line-clamp-2`}
         >
@@ -100,7 +99,7 @@ const ArticleCard = ({
   description,
   image,
   LinkComponent = "a",
-}: Omit<ArticleCardProps, "type">) => {
+}: Omit<ArticleCardProps | LinkCardProps, "type">) => {
   return (
     <LinkComponent href={url}>
       <div className="flex flex-col sm:flex-row gap-6 py-6 px-3 sm:px-6 border-y border-divider-medium text-content hover:text-hyperlink-hover">
@@ -148,8 +147,11 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends any
 const Card = (props: DistributiveOmit<CollectionCardProps, "type">) => {
   if (props.variant === "file") {
     return <FileCard {...props} />
+  } else if (props.variant === "article" || props.variant === "link") {
+    return <ArticleCard {...props} />
   }
-  return <ArticleCard {...props} />
+
+  return <></>
 }
 
 export default Card

@@ -1,4 +1,5 @@
-import type { IsomerPageSchema, IsomerSitemap } from "./types"
+import { getSitemapAsArray } from "~/utils"
+import type { IsomerPageSchema, IsomerSitemap } from "~/types"
 
 type SitemapXmlItem = {
   url: string
@@ -10,7 +11,10 @@ export const getMetadata = (props: IsomerPageSchema) => {
     metadataBase: props.site.url ? new URL(props.site.url) : undefined,
     description: props.page.description || undefined,
     robots: {
-      index: !props.page.noIndex,
+      index:
+        props.layout !== "file" &&
+        props.layout !== "link" &&
+        !props.page.noIndex,
     },
     icons: {
       shortcut:
@@ -53,20 +57,12 @@ export const getRobotsTxt = (props: IsomerPageSchema) => {
 }
 
 export const getSitemapXml = (sitemap: IsomerSitemap) => {
-  let result: SitemapXmlItem[] = []
-
-  const traverse = (node: IsomerSitemap) => {
-    if (node.permalink) {
-      result.push({
-        url: node.permalink,
-        lastModified: node.lastModified,
-      })
-    }
-    if (node.children && node.children.length > 0) {
-      node.children.forEach((child) => traverse(child))
-    }
-  }
-
-  traverse(sitemap)
-  return result
+  return getSitemapAsArray(sitemap)
+    .filter((item) => item.layout !== "file" && item.layout !== "link")
+    .map(
+      ({ permalink, lastModified }): SitemapXmlItem => ({
+        url: permalink,
+        lastModified,
+      }),
+    )
 }
