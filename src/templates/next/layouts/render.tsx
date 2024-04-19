@@ -11,6 +11,7 @@ import {
   Button,
   Callout,
   CollectionCard,
+  Divider,
   Footer,
   Heading,
   Hero,
@@ -48,6 +49,8 @@ export const renderComponent = ({
       return <Callout {...component} />
     case "collectionCard":
       return <CollectionCard {...component} LinkComponent={LinkComponent} />
+    case "divider":
+      return <Divider {...component} />
     case "footer":
       return <Footer {...component} LinkComponent={LinkComponent} />
     case "heading":
