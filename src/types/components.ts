@@ -5,6 +5,7 @@ import type {
   CardsProps,
   CollectionCardProps,
   ContentProps,
+  DividerProps,
   FooterProps,
   HeaderProps,
   HeadingProps,
@@ -33,6 +34,7 @@ type IsomerComponentProps =
   | CollectionCardProps
   | CardsProps
   | ContentProps
+  | DividerProps
   | FooterProps
   | HeadingProps
   | HeaderProps
