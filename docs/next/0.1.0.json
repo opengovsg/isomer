@@ -4,7 +4,7 @@
   "title": "Isomer Next Page JSON",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "page", "content"],
+  "required": ["version", "page", "layout"],
   "properties": {
     "version": {
       "type": "string",
@@ -14,7 +14,7 @@
     "layout": {
       "type": "string",
       "description": "The layout of the page to use",
-      "enum": ["homepage", "content", "collection"]
+      "enum": ["homepage", "content", "collection", "article", "file", "link"]
     },
     "page": {
       "type": "object",
@@ -23,10 +23,11 @@
       "properties": {
         "title": {
           "type": "string",
-          "description": "The title of the page"
+          "title": "Page title"
         },
         "description": {
           "type": "string",
+          "title": "Page description",
           "description": "The summary of the page for SEO purposes"
         },
         "noIndex": {
@@ -37,7 +38,227 @@
     },
     "content": {
       "type": "array",
-      "title": "Page content",
+      "title": "Page content"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "layout": {
+            "const": "homepage"
+          }
+        },
+        "required": ["layout"]
+      },
+      "then": {
+        "properties": {
+          "content": {
+            "$ref": "#/definitions/all-content-components"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "layout": {
+            "const": "content"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "page": {
+            "required": ["contentPageHeader"],
+            "properties": {
+              "contentPageHeader": {
+                "$ref": "#/definitions/contentpageheader"
+              }
+            }
+          },
+          "content": {
+            "$ref": "#/definitions/all-content-components"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "layout": {
+            "const": "collection"
+          }
+        },
+        "required": ["layout"]
+      },
+      "then": {
+        "properties": {
+          "page": {
+            "required": ["defaultSortBy", "defaultSortDirection", "subtitle"],
+            "properties": {
+              "defaultSortBy": {
+                "type": "string",
+                "description": "The default field to sort the collection items by",
+                "enum": ["date"]
+              },
+              "defaultSortDirection": {
+                "type": "string",
+                "description": "The default direction to sort the collection items by",
+                "enum": ["asc", "desc"]
+              },
+              "subtitle": {
+                "type": "string",
+                "description": "The subtitle of the collection"
+              }
+            }
+          },
+          "content": {
+            "type": "array",
+            "description": "This should be empty for collection pages, make sure to remove any items here.",
+            "default": [],
+            "minItems": 0,
+            "maxItems": 0,
+            "items": {
+              "type": "null"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "layout": {
+            "const": "article"
+          }
+        },
+        "required": ["layout"]
+      },
+      "then": {
+        "properties": {
+          "page": {
+            "required": ["category", "date", "articlePageHeader"],
+            "properties": {
+              "category": {
+                "type": "string",
+                "title": "Category of the article",
+                "description": "The category is used for filtering in the parent collection page."
+              },
+              "date": {
+                "type": "string",
+                "title": "Date of the article"
+              },
+              "image": {
+                "$ref": "#/definitions/image-collection-card"
+              },
+              "articlePageHeader": {
+                "$ref": "#/definitions/articlepageheader"
+              }
+            }
+          },
+          "content": {
+            "$ref": "#/definitions/all-content-components"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "layout": {
+            "const": "file"
+          }
+        },
+        "required": ["layout"]
+      },
+      "then": {
+        "properties": {
+          "page": {
+            "required": ["ref", "category", "date"],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "title": "URL of the actual file",
+                "description": "The link that users will open immediately when they click on the file item in the parent collection page."
+              },
+              "category": {
+                "type": "string",
+                "title": "Category of the file item",
+                "description": "The category is used for filtering in the parent collection page."
+              },
+              "date": {
+                "type": "string",
+                "title": "Date of the file item"
+              },
+              "image": {
+                "$ref": "#/definitions/image-collection-card"
+              }
+            }
+          },
+          "content": {
+            "type": "array",
+            "description": "This should be empty for file pages, make sure to remove any items here.",
+            "default": [],
+            "minItems": 0,
+            "maxItems": 0,
+            "items": {
+              "type": "null"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "layout": {
+            "const": "link"
+          }
+        },
+        "required": ["layout"]
+      },
+      "then": {
+        "properties": {
+          "page": {
+            "required": ["ref", "category", "date"],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "title": "URL of the actual link",
+                "description": "The link that users will open immediately when they click on the link item in the parent collection page."
+              },
+              "category": {
+                "type": "string",
+                "title": "Category of the link item",
+                "description": "The category is used for filtering in the parent collection page."
+              },
+              "date": {
+                "type": "string",
+                "title": "Date of the link item"
+              },
+              "image": {
+                "$ref": "#/definitions/image-collection-card"
+              }
+            }
+          },
+          "content": {
+            "type": "array",
+            "description": "This should be empty for link pages, make sure to remove any items here.",
+            "default": [],
+            "minItems": 0,
+            "maxItems": 0,
+            "items": {
+              "type": "null"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "all-content-components": {
+      "type": "array",
       "minItems": 1,
       "items": {
         "oneOf": [
@@ -49,6 +270,9 @@
           },
           {
             "$ref": "#/definitions/callout"
+          },
+          {
+            "$ref": "#/definitions/divider"
           },
           {
             "$ref": "#/definitions/heading"
@@ -91,64 +315,7 @@
           }
         ]
       }
-    }
-  },
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "layout": {
-            "const": "content"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "page": {
-            "required": ["contentPageHeader"],
-            "properties": {
-              "contentPageHeader": {
-                "$ref": "#/definitions/contentpageheader"
-              }
-            }
-          }
-        }
-      }
     },
-    {
-      "if": {
-        "properties": {
-          "layout": {
-            "const": "collection"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "page": {
-            "required": ["defaultSortBy", "defaultSortDirection", "subtitle"],
-            "properties": {
-              "defaultSortBy": {
-                "type": "string",
-                "description": "The default field to sort the collection items by",
-                "enum": ["date"]
-              },
-              "defaultSortDirection": {
-                "type": "string",
-                "description": "The default direction to sort the collection items by",
-                "enum": ["asc", "desc"]
-              },
-              "subtitle": {
-                "type": "string",
-                "description": "The subtitle of the collection"
-              }
-            }
-          }
-        }
-      }
-    }
-  ],
-  "definitions": {
     "accordion": {
       "type": "object",
       "title": "Accordion component",
@@ -185,6 +352,22 @@
                 "$ref": "#/definitions/unorderedlist"
               }
             ]
+          }
+        }
+      }
+    },
+    "articlepageheader": {
+      "type": "object",
+      "title": "Article page header",
+      "description": "The article page header is used to display the title, summary, breadcrumbs, category and date of an article page.",
+      "properties": {
+        "summary": {
+          "type": "array",
+          "title": "Page summary",
+          "description": "The summary of the article page's content. Having multiple items will display them as a list.",
+          "minItems": 1,
+          "items": {
+            "type": "string"
           }
         }
       }
@@ -265,8 +448,8 @@
     },
     "contentpageheader": {
       "type": "object",
-      "title": "Content page header component",
-      "description": "The content page header component is used to display the title, summary, and breadcrumbs of a content page.",
+      "title": "Content page header",
+      "description": "The content page header is used to display the title, summary, and breadcrumbs of a content page.",
       "required": ["summary"],
       "properties": {
         "summary": {
@@ -283,6 +466,19 @@
           "type": "string",
           "title": "Button URL",
           "description": "The URL to link the button to"
+        }
+      }
+    },
+    "divider": {
+      "type": "object",
+      "title": "Divider component",
+      "description": "A horizontal rule that serves as a divider to separate content",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["divider"],
+          "default": "divider"
         }
       }
     },
@@ -869,6 +1065,24 @@
           "type": "string",
           "title": "URL Link",
           "description": "The URL to link the image to"
+        }
+      }
+    },
+    "image-collection-card": {
+      "type": "object",
+      "title": "Image for collection card",
+      "description": "An optional image to include in the collection card.",
+      "required": ["src", "alt"],
+      "properties": {
+        "src": {
+          "type": "string",
+          "title": "Image URL",
+          "description": "The URL to the image to display"
+        },
+        "alt": {
+          "type": "string",
+          "title": "Image alt text",
+          "description": "The alt text for the image"
         }
       }
     },
