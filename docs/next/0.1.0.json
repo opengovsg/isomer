@@ -1072,7 +1072,6 @@
       "type": "object",
       "title": "Image for collection card",
       "description": "An optional image to include in the collection card.",
-      "required": ["src", "alt"],
       "properties": {
         "src": {
           "type": "string",
