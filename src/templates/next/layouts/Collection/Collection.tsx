@@ -37,45 +37,52 @@ const getCollectionItems = (
     getSitemapAsArray(child),
   )
 
-  return items.map((item) => {
-    const date = new Date(item.date || item.lastModified)
-    const lastUpdated =
-      date.getDate().toString().padStart(2, "0") +
-      " " +
-      date.toLocaleString("default", { month: "long" }) +
-      " " +
-      date.getFullYear()
+  return items
+    .filter(
+      (item) =>
+        item.layout === "file" ||
+        item.layout === "link" ||
+        item.layout === "article",
+    )
+    .map((item) => {
+      const date = new Date(item.date || item.lastModified)
+      const lastUpdated =
+        date.getDate().toString().padStart(2, "0") +
+        " " +
+        date.toLocaleString("default", { month: "long" }) +
+        " " +
+        date.getFullYear()
 
-    const baseItem = {
-      type: "collectionCard" as const,
-      lastUpdated,
-      category: item.category || "Others",
-      title: item.title,
-      description: item.summary,
-      image: item.image,
-    }
+      const baseItem = {
+        type: "collectionCard" as const,
+        lastUpdated,
+        category: item.category || "Others",
+        title: item.title,
+        description: item.summary,
+        image: item.image,
+      }
 
-    if (item.layout === "file") {
+      if (item.layout === "file") {
+        return {
+          ...baseItem,
+          variant: "file",
+          url: item.ref,
+          fileDetails: item.fileDetails,
+        }
+      } else if (item.layout === "link") {
+        return {
+          ...baseItem,
+          variant: "link",
+          url: item.ref,
+        }
+      }
+
       return {
         ...baseItem,
-        variant: "file",
-        url: item.ref,
-        fileDetails: item.fileDetails,
+        variant: "article",
+        url: item.permalink,
       }
-    } else if (item.layout === "link") {
-      return {
-        ...baseItem,
-        variant: "link",
-        url: item.ref,
-      }
-    }
-
-    return {
-      ...baseItem,
-      variant: "article",
-      url: item.permalink,
-    }
-  })
+    })
 }
 
 const CollectionLayout = ({
