@@ -10,6 +10,7 @@ import type {
   HeaderProps,
   HeadingProps,
   HeroProps,
+  IframeProps,
   ImageProps,
   InfoCardsProps,
   InfoColsProps,
@@ -39,6 +40,7 @@ type IsomerComponentProps =
   | HeadingProps
   | HeaderProps
   | HeroProps
+  | IframeProps
   | ImageProps
   | InfobarProps
   | InfoCardsProps
