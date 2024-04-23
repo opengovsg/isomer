@@ -5,6 +5,7 @@ import { Paragraph } from "../../typography/Paragraph"
 import Image from "../Image"
 import OrderedList from "../OrderedList"
 import UnorderedList from "../UnorderedList"
+import Table from "../Table"
 
 const Accordion = ({ summary, details }: AccordionProps) => {
   return (
@@ -27,6 +28,8 @@ const Accordion = ({ summary, details }: AccordionProps) => {
             return <Image key={index} {...detail} />
           } else if (detail.type === "orderedlist") {
             return <OrderedList key={index} {...detail} />
+          } else if (detail.type === "table") {
+            return <Table key={index} {...detail} />
           } else if (detail.type === "unorderedlist") {
             return <UnorderedList key={index} {...detail} />
           } else {
