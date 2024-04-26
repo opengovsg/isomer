@@ -15,6 +15,7 @@ import {
   Footer,
   Heading,
   Hero,
+  Iframe,
   Image,
   InfoCards,
   InfoCols,
@@ -57,6 +58,8 @@ export const renderComponent = ({
       return <Heading {...component} />
     case "hero":
       return <Hero {...component} />
+    case "iframe":
+      return <Iframe {...component} />
     case "image":
       return <Image {...component} />
     case "infobar":
