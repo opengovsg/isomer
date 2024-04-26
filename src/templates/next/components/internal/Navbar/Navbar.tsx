@@ -28,7 +28,7 @@ export const Navbar = ({
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [navbarDesktopBottomY, setNavbarDesktopBottomY] = useState(0)
+  const [navbarDesktopHeight, setNavbarDesktopHeight] = useState(0)
   const [siteHeaderBottomY, setSiteHeaderBottomY] = useState(0)
 
   // Reference for navigation items bar on desktop
@@ -39,9 +39,7 @@ export const Navbar = ({
 
   useEffect(() => {
     const onResize = () => {
-      setNavbarDesktopBottomY(
-        navDesktopRef.current?.getBoundingClientRect().bottom || 0,
-      )
+      setNavbarDesktopHeight(navDesktopRef.current?.offsetHeight || 0)
       setSiteHeaderBottomY(
         siteHeaderRef.current?.getBoundingClientRect().bottom || 0,
       )
@@ -163,7 +161,7 @@ export const Navbar = ({
       )}
 
       {/* Navigation items (for desktop) */}
-      <div className="hidden lg:block bg-[#f4f2f1] w-full">
+      <div className="hidden lg:block bg-[#f4f2f1] w-full relative">
         <div className="w-full max-w-container mx-auto px-10">
           <div className="mx-auto w-full max-w-screen-xl">
             <ul className="flex flex-row flex-wrap" ref={navDesktopRef}>
@@ -206,9 +204,9 @@ export const Navbar = ({
                     <div
                       className={`${
                         openNavItemIdx === idx ? "absolute" : "hidden"
-                      } bg-white left-0 w-full px-4 border-b border-b-divider-medium`}
+                      } bg-white left-0 w-full px-4 border-b border-b-divider-medium z-20`}
                       style={{
-                        top: `${navbarDesktopBottomY}px`,
+                        top: `${navbarDesktopHeight}px`,
                       }}
                     >
                       <div className="flex flex-col mx-auto w-full max-w-screen-xl py-12 max-h-[32rem]">
@@ -268,16 +266,6 @@ export const Navbar = ({
             </ul>
           </div>
         </div>
-
-        {/* Overlay after navigation menu */}
-        {openNavItemIdx !== -1 && (
-          <div
-            className="w-full bg-canvas-overlay"
-            style={{
-              height: `calc(100vh - ${navbarDesktopBottomY}px)`,
-            }}
-          ></div>
-        )}
       </div>
 
       {/* Navigation items, first level (for mobile/tablet) */}
