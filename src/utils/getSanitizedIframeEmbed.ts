@@ -4,11 +4,11 @@ import DOMPurify from "isomorphic-dompurify"
 // and to insert the iframe title for accessibility
 export const getSanitizedIframeWithTitle = (content: string, title: string) => {
   DOMPurify.addHook("beforeSanitizeElements", (curr) => {
-    // Add title attribute to iframe elements for accessibility
     if (curr.tagName !== "IFRAME") {
       return curr
     }
 
+    // Add title attribute to iframe elements for accessibility
     curr.setAttribute("title", title)
     curr.setAttribute("height", "100%")
     curr.setAttribute("width", "100%")
