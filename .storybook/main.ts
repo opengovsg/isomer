@@ -7,6 +7,7 @@ export default {
     "@storybook/addon-essentials",
     "@storybook/addon-themes",
     "@storybook/addon-a11y",
+    "@chromatic-com/storybook"
   ],
 
   async viteFinal(config: any) {
