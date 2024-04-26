@@ -112,5 +112,17 @@ Default.args = {
         },
       ],
     },
+    {
+      name: "Single item",
+      url: "/single-item",
+    },
+    {
+      name: "Single item",
+      url: "/single-item",
+    },
+    {
+      name: "Single item",
+      url: "/single-item",
+    },
   ],
 }

@@ -3,7 +3,10 @@
 import { useState } from "react"
 import type { MastheadProps } from "~/interfaces"
 
-export const Masthead = ({ isStaging }: MastheadProps) => {
+export const Masthead = ({
+  isStaging,
+  LinkComponent = "a",
+}: Omit<MastheadProps, "type">) => {
   const [isMastheadContentVisible, setIsMastheadContentVisible] =
     useState(false)
 
@@ -13,7 +16,7 @@ export const Masthead = ({ isStaging }: MastheadProps) => {
       className="bg-[#f0f0f0] text-[0.6875rem] text-[#474747] lg:text-sm"
       aria-label="A Singapore Government Agency Website"
     >
-      <div className="lg:container lg:px-6 px-3">
+      <div className="max-w-container mx-auto lg:px-10 px-6">
         <div className="flex gap-1">
           <svg
             version="1.1"
@@ -40,7 +43,7 @@ export const Masthead = ({ isStaging }: MastheadProps) => {
                 </>
               ) : null}
             </span>
-            <div
+            <button
               className="flex text-[#2f5fd0] items-start cursor-pointer"
               id="sgds-masthead-identify"
               role="button"
@@ -59,7 +62,7 @@ export const Masthead = ({ isStaging }: MastheadProps) => {
                 height="20"
                 viewBox="0 0 20 20"
                 fill="none"
-                className={`block w-[12px] h-[21px] select-none transition-all duration-300 ease-in-out delay-0 self-center ${
+                className={`block w-[12px] h-4 lg:h-[21px] select-none transition-transform duration-300 ease-in-out delay-0 ${
                   isMastheadContentVisible ? "rotate-0" : "rotate-180"
                 }`}
               >
@@ -68,18 +71,18 @@ export const Masthead = ({ isStaging }: MastheadProps) => {
                   fill="#2F60CE"
                 ></path>
               </svg>
-            </div>
+            </button>
           </div>
         </div>
       </div>
 
       <div
         id="sgds-masthead-content"
-        className={`lg:container lg:px-6 px-3 pt-4 pb-8 lg:pt-10 lg:pb-12 text-[#474747] ${
+        className={`max-w-container mx-auto lg:px-10 px-6 pt-4 pb-8 lg:pt-10 lg:pb-12 text-[#474747] ${
           isMastheadContentVisible ? "block" : "hidden"
         }`}
       >
-        <div className="grid grid-cols-[1fr] lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))] gap-6 lg:gap-40">
+        <div className="grid grid-cols-[1fr] lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))] gap-6 lg:gap-40 px-px">
           <div className="flex gap-2 lg:gap-4 text-[0.6875rem] lg:text-base">
             <div className="lg:mt-[0.2rem] -mt-[0.1rem]">
               <svg
@@ -100,7 +103,7 @@ export const Masthead = ({ isStaging }: MastheadProps) => {
               <article className="leading-[1.2rem] lg:leading-6">
                 Government agencies communicate via .gov.sg websites (e.g.
                 go.gov.sg/open).&nbsp;
-                <a
+                <LinkComponent
                   href="https://www.gov.sg/trusted-sites#govsites"
                   className="inline-flex items-center text-[#2f5fd0] hover:text-[#4371d6]"
                   rel="noreferrer"
@@ -118,7 +121,7 @@ export const Masthead = ({ isStaging }: MastheadProps) => {
                     <path d="M18.667 4v2.667h4c0.186-0.020 0.374-0.020 0.56 0l-2.667 2.667-6.973 6.987 1.88 1.88 9.733-9.667c0.092 0.257 0.137 0.528 0.133 0.8v4h2.667v-9.333h-9.333z"></path>
                     <path d="M22.667 25.333h-16v-16h8v-2.667h-8c-1.473 0-2.667 1.194-2.667 2.667v16c0 1.473 1.194 2.667 2.667 2.667h16c1.473 0 2.667-1.194 2.667-2.667v-8h-2.667v8z"></path>
                   </svg>
-                </a>
+                </LinkComponent>
               </article>
             </div>
           </div>
