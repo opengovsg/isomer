@@ -97,7 +97,7 @@
   },
   "dependencies": {
     "@govtechsg/sgds": "^2.2.0",
-    "@govtechsg/sgds-react": "^2.2.2",
+    "@govtechsg/sgds-react": "^2.4.0",
     "@headlessui/react": "^1.7.18",
     "@heroicons/react": "^2.1.1",
     "bootstrap-icons": "^1.11.3",
