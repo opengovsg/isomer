@@ -101,7 +101,7 @@
     "@headlessui/react": "^1.7.18",
     "@heroicons/react": "^2.1.1",
     "bootstrap-icons": "^1.11.3",
-    "isomorphic-dompurify": "^2.5.0",
+    "isomorphic-dompurify": "^2.6.0",
     "js-base64": "^3.7.6",
     "markdown-to-jsx": "^7.4.1",
     "minisearch": "^6.3.0",
