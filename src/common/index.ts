@@ -19,6 +19,7 @@ export { default as InfoColsProps } from "./InfoCols"
 export { default as InfoCardsProps } from "./InfoCards"
 export { default as InfopicProps } from "./Infopic"
 export { default as KeyStatisticsProps } from "./KeyStatistics"
+export { default as ListItemProps } from "./ListItem"
 export { default as MastheadProps } from "./Masthead"
 export { default as NavbarProps } from "./Navbar"
 export { default as OrderedListProps } from "./OrderedList"
@@ -26,7 +27,12 @@ export { default as ParagraphProps } from "./Paragraph"
 export { default as SearchProps } from "./Search"
 export { default as SidePaneProps } from "./SidePane"
 export { default as SiderailProps } from "./Siderail"
-export { default as TableProps } from "./Table"
+export {
+  default as TableProps,
+  TableRowProps,
+  TableHeaderProps,
+  TableCellProps,
+} from "./Table"
 export { default as TableOfContentsProps } from "./TableOfContents"
 export { default as UnorderedListProps } from "./UnorderedList"
 export { default as NotificationProps } from "./Notification"

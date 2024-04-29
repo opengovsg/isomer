@@ -1,11 +1,11 @@
+import { SiderailProps } from "~/common"
 import { ContentPageSchema, IsomerSitemap } from "~/engine"
+import { getBreadcrumbFromSiteMap } from "~/utils"
 import ContentPageHeader from "../../components/shared/ContentPageHeader"
 import Siderail from "../../components/shared/Siderail"
 import TableOfContents from "../../components/shared/TableOfContents"
+import ContentHole from "../../tiptap/ContentHole"
 import { Skeleton } from "../Skeleton"
-import { renderComponent } from "../render"
-import { SiderailProps } from "~/common"
-import { getBreadcrumbFromSiteMap } from "~/utils"
 
 const getSiderailFromSiteMap = (
   sitemap: IsomerSitemap,
@@ -69,7 +69,7 @@ const getTableOfContentsFromContent = (
   for (const block of content) {
     if (block.type === "heading" && block.level === 2) {
       items.push({
-        content: block.content,
+        content: block.content[0]?.content || "",
         anchorLink: "#" + block.id,
       })
     }
@@ -83,6 +83,7 @@ const ContentLayout = ({
   content,
   LinkComponent,
   ScriptComponent,
+  NodeViewContent,
 }: ContentPageSchema) => {
   const sideRail = getSiderailFromSiteMap(
     site.siteMap,
@@ -122,9 +123,7 @@ const ContentLayout = ({
             <TableOfContents {...tableOfContents} />
           )}
           <div>
-            {content.map((component) =>
-              renderComponent({ component, LinkComponent }),
-            )}
+            <ContentHole content={content} NodeViewContent={NodeViewContent} />
           </div>
         </div>
       </div>

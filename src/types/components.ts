@@ -17,6 +17,7 @@ import type {
   InfobarProps,
   InfopicProps,
   KeyStatisticsProps,
+  ListItemProps,
   MastheadProps,
   NavbarProps,
   NotificationProps,
@@ -47,6 +48,7 @@ type IsomerComponentProps =
   | InfoColsProps
   | InfopicProps
   | KeyStatisticsProps
+  | ListItemProps
   | MastheadProps
   | NavbarProps
   | OrderedListProps

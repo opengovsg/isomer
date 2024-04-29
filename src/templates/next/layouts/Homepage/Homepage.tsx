@@ -1,6 +1,6 @@
 import { HomePageSchema } from "~/engine"
+import ContentHole from "../../tiptap/ContentHole"
 import { Skeleton } from "../Skeleton"
-import { renderComponent } from "../render"
 
 const HomepageLayout = ({
   site,
@@ -8,6 +8,7 @@ const HomepageLayout = ({
   content,
   LinkComponent,
   ScriptComponent,
+  NodeViewContent,
 }: HomePageSchema) => {
   return (
     <Skeleton
@@ -21,9 +22,7 @@ const HomepageLayout = ({
         // but cannot be used here as tailwind does not support dynamic class names
         className={`[&_.component-content]:max-w-[1240px] [&_.component-content]:px-6 [&_.component-content]:md:px-10 [&_.component-content]:mx-auto`}
       >
-        {content.map((component) =>
-          renderComponent({ component, LinkComponent }),
-        )}
+        <ContentHole content={content} NodeViewContent={NodeViewContent} />
       </div>
     </Skeleton>
   )

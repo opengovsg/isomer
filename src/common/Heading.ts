@@ -1,11 +1,14 @@
+import type ParagraphProps from "./Paragraph"
+import type { BaseIsomerComponent } from "./base"
+
 // excludes 1 as it should only be used for the page title i.e ContentPageHeader
-export const HeadingLevels = [2, 3, 4, 5, 6] as const
+export const HeadingLevels = [2, 3, 4, 5, 6, "2", "3", "4", "5", "6"] as const
 export type HeadingLevel = (typeof HeadingLevels)[number]
 
-export interface HeadingProps {
+export interface HeadingProps extends BaseIsomerComponent {
   type: "heading"
   id: string // Used for anchor links
-  content: string
+  content: [ParagraphProps]
   level: HeadingLevel
 }
 

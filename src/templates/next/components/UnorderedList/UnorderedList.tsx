@@ -1,28 +1,15 @@
 import type { UnorderedListProps } from "~/common"
-import OrderedList from "../OrderedList"
-import { BaseParagraph } from "../shared/Paragraph"
-import { Paragraph } from "../../typography/Paragraph"
+import ContentHole from "../../tiptap/ContentHole"
 
-const UnorderedList = ({ items }: UnorderedListProps) => {
+const UnorderedList = ({
+  content,
+  NodeViewWrapper = "ul",
+  NodeViewContent,
+}: UnorderedListProps) => {
   return (
-    <ul className="list-disc ps-8 mt-6">
-      {items.map((item) => {
-        if (typeof item === "string") {
-          return (
-            <li key={Math.random()} className="[&_p]:inline pl-2 my-5">
-              <BaseParagraph
-                content={item}
-                className={`text-content ${Paragraph[1]}`}
-              />
-            </li>
-          )
-        } else if (item.type === "orderedlist") {
-          return <OrderedList key={Math.random()} {...item} />
-        } else {
-          return <UnorderedList key={Math.random()} {...item} />
-        }
-      })}
-    </ul>
+    <NodeViewWrapper as="ul" className="list-disc ps-8 mt-6">
+      <ContentHole content={content} NodeViewContent={NodeViewContent} />
+    </NodeViewWrapper>
   )
 }
 

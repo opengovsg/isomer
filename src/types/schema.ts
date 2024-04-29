@@ -17,6 +17,7 @@ interface BasePageSchema {
   content: IsomerComponent[]
   LinkComponent?: any // Next.js link
   ScriptComponent?: any // Next.js script
+  NodeViewContent?: any // Tiptap editor
 }
 
 export interface ArticlePageSchema extends BasePageSchema {

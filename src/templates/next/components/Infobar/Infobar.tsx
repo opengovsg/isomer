@@ -11,9 +11,10 @@ const Infobar = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   LinkComponent,
+  NodeViewWrapper = "section",
 }: InfobarProps) => {
   return (
-    <section>
+    <NodeViewWrapper as="section">
       <div
         className={`${ComponentContent} flex flex-col gap-12 items-center mx-auto text-center lg:max-w-3xl px-5 py-16 lg:py-24`}
       >
@@ -42,7 +43,7 @@ const Infobar = ({
           )}
         </div>
       </div>
-    </section>
+    </NodeViewWrapper>
   )
 }
 

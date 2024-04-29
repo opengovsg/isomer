@@ -1,54 +1,66 @@
 import { HeadingProps } from "~/common"
 import { Heading as HeadingStyles } from "~/templates/next/typography/Heading"
+import ContentHole from "../../tiptap/ContentHole"
 
-const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
-  if (level === 2) {
+const Heading = ({
+  id,
+  content,
+  level,
+  NodeViewWrapper = `h${level}`,
+  NodeViewContent,
+}: Omit<HeadingProps, "type">) => {
+  if (level === 2 || level === "2") {
     return (
-      <h2
+      <NodeViewWrapper
+        as="h2"
         id={id}
         className={`${HeadingStyles[2]} text-content [&:not(:first-child)]:mt-36`}
       >
-        {content}
-      </h2>
+        <ContentHole content={content} NodeViewContent={NodeViewContent} />
+      </NodeViewWrapper>
     )
   }
-  if (level === 3) {
+  if (level === 3 || level === "3") {
     return (
-      <h3
+      <NodeViewWrapper
+        as="h3"
         id={id}
         className={`${HeadingStyles[3]} text-content [&:not(:first-child)]:mt-16`}
       >
-        {content}
-      </h3>
+        <ContentHole content={content} NodeViewContent={NodeViewContent} />
+      </NodeViewWrapper>
     )
   }
-  if (level === 4) {
+  if (level === 4 || level === "4") {
     return (
-      <h4
+      <NodeViewWrapper
+        as="h4"
         id={id}
         className={`${HeadingStyles[4]} text-content [&:not(:first-child)]:mt-12`}
       >
-        {content}
-      </h4>
+        <ContentHole content={content} NodeViewContent={NodeViewContent} />
+      </NodeViewWrapper>
     )
   }
-  if (level === 5) {
+  if (level === 5 || level === "5") {
     return (
-      <h5
+      <NodeViewWrapper
+        as="h5"
         id={id}
         className={`${HeadingStyles[5]} text-content [&:not(:first-child)]:mt-7`}
       >
-        {content}
-      </h5>
+        <ContentHole content={content} NodeViewContent={NodeViewContent} />
+      </NodeViewWrapper>
     )
   }
   return (
-    <h6
+    <NodeViewWrapper
+      as="h6"
       id={id}
       className={`${HeadingStyles[6]} text-content [&:not(:first-child)]:mt-7`}
     >
-      {content}
-    </h6>
+      <ContentHole content={content} NodeViewContent={NodeViewContent} />
+    </NodeViewWrapper>
   )
 }
 

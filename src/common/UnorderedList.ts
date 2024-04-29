@@ -1,8 +1,10 @@
+import type ListItemProps from "./ListItem"
 import type OrderedListProps from "./OrderedList"
+import type { BaseIsomerComponent } from "./base"
 
-export interface UnorderedListProps {
+export interface UnorderedListProps extends BaseIsomerComponent {
   type: "unorderedlist"
-  items: (string | OrderedListProps | UnorderedListProps)[]
+  content: (ListItemProps | OrderedListProps | UnorderedListProps)[]
 }
 
 export default UnorderedListProps

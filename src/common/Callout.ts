@@ -1,3 +1,5 @@
+import type { BaseIsomerComponent } from "./base"
+
 export const CalloutVariants = [
   "info",
   "success",
@@ -6,7 +8,7 @@ export const CalloutVariants = [
 ] as const
 export type CalloutVariant = (typeof CalloutVariants)[number]
 
-export interface CalloutProps {
+export interface CalloutProps extends BaseIsomerComponent {
   type: "callout"
   content: string
   variant: CalloutVariant

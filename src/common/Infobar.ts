@@ -1,4 +1,6 @@
-export interface InfobarProps {
+import type { BaseIsomerComponent } from "./base"
+
+export interface InfobarProps extends BaseIsomerComponent {
   type: "infobar"
   sectionIdx?: number
   title: string

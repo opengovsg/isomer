@@ -22,6 +22,7 @@ import {
   Infobar,
   Infopic,
   KeyStatistics,
+  ListItem,
   Masthead,
   Navbar,
   OrderedList,
@@ -72,6 +73,8 @@ export const renderComponent = ({
       return <Infopic {...component} />
     case "keystatistics":
       return <KeyStatistics {...component} />
+    case "listItem":
+      return <ListItem {...component} />
     case "masthead":
       return <Masthead {...component} />
     case "navbar":
@@ -85,6 +88,7 @@ export const renderComponent = ({
     case "orderedlist":
       return <OrderedList {...component} />
     case "paragraph":
+    case "text":
       return <Paragraph {...component} />
     case "table":
       return <Table {...component} />
