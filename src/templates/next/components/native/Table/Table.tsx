@@ -67,9 +67,9 @@ const Table = ({ caption, content }: TableProps) => {
                       }`}
                     >
                       {cell.type === "tableHeader" ? (
-                        <Prose content={cell.content} inline={true} />
+                        <Prose content={cell.content} />
                       ) : (
-                        <Prose content={cell.content} inline={true} />
+                        <Prose content={cell.content} />
                       )}
                     </TableCellTag>
                   )

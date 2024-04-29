@@ -19,7 +19,6 @@ export type ProseContent = (
 )[]
 
 export interface ProseProps {
-  type: "prose"
   content: ProseContent
   inline?: boolean
 }

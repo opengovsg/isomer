@@ -6,7 +6,7 @@ const Callout = ({ content, variant }: CalloutProps) => {
     <div
       className={`bg-utility-info-subtle p-6 border border-utility-info rounded [&:not(:first-child)]:mt-8`}
     >
-      <Prose content={content} inline={true} />
+      <Prose content={content} />
     </div>
   )
 }

@@ -11,7 +11,7 @@ import Paragraph from "../Paragraph"
 import Table from "../Table"
 import UnorderedList from "../UnorderedList"
 
-const Prose = ({ content, inline }: Omit<ProseProps, "type">) => {
+const Prose = ({ content }: ProseProps) => {
   return (
     <>
       {content.map((component, index) => {
@@ -25,9 +25,7 @@ const Prose = ({ content, inline }: Omit<ProseProps, "type">) => {
           return <ListItem key={index} {...component} />
         } else if (component.type === "orderedlist") {
           return <OrderedList key={index} {...component} />
-        } else if (component.type === "paragraph" && !inline) {
-          return <Paragraph key={index} {...component} />
-        } else if (component.type === "paragraph" && inline) {
+        } else if (component.type === "paragraph") {
           return (
             <BaseParagraph
               key={index}

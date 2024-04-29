@@ -11,7 +11,7 @@ const Accordion = ({ summary, details }: AccordionProps) => {
       </summary>
 
       <div className="mt-2 mb-4 ml-4 mr-6">
-        <Prose content={details} inline={true} />
+        <Prose content={details} />
       </div>
     </details>
   )
