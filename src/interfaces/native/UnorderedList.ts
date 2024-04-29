@@ -1,4 +1,4 @@
-import type OrderedListProps from "./OrderedList"
+import type { OrderedListProps } from "./OrderedList"
 
 export interface UnorderedListProps {
   type: "unorderedlist"
