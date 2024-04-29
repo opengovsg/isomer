@@ -1,5 +1,5 @@
 import type { Meta, StoryFn } from "@storybook/react"
-import type { ParagraphProps } from "~/common"
+import type { ParagraphProps } from "~/interfaces"
 import Paragraph from "./Paragraph"
 
 export default {

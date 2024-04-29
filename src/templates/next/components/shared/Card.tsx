@@ -1,4 +1,4 @@
-import { SingleCardProps } from "~/common/InfoCards"
+import type { SingleCardProps } from "~/interfaces/complex/InfoCards"
 import { Heading } from "../../typography/Heading"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { ButtonLink } from "../../typography/ButtonLink"

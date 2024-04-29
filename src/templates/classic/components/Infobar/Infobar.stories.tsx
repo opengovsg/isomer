@@ -1,6 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import Infobar from "./Infobar"
-import type { InfobarProps } from "~/common"
+import type { InfobarProps } from "~/interfaces"
 
 export default {
   title: "Classic/Components/Infobar",

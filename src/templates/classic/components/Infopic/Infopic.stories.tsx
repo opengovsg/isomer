@@ -1,6 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import InfoPic from "./Infopic"
-import type { InfopicProps } from "~/common"
+import type { InfopicProps } from "~/interfaces"
 
 export default {
   title: "Classic/Components/Infopic",

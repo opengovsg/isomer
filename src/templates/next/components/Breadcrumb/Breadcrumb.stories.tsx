@@ -1,6 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import Breadcrumb from "./Breadcrumb"
-import BreadcrumbProps from "~/common/Breadcrumb"
+import type { BreadcrumbProps } from "~/interfaces"
 
 export default {
   title: "Next/Components/Breadcrumb",

@@ -1,6 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import OrderedList from "./OrderedList"
-import type { OrderedListProps } from "~/common"
+import type { OrderedListProps } from "~/interfaces"
 
 export default {
   title: "Next/Components/OrderedList",

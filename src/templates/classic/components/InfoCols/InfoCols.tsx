@@ -1,6 +1,6 @@
 import { ArrowRightIcon } from "@heroicons/react/24/outline"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
-import InfoColsProps from "~/common/InfoCols"
+import type { InfoColsProps } from "~/interfaces"
 
 const InfoColsHeader = ({
   title,

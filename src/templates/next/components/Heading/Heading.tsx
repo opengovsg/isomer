@@ -1,4 +1,4 @@
-import { HeadingProps } from "~/common"
+import type { HeadingProps } from "~/interfaces"
 import { Heading as HeadingStyles } from "~/templates/next/typography/Heading"
 
 const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {

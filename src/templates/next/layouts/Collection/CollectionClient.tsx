@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { CollectionCardProps } from "~/common"
-import { SortDirection, SortKey } from "~/common/CollectionSort"
+import type { CollectionCardProps } from "~/interfaces"
+import { SortDirection, SortKey } from "~/interfaces/internal/CollectionSort"
 import type { CollectionPageSchema } from "~/engine"
 import { CollectionCard } from "../../components"
 import { CollectionSearch, Filter, Pagination } from "../../components/shared"

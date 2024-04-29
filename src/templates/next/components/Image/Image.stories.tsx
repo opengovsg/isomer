@@ -1,6 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import Image from "./Image"
-import type { ImageProps } from "~/common"
+import type { ImageProps } from "~/interfaces"
 
 export default {
   title: "Next/Components/Image",

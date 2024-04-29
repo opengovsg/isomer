@@ -1,4 +1,4 @@
-import { ButtonProps } from "~/common"
+import type { ButtonProps } from "~/interfaces"
 
 // Classic Button does not use much from ButtonProps, e.g bg colour is always site's secondary colour
 const Button = ({ label, href }: ButtonProps) => {

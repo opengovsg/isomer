@@ -1,5 +1,5 @@
 import { ChevronDownIcon } from "@heroicons/react/24/outline"
-import { SidePaneProps } from "~/common"
+import type { SidePaneProps } from "~/interfaces"
 
 export type SectionWithSiblings = {
   parentTitle?: string

@@ -1,4 +1,4 @@
-import { InfopicProps } from "~/common"
+import type { InfopicProps } from "~/interfaces"
 import Button from "../Button"
 import { ComponentContent } from "../shared/customCssClass"
 

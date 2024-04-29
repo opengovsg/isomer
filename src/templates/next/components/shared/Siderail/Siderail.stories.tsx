@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from "@storybook/react"
 import Siderail from "./Siderail"
-import { SiderailProps } from "~/common"
+import type { SiderailProps } from "~/interfaces"
 
 export default {
   title: "Next/Internal Components/Siderail",

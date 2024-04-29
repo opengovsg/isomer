@@ -1,4 +1,4 @@
-import { SortDirection, SortKey } from "~/common/CollectionSort"
+import { SortDirection, SortKey } from "~/interfaces/internal/CollectionSort"
 
 export interface CollectionSortProps {
   sortBy: SortKey

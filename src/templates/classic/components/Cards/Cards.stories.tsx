@@ -1,6 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import Cards from "./Cards"
-import type { CardsProps } from "~/common"
+import type { CardsProps } from "~/interfaces"
 
 export default {
   title: "Classic/Components/Cards",

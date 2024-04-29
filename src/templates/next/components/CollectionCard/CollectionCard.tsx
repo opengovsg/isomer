@@ -3,7 +3,7 @@ import type {
   CollectionCardProps,
   FileCardProps,
   LinkCardProps,
-} from "~/common/CollectionCard"
+} from "~/interfaces/internal/CollectionCard"
 import { Caption } from "../../typography/Caption"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"

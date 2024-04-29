@@ -1,5 +1,5 @@
-import type { CollectionCardProps } from "~/common"
-import type { FileCardProps } from "~/common/CollectionCard"
+import type { CollectionCardProps } from "~/interfaces"
+import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
 import type { IsomerPageSchema } from "./schema"
 
 interface IsomerBaseSitemap {

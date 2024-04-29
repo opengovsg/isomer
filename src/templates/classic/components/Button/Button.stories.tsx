@@ -1,6 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import Button from "./Button"
-import type { ButtonProps } from "~/common"
+import type { ButtonProps } from "~/interfaces"
 
 export default {
   title: "Classic/Components/Button",

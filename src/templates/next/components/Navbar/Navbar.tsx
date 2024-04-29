@@ -11,7 +11,7 @@ import {
   BiSearch,
   BiX,
 } from "react-icons/bi"
-import type { NavbarProps } from "~/common"
+import type { NavbarProps } from "~/interfaces"
 import { ButtonLink } from "../../typography/ButtonLink"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"

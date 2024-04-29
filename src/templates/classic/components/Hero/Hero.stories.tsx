@@ -1,5 +1,5 @@
 import type { StoryFn, Meta } from "@storybook/react"
-import type { HeroProps } from "~/common"
+import type { HeroProps } from "~/interfaces"
 import Hero from "./Hero"
 
 export default {

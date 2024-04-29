@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import type { TableProps } from "~/common"
+import type { TableProps } from "~/interfaces"
 import BaseParagraph from "../shared/Paragraph"
 import Image from "../Image"
 import OrderedList from "../OrderedList"

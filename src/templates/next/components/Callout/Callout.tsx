@@ -1,4 +1,4 @@
-import { CalloutProps } from "~/common"
+import type { CalloutProps } from "~/interfaces"
 import BaseParagraph from "../shared/Paragraph"
 import { Paragraph } from "../../typography/Paragraph"
 

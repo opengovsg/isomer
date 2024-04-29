@@ -1,5 +1,5 @@
 import type { Meta, StoryFn } from "@storybook/react"
-import type { NavbarProps } from "~/common"
+import type { NavbarProps } from "~/interfaces"
 import Navbar from "./Navbar"
 
 export default {

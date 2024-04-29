@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { BiCheck } from "react-icons/bi"
 import { MdKeyboardArrowDown } from "react-icons/md"
-import { SortDirection, SortKey } from "~/common/CollectionSort"
+import { SortDirection, SortKey } from "~/interfaces/internal/CollectionSort"
 import CollectionSortProps from "~/templates/next/types/CollectionSort"
 import { Paragraph } from "../../../typography/Paragraph"
 

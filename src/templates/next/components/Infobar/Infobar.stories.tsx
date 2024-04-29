@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from "@storybook/react"
 import Infobar from "./Infobar"
-import { InfobarProps } from "~/common"
+import { InfobarProps } from "~/interfaces"
 
 export default {
   title: "Next/Components/Infobar",

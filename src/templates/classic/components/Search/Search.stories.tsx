@@ -1,6 +1,6 @@
 import type { StoryFn, Meta } from "@storybook/react"
 import Search from "./Search"
-import type { SearchProps } from "~/common"
+import type { SearchProps } from "~/interfaces"
 
 export default {
   title: "Classic/Components/Search",

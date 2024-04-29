@@ -1,4 +1,4 @@
-import type { OrderedListProps } from "~/common"
+import type { OrderedListProps } from "~/interfaces"
 import UnorderedList from "../UnorderedList"
 import { BaseParagraph } from "../shared/Paragraph"
 import { Paragraph } from "../../typography/Paragraph"

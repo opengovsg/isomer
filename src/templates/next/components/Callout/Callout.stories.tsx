@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from "@storybook/react"
 import Callout from "./Callout"
-import { CalloutProps } from "~/common"
+import type { CalloutProps } from "~/interfaces"
 
 export default {
   title: "Next/Components/Callout",

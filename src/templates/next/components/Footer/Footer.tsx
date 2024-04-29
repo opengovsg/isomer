@@ -11,8 +11,11 @@ import { FaTelegram, FaXTwitter } from "react-icons/fa6"
 import { IoLogoGithub } from "react-icons/io"
 import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
-import { FooterProps } from "~/common"
-import { FooterItem as FooterItemType, SocialMediaType } from "~/common/Footer"
+import type { FooterProps } from "~/interfaces"
+import type {
+  FooterItem as FooterItemType,
+  SocialMediaType,
+} from "~/interfaces/internal/Footer"
 import { Caption } from "../../typography/Caption"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"

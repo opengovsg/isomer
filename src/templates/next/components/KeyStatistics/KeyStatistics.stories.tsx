@@ -1,6 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import KeyStatistics from "./KeyStatistics"
-import type { KeyStatisticsProps } from "~/common"
+import type { KeyStatisticsProps } from "~/interfaces"
 
 export default {
   title: "Next/Components/KeyStatistics",

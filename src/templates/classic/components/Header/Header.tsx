@@ -1,5 +1,5 @@
 import React from "react" // Import React
-import type { HeaderProps } from "~/common"
+import type { HeaderProps } from "~/interfaces"
 
 type Breadcrumb = {
   name: string

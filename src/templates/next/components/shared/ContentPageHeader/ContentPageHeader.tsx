@@ -1,4 +1,4 @@
-import { ContentPageHeaderProps } from "~/common"
+import type { ContentPageHeaderProps } from "~/interfaces"
 import Button from "../../Button"
 import Breadcrumb from "../../Breadcrumb"
 import { BaseParagraph } from "../Paragraph"

@@ -1,5 +1,5 @@
 import { getSanitizedInlineContent } from "~/utils"
-import { BaseParagraphProps } from "~/common/Paragraph"
+import type { BaseParagraphProps } from "~/interfaces/native/Paragraph"
 
 export const BaseParagraph = ({
   content,

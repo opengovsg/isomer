@@ -1,7 +1,7 @@
 import { Card, CardImg, Col } from "@govtechsg/sgds-react"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
-import { InfoCardsProps } from "~/common"
-import { SingleCardProps } from "~/common/InfoCards"
+import type { InfoCardsProps } from "~/interfaces"
+import type { SingleCardProps } from "~/interfaces/complex/InfoCards"
 
 const SingleCard = ({
   title,

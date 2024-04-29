@@ -1,5 +1,5 @@
 import { BiRightArrowAlt } from "react-icons/bi"
-import { TableOfContentsProps } from "~/common"
+import type { TableOfContentsProps } from "~/interfaces"
 
 const TableOfContents = ({ items }: TableOfContentsProps) => {
   return (

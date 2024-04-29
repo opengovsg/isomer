@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from "@storybook/react"
 import CollectionCard from "./CollectionCard"
-import { CollectionCardProps } from "~/common"
+import type { CollectionCardProps } from "~/interfaces"
 
 export default {
   title: "Next/Components/CollectionCard",

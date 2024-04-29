@@ -1,4 +1,4 @@
-import type { ArticlePageHeaderProps } from "~/common"
+import type { ArticlePageHeaderProps } from "~/interfaces"
 import Breadcrumb from "../../Breadcrumb"
 import BaseParagraph from "../Paragraph"
 import { Paragraph } from "../../../typography/Paragraph"

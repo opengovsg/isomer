@@ -1,6 +1,6 @@
 import { ArrowRightIcon } from "@heroicons/react/24/outline"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
-import { InfobarProps } from "~/common"
+import type { InfobarProps } from "~/interfaces"
 
 const Infobar = ({
   sectionIdx,

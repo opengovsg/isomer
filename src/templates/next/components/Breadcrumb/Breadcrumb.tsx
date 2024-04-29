@@ -1,5 +1,5 @@
-import BreadcrumbProps from "~/common/Breadcrumb"
 import { MdChevronRight } from "react-icons/md"
+import type { BreadcrumbProps } from "~/interfaces"
 
 const Breadcrumb = ({ links, LinkComponent = "a" }: BreadcrumbProps) => {
   return (

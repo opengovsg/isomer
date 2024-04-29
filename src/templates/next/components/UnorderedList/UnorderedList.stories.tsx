@@ -1,6 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import UnorderedList from "./UnorderedList"
-import type { UnorderedListProps } from "~/common"
+import type { UnorderedListProps } from "~/interfaces"
 
 export default {
   title: "Next/Components/UnorderedList",

@@ -1,4 +1,4 @@
-import { InfoCardsProps } from "~/common"
+import type { InfoCardsProps } from "~/interfaces"
 import Card from "../shared/Card"
 import { Heading } from "../../typography/Heading"
 import { ComponentContent } from "../shared/customCssClass"

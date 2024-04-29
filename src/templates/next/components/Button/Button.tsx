@@ -1,6 +1,6 @@
-import { ButtonProps } from "~/common"
-import { ButtonColorScheme } from "~/common/Button"
-import { SUPPORTED_ICONS_MAP } from "~/common/Icons"
+import type { ButtonProps } from "~/interfaces"
+import type { ButtonColorScheme } from "~/interfaces/native/Button"
+import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 
 const Label = ({ label }: Pick<ButtonProps, "label">) => (
   <span className="text-center text-lg font-semibold leading-tight">

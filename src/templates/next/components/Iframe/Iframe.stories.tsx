@@ -1,5 +1,5 @@
 import type { Meta, StoryFn } from "@storybook/react"
-import type { IframeProps } from "~/common"
+import type { IframeProps } from "~/interfaces"
 import Iframe from "./Iframe"
 
 export default {

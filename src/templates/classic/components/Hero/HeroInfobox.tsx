@@ -1,8 +1,8 @@
-import {
-  type HeroFloatingProps,
-  type HeroInfoboxProps,
-  type HeroSideProps,
-} from "~/common/Hero"
+import type {
+  HeroFloatingProps,
+  HeroInfoboxProps,
+  HeroSideProps,
+} from "~/interfaces/complex/Hero"
 import { HeroDropdown } from "./HeroDropdown"
 
 type HeroInfoboxVariants =

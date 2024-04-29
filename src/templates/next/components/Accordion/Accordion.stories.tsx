@@ -1,6 +1,6 @@
-import type { StoryFn, Meta } from "@storybook/react"
+import type { Meta, StoryFn } from "@storybook/react"
+import type { AccordionProps } from "~/interfaces"
 import Accordion from "./Accordion"
-import type { AccordionProps } from "~/common"
 
 export default {
   title: "Next/Components/Accordion",

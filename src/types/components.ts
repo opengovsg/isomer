@@ -26,7 +26,7 @@ import type {
   SidePaneProps,
   TableProps,
   UnorderedListProps,
-} from "~/common"
+} from "~/interfaces"
 
 type IsomerComponentProps =
   | AccordionProps

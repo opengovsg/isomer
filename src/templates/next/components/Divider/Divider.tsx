@@ -1,4 +1,4 @@
-import type { DividerProps } from "~/common"
+import type { DividerProps } from "~/interfaces"
 
 const Divider = ({}: DividerProps) => {
   return <hr className="bg-divider-medium my-6" />

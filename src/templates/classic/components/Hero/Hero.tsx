@@ -6,7 +6,7 @@ import type {
   HeroCenterProps,
   HeroFloatingProps,
   HeroImageProps,
-} from "~/common/Hero"
+} from "~/interfaces/complex/Hero"
 import { HeroDropdown } from "./HeroDropdown"
 import {
   HeroInfoboxDesktop,

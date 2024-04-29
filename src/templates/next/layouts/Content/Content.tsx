@@ -4,7 +4,7 @@ import Siderail from "../../components/shared/Siderail"
 import TableOfContents from "../../components/shared/TableOfContents"
 import { Skeleton } from "../Skeleton"
 import { renderComponent } from "../render"
-import { SiderailProps } from "~/common"
+import type { SiderailProps } from "~/interfaces"
 import { getBreadcrumbFromSiteMap } from "~/utils"
 
 const getSiderailFromSiteMap = (

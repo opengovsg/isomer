@@ -5,7 +5,7 @@ import type {
   HeroFloatingImageProps,
   HeroGradientProps,
   HeroSplitProps,
-} from "~/common/Hero"
+} from "~/interfaces/complex/Hero"
 import Button from "../Button"
 import { ComponentContent } from "../shared/customCssClass"
 import { Heading } from "../../typography/Heading"

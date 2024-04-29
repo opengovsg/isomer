@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from "@storybook/react"
 import InfoCols from "./InfoCols"
-import { InfoColsProps } from "~/common"
+import type { InfoColsProps } from "~/interfaces"
 
 export default {
   title: "Next/Components/InfoCols",

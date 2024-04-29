@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from "@storybook/react"
 import TableOfContents from "./TableOfContents"
-import { TableOfContentsProps } from "~/common"
+import type { TableOfContentsProps } from "~/interfaces"
 
 export default {
   title: "Next/Internal Components/TableOfContents",

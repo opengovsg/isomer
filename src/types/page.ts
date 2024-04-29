@@ -2,8 +2,11 @@ import type {
   ArticlePageHeaderProps,
   CollectionCardProps,
   ContentPageHeaderProps,
-} from "~/common"
-import type { SortDirection, SortKey } from "~/common/CollectionSort"
+} from "~/interfaces"
+import type {
+  SortDirection,
+  SortKey,
+} from "~/interfaces/internal/CollectionSort"
 
 interface BaseItemProps {
   permalink: string

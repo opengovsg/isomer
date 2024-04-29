@@ -1,7 +1,7 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import SidePane from "./SidePane"
 import Sitemap from "../../../../sitemap.json"
-import type { SidePaneProps } from "~/common"
+import type { SidePaneProps } from "~/interfaces"
 
 export default {
   title: "Classic/Components/SidePane",

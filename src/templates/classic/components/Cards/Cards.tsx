@@ -1,4 +1,4 @@
-import { CardsProps } from "~/common"
+import type { CardsProps } from "~/interfaces"
 
 function Cards({ sectionTitle, sectionCaption, cards }: CardsProps) {
   return (

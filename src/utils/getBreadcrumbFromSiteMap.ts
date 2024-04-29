@@ -1,4 +1,4 @@
-import type { BreadcrumbProps } from "~/common"
+import type { BreadcrumbProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/engine"
 
 // Traverse the sitemap to get the breadcrumb for the page with the given

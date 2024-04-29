@@ -1,6 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import InfoCards from "./InfoCards"
-import type { InfoCardsProps } from "~/common"
+import type { InfoCardsProps } from "~/interfaces"
 
 export default {
   title: "Classic/Components/InfoCards",

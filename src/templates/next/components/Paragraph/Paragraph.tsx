@@ -1,4 +1,4 @@
-import { ParagraphProps } from "~/common"
+import type { ParagraphProps } from "~/interfaces"
 import BaseParagraph from "../shared/Paragraph"
 import { Paragraph as ParagraphStyle } from "../../typography/Paragraph"
 

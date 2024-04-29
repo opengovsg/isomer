@@ -1,4 +1,4 @@
-import type SearchSGInputBoxProps from "~/common/SearchSGInputBox"
+import type { SearchSGInputBoxProps } from "~/interfaces"
 
 const SearchSGInputBox = ({
   clientId,

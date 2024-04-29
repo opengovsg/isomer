@@ -1,11 +1,11 @@
 import { BiChevronDown } from "react-icons/bi"
-import { AccordionProps } from "~/common"
-import BaseParagraph from "../shared/Paragraph"
+import type { AccordionProps } from "~/interfaces"
 import { Paragraph } from "../../typography/Paragraph"
 import Image from "../Image"
 import OrderedList from "../OrderedList"
-import UnorderedList from "../UnorderedList"
 import Table from "../Table"
+import UnorderedList from "../UnorderedList"
+import BaseParagraph from "../shared/Paragraph"
 
 const Accordion = ({ summary, details }: AccordionProps) => {
   return (

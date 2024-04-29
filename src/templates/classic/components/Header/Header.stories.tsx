@@ -1,7 +1,7 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import Header from "./Header"
 import Sitemap from "../../../../sitemap.json"
-import type { HeaderProps } from "~/common"
+import type { HeaderProps } from "~/interfaces"
 
 export default {
   title: "Classic/Components/Header",

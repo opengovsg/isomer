@@ -1,6 +1,6 @@
 import type { StoryFn, Meta } from "@storybook/react"
 import Footer from "./Footer"
-import type { FooterProps } from "~/common"
+import type { FooterProps } from "~/interfaces"
 
 export default {
   title: "Next/Components/Footer",

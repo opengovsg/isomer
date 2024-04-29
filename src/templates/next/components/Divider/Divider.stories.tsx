@@ -1,5 +1,5 @@
 import type { Meta, StoryFn } from "@storybook/react"
-import type { DividerProps } from "~/common"
+import type { DividerProps } from "~/interfaces"
 import Divider from "./Divider"
 import Paragraph from "../Paragraph"
 

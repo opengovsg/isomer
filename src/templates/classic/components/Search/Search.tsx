@@ -6,8 +6,8 @@ import {
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
 } from "@heroicons/react/24/outline"
-import { SearchProps } from "~/common"
-import { SearchRecord } from "~/common/Search"
+import type { SearchProps } from "~/interfaces"
+import type { SearchRecord } from "~/interfaces/internal/Search"
 
 const Search: React.FC<SearchProps> = ({ index }) => {
   const [searchTerm, setSearchTerm] = useState<string>("")

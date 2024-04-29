@@ -1,4 +1,4 @@
-import type { IframeProps } from "~/common"
+import type { IframeProps } from "~/interfaces"
 import { getSanitizedIframeWithTitle } from "~/utils/getSanitizedIframeEmbed"
 
 // Sets the appropriate padding for the iframe based on the URL

@@ -1,8 +1,9 @@
-import { type Meta, StoryObj, StoryFn } from "@storybook/react"
-import ButtonProps, {
+import { StoryFn, StoryObj, type Meta } from "@storybook/react"
+import {
   BUTTON_COLOR_SCHEMES,
   BUTTON_VARIANTS,
-} from "~/common/Button"
+  type ButtonProps,
+} from "~/interfaces/native/Button"
 import Button from "./Button"
 
 export default {

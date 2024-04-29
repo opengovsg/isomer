@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from "@storybook/react"
 import NotificationBanner from "./Notification"
-import { NotificationProps } from "~/common"
+import type { NotificationProps } from "~/interfaces"
 
 export default {
   title: "Next/Internal Components/Notification",

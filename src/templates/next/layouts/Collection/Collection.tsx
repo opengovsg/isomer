@@ -1,4 +1,4 @@
-import { CollectionCardProps } from "~/common"
+import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchema, IsomerSitemap } from "~/engine"
 import { getSitemapAsArray } from "~/utils"
 import { Skeleton } from "../Skeleton"

@@ -1,5 +1,5 @@
-import { InfoColsProps } from "~/common"
-import { SUPPORTED_ICONS_MAP, SupportedIconName } from "~/common/Icons"
+import type { InfoColsProps } from "~/interfaces"
+import { SUPPORTED_ICONS_MAP, SupportedIconName } from "~/common/icons"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"
 import Button from "../Button"

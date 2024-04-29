@@ -1,6 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react"
 import Table from "./Table"
-import type { TableProps } from "~/common"
+import type { TableProps } from "~/interfaces"
 
 export default {
   title: "Next/Components/Table",

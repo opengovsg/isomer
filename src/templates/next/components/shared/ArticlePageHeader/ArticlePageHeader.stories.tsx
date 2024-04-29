@@ -1,5 +1,5 @@
 import type { Meta, StoryFn } from "@storybook/react"
-import type { ArticlePageHeaderProps } from "~/common"
+import type { ArticlePageHeaderProps } from "~/interfaces"
 import ArticlePageHeader from "./ArticlePageHeader"
 
 export default {

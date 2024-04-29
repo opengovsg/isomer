@@ -1,7 +1,7 @@
-import { Meta, StoryFn, StoryObj } from "@storybook/react"
+import { Meta, StoryObj } from "@storybook/react"
+import type { HeadingProps } from "~/interfaces"
+import { HeadingLevels } from "~/interfaces/native/Heading"
 import Heading from "./Heading"
-import { HeadingProps } from "~/common"
-import { HeadingLevels } from "~/common/Heading"
 
 export default {
   title: "Next/Components/Heading",

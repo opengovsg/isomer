@@ -3,7 +3,7 @@
 import { BiX } from "react-icons/bi"
 import { useState } from "react"
 import BaseParagraph from "../Paragraph"
-import { NotificationProps } from "~/common"
+import type { NotificationProps } from "~/interfaces"
 
 const NotificationBanner = ({ content }: NotificationProps) => {
   const [isShown, setIsShown] = useState(true)

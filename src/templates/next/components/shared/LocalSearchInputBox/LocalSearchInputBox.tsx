@@ -1,5 +1,5 @@
 import { BiSearch } from "react-icons/bi"
-import LocalSearchInputBoxProps from "~/common/LocalSearchInputBox"
+import type { LocalSearchInputBoxProps } from "~/interfaces"
 
 const LocalSearchInputBox = ({
   searchUrl,
