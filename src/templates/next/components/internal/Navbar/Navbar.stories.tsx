@@ -3,7 +3,7 @@ import type { NavbarProps } from "~/interfaces"
 import Navbar from "./Navbar"
 
 export default {
-  title: "Next/Components/Navbar",
+  title: "Next/Internal Components/Navbar",
   component: Navbar,
   argTypes: {},
   parameters: {
@@ -19,7 +19,6 @@ const Template: StoryFn<NavbarProps> = (args) => <Navbar {...args} />
 // Default scenario
 export const Default = Template.bind({})
 Default.args = {
-  type: "navbar",
   logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
   logoAlt: "Isomer logo",
   search: {

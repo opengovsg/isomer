@@ -3,7 +3,7 @@ import CollectionCard from "./CollectionCard"
 import type { CollectionCardProps } from "~/interfaces"
 
 export default {
-  title: "Next/Components/CollectionCard",
+  title: "Next/Internal Components/CollectionCard",
   component: CollectionCard,
   argTypes: {},
   parameters: {

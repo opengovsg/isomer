@@ -3,7 +3,7 @@ import Breadcrumb from "./Breadcrumb"
 import type { BreadcrumbProps } from "~/interfaces"
 
 export default {
-  title: "Next/Components/Breadcrumb",
+  title: "Next/Internal Components/Breadcrumb",
   component: Breadcrumb,
   argTypes: {},
   parameters: {

@@ -3,7 +3,7 @@ import Masthead from "./Masthead"
 import type { MastheadProps } from "~/interfaces"
 
 export default {
-  title: "Next/Components/Masthead",
+  title: "Next/Internal Components/Masthead",
   component: Masthead,
   argTypes: {},
   parameters: {

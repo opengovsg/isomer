@@ -3,7 +3,7 @@ import Footer from "./Footer"
 import type { FooterProps } from "~/interfaces"
 
 export default {
-  title: "Next/Components/Footer",
+  title: "Next/Internal Components/Footer",
   component: Footer,
   argTypes: {},
   parameters: {
