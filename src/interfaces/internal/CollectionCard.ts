@@ -9,7 +9,6 @@ export interface FileDetails {
   size: string
 }
 interface BaseCardProps {
-  type: "collectionCard"
   lastUpdated: string
   category: string
   title: string

@@ -33,7 +33,6 @@ export interface SiteConfigFooterProps {
 }
 
 export interface FooterProps extends SiteConfigFooterProps {
-  type: "footer"
   LinkComponent?: any
   isGovernment?: boolean
   siteName: string

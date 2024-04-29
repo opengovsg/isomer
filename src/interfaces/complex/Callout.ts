@@ -1,3 +1,5 @@
+import type { ProseContent } from "../native"
+
 export const CalloutVariants = [
   "info",
   "success",
@@ -8,6 +10,6 @@ export type CalloutVariant = (typeof CalloutVariants)[number]
 
 export interface CalloutProps {
   type: "callout"
-  content: string
+  content: ProseContent
   variant: CalloutVariant
 }

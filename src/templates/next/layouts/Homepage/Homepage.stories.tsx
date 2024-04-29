@@ -33,7 +33,14 @@ Default.args = {
   layout: "homepage",
   site: {
     siteName: "Isomer Next",
-    siteMap: { title: "Home", permalink: "/", children: [] },
+    siteMap: {
+      title: "Home",
+      permalink: "/",
+      lastModified: "",
+      layout: "homepage",
+      summary: "",
+      children: [],
+    },
     theme: "isomer-next",
     isGovernment: true,
     logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",

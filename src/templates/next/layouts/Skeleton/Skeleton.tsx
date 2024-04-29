@@ -1,5 +1,10 @@
 import type { IsomerPageSchema } from "~/engine"
-import { renderComponent } from "../render"
+import {
+  Footer,
+  Masthead,
+  Navbar,
+  Notification,
+} from "../../components/internal"
 
 export const Skeleton = ({
   site,
@@ -14,43 +19,29 @@ export const Skeleton = ({
 
   return (
     <>
-      {site.isGovernment &&
-        renderComponent({
-          component: { type: "masthead", isStaging },
-          LinkComponent,
-        })}
-      {site.notification &&
-        renderComponent({
-          component: {
-            type: "notification",
-            content: site.notification,
-          },
-        })}
-      {renderComponent({
-        component: {
-          type: "navbar",
-          logoUrl: site.logoUrl,
-          logoAlt: site.siteName,
-          search: site.search,
-          items: site.navBarItems,
-        },
-        LinkComponent,
-        ScriptComponent,
-      })}
+      {site.isGovernment && <Masthead isStaging={isStaging} />}
+
+      {site.notification && <Notification content={site.notification} />}
+
+      <Navbar
+        logoUrl={site.logoUrl}
+        logoAlt={site.siteName}
+        search={site.search}
+        items={site.navBarItems}
+        LinkComponent={LinkComponent}
+        ScriptComponent={ScriptComponent}
+      />
 
       {children}
 
-      {renderComponent({
-        component: {
-          type: "footer",
-          isGovernment: site.isGovernment,
-          siteName: site.siteName,
-          agencyName: site.agencyName || site.siteName,
-          lastUpdated: site.lastUpdated,
-          ...site.footerItems,
-        },
-        LinkComponent,
-      })}
+      <Footer
+        isGovernment={site.isGovernment}
+        siteName={site.siteName}
+        agencyName={site.agencyName || site.siteName}
+        lastUpdated={site.lastUpdated}
+        LinkComponent={LinkComponent}
+        {...site.footerItems}
+      />
     </>
   )
 }

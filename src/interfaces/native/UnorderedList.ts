@@ -1,8 +1,7 @@
+import type { ListItemProps } from "./ListItem"
 import type { OrderedListProps } from "./OrderedList"
 
 export interface UnorderedListProps {
   type: "unorderedlist"
-  items: (string | OrderedListProps | UnorderedListProps)[]
+  content: (ListItemProps | OrderedListProps | UnorderedListProps)[]
 }
-
-export default UnorderedListProps

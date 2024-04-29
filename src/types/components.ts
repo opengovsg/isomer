@@ -3,11 +3,7 @@ import type {
   ButtonProps,
   CalloutProps,
   CardsProps,
-  CollectionCardProps,
-  ContentProps,
   DividerProps,
-  FooterProps,
-  HeaderProps,
   HeadingProps,
   HeroProps,
   IframeProps,
@@ -17,13 +13,8 @@ import type {
   InfobarProps,
   InfopicProps,
   KeyStatisticsProps,
-  MastheadProps,
-  NavbarProps,
-  NotificationProps,
   OrderedListProps,
   ParagraphProps,
-  SearchProps,
-  SidePaneProps,
   TableProps,
   UnorderedListProps,
 } from "~/interfaces"
@@ -32,13 +23,9 @@ type IsomerComponentProps =
   | AccordionProps
   | ButtonProps
   | CalloutProps
-  | CollectionCardProps
   | CardsProps
-  | ContentProps
   | DividerProps
-  | FooterProps
   | HeadingProps
-  | HeaderProps
   | HeroProps
   | IframeProps
   | ImageProps
@@ -47,15 +34,10 @@ type IsomerComponentProps =
   | InfoColsProps
   | InfopicProps
   | KeyStatisticsProps
-  | MastheadProps
-  | NavbarProps
   | OrderedListProps
   | ParagraphProps
-  | SearchProps
-  | SidePaneProps
   | TableProps
   | UnorderedListProps
-  | NotificationProps
 
 export type IsomerComponent = IsomerComponentProps & {
   sectionIdx?: number

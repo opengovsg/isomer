@@ -1,11 +1,13 @@
 import { ContentPageSchema, IsomerSitemap } from "~/engine"
-import ContentPageHeader from "../../components/shared/ContentPageHeader"
-import Siderail from "../../components/shared/Siderail"
-import TableOfContents from "../../components/shared/TableOfContents"
-import { Skeleton } from "../Skeleton"
-import { renderComponent } from "../render"
 import type { SiderailProps } from "~/interfaces"
-import { getBreadcrumbFromSiteMap } from "~/utils"
+import { getBreadcrumbFromSiteMap, getTextAsHtml } from "~/utils"
+import {
+  ContentPageHeader,
+  Siderail,
+  TableOfContents,
+} from "../../components/internal"
+import { renderComponent } from "../../render"
+import { Skeleton } from "../Skeleton"
 
 const getSiderailFromSiteMap = (
   sitemap: IsomerSitemap,
@@ -69,7 +71,7 @@ const getTableOfContentsFromContent = (
   for (const block of content) {
     if (block.type === "heading" && block.level === 2) {
       items.push({
-        content: block.content,
+        content: getTextAsHtml(block.content),
         anchorLink: "#" + block.id,
       })
     }

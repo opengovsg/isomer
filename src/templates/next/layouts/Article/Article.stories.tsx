@@ -26,20 +26,32 @@ Default.args = {
     siteMap: {
       title: "Home",
       permalink: "/",
+      lastModified: "",
+      layout: "homepage",
+      summary: "",
       children: [
         {
           title: "Newsroom",
           permalink: "/newsroom",
+          lastModified: "",
+          layout: "content",
+          summary: "",
           children: [
             {
               title: "News",
               permalink: "/newsroom/news",
+              lastModified: "",
+              layout: "content",
+              summary: "",
               children: [
                 {
                   title:
                     "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
                   permalink:
                     "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
+                  lastModified: "",
+                  layout: "content",
+                  summary: "",
                 },
               ],
             },
@@ -94,13 +106,21 @@ Default.args = {
   content: [
     {
       type: "paragraph",
-      content:
-        "South African Gumede Sthembiso Joel, 33, was sentenced to 24 months’ imprisonment today after pleading guilty to two charges under the Endangered Species (Import and Export) Act [1] (“ESA”) for transiting in Singapore with rhinoceros horns without a valid permit. This is the heaviest sentence meted out in Singapore to date for a case involving the smuggling of wildlife parts.",
+      content: [
+        {
+          type: "text",
+          text: "South African Gumede Sthembiso Joel, 33, was sentenced to 24 months’ imprisonment today after pleading guilty to two charges under the Endangered Species (Import and Export) Act [1] (“ESA”) for transiting in Singapore with rhinoceros horns without a valid permit. This is the heaviest sentence meted out in Singapore to date for a case involving the smuggling of wildlife parts.",
+        },
+      ],
     },
     {
       type: "paragraph",
-      content:
-        "On 4 October 2022, the National Parks Board (NParks) seized 20 pieces of rhinoceros horns that were being smuggled through Singapore Changi Airport. Airport security and NParks’ K9 Unit detected and inspected two pieces of baggage (“Boxes”) and found 34.7 kg of rhinoceros horns, which would have an estimated wholesale value of approximately S$1,200,140.79 (US$843,210) as of 4 October 2022. The accused, who was travelling from South Africa to the Lao People’s Democratic Republic through Singapore, was immediately arrested and the rhinoceros horns were seized by NParks.",
+      content: [
+        {
+          type: "text",
+          text: "On 4 October 2022, the National Parks Board (NParks) seized 20 pieces of rhinoceros horns that were being smuggled through Singapore Changi Airport. Airport security and NParks’ K9 Unit detected and inspected two pieces of baggage (“Boxes”) and found 34.7 kg of rhinoceros horns, which would have an estimated wholesale value of approximately S$1,200,140.79 (US$843,210) as of 4 October 2022. The accused, who was travelling from South Africa to the Lao People’s Democratic Republic through Singapore, was immediately arrested and the rhinoceros horns were seized by NParks.",
+        },
+      ],
     },
   ],
 }

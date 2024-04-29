@@ -1,8 +1,8 @@
 import { ArticlePageSchema } from "~/engine"
 import { getBreadcrumbFromSiteMap } from "~/utils"
 import { Skeleton } from "../Skeleton"
-import ArticlePageHeader from "../../components/shared/ArticlePageHeader"
-import { renderComponent } from "../render"
+import ArticlePageHeader from "../../components/internal/ArticlePageHeader"
+import { renderComponent } from "../../render"
 
 const ArticleLayout = ({
   site,

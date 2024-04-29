@@ -9,7 +9,6 @@ export interface NavbarItem {
 }
 
 export interface NavbarProps {
-  type: "navbar"
   logoUrl: string
   logoAlt: string
   search?: LocalSearchProps | SearchSGProps

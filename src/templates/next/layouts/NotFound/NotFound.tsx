@@ -1,6 +1,6 @@
 import { NotFoundPageSchema } from "~/engine"
 import { Skeleton } from "../Skeleton"
-import { renderComponent } from "../render"
+import { renderComponent } from "../../render"
 
 const NotFoundLayout = ({
   site,

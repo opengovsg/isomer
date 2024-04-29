@@ -1,6 +1,8 @@
 import type {
+  DividerProps,
   ImageProps,
   OrderedListProps,
+  ParagraphProps,
   UnorderedListProps,
 } from "~/interfaces/native"
 
@@ -10,24 +12,32 @@ interface TableBaseCell {
 }
 
 interface TableCell extends TableBaseCell {
-  variant: "tableCell"
-  value: (string | ImageProps | OrderedListProps | UnorderedListProps)[]
+  type: "tableCell"
+  content: (
+    | DividerProps
+    | ParagraphProps
+    | ImageProps
+    | OrderedListProps
+    | UnorderedListProps
+  )[]
 }
 
 interface TableHeaderCell extends TableBaseCell {
-  variant: "tableHeader"
-  value: string
+  type: "tableHeader"
+  content: [ParagraphProps]
 }
 interface TableContentRow {
-  cells: [TableCell, ...TableCell[]]
+  type: "tableRow"
+  content: [TableCell, ...TableCell[]]
 }
 
 interface TableHeaderRow {
-  cells: [TableHeaderCell, ...TableHeaderCell[]]
+  type: "tableRow"
+  content: [TableHeaderCell, ...TableHeaderCell[]]
 }
 
 export interface TableProps {
   type: "table"
   caption: string
-  rows: [TableHeaderRow, ...(TableHeaderRow | TableContentRow)[]]
+  content: [TableHeaderRow, ...(TableHeaderRow | TableContentRow)[]]
 }

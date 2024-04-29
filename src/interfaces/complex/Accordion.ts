@@ -1,21 +1,7 @@
-import type {
-  ImageProps,
-  OrderedListProps,
-  TableProps,
-  UnorderedListProps,
-} from "~/interfaces/native"
+import type { ProseContent } from "../native"
 
-interface AccordionItem {
-  summary: string
-  details: (
-    | ImageProps
-    | OrderedListProps
-    | string
-    | UnorderedListProps
-    | TableProps
-  )[]
-}
-
-export interface AccordionProps extends AccordionItem {
+export interface AccordionProps {
   type: "accordion"
+  summary: string
+  details: ProseContent
 }

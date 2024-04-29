@@ -1,4 +1,5 @@
 export type { AccordionProps } from "./Accordion"
+export type { ButtonProps } from "./Button"
 export type { CalloutProps } from "./Callout"
 export type { CardsProps } from "./Cards"
 export type { HeroProps } from "./Hero"

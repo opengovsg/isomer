@@ -1,12 +1,16 @@
 "use client"
 
 import { useState } from "react"
+import type { CollectionPageSchema } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
 import { SortDirection, SortKey } from "~/interfaces/internal/CollectionSort"
-import type { CollectionPageSchema } from "~/engine"
-import { CollectionCard } from "../../components"
-import { CollectionSearch, Filter, Pagination } from "../../components/shared"
-import CollectionSort from "../../components/shared/CollectionSort"
+import {
+  CollectionCard,
+  CollectionSearch,
+  CollectionSort,
+  Filter,
+  Pagination,
+} from "../../components/internal"
 import type { AppliedFilter, Filter as FilterType } from "../../types/Filter"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"

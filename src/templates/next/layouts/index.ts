@@ -1,4 +1,3 @@
-export { renderLayout, renderComponent } from "./render"
 export { default as ArticleLayout } from "./Article"
 export { default as CollectionLayout } from "./Collection"
 export { default as ContentLayout } from "./Content"
