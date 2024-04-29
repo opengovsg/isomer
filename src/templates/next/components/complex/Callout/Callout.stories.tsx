@@ -19,5 +19,15 @@ const Template: StoryFn<CalloutProps> = (args) => <Callout {...args} />
 // Default scenario
 export const Default = Template.bind({})
 Default.args = {
-  content: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+  content: [
+    {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+        },
+      ],
+    },
+  ],
 }
