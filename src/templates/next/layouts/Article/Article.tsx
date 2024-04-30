@@ -2,7 +2,7 @@ import { ArticlePageSchema } from "~/engine"
 import { getBreadcrumbFromSiteMap } from "~/utils"
 import { Skeleton } from "../Skeleton"
 import ArticlePageHeader from "../../components/internal/ArticlePageHeader"
-import { renderComponent } from "../../render"
+import { renderPageContent } from "../../render"
 
 const ArticleLayout = ({
   site,
@@ -37,9 +37,7 @@ const ArticleLayout = ({
 
         <div className="max-w-[960px] w-full mx-auto gap-10 pb-16">
           <div className="overflow-x-auto w-full lg:max-w-[660px]">
-            {content.map((component) =>
-              renderComponent({ component, LinkComponent }),
-            )}
+            {renderPageContent({ content, LinkComponent })}
           </div>
         </div>
       </div>

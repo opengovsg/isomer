@@ -6,7 +6,7 @@ import {
   Siderail,
   TableOfContents,
 } from "../../components/internal"
-import { renderComponent } from "../../render"
+import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
 const getSiderailFromSiteMap = (
@@ -123,11 +123,7 @@ const ContentLayout = ({
           {tableOfContents.items.length > 0 && (
             <TableOfContents {...tableOfContents} />
           )}
-          <div>
-            {content.map((component) =>
-              renderComponent({ component, LinkComponent }),
-            )}
-          </div>
+          <div>{renderPageContent({ content, LinkComponent })}</div>
         </div>
       </div>
     </Skeleton>
