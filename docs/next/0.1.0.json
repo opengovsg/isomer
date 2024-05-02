@@ -1753,7 +1753,7 @@
             "items": {
               "anyOf": [
                 {
-                  "$ref": "#/components/native/paragraph"
+                  "$ref": "#/components/native/listItem"
                 },
                 {
                   "$ref": "#/components/native/orderedlist"
