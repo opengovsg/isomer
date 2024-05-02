@@ -1713,7 +1713,7 @@
       "text": {
         "type": "object",
         "title": "Text content",
-        "required": ["type", "text"],
+        "required": ["type"],
         "properties": {
           "type": {
             "type": "string",
