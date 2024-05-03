@@ -113,7 +113,7 @@ const ContentLayout = ({
         breadcrumb={breadcrumb}
         LinkComponent={LinkComponent}
       />
-      <div className="flex gap-[120px] px-6 md:px-10 py-16 max-w-[1240px] mx-auto justify-center">
+      <div className="flex gap-[120px] px-6 md:px-10 py-16 max-w-container mx-auto justify-center">
         {sideRail && (
           <div className="hidden lg:block w-full max-w-[240px]">
             <Siderail {...sideRail} LinkComponent={LinkComponent} />

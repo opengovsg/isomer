@@ -82,6 +82,9 @@ export default {
       screens: {
         xs: "576px",
       },
+      spacing: {
+        container: "1240px",
+      },
     },
   },
 }

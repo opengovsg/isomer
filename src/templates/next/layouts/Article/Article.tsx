@@ -23,7 +23,7 @@ const ArticleLayout = ({
       LinkComponent={LinkComponent}
       ScriptComponent={ScriptComponent}
     >
-      <div className="flex flex-col gap-20 px-6 md:px-10 max-w-[1240px] mx-auto">
+      <div className="flex flex-col gap-20 px-6 md:px-10 max-w-container mx-auto">
         <ArticlePageHeader
           {...page.articlePageHeader}
           breadcrumb={breadcrumb}

@@ -19,7 +19,9 @@ export const Skeleton = ({
 
   return (
     <>
-      {site.isGovernment && <Masthead isStaging={isStaging} />}
+      {site.isGovernment && (
+        <Masthead isStaging={isStaging} LinkComponent={LinkComponent} />
+      )}
 
       {site.notification && <Notification content={site.notification} />}
 
