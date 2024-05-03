@@ -14,7 +14,10 @@ const NotificationBanner = ({ content }: NotificationProps) => {
   return (
     isShown && (
       <div className="flex flex-col sm:flex-row justify-between gap-6 bg-site-primary-100 py-4 px-5 sm:px-10">
-        <BaseParagraph className="text-base" content={content}></BaseParagraph>
+        <BaseParagraph
+          className="text-base text-content"
+          content={content}
+        ></BaseParagraph>
         <button
           className="flex flex-row ml-auto items-center gap-1"
           aria-label="Dismiss notification"
