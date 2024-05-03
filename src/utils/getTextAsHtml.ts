@@ -17,7 +17,7 @@ const MARK_DOM_MAPPING: Record<MarkTypes, string> = {
 export const getTextAsHtml = (content: TextProps[]) => {
   return content
     .map((node) => {
-      if (!Object.keys(node).includes("marks")) {
+      if (!node.marks) {
         return node.text
       }
 
