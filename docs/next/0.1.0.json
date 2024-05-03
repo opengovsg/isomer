@@ -8,7 +8,6 @@
     "version": {
       "type": "string",
       "description": "The version of the Isomer Next schema to use",
-      "enum": ["0.1.0"],
       "default": "0.1.0"
     }
   },
