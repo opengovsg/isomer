@@ -1,4 +1,4 @@
-import { ArrowRightIcon } from "@heroicons/react/24/outline"
+import { BiRightArrowAlt } from "react-icons/bi"
 import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 import type { InfopicProps } from "~/interfaces"
 
@@ -47,7 +47,7 @@ const TextComponent = ({
             {buttonLabel}
 
             <div className="my-auto">
-              <ArrowRightIcon className="text-site-secondary size-5" />
+              <BiRightArrowAlt className="text-site-secondary size-5" />
             </div>
           </a>
         </div>

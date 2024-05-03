@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from "@heroicons/react/24/outline"
+import { BiChevronDown } from "react-icons/bi"
 import type { SidePaneProps } from "~/interfaces"
 
 export type SectionWithSiblings = {
@@ -74,7 +74,7 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
                       sectionWithSiblings?.siblings &&
                       sectionWithSiblings?.siblings.length > 0 && (
                         <a className="cursor-pointer">
-                          <ChevronDownIcon className="mx-3 mt-2.5 h-5 w-5 text-headings" />
+                          <BiChevronDown className="mx-3 mt-2.5 h-5 w-5 text-headings" />
                         </a>
                       )}
                   </div>

@@ -1,11 +1,7 @@
 import { Fragment } from "react"
 import { Disclosure, Menu, Transition } from "@headlessui/react"
 
-import {
-  Bars3Icon,
-  XMarkIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline"
+import { BiMenu, BiX, BiSearch } from "react-icons/bi"
 
 export type NavbarLink = {
   type: "single" | "dropdown"
@@ -50,9 +46,9 @@ export const IsomerNav = ({
                     <span className="absolute -inset-0.5" />
                     <span className="sr-only">Open main menu</span>
                     {open ? (
-                      <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+                      <BiX className="block h-6 w-6" aria-hidden="true" />
                     ) : (
-                      <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+                      <BiMenu className="block h-6 w-6" aria-hidden="true" />
                     )}
                   </Disclosure.Button>
                 </div>
@@ -130,10 +126,7 @@ export const IsomerNav = ({
                         <span className="absolute -inset-1.5" />
                         <span className="sr-only">Search</span>
 
-                        <MagnifyingGlassIcon
-                          className="h-6 w-6"
-                          aria-hidden="true"
-                        />
+                        <BiSearch className="h-6 w-6" aria-hidden="true" />
                       </button>
                     </LinkComponent>
                   </div>

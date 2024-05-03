@@ -2,10 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react"
 import MiniSearch from "minisearch"
-import {
-  ChevronDoubleLeftIcon,
-  ChevronDoubleRightIcon,
-} from "@heroicons/react/24/outline"
+import { BiChevronsLeft, BiChevronsRight } from "react-icons/bi"
 import type { SearchProps } from "~/interfaces"
 import type { SearchRecord } from "~/interfaces/internal/Search"
 
@@ -163,7 +160,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
             onClick={() => setCurrentPage(1)}
             className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
           >
-            <ChevronDoubleLeftIcon
+            <BiChevronsLeft
               className="mr-3 h-5 w-5 text-gray-400"
               aria-hidden="true"
             />
@@ -177,7 +174,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
             className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
           >
             Last
-            <ChevronDoubleRightIcon
+            <BiChevronsRight
               className="ml-3 h-5 w-5 text-gray-400"
               aria-hidden="true"
             />
