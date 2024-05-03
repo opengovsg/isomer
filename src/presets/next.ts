@@ -50,8 +50,8 @@ export default {
         interaction: {
           main: {
             DEFAULT: "#333333",
-            hover: "#f78d1b",
-            active: "#f78d1b",
+            hover: "#191919",
+            active: "#191919",
             subtle: {
               hover: "#f4f9ff",
             },
