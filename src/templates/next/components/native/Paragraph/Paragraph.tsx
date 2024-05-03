@@ -7,7 +7,7 @@ const Paragraph = ({ content }: Pick<ParagraphProps, "content">) => {
   return (
     <BaseParagraph
       content={getTextAsHtml(content)}
-      className={`${ParagraphStyle[1]} text-content-strong`}
+      className={`${ParagraphStyle[1]} text-content`}
     />
   )
 }
