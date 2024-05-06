@@ -14,7 +14,13 @@ const getIsTableOverflowing = (tableRef: React.RefObject<HTMLTableElement>) => {
   return tableRight > parentRight
 }
 
-// Determine the extent in which the table should have a sticky first part
+// Determine the exact rows of the table that should have a sticky first part
+// This works by first assuming that all rows in the table should have a sticky
+// first part, then omitting rows that overlap with a previous row containing
+// a rowSpan definition. The first cells in these rows would be part of the
+// second column.
+// Example: If row index 2 has a rowSpan of 3, then row index 3 and 4 should not
+// have a sticky first part.
 const getStickyRowIndexes = (tableRows: TableProps["content"]) => {
   let stickyRowIndexes: number[] = [...Array(tableRows.length).keys()]
 
@@ -22,10 +28,12 @@ const getStickyRowIndexes = (tableRows: TableProps["content"]) => {
     .map((row) => row.content[0])
     .forEach((cell, index) => {
       if (!stickyRowIndexes.includes(index)) {
+        // Index has already been removed by an earlier rowSpan
         return
       }
 
       if (cell.rowSpan) {
+        // Exclude the next few rows that are covered by the rowSpan
         stickyRowIndexes = stickyRowIndexes.filter(
           (value) => value <= index || value >= index + cell.rowSpan!,
         )
