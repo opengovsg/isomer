@@ -120,7 +120,7 @@ const ContentLayout = ({
           </div>
         )}
         <div className="flex flex-col gap-[90px] overflow-x-auto w-full max-w-[800px]">
-          {tableOfContents.items.length > 0 && (
+          {tableOfContents.items.length > 1 && (
             <TableOfContents {...tableOfContents} />
           )}
           <div>
