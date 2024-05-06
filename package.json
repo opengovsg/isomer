@@ -100,7 +100,7 @@
     "@govtechsg/sgds": "^2.2.0",
     "@govtechsg/sgds-react": "^2.2.2",
     "@headlessui/react": "^1.7.18",
-    "isomorphic-dompurify": "^2.5.0",
+    "isomorphic-dompurify": "^2.9.0",
     "js-base64": "^3.7.6",
     "markdown-to-jsx": "^7.4.1",
     "minisearch": "^6.3.0",
