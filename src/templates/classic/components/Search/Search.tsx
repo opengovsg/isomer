@@ -5,6 +5,7 @@ import MiniSearch from "minisearch"
 import { BiChevronsLeft, BiChevronsRight } from "react-icons/bi"
 import type { SearchProps } from "~/interfaces"
 import type { SearchRecord } from "~/interfaces/internal/Search"
+import DOMPurify from "isomorphic-dompurify"
 
 const Search: React.FC<SearchProps> = ({ index }) => {
   const [searchTerm, setSearchTerm] = useState<string>("")
@@ -146,7 +147,9 @@ const Search: React.FC<SearchProps> = ({ index }) => {
               <p
                 className="line-clamp-3 truncate"
                 dangerouslySetInnerHTML={{
-                  __html: highlightMatch(result.content, searchTerm),
+                  __html: DOMPurify.sanitize(
+                    highlightMatch(result.content, searchTerm),
+                  ),
                 }}
               />
             </li>
