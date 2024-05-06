@@ -1,11 +1,6 @@
 import { getSitemapAsArray } from "~/utils"
 import type { IsomerPageSchema, IsomerSitemap } from "~/types"
 
-type SitemapXmlItem = {
-  url: string
-  lastModified?: string | Date | undefined
-}
-
 export const getMetadata = (props: IsomerPageSchema) => {
   const metadata = {
     metadataBase: props.site.url ? new URL(props.site.url) : undefined,
@@ -59,10 +54,8 @@ export const getRobotsTxt = (props: IsomerPageSchema) => {
 export const getSitemapXml = (sitemap: IsomerSitemap) => {
   return getSitemapAsArray(sitemap)
     .filter((item) => item.layout !== "file" && item.layout !== "link")
-    .map(
-      ({ permalink, lastModified }): SitemapXmlItem => ({
-        url: permalink,
-        lastModified,
-      }),
-    )
+    .map(({ permalink, lastModified }) => ({
+      url: permalink,
+      lastModified,
+    }))
 }

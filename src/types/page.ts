@@ -10,6 +10,7 @@ import type {
 
 interface BaseItemProps {
   permalink: string
+  lastModified: string
   title: string
   description?: string
 }

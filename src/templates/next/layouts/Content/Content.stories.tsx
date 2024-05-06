@@ -103,6 +103,7 @@ Default.args = {
   },
   page: {
     permalink: "/parent/rationality",
+    lastModified: "2024-05-02T14:12:57.160Z",
     title: "Content page",
     description: "A Next.js starter for Isomer",
     contentPageHeader: {

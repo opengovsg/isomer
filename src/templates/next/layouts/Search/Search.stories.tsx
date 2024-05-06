@@ -68,5 +68,6 @@ SearchSG.args = {
     title: "Search",
     description: "Search results",
     permalink: "/search",
+    lastModified: "2024-05-02T14:12:57.160Z",
   },
 }

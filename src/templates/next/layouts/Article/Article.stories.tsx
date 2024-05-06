@@ -94,6 +94,7 @@ Default.args = {
       "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
     permalink:
       "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
+    lastModified: "2024-05-02T14:12:57.160Z",
     category: "NParks Happenings",
     date: "1 May 2024",
     articlePageHeader: {

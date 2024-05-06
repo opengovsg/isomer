@@ -50,5 +50,6 @@ Default.args = {
     title: "Search",
     description: "Search results",
     permalink: "/404.html",
+    lastModified: "2024-05-02T14:12:57.160Z",
   },
 }
