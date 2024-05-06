@@ -8,14 +8,13 @@ export const renderPageContent = ({
   content: IsomerComponent[]
   LinkComponent: any
 }) => {
-  let isTextOnRight = false
+  let isInfopicTextOnRight = false
   return content.map((component) => {
     if (component.type === "infopic") {
-      console.log(isTextOnRight)
-      isTextOnRight = !isTextOnRight
+      isInfopicTextOnRight = !isInfopicTextOnRight
       const formattedComponent = {
         ...component,
-        isTextOnRight,
+        isInfopicTextOnRight,
       }
       return renderComponent({ component: formattedComponent, LinkComponent })
     }
