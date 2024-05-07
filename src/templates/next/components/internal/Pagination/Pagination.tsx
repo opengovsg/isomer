@@ -10,7 +10,7 @@ export const Pagination = ({
   const totalPages = Math.ceil(totalItems / Math.max(1, itemsPerPage))
 
   return (
-    <nav className="flex flex-row w-full" aria-label="Pagination">
+    <nav className="grid grid-cols-4 w-full" aria-label="Pagination">
       {/* Previous button */}
       <button
         className="flex flex-row p-1 gap-1 align-middle cursor-pointer disabled:cursor-not-allowed disabled:text-interaction-sub disabled:hover:bg-transparent hover:bg-interaction-main-subtle-hover"
@@ -26,20 +26,14 @@ export const Pagination = ({
         <p className="hidden xs:inline underline text-lg">Previous</p>
       </button>
 
-      {/* Spacing */}
-      <div className="flex-grow" />
-
       {/* Page number */}
-      <p className="my-auto xs:text-xl xs:leading-8">
+      <p className="col-span-2 justify-self-center my-auto xs:text-xl xs:leading-8">
         Page {currPage} of {totalPages}
       </p>
 
-      {/* Spacing */}
-      <div className="flex-grow" />
-
       {/* Next button */}
       <button
-        className="flex flex-row p-1 gap-1 align-middle cursor-pointer disabled:cursor-not-allowed disabled:text-interaction-sub disabled:hover:bg-transparent hover:bg-interaction-main-subtle-hover"
+        className="justify-self-end flex flex-row p-1 gap-1 align-middle cursor-pointer disabled:cursor-not-allowed disabled:text-interaction-sub disabled:hover:bg-transparent hover:bg-interaction-main-subtle-hover"
         aria-label="Next page"
         disabled={currPage >= totalPages}
         onClick={() => {

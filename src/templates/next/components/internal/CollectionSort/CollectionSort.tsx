@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { BiCheck } from "react-icons/bi"
-import { MdKeyboardArrowDown } from "react-icons/md"
+import { BiChevronDown } from "react-icons/bi"
 import { SortDirection, SortKey } from "~/interfaces/internal/CollectionSort"
 import CollectionSortProps from "~/templates/next/types/CollectionSort"
 import { Paragraph } from "../../../typography/Paragraph"
@@ -45,13 +45,16 @@ const CollectionSort = ({
 }: CollectionSortProps) => {
   const [showSortOptions, setShowSortOptions] = useState(false)
   const selectedSortOption = SortConfigToOptionMap[sortBy][sortDirection]
+
   return (
     <div className="relative">
       <div className="flex flex-col gap-2">
         <p className={`${Paragraph[2]} text-content-strong`}>Sort by</p>
         <button
-          className={`flex gap-6 justify-between border border-divider-medium py-2.5 px-4 rounded-[4px] ${
-            showSortOptions && "border-2 border-focus-outline"
+          className={`flex gap-6 border justify-between py-2.5 px-4 rounded-[4px] ${
+            showSortOptions
+              ? "border-focus-outline outline outline-1 outline-focus-outline"
+              : "border-divider-medium"
           }`}
           aria-label={
             showSortOptions ? "Hide sort options" : "Show sort options"
@@ -59,15 +62,16 @@ const CollectionSort = ({
           onClick={() => setShowSortOptions(!showSortOptions)}
         >
           {selectedSortOption}
-          <MdKeyboardArrowDown
-            className={`w-5 h-auto flex-shrink-0 transition-all duration-300 ease-in-out ${
+          <BiChevronDown
+            className={`w-5 h-auto my-auto flex-shrink-0 transition-all duration-300 ease-in-out ${
               showSortOptions ? "rotate-180" : "rotate-0"
             }`}
           />
         </button>
       </div>
+
       {showSortOptions && (
-        <div className="absolute w-full bg-white flex flex-col gap-0 rounded-[4px] py-3">
+        <div className="absolute w-full bg-white flex flex-col gap-0 rounded-[4px] my-3 shadow-sm">
           {SortOptions.map((option) => (
             <button
               key={option}

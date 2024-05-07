@@ -4,6 +4,7 @@ import { useState } from "react"
 import { BiChevronDown } from "react-icons/bi"
 import type { FilterProps } from "../../../types/Filter"
 import { Heading } from "../../../typography/Heading"
+import { Paragraph } from "../../../typography/Paragraph"
 
 const Filter = ({
   filters,
@@ -13,36 +14,6 @@ const Filter = ({
   const [showFilter, setShowFilter] = useState<Record<string, boolean>>(
     filters.reduce((acc, { id }) => ({ ...acc, [id]: true }), {}),
   )
-
-  const updateAppliedFilters = (filterId: string, itemId: string) => {
-    const filterIndex = appliedFilters.findIndex(
-      (filter) => filter.id === filterId,
-    )
-    if (filterIndex > -1) {
-      const itemIndex = appliedFilters[filterIndex].items.findIndex(
-        (item) => item.id === itemId,
-      )
-      if (itemIndex > -1) {
-        const newAppliedFilters = [...appliedFilters]
-        newAppliedFilters[filterIndex].items.splice(itemIndex, 1)
-
-        if (newAppliedFilters[filterIndex].items.length === 0) {
-          newAppliedFilters.splice(filterIndex, 1)
-        }
-
-        setAppliedFilters(newAppliedFilters)
-      } else {
-        const newAppliedFilters = [...appliedFilters]
-        newAppliedFilters[filterIndex].items.push({ id: itemId })
-        setAppliedFilters(newAppliedFilters)
-      }
-    } else {
-      setAppliedFilters([
-        ...appliedFilters,
-        { id: filterId, items: [{ id: itemId }] },
-      ])
-    }
-  }
 
   const updateFilterToggle = (filterId: string) => {
     setShowFilter({ ...showFilter, [filterId]: !showFilter[filterId] })
@@ -57,7 +28,9 @@ const Filter = ({
             className="flex flex-row w-full"
             onClick={() => updateFilterToggle(id)}
           >
-            <h5 className={`${Heading[5]} text-content-medium`}>{label}</h5>
+            <h5 className={`${Paragraph["1"]} font-medium text-content-medium`}>
+              {label}
+            </h5>
             <div className="flex-1"></div>
             <BiChevronDown
               className={`text-2xl text-content-medium transition-all duration-300 ease-in-out ${
@@ -87,9 +60,11 @@ const Filter = ({
                       .find((filter) => filter.id === id)
                       ?.items.some((item) => item.id === itemId)
                   }
-                  onChange={() => updateAppliedFilters(id, itemId)}
+                  onChange={() => setAppliedFilters(id, itemId)}
                 />
-                <p className="ml-4 inline-block">
+                <p
+                  className={`${Paragraph["2"]} ml-4 inline-block break-words`}
+                >
                   {itemLabel} ({count.toLocaleString()})
                 </p>
               </label>

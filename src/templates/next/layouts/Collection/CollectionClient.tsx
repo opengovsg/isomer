@@ -10,8 +10,13 @@ import {
   CollectionSort,
   Filter,
   Pagination,
+  Pill,
 } from "../../components/internal"
-import type { AppliedFilter, Filter as FilterType } from "../../types/Filter"
+import type {
+  AppliedFilter,
+  AppliedFiltersWithLabel,
+  Filter as FilterType,
+} from "../../types/Filter"
 import { Heading } from "../../typography/Heading"
 import { Paragraph } from "../../typography/Paragraph"
 
@@ -81,6 +86,27 @@ const getAvailableFilters = (items: CollectionCardProps[]): FilterType[] => {
   ]
 
   return availableFilters
+}
+
+const getAppliedFiltersWithLabels = (
+  filters: FilterType[],
+  appliedFilters: AppliedFilter[],
+): AppliedFiltersWithLabel[] => {
+  return appliedFilters.flatMap((appliedFilterType) =>
+    appliedFilterType.items.map((appliedFilter) => {
+      const label =
+        filters
+          .find((filterType) => filterType.id === appliedFilterType.id)
+          ?.items.find((filter) => filter.id === appliedFilter.id)?.label ||
+        appliedFilter.id
+
+      return {
+        appliedFilterTypeId: appliedFilterType.id,
+        appliedFilterId: appliedFilter.id,
+        label,
+      }
+    }),
+  )
 }
 
 const getFilteredItems = (
@@ -170,6 +196,41 @@ const getPaginatedItems = (
   )
 }
 
+const updateAppliedFilters = (
+  appliedFilters: AppliedFilter[],
+  setAppliedFilters: React.Dispatch<React.SetStateAction<AppliedFilter[]>>,
+  filterId: string,
+  itemId: string,
+) => {
+  const filterIndex = appliedFilters.findIndex(
+    (filter) => filter.id === filterId,
+  )
+  if (filterIndex > -1) {
+    const itemIndex = appliedFilters[filterIndex].items.findIndex(
+      (item) => item.id === itemId,
+    )
+    if (itemIndex > -1) {
+      const newAppliedFilters = [...appliedFilters]
+      newAppliedFilters[filterIndex].items.splice(itemIndex, 1)
+
+      if (newAppliedFilters[filterIndex].items.length === 0) {
+        newAppliedFilters.splice(filterIndex, 1)
+      }
+
+      setAppliedFilters(newAppliedFilters)
+    } else {
+      const newAppliedFilters = [...appliedFilters]
+      newAppliedFilters[filterIndex].items.push({ id: itemId })
+      setAppliedFilters(newAppliedFilters)
+    }
+  } else {
+    setAppliedFilters([
+      ...appliedFilters,
+      { id: filterId, items: [{ id: itemId }] },
+    ])
+  }
+}
+
 const CollectionClient = ({
   page,
   LinkComponent,
@@ -210,33 +271,71 @@ const CollectionClient = ({
         </h1>
         <p className={`${Paragraph[1]} text-content`}>{subtitle}</p>
       </div>
-      <div className="w-3/4 mx-auto">
+
+      <div className="w-full sm:w-3/4 mx-auto">
         <CollectionSearch
           placeholder={`Search for ${page.title.toLowerCase()}`}
           search={searchValue}
           setSearch={setSearchValue}
         />
       </div>
-      <div className="flex flex-col sm:flex-row gap-10 justify-between w-full">
-        <div className="w-full sm:w-1/6">
+
+      <div className="flex flex-col lg:flex-row gap-10 justify-between w-full">
+        <div className="w-full lg:w-1/5 xl:w-1/6">
           <Filter
             filters={filters}
             appliedFilters={appliedFilters}
-            setAppliedFilters={setAppliedFilters}
+            setAppliedFilters={(id: string, itemId: string) =>
+              updateAppliedFilters(
+                appliedFilters,
+                setAppliedFilters,
+                id,
+                itemId,
+              )
+            }
           />
         </div>
-        <div className="flex flex-col gap-6 w-full sm:w-5/6">
-          <div className="flex justify-between w-full items-end">
-            <p className={`${Paragraph[1]} text-content`}>
-              {appliedFilters.length > 0 || searchValue !== ""
-                ? `${filteredItems.length} search ${
-                    filteredItems.length === 1 ? "result" : "results"
-                  }`
-                : `${items.length} ${
-                    items.length === 1 ? "article" : "articles"
-                  }`}
-            </p>
-            <div className="w-[260px]">
+        <div className="flex flex-col gap-6 w-full lg:w-4/5 xl:w-5/6">
+          <div className="flex flex-wrap sm:flex-nowrap justify-between w-full items-start gap-6">
+            <div className="flex flex-col gap-3 w-full h-full">
+              <p className={`${Paragraph[1]} text-content mt-auto`}>
+                {appliedFilters.length > 0 || searchValue !== ""
+                  ? `${filteredItems.length} search ${
+                      filteredItems.length === 1 ? "result" : "results"
+                    }`
+                  : `${items.length} ${
+                      items.length === 1 ? "article" : "articles"
+                    }`}
+                {searchValue !== "" && (
+                  <>
+                    {" "}
+                    for "<b>{searchValue}</b>"
+                  </>
+                )}
+              </p>
+
+              {appliedFilters.length > 0 && (
+                <div className="flex flex-row flex-wrap gap-3">
+                  {getAppliedFiltersWithLabels(filters, appliedFilters).map(
+                    (appliedFilter) => (
+                      <Pill
+                        key={`${appliedFilter.appliedFilterTypeId}-${appliedFilter.appliedFilterId}`}
+                        content={appliedFilter.label}
+                        onClose={() =>
+                          updateAppliedFilters(
+                            appliedFilters,
+                            setAppliedFilters,
+                            appliedFilter.appliedFilterTypeId,
+                            appliedFilter.appliedFilterId,
+                          )
+                        }
+                      />
+                    ),
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="w-full sm:w-[260px] shrink-0">
               <CollectionSort
                 sortBy={sortBy}
                 setSortBy={setSortBy}
@@ -245,23 +344,56 @@ const CollectionClient = ({
               />
             </div>
           </div>
-          <div className="flex flex-col gap-0">
-            {paginatedItems.map((item) => (
-              <CollectionCard {...item} LinkComponent={LinkComponent} />
-            ))}
+          <div className="flex flex-col gap-0 h-full w-full">
+            {paginatedItems.length > 0 &&
+              paginatedItems.map((item) => (
+                <CollectionCard
+                  key={Math.random()}
+                  {...item}
+                  LinkComponent={LinkComponent}
+                />
+              ))}
+
+            {paginatedItems.length === 0 && searchValue !== "" && (
+              <div className="m-auto text-center flex flex-col gap-3">
+                <p className={`${Paragraph["1"]}`}>
+                  We couldn’t find articles that match your search.
+                </p>
+                <button
+                  className="w-fit mx-auto text-hyperlink hover:text-hyperlink-hover text-lg font-semibold"
+                  onClick={() => {
+                    setSearchValue("")
+                    setAppliedFilters([])
+                  }}
+                >
+                  Clear all filters
+                </button>
+              </div>
+            )}
+
+            {items.length === 0 && (
+              <div className="m-auto text-center flex flex-col gap-3">
+                <p className={`${Paragraph["1"]}`}>
+                  There are no items in this collection.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
-      <div className="w-full">
-        <div className="sm:max-w-96 sm:ml-auto">
-          <Pagination
-            totalItems={filteredItems.length}
-            itemsPerPage={ITEMS_PER_PAGE}
-            currPage={currPage}
-            setCurrPage={setCurrPage}
-          />
+
+      {paginatedItems.length > 0 && (
+        <div className="w-full">
+          <div className="sm:max-w-96 sm:ml-auto">
+            <Pagination
+              totalItems={filteredItems.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+              currPage={currPage}
+              setCurrPage={setCurrPage}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
