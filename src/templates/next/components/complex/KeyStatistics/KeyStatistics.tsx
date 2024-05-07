@@ -8,15 +8,22 @@ const ITEM_WIDTHS: Record<
   side: {
     1: "basis-full",
     2: "basis-[calc((100%-2.5rem)/2)]",
-    3: "basis-[calc((100%-5rem)/3)]",
+    3: "basis-[calc((100%-5rem)/3)] md:max-w-[calc((100%-2.5rem)/2)]",
   },
   top: {
     1: "basis-full",
     2: "basis-[calc((100%-2.5rem)/2)]",
-    3: "basis-[calc((100%-5rem)/3)]",
-    4: "basis-[calc((100%-7.5rem)/4)]",
+    3: "basis-[calc((100%-5rem)/3)] md:max-w-[calc((100%-2.5rem)/2)]",
+    4: "basis-[calc((100%-7.5rem)/4)] md:max-w-[calc((100%-5rem)/3)]",
   },
 }
+
+// This is the maximum number of characters in a key statistic value
+// This is required because we make all columns have the same width. If there is
+// a value that is very large relative to the other values, then there will be
+// a lot of weird white space. 7 characters should fit most use-cases.
+// Example: +$1.23M, +235.2%, $123.4B
+const MAX_CHAR_LIMIT = 7
 
 const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
   const maxItems = variant === "side" ? 3 : 4
@@ -38,12 +45,12 @@ const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
         <div className="flex flex-wrap flex-col md:flex-row gap-10">
           {statistics.slice(0, maxItems).map(({ label, value }) => (
             <div
-              className={`flex flex-col gap-3 flex-shrink-0 ${
+              className={`flex flex-col gap-3 grow ${
                 ITEM_WIDTHS[variant][Math.min(maxItems, statistics.length)]
               }`}
             >
               <h3 className="text-4xl xs:text-5xl leading-[2.75rem] xs:leading-[3.5rem] text-content-strong font-semibold text-pretty">
-                {value}
+                {value.slice(0, MAX_CHAR_LIMIT)}
               </h3>
               <p className="text-sm text-content-medium">{label}</p>
             </div>
