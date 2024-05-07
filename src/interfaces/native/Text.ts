@@ -43,6 +43,6 @@ export type Marks =
 
 export interface TextProps {
   type: "text"
-  marks: Marks[]
+  marks?: Marks[]
   text: string
 }
