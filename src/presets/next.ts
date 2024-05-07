@@ -45,6 +45,7 @@ export default {
           neutral: {
             DEFAULT: "#f3f2f1",
             subtle: "#fcfcfc",
+            neutral: "#f4f2f1",
           },
         },
         interaction: {

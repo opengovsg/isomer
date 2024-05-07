@@ -161,7 +161,7 @@ export const Navbar = ({
       )}
 
       {/* Navigation items (for desktop) */}
-      <div className="hidden lg:block bg-[#f4f2f1] w-full relative">
+      <div className="hidden lg:block bg-utility-neutral w-full relative">
         <div className="w-full max-w-container mx-auto px-10">
           <div className="mx-auto w-full max-w-screen-xl">
             <ul className="flex flex-row flex-wrap" ref={navDesktopRef}>
