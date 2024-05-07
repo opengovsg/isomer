@@ -112,7 +112,7 @@ const ContentLayout = ({
         title={page.title}
         breadcrumb={breadcrumb}
         LinkComponent={LinkComponent}
-        lastUpdated={page.lastUpdated}
+        lastUpdated={page.lastModified}
       />
       <div className="flex gap-[120px] px-6 md:px-10 py-16 max-w-[1240px] mx-auto justify-center">
         {sideRail && (

@@ -46,7 +46,6 @@ export interface ContentPageProps extends BasePageProps {
     ContentPageHeaderProps,
     "summary" | "buttonLabel" | "buttonUrl"
   >
-  lastUpdated: string
 }
 export interface HomePageProps extends BasePageProps {}
 export interface NotFoundPageProps extends BasePageProps {}

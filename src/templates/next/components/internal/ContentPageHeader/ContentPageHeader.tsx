@@ -23,7 +23,13 @@ const ContentPageHeader = ({
           <h1 className="text-[2.75rem] leading-tight lg:text-[3.75rem] font-semibold text-content-strong">
             {title}
           </h1>
-          <div className="pt-6 lg:pb-2">{`Last updated ${lastUpdated}`}</div>
+          <div className="pt-6 lg:pb-2">{`Last updated ${new Date(
+            lastUpdated,
+          ).toLocaleDateString(undefined, {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })}`}</div>
           <BaseParagraph
             content={summary}
             className={`text-content ${Paragraph[1]}`}
