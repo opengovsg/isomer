@@ -1,13 +1,5 @@
 import type { IsomerComponent, IsomerPageSchema } from "~/engine"
 import {
-  ArticleLayout,
-  CollectionLayout,
-  ContentLayout,
-  HomepageLayout,
-  NotFoundLayout,
-  SearchLayout,
-} from "../layouts"
-import {
   Accordion,
   Button,
   Callout,
@@ -26,6 +18,14 @@ import {
   Table,
   UnorderedList,
 } from "../components"
+import {
+  ArticleLayout,
+  CollectionLayout,
+  ContentLayout,
+  HomepageLayout,
+  NotFoundLayout,
+  SearchLayout,
+} from "../layouts"
 
 interface RenderComponentProps {
   component: IsomerComponent
@@ -36,7 +36,6 @@ interface RenderComponentProps {
 export const renderComponent = ({
   component,
   LinkComponent,
-  ScriptComponent,
 }: RenderComponentProps) => {
   switch (component.type) {
     case "accordion":

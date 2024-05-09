@@ -45,6 +45,7 @@ export default {
           neutral: {
             DEFAULT: "#f3f2f1",
             subtle: "#fcfcfc",
+            neutral: "#f4f2f1",
           },
         },
         interaction: {
@@ -81,6 +82,9 @@ export default {
       },
       screens: {
         xs: "576px",
+      },
+      spacing: {
+        container: "1240px",
       },
     },
   },

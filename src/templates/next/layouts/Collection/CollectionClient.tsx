@@ -201,7 +201,7 @@ const CollectionClient = ({
   )
 
   return (
-    <div className="max-w-[1240px] flex flex-col gap-16 mx-auto my-20 px-6 md:px-10 py-16 items-center">
+    <div className="max-w-container flex flex-col gap-16 mx-auto my-20 px-6 md:px-10 py-16 items-center">
       <div className="flex flex-col gap-12 w-full">
         <h1
           className={`flex flex-col gap-16 text-content-strong ${Heading[1]}`}
