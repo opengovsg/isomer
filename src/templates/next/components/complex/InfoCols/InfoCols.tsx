@@ -30,13 +30,13 @@ const InfoBoxes = ({
   LinkComponent,
 }: Pick<InfoColsProps, "infoBoxes" | "LinkComponent">) => {
   return (
-    <div className="grid grid-cols-1 gap-x-8 gap-y-9 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
       {infoBoxes.map((infoBox, idx) => (
         <div key={idx} className="flex flex-col gap-5 items-start text-left">
           <InfoBoxIcon icon={infoBox.icon} />
           <div className="flex flex-col gap-4 items-start text-left">
             <div className="flex flex-col gap-4 items-start text-content-strong">
-              <h3 className={`${Heading[5]} text-content-strong`}>
+              <h3 className={`${Heading[4]} text-content-strong`}>
                 {infoBox.title}
               </h3>
               <p className={`${Paragraph[2]} text-content`}>
