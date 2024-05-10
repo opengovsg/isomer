@@ -62,7 +62,7 @@ const SideBySideInfoPic = ({
       {/* Mobile-Tablet */}
       <div className="lg:hidden">
         <div
-          className={`${ComponentContent} py-16 sm:py-24 px-6 sm:px-14 flex flex-col gap-14`}
+          className={`${ComponentContent} py-16 sm:py-24 sm:px-14 flex flex-col gap-14`}
         >
           <TextComponent
             title={title}
@@ -78,7 +78,7 @@ const SideBySideInfoPic = ({
         <div
           className={`${ComponentContent} flex ${
             isTextOnRight ? "flex-row" : "flex-row-reverse"
-          } gap-14 px-10 py-24`}
+          } gap-14 py-24`}
         >
           <ImageComponent src={src} alt={alt} className="w-1/3" />
           <TextComponent
@@ -109,7 +109,7 @@ const SidePartInfoPic = ({
       <div className="lg:hidden">
         <div className="flex flex-col gap-0">
           <ImageComponent src={src} alt={alt} />
-          <div className={`${ComponentContent} py-10 px-6 sm:px-20`}>
+          <div className={`${ComponentContent} py-10`}>
             <TextComponent
               title={title}
               description={description}
@@ -124,7 +124,7 @@ const SidePartInfoPic = ({
         <div
           className={`${ComponentContent} flex ${
             isTextOnRight ? "flex-row" : "flex-row-reverse"
-          } gap-10 px-10`}
+          } gap-10`}
         >
           <ImageComponent src={src} alt={alt} className="w-1/2" />
           <div className="w-1/2 py-24 my-auto">
