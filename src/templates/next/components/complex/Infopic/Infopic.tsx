@@ -42,7 +42,7 @@ const ImageComponent = ({
       <img
         src={src}
         alt={alt}
-        className="h-full w-full object-cover object-center"
+        className="h-full w-full object-cover object-center object-center max-h-[22.5rem] lg:max-h-[38.75rem]"
       />
     </div>
   )
