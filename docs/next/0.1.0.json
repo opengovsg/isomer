@@ -1631,14 +1631,14 @@
       "table-cell": {
         "type": "object",
         "title": "Table cell",
-        "required": ["type", "value"],
+        "required": ["type", "content"],
         "properties": {
           "type": {
             "type": "string",
             "enum": ["tableCell"],
             "default": "tableCell"
           },
-          "value": {
+          "content": {
             "type": "array",
             "title": "Table cell contents",
             "description": "The contents of the table cell",
