@@ -27,7 +27,7 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
     <section>
       {variant === "side" ? (
         <div
-          className={`${ComponentContent} py-12 px-5 lg:py-24 lg:px-10 flex flex-col lg:flex-row gap-12 items-center mx-auto`}
+          className={`${ComponentContent} py-12 lg:py-24 flex flex-col lg:flex-row gap-12 items-center mx-auto`}
         >
           <TitleSection
             title={title}
@@ -65,7 +65,7 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
         </div>
       ) : (
         <div
-          className={`${ComponentContent} py-12 px-5 lg:py-24 lg:px-10 flex flex-col gap-12 items-center mx-auto`}
+          className={`${ComponentContent} py-12 lg:py-24 flex flex-col gap-12 items-center mx-auto`}
         >
           <TitleSection title={title} subtitle={subtitle} />
           <div

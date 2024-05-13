@@ -68,7 +68,7 @@ const InfoCols = ({
   const bgColor = backgroundColor === "gray" ? "bg-gray-100" : "bg-white"
   return (
     <section className={bgColor}>
-      <div className={`${ComponentContent} py-24 px-8 sm:px-16 lg:px-24`}>
+      <div className={`${ComponentContent} py-24`}>
         <div className="flex flex-col gap-12">
           <InfoColsHeader title={title} subtitle={subtitle} />
           <InfoBoxes infoBoxes={infoBoxes} LinkComponent={LinkComponent} />

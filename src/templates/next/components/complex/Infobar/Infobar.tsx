@@ -15,7 +15,7 @@ const Infobar = ({
   return (
     <section>
       <div
-        className={`${ComponentContent} flex flex-col gap-12 items-center mx-auto text-center lg:max-w-3xl px-5 py-16 lg:py-24`}
+        className={`${ComponentContent} flex flex-col gap-12 items-center mx-auto text-center lg:max-w-3xl py-16 lg:py-24`}
       >
         <div className="flex flex-col gap-7">
           <h1 className="text-content text-4xl leading-tight font-semibold lg:text-5xl lg:leading-tight">

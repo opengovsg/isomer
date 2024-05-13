@@ -31,7 +31,7 @@ const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
   return (
     <section>
       <div
-        className={`${ComponentContent} flex flex-col px-5 py-12 xs:px-10 xs:py-24 gap-10 ${
+        className={`${ComponentContent} flex flex-col py-12 xs:py-24 gap-10 ${
           variant === "side" ? "lg:flex-row lg:gap-16" : ""
         }`}
       >
