@@ -7,7 +7,6 @@ import Heading from "../Heading"
 import Image from "../Image"
 import ListItem from "../ListItem"
 import OrderedList from "../OrderedList"
-import Paragraph from "../Paragraph"
 import Table from "../Table"
 import UnorderedList from "../UnorderedList"
 
