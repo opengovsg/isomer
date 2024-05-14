@@ -14,7 +14,7 @@ export const renderPageContent = ({
       isInfopicTextOnRight = !isInfopicTextOnRight
       const formattedComponent = {
         ...component,
-        isInfopicTextOnRight,
+        isTextOnRight: isInfopicTextOnRight,
       }
       return renderComponent({ component: formattedComponent, LinkComponent })
     }
