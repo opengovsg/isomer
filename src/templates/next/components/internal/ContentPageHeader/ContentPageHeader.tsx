@@ -3,6 +3,7 @@ import Button from "../../complex/Button"
 import Breadcrumb from "../Breadcrumb"
 import BaseParagraph from "../BaseParagraph"
 import { Paragraph } from "../../../typography/Paragraph"
+import { getFormattedDate } from "~/utils/getFormattedDate"
 
 const ContentPageHeader = ({
   title,
@@ -23,13 +24,7 @@ const ContentPageHeader = ({
           <h1 className="text-[2.75rem] leading-tight lg:text-[3.75rem] font-semibold text-content-strong">
             {title}
           </h1>
-          <div className="pt-6 lg:pb-2">{`Last updated ${new Date(
-            lastUpdated,
-          ).toLocaleDateString(undefined, {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })}`}</div>
+          <div className="pt-6 lg:pb-2">{`Last updated ${getFormattedDate(lastUpdated)}`}</div>
           <BaseParagraph
             content={summary}
             className={`text-content ${Paragraph[1]}`}
