@@ -6,6 +6,11 @@ export default {
   title: "Next/Components/Iframe",
   component: Iframe,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+  },
 } as Meta
 
 // Template for stories

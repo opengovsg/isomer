@@ -6,6 +6,11 @@ export default {
   title: "Classic/Components/InfoCols",
   component: InfoCols,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Classic",
+    },
+  },
 } as Meta
 
 // Template for stories

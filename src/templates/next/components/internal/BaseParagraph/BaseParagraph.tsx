@@ -10,7 +10,7 @@ export const BaseParagraph = ({
 
   return (
     <p
-      className={`[&:not(:first-child)]:mt-6 [&_a]:underline [&_a]:text-blue-500 hover:[&_a]:text-blue-700 visited:[&_a]:text-purple-600 after:[&_a[target*="blank"]]:content-['_↗'] ${className}`}
+      className={`[&:not(:first-child)]:mt-6 after:[&_a[target*="blank"]]:content-['_↗'] [&_a]:text-hyperlink [&_a]:underline visited:[&_a]:text-purple-600 hover:[&_a]:text-hyperlink-hover ${className}`}
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
       id={id}
     />

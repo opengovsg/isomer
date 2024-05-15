@@ -6,22 +6,92 @@ export default {
   title: "Next/Components/Paragraph",
   component: Paragraph,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+  },
 } as Meta
 
 // Template for stories
 const Template: StoryFn<ParagraphProps> = (args) => <Paragraph {...args} />
 
-// export const Default = Template.bind({})
-// Default.args = {
-//   content: `This is a paragraph of text. It can contain <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">external links</a> (and <a href="/contact">internal ones</a>), <code>code</code>, and line breaks. <br />
-//   We can also use <sub>subscript</sub> and <sup>superscript</sup> text.
-
-//   <p>This part is not on a new line because we do not allow paragraphs in paragraphs.</p><br />
-
-//   As usual, we can also use <b>bold</b>, <i>italic</i>, <u>underline</u>, and <s>strikethrough</s> text, but definitely not illegal content.
-
-//   <script>alert("This is a harmful script")</script>`,
-// }
+export const Default = Template.bind({})
+Default.args = {
+  content: [
+    {
+      type: "text",
+      text: "This is a paragraph of text. It can contain ",
+    },
+    {
+      type: "text",
+      marks: [
+        {
+          type: "link",
+          href: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        },
+      ],
+      text: "external links",
+    },
+    {
+      type: "text",
+      text: " (and ",
+    },
+    {
+      type: "text",
+      marks: [
+        {
+          type: "link",
+          href: "/contact",
+        },
+      ],
+      text: "internal ones",
+    },
+    {
+      type: "text",
+      text: "), ",
+    },
+    {
+      type: "text",
+      marks: [
+        {
+          type: "code",
+        },
+      ],
+      text: "code",
+    },
+    {
+      type: "text",
+      text: ", and line breaks. We can also use ",
+    },
+    {
+      type: "text",
+      marks: [
+        {
+          type: "subscript",
+        },
+      ],
+      text: "subscript",
+    },
+    {
+      type: "text",
+      text: " and ",
+    },
+    {
+      type: "text",
+      marks: [
+        {
+          type: "superscript",
+        },
+      ],
+      text: "superscript",
+    },
+    {
+      type: "text",
+      text: " text.",
+    },
+  ],
+}
 
 export const Simple = Template.bind({})
 Simple.args = {

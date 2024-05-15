@@ -7,6 +7,11 @@ export default {
   title: "Next/Components/Divider",
   component: Divider,
   argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+  },
 } as Meta
 
 // Template for stories
