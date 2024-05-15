@@ -198,7 +198,7 @@ const getPaginatedItems = (
 
 const updateAppliedFilters = (
   appliedFilters: AppliedFilter[],
-  setAppliedFilters: React.Dispatch<React.SetStateAction<AppliedFilter[]>>,
+  setAppliedFilters: (appliedFilters: AppliedFilter[]) => void,
   filterId: string,
   itemId: string,
 ) => {
