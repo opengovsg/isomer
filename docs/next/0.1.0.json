@@ -50,6 +50,9 @@
             "$ref": "#/components/complex/hero"
           },
           {
+            "$ref": "#/components/complex/iframe"
+          },
+          {
             "$ref": "#/components/complex/infobar"
           },
           {
@@ -556,6 +559,29 @@
             "$ref": "#/components/internal/hero-floatingimage"
           }
         ]
+      },
+      "iframe": {
+        "type": "object",
+        "title": "Iframe component",
+        "description": "The iframe component is used to embed a whitelisted external webpage within the current page.",
+        "required": ["type", "title", "content"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["iframe"],
+            "default": "iframe"
+          },
+          "title": {
+            "type": "string",
+            "title": "Iframe title",
+            "description": "The title of the iframe"
+          },
+          "content": {
+            "type": "string",
+            "title": "Iframe content",
+            "description": "The full iframe embed code to display, should only contain the <iframe> tag"
+          }
+        }
       },
       "infobar": {
         "type": "object",
