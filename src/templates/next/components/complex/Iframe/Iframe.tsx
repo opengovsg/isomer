@@ -1,5 +1,6 @@
 import type { IframeProps } from "~/interfaces"
 import { getSanitizedIframeWithTitle } from "~/utils"
+import { ComponentContent } from "../../internal/customCssClass"
 
 // Sets the appropriate padding for the iframe based on the URL
 // 56.25% is a 16:9 aspect ratio (16/9 * 100 = 56.25)
@@ -29,12 +30,14 @@ const Iframe = ({ title, content }: IframeProps) => {
   const iframeUrl = sanitizedIframe.getAttribute("src")
 
   return (
-    <div
-      className={`relative overflow-hidden w-full ${getPaddingForEmbed(
-        iframeUrl,
-      )}`}
-      dangerouslySetInnerHTML={{ __html: sanitizedIframe.outerHTML }}
-    />
+    <section className={ComponentContent}>
+      <div
+        className={`relative w-full overflow-hidden ${getPaddingForEmbed(
+          iframeUrl,
+        )}`}
+        dangerouslySetInnerHTML={{ __html: sanitizedIframe.outerHTML }}
+      />
+    </section>
   )
 }
 
