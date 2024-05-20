@@ -42,7 +42,7 @@ const ImageComponent = ({
       <img
         src={src}
         alt={alt}
-        className="h-full w-full object-cover object-center"
+        className="h-full w-full object-cover object-center object-center max-h-[22.5rem] lg:max-h-[38.75rem]"
       />
     </div>
   )
@@ -122,17 +122,16 @@ const SidePartInfoPic = ({
       {/* Desktop */}
       <div className="hidden lg:block">
         <div
-          className={`${ComponentContent} flex ${
-            isTextOnRight ? "flex-row" : "flex-row-reverse"
-          } gap-10`}
+          className={`flex ${isTextOnRight ? "flex-row" : "flex-row-reverse"}`}
         >
           <ImageComponent src={src} alt={alt} className="w-1/2" />
-          <div className="w-1/2 py-24 my-auto">
+          <div className="w-1/2 py-24 my-auto pl-10">
             <TextComponent
               title={title}
               description={description}
               buttonLabel={button}
               buttonUrl={url}
+              className="max-w-screen-sm"
             />
           </div>
         </div>
@@ -142,10 +141,10 @@ const SidePartInfoPic = ({
 }
 
 const InfoPic = (props: InfopicProps) => {
-  if (props.variant === "side-part") {
-    return <SidePartInfoPic {...props} />
+  if (props.variant === "side-by-side") {
+    return <SideBySideInfoPic {...props} />
   }
-  return <SideBySideInfoPic {...props} />
+  return <SidePartInfoPic {...props} />
 }
 
 export default InfoPic
