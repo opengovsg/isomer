@@ -67,7 +67,7 @@ const NavSection = ({
 }: Pick<FooterProps, "LinkComponent" | "siteNavItems" | "customNavItems">) => {
   return (
     <div
-      className={`flex flex-col gap-12 lg:flex-row lg:gap-16 ${Caption[1]}`}
+      className={`flex flex-col gap-8 lg:gap-12 lg:flex-row lg:gap-16 ${Caption[1]}`}
     >
       <div className="flex flex-col gap-3 lg:w-64">
         {siteNavItems.map((item) => (
@@ -185,7 +185,7 @@ const LegalSection = ({
   | "siteMapLink"
 >) => {
   return (
-    <div className="flex flex-col gap-8 lg:gap-2">
+    <div className="flex flex-col gap-4 lg:gap-2">
       <p className={`text-content-inverse-light ${Caption[1]}`}>
         &copy; {new Date().getFullYear()}{" "}
         {isGovernment ? "Government of Singapore" : agencyName}, last updated{" "}
@@ -230,7 +230,7 @@ const LegalSection = ({
 const CreditsSection = () => {
   return (
     <div
-      className={`flex flex-col gap-9 lg:flex-row lg:gap-8 xl:gap-20 ${Caption[1]}`}
+      className={`flex flex-col gap-6 lg:flex-row lg:gap-8 xl:gap-20 ${Caption[1]}`}
     >
       <a
         href="https://www.isomer.gov.sg"
@@ -271,7 +271,7 @@ const FooterMobile = ({
   siteMapLink,
 }: FooterProps) => {
   return (
-    <div className="flex flex-col gap-16 py-16 px-6 md:p-20 lg:hidden ">
+    <div className="flex flex-col gap-14 py-16 px-6 md:p-20 lg:hidden ">
       <SiteNameSection siteName={siteName} />
       <NavSection
         siteNavItems={navItems}
