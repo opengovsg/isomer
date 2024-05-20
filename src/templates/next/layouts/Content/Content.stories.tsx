@@ -1054,6 +1054,7 @@ NoTable.args = {
   page: {
     permalink: "/parent/rationality",
     title: "Content page",
+    lastModified: "2024-05-02T14:12:57.160Z",
     description: "A Next.js starter for Isomer",
     contentPageHeader: {
       summary:
@@ -1404,6 +1405,7 @@ SmallTable.args = {
   page: {
     permalink: "/parent/rationality",
     title: "Content page",
+    lastModified: "2024-05-02T14:12:57.160Z",
     description: "A Next.js starter for Isomer",
     contentPageHeader: {
       summary:

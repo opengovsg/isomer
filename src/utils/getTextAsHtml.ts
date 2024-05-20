@@ -22,19 +22,20 @@ export const getTextAsHtml = (content: TextProps[]) => {
       }
 
       let output = node.text
+      if (node.marks) {
+        node.marks.forEach((mark) => {
+          if (mark.type === "link") {
+            output = `<${MARK_DOM_MAPPING[mark.type]} href="${
+              mark.href
+            }">${output}</${MARK_DOM_MAPPING[mark.type]}>`
+            return
+          }
 
-      node.marks.forEach((mark) => {
-        if (mark.type === "link") {
-          output = `<${MARK_DOM_MAPPING[mark.type]} href="${
-            mark.href
-          }">${output}</${MARK_DOM_MAPPING[mark.type]}>`
-          return
-        }
-
-        output = `<${MARK_DOM_MAPPING[mark.type]}>${output}</${
-          MARK_DOM_MAPPING[mark.type]
-        }>`
-      })
+          output = `<${MARK_DOM_MAPPING[mark.type]}>${output}</${
+            MARK_DOM_MAPPING[mark.type]
+          }>`
+        })
+      }
 
       return output
     })

@@ -112,6 +112,7 @@ const ContentLayout = ({
         title={page.title}
         breadcrumb={breadcrumb}
         LinkComponent={LinkComponent}
+        lastUpdated={page.lastModified}
       />
       <div className="flex gap-[120px] px-6 md:px-10 py-16 max-w-container mx-auto justify-center">
         {sideRail && (
@@ -120,7 +121,7 @@ const ContentLayout = ({
           </div>
         )}
         <div className="flex flex-col gap-[90px] overflow-x-auto w-full max-w-[800px]">
-          {tableOfContents.items.length > 0 && (
+          {tableOfContents.items.length > 1 && (
             <TableOfContents {...tableOfContents} />
           )}
           <div>{renderPageContent({ content, LinkComponent })}</div>
