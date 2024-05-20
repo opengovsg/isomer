@@ -3,7 +3,7 @@ import Button from "../../complex/Button"
 import Breadcrumb from "../Breadcrumb"
 import BaseParagraph from "../BaseParagraph"
 import { Paragraph } from "../../../typography/Paragraph"
-import { getFormattedDate } from "~/utils/getFormattedDate"
+import { getFormattedDate } from "~/utils"
 
 const ContentPageHeader = ({
   title,
