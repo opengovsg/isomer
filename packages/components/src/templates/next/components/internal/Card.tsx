@@ -31,11 +31,13 @@ const TextComponent = ({
   text,
   buttonLabel,
   className,
+  url,
 }: {
   text: SingleCardProps["description"]
   title: SingleCardProps["title"]
   buttonLabel: SingleCardProps["buttonLabel"]
   className?: string
+  url: string
 }) => {
   return (
     <div
@@ -43,19 +45,30 @@ const TextComponent = ({
     >
       <div className="flex flex-col gap-3">
         {title && (
-          <h4 className="text-heading-04 text-content-strong">{title}</h4>
+          <h4 className="text-heading-04 text-content-strong line-clamp-2">
+            {title}
+          </h4>
         )}
         {text && (
-          <p className="grow text-left text-base text-content sm:text-lg">
+          <p className="text-content line-clamp-4 grow text-left text-base sm:text-lg">
             {text}
           </p>
         )}
       </div>
       {buttonLabel && (
-        <div className="flex items-center gap-1">
-          <p className="text-button-link-01 text-interaction-link">
+        <div className={`flex items-center gap-1`}>
+          <a
+            href={url}
+            target={url.startsWith("http") ? "_blank" : undefined}
+            rel={
+              url.startsWith("http")
+                ? "noopener noreferrer nofollow"
+                : undefined
+            }
+            className="text-interaction-link text-button-link-01 after:absolute after:inset-0"
+          >
             {buttonLabel}
-          </p>
+          </a>
           <BiRightArrowAlt className="h-auto w-6 flex-shrink-0" />
         </div>
       )}
@@ -74,13 +87,10 @@ const Card = ({
   variant,
 }: CardProps) => {
   return (
-    <a
-      className={`flex ${
+    <div
+      className={`relative flex ${
         variant === "horizontal" ? "flex-row" : "flex-col"
-      }  gap-1 border border-divider-medium ${className}`}
-      href={url}
-      target={url.startsWith("http") ? "_blank" : undefined}
-      rel={url.startsWith("http") ? "noopener noreferrer nofollow" : undefined}
+      }  border-divider-medium gap-1 rounded-md border hover:opacity-90 ${className}`}
     >
       {variant === "horizontal" ? (
         <>
@@ -94,6 +104,7 @@ const Card = ({
             title={title}
             buttonLabel={buttonLabel}
             className="h-full w-1/2"
+            url={url}
           />
         </>
       ) : (
@@ -103,10 +114,15 @@ const Card = ({
             alt={imageAlt || title}
             className="h-52"
           />
-          <TextComponent text={text} title={title} buttonLabel={buttonLabel} />
+          <TextComponent
+            text={text}
+            title={title}
+            buttonLabel={buttonLabel}
+            url={url}
+          />
         </>
       )}
-    </a>
+    </div>
   )
 }
 
