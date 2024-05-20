@@ -29,7 +29,53 @@ Default.args = {
       lastModified: "",
       layout: "homepage",
       summary: "",
-      children: [],
+      children: [
+        {
+          title: "Publications and other press releases",
+          permalink: "/publications",
+          lastModified: "",
+          layout: "collection",
+          summary: "",
+          children: [
+            {
+              title: "This is a publication title that is really long because",
+              permalink: "/publications/item-one",
+              lastModified: "",
+              layout: "article",
+              summary:
+                "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year.",
+              date: "2024-05-07",
+              category: "Category Name",
+            },
+            {
+              title: "Isomer hero banner",
+              permalink: "/publications/item-two",
+              lastModified: "",
+              layout: "file",
+              summary:
+                "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
+              date: "2024-05-07",
+              category: "Category Name",
+              ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
+              fileDetails: {
+                type: "png",
+                size: "1.2MB",
+              },
+            },
+            {
+              title: "Isomer guide",
+              permalink: "/publications/item-three",
+              lastModified: "",
+              layout: "link",
+              summary:
+                "Have a look at the Isomer guide to understand how to use the Isomer CMS.",
+              date: "2023-08-12",
+              category: "Category Name",
+              ref: "https://guide.isomer.gov.sg",
+            },
+          ],
+        },
+      ],
     },
     theme: "isomer-next",
     isGovernment: true,

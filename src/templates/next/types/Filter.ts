@@ -14,6 +14,12 @@ interface AppliedFilterItem {
   id: FilterItem["id"]
 }
 
+export interface AppliedFiltersWithLabel {
+  appliedFilterTypeId: Filter["id"]
+  appliedFilterId: FilterItem["id"]
+  label: FilterItem["label"]
+}
+
 export interface AppliedFilter {
   id: Filter["id"]
   items: AppliedFilterItem[]
@@ -22,7 +28,7 @@ export interface AppliedFilter {
 export interface FilterProps {
   filters: Filter[]
   appliedFilters: AppliedFilter[]
-  setAppliedFilters: (filters: AppliedFilter[]) => void
+  setAppliedFilters: (filterId: string, itemId: string) => void
 }
 
 export default FilterProps

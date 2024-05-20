@@ -35,6 +35,7 @@ export default {
         },
         divider: {
           medium: "#d0d0d0",
+          strong: "#484848",
           subtle: "#f2f2f2",
         },
         utility: {
@@ -85,6 +86,9 @@ export default {
       },
       spacing: {
         container: "1240px",
+      },
+      boxShadow: {
+        sm: "0 0px 10px 0px rgba(191, 191, 191, 0.5)",
       },
     },
   },
