@@ -26,7 +26,8 @@ Default.args = {
   variant: "top",
   cards: [
     {
-      title: "Testing for a card with a long line length that spans across two lines or more",
+      title:
+        "Testing for a card with a long line length that spans across two lines or more",
       description:
         "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
       imageUrl: "https://placehold.co/200x300",
@@ -37,7 +38,7 @@ Default.args = {
     {
       title: "Card with short title",
       description:
-      "In the labyrinthine expanse of Zandoria, an enigmatic government wields authority through a web of intricate bureaucracy and omnipresent surveillance, shaping the lives of its denizens with meticulous precision and unyielding control.",
+        "In the labyrinthine expanse of Zandoria, an enigmatic government wields authority through a web of intricate bureaucracy and omnipresent surveillance, shaping the lives of its denizens with meticulous precision and unyielding control.",
       imageUrl: "https://placehold.co/200x300",
       imageAlt: "alt text",
       buttonLabel: "Explore with us",
@@ -46,7 +47,7 @@ Default.args = {
     {
       title: "Committee of Supply (COS) 2024",
       description:
-      "In the kingdom of Veridonia, the government operates as a benevolent monarchy, guided by ancient traditions and the wisdom of its sovereign. Its policies prioritize the welfare of its subjects, fostering prosperity and unity throughout the realm.",
+        "In the kingdom of Veridonia, the government operates as a benevolent monarchy, guided by ancient traditions and the wisdom of its sovereign. Its policies prioritize the welfare of its subjects, fostering prosperity and unity throughout the realm.",
       imageUrl: "https://placehold.co/200x300",
       imageAlt: "alt text",
       buttonLabel: "Explore with us",
