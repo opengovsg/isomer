@@ -21,18 +21,18 @@ const HeroGradient = ({
 }: HeroGradientProps) => {
   return (
     <section
-      className="min-h-[15rem] bg-cover bg-center bg-no-repeat sm:min-h-[22.5rem] md:min-h-[31.25rem]"
+      className="flex min-h-[15rem] bg-cover bg-center bg-no-repeat sm:min-h-[22.5rem] md:min-h-[31.25rem]"
       style={{
         backgroundImage: `url('${backgroundUrl}')`,
       }}
     >
       <div
-        className={`h-full w-full ${
+        className={`w-full content-end ${
           alignment === "left" ? "bg-gradient-to-r" : "bg-gradient-to-l"
         } from-[rgba(0,0,0,85%)] md:from-[rgba(0,0,0,75%)] xl:from-[rgba(0,0,0,65%)]`}
       >
         <div
-          className={`${ComponentContent} flex h-full flex-row items-end p-10 text-white ${
+          className={`${ComponentContent} flex flex-row items-end p-10 text-white ${
             alignment === "left" ? "justify-start" : "justify-end"
           } ${alignment === "left" ? "text-start" : "text-end"}`}
         >
@@ -88,9 +88,9 @@ const HeroSplit = ({
           alignment === "left" ? "flex-row" : "flex-row-reverse"
         }`}
       >
-        <div className={`h-full w-1/2 ${bgColor}`}>
+        <div className={`w-1/2 ${bgColor} content-end`}>
           <div
-            className={`flex h-full flex-row items-center p-10 ${
+            className={`flex flex-row items-center p-10 ${
               alignment === "left"
                 ? "justify-start text-start"
                 : "justify-end text-end"
@@ -123,7 +123,7 @@ const HeroSplit = ({
             </div>
           </div>
         </div>
-        <div className="h-full w-1/2">
+        <div className="w-1/2">
           <div
             className="h-full bg-cover bg-center bg-no-repeat"
             style={{
@@ -163,9 +163,9 @@ const HeroFloating = ({
   const textColor = backgroundColor === "black" ? "text-white" : "text-black"
 
   return (
-    <section className="min-h-[15rem] sm:min-h-[22.5rem] md:min-h-[31.25rem]">
+    <section className="flex min-h-[15rem] sm:min-h-[22.5rem] md:min-h-[31.25rem]">
       <div
-        className="h-full bg-cover bg-center bg-no-repeat"
+        className="w-full bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url('${backgroundUrl}')`,
         }}
@@ -222,7 +222,7 @@ const HeroCopyLed = ({
   backgroundUrl,
 }: Omit<HeroCopyLedProps, "variant">) => {
   return (
-    <section className="min-h-[15rem] sm:min-h-[22.5rem] md:min-h-[31.25rem]">
+    <section className="h-px min-h-[15rem] sm:min-h-[22.5rem] md:min-h-[31.25rem]">
       <div className="flex w-full flex-row justify-center bg-site-primary-200">
         <div
           className={`${ComponentContent} flex w-4/5 flex-col items-center gap-6 py-16 text-center md:items-start md:text-start lg:w-3/4`}
