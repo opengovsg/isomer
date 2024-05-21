@@ -1,6 +1,5 @@
 import type { InfoCardsProps } from "~/interfaces"
 import Card from "../../internal/Card"
-import { Heading } from "../../../typography/Heading"
 import { ComponentContent } from "../../internal/customCssClass"
 
 const TitleSection = ({
@@ -13,10 +12,10 @@ const TitleSection = ({
   className?: string
 }) => {
   return (
-    <div className={`flex flex-col gap-8 self-start max-w-3xl ${className}`}>
-      <h3 className={`${Heading[3]} text-content-strong`}>{title}</h3>
+    <div className={`flex max-w-3xl flex-col gap-8 self-start ${className}`}>
+      <h3 className="text-heading-03 text-content-strong">{title}</h3>
       {subtitle && (
-        <p className="text-content text-sm sm:text-lg">{subtitle}</p>
+        <p className="text-sm text-content sm:text-lg">{subtitle}</p>
       )}
     </div>
   )
@@ -27,7 +26,7 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
     <section>
       {variant === "side" ? (
         <div
-          className={`${ComponentContent} py-12 lg:py-24 flex flex-col lg:flex-row gap-12 items-center mx-auto`}
+          className={`${ComponentContent} mx-auto flex flex-col items-center gap-12 py-12 lg:flex-row lg:py-24`}
         >
           <TitleSection
             title={title}
@@ -35,7 +34,7 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
             className="lg:max-w-60"
           />
           <div
-            className={`grid grid-cols-1 lg:grid-cols-3 gap-8 md:max-lg:hidden`}
+            className={`grid grid-cols-1 gap-8 md:max-lg:hidden lg:grid-cols-3`}
           >
             {cards.map((card) => (
               <Card
@@ -46,7 +45,7 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
                 imageAlt={card.imageAlt}
                 buttonLabel={card.buttonLabel}
                 variant="vertical"
-              ></Card>
+              />
             ))}
           </div>
           <div className={`hidden grid-cols-1 gap-8 md:max-lg:grid`}>
@@ -59,17 +58,17 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
                 imageAlt={card.imageAlt}
                 buttonLabel={card.buttonLabel}
                 variant="horizontal"
-              ></Card>
+              />
             ))}
           </div>
         </div>
       ) : (
         <div
-          className={`${ComponentContent} py-12 lg:py-24 flex flex-col gap-12 items-center mx-auto`}
+          className={`${ComponentContent} mx-auto flex flex-col items-center gap-12 py-12 lg:py-24`}
         >
           <TitleSection title={title} subtitle={subtitle} />
           <div
-            className={`grid grid-cols-1 lg:grid-cols-3 gap-8 sm:max-lg:hidden`}
+            className={`grid grid-cols-1 gap-8 sm:max-lg:hidden lg:grid-cols-3`}
           >
             {cards.map((card) => (
               <Card

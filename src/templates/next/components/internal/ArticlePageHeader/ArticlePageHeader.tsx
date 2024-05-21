@@ -1,7 +1,6 @@
 import type { ArticlePageHeaderProps } from "~/interfaces"
-import Breadcrumb from "../Breadcrumb"
 import BaseParagraph from "../BaseParagraph"
-import { Paragraph } from "../../../typography/Paragraph"
+import Breadcrumb from "../Breadcrumb"
 
 const ArticlePageHeader = ({
   breadcrumb,
@@ -12,15 +11,15 @@ const ArticlePageHeader = ({
   LinkComponent,
 }: ArticlePageHeaderProps) => {
   return (
-    <div className="max-w-[960px] w-full mx-auto">
+    <div className="mx-auto w-full max-w-[960px]">
       <div className="my-8 lg:my-16">
         <Breadcrumb links={breadcrumb.links} LinkComponent={LinkComponent} />
       </div>
 
       <div className="mb-3 text-lg text-content-medium">{category}</div>
 
-      <div className="flex flex-col gap-9 max-w-[660px]">
-        <h1 className="text-[2.375rem] leading-[2.75rem] lg:text-5xl lg:leading-[3.625rem] font-semibold text-content-strong">
+      <div className="flex max-w-[660px] flex-col gap-9">
+        <h1 className="text-[2.375rem] font-semibold leading-[2.75rem] text-content-strong lg:text-5xl lg:leading-[3.625rem]">
           {title}
         </h1>
 
@@ -30,15 +29,15 @@ const ArticlePageHeader = ({
           {summary.length === 1 ? (
             <BaseParagraph
               content={summary[0]}
-              className={`text-content ${Paragraph[1]}`}
+              className="text-paragraph-01 text-content"
             />
           ) : (
             <ul className="list-disc ps-7">
               {summary.map((item) => (
-                <li key={Math.random()} className="[&_p]:inline pl-0.5">
+                <li key={Math.random()} className="pl-0.5 [&_p]:inline">
                   <BaseParagraph
                     content={item}
-                    className={`text-content ${Paragraph[1]}`}
+                    className="text-paragraph-01 text-content"
                   />
                 </li>
               ))}

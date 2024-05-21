@@ -17,8 +17,6 @@ import type {
   AppliedFiltersWithLabel,
   Filter as FilterType,
 } from "../../types/Filter"
-import { Heading } from "../../typography/Heading"
-import { Paragraph } from "../../typography/Paragraph"
 
 interface CollectionClientProps {
   page: CollectionPageSchema["page"]
@@ -262,17 +260,15 @@ const CollectionClient = ({
   )
 
   return (
-    <div className="max-w-container flex flex-col gap-16 mx-auto my-20 px-6 md:px-10 py-16 items-center">
-      <div className="flex flex-col gap-12 w-full">
-        <h1
-          className={`flex flex-col gap-16 text-content-strong ${Heading[1]}`}
-        >
+    <div className="mx-auto my-20 flex max-w-container flex-col items-center gap-16 px-6 py-16 md:px-10">
+      <div className="flex w-full flex-col gap-12">
+        <h1 className="text-heading-01 flex flex-col gap-16 text-content-strong">
           {title}
         </h1>
-        <p className={`${Paragraph[1]} text-content`}>{subtitle}</p>
+        <p className="text-paragraph-01 text-content">{subtitle}</p>
       </div>
 
-      <div className="w-full sm:w-3/4 mx-auto">
+      <div className="mx-auto w-full sm:w-3/4">
         <CollectionSearch
           placeholder={`Search for ${page.title.toLowerCase()}`}
           search={searchValue}
@@ -280,7 +276,7 @@ const CollectionClient = ({
         />
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-10 justify-between w-full">
+      <div className="flex w-full flex-col justify-between gap-10 lg:flex-row">
         <div className="w-full lg:w-1/5 xl:w-1/6">
           <Filter
             filters={filters}
@@ -295,10 +291,10 @@ const CollectionClient = ({
             }
           />
         </div>
-        <div className="flex flex-col gap-6 w-full lg:w-4/5 xl:w-5/6">
-          <div className="flex flex-wrap sm:flex-nowrap justify-between w-full items-start gap-6">
-            <div className="flex flex-col gap-3 w-full h-full">
-              <p className={`${Paragraph[1]} text-content mt-auto`}>
+        <div className="flex w-full flex-col gap-6 lg:w-4/5 xl:w-5/6">
+          <div className="flex w-full flex-wrap items-start justify-between gap-6 sm:flex-nowrap">
+            <div className="flex h-full w-full flex-col gap-3">
+              <p className="text-paragraph-01 mt-auto text-content">
                 {appliedFilters.length > 0 || searchValue !== ""
                   ? `${filteredItems.length} search ${
                       filteredItems.length === 1 ? "result" : "results"
@@ -335,7 +331,7 @@ const CollectionClient = ({
                 </div>
               )}
             </div>
-            <div className="w-full sm:w-[260px] shrink-0">
+            <div className="w-full shrink-0 sm:w-[260px]">
               <CollectionSort
                 sortBy={sortBy}
                 setSortBy={setSortBy}
@@ -344,7 +340,7 @@ const CollectionClient = ({
               />
             </div>
           </div>
-          <div className="flex flex-col gap-0 h-full w-full">
+          <div className="flex h-full w-full flex-col gap-0">
             {paginatedItems.length > 0 &&
               paginatedItems.map((item) => (
                 <CollectionCard
@@ -355,12 +351,12 @@ const CollectionClient = ({
               ))}
 
             {paginatedItems.length === 0 && searchValue !== "" && (
-              <div className="m-auto text-center flex flex-col gap-3">
-                <p className={`${Paragraph["1"]}`}>
+              <div className="m-auto flex flex-col gap-3 text-center">
+                <p className="text-paragraph-01">
                   We couldn’t find articles that match your search.
                 </p>
                 <button
-                  className="w-fit mx-auto text-hyperlink hover:text-hyperlink-hover text-lg font-semibold"
+                  className="mx-auto w-fit text-lg font-semibold text-hyperlink hover:text-hyperlink-hover"
                   onClick={() => {
                     setSearchValue("")
                     setAppliedFilters([])
@@ -372,8 +368,8 @@ const CollectionClient = ({
             )}
 
             {items.length === 0 && (
-              <div className="m-auto text-center flex flex-col gap-3">
-                <p className={`${Paragraph["1"]}`}>
+              <div className="m-auto flex flex-col gap-3 text-center">
+                <p className="text-paragraph-01">
                   There are no items in this collection.
                 </p>
               </div>
@@ -384,7 +380,7 @@ const CollectionClient = ({
 
       {paginatedItems.length > 0 && (
         <div className="w-full">
-          <div className="sm:max-w-96 sm:ml-auto">
+          <div className="sm:ml-auto sm:max-w-96">
             <Pagination
               totalItems={filteredItems.length}
               itemsPerPage={ITEMS_PER_PAGE}

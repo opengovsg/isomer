@@ -3,8 +3,6 @@
 import { useState } from "react"
 import { BiChevronDown } from "react-icons/bi"
 import type { FilterProps } from "../../../types/Filter"
-import { Heading } from "../../../typography/Heading"
-import { Paragraph } from "../../../typography/Paragraph"
 
 const Filter = ({
   filters,
@@ -21,14 +19,14 @@ const Filter = ({
 
   return (
     <div className="flex flex-col divide-y divide-divider-medium last:border-b last:border-b-divider-medium">
-      <h5 className={`${Heading[5]} text-content py-4`}>Filter by</h5>
+      <h5 className="text-heading-05 py-4 text-content">Filter by</h5>
       {filters.map(({ id, label, items }) => (
         <div className="py-4" key={id}>
           <button
-            className="flex flex-row w-full"
+            className="flex w-full flex-row"
             onClick={() => updateFilterToggle(id)}
           >
-            <h5 className={`${Paragraph["1"]} font-medium text-content-medium`}>
+            <h5 className="text-paragraph-01 font-medium text-content-medium">
               {label}
             </h5>
             <div className="flex-1"></div>
@@ -40,7 +38,7 @@ const Filter = ({
           </button>
 
           <div
-            className={`flex flex-col w-full pt-4 gap-3 text-content-medium ${
+            className={`flex w-full flex-col gap-3 pt-4 text-content-medium ${
               showFilter[id] ? "block" : "hidden"
             }`}
           >
@@ -48,11 +46,11 @@ const Filter = ({
               <label
                 key={itemId}
                 htmlFor={itemId}
-                className="flex flex-row align-middle w-full px-1 py-2 rounded hover:bg-interaction-main-subtle-hover has-[:focus]:ring-2 has-[:focus]:ring-focus-outline"
+                className="flex w-full flex-row rounded px-1 py-2 align-middle hover:bg-interaction-main-subtle-hover has-[:focus]:ring-2 has-[:focus]:ring-focus-outline"
               >
                 <input
                   type="checkbox"
-                  className="h-6 w-6 rounded border-2 border-divider-medium text-interaction-main group-focus:ring-2 group-focus:ring-focus-outline focus:ring-0"
+                  className="h-6 w-6 rounded border-2 border-divider-medium text-interaction-main focus:ring-0 group-focus:ring-2 group-focus:ring-focus-outline"
                   id={itemId}
                   name={itemId}
                   checked={
@@ -62,9 +60,7 @@ const Filter = ({
                   }
                   onChange={() => setAppliedFilters(id, itemId)}
                 />
-                <p
-                  className={`${Paragraph["2"]} ml-4 inline-block break-words`}
-                >
+                <p className="text-paragraph-02 ml-4 inline-block break-words">
                   {itemLabel} ({count.toLocaleString()})
                 </p>
               </label>

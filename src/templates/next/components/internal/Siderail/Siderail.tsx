@@ -1,11 +1,9 @@
 "use client"
 
-import { BiLeftArrowAlt } from "react-icons/bi"
-import type { SiderailProps } from "~/interfaces"
-import { Heading } from "../../../typography/Heading"
-import { Paragraph } from "../../../typography/Paragraph"
 import { useState } from "react"
-import { MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md"
+import { BiLeftArrowAlt } from "react-icons/bi"
+import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md"
+import type { SiderailProps } from "~/interfaces"
 
 const SiderailMobile = ({
   parentTitle,
@@ -14,21 +12,21 @@ const SiderailMobile = ({
 }: Omit<SiderailProps, "type">) => {
   const [isExpanded, setIsExpanded] = useState(false)
   return (
-    <div className="lg:hidden relative">
+    <div className="relative lg:hidden">
       <button
-        className="w-full flex gap-2 px-5 py-4 justify-between items-center border-b-2 border-black"
+        className="flex w-full items-center justify-between gap-2 border-b-2 border-black px-5 py-4"
         onClick={() => setIsExpanded(!isExpanded)}
         aria-label={`${
           isExpanded ? "Collapse" : "Expand"
         } local navigation menu`}
       >
-        <h4 className={`${Heading["4-medium"]} text-content-strong`}>
+        <h4 className="text-heading-04-medium text-content-strong">
           {parentTitle}
         </h4>
         {isExpanded ? (
-          <MdKeyboardArrowUp className="w-6 h-auto flex-shrink-0" />
+          <MdKeyboardArrowUp className="h-auto w-6 flex-shrink-0" />
         ) : (
-          <MdKeyboardArrowDown className="w-6 h-auto flex-shrink-0" />
+          <MdKeyboardArrowDown className="h-auto w-6 flex-shrink-0" />
         )}
       </button>
 
@@ -37,15 +35,15 @@ const SiderailMobile = ({
           {pages.map(({ url, title, isCurrent, childPages }) => {
             return (
               <li
-                className={`border-b border-divider-medium ${Paragraph[3]} text-content`}
+                className="text-paragraph-03 border-b border-divider-medium text-content"
                 aria-current={isCurrent ? "page" : undefined}
               >
                 {isCurrent ? (
-                  <p className="font-bold block py-4 px-5">{title}</p>
+                  <p className="block px-5 py-4 font-bold">{title}</p>
                 ) : (
                   <LinkComponent
                     href={url}
-                    className="block py-4 px-5 hover:bg-interaction-sub active:underline active:underline-offset-2"
+                    className="block px-5 py-4 hover:bg-interaction-sub active:underline active:underline-offset-2"
                   >
                     {title}
                   </LinkComponent>
@@ -84,13 +82,13 @@ const SiderailDesktop = ({
   LinkComponent = "a",
 }: Omit<SiderailProps, "type">) => {
   return (
-    <div className="hidden lg:flex flex-col w-full">
+    <div className="hidden w-full flex-col lg:flex">
       <LinkComponent
         href={parentUrl}
-        className="flex gap-2 items-start pb-2 border-b-2 border-black"
+        className="flex items-start gap-2 border-b-2 border-black pb-2"
       >
-        <BiLeftArrowAlt className="w-6 h-9 flex-shrink-0" />
-        <h4 className={`${Heading["4-medium"]} text-content-strong`}>
+        <BiLeftArrowAlt className="h-9 w-6 flex-shrink-0" />
+        <h4 className="text-heading-04-medium text-content-strong">
           {parentTitle}
         </h4>
       </LinkComponent>
@@ -99,17 +97,17 @@ const SiderailDesktop = ({
         {pages.map(({ url, title, isCurrent, childPages }, index) => {
           return (
             <li
-              className={`${Paragraph[3]} ${
+              className={`text-paragraph-03 ${
                 index !== pages.length - 1 && "border-b border-divider-medium"
               } text-content`}
               aria-current={isCurrent ? "page" : undefined}
             >
               {isCurrent ? (
-                <p className="font-bold block py-3 px-2">{title}</p>
+                <p className="block px-2 py-3 font-bold">{title}</p>
               ) : (
                 <LinkComponent
                   href={url}
-                  className="block py-3 px-2 hover:bg-interaction-sub active:underline active:underline-offset-2"
+                  className="block px-2 py-3 hover:bg-interaction-sub active:underline active:underline-offset-2"
                 >
                   <p className="">{title}</p>
                 </LinkComponent>

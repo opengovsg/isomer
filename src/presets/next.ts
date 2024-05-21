@@ -2,6 +2,9 @@
 export default {
   theme: {
     extend: {
+      boxShadow: {
+        sm: "0 0px 10px 0px rgba(191, 191, 191, 0.5)",
+      },
       colors: {
         canvas: {
           DEFAULT: "#ffffff",
@@ -86,9 +89,6 @@ export default {
       },
       spacing: {
         container: "1240px",
-      },
-      boxShadow: {
-        sm: "0 0px 10px 0px rgba(191, 191, 191, 0.5)",
       },
     },
   },

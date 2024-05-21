@@ -1,6 +1,5 @@
 import type { ProseProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
-import { Paragraph as ParagraphStyles } from "../../../typography/Paragraph"
 import BaseParagraph from "../../internal/BaseParagraph"
 import Divider from "../Divider"
 import Heading from "../Heading"
@@ -29,7 +28,7 @@ const Prose = ({ content }: ProseProps) => {
             <BaseParagraph
               key={index}
               content={getTextAsHtml(component.content)}
-              className={`text-content ${ParagraphStyles[1]}`}
+              className="text-paragraph-01 text-content"
             />
           )
         } else if (component.type === "table") {
