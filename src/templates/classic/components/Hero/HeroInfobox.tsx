@@ -83,22 +83,22 @@ export const HeroInfoboxDesktop = ({
             variant === "side" ? "w-full max-w-xl" : null
           } self-${alignment === "right" ? "start" : "end"}`}
         >
-          <div className="flex flex-col mb-8">
+          <div className="mb-8 flex flex-col">
             <h1
-              className={`mb-4 text-[2.75rem] lg:text-5xl not-italic font-bold leading-[3.5rem] -tracking-[0.0605rem] lg:-tracking-[0.066rem] ${textColor[backgroundColor]}`}
+              className={`mb-4 text-[2.75rem] font-bold not-italic leading-[3.5rem] -tracking-[0.0605rem] lg:text-5xl lg:-tracking-[0.066rem] ${textColor[backgroundColor]}`}
             >
               {title}
             </h1>
             {subtitle && (
               <p
-                className={`hidden lg:block text-lg not-italic font-normal ${textColor[backgroundColor]}`}
+                className={`hidden text-lg font-normal not-italic lg:block ${textColor[backgroundColor]}`}
               >
                 {subtitle}
               </p>
             )}
           </div>
           {dropdown && !buttonLabel && !buttonUrl && (
-            <div className="flex w-full justify-center content-center">
+            <div className="flex w-full content-center justify-center">
               <HeroDropdown {...dropdown} />
             </div>
           )}
@@ -113,7 +113,7 @@ export const HeroInfoboxDesktop = ({
                     : ""
                 }
                 target={buttonUrl.startsWith("http") ? "_blank" : ""}
-                className={`${BP_BUTTON_CLASSES} bg-site-secondary text-content-inverse border-transparent uppercase px-6 py-[7px] text-base tracking-wider font-semibold h-[2.4rem]`}
+                className={`${BP_BUTTON_CLASSES} tracking-wider h-[2.4rem] border-transparent bg-site-secondary px-6 py-[7px] text-base font-semibold uppercase text-content-inverse`}
               >
                 {buttonLabel}
               </a>
@@ -144,7 +144,7 @@ export const HeroInfoboxTablet = ({
         <div className="flex flex-col">
           <div className="mb-8">
             <h1
-              className={`mb-4 text-[2.75rem] lg:text-5xl not-italic font-bold leading-[3.5rem] -tracking-[0.0605rem] lg:-tracking-[0.066rem] ${textColor[backgroundColor]}`}
+              className={`mb-4 text-[2.75rem] font-bold not-italic leading-[3.5rem] -tracking-[0.0605rem] lg:text-5xl lg:-tracking-[0.066rem] ${textColor[backgroundColor]}`}
             >
               {title}
             </h1>
@@ -168,7 +168,7 @@ export const HeroInfoboxTablet = ({
                       : ""
                   }
                   target={buttonUrl.startsWith("http") ? "_blank" : ""}
-                  className={`${BP_BUTTON_CLASSES} bg-site-secondary text-content-inverse border-transparent uppercase px-6 py-[7px] text-base tracking-wider font-semibold h-[2.4rem]`}
+                  className={`${BP_BUTTON_CLASSES} tracking-wider h-[2.4rem] border-transparent bg-site-secondary px-6 py-[7px] text-base font-semibold uppercase text-content-inverse`}
                 >
                   {buttonLabel}
                 </a>
@@ -189,13 +189,13 @@ export const HeroInfoboxMobile = ({
   dropdown,
 }: HeroInfoboxProps) => {
   return (
-    <div className="mb-0 m-auto items-center px-12 py-[6.625rem]">
+    <div className="m-auto mb-0 items-center px-12 py-[6.625rem]">
       <div
-        className={`flex flex-col flex-none py-8 px-12 m-auto items-center w-3/4 min-w-96 ${bgColor[backgroundColor]}`}
+        className={`m-auto flex w-3/4 min-w-96 flex-none flex-col items-center px-12 py-8 ${bgColor[backgroundColor]}`}
       >
         <div className="mb-8 text-center">
           <h1
-            className={`mb-4 text-[2.75rem] lg:text-5xl not-italic font-bold leading-[3.5rem] -tracking-[0.0605rem] lg:-tracking-[0.066rem] ${textColor[backgroundColor]}`}
+            className={`mb-4 text-[2.75rem] font-bold not-italic leading-[3.5rem] -tracking-[0.0605rem] lg:text-5xl lg:-tracking-[0.066rem] ${textColor[backgroundColor]}`}
           >
             {title}
           </h1>
@@ -213,7 +213,7 @@ export const HeroInfoboxMobile = ({
                     : ""
                 }
                 target={buttonUrl.startsWith("http") ? "_blank" : ""}
-                className={`${BP_BUTTON_CLASSES} bg-site-secondary text-content-inverse border-transparent uppercase px-6 py-[7px] text-base tracking-wider font-semibold h-[2.4rem]`}
+                className={`${BP_BUTTON_CLASSES} tracking-wider h-[2.4rem] border-transparent bg-site-secondary px-6 py-[7px] text-base font-semibold uppercase text-content-inverse`}
               >
                 {buttonLabel}
               </a>

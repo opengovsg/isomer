@@ -9,10 +9,10 @@ const Breadcrumb = ({ links, LinkComponent = "a" }: BreadcrumbProps) => {
         return (
           <div
             key={index}
-            className="flex flex-row gap-1 items-center text-content-medium"
+            className="flex flex-row items-center gap-1 text-content-medium"
           >
             {isCurr ? (
-              <p className="text-content font-semibold">{link.title}</p>
+              <p className="font-semibold text-content">{link.title}</p>
             ) : (
               <LinkComponent
                 href={link.url}
@@ -21,7 +21,7 @@ const Breadcrumb = ({ links, LinkComponent = "a" }: BreadcrumbProps) => {
                 {link.title}
               </LinkComponent>
             )}
-            {!isCurr && <MdChevronRight className="min-w-6 h-auto" />}
+            {!isCurr && <MdChevronRight className="h-auto min-w-6" />}
           </div>
         )
       })}

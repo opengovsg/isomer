@@ -55,27 +55,27 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
 
   return (
     <nav
-      className="flex flex-col bg-header p-10 h-full"
+      className="flex h-full flex-col bg-header p-10"
       aria-label="Breadcrumb"
     >
       <div className="container max-w-5xl">
         <ol
           role="list"
-          className="flex items-center text-white overflow-scroll"
+          className="flex items-center overflow-scroll text-white"
         >
           {breadcrumbs.map((breadcrumb, idx) => (
             <li key={idx}>
               <div className="flex items-center">
                 <a
                   href={breadcrumb.href}
-                  className="text-sm font-light uppercase tracking-wider"
+                  className="tracking-wider text-sm font-light uppercase"
                   aria-current={breadcrumb.current ? "page" : undefined}
                 >
                   {breadcrumb.name}
                 </a>
                 {idx !== breadcrumbs.length - 1 && (
                   <svg
-                    className="h-5 w-5 mx-2 flex-shrink-0 text-gray-300"
+                    className="mx-2 h-5 w-5 flex-shrink-0 text-gray-300"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     aria-hidden="true"
@@ -87,7 +87,7 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
             </li>
           ))}
         </ol>
-        <h1 className="pt-5 text-white text-3xl font-medium leading-7 md:text-5xl truncate">
+        <h1 className="truncate pt-5 text-3xl font-medium leading-7 text-white md:text-5xl">
           {title}
         </h1>
       </div>

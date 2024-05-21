@@ -13,7 +13,7 @@ const CollectionSearch = ({
         <BiSearch className="h-5 w-5 fill-interaction-support-placeholder" />
       </span>
       <input
-        className="w-full rounded ring-1 ring-divider-medium focus:ring-focus-outline focus:ring-2 active:ring-focus-outline active:bg-interaction-main-subtle-hover active:ring-2 pl-[3.25rem] py-3 placeholder:text-interaction-support-placeholder"
+        className="w-full rounded py-3 pl-[3.25rem] ring-1 ring-divider-medium placeholder:text-interaction-support-placeholder focus:ring-2 focus:ring-focus-outline active:bg-interaction-main-subtle-hover active:ring-2 active:ring-focus-outline"
         placeholder={placeholder}
         type="text"
         name="search"

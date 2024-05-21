@@ -24,7 +24,7 @@ const HeroSide = (
   >,
 ) => {
   return (
-    <div className="grow shrink-0">
+    <div className="shrink-0 grow">
       {/* Desktop view 768 above */}
       <div className="hidden md:block">
         <HeroInfoboxDesktop {...props} />
@@ -45,11 +45,11 @@ const HeroImage = ({
   keyof HeroBackgroundImageProps | keyof HeroKeyHighlightProps
 >) => {
   return (
-    <div className="grow shrink-0 px-6 py-12">
-      <div className="mx-auto mt-8 mb-0">
-        <div className="flex min-h-[398px] w-11/12 md:w-5/6 lg:w-2/3 mx-auto items-center justify-center">
+    <div className="shrink-0 grow px-6 py-12">
+      <div className="mx-auto mb-0 mt-8">
+        <div className="mx-auto flex min-h-[398px] w-11/12 items-center justify-center md:w-5/6 lg:w-2/3">
           {dropdown && (
-            <div className="block basis-0 grow shrink p-3 max-w-full">
+            <div className="block max-w-full shrink grow basis-0 p-3">
               <HeroDropdown {...dropdown} />
             </div>
           )}
@@ -68,12 +68,12 @@ const HeroFloating = (
   return (
     <div className="md:p-12">
       {/* Desktop view 1024 above */}
-      <div className="hidden lg:block max-w-screen-xl mx-auto my-0">
+      <div className="mx-auto my-0 hidden max-w-screen-xl lg:block">
         <HeroInfoboxDesktop {...props} />
       </div>
 
       {/* Tablet view 769 to 1023 */}
-      <div className="hidden md:block lg:hidden mb-0">
+      <div className="mb-0 hidden md:block lg:hidden">
         <HeroInfoboxTablet {...props} />
       </div>
 
@@ -96,15 +96,15 @@ const HeroCenter = ({
   keyof HeroBackgroundImageProps | keyof HeroKeyHighlightProps
 >) => {
   return (
-    <div className="grow shrink-0 bg-[##00000040] px-6 py-12">
-      <div className="mx-auto mt-8 mb-0 relative">
-        <div className="flex lg:min-h-80 lg:h-96 items-center justify-center">
-          <div className="flex-none w-3/4 text-center text-white">
-            <h1 className="text-6xl md:text-[5.25rem] md:leading-[5.25rem] font-bold -tracking-[0.09375rem] m-0 pb-8 text-balance">
+    <div className="shrink-0 grow bg-[##00000040] px-6 py-12">
+      <div className="relative mx-auto mb-0 mt-8">
+        <div className="flex items-center justify-center lg:h-96 lg:min-h-80">
+          <div className="w-3/4 flex-none text-center text-white">
+            <h1 className="m-0 text-balance pb-8 text-6xl font-bold -tracking-[0.09375rem] md:text-[5.25rem] md:leading-[5.25rem]">
               {title}
             </h1>
             {subtitle && (
-              <p className="hidden md:block pb-8 text-xl">{subtitle}</p>
+              <p className="hidden pb-8 text-xl md:block">{subtitle}</p>
             )}
             {dropdown && !buttonLabel && !buttonUrl && (
               <HeroDropdown {...dropdown} />
@@ -120,7 +120,7 @@ const HeroCenter = ({
                       : ""
                   }
                   target={buttonUrl.startsWith("http") ? "_blank" : ""}
-                  className={`${BP_BUTTON_CLASSES} bg-site-secondary text-content-inverse border-transparent uppercase px-6 py-[7px] text-base tracking-wider font-semibold h-[2.4rem]`}
+                  className={`${BP_BUTTON_CLASSES} tracking-wider h-[2.4rem] border-transparent bg-site-secondary px-6 py-[7px] text-base font-semibold uppercase text-content-inverse`}
                 >
                   {buttonLabel}
                 </a>
@@ -141,10 +141,10 @@ const HeroKeyHighlights = ({ keyHighlights }: HeroKeyHighlightProps) => {
   return (
     <section
       id="key-highlights"
-      className="p-0 lg:px-6 bg-site-primary text-white"
+      className="bg-site-primary p-0 text-white lg:px-6"
     >
-      <div className="mx-auto my-0 relative lg:max-w-[60rem] xl:max-w-[76rem] 2xl:max-w-[84rem]">
-        <div className={`m-0 text-center justify-center flex-none md:flex`}>
+      <div className="relative mx-auto my-0 lg:max-w-[60rem] xl:max-w-[76rem] 2xl:max-w-[84rem]">
+        <div className={`m-0 flex-none justify-center text-center md:flex`}>
           {keyHighlights
             .slice(0, 4)
             .map(
@@ -153,7 +153,7 @@ const HeroKeyHighlights = ({ keyHighlights }: HeroKeyHighlightProps) => {
                 title: highlightTitle,
                 description: highlightDescription,
               }) => (
-                <div className="transition-colors hover:bg-site-primary-hover cursor-pointer grow basis-0 border-solid border-l first:border-l-0 border-l-subtitle">
+                <div className="grow basis-0 cursor-pointer border-l border-solid border-l-subtitle transition-colors first:border-l-0 hover:bg-site-primary-hover">
                   <a
                     href={highlightUrl}
                     rel={
@@ -165,7 +165,7 @@ const HeroKeyHighlights = ({ keyHighlights }: HeroKeyHighlightProps) => {
                   >
                     <div className="block px-8 py-5">
                       {highlightTitle && (
-                        <p className="font-semibold text-white tracking-[0.0125rem] uppercase pt-1">
+                        <p className="pt-1 font-semibold uppercase tracking-[0.0125rem] text-white">
                           {highlightTitle}
                           {highlightUrl.startsWith("http") && (
                             <>
@@ -175,7 +175,7 @@ const HeroKeyHighlights = ({ keyHighlights }: HeroKeyHighlightProps) => {
                                 width="20"
                                 height="20"
                                 fill="currentColor"
-                                className="text-2xl -mt-0.5 inline-block"
+                                className="-mt-0.5 inline-block text-2xl"
                                 viewBox="0 0 20 20"
                               >
                                 <path

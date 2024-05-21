@@ -31,25 +31,25 @@ const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
   return (
     <section>
       <div
-        className={`${ComponentContent} flex flex-col py-12 xs:py-24 gap-10 ${
+        className={`${ComponentContent} flex flex-col gap-10 py-12 xs:py-24 ${
           variant === "side" ? "lg:flex-row lg:gap-16" : ""
         }`}
       >
         <h2
-          className={`text-2xl xs:text-4xl xs:leading-[2.75rem] text-content font-semibold w-full ${
+          className={`w-full text-2xl font-semibold text-content xs:text-4xl xs:leading-[2.75rem] ${
             variant === "side" ? "lg:w-1/3" : ""
           }`}
         >
           {title}
         </h2>
-        <div className="flex flex-wrap flex-col md:flex-row gap-10">
+        <div className="flex flex-col flex-wrap gap-10 md:flex-row">
           {statistics.slice(0, maxItems).map(({ label, value }) => (
             <div
-              className={`flex flex-col gap-3 grow ${
+              className={`flex grow flex-col gap-3 ${
                 ITEM_WIDTHS[variant][Math.min(maxItems, statistics.length)]
               }`}
             >
-              <h3 className="text-4xl xs:text-5xl leading-[2.75rem] xs:leading-[3.5rem] text-content-strong font-semibold text-pretty">
+              <h3 className="text-pretty text-4xl font-semibold leading-[2.75rem] text-content-strong xs:text-5xl xs:leading-[3.5rem]">
                 {value.slice(0, MAX_CHAR_LIMIT)}
               </h3>
               <p className="text-sm text-content-medium">{label}</p>

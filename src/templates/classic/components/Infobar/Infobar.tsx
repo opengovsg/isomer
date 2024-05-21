@@ -12,25 +12,25 @@ const Infobar = ({
 }: InfobarProps) => {
   return (
     <HomepageSectionWrapper sectionIndex={sectionIdx}>
-      <section className="py-12 px-6 ">
-        <div className="flex flex-col gap-3 items-center mx-auto md:w-1/2 pt-10 px-3 text-center">
+      <section className="px-6 py-12 ">
+        <div className="mx-auto flex flex-col items-center gap-3 px-3 pt-10 text-center md:w-1/2">
           <div className="flex flex-col gap-4">
             {subtitle && (
-              <p className="text-subtitle uppercase tracking-widest">
+              <p className="tracking-widest uppercase text-subtitle">
                 {subtitle}
               </p>
             )}
-            <h1 className="text-site-secondary text-5xl">
+            <h1 className="text-5xl text-site-secondary">
               <b className="font-semibold">{title}</b>
             </h1>
             {description && (
-              <p className="text-paragraph text-xl">{description}</p>
+              <p className="text-xl text-paragraph">{description}</p>
             )}
           </div>
           {buttonLabel && buttonUrl && (
             <div className="p-3 text-lg font-semibold uppercase">
               <a
-                className="flex gap-2 text-site-secondary font-semibold text-center underline uppercase tracking-wide"
+                className="tracking-wide flex gap-2 text-center font-semibold uppercase text-site-secondary underline"
                 href={buttonUrl}
                 target={buttonUrl.startsWith("http") ? "_blank" : undefined}
                 rel={
@@ -41,7 +41,7 @@ const Infobar = ({
               >
                 {buttonLabel}
                 <div className="my-auto">
-                  <BiRightArrowAlt className="text-site-secondary size-5" />
+                  <BiRightArrowAlt className="size-5 text-site-secondary" />
                 </div>
               </a>
             </div>

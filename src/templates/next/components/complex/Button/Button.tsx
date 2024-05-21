@@ -3,7 +3,7 @@ import type { ButtonColorScheme } from "~/interfaces/complex/Button"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 
 const Label = ({ label }: Pick<ButtonProps, "label">) => (
-  <span className="text-center text-md font-medium leading-tight">{label}</span>
+  <span className="text-md text-center font-medium leading-tight">{label}</span>
 )
 
 const RightIcon = ({ rightIcon }: Pick<ButtonProps, "rightIcon">) => {
@@ -11,7 +11,7 @@ const RightIcon = ({ rightIcon }: Pick<ButtonProps, "rightIcon">) => {
     return null
   }
   const Icon = SUPPORTED_ICONS_MAP[rightIcon]
-  return <Icon className="min-w-5 h-auto" />
+  return <Icon className="h-auto min-w-5" />
 }
 
 const BaseButton = ({
@@ -31,7 +31,7 @@ const BaseButton = ({
       target={href.startsWith("http") ? "_blank" : undefined}
       rel={href.startsWith("http") ? "noopener noreferrer nofollow" : undefined}
       type="button"
-      className={`${className} w-fit inline-flex items-center rounded gap-1 ${
+      className={`${className} inline-flex w-fit items-center gap-1 rounded ${
         isLinkVariant ? "h-fit" : "px-4 py-3"
       } `}
     >
@@ -66,7 +66,7 @@ const OutlineButton = (props: Omit<ButtonProps, "type">) => {
       {...props}
       className={`${
         colorSchemeClassMap[props.colorScheme ?? "black"]
-      } bg-transparent border`}
+      } border bg-transparent`}
     />
   )
 }

@@ -46,7 +46,7 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
 
   return (
     <aside className="w-64">
-      <ul className="divide-navItems divide-y divide-solid">
+      <ul className="divide-y divide-solid divide-navItems">
         {parentNodeSiblings && (
           <>
             {parentNodeSiblings.siblings.map((sibling, index) => (
@@ -60,7 +60,7 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
                   <div className="flex">
                     <a
                       href={sibling.permalink}
-                      className={`p-1 m-1 ${
+                      className={`m-1 p-1 ${
                         sibling.permalink ===
                         sectionWithSiblings?.parentPermalink
                           ? "font-semibold text-headings"
@@ -84,7 +84,7 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
                       sectionWithSiblings?.siblings.map((sibling, index) => (
                         <li
                           key={index}
-                          className={`ml-4 py-2 mt-2 list-none ${
+                          className={`ml-4 mt-2 list-none py-2 ${
                             currentPermalink === sibling.permalink
                               ? "font-semibold text-headings"
                               : "text-navItems"

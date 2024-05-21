@@ -114,13 +114,13 @@ const ContentLayout = ({
         LinkComponent={LinkComponent}
         lastUpdated={page.lastModified}
       />
-      <div className="flex gap-[120px] px-6 md:px-10 py-16 max-w-container mx-auto justify-center">
+      <div className="mx-auto flex max-w-container justify-center gap-[120px] px-6 py-16 md:px-10">
         {sideRail && (
-          <div className="hidden lg:block w-full max-w-[240px]">
+          <div className="hidden w-full max-w-[240px] lg:block">
             <Siderail {...sideRail} LinkComponent={LinkComponent} />
           </div>
         )}
-        <div className="flex flex-col gap-[90px] overflow-x-auto w-full max-w-[800px]">
+        <div className="flex w-full max-w-[800px] flex-col gap-[90px] overflow-x-auto">
           {tableOfContents.items.length > 1 && (
             <TableOfContents {...tableOfContents} />
           )}

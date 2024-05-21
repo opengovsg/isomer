@@ -8,9 +8,9 @@ const InfoColsHeader = ({
 }: Pick<InfoColsProps, "title" | "subtitle">) => (
   <div className="flex flex-col gap-4">
     {subtitle && (
-      <p className="text-subtitle uppercase tracking-widest">{subtitle}</p>
+      <p className="tracking-widest uppercase text-subtitle">{subtitle}</p>
     )}
-    <h1 className="text-site-secondary text-5xl font-semibold leading-tight">
+    <h1 className="text-5xl font-semibold leading-tight text-site-secondary">
       {title}
     </h1>
   </div>
@@ -30,15 +30,15 @@ const InfoBoxes = ({ infoBoxes }: Pick<InfoColsProps, "infoBoxes">) => {
 
   return (
     <div
-      className={`grid grid-cols-1 gap-4 justify-between ${mdColsClass} ${xlColsClass}`}
+      className={`grid grid-cols-1 justify-between gap-4 ${mdColsClass} ${xlColsClass}`}
     >
       {infoBoxes.map((infoBox, idx) => (
         <div
           key={idx}
-          className="flex flex-col gap-4 p-6 items-center text-center md:items-start md:text-left"
+          className="flex flex-col items-center gap-4 p-6 text-center md:items-start md:text-left"
         >
           <h3 className="text-3xl font-bold text-subtitle">{infoBox.title}</h3>
-          <p className="text-paragraph text-xl">{infoBox.description}</p>
+          <p className="text-xl text-paragraph">{infoBox.description}</p>
         </div>
       ))}
     </div>
@@ -54,7 +54,7 @@ const InfoColsFooter = ({
     buttonUrl && (
       <div className="text-lg font-semibold uppercase">
         <a
-          className="flex gap-2 text-site-secondary font-semibold text-center underline uppercase tracking-wide"
+          className="tracking-wide flex gap-2 text-center font-semibold uppercase text-site-secondary underline"
           href={buttonUrl}
           target={buttonUrl.startsWith("http") ? "_blank" : undefined}
           rel={
@@ -65,7 +65,7 @@ const InfoColsFooter = ({
         >
           {buttonLabel}
           <div className="my-auto">
-            <BiRightArrowAlt className="text-site-secondary size-5" />
+            <BiRightArrowAlt className="size-5 text-site-secondary" />
           </div>
         </a>
       </div>
@@ -83,8 +83,8 @@ const InfoCols = ({
 }: InfoColsProps) => {
   return (
     <HomepageSectionWrapper sectionIndex={sectionIdx}>
-      <section className="py-24 px-8 sm:px-16 md:px-24">
-        <div className="flex flex-col gap-12 items-center mx-auto text-center">
+      <section className="px-8 py-24 sm:px-16 md:px-24">
+        <div className="mx-auto flex flex-col items-center gap-12 text-center">
           <InfoColsHeader title={title} subtitle={subtitle} />
           <InfoBoxes infoBoxes={infoBoxes} />
           <InfoColsFooter buttonLabel={buttonLabel} buttonUrl={buttonUrl} />
