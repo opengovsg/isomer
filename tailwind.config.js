@@ -26,9 +26,6 @@ export default {
         },
       },
     },
-    letterSpacing: {
-      tight: "-0.022em",
-    },
   },
   plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography")],
 }
