@@ -14,8 +14,8 @@ const ContentPageHeader = ({
   LinkComponent,
 }: ContentPageHeaderProps) => {
   return (
-    <div className="bg-site-primary-100 px-4 py-8 md:px-10 lg:px-5 lg:py-16">
-      <div className="mx-auto flex max-w-[848px] flex-col gap-8 lg:gap-12">
+    <div className="bg-site-primary-100">
+      <div className="mx-auto flex max-w-[880px] flex-col gap-8 px-6 py-8 md:px-10 lg:max-w-container lg:gap-12 lg:py-16">
         <div className="hidden lg:block">
           <Breadcrumb links={breadcrumb.links} LinkComponent={LinkComponent} />
         </div>
