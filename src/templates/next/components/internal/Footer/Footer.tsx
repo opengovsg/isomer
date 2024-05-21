@@ -49,7 +49,7 @@ const FooterItem = ({
         className="flex gap-1 items-center w-fit hover:underline hover:underline-offset-2 line-clamp-1"
       >
         {title}
-        <BiLinkExternal className="w-[0.875rem] lg:w-[1rem] h-auto flex-shrink-0" />
+        <BiLinkExternal className="w-3.5 lg:w-4 h-auto flex-shrink-0" />
       </LinkComponent>
     )
   }
@@ -108,7 +108,7 @@ const SocialMediaSection = ({
               rel="noopener noreferrer nofollow"
               aria-label={`${link.type} page`}
             >
-              <Icon className="w-[1.5rem] h-auto" />
+              <Icon className="w-6 h-auto" />
             </a>
           )
         })}
