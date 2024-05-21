@@ -10,10 +10,10 @@ export const HeroDropdown = ({ title, options }: HeroDropdownProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   return (
-    <div className="block relative border-light w-full">
+    <div className="border-light relative block w-full">
       <div className="w-full">
         <a
-          className={`${BP_BUTTON_CLASSES} flex px-6 py-7 box-border justify-between bg-white border-0 border-b border-solid border-border-light m-auto w-[calc(100%-3rem)] text-xl text-prose font-semibold`}
+          className={`${BP_BUTTON_CLASSES} m-auto box-border flex w-[calc(100%-3rem)] justify-between border-0 border-b border-solid border-border-light bg-white px-6 py-7 text-xl font-semibold text-prose`}
           aria-haspopup
           aria-controls="hero-dropdown-menu"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -27,7 +27,7 @@ export const HeroDropdown = ({ title, options }: HeroDropdownProps) => {
               <p>I want to...</p>
             </span>
           )}
-          <span className="justify-center h-4 w-4">
+          <span className="h-4 w-4 justify-center">
             {/* Chevron down */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -35,7 +35,7 @@ export const HeroDropdown = ({ title, options }: HeroDropdownProps) => {
               viewBox="0 0 20 20"
               width="20"
               height="20"
-              className="text-2xl -mt-0.5"
+              className="-mt-0.5 text-2xl"
             >
               <path
                 fill-rule="evenodd"
@@ -48,17 +48,17 @@ export const HeroDropdown = ({ title, options }: HeroDropdownProps) => {
       <div
         id="hero-dropdown-menu"
         role="menu"
-        className={`absolute left-0 min-w-48 pt-0 w-full top-full z-20 text-start ${
+        className={`absolute left-0 top-full z-20 w-full min-w-48 pt-0 text-start ${
           isDropdownOpen ? "block" : "hidden"
         }`}
       >
-        <div className="bg-white rounded-none border border-solid border-border-light py-4 m-auto">
+        <div className="m-auto rounded-none border border-solid border-border-light bg-white py-4">
           {options.map(({ url: optionUrl, title: optionTitle }) => {
             return (
               optionUrl &&
               optionTitle && (
                 <a
-                  className="block relative text-prose hover:text-site-secondary text-xl px-6 py-3"
+                  className="relative block px-6 py-3 text-xl text-prose hover:text-site-secondary"
                   href={optionUrl}
                   rel={
                     optionUrl.startsWith("http")

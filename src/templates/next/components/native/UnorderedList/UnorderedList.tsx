@@ -3,7 +3,7 @@ import Prose from "../Prose"
 
 const UnorderedList = ({ content }: UnorderedListProps) => {
   return (
-    <ul className="list-disc ps-8 mt-6">
+    <ul className="mt-6 list-disc ps-8">
       <Prose content={content} />
     </ul>
   )

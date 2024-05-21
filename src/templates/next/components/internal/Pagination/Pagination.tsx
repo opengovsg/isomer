@@ -10,10 +10,10 @@ export const Pagination = ({
   const totalPages = Math.ceil(totalItems / Math.max(1, itemsPerPage))
 
   return (
-    <nav className="grid grid-cols-4 w-full" aria-label="Pagination">
+    <nav className="grid w-full grid-cols-4" aria-label="Pagination">
       {/* Previous button */}
       <button
-        className="flex flex-row p-1 gap-1 align-middle cursor-pointer disabled:cursor-not-allowed disabled:text-interaction-sub disabled:hover:bg-transparent hover:bg-interaction-main-subtle-hover"
+        className="flex cursor-pointer flex-row gap-1 p-1 align-middle hover:bg-interaction-main-subtle-hover disabled:cursor-not-allowed disabled:text-interaction-sub disabled:hover:bg-transparent"
         aria-label="Previous page"
         disabled={currPage <= 1}
         onClick={() => {
@@ -22,18 +22,18 @@ export const Pagination = ({
           }
         }}
       >
-        <BiLeftArrowAlt className="text-2xl my-auto" />
-        <p className="hidden xs:inline underline text-lg">Previous</p>
+        <BiLeftArrowAlt className="my-auto text-2xl" />
+        <p className="hidden text-lg underline xs:inline">Previous</p>
       </button>
 
       {/* Page number */}
-      <p className="col-span-2 justify-self-center my-auto xs:text-xl xs:leading-8">
+      <p className="col-span-2 my-auto justify-self-center xs:text-xl xs:leading-8">
         Page {currPage} of {totalPages}
       </p>
 
       {/* Next button */}
       <button
-        className="justify-self-end flex flex-row p-1 gap-1 align-middle cursor-pointer disabled:cursor-not-allowed disabled:text-interaction-sub disabled:hover:bg-transparent hover:bg-interaction-main-subtle-hover"
+        className="flex cursor-pointer flex-row gap-1 justify-self-end p-1 align-middle hover:bg-interaction-main-subtle-hover disabled:cursor-not-allowed disabled:text-interaction-sub disabled:hover:bg-transparent"
         aria-label="Next page"
         disabled={currPage >= totalPages}
         onClick={() => {
@@ -42,8 +42,8 @@ export const Pagination = ({
           }
         }}
       >
-        <p className="hidden xs:inline underline text-lg">Next</p>
-        <BiRightArrowAlt className="text-2xl my-auto" />
+        <p className="hidden text-lg underline xs:inline">Next</p>
+        <BiRightArrowAlt className="my-auto text-2xl" />
       </button>
     </nav>
   )

@@ -3,11 +3,11 @@ import type { TableOfContentsProps } from "~/interfaces"
 
 const TableOfContents = ({ items }: TableOfContentsProps) => {
   return (
-    <div className="flex flex-col gap-3 pl-5 border-l-4 border-content w-[18.75rem]">
-      <p className="text-lg text-content-strong font-semibold">On this page</p>
+    <div className="flex w-[18.75rem] flex-col gap-3 border-l-4 border-content pl-5">
+      <p className="text-lg font-semibold text-content-strong">On this page</p>
       <div className="flex flex-col gap-3">
         {items.map(({ anchorLink, content }) => (
-          <div className="flex flex-row gap-2 items-start">
+          <div className="flex flex-row items-start gap-2">
             <BiRightArrowAlt className="size-6 shrink-0 text-interaction-main" />
             <a
               href={anchorLink}

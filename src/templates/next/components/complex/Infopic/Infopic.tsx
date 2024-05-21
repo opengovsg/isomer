@@ -14,11 +14,11 @@ const TextComponent = ({
   return (
     <div className={`flex flex-col gap-10 ${className ?? ""}`}>
       <div className="flex flex-col gap-4 sm:gap-6">
-        <h1 className="text-content text-2xl font-semibold sm:text-4xl">
+        <h1 className="text-2xl font-semibold text-content sm:text-4xl">
           {title}
         </h1>
         {description && (
-          <p className="text-content text-sm sm:text-lg">{description}</p>
+          <p className="text-sm text-content sm:text-lg">{description}</p>
         )}
       </div>
       {buttonLabel && buttonUrl && (
@@ -42,7 +42,7 @@ const ImageComponent = ({
       <img
         src={src}
         alt={alt}
-        className="h-full w-full object-cover object-center object-center max-h-[22.5rem] lg:max-h-[38.75rem]"
+        className="h-full max-h-[22.5rem] w-full object-cover object-center object-center lg:max-h-[38.75rem]"
       />
     </div>
   )
@@ -62,7 +62,7 @@ const SideBySideInfoPic = ({
       {/* Mobile-Tablet */}
       <div className="lg:hidden">
         <div
-          className={`${ComponentContent} py-16 sm:py-24 sm:px-14 flex flex-col gap-14`}
+          className={`${ComponentContent} flex flex-col gap-14 py-16 sm:px-14 sm:py-24`}
         >
           <TextComponent
             title={title}
@@ -125,7 +125,7 @@ const SidePartInfoPic = ({
           className={`flex ${isTextOnRight ? "flex-row" : "flex-row-reverse"}`}
         >
           <ImageComponent src={src} alt={alt} className="w-1/2" />
-          <div className="w-1/2 py-24 my-auto pl-10">
+          <div className="my-auto w-1/2 py-24 pl-10">
             <TextComponent
               title={title}
               description={description}

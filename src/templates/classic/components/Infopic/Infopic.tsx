@@ -28,14 +28,14 @@ const TextComponent = ({
   return (
     <div className="flex flex-col gap-4 lg:px-8">
       {subtitle && (
-        <p className="text-subtitle uppercase tracking-widest">{subtitle}</p>
+        <p className="tracking-widest uppercase text-subtitle">{subtitle}</p>
       )}
-      <h1 className="text-site-secondary text-5xl font-semibold">{title}</h1>
-      {description && <p className="text-paragraph text-xl">{description}</p>}
+      <h1 className="text-5xl font-semibold text-site-secondary">{title}</h1>
+      {description && <p className="text-xl text-paragraph">{description}</p>}
       {buttonLabel && buttonUrl && (
-        <div className="text-lg font-semibold uppercase tracking-wid">
+        <div className="tracking-wid text-lg font-semibold uppercase">
           <a
-            className="flex gap-2 text-site-secondary font-semibold underline uppercase"
+            className="flex gap-2 font-semibold uppercase text-site-secondary underline"
             href={buttonUrl}
             target={buttonUrl.startsWith("http") ? "_blank" : undefined}
             rel={
@@ -47,7 +47,7 @@ const TextComponent = ({
             {buttonLabel}
 
             <div className="my-auto">
-              <BiRightArrowAlt className="text-site-secondary size-5" />
+              <BiRightArrowAlt className="size-5 text-site-secondary" />
             </div>
           </a>
         </div>

@@ -106,7 +106,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
       <button
         key={page}
         onClick={() => setCurrentPage(page)}
-        className={`inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium cursor-pointer ${
+        className={`inline-flex cursor-pointer items-center border-t-2 px-4 pt-4 text-sm font-medium ${
           currentPage === page
             ? "border-indigo-500 text-indigo-600"
             : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
@@ -118,7 +118,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
   }
 
   return (
-    <div className="container max-w-5xl my-10 overflow-hidden bg-white shadow sm:rounded-md">
+    <div className="container my-10 max-w-5xl overflow-hidden bg-white shadow sm:rounded-md">
       <div className="relative mt-2 flex items-center">
         <input
           type="text"
@@ -137,7 +137,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
           {currentResults.map((result) => (
             <li key={String(result.id)} className="px-4 py-4 sm:px-6">
               <a
-                className="text-site-secondary text-xl underline"
+                className="text-xl text-site-secondary underline"
                 href={result.url}
               >
                 {result.title}
@@ -157,7 +157,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
         </ul>
       )}
 
-      <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0 py-5">
+      <nav className="flex items-center justify-between border-t border-gray-200 px-4 py-5 sm:px-0">
         <div className="-mt-px flex w-0 flex-1">
           <button
             onClick={() => setCurrentPage(1)}
