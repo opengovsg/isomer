@@ -16,9 +16,6 @@ import type {
   FooterItem as FooterItemType,
   SocialMediaType,
 } from "~/interfaces/internal/Footer"
-import { Caption } from "../../../typography/Caption"
-import { Heading } from "../../../typography/Heading"
-import { Paragraph } from "../../../typography/Paragraph"
 
 const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
   facebook: FaFacebook,
@@ -32,7 +29,7 @@ const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
 }
 
 const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
-  return <h2 className={Heading[4]}>{siteName}</h2>
+  return <h2 className="text-heading-04">{siteName}</h2>
 }
 
 const FooterItem = ({
@@ -46,15 +43,18 @@ const FooterItem = ({
         href={url}
         target="_blank"
         rel="noopener noreferrer nofollow"
-        className="flex gap-1 items-center w-fit hover:underline hover:underline-offset-2 line-clamp-1"
+        className="line-clamp-1 flex w-fit items-center gap-1 hover:underline hover:underline-offset-2"
       >
         {title}
-        <BiLinkExternal className="w-3.5 lg:w-4 h-auto flex-shrink-0" />
+        <BiLinkExternal className="h-auto w-3.5 flex-shrink-0 lg:w-4" />
       </LinkComponent>
     )
   }
   return (
-    <a className="w-fit hover:underline hover:underline-offset-2 line-clamp-1" href={url}>
+    <a
+      className="line-clamp-1 w-fit hover:underline hover:underline-offset-2"
+      href={url}
+    >
       {title}
     </a>
   )
@@ -66,9 +66,7 @@ const NavSection = ({
   customNavItems,
 }: Pick<FooterProps, "LinkComponent" | "siteNavItems" | "customNavItems">) => {
   return (
-    <div
-      className={`flex flex-col gap-8 lg:gap-12 lg:flex-row lg:gap-16 ${Caption[1]}`}
-    >
+    <div className="text-caption-01 flex flex-col gap-8 lg:flex-row lg:gap-12">
       <div className="flex flex-col gap-3 lg:w-64">
         {siteNavItems.map((item) => (
           <FooterItem
@@ -96,8 +94,8 @@ const SocialMediaSection = ({
 }: Pick<FooterProps, "socialMediaLinks">) => {
   return (
     <div className="flex flex-col gap-5">
-      <h3 className={Heading['subhead-1']}>Reach us</h3>
-      <div className="flex flex-row gap-7 flex-wrap">
+      <h3 className="text-subheading-01">Reach us</h3>
+      <div className="flex flex-row flex-wrap gap-7">
         {socialMediaLinks?.map((link) => {
           const Icon = SocialMediaTypeToIconMap[link.type]
           return (
@@ -108,7 +106,7 @@ const SocialMediaSection = ({
               rel="noopener noreferrer nofollow"
               aria-label={`${link.type} page`}
             >
-              <Icon className="w-6 h-auto" />
+              <Icon className="h-auto w-6" />
             </a>
           )
         })}
@@ -126,7 +124,7 @@ const ContactUsSection = ({
   "LinkComponent" | "contactUsLink" | "feedbackFormLink"
 >) => {
   return (
-    <div className={`flex flex-col gap-3 ${Caption[1]}`}>
+    <div className="text-caption-01 flex flex-col gap-3">
       {contactUsLink && (
         <FooterItem
           title="Contact Us"
@@ -155,7 +153,7 @@ const ReachUsSection = ({
   "LinkComponent" | "socialMediaLinks" | "contactUsLink" | "feedbackFormLink"
 >) => {
   return (
-    <div className="flex flex-col gap-6 lg:gap-6 lg:w-fit">
+    <div className="flex flex-col gap-6 lg:w-fit">
       <SocialMediaSection socialMediaLinks={socialMediaLinks} />
       <ContactUsSection
         LinkComponent={LinkComponent}
@@ -186,14 +184,12 @@ const LegalSection = ({
 >) => {
   return (
     <div className="flex flex-col gap-4 lg:gap-2">
-      <p className={`text-content-inverse-light ${Caption[1]}`}>
+      <p className="text-caption-01 text-content-inverse-light">
         &copy; {new Date().getFullYear()}{" "}
         {isGovernment ? "Government of Singapore" : agencyName}, last updated{" "}
         {lastUpdated}
       </p>
-      <div
-        className={`flex flex-col gap-3 lg:flex-row lg:gap-8 ${Caption[1]}`}
-      >
+      <div className="text-caption-01 flex flex-col gap-3 lg:flex-row lg:gap-8">
         {isGovernment && (
           <FooterItem
             title="Report Vulnerability"
@@ -229,9 +225,7 @@ const LegalSection = ({
 
 const CreditsSection = () => {
   return (
-    <div
-      className={`flex flex-col gap-6 lg:flex-row lg:gap-8 xl:gap-20 ${Caption[1]}`}
-    >
+    <div className="text-caption-01 flex flex-col gap-6 lg:flex-row lg:gap-8 xl:gap-20">
       <a
         href="https://www.isomer.gov.sg"
         target="_blank"
@@ -271,7 +265,7 @@ const FooterMobile = ({
   siteMapLink,
 }: FooterProps) => {
   return (
-    <div className="flex flex-col gap-14 py-16 px-6 md:p-20 lg:hidden ">
+    <div className="flex flex-col gap-14 px-6 py-16 md:p-20 lg:hidden ">
       <SiteNameSection siteName={siteName} />
       <NavSection
         siteNavItems={navItems}
@@ -317,10 +311,10 @@ const FooterDesktop = ({
   siteMapLink,
 }: FooterProps) => {
   return (
-    <div className="hidden lg:block py-14 px-[4rem]">
-      <div className="flex flex-col gap-6 max-w-[72.5rem] mx-auto">
+    <div className="hidden px-[4rem] py-14 lg:block">
+      <div className="mx-auto flex max-w-[72.5rem] flex-col gap-6">
         <SiteNameSection siteName={siteName} />
-        <div className="lg:grid grid-rows-[1fr_min-content] grid-cols-[1fr_min-content] gap-y-14 gap-x-8">
+        <div className="grid-cols-[1fr_min-content] grid-rows-[1fr_min-content] gap-x-8 gap-y-14 lg:grid">
           <div>
             <NavSection
               siteNavItems={navItems}

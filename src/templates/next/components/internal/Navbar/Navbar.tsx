@@ -12,9 +12,6 @@ import {
   BiX,
 } from "react-icons/bi"
 import type { NavbarProps } from "~/interfaces"
-import { ButtonLink } from "../../../typography/ButtonLink"
-import { Heading } from "../../../typography/Heading"
-import { Paragraph } from "../../../typography/Paragraph"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
 
 export const Navbar = ({
@@ -73,7 +70,7 @@ export const Navbar = ({
     <div className="flex flex-col">
       {/* Site header */}
       <div
-        className="flex flex-row w-full max-w-container mx-auto px-6 lg:px-10 py-6"
+        className="mx-auto flex w-full max-w-container flex-row px-6 py-6 lg:px-10"
         ref={siteHeaderRef}
       >
         {/* Logo */}
@@ -81,7 +78,7 @@ export const Navbar = ({
           <img
             src={logoUrl}
             alt={logoAlt}
-            className="h-11 lg:h-20 w-full max-w-[110px] lg:max-w-[200px] object-contain object-center"
+            className="h-11 w-full max-w-[110px] object-contain object-center lg:h-20 lg:max-w-[200px]"
           />
         </LinkComponent>
 
@@ -90,7 +87,7 @@ export const Navbar = ({
 
         {/* Search icon */}
         {search && !isHamburgerOpen && (
-          <div className="block my-auto">
+          <div className="my-auto block">
             {isSearchOpen ? (
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -112,7 +109,7 @@ export const Navbar = ({
         )}
 
         {/* Hamburger menu for small screens */}
-        <div className="block lg:hidden my-auto">
+        <div className="my-auto block lg:hidden">
           {isHamburgerOpen ? (
             <button
               onClick={() => {
@@ -123,7 +120,7 @@ export const Navbar = ({
               className="mb-[5px]"
             >
               Close
-              <BiX className="inline ml-1 -mt-0.5 text-2xl" />
+              <BiX className="-mt-0.5 ml-1 inline text-2xl" />
             </button>
           ) : (
             <button
@@ -132,7 +129,7 @@ export const Navbar = ({
                 setIsSearchOpen(false)
               }}
               aria-label="Open navigation menu"
-              className="mt-[3px] ml-5"
+              className="ml-5 mt-[3px]"
             >
               <BiMenu className="text-2xl" />
             </button>
@@ -145,7 +142,7 @@ export const Navbar = ({
         <div
           className={`${
             isSearchOpen ? "block" : "hidden"
-          } w-full max-w-container mx-auto mb-4 px-6 lg:px-10`}
+          } mx-auto mb-4 w-full max-w-container px-6 lg:px-10`}
         >
           {search.type === "localSearch" && (
             <LocalSearchInputBox searchUrl={search.searchUrl} />
@@ -161,8 +158,8 @@ export const Navbar = ({
       )}
 
       {/* Navigation items (for desktop) */}
-      <div className="hidden lg:block bg-utility-neutral w-full relative">
-        <div className="w-full max-w-container mx-auto px-10">
+      <div className="relative hidden w-full bg-utility-neutral lg:block">
+        <div className="mx-auto w-full max-w-container px-10">
           <div className="mx-auto w-full max-w-screen-xl">
             <ul className="flex flex-row flex-wrap" ref={navDesktopRef}>
               {items.map(({ name, url, description, items }, idx) => {
@@ -170,7 +167,7 @@ export const Navbar = ({
                   return (
                     <li key={Math.random()}>
                       <LinkComponent
-                        className="block px-3 py-4 text-lg text-content-medium transition ease-in-out duration-300 hover:bg-interaction-sub active:bg-interaction-sub"
+                        className="block px-3 py-4 text-lg text-content-medium transition duration-300 ease-in-out hover:bg-interaction-sub active:bg-interaction-sub"
                         href={url}
                       >
                         {name}
@@ -182,7 +179,7 @@ export const Navbar = ({
                 return (
                   <li key={Math.random()}>
                     <button
-                      className={`block px-3 py-4 text-lg text-content-medium transition ease-in-out duration-300 hover:bg-interaction-sub active:bg-interaction-sub ${
+                      className={`block px-3 py-4 text-lg text-content-medium transition duration-300 ease-in-out hover:bg-interaction-sub active:bg-interaction-sub ${
                         openNavItemIdx === idx ? "bg-interaction-sub" : ""
                       }`}
                       onClick={() => {
@@ -195,26 +192,24 @@ export const Navbar = ({
                     >
                       {name}
                       {openNavItemIdx !== idx && (
-                        <BiChevronDown className="inline ml-1 -mt-1 text-2xl" />
+                        <BiChevronDown className="-mt-1 ml-1 inline text-2xl" />
                       )}
                       {openNavItemIdx === idx && (
-                        <BiChevronUp className="inline ml-1 -mt-1 text-2xl" />
+                        <BiChevronUp className="-mt-1 ml-1 inline text-2xl" />
                       )}
                     </button>
                     <div
                       className={`${
                         openNavItemIdx === idx ? "absolute" : "hidden"
-                      } bg-white left-0 w-full px-4 border-b border-b-divider-medium z-20`}
+                      } left-0 z-20 w-full border-b border-b-divider-medium bg-white px-4`}
                       style={{
                         top: `${navbarDesktopHeight}px`,
                       }}
                     >
-                      <div className="flex flex-col mx-auto w-full max-w-screen-xl py-12 max-h-[32rem]">
-                        <div className="flex flex-row w-full max-w-container mx-auto items-start pb-4 px-10">
+                      <div className="mx-auto flex max-h-[32rem] w-full max-w-screen-xl flex-col py-12">
+                        <div className="mx-auto flex w-full max-w-container flex-row items-start px-10 pb-4">
                           <div className="flex flex-col gap-1">
-                            <h6
-                              className={`${Heading[6]} text-content-medium uppercase`}
-                            >
+                            <h6 className="text-heading-06 uppercase text-content-medium">
                               {name}
                             </h6>
                             <p className="text-content">{description}</p>
@@ -226,31 +221,27 @@ export const Navbar = ({
                           <button
                             onClick={() => setOpenNavItemIdx(-1)}
                             aria-label="Close navigation item"
-                            className={`${ButtonLink[1]} text-content`}
+                            className="text-button-link-01 text-content"
                           >
                             Close
-                            <BiX className="inline ml-1 -mt-0.5 text-2xl" />
+                            <BiX className="-mt-0.5 ml-1 inline text-2xl" />
                           </button>
                         </div>
 
-                        <hr className="border-t-divider-medium border-t mb-8" />
+                        <hr className="mb-8 border-t border-t-divider-medium" />
 
                         <div className="overflow-auto">
-                          <ul className="flex flex-row flex-wrap gap-x-36 gap-y-8 w-full max-w-container mx-auto px-10">
+                          <ul className="mx-auto flex w-full max-w-container flex-row flex-wrap gap-x-36 gap-y-8 px-10">
                             {items.map((subItem) => (
                               <li key={subItem.name} className="w-2/5">
                                 <div className="flex flex-col gap-1">
                                   <LinkComponent href={subItem.url}>
-                                    <p
-                                      className={`${Paragraph["1-medium"]} underline underline-offset-2 text-content text-pretty`}
-                                    >
+                                    <p className="text-paragraph-01-medium text-pretty text-content underline underline-offset-2">
                                       {subItem.name}
-                                      <BiRightArrowAlt className="inline -mt-0.5 w-6 h-auto" />
+                                      <BiRightArrowAlt className="-mt-0.5 inline h-auto w-6" />
                                     </p>
                                   </LinkComponent>
-                                  <p
-                                    className={`${Paragraph[2]} text-content-medium`}
-                                  >
+                                  <p className="text-paragraph-02 text-content-medium">
                                     {subItem.description}
                                   </p>
                                 </div>
@@ -297,7 +288,7 @@ export const Navbar = ({
                     onClick={() => setOpenNavItemIdx(idx)}
                     className="w-full"
                   >
-                    <div className="flex flex-row justify-between w-full">
+                    <div className="flex w-full flex-row justify-between">
                       <p className="text-lg text-content hover:text-content-medium">
                         {name}
                       </p>
@@ -321,29 +312,27 @@ export const Navbar = ({
         >
           <div className="px-6 pt-4">
             <button
-              className="flex flex-row gap-3 pt-2.5 pb-4 text-content"
+              className="flex flex-row gap-3 pb-4 pt-2.5 text-content"
               onClick={() => setOpenNavItemIdx(-1)}
               aria-label="Return to main navigation menu"
             >
               <BiLeftArrowAlt className="text-2xl" />
-              <h5 className={Heading[5]}>{items[openNavItemIdx].name}</h5>
+              <h5 className="text-heading-05">{items[openNavItemIdx].name}</h5>
             </button>
 
-            <ul className="flex flex-row flex-wrap px-9 py-4 gap-x-36 gap-y-[1.125rem] md:gap-y-8">
+            <ul className="flex flex-row flex-wrap gap-x-36 gap-y-[1.125rem] px-9 py-4 md:gap-y-8">
               {items[openNavItemIdx].items?.map(
                 ({ name, url, description }) => (
                   <li key={name} className="w-full md:w-1/3">
                     <div className="flex flex-col gap-1">
                       <LinkComponent
                         href={url}
-                        className={`${Paragraph["1-medium"]} underline text-content`}
+                        className="text-paragraph-01-medium text-content underline"
                       >
                         {name}
-                        <BiRightArrowAlt className="hidden md:inline ml-1 -mt-0.5 text-xl" />
+                        <BiRightArrowAlt className="-mt-0.5 ml-1 hidden text-xl md:inline" />
                       </LinkComponent>
-                      <p
-                        className={`hidden md:block ${Paragraph[2]} text-content-medium`}
-                      >
+                      <p className="text-paragraph-02 hidden text-content-medium md:block">
                         {description}
                       </p>
                     </div>

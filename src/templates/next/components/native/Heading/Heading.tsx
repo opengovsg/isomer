@@ -1,5 +1,4 @@
 import type { HeadingProps } from "~/interfaces"
-import { Heading as HeadingStyles } from "~/templates/next/typography/Heading"
 import { getTextAsHtml } from "~/utils"
 
 const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
@@ -7,7 +6,7 @@ const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
     return (
       <h2
         id={id}
-        className={`${HeadingStyles[2]} text-content [&:not(:first-child)]:mt-36`}
+        className="text-heading-02 text-content [&:not(:first-child)]:mt-36"
       >
         {getTextAsHtml(content)}
       </h2>
@@ -17,7 +16,7 @@ const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
     return (
       <h3
         id={id}
-        className={`${HeadingStyles[3]} text-content [&:not(:first-child)]:mt-16`}
+        className="text-heading-03 text-content [&:not(:first-child)]:mt-16"
       >
         {getTextAsHtml(content)}
       </h3>
@@ -27,7 +26,7 @@ const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
     return (
       <h4
         id={id}
-        className={`${HeadingStyles[4]} text-content [&:not(:first-child)]:mt-12`}
+        className="text-heading-04 text-content [&:not(:first-child)]:mt-12"
       >
         {getTextAsHtml(content)}
       </h4>
@@ -37,7 +36,7 @@ const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
     return (
       <h5
         id={id}
-        className={`${HeadingStyles[5]} text-content [&:not(:first-child)]:mt-7`}
+        className="text-heading-05 text-content [&:not(:first-child)]:mt-7"
       >
         {getTextAsHtml(content)}
       </h5>
@@ -46,7 +45,7 @@ const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
   return (
     <h6
       id={id}
-      className={`${HeadingStyles[6]} text-content [&:not(:first-child)]:mt-7`}
+      className="text-heading-06 text-content [&:not(:first-child)]:mt-7"
     >
       {getTextAsHtml(content)}
     </h6>

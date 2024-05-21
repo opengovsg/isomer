@@ -1,15 +1,13 @@
 import type {
-  HeroProps,
   HeroCopyLedProps,
-  HeroFloatingProps,
   HeroFloatingImageProps,
+  HeroFloatingProps,
   HeroGradientProps,
+  HeroProps,
   HeroSplitProps,
 } from "~/interfaces/complex/Hero"
-import Button from "../Button"
 import { ComponentContent } from "../../internal/customCssClass"
-import { Heading } from "../../../typography/Heading"
-import { Paragraph } from "../../../typography/Paragraph"
+import Button from "../Button"
 
 const HeroGradient = ({
   alignment = "left",
@@ -23,7 +21,7 @@ const HeroGradient = ({
 }: HeroGradientProps) => {
   return (
     <section
-      className="bg-cover bg-center bg-no-repeat min-h-[15rem] sm:min-h-[22.5rem] md:min-h-[31.25rem]"
+      className="min-h-[15rem] bg-cover bg-center bg-no-repeat sm:min-h-[22.5rem] md:min-h-[31.25rem]"
       style={{
         backgroundImage: `url('${backgroundUrl}')`,
       }}
@@ -34,13 +32,13 @@ const HeroGradient = ({
         } from-[rgba(0,0,0,85%)] md:from-[rgba(0,0,0,75%)] xl:from-[rgba(0,0,0,65%)]`}
       >
         <div
-          className={`${ComponentContent} text-white p-10 flex flex-row items-end h-full ${
+          className={`${ComponentContent} flex h-full flex-row items-end p-10 text-white ${
             alignment === "left" ? "justify-start" : "justify-end"
           } ${alignment === "left" ? "text-start" : "text-end"}`}
         >
-          <div className="flex flex-col w-full sm:w-3/5 xl:max-w-[520px] gap-6">
-            <h1 className={Heading[1]}>{title}</h1>
-            {subtitle && <p className={Paragraph[1]}>{subtitle}</p>}
+          <div className="flex w-full flex-col gap-6 sm:w-3/5 xl:max-w-[520px]">
+            <h1 className="text-heading-01">{title}</h1>
+            {subtitle && <p className="text-paragraph-01">{subtitle}</p>}
             {buttonLabel && buttonUrl && (
               <div
                 className={`flex flex-row gap-4 ${
@@ -86,13 +84,13 @@ const HeroSplit = ({
   return (
     <>
       <section
-        className={`hidden md:flex min-h-[15rem] sm:min-h-[22.5rem] md:min-h-[31.25rem] ${
+        className={`hidden min-h-[15rem] sm:min-h-[22.5rem] md:flex md:min-h-[31.25rem] ${
           alignment === "left" ? "flex-row" : "flex-row-reverse"
         }`}
       >
         <div className={`h-full w-1/2 ${bgColor}`}>
           <div
-            className={`flex flex-row p-10 items-center h-full ${
+            className={`flex h-full flex-row items-center p-10 ${
               alignment === "left"
                 ? "justify-start text-start"
                 : "justify-end text-end"
@@ -127,7 +125,7 @@ const HeroSplit = ({
         </div>
         <div className="h-full w-1/2">
           <div
-            className="bg-cover bg-center bg-no-repeat h-full"
+            className="h-full bg-cover bg-center bg-no-repeat"
             style={{
               backgroundImage: `url('${backgroundUrl}')`,
             }}
@@ -167,20 +165,20 @@ const HeroFloating = ({
   return (
     <section className="min-h-[15rem] sm:min-h-[22.5rem] md:min-h-[31.25rem]">
       <div
-        className="bg-cover bg-center bg-no-repeat h-full"
+        className="h-full bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url('${backgroundUrl}')`,
         }}
       >
         <div
-          className={`${ComponentContent} flex flex-row px-28 py-16 items-center justify-center text-center h-full w-full ${
+          className={`${ComponentContent} flex h-full w-full flex-row items-center justify-center px-28 py-16 text-center ${
             alignment === "left"
               ? "md:justify-start md:text-start"
               : "md:justify-end md:text-end"
           }`}
         >
           <div
-            className={`p-10 flex flex-col gap-6 ${bgColor} ${textColor} md:w-2/3 lg:w-1/2`}
+            className={`flex flex-col gap-6 p-10 ${bgColor} ${textColor} md:w-2/3 lg:w-1/2`}
           >
             <h1 className="text-6xl font-medium">{title}</h1>
             {subtitle && <p>{subtitle}</p>}
@@ -225,9 +223,9 @@ const HeroCopyLed = ({
 }: Omit<HeroCopyLedProps, "variant">) => {
   return (
     <section className="min-h-[15rem] sm:min-h-[22.5rem] md:min-h-[31.25rem]">
-      <div className="bg-site-primary-200 w-full flex flex-row justify-center">
+      <div className="flex w-full flex-row justify-center bg-site-primary-200">
         <div
-          className={`${ComponentContent} w-4/5 lg:w-3/4 py-16 flex flex-col items-center text-center md:items-start md:text-start gap-6`}
+          className={`${ComponentContent} flex w-4/5 flex-col items-center gap-6 py-16 text-center md:items-start md:text-start lg:w-3/4`}
         >
           <h1 className="text-6xl font-normal">{title}</h1>
           {subtitle && <p className="text-2xl leading-9">{subtitle}</p>}
@@ -252,7 +250,7 @@ const HeroCopyLed = ({
       </div>
       {backgroundUrl && (
         <div
-          className="bg-cover bg-center bg-no-repeat h-3/5"
+          className="h-3/5 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url('${backgroundUrl}')`,
           }}
@@ -273,12 +271,12 @@ const HeroFloatingImage = ({
 }: HeroFloatingImageProps) => {
   return (
     <>
-      <section className="hidden md:block min-h-[15rem] sm:min-h-[22.5rem] md:min-h-[31.25rem]">
-        <div className="bg-site-primary-200 w-full flex flex-row justify-center">
+      <section className="hidden min-h-[15rem] sm:min-h-[22.5rem] md:block md:min-h-[31.25rem]">
+        <div className="flex w-full flex-row justify-center bg-site-primary-200">
           <div
-            className={`${ComponentContent} w-4/5 lg:w-3/4 py-16 flex flex-row gap-24`}
+            className={`${ComponentContent} flex w-4/5 flex-row gap-24 py-16 lg:w-3/4`}
           >
-            <div className="flex flex-col w-1/2 gap-6">
+            <div className="flex w-1/2 flex-col gap-6">
               <h1 className="text-6xl font-medium">{title}</h1>
               {subtitle && <p>{subtitle}</p>}
               {buttonLabel && buttonUrl && (
@@ -301,7 +299,7 @@ const HeroFloatingImage = ({
             </div>
             <div className="w-1/2 self-center">
               <img
-                className="object-cover h-full w-full max-h-[24rem]"
+                className="h-full max-h-[24rem] w-full object-cover"
                 src={backgroundUrl}
               />
             </div>

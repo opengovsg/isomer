@@ -1,7 +1,5 @@
-import type { SingleCardProps } from "~/interfaces/complex/InfoCards"
-import { Heading } from "../../typography/Heading"
 import { BiRightArrowAlt } from "react-icons/bi"
-import { ButtonLink } from "../../typography/ButtonLink"
+import type { SingleCardProps } from "~/interfaces/complex/InfoCards"
 
 interface CardProps extends SingleCardProps {
   variant?: "horizontal" | "vertical"
@@ -41,24 +39,24 @@ const TextComponent = ({
 }) => {
   return (
     <div
-      className={`py-6 px-5 sm:p-7 flex flex-col flex-grow gap-6 justify-between ${className}`}
+      className={`flex flex-grow flex-col justify-between gap-6 px-5 py-6 sm:p-7 ${className}`}
     >
       <div className="flex flex-col gap-3">
         {title && (
-          <h4 className={`${Heading[4]} text-content-strong`}>{title}</h4>
+          <h4 className="text-heading-04 text-content-strong">{title}</h4>
         )}
         {text && (
-          <p className="text-content text-left text-base sm:text-lg grow">
+          <p className="grow text-left text-base text-content sm:text-lg">
             {text}
           </p>
         )}
       </div>
       {buttonLabel && (
-        <div className={`flex items-center gap-1`}>
-          <p className={`text-interaction-link ${ButtonLink[1]}`}>
+        <div className="flex items-center gap-1">
+          <p className="text-button-link-01 text-interaction-link">
             {buttonLabel}
           </p>
-          <BiRightArrowAlt className="w-6 h-auto flex-shrink-0" />
+          <BiRightArrowAlt className="h-auto w-6 flex-shrink-0" />
         </div>
       )}
     </div>
@@ -103,7 +101,7 @@ const Card = ({
           <ImageComponent
             src={imageUrl}
             alt={imageAlt || title}
-            className="max-h-52"
+            className="h-52"
           />
           <TextComponent text={text} title={title} buttonLabel={buttonLabel} />
         </>
