@@ -66,7 +66,7 @@ const NavSection = ({
   customNavItems,
 }: Pick<FooterProps, "LinkComponent" | "siteNavItems" | "customNavItems">) => {
   return (
-    <div className="text-caption-01 flex flex-col gap-8 lg:flex-row lg:gap-12">
+    <div className="flex flex-col gap-8 text-caption-01 lg:flex-row lg:gap-12">
       <div className="flex flex-col gap-3 lg:w-64">
         {siteNavItems.map((item) => (
           <FooterItem
@@ -124,7 +124,7 @@ const ContactUsSection = ({
   "LinkComponent" | "contactUsLink" | "feedbackFormLink"
 >) => {
   return (
-    <div className="text-caption-01 flex flex-col gap-3">
+    <div className="flex flex-col gap-3 text-caption-01">
       {contactUsLink && (
         <FooterItem
           title="Contact Us"
@@ -183,41 +183,43 @@ const LegalSection = ({
   | "siteMapLink"
 >) => {
   return (
-    <div className="flex flex-col gap-4 lg:gap-2">
-      <p className="text-caption-01 text-content-inverse-light">
-        &copy; {new Date().getFullYear()}{" "}
-        {isGovernment ? "Government of Singapore" : agencyName}, last updated{" "}
-        {lastUpdated}
-      </p>
-      <div className="text-caption-01 flex flex-col gap-3 lg:flex-row lg:gap-8">
-        {isGovernment && (
-          <FooterItem
-            title="Report Vulnerability"
-            url="https://tech.gov.sg/report_vulnerability"
-            LinkComponent={LinkComponent}
-          />
-        )}
-        {privacyStatementLink && (
-          <FooterItem
-            title="Privacy Statement"
-            url={privacyStatementLink}
-            LinkComponent={LinkComponent}
-          />
-        )}
-        {termsOfUseLink && (
-          <FooterItem
-            title="Terms of Use"
-            url={termsOfUseLink}
-            LinkComponent={LinkComponent}
-          />
-        )}
-        {isGovernment && (
-          <FooterItem
-            title="Reach"
-            url={"https://www.reach.gov.sg"}
-            LinkComponent={LinkComponent}
-          />
-        )}
+    <div className="flex h-full">
+      <div className="flex flex-col	justify-end	gap-4 lg:gap-2">
+        <p className="text-content-inverse-light text-caption-01">
+          &copy; {new Date().getFullYear()}{" "}
+          {isGovernment ? "Government of Singapore" : agencyName}, last updated{" "}
+          {lastUpdated}
+        </p>
+        <div className="flex flex-col gap-3 text-caption-01 lg:flex-row lg:gap-8">
+          {isGovernment && (
+            <FooterItem
+              title="Report Vulnerability"
+              url="https://tech.gov.sg/report_vulnerability"
+              LinkComponent={LinkComponent}
+            />
+          )}
+          {privacyStatementLink && (
+            <FooterItem
+              title="Privacy Statement"
+              url={privacyStatementLink}
+              LinkComponent={LinkComponent}
+            />
+          )}
+          {termsOfUseLink && (
+            <FooterItem
+              title="Terms of Use"
+              url={termsOfUseLink}
+              LinkComponent={LinkComponent}
+            />
+          )}
+          {isGovernment && (
+            <FooterItem
+              title="Reach"
+              url={"https://www.reach.gov.sg"}
+              LinkComponent={LinkComponent}
+            />
+          )}
+        </div>
       </div>
     </div>
   )
@@ -225,7 +227,7 @@ const LegalSection = ({
 
 const CreditsSection = () => {
   return (
-    <div className="text-caption-01 flex flex-col gap-6 lg:flex-row lg:gap-8 xl:gap-20">
+    <div className="flex flex-col gap-6 text-caption-01 lg:flex-row lg:gap-8 xl:gap-20">
       <a
         href="https://www.isomer.gov.sg"
         target="_blank"
