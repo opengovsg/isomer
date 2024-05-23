@@ -28,7 +28,7 @@ Default.args = {
       description: "Building a Vibrant Economy, Nurturing Enterprises",
       buttonLabel: "Our plan",
       buttonUrl: "/faq",
-      icon: "doc-report",
+      icon: "bar-chart",
     },
     {
       title:
@@ -60,7 +60,7 @@ Default.args = {
       description: "23 roadmaps to drive industry transformation",
       buttonLabel: "See how we can help",
       buttonUrl: "/faq",
-      icon: "sparkles",
+      icon: "stars",
     },
     {
       title: "Pro-Enterprise Panel (PEP)",
