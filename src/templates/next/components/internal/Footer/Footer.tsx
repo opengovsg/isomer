@@ -184,7 +184,7 @@ const LegalSection = ({
 >) => {
   return (
     <div className="flex h-full">
-      <div className="flex flex-col	justify-end	gap-4 lg:gap-2">
+      <div className="flex flex-col justify-end gap-4 lg:gap-2">
         <p className="text-content-inverse-light text-caption-01">
           &copy; {new Date().getFullYear()}{" "}
           {isGovernment ? "Government of Singapore" : agencyName}, last updated{" "}
