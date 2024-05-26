@@ -37,7 +37,7 @@ const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
       >
         <h2
           className={`w-full text-2xl font-medium text-content ${
-            variant === "side" ? "lg:w-1/3" : ""
+            variant === "side" ? "lg:w-1/3" : "md:max-w-[47.5rem]"
           }`}
         >
           {title}
