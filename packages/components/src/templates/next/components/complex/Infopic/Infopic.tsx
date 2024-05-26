@@ -133,7 +133,7 @@ const SidePartInfoPic = ({
               description={description}
               buttonLabel={button}
               buttonUrl={url}
-              className="max-w-[33.75rem]"
+              className="max-w-[30.25rem]"
             />
           </div>
         </div>
