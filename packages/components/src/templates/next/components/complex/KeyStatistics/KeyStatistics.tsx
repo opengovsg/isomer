@@ -42,7 +42,7 @@ const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
         >
           {title}
         </h2>
-        <div className="flex flex-col flex-wrap justify-center gap-8 md:flex-row">
+        <div className="flex flex-col flex-wrap justify-center gap-x-8 gap-y-10 md:flex-row">
           {statistics.slice(0, maxItems).map(({ label, value }) => (
             <div
               className={`flex grow flex-col gap-3 text-center ${
