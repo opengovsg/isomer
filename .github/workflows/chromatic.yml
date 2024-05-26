@@ -67,6 +67,7 @@ jobs:
         with:
           filters: |
             components:
+              - '.github/workflows/chromatic.yml'
               - 'packages/components/.storybook/**'
               - 'packages/components/src/**'
               - 'packages/components/package.json'
@@ -119,3 +120,4 @@ jobs:
           # onlyChanged: true
           branchName: ${{ env.ISOMER_BRANCH_NAME }}
           autoAcceptChanges: main
+          workingDir: packages/components
