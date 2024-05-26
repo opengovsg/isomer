@@ -12,11 +12,9 @@ const TextComponent = ({
   className?: string
 }) => {
   return (
-    <div className={`flex flex-col gap-10 ${className ?? ""}`}>
+    <div className={`flex flex-col gap-6 ${className ?? ""}`}>
       <div className="flex flex-col gap-4 sm:gap-6">
-        <h1 className="text-2xl font-semibold text-content sm:text-4xl">
-          {title}
-        </h1>
+        <h1 className="text-2xl font-bold text-content sm:text-4xl">{title}</h1>
         {description && (
           <p className="text-sm text-content sm:text-lg">{description}</p>
         )}
@@ -38,11 +36,13 @@ const ImageComponent = ({
   className?: string
 }) => {
   return (
-    <div className={`aspect-h-1 aspect-w-1 overflow-hidden ${className ?? ""}`}>
+    <div
+      className={`aspect-h-1 aspect-w-1 my-auto overflow-hidden ${className ?? ""}`}
+    >
       <img
         src={src}
         alt={alt}
-        className="h-full max-h-[22.5rem] w-full object-cover object-center object-center lg:max-h-[38.75rem]"
+        className="max-h-[22.5rem] w-full object-cover object-center lg:max-h-[38.75rem]"
       />
     </div>
   )
@@ -60,33 +60,33 @@ const SideBySideInfoPic = ({
   return (
     <>
       {/* Mobile-Tablet */}
-      <div className="lg:hidden">
+      <div className="md:hidden">
         <div
-          className={`${ComponentContent} flex flex-col gap-14 py-16 sm:px-14 sm:py-24`}
+          className={`${ComponentContent} flex flex-col gap-10 py-16 sm:px-14 sm:py-12`}
         >
+          <ImageComponent src={src} alt={alt} className="rounded-xl" />
           <TextComponent
             title={title}
             description={description}
             buttonLabel={button}
             buttonUrl={url}
           />
-          <ImageComponent src={src} alt={alt} />
         </div>
       </div>
       {/* Desktop */}
-      <div className="hidden lg:block">
+      <div className="hidden md:block">
         <div
           className={`${ComponentContent} flex ${
             isTextOnRight ? "flex-row" : "flex-row-reverse"
-          } gap-14 py-24`}
+          } gap-16 py-24`}
         >
-          <ImageComponent src={src} alt={alt} className="w-1/3" />
+          <ImageComponent src={src} alt={alt} className="w-1/2 rounded-xl" />
           <TextComponent
             title={title}
             description={description}
             buttonLabel={button}
             buttonUrl={url}
-            className="w-2/3"
+            className="w-1/2 justify-center"
           />
         </div>
       </div>
@@ -125,13 +125,15 @@ const SidePartInfoPic = ({
           className={`flex ${isTextOnRight ? "flex-row" : "flex-row-reverse"}`}
         >
           <ImageComponent src={src} alt={alt} className="w-1/2" />
-          <div className="my-auto w-1/2 py-24 pl-10">
+          <div
+            className={`my-auto flex w-1/2 py-24 ${isTextOnRight ? "justify-start pl-24" : "justify-end pr-24"} `}
+          >
             <TextComponent
               title={title}
               description={description}
               buttonLabel={button}
               buttonUrl={url}
-              className="max-w-screen-sm"
+              className="max-w-[33.75rem]"
             />
           </div>
         </div>
