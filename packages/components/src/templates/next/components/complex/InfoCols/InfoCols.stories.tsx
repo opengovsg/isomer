@@ -21,7 +21,8 @@ export const Default = Template.bind({})
 Default.args = {
   sectionIdx: 0,
   title: "MTI Highlights",
-  subtitle: "Key initiatives from the Ministry of Trade and Industry",
+  subtitle:
+    "These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
   infoBoxes: [
     {
       title: "Committee of Supply (COS) 2023",

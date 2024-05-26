@@ -7,9 +7,15 @@ const InfoColsHeader = ({
   title,
   subtitle,
 }: Pick<InfoColsProps, "title" | "subtitle">) => (
-  <div className="flex w-full flex-col items-start gap-7 text-left">
-    <h2 className="text-heading-03 text-content-strong">{title}</h2>
-    {subtitle && <p className="text-paragraph-02 text-content">{subtitle}</p>}
+  <div className="flex w-full max-w-[47.5rem] flex-col items-start gap-7 text-left">
+    <h2 className="text-2xl font-semibold text-content-strong sm:text-4xl">
+      {title}
+    </h2>
+    {subtitle && (
+      <p className="text-sm text-content text-paragraph-02 sm:text-lg">
+        {subtitle}
+      </p>
+    )}
   </div>
 )
 
@@ -34,10 +40,10 @@ const InfoBoxes = ({
           <InfoBoxIcon icon={infoBox.icon} />
           <div className="flex flex-col items-start gap-4 text-left">
             <div className="flex flex-col items-start gap-4 text-content-strong">
-              <h3 className="text-heading-04 text-content-strong">
+              <h3 className="line-clamp-2 text-lg font-semibold text-content-strong sm:text-2xl">
                 {infoBox.title}
               </h3>
-              <p className="text-paragraph-02 text-content">
+              <p className="line-clamp-4 text-sm text-content sm:text-lg">
                 {infoBox.description}
               </p>
             </div>
