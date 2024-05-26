@@ -14,7 +14,7 @@ env:
   # The full comment text to match to trigger this workflow
   ISOMER_TRIGGER_COMMENT: "!run chromatic"
   # The slug for the Isomer core team
-  ISOMER_CORE_TEAM_SLUG: core
+  ISOMER_CORE_TEAM_SLUG: isomer-admins
   # Use GitHub Token
   GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
@@ -66,15 +66,15 @@ jobs:
         id: filter
         with:
           filters: |
-            frontend:
-              - '.storybook/**'
-              - 'src/**'
-              - 'package.json'
-              - 'package-lock.json'
-              - 'tailwind.config.js'
+            components:
+              - 'packages/components/.storybook/**'
+              - 'packages/components/src/**'
+              - 'packages/components/package.json'
+              - 'packages/components/package-lock.json'
+              - 'packages/components/tailwind.config.js'
 
       - name: Set environment variable to run Chromatic build
-        if: ${{ ((github.event_name == 'push' && steps.filter.outputs.frontend == 'true') || (steps.check.outputs.triggered == 'true' && github.event_name == 'issue_comment' && github.event.issue.pull_request)) }}
+        if: ${{ ((github.event_name == 'push' && steps.filter.outputs.components == 'true') || (steps.check.outputs.triggered == 'true' && github.event_name == 'issue_comment' && github.event.issue.pull_request)) }}
         run: echo "ISOMER_RUN_CHROMATIC_BUILD=true" >> $GITHUB_ENV
 
       # This extra step is not in the original chromatic workflow.
@@ -96,7 +96,7 @@ jobs:
         id: get_pull_request
         with:
           route: GET /repos/{repository}/pulls/{pull_number}
-          repository: ${{ github.repository }} # isomerpages/isomercms-frontend
+          repository: ${{ github.repository }} # opengovsg/isomer-next
           pull_number: ${{ github.event.issue.number }}
 
       - name: Save branch name as environment variable (for pull requests)
