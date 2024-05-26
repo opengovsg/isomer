@@ -1,0 +1,48 @@
+{
+  "version": "0.1.0",
+  "page": {
+    "contentPageHeader": {
+      "summary": "The Ministry of Trade and Industry is one of the ministries of the Singapore Government that works to advance Singapore's economy."
+    },
+    "title": "About us"
+  },
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "The "
+        },
+        {
+          "type": "text",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ],
+          "text": "Ministry of Trade and Industry"
+        },
+        {
+          "type": "text",
+          "text": " is one of the ministries of the "
+        },
+        {
+          "type": "text",
+          "marks": [
+            {
+              "type": "link",
+              "href": "https://www.gov.sg"
+            }
+          ],
+          "text": "Singapore Government"
+        },
+        {
+          "type": "text",
+          "text": " that works to advance Singapore's economy."
+        }
+      ]
+    }
+  ],
+  "layout": "content"
+}

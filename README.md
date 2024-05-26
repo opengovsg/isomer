@@ -1,7 +1,3 @@
-# Isomer Next Components
+## Isomer Next
 
-This repository contains a collection of React components for the Isomer Next project.
-
-## Installation
-
-To use these components in your project, you can install them via npm.
+This is a monorepo for the Isomer Next project.
