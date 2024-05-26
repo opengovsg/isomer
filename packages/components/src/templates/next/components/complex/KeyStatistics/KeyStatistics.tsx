@@ -31,21 +31,21 @@ const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
   return (
     <section>
       <div
-        className={`${ComponentContent} flex flex-col gap-10 py-12 xs:py-24 ${
+        className={`${ComponentContent} flex flex-col gap-16 py-12 xs:py-24 lg:gap-24 ${
           variant === "side" ? "lg:flex-row lg:gap-16" : ""
         }`}
       >
         <h2
-          className={`w-full text-2xl font-semibold text-content xs:text-4xl xs:leading-[2.75rem] ${
+          className={`w-full text-2xl font-medium text-content ${
             variant === "side" ? "lg:w-1/3" : ""
           }`}
         >
           {title}
         </h2>
-        <div className="flex flex-col flex-wrap gap-10 md:flex-row">
+        <div className="flex flex-col flex-wrap justify-center gap-8 md:flex-row">
           {statistics.slice(0, maxItems).map(({ label, value }) => (
             <div
-              className={`flex grow flex-col gap-3 ${
+              className={`flex grow flex-col gap-3 text-center ${
                 ITEM_WIDTHS[variant][Math.min(maxItems, statistics.length)]
               }`}
             >
