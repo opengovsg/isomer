@@ -1,23 +1,15 @@
 # Workflow name
-name: "Chromatic"
+name: "Chromatic for Isomer Components"
 
 # Event for the workflow
 on:
-  issue_comment:
-    types: [created, edited]
+  pull_request:
+    types: [opened, reopened, synchronize]
 
   push:
     branches:
       - main
-
-env:
-  # The full comment text to match to trigger this workflow
-  ISOMER_TRIGGER_COMMENT: "!run chromatic"
-  # The slug for the Isomer core team
-  ISOMER_CORE_TEAM_SLUG: isomer-admins
-  # Use GitHub Token
-  GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-
+  
 # List of jobs
 jobs:
   chromatic:
@@ -28,40 +20,12 @@ jobs:
     environment: staging
     # Job steps
     steps:
-      # Determine if the PR comment should trigger the Chromatic build
-      - name: Check if user is part of Isomer core team (PR comment)
-        if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request }}
-        uses: tspascoal/get-user-teams-membership@v1
-        id: checkUserMember
-        with:
-          username: ${{ github.actor }}
-          team: ${{ env.ISOMER_CORE_TEAM_SLUG }}
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # requires read:org
-
-      - name: Check for trigger words (in PR comment)
-        if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request }}
-        uses: khan/pull-request-comment-trigger@v1.1.0
-        id: check
-        with:
-          trigger: "${{ env.ISOMER_TRIGGER_COMMENT }}"
-          prefix_only: "true"
-          reaction: "+1"
-
-      - name: Checkout repository (pull request)
-        if: ${{ github.event_name == 'issue_comment' }}
-        uses: actions/checkout@v3
-        with:
-          ref: refs/pull/${{ github.event.issue.number }}/head
-          fetch-depth: 0 # 👈 Required to retrieve git history
-
-      - name: Checkout repository (push)
-        if: ${{ github.event_name == 'push' }}
+      - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0 # 👈 Required to retrieve git history
 
-      - name: Check for changes (push)
-        if: ${{ github.event_name == 'push' }}
+      - name: Check for changes
         uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -75,7 +39,7 @@ jobs:
               - 'packages/components/tailwind.config.js'
 
       - name: Set environment variable to run Chromatic build
-        if: ${{ ((github.event_name == 'push' && steps.filter.outputs.components == 'true') || (steps.check.outputs.triggered == 'true' && github.event_name == 'issue_comment' && github.event.issue.pull_request)) }}
+        if: ${{ github.event_name == 'push' && steps.filter.outputs.components == 'true' }}
         run: echo "ISOMER_RUN_CHROMATIC_BUILD=true" >> $GITHUB_ENV
 
       # This extra step is not in the original chromatic workflow.
@@ -91,23 +55,6 @@ jobs:
         if: ${{ env.ISOMER_RUN_CHROMATIC_BUILD == 'true' }}
         run: npm ci
 
-      - name: Get pull request information (for pull requests)
-        if: ${{ env.ISOMER_RUN_CHROMATIC_BUILD == 'true' && github.event_name == 'issue_comment' }}
-        uses: octokit/request-action@v2.x
-        id: get_pull_request
-        with:
-          route: GET /repos/{repository}/pulls/{pull_number}
-          repository: ${{ github.repository }} # opengovsg/isomer-next
-          pull_number: ${{ github.event.issue.number }}
-
-      - name: Save branch name as environment variable (for pull requests)
-        if: ${{ env.ISOMER_RUN_CHROMATIC_BUILD == 'true' && github.event_name == 'issue_comment' }}
-        run: echo "ISOMER_BRANCH_NAME=${{ fromJSON(steps.get_pull_request.outputs.data).head.ref }}" >> $GITHUB_ENV
-
-      - name: Save branch name as environment variable (for push)
-        if: ${{ env.ISOMER_RUN_CHROMATIC_BUILD == 'true' && github.event_name == 'push' }}
-        run: echo "ISOMER_BRANCH_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
-
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         if: ${{ env.ISOMER_RUN_CHROMATIC_BUILD == 'true' }}
@@ -116,8 +63,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          projectToken: ${{ secrets.CHROMATIC_COMPONENTS_PROJECT_TOKEN }}
           # onlyChanged: true
-          branchName: ${{ env.ISOMER_BRANCH_NAME }}
+          branchName: ${{ github.ref_name }}
           autoAcceptChanges: main
           workingDir: packages/components
