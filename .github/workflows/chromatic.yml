@@ -9,7 +9,7 @@ on:
   push:
     branches:
       - main
-  
+
 # List of jobs
 jobs:
   chromatic:
@@ -39,7 +39,7 @@ jobs:
               - 'packages/components/tailwind.config.js'
 
       - name: Set environment variable to run Chromatic build
-        if: ${{ github.event_name == 'push' && steps.filter.outputs.components == 'true' }}
+        if: ${{ steps.filter.outputs.components == 'true' }}
         run: echo "ISOMER_RUN_CHROMATIC_BUILD=true" >> $GITHUB_ENV
 
       # This extra step is not in the original chromatic workflow.
