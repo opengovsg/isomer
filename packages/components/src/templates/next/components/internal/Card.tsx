@@ -41,7 +41,7 @@ const TextComponent = ({
 }) => {
   return (
     <div
-      className={`flex flex-grow flex-col justify-between gap-6 px-5 py-6 sm:p-7 ${className}`}
+      className={`flex flex-grow flex-col justify-between gap-6 px-5 py-6 sm:p-5 ${className}`}
     >
       <div className="flex flex-col gap-3">
         {title && (
