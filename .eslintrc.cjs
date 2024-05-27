@@ -9,6 +9,7 @@ module.exports = {
     "plugin:react/recommended",
     "airbnb",
     "airbnb-typescript",
+    "prettier",
   ],
   overrides: [
     {
