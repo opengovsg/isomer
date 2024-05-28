@@ -16,7 +16,7 @@ jobs:
     # Operating System
     runs-on: ubuntu-latest
     # Only run if the user is not a bot
-    if: ${{ !endsWith(github.actor , 'bot') }}
+    if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') }}
     environment: staging
     # Job steps
     steps:
