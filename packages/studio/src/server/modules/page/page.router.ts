@@ -4,10 +4,6 @@ import { createPageSchema, getEditPageSchema, updatePageBlobSchema, updatePageSc
 export const pageRouter = router({
   readPageAndBlob: protectedProcedure
     .input(getEditPageSchema)
-    // NOTE: Unique constraint on (site_id, page_id)
-    // file: B 
-    // tree: A -> (B -> D) + C 
-    // tree: Folders -> Folders -> Page (meta) => <page_blob> 
     .query(async ({ input, ctx }) => {
 
       // TODO: Fill these in later
