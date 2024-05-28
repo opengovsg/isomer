@@ -88,8 +88,8 @@ export const Navbar = ({
             className="mt-2 flex flex-row flex-wrap gap-1"
             ref={navDesktopRef}
           >
-            {items.map(({ name, url, description, items }, idx) => {
-              if (!items || items.length === 0) {
+            {items.map(({ name, url, description, items: subItems }, idx) => {
+              if (!subItems || subItems.length === 0) {
                 return (
                   <li key={`${name}-${idx}`}>
                     <LinkComponent
@@ -158,7 +158,7 @@ export const Navbar = ({
 
                       <div className="overflow-auto">
                         <ul className="max-w-container mx-auto flex w-full flex-row flex-wrap gap-x-36 gap-y-8 px-10">
-                          {items.map((subItem) => (
+                          {subItems.map((subItem) => (
                             <li key={subItem.name} className="w-2/5">
                               <div className="flex flex-col gap-1">
                                 <LinkComponent href={subItem.url}>
