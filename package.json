@@ -11,7 +11,8 @@
     "storybook": "turbo run storybook --parallel",
     "storybook:build": "turbo run storybook:build --parallel",
     "teardown": "turbo teardown",
-    "test-start": "turbo test-start"
+    "test-start": "turbo test-start", 
+    "dev": "turbo dev" 
   },
   "workspaces": [
     "docs",

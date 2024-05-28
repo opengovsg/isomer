@@ -21,6 +21,7 @@
       "outputs": ["storybook-static/**"]
     },
     "teardown": {},
-    "test-start": {}
+    "test-start": {},
+    "dev": {} 
   }
 }
