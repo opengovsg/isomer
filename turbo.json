@@ -2,6 +2,9 @@
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
     "build": {},
-    "clean": {}
+    "clean": {},
+    "setup:test": {},
+    "teardown": {},
+    "test-start": {}
   }
 }

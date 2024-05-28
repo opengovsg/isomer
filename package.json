@@ -5,7 +5,10 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "clean": "turbo clean"
+    "clean": "turbo clean",
+    "setup:test": "turbo setup:test",
+    "teardown": "turbo teardown",
+    "test-start": "turbo test-start"
   },
   "workspaces": [
     "packages/*"
