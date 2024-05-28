@@ -27,7 +27,7 @@ Default.args = {
   },
   items: [
     {
-      name: "Expandable nav item",
+      name: "About us",
       url: "/item-one",
       items: [
         {
@@ -64,7 +64,7 @@ Default.args = {
       ],
     },
     {
-      name: "Expandable nav item",
+      name: "Industries",
       url: "/item-two",
       description: "This is a description of the item.",
       items: [
@@ -80,7 +80,7 @@ Default.args = {
       ],
     },
     {
-      name: "Expandable nav item",
+      name: "Media",
       url: "/item-three",
       items: [
         {
@@ -95,11 +95,21 @@ Default.args = {
       ],
     },
     {
-      name: "Single item",
-      url: "/single-item",
+      name: "Careers",
+      url: "/item-four",
+      items: [
+        {
+          name: "A sub item",
+          url: "/item-four/sub-item",
+        },
+        {
+          name: "Another sub item",
+          url: "/item-four/another-sub-item",
+        },
+      ],
     },
     {
-      name: "Expandable nav item",
+      name: "Publications",
       url: "/item-five",
       items: [
         {
@@ -113,15 +123,21 @@ Default.args = {
       ],
     },
     {
-      name: "Single item",
-      url: "/single-item",
+      name: "Newsroom",
+      url: "/item-six",
+      items: [
+        {
+          name: "A sub item",
+          url: "/item-six/sub-item",
+        },
+        {
+          name: "Another sub item",
+          url: "/item-six/another-sub-item",
+        },
+      ],
     },
     {
-      name: "Single item",
-      url: "/single-item",
-    },
-    {
-      name: "Single item",
+      name: "Contact us",
       url: "/single-item",
     },
   ],
