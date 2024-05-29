@@ -91,26 +91,31 @@ Default.args = {
   },
   page: {
     title:
-      "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
+      "Singapore's Spectacular Citizens' Festival: a Celebration of Unity and Diversity",
     permalink:
       "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
     lastModified: "2024-05-02T14:12:57.160Z",
-    category: "NParks Happenings",
+    category: "Citizen Engagement",
     date: "1 May 2024",
     articlePageHeader: {
       summary: [
-        "20 pieces of rhinoceros horns were found in two pieces of transit baggage bound for Laos.",
-        "The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
+        "Singapore is preparing to host its inaugural Citizens' Festival in Marina Boulevard.",
+        "The festival aims to unite Singaporeans of all backgrounds through cultural showcases, food markets, live music, and wellness activities.",
       ],
     },
   },
   content: [
     {
+      type: "image",
+      src: "https://images.unsplash.com/photo-1570441262582-a2d4b9a916a5?q=80&w=2948&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "A man is serving food out of a blue food",
+    },
+    {
       type: "paragraph",
       content: [
         {
           type: "text",
-          text: "South African Gumede Sthembiso Joel, 33, was sentenced to 24 months’ imprisonment today after pleading guilty to two charges under the Endangered Species (Import and Export) Act [1] (“ESA”) for transiting in Singapore with rhinoceros horns without a valid permit. This is the heaviest sentence meted out in Singapore to date for a case involving the smuggling of wildlife parts.",
+          text: "Singapore - In a bid to foster community spirit and celebrate the rich tapestry of its diverse population, Singapore is gearing up to host its first-ever Citizens' Festival. This unprecedented event promises to be a dazzling extravaganza filled with entertainment, cultural showcases, and gastronomic delights.",
         },
       ],
     },
@@ -119,7 +124,16 @@ Default.args = {
       content: [
         {
           type: "text",
-          text: "On 4 October 2022, the National Parks Board (NParks) seized 20 pieces of rhinoceros horns that were being smuggled through Singapore Changi Airport. Airport security and NParks’ K9 Unit detected and inspected two pieces of baggage (“Boxes”) and found 34.7 kg of rhinoceros horns, which would have an estimated wholesale value of approximately S$1,200,140.79 (US$843,210) as of 4 October 2022. The accused, who was travelling from South Africa to the Lao People’s Democratic Republic through Singapore, was immediately arrested and the rhinoceros horns were seized by NParks.",
+          text: "One of the highlights of the festival is the Cultural Village, where visitors can immerse themselves in the sights, sounds, and flavors of Singapore's various ethnic communities. From traditional Malay dance performances to Chinese calligraphy demonstrations and Indian culinary workshops, attendees will have the opportunity to gain a deeper appreciation for the country's multicultural heritage.",
+        },
+      ],
+    },
+    {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: "This is a Chat-GPT4 generated article for visual testing purposes.",
         },
       ],
     },

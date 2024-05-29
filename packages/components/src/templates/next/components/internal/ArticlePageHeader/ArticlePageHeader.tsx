@@ -11,34 +11,27 @@ const ArticlePageHeader = ({
   LinkComponent,
 }: ArticlePageHeaderProps) => {
   return (
-    <div className="mx-auto w-full max-w-[960px]">
-      <div className="my-8 lg:my-16">
+    <div className="mx-auto w-full">
+      <div className="my-16">
         <Breadcrumb links={breadcrumb.links} LinkComponent={LinkComponent} />
       </div>
 
-      <div className="mb-3 text-lg text-content-medium">{category}</div>
+      <div className="mb-3 text-base font-medium text-gray-600">{category}</div>
 
-      <div className="flex max-w-[660px] flex-col gap-9">
-        <h1 className="text-[2.375rem] font-semibold leading-[2.75rem] text-content-strong lg:text-5xl lg:leading-[3.625rem]">
+      <div className="flex flex-col gap-5">
+        <h1 className="text-content-strong text-3xl font-semibold tracking-tight lg:text-4xl">
           {title}
         </h1>
+        <p className="text-sm text-gray-800">{date}</p>
 
-        <p className="text-xl leading-8 text-content-strong">{date}</p>
-
-        <div className="bg-utility-neutral px-3 py-[1.125rem]">
+        <div className="text-xl tracking-tight text-gray-500 md:text-2xl">
           {summary.length === 1 ? (
-            <BaseParagraph
-              content={summary[0]}
-              className="text-paragraph-01 text-content"
-            />
+            <BaseParagraph content={summary[0]} />
           ) : (
             <ul className="list-disc ps-7">
               {summary.map((item) => (
                 <li key={Math.random()} className="pl-0.5 [&_p]:inline">
-                  <BaseParagraph
-                    content={item}
-                    className="text-paragraph-01 text-content"
-                  />
+                  <BaseParagraph content={item} />
                 </li>
               ))}
             </ul>
