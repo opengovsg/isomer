@@ -15,7 +15,7 @@ const TitleSection = ({
     <div
       className={`flex max-w-3xl flex-col gap-8 self-start pb-8 sm:pb-12 ${className}`}
     >
-      <h3 className="text-heading-03 text-content-strong">{title}</h3>
+      <h2 className="text-heading-03 text-content-strong">{title}</h2>
       {subtitle && (
         <p className="text-content text-sm sm:text-lg">{subtitle}</p>
       )}
