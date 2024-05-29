@@ -114,7 +114,7 @@ const ContentLayout = ({
         LinkComponent={LinkComponent}
         lastUpdated={page.lastModified}
       />
-      <div className="mx-auto flex max-w-container justify-center gap-[120px] px-6 py-16 md:px-10">
+      <div className="max-w-container mx-auto flex justify-center gap-[120px] px-6 py-16 md:px-10">
         {sideRail && (
           <div className="hidden w-full max-w-[240px] lg:block">
             <Siderail {...sideRail} LinkComponent={LinkComponent} />
