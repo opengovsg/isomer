@@ -67,7 +67,7 @@ const Table = ({ caption, content }: TableProps) => {
         <caption className="mb-4 caption-top text-left">
           <BaseParagraph
             content={caption}
-            className="text-caption-01 sticky left-0 table-header-group text-balance text-content"
+            className="text-caption-01 text-content sticky left-0 table-header-group text-balance"
           />
         </caption>
         <tbody>
@@ -78,7 +78,7 @@ const Table = ({ caption, content }: TableProps) => {
             return (
               <tr
                 key={index}
-                className="*:first:border-divide-subtle *:first:border-t"
+                className="*:first:border-divide-subtle text-left *:first:border-t"
               >
                 {row.content.map((cell, cellIndex) => {
                   return (
@@ -86,10 +86,10 @@ const Table = ({ caption, content }: TableProps) => {
                       key={cellIndex}
                       colSpan={cell.colSpan}
                       rowSpan={cell.rowSpan}
-                      className={`border-divide-subtle max-w-40 break-words border-b border-r px-4 py-3.5 align-top first:border-l last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ol]:text-sm [&_ul]:mt-0 [&_ul]:ps-5 ${
+                      className={`border-divide-subtle max-w-40 break-words border-b border-r px-4 py-3.5 align-top first:border-l last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ol]:text-sm [&_p]:text-sm [&_ul]:mt-0 [&_ul]:ps-5 ${
                         cell.type === "tableHeader"
                           ? "bg-utility-neutral"
-                          : "bg-utility-neutral-subtle [&_p]:text-sm"
+                          : "bg-utility-neutral-subtle"
                       } ${
                         stickyRowIndexes.includes(index) &&
                         cellIndex === 0 &&
