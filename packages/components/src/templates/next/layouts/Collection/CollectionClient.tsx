@@ -260,15 +260,15 @@ const CollectionClient = ({
   )
 
   return (
-    <div className="mx-auto my-20 flex max-w-container flex-col items-center gap-16 px-6 py-16 md:px-10">
-      <div className="flex w-full flex-col gap-12">
-        <h1 className="text-heading-01 flex flex-col gap-16 text-content-strong">
+    <div className="max-w-container mx-auto my-16 flex flex-col items-start gap-16 px-6 md:px-10">
+      <div className="flex max-w-[47.8rem] flex-col gap-12">
+        <h1 className="text-heading-01 text-content-strong flex flex-col gap-16">
           {title}
         </h1>
         <p className="text-paragraph-01 text-content">{subtitle}</p>
       </div>
 
-      <div className="mx-auto w-full sm:w-3/4">
+      <div className="mx-auto w-full">
         <CollectionSearch
           placeholder={`Search for ${page.title.toLowerCase()}`}
           search={searchValue}
@@ -277,7 +277,7 @@ const CollectionClient = ({
       </div>
 
       <div className="flex w-full flex-col justify-between gap-10 lg:flex-row">
-        <div className="w-full lg:w-1/5 xl:w-1/6">
+        <div className="w-full lg:w-1/4">
           <Filter
             filters={filters}
             appliedFilters={appliedFilters}
@@ -291,10 +291,10 @@ const CollectionClient = ({
             }
           />
         </div>
-        <div className="flex w-full flex-col gap-6 lg:w-4/5 xl:w-5/6">
-          <div className="flex w-full flex-wrap items-start justify-between gap-6 sm:flex-nowrap">
+        <div className="flex w-full flex-col gap-4 lg:w-3/4">
+          <div className="flex w-full flex-wrap items-end justify-between gap-6 sm:flex-nowrap">
             <div className="flex h-full w-full flex-col gap-3">
-              <p className="text-paragraph-01 mt-auto text-content">
+              <p className="text-content mt-auto text-base">
                 {appliedFilters.length > 0 || searchValue !== ""
                   ? `${filteredItems.length} search ${
                       filteredItems.length === 1 ? "result" : "results"
@@ -309,7 +309,7 @@ const CollectionClient = ({
                   </>
                 )}
               </p>
-
+              {/* Commenting out applied filter display temporarily
               {appliedFilters.length > 0 && (
                 <div className="flex flex-row flex-wrap gap-3">
                   {getAppliedFiltersWithLabels(filters, appliedFilters).map(
@@ -329,7 +329,7 @@ const CollectionClient = ({
                     ),
                   )}
                 </div>
-              )}
+              )}*/}
             </div>
             <div className="w-full shrink-0 sm:w-[260px]">
               <CollectionSort
@@ -351,12 +351,12 @@ const CollectionClient = ({
               ))}
 
             {paginatedItems.length === 0 && searchValue !== "" && (
-              <div className="m-auto flex flex-col gap-3 text-center">
+              <div className="my-20 flex flex-col gap-3 text-center lg:m-auto">
                 <p className="text-paragraph-01">
                   We couldn’t find articles that match your search.
                 </p>
                 <button
-                  className="mx-auto w-fit text-lg font-semibold text-hyperlink hover:text-hyperlink-hover"
+                  className="text-hyperlink hover:text-hyperlink-hover text-md mx-auto w-fit font-semibold lg:text-lg"
                   onClick={() => {
                     setSearchValue("")
                     setAppliedFilters([])
