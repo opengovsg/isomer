@@ -27,12 +27,12 @@ const HeroGradient = ({
       }}
     >
       <div
-        className={`w-full content-end ${
+        className={`w-full content-center ${
           alignment === "left" ? "bg-gradient-to-r" : "bg-gradient-to-l"
         } from-[rgba(0,0,0,85%)] md:from-[rgba(0,0,0,75%)] xl:from-[rgba(0,0,0,65%)]`}
       >
         <div
-          className={`${ComponentContent} flex flex-row items-end p-10 text-white ${
+          className={`${ComponentContent} flex flex-row p-10 text-white ${
             alignment === "left" ? "justify-start" : "justify-end"
           } ${alignment === "left" ? "text-start" : "text-end"}`}
         >
@@ -223,7 +223,7 @@ const HeroCopyLed = ({
 }: Omit<HeroCopyLedProps, "variant">) => {
   return (
     <section className="h-px min-h-[15rem] sm:min-h-[22.5rem] md:min-h-[31.25rem]">
-      <div className="flex w-full flex-row justify-center bg-site-primary-200">
+      <div className="bg-site-primary-200 flex w-full flex-row justify-center">
         <div
           className={`${ComponentContent} flex w-4/5 flex-col items-center gap-6 py-16 text-center md:items-start md:text-start lg:w-3/4`}
         >
@@ -272,7 +272,7 @@ const HeroFloatingImage = ({
   return (
     <>
       <section className="hidden min-h-[15rem] sm:min-h-[22.5rem] md:block md:min-h-[31.25rem]">
-        <div className="flex w-full flex-row justify-center bg-site-primary-200">
+        <div className="bg-site-primary-200 flex w-full flex-row justify-center">
           <div
             className={`${ComponentContent} flex w-4/5 flex-row gap-24 py-16 lg:w-3/4`}
           >
