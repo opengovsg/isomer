@@ -23,7 +23,7 @@ const ArticleLayout = ({
       LinkComponent={LinkComponent}
       ScriptComponent={ScriptComponent}
     >
-      <div className="mx-auto flex max-w-container flex-col gap-20 px-6 md:px-10">
+      <div className="mx-auto flex max-w-[47.8rem] flex-col gap-20 px-6 md:px-10">
         <ArticlePageHeader
           {...page.articlePageHeader}
           breadcrumb={breadcrumb}
@@ -33,9 +33,7 @@ const ArticleLayout = ({
           LinkComponent={LinkComponent}
         />
 
-        <hr className="border-divider-medium" />
-
-        <div className="mx-auto w-full max-w-[960px] gap-10 pb-16">
+        <div className="mx-auto w-full gap-10 pb-20">
           <div className="w-full overflow-x-auto lg:max-w-[660px]">
             {renderPageContent({ content, LinkComponent })}
           </div>
