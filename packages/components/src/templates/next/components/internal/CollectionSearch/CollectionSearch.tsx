@@ -10,10 +10,10 @@ const CollectionSearch = ({
     <label className="relative block">
       <span className="sr-only">{placeholder}</span>
       <span className="absolute inset-y-0 left-0 flex items-center pl-4">
-        <BiSearch className="h-5 w-5 fill-interaction-support-placeholder" />
+        <BiSearch className="fill-interaction-support-placeholder h-5 w-5" />
       </span>
       <input
-        className="w-full rounded py-3 pl-[3.25rem] ring-1 ring-divider-medium placeholder:text-interaction-support-placeholder focus:ring-2 focus:ring-focus-outline active:bg-interaction-main-subtle-hover active:ring-2 active:ring-focus-outline"
+        className="ring-divider-medium placeholder:text-interaction-support-placeholder focus:ring-focus-outline active:bg-interaction-main-subtle-hover active:ring-focus-outline w-full rounded-lg py-4 pl-[3.25rem] focus:ring-2 active:ring-2"
         placeholder={placeholder}
         type="text"
         name="search"
