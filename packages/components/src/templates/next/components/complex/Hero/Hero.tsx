@@ -29,7 +29,7 @@ const HeroGradient = ({
       <div
         className={`w-full content-center ${
           alignment === "left" ? "bg-gradient-to-r" : "bg-gradient-to-l"
-        } from-[rgba(0,0,0,85%)] md:from-[rgba(0,0,0,75%)] xl:from-[rgba(0,0,0,65%)]`}
+        } from-[rgba(0,0,0,95%)] to-[rgba(0,0,0,70%)] md:from-[rgba(0,0,0,75%)] xl:from-[rgba(0,0,0,95%)]`}
       >
         <div
           className={`${ComponentContent} flex flex-row p-10 text-white ${
@@ -37,7 +37,7 @@ const HeroGradient = ({
           } ${alignment === "left" ? "text-start" : "text-end"}`}
         >
           <div className="flex w-full flex-col gap-6 sm:w-3/5 xl:max-w-[520px]">
-            <h1 className="text-heading-01">{title}</h1>
+            <h1 className="text-heading-01 font-bold">{title}</h1>
             {subtitle && <p className="text-paragraph-01">{subtitle}</p>}
             {buttonLabel && buttonUrl && (
               <div
