@@ -31,14 +31,15 @@ Default.args = {
       url: "/item-one",
       items: [
         {
-          name: "PA's network one",
+          name: "Join us",
           url: "/item-one/pa-network-one",
-          description: "Click here and brace yourself for mild disappointment.",
+          description:
+            "Join us on our journey to improve community engagement in Singapore",
         },
         {
-          name: "PA's network two",
+          name: "Our team",
           url: "/item-one/pa-network-two",
-          description: "Click here and brace yourself for mild disappointment.",
+          description: "This is our leadership and senior management team",
         },
         {
           name: "PA's network three",
@@ -48,18 +49,17 @@ Default.args = {
           name: "PA's network four",
           url: "/item-one/pa-network-four",
           description:
-            "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+            "This one has a pretty long one. If the description gets very very long, it might be worth truncating the description at some point.",
         },
         {
           name: "PA's network five",
           url: "/item-one/pa-network-five",
           description:
-            "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+            "This one has a pretty long one. If the description gets very very long, it might be worth truncating the description at some point.",
         },
         {
           name: "PA's network six",
           url: "/item-one/pa-network-six",
-          description: "Click here and brace yourself for mild disappointment.",
         },
       ],
     },
