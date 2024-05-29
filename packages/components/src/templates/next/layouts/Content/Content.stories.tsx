@@ -1591,6 +1591,15 @@ SmallTable.args = {
       content: [{ type: "text", text: "Checklist for sheer irrationality" }],
     },
     {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: "In the realm of human cognition, irrationality often reigns supreme, defying the logic that ostensibly governs our decisions and actions.",
+        },
+      ],
+    },
+    {
       type: "heading",
       id: "section1",
       level: 3,
@@ -1794,6 +1803,26 @@ SmallTable.args = {
     {
       type: "paragraph",
       content: [{ type: "text", text: "This is yet another paragraph" }],
+    },
+    {
+      type: "heading",
+      id: "section3",
+      level: 3,
+      content: [
+        {
+          type: "text",
+          text: "Test this is a long heading that comes right before a h4",
+        },
+      ],
+    },
+    {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: "What if got some small text here like the section below this is going to explain blah blah",
+        },
+      ],
     },
     {
       type: "heading",

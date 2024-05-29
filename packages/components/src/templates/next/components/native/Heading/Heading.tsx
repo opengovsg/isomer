@@ -6,7 +6,7 @@ const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
     return (
       <h2
         id={id}
-        className="text-heading-02 text-content [&:not(:first-child)]:mt-36"
+        className="text-heading-02 text-content [&:not(:first-child)]:mt-24"
       >
         {getTextAsHtml(content)}
       </h2>
@@ -16,7 +16,7 @@ const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
     return (
       <h3
         id={id}
-        className="text-heading-03 text-content [&:not(:first-child)]:mt-16"
+        className="text-heading-03 text-content [&:not(:first-child)]:mt-14"
       >
         {getTextAsHtml(content)}
       </h3>
