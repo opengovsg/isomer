@@ -7,6 +7,8 @@
     "build": "turbo build",
     "clean": "turbo clean",
     "setup:test": "turbo setup:test",
+    "storybook": "turbo run storybook --parallel",
+    "storybook:build": "turbo run storybook:build --parallel",
     "teardown": "turbo teardown",
     "test-start": "turbo test-start"
   },
