@@ -7,14 +7,14 @@ export const getBreadcrumbFromSiteMap = (
   sitemap: IsomerSitemap,
   permalink: string[],
 ): BreadcrumbProps => {
-  const breadcrumb = []
+  const breadcrumb = [
+    {
+      title: "Home",
+      url: "/",
+    },
+  ]
   let node = sitemap
   let currentPath = ""
-
-  breadcrumb.push({
-    title: "Home",
-    url: "/",
-  })
 
   for (const pathSegment of permalink.slice(0, -1)) {
     currentPath += "/" + pathSegment
