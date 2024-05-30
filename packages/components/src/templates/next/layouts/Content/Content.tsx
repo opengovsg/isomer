@@ -1,6 +1,11 @@
 import { ContentPageSchema, IsomerSitemap } from "~/engine"
 import type { SiderailProps } from "~/interfaces"
-import { getBreadcrumbFromSiteMap, getTextAsHtml } from "~/utils"
+import {
+  getBreadcrumbFromSiteMap,
+  getDigestFromText,
+  getRandomNumberBetIntervals,
+  getTextAsHtml,
+} from "~/utils"
 import {
   ContentPageHeader,
   Siderail,
@@ -79,6 +84,30 @@ const getTableOfContentsFromContent = (
   return { items }
 }
 
+// if block.id is not present for heading level 2, we auto-generate one
+// for use in table of contents anchor links
+const transformContent = (content: ContentPageSchema["content"]) => {
+  const transformedContent: ContentPageSchema["content"] = []
+  for (let i = 0; i < content.length; i++) {
+    const block = content[i]
+    if (
+      block.type === "heading" &&
+      block.level === 2 &&
+      block.id === undefined
+    ) {
+      // generate a unique hash to auto-generate anchor links
+      const anchorId = getDigestFromText(
+        `${JSON.stringify(block)}_${getRandomNumberBetIntervals(1, 1000)}`,
+      )
+
+      transformedContent.push({ ...block, id: anchorId })
+    } else {
+      transformedContent.push(block)
+    }
+  }
+  return transformedContent
+}
+
 const ContentLayout = ({
   site,
   page,
@@ -90,7 +119,9 @@ const ContentLayout = ({
     site.siteMap,
     page.permalink.split("/").slice(1),
   )
-  const tableOfContents = getTableOfContentsFromContent(content)
+  // auto-inject ids for heading level 2 blocks if does not exist
+  const transformedContent = transformContent(content)
+  const tableOfContents = getTableOfContentsFromContent(transformedContent)
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
@@ -114,7 +145,7 @@ const ContentLayout = ({
         LinkComponent={LinkComponent}
         lastUpdated={page.lastModified}
       />
-      <div className="mx-auto flex max-w-container justify-center gap-[120px] px-6 py-16 md:px-10">
+      <div className="max-w-container mx-auto flex justify-center gap-[120px] px-6 py-16 md:px-10">
         {sideRail && (
           <div className="hidden w-full max-w-[240px] lg:block">
             <Siderail {...sideRail} LinkComponent={LinkComponent} />
@@ -124,7 +155,9 @@ const ContentLayout = ({
           {tableOfContents.items.length > 1 && (
             <TableOfContents {...tableOfContents} />
           )}
-          <div>{renderPageContent({ content, LinkComponent })}</div>
+          <div>
+            {renderPageContent({ content: transformedContent, LinkComponent })}
+          </div>
         </div>
       </div>
     </Skeleton>
