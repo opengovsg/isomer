@@ -1,9 +1,17 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env", "tsconfig.json"],
   "pipeline": {
     "build": {},
     "clean": {},
     "setup:test": {},
+    "storybook": {
+      "cache": false
+    },
+    "storybook:build": {
+      "inputs": ["!storybook-static/**"],
+      "outputs": ["storybook-static/**"]
+    },
     "teardown": {},
     "test-start": {}
   }

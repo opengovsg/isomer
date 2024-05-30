@@ -45,3 +45,5 @@ playwright/test-results
 
 # storybook
 build-storybook.log
+# Turborepo
+.turbo
