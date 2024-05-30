@@ -122,8 +122,8 @@ export default {
           fontWeight: "600",
           letterSpacing: theme("letterSpacing.tight"),
           "@media (min-width: 1024px)": {
-            fontSize: "3rem",
-            lineHeight: "3.625rem",
+            fontSize: "2.7rem",
+            lineHeight: "3.2rem",
           },
         },
 
