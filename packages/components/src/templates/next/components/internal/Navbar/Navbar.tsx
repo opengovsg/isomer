@@ -145,7 +145,7 @@ export const Navbar = ({
                         <button
                           onClick={() => setOpenNavItemIdx(-1)}
                           aria-label="Close navigation item"
-                          className="text-content text-base"
+                          className="text-content text-sm lg:text-base"
                         >
                           Close
                           <BiX className="-mt-0.5 ml-1 inline text-2xl" />
@@ -265,9 +265,9 @@ export const Navbar = ({
             {items.map(({ name, url, items }, idx) => {
               if (!items || items.length === 0) {
                 return (
-                  <li key={Math.random()} className="w-full py-2">
+                  <li key={Math.random()} className="w-full py-3">
                     <LinkComponent
-                      className="text-content hover:text-content-medium block w-full text-lg"
+                      className="text-content hover:text-content-medium text-md block w-full"
                       href={url}
                     >
                       {name}
@@ -277,15 +277,13 @@ export const Navbar = ({
               }
 
               return (
-                <li key={Math.random()} className="w-full py-2">
+                <li key={Math.random()} className="w-full py-3">
                   <button
                     onClick={() => setOpenNavItemIdx(idx)}
                     className="w-full"
                   >
                     <div className="flex w-full flex-row justify-between">
-                      <p className="text-content hover:text-content-medium text-lg">
-                        {name}
-                      </p>
+                      <p className="text-md text-content">{name}</p>
                       <BiChevronRight className="text-2xl" />
                     </div>
                   </button>
@@ -306,25 +304,25 @@ export const Navbar = ({
         >
           <div className="px-6 pt-4">
             <button
-              className="text-content flex flex-row gap-3 pb-4 pt-2.5"
+              className="flex flex-row gap-3 pb-4 pt-2.5"
               onClick={() => setOpenNavItemIdx(-1)}
               aria-label="Return to main navigation menu"
             >
               <BiLeftArrowAlt className="text-2xl" />
-              <h5 className="text-heading-05">{items[openNavItemIdx].name}</h5>
+              <h5 className="text-md">{items[openNavItemIdx].name}</h5>
             </button>
 
-            <ul className="flex flex-row flex-wrap gap-x-36 gap-y-[1.125rem] px-9 py-4 md:gap-y-8">
+            <ul className="flex flex-row flex-wrap gap-x-36 gap-y-5 px-9 py-4 md:gap-y-8">
               {items[openNavItemIdx].items?.map(
                 ({ name, url, description }) => (
                   <li key={name} className="w-full md:w-1/3">
                     <div className="flex flex-col gap-1">
                       <LinkComponent
                         href={url}
-                        className="text-paragraph-01-medium text-content underline"
+                        className="text-paragraph-01 text-content-medium md:text-content"
                       >
                         {name}
-                        <BiRightArrowAlt className="-mt-0.5 ml-1 hidden text-xl md:inline" />
+                        <BiRightArrowAlt className="-mt-0.5 ml-1 hidden text-lg md:inline" />
                       </LinkComponent>
                       <p className="text-paragraph-02 text-content-medium hidden md:block">
                         {description}
