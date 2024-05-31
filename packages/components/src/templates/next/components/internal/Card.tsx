@@ -50,7 +50,7 @@ const TextComponent = ({
           </h4>
         )}
         {text && (
-          <p className="text-content line-clamp-4 grow text-left	text-base sm:text-lg">
+          <p className="text-content line-clamp-4 grow text-left text-base sm:text-lg">
             {text}
           </p>
         )}
@@ -65,7 +65,7 @@ const TextComponent = ({
                 ? "noopener noreferrer nofollow"
                 : undefined
             }
-            className="text-button-link-01 text-interaction-link after:absolute after:inset-0"
+            className="text-interaction-link font-medium after:absolute after:inset-0"
           >
             {buttonLabel}
           </a>
@@ -90,7 +90,7 @@ const Card = ({
     <div
       className={`relative flex ${
         variant === "horizontal" ? "flex-row" : "flex-col"
-      } border-divider-medium gap-1 rounded-md border hover:opacity-80 ${className}`}
+      } outline-divider-medium gap-1 rounded-md outline hover:opacity-80 ${className}`}
     >
       {variant === "horizontal" ? (
         <>

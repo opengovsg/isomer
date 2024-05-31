@@ -3,7 +3,7 @@ import type { ButtonColorScheme } from "~/interfaces/complex/Button"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 
 const Label = ({ label }: Pick<ButtonProps, "label">) => (
-  <span className="text-md text-center font-medium leading-tight">{label}</span>
+  <span className="text-center text-lg font-medium leading-tight">{label}</span>
 )
 
 const RightIcon = ({ rightIcon }: Pick<ButtonProps, "rightIcon">) => {
@@ -32,7 +32,7 @@ const BaseButton = ({
       rel={href.startsWith("http") ? "noopener noreferrer nofollow" : undefined}
       type="button"
       className={`${className} inline-flex w-fit items-center gap-1 rounded ${
-        isLinkVariant ? "h-fit" : "px-4 py-3"
+        isLinkVariant ? "h-fit" : "px-5 py-3"
       } `}
     >
       <Label label={label} />
