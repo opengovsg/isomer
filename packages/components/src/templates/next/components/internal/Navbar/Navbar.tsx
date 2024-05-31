@@ -108,7 +108,7 @@ export const Navbar = ({
                     className={`flex flex-row px-2 py-1 align-middle text-base/5 font-medium ${
                       openNavItemIdx === idx
                         ? "text-[#766a62]"
-                        : "text-[#1f2937]"
+                        : "text-neutral-800"
                     }`}
                     onClick={() => {
                       setIsSearchOpen(false)
@@ -127,18 +127,16 @@ export const Navbar = ({
                   <div
                     className={`${
                       openNavItemIdx === idx ? "absolute" : "hidden"
-                    } border-b-divider-medium left-0 z-20 w-full border-b bg-white px-4`}
+                    } left-0 z-20 w-full border-y  border-y-gray-100 bg-white px-4`}
                     style={{
                       top: `${navbarDesktopHeight}px`,
                     }}
                   >
-                    <div className="mx-auto flex max-h-[32rem] w-full max-w-screen-xl flex-col py-12">
-                      <div className="max-w-container mx-auto flex w-full flex-row items-start px-10 pb-4">
+                    <div className="mx-auto flex w-full max-w-screen-xl flex-col py-12">
+                      <div className="max-w-container mx-auto flex w-full flex-row items-start px-10 pb-12">
                         <div className="flex flex-col gap-1">
-                          <h6 className="text-heading-06 text-content-medium uppercase">
-                            {name}
-                          </h6>
-                          <p className="text-content">{description}</p>
+                          <h6 className="text-2xl font-semibold">{name}</h6>
+                          <p className="text-gray-700">{description}</p>
                         </div>
 
                         {/* Spacer */}
@@ -147,14 +145,12 @@ export const Navbar = ({
                         <button
                           onClick={() => setOpenNavItemIdx(-1)}
                           aria-label="Close navigation item"
-                          className="text-button-link-01 text-content"
+                          className="text-content text-sm lg:text-base"
                         >
                           Close
                           <BiX className="-mt-0.5 ml-1 inline text-2xl" />
                         </button>
                       </div>
-
-                      <hr className="border-t-divider-medium mb-8 border-t" />
 
                       <div className="overflow-auto">
                         <ul className="max-w-container mx-auto flex w-full flex-row flex-wrap gap-x-36 gap-y-8 px-10">
@@ -162,12 +158,12 @@ export const Navbar = ({
                             <li key={subItem.name} className="w-2/5">
                               <div className="flex flex-col gap-1">
                                 <LinkComponent href={subItem.url}>
-                                  <p className="text-paragraph-01-medium text-content text-pretty underline underline-offset-2">
+                                  <p className="text-content text-pretty text-lg font-semibold hover:underline hover:underline-offset-2">
                                     {subItem.name}
-                                    <BiRightArrowAlt className="-mt-0.5 inline h-auto w-6" />
+                                    <BiRightArrowAlt className="-mt-0.5 inline h-auto w-5" />
                                   </p>
                                 </LinkComponent>
-                                <p className="text-paragraph-02 text-content-medium">
+                                <p className="text-base text-gray-500">
                                   {subItem.description}
                                 </p>
                               </div>
@@ -218,7 +214,6 @@ export const Navbar = ({
                 setOpenNavItemIdx(-1)
               }}
               aria-label="Close navigation menu"
-              className="mb-[5px]"
             >
               Close
               <BiX className="-mt-0.5 ml-1 inline text-2xl" />
@@ -270,9 +265,9 @@ export const Navbar = ({
             {items.map(({ name, url, items }, idx) => {
               if (!items || items.length === 0) {
                 return (
-                  <li key={Math.random()} className="w-full py-2">
+                  <li key={Math.random()} className="w-full py-3">
                     <LinkComponent
-                      className="text-content hover:text-content-medium block w-full text-lg"
+                      className="text-content hover:text-content-medium text-md block w-full"
                       href={url}
                     >
                       {name}
@@ -282,15 +277,13 @@ export const Navbar = ({
               }
 
               return (
-                <li key={Math.random()} className="w-full py-2">
+                <li key={Math.random()} className="w-full py-3">
                   <button
                     onClick={() => setOpenNavItemIdx(idx)}
                     className="w-full"
                   >
                     <div className="flex w-full flex-row justify-between">
-                      <p className="text-content hover:text-content-medium text-lg">
-                        {name}
-                      </p>
+                      <p className="text-md text-content">{name}</p>
                       <BiChevronRight className="text-2xl" />
                     </div>
                   </button>
@@ -311,25 +304,25 @@ export const Navbar = ({
         >
           <div className="px-6 pt-4">
             <button
-              className="text-content flex flex-row gap-3 pb-4 pt-2.5"
+              className="flex flex-row gap-3 pb-4 pt-2.5"
               onClick={() => setOpenNavItemIdx(-1)}
               aria-label="Return to main navigation menu"
             >
               <BiLeftArrowAlt className="text-2xl" />
-              <h5 className="text-heading-05">{items[openNavItemIdx].name}</h5>
+              <h5 className="text-md">{items[openNavItemIdx].name}</h5>
             </button>
 
-            <ul className="flex flex-row flex-wrap gap-x-36 gap-y-[1.125rem] px-9 py-4 md:gap-y-8">
+            <ul className="flex flex-row flex-wrap gap-x-36 gap-y-5 px-9 py-4 md:gap-y-8">
               {items[openNavItemIdx].items?.map(
                 ({ name, url, description }) => (
                   <li key={name} className="w-full md:w-1/3">
                     <div className="flex flex-col gap-1">
                       <LinkComponent
                         href={url}
-                        className="text-paragraph-01-medium text-content underline"
+                        className="text-paragraph-01 text-content-medium md:text-content"
                       >
                         {name}
-                        <BiRightArrowAlt className="-mt-0.5 ml-1 hidden text-xl md:inline" />
+                        <BiRightArrowAlt className="-mt-0.5 ml-1 hidden text-lg md:inline" />
                       </LinkComponent>
                       <p className="text-paragraph-02 text-content-medium hidden md:block">
                         {description}
