@@ -8,6 +8,7 @@
   "scripts": {
     "rollup": "rollup -c",
     "storybook": "storybook dev -p 6006",
+    "dev": "npm run storybook",
     "build-storybook": "storybook build",
     "publish-package": "rollup -c && npm run publish",
     "clean": "rimraf dist",
