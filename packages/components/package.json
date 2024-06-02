@@ -101,7 +101,7 @@
   "dependencies": {
     "@govtechsg/sgds": "^2.2.0",
     "@govtechsg/sgds-react": "^2.5.0",
-    "@headlessui/react": "^1.7.19",
+    "@headlessui/react": "^2.0.4",
     "isomorphic-dompurify": "^2.11.0",
     "js-base64": "^3.7.7",
     "js-md5": "^0.8.3",
