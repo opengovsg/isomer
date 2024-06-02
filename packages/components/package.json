@@ -1,5 +1,5 @@
 {
-  "name": "@isomerpages/isomer-components",
+  "name": "@opengovsg/isomer-components",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/isomerpages"
   },

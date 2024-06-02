@@ -2,8 +2,16 @@
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env", "tsconfig.json"],
   "pipeline": {
-    "build": {},
+    "build": {
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
     "clean": {},
+    "dev": {
+      "dependsOn": ["db:setup"],
+      "cache": false,
+      "persistent": true
+    },
+    "db:setup": { "cache": false },
     "setup:test": {},
     "storybook": {
       "cache": false

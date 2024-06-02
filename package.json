@@ -6,6 +6,7 @@
   "scripts": {
     "build": "turbo build",
     "clean": "turbo clean",
+    "dev": "turbo run dev",
     "setup:test": "turbo setup:test",
     "storybook": "turbo run storybook --parallel",
     "storybook:build": "turbo run storybook:build --parallel",
@@ -13,6 +14,8 @@
     "test-start": "turbo test-start"
   },
   "workspaces": [
+    "docs",
+    "apps/*",
     "packages/*"
   ],
   "author": "Isomer Team",
