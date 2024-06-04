@@ -10,7 +10,7 @@ const LocalSearchInputBox = ({
         type="search"
         name="q"
         placeholder="Search this site"
-        className="block w-full border border-divider-medium px-4 py-2 focus:border-site-primary focus:outline-none focus:ring-site-primary"
+        className="border-divider-medium focus:border-site-primary focus:ring-site-primary block w-full border px-4 py-2 focus:outline-none"
       />
 
       <button type="submit" aria-label="Search this site">
