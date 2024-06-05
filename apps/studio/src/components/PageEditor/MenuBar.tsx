@@ -18,6 +18,7 @@ import {
   BsSubscript,
 } from 'react-icons/bs'
 import type { Editor } from '@tiptap/core'
+import { Divider, Wrap } from '@chakra-ui/react'
 
 const MenuBar = ({ editor, schema }: { editor: Editor; schema: any }) => {
   const items: any[] = [
@@ -260,11 +261,11 @@ const MenuBar = ({ editor, schema }: { editor: Editor; schema: any }) => {
   ]
 
   return (
-    <div className="flex flex-row bg-gray-200 flex-wrap flex-grow-0 flex-shrink-0 flex-auto p-1 border-b border-b-[#BFC2C8] gap-1">
+    <Wrap flexGrow="0" flexShrink="0" p="0.25rem" gap="0.25rem">
       {items.map((item) => (
         <>
           {item.type === 'divider' && !item.isHidden && (
-            <hr className="h-5 border-b-0 border-r border-[#BFC2C8] mx-1" />
+            <Divider orientation="vertical" height="1.25rem" />
           )}
 
           {/* {item.type === "horizontal-list" && (
@@ -397,7 +398,7 @@ const MenuBar = ({ editor, schema }: { editor: Editor; schema: any }) => {
           )}
         </>
       ))}
-    </div>
+    </Wrap>
   )
 }
 

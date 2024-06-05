@@ -64,16 +64,27 @@ const Editor = ({ jsonSchema, editorValue, onChange }: any) => {
     <Box>
       <ThemeProvider theme={jsonFormsTheme}>
         <CssBaseline />
-        <div className="p-2 overflow-y-auto max-h-full [&_div]:!max-w-full [&_div_.MuiTabs-flexContainer]:overflow-x-auto">
+        <Box
+          padding="0.5rem"
+          overflowY={'auto'}
+          maxH="full"
+          css={{
+            '& div': {
+              maxWidth: '100% !important', // Setting max-w-full with high specificity
+            },
+            '& div.MuiTabs-flexContainer': {
+              overflowX: 'auto',
+            },
+          }}
+        >
           <JsonForms
             schema={jsonSchema}
-            // schema={schema}
             data={editorValue}
             renderers={renderers}
             cells={materialCells}
             onChange={({ data }) => onChange(data)}
           />
-        </div>
+        </Box>
       </ThemeProvider>
     </Box>
   )

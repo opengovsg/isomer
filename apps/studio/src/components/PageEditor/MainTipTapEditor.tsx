@@ -29,6 +29,7 @@ import {
 } from '@tiptap/react'
 import type { CustomRendererProps } from './types'
 import MenuBar from './MenuBar'
+import { Box } from '@chakra-ui/react'
 
 const convertToTiptap: any = (value: any) => {
   const keys = Object.keys(value)
@@ -101,7 +102,14 @@ const convertFromTiptap: any = (value: any) => {
 const CustomNode = ({ type }: any) => {
   return (
     <NodeViewWrapper>
-      <div className="px-2 py-1 bg-slate-100">{type}</div>
+      <Box
+        px="0.5rem"
+        py="0.25rem"
+        background="slate-100"
+        className="px-2 py-1 bg-slate-100"
+      >
+        {type}
+      </Box>
     </NodeViewWrapper>
   )
 }
@@ -219,13 +227,14 @@ const MainTiptapEditor = ({
   })
 
   return (
-    <div className="p-2">
+    <Box padding="0.5rem" borderWidth={'1px'} borderColor="gray.300">
       <MenuBar editor={editor!} schema={rootSchema} />
       <EditorContent
         editor={editor}
         className="p-2 border focus:[&>.tiptap]:outline-offset-8"
+        style={{ padding: '0.5rem', borderStyle: 'solid' }}
       />
-    </div>
+    </Box>
   )
 }
 
