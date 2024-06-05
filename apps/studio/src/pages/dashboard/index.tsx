@@ -1,6 +1,6 @@
 import { useDisclosure } from '@chakra-ui/react'
 import { Button } from '@opengovsg/design-system-react'
-import PageCreateModal from '~/components/features/editing-experience/PageCreateModal'
+import PageCreateModal from '~/features/editing-experience/PageCreateModal'
 
 export default function Dashboard() {
   const { isOpen, onOpen, onClose } = useDisclosure()

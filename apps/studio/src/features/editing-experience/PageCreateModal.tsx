@@ -61,8 +61,7 @@ export const PageCreateModal = ({
   } = useForm<PageCreateFormFields>()
 
   const watchAllFields = watch()
-  console.log(watchAllFields)
-  console.log(`errors`, errors)
+
   useEffect(() => {
     setTitleLen(watchAllFields.title?.length || 0)
     setPageUrlLen(watchAllFields.url?.length || 0)
