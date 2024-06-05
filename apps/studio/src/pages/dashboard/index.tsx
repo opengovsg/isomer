@@ -31,24 +31,30 @@ export default function Dashboard() {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Tell us about your new page</ModalHeader>
+          <ModalHeader color="base.content.strong">
+            Tell us about your new page
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <FormControl>
               <Stack gap={'1.5em'}>
-                <Text fontSize="md">You can change these later.</Text>
+                <Text fontSize="md" color="base.content.default">
+                  You can change these later.
+                </Text>
                 {/* Section 1: Page Title */}
                 <Box>
-                  <FormLabel>
+                  <FormLabel color="base.content.strong">
                     Page title
-                    <FormHelperText>Title should be descriptive</FormHelperText>
+                    <FormHelperText color="base.content.default">
+                      Title should be descriptive
+                    </FormHelperText>
                   </FormLabel>
 
                   <Input
                     type="text"
                     placeholder="This is a title for your new page"
                   />
-                  <FormHelperText mt={'0.5em'}>
+                  <FormHelperText mt={'0.5em'} color="base.content.medium">
                     200 characters left
                   </FormHelperText>
                 </Box>
@@ -62,12 +68,19 @@ export default function Dashboard() {
                     </FormHelperText>
                   </FormLabel>
                   <InputGroup>
-                    <InputLeftAddon color={'brand.secondary.400'}>
+                    <InputLeftAddon
+                      bgColor="interaction.support.disabled"
+                      color="base.divider.strong"
+                    >
                       your-site.gov.sg/
                     </InputLeftAddon>
-                    <Input type="tel" defaultValue={'hello-world'} />
+                    <Input
+                      type="tel"
+                      defaultValue={'hello-world'}
+                      color="base.content.default"
+                    />
                   </InputGroup>
-                  <FormHelperText mt={'0.5em'}>
+                  <FormHelperText mt={'0.5em'} color="base.content.medium">
                     200 characters left
                   </FormHelperText>
                 </Box>
@@ -80,11 +93,12 @@ export default function Dashboard() {
               variant="link"
               mr={5}
               onClick={onClose}
-              color={'brand.secondary.700'}
+              fontWeight={500}
+              color={'base.content.strong'}
             >
               Cancel
             </Button>
-            <Button>Create page</Button>
+            <Button bgColor="interaction.main.default">Create page</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
