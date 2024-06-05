@@ -31,7 +31,7 @@ export const postRouter = router({
       /* TODO: EXAMPLE: Remove later, this is a sample execution using Kysely */
       const postsDB = await ctx.db
         .selectFrom('Post')
-        .select(['Post.id', 'Post'])
+        .select('Post.id')
         .where(
           'Post.id',
           'in',
