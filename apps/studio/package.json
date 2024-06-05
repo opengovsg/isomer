@@ -8,6 +8,7 @@
     "db:sleep": "sleep 3",
     "db:seed": "prisma db seed",
     "db:reset": "prisma migrate reset",
+    "db:push": "prisma db push",
     "setup": "run-s --print-label db:setup db:sleep migrate:dev db:seed",
     "setup:test": "run-s --print-label db:setup db:sleep migrate db:seed",
     "teardown": "docker compose down",
