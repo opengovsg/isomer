@@ -23,7 +23,7 @@ export const PostImages = ({ images }: PostImagesProps): JSX.Element | null => {
       columns={Math.min(Math.max(images.length, 1), 2)}
       spacing="2px"
     >
-      {images.map((url, index) => (
+      {images.map((url: string, index: number) => (
         <Box height={imageContainerHeight} data-value="post-action" key={index}>
           <Image
             alt="Uploaded image"
