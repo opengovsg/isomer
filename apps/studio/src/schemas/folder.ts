@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-export const getFolderSchema = z.object({
-    // Could pass a null resourceId for the root level folder?
+export const readFolderOrTopLevelFolder = z.object({
+    // Null resourceId indicates reading of top level folder in a site.
     siteId: z.string(),
     resourceId: z.string().nullable()
 })

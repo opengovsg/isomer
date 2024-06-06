@@ -22,8 +22,5 @@
   "license": "ISC",
   "devDependencies": {
     "turbo": "^1.13.3"
-  },
-  "dependencies": {
-    "zod": "^3.23.8"
   }
 }
