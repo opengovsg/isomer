@@ -197,7 +197,9 @@ const MainTiptapEditor = ({
               (component: string) =>
               ({ tr, dispatch, editor }) => {
                 const { selection } = tr
-                const node = editor.schema.nodes[component].create({})
+                const parentNode = editor.schema.nodes[component]
+                if (!parentNode) return false
+                const node = parentNode.create({})
 
                 if (dispatch) {
                   tr.replaceRangeWith(selection.from, selection.to, node)
