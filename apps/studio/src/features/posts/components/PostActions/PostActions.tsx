@@ -42,7 +42,7 @@ export const PostActions = ({
   })
 
   const incrementReplyCount = () => {
-    setPost((prevPost) => ({
+    setPost((prevPost: RouterOutput['post']['byUser']['posts'][number]) => ({
       ...prevPost,
       _count: {
         ...prevPost._count,
