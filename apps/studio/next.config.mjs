@@ -4,16 +4,22 @@
  */
 const { env } = await import('./src/env.mjs')
 
+/*
+TODO: Removing this CSP first
+  // img-src 'self' data: blob: ${
+  //   // For displaying images from R2
+  //   env.R2_PUBLIC_HOSTNAME ? `https://${env.R2_PUBLIC_HOSTNAME}` : ''
+  // };
+*/
+
+// TODO: Stricten the CSP for images
 const ContentSecurityPolicy = `
   default-src 'none';
   base-uri 'self';
   font-src 'self' https: data:;
   form-action 'self';
   frame-ancestors 'self';
-  img-src 'self' data: blob: ${
-    // For displaying images from R2
-    env.R2_PUBLIC_HOSTNAME ? `https://${env.R2_PUBLIC_HOSTNAME}` : ''
-  };
+  img-src * data:;
   frame-src 'self';
   object-src 'none';
   script-src 'self' ${env.NODE_ENV === 'production' ? '' : "'unsafe-eval'"};
