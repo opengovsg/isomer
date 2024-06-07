@@ -207,7 +207,7 @@ export const DashboardTable = (): JSX.Element => {
                       {element.type === 'page' && (
                         <VStack alignSelf='stretch' alignItems='flex-start'>
                           <Text textColor='base.content.strong' textStyle='caption-2'>{element.lastEditUser}</Text>
-                          <Text textColor='base.content.medium' textStyle='caption-2'>{element.lastEditDate.toLocaleString()}</Text>
+                          <Text textColor='base.content.medium' textStyle='caption-2'>{Math.floor((new Date().getTime() - (element.lastEditDate as Date).getTime()) / (1000 * 3600 * 24))} Days Ago</Text>
                         </VStack>
                       )}
                       
