@@ -118,6 +118,7 @@ export const DashboardTable = (): JSX.Element => {
   //       throw new Error(exception)
   //   }
   // },[sorting,dataToDisplay])
+  const entriesPerPage = 6
   return (
     <>
       <TableContainer w='100%' borderRadius='8px' border='1px' borderColor='base.divider.medium' bgColor='#FFF' >
@@ -173,7 +174,7 @@ export const DashboardTable = (): JSX.Element => {
             </Tr>
           </Thead>
           <Tbody>
-            {dataToDisplay.slice((pageNumber-1) * 6, pageNumber * 6).map((element) => {
+            {dataToDisplay.slice((pageNumber-1) * entriesPerPage, pageNumber * entriesPerPage).map((element) => {
               return (
                 <Tr>
                   <Td w='min-content'>
@@ -197,7 +198,9 @@ export const DashboardTable = (): JSX.Element => {
                   </Td>
 
                   <Td>
-                    {element.type === 'page' && element.status=='draft' && <Badge variant='subtle' colorScheme='warning' borderRadius='50px' ><BiSolidCircle color='utility.feedback.warning' style={{marginRight:'4px'}}/>Draft</Badge>}
+                    
+                    {/* Fill doesn't seem to work with semantic tokens   */}
+                    {element.type === 'page' && element.status=='draft' && <Badge variant='subtle' colorScheme='warning' borderRadius='50px' ><BiSolidCircle fill='#FFDA68' style={{marginRight:'4px'}}/>Draft</Badge>} 
                     {element.type === 'page' && element.status=='published' && <Badge variant='subtle' colorScheme='success' borderRadius='50px' ><BiSolidCircle style={{marginRight:'4px'}}/>Published</Badge>}
                     {element.type === 'folder' && <MdOutlineHorizontalRule />}
                   </Td>
@@ -222,7 +225,7 @@ export const DashboardTable = (): JSX.Element => {
         </Table>
       </TableContainer>
       <Box alignSelf='flex-end'>      
-        <Pagination  currentPage={pageNumber} onPageChange={onPageChange} pageSize={6} totalCount={dataToDisplay.length}  />
+        <Pagination  currentPage={pageNumber} onPageChange={onPageChange} pageSize={entriesPerPage} totalCount={dataToDisplay.length}  />
       </Box>
     </>
   )
