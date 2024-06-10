@@ -138,21 +138,21 @@ export const DashboardTable = (): JSX.Element => {
         <Table>
           <Thead>
             <Tr>
-              <Th w="auto">
+              <Th w="5%">
                 {/* checkbox */}
                 <Checkbox size="sm" w="fit-content" h="fit-content" />
               </Th>
-              <Th textTransform="none">
+              <Th textTransform="none" w="65%">
                 <HStack>
                   <Text textStyle="body-2">Title</Text>
                 </HStack>
               </Th>
-              <Th textTransform="none">
+              <Th textTransform="none" w="8%">
                 <HStack>
                   <Text textStyle="body-2">Status</Text>
                 </HStack>
               </Th>
-              <Th textTransform="none">
+              <Th textTransform="none" w="22%">
                 <HStack>
                   <Text textStyle="body-2">Last Edited</Text>
                 </HStack>
