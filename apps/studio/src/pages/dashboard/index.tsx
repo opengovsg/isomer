@@ -1,4 +1,11 @@
-import { Box, Center, IconButton, Td, color, useDisclosure } from '@chakra-ui/react'
+import {
+  Box,
+  Center,
+  IconButton,
+  Td,
+  color,
+  useDisclosure,
+} from '@chakra-ui/react'
 import { Badge, BadgeLeftIcon, Button } from '@opengovsg/design-system-react'
 import PageCreateModal from '~/features/editing-experience/PageCreateModal'
 import {
@@ -15,30 +22,54 @@ import {
 import { Checkbox, Pagination } from '@opengovsg/design-system-react'
 import { VscAccount } from 'react-icons/vsc'
 import { type NextPageWithLayout } from '~/lib/types'
-import { BiDotsHorizontalRounded, BiFileBlank, BiFolder, BiHome, BiSolidCircle } from 'react-icons/bi'
+import {
+  BiDotsHorizontalRounded,
+  BiFileBlank,
+  BiFolder,
+  BiHome,
+  BiSolidCircle,
+} from 'react-icons/bi'
 import { useEffect, useState } from 'react'
 import { boolean } from 'zod'
 import _ from 'lodash'
 import { MdOutlineHorizontalRule } from 'react-icons/md'
 
 const Dashboard: NextPageWithLayout = () => {
-  const { isOpen:isPageCreateModalOpen, onOpen:onPageCreateModalOpen, onClose:onpageCreateModalClose } = useDisclosure()
+  const {
+    isOpen: isPageCreateModalOpen,
+    onOpen: onPageCreateModalOpen,
+    onClose: onpageCreateModalClose,
+  } = useDisclosure()
   return (
-    <VStack bgColor="#F3F5F7" w='100%' p='1.75rem'  minH='100vh'>
-      <Text alignSelf='flex-start' textColor='base.content.default' textStyle='h5' >My Pages</Text>
-      <HStack w='100%' alignItems='end'>
-        <Text alignSelf='flex-start' mr='auto' textColor='base.content.default' textStyle='body-2'>
+    <VStack bgColor="#F3F5F7" w="100%" p="1.75rem" minH="100vh">
+      <Text
+        alignSelf="flex-start"
+        textColor="base.content.default"
+        textStyle="h5"
+      >
+        My Pages
+      </Text>
+      <HStack w="100%" alignItems="end">
+        <Text
+          alignSelf="flex-start"
+          mr="auto"
+          textColor="base.content.default"
+          textStyle="body-2"
+        >
           Double click a page to start editing.
         </Text>
-        <Button alignSelf='flex-end' ml='auto' variant='outline' size='xs'>
+        <Button alignSelf="flex-end" ml="auto" variant="outline" size="xs">
           Create a folder
         </Button>
-        <Button onClick={onPageCreateModalOpen} alignSelf='flex-end' size='xs'>
+        <Button onClick={onPageCreateModalOpen} alignSelf="flex-end" size="xs">
           Create a new page
         </Button>
       </HStack>
-      <DashboardTable/>
-      <PageCreateModal isOpen={isPageCreateModalOpen} onClose={onpageCreateModalClose}/>
+      <DashboardTable />
+      <PageCreateModal
+        isOpen={isPageCreateModalOpen}
+        onClose={onpageCreateModalClose}
+      />
     </VStack>
   )
 }
@@ -93,139 +124,155 @@ export const DashboardTable = (): JSX.Element => {
 
   const [pageNumber, onPageChange] = useState(1)
   const [dataToDisplay, setDataToDisplay] = useState(dummyChildData)
-  // const [sorting, setSorting] = useState<{column:'Title'|'Status'|'Last Edited', ascending:boolean}>({column: 'Title', ascending: true})
 
-  // useEffect(()=>{
-  //   console.log(sorting)
-  //   const colToSort=sorting.column
-  //   const sortedData=[...dataToDisplay]
-  //   switch(colToSort){
-  //     case('Title'):
-  //       _.sortBy(sortedData,(a)=>a.name)
-  //       sorting.ascending?setDataToDisplay(sortedData):setDataToDisplay(sortedData.toReversed())
-  //       break
-  //     case('Last Edited'):
-  //       _.sortBy(sortedData,(a)=>a.lastEditDate)
-  //       sorting.ascending?setDataToDisplay(sortedData):setDataToDisplay(sortedData.toReversed())
-  //       break
-      
-  //     case('Status'):
-  //       _.sortBy(sortedData,(a)=>a.status)
-  //       sorting.ascending?setDataToDisplay(sortedData):setDataToDisplay(sortedData.toReversed())
-  //       break
-  //     default:
-  //       const exception: never = colToSort
-  //       throw new Error(exception)
-  //   }
-  // },[sorting,dataToDisplay])
   const entriesPerPage = 6
   return (
     <>
-      <TableContainer w='100%' borderRadius='8px' border='1px' borderColor='base.divider.medium' bgColor='#FFF' >
+      <TableContainer
+        w="100%"
+        borderRadius="8px"
+        border="1px"
+        borderColor="base.divider.medium"
+        bgColor="#FFF"
+      >
         <Table>
-          <Thead >
-            <Tr >
-              <Th w='auto'>
+          <Thead>
+            <Tr>
+              <Th w="auto">
                 {/* checkbox */}
-                <Checkbox size='sm' w='fit-content' h='fit-content'/>
+                <Checkbox size="sm" w="fit-content" h="fit-content" />
               </Th>
-              <Th 
-              // onClick={()=>{
-              //   if(sorting.column==='Title'){
-              //     setSorting({...sorting, ascending:!sorting.ascending})
-              //   } else {
-              //     setSorting({column:'Title', ascending:true})
-              //   }
-              // }}
-              textTransform='none'
-              >
+              <Th textTransform="none">
                 <HStack>
-                  <Text textStyle='body-2'>Title</Text>
+                  <Text textStyle="body-2">Title</Text>
                 </HStack>
               </Th>
-              <Th 
-              // onClick={()=>{
-              //   if(sorting.column==='Status'){
-              //     setSorting({...sorting, ascending:!sorting.ascending})
-              //   } else {
-              //     setSorting({column:'Status', ascending:true})
-              //   }
-              // }}
-              textTransform='none'
-              >
+              <Th textTransform="none">
                 <HStack>
-                  <Text textStyle='body-2'>Status</Text>
+                  <Text textStyle="body-2">Status</Text>
                 </HStack>
               </Th>
-              <Th 
-              // onClick={()=>{
-              //   if(sorting.column==="Last Edited"){
-              //     setSorting({...sorting, ascending:!sorting.ascending})
-              //   } else {
-              //     setSorting({column:'Last Edited', ascending:true})
-              //   }
-              // }}
-              textTransform='none'
-              >
+              <Th textTransform="none">
                 <HStack>
-                  <Text textStyle='body-2'>Last Edited</Text>
+                  <Text textStyle="body-2">Last Edited</Text>
                 </HStack>
               </Th>
             </Tr>
           </Thead>
           <Tbody>
-            {dataToDisplay.slice((pageNumber-1) * entriesPerPage, pageNumber * entriesPerPage).map((element) => {
-              return (
-                <Tr>
-                  <Td w='min-content'>
-                  <Checkbox size='sm' w='fit-content' h='fit-content'/>
-                  </Td>
-
-                  <Td>
-                    <HStack spacing='0.75rem'>
-                      {element.type === 'page' && element.permalink === '/' && <BiHome size='1.25rem' />}
-                      {element.type === 'page' && element.permalink !== '/' && <BiFileBlank size='1.25rem' />}
-                      {element.type === 'folder' && <BiFolder size='1.25rem' />}
-
-                      <VStack alignItems='flex-start'>
-                        <Text textStyle='subhead-2' >{element.name}</Text>
-                        <Text textStyle='caption-2' >
-                          {element.type === 'page' && element.permalink}
-                          {element.type === 'folder' && '0 pages'}
-                        </Text>
-                      </VStack>
-                    </HStack>
-                  </Td>
-
-                  <Td>
-                    
-                    {/* Fill doesn't seem to work with semantic tokens   */}
-                    {element.type === 'page' && element.status=='draft' && <Badge variant='subtle' colorScheme='warning' borderRadius='50px' ><BiSolidCircle fill='#FFDA68' style={{marginRight:'4px'}}/>Draft</Badge>} 
-                    {element.type === 'page' && element.status=='published' && <Badge variant='subtle' colorScheme='success' borderRadius='50px' ><BiSolidCircle style={{marginRight:'4px'}}/>Published</Badge>}
-                    {element.type === 'folder' && <MdOutlineHorizontalRule />}
-                  </Td>
-
-                  <Td>
-                    <HStack justifyContent='space-between'>
-                      {element.type === 'page' && (
-                        <VStack alignSelf='stretch' alignItems='flex-start'>
-                          <Text textColor='base.content.strong' textStyle='caption-2'>{element.lastEditUser}</Text>
-                          <Text textColor='base.content.medium' textStyle='caption-2'>{Math.floor((new Date().getTime() - (element.lastEditDate as Date).getTime()) / (1000 * 3600 * 24))} Days Ago</Text>
-                        </VStack>
-                      )}
-                      
-                      {element.type === 'folder' && <MdOutlineHorizontalRule />}
-                      <IconButton variant='clear' colorScheme='neutral' aria-label={'Manage'} icon={<BiDotsHorizontalRounded size='1.5rem'/>} />
-                    </HStack>
-                  </Td>
-                </Tr>
+            {dataToDisplay
+              .slice(
+                (pageNumber - 1) * entriesPerPage,
+                pageNumber * entriesPerPage,
               )
-            })}
+              .map((element) => {
+                return (
+                  <Tr>
+                    <Td w="min-content">
+                      <Checkbox size="sm" w="fit-content" h="fit-content" />
+                    </Td>
+
+                    <Td>
+                      <HStack spacing="0.75rem">
+                        {element.type === 'page' &&
+                          element.permalink === '/' && (
+                            <BiHome size="1.25rem" />
+                          )}
+                        {element.type === 'page' &&
+                          element.permalink !== '/' && (
+                            <BiFileBlank size="1.25rem" />
+                          )}
+                        {element.type === 'folder' && (
+                          <BiFolder size="1.25rem" />
+                        )}
+
+                        <VStack alignItems="flex-start">
+                          <Text textStyle="subhead-2">{element.name}</Text>
+                          <Text textStyle="caption-2">
+                            {element.type === 'page' && element.permalink}
+                            {element.type === 'folder' && '0 pages'}
+                          </Text>
+                        </VStack>
+                      </HStack>
+                    </Td>
+
+                    <Td>
+                      {/* Fill doesn't seem to work with semantic tokens   */}
+                      {element.type === 'page' && element.status == 'draft' && (
+                        <Badge
+                          variant="subtle"
+                          colorScheme="warning"
+                          borderRadius="50px"
+                        >
+                          <BiSolidCircle
+                            fill="#FFDA68"
+                            style={{ marginRight: '4px' }}
+                          />
+                          Draft
+                        </Badge>
+                      )}
+                      {element.type === 'page' &&
+                        element.status == 'published' && (
+                          <Badge
+                            variant="subtle"
+                            colorScheme="success"
+                            borderRadius="50px"
+                          >
+                            <BiSolidCircle style={{ marginRight: '4px' }} />
+                            Published
+                          </Badge>
+                        )}
+                      {element.type === 'folder' && <MdOutlineHorizontalRule />}
+                    </Td>
+
+                    <Td>
+                      <HStack justifyContent="space-between">
+                        {element.type === 'page' && (
+                          <VStack alignSelf="stretch" alignItems="flex-start">
+                            <Text
+                              textColor="base.content.strong"
+                              textStyle="caption-2"
+                            >
+                              {element.lastEditUser}
+                            </Text>
+                            <Text
+                              textColor="base.content.medium"
+                              textStyle="caption-2"
+                            >
+                              {Math.floor(
+                                (new Date().getTime() -
+                                  (element.lastEditDate as Date).getTime()) /
+                                  (1000 * 3600 * 24),
+                              )}{' '}
+                              Days Ago
+                            </Text>
+                          </VStack>
+                        )}
+
+                        {element.type === 'folder' && (
+                          <MdOutlineHorizontalRule />
+                        )}
+                        <IconButton
+                          variant="clear"
+                          colorScheme="neutral"
+                          aria-label={'Manage'}
+                          icon={<BiDotsHorizontalRounded size="1.5rem" />}
+                        />
+                      </HStack>
+                    </Td>
+                  </Tr>
+                )
+              })}
           </Tbody>
         </Table>
       </TableContainer>
-      <Box alignSelf='flex-end'>      
-        <Pagination  currentPage={pageNumber} onPageChange={onPageChange} pageSize={entriesPerPage} totalCount={dataToDisplay.length}  />
+      <Box alignSelf="flex-end">
+        <Pagination
+          currentPage={pageNumber}
+          onPageChange={onPageChange}
+          pageSize={entriesPerPage}
+          totalCount={dataToDisplay.length}
+        />
       </Box>
     </>
   )
