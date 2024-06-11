@@ -1,16 +1,15 @@
 pull_request_rules:
-  - name: Approve and merge non-major version dependabot upgrades
+  - name: Approve & merge non-major version dependabot upgrades
     conditions:
       - author~=^dependabot\[bot\]$
       - check-success~=install
       - check-success~=build
-      - -dependabot-update-type = version-update:semver-major
+      - '-dependabot-update-type = version-update:semver-major'
     actions:
       review:
         type: APPROVE
       merge:
         method: squash
-
   - name: Approve and merge Snyk.io upgrades
     conditions:
       - author=isomeradmin
@@ -23,27 +22,26 @@ pull_request_rules:
         type: APPROVE
       merge:
         method: squash
-
   - name: Ping Isomer members for stale open PRs (>1 month since last activity)
     conditions:
       - updated-at<30 days ago
-      - -closed
+      - '-closed'
     actions:
       request_reviews:
         teams:
-          - "@opengovsg/isomer-engineers"
+          - '@opengovsg/isomer-engineers'
       comment:
-        message: This pull request has been stale for more than 30 days! Could someone please take a look at it @opengovsg/isomer-engineers
-
+        message: >-
+          This pull request has been stale for more than 30 days! Could someone
+          please take a look at it @opengovsg/isomer-engineers
   - name: Automatically delete branches after they have been merged
     conditions:
       - merged
     actions:
-      delete_head_branch:
-
+      delete_head_branch: 
   - name: Automatically mark a PR as draft if [WIP] is in the title
     conditions:
       - title~=(?i)\[wip\]
     actions:
       edit:
-        draft: True
+        draft: true
