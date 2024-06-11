@@ -41,7 +41,7 @@ yarn-error.log*
 playwright/test-results
 
 # env
-.env
+.env*
 
 # storybook
 build-storybook.log
