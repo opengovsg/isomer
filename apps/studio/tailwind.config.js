@@ -1,23 +1,15 @@
 /** @type {import('tailwindcss').Config} */
-import classicPreset from './src/presets/classic'
-import nextPreset from './src/presets/next'
-import { ClassicPreset, NextPreset } from '@opengovsg/isomer-components'
+import { NextPreset } from '@opengovsg/isomer-components'
 
 export default {
   content: [
-    // './index.html',
-    // './src/**/*.{js,ts,jsx,tsx}',
-    // './src/**/*.{js,ts,jsx,tsx,mdx}',
     './src/**/*.{js,ts,jsx,tsx,mdx}',
     './node_modules/@opengovsg/isomer-components/**/*.{js,ts,jsx,tsx}',
-    './node_modules/@opengovsg/isomer-components/**/*.{js,ts,jsx,tsx}',
     '../../node_modules/@opengovsg/isomer-components/**/*.{js,ts,jsx,tsx}',
-    // './components/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   presets: [
     //   // Note: This is here temporarily until we can figure out how to load the
     //   // presets dynamically depending on the template being used.
-    ClassicPreset,
     NextPreset,
   ],
   theme: {
