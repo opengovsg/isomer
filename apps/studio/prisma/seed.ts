@@ -3,7 +3,7 @@
  *
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
-import { db } from '../database'
+import { db } from '../database/database'
 
 async function main() {
   // Nothing
