@@ -99,7 +99,7 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
-    "@govtechsg/sgds": "^2.2.0",
+    "@govtechsg/sgds": "^2.3.3",
     "@govtechsg/sgds-react": "^2.5.0",
     "@headlessui/react": "^2.0.4",
     "isomorphic-dompurify": "^2.11.0",
