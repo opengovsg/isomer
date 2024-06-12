@@ -15,7 +15,7 @@ curl https://raw.githubusercontent.com/opengovsg/isomer-next/main/tooling/templa
 #######################
 
 # Temporary until we start doing proper releases of the Isomer components
-curl -L https://raw.githubusercontent.com/opengovsg/isomer-next/main/docs/isomerpages-isomer-components-0.0.13.tgz -o isomerpages-isomer-components-0.0.13.tgz
+curl -L https://github.com/isomerpages/isomer-components-package/raw/main/opengovsg-isomer-components-0.0.13.tgz -o isomerpages-isomer-components-0.0.13.tgz
 npm install isomerpages-isomer-components-0.0.13.tgz
 
 #######################################################################
@@ -42,3 +42,4 @@ cp -v sitemap.json public/
 # cp -v searchIndex.json public/
 
 echo "Copied sitemap and search index to public folder"
+
