@@ -1,5 +1,5 @@
 import { Post } from '~/features/posts/components'
-import { RouterOutput, trpc } from '~/utils/trpc'
+import { trpc } from '~/utils/trpc'
 import { EmptyPostList } from './EmptyPostList'
 import { Stack, StackDivider } from '@chakra-ui/react'
 import { APP_GRID_COLUMN } from '~/constants/layouts'
@@ -17,11 +17,9 @@ export const PostList = (): JSX.Element => {
       gridColumn={APP_GRID_COLUMN}
       flexDir="column"
     >
-      {data.items.map(
-        (post: RouterOutput['post']['byUser']['posts'][number]) => (
-          <Post key={post.id} post={post} />
-        ),
-      )}
+      {data.items.map((post) => (
+        <Post key={post.id} post={post} />
+      ))}
     </Stack>
   )
 }
