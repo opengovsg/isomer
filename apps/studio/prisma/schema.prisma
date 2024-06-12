@@ -7,8 +7,16 @@ datasource db {
 }
 
 generator client {
-  provider        = "prisma-kysely"
-  previewFeatures = ["fullTextSearch"]
+  provider = "prisma-client-js"
+}
+
+generator kysely {
+  provider     = "prisma-kysely"
+  readOnlyIds  = true
+  output       = "./generated"
+  fileName     = "generatedTypes.ts"
+  // Optionally generate runtime enums to a separate file
+  enumFileName = "generatedEnums.ts"
 }
 
 model VerificationToken {
@@ -22,14 +30,14 @@ model Post {
   id           String       @id @default(cuid())
   title        String?      @db.Text
   content      String       @db.Text
-  contentHtml  String       @map("content_html") @db.Text
-  authorId     String       @map("author_id")
+  contentHtml  String       @db.Text
+  authorId     String
   author       User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
   images       String[]
   likes        LikedPosts[]
   // This features the self-relation Prisma concept, specifically a one-to-many self relation.
   // https://www.prisma.io/docs/concepts/components/prisma-schema/relations/self-relations
-  parentPostId String?      @map("parent_post_id")
+  parentPostId String?
   // The parent post of this post, if it is a reply.
   // @relation("PostToParent") is the name of the relation. See relation documentation below for more info.
   parent       Post?        @relation("PostReplies", fields: [parentPostId], references: [id])
@@ -39,9 +47,9 @@ model Post {
   // To return `Date`s intact through the API we use transformers
   // https://trpc.io/docs/data-transformers
   // This is unique so it can be used for cursor-based pagination
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at") @db.Timestamp
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime? @db.Timestamp
 
   @@index([parentPostId])
   @@index([parentPostId, deletedAt, id])
@@ -51,10 +59,10 @@ model Post {
 
 model LikedPosts {
   post      Post     @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  postId    String   @map("post_id")
+  postId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
+  userId    String
+  createdAt DateTime @default(now())
 
   @@id([postId, userId])
 }
@@ -64,7 +72,7 @@ model User {
   name          String?
   username      String?      @unique
   email         String?      @unique
-  emailVerified DateTime?    @map("email_verified")
+  emailVerified DateTime?
   image         String?
   bio           String?
   posts         Post[]
@@ -77,7 +85,7 @@ model Accounts {
   provider          String
   providerAccountId String
 
-  userId String @map("user_id")
+  userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
