@@ -1,7 +1,7 @@
 import config from "@/data/config.json";
 import footer from "@/data/footer.json";
 import navbar from "@/data/navbar.json";
-import { getRobotsTxt } from "@isomerpages/isomer-components";
+import { getRobotsTxt } from "@opengovsg/isomer-components";
 import type { MetadataRoute } from "next";
 
 const timeNow = new Date();
