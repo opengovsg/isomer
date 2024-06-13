@@ -15,7 +15,7 @@ curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/ta
 #######################
 
 # Temporary until we start doing proper releases of the Isomer components
-curl -L https://github.com/isomerpages/isomer-components-package/raw/main/opengovsg-isomer-components-0.0.13.tgz -o opengovsg-isomer-components-0.0.13.tgz
+curl -L https://raw.githubusercontent.com/isomerpages/isomer-components-package/main/opengovsg-isomer-components-0.0.13.tgz -o opengovsg-isomer-components-0.0.13.tgz
 npm install opengovsg-isomer-components-0.0.13.tgz
 
 #######################################################################
