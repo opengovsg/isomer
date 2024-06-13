@@ -7,7 +7,7 @@ import {
   getMetadata,
   getSitemapXml,
   type IsomerPageSchema,
-} from "@isomerpages/isomer-components";
+} from "@opengovsg/isomer-components";
 import type { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
 

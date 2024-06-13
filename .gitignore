@@ -41,3 +41,6 @@ build-storybook.log
 
 # Build artifacts
 dist/
+
+# env file
+.env
