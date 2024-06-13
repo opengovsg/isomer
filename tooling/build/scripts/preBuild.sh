@@ -6,25 +6,25 @@ set -x
 # Download package.json and package-lock.json files from central repo #
 #######################################################################
 
-curl https://raw.githubusercontent.com/opengovsg/isomer-next/main/tooling/template/package.json -o package.json
-curl https://raw.githubusercontent.com/opengovsg/isomer-next/main/tooling/template/package-lock.json -o package-lock.json
-curl https://raw.githubusercontent.com/opengovsg/isomer-next/main/tooling/template/tailwind.config.js -o tailwind.config.js
+curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/package.json -o package.json
+curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/package-lock.json -o package-lock.json
+curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/tailwind.config.js -o tailwind.config.js
 
 #######################
 # Install NPM modules #
 #######################
 
 # Temporary until we start doing proper releases of the Isomer components
-curl -L https://raw.githubusercontent.com/opengovsg/isomer-next/main/docs/isomerpages-isomer-components-0.0.13.tgz -o isomerpages-isomer-components-0.0.13.tgz
-npm install isomerpages-isomer-components-0.0.13.tgz
+curl -L https://raw.githubusercontent.com/isomerpages/isomer-components-package/main/opengovsg-isomer-components-0.0.13.tgz -o opengovsg-isomer-components-0.0.13.tgz
+npm install opengovsg-isomer-components-0.0.13.tgz
 
 #######################################################################
 # Generate sitemap.json and search index                              #
 #######################################################################
 mkdir -p scripts/
 
-curl https://raw.githubusercontent.com/opengovsg/isomer-next/main/tooling/build/scripts/generate-sitemap.js -o scripts/generate-sitemap.js
-# curl https://raw.githubusercontent.com/opengovsg/isomer-next/main/tooling/build/scripts/generate-search-index.js -o scripts/generate-search-index.js
+curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/generate-sitemap.js -o scripts/generate-sitemap.js
+# curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/generate-search-index.js -o scripts/generate-search-index.js
 
 node scripts/generate-sitemap.js
 
