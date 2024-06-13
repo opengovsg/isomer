@@ -8,7 +8,7 @@ import { type GetLayout } from '~/lib/types'
 export const PageEditingLayout: GetLayout = (page) => {
   return (
     <EnforceLoginStatePageWrapper>
-      <Flex minH="$100vh" flexDir="column" bg="base.canvas.alt" pos="relative">
+      <Flex minH="100vh" flexDir="column" bg="base.canvas.alt" pos="relative">
         <Grid
           flex={1}
           width="100vw"
