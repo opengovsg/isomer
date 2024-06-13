@@ -106,7 +106,7 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-class-properties": "^7.24.6",
-    "@babel/plugin-transform-object-rest-spread": "^7.23.4",
+    "@babel/plugin-transform-object-rest-spread": "^7.24.7",
     "@babel/preset-env": "^7.23.8",
     "@babel/preset-typescript": "^7.24.6",
     "@chakra-ui/cli": "^2.4.1",
