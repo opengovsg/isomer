@@ -11,6 +11,17 @@ generator client {
   previewFeatures = ["fullTextSearch"]
 }
 
+generator kysely {
+  provider = "prisma-kysely"
+
+  // Optionally provide a destination directory for the generated file
+  // and a filename of your choice
+  output       = "../src/db"
+  fileName     = "types.ts"
+  // Optionally generate runtime enums to a separate file
+  enumFileName = "enums.ts"
+}
+
 model VerificationToken {
   identifier String   @id
   token      String
@@ -18,68 +29,73 @@ model VerificationToken {
   expires    DateTime
 }
 
-model Post {
-  id           String       @id @default(cuid())
-  title        String?      @db.Text
-  content      String       @db.Text
-  contentHtml  String       @map("content_html") @db.Text
-  authorId     String       @map("author_id")
-  author       User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  images       String[]
-  likes        LikedPosts[]
-  // This features the self-relation Prisma concept, specifically a one-to-many self relation.
-  // https://www.prisma.io/docs/concepts/components/prisma-schema/relations/self-relations
-  parentPostId String?      @map("parent_post_id")
-  // The parent post of this post, if it is a reply.
-  // @relation("PostToParent") is the name of the relation. See relation documentation below for more info.
-  parent       Post?        @relation("PostReplies", fields: [parentPostId], references: [id])
-  // The replies to this post.
-  replies      Post[]       @relation("PostReplies")
+model Resource {
+  id             String       @id @default(cuid())
+  name           String
+  siteId         String
+  parentId       String?
+  lastEditTime   DateTime
+  lastEditUserId Int
+  blobId         String?      @unique
+  variant        ResourceType
+  userId         String
 
-  // To return `Date`s intact through the API we use transformers
-  // https://trpc.io/docs/data-transformers
-  // This is unique so it can be used for cursor-based pagination
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at") @db.Timestamp
+  site         Site         @relation(fields: [siteId], references: [id])
+  parent       Resource?    @relation("parentRelation", fields: [parentId], references: [id])
+  child        Resource[]   @relation("parentRelation")
+  lastEditUser User         @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction) // Don't delete the file if the user is deleted
+  blob         Blob?
+  Permission   Permission[]
 
-  @@index([parentPostId])
-  @@index([parentPostId, deletedAt, id])
-  @@index([deletedAt])
-  @@index([createdAt])
-}
-
-model LikedPosts {
-  post      Post     @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  postId    String   @map("post_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@id([postId, userId])
+  @@unique([siteId, parentId, name], name: "uniqueChildNames")
 }
 
 model User {
-  id            String       @id @default(cuid())
-  name          String?
-  username      String?      @unique
-  email         String?      @unique
-  emailVerified DateTime?    @map("email_verified")
-  image         String?
-  bio           String?
-  posts         Post[]
-  likedPosts    LikedPosts[]
-  accounts      Accounts[]
+  id    String @id @default(cuid())
+  name  String
+  email String @unique
+  phone String @unique
+
+  Resource   Resource[]
+  Permission Permission[]
 }
 
-model Accounts {
-  id                String @id @default(cuid())
-  provider          String
-  providerAccountId String
+model Permission {
+  id         String   @id @default(cuid())
+  resourceId String
+  userId     String
+  role       RoleType
 
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Delete the row if either resource or user is deleted, default behavior cascade
+  resource Resource @relation(fields: [resourceId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
 
-  @@unique([provider, providerAccountId])
-  @@index([userId])
+  // userId and resource Id should be unique? Each user should have unambiguous access to resource? Or not if we take the strictest or laxest perm for the user
+  @@unique([userId, resourceId], name: "unambiguousPermissionsPerUserResource")
+}
+
+model Site {
+  id   String @id @default(cuid())
+  name String @unique
+
+  Resource Resource[]
+}
+
+model Blob {
+  id          String @id @default(cuid())
+  blobContent Json
+
+  // Should the blob be deleted on deletion of the resource? 
+  resource Resource @relation(fields: [id], references: [blobId])
+}
+
+enum ResourceType {
+  PageResource
+  FolderResource
+}
+
+enum RoleType {
+  Admin
+  Editor
+  Publisher
 }
