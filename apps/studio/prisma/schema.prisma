@@ -7,19 +7,16 @@ datasource db {
 }
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch"]
+  provider = "prisma-client-js"
 }
 
 generator kysely {
-  provider = "prisma-kysely"
-
-  // Optionally provide a destination directory for the generated file
-  // and a filename of your choice
-  output       = "../src/db"
-  fileName     = "types.ts"
+  provider     = "prisma-kysely"
+  readOnlyIds  = true
+  output       = "./generated"
+  fileName     = "generatedTypes.ts"
   // Optionally generate runtime enums to a separate file
-  enumFileName = "enums.ts"
+  enumFileName = "generatedEnums.ts"
 }
 
 model VerificationToken {

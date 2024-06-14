@@ -3,7 +3,7 @@ const {
   CreateAppCommand,
   CreateBranchCommand,
   StartJobCommand,
-} = require("@aws-sdk/client-amplify");
+} = require("@aws-sdk/client-amplify")
 
 const AMPLIFY_BUILD_SPEC = `
 version: 1
@@ -12,10 +12,10 @@ frontend:
     preBuild:
       commands:
         - rm -rf node_modules && rm -rf .next
-        - curl https://raw.githubusercontent.com/opengovsg/isomer-next/main/tooling/build/scripts/preBuild.sh | bash
+        - curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash
     build:
       commands:
-        - curl https://raw.githubusercontent.com/opengovsg/isomer-next/main/tooling/build/scripts/build.sh | bash
+        - curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/build.sh | bash
   artifacts:
     baseDirectory: out
     files:
@@ -24,12 +24,13 @@ frontend:
 #     paths:
 #       - .next/cache/**/*
 #       - node_modules/**/*
-`;
+`
 
-const amplifyClient = new AmplifyClient({ region: "ap-southeast-1" });
+const amplifyClient = new AmplifyClient({ region: "ap-southeast-1" })
 
 const createApp = async (appName) => {
-  let appId = "";
+  console.log("Creating app:", appName)
+  let appId = ""
 
   const params = new CreateAppCommand({
     name: appName,
@@ -40,12 +41,12 @@ const createApp = async (appName) => {
       NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT: "staging",
     },
     customRules: [{ source: "/<*>", target: "/404.html", status: "404" }],
-  });
+  })
 
   await amplifyClient
     .send(params)
     .then((appInfo) => {
-      appId = appInfo.app?.appId;
+      appId = appInfo.app?.appId
 
       const mainBranchParams = new CreateBranchCommand({
         appId,
@@ -55,9 +56,9 @@ const createApp = async (appName) => {
         environmentVariables: {
           NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT: "production",
         },
-      });
+      })
 
-      return amplifyClient.send(mainBranchParams);
+      return amplifyClient.send(mainBranchParams)
     })
     .then(() =>
       amplifyClient.send(
@@ -66,8 +67,8 @@ const createApp = async (appName) => {
           branchName: "staging",
           framework: "Next.js - SSG",
           enableAutoBuild: true,
-        })
-      )
+        }),
+      ),
     )
     .then(() =>
       amplifyClient.send(
@@ -75,8 +76,8 @@ const createApp = async (appName) => {
           appId,
           branchName: "main",
           jobType: "RELEASE",
-        })
-      )
+        }),
+      ),
     )
     .then(() =>
       amplifyClient.send(
@@ -84,9 +85,25 @@ const createApp = async (appName) => {
           appId,
           branchName: "staging",
           jobType: "RELEASE",
-        })
-      )
-    );
-};
+        }),
+      ),
+    )
+}
 
-createApp("mti-corp");
+const main = async () => {
+  const apps = [
+    "moh-hpp-next",
+    "moh-healthwatch-next",
+    "moh-hcsa-next",
+    "moh-ifeelyoung-next",
+    "moh-biosafety-next",
+    "moh-dc-next",
+    "moh-prepare-next",
+  ]
+
+  for (const app of apps) {
+    await createApp(app)
+  }
+}
+
+main()
