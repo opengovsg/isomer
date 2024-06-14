@@ -31,7 +31,7 @@ model Resource {
   name           String
   siteId         String
   parentId       String?
-  lastEditTime   DateTime
+  lastEditTime   DateTime?
   lastEditUserId Int
   blobId         String?      @unique
   variant        ResourceType
@@ -40,7 +40,7 @@ model Resource {
   site         Site         @relation(fields: [siteId], references: [id])
   parent       Resource?    @relation("parentRelation", fields: [parentId], references: [id])
   child        Resource[]   @relation("parentRelation")
-  lastEditUser User         @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction) // Don't delete the file if the user is deleted
+  lastEditUser User?        @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction) // Don't delete the file if the user is deleted
   blob         Blob?
   Permission   Permission[]
 
