@@ -29,24 +29,14 @@ export const postRouter = router({
         },
       })
       /* TODO: EXAMPLE: Remove later, this is a sample execution using Kysely */
-      const postsDB = await ctx.db
-        .selectFrom('Post')
-        .select('Post.id')
-        .where(
-          'Post.id',
-          'in',
-          likedPosts.map((likedPost) => likedPost.postId),
-        )
-        .execute()
-
       const posts = await ctx.prisma.post.findMany({
         select: defaultPostSelect,
         // get an extra item at the end which we'll use as next cursor
         take: limit + 1,
         cursor: cursor
           ? {
-              id: cursor,
-            }
+            id: cursor,
+          }
           : undefined,
         orderBy: {
           createdAt: input.order,
@@ -59,7 +49,7 @@ export const postRouter = router({
         },
       })
 
-      let nextCursor: typeof cursor | undefined = undefined
+      let nextCursor: typeof cursor | undefined
       if (posts.length > limit) {
         // Remove the last item and use it as next cursor
 
@@ -77,13 +67,13 @@ export const postRouter = router({
           ctx.user.username === input.username
             ? likedPosts
             : await ctx.prisma.likedPosts.findMany({
-                where: {
-                  userId: ctx.user.id,
-                  postId: {
-                    in: posts.map((post) => post.id),
-                  },
+              where: {
+                userId: ctx.user.id,
+                postId: {
+                  in: posts.map((post) => post.id),
                 },
-              })
+              },
+            })
         const likedUserPosts = Object.fromEntries(
           userLikedPosts.map((likedPost) => [likedPost.postId, true]),
         )
@@ -126,7 +116,7 @@ export const postRouter = router({
         },
       })
 
-      let nextCursor: typeof cursor | undefined = undefined
+      let nextCursor: typeof cursor | undefined
       if (posts.length > limit) {
         // Remove the last item and use it as next cursor
 
@@ -187,7 +177,7 @@ export const postRouter = router({
         },
       })
 
-      let nextCursor: typeof cursor | undefined = undefined
+      let nextCursor: typeof cursor | undefined
       if (posts.length > limit) {
         // Remove the last item and use it as next cursor
         const nextItem = posts.pop()!
@@ -227,7 +217,7 @@ export const postRouter = router({
   toggleLikePost: protectedProcedure
     .input(z.object({ postId: z.string() }))
     .mutation(async ({ input: { postId }, ctx }) => {
-      return await ctx.prisma.$transaction(async (tx) => {
+      return ctx.prisma.$transaction(async (tx) => {
         const currentLike = await tx.likedPosts.findFirst({
           where: {
             userId: ctx.user.id,
@@ -244,7 +234,7 @@ export const postRouter = router({
             },
           })
         } else {
-          return await tx.likedPosts.create({
+          return tx.likedPosts.create({
             data: {
               user: {
                 connect: {
@@ -279,8 +269,8 @@ export const postRouter = router({
         take: limit + 1,
         cursor: cursor
           ? {
-              id: cursor,
-            }
+            id: cursor,
+          }
           : undefined,
         orderBy: {
           createdAt: input.order,
