@@ -112,7 +112,7 @@
     "@babel/plugin-transform-class-properties": "^7.24.7",
     "@babel/plugin-transform-object-rest-spread": "^7.24.7",
     "@babel/preset-env": "^7.23.8",
-    "@babel/preset-typescript": "^7.24.6",
+    "@babel/preset-typescript": "^7.24.7",
     "@chakra-ui/cli": "^2.4.1",
     "@playwright/test": "^1.40.1",
     "@storybook/addon-a11y": "7.6.7",
