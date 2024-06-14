@@ -5,37 +5,39 @@ export type Generated<T> =
     : ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
-export type Accounts = {
+import type { RoleType } from "./generatedEnums"
+
+export type Blob = {
   id: string
-  provider: string
-  providerAccountId: string
-  userId: string
+  content: unknown
 }
-export type LikedPosts = {
-  postId: string
-  userId: string
-  createdAt: Generated<Timestamp>
-}
-export type Post = {
+export type Permission = {
   id: string
-  title: string | null
-  content: string
-  contentHtml: string
-  authorId: string
-  images: string[]
-  parentPostId: string | null
-  createdAt: Generated<Timestamp>
-  updatedAt: Generated<Timestamp>
-  deletedAt: Timestamp | null
+  resourceId: string
+  userId: string
+  role: RoleType
+}
+export type Resource = {
+  id: string
+  name: string
+  siteId: string
+  parentId: string | null
+  blobId: string | null
+}
+export type Site = {
+  id: string
+  name: string
+}
+export type SiteMember = {
+  userId: string
+  siteId: string
 }
 export type User = {
   id: string
-  name: string | null
-  username: string | null
-  email: string | null
-  emailVerified: Timestamp | null
-  image: string | null
-  bio: string | null
+  name: string
+  email: string
+  phone: string
+  preferredName: string | null
 }
 export type VerificationToken = {
   identifier: string
@@ -44,9 +46,11 @@ export type VerificationToken = {
   expires: Timestamp
 }
 export type DB = {
-  Accounts: Accounts
-  LikedPosts: LikedPosts
-  Post: Post
+  Blob: Blob
+  Permission: Permission
+  Resource: Resource
+  Site: Site
+  SiteMember: SiteMember
   User: User
   VerificationToken: VerificationToken
 }
