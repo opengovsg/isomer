@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
-import siteConfig from "./data/config.json";
-import { NextPreset } from "@opengovsg/isomer-components";
+import siteConfig from "./data/config.json"
+import { NextPreset } from "@opengovsg/isomer-components"
 
 const config = {
   content: [
@@ -24,6 +24,6 @@ const config = {
       },
     },
   },
-};
+}
 
-export default config;
+export default config
