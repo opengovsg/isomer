@@ -1,12 +1,12 @@
 import { Box } from '@chakra-ui/react'
 import { type TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc'
+import { useEffect } from 'react'
+import { trpc } from '~/utils/trpc'
 import { UnexpectedErrorCard } from './UnexpectedErrorCard'
 import { FullscreenSpinner } from '../FullscreenSpinner'
-import { trpc } from '~/utils/trpc'
-import { useEffect } from 'react'
 
-const UnauthorizedError = () => {
-  const utils = trpc.useContext()
+function UnauthorizedError() {
+  const utils = trpc.useUtils()
   useEffect(() => {
     void utils.invalidate()
   }, [utils])
@@ -15,7 +15,7 @@ const UnauthorizedError = () => {
 }
 
 // TODO: Make custom components for these
-export const DefaultTrpcError = ({ code }: { code: TRPC_ERROR_CODE_KEY }) => {
+export function DefaultTrpcError({ code }: { code: TRPC_ERROR_CODE_KEY }) {
   switch (code) {
     case 'NOT_FOUND':
       return (
