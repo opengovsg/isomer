@@ -1,11 +1,11 @@
 /** @type {import('tailwindcss').Config} */
-import siteConfig from "./data/config.json";
-import { NextPreset } from "@isomerpages/isomer-components";
+import siteConfig from "./data/config.json"
+import { NextPreset } from "@opengovsg/isomer-components"
 
 const config = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/@isomerpages/isomer-components/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/@opengovsg/isomer-components/**/*.{js,ts,jsx,tsx}",
   ],
   presets: [NextPreset],
   theme: {
@@ -24,6 +24,6 @@ const config = {
       },
     },
   },
-};
+}
 
-export default config;
+export default config
