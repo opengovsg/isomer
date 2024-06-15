@@ -1,6 +1,6 @@
 import { IsomerPageSchema, RenderEngine } from '@opengovsg/isomer-components'
-import navBar from './data/navbar.json'
-import footer from './data/footer.json'
+import navBar from '../data/navbar.json'
+import footer from '../data/footer.json'
 
 export interface PreviewProps {
   schema?: {
