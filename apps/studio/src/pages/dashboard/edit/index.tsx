@@ -12,7 +12,12 @@ const EditPage: NextPageWithLayout = () => {
           open
           state={{
             state: 'root',
-            blocks: ['Hero', 'Content', 'Infopic', 'Content'],
+            blocks: [
+              { text: '1', id: 'hero-123' },
+              { text: '2', id: 'content-123' },
+              { text: '3', id: 'infopic-123' },
+              { text: '4', id: 'content-234' },
+            ],
           }}
         />
       </GridItem>
