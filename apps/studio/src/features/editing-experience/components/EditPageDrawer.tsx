@@ -73,7 +73,9 @@ export const EditPageDrawer = ({ open, state }: EditPageDrawerProps) => {
                 w={'100%'}
                 ref={provided.innerRef}
               >
-                <Text fontSize={'xl'}>Custom blocks</Text>
+                <Text fontSize={'xl'} pl={4}>
+                  Custom blocks
+                </Text>
                 <Box w="100%">
                   {currState.blocks.map((block, index) => (
                     <Draggable
@@ -85,13 +87,19 @@ export const EditPageDrawer = ({ open, state }: EditPageDrawerProps) => {
                         <VStack w="100%" gap={0}>
                           <HStack
                             w="100%"
-                            py="3"
+                            py="4"
                             bgColor={'white'}
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                           >
-                            <MdOutlineDragIndicator />
+                            <MdOutlineDragIndicator
+                              style={{
+                                marginLeft: '0.75rem',
+                                width: '1.5rem',
+                                height: '1.5rem',
+                              }}
+                            />
                             <Text px="3">{block.text}</Text>
                           </HStack>
                           <Divider />

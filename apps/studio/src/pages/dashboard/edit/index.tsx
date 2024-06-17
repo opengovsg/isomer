@@ -5,7 +5,7 @@ import { PageEditingLayout } from '~/templates/layouts/PageEditingLayout'
 
 const EditPage: NextPageWithLayout = () => {
   return (
-    <Grid w="100vw" templateColumns="repeat(3, 1fr)" gap={4}>
+    <Grid w="100vw" templateColumns="repeat(3, 1fr)" gap={0}>
       {/* TODO: Implement sidebar editor */}
       <GridItem w="100%" colSpan={1} bg="slate.50">
         <EditPageDrawer
@@ -13,10 +13,10 @@ const EditPage: NextPageWithLayout = () => {
           state={{
             state: 'root',
             blocks: [
-              { text: '1', id: 'hero-123' },
-              { text: '2', id: 'content-123' },
-              { text: '3', id: 'infopic-123' },
-              { text: '4', id: 'content-234' },
+              { text: 'Hero', id: 'hero-123' },
+              { text: 'Content', id: 'content-123' },
+              { text: 'Infopic', id: 'infopic-123' },
+              { text: 'Content', id: 'content-234' },
             ],
           }}
         />
