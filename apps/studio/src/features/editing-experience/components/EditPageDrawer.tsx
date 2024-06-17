@@ -1,4 +1,4 @@
-import { Text, VStack, HStack, Box, Divider } from '@chakra-ui/react'
+import { Text, VStack, HStack, Box, Divider, Spacer } from '@chakra-ui/react'
 import { useState } from 'react'
 import {
   DragDropContext,
@@ -66,57 +66,78 @@ export const EditPageDrawer = ({ open, state }: EditPageDrawerProps) => {
   switch (currState.state) {
     case 'root':
       return (
-        <VStack justifyContent={'space-between'} h="100%">
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="blocks">
-              {(provided) => (
-                <VStack
-                  {...provided.droppableProps}
-                  align={'baseline'}
-                  w={'100%'}
-                  ref={provided.innerRef}
-                >
-                  <Text fontSize={'xl'} pl={4}>
-                    Custom blocks
-                  </Text>
-                  <Box w="100%">
-                    {currState.blocks.map((block, index) => (
-                      <Draggable
-                        key={block.id}
-                        draggableId={block.id}
-                        index={index}
-                      >
-                        {(provided) => (
-                          <VStack w="100%" gap={0}>
-                            <HStack
-                              w="100%"
-                              py="4"
-                              bgColor={'white'}
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                            >
-                              <MdOutlineDragIndicator
-                                style={{
-                                  marginLeft: '0.75rem',
-                                  width: '1.5rem',
-                                  height: '1.5rem',
-                                }}
-                              />
-                              <Text px="3">{block.text}</Text>
-                            </HStack>
-                            <Divider />
-                          </VStack>
-                        )}
-                      </Draggable>
-                    ))}
-                  </Box>
-                  {provided.placeholder}
-                </VStack>
-              )}
-            </Droppable>
-          </DragDropContext>
+        <VStack w="100%" h="100%" gap={10} pt={10}>
+          {/* Fixed Blocks Section */}
+          <VStack w="100%" align={'baseline'}>
+            <Text fontSize={'xl'} pl={4} fontWeight={500}>
+              Fixed blocks
+            </Text>
+            <HStack w="100%" py="4" bgColor={'white'}>
+              <VStack w="100%" align={'baseline'} pl={1}>
+                <Text px="3" fontWeight={500}>
+                  Page header
+                </Text>
+                <Text px="3">Title, summary, and Call-to-Action</Text>
+              </VStack>
+            </HStack>
+          </VStack>
 
+          <VStack justifyContent={'space-between'} w="100%" h="100%">
+            {/* Custom Blocks Section */}
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="blocks">
+                {(provided) => (
+                  <VStack
+                    {...provided.droppableProps}
+                    align={'baseline'}
+                    w={'100%'}
+                    ref={provided.innerRef}
+                  >
+                    <Text fontSize={'xl'} pl={4} fontWeight={500}>
+                      Custom blocks
+                    </Text>
+                    <Box w="100%">
+                      {currState.blocks.map((block, index) => (
+                        <Draggable
+                          key={block.id}
+                          draggableId={block.id}
+                          index={index}
+                        >
+                          {(provided) => (
+                            <VStack w="100%" gap={0}>
+                              <HStack
+                                w="100%"
+                                py="4"
+                                bgColor={'white'}
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                              >
+                                <MdOutlineDragIndicator
+                                  style={{
+                                    marginLeft: '0.75rem',
+                                    width: '1.5rem',
+                                    height: '1.5rem',
+                                  }}
+                                />
+                                <Text px="3" fontWeight={500}>
+                                  {block.text}
+                                </Text>
+                              </HStack>
+                              <Divider />
+                            </VStack>
+                          )}
+                        </Draggable>
+                      ))}
+                    </Box>
+                    {provided.placeholder}
+                  </VStack>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </VStack>
+          <Spacer />
+          {/* Add New Block Section */}
           <Box
             w="100%"
             bgColor={'white'}
