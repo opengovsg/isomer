@@ -23,7 +23,7 @@ export default {
             200: '#ffeec2',
           },
           secondary: {
-            DEFAULT: '#4E4541',
+            DEFAULT: '#877664',
             100: '#f4f2F1',
           },
         },

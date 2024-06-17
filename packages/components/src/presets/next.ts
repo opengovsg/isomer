@@ -84,6 +84,7 @@ export default {
           },
           secondary: {
             DEFAULT: "#877664",
+            100: "#f4f2F1",
           },
         },
       },
