@@ -27,7 +27,7 @@ export default function RootStateDrawer({
 }: RootStateDrawerProps) {
   return (
     <VStack w="100%" h="100%" gap={10} pt={10}>
-      {/* Fixed Blocks Section */}
+      {/* TODO: Fixed Blocks Section */}
       <VStack w="100%" align={'baseline'}>
         <Text fontSize={'xl'} pl={4} fontWeight={500}>
           Fixed blocks
@@ -97,7 +97,7 @@ export default function RootStateDrawer({
         </DragDropContext>
       </VStack>
       <Spacer />
-      {/* Add New Block Section */}
+      {/* TODO: Add New Block Section */}
       <Box
         w="100%"
         bgColor={'white'}
