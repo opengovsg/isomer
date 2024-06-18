@@ -34,7 +34,6 @@ model Resource {
   lastEditTime   DateTime?
   lastEditUserId String
   blobId         String?      @unique
-  variant        ResourceType
   status         PageStatus // Is this a good place to be storing this?
   site           Site         @relation(fields: [siteId], references: [id])
   parent         Resource?    @relation("parentRelation", fields: [parentId], references: [id])
