@@ -1,4 +1,13 @@
-import { Flex, Text, VStack, Wrap } from '@chakra-ui/react'
+import {
+  Flex,
+  Popover,
+  PopoverArrow,
+  PopoverContent,
+  PopoverTrigger,
+  Text,
+  VStack,
+  Wrap,
+} from '@chakra-ui/react'
 import { Button, IconButton } from '@opengovsg/design-system-react'
 import { IconType } from 'react-icons'
 import {
@@ -44,26 +53,42 @@ const BlockItem = ({
   label,
   onProceed,
   sectionType,
+  description,
 }: {
   icon: IconType
   label: string
   onProceed: (sectionType: SectionType) => void
   sectionType: SectionType
+  description: string
 }) => {
   return (
-    <Button
-      m="0.75rem"
-      w="6rem"
-      h="6rem"
-      variant="clear"
-      colorScheme="neutral"
-      onClick={() => onProceed(sectionType)}
-    >
-      <VStack gap="0.5rem" color="base.content.default">
-        <Icon size="1.25rem" />
-        <Text textStyle={'caption-1'}>{label}</Text>
-      </VStack>
-    </Button>
+    <Popover trigger="hover" placement="right">
+      <PopoverTrigger>
+        <Button
+          m="0.75rem"
+          w="6rem"
+          h="6rem"
+          variant="clear"
+          colorScheme="neutral"
+          onClick={() => onProceed(sectionType)}
+        >
+          <VStack gap="0.5rem" color="base.content.default">
+            <Icon size="1.25rem" />
+            <Text textStyle={'caption-1'}>{label}</Text>
+          </VStack>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent>
+        <PopoverArrow />
+        <VStack p="1.5rem" alignItems={'start'} gap="0.75rem">
+          <Flex alignItems={'center'} gap="0.5rem">
+            <Icon size="1.25rem" />
+            <Text textStyle={'subhead-2'}>{label}</Text>
+          </Flex>
+          <Text textStyle="body-2">{description}</Text>
+        </VStack>
+      </PopoverContent>
+    </Popover>
   )
 }
 
@@ -110,12 +135,14 @@ const ComponentSelector = ({ onClose, onProceed }: ComponentSelectorProps) => {
               icon={BiText}
               onProceed={onProceed}
               sectionType="paragraph"
-            />
+              description="Add text to your page - lists, headings, paragraph, and links."
+            ></BlockItem>
             <BlockItem
               label="Image"
               icon={BiImage}
               onProceed={onProceed}
               sectionType="image"
+              description="TODO"
             />
           </BlockList>
         </Section>
@@ -127,24 +154,28 @@ const ComponentSelector = ({ onClose, onProceed }: ComponentSelectorProps) => {
               icon={BiDollar}
               onProceed={onProceed}
               sectionType="statistics"
+              description="TODO"
             />
             <BlockItem
               label="Callout"
               icon={BiSolidQuoteAltLeft}
               onProceed={onProceed}
               sectionType="callout"
+              description="TODO"
             />
             <BlockItem
               label="Text with button"
               icon={BiSolidHandUp}
               onProceed={onProceed}
               sectionType="textWithButton"
+              description="TODO"
             />
             <BlockItem
               label="Text with image"
               icon={BiImages}
               onProceed={onProceed}
               sectionType="textWithImage"
+              description="TODO"
             />
           </BlockList>
         </Section>
@@ -156,24 +187,28 @@ const ComponentSelector = ({ onClose, onProceed }: ComponentSelectorProps) => {
               icon={BiCard}
               onProceed={onProceed}
               sectionType="cards"
+              description="TODO"
             />
             <BlockItem
               label="Columns"
               icon={BiColumns}
               onProceed={onProceed}
               sectionType="columns"
+              description="TODO"
             />
             <BlockItem
               label="Accordion"
               icon={BiExpandVertical}
               onProceed={onProceed}
               sectionType="accordion"
+              description="TODO"
             />
             <BlockItem
               label="Divider"
               icon={BiRuler}
               onProceed={onProceed}
               sectionType="divider"
+              description="TODO"
             />
           </BlockList>
         </Section>
@@ -185,18 +220,21 @@ const ComponentSelector = ({ onClose, onProceed }: ComponentSelectorProps) => {
               icon={BiMovie}
               onProceed={onProceed}
               sectionType="youtube"
+              description="TODO"
             />
             <BlockItem
               label="Google Maps"
               icon={BiMap}
               onProceed={onProceed}
               sectionType="googleMaps"
+              description="TODO"
             />
             <BlockItem
               label="FormSG"
               icon={BiQuestionMark}
               onProceed={onProceed}
               sectionType="formsg"
+              description="TODO"
             />
           </BlockList>
         </Section>
