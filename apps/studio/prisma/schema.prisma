@@ -27,22 +27,17 @@ model VerificationToken {
 }
 
 model Resource {
-  id             String       @id @default(cuid())
-  name           String
-  siteId         String
-  parentId       String?
-  lastEditTime   DateTime?
-  lastEditUserId String
-  blobId         String?      @unique
-  status         PageStatus // Is this a good place to be storing this?
-  site           Site         @relation(fields: [siteId], references: [id])
-  parent         Resource?    @relation("parentRelation", fields: [parentId], references: [id])
-  children       Resource[]   @relation("parentRelation")
-  lastEditUser   User?        @relation(fields: [lastEditUserId], references: [id], onDelete: NoAction, onUpdate: NoAction) // Don't delete the file if the user is deleted
-  blob           Blob?
-  permission     Permission[]
+  id       String  @id @default(cuid())
+  name     String
+  siteId   String
+  parentId String?
 
-  @@unique([siteId, parentId, name], name: "uniqueChildNames")
+  blobId     String?      @unique
+  site       Site         @relation(fields: [siteId], references: [id])
+  parent     Resource?    @relation("parentRelation", fields: [parentId], references: [id])
+  children   Resource[]   @relation("parentRelation")
+  blob       Blob?        @relation(fields: [blobId], references: [id])
+  permission Permission[]
 }
 
 model User {
@@ -51,9 +46,8 @@ model User {
   email String @unique
   phone String
 
-  Resource     Resource[]
-  Permission   Permission[]
-  SitesOnUsers SitesOnUsers[]
+  Permission  Permission[]
+  SiteMembers SiteMember[]
 }
 
 model Permission {
@@ -65,16 +59,13 @@ model Permission {
   // Delete the row if either resource or user is deleted, default behavior cascade
   resource Resource @relation(fields: [resourceId], references: [id])
   user     User     @relation(fields: [userId], references: [id])
-
-  // userId and resource Id should be unique? Each user should have unambiguous access to resource? Or not if we take the strictest or laxest perm for the user
-  @@unique([userId, resourceId], name: "unambiguousPermissionsPerUserResource")
 }
 
 model Site {
-  id           String         @id @default(cuid())
-  name         String         @unique
-  Resource     Resource[]
-  SitesOnUsers SitesOnUsers[]
+  id          String       @id @default(cuid())
+  name        String       @unique
+  Resources   Resource[]
+  SiteMembers SiteMember[]
 }
 
 model Blob {
@@ -82,10 +73,10 @@ model Blob {
   content Json
 
   // Should the blob be deleted on deletion of the resource? 
-  resource Resource @relation(fields: [id], references: [blobId])
+  Resource Resource?
 }
 
-model SitesOnUsers {
+model SiteMember {
   user   User   @relation(fields: [userId], references: [id])
   userId String
   site   Site   @relation(fields: [siteId], references: [id])
@@ -94,18 +85,8 @@ model SitesOnUsers {
   @@id([siteId, userId])
 }
 
-enum ResourceType {
-  PageResource
-  FolderResource
-}
-
 enum RoleType {
   Admin
   Editor
   Publisher
-}
-
-enum PageStatus {
-  Published
-  Draft
 }

@@ -4,7 +4,7 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   : ColumnType<T, T | undefined, T>;
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-import type { ResourceType, RoleType, PageStatus } from "./generatedEnums";
+import type { RoleType } from "./generatedEnums";
 
 export type Blob = {
     id: string;
@@ -21,15 +21,15 @@ export type Resource = {
     name: string;
     siteId: string;
     parentId: string | null;
-    lastEditTime: Timestamp | null;
-    lastEditUserId: string;
     blobId: string | null;
-    variant: ResourceType;
-    status: PageStatus;
 };
 export type Site = {
     id: string;
     name: string;
+};
+export type SiteMember = {
+    userId: string;
+    siteId: string;
 };
 export type User = {
     id: string;
@@ -48,6 +48,7 @@ export type DB = {
     Permission: Permission;
     Resource: Resource;
     Site: Site;
+    SiteMember: SiteMember;
     User: User;
     VerificationToken: VerificationToken;
 };
