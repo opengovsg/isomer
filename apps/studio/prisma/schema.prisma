@@ -32,17 +32,16 @@ model Resource {
   siteId         String
   parentId       String?
   lastEditTime   DateTime?
-  lastEditUserId Int
+  lastEditUserId String
   blobId         String?      @unique
   variant        ResourceType
-  userId         String
-
-  site         Site         @relation(fields: [siteId], references: [id])
-  parent       Resource?    @relation("parentRelation", fields: [parentId], references: [id])
-  child        Resource[]   @relation("parentRelation")
-  lastEditUser User?        @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction) // Don't delete the file if the user is deleted
-  blob         Blob?
-  Permission   Permission[]
+  status         PageStatus // Is this a good place to be storing this?
+  site           Site         @relation(fields: [siteId], references: [id])
+  parent         Resource?    @relation("parentRelation", fields: [parentId], references: [id])
+  children       Resource[]   @relation("parentRelation")
+  lastEditUser   User?        @relation(fields: [lastEditUserId], references: [id], onDelete: NoAction, onUpdate: NoAction) // Don't delete the file if the user is deleted
+  blob           Blob?
+  permission     Permission[]
 
   @@unique([siteId, parentId, name], name: "uniqueChildNames")
 }
@@ -51,7 +50,7 @@ model User {
   id    String @id @default(cuid())
   name  String
   email String @unique
-  phone String @unique
+  phone String
 
   Resource   Resource[]
   Permission Permission[]
@@ -79,8 +78,8 @@ model Site {
 }
 
 model Blob {
-  id          String @id @default(cuid())
-  blobContent Json
+  id      String @id @default(cuid())
+  content Json
 
   // Should the blob be deleted on deletion of the resource? 
   resource Resource @relation(fields: [id], references: [blobId])
@@ -95,4 +94,9 @@ enum RoleType {
   Admin
   Editor
   Publisher
+}
+
+enum PageStatus {
+  Published
+  Draft
 }
