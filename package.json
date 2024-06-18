@@ -21,6 +21,6 @@
   "author": "Isomer Team",
   "license": "ISC",
   "devDependencies": {
-    "turbo": "^1.13.3"
+    "turbo": "^2.0.4"
   }
 }
