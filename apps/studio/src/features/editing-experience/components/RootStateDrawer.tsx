@@ -16,15 +16,31 @@ import {
 import { BsPlus } from 'react-icons/bs'
 import { MdOutlineDragIndicator } from 'react-icons/md'
 import { RootDrawerState } from './EditPageDrawer'
+import { useState } from 'react'
+
+type Block = {
+  text: string
+  id: string
+}
 
 type RootStateDrawerProps = {
-  onDragEnd: (result: DropResult) => void
-  currState: RootDrawerState
+  blocks: Block[]
 }
-export default function RootStateDrawer({
-  onDragEnd,
-  currState,
-}: RootStateDrawerProps) {
+export default function RootStateDrawer({ blocks }: RootStateDrawerProps) {
+  const [currState, setCurrState] = useState<{ blocks: Block[] }>({ blocks })
+
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) return
+
+    const updatedBlocks = Array.from(currState.blocks)
+    // Remove block at source index
+    const [movedBlock] = updatedBlocks.splice(result.source.index, 1)
+    // Insert at destination index
+    updatedBlocks.splice(result.destination.index, 0, movedBlock!)
+
+    setCurrState({ blocks: updatedBlocks })
+  }
+
   return (
     <VStack w="100%" h="100%" gap={10} pt={10}>
       {/* TODO: Fixed Blocks Section */}
