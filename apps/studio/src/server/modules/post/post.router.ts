@@ -28,6 +28,17 @@ export const postRouter = router({
           },
         },
       })
+      /* TODO: EXAMPLE: Remove later, this is a sample execution using Kysely */
+      const postsDB = await ctx.db
+        .selectFrom('Post')
+        .select('Post.id')
+        .where(
+          'Post.id',
+          'in',
+          likedPosts.map((likedPost) => likedPost.postId),
+        )
+        .execute()
+
       const posts = await ctx.prisma.post.findMany({
         select: defaultPostSelect,
         // get an extra item at the end which we'll use as next cursor

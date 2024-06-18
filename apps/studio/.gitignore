@@ -42,6 +42,7 @@ playwright/test-results
 
 # env
 .env
+.env.test
 
 # storybook
 build-storybook.log

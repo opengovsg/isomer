@@ -12,3 +12,9 @@ export const createFolderSchema = z.object({
   // Nullable for top level folder
   parentFolderId: z.string().nullable(),
 })
+
+export const readFolderOrTopLevelFolderSchema = z.object({
+    // Null resourceId indicates reading of top level folder in a site.
+    siteId: z.string(),
+    resourceId: z.string().nullable()
+})
