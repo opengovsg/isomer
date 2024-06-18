@@ -18,7 +18,7 @@ import { MdOutlineDragIndicator } from 'react-icons/md'
 import { RootDrawerState } from './EditPageDrawer'
 import { useState } from 'react'
 
-type Block = {
+export type Block = {
   text: string
   id: string
 }

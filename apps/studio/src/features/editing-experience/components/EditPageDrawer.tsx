@@ -9,7 +9,7 @@ import {
 import { MdOutlineDragIndicator } from 'react-icons/md'
 import { BsPlus } from 'react-icons/bs'
 import { Button } from '@opengovsg/design-system-react'
-import RootStateDrawer from './RootStateDrawer'
+import RootStateDrawer, { Block } from './RootStateDrawer'
 
 export type RootDrawerState = {
   state: 'root'
