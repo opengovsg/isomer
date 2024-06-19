@@ -47,8 +47,9 @@ export const folderRouter = router({
             id: c.id,
             name: c.name,
             type: 'page',
-            lastEditedDate: new Date(),
-            lastEditedUser: 'Coming Soon',
+            lastEditDate: new Date(),
+            lastEditUser: 'Coming Soon',
+            permalink: '/placeholder',
           }
         }
         return {
@@ -57,6 +58,7 @@ export const folderRouter = router({
           type: 'folder',
           lastEditDate: 'folder',
           lastEditUser: 'Coming Soon',
+          permalink: '/placeholder',
         }
       })
 
