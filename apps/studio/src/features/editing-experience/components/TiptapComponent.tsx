@@ -1,5 +1,5 @@
-import { Box, Flex, VStack } from '@chakra-ui/react'
-import { Button } from '@opengovsg/design-system-react'
+import { Box, Flex, Icon, VStack } from '@chakra-ui/react'
+import { Button, IconButton } from '@opengovsg/design-system-react'
 import { Bold } from '@tiptap/extension-bold'
 import { BulletList } from '@tiptap/extension-bullet-list'
 import { Document } from '@tiptap/extension-document'
@@ -22,20 +22,39 @@ import TableRow from '@tiptap/extension-table-row'
 import { EditorContent, useEditor } from '@tiptap/react'
 // import type { CustomRendererProps } from './types'
 import { MenuBar } from '~/components/PageEditor/MenuBar'
+import { Text as ChakraText } from '@chakra-ui/react'
 
 import { Table } from './extensions/Table'
+import { BiImage, BiText, BiX } from 'react-icons/bi'
+
+type NativeComponentType = 'paragraph' | 'image'
 
 export interface TipTapComponentProps {
+  type: NativeComponentType
   data: any
   handleChange(path: string, value: any): void
   onProceed(path: string, value: any): void
+  onClose(): void
   path: string
 }
 
+const typeMapping = {
+  paragraph: {
+    icon: BiText,
+    title: 'Paragraph',
+  },
+  image: {
+    icon: BiImage,
+    title: 'Image',
+  },
+}
+
 const TipTapComponent = ({
+  type,
   data,
   handleChange,
   onProceed,
+  onClose,
   path,
 }: TipTapComponentProps) => {
   const editor = useEditor({
@@ -98,8 +117,21 @@ const TipTapComponent = ({
         borderBottom="1px solid"
         borderColor="base.divider.strong"
         w="100%"
+        alignItems={'center'}
       >
-        Header
+        <Icon as={typeMapping[type].icon} color={'blue.600'} />
+        <ChakraText pl="0.75rem" textStyle="h5" w="100%">
+          {typeMapping[type].title}
+        </ChakraText>
+        <IconButton
+          size="lg"
+          variant="clear"
+          colorScheme="neutral"
+          color="interaction.sub.default"
+          aria-label="Close add component"
+          icon={<BiX />}
+          onClick={onClose}
+        />
       </Flex>
       <Box
         p="2rem"

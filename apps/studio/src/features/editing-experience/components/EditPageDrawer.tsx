@@ -47,6 +47,8 @@ export function EditPageDrawer({ isOpen: open, state }: EditPageDrawerProps) {
           path="test"
           handleChange={(path: string, data: any) => console.log(path, data)}
           onProceed={(path: string, data: any) => console.log(path, data)}
+          onClose={() => setCurrState(state)}
+          type="paragraph"
         />
       )
     default:
