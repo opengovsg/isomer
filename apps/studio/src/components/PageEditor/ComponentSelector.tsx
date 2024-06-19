@@ -216,7 +216,7 @@ const ComponentSelector = ({ onClose, onProceed }: ComponentSelectorProps) => {
           <SectionTitle title="External Content" />
           <BlockList>
             <BlockItem
-              label="Youtube"
+              label="YouTube"
               icon={BiMovie}
               onProceed={onProceed}
               sectionType="youtube"
