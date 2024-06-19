@@ -11,6 +11,7 @@ import MainTiptapEditor from './MainTipTapEditor'
 import { ThemeProvider, CssBaseline } from '@mui/material'
 import { createTheme } from '@mui/material/styles'
 import { Box } from '@chakra-ui/react'
+import ComponentSelector from './ComponentSelector'
 
 const jsonFormsTheme = createTheme()
 
@@ -61,32 +62,10 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
 
 const Editor = ({ jsonSchema, editorValue, onChange }: any) => {
   return (
-    <Box>
-      <ThemeProvider theme={jsonFormsTheme}>
-        <CssBaseline />
-        <Box
-          padding="0.5rem"
-          overflowY={'auto'}
-          maxH="full"
-          css={{
-            '& div': {
-              maxWidth: '100% !important', // Setting max-w-full with high specificity
-            },
-            '& div.MuiTabs-flexContainer': {
-              overflowX: 'auto',
-            },
-          }}
-        >
-          <JsonForms
-            schema={jsonSchema}
-            data={editorValue}
-            renderers={renderers}
-            cells={materialCells}
-            onChange={({ data }) => onChange(data)}
-          />
-        </Box>
-      </ThemeProvider>
-    </Box>
+    <ComponentSelector
+      onClose={() => console.log('close')}
+      onProceed={(componentType) => console.log(componentType)}
+    />
   )
 }
 
