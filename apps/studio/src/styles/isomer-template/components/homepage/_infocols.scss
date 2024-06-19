@@ -1,0 +1,94 @@
+@use "sass:map";
+
+.infocols-container {
+  max-width: $container-max-width;
+  margin: auto;
+}
+
+.infocols-section {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+
+  .infocols-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .infocols-footer {
+    flex-direction: row;
+    gap: 0;
+
+    .infocols-linktext {
+      font-size: 1.125rem;
+      text-transform: uppercase;
+      transform: translateY(
+        -0.09rem
+      ); // making it centered with the arrow-right icon
+    }
+  }
+}
+
+.infocols-infobox-section-grid {
+  flex-direction: column;
+  flex: 1;
+  gap: 1rem;
+}
+
+.infocols-infobox-section.space-between {
+  justify-content: space-between;
+}
+
+.infocols-infobox-section {
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+  gap: 1rem;
+  flex-wrap: wrap;
+  flex-direction: column;
+  width: 100%;
+
+  // md: Make it into row for tablet onwards
+  @media screen and (min-width: map-get($breakpoints, "md")) {
+    flex-direction: row;
+  }
+
+  .infocols-infobox-body {
+    flex-direction: column;
+    flex: 1 0 0;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+
+    // xl/xxl: Fill 40% if width >= 1280
+    @media screen and (min-width: map-get($breakpoints, "xl")) {
+      max-width: 40%;
+      min-width: none;
+    }
+
+    // md: Fill 50% if width 1280 > x >= 769
+    @media screen and (min-width: map-get($breakpoints, "md")) {
+      align-items: flex-start;
+      text-align: left;
+
+      max-width: 50%;
+    }
+
+    // Ensure 2 row layout for 3 columns if between md and xl
+    @media screen and (max-width: map-get($breakpoints, "xl")) and (min-width: map-get($breakpoints, "md")) {
+      width: 50%;
+      min-width: 40%;
+    }
+
+    // sm: For screen width x < 769, infobox fills up entire width
+    @media screen and (max-width: (map-get($breakpoints, "md")-1)) {
+      width: 100%;
+    }
+
+    .infocols-infobox-description {
+      flex-grow: 1;
+    }
+  }
+}

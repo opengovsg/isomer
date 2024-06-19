@@ -1,0 +1,166 @@
+@use "sass:map";
+
+display-1 {
+  color: $content-base;
+
+  font-family: Lato;
+  font-size: 4rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 5rem; /* 125% */
+  letter-spacing: -1.408px;
+}
+
+// 1024 and above
+@media screen and (min-width: map-get($breakpoints, "lg")) {
+  .h1 {
+    color: $content-base;
+
+    font-family: Lato;
+    font-size: 3rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 3.5rem; /* 116.667% */
+    letter-spacing: -0.066rem;
+  }
+}
+
+// 1023 and below
+@media screen and (max-width: (map-get($breakpoints, "lg") - 1)) {
+  .h1 {
+    color: $content-base;
+
+    font-family: Lato;
+    font-size: 2.75rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 3.5rem; /* 116.667% */
+    letter-spacing: -0.0605rem;
+  }
+}
+
+.h2 {
+  color: $content-base;
+
+  font-family: Lato;
+  font-size: 2rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 2.5rem; /* 125% */
+  letter-spacing: -0.044rem;
+}
+
+.h3 {
+  color: $content-base;
+
+  font-feature-settings: "clig" off, "liga" off;
+  font-family: Lato;
+  font-size: 1.625rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 2rem; /* 123.077% */
+}
+
+.subtitle-1 {
+  color: $content-base;
+
+  /* new-subtitle-1 */
+  font-family: Lato;
+  font-size: 1.125rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.75rem; /* 155.556% */
+  letter-spacing: -0.02475rem;
+}
+
+.subtitle-2 {
+  color: $content-base;
+
+  /* new-subtitle-2 */
+  font-family: Lato;
+  font-size: 1rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.375rem;
+  letter-spacing: 0.09375rem;
+  text-transform: uppercase;
+}
+
+.body-1 {
+  color: $content-base;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "clig" off, "liga" off;
+
+  /* new-body-1 */
+  font-family: Lato;
+  font-size: 1.25rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 2rem; /* 160% */
+}
+
+.body-2 {
+  color: $content-base;
+
+  font-feature-settings: "clig" off, "liga" off;
+  font-family: Lato;
+  font-size: 1.125rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.75rem; /* 160% */
+}
+
+.link-button {
+  color: var(--site-secondary-color);
+  text-align: center;
+  font-feature-settings: "clig" off, "liga" off;
+
+  /* new-linkbutton */
+  font-family: Lato;
+  font-size: 1.125rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 2rem; /* 177.778% */
+  text-transform: uppercase;
+
+  &:hover {
+    color: var(--site-secondary-color-hover);
+  }
+
+  .link-button-text {
+    text-decoration-line: underline;
+  }
+}
+
+.button-text {
+  color: var(--site-secondary-color);
+  text-align: center;
+  font-feature-settings: "clig" off, "liga" off;
+
+  /* new-buttontext */
+  font-family: Lato;
+  font-size: 1rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 2rem; /* 200% */
+  text-transform: uppercase;
+}
+
+.link {
+  color: var(--site-secondary-color);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "clig" off, "liga" off;
+
+  /* new-link */
+  font-family: Lato;
+  font-size: 1.125rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.5rem; /* 133.333% */
+  letter-spacing: 0.01688rem;
+  text-decoration-line: underline;
+
+  &:hover {
+    color: var(--site-secondary-color-hover);
+  }
+}

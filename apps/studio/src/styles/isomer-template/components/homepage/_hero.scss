@@ -1,0 +1,100 @@
+@use "sass:map";
+
+.border-solid-gray {
+  border: 1px solid $border-light;
+}
+
+.min-height-mobile {
+  min-height: 398px;
+}
+
+.gray-overlay {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.with-padding {
+  padding: 3rem 1.5rem;
+}
+
+@media screen and (min-width: map-get($breakpoints, "md")) {
+  .hero-floating {
+    padding: 3rem;
+  }
+}
+
+// NOTE: This is to keep the infobox from exceeding
+// the width of the nav-bar.
+// Hence, any changes here or on nav-bar should be
+// duplicated to the other.
+.infobox-floating-container {
+  max-width: $container-max-width;
+  margin: 0 auto;
+}
+
+.hero-background-white {
+  .hero-text-color {
+    color: $content-base;
+  }
+  background-color: $canvas-base;
+}
+
+.hero-background-black {
+  .hero-text-color {
+    color: $content-inverse;
+  }
+  background-color: $canvas-inverse;
+}
+
+.hero-background-gray {
+  .hero-text-color {
+    color: $content-inverse;
+  }
+  background-color: $canvas-translucent-grey;
+}
+
+.hero-floating-sm {
+  width: 33%;
+}
+
+.hero-floating-md {
+  width: 50%;
+}
+
+@media screen and (min-width: map-get($breakpoints, "xl")) {
+  .hero-side-sm {
+    width: 50%;
+  }
+
+  .side-section-container-left {
+    text-align: right;
+    align-self: flex-end;
+  }
+
+  .side-section-container-right {
+    text-align: left;
+    align-self: flex-start;
+  }
+}
+
+// NOTE: This is done to account for the drawer width which eats into the preview
+@media screen and (min-width: (map-get($breakpoints, "xxl") + $preview-drawer-width)) {
+  .side-section-infobox-container {
+    width: 576px;
+  }
+}
+
+@media screen and (max-width: (map-get($breakpoints, "xxl") + $preview-drawer-width - 1)) {
+  .side-section-infobox-container {
+    width: 100%;
+  }
+}
+
+@media screen and ((max-width: (map-get($breakpoints, "xl") - 1))) {
+  .hero-side-sm {
+    width: 33%;
+  }
+}
+
+.hero-side-md {
+  width: 50%;
+}

@@ -1,0 +1,14 @@
+.announcements-section {
+  max-width: $container-max-width;
+  flex-direction: column;
+  align-items: center;
+}
+
+.announcements-divider {
+  height: 1px;
+  color: #f9f9f9;
+}
+
+a[target="_blank"].link::after {
+  content: unset;
+}

@@ -1,0 +1,268 @@
+@use "sass:meta";
+
+@import "../isomer-template/theme/breakpoints";
+@import "../isomer-template/theme/colors";
+@import "../isomer-template/components/cards";
+
+.preview-styles {
+  // NOTE: These css variables all come from sgds.
+  // This has to be done because the css variables will
+  // otherwise be undefined at runtime as
+  // they are not loaded by sass.
+  --font-size-h1-display: 5.25rem;
+  --font-size-h1-mobile: 2.75rem;
+  --font-size-h1-display-mobile: 3.5rem;
+  --font-size-h1: 3.375rem;
+  --font-size-h1-lh: 3.75rem;
+  --font-size-h2: 2.75rem;
+  --font-size-h2-lh: 3.75rem;
+  --font-size-h2-mobile: 2rem;
+  --font-size-h3: 2rem;
+  --font-size-h3-lh: 2.8125rem;
+  --font-size-h3-mobile: 1.75rem;
+  --font-size-h4: 1.625rem;
+  --font-size-h4-lh: 2.25rem;
+  --font-size-h4-mobile: 1.5rem;
+  --font-size-h5: 1.375rem;
+  --font-size-h5-lh: 1.875rem;
+  --font-size-h6: 1.3rem;
+  --font-size-h6-lh: 1.5rem;
+  --font-size-p: 1.125rem;
+  --font-size-p-lh: 2rem;
+  --font-size-p-lh-content: 2.2rem;
+  --font-size-small: 1rem;
+  --card-variant-highlight-margin-top: 80px;
+  --global-alignment: 1rem;
+  --global-alignment-multiplier-xs: 0.25;
+  --global-alignment-multiplier-sm: 0.5;
+  --global-alignment-multiplier-lg: 2;
+  --global-alignment-multiplier-xl: 4;
+  --timepicker-height: 70px;
+  --radius: 0;
+  --radius-sm: 2px;
+  --radius-lg: 5px;
+
+  // @include meta.load-css("../../preview-panel.scss");
+}
+
+.previewTextStyles {
+  h1 {
+    font-size: 3.375rem;
+    line-height: 4.5rem;
+    font-weight: 400;
+    letter-spacing: -0.022em;
+  }
+
+  h2 {
+    font-size: 2.75rem;
+    line-height: 4rem;
+    font-weight: 400;
+    letter-spacing: -0.022em;
+  }
+
+  h3 {
+    font-size: 2rem;
+    line-height: 3rem;
+    font-weight: 400;
+    letter-spacing: -0.022em;
+  }
+
+  h4 {
+    font-size: 1.625rem;
+    line-height: 2.5rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+
+  h5 {
+    font-size: 1.375rem;
+    line-height: 2rem;
+    font-weight: 400;
+    letter-spacing: -0.018em;
+  }
+
+  h6 {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 400;
+    letter-spacing: -0.011em;
+  }
+}
+
+// .homepageEditorSidebar {
+//   width: $homepage-editor-sidebar-width;
+//   background: $base-background-light;
+//   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2);
+//   overflow-y: scroll;
+//   box-sizing: border-box;
+//   padding: 30px;
+//   padding-bottom: 100px;
+//   height: calc(100vh - #{$header-height} - #{$footer-height} - 1rem);
+// }
+
+// .homepageEditorMain {
+//   @extend .preview-styles;
+
+//   * {
+//     font-family: "Lato";
+//   }
+//   width: calc(100vw - #{$homepage-editor-sidebar-width});
+//   height: calc(100vh - #{$header-height} - #{$footer-height} - 1rem);
+//   box-sizing: border-box;
+//   overflow-y: scroll;
+//   position: relative;
+// }
+
+// .contactUsEditorMain {
+//   @extend .preview-styles;
+
+//   * {
+//     font-family: "Lato";
+//   }
+//   width: calc(100vw - #{$homepage-editor-sidebar-width});
+//   height: calc(100vh - #{$header-height} - #{$footer-height} - 1rem);
+//   box-sizing: border-box;
+//   overflow-y: scroll;
+//   position: relative;
+//   background-color: white;
+// }
+
+// .pageEditorSidebar {
+//   background: $base-background-light;
+//   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2);
+//   box-sizing: border-box;
+//   position: relative;
+//   height: calc(100vh - #{$header-height} - #{$footer-height} - 2.5rem);
+// }
+
+// .pageEditorSidebarLoading {
+//   opacity: 0.5;
+//   pointer-events: none;
+
+//   .sidebarLoadingIcon {
+//     position: absolute;
+//     z-index: 2;
+//     top: 50%;
+//     left: 50%;
+//   }
+
+//   .hideSidebarLoadingIcon {
+//     visibility: hidden;
+//   }
+// }
+
+// .pageEditorSidebarDisabled {
+//   width: 100%;
+//   top: 50%;
+//   pointer-events: none;
+//   text-align: center;
+//   position: absolute;
+//   z-index: 2;
+//   margin: -30px;
+//   margin-bottom: -100px;
+// }
+
+// .pageEditorMain {
+//   @extend .previewTextStyles;
+
+//   * {
+//     font-family: "Lato";
+//   }
+// }
+
+// //! TODO figure out how to put styles at the correct place
+
+// details.isomer-details summary {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   padding: 1rem;
+//   &:empty {
+//     justify-content: flex-end;
+//   }
+// }
+
+// details.isomer-details summary::marker {
+//   display: none;
+// }
+
+// details.isomer-details summary::after {
+//   // Using sgds-icons.chevron-down
+//   font-family: "sgds-icons";
+//   content: "\E93C";
+//   transition: 0.25s transform ease;
+//   margin-left: 0.75rem;
+// }
+
+// details.isomer-details[open] summary::after {
+//   transform: rotate(180deg);
+// }
+
+// @keyframes details-show {
+//   from {
+//     opacity: 0;
+//     transform: var(--details-translate, translateY(-0.5em));
+//   }
+// }
+
+// details.isomer-details[open] > *:not(summary) {
+//   animation: details-show 150ms ease-in-out;
+// }
+
+// details.isomer-details {
+//   display: flex;
+//   border-top: 1px solid #d4d4d4;
+//   border-bottom: 1px solid #d4d4d4;
+
+//   > div {
+//     flex: 1 1 auto;
+//   }
+
+//   div.isomer-details-content > * {
+//     margin-left: 1rem;
+//     margin-right: 1.25rem;
+//     margin-bottom: 1rem;
+//   }
+// }
+
+// details.isomer-details ~ details.isomer-details {
+//   margin-top: 0;
+//   margin-bottom: 0;
+//   border-top: 0;
+// }
+
+.isomer-accordion-group {
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+}
+
+.isomer-accordion-group:first-child {
+  margin-top: 0;
+}
+
+.isomer-accordion-group:last-child {
+  margin-bottom: 0;
+}
+
+.isomer-details:last-of-type {
+  margin-bottom: 0;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+.isomer-accordion-white > details.isomer-details > summary {
+  background-color: #fff;
+}
+
+.isomer-accordion-white > details.isomer-details[open] > summary {
+  font-weight: 700;
+}
+
+.isomer-accordion-gray > details.isomer-details > summary {
+  background-color: #f4f4f4;
+  color: #4372d6;
+}
+
+.isomer-accordion-gray > details.isomer-details > summary:hover {
+  color: #fff;
+  background-color: #4372d6;
+}

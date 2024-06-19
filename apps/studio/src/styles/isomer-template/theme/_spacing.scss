@@ -1,0 +1,110 @@
+/*
+  These are margin and padding helpers with values that follow the ones
+  used by Tailwind CSS. This will generate several classes, such as:
+  - .mr-8 which gives margin-right 2rem
+  - .mx-16 which gives margin-left and margin-right 4rem
+  - .py-4 which gives padding-top and padding-bottom 1rem
+  - .p-20 which gives padding 5rem
+*/
+
+$spaceamounts: (
+  "auto",
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  14,
+  16,
+  20,
+  24,
+  28,
+  32,
+  36,
+  40,
+  44,
+  48,
+  52,
+  56,
+  60,
+  64,
+  72,
+  80,
+  96
+);
+
+$sides: (
+  "t": "top",
+  "b": "bottom",
+  "l": "left",
+  "r": "right",
+  "x": (
+    "left",
+    "right",
+  ),
+  "y": (
+    "top",
+    "bottom",
+  ),
+  "": (
+    "top",
+    "bottom",
+    "left",
+    "right",
+  ),
+);
+
+@each $breakpoint, $minwidth in $breakpoints {
+  @if $minwidth != 0px {
+    @media (min-width: $minwidth) {
+      @each $space in $spaceamounts {
+        $remSpace: if($space == "auto", auto, calc(#{$space}rem / 4));
+
+        @each $prefix, $positions in $sides {
+          $suffix: #{$prefix};
+          @if $minwidth != 0px {
+            $suffix: #{$prefix}-#{$breakpoint};
+          }
+
+          .m#{$suffix}-#{$space} {
+            @each $position in $positions {
+              margin-#{$position}: $remSpace !important;
+            }
+          }
+
+          .p#{$suffix}-#{$space} {
+            @each $position in $positions {
+              padding-#{$position}: $remSpace !important;
+            }
+          }
+        }
+      }
+    }
+  } @else {
+    @each $space in $spaceamounts {
+      $remSpace: if($space == "auto", auto, calc(#{$space}rem / 4));
+
+      @each $prefix, $positions in $sides {
+        .m#{$prefix}-#{$space} {
+          @each $position in $positions {
+            margin-#{$position}: $remSpace !important;
+          }
+        }
+
+        .p#{$prefix}-#{$space} {
+          @each $position in $positions {
+            padding-#{$position}: $remSpace !important;
+          }
+        }
+      }
+    }
+  }
+}
