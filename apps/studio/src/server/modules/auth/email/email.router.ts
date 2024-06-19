@@ -2,17 +2,17 @@ import { TRPCError } from '@trpc/server'
 import { publicProcedure, router } from '~/server/trpc'
 import { sendMail } from '~/lib/mail'
 import { getBaseUrl } from '~/utils/getBaseUrl'
-import { createTokenHash, createVfnPrefix, createVfnToken } from '../auth.util'
-import { verifyToken } from '../auth.service'
-import { VerificationError } from '../auth.error'
 import { env } from '~/env.mjs'
 import { formatInTimeZone } from 'date-fns-tz'
-import { defaultMeSelect } from '../../me/me.select'
-import { generateUsername } from '../../me/me.service'
 import {
   emailSignInSchema,
   emailVerifyOtpSchema,
 } from '~/schemas/auth/email/sign-in'
+import { createTokenHash, createVfnPrefix, createVfnToken } from '../auth.util'
+import { verifyToken } from '../auth.service'
+import { VerificationError } from '../auth.error'
+import { defaultMeSelect } from '../../me/me.select'
+import { generateUsername } from '../../me/me.service'
 
 export const emailSessionRouter = router({
   // Generate OTP.
@@ -86,9 +86,9 @@ export const emailSessionRouter = router({
         update: {},
         create: {
           email,
-          emailVerified: new Date(),
+          // TODO: add the phone in later, this is a wip
+          phone: '',
           name: emailName,
-          username: generateUsername(emailName),
         },
         select: defaultMeSelect,
       })
