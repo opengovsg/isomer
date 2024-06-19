@@ -1,4 +1,5 @@
 import {
+  Box,
   FormControl,
   NumberDecrementStepper,
   NumberIncrementStepper,
@@ -46,7 +47,7 @@ export const FormBuilder = ({
   const onSubmit = handleSubmit((data) => console.log(data))
 
   return (
-    <div className="bg-white p-4">
+    <Box p={4} bg="white">
       <form onSubmit={onSubmit}>
         {Object.keys(properties)
           .filter((prop) => prop !== 'type')
@@ -62,7 +63,7 @@ export const FormBuilder = ({
 
             if (type === 'string' && options && format === 'select') {
               return (
-                <div className="py-2">
+                <Box py={2}>
                   <FormControl isRequired={required.includes(prop)}>
                     <FormLabel description={description}>{title}</FormLabel>
                     {/* @ts-ignore */}
@@ -74,13 +75,13 @@ export const FormBuilder = ({
                       ))}
                     </Select>
                   </FormControl>
-                </div>
+                </Box>
               )
             }
 
             if (type === 'string' && options && format === 'radio') {
               return (
-                <div className="py-2">
+                <Box py={2}>
                   <FormControl isRequired={required.includes(prop)}>
                     <FormLabel description={description}>{title}</FormLabel>
                     <RadioGroup>
@@ -92,13 +93,13 @@ export const FormBuilder = ({
                       ))}
                     </RadioGroup>
                   </FormControl>
-                </div>
+                </Box>
               )
             }
 
             if (type === 'string') {
               return (
-                <div className="py-2">
+                <Box py={2}>
                   <FormControl isRequired={required.includes(prop)}>
                     <FormLabel description={description}>{title}</FormLabel>
                     <Input
@@ -108,7 +109,7 @@ export const FormBuilder = ({
                       placeholder={title}
                     />
                   </FormControl>
-                </div>
+                </Box>
               )
             }
 
@@ -117,7 +118,7 @@ export const FormBuilder = ({
               const { minimum, maximum } = properties[prop]
 
               return (
-                <div className="py-2">
+                <Box py={2}>
                   <FormControl isRequired={required.includes(prop)}>
                     <FormLabel description={description}>{title}</FormLabel>
                     <NumberInput min={minimum} max={maximum}>
@@ -129,13 +130,13 @@ export const FormBuilder = ({
                       </NumberInputStepper>
                     </NumberInput>
                   </FormControl>
-                </div>
+                </Box>
               )
             }
 
             if (type === 'boolean') {
               return (
-                <div className="py-2">
+                <Box py={2}>
                   <FormControl isRequired={required.includes(prop)}>
                     <FormLabel description={description} htmlFor={prop}>
                       {title}
@@ -146,20 +147,20 @@ export const FormBuilder = ({
                       id={prop}
                     />
                   </FormControl>
-                </div>
+                </Box>
               )
             }
 
             return (
-              <div className="py-2">
+              <Box py={2}>
                 <label>{title} - UNIMPLEMENTED</label>
                 {/* @ts-ignore */}
                 <input type="text" {...register(prop)} />
-              </div>
+              </Box>
             )
           })}
         <Button type="submit">Submit</Button>
       </form>
-    </div>
+    </Box>
   )
 }
