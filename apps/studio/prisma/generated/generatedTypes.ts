@@ -36,6 +36,7 @@ export type User = {
     name: string;
     email: string;
     phone: string;
+    preferredName: string | null;
 };
 export type VerificationToken = {
     identifier: string;
