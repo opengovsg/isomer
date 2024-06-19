@@ -16,10 +16,6 @@ export function PostList(): JSX.Element {
       divider={<StackDivider />}
       gridColumn={APP_GRID_COLUMN}
       flexDir="column"
-    >
-      {data.items.map((post) => (
-        <Post key={post.id} post={post} />
-      ))}
-    </Stack>
+    />
   )
 }
