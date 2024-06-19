@@ -27,16 +27,17 @@ model VerificationToken {
 }
 
 model Resource {
-  id       String  @id @default(cuid())
+  id       String    @id @default(cuid())
   name     String
   siteId   String
+  site     Site      @relation(fields: [siteId], references: [id])
   parentId String?
+  parent   Resource? @relation("parentRelation", fields: [parentId], references: [id])
+  blobId   String?   @unique
+  blob     Blob?     @relation(fields: [blobId], references: [id])
 
-  blobId     String?      @unique
-  site       Site         @relation(fields: [siteId], references: [id])
-  parent     Resource?    @relation("parentRelation", fields: [parentId], references: [id])
-  children   Resource[]   @relation("parentRelation")
-  blob       Blob?        @relation(fields: [blobId], references: [id])
+  children Resource[] @relation("parentRelation")
+
   permission Permission[]
 }
 
@@ -53,12 +54,12 @@ model User {
 model Permission {
   id         String   @id @default(cuid())
   resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id])
   userId     String
+  user       User     @relation(fields: [userId], references: [id])
   role       RoleType
 
   // Delete the row if either resource or user is deleted, default behavior cascade
-  resource Resource @relation(fields: [resourceId], references: [id])
-  user     User     @relation(fields: [userId], references: [id])
 }
 
 model Site {
@@ -77,10 +78,10 @@ model Blob {
 }
 
 model SiteMember {
-  user   User   @relation(fields: [userId], references: [id])
   userId String
-  site   Site   @relation(fields: [siteId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
   siteId String
+  site   Site   @relation(fields: [siteId], references: [id])
 
   @@id([siteId, userId])
 }
