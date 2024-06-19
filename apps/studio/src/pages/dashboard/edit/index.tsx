@@ -1,8 +1,6 @@
 import { Grid, GridItem } from '@chakra-ui/react'
 import { EditorDrawerProvider } from '~/contexts/EditorDrawerContext'
 import EditPageDrawer from '~/features/editing-experience/components/EditPageDrawer'
-import { FormBuilder } from '~/features/editing-experience/components/FormBuilder'
-import TipTapComponent from '~/features/editing-experience/components/TipTapComponent'
 import { NextPageWithLayout } from '~/lib/types'
 import { PageEditingLayout } from '~/templates/layouts/PageEditingLayout'
 

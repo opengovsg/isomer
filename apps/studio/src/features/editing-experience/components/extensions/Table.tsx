@@ -13,11 +13,6 @@ export const Table = TiptapTable.extend({
       blockWrapper.setAttribute('data-group', 'true')
       blockWrapper.className = 'table-block-wrapper'
 
-      const textBox = document.createElement('div')
-      textBox.className = 'table-block-label'
-      const text = document.createElement('p')
-      text.textContent = 'Table'
-
       const borderWrapper = document.createElement('div')
       borderWrapper.className = 'table-block-border'
       const dragHandle = document.createElement('div')
@@ -28,8 +23,6 @@ export const Table = TiptapTable.extend({
 
       dom.appendChild(dragWrapper)
       dragWrapper.appendChild(blockWrapper)
-      textBox.appendChild(text)
-      blockWrapper.appendChild(textBox)
       blockWrapper.appendChild(borderWrapper)
       blockWrapper.appendChild(dragHandle)
       borderWrapper.append(contentDOM)
