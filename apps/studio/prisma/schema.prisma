@@ -42,11 +42,11 @@ model Resource {
 }
 
 model User {
-  id            String @id @default(cuid())
+  id            String  @id @default(cuid())
   name          String
-  email         String @unique
+  email         String  @unique
   phone         String
-  preferredName String
+  preferredName String?
 
   Permission  Permission[]
   SiteMembers SiteMember[]
