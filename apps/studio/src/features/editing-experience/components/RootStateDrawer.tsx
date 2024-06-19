@@ -8,25 +8,22 @@ import {
   Text,
 } from '@chakra-ui/react'
 import {
-  DropResult,
+  type DropResult,
   DragDropContext,
   Droppable,
   Draggable,
 } from '@hello-pangea/dnd'
 import { BsPlus } from 'react-icons/bs'
 import { MdOutlineDragIndicator } from 'react-icons/md'
-import { RootDrawerState } from './EditPageDrawer'
 import { useState } from 'react'
-
-export type Block = {
-  text: string
-  id: string
-}
+import { type Block } from '~/types/editorDrawer'
+import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 
 type RootStateDrawerProps = {
   blocks: Block[]
 }
 export default function RootStateDrawer({ blocks }: RootStateDrawerProps) {
+  const { setDrawerState } = useEditorDrawerContext()
   const [currState, setCurrState] = useState<{ blocks: Block[] }>({ blocks })
 
   const onDragEnd = (result: DropResult) => {
@@ -44,12 +41,12 @@ export default function RootStateDrawer({ blocks }: RootStateDrawerProps) {
   return (
     <VStack w="100%" h="100%" gap={10} pt={10}>
       {/* TODO: Fixed Blocks Section */}
-      <VStack w="100%" align={'baseline'}>
-        <Text fontSize={'xl'} pl={4} fontWeight={500}>
+      <VStack w="100%" align="baseline">
+        <Text fontSize="xl" pl={4} fontWeight={500}>
           Fixed blocks
         </Text>
-        <HStack w="100%" py="4" bgColor={'white'}>
-          <VStack w="100%" align={'baseline'} pl={1}>
+        <HStack w="100%" py="4" bgColor="white">
+          <VStack w="100%" align="baseline" pl={1}>
             <Text px="3" fontWeight={500}>
               Page header
             </Text>
@@ -58,18 +55,18 @@ export default function RootStateDrawer({ blocks }: RootStateDrawerProps) {
         </HStack>
       </VStack>
 
-      <VStack justifyContent={'space-between'} w="100%" h="100%">
+      <VStack justifyContent="space-between" w="100%" h="100%">
         {/* Custom Blocks Section */}
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="blocks">
             {(provided) => (
               <VStack
                 {...provided.droppableProps}
-                align={'baseline'}
-                w={'100%'}
+                align="baseline"
+                w="100%"
                 ref={provided.innerRef}
               >
-                <Text fontSize={'xl'} pl={4} fontWeight={500}>
+                <Text fontSize="xl" pl={4} fontWeight={500}>
                   Custom blocks
                 </Text>
                 <Box w="100%">
@@ -80,11 +77,19 @@ export default function RootStateDrawer({ blocks }: RootStateDrawerProps) {
                       index={index}
                     >
                       {(provided) => (
-                        <VStack w="100%" gap={0}>
+                        <VStack
+                          w="100%"
+                          gap={0}
+                          // as={Button}
+                          onClick={() => {
+                            console.log('hiuh')
+                            setDrawerState({ state: 'nativeEditor' })
+                          }}
+                        >
                           <HStack
                             w="100%"
                             py="4"
-                            bgColor={'white'}
+                            bgColor="white"
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
@@ -116,11 +121,15 @@ export default function RootStateDrawer({ blocks }: RootStateDrawerProps) {
       {/* TODO: Add New Block Section */}
       <Box
         w="100%"
-        bgColor={'white'}
+        bgColor="white"
         p="1.5rem 2rem 1.5rem 2rem"
         boxShadow="0px 0px 10px 0px #BFBFBF80"
       >
-        <Button w="100%" variant={'outline'}>
+        <Button
+          w="100%"
+          variant="outline"
+          onClick={() => setDrawerState({ state: 'addBlock' })}
+        >
           <BsPlus style={{ height: '1.25rem', width: '1.25rem' }} />
           Add a new block
         </Button>
