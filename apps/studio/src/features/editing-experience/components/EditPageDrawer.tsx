@@ -35,11 +35,14 @@ type DrawerState =
   | ComplexEditorState
 
 type EditPageDrawerProps = {
-  open: boolean
+  isOpen: boolean
   state: DrawerState
 }
 
-export const EditPageDrawer = ({ open, state }: EditPageDrawerProps) => {
+export const EditPageDrawer = ({
+  isOpen: open,
+  state,
+}: EditPageDrawerProps) => {
   const [currState, setCurrState] = useState<DrawerState>(state)
 
   switch (currState.state) {

@@ -9,7 +9,7 @@ const EditPage: NextPageWithLayout = () => {
       {/* TODO: Implement sidebar editor */}
       <GridItem w="100%" colSpan={1} bg="slate.50">
         <EditPageDrawer
-          open
+          isOpen
           state={{
             state: 'root',
             blocks: [
