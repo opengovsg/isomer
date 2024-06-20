@@ -19,6 +19,7 @@ import {
 import { IsomerComponent } from '@opengovsg/isomer-components'
 import { useForm } from 'react-hook-form'
 import IsomerSchema from './0.1.0.json'
+import { getSchemaFieldType } from '~/utils/schema'
 
 // TODO: Props here might not make sense, need to check again
 export interface FormBuilderProps {
@@ -43,6 +44,10 @@ export const FormBuilder = ({
   const { required, properties } = schema
   const { register, handleSubmit } = useForm<typeof properties>()
 
+  // Utility type to get all keys from a union of objects
+  type UnionKeys<T> = T extends T ? keyof T : never
+  type ComplexComponentProps = UnionKeys<typeof properties>
+
   // TODO: Remove or replace with proper submit function
   const onSubmit = handleSubmit((data) => console.log(data))
 
@@ -50,7 +55,10 @@ export const FormBuilder = ({
     <Box p={4} bg="white">
       <form onSubmit={onSubmit}>
         {Object.keys(properties)
-          .filter((prop) => prop !== 'type')
+          .filter<Exclude<ComplexComponentProps, 'type'>>(
+            (prop): prop is Exclude<ComplexComponentProps, 'type'> =>
+              prop !== 'type',
+          )
           .map((prop) => {
             const {
               type,
@@ -58,15 +66,15 @@ export const FormBuilder = ({
               enum: options,
               title,
               description,
-              // @ts-ignore
+              // @ts-ignore this is safe because prop comes direct from properties
             } = properties[prop]
+            const fieldType = getSchemaFieldType(type, format, options)
 
-            if (type === 'string' && options && format === 'select') {
+            if (fieldType === 'dropdown') {
               return (
                 <Box py={2}>
                   <FormControl isRequired={required.includes(prop)}>
                     <FormLabel description={description}>{title}</FormLabel>
-                    {/* @ts-ignore */}
                     <Select placeholder={title} {...register(prop)}>
                       {options.map((option: string) => (
                         <option key={option} value={option}>
@@ -79,14 +87,13 @@ export const FormBuilder = ({
               )
             }
 
-            if (type === 'string' && options && format === 'radio') {
+            if (fieldType === 'radio') {
               return (
                 <Box py={2}>
                   <FormControl isRequired={required.includes(prop)}>
                     <FormLabel description={description}>{title}</FormLabel>
                     <RadioGroup>
                       {options.map((option: string) => (
-                        // @ts-ignore
                         <Radio key={option} value={option} {...register(prop)}>
                           {option.charAt(0).toUpperCase() + option.slice(1)}
                         </Radio>
@@ -97,14 +104,13 @@ export const FormBuilder = ({
               )
             }
 
-            if (type === 'string') {
+            if (fieldType === 'text') {
               return (
                 <Box py={2}>
                   <FormControl isRequired={required.includes(prop)}>
                     <FormLabel description={description}>{title}</FormLabel>
                     <Input
                       type="text"
-                      // @ts-ignore
                       {...register(prop)}
                       placeholder={title}
                     />
@@ -113,8 +119,8 @@ export const FormBuilder = ({
               )
             }
 
-            if (type === 'integer') {
-              // @ts-ignore
+            if (fieldType === 'integer') {
+              // @ts-ignore this is safe because prop comes direct from properties
               const { minimum, maximum } = properties[prop]
 
               return (
@@ -122,7 +128,6 @@ export const FormBuilder = ({
                   <FormControl isRequired={required.includes(prop)}>
                     <FormLabel description={description}>{title}</FormLabel>
                     <NumberInput min={minimum} max={maximum}>
-                      {/* @ts-ignore */}
                       <NumberInputField {...register(prop)} />
                       <NumberInputStepper>
                         <NumberIncrementStepper />
@@ -134,18 +139,14 @@ export const FormBuilder = ({
               )
             }
 
-            if (type === 'boolean') {
+            if (fieldType === 'boolean') {
               return (
                 <Box py={2}>
                   <FormControl isRequired={required.includes(prop)}>
                     <FormLabel description={description} htmlFor={prop}>
                       {title}
                     </FormLabel>
-                    <Switch
-                      // @ts-ignore
-                      {...register(prop)}
-                      id={prop}
-                    />
+                    <Switch {...register(prop)} id={prop} />
                   </FormControl>
                 </Box>
               )
@@ -154,7 +155,6 @@ export const FormBuilder = ({
             return (
               <Box py={2}>
                 <label>{title} - UNIMPLEMENTED</label>
-                {/* @ts-ignore */}
                 <input type="text" {...register(prop)} />
               </Box>
             )
