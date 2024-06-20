@@ -74,9 +74,6 @@
             "$ref": "#/components/native/divider"
           },
           {
-            "$ref": "#/components/native/hardBreak"
-          },
-          {
             "$ref": "#/components/native/heading"
           },
           {
@@ -404,9 +401,6 @@
                   "$ref": "#/components/native/divider"
                 },
                 {
-                  "$ref": "#/components/native/hardBreak"
-                },
-                {
                   "$ref": "#/components/native/heading"
                 },
                 {
@@ -506,9 +500,6 @@
                 },
                 {
                   "$ref": "#/components/native/divider"
-                },
-                {
-                  "$ref": "#/components/native/hardBreak"
                 },
                 {
                   "$ref": "#/components/native/heading"
@@ -958,6 +949,19 @@
             "type": "string",
             "title": "Button URL",
             "description": "The URL to link the button to"
+          }
+        }
+      },
+      "hardBreak": {
+        "type": "object",
+        "title": "Line break component",
+        "description": "A line break that forces a new line",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["hardBreak"],
+            "default": "hardBreak"
           }
         }
       },
@@ -1476,19 +1480,6 @@
           }
         }
       },
-      "hardBreak": {
-        "type": "object",
-        "title": "Line break component",
-        "description": "A line break that forces a new line",
-        "required": ["type"],
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": ["hardBreak"],
-            "default": "hardBreak"
-          }
-        }
-      },
       "heading": {
         "type": "object",
         "title": "Heading component",
@@ -1583,7 +1574,14 @@
             "title": "Paragraph content",
             "description": "The content of the paragraph",
             "items": {
-              "$ref": "#/components/native/text"
+              "anyOf": [
+                {
+                  "$ref": "#/components/internal/hardBreak"
+                },
+                {
+                  "$ref": "#/components/native/text"
+                }
+              ]
             }
           }
         }
@@ -1698,9 +1696,6 @@
                 },
                 {
                   "$ref": "#/components/native/divider"
-                },
-                {
-                  "$ref": "#/components/native/hardBreak"
                 },
                 {
                   "$ref": "#/components/native/paragraph"

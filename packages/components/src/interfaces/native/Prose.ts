@@ -1,6 +1,5 @@
 import type { ImageProps } from "../complex/Image"
 import type { DividerProps } from "./Divider"
-import type { HardBreakProps } from "./HardBreak"
 import type { HeadingProps } from "./Heading"
 import type { ListItemProps } from "./ListItem"
 import type { OrderedListProps } from "./OrderedList"
@@ -10,7 +9,6 @@ import type { UnorderedListProps } from "./UnorderedList"
 
 export type ProseContent = (
   | DividerProps
-  | HardBreakProps
   | HeadingProps
   | ImageProps
   | ListItemProps

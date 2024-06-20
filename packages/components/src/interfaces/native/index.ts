@@ -1,5 +1,4 @@
 export type { DividerProps } from "./Divider"
-export type { HardBreakProps } from "./HardBreak"
 export type { HeadingProps } from "./Heading"
 export type { ListItemProps } from "./ListItem"
 export type { OrderedListProps } from "./OrderedList"

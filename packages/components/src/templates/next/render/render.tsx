@@ -4,7 +4,6 @@ import {
   Button,
   Callout,
   Divider,
-  HardBreak,
   Heading,
   Hero,
   Iframe,
@@ -47,8 +46,6 @@ export const renderComponent = ({
       return <Callout {...component} />
     case "divider":
       return <Divider {...component} />
-    case "hardBreak":
-      return <HardBreak {...component} />
     case "heading":
       return <Heading {...component} />
     case "hero":

@@ -1,5 +1,4 @@
 export { default as Divider } from "./Divider"
-export { default as HardBreak } from "./HardBreak"
 export { default as Heading } from "./Heading"
 export { default as OrderedList } from "./OrderedList"
 export { default as Paragraph } from "./Paragraph"
