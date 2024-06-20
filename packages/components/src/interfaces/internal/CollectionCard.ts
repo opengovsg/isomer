@@ -1,4 +1,4 @@
-import type { ImageProps } from "~/interfaces/native"
+import type { ImageProps } from "~/interfaces"
 
 export interface Tag {
   title: string

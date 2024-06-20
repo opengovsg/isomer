@@ -4,6 +4,7 @@ import {
   Button,
   Callout,
   Divider,
+  HardBreak,
   Heading,
   Hero,
   Iframe,
@@ -46,6 +47,8 @@ export const renderComponent = ({
       return <Callout {...component} />
     case "divider":
       return <Divider {...component} />
+    case "hardBreak":
+      return <HardBreak {...component} />
     case "heading":
       return <Heading {...component} />
     case "hero":
@@ -64,13 +67,13 @@ export const renderComponent = ({
       return <Infopic {...component} />
     case "keystatistics":
       return <KeyStatistics {...component} />
-    case "orderedlist":
+    case "orderedList":
       return <OrderedList {...component} />
     case "paragraph":
       return <Paragraph {...component} />
     case "table":
       return <Table {...component} />
-    case "unorderedlist":
+    case "unorderedList":
       return <UnorderedList {...component} />
   }
 }

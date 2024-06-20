@@ -4,6 +4,7 @@ import type {
   CalloutProps,
   CardsProps,
   DividerProps,
+  HardBreakProps,
   HeadingProps,
   HeroProps,
   IframeProps,
@@ -25,6 +26,7 @@ type IsomerComponentProps =
   | CalloutProps
   | CardsProps
   | DividerProps
+  | HardBreakProps
   | HeadingProps
   | HeroProps
   | IframeProps

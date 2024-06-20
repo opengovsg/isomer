@@ -74,10 +74,13 @@
             "$ref": "#/components/native/divider"
           },
           {
+            "$ref": "#/components/native/hardBreak"
+          },
+          {
             "$ref": "#/components/native/heading"
           },
           {
-            "$ref": "#/components/native/orderedlist"
+            "$ref": "#/components/native/orderedList"
           },
           {
             "$ref": "#/components/native/paragraph"
@@ -86,7 +89,7 @@
             "$ref": "#/components/native/table"
           },
           {
-            "$ref": "#/components/native/unorderedlist"
+            "$ref": "#/components/native/unorderedList"
           }
         ]
       }
@@ -401,10 +404,13 @@
                   "$ref": "#/components/native/divider"
                 },
                 {
+                  "$ref": "#/components/native/hardBreak"
+                },
+                {
                   "$ref": "#/components/native/heading"
                 },
                 {
-                  "$ref": "#/components/native/orderedlist"
+                  "$ref": "#/components/native/orderedList"
                 },
                 {
                   "$ref": "#/components/native/paragraph"
@@ -413,7 +419,7 @@
                   "$ref": "#/components/native/table"
                 },
                 {
-                  "$ref": "#/components/native/unorderedlist"
+                  "$ref": "#/components/native/unorderedList"
                 }
               ]
             }
@@ -502,10 +508,13 @@
                   "$ref": "#/components/native/divider"
                 },
                 {
+                  "$ref": "#/components/native/hardBreak"
+                },
+                {
                   "$ref": "#/components/native/heading"
                 },
                 {
-                  "$ref": "#/components/native/orderedlist"
+                  "$ref": "#/components/native/orderedList"
                 },
                 {
                   "$ref": "#/components/native/paragraph"
@@ -514,7 +523,7 @@
                   "$ref": "#/components/native/table"
                 },
                 {
-                  "$ref": "#/components/native/unorderedlist"
+                  "$ref": "#/components/native/unorderedList"
                 }
               ]
             }
@@ -1467,6 +1476,19 @@
           }
         }
       },
+      "hardBreak": {
+        "type": "object",
+        "title": "Line break component",
+        "description": "A line break that forces a new line",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["hardBreak"],
+            "default": "hardBreak"
+          }
+        }
+      },
       "heading": {
         "type": "object",
         "title": "Heading component",
@@ -1511,15 +1533,15 @@
           }
         }
       },
-      "orderedlist": {
+      "orderedList": {
         "type": "object",
         "title": "Ordered list component",
         "required": ["type", "content"],
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["orderedlist"],
-            "default": "orderedlist"
+            "enum": ["orderedList"],
+            "default": "orderedList"
           },
           "start": {
             "type": "integer",
@@ -1536,10 +1558,10 @@
                   "$ref": "#/components/native/listItem"
                 },
                 {
-                  "$ref": "#/components/native/orderedlist"
+                  "$ref": "#/components/native/orderedList"
                 },
                 {
-                  "$ref": "#/components/native/unorderedlist"
+                  "$ref": "#/components/native/unorderedList"
                 }
               ]
             }
@@ -1678,13 +1700,16 @@
                   "$ref": "#/components/native/divider"
                 },
                 {
+                  "$ref": "#/components/native/hardBreak"
+                },
+                {
                   "$ref": "#/components/native/paragraph"
                 },
                 {
-                  "$ref": "#/components/native/orderedlist"
+                  "$ref": "#/components/native/orderedList"
                 },
                 {
-                  "$ref": "#/components/native/unorderedlist"
+                  "$ref": "#/components/native/unorderedList"
                 }
               ]
             }
@@ -1761,15 +1786,15 @@
           }
         }
       },
-      "unorderedlist": {
+      "unorderedList": {
         "type": "object",
         "title": "Unordered list component",
         "required": ["type", "content"],
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["unorderedlist"],
-            "default": "unorderedlist"
+            "enum": ["unorderedList"],
+            "default": "unorderedList"
           },
           "content": {
             "type": "array",
@@ -1781,10 +1806,10 @@
                   "$ref": "#/components/native/listItem"
                 },
                 {
-                  "$ref": "#/components/native/orderedlist"
+                  "$ref": "#/components/native/orderedList"
                 },
                 {
-                  "$ref": "#/components/native/unorderedlist"
+                  "$ref": "#/components/native/unorderedList"
                 }
               ]
             }
