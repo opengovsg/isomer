@@ -18,30 +18,56 @@ export const folderRouter = router({
       // 0. Perm checking
       // 1. Last Edited user and time
       // 2. Page status(draft, published)
-
-      let query = ctx.db
-        .selectFrom('Resource')
-        .select(['name', 'id', 'siteId', 'parentId'])
-        .selectAll()
       if (input.resourceId) {
-        query = query.where('id', '=', input.resourceId)
-      } else {
-        query = query
-          .where('siteId', '=', input.siteId)
-          .where('parentId', 'is', null)
+        // Non-root level lookup
+        const folderResult = await ctx.db
+          .selectFrom('Resource')
+          .select(['name', 'parentId'])
+          .where('id', '=', input.resourceId)
+          .executeTakeFirstOrThrow()
+        const childrenResult = await ctx.db
+          .selectFrom('Resource')
+          .select(['id', 'name', 'blobId'])
+          .where('parentId', '=', input.resourceId)
+          .execute()
+        const children = childrenResult.map((c) => {
+          if (c.blobId) {
+            return {
+              id: c.id,
+              name: c.name,
+              type: 'page',
+              lastEditDate: new Date(0),
+              lastEditUser: 'Coming Soon',
+              permalink: '/placeholder',
+              status: 'published',
+            }
+          }
+          return {
+            id: c.id,
+            name: c.name,
+            type: 'folder',
+            lastEditDate: 'folder',
+            lastEditUser: 'Coming Soon',
+            permalink: '/placeholder',
+            status: 'folder',
+          }
+        })
+
+        const { parentId } = folderResult
+        const folderName = folderResult.name
+
+        return {
+          folderName,
+          children,
+          parentId,
+        }
       }
-
-      const folderResult = await query
-        .select(['name', 'parentId'])
-        .executeTakeFirstOrThrow()
-
       const childrenResult = await ctx.db
         .selectFrom('Resource')
         .select(['id', 'name', 'blobId'])
-        .where('parentId', '=', input.resourceId)
+        .where('parentId', 'is', null)
         .execute()
-
-      const children = childrenQuery.map((c) => {
+      const children = childrenResult.map((c) => {
         if (c.blobId) {
           return {
             id: c.id,
@@ -50,6 +76,7 @@ export const folderRouter = router({
             lastEditDate: new Date(0),
             lastEditUser: 'Coming Soon',
             permalink: '/placeholder',
+            status: 'published',
           }
         }
         return {
@@ -59,11 +86,11 @@ export const folderRouter = router({
           lastEditDate: 'folder',
           lastEditUser: 'Coming Soon',
           permalink: '/placeholder',
+          status: 'folder',
         }
       })
-
-      const { parentId } = folderResult
-      const folderName: string = folderResult.name
+      const parentId = null
+      const folderName = 'Root-level Site Folder'
 
       return {
         folderName,
