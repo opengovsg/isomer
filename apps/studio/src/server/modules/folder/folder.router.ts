@@ -15,9 +15,10 @@ export const folderRouter = router({
     .input(readFolderOrTopLevelFolderSchema)
     .query(async ({ ctx, input }) => {
       // Things that aren't working yet:
+      // 0. Perm checking
       // 1. Last Edited user and time
       // 2. Page status(draft, published)
-      // Not sure if a backpointer is needed here
+
       let query = ctx.db
         .selectFrom('Resource')
         .select(['name', 'id', 'siteId', 'parentId'])
@@ -34,12 +35,11 @@ export const folderRouter = router({
         .select(['name', 'parentId'])
         .executeTakeFirstOrThrow()
 
-      const childrenQuery = await ctx.db
+      const childrenResult = await ctx.db
         .selectFrom('Resource')
         .select(['id', 'name', 'blobId'])
         .where('parentId', '=', input.resourceId)
         .execute()
-      const folderName: string = folderResult.name
 
       const children = childrenQuery.map((c) => {
         if (c.blobId) {
@@ -47,7 +47,7 @@ export const folderRouter = router({
             id: c.id,
             name: c.name,
             type: 'page',
-            lastEditDate: new Date(),
+            lastEditDate: new Date(0),
             lastEditUser: 'Coming Soon',
             permalink: '/placeholder',
           }
@@ -63,6 +63,8 @@ export const folderRouter = router({
       })
 
       const { parentId } = folderResult
+      const folderName: string = folderResult.name
+
       return {
         folderName,
         children,
