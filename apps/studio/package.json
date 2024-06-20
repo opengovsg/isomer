@@ -126,7 +126,7 @@
     "@storybook/react": "7.6.7",
     "@storybook/testing-library": "0.2.2",
     "@types/eslint": "^8.56.1",
-    "@types/node": "^20.14.2",
+    "@types/node": "^20.14.5",
     "@types/pg": "^8.11.6",
     "@types/react": "^18.3.3",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
