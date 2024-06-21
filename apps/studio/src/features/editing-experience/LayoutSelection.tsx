@@ -18,7 +18,7 @@ import {
 import { Button, BxRightArrowAlt } from '@opengovsg/design-system-react'
 
 import { Icon } from '@chakra-ui/react'
-import { BiLeftArrowAlt } from 'react-icons/bi'
+import { BiLeftArrowAlt, BiShow } from 'react-icons/bi'
 
 interface LayoutSelectionProps {
   pageName: String
@@ -159,7 +159,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                       selectedLayout == e.layoutName
                         ? {}
                         : {
-                            '.layout-title': { color: 'blue' },
+                            '.layout-title': { color: 'base.content.brand' },
                             '.hover-text': {
                               opacity: 1,
                             },
@@ -214,35 +214,43 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                         borderRadius="4px 4px 0px 0px"
                         boxShadow="0px 0px 20px 0px rgba(104, 104, 104, 0.30)"
                       />
-                      <Box
-                        // className="hover-text"
-                        // display="none"
-                        // position="absolute"
-                        // top="0"
-                        // left="0"
-                        // right="0"
-                        // bottom="0"
-                        // bg="rgba(0, 0, 255, 0.2)"
-                        // color="blue"
-                        // alignItems="center"
-                        // justifyContent="center"
-                        // borderRadius="8px"
-                        className="hover-text"
-                        position="absolute"
-                        top="0"
-                        left="0"
-                        right="0"
-                        bottom="0"
-                        bg="rgba(0, 0, 255, 0.2)"
-                        color="blue"
-                        alignItems="center"
-                        justifyContent="center"
-                        borderRadius="8px"
-                      >
-                        <Center w="100%" h="100%">
-                          <Text fontSize="lg">Click to preview</Text>
-                        </Center>
-                      </Box>
+                      {selectedLayout != e.layoutName && (
+                        <Box
+                          // className="hover-text"
+                          // display="none"
+                          // position="absolute"
+                          // top="0"
+                          // left="0"
+                          // right="0"
+                          // bottom="0"
+                          // bg="rgba(0, 0, 255, 0.2)"
+                          // color="blue"
+                          // alignItems="center"
+                          // justifyContent="center"
+                          // borderRadius="8px"
+                          className="hover-text"
+                          position="absolute"
+                          top="0"
+                          left="0"
+                          right="0"
+                          bottom="0"
+                          bg="rgba(0, 0, 255, 0.2)"
+                          color="blue"
+                          alignItems="center"
+                          justifyContent="center"
+                          borderRadius="8px"
+                        >
+                          <VStack
+                            w="100%"
+                            h="100%"
+                            justify="center"
+                            gap="0.25rem"
+                          >
+                            <Icon as={BiShow} />
+                            <Text textStyle="caption-1">Click to preview</Text>
+                          </VStack>
+                        </Box>
+                      )}
                     </Box>
                     <HStack w="100%" justifyContent="space-between">
                       <Text
