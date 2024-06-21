@@ -1,4 +1,4 @@
-import { Box, Flex, Icon, VStack } from '@chakra-ui/react'
+import { Box, Flex, Icon, VStack, Text as ChakraText } from '@chakra-ui/react'
 import { Button, IconButton } from '@opengovsg/design-system-react'
 import { Bold } from '@tiptap/extension-bold'
 import { BulletList } from '@tiptap/extension-bullet-list'
@@ -21,11 +21,11 @@ import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 import { EditorContent, useEditor } from '@tiptap/react'
 // import type { CustomRendererProps } from './types'
+import { BiImage, BiText, BiX } from 'react-icons/bi'
+import Underline from '@tiptap/extension-underline'
 import { MenuBar } from '~/components/PageEditor/MenuBar'
-import { Text as ChakraText } from '@chakra-ui/react'
 
 import { Table } from './extensions/Table'
-import { BiImage, BiText, BiX } from 'react-icons/bi'
 
 type NativeComponentType = 'paragraph' | 'image'
 
@@ -49,14 +49,14 @@ const typeMapping = {
   },
 }
 
-const TipTapComponent = ({
+function TipTapComponent({
   type,
   data,
   handleChange,
   onProceed,
   onClose,
   path,
-}: TipTapComponentProps) => {
+}: TipTapComponentProps) {
   const editor = useEditor({
     extensions: [
       // Blockquote,
@@ -101,6 +101,7 @@ const TipTapComponent = ({
       TableHeader,
       TableCell,
       Text,
+      Underline,
     ],
     content: data,
     onUpdate({ editor }) {
@@ -117,9 +118,9 @@ const TipTapComponent = ({
         borderBottom="1px solid"
         borderColor="base.divider.strong"
         w="100%"
-        alignItems={'center'}
+        alignItems="center"
       >
-        <Icon as={typeMapping[type].icon} color={'blue.600'} />
+        <Icon as={typeMapping[type].icon} color="blue.600" />
         <ChakraText pl="0.75rem" textStyle="h5" w="100%">
           {typeMapping[type].title}
         </ChakraText>
@@ -158,7 +159,7 @@ const TipTapComponent = ({
             px="2rem"
             py="1rem"
             h="100%"
-            backgroundColor={'white'}
+            backgroundColor="white"
             onClick={() => editor.chain().focus().run()}
             cursor="text"
           />
