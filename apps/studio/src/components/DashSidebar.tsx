@@ -18,7 +18,7 @@ import { ADMIN_DASHBAR_WIDTHS, ADMIN_NAVBAR_HEIGHT } from '~/constants/layouts'
 import { useMe } from '~/features/me/api'
 import { HOME, PROFILE, SETTINGS_PROFILE } from '~/lib/routes'
 
-export const DashSidebar = () => {
+export function DashSidebar() {
   const [showWhenSmallMobile, setShowWhenSmallMobile] = useState(false)
   const isMobile = useIsMobile()
   const { me } = useMe()
@@ -38,12 +38,8 @@ export const DashSidebar = () => {
 
   const isProfileActive = useMemo(() => {
     if (pathname === SETTINGS_PROFILE) return true
-    if (
-      pathname.startsWith(`${PROFILE}/[username]`) &&
-      query.username === me?.username
-    )
-      return true
-  }, [pathname, query.username, me?.username])
+    if (pathname.startsWith(`${PROFILE}/[username]`)) return true
+  }, [pathname])
 
   const showText = isMobile && breakpointValue === 'sm'
 
@@ -113,7 +109,6 @@ export const DashSidebar = () => {
           <SidebarItem
             icon={BiFace}
             as={Link}
-            href={`${PROFILE}/${me?.username}`}
             isActive={isProfileActive}
             title="Profile"
             px={{ base: '1.125rem', sm: '0.75rem', md: '1rem' }}

@@ -2,7 +2,6 @@ import { Flex } from '@chakra-ui/react'
 import { useRouter } from 'next/router'
 import { BackBannerButton } from '~/components/BackBannerButton'
 import { APP_GRID_COLUMN, APP_GRID_TEMPLATE_COLUMN } from '~/constants/layouts'
-import { ThreadView } from '~/features/thread/components'
 import { type NextPageWithLayout } from '~/lib/types'
 import { AppGrid } from '~/templates/AppGrid'
 import { ThreadLayout } from '~/templates/layouts/ThreadLayout'
@@ -30,9 +29,7 @@ const Thread: NextPageWithLayout = () => {
         pb="2.5rem"
         templateColumns={APP_GRID_TEMPLATE_COLUMN}
         px={{ base: '1rem', lg: 0 }}
-      >
-        <ThreadView />
-      </AppGrid>
+      />
     </Flex>
   )
 }

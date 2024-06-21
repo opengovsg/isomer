@@ -1,7 +1,7 @@
-import { type User } from '@prisma/client'
+import { type User } from 'prisma/generated/generatedTypes'
 import { prisma } from '~/server/prisma'
 
-export const auth = (user: Partial<User>) => {
+export const auth = (user: User) => {
   if (user.id) {
     return prisma.user.upsert({
       where: { id: user.id },
@@ -9,6 +9,7 @@ export const auth = (user: Partial<User>) => {
       update: {},
     })
   }
+
   return prisma.user.create({
     data: user,
   })
