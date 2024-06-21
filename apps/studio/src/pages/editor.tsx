@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import Ajv from 'ajv'
 import Editor from '~/components/PageEditor/Editor'
-import Preview from '~/features/editing-experience/Preview'
+import Preview from '~/features/editing-experience/components/Preview'
 
 const ISOMER_SCHEMA_URI = 'https://schema.isomer.gov.sg/next/0.1.0.json'
 

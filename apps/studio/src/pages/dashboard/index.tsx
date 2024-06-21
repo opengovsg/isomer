@@ -1,39 +1,10 @@
-import {
-  Box,
-  Center,
-  IconButton,
-  Td,
-  color,
-  useDisclosure,
-} from '@chakra-ui/react'
-import { Badge, BadgeLeftIcon, Button } from '@opengovsg/design-system-react'
-import PageCreateModal from '~/features/editing-experience/PageCreateModal'
-import {
-  HStack,
-  VStack,
-  Text,
-  TableContainer,
-  Th,
-  Tbody,
-  Table,
-  Thead,
-  Tr,
-} from '@chakra-ui/react'
-import { Checkbox, Pagination } from '@opengovsg/design-system-react'
-import { VscAccount } from 'react-icons/vsc'
+import { useDisclosure } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
+import { HStack, VStack, Text } from '@chakra-ui/react'
 import { type NextPageWithLayout } from '~/lib/types'
-import {
-  BiDotsHorizontalRounded,
-  BiFileBlank,
-  BiFolder,
-  BiHome,
-  BiSolidCircle,
-} from 'react-icons/bi'
-import { useEffect, useState } from 'react'
-import { boolean } from 'zod'
 import _ from 'lodash'
-import { MdOutlineHorizontalRule } from 'react-icons/md'
 import { DashboardTable } from '~/features/dashboard/DashboardTable'
+import PageCreateModal from '~/features/editing-experience/components/PageCreateModal'
 
 const Dashboard: NextPageWithLayout = () => {
   const {
@@ -74,7 +45,5 @@ const Dashboard: NextPageWithLayout = () => {
     </VStack>
   )
 }
-
-
 
 export default Dashboard
