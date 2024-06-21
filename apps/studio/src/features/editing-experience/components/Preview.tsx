@@ -1,4 +1,7 @@
-import { IsomerPageSchema, RenderEngine } from '@opengovsg/isomer-components'
+import {
+  type IsomerPageSchema,
+  RenderEngine,
+} from '@opengovsg/isomer-components'
 import navBar from '../data/navbar.json'
 import footer from '../data/footer.json'
 
