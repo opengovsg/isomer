@@ -1,63 +1,63 @@
-const fs = require("fs").promises;
-const path = require("path");
+const fs = require("fs").promises
+const path = require("path")
 
-const JSON_SCHEMA_VERSION = "0.1.0";
-const schemaDirPath = path.join(__dirname, "../schema");
-const sitemapPath = path.join(__dirname, "../sitemap.json");
+const JSON_SCHEMA_VERSION = "0.1.0"
+const schemaDirPath = path.join(__dirname, "../schema")
+const sitemapPath = path.join(__dirname, "../sitemap.json")
 
 const getSchemaJson = async (filePath) => {
   try {
-    const schemaContent = await fs.readFile(filePath, "utf8");
-    return JSON.parse(schemaContent);
+    const schemaContent = await fs.readFile(filePath, "utf8")
+    return JSON.parse(schemaContent)
   } catch (error) {
-    return null;
+    return null
   }
-};
+}
 
 const getDirectoryItemStats = async (filePath) => {
   try {
-    return await fs.stat(filePath);
+    return await fs.stat(filePath)
   } catch (error) {
-    return null;
+    return null
   }
-};
+}
 
 const getHumanReadableFileSize = (bytes) => {
-  const unit = 1000;
+  const unit = 1000
 
   if (Math.abs(bytes) < unit) {
-    return bytes + " B";
+    return bytes + " B"
   }
 
-  const units = ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-  let index = -1;
+  const units = ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
+  let index = -1
 
   while (Math.abs(bytes) >= unit && index < units.length - 1) {
-    bytes /= unit;
-    index++;
+    bytes /= unit
+    index++
   }
 
-  return `${bytes.toFixed(1)} ${units[index]}`;
-};
+  return `${bytes.toFixed(1)} ${units[index]}`
+}
 
 const getSiteMapEntry = async (fullPath, relativePath, name) => {
-  const permalink = relativePath.split(".").slice(0, -1).join("-");
-  const schemaData = await getSchemaJson(fullPath);
-  const fileStats = await getDirectoryItemStats(fullPath);
+  const permalink = relativePath.split(".").slice(0, -1).join("-")
+  const schemaData = await getSchemaJson(fullPath)
+  const fileStats = await getDirectoryItemStats(fullPath)
 
   if (!schemaData || !fileStats) {
-    return null;
+    return null
   }
 
-  const pageName = name.split(".")[0].replace(/-/g, " ");
+  const pageName = name.split(".")[0].replace(/-/g, " ")
   const title =
     schemaData.page.title ||
-    pageName.charAt(0).toUpperCase() + pageName.slice(1);
+    pageName.charAt(0).toUpperCase() + pageName.slice(1)
   const summary =
     schemaData.page.contentPageHeader?.summary ||
     schemaData.page.articlePageHeader?.summary.join(" ") ||
     schemaData.page.description ||
-    "";
+    ""
 
   const siteMapEntry = {
     permalink,
@@ -68,14 +68,14 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
     category: schemaData.page.category,
     date: schemaData.page.date,
     image: schemaData.page.image,
-  };
+  }
 
   if (schemaData.layout === "file") {
-    const refFilePath = path.join(__dirname, "../public", schemaData.page.ref);
-    const refFileStats = await getDirectoryItemStats(refFilePath);
+    const refFilePath = path.join(__dirname, "../public", schemaData.page.ref)
+    const refFileStats = await getDirectoryItemStats(refFilePath)
 
     if (!refFileStats) {
-      return null;
+      return null
     }
 
     return {
@@ -85,41 +85,41 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
         type: path.extname(refFilePath).slice(1).toUpperCase(),
         size: getHumanReadableFileSize(refFileStats.size),
       },
-    };
+    }
   }
 
   if (schemaData.layout === "link") {
     return {
       ...siteMapEntry,
       ref: schemaData.page.ref,
-    };
+    }
   }
 
   // Check if file is actually an index page for a directory
   const directoryPath = path.join(
     path.dirname(fullPath),
-    path.basename(fullPath, ".json")
-  );
-  const directoryItemStats = await getDirectoryItemStats(directoryPath);
+    path.basename(fullPath, ".json"),
+  )
+  const directoryItemStats = await getDirectoryItemStats(directoryPath)
   const isDirectoryAlsoPresent =
-    directoryItemStats && directoryItemStats.isDirectory();
+    directoryItemStats && directoryItemStats.isDirectory()
 
   if (isDirectoryAlsoPresent) {
     return {
       ...siteMapEntry,
       children: await getSiteMapChildrenEntries(directoryPath, permalink),
-    };
+    }
   }
 
-  return siteMapEntry;
-};
+  return siteMapEntry
+}
 
 // Generates sitemap entries and an index file for directories without an index file
 const processDanglingDirectory = async (fullPath, relativePath, name) => {
-  const children = await getSiteMapChildrenEntries(fullPath, relativePath);
+  const children = await getSiteMapChildrenEntries(fullPath, relativePath)
   // TODO: Improve the content for generated index pages
   const listOfChildPages = {
-    type: "unorderedlist",
+    type: "unorderedList",
     content: children.map((child) => ({
       type: "listItem",
       content: [
@@ -140,12 +140,12 @@ const processDanglingDirectory = async (fullPath, relativePath, name) => {
         },
       ],
     })),
-  };
+  }
 
-  const pageName = name.replace(/-/g, " ");
-  const title = pageName.charAt(0).toUpperCase() + pageName.slice(1);
-  const summary = `Pages in ${title}`;
-  const layout = "content";
+  const pageName = name.replace(/-/g, " ")
+  const title = pageName.charAt(0).toUpperCase() + pageName.slice(1)
+  const summary = `Pages in ${title}`
+  const layout = "content"
 
   await fs.writeFile(
     path.join(fullPath + ".json"),
@@ -162,11 +162,11 @@ const processDanglingDirectory = async (fullPath, relativePath, name) => {
         content: [listOfChildPages],
       },
       null,
-      2
-    )
-  );
+      2,
+    ),
+  )
 
-  console.log("Generated missing index file for directory:", relativePath);
+  console.log("Generated missing index file for directory:", relativePath)
 
   return {
     permalink: relativePath,
@@ -175,57 +175,57 @@ const processDanglingDirectory = async (fullPath, relativePath, name) => {
     title,
     summary,
     children,
-  };
-};
+  }
+}
 
 const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
-  const entries = await fs.readdir(fullPath, { withFileTypes: true });
+  const entries = await fs.readdir(fullPath, { withFileTypes: true })
   const fileEntries = entries.filter(
-    (entry) => entry.isFile() && entry.name.endsWith(".json")
-  );
+    (entry) => entry.isFile() && entry.name.endsWith(".json"),
+  )
 
-  const children = [];
+  const children = []
 
   // Check if _pages.json exists
-  const pageOrderFilePath = path.join(fullPath, "_pages.json");
-  const pageOrderData = await getSchemaJson(pageOrderFilePath);
+  const pageOrderFilePath = path.join(fullPath, "_pages.json")
+  const pageOrderData = await getSchemaJson(pageOrderFilePath)
 
   if (pageOrderData) {
-    const childPages = pageOrderData["pages"];
+    const childPages = pageOrderData["pages"]
 
     const childEntries = await Promise.all(
       childPages.map((child) => {
-        const fileName = child + ".json";
+        const fileName = child + ".json"
         const childEntry = getSiteMapEntry(
           path.join(fullPath, fileName),
           path.join(relativePath, fileName),
-          fileName
-        );
+          fileName,
+        )
 
-        return childEntry;
-      })
-    );
+        return childEntry
+      }),
+    )
 
-    children.push(...childEntries.filter((entry) => entry !== null));
+    children.push(...childEntries.filter((entry) => entry !== null))
   } else {
     // If _pages.json does not exist, process files in the directory in arbitrary order
-    console.log("No _pages.json found for:", relativePath);
+    console.log("No _pages.json found for:", relativePath)
 
     const childEntries = await Promise.all(
       fileEntries
         .filter(
-          (entry) => !(relativePath === "/" && entry.name === "index.json")
+          (entry) => !(relativePath === "/" && entry.name === "index.json"),
         )
         .map((fileEntry) =>
           getSiteMapEntry(
             path.join(fullPath, fileEntry.name),
             path.join(relativePath, fileEntry.name),
-            fileEntry.name
-          )
-        )
-    );
+            fileEntry.name,
+          ),
+        ),
+    )
 
-    children.push(...childEntries.filter((entry) => entry !== null));
+    children.push(...childEntries.filter((entry) => entry !== null))
   }
 
   // Process any directories that do not have a corresponding index file
@@ -235,29 +235,29 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
       .filter(
         (dirEntry) =>
           !fileEntries.find(
-            (fileEntry) => fileEntry.name === dirEntry.name + ".json"
-          )
+            (fileEntry) => fileEntry.name === dirEntry.name + ".json",
+          ),
       )
       .map((dirEntry) =>
         processDanglingDirectory(
           path.join(fullPath, dirEntry.name),
           path.join(relativePath, dirEntry.name),
-          dirEntry.name
-        )
-      )
-  );
+          dirEntry.name,
+        ),
+      ),
+  )
 
-  children.push(...danglingDirEntries);
+  children.push(...danglingDirEntries)
 
-  return children;
-};
+  return children
+}
 
 const generateSitemap = async () => {
-  const startTime = performance.now();
-  const children = await getSiteMapChildrenEntries(schemaDirPath, "/");
-  const indexJsonPath = path.join(schemaDirPath, "index.json");
-  const indexJsonSchema = await getSchemaJson(indexJsonPath);
-  const indexJsonStat = await getDirectoryItemStats(indexJsonPath);
+  const startTime = performance.now()
+  const children = await getSiteMapChildrenEntries(schemaDirPath, "/")
+  const indexJsonPath = path.join(schemaDirPath, "index.json")
+  const indexJsonSchema = await getSchemaJson(indexJsonPath)
+  const indexJsonStat = await getDirectoryItemStats(indexJsonPath)
 
   const sitemap = {
     permalink: "/",
@@ -266,12 +266,12 @@ const generateSitemap = async () => {
     title: indexJsonSchema.page.title || "Home",
     summary: indexJsonSchema.page.description || "",
     children,
-  };
+  }
 
-  await fs.writeFile(sitemapPath, JSON.stringify(sitemap, null, 2));
-  const endTime = performance.now();
-  console.log("Sitemap generated at:", sitemapPath);
-  console.log("Time taken:", (endTime - startTime) / 1000, "seconds");
-};
+  await fs.writeFile(sitemapPath, JSON.stringify(sitemap, null, 2))
+  const endTime = performance.now()
+  console.log("Sitemap generated at:", sitemapPath)
+  console.log("Time taken:", (endTime - startTime) / 1000, "seconds")
+}
 
-generateSitemap().catch(console.error);
+generateSitemap().catch(console.error)
