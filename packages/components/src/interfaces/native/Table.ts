@@ -4,7 +4,7 @@ import type {
   OrderedListProps,
   ParagraphProps,
   UnorderedListProps,
-} from "~/interfaces/native"
+} from "~/interfaces"
 
 interface TableBaseCell {
   colSpan?: number
