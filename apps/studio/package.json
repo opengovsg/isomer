@@ -50,7 +50,7 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@hello-pangea/dnd": "^16.6.0",
-    "@hookform/resolvers": "^3.3.4",
+    "@hookform/resolvers": "^3.6.0",
     "@jsonforms/core": "^3.3.0",
     "@jsonforms/material-renderers": "^3.3.0",
     "@jsonforms/react": "^3.3.0",
