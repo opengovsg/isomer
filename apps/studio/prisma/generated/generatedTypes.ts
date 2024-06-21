@@ -50,7 +50,7 @@ export type Resource = {
 export type Site = {
   id: string
   name: string
-  Config: unknown
+  config: unknown
 }
 export type SiteMember = {
   userId: string

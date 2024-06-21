@@ -48,8 +48,8 @@ model User {
   phone         String
   preferredName String?
 
-  Permission  Permission[]
-  SiteMembers SiteMember[]
+  permission  Permission[]
+  siteMembers SiteMember[]
 }
 
 model Permission {
@@ -66,15 +66,15 @@ model Permission {
 model Site {
   id          String       @id @default(cuid())
   name        String       @unique
-  Resources   Resource[]
-  SiteMembers SiteMember[]
+  resources   Resource[]
+  siteMembers SiteMember[]
   // NOTE: This is `theme/isGovernment/sitemap`
   // This is currently put as `Json` for ease of extensibility
   // when we lock in what we actually want for site-wide config, 
   // we should put this in our db table.
-  Config      Json
-  Navbar      Navbar?
-  Footer      Footer?
+  config      Json
+  navbar      Navbar?
+  footer      Footer?
 }
 
 model Navbar {
@@ -84,7 +84,7 @@ model Navbar {
   description String
   siteId      String        @unique
   site        Site          @relation(fields: [siteId], references: [id])
-  NavbarItems NavbarItems[]
+  items       NavbarItems[]
 }
 
 model NavbarItems {
@@ -92,7 +92,7 @@ model NavbarItems {
   name        String
   url         String
   description String
-  Navbar      Navbar @relation(fields: [navbarId], references: [id])
+  navbar      Navbar @relation(fields: [navbarId], references: [id])
   navbarId    String
 }
 
@@ -112,7 +112,7 @@ model Blob {
   content Json
 
   // Should the blob be deleted on deletion of the resource? 
-  Resource Resource?
+  resource Resource?
 }
 
 model SiteMember {
