@@ -14,6 +14,7 @@ import {
   Image,
   Text,
   VStack,
+  useToken,
 } from '@chakra-ui/react'
 import { Button, BxRightArrowAlt } from '@opengovsg/design-system-react'
 
@@ -113,6 +114,11 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
   const [selectedLayout, setSelectedLayout] = useState(
     LAYOUT_DATA[0].layoutName,
   )
+  const interactionMainSubtleDefault = useToken(
+    'colors',
+    'interaction.main-subtle.default',
+  )
+  console.log(interactionMainSubtleDefault)
 
   // If selected there is no special hover effect.
 
@@ -143,7 +149,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
           templateColumns="repeat(4, 1fr)"
           gap={0}
         >
-          <GridItem w="100%" colSpan={1} bg="tomato" overflowY="scroll">
+          <GridItem w="100%" colSpan={1} bg="grey.50" overflowY="scroll">
             <VStack p="2rem" gap="2rem" h="fit-content">
               {/* Picking Layouts */}
               {LAYOUT_DATA.map((e) => {
@@ -162,6 +168,12 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                             '.layout-title': { color: 'base.content.brand' },
                             '.hover-text': {
                               opacity: 1,
+                            },
+                            '.hover-border': {
+                              borderColor: useToken(
+                                'colors',
+                                'interaction.main-subtle.hover',
+                              ),
                             },
                           }
                     }
@@ -198,6 +210,8 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                     // }}
                   >
                     <Box
+                      //    className={selectedLayout==e.layoutName?"":"hover-border"}
+                      className="hover-border"
                       borderRadius="8px"
                       border="2px"
                       p="1.5rem 1.5rem 0 1.5rem"
@@ -234,17 +248,19 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                           left="0"
                           right="0"
                           bottom="0"
-                          bg="rgba(0, 0, 255, 0.2)"
-                          color="blue"
+                          bg="rgba(172, 199, 250, 0.4)"
+                          opacity="0"
                           alignItems="center"
                           justifyContent="center"
-                          borderRadius="8px"
+                          borderRadius="6px" // due to this being smaller than the outer Box
                         >
                           <VStack
                             w="100%"
                             h="100%"
                             justify="center"
                             gap="0.25rem"
+                            opacity="1"
+                            color="base.content.brand"
                           >
                             <Icon as={BiShow} />
                             <Text textStyle="caption-1">Click to preview</Text>
@@ -282,7 +298,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
           <GridItem
             w="100%"
             colSpan={3}
-            bg="brown"
+            bg="grey.100"
             p=""
             overflow="auto"
           ></GridItem>
