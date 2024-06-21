@@ -12,6 +12,8 @@ import {
   GridItem,
   HStack,
   Image,
+  List,
+  ListItem,
   Text,
   VStack,
   useToken,
@@ -299,9 +301,98 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
             w="100%"
             colSpan={3}
             bg="grey.100"
-            p=""
+            p="2rem 2rem 0 2rem"
             overflow="auto"
-          ></GridItem>
+          >
+            <Box
+              borderRadius="8px 8px 0px 0px"
+              w="100%"
+              minH="100%"
+              boxShadow="0 0 20px 0 rgba(104,104,104,0.3)"
+            >
+              <HStack
+                borderRadius="8px 8px 0px 0px"
+                w="100%"
+                bgColor="slate.200"
+                textColor="white"
+                justifyContent="center"
+                gap="0"
+                padding="0.5rem 0.75rem"
+              >
+                <Text textStyle="caption-2">
+                  {`You're previewing the`}&nbsp;
+                </Text>
+                <Text textStyle="caption-1">
+                  {selectedLayout}
+                  {` Layout`}
+                </Text>
+              </HStack>
+              <List>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem> <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem> <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem> <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem> <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem> <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem> <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem> <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem> <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem> <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+                <ListItem>test</ListItem>
+              </List>
+            </Box>
+          </GridItem>
         </Grid>
       </VStack>
     </>
