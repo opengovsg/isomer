@@ -68,6 +68,27 @@ model Site {
   name        String       @unique
   Resources   Resource[]
   SiteMembers SiteMember[]
+  // NOTE: This is `theme/isGovernment/sitemap`
+  // This is currently put as `Json` for ease of extensibility
+  // when we lock in what we actually want for site-wide config, 
+  // we should put this in our db table.
+  Config      Json
+  Navbar      Navbar?
+  Footer      Footer?
+}
+
+model Navbar {
+  id     String @id @default(cuid())
+  name   String
+  siteId String @unique
+  site   Site   @relation(fields: [siteId], references: [id])
+}
+
+model Footer {
+  id     String @id @default(cuid())
+  name   String
+  siteId String @unique
+  site   Site   @relation(fields: [siteId], references: [id])
 }
 
 model Blob {
