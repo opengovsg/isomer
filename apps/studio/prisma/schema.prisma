@@ -78,17 +78,33 @@ model Site {
 }
 
 model Navbar {
-  id     String @id @default(cuid())
-  name   String
-  siteId String @unique
-  site   Site   @relation(fields: [siteId], references: [id])
+  id          String        @id @default(cuid())
+  name        String
+  url         String
+  description String
+  siteId      String        @unique
+  site        Site          @relation(fields: [siteId], references: [id])
+  NavbarItems NavbarItems[]
+}
+
+model NavbarItems {
+  id          String @id @default(cuid())
+  name        String
+  url         String
+  description String
+  Navbar      Navbar @relation(fields: [navbarId], references: [id])
+  navbarId    String
 }
 
 model Footer {
-  id     String @id @default(cuid())
-  name   String
-  siteId String @unique
-  site   Site   @relation(fields: [siteId], references: [id])
+  id                   String  @id @default(cuid())
+  name                 String
+  siteId               String  @unique
+  site                 Site    @relation(fields: [siteId], references: [id])
+  contactUsLink        String?
+  feedbackFormLink     String?
+  privacyStatementLink String?
+  termsOfUseLink       String?
 }
 
 model Blob {
