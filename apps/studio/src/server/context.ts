@@ -4,7 +4,7 @@ import { getIronSession } from 'iron-session'
 import { type SessionData, type Session } from '~/lib/types/session'
 import { type User } from '@prisma/client'
 import { prisma } from './prisma'
-import { db } from '../../database/database'
+import { db } from './modules/database'
 import { sessionOptions } from './modules/auth/session'
 import { type defaultMeSelect } from './modules/me/me.select'
 

@@ -5,7 +5,11 @@ import {
   updatePageBlobSchema,
   updatePageSchema,
 } from '~/schemas/page'
-import { getFullPageById, getNavBar } from '../resource/resource.service'
+import {
+  getFooter,
+  getFullPageById,
+  getNavBar,
+} from '../resource/resource.service'
 import { getSiteMeta } from '../site/site.service'
 
 export const pageRouter = router({
@@ -13,9 +17,7 @@ export const pageRouter = router({
     .input(getEditPageSchema)
     .query(async ({ input, ctx }) => {
       const { pageId, siteId } = input
-
       const page = await getFullPageById(pageId)
-
       // TODO: Fill these in later
       const pageName: string = page.name
       const { theme, isGovernment, sitemap } = getSiteMeta(siteId)
