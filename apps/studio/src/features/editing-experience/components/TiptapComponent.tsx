@@ -1,5 +1,6 @@
 import { Box, Flex, Icon, VStack, Text as ChakraText } from '@chakra-ui/react'
 import { Button, IconButton } from '@opengovsg/design-system-react'
+import { Blockquote } from '@tiptap/extension-blockquote'
 import { Bold } from '@tiptap/extension-bold'
 import { BulletList } from '@tiptap/extension-bullet-list'
 import { Document } from '@tiptap/extension-document'
@@ -59,7 +60,7 @@ function TipTapComponent({
 }: TipTapComponentProps) {
   const editor = useEditor({
     extensions: [
-      // Blockquote,
+      Blockquote,
       Bold,
       BulletList.extend({
         name: 'unorderedlist',
