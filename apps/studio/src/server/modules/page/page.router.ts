@@ -5,23 +5,25 @@ import {
   updatePageBlobSchema,
   updatePageSchema,
 } from '~/schemas/page'
+import {
+  getFooter,
+  getFullPageById,
+  getNavBar,
+} from '../resource/resource.service'
+import { getSiteMeta } from '../site/site.service'
 
 export const pageRouter = router({
   readPageAndBlob: protectedProcedure
     .input(getEditPageSchema)
     .query(async ({ input, ctx }) => {
+      const { pageId, siteId } = input
+      const page = await getFullPageById(pageId)
       // TODO: Fill these in later
-      const pageName: string = ''
-      const theme = {}
-      const isGovernment = false
-      const navbar = {}
-      const footer = {}
-      const sitemap = {
-        parentTitle: '',
-        childrenTitles: [''],
-        siblingTitles: [''],
-      }
-      const content = ''
+      const pageName: string = page.name
+      const { theme, isGovernment, sitemap } = getSiteMeta(siteId)
+      const navbar = getNavBar(siteId)
+      const footer = getFooter(siteId)
+      const { content } = page
 
       return {
         pageName,
@@ -36,6 +38,7 @@ export const pageRouter = router({
         content,
       }
     }),
+
   updatePage: protectedProcedure
     .input(updatePageSchema)
     .query(async ({ input, ctx }) => {
