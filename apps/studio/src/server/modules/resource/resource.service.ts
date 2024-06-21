@@ -40,9 +40,24 @@ export const getPageById = (id: string) => {
 
 // TODO: should be selecting from new table
 export const getNavBar = (siteId: string) => {
-  return ''
+  return (
+    db
+      .selectFrom('Navbar')
+      .where('siteId', '=', siteId)
+      .innerJoin('NavbarItems', 'id', 'NavbarItems.navbarId')
+      .selectAll()
+      // NOTE: Throwing here is acceptable because each site should have a navbar
+      .executeTakeFirstOrThrow()
+  )
 }
 
 export const getFooter = (siteId: string) => {
-  return ''
+  return (
+    db
+      .selectFrom('Footer')
+      .where('siteId', '=', siteId)
+      .selectAll()
+      // NOTE: Throwing here is acceptable because each site should have a footer
+      .executeTakeFirstOrThrow()
+  )
 }
