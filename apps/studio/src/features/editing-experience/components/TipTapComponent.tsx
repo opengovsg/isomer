@@ -27,15 +27,13 @@ import Underline from '@tiptap/extension-underline'
 import { MenuBar } from '~/components/PageEditor/MenuBar'
 
 import { Table } from './extensions/Table'
+import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 
 type NativeComponentType = 'paragraph' | 'image'
 
 export interface TipTapComponentProps {
   type: NativeComponentType
   data: any
-  handleChange(path: string, value: any): void
-  onProceed(path: string, value: any): void
-  onClose(): void
   path: string
 }
 
@@ -50,14 +48,9 @@ const typeMapping = {
   },
 }
 
-function TipTapComponent({
-  type,
-  data,
-  handleChange,
-  onProceed,
-  onClose,
-  path,
-}: TipTapComponentProps) {
+function TipTapComponent({ type, data, path }: TipTapComponentProps) {
+  const { setDrawerState, setPageState, setEditorState } =
+    useEditorDrawerContext()
   const editor = useEditor({
     extensions: [
       Blockquote,
@@ -106,7 +99,8 @@ function TipTapComponent({
     ],
     content: data,
     onUpdate({ editor }) {
-      handleChange(path, editor.getJSON().content)
+      // setEditorState()
+      console.log(path, editor.getJSON().content)
     },
   })
 
@@ -133,7 +127,7 @@ function TipTapComponent({
           color="interaction.sub.default"
           aria-label="Close add component"
           icon={<BiX />}
-          onClick={onClose}
+          onClick={() => setDrawerState({ state: 'root' })}
         />
       </Flex>
       <Box
@@ -175,7 +169,13 @@ function TipTapComponent({
         w="100%"
         justifyContent="end"
       >
-        <Button onClick={() => onProceed(path, editor.getJSON().content)}>
+        <Button
+          onClick={() => {
+            // setPageState()
+            console.log('saving')
+            setDrawerState({ state: 'root' })
+          }}
+        >
           Save
         </Button>
       </Flex>

@@ -1,7 +1,7 @@
 import { Grid, GridItem } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import Ajv from 'ajv'
-import { EditorDrawerProvider } from '~/contexts/EditorDrawerContext'
+import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import EditPageDrawer from '~/features/editing-experience/components/EditPageDrawer'
 import Preview from '~/features/editing-experience/components/Preview'
 import { type NextPageWithLayout } from '~/lib/types'
@@ -165,35 +165,38 @@ const EditPage: NextPageWithLayout = () => {
     }
   }
 
+  const { setDrawerState, setPageState, setEditorState } =
+    useEditorDrawerContext()
+  useEffect(() => {
+    setDrawerState({
+      state: 'root',
+    })
+    const blocks = [
+      { text: 'Hero', id: 'hero-123' },
+      { text: 'Content', id: 'content-123' },
+      { text: 'Infopic', id: 'infopic-123' },
+      { text: 'Content', id: 'content-234' },
+    ]
+    setEditorState(blocks)
+    setPageState(blocks)
+  }, [])
+
   return (
-    <EditorDrawerProvider>
-      <Grid
-        w="100vw"
-        templateColumns="repeat(3, 1fr)"
-        gap={0}
-        maxH="calc(100vh - 57px)"
-      >
-        {/* TODO: Implement sidebar editor */}
-        <GridItem colSpan={1} bg="slate.50">
-          <EditPageDrawer
-            isOpen
-            state={{
-              state: 'root',
-              blocks: [
-                { text: 'Hero', id: 'hero-123' },
-                { text: 'Content', id: 'content-123' },
-                { text: 'Infopic', id: 'infopic-123' },
-                { text: 'Content', id: 'content-234' },
-              ],
-            }}
-          />
-        </GridItem>
-        {/* TODO: Implement preview */}
-        <GridItem colSpan={2} overflow="scroll">
-          <Preview schema={editedSchema} />
-        </GridItem>
-      </Grid>
-    </EditorDrawerProvider>
+    <Grid
+      w="100vw"
+      templateColumns="repeat(3, 1fr)"
+      gap={0}
+      maxH="calc(100vh - 57px)"
+    >
+      {/* TODO: Implement sidebar editor */}
+      <GridItem colSpan={1} bg="slate.50">
+        <EditPageDrawer isOpen />
+      </GridItem>
+      {/* TODO: Implement preview */}
+      <GridItem colSpan={2} overflow="scroll">
+        <Preview schema={editedSchema} />
+      </GridItem>
+    </Grid>
   )
 }
 
