@@ -243,12 +243,6 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
     //   title: 'Add link',
     //   action: () => showModal('hyperlink'),
     // },
-    // {
-    //   type: 'item',
-    //   icon: BiImageAdd,
-    //   title: 'Add image',
-    //   action: () => showModal('images'),
-    // },
     {
       type: 'item',
       icon: BiTable,
@@ -266,12 +260,6 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
     //   icon: BiFile,
     //   title: 'Add file',
     //   action: () => showModal('files'),
-    // },
-    // {
-    //   type: 'item',
-    //   icon: BiCodeAlt,
-    //   title: 'Insert embed',
-    //   action: () => showModal('embed'),
     // },
     {
       type: 'divider',
