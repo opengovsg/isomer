@@ -1,4 +1,4 @@
-import { LayoutSelection } from '../../features/editing-experience/LayoutSelection'
+import LayoutSelection from '../../features/editing-experience/LayoutSelection'
 
 export default function TestLayoutSelector() {
   return (

@@ -1,215 +1,52 @@
-/* eslint-disable import/prefer-default-export */
-/* eslint-disable prettier/prettier */
-/* eslint-disable */
-
 // Component for layout selection
 
 import React, { useState } from 'react'
 import {
   Box,
-  Center,
   Grid,
   GridItem,
   HStack,
   Image,
-  List,
-  ListItem,
   Text,
   VStack,
   useToken,
+  Icon,
 } from '@chakra-ui/react'
 import { Button, BxRightArrowAlt } from '@opengovsg/design-system-react'
-import Preview from '../editing-experience/components/Preview'
-
-import { Icon } from '@chakra-ui/react'
 import { BiLeftArrowAlt, BiShow } from 'react-icons/bi'
-import { relative } from 'path'
+import Preview from '~/features/editing-experience/components/Preview'
+import placeholderContent from '~/features/editing-experience/data/placeholderContent.json'
 
 interface LayoutSelectionProps {
-  pageName: String
+  pageName: string
 }
+
+type LayoutType = 'article' | 'content'
 
 const LAYOUT_DATA: {
   layoutDisplayName: string
-  layoutSchemaName: string
+  layoutTypename: LayoutType
   layoutDescription: string
   imageSource: string
 }[] = [
   {
     layoutDisplayName: 'Default',
-    layoutSchemaName: 'content',
+    layoutTypename: 'content',
     layoutDescription: 'This is the most basic layout for your content.',
-    imageSource: '/assets/layout_card/default_layout_card.png',
+    imageSource: '/assets/layout-card/default_layout_card.png',
   },
   {
     layoutDisplayName: 'Article',
-    layoutSchemaName: 'article',
+    layoutTypename: 'article',
     layoutDescription:
       'Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches',
-    imageSource: '/assets/layout_card/article_layout_card.png',
+    imageSource: '/assets/layout-card/article_layout_card.png',
   },
 ]
 
-const placeholderSchema = {
-  version: '0.1.0',
-  layout: 'content',
-  page: {
-    contentPageHeader: {
-      summary: "Our organisation's vision, mission, structure and values",
-    },
-    title: 'About MTI',
-    description: "Our organisation's vision, mission, structure and values",
-  },
-  content: [
-    {
-      type: 'heading',
-      level: 2,
-      content: [
-        {
-          type: 'text',
-          marks: [],
-          text: 'Our vision',
-        },
-      ],
-    },
-    {
-      type: 'paragraph',
-      content: [
-        {
-          type: 'text',
-          marks: [],
-          text: 'Our vision is for Singapore to be a leading global city with a dynamic economy, world-class and innovative enterprises, a conducive environment for entrepreneurs and enterprises to tap its diverse opportunities and good jobs for all Singaporeans.',
-        },
-      ],
-    },
-    {
-      type: 'heading',
-      level: 2,
-      content: [
-        {
-          type: 'text',
-          marks: [],
-          text: 'Our mission',
-        },
-      ],
-    },
-    {
-      type: 'paragraph',
-      content: [
-        {
-          type: 'text',
-          marks: [],
-          text: 'To promote economic growth and create good jobs, to enable Singaporeans to improve their lives. Together with our statutory boards, we will ensure that Singapore’s economy continues to be competitive, is able to attract investments, and nurture a deeper base of global Singapore enterprises.',
-        },
-      ],
-    },
-    {
-      type: 'unorderedList',
-      content: [
-        {
-          type: 'listItem',
-          content: [
-            {
-              type: 'paragraph',
-              content: [
-                {
-                  type: 'text',
-                  marks: [],
-                  text: 'Value Our People',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          type: 'listItem',
-          content: [
-            {
-              type: 'paragraph',
-              content: [
-                {
-                  type: 'text',
-                  marks: [],
-                  text: 'Value Our People',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          type: 'listItem',
-          content: [
-            {
-              type: 'paragraph',
-              content: [
-                {
-                  type: 'text',
-                  marks: [],
-                  text: 'Serve With Integrity',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          type: 'listItem',
-          content: [
-            {
-              type: 'paragraph',
-              content: [
-                {
-                  type: 'text',
-                  marks: [],
-                  text: 'Collaborate As Partners',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          type: 'listItem',
-          content: [
-            {
-              type: 'paragraph',
-              content: [
-                {
-                  type: 'text',
-                  marks: [],
-                  text: 'Dare To Innovate',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          type: 'listItem',
-          content: [
-            {
-              type: 'paragraph',
-              content: [
-                {
-                  type: 'text',
-                  marks: [],
-                  text: 'Strive For Excellence',
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      type: 'image',
-      src: 'https://github.com/isomerpages/mti-corp/blob/staging/public/images/about/accreditations.png?raw=true',
-      alt: 'Three logos in a row. From left, they read SOCOTEC, People De Eloper, and Singapore Quality Class Star.',
-      width: 100,
-    },
-  ],
-}
-
-export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
+function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
   // need state here to keep track of selected layout
-  const [selectedLayout, setSelectedLayout] = useState(LAYOUT_DATA[0])
+  const [selectedLayout, setSelectedLayout] = useState(LAYOUT_DATA[0]!)
   return (
     <>
       {/* This is the floating header */}
@@ -243,6 +80,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
               {LAYOUT_DATA.map((e) => {
                 return (
                   <VStack
+                    key={e.layoutTypename}
                     p="0"
                     gap="0"
                     cursor="pointer"
@@ -250,7 +88,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                       setSelectedLayout(e)
                     }}
                     _hover={
-                      selectedLayout.layoutSchemaName == e.layoutSchemaName
+                      selectedLayout.layoutTypename === e.layoutTypename
                         ? {}
                         : {
                             '.layout-title': { color: 'base.content.brand' },
@@ -266,7 +104,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                           }
                     }
                     sx={
-                      selectedLayout.layoutSchemaName == e.layoutSchemaName
+                      selectedLayout.layoutTypename === e.layoutTypename
                         ? {}
                         : {
                             '.layout-title': {
@@ -278,27 +116,8 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                             },
                           }
                     }
-                    // _hover={{
-                    //   '.layout-title': { textColor: 'base.content.brand' },
-                    //   '.hover-text': {
-                    //     display: 'block',
-                    //   },
-                    // }}
-                    // sx={{
-                    //   '.layout-title': {
-                    //     transition: 'textColor 300ms ease-out',
-                    //   },
-                    //   '.hover-text': {
-                    //     transition: 'opacity 300ms ease-out',
-                    //     opacity: 0,
-                    //   },
-                    //   ':hover .hover-text': {
-                    //     opacity: 1,
-                    //   },
-                    // }}
                   >
                     <Box
-                      //    className={selectedLayout==e.layoutName?"":"hover-border"}
                       className="hover-border"
                       borderRadius="8px"
                       border="2px"
@@ -306,7 +125,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                       mb="1.25rem"
                       position="relative"
                       borderColor={
-                        selectedLayout.layoutSchemaName == e.layoutSchemaName
+                        selectedLayout.layoutTypename === e.layoutTypename
                           ? 'base.divider.brand'
                           : 'base.divider.medium'
                       }
@@ -315,22 +134,11 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                         src={e.imageSource}
                         borderRadius="4px 4px 0px 0px"
                         boxShadow="0px 0px 20px 0px rgba(104, 104, 104, 0.30)"
+                        alt={`Image of ${e.layoutDisplayName} layout`}
                       />
-                      {selectedLayout.layoutSchemaName !=
-                        e.layoutSchemaName && (
+
+                      {selectedLayout.layoutTypename !== e.layoutTypename && (
                         <Box
-                          // className="hover-text"
-                          // display="none"
-                          // position="absolute"
-                          // top="0"
-                          // left="0"
-                          // right="0"
-                          // bottom="0"
-                          // bg="rgba(0, 0, 255, 0.2)"
-                          // color="blue"
-                          // alignItems="center"
-                          // justifyContent="center"
-                          // borderRadius="8px"
                           className="hover-text"
                           position="absolute"
                           top="0"
@@ -363,7 +171,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                         textAlign="left"
                         textStyle="h6"
                         textColor={
-                          selectedLayout.layoutSchemaName == e.layoutSchemaName
+                          selectedLayout.layoutTypename === e.layoutTypename
                             ? 'base.content.brand'
                             : 'base.content.strong'
                         }
@@ -396,29 +204,35 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
               w="100%"
               minH="100%"
               boxShadow="0 0 20px 0 rgba(104,104,104,0.3)"
+              position="relative"
             >
-              <VStack w="100%" minH="100%" position="relative">
-                <HStack
-                  borderRadius="8px 8px 0px 0px"
-                  w="100%"
-                  bgColor="slate.200"
-                  textColor="white"
-                  justifyContent="center"
-                  gap="0"
-                  padding="0.5rem 0.75rem"
-                >
-                  <Text textStyle="caption-2">
-                    {`You're previewing the`}&nbsp;
-                  </Text>
-                  <Text textStyle="caption-1">
-                    {selectedLayout.layoutDisplayName}
-                    {` Layout`}
-                  </Text>
-                </HStack>
-                <Preview schema={placeholderSchema} />
+              <HStack
+                borderRadius="8px 8px 0px 0px"
+                w="100%"
+                bgColor="slate.200"
+                textColor="white"
+                justifyContent="center"
+                gap="0"
+                padding="0.5rem 0.75rem"
+              >
+                <Text textStyle="caption-2">
+                  {`You're previewing the`}&nbsp;
+                </Text>
+                <Text textStyle="caption-1">
+                  {selectedLayout.layoutDisplayName}
+                  {` Layout`}
+                </Text>
+              </HStack>
+              <Preview schema={placeholderContent} />
 
-                <Box position="absolute" w="100%" h="100%" zIndex="1" />
-              </VStack>
+              <Box
+                position="absolute"
+                top="0"
+                left="0"
+                w="100%"
+                h="100%"
+                zIndex="10"
+              />
             </Box>
           </GridItem>
         </Grid>
@@ -426,17 +240,4 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
     </>
   )
 }
-
-// const LinksReportDetails = ({ layoutStyle: String }: {}) => {
-//   return (
-//     <VStack p="0" gap="0">
-//       <Box borderRadius="8px" border="2px" p="1.5rem 1.5rem 0 1.5rem">
-//         {/* image */}
-//       </Box>
-//       <Hstack>
-//         <Text>layout name</Text>
-//       </Hstack>
-//       <Text>description text</Text>
-//     </VStack>
-//   )
-// }
+export default LayoutSelection
