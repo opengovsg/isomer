@@ -19,6 +19,7 @@ import {
   useToken,
 } from '@chakra-ui/react'
 import { Button, BxRightArrowAlt } from '@opengovsg/design-system-react'
+import Preview from '../editing-experience/components/Preview'
 
 import { Icon } from '@chakra-ui/react'
 import { BiLeftArrowAlt, BiShow } from 'react-icons/bi'
@@ -50,42 +51,157 @@ const LAYOUT_DATA: {
 
 const placeholderSchema = {
   version: '0.1.0',
-  layout: 'default',
+  layout: 'content',
   page: {
-    title: 'Home',
+    contentPageHeader: {
+      summary: "Our organisation's vision, mission, structure and values",
+    },
+    title: 'About MTI',
+    description: "Our organisation's vision, mission, structure and values",
   },
   content: [
     {
+      type: 'heading',
+      level: 2,
+      content: [
+        {
+          type: 'text',
+          marks: [],
+          text: 'Our vision',
+        },
+      ],
+    },
+    {
+      type: 'paragraph',
+      content: [
+        {
+          type: 'text',
+          marks: [],
+          text: 'Our vision is for Singapore to be a leading global city with a dynamic economy, world-class and innovative enterprises, a conducive environment for entrepreneurs and enterprises to tap its diverse opportunities and good jobs for all Singaporeans.',
+        },
+      ],
+    },
+    {
+      type: 'heading',
+      level: 2,
+      content: [
+        {
+          type: 'text',
+          marks: [],
+          text: 'Our mission',
+        },
+      ],
+    },
+    {
+      type: 'paragraph',
+      content: [
+        {
+          type: 'text',
+          marks: [],
+          text: 'To promote economic growth and create good jobs, to enable Singaporeans to improve their lives. Together with our statutory boards, we will ensure that Singapore’s economy continues to be competitive, is able to attract investments, and nurture a deeper base of global Singapore enterprises.',
+        },
+      ],
+    },
+    {
+      type: 'unorderedList',
+      content: [
+        {
+          type: 'listItem',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                {
+                  type: 'text',
+                  marks: [],
+                  text: 'Value Our People',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'listItem',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                {
+                  type: 'text',
+                  marks: [],
+                  text: 'Value Our People',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'listItem',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                {
+                  type: 'text',
+                  marks: [],
+                  text: 'Serve With Integrity',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'listItem',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                {
+                  type: 'text',
+                  marks: [],
+                  text: 'Collaborate As Partners',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'listItem',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                {
+                  type: 'text',
+                  marks: [],
+                  text: 'Dare To Innovate',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'listItem',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                {
+                  type: 'text',
+                  marks: [],
+                  text: 'Strive For Excellence',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
       type: 'image',
-      src: 'https://images.unsplash.com/photo-1570441262582-a2d4b9a916a5?q=80&w=2948&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      alt: 'A man is serving food out of a blue food',
-    },
-    {
-      type: 'paragraph',
-      content: [
-        {
-          type: 'text',
-          text: "Singapore - In a bid to foster community spirit and celebrate the rich tapestry of its diverse population, Singapore is gearing up to host its first-ever Citizens' Festival. This unprecedented event promises to be a dazzling extravaganza filled with entertainment, cultural showcases, and gastronomic delights.",
-        },
-      ],
-    },
-    {
-      type: 'paragraph',
-      content: [
-        {
-          type: 'text',
-          text: "One of the highlights of the festival is the Cultural Village, where visitors can immerse themselves in the sights, sounds, and flavors of Singapore's various ethnic communities. From traditional Malay dance performances to Chinese calligraphy demonstrations and Indian culinary workshops, attendees will have the opportunity to gain a deeper appreciation for the country's multicultural heritage.",
-        },
-      ],
-    },
-    {
-      type: 'paragraph',
-      content: [
-        {
-          type: 'text',
-          text: 'This is a Chat-GPT4 generated article for visual testing purposes.',
-        },
-      ],
+      src: 'https://github.com/isomerpages/mti-corp/blob/staging/public/images/about/accreditations.png?raw=true',
+      alt: 'Three logos in a row. From left, they read SOCOTEC, People De Eloper, and Singapore Quality Class Star.',
+      width: 100,
     },
   ],
 }
@@ -279,6 +395,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
               w="100%"
               minH="100%"
               boxShadow="0 0 20px 0 rgba(104,104,104,0.3)"
+              onClick={(e) => e.stopPropagation()}
             >
               <HStack
                 borderRadius="8px 8px 0px 0px"
@@ -297,6 +414,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                   {` Layout`}
                 </Text>
               </HStack>
+              <Preview schema={placeholderSchema} />
             </Box>
           </GridItem>
         </Grid>
