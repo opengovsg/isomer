@@ -1,7 +1,7 @@
 export interface Sitemap {
   parentTitle: string
   childrenTitles: string[]
-  sibilngTitles: string[]
+  siblingTitles: string[]
 }
 type SiteTheme = 'isomer-classic' | 'isomer-next'
 export interface SiteConfig {
