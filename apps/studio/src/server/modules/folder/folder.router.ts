@@ -18,12 +18,12 @@ export const folderRouter = router({
 
       const folderResult = await ctx.db
         .selectFrom('Resource')
-        .select(['name', 'parentId'])
+        .selectAll('Resource')
         .where('id', '=', input.resourceId)
         .executeTakeFirstOrThrow()
       const childrenResult = await ctx.db
         .selectFrom('Resource')
-        .select(['id', 'name', 'blobId'])
+        .selectAll('Resource')
         .where('parentId', '=', input.resourceId)
         .execute()
       const children = childrenResult.map((c) => {
@@ -42,10 +42,7 @@ export const folderRouter = router({
           id: c.id,
           name: c.name,
           type: 'folder',
-          lastEditDate: 'folder',
-          lastEditUser: 'Coming Soon',
           permalink: '/placeholder',
-          status: 'folder',
         }
       })
 
