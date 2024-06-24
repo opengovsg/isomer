@@ -97,9 +97,7 @@ function ComponentSelector() {
   const { setDrawerState, setPageState, setEditorState } =
     useEditorDrawerContext()
   const onProceed = (sectionType: SectionType) => {
-    // setPageState()
-    // setEditorState()
-    console.log(sectionType)
+    // TODO: add new section to page/editor state
     setDrawerState({ state: 'root' })
   }
   return (

@@ -99,8 +99,7 @@ function TipTapComponent({ type, data, path }: TipTapComponentProps) {
     ],
     content: data,
     onUpdate({ editor }) {
-      // setEditorState()
-      console.log(path, editor.getJSON().content)
+      // TODO: set editor state - content is retrieved via editor.getJSON().content
     },
   })
 
@@ -171,7 +170,7 @@ function TipTapComponent({ type, data, path }: TipTapComponentProps) {
       >
         <Button
           onClick={() => {
-            // setPageState()
+            // TODO: save page and update pageState
             console.log('saving')
             setDrawerState({ state: 'root' })
           }}

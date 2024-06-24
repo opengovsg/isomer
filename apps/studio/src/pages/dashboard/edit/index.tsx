@@ -171,6 +171,7 @@ const EditPage: NextPageWithLayout = () => {
     setDrawerState({
       state: 'root',
     })
+    // TODO: retrieve data from backend
     const blocks = [
       { text: 'Hero', id: 'hero-123' },
       { text: 'Content', id: 'content-123' },
