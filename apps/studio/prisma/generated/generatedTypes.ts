@@ -15,24 +15,12 @@ export type Footer = {
   id: string
   name: string
   siteId: string
-  contactUsLink: string | null
-  feedbackFormLink: string | null
-  privacyStatementLink: string | null
-  termsOfUseLink: string | null
+  content: unknown
 }
 export type Navbar = {
   id: string
-  name: string
-  url: string
-  description: string
   siteId: string
-}
-export type NavbarItems = {
-  id: string
-  name: string
-  url: string
-  description: string
-  navbarId: string
+  content: unknown
 }
 export type Permission = {
   id: string
@@ -73,7 +61,6 @@ export type DB = {
   Blob: Blob
   Footer: Footer
   Navbar: Navbar
-  NavbarItems: NavbarItems
   Permission: Permission
   Resource: Resource
   Site: Site
