@@ -80,9 +80,8 @@ export default function RootStateDrawer({ blocks }: RootStateDrawerProps) {
                         <VStack
                           w="100%"
                           gap={0}
-                          // as={Button}
                           onClick={() => {
-                            console.log('hiuh')
+                            console.log('huh')
                             setDrawerState({ state: 'nativeEditor' })
                           }}
                         >

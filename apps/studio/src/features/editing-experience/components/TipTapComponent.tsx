@@ -110,6 +110,7 @@ function TipTapComponent({
     },
   })
 
+  // TODO: Add a loading state or use suspsense
   if (!editor) return <></>
   return (
     <VStack bg="white" h="100%" gap="0">
