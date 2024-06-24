@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 
 import Ajv from 'ajv'
-import Editor from '~/components/PageEditor/Editor'
 import Preview from '~/features/editing-experience/components/Preview'
 
 const ISOMER_SCHEMA_URI = 'https://schema.isomer.gov.sg/next/0.1.0.json'
@@ -64,7 +63,7 @@ const placeholder = {
   ],
 }
 
-const EditPage = () => {
+function EditPage() {
   const [isEditorOpen, setIsEditorOpen] = useState(true)
   const [editorValue, setEditorValue] = useState(
     JSON.stringify(placeholder, null, 2),
@@ -212,21 +211,6 @@ const EditPage = () => {
       </div> */}
 
       <div className="flex flex-row">
-        <div
-          className={
-            isEditorOpen
-              ? 'w-2/5 h-[calc(100vh-33px)] border-r-2 border-r-gray-400'
-              : 'w-0'
-          }
-        >
-          {jsonSchema && (
-            <Editor
-              jsonSchema={jsonSchema}
-              editorValue={placeholder}
-              onChange={handleNewEditorChange}
-            />
-          )}
-        </div>
         <div
           className={`h-[calc(100vh-33px)] overflow-scroll ${
             isEditorOpen ? 'w-3/5 px-1' : 'w-full'

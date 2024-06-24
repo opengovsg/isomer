@@ -1,0 +1,43 @@
+.table-block-wrapper {
+  position: relative;
+  &:hover {
+    display: block;
+    .table-block-label {
+      display: block;
+    }
+    .table-block-border {
+      border-color: #055aff;
+    }
+  }
+
+  .drag-handle {
+    margin-top: 2px;
+  }
+
+  &:focus {
+    display: block;
+    .table-block-label {
+      display: block;
+    }
+    .table-block-border {
+      border-color: #055aff;
+    }
+  }
+
+  .table-block-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #055aff;
+    color: white;
+    padding: 0.25rem;
+    display: none;
+    font-size: 0.75rem;
+    z-index: 1;
+  }
+
+  .table-block-border {
+    border: 2px solid transparent;
+    object-fit: contain;
+  }
+}

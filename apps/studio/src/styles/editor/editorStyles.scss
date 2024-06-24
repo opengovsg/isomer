@@ -1,0 +1,218 @@
+@use "./Editor.module.scss";
+
+.tiptap:focus {
+  outline: none;
+}
+
+.resize-cursor {
+  cursor: ew-resize;
+  cursor: col-resize;
+}
+
+/* Basic editor styles */
+.tiptap {
+  @extend .previewTextStyles;
+
+  > * + * {
+    margin-top: 0.75em;
+  }
+
+  height: 100%;
+
+  > p.is-empty::before {
+    color: #adb5bd;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  table {
+    border-collapse: collapse;
+    margin: 0;
+    overflow: hidden;
+    table-layout: fixed;
+    width: 100%;
+
+    .selectedCell:after {
+      background: rgba(200, 200, 255, 0.2);
+      content: "";
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      pointer-events: none;
+      position: absolute;
+      z-index: 2;
+    }
+
+    td,
+    th {
+      border: 1px solid #d6d6d6;
+      box-sizing: border-box;
+      min-width: 1em;
+      padding: 0.5em 0.75em;
+      position: relative;
+      vertical-align: top;
+
+      > * {
+        margin-bottom: 0;
+      }
+    }
+
+    th {
+      color: #323232;
+      font-weight: bold;
+      text-align: left;
+    }
+  }
+
+  a {
+    color: #68cef8;
+    text-decoration: underline;
+  }
+
+  ul,
+  ol {
+    padding: 0 1rem;
+  }
+
+  code {
+    background-color: rgba(#616161, 0.1);
+    color: #616161;
+  }
+
+  pre {
+    background: #0d0d0d;
+    border-radius: 0.5rem;
+    color: #fff;
+    font-family: "JetBrainsMono", monospace;
+    padding: 0.75rem 1rem;
+
+    code {
+      background: none;
+      color: inherit;
+      font-size: 0.8rem;
+      padding: 0;
+    }
+  }
+
+  mark {
+    background-color: #faf594;
+  }
+
+  img {
+    height: auto;
+    max-width: 50%;
+  }
+
+  hr {
+    margin: 1rem 0;
+  }
+
+  blockquote {
+    border-left: 2px solid rgba(#0d0d0d, 0.1);
+    padding-left: 1rem;
+  }
+
+  hr {
+    border: none;
+    border-top: 2px solid rgba(#0d0d0d, 0.1);
+    margin: 2rem 0;
+  }
+
+  ul[data-type="taskList"] {
+    list-style: none;
+    padding: 0;
+
+    li {
+      align-items: center;
+      display: flex;
+
+      > label {
+        flex: 0 0 auto;
+        margin-right: 0.5rem;
+        user-select: none;
+      }
+
+      > div {
+        flex: 1 1 auto;
+      }
+    }
+  }
+
+  .node-detailGroup * [data-type="details"]:first-child {
+    border-top: 0;
+  }
+  .node-detailGroup * [data-type="details"]:last-child {
+    border-bottom: 0;
+  }
+
+  [data-type="details"] {
+    display: flex;
+    border-bottom: 1px solid #d4d4d4;
+    padding: 0.5rem;
+    margin-top: 0;
+    margin-bottom: 0;
+    border-top: 0;
+
+    > button {
+      display: flex;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      padding: 0;
+      height: 1.5em;
+      width: 1.5em;
+      color: black;
+
+      &::after {
+        // Using sgds-icons.chevron-down
+        font-family: "sgds-icons";
+        content: "\E93C";
+        justify-content: center;
+        align-items: center;
+        width: 1.5em;
+        height: 1.5em;
+      }
+    }
+
+    > div {
+      flex: 1 1 auto;
+    }
+
+    * summary {
+      list-style: none;
+    }
+
+    &.is-open summary {
+      font-weight: 700;
+    }
+
+    &.is-open > button::after {
+      // Using sgds-icons.chevron-down
+      font-family: "sgds-icons";
+      content: "\E93C";
+      transform: rotate(180deg);
+    }
+
+    :last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Table
+.drag-handle {
+  flex: 0 0 auto;
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  top: 0rem;
+  left: -1.25rem;
+  cursor: grab;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 16"><path fill-opacity="0.2" d="M4 14c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zM2 6C.9 6 0 6.9 0 8s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6C.9 0 0 .9 0 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>');
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
