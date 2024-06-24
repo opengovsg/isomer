@@ -16,10 +16,13 @@ import {
   Radio,
   Switch,
 } from '@opengovsg/design-system-react'
-import { IsomerComponent } from '@opengovsg/isomer-components'
+import { type IsomerComponent } from '@opengovsg/isomer-components'
 import { useForm } from 'react-hook-form'
 import IsomerSchema from './0.1.0.json'
 import { getSchemaFieldType } from '~/utils/schema'
+
+// Utility type to get all keys from a union of objects
+type UnionKeys<T> = T extends T ? keyof T : never
 
 // TODO: Props here might not make sense, need to check again
 export interface FormBuilderProps {
@@ -36,16 +39,13 @@ export interface FormBuilderProps {
 // - Support type = 'array' with items of type = 'object' to be sub-form (no drag and drop yet)
 // - Support $ref to other parts of the schema
 // - Handle grouping of fields
-export const FormBuilder = ({
+export function FormBuilder({
   component,
   data,
-}: FormBuilderProps): JSX.Element => {
+}: FormBuilderProps): JSX.Element {
   const schema = IsomerSchema.components.complex[component]
   const { required, properties } = schema
   const { register, handleSubmit } = useForm<typeof properties>()
-
-  // Utility type to get all keys from a union of objects
-  type UnionKeys<T> = T extends T ? keyof T : never
   type ComplexComponentProps = UnionKeys<typeof properties>
 
   // TODO: Remove or replace with proper submit function
@@ -66,7 +66,7 @@ export const FormBuilder = ({
               enum: options,
               title,
               description,
-              // @ts-ignore this is safe because prop comes direct from properties
+              // @ts-expect-error this is safe because prop comes direct from properties
             } = properties[prop]
             const fieldType = getSchemaFieldType(type, format, options)
 
@@ -120,7 +120,7 @@ export const FormBuilder = ({
             }
 
             if (fieldType === 'integer') {
-              // @ts-ignore this is safe because prop comes direct from properties
+              // @ts-expect-error this is safe because prop comes direct from properties
               const { minimum, maximum } = properties[prop]
 
               return (
