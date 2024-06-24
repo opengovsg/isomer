@@ -3,9 +3,9 @@ export interface Sitemap {
   childrenTitles: string[]
   sibilngTitles: string[]
 }
-
+type SiteTheme = 'isomer-classic' | 'isomer-next'
 export interface SiteConfig {
-  theme: string
+  theme: SiteTheme
   isGovernment?: boolean
   sitemap: Sitemap
 }

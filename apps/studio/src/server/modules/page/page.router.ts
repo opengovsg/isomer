@@ -10,7 +10,7 @@ import {
   getFullPageById,
   getNavBar,
 } from '../resource/resource.service'
-import { getSiteMeta } from '../site/site.service'
+import { getSiteConfig } from '../site/site.service'
 
 export const pageRouter = router({
   readPageAndBlob: protectedProcedure
@@ -20,7 +20,7 @@ export const pageRouter = router({
       const page = await getFullPageById(pageId)
       // TODO: Fill these in later
       const pageName: string = page.name
-      const siteMeta = getSiteMeta(siteId)
+      const siteMeta = getSiteConfig(siteId)
       const navbar = getNavBar(siteId)
       const footer = getFooter(siteId)
       const { content } = page
