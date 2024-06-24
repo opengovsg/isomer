@@ -64,13 +64,13 @@ export const renderComponent = ({
       return <Infopic {...component} />
     case "keystatistics":
       return <KeyStatistics {...component} />
-    case "orderedlist":
+    case "orderedList":
       return <OrderedList {...component} />
     case "paragraph":
       return <Paragraph {...component} />
     case "table":
       return <Table {...component} />
-    case "unorderedlist":
+    case "unorderedList":
       return <UnorderedList {...component} />
   }
 }

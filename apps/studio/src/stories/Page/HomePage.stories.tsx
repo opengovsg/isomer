@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { meHandlers } from 'tests/msw/handlers/me'
-import { postHandlers } from 'tests/msw/handlers/post'
 
 import HomePage from '~/pages/home'
 import { getMobileViewParameters } from '../utils/viewports'
@@ -13,7 +12,7 @@ const meta: Meta<typeof HomePage> = {
     // More on how to position stories at: https://storybook.js.org/docs/react/configure/story-layout
     layout: 'fullscreen',
     msw: {
-      handlers: [meHandlers.me(), postHandlers.emptyList()],
+      handlers: [meHandlers.me()],
     },
   },
 }
@@ -26,7 +25,7 @@ export const EmptyPostList: Story = {}
 export const WithPosts: Story = {
   parameters: {
     msw: {
-      handlers: [meHandlers.me(), postHandlers.list()],
+      handlers: [meHandlers.me()],
     },
   },
 }

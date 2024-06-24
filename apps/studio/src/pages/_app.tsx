@@ -47,10 +47,7 @@ const MyApp = ((props: AppPropsWithAuthAndLayout) => {
 }) as AppType
 
 // This is needed so suspense will be triggered for anything within the LayoutComponents which uses useSuspenseQuery
-const ChildWithLayout = ({
-  Component,
-  pageProps,
-}: AppPropsWithAuthAndLayout) => {
+function ChildWithLayout({ Component, pageProps }: AppPropsWithAuthAndLayout) {
   const getLayout =
     Component.getLayout ?? ((page) => <DefaultLayout>{page}</DefaultLayout>)
 

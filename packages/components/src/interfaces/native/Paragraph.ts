@@ -1,3 +1,4 @@
+import type { HardBreakProps } from "../internal/HardBreak"
 import type { TextProps } from "./Text"
 
 export interface BaseParagraphProps {
@@ -9,5 +10,5 @@ export interface BaseParagraphProps {
 export interface ParagraphProps
   extends Omit<BaseParagraphProps, "className" | "content"> {
   type: "paragraph"
-  content: TextProps[]
+  content: (HardBreakProps | TextProps)[]
 }

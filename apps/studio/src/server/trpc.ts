@@ -10,15 +10,15 @@
 
 import superjson from 'superjson'
 import { ZodError } from 'zod'
-import { type Context } from './context'
 import { TRPCError, initTRPC } from '@trpc/server'
-import { prisma } from './prisma'
 import { createBaseLogger } from '~/lib/logger'
 import getIP from '~/utils/getClientIp'
 import { type OpenApiMeta } from 'trpc-openapi'
-import { defaultMeSelect } from './modules/me/me.select'
 import { env } from '~/env.mjs'
 import { APP_VERSION_HEADER_KEY } from '~/constants/version'
+import { defaultMeSelect } from './modules/me/me.select'
+import { prisma } from './prisma'
+import { type Context } from './context'
 
 const t = initTRPC
   .meta<OpenApiMeta>()
@@ -133,9 +133,9 @@ const nonStrictAuthMiddleware = t.middleware(async ({ next, ctx }) => {
   // this code path is needed if a user does not exist in the database as they were deleted, but the session was active before
   const user = ctx.session?.userId
     ? await prisma.user.findUnique({
-        where: { id: ctx.session.userId },
-        select: defaultMeSelect,
-      })
+      where: { id: ctx.session.userId },
+      select: defaultMeSelect,
+    })
     : null
 
   return next({
@@ -149,19 +149,19 @@ const nonStrictAuthMiddleware = t.middleware(async ({ next, ctx }) => {
  * Create a router
  * @see https://trpc.io/docs/v10/router
  */
-export const router = t.router
+export const { router } = t
 
 /**
  * Create an unprotected procedure
  * @see https://trpc.io/docs/v10/procedures
- **/
+ * */
 export const publicProcedure = t.procedure
   .use(loggerWithVersionMiddleware)
   .use(baseMiddleware)
 
 /**
  * Create a protected procedure
- **/
+ * */
 export const protectedProcedure = t.procedure
   .use(loggerWithVersionMiddleware)
   .use(authMiddleware)
@@ -173,9 +173,9 @@ export const agnosticProcedure = t.procedure
 /**
  * @see https://trpc.io/docs/v10/middlewares
  */
-export const middleware = t.middleware
+export const { middleware } = t
 
 /**
  * @see https://trpc.io/docs/v10/merging-routers
  */
-export const mergeRouters = t.mergeRouters
+export const { mergeRouters } = t

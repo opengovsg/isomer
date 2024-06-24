@@ -2,7 +2,7 @@ import type { ListItemProps } from "./ListItem"
 import type { UnorderedListProps } from "./UnorderedList"
 
 export interface OrderedListProps {
-  type: "orderedlist"
+  type: "orderedList"
   start?: number
   content: (ListItemProps | OrderedListProps | UnorderedListProps)[]
 }

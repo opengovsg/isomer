@@ -1,6 +1,6 @@
+import type { ImageProps } from "../complex/Image"
 import type { DividerProps } from "./Divider"
 import type { HeadingProps } from "./Heading"
-import type { ImageProps } from "./Image"
 import type { ListItemProps } from "./ListItem"
 import type { OrderedListProps } from "./OrderedList"
 import type { ParagraphProps } from "./Paragraph"

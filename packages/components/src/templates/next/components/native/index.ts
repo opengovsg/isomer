@@ -1,6 +1,5 @@
 export { default as Divider } from "./Divider"
 export { default as Heading } from "./Heading"
-export { default as Image } from "./Image"
 export { default as OrderedList } from "./OrderedList"
 export { default as Paragraph } from "./Paragraph"
 export { default as Prose } from "./Prose"

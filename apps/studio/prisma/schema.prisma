@@ -26,68 +26,91 @@ model VerificationToken {
   expires    DateTime
 }
 
-model Post {
-  id           String       @id @default(cuid())
-  title        String?      @db.Text
-  content      String       @db.Text
-  contentHtml  String       @db.Text
-  authorId     String
-  author       User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  images       String[]
-  likes        LikedPosts[]
-  // This features the self-relation Prisma concept, specifically a one-to-many self relation.
-  // https://www.prisma.io/docs/concepts/components/prisma-schema/relations/self-relations
-  parentPostId String?
-  // The parent post of this post, if it is a reply.
-  // @relation("PostToParent") is the name of the relation. See relation documentation below for more info.
-  parent       Post?        @relation("PostReplies", fields: [parentPostId], references: [id])
-  // The replies to this post.
-  replies      Post[]       @relation("PostReplies")
+model Resource {
+  id       String    @id @default(cuid())
+  name     String
+  siteId   String
+  site     Site      @relation(fields: [siteId], references: [id])
+  parentId String?
+  parent   Resource? @relation("parentRelation", fields: [parentId], references: [id])
+  blobId   String?   @unique
+  blob     Blob?     @relation(fields: [blobId], references: [id])
 
-  // To return `Date`s intact through the API we use transformers
-  // https://trpc.io/docs/data-transformers
-  // This is unique so it can be used for cursor-based pagination
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
-  deletedAt DateTime? @db.Timestamp
+  children Resource[] @relation("parentRelation")
 
-  @@index([parentPostId])
-  @@index([parentPostId, deletedAt, id])
-  @@index([deletedAt])
-  @@index([createdAt])
-}
-
-model LikedPosts {
-  post      Post     @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  postId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  userId    String
-  createdAt DateTime @default(now())
-
-  @@id([postId, userId])
+  permission Permission[]
 }
 
 model User {
-  id            String       @id @default(cuid())
-  name          String?
-  username      String?      @unique
-  email         String?      @unique
-  emailVerified DateTime?
-  image         String?
-  bio           String?
-  posts         Post[]
-  likedPosts    LikedPosts[]
-  accounts      Accounts[]
+  id            String  @id @default(cuid())
+  name          String
+  email         String  @unique
+  phone         String
+  preferredName String?
+
+  permission  Permission[]
+  siteMembers SiteMember[]
 }
 
-model Accounts {
-  id                String @id @default(cuid())
-  provider          String
-  providerAccountId String
+model Permission {
+  id         String   @id @default(cuid())
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id])
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  role       RoleType
 
+  // Delete the row if either resource or user is deleted, default behavior cascade
+}
+
+model Site {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  resources   Resource[]
+  siteMembers SiteMember[]
+  // NOTE: This is `theme/isGovernment/sitemap`
+  // This is currently put as `Json` for ease of extensibility
+  // when we lock in what we actually want for site-wide config, 
+  // we should put this in our db table.
+  config      Json
+  navbar      Navbar?
+  footer      Footer?
+}
+
+model Navbar {
+  id      String @id @default(cuid())
+  siteId  String @unique
+  site    Site   @relation(fields: [siteId], references: [id])
+  content Json
+}
+
+model Footer {
+  id      String @id @default(cuid())
+  name    String
+  siteId  String @unique
+  site    Site   @relation(fields: [siteId], references: [id])
+  content Json
+}
+
+model Blob {
+  id      String @id @default(cuid())
+  content Json
+
+  // Should the blob be deleted on deletion of the resource? 
+  resource Resource?
+}
+
+model SiteMember {
   userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+  siteId String
+  site   Site   @relation(fields: [siteId], references: [id])
 
-  @@unique([provider, providerAccountId])
-  @@index([userId])
+  @@id([siteId, userId])
+}
+
+enum RoleType {
+  Admin
+  Editor
+  Publisher
 }

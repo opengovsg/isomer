@@ -52,7 +52,7 @@ class MockIronStore {
 export const createMockRequest = async (
   session: Session,
   reqOptions: RequestOptions = { method: 'GET' },
-  resOptions?: ResponseOptions
+  resOptions?: ResponseOptions,
 ): Promise<Context> => {
   const innerContext = await createContextInner({ session })
 
@@ -83,7 +83,9 @@ export const applySession = () => {
   return session
 }
 
-export const applyAuthedSession = async (user: Partial<User>) => {
+// NOTE: The argument to this function was changed from
+// `Partial<User>` to `User`
+export const applyAuthedSession = async (user: User) => {
   const authedUser = await auth(user)
   const session = applySession()
   session.userId = authedUser.id

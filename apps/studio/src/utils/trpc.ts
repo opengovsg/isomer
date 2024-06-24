@@ -8,19 +8,19 @@ import { createTRPCNext } from '@trpc/next'
 import { type inferRouterInputs, type inferRouterOutputs } from '@trpc/server'
 import { type NextPageContext } from 'next'
 import superjson from 'superjson'
+import { type TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc'
+import { observable } from '@trpc/server/observable'
 import { TRPCWithErrorCodeSchema } from '~/utils/error'
 // ℹ️ Type-only import:
 // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#type-only-imports-and-export
 import type { AppRouter } from '~/server/modules/_app'
-import { getBaseUrl } from './getBaseUrl'
-import { type TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc'
 import { LOGGED_IN_KEY } from '~/constants/localStorage'
-import { observable } from '@trpc/server/observable'
 import { env } from '~/env.mjs'
 import {
   APP_VERSION_HEADER_KEY,
   REQUIRE_UPDATE_EVENT,
 } from '~/constants/version'
+import { getBaseUrl } from './getBaseUrl'
 
 const NON_RETRYABLE_ERROR_CODES: Set<TRPC_ERROR_CODE_KEY> = new Set([
   'BAD_REQUEST',
@@ -43,7 +43,7 @@ export const versionLink: TRPCLink<AppRouter> = () => {
           if (!response) {
             return observer.next(value)
           }
-          const headers = response.headers
+          const { headers } = response
           if (!headers) {
             return observer.next(value)
           }

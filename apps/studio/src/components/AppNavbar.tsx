@@ -11,7 +11,7 @@ import { ADMIN_NAVBAR_HEIGHT } from '~/constants/layouts'
 import { useMe } from '~/features/me/api'
 import { SETTINGS_PROFILE } from '~/lib/routes'
 
-export const AppNavbar = (): JSX.Element => {
+export function AppNavbar(): JSX.Element {
   const { me, logout } = useMe()
 
   return (
@@ -50,7 +50,6 @@ export const AppNavbar = (): JSX.Element => {
           spacing={{ base: '0.75rem', md: '1.5rem' }}
         >
           <AvatarMenu
-            src={me?.image ?? undefined}
             name={me?.name ?? undefined}
             variant="subtle"
             bg="base.canvas.brand-subtle"
