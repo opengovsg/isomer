@@ -93,14 +93,8 @@ const placeholderSchema = {
 export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
   // need state here to keep track of selected layout
   const [selectedLayout, setSelectedLayout] = useState(
-    LAYOUT_DATA[0].layoutDisplayName,
+    LAYOUT_DATA[0].layoutSchemaName,
   )
-  const interactionMainSubtleDefault = useToken(
-    'colors',
-    'interaction.main-subtle.default',
-  )
-  console.log(interactionMainSubtleDefault)
-
   return (
     <>
       {/* This is the floating header */}
@@ -138,10 +132,10 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                     gap="0"
                     cursor="pointer"
                     onClick={() => {
-                      setSelectedLayout(e.layoutDisplayName)
+                      setSelectedLayout(e.layoutSchemaName)
                     }}
                     _hover={
-                      selectedLayout == e.layoutDisplayName
+                      selectedLayout == e.layoutSchemaName
                         ? {}
                         : {
                             '.layout-title': { color: 'base.content.brand' },
@@ -157,7 +151,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                           }
                     }
                     sx={
-                      selectedLayout == e.layoutDisplayName
+                      selectedLayout == e.layoutSchemaName
                         ? {}
                         : {
                             '.layout-title': {
@@ -197,7 +191,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                       mb="1.25rem"
                       position="relative"
                       borderColor={
-                        selectedLayout == e.layoutDisplayName
+                        selectedLayout == e.layoutSchemaName
                           ? 'base.divider.brand'
                           : 'base.divider.medium'
                       }
@@ -207,7 +201,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                         borderRadius="4px 4px 0px 0px"
                         boxShadow="0px 0px 20px 0px rgba(104, 104, 104, 0.30)"
                       />
-                      {selectedLayout != e.layoutDisplayName && (
+                      {selectedLayout != e.layoutSchemaName && (
                         <Box
                           // className="hover-text"
                           // display="none"
@@ -253,7 +247,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                         textAlign="left"
                         textStyle="h6"
                         textColor={
-                          selectedLayout == e.layoutDisplayName
+                          selectedLayout == e.layoutSchemaName
                             ? 'base.content.brand'
                             : 'base.content.strong'
                         }
