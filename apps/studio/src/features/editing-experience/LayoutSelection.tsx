@@ -23,6 +23,7 @@ import Preview from '../editing-experience/components/Preview'
 
 import { Icon } from '@chakra-ui/react'
 import { BiLeftArrowAlt, BiShow } from 'react-icons/bi'
+import { relative } from 'path'
 
 interface LayoutSelectionProps {
   pageName: String
@@ -395,26 +396,29 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
               w="100%"
               minH="100%"
               boxShadow="0 0 20px 0 rgba(104,104,104,0.3)"
-              onClick={(e) => e.stopPropagation()}
             >
-              <HStack
-                borderRadius="8px 8px 0px 0px"
-                w="100%"
-                bgColor="slate.200"
-                textColor="white"
-                justifyContent="center"
-                gap="0"
-                padding="0.5rem 0.75rem"
-              >
-                <Text textStyle="caption-2">
-                  {`You're previewing the`}&nbsp;
-                </Text>
-                <Text textStyle="caption-1">
-                  {selectedLayout.layoutDisplayName}
-                  {` Layout`}
-                </Text>
-              </HStack>
-              <Preview schema={placeholderSchema} />
+              <VStack w="100%" minH="100%" position="relative">
+                <HStack
+                  borderRadius="8px 8px 0px 0px"
+                  w="100%"
+                  bgColor="slate.200"
+                  textColor="white"
+                  justifyContent="center"
+                  gap="0"
+                  padding="0.5rem 0.75rem"
+                >
+                  <Text textStyle="caption-2">
+                    {`You're previewing the`}&nbsp;
+                  </Text>
+                  <Text textStyle="caption-1">
+                    {selectedLayout.layoutDisplayName}
+                    {` Layout`}
+                  </Text>
+                </HStack>
+                <Preview schema={placeholderSchema} />
+
+                <Box position="absolute" w="100%" h="100%" zIndex="1" />
+              </VStack>
             </Box>
           </GridItem>
         </Grid>
