@@ -86,7 +86,6 @@ model Navbar {
 
 model Footer {
   id      String @id @default(cuid())
-  name    String
   siteId  String @unique
   site    Site   @relation(fields: [siteId], references: [id])
   content Json
