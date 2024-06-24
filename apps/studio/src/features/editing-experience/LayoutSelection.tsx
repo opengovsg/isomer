@@ -28,101 +28,78 @@ interface LayoutSelectionProps {
 }
 
 const LAYOUT_DATA: {
-  layoutName: string
+  layoutDisplayName: string
+  layoutSchemaName: string
   layoutDescription: string
   imageSource: string
 }[] = [
   {
-    layoutName: 'Default',
+    layoutDisplayName: 'Default',
+    layoutSchemaName: 'content',
     layoutDescription: 'This is the most basic layout for your content.',
     imageSource: '/assets/layout_card/default_layout_card.png',
   },
   {
-    layoutName: 'Article',
+    layoutDisplayName: 'Article',
+    layoutSchemaName: 'article',
     layoutDescription:
       'Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches',
     imageSource: '/assets/layout_card/article_layout_card.png',
   },
-  //   {
-  //     layoutName: 'Default',
-  //     layoutDescription: 'This is the most basic layout for your content.',
-  //     imageSource: '/assets/layout_card/default_layout_card.png',
-  //   },
-  //   {
-  //     layoutName: 'Article',
-  //     layoutDescription:
-  //       'Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches',
-  //     imageSource: '/assets/layout_card/article_layout_card.png',
-  //   },
-  //   {
-  //     layoutName: 'Default',
-  //     layoutDescription: 'This is the most basic layout for your content.',
-  //     imageSource: '/assets/layout_card/default_layout_card.png',
-  //   },
-  //   {
-  //     layoutName: 'Article',
-  //     layoutDescription:
-  //       'Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches',
-  //     imageSource: '/assets/layout_card/article_layout_card.png',
-  //   },
-  //   {
-  //     layoutName: 'Default',
-  //     layoutDescription: 'This is the most basic layout for your content.',
-  //     imageSource: '/assets/layout_card/default_layout_card.png',
-  //   },
-  //   {
-  //     layoutName: 'Article',
-  //     layoutDescription:
-  //       'Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches',
-  //     imageSource: '/assets/layout_card/article_layout_card.png',
-  //   },
-  //   {
-  //     layoutName: 'Default',
-  //     layoutDescription: 'This is the most basic layout for your content.',
-  //     imageSource: '/assets/layout_card/default_layout_card.png',
-  //   },
-  //   {
-  //     layoutName: 'Article',
-  //     layoutDescription:
-  //       'Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches',
-  //     imageSource: '/assets/layout_card/article_layout_card.png',
-  //   },
-  //   {
-  //     layoutName: 'Default',
-  //     layoutDescription: 'This is the most basic layout for your content.',
-  //     imageSource: '/assets/layout_card/default_layout_card.png',
-  //   },
-  //   {
-  //     layoutName: 'Article',
-  //     layoutDescription:
-  //       'Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches',
-  //     imageSource: '/assets/layout_card/article_layout_card.png',
-  //   },
-  //   {
-  //     layoutName: 'Default',
-  //     layoutDescription: 'This is the most basic layout for your content.',
-  //     imageSource: '/assets/layout_card/default_layout_card.png',
-  //   },
-  //   {
-  //     layoutName: 'Article',
-  //     layoutDescription:
-  //       'Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches',
-  //     imageSource: '/assets/layout_card/article_layout_card.png',
-  //   },
 ]
+
+const placeholderSchema = {
+  version: '0.1.0',
+  layout: 'default',
+  page: {
+    title: 'Home',
+  },
+  content: [
+    {
+      type: 'image',
+      src: 'https://images.unsplash.com/photo-1570441262582-a2d4b9a916a5?q=80&w=2948&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      alt: 'A man is serving food out of a blue food',
+    },
+    {
+      type: 'paragraph',
+      content: [
+        {
+          type: 'text',
+          text: "Singapore - In a bid to foster community spirit and celebrate the rich tapestry of its diverse population, Singapore is gearing up to host its first-ever Citizens' Festival. This unprecedented event promises to be a dazzling extravaganza filled with entertainment, cultural showcases, and gastronomic delights.",
+        },
+      ],
+    },
+    {
+      type: 'paragraph',
+      content: [
+        {
+          type: 'text',
+          text: "One of the highlights of the festival is the Cultural Village, where visitors can immerse themselves in the sights, sounds, and flavors of Singapore's various ethnic communities. From traditional Malay dance performances to Chinese calligraphy demonstrations and Indian culinary workshops, attendees will have the opportunity to gain a deeper appreciation for the country's multicultural heritage.",
+        },
+      ],
+    },
+    {
+      type: 'paragraph',
+      content: [
+        {
+          type: 'text',
+          text: 'This is a Chat-GPT4 generated article for visual testing purposes.',
+        },
+      ],
+    },
+  ],
+}
 
 export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
   // need state here to keep track of selected layout
   const [selectedLayout, setSelectedLayout] = useState(
-    LAYOUT_DATA[0].layoutName,
+    LAYOUT_DATA[0].layoutDisplayName,
   )
   const interactionMainSubtleDefault = useToken(
     'colors',
     'interaction.main-subtle.default',
   )
   console.log(interactionMainSubtleDefault)
-
-  // If selected there is no special hover effect.
 
   return (
     <>
@@ -161,10 +138,10 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                     gap="0"
                     cursor="pointer"
                     onClick={() => {
-                      setSelectedLayout(e.layoutName)
+                      setSelectedLayout(e.layoutDisplayName)
                     }}
                     _hover={
-                      selectedLayout == e.layoutName
+                      selectedLayout == e.layoutDisplayName
                         ? {}
                         : {
                             '.layout-title': { color: 'base.content.brand' },
@@ -180,7 +157,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                           }
                     }
                     sx={
-                      selectedLayout == e.layoutName
+                      selectedLayout == e.layoutDisplayName
                         ? {}
                         : {
                             '.layout-title': {
@@ -220,7 +197,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                       mb="1.25rem"
                       position="relative"
                       borderColor={
-                        selectedLayout == e.layoutName
+                        selectedLayout == e.layoutDisplayName
                           ? 'base.divider.brand'
                           : 'base.divider.medium'
                       }
@@ -230,7 +207,7 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                         borderRadius="4px 4px 0px 0px"
                         boxShadow="0px 0px 20px 0px rgba(104, 104, 104, 0.30)"
                       />
-                      {selectedLayout != e.layoutName && (
+                      {selectedLayout != e.layoutDisplayName && (
                         <Box
                           // className="hover-text"
                           // display="none"
@@ -276,13 +253,13 @@ export const LayoutSelection = (props: LayoutSelectionProps): JSX.Element => {
                         textAlign="left"
                         textStyle="h6"
                         textColor={
-                          selectedLayout == e.layoutName
+                          selectedLayout == e.layoutDisplayName
                             ? 'base.content.brand'
                             : 'base.content.strong'
                         }
                         mb="0.5rem"
                       >
-                        {e.layoutName} layout
+                        {e.layoutDisplayName} layout
                       </Text>
                     </HStack>
                     <Text
