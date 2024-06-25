@@ -1,3 +1,4 @@
+import { type IsomerPageSchema } from '@opengovsg/isomer-components'
 import { protectedProcedure, router } from '~/server/trpc'
 import {
   createPageSchema,
@@ -30,7 +31,8 @@ export const pageRouter = router({
         pageName,
         navbar,
         footer,
-        content,
+        // TODO: add validation on either read/write
+        content: content as IsomerPageSchema,
       }
     }),
 
