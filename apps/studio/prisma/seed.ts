@@ -8,6 +8,7 @@ import {
   type Navbar,
   type Footer,
 } from '~/server/modules/resource/resource.types'
+import { type IsomerSitemap } from '@opengovsg/isomer-components'
 import { db } from '../src/server/modules/database'
 
 const NAV_BAR_ITEMS: Navbar['items'] = [
@@ -50,6 +51,33 @@ const NAV_BAR_ITEMS: Navbar['items'] = [
   },
 ]
 
+const FOOTER_ITEMS = [
+  {
+    title: 'About us',
+    url: '/about',
+  },
+  {
+    title: 'Our partners',
+    url: '/partners',
+  },
+  {
+    title: 'Grants and programmes',
+    url: '/grants-and-programmes',
+  },
+  {
+    title: 'Contact us',
+    url: '/contact-us',
+  },
+  {
+    title: 'Something else',
+    url: '/something-else',
+  },
+  {
+    title: 'Resources',
+    url: '/resources',
+  },
+]
+
 async function main() {
   const { id } = await db
     .insertInto('Site')
@@ -58,10 +86,13 @@ async function main() {
       config: {
         theme: 'isomer-next',
         sitemap: {
-          siblingTitles: [],
-          childrenTitles: [],
-          parentTitle: '',
-        },
+          title: 'Home',
+          permalink: '/',
+          children: [],
+          layout: 'content',
+          summary: 'something',
+          lastModified: '',
+        } satisfies IsomerSitemap,
         isGovernment: true,
       } satisfies SiteConfig,
     })
@@ -73,11 +104,11 @@ async function main() {
     .values({
       siteId: id,
       content: {
-        name: 'A foot',
         contactUsLink: '/contact-us',
         feedbackFormLink: 'https://www.form.gov.sg',
         privacyStatementLink: '/privacy',
         termsOfUseLink: '/terms-of-use',
+        siteNavItems: FOOTER_ITEMS,
       } satisfies Footer,
     })
     .execute()
