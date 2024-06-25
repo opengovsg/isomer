@@ -16,13 +16,13 @@ export const pageRouter = router({
   readPageAndBlob: protectedProcedure
     .input(getEditPageSchema)
     .query(async ({ input, ctx }) => {
-      const { pageId, siteId } = input
+      const { pageId } = input
       const page = await getFullPageById(pageId)
       // TODO: Fill these in later
       const pageName: string = page.name
-      const siteMeta = getSiteConfig(siteId)
-      const navbar = getNavBar(siteId)
-      const footer = getFooter(siteId)
+      const siteMeta = getSiteConfig(page.siteId)
+      const navbar = getNavBar(page.siteId)
+      const footer = getFooter(page.siteId)
       const { content } = page
 
       return {

@@ -21,13 +21,14 @@ export const getFolders = () =>
     .execute()
 
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
-const getById = (id: number) => db.selectFrom('Resource').where('id', '=', id)
+const getById = (id: number) =>
+  db.selectFrom('Resource').where('Resource.id', '=', id)
 
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
 export const getFullPageById = (id: number) => {
   return getById(id)
-    .where('blobId', '!=', null)
-    .innerJoin('Blob', 'blobId', 'Blob.id')
+    .where('Resource.blobId', 'is not', null)
+    .innerJoin('Blob', 'Resource.blobId', 'Blob.id')
     .selectAll()
     .executeTakeFirstOrThrow()
 }

@@ -23,6 +23,9 @@ export default function Preview({ schema }: PreviewProps) {
   const [{ content: navbar }] = trpc.site.getNavbar.useSuspenseQuery({
     id: 1,
   })
+  const [data] = trpc.page.readPageAndBlob.useSuspenseQuery({
+    pageId: 1,
+  })
 
   return (
     <RenderEngine
