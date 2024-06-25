@@ -1,7 +1,7 @@
 import { db } from '../database'
 import { type SiteConfig } from './site.types'
 
-export const getSiteConfig = async (siteId: string) => {
+export const getSiteConfig = async (siteId: number) => {
   const { config, name } = await db
     .selectFrom('Site')
     .where('id', '=', siteId)
