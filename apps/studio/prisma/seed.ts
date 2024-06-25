@@ -51,10 +51,9 @@ const NAV_BAR_ITEMS = [
 ]
 
 async function main() {
-  await db
+  const { id } = await db
     .insertInto('Site')
     .values({
-      id: '1',
       name: 'Ministry of Trade and Industry',
       config: {
         theme: 'isomer-next',
@@ -66,13 +65,13 @@ async function main() {
         isGovernment: true,
       } satisfies SiteConfig,
     })
-    .execute()
+    .returning('id')
+    .executeTakeFirstOrThrow()
 
   await db
     .insertInto('Footer')
     .values({
-      id: '1',
-      siteId: '1',
+      siteId: id,
       content: {
         name: 'A foot',
         contactUsLink: '/contact-us',
@@ -86,8 +85,7 @@ async function main() {
   await db
     .insertInto('Navbar')
     .values({
-      id: '1',
-      siteId: '1',
+      siteId: id,
       content: {
         name: 'navi',
         url: 'www.isomer.gov.sg',
