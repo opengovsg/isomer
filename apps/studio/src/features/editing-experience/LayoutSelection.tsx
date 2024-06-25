@@ -209,7 +209,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
               borderRadius="8px 8px 0px 0px"
               w="100%"
               minH="100%"
-              boxShadow="0 0 20px 0 rgba(104,104,104,0.3)"
+              boxShadow="md"
               position="relative"
             >
               <HStack
