@@ -180,7 +180,7 @@ const EditPage: NextPageWithLayout = () => {
     ]
     setEditorState(blocks)
     setPageState(blocks)
-  }, [])
+  }, [setDrawerState, setEditorState, setPageState])
 
   return (
     <Grid
