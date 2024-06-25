@@ -87,25 +87,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                     onClick={() => {
                       setSelectedLayout(e)
                     }}
-                    _hover={
-                      selectedLayout.layoutTypename === e.layoutTypename
-                        ? {}
-                        : {
-                            '.layout-title': { color: 'base.content.brand' },
-                            '.hover-text': {
-                              opacity: 1,
-                            },
-                            '.hover-blur': {
-                              opacity: 0.6,
-                            },
-                            '.hover-border': {
-                              borderColor: useToken(
-                                'colors',
-                                'interaction.main-subtle.hover',
-                              ),
-                            },
-                          }
-                    }
+                    role="group"
                   >
                     <Box
                       className="hover-border"
@@ -122,6 +104,16 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                       sx={{
                         transition: 'border-color 300ms ease-out',
                       }}
+                      _groupHover={
+                        selectedLayout.layoutTypename !== e.layoutTypename
+                          ? {
+                              borderColor: useToken(
+                                'colors',
+                                'interaction.main-subtle.hover',
+                              ),
+                            }
+                          : {}
+                      }
                     >
                       <Image
                         src={e.imageSource}
@@ -147,6 +139,9 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                               transition: 'opacity 300ms ease-out',
                               opacity: 0,
                             }}
+                            _groupHover={{
+                              opacity: 0.6,
+                            }}
                           />
                           <VStack
                             sx={{
@@ -163,6 +158,9 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                             gap="0.25rem"
                             opacity="0"
                             color="base.content.brand"
+                            _groupHover={{
+                              opacity: 1,
+                            }}
                           >
                             <Icon as={BiShow} />
                             <Text textStyle="caption-1">Click to preview</Text>
@@ -182,6 +180,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                         }
                         mb="0.5rem"
                         sx={{ transition: 'color 300ms ease-out' }}
+                        _groupHover={{ textColor: 'base.content.brand' }}
                       >
                         {e.layoutDisplayName} layout
                       </Text>
