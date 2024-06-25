@@ -1,4 +1,4 @@
-// This is your Prisma schema file,
+// This is your Prisma schema file,/
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
@@ -27,13 +27,13 @@ model VerificationToken {
 }
 
 model Resource {
-  id       String    @id @default(cuid())
+  id       Int       @id @default(autoincrement())
   name     String
-  siteId   String
+  siteId   Int
   site     Site      @relation(fields: [siteId], references: [id])
-  parentId String?
+  parentId Int?
   parent   Resource? @relation("parentRelation", fields: [parentId], references: [id])
-  blobId   String?   @unique
+  blobId   Int?      @unique
   blob     Blob?     @relation(fields: [blobId], references: [id])
 
   children Resource[] @relation("parentRelation")
@@ -42,7 +42,7 @@ model Resource {
 }
 
 model User {
-  id            String  @id @default(cuid())
+  id            Int     @id @default(autoincrement())
   name          String
   email         String  @unique
   phone         String
@@ -53,10 +53,10 @@ model User {
 }
 
 model Permission {
-  id         String   @id @default(cuid())
-  resourceId String
+  id         Int      @id @default(autoincrement())
+  resourceId Int
   resource   Resource @relation(fields: [resourceId], references: [id])
-  userId     String
+  userId     Int
   user       User     @relation(fields: [userId], references: [id])
   role       RoleType
 
@@ -64,7 +64,7 @@ model Permission {
 }
 
 model Site {
-  id          String       @id @default(cuid())
+  id          Int          @id @default(autoincrement())
   name        String       @unique
   resources   Resource[]
   siteMembers SiteMember[]
@@ -78,21 +78,21 @@ model Site {
 }
 
 model Navbar {
-  id      String @id @default(cuid())
-  siteId  String @unique
-  site    Site   @relation(fields: [siteId], references: [id])
+  id      Int  @id @default(autoincrement())
+  siteId  Int  @unique
+  site    Site @relation(fields: [siteId], references: [id])
   content Json
 }
 
 model Footer {
-  id      String @id @default(cuid())
-  siteId  String @unique
-  site    Site   @relation(fields: [siteId], references: [id])
+  id      Int  @id @default(autoincrement())
+  siteId  Int  @unique
+  site    Site @relation(fields: [siteId], references: [id])
   content Json
 }
 
 model Blob {
-  id      String @id @default(cuid())
+  id      Int  @id @default(autoincrement())
   content Json
 
   // Should the blob be deleted on deletion of the resource? 
@@ -100,10 +100,10 @@ model Blob {
 }
 
 model SiteMember {
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-  siteId String
-  site   Site   @relation(fields: [siteId], references: [id])
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+  siteId Int
+  site   Site @relation(fields: [siteId], references: [id])
 
   @@id([siteId, userId])
 }
