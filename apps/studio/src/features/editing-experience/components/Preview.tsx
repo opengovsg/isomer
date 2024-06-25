@@ -10,7 +10,7 @@ export interface PreviewProps {
     version: string
     layout: string
     page: any
-    content: IsomerPageSchema['content']
+    content: IsomerComponent
   }
 }
 
