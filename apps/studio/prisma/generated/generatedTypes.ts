@@ -13,7 +13,6 @@ export type Blob = {
 }
 export type Footer = {
   id: string
-  name: string
   siteId: string
   content: unknown
 }

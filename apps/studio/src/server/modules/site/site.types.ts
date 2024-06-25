@@ -1,11 +1,18 @@
 export interface Sitemap {
   parentTitle: string
   childrenTitles: string[]
-  sibilngTitles: string[]
+  siblingTitles: string[]
 }
 
+export const SiteThemes = {
+  classic: 'isomer-classic',
+  next: 'isomer-next',
+} as const
+
+type SiteTheme = (typeof SiteThemes)[keyof typeof SiteThemes]
+
 export interface SiteConfig {
-  theme: string
+  theme: SiteTheme
   isGovernment?: boolean
   sitemap: Sitemap
 }

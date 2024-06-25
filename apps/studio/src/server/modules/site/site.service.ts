@@ -1,8 +1,8 @@
 import { db } from '../database'
 import { type SiteConfig } from './site.types'
 
-export const getSiteMeta = async (siteId: string) => {
-  const { config } = await db
+export const getSiteConfig = async (siteId: string) => {
+  const { config, name } = await db
     .selectFrom('Site')
     .where('id', '=', siteId)
     .selectAll()
@@ -16,5 +16,6 @@ export const getSiteMeta = async (siteId: string) => {
     theme,
     isGovernment,
     sitemap,
+    name,
   }
 }

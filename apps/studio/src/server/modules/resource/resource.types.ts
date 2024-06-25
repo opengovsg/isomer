@@ -1,10 +1,10 @@
 export interface NavbarItem {
   name: string
   url: string
-  description: string
+  description?: string
 }
 
-export interface Navbar extends NavbarItem {
+export interface Navbar extends Omit<NavbarItem, 'description'> {
   items: NavbarItem[]
 }
 
