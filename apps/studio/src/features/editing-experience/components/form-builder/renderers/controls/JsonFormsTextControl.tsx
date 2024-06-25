@@ -15,17 +15,9 @@ export const jsonFormsTextControlTester: RankedTester = rankWith(
 
 export function JsonFormsTextControl({
   data,
-  visible,
   label,
-  id,
-  enabled,
-  uischema,
-  schema,
-  rootSchema,
   handleChange,
-  errors,
   path,
-  config,
   description,
   required,
 }: ControlProps) {
