@@ -10,7 +10,7 @@ export interface PreviewProps {
     version: string
     layout: string
     page: any
-    content: IsomerComponent
+    content: IsomerComponent[]
   }
 }
 
@@ -23,9 +23,6 @@ export default function Preview({ schema }: PreviewProps) {
   })
   const [{ content: navbar }] = trpc.site.getNavbar.useSuspenseQuery({
     id: 1,
-  })
-  const [{ content: page }] = trpc.page.readPageAndBlob.useSuspenseQuery({
-    pageId: 1,
   })
 
   return (
@@ -52,7 +49,7 @@ export default function Preview({ schema }: PreviewProps) {
         lastModified: new Date().toISOString(),
       }}
       // TODO: remove this cast and add validation
-      content={page.content}
+      content={renderSchema.content}
     />
   )
 }

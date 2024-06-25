@@ -1,11 +1,12 @@
 import { Grid, GridItem } from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
 import Ajv from 'ajv'
+import { useEffect, useState } from 'react'
 import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import EditPageDrawer from '~/features/editing-experience/components/EditPageDrawer'
 import Preview from '~/features/editing-experience/components/Preview'
 import { type NextPageWithLayout } from '~/lib/types'
 import { PageEditingLayout } from '~/templates/layouts/PageEditingLayout'
+import { trpc } from '~/utils/trpc'
 
 const ISOMER_SCHEMA_URI = 'https://schema.isomer.gov.sg/next/0.1.0.json'
 
@@ -69,17 +70,34 @@ const placeholder = {
 
 const EditPage: NextPageWithLayout = () => {
   const [isEditorOpen, setIsEditorOpen] = useState(true)
-  const [editorValue, setEditorValue] = useState(
-    JSON.stringify(placeholder, null, 2),
-  )
-  const [newEditorValue, setNewEditorValue] = useState({})
   const [editedSchema, setEditedSchema] = useState<any>(placeholder)
   const [isJSONValid, setIsJSONValid] = useState(true)
   const [isNewEditor, setIsNewEditor] = useState(false)
-  const [isCopied, setIsCopied] = useState(false)
 
+  const [isCopied, setIsCopied] = useState(false)
   const [jsonSchema, setJsonSchema] = useState<any>(null)
   const [validate, setValidate] = useState<any>(null)
+
+  const {
+    drawerState,
+    setDrawerState,
+    pageState,
+    setPageState,
+    editorState,
+    setEditorState,
+  } = useEditorDrawerContext()
+
+  const [{ theme, isGovernment, sitemap, name }] =
+    trpc.site.getConfig.useSuspenseQuery({ id: 1 })
+  const [{ content: footer }] = trpc.site.getFooter.useSuspenseQuery({
+    id: 1,
+  })
+  const [{ content: navbar }] = trpc.site.getNavbar.useSuspenseQuery({
+    id: 1,
+  })
+  const [{ content: page }] = trpc.page.readPageAndBlob.useSuspenseQuery({
+    pageId: 1,
+  })
 
   const loadSchema = async () => {
     await fetch(ISOMER_SCHEMA_URI)
@@ -118,7 +136,7 @@ const EditPage: NextPageWithLayout = () => {
   }, [isCopied])
 
   const handleEditorChange = (value: any) => {
-    setEditorValue(value)
+    setEditorState(value)
     localStorage.setItem('editorValue', value)
 
     try {
@@ -143,7 +161,7 @@ const EditPage: NextPageWithLayout = () => {
   }
 
   const handleNewEditorChange = (value: any) => {
-    setNewEditorValue(value)
+    setEditorState(value)
     localStorage.setItem('newEditorValue', value)
 
     try {
@@ -165,22 +183,14 @@ const EditPage: NextPageWithLayout = () => {
     }
   }
 
-  const { setDrawerState, setPageState, setEditorState } =
-    useEditorDrawerContext()
   useEffect(() => {
     setDrawerState({
       state: 'root',
     })
-    // TODO: retrieve data from backend
-    const blocks = [
-      { text: 'Hero', id: 'hero-123' },
-      { text: 'Content', id: 'content-123' },
-      { text: 'Infopic', id: 'infopic-123' },
-      { text: 'Content', id: 'content-234' },
-    ]
+    const blocks = page.content
     setEditorState(blocks)
     setPageState(blocks)
-  }, [setDrawerState, setEditorState, setPageState])
+  }, [page.content, setDrawerState, setEditorState, setPageState])
 
   return (
     <Grid
@@ -195,7 +205,13 @@ const EditPage: NextPageWithLayout = () => {
       </GridItem>
       {/* TODO: Implement preview */}
       <GridItem colSpan={2} overflow="scroll">
-        <Preview schema={editedSchema} />
+        <Preview
+          schema={{
+            content: pageState,
+            version: page.version,
+            layout: page.layout,
+          }}
+        />
       </GridItem>
     </Grid>
   )
