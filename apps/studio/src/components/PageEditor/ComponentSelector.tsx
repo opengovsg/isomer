@@ -9,7 +9,7 @@ import {
   Wrap,
 } from '@chakra-ui/react'
 import { Button, IconButton } from '@opengovsg/design-system-react'
-import { IconType } from 'react-icons'
+import { type IconType } from 'react-icons'
 import {
   BiCard,
   BiColumns,
@@ -26,29 +26,30 @@ import {
   BiText,
   BiX,
 } from 'react-icons/bi'
-import { SectionType } from './types'
+import { type SectionType } from './types'
+import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 
-const Section = ({ children }: React.PropsWithChildren) => {
+function Section({ children }: React.PropsWithChildren) {
   return (
-    <VStack gap="0.5rem" alignItems={'start'}>
+    <VStack gap="0.5rem" alignItems="start">
       {children}
     </VStack>
   )
 }
 
-const SectionTitle = ({ title }: { title: string }) => {
+function SectionTitle({ title }: { title: string }) {
   return (
-    <Text textStyle={'subhead-3'} textColor="base.content.medium">
+    <Text textStyle="subhead-3" textColor="base.content.medium">
       {title}
     </Text>
   )
 }
 
-const BlockList = ({ children }: React.PropsWithChildren) => {
+function BlockList({ children }: React.PropsWithChildren) {
   return <Wrap spacing="0">{children}</Wrap>
 }
 
-const BlockItem = ({
+function BlockItem({
   icon: Icon,
   label,
   onProceed,
@@ -60,7 +61,7 @@ const BlockItem = ({
   onProceed: (sectionType: SectionType) => void
   sectionType: SectionType
   description: string
-}) => {
+}) {
   return (
     <Popover trigger="hover" placement="right">
       <PopoverTrigger>
@@ -74,16 +75,16 @@ const BlockItem = ({
         >
           <VStack gap="0.5rem" color="base.content.default">
             <Icon size="1.25rem" />
-            <Text textStyle={'caption-1'}>{label}</Text>
+            <Text textStyle="caption-1">{label}</Text>
           </VStack>
         </Button>
       </PopoverTrigger>
       <PopoverContent>
         <PopoverArrow />
-        <VStack p="1.5rem" alignItems={'start'} gap="0.75rem">
-          <Flex alignItems={'center'} gap="0.5rem">
+        <VStack p="1.5rem" alignItems="start" gap="0.75rem">
+          <Flex alignItems="center" gap="0.5rem">
             <Icon size="1.25rem" />
-            <Text textStyle={'subhead-2'}>{label}</Text>
+            <Text textStyle="subhead-2">{label}</Text>
           </Flex>
           <Text textStyle="body-2">{description}</Text>
         </VStack>
@@ -92,29 +93,30 @@ const BlockItem = ({
   )
 }
 
-interface ComponentSelectorProps {
-  onClose: () => void
-  onProceed: (sectionType: SectionType) => void
-}
-
-const ComponentSelector = ({ onClose, onProceed }: ComponentSelectorProps) => {
+function ComponentSelector() {
+  const { setDrawerState, setPageState, setEditorState } =
+    useEditorDrawerContext()
+  const onProceed = (sectionType: SectionType) => {
+    // TODO: add new section to page/editor state
+    setDrawerState({ state: 'root' })
+  }
   return (
     <VStack w="full" gap="0">
       <Flex
         w="full"
         py="1.25rem"
         px="2rem"
-        alignItems={'center'}
-        justifyContent={'space-between'}
-        borderBottom={'solid'}
-        borderWidth={'1px'}
-        borderColor={'base.divider.medium'}
+        alignItems="center"
+        justifyContent="space-between"
+        borderBottom="solid"
+        borderWidth="1px"
+        borderColor="base.divider.medium"
       >
-        <VStack alignItems={'start'}>
-          <Text as={'h5'} textStyle={'h5'}>
+        <VStack alignItems="start">
+          <Text as="h5" textStyle="h5">
             Add a new block
           </Text>
-          <Text textStyle={'body-2'}>Click a block to add to the page</Text>
+          <Text textStyle="body-2">Click a block to add to the page</Text>
         </VStack>
         <IconButton
           size="lg"
@@ -123,10 +125,12 @@ const ComponentSelector = ({ onClose, onProceed }: ComponentSelectorProps) => {
           color="interaction.sub.default"
           aria-label="Close add component"
           icon={<BiX />}
-          onClick={onClose}
+          onClick={() => {
+            setDrawerState({ state: 'root' })
+          }}
         />
       </Flex>
-      <VStack p="2rem" w="full" gap="1.25rem" alignItems={'start'}>
+      <VStack p="2rem" w="full" gap="1.25rem" alignItems="start">
         <Section>
           <SectionTitle title="Basic Building Blocks" />
           <BlockList>
@@ -136,7 +140,7 @@ const ComponentSelector = ({ onClose, onProceed }: ComponentSelectorProps) => {
               onProceed={onProceed}
               sectionType="paragraph"
               description="Add text to your page - lists, headings, paragraph, and links."
-            ></BlockItem>
+            />
             <BlockItem
               label="Image"
               icon={BiImage}

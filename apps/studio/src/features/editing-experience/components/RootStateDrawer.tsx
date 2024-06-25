@@ -15,27 +15,23 @@ import {
 } from '@hello-pangea/dnd'
 import { BsPlus } from 'react-icons/bs'
 import { MdOutlineDragIndicator } from 'react-icons/md'
-import { useState } from 'react'
-import { type Block } from '~/types/editorDrawer'
 import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 
-type RootStateDrawerProps = {
-  blocks: Block[]
-}
-export default function RootStateDrawer({ blocks }: RootStateDrawerProps) {
-  const { setDrawerState } = useEditorDrawerContext()
-  const [currState, setCurrState] = useState<{ blocks: Block[] }>({ blocks })
+export default function RootStateDrawer() {
+  const { setDrawerState, pageState, setPageState, setEditorState } =
+    useEditorDrawerContext()
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return
 
-    const updatedBlocks = Array.from(currState.blocks)
+    const updatedBlocks = Array.from(pageState)
     // Remove block at source index
     const [movedBlock] = updatedBlocks.splice(result.source.index, 1)
     // Insert at destination index
     updatedBlocks.splice(result.destination.index, 0, movedBlock!)
 
-    setCurrState({ blocks: updatedBlocks })
+    setPageState(updatedBlocks)
+    setEditorState(updatedBlocks)
   }
 
   return (
@@ -70,7 +66,7 @@ export default function RootStateDrawer({ blocks }: RootStateDrawerProps) {
                   Custom blocks
                 </Text>
                 <Box w="100%">
-                  {currState.blocks.map((block, index) => (
+                  {pageState.map((block, index) => (
                     <Draggable
                       key={block.id}
                       draggableId={block.id}

@@ -5,23 +5,44 @@ import React, {
   useMemo,
   type PropsWithChildren,
 } from 'react'
-import { type DrawerState } from '~/types/editorDrawer'
+import { type Block, type DrawerState } from '~/types/editorDrawer'
 
 export interface DrawerContextType {
-  drawerState: DrawerState | null
+  drawerState: DrawerState
   setDrawerState: (state: DrawerState) => void
+  pageState: Block[]
+  setPageState: (state: Block[]) => void
+  editorState: Block[]
+  setEditorState: (state: Block[]) => void
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
 export function EditorDrawerProvider({ children }: PropsWithChildren) {
-  const [drawerState, setDrawerState] = useState<DrawerState | null>(null)
+  const [drawerState, setDrawerState] = useState<DrawerState>({
+    state: 'root',
+  })
+  // Current saved state of page
+  const [pageState, setPageState] = useState<Block[]>([])
+  // Current edit view of page
+  const [editorState, setEditorState] = useState<Block[]>([])
 
   const value = useMemo(
     () => ({
       drawerState,
       setDrawerState,
+      pageState,
+      setPageState,
+      editorState,
+      setEditorState,
     }),
-    [drawerState, setDrawerState],
+    [
+      drawerState,
+      setDrawerState,
+      pageState,
+      setPageState,
+      editorState,
+      setEditorState,
+    ],
   )
 
   return (

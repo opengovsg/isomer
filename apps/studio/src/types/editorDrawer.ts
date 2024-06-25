@@ -5,7 +5,6 @@ export type Block = {
 
 export type RootDrawerState = {
   state: 'root'
-  blocks: Block[]
 }
 
 export type AddNewBlockState = {
