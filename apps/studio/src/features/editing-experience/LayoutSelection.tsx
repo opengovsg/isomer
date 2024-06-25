@@ -50,8 +50,8 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
   return (
     <>
       {/* This is the floating header */}
-      <VStack position="fixed" h="100vh">
-        <VStack p="1.5rem 2rem" w="100vw" gap="0.5rem" alignItems="flex-start">
+      <VStack position="fixed" h="100%">
+        <VStack p="1.5rem 2rem" w="full" gap="0.5rem" alignItems="flex-start">
           <Button variant="link">
             <Icon as={BiLeftArrowAlt} />
             Back To All Pages
@@ -69,7 +69,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
           </HStack>
         </VStack>
         <Grid
-          w="100vw"
+          w="100%"
           h="calc(100% - 7rem)"
           templateColumns="repeat(4, 1fr)"
           gap={0}
@@ -95,24 +95,14 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                             '.hover-text': {
                               opacity: 1,
                             },
+                            '.hover-blur': {
+                              opacity: 0.6,
+                            },
                             '.hover-border': {
                               borderColor: useToken(
                                 'colors',
                                 'interaction.main-subtle.hover',
                               ),
-                            },
-                          }
-                    }
-                    sx={
-                      selectedLayout.layoutTypename === e.layoutTypename
-                        ? {}
-                        : {
-                            '.layout-title': {
-                              transition: 'color 300ms ease-out',
-                            },
-                            '.hover-text': {
-                              transition: 'opacity 300ms ease-out',
-                              opacity: 0,
                             },
                           }
                     }
@@ -129,40 +119,55 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                           ? 'base.divider.brand'
                           : 'base.divider.medium'
                       }
+                      sx={{
+                        transition: 'border-color 300ms ease-out',
+                      }}
                     >
                       <Image
                         src={e.imageSource}
                         borderRadius="4px 4px 0px 0px"
-                        boxShadow="0px 0px 20px 0px rgba(104, 104, 104, 0.30)"
+                        boxShadow="md"
                         alt={`Image of ${e.layoutDisplayName} layout`}
                       />
 
                       {selectedLayout.layoutTypename !== e.layoutTypename && (
-                        <Box
-                          className="hover-text"
-                          position="absolute"
-                          top="0"
-                          left="0"
-                          right="0"
-                          bottom="0"
-                          bg="rgba(172, 199, 250, 0.4)"
-                          opacity="0"
-                          alignItems="center"
-                          justifyContent="center"
-                          borderRadius="6px" // due to this being smaller than the outer Box
-                        >
-                          <VStack
+                        <>
+                          <Box
+                            className="hover-blur"
+                            position="absolute"
+                            top="0"
+                            left="0"
+                            bg="interaction.main-subtle.default"
+                            opacity="0.6"
+                            alignItems="center"
                             w="100%"
                             h="100%"
+                            borderRadius="6px" // due to this being smaller than the outer Box
+                            sx={{
+                              transition: 'opacity 300ms ease-out',
+                              opacity: 0,
+                            }}
+                          />
+                          <VStack
+                            sx={{
+                              transition: 'opacity 300ms ease-out',
+                              opacity: 0,
+                            }}
+                            className="hover-text"
+                            w="100%"
+                            h="100%"
+                            position="absolute"
+                            top="0"
+                            left="0"
                             justify="center"
                             gap="0.25rem"
-                            opacity="1"
+                            opacity="0"
                             color="base.content.brand"
                           >
                             <Icon as={BiShow} />
                             <Text textStyle="caption-1">Click to preview</Text>
                           </VStack>
-                        </Box>
+                        </>
                       )}
                     </Box>
                     <HStack w="100%" justifyContent="space-between">
@@ -176,6 +181,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                             : 'base.content.strong'
                         }
                         mb="0.5rem"
+                        sx={{ transition: 'color 300ms ease-out' }}
                       >
                         {e.layoutDisplayName} layout
                       </Text>
@@ -224,15 +230,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                 </Text>
               </HStack>
               <Preview schema={placeholderContent} />
-
-              <Box
-                position="absolute"
-                top="0"
-                left="0"
-                w="100%"
-                h="100%"
-                zIndex="10"
-              />
+              <Box position="absolute" top="0" left="0" w="100%" h="100%" />
             </Box>
           </GridItem>
         </Grid>
