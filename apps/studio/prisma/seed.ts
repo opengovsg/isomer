@@ -3,6 +3,7 @@
  *
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
+import { type IsomerSitemap } from '@opengovsg/isomer-components'
 import { type SiteConfig } from '~/server/modules/site/site.types'
 import {
   type Navbar,
@@ -86,11 +87,7 @@ async function main() {
     .insertInto('Navbar')
     .values({
       siteId: id,
-      content: {
-        name: 'navi',
-        url: 'www.isomer.gov.sg',
-        items: NAV_BAR_ITEMS,
-      } satisfies Navbar,
+      content: { items: NAV_BAR_ITEMS } satisfies Navbar,
     })
     .execute()
 }

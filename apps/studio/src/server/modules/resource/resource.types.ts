@@ -1,5 +1,9 @@
-export interface NavbarItem {
-  name: string
+import { type IsomerSiteProps } from '@opengovsg/isomer-components'
+
+export type Navbar = { items: IsomerSiteProps['navBarItems'] }
+
+export interface FooterItem {
+  title: string
   url: string
   description?: string
 }
