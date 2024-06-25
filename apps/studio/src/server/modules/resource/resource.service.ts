@@ -1,4 +1,3 @@
-import { Resource } from 'prisma/generated/generatedTypes'
 import { db } from '../database'
 import {
   type Page,

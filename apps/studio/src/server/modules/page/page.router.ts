@@ -18,8 +18,8 @@ export const pageRouter = router({
   readPageAndBlob: protectedProcedure
     .input(getEditPageSchema)
     .query(async ({ input, ctx }) => {
-      const { id, siteId } = input
-      const page = await getFullPageById(id)
+      const { pageId, siteId } = input
+      const page = await getFullPageById(pageId)
       // TODO: Fill these in later
       const pageName: string = page.name
       const siteMeta = getSiteConfig(siteId)
@@ -44,7 +44,7 @@ export const pageRouter = router({
     .query(async ({ input, ctx }) => {
       // NOTE: Need to do validation like checking for existence of the page
       // and whether the user has write-access to said page
-      await updatePageById(input)
+      await updatePageById({ ...input, id: input.pageId })
 
       return {
         // NOTE: This should adhere to our db schema
@@ -59,7 +59,7 @@ export const pageRouter = router({
     .query(async ({ input, ctx }) => {
       // NOTE: Need to do validation like checking for existence of the page
       // and whether the user has write-access to said page
-      await updateBlobById(input)
+      await updateBlobById({ ...input, id: input.pageId })
 
       // NOTE: Not returning the `content` first because
       // 1. it might potentially be huge
