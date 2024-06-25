@@ -32,14 +32,13 @@ export const pageRouter = router({
         ...siteMeta,
         navbar,
         footer,
-        // NOTE: This is immediate parent, immediate children and siblings
         content,
       }
     }),
 
   updatePage: protectedProcedure
     .input(updatePageSchema)
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const parentId = ''
       const pageName = ''
 
@@ -53,7 +52,7 @@ export const pageRouter = router({
     }),
   updatePageBlob: protectedProcedure
     .input(updatePageBlobSchema)
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       // NOTE: Not returning the `content` first because
       // 1. it might potentially be huge
       // 2. frontend already knows
