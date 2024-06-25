@@ -1,0 +1,39 @@
+pull_request_rules:
+  - name: Approve and merge non-major version dependabot upgrades
+    conditions:
+      - author~=^dependabot\[bot\]$
+      - -dependabot-update-type = version-update:semver-major
+    actions:
+      review:
+        type: APPROVE
+      merge:
+        method: squash
+
+  - name: Approve and merge Snyk.io upgrades
+    conditions:
+      - author=isomeradmin
+      - title~=^\[Snyk\]
+      - base = develop
+    actions:
+      review:
+        type: APPROVE
+      merge:
+        method: squash
+
+  - name: Automatically mark a PR as draft if [WIP] is in the title
+    conditions:
+      - title~=(?i)\[wip\]
+    actions:
+      edit:
+        draft: True
+        
+  - name: Ping Isomer members for stale open PRs (>1 month since last activity)
+    conditions:
+      - updated-at<30 days ago
+      - -closed
+    actions:
+      request_reviews:
+        teams:
+          - "@isomerpages/iso-engineers"
+      comment:
+        message: This pull request has been stale for more than 30 days! Could someone please take a look at it @isomerpages/iso-engineers
