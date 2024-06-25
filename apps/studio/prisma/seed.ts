@@ -14,6 +14,19 @@ import {
 } from '~/server/modules/resource/resource.types'
 import { db } from '../src/server/modules/database'
 
+const MOCK_PHONE_NUMBER = '123456789'
+
+const ISOMER_ADMINS = [
+  'alex',
+  'jan',
+  'kishore',
+  'jiachin',
+  'sehyun',
+  'harish',
+  'zhongjun',
+  'hanpu',
+]
+
 const PAGE_BLOB = {
   version: '0.1.0',
   layout: 'homepage',
@@ -197,6 +210,19 @@ async function main() {
     .insertInto('Resource')
     .values({ blobId, name: 'Home', siteId })
     .executeTakeFirstOrThrow()
+
+  await Promise.all(
+    ISOMER_ADMINS.map((name) => {
+      return db
+        .insertInto('User')
+        .values({
+          name,
+          email: `${name}@open.gov.sg`,
+          phone: MOCK_PHONE_NUMBER,
+        })
+        .executeTakeFirstOrThrow()
+    }),
+  )
 }
 
 main()
