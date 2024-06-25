@@ -5,12 +5,18 @@ import { useState } from 'react'
 import IsomerSchema from '../../data/0.1.0.json'
 
 import {
+  JsonFormsArrayControl,
+  jsonFormsArrayControlTester,
   JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
   JsonFormsDropdownControl,
   jsonFormsDropdownControlTester,
   JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
+  JsonFormsOneOfControl,
+  jsonFormsOneOfControlTester,
+  JsonFormsProseControl,
+  jsonFormsProseControlTester,
   JsonFormsRadioControl,
   jsonFormsRadioControlTester,
   JsonFormsTextControl,
@@ -20,6 +26,7 @@ import {
 } from './renderers'
 
 const renderers: JsonFormsRendererRegistryEntry[] = [
+  { tester: jsonFormsArrayControlTester, renderer: JsonFormsArrayControl },
   { tester: jsonFormsBooleanControlTester, renderer: JsonFormsBooleanControl },
   {
     tester: jsonFormsDropdownControlTester,
@@ -27,6 +34,8 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   },
   { tester: jsonFormsIntegerControlTester, renderer: JsonFormsIntegerControl },
   { tester: jsonFormsTextControlTester, renderer: JsonFormsTextControl },
+  { tester: jsonFormsOneOfControlTester, renderer: JsonFormsOneOfControl },
+  { tester: jsonFormsProseControlTester, renderer: JsonFormsProseControl },
   { tester: jsonFormsRadioControlTester, renderer: JsonFormsRadioControl },
   {
     tester: jsonFormsVerticalLayoutTester,

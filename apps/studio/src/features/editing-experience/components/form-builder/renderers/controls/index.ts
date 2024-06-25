@@ -1,4 +1,8 @@
 export {
+  default as JsonFormsArrayControl,
+  jsonFormsArrayControlTester,
+} from './JsonFormsArrayControl'
+export {
   default as JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
 } from './JsonFormsBooleanControl'
@@ -10,6 +14,14 @@ export {
   default as JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
 } from './JsonFormsIntegerControl'
+export {
+  default as JsonFormsOneOfControl,
+  jsonFormsOneOfControlTester,
+} from './JsonFormsOneOfControl'
+export {
+  default as JsonFormsProseControl,
+  jsonFormsProseControlTester,
+} from './JsonFormsProseControl'
 export {
   default as JsonFormsRadioControl,
   jsonFormsRadioControlTester,
