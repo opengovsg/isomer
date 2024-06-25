@@ -1,4 +1,5 @@
 import {
+  type IsomerComponent,
   type IsomerPageSchema,
   RenderEngine,
 } from '@opengovsg/isomer-components'
@@ -50,7 +51,8 @@ export default function Preview({ schema }: PreviewProps) {
         permalink: '/',
         lastModified: new Date().toISOString(),
       }}
-      content={renderSchema.content}
+      // TODO: remove this cast and add validation
+      content={data.content.content as IsomerComponent[]}
     />
   )
 }

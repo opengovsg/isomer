@@ -17,19 +17,17 @@ export const pageRouter = router({
     .input(getEditPageSchema)
     .query(async ({ input, ctx }) => {
       const { pageId } = input
+      // const page = await getFullPageById(pageId)
       const page = await getFullPageById(pageId)
       // TODO: Fill these in later
       const pageName: string = page.name
       const siteMeta = getSiteConfig(page.siteId)
-      const navbar = getNavBar(page.siteId)
-      const footer = getFooter(page.siteId)
+      const navbar = await getNavBar(page.siteId)
+      const footer = await getFooter(page.siteId)
       const { content } = page
 
       return {
         pageName,
-        // NOTE: might shift theme, isGovt, navbar, footer out into separate function?
-        // because this is shared across the whole site (site level props)
-        ...siteMeta,
         navbar,
         footer,
         content,
