@@ -3,12 +3,15 @@
  *
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
-import { type SiteConfig } from '~/server/modules/site/site.types'
 import {
   type Navbar,
   type Footer,
 } from '~/server/modules/resource/resource.types'
-import { type IsomerSitemap } from '@opengovsg/isomer-components'
+import {
+  IsomerGeneratedSiteProps,
+  IsomerSiteConfigProps,
+  type IsomerSitemap,
+} from '@opengovsg/isomer-components'
 import { db } from '../src/server/modules/database'
 
 const NAV_BAR_ITEMS: Navbar['items'] = [
@@ -88,7 +91,7 @@ async function main() {
         siteName: 'MTI',
         logoUrl: '',
         search: undefined,
-        lastUpdated: '',
+        // TODO: Remove siteMap as it is a generated field
         siteMap: {
           title: 'Home',
           permalink: '/',
@@ -98,7 +101,9 @@ async function main() {
           lastModified: '',
         } satisfies IsomerSitemap,
         isGovernment: true,
-      } satisfies SiteConfig,
+      } satisfies IsomerSiteConfigProps & {
+        siteMap: IsomerGeneratedSiteProps['siteMap']
+      },
     })
     .returning('id')
     .executeTakeFirstOrThrow()
