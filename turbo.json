@@ -6,7 +6,8 @@
   ],
   "globalEnv": [
     "NODE_ENV",
-    "DATABASE_URL"
+    "DATABASE_URL",
+    "SESSION_SECRET"
   ],
   "tasks": {
     "build": {
