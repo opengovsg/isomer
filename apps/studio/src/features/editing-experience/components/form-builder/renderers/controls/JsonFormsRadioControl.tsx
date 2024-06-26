@@ -10,9 +10,10 @@ import {
 } from '@jsonforms/core'
 import { withJsonFormsEnumProps } from '@jsonforms/react'
 import { FormLabel, Radio } from '@opengovsg/design-system-react'
+import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
 
 export const jsonFormsRadioControlTester: RankedTester = rankWith(
-  3,
+  JSON_FORMS_RANKING.RadioControl,
   and(
     isEnumControl,
     schemaMatches((schema) => schema.format === 'radio'),

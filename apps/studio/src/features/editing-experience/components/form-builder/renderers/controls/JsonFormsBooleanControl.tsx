@@ -11,9 +11,10 @@ import {
   FormLabel,
   Switch,
 } from '@opengovsg/design-system-react'
+import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
 
 export const jsonFormsBooleanControlTester: RankedTester = rankWith(
-  2,
+  JSON_FORMS_RANKING.BooleanControl,
   isBooleanControl,
 )
 

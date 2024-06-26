@@ -22,9 +22,10 @@ import {
   FormLabel,
   NumberInput,
 } from '@opengovsg/design-system-react'
+import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
 
 export const jsonFormsIntegerControlTester: RankedTester = rankWith(
-  4,
+  JSON_FORMS_RANKING.IntegerControl,
   and(
     uiTypeIs('Control'),
     or(schemaTypeIs('integer'), schemaTypeIs('number')),

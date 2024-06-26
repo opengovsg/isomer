@@ -9,9 +9,10 @@ import {
 import { withJsonFormsEnumProps } from '@jsonforms/react'
 import { FormLabel, SingleSelect } from '@opengovsg/design-system-react'
 import { useState } from 'react'
+import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
 
 export const jsonFormsDropdownControlTester: RankedTester = rankWith(
-  2,
+  JSON_FORMS_RANKING.DropdownControl,
   isEnumControl,
 )
 
@@ -23,10 +24,11 @@ export function JsonFormsDropdownControl({
   description,
   required,
   options,
+  schema,
 }: ControlProps & OwnPropsOfEnum) {
   const [dropdownValue, setDropdownValue] = useState(data || '')
 
-  if (!options) {
+  if (!options || (options.length === 1 && !!schema.default)) {
     return null
   }
 
