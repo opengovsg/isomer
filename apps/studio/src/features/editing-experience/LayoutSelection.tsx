@@ -12,8 +12,8 @@ import {
   useToken,
   Icon,
 } from '@chakra-ui/react'
-import { Button, BxRightArrowAlt } from '@opengovsg/design-system-react'
-import { BiLeftArrowAlt, BiShow } from 'react-icons/bi'
+import { Button } from '@opengovsg/design-system-react'
+import { BiLeftArrowAlt, BiRightArrowAlt, BiShow } from 'react-icons/bi'
 import Preview from '~/features/editing-experience/components/Preview'
 import placeholderContent from '~/features/editing-experience/data/placeholderContent.json'
 
@@ -44,6 +44,7 @@ const LAYOUT_DATA: {
   },
 ]
 
+// TODO: Make this headless by getting the LAYOUT_DATA from the schema. Find somewhere in the schema for layoutDescription & image(fetch this too or generate it)
 function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
   // need state here to keep track of selected layout
   const [selectedLayout, setSelectedLayout] = useState(LAYOUT_DATA[0]!)
@@ -64,7 +65,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
             </Text>
             <Button size="xs">
               Start with this layout
-              <BxRightArrowAlt fontSize="1.5rem" />
+              <BiRightArrowAlt fontSize="1.5rem" />
             </Button>
           </HStack>
         </VStack>
@@ -77,15 +78,15 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
           <GridItem w="100%" colSpan={1} bg="grey.50" overflowY="scroll">
             <VStack p="2rem" gap="2rem" h="fit-content">
               {/* Picking Layouts */}
-              {LAYOUT_DATA.map((e) => {
+              {LAYOUT_DATA.map((layoutEntry) => {
                 return (
                   <VStack
-                    key={e.layoutTypename}
+                    key={layoutEntry.layoutTypename}
                     p="0"
                     gap="0"
                     cursor="pointer"
                     onClick={() => {
-                      setSelectedLayout(e)
+                      setSelectedLayout(layoutEntry)
                     }}
                     role="group"
                   >
@@ -97,7 +98,8 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                       mb="1.25rem"
                       position="relative"
                       borderColor={
-                        selectedLayout.layoutTypename === e.layoutTypename
+                        selectedLayout.layoutTypename ===
+                        layoutEntry.layoutTypename
                           ? 'base.divider.brand'
                           : 'base.divider.medium'
                       }
@@ -105,7 +107,8 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                         transition: 'border-color 300ms ease-out',
                       }}
                       _groupHover={
-                        selectedLayout.layoutTypename !== e.layoutTypename
+                        selectedLayout.layoutTypename !==
+                        layoutEntry.layoutTypename
                           ? {
                               borderColor: useToken(
                                 'colors',
@@ -116,13 +119,14 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                       }
                     >
                       <Image
-                        src={e.imageSource}
+                        src={layoutEntry.imageSource}
                         borderRadius="4px 4px 0px 0px"
                         boxShadow="md"
-                        alt={`Image of ${e.layoutDisplayName} layout`}
+                        alt={`Image of ${layoutEntry.layoutDisplayName} layout`}
                       />
 
-                      {selectedLayout.layoutTypename !== e.layoutTypename && (
+                      {selectedLayout.layoutTypename !==
+                        layoutEntry.layoutTypename && (
                         <>
                           <Box
                             className="hover-blur"
@@ -174,7 +178,8 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                         textAlign="left"
                         textStyle="h6"
                         textColor={
-                          selectedLayout.layoutTypename === e.layoutTypename
+                          selectedLayout.layoutTypename ===
+                          layoutEntry.layoutTypename
                             ? 'base.content.brand'
                             : 'base.content.strong'
                         }
@@ -182,7 +187,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                         sx={{ transition: 'color 300ms ease-out' }}
                         _groupHover={{ textColor: 'base.content.brand' }}
                       >
-                        {e.layoutDisplayName} layout
+                        {layoutEntry.layoutDisplayName} layout
                       </Text>
                     </HStack>
                     <Text
@@ -190,7 +195,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                       textStyle="body-1"
                       textColor="base.content.default"
                     >
-                      {e.layoutDescription}
+                      {layoutEntry.layoutDescription}
                     </Text>
                   </VStack>
                 )
