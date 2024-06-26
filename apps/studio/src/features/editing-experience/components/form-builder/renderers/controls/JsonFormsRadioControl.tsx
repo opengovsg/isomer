@@ -1,0 +1,55 @@
+import { Box, FormControl, RadioGroup } from '@chakra-ui/react'
+import {
+  and,
+  isEnumControl,
+  rankWith,
+  schemaMatches,
+  type ControlProps,
+  type OwnPropsOfEnum,
+  type RankedTester,
+} from '@jsonforms/core'
+import { withJsonFormsEnumProps } from '@jsonforms/react'
+import { FormLabel, Radio } from '@opengovsg/design-system-react'
+
+export const jsonFormsRadioControlTester: RankedTester = rankWith(
+  3,
+  and(
+    isEnumControl,
+    schemaMatches((schema) => schema.format === 'radio'),
+  ),
+)
+
+export function JsonFormsRadioControl({
+  label,
+  handleChange,
+  path,
+  description,
+  required,
+  options,
+}: ControlProps & OwnPropsOfEnum) {
+  if (!options) {
+    return null
+  }
+
+  return (
+    <Box py={2}>
+      <FormControl isRequired={required}>
+        <FormLabel description={description}>{label}</FormLabel>
+        <RadioGroup onChange={(value) => handleChange(path, value)}>
+          {options.map((option) => (
+            <Radio
+              my={1}
+              key={option.label}
+              value={option.value}
+              allowDeselect={false}
+            >
+              {option.label.charAt(0).toUpperCase() + option.label.slice(1)}
+            </Radio>
+          ))}
+        </RadioGroup>
+      </FormControl>
+    </Box>
+  )
+}
+
+export default withJsonFormsEnumProps(JsonFormsRadioControl)
