@@ -1,6 +1,10 @@
 /* eslint-disable import/prefer-default-export */
 import { protectedProcedure, router } from '~/server/trpc'
-import { createFolderSchema, readFolderSchema } from '~/schemas/folder'
+import {
+  createFolderSchema,
+  readFolderSchema,
+  readTopLevelFolderSchema,
+} from '~/schemas/folder'
 
 export const folderRouter = router({
   create: protectedProcedure
@@ -54,5 +58,40 @@ export const folderRouter = router({
         children,
         parentId,
       }
+    }),
+  readTopLevelfolder: protectedProcedure
+    .input(readTopLevelFolderSchema)
+    .query(async ({ ctx, input }) => {
+      const siteName = await ctx.db
+        .selectFrom('Site')
+        .select('name')
+        .where('id', '=', input.siteId)
+        .executeTakeFirstOrThrow()
+      const childrenResult = await ctx.db
+        .selectFrom('Resource')
+        .selectAll('Resource')
+        .where('siteId', '=', input.siteId)
+        .where('parentId', 'is', null)
+        .execute()
+      const children = childrenResult.map((c) => {
+        if (c.blobId) {
+          return {
+            id: c.id,
+            name: c.name,
+            type: 'page',
+            lastEditDate: new Date(0),
+            lastEditUser: 'Coming Soon',
+            permalink: '/placeholder',
+            status: 'published',
+          }
+        }
+        return {
+          id: c.id,
+          name: c.name,
+          type: 'folder',
+          permalink: '/placeholder',
+        }
+      })
+      return { siteName, children }
     }),
 })

@@ -17,3 +17,7 @@ export const readFolderSchema = z.object({
   siteId: z.number().min(1),
   resourceId: z.number().min(1),
 })
+
+export const readTopLevelFolderSchema = z.object({
+  siteId: z.string().min(1),
+})
