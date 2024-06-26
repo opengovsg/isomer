@@ -32,10 +32,10 @@ export const generateMetadata = async (
   schema.site = {
     ...config.site,
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-    // @ts-expect-error blah
+    // @ts-ignore blah
     siteMap: sitemap,
     navBarItems: navbar,
-    // @ts-expect-error blah
+    // @ts-ignore blah
     footerItems: footer,
     lastUpdated,
   }
@@ -53,10 +53,10 @@ const NotFound = () => {
         site={{
           ...config.site,
           environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-          // @ts-expect-error blah
+          // @ts-ignore blah
           siteMap: sitemap,
           navBarItems: navbar,
-          // @ts-expect-error blah
+          // @ts-ignore blah
           footerItems: footer,
         }}
         layout="notfound"
