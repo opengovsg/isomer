@@ -4,14 +4,14 @@
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
 import {
+  type IsomerGeneratedSiteProps,
+  type IsomerSiteConfigProps,
+  type IsomerSitemap,
+} from '@opengovsg/isomer-components'
+import {
   type Navbar,
   type Footer,
 } from '~/server/modules/resource/resource.types'
-import {
-  IsomerGeneratedSiteProps,
-  IsomerSiteConfigProps,
-  type IsomerSitemap,
-} from '@opengovsg/isomer-components'
 import { db } from '../src/server/modules/database'
 
 const NAV_BAR_ITEMS: Navbar['items'] = [
