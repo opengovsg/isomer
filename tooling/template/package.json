@@ -14,7 +14,7 @@
     "autoprefixer": "^10.0.1",
     "dompurify": "^3.0.10",
     "next": "^14.2.4",
-    "postcss": "^8",
+    "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.5"
   },
