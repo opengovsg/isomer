@@ -84,7 +84,7 @@ const PAGE_BLOB = {
     },
   ],
 }
-const NAV_BAR_ITEMS = [
+const NAV_BAR_ITEMS: Navbar['items'] = [
   {
     name: 'Expandable nav item',
     url: '/item-one',
