@@ -85,7 +85,11 @@ async function main() {
       name: 'Ministry of Trade and Industry',
       config: {
         theme: 'isomer-next',
-        sitemap: {
+        siteName: 'MTI',
+        logoUrl: '',
+        search: undefined,
+        lastUpdated: '',
+        siteMap: {
           title: 'Home',
           permalink: '/',
           children: [],
