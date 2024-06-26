@@ -16,6 +16,9 @@
         "dist/**",
         ".next/**",
         "!.next/cache/**"
+      ],
+      "env": [
+        "DATABASE_URL"
       ]
     },
     "clean": {},
@@ -23,11 +26,17 @@
       "dependsOn": [
         "db:setup"
       ],
+      "env": [
+        "DATABASE_URL"
+      ],
       "cache": false,
       "persistent": true
     },
     "db:setup": {
-      "cache": false
+      "cache": false,
+      "env": [
+        "DATABASE_URL"
+      ]
     },
     "setup:test": {},
     "storybook": {
@@ -42,6 +51,10 @@
       ]
     },
     "teardown": {},
-    "test-start": {}
+    "test-start": {
+      "env": [
+        "DATABASE_URL"
+      ]
+    }
   }
 }
