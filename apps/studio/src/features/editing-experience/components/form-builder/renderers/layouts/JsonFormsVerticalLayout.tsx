@@ -7,9 +7,10 @@ import {
   type RankedTester,
 } from '@jsonforms/core'
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from '@jsonforms/react'
+import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
 
 export const jsonFormsVerticalLayoutTester: RankedTester = rankWith(
-  1,
+  JSON_FORMS_RANKING.VerticalLayoutRenderer,
   uiTypeIs('VerticalLayout'),
 )
 

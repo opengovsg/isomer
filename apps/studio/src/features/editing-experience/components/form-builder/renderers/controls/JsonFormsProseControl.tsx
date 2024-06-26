@@ -8,9 +8,10 @@ import {
 } from '@jsonforms/core'
 import { withJsonFormsControlProps } from '@jsonforms/react'
 import { FormLabel, Textarea } from '@opengovsg/design-system-react'
+import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
 
 export const jsonFormsProseControlTester: RankedTester = rankWith(
-  2,
+  JSON_FORMS_RANKING.ProseControl,
   schemaMatches(
     (schema) => hasType(schema, 'array') && schema.format === 'prose',
   ),

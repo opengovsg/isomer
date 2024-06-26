@@ -9,9 +9,10 @@ import {
 import { JsonFormsDispatch, withJsonFormsOneOfProps } from '@jsonforms/react'
 import { FormLabel, SingleSelect } from '@opengovsg/design-system-react'
 import { useState } from 'react'
+import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
 
 export const jsonFormsOneOfControlTester: RankedTester = rankWith(
-  3,
+  JSON_FORMS_RANKING.OneOfControl,
   isOneOfControl,
 )
 

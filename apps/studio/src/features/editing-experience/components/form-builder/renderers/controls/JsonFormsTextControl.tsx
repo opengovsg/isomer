@@ -7,9 +7,10 @@ import {
 } from '@jsonforms/core'
 import { withJsonFormsControlProps } from '@jsonforms/react'
 import { FormLabel, Input } from '@opengovsg/design-system-react'
+import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
 
 export const jsonFormsTextControlTester: RankedTester = rankWith(
-  1,
+  JSON_FORMS_RANKING.TextControl,
   isStringControl,
 )
 

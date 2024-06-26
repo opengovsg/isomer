@@ -8,9 +8,10 @@ import {
 } from '@jsonforms/core'
 import { withJsonFormsArrayLayoutProps } from '@jsonforms/react'
 import { Button } from '@opengovsg/design-system-react'
+import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
-  3,
+  JSON_FORMS_RANKING.ArrayControl,
   isObjectArrayControl,
 )
 
