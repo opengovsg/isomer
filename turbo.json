@@ -5,7 +5,8 @@
     "tsconfig.json"
   ],
   "globalEnv": [
-    "NODE_ENV"
+    "NODE_ENV",
+    "DATABASE_URL"
   ],
   "tasks": {
     "build": {
@@ -16,9 +17,6 @@
         "dist/**",
         ".next/**",
         "!.next/cache/**"
-      ],
-      "env": [
-        "DATABASE_URL"
       ]
     },
     "clean": {},
@@ -26,17 +24,11 @@
       "dependsOn": [
         "db:setup"
       ],
-      "env": [
-        "DATABASE_URL"
-      ],
       "cache": false,
       "persistent": true
     },
     "db:setup": {
-      "cache": false,
-      "env": [
-        "DATABASE_URL"
-      ]
+      "cache": false
     },
     "setup:test": {},
     "storybook": {
@@ -51,10 +43,6 @@
       ]
     },
     "teardown": {},
-    "test-start": {
-      "env": [
-        "DATABASE_URL"
-      ]
-    }
+    "test-start": {}
   }
 }
