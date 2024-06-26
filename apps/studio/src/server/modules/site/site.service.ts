@@ -1,5 +1,8 @@
+import {
+  type IsomerGeneratedSiteProps,
+  type IsomerSiteConfigProps,
+} from '@opengovsg/isomer-components'
 import { db } from '../database'
-import { type SiteConfig } from './site.types'
 
 export const getSiteConfig = async (siteId: number) => {
   const { config, name } = await db
@@ -10,7 +13,10 @@ export const getSiteConfig = async (siteId: number) => {
 
   // TODO: add JSON parsing + validation
   // at present, this is stored at JSONB inside our db.
-  const { theme, isGovernment, sitemap } = config as SiteConfig
+  // TODO: remove siteMap as it is a generated field
+  const { theme, isGovernment, sitemap } = config as IsomerSiteConfigProps & {
+    sitemap: IsomerGeneratedSiteProps['siteMap']
+  }
 
   return {
     theme,
