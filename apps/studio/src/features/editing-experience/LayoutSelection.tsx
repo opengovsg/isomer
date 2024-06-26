@@ -15,7 +15,8 @@ import {
 import { Button } from '@opengovsg/design-system-react'
 import { BiLeftArrowAlt, BiRightArrowAlt, BiShow } from 'react-icons/bi'
 import Preview from '~/features/editing-experience/components/Preview'
-import placeholderContent from '~/features/editing-experience/data/placeholderContent.json'
+import articleLayoutPreview from '~/features/editing-experience/data/articleLayoutPreview.json'
+import contentLayoutPreview from '~/features/editing-experience/data/contentLayoutPreview.json'
 
 interface LayoutSelectionProps {
   pageName: string
@@ -28,12 +29,14 @@ const LAYOUT_DATA: {
   layoutTypename: LayoutType
   layoutDescription: string
   imageSource: string
+  previewJson: JSON
 }[] = [
   {
     layoutDisplayName: 'Default',
     layoutTypename: 'content',
     layoutDescription: 'This is the most basic layout for your content.',
     imageSource: '/assets/layout-card/default_layout_card.png',
+    previewJson: contentLayoutPreview,
   },
   {
     layoutDisplayName: 'Article',
@@ -41,6 +44,7 @@ const LAYOUT_DATA: {
     layoutDescription:
       'Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches',
     imageSource: '/assets/layout-card/article_layout_card.png',
+    previewJson: articleLayoutPreview,
   },
 ]
 
@@ -235,7 +239,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                   {` Layout`}
                 </Text>
               </HStack>
-              <Preview schema={placeholderContent} />
+              <Preview schema={selectedLayout.previewJson} />
               <Box position="absolute" top="0" left="0" w="100%" h="100%" />
             </Box>
           </GridItem>

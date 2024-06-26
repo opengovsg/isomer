@@ -1,0 +1,54 @@
+{
+    "layout": "article",
+    "content": [
+      {
+        "type": "paragraph",
+        "details": [
+          {
+            "type": "divider"
+          }
+        ],
+        "content": [
+          {
+            "type": "text",
+            "marks": [],
+            "text": "Singapore’s electronics cluster is dominated by the semiconductors segment."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "marks": [],
+            "text": "The electronics cluster in Singapore is made up of four segments, namely the semiconductors, computer peripherals & data storage, infocomms & consumer electronics and other electronic modules & components segments. From 2000 to 2022, the nominal VA of the semiconductors segment expanded by a compound annual growth rate (CAGR) of 9.3 per cent, outstripping the 6.1 per cent CAGR for the electronics cluster as a whole over the same period. This reflects Singapore’s success in attracting and anchoring high VA activities within the semiconductor value chain. As a result, the nominal VA share of the semiconductors segment within the cluster rose from 45.6 per cent in 2000 to 86.4 per cent in 2022 (Exhibit 1). The semiconductors segment is expected to continue to be an important contributor to the cluster’s VA as semiconductor companies ramp up their production capacities in Singapore."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "marks": [],
+            "text": "<a href='https://www.mti.gov.sg/-/media/MTI/Resources/Economic-Survey-of-Singapore/2023/Economic-Survey-of-Singapore-2023/BA6_AES2023.pdf'>Download thev full article</a>[PDF, 179KB]."
+          }
+        ]
+      }
+    ],
+    "page": {
+      "contentPageHeader": {
+        "summary": "15 FEB 2024"
+      },
+      "title": "Performance and Outlook of the Electronics Cluster in Singapore",
+      "date": "15 Feb 2024",
+      "category": "Feature Articles",
+      "articlePageHeader": {
+        "summary": [
+          "The electronics cluster is the largest cluster within the manufacturing sector in Singapore, accounting for 46.9 per cent of the sector’s nominal value-added (VA) and 9.7 per cent of Singapore’s overall nominal VA in 2022. This box article examines the composition of the electronics cluster, its recent performance, as well as its outlook in the short and longer term."
+        ]
+      }
+    },
+    "version": "0.1.0"
+  }
