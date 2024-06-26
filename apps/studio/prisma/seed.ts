@@ -3,7 +3,6 @@
  *
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
-import { type IsomerSitemap } from '@opengovsg/isomer-components'
 import { type SiteConfig } from '~/server/modules/site/site.types'
 import {
   type Navbar,
@@ -11,7 +10,7 @@ import {
 } from '~/server/modules/resource/resource.types'
 import { db } from '../src/server/modules/database'
 
-const NAV_BAR_ITEMS = [
+const NAV_BAR_ITEMS: Navbar['items'] = [
   {
     name: 'Expandable nav item',
     url: '/item-one',
