@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@opengovsg/isomer-components": "file:opengovsg-isomer-components-0.0.13.tgz",
-    "autoprefixer": "^10.0.1",
+    "autoprefixer": "^10.4.19",
     "dompurify": "^3.0.10",
     "next": "^14.2.4",
     "postcss": "^8.4.38",
