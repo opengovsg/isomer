@@ -86,6 +86,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                     gap="0"
                     cursor="pointer"
                     onClick={() => {
+                      // TODO: set layout to render here
                       setSelectedLayout(layoutEntry)
                     }}
                     role="group"
@@ -191,6 +192,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                       </Text>
                     </HStack>
                     <Text
+                      w="100%"
                       textAlign="left"
                       textStyle="body-1"
                       textColor="base.content.default"
