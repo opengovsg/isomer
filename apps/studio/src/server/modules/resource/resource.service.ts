@@ -21,10 +21,10 @@ export const getFolders = () =>
     .execute()
 
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
-const getById = (id: string) => db.selectFrom('Resource').where('id', '=', id)
+const getById = (id: number) => db.selectFrom('Resource').where('id', '=', id)
 
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
-export const getFullPageById = (id: string) => {
+export const getFullPageById = (id: number) => {
   return getById(id)
     .where('blobId', '!=', null)
     .innerJoin('Blob', 'blobId', 'Blob.id')
@@ -32,7 +32,7 @@ export const getFullPageById = (id: string) => {
     .executeTakeFirstOrThrow()
 }
 
-export const getPageById = (id: string) => {
+export const getPageById = (id: number) => {
   return getById(id)
     .where('blobId', '!=', null)
     .selectAll()
@@ -40,7 +40,7 @@ export const getPageById = (id: string) => {
 }
 
 // TODO: should be selecting from new table
-export const getNavBar = async (siteId: string) => {
+export const getNavBar = async (siteId: number) => {
   const { content, ...rest } = await db
     .selectFrom('Navbar')
     .where('siteId', '=', siteId)
@@ -51,7 +51,7 @@ export const getNavBar = async (siteId: string) => {
   return { ...rest, content: content as Navbar }
 }
 
-export const getFooter = async (siteId: string) => {
+export const getFooter = async (siteId: number) => {
   const { content, ...rest } = await db
     .selectFrom('Footer')
     .where('siteId', '=', siteId)

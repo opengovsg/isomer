@@ -1,18 +1,3 @@
-export interface Sitemap {
-  parentTitle: string
-  childrenTitles: string[]
-  siblingTitles: string[]
-}
+import { type IsomerSiteProps } from '@opengovsg/isomer-components'
 
-export const SiteThemes = {
-  classic: 'isomer-classic',
-  next: 'isomer-next',
-} as const
-
-type SiteTheme = (typeof SiteThemes)[keyof typeof SiteThemes]
-
-export interface SiteConfig {
-  theme: SiteTheme
-  isGovernment?: boolean
-  sitemap: Sitemap
-}
+export type SiteConfig = Omit<IsomerSiteProps, 'navBarItems' | 'footerItems'>
