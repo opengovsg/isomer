@@ -69,32 +69,16 @@ const placeholder = {
 }
 
 const EditPage: NextPageWithLayout = () => {
-  const [isEditorOpen, setIsEditorOpen] = useState(true)
-  const [editedSchema, setEditedSchema] = useState<any>(placeholder)
-  const [isJSONValid, setIsJSONValid] = useState(true)
-  const [isNewEditor, setIsNewEditor] = useState(false)
+  const [, setEditedSchema] = useState<any>(placeholder)
+  const [, setIsJSONValid] = useState(true)
 
   const [isCopied, setIsCopied] = useState(false)
-  const [jsonSchema, setJsonSchema] = useState<any>(null)
+  const [, setJsonSchema] = useState<any>(null)
   const [validate, setValidate] = useState<any>(null)
 
-  const {
-    drawerState,
-    setDrawerState,
-    pageState,
-    setPageState,
-    editorState,
-    setEditorState,
-  } = useEditorDrawerContext()
+  const { setDrawerState, pageState, setPageState, setEditorState } =
+    useEditorDrawerContext()
 
-  const [{ theme, isGovernment, sitemap, name }] =
-    trpc.site.getConfig.useSuspenseQuery({ id: 1 })
-  const [{ content: footer }] = trpc.site.getFooter.useSuspenseQuery({
-    id: 1,
-  })
-  const [{ content: navbar }] = trpc.site.getNavbar.useSuspenseQuery({
-    id: 1,
-  })
   const [{ content: page }] = trpc.page.readPageAndBlob.useSuspenseQuery({
     pageId: 1,
   })
@@ -109,6 +93,30 @@ const EditPage: NextPageWithLayout = () => {
         setJsonSchema(schema)
         setValidate(() => validateFn)
       })
+  }
+
+  const handleEditorChange = (value: any) => {
+    setEditorState(value)
+
+    try {
+      const parsedJson = JSON.parse(value)
+
+      if (validate === null) {
+        console.log('Schema not loaded yet')
+        return
+      }
+
+      if (validate(parsedJson)) {
+        setIsJSONValid(true)
+        setEditedSchema(parsedJson)
+      } else {
+        setIsJSONValid(false)
+        console.log('JSON is invalid', validate.errors)
+      }
+    } catch (e) {
+      setIsJSONValid(false)
+      console.log(e)
+    }
   }
 
   useEffect(() => {
@@ -134,54 +142,6 @@ const EditPage: NextPageWithLayout = () => {
       setTimeout(() => setIsCopied(false), 3000)
     }
   }, [isCopied])
-
-  const handleEditorChange = (value: any) => {
-    setEditorState(value)
-    localStorage.setItem('editorValue', value)
-
-    try {
-      const parsedJson = JSON.parse(value)
-
-      if (validate === null) {
-        console.log('Schema not loaded yet')
-        return
-      }
-
-      if (validate(parsedJson)) {
-        setIsJSONValid(true)
-        setEditedSchema(parsedJson)
-      } else {
-        setIsJSONValid(false)
-        console.log('JSON is invalid', validate.errors)
-      }
-    } catch (e) {
-      setIsJSONValid(false)
-      console.log(e)
-    }
-  }
-
-  const handleNewEditorChange = (value: any) => {
-    setEditorState(value)
-    localStorage.setItem('newEditorValue', value)
-
-    try {
-      if (validate === null) {
-        console.log('Schema not loaded yet')
-        return
-      }
-
-      if (validate(value)) {
-        setIsJSONValid(true)
-        setEditedSchema(value)
-      } else {
-        setIsJSONValid(false)
-        console.log('JSON is invalid', validate.errors)
-      }
-    } catch (e) {
-      setIsJSONValid(false)
-      console.log(e)
-    }
-  }
 
   useEffect(() => {
     setDrawerState({
