@@ -4,11 +4,11 @@
   "description": "Isomer Next",
   "private": true,
   "scripts": {
-    "build": "turbo build",
+    "build": "dotenv -- turbo build",
     "clean": "turbo clean",
     "dev": "dotenv -- turbo run dev",
     "setup:test": "turbo setup:test",
-    "storybook": "turbo run storybook --parallel",
+    "storybook": "dotenv -- turbo run storybook --parallel",
     "storybook:build": "turbo run storybook:build --parallel",
     "teardown": "turbo teardown",
     "test-start": "turbo test-start"
