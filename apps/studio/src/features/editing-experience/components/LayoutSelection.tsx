@@ -18,11 +18,25 @@ import Preview from '~/features/editing-experience/components/Preview'
 import articleLayoutPreview from '~/features/editing-experience/data/articleLayoutPreview.json'
 import contentLayoutPreview from '~/features/editing-experience/data/contentLayoutPreview.json'
 
-interface LayoutSelectionProps {
+type LayoutType = 'article' | 'content'
+
+export interface LayoutSelectionProps {
   pageName: string
+  // preparing to make the trpc call to create page. required props
+  pageUrl: string
+  siteId: string
+  folderId: string
 }
 
-type LayoutType = 'article' | 'content'
+// export const createPageSchema = z.object({
+//   pageName: z.string(),
+//   pageTitle: z.string(),
+//   // TODO: add the actual layouts in here
+//   layout: z.enum(PAGE_LAYOUTS).default('content'),
+//   siteId: z.string(),
+//   // NOTE: implies that top level pages are allowed
+//   folderId: z.string().nullable(),
+// })
 
 const LAYOUT_DATA: {
   layoutDisplayName: string
@@ -59,7 +73,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
         <VStack p="1.5rem 2rem" w="full" gap="0.5rem" alignItems="flex-start">
           <Button variant="link">
             <Icon as={BiLeftArrowAlt} />
-            Back To All Pages
+            Back to all pages
           </Button>
           <HStack p="0" justifyContent="space-between" w="100%">
             <Text textStyle="h4" color="base.content.default">
@@ -90,7 +104,6 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                     gap="0"
                     cursor="pointer"
                     onClick={() => {
-                      // TODO: set layout to render here
                       setSelectedLayout(layoutEntry)
                     }}
                     role="group"
@@ -108,9 +121,21 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                           ? 'base.divider.brand'
                           : 'base.divider.medium'
                       }
-                      sx={{
-                        transition: 'border-color 300ms ease-out',
-                      }}
+                      bgColor={
+                        selectedLayout.layoutTypename ===
+                        layoutEntry.layoutTypename
+                          ? 'interaction.muted.main.active'
+                          : 'interaction.muted.main.hover'
+                      }
+                      sx={
+                        selectedLayout.layoutTypename !==
+                        layoutEntry.layoutTypename
+                          ? {
+                              transition:
+                                'border-color 300ms ease-out, opacity 300ms ease-out, background-color 300ms ease-out',
+                            }
+                          : {}
+                      }
                       _groupHover={
                         selectedLayout.layoutTypename !==
                         layoutEntry.layoutTypename
@@ -118,6 +143,10 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                               borderColor: useToken(
                                 'colors',
                                 'interaction.main-subtle.hover',
+                              ),
+                              bgColor: useToken(
+                                'colors',
+                                'interaction.main-subtle.default',
                               ),
                             }
                           : {}
@@ -133,17 +162,18 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                       {selectedLayout.layoutTypename !==
                         layoutEntry.layoutTypename && (
                         <>
+                          {/* for opacity, since we need the text to be clear */}
                           <Box
                             className="hover-blur"
                             position="absolute"
                             top="0"
                             left="0"
-                            bg="interaction.main-subtle.default"
                             opacity="0.6"
                             alignItems="center"
                             w="100%"
                             h="100%"
                             borderRadius="6px" // due to this being smaller than the outer Box
+                            bgColor="interaction.main-subtle.default"
                             sx={{
                               transition: 'opacity 300ms ease-out',
                               opacity: 0,
