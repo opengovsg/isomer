@@ -17,7 +17,6 @@ import { BiLeftArrowAlt, BiRightArrowAlt, BiShow } from 'react-icons/bi'
 import Preview from '~/features/editing-experience/components/Preview'
 import articleLayoutPreview from '~/features/editing-experience/data/articleLayoutPreview.json'
 import contentLayoutPreview from '~/features/editing-experience/data/contentLayoutPreview.json'
-import { trpc } from '~/utils/trpc'
 
 type LayoutType = 'article' | 'content'
 
@@ -51,7 +50,7 @@ const dataAttr = (value: unknown) => (!!value ? true : undefined) // Keeping thi
 
 // TODO: Make this headless by getting the LAYOUT_DATA from the schema. Find somewhere in the schema for layoutDescription & image(fetch this too or generate it)
 function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
-  const [selectedLayout, setSelectedLayout] = useState(LAYOUT_DATA[0]!)
+  const [selectedLayout, setSelectedLayout] = useState(LAYOUT_DATA[0])
 
   return (
     <>
