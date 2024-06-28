@@ -1,5 +1,10 @@
 import { db } from '../database'
-import { type Footer, type Navbar } from './resource.types'
+import {
+  type Page,
+  type Footer,
+  type Navbar,
+  type UpdateBlobProps,
+} from './resource.types'
 
 export const getPages = () => {
   return (
@@ -21,13 +26,14 @@ export const getFolders = () =>
     .execute()
 
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
-const getById = (id: number) => db.selectFrom('Resource').where('id', '=', id)
+const getById = (id: number) =>
+  db.selectFrom('Resource').where('Resource.id', '=', id)
 
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
 export const getFullPageById = (id: number) => {
   return getById(id)
-    .where('blobId', '!=', null)
-    .innerJoin('Blob', 'blobId', 'Blob.id')
+    .where('Resource.blobId', 'is not', null)
+    .innerJoin('Blob', 'Resource.blobId', 'Blob.id')
     .selectAll()
     .executeTakeFirstOrThrow()
 }
@@ -37,6 +43,34 @@ export const getPageById = (id: number) => {
     .where('blobId', '!=', null)
     .selectAll()
     .executeTakeFirstOrThrow()
+}
+
+export const updatePageById = (
+  page: Partial<Omit<Page, 'id' | 'blobId'>> & { id: string },
+) => {
+  const { id, ...rest } = page
+  return db.transaction().execute((tx) => {
+    return tx
+      .updateTable('Resource')
+      .set(rest)
+      .where('id', '=', id)
+      .executeTakeFirstOrThrow()
+  })
+}
+
+export const updateBlobById = (props: UpdateBlobProps) => {
+  const { id, content } = props
+  return db.transaction().execute((tx) => {
+    return (
+      tx
+        .updateTable('Blob')
+        .innerJoin('Resource', 'Resource.id', 'id')
+        // NOTE: This works because a page has a 1-1 relation with a blob
+        .set({ content })
+        .where('Resource.id', '=', id)
+        .executeTakeFirstOrThrow()
+    )
+  })
 }
 
 // TODO: should be selecting from new table
