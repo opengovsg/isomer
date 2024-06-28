@@ -26,8 +26,9 @@ export function JsonFormsVerticalLayoutRenderer({
 
   return (
     <VStack spacing={2}>
-      {elements.map((element) => (
-        <Box key={path} w="100%">
+      {elements.map((element, index) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <Box key={`${path}-${index}`} w="100%">
           <JsonFormsDispatch
             uischema={element}
             schema={schema}
