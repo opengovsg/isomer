@@ -1,10 +1,5 @@
 import { db } from '../database'
-import {
-  type Page,
-  type Footer,
-  type Navbar,
-  type UpdateBlobProps,
-} from './resource.types'
+import { type Page, type Footer, type Navbar } from './resource.types'
 
 export const getPages = () => {
   return (
@@ -46,7 +41,7 @@ export const getPageById = (id: number) => {
 }
 
 export const updatePageById = (
-  page: Partial<Omit<Page, 'id' | 'blobId'>> & { id: string },
+  page: Partial<Omit<Page, 'id'>> & { id: number },
 ) => {
   const { id, ...rest } = page
   return db.transaction().execute((tx) => {
@@ -58,7 +53,7 @@ export const updatePageById = (
   })
 }
 
-export const updateBlobById = (props: UpdateBlobProps) => {
+export const updateBlobById = (props: { id: number; content: Page }) => {
   const { id, content } = props
   return db.transaction().execute((tx) => {
     return (

@@ -1,21 +1,10 @@
 import {
-  type IsomerComponent,
   type IsomerPageSchema,
   RenderEngine,
 } from '@opengovsg/isomer-components'
 import { trpc } from '~/utils/trpc'
 
-export interface PreviewProps {
-  schema?: {
-    version: string
-    layout: string
-    page: any
-    content: IsomerComponent[]
-  }
-}
-
-export default function Preview({ schema }: PreviewProps) {
-  const renderSchema = schema!
+export default function Preview({ layout, content, page }: IsomerPageSchema) {
   const [{ theme, isGovernment, sitemap, name }] =
     trpc.site.getConfig.useSuspenseQuery({ id: 1 })
   const [{ content: footer }] = trpc.site.getFooter.useSuspenseQuery({
@@ -42,14 +31,10 @@ export default function Preview({ schema }: PreviewProps) {
         footerItems: footer,
       }}
       // @ts-expect-error blah
-      layout={renderSchema.layout}
-      page={{
-        ...renderSchema.page,
-        permalink: '/',
-        lastModified: new Date().toISOString(),
-      }}
+      layout={layout}
       // TODO: remove this cast and add validation
-      content={renderSchema.content}
+      content={content}
+      page={page}
     />
   )
 }

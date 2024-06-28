@@ -1,4 +1,3 @@
-import { type IsomerPageSchema } from '@opengovsg/isomer-components'
 import { protectedProcedure, router } from '~/server/trpc'
 import {
   createPageSchema,
@@ -24,10 +23,9 @@ export const pageRouter = router({
     .input(getEditPageSchema)
     .query(async ({ input, ctx }) => {
       const { pageId } = input
-      // const page = await getFullPageById(pageId)
       const page = await getFullPageById(pageId)
       const pageName: string = page.name
-      const siteMeta = getSiteConfig(page.siteId)
+      const siteMeta = await getSiteConfig(page.siteId)
       const navbar = await getNavBar(page.siteId)
       const footer = await getFooter(page.siteId)
       const { content } = page
