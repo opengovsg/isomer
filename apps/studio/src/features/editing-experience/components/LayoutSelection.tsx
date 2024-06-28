@@ -224,7 +224,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
               <HStack
                 borderTopRadius="8px"
                 w="100%"
-                bgColor="slate.200"
+                bgColor="base.canvas.light"
                 textColor="white"
                 justifyContent="center"
                 gap="0"
