@@ -29,13 +29,7 @@ export interface LayoutSelectionProps {
   folderId: string
 }
 
-const LAYOUT_DATA: {
-  layoutDisplayName: string
-  layoutTypename: LayoutType
-  layoutDescription: string
-  imageSource: string
-  previewJson: JSON
-}[] = [
+const LAYOUT_DATA = [
   {
     layoutDisplayName: 'Default',
     layoutTypename: 'content',
@@ -51,11 +45,12 @@ const LAYOUT_DATA: {
     imageSource: '/assets/layout-card/article_layout_card.webp',
     previewJson: articleLayoutPreview,
   },
-]
+] as const
+
+const dataAttr = (value: unknown) => (!!value ? true : undefined) // Keeping this here for now, might shift out to a utils file when necessary.
 
 // TODO: Make this headless by getting the LAYOUT_DATA from the schema. Find somewhere in the schema for layoutDescription & image(fetch this too or generate it)
 function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
-  // need state here to keep track of selected layout
   const [selectedLayout, setSelectedLayout] = useState(LAYOUT_DATA[0]!)
 
   return (
@@ -99,7 +94,6 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                     as="button"
                   >
                     <Box
-                      // className="hover-border"
                       borderRadius="8px"
                       border="2px"
                       p="1.5rem 1.5rem 0 1.5rem"
@@ -107,12 +101,10 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                       position="relative"
                       borderColor="base.divider.medium"
                       bgColor="interaction.muted.main.hover"
-                      data-active={
+                      data-active={dataAttr(
                         selectedLayout.layoutTypename ===
-                        layoutEntry.layoutTypename
-                          ? true
-                          : null
-                      } // have to use null so that React will not parse this jsx attribute. having the [data-active] selection attribute will trigger _active.
+                          layoutEntry.layoutTypename,
+                      )} // have to use null so that React will not parse this jsx attribute. having the [data-active] selection attribute will trigger _active.
                       _active={{
                         borderColor: 'base.divider.brand',
                         bgColor: 'interaction.muted.main.active',
@@ -178,15 +170,14 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                     </Box>
                     <HStack w="100%" justifyContent="space-between">
                       <Text
-                        className="layout-title"
                         textAlign="left"
                         textStyle="h6"
-                        textColor={
+                        textColor="base.content.strong"
+                        data-active={dataAttr(
                           selectedLayout.layoutTypename ===
-                          layoutEntry.layoutTypename
-                            ? 'base.content.brand'
-                            : 'base.content.strong'
-                        }
+                            layoutEntry.layoutTypename,
+                        )}
+                        _active={{ textColor: 'base.content.brand' }}
                         mb="0.5rem"
                         transition="color 300ms ease-out"
                         _groupHover={{ textColor: 'base.content.brand' }}
