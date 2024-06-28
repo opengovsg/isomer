@@ -1,28 +1,45 @@
+import { dirname, join } from 'path'
 import type { StorybookConfig } from '@storybook/nextjs'
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
+
   addons: [
-    '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/addon-interactions',
-    '@storybook/addon-themes',
-    '@storybook/addon-a11y',
+    getAbsolutePath('@storybook/addon-links'),
+    getAbsolutePath('@storybook/addon-essentials'),
+    getAbsolutePath('@storybook/addon-interactions'),
+    getAbsolutePath('@storybook/addon-themes'),
+    getAbsolutePath('@storybook/addon-a11y'),
+    getAbsolutePath('@storybook/addon-mdx-gfm'),
+    '@chromatic-com/storybook',
   ],
+
   framework: {
-    name: '@storybook/nextjs',
+    name: getAbsolutePath('@storybook/nextjs'),
     options: {},
   },
-  docs: {
-    autodocs: 'tag',
-  },
+
+  docs: {},
+
   staticDirs: ['../public'],
+
   core: {
     disableTelemetry: true,
   },
+
   env: (config) => ({
     ...config,
     SKIP_ENV_VALIDATION: 'true',
     STORYBOOK_ENVIRONMENT: JSON.stringify(process.env),
   }),
+
+  typescript: {
+    check: false,
+    skipCompiler: false,
+    reactDocgen: 'react-docgen-typescript',
+  },
 }
 export default config
+
+function getAbsolutePath(value: string): any {
+  return dirname(require.resolve(join(value, 'package.json')))
+}

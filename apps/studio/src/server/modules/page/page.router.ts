@@ -10,17 +10,22 @@ import {
   getFooter,
   getFullPageById,
   getNavBar,
+  updateBlobById,
+  updatePageById,
 } from '../resource/resource.service'
 import { getSiteConfig } from '../site/site.service'
 
+// TODO: Need to do validation like checking for existence of the page
+// and whether the user has write-access to said page
+const pageProcedure = protectedProcedure
+
 export const pageRouter = router({
-  readPageAndBlob: protectedProcedure
+  readPageAndBlob: pageProcedure
     .input(getEditPageSchema)
     .query(async ({ input, ctx }) => {
       const { pageId } = input
       // const page = await getFullPageById(pageId)
       const page = await getFullPageById(pageId)
-      // TODO: Fill these in later
       const pageName: string = page.name
       const siteMeta = getSiteConfig(page.siteId)
       const navbar = await getNavBar(page.siteId)
@@ -31,35 +36,28 @@ export const pageRouter = router({
         pageName,
         navbar,
         footer,
-        // TODO: add validation on either read/write
-        content: content as IsomerPageSchema,
+        content,
+        ...siteMeta,
       }
     }),
 
-  updatePage: protectedProcedure
+  updatePage: pageProcedure
     .input(updatePageSchema)
     .mutation(async ({ input, ctx }) => {
-      const parentId = ''
-      const pageName = ''
+      await updatePageById({ ...input, id: input.pageId })
 
-      return {
-        // NOTE: This should adhere to our db schema
-        parentId,
-        pageName,
-        // NOTE: Don't need `variant` here
-        // because the router itself discriminates for us
-      }
+      return input
     }),
-  updatePageBlob: protectedProcedure
+
+  updatePageBlob: pageProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input, ctx }) => {
-      // NOTE: Not returning the `content` first because
-      // 1. it might potentially be huge
-      // 2. frontend already knows
-      // ahead of time what is the content (it sent the content over)
-      return {}
+      await updateBlobById({ ...input, id: input.pageId })
+
+      return input
     }),
-  createPage: protectedProcedure
+
+  createPage: pageProcedure
     .input(createPageSchema)
     .query(async ({ input, ctx }) => {
       return { pageId: '' }

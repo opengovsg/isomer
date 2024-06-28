@@ -1,5 +1,10 @@
 import { db } from '../database'
-import { type Footer, type Navbar } from './resource.types'
+import {
+  type Page,
+  type Footer,
+  type Navbar,
+  type UpdateBlobProps,
+} from './resource.types'
 
 export const getPages = () => {
   return (
@@ -38,6 +43,34 @@ export const getPageById = (id: number) => {
     .where('blobId', '!=', null)
     .selectAll()
     .executeTakeFirstOrThrow()
+}
+
+export const updatePageById = (
+  page: Partial<Omit<Page, 'id' | 'blobId'>> & { id: string },
+) => {
+  const { id, ...rest } = page
+  return db.transaction().execute((tx) => {
+    return tx
+      .updateTable('Resource')
+      .set(rest)
+      .where('id', '=', id)
+      .executeTakeFirstOrThrow()
+  })
+}
+
+export const updateBlobById = (props: UpdateBlobProps) => {
+  const { id, content } = props
+  return db.transaction().execute((tx) => {
+    return (
+      tx
+        .updateTable('Blob')
+        .innerJoin('Resource', 'Resource.id', 'id')
+        // NOTE: This works because a page has a 1-1 relation with a blob
+        .set({ content })
+        .where('Resource.id', '=', id)
+        .executeTakeFirstOrThrow()
+    )
+  })
 }
 
 // TODO: should be selecting from new table
