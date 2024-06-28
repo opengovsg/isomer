@@ -1,3 +1,4 @@
+import { type IsomerPageSchema } from '@opengovsg/isomer-components'
 import { protectedProcedure, router } from '~/server/trpc'
 import {
   createPageSchema,
@@ -22,13 +23,13 @@ export const pageRouter = router({
   readPageAndBlob: pageProcedure
     .input(getEditPageSchema)
     .query(async ({ input, ctx }) => {
-      const { pageId, siteId } = input
+      const { pageId } = input
+      // const page = await getFullPageById(pageId)
       const page = await getFullPageById(pageId)
       const pageName: string = page.name
-      // NOTE: Sitemap in siteMeta is immediate parent, immediate children and siblings
-      const siteMeta = getSiteConfig(siteId)
-      const navbar = getNavBar(siteId)
-      const footer = getFooter(siteId)
+      const siteMeta = getSiteConfig(page.siteId)
+      const navbar = await getNavBar(page.siteId)
+      const footer = await getFooter(page.siteId)
       const { content } = page
 
       return {
@@ -42,7 +43,7 @@ export const pageRouter = router({
 
   updatePage: pageProcedure
     .input(updatePageSchema)
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       await updatePageById({ ...input, id: input.pageId })
 
       return input
@@ -50,7 +51,7 @@ export const pageRouter = router({
 
   updatePageBlob: pageProcedure
     .input(updatePageBlobSchema)
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       await updateBlobById({ ...input, id: input.pageId })
 
       return input

@@ -14,6 +14,76 @@ import {
 } from '~/server/modules/resource/resource.types'
 import { db } from '../src/server/modules/database'
 
+const MOCK_PHONE_NUMBER = '123456789'
+
+const ISOMER_ADMINS = [
+  'alex',
+  'jan',
+  'kishore',
+  'jiachin',
+  'sehyun',
+  'harish',
+  'zhongjun',
+  'hanpu',
+]
+
+const PAGE_BLOB = {
+  version: '0.1.0',
+  layout: 'homepage',
+  page: {
+    title: 'Home',
+  },
+  content: [
+    {
+      type: 'hero',
+      variant: 'gradient',
+      alignment: 'left',
+      backgroundColor: 'black',
+      title: 'Ministry of Trade and Industry',
+      subtitle:
+        'A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity',
+      buttonLabel: 'Main CTA',
+      buttonUrl: '/',
+      secondaryButtonLabel: 'Sub CTA',
+      secondaryButtonUrl: '/',
+      backgroundUrl: 'https://ohno.isomer.gov.sg/images/hero-banner.png',
+    },
+    {
+      type: 'infobar',
+      title: 'This is an infobar',
+      description: 'This is the description that goes into the Infobar section',
+    },
+    {
+      type: 'infopic',
+      title: 'This is an infopic',
+      description: 'This is the description for the infopic component',
+      imageSrc: 'https://placehold.co/600x400',
+    },
+    {
+      type: 'keystatistics',
+      statistics: [
+        {
+          label: 'Average all nighters pulled in a typical calendar month',
+          value: '3',
+        },
+        {
+          label: 'Growth in tasks assigned Q4 2024 (YoY)',
+          value: '+12.2%',
+        },
+        {
+          label: 'Creative blocks met per single evening',
+          value: '89',
+        },
+        {
+          value: '4.0',
+          label: 'Number of lies in this stat block',
+        },
+      ],
+      variant: 'top',
+      title: 'Irrationality in numbers',
+    },
+  ],
+}
 const NAV_BAR_ITEMS: Navbar['items'] = [
   {
     name: 'Expandable nav item',
@@ -82,7 +152,7 @@ const FOOTER_ITEMS = [
 ]
 
 async function main() {
-  const { id } = await db
+  const { id: siteId } = await db
     .insertInto('Site')
     .values({
       name: 'Ministry of Trade and Industry',
@@ -111,7 +181,7 @@ async function main() {
   await db
     .insertInto('Footer')
     .values({
-      siteId: id,
+      siteId,
       content: {
         contactUsLink: '/contact-us',
         feedbackFormLink: 'https://www.form.gov.sg',
@@ -125,10 +195,34 @@ async function main() {
   await db
     .insertInto('Navbar')
     .values({
-      siteId: id,
+      siteId,
       content: { items: NAV_BAR_ITEMS } satisfies Navbar,
     })
     .execute()
+
+  const { id: blobId } = await db
+    .insertInto('Blob')
+    .values({ content: PAGE_BLOB })
+    .returning('id')
+    .executeTakeFirstOrThrow()
+
+  await db
+    .insertInto('Resource')
+    .values({ blobId, name: 'Home', siteId })
+    .executeTakeFirstOrThrow()
+
+  await Promise.all(
+    ISOMER_ADMINS.map((name) => {
+      return db
+        .insertInto('User')
+        .values({
+          name,
+          email: `${name}@open.gov.sg`,
+          phone: MOCK_PHONE_NUMBER,
+        })
+        .executeTakeFirstOrThrow()
+    }),
+  )
 }
 
 main()

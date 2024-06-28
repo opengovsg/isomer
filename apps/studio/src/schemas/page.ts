@@ -4,7 +4,6 @@ const PAGE_LAYOUTS = ['content'] as const
 
 export const getEditPageSchema = z.object({
   pageId: z.number().min(1),
-  siteId: z.number().min(1),
 })
 
 export const updatePageSchema = getEditPageSchema.extend({
