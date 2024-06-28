@@ -14,7 +14,7 @@ import {
 } from '../resource/resource.service'
 import { getSiteConfig } from '../site/site.service'
 
-// NOTE: Need to do validation like checking for existence of the page
+// TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page
 const pageProcedure = protectedProcedure
 
