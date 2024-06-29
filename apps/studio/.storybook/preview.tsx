@@ -191,7 +191,7 @@ const decorators: Decorator[] = [
       default: theme,
     },
     Provider: ThemeProvider,
-  }),
+  }) as Decorator, // FIXME: Remove this cast when types are fixed
   MockDateDecorator,
   mswDecorator,
 ]
