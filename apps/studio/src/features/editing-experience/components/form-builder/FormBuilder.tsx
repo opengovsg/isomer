@@ -6,22 +6,24 @@ import IsomerSchema from '../../data/0.1.0.json'
 
 import {
   JsonFormsArrayControl,
-  jsonFormsArrayControlTester,
   JsonFormsBooleanControl,
-  jsonFormsBooleanControlTester,
   JsonFormsDropdownControl,
-  jsonFormsDropdownControlTester,
   JsonFormsIntegerControl,
-  jsonFormsIntegerControlTester,
   JsonFormsObjectControl,
-  jsonFormsObjectControlTester,
   JsonFormsOneOfControl,
-  jsonFormsOneOfControlTester,
   JsonFormsProseControl,
-  jsonFormsProseControlTester,
   JsonFormsRadioControl,
-  jsonFormsRadioControlTester,
   JsonFormsTextControl,
+  jsonFormsArrayControlTester,
+  jsonFormsBooleanControlTester,
+  jsonFormsDropdownControlTester,
+  jsonFormsGroupLayoutRenderer,
+  jsonFormsGroupLayoutTester,
+  jsonFormsIntegerControlTester,
+  jsonFormsObjectControlTester,
+  jsonFormsOneOfControlTester,
+  jsonFormsProseControlTester,
+  jsonFormsRadioControlTester,
   jsonFormsTextControlTester,
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
@@ -41,6 +43,10 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsProseControlTester, renderer: JsonFormsProseControl },
   { tester: jsonFormsRadioControlTester, renderer: JsonFormsRadioControl },
   {
+    tester: jsonFormsGroupLayoutTester,
+    renderer: jsonFormsGroupLayoutRenderer,
+  },
+  {
     tester: jsonFormsVerticalLayoutTester,
     renderer: jsonFormsVerticalLayoutRenderer,
   },
@@ -56,7 +62,7 @@ export default function FormBuilder({
   const { properties, ...rest } = IsomerSchema.components.complex[component]
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { type, ...props } = properties
-  const newSchema = {
+  const schema = {
     ...rest,
     properties: props,
     components: IsomerSchema.components,
@@ -66,7 +72,7 @@ export default function FormBuilder({
 
   return (
     <JsonForms
-      schema={newSchema}
+      schema={schema}
       data={formData}
       renderers={renderers}
       onChange={({ data }) => {
