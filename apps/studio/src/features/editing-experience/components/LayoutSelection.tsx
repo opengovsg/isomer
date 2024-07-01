@@ -13,7 +13,9 @@ import {
 } from '@chakra-ui/react'
 import { Button, Link } from '@opengovsg/design-system-react'
 import { BiLeftArrowAlt, BiRightArrowAlt, BiShow } from 'react-icons/bi'
-import Preview from '~/features/editing-experience/components/Preview'
+import Preview, {
+  type PreviewProps,
+} from '~/features/editing-experience/components/Preview'
 import articleLayoutPreview from '~/features/editing-experience/data/articleLayoutPreview.json'
 import contentLayoutPreview from '~/features/editing-experience/data/contentLayoutPreview.json'
 
@@ -25,7 +27,15 @@ export interface LayoutSelectionProps {
   folderId: string
 }
 
-const LAYOUT_DATA = [
+type LayoutDataType = {
+  layoutDisplayName: string
+  layoutTypename: string
+  layoutDescription: string
+  imageSource: string
+  previewJson: object
+}
+
+const LAYOUT_DATA: LayoutDataType[] = [
   {
     layoutDisplayName: 'Default',
     layoutTypename: 'content',
@@ -47,7 +57,9 @@ const dataAttr = (value: unknown) => (!!value ? true : undefined) // Keeping thi
 
 // TODO: Make this headless by getting the LAYOUT_DATA from the schema. Find somewhere in the schema for layoutDescription & image(fetch this too or generate it)
 function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
-  const [selectedLayout, setSelectedLayout] = useState(LAYOUT_DATA[0])
+  const [selectedLayout, setSelectedLayout] = useState<LayoutDataType>(
+    LAYOUT_DATA[0]!,
+  )
 
   return (
     <>
@@ -225,7 +237,9 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                   {` Layout`}
                 </Text>
               </HStack>
-              <Preview schema={selectedLayout.previewJson} />
+              <Preview
+                schema={selectedLayout.previewJson as PreviewProps['schema']}
+              />
               <Box position="absolute" top="0" left="0" w="100%" h="100%" />
             </Box>
           </GridItem>
