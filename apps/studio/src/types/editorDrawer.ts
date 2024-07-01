@@ -1,8 +1,3 @@
-export type Block = {
-  text: string
-  id: string
-}
-
 export type RootDrawerState = {
   state: 'root'
 }

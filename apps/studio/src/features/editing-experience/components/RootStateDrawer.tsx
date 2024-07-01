@@ -68,8 +68,9 @@ export default function RootStateDrawer() {
                 <Box w="100%">
                   {pageState.map((block, index) => (
                     <Draggable
-                      key={block.id}
-                      draggableId={block.id}
+                      // TODO: Determine key + draggable id
+                      key={index}
+                      draggableId={`${block.type}-${index}`}
                       index={index}
                     >
                       {(provided) => (
@@ -97,7 +98,7 @@ export default function RootStateDrawer() {
                               }}
                             />
                             <Text px="3" fontWeight={500}>
-                              {block.text}
+                              {block.type}
                             </Text>
                           </HStack>
                           <Divider />

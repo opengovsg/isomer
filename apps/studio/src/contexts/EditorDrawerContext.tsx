@@ -1,3 +1,4 @@
+import { type IsomerComponent } from '@opengovsg/isomer-components'
 import React, {
   createContext,
   useState,
@@ -5,15 +6,15 @@ import React, {
   useMemo,
   type PropsWithChildren,
 } from 'react'
-import { type Block, type DrawerState } from '~/types/editorDrawer'
+import { type DrawerState } from '~/types/editorDrawer'
 
 export interface DrawerContextType {
   drawerState: DrawerState
   setDrawerState: (state: DrawerState) => void
-  pageState: Block[]
-  setPageState: (state: Block[]) => void
-  editorState: Block[]
-  setEditorState: (state: Block[]) => void
+  pageState: IsomerComponent[]
+  setPageState: (state: IsomerComponent[]) => void
+  editorState: IsomerComponent[]
+  setEditorState: (state: IsomerComponent[]) => void
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
@@ -22,9 +23,9 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
     state: 'root',
   })
   // Current saved state of page
-  const [pageState, setPageState] = useState<Block[]>([])
+  const [pageState, setPageState] = useState<IsomerComponent[]>([])
   // Current edit view of page
-  const [editorState, setEditorState] = useState<Block[]>([])
+  const [editorState, setEditorState] = useState<IsomerComponent[]>([])
 
   const value = useMemo(
     () => ({
