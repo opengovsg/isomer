@@ -6,6 +6,10 @@ import {
   updatePageSchema,
 } from '~/schemas/page'
 import {
+  type IsomerPageSchema,
+  type IsomerComponent,
+} from '@opengovsg/isomer-components'
+import {
   getFooter,
   getFullPageById,
   getNavBar,
@@ -34,7 +38,7 @@ export const pageRouter = router({
         pageName,
         navbar,
         footer,
-        content,
+        content: content as IsomerPageSchema,
         ...siteMeta,
       }
     }),
