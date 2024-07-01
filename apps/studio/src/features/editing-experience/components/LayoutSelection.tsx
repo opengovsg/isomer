@@ -9,7 +9,6 @@ import {
   Image,
   Text,
   VStack,
-  useToken,
   Icon,
 } from '@chakra-ui/react'
 import { Button, Link } from '@opengovsg/design-system-react'
@@ -17,8 +16,6 @@ import { BiLeftArrowAlt, BiRightArrowAlt, BiShow } from 'react-icons/bi'
 import Preview from '~/features/editing-experience/components/Preview'
 import articleLayoutPreview from '~/features/editing-experience/data/articleLayoutPreview.json'
 import contentLayoutPreview from '~/features/editing-experience/data/contentLayoutPreview.json'
-
-type LayoutType = 'article' | 'content'
 
 export interface LayoutSelectionProps {
   pageName: string
