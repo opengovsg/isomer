@@ -55,7 +55,16 @@ export const createMockRequest = (
 ): Context => {
   const innerContext = createContextInner({ session })
 
-  const { req, res } = createMocks(reqOptions, resOptions)
+  const { req, res } = createMocks(
+    {
+      ...reqOptions,
+      headers: {
+        'content-type': 'application/json', // will always be application/json
+        ...reqOptions.headers,
+      },
+    },
+    resOptions,
+  )
 
   return {
     ...innerContext,
