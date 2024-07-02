@@ -14,7 +14,6 @@ import {
   InputLeftAddon,
   Text,
   Stack,
-  Box,
 } from '@chakra-ui/react'
 import {
   Button,
@@ -69,12 +68,16 @@ export function PageCreateModal({
     setPageUrlLen(watchAllFields.url?.length || 0)
   }, [watchAllFields])
 
+  const [submittedData, setSubmittedData] = useState<PageCreateFormFields>({
+    title: '',
+    url: '',
+  })
+
   // This might need to go into the layout component? or we keep state in this component then pass selectedlayout and setselectedlayout into the component
   // Prefer to keep page creation states within the layout selection modal? More portable in that case if we want to shift the entry point.
-  const onSubmit: SubmitHandler<PageCreateFormFields> = (data) =>
-    console.log(data)
-
-  const [submitted, setSubmitted] = useState(false)
+  const onSubmit: SubmitHandler<PageCreateFormFields> = (data) => {
+    setSubmittedData(data)
+  }
 
   let content = (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -183,11 +186,7 @@ export function PageCreateModal({
             >
               Cancel
             </Button>
-            <Button
-              bgColor="interaction.main.default"
-              type="submit"
-              onClick={() => setSubmitted(true)}
-            >
+            <Button bgColor="interaction.main.default" type="submit">
               Create page
             </Button>
           </ModalFooter>
@@ -196,13 +195,16 @@ export function PageCreateModal({
     </Modal>
   )
 
-  if (submitted) {
+  if (submittedData.title !== '') {
     content = (
       <Modal isOpen={isOpen} onClose={onClose} size="full">
         <ModalOverlay />
         <ModalContent m="0">
           {/* Uncomment when ready */}
-          <LayoutSelection />
+          <LayoutSelection
+            pageName={submittedData.title}
+            pageUrl={submittedData.url}
+          />
         </ModalContent>
       </Modal>
     )

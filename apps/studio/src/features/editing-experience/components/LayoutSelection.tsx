@@ -18,13 +18,13 @@ import Preview, {
 } from '~/features/editing-experience/components/Preview'
 import articleLayoutPreview from '~/features/editing-experience/data/articleLayoutPreview.json'
 import contentLayoutPreview from '~/features/editing-experience/data/contentLayoutPreview.json'
+import { trpc } from '~/utils/trpc'
+import { useParams } from 'next/navigation'
 
 export interface LayoutSelectionProps {
   pageName: string
   // preparing to make the trpc call to create page. required props
   pageUrl: string
-  siteId: string
-  folderId: string
 }
 
 const LAYOUT_DATA = [
@@ -52,6 +52,19 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
   const [selectedLayout, setSelectedLayout] = useState<LayoutDataType>(
     LAYOUT_DATA[0]!,
   )
+  const { siteId, resourceId } = useParams<{
+    siteId: string
+    resourceId: string
+  }>()
+
+  const handleCreatePage = () => {
+    trpc.page.createPage.useQuery({
+      ...props,
+      layout: selectedLayout.layoutTypename,
+      folderId: Number(resourceId),
+      siteId: Number(siteId),
+    })
+  }
 
   return (
     <>
@@ -66,7 +79,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
             <Text textStyle="h4" color="base.content.default">
               {`Choose a layout for "${props.pageName}"`}
             </Text>
-            <Button size="xs">
+            <Button size="xs" onClick={handleCreatePage}>
               Start with this layout
               <BiRightArrowAlt fontSize="1.5rem" />
             </Button>

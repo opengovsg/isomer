@@ -21,7 +21,8 @@ export const updatePageBlobSchema = getEditPageSchema.extend({
 
 export const createPageSchema = z.object({
   pageName: z.string(),
-  pageTitle: z.string(),
+  // changing pageTitle to pageUrl for now. Alternative option to set pageTitle?
+  pageUrl: z.string(),
   // TODO: add the actual layouts in here
   layout: z.enum(PAGE_LAYOUTS).default('content'),
   siteId: z.number().min(1),

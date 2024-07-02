@@ -52,9 +52,6 @@ export default function DashboardTable(): JSX.Element {
     resourceId: string
   }>()
 
-  // console.log(siteId)
-  // console.log(resourceId)
-
   const { data, error, isLoading } = trpc.folder.readFolder.useQuery(
     {
       siteId: Number(siteId),
@@ -68,8 +65,7 @@ export default function DashboardTable(): JSX.Element {
       console.log(data)
       setDataToDisplay(data.children)
     }
-    // setLoading(isLoading)
-  }, [data])
+=  }, [data])
 
   // if (!resourceId) {
   //   // todo: fetch data after setting up root folder trpc endpoint
