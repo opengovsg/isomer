@@ -13,15 +13,9 @@
     "teardown": "turbo teardown",
     "test-start": "turbo test-start"
   },
-  "workspaces": [
-    "docs",
-    "apps/*",
-    "packages/*"
-  ],
   "author": "Isomer Team",
   "license": "ISC",
   "devDependencies": {
     "turbo": "^2.0.5"
-  },
-  "packageManager": "npm@10.2.3"
+  }
 }
