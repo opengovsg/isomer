@@ -5,10 +5,7 @@ import {
   updatePageBlobSchema,
   updatePageSchema,
 } from '~/schemas/page'
-import {
-  type IsomerPageSchema,
-  type IsomerComponent,
-} from '@opengovsg/isomer-components'
+import { type IsomerPageSchema } from '@opengovsg/isomer-components'
 import {
   getFooter,
   getFullPageById,
