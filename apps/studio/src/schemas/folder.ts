@@ -8,13 +8,12 @@ export const createFolderSchema = z.object({
   folderTitle: z.string().max(MAX_FOLDER_TITLE_LENGTH),
   folderDescription: z.string().max(MAX_FOLDER_DESCRIPTION_LENGTH),
   permalink: z.string().max(MAX_FOLDER_PERMALINK_LENGTH),
-  siteId: z.string(),
+  siteId: z.string().min(1),
   // Nullable for top level folder
-  parentFolderId: z.string().nullable(),
+  parentFolderId: z.string().optional(),
 })
 
-export const readFolderOrTopLevelFolderSchema = z.object({
-    // Null resourceId indicates reading of top level folder in a site.
-    siteId: z.string(),
-    resourceId: z.string().nullable()
+export const readFolderSchema = z.object({
+  siteId: z.string().min(1),
+  resourceId: z.string().min(1),
 })

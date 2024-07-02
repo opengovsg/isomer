@@ -1,4 +1,5 @@
 import { db } from '../database'
+import { type Footer, type Navbar } from './resource.types'
 
 export const getPages = () => {
   return (
@@ -39,10 +40,24 @@ export const getPageById = (id: string) => {
 }
 
 // TODO: should be selecting from new table
-export const getNavBar = (siteId: string) => {
-  return ''
+export const getNavBar = async (siteId: string) => {
+  const { content, ...rest } = await db
+    .selectFrom('Navbar')
+    .where('siteId', '=', siteId)
+    .selectAll()
+    // NOTE: Throwing here is acceptable because each site should have a navbar
+    .executeTakeFirstOrThrow()
+
+  return { ...rest, content: content as Navbar }
 }
 
-export const getFooter = (siteId: string) => {
-  return ''
+export const getFooter = async (siteId: string) => {
+  const { content, ...rest } = await db
+    .selectFrom('Footer')
+    .where('siteId', '=', siteId)
+    .selectAll()
+    // NOTE: Throwing here is acceptable because each site should have a footer
+    .executeTakeFirstOrThrow()
+
+  return { ...rest, content: content as Footer }
 }

@@ -1,9 +1,9 @@
 import type { ProseProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
+import Image from "../../complex/Image"
 import BaseParagraph from "../../internal/BaseParagraph"
 import Divider from "../Divider"
 import Heading from "../Heading"
-import Image from "../Image"
 import ListItem from "../ListItem"
 import OrderedList from "../OrderedList"
 import Table from "../Table"
@@ -21,7 +21,7 @@ const Prose = ({ content }: ProseProps) => {
           return <Image key={index} {...component} />
         } else if (component.type === "listItem") {
           return <ListItem key={index} {...component} />
-        } else if (component.type === "orderedlist") {
+        } else if (component.type === "orderedList") {
           return <OrderedList key={index} {...component} />
         } else if (component.type === "paragraph") {
           return (
@@ -33,7 +33,7 @@ const Prose = ({ content }: ProseProps) => {
           )
         } else if (component.type === "table") {
           return <Table key={index} {...component} />
-        } else if (component.type === "unorderedlist") {
+        } else if (component.type === "unorderedList") {
           return <UnorderedList key={index} {...component} />
         } else {
           return <></>

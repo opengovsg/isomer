@@ -194,7 +194,7 @@ const LegalSection = ({
           {isGovernment && (
             <FooterItem
               title="Report Vulnerability"
-              url="https://tech.gov.sg/report_vulnerability"
+              url="https://tech.gov.sg/report-vulnerability"
               LinkComponent={LinkComponent}
             />
           )}

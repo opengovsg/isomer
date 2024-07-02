@@ -1,0 +1,15 @@
+@use "sass:map";
+
+// Minimum width before a media query is triggered
+$breakpoints: (
+  "": 0px,
+  sm: 431px,
+  md: 770px,
+  lg: 1024px,
+  xl: 1280px,
+  xxl: 1408px,
+);
+
+// Maximum width of site contents
+$container-max-width: map-get($breakpoints, "xl");
+$preview-drawer-width: 447.5px;

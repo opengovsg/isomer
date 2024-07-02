@@ -11,6 +11,16 @@ export type Blob = {
   id: string
   content: unknown
 }
+export type Footer = {
+  id: string
+  siteId: string
+  content: unknown
+}
+export type Navbar = {
+  id: string
+  siteId: string
+  content: unknown
+}
 export type Permission = {
   id: string
   resourceId: string
@@ -27,6 +37,7 @@ export type Resource = {
 export type Site = {
   id: string
   name: string
+  config: unknown
 }
 export type SiteMember = {
   userId: string
@@ -47,6 +58,8 @@ export type VerificationToken = {
 }
 export type DB = {
   Blob: Blob
+  Footer: Footer
+  Navbar: Navbar
   Permission: Permission
   Resource: Resource
   Site: Site

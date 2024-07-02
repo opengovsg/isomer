@@ -1,6 +1,7 @@
 import '@fontsource/ibm-plex-mono' // Import if using code textStyles.
 import 'inter-ui/inter.css' // Strongly recommended.
 import '../styles/tailwind.css'
+import '../styles/editor/editorStyles.scss'
 
 import { Skeleton, Stack } from '@chakra-ui/react'
 import { ThemeProvider } from '@opengovsg/design-system-react'

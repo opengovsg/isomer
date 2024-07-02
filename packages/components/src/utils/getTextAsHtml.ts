@@ -1,3 +1,4 @@
+import type { HardBreakProps } from "~/interfaces"
 import type { Marks, TextProps } from "~/interfaces/native/Text"
 
 type MarkTypes = Marks["type"]
@@ -14,9 +15,13 @@ const MARK_DOM_MAPPING: Record<MarkTypes, string> = {
 }
 
 // Converts the text node with marks into the appropriate HTML
-export const getTextAsHtml = (content: TextProps[]) => {
+export const getTextAsHtml = (content: (HardBreakProps | TextProps)[]) => {
   return content
     .map((node) => {
+      if (node.type === "hardBreak") {
+        return "<br />"
+      }
+
       if (!node.marks) {
         return node.text
       }

@@ -10,7 +10,7 @@ import {
   getFullPageById,
   getNavBar,
 } from '../resource/resource.service'
-import { getSiteMeta } from '../site/site.service'
+import { getSiteConfig } from '../site/site.service'
 
 export const pageRouter = router({
   readPageAndBlob: protectedProcedure
@@ -20,7 +20,7 @@ export const pageRouter = router({
       const page = await getFullPageById(pageId)
       // TODO: Fill these in later
       const pageName: string = page.name
-      const { theme, isGovernment, sitemap } = getSiteMeta(siteId)
+      const siteMeta = getSiteConfig(siteId)
       const navbar = getNavBar(siteId)
       const footer = getFooter(siteId)
       const { content } = page
@@ -29,12 +29,10 @@ export const pageRouter = router({
         pageName,
         // NOTE: might shift theme, isGovt, navbar, footer out into separate function?
         // because this is shared across the whole site (site level props)
-        theme,
-        isGovernment,
+        ...siteMeta,
         navbar,
         footer,
         // NOTE: This is immediate parent, immediate children and siblings
-        sitemap,
         content,
       }
     }),
