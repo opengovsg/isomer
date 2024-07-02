@@ -5,13 +5,19 @@ runs:
   using: composite
   steps:
     - uses: pnpm/action-setup@v2
+    - uses: actions/cache@v3
+      name: Setup pnpm cache
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
     - uses: actions/setup-node@v4
       with:
         node-version: 20
         cache: "pnpm"
-
     - shell: bash
       run: pnpm add -g turbo
 
     - shell: bash
-      run: pnpm install
+      run: pnpm install --frozen-lockfile
