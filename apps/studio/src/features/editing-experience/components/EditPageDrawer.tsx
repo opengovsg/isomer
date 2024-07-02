@@ -1,56 +1,25 @@
-import { Text, VStack, HStack, Box, Divider, Spacer } from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
-} from '@hello-pangea/dnd'
-import { MdOutlineDragIndicator } from 'react-icons/md'
-import { BsPlus } from 'react-icons/bs'
-import { Button } from '@opengovsg/design-system-react'
-import RootStateDrawer from './RootStateDrawer'
-import { type DrawerState } from '~/types/editorDrawer'
 import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import ComponentSelector from '~/components/PageEditor/ComponentSelector'
+import RootStateDrawer from './RootStateDrawer'
 import TipTapComponent from './TipTapComponent'
+import ComplexEditorStateDrawer from './ComplexEditorStateDrawer'
 
 type EditPageDrawerProps = {
   isOpen: boolean
-  state: DrawerState
 }
 
-export function EditPageDrawer({ isOpen: open, state }: EditPageDrawerProps) {
-  const { drawerState: currState, setDrawerState: setCurrState } =
-    useEditorDrawerContext()
+export function EditPageDrawer({ isOpen: open }: EditPageDrawerProps) {
+  const { drawerState: currState } = useEditorDrawerContext()
 
-  useEffect(() => {
-    setCurrState(state)
-  }, [])
-
-  if (!currState) return <></>
-  console.log(currState.state)
   switch (currState.state) {
     case 'root':
-      return <RootStateDrawer blocks={currState.blocks} />
+      return <RootStateDrawer />
     case 'addBlock':
-      return (
-        <ComponentSelector
-          onClose={() => setCurrState(state)}
-          onProceed={(componentType) => console.log(componentType)}
-        />
-      )
+      return <ComponentSelector />
     case 'nativeEditor':
-      return (
-        <TipTapComponent
-          data="test"
-          path="test"
-          handleChange={(path: string, data: any) => console.log(path, data)}
-          onProceed={(path: string, data: any) => console.log(path, data)}
-          onClose={() => setCurrState(state)}
-          type="paragraph"
-        />
-      )
+      return <TipTapComponent data="test" path="test" type="paragraph" />
+    case 'complexEditor':
+      return <ComplexEditorStateDrawer />
     default:
       return <h1>Edit Page Drawer</h1>
   }

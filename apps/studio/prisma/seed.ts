@@ -3,14 +3,88 @@
  *
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
-import { type SiteConfig } from '~/server/modules/site/site.types'
+import {
+  type IsomerGeneratedSiteProps,
+  type IsomerSiteConfigProps,
+  type IsomerSitemap,
+} from '@opengovsg/isomer-components'
 import {
   type Navbar,
   type Footer,
 } from '~/server/modules/resource/resource.types'
 import { db } from '../src/server/modules/database'
 
-const NAV_BAR_ITEMS = [
+const MOCK_PHONE_NUMBER = '123456789'
+
+const ISOMER_ADMINS = [
+  'alex',
+  'jan',
+  'kishore',
+  'jiachin',
+  'sehyun',
+  'harish',
+  'zhongjun',
+  'hanpu',
+]
+
+const PAGE_BLOB = {
+  version: '0.1.0',
+  layout: 'homepage',
+  page: {
+    title: 'Home',
+  },
+  content: [
+    {
+      type: 'hero',
+      variant: 'gradient',
+      alignment: 'left',
+      backgroundColor: 'black',
+      title: 'Ministry of Trade and Industry',
+      subtitle:
+        'A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity',
+      buttonLabel: 'Main CTA',
+      buttonUrl: '/',
+      secondaryButtonLabel: 'Sub CTA',
+      secondaryButtonUrl: '/',
+      backgroundUrl: 'https://ohno.isomer.gov.sg/images/hero-banner.png',
+    },
+    {
+      type: 'infobar',
+      title: 'This is an infobar',
+      description: 'This is the description that goes into the Infobar section',
+    },
+    {
+      type: 'infopic',
+      title: 'This is an infopic',
+      description: 'This is the description for the infopic component',
+      imageSrc: 'https://placehold.co/600x400',
+    },
+    {
+      type: 'keystatistics',
+      statistics: [
+        {
+          label: 'Average all nighters pulled in a typical calendar month',
+          value: '3',
+        },
+        {
+          label: 'Growth in tasks assigned Q4 2024 (YoY)',
+          value: '+12.2%',
+        },
+        {
+          label: 'Creative blocks met per single evening',
+          value: '89',
+        },
+        {
+          value: '4.0',
+          label: 'Number of lies in this stat block',
+        },
+      ],
+      variant: 'top',
+      title: 'Irrationality in numbers',
+    },
+  ],
+}
+const NAV_BAR_ITEMS: Navbar['items'] = [
   {
     name: 'Expandable nav item',
     url: '/item-one',
@@ -50,35 +124,70 @@ const NAV_BAR_ITEMS = [
   },
 ]
 
+const FOOTER_ITEMS = [
+  {
+    title: 'About us',
+    url: '/about',
+  },
+  {
+    title: 'Our partners',
+    url: '/partners',
+  },
+  {
+    title: 'Grants and programmes',
+    url: '/grants-and-programmes',
+  },
+  {
+    title: 'Contact us',
+    url: '/contact-us',
+  },
+  {
+    title: 'Something else',
+    url: '/something-else',
+  },
+  {
+    title: 'Resources',
+    url: '/resources',
+  },
+]
+
 async function main() {
-  await db
+  const { id: siteId } = await db
     .insertInto('Site')
     .values({
-      id: '1',
       name: 'Ministry of Trade and Industry',
       config: {
         theme: 'isomer-next',
-        sitemap: {
-          siblingTitles: [],
-          childrenTitles: [],
-          parentTitle: '',
-        },
+        siteName: 'MTI',
+        logoUrl: '',
+        search: undefined,
+        // TODO: Remove siteMap as it is a generated field
+        siteMap: {
+          title: 'Home',
+          permalink: '/',
+          children: [],
+          layout: 'content',
+          summary: 'something',
+          lastModified: '',
+        } satisfies IsomerSitemap,
         isGovernment: true,
-      } satisfies SiteConfig,
+      } satisfies IsomerSiteConfigProps & {
+        siteMap: IsomerGeneratedSiteProps['siteMap']
+      },
     })
-    .execute()
+    .returning('id')
+    .executeTakeFirstOrThrow()
 
   await db
     .insertInto('Footer')
     .values({
-      id: '1',
-      siteId: '1',
+      siteId,
       content: {
-        name: 'A foot',
         contactUsLink: '/contact-us',
         feedbackFormLink: 'https://www.form.gov.sg',
         privacyStatementLink: '/privacy',
         termsOfUseLink: '/terms-of-use',
+        siteNavItems: FOOTER_ITEMS,
       } satisfies Footer,
     })
     .execute()
@@ -86,15 +195,34 @@ async function main() {
   await db
     .insertInto('Navbar')
     .values({
-      id: '1',
-      siteId: '1',
-      content: {
-        name: 'navi',
-        url: 'www.isomer.gov.sg',
-        items: NAV_BAR_ITEMS,
-      } satisfies Navbar,
+      siteId,
+      content: { items: NAV_BAR_ITEMS } satisfies Navbar,
     })
     .execute()
+
+  const { id: blobId } = await db
+    .insertInto('Blob')
+    .values({ content: PAGE_BLOB })
+    .returning('id')
+    .executeTakeFirstOrThrow()
+
+  await db
+    .insertInto('Resource')
+    .values({ blobId, name: 'Home', siteId })
+    .executeTakeFirstOrThrow()
+
+  await Promise.all(
+    ISOMER_ADMINS.map((name) => {
+      return db
+        .insertInto('User')
+        .values({
+          name,
+          email: `${name}@open.gov.sg`,
+          phone: MOCK_PHONE_NUMBER,
+        })
+        .executeTakeFirstOrThrow()
+    }),
+  )
 }
 
 main()

@@ -2,8 +2,7 @@ pull_request_rules:
   - name: Approve and merge non-major version dependabot upgrades
     conditions:
       - author~=^dependabot\[bot\]$
-      - check-success~=install
-      - check-success~=build
+      - check-success~=tests
       - -dependabot-update-type = version-update:semver-major
     actions:
       review:
@@ -14,8 +13,7 @@ pull_request_rules:
   - name: Approve and merge Snyk.io upgrades
     conditions:
       - author=isomeradmin
-      - check-success~=install
-      - check-success~=build
+      - check-success~=tests
       - title~=^\[Snyk\]
       - base = main
     actions:

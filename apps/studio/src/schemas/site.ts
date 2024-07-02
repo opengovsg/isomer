@@ -1,5 +1,5 @@
 import { z } from 'zod'
 
 export const getConfigSchema = z.object({
-  id: z.string().min(1),
+  id: z.number().min(1),
 })

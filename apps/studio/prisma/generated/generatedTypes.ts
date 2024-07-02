@@ -1,4 +1,4 @@
-import type { ColumnType } from "kysely"
+import type { ColumnType, GeneratedAlways } from "kysely"
 export type Generated<T> =
   T extends ColumnType<infer S, infer I, infer U>
     ? ColumnType<S, I | undefined, U>
@@ -8,43 +8,43 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>
 import type { RoleType } from "./generatedEnums"
 
 export type Blob = {
-  id: string
+  id: GeneratedAlways<number>
   content: unknown
 }
 export type Footer = {
-  id: string
-  siteId: string
+  id: GeneratedAlways<number>
+  siteId: number
   content: unknown
 }
 export type Navbar = {
-  id: string
-  siteId: string
+  id: GeneratedAlways<number>
+  siteId: number
   content: unknown
 }
 export type Permission = {
-  id: string
-  resourceId: string
-  userId: string
+  id: GeneratedAlways<number>
+  resourceId: number
+  userId: number
   role: RoleType
 }
 export type Resource = {
-  id: string
+  id: GeneratedAlways<number>
   name: string
-  siteId: string
-  parentId: string | null
-  blobId: string | null
+  siteId: number
+  parentId: number | null
+  blobId: number | null
 }
 export type Site = {
-  id: string
+  id: GeneratedAlways<number>
   name: string
   config: unknown
 }
 export type SiteMember = {
-  userId: string
-  siteId: string
+  userId: number
+  siteId: number
 }
 export type User = {
-  id: string
+  id: GeneratedAlways<number>
   name: string
   email: string
   phone: string

@@ -1,17 +1,17 @@
-export interface NavbarItem {
-  name: string
-  url: string
-  description?: string
-}
+import {
+  type IsomerPageSchema,
+  type IsomerSiteProps,
+} from '@opengovsg/isomer-components'
+import { type Resource } from 'prisma/generated/generatedTypes'
+import { type SetRequired } from 'type-fest'
 
-export interface Navbar extends Omit<NavbarItem, 'description'> {
-  items: NavbarItem[]
-}
+export type PageContent = Omit<
+  IsomerPageSchema,
+  'layout' | 'LinkComponent' | 'ScriptComponent'
+>
 
-export interface Footer {
-  name: string
-  contactUsLink?: string
-  feedbackFormLink?: string
-  privacyStatementLink?: string
-  termsOfUseLink?: string
-}
+export type Page = SetRequired<Resource, 'blobId'>
+
+export type Navbar = { items: IsomerSiteProps['navBarItems'] }
+
+export type Footer = IsomerSiteProps['footerItems']

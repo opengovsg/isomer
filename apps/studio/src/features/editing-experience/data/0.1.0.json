@@ -32,7 +32,7 @@
     }
   ],
   "definitions": {
-    "content-components": {
+    "contentComponents": {
       "type": "array",
       "minItems": 1,
       "items": {
@@ -51,6 +51,9 @@
           },
           {
             "$ref": "#/components/complex/iframe"
+          },
+          {
+            "$ref": "#/components/complex/image"
           },
           {
             "$ref": "#/components/complex/infobar"
@@ -74,10 +77,7 @@
             "$ref": "#/components/native/heading"
           },
           {
-            "$ref": "#/components/native/image"
-          },
-          {
-            "$ref": "#/components/native/orderedlist"
+            "$ref": "#/components/native/orderedList"
           },
           {
             "$ref": "#/components/native/paragraph"
@@ -86,12 +86,12 @@
             "$ref": "#/components/native/table"
           },
           {
-            "$ref": "#/components/native/unorderedlist"
+            "$ref": "#/components/native/unorderedList"
           }
         ]
       }
     },
-    "page-metadata": {
+    "pageMetadata": {
       "type": "object",
       "required": ["title"],
       "properties": {
@@ -125,14 +125,14 @@
         "page": {
           "allOf": [
             {
-              "$ref": "#/definitions/page-metadata"
+              "$ref": "#/definitions/pageMetadata"
             }
           ]
         },
         "content": {
           "type": "array",
           "title": "Page content",
-          "$ref": "#/definitions/content-components"
+          "$ref": "#/definitions/contentComponents"
         }
       }
     },
@@ -149,14 +149,14 @@
         "page": {
           "allOf": [
             {
-              "$ref": "#/definitions/page-metadata"
+              "$ref": "#/definitions/pageMetadata"
             },
             {
               "type": "object",
               "required": ["contentPageHeader"],
               "properties": {
                 "contentPageHeader": {
-                  "$ref": "#/components/internal/contentpageheader"
+                  "$ref": "#/components/internal/contentPageHeader"
                 }
               }
             }
@@ -165,7 +165,7 @@
         "content": {
           "type": "array",
           "title": "Page content",
-          "$ref": "#/definitions/content-components"
+          "$ref": "#/definitions/contentComponents"
         }
       }
     },
@@ -182,7 +182,7 @@
         "page": {
           "allOf": [
             {
-              "$ref": "#/definitions/page-metadata"
+              "$ref": "#/definitions/pageMetadata"
             },
             {
               "type": "object",
@@ -232,7 +232,7 @@
         "page": {
           "allOf": [
             {
-              "$ref": "#/definitions/page-metadata"
+              "$ref": "#/definitions/pageMetadata"
             },
             {
               "type": "object",
@@ -248,10 +248,10 @@
                   "title": "Date of the article"
                 },
                 "image": {
-                  "$ref": "#/components/internal/image-collection-card"
+                  "$ref": "#/components/internal/imageCollectionCard"
                 },
                 "articlePageHeader": {
-                  "$ref": "#/components/internal/articlepageheader"
+                  "$ref": "#/components/internal/articlePageHeader"
                 }
               }
             }
@@ -260,7 +260,7 @@
         "content": {
           "type": "array",
           "title": "Page content",
-          "$ref": "#/definitions/content-components"
+          "$ref": "#/definitions/contentComponents"
         }
       }
     },
@@ -277,7 +277,7 @@
         "page": {
           "allOf": [
             {
-              "$ref": "#/definitions/page-metadata"
+              "$ref": "#/definitions/pageMetadata"
             },
             {
               "required": ["ref", "category", "date"],
@@ -297,7 +297,7 @@
                   "title": "Date of the file item"
                 },
                 "image": {
-                  "$ref": "#/components/internal/image-collection-card"
+                  "$ref": "#/components/internal/imageCollectionCard"
                 }
               }
             }
@@ -329,7 +329,7 @@
         "page": {
           "allOf": [
             {
-              "$ref": "#/definitions/page-metadata"
+              "$ref": "#/definitions/pageMetadata"
             },
             {
               "required": ["ref", "category", "date"],
@@ -349,7 +349,7 @@
                   "title": "Date of the link item"
                 },
                 "image": {
-                  "$ref": "#/components/internal/image-collection-card"
+                  "$ref": "#/components/internal/imageCollectionCard"
                 }
               }
             }
@@ -395,16 +395,16 @@
             "items": {
               "anyOf": [
                 {
+                  "$ref": "#/components/complex/image"
+                },
+                {
                   "$ref": "#/components/native/divider"
                 },
                 {
                   "$ref": "#/components/native/heading"
                 },
                 {
-                  "$ref": "#/components/native/image"
-                },
-                {
-                  "$ref": "#/components/native/orderedlist"
+                  "$ref": "#/components/native/orderedList"
                 },
                 {
                   "$ref": "#/components/native/paragraph"
@@ -413,7 +413,7 @@
                   "$ref": "#/components/native/table"
                 },
                 {
-                  "$ref": "#/components/native/unorderedlist"
+                  "$ref": "#/components/native/unorderedList"
                 }
               ]
             }
@@ -485,7 +485,6 @@
             "type": "string",
             "title": "Callout variant",
             "description": "The variant of the callout to use",
-            "format": "radio",
             "enum": ["info", "success", "warning", "critical"]
           },
           "content": {
@@ -497,16 +496,16 @@
             "items": {
               "anyOf": [
                 {
+                  "$ref": "#/components/complex/image"
+                },
+                {
                   "$ref": "#/components/native/divider"
                 },
                 {
                   "$ref": "#/components/native/heading"
                 },
                 {
-                  "$ref": "#/components/native/image"
-                },
-                {
-                  "$ref": "#/components/native/orderedlist"
+                  "$ref": "#/components/native/orderedList"
                 },
                 {
                   "$ref": "#/components/native/paragraph"
@@ -515,7 +514,7 @@
                   "$ref": "#/components/native/table"
                 },
                 {
-                  "$ref": "#/components/native/unorderedlist"
+                  "$ref": "#/components/native/unorderedList"
                 }
               ]
             }
@@ -536,28 +535,28 @@
         },
         "oneOf": [
           {
-            "$ref": "#/components/internal/hero-side"
+            "$ref": "#/components/internal/heroSide"
           },
           {
-            "$ref": "#/components/internal/hero-image"
+            "$ref": "#/components/internal/heroImage"
           },
           {
-            "$ref": "#/components/internal/hero-floating"
+            "$ref": "#/components/internal/heroFloating"
           },
           {
-            "$ref": "#/components/internal/hero-center"
+            "$ref": "#/components/internal/heroCenter"
           },
           {
-            "$ref": "#/components/internal/hero-gradient"
+            "$ref": "#/components/internal/heroGradient"
           },
           {
-            "$ref": "#/components/internal/hero-split"
+            "$ref": "#/components/internal/heroSplit"
           },
           {
-            "$ref": "#/components/internal/hero-copyled"
+            "$ref": "#/components/internal/heroCopyled"
           },
           {
-            "$ref": "#/components/internal/hero-floatingimage"
+            "$ref": "#/components/internal/heroFloatingImage"
           }
         ]
       },
@@ -581,6 +580,40 @@
             "type": "string",
             "title": "Iframe content",
             "description": "The full iframe embed code to display, should only contain the <iframe> tag"
+          }
+        }
+      },
+      "image": {
+        "type": "object",
+        "title": "Image component",
+        "required": ["type", "src", "alt"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["image"],
+            "default": "image"
+          },
+          "src": {
+            "type": "string",
+            "title": "Image URL",
+            "description": "The URL to the image to display"
+          },
+          "alt": {
+            "type": "string",
+            "title": "Image alt text",
+            "description": "The alt text for the image"
+          },
+          "width": {
+            "type": "integer",
+            "title": "Image width",
+            "description": "The width of the image",
+            "exclusiveMinimum": 0,
+            "maximum": 100
+          },
+          "href": {
+            "type": "string",
+            "title": "URL Link",
+            "description": "The URL to link the image to"
           }
         }
       },
@@ -645,7 +678,8 @@
             "type": "string",
             "title": "Infocards variant",
             "description": "The variant of the Infocards component to use",
-            "enum": ["side", "top"]
+            "enum": ["side", "top"],
+            "format": "radio"
           },
           "title": {
             "type": "string",
@@ -880,7 +914,7 @@
       }
     },
     "internal": {
-      "articlepageheader": {
+      "articlePageHeader": {
         "type": "object",
         "title": "Article page header",
         "description": "The article page header is used to display the title, summary, breadcrumbs, category and date of an article page.",
@@ -896,7 +930,7 @@
           }
         }
       },
-      "contentpageheader": {
+      "contentPageHeader": {
         "type": "object",
         "title": "Content page header",
         "description": "The content page header is used to display the title, summary, and breadcrumbs of a content page.",
@@ -919,7 +953,20 @@
           }
         }
       },
-      "hero-side": {
+      "hardBreak": {
+        "type": "object",
+        "title": "Line break component",
+        "description": "A line break that forces a new line",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["hardBreak"],
+            "default": "hardBreak"
+          }
+        }
+      },
+      "heroSide": {
         "type": "object",
         "title": "Hero side variant",
         "required": ["variant", "title", "backgroundUrl"],
@@ -978,7 +1025,7 @@
             "enum": ["sm", "md"]
           },
           "dropdown": {
-            "$ref": "#/components/internal/hero-dropdown"
+            "$ref": "#/components/internal/heroDropdown"
           },
           "backgroundUrl": {
             "type": "string",
@@ -986,11 +1033,11 @@
             "description": "The URL to the background image"
           },
           "keyHighlights": {
-            "$ref": "#/components/internal/hero-key-highlights"
+            "$ref": "#/components/internal/heroKeyHighlights"
           }
         }
       },
-      "hero-image": {
+      "heroImage": {
         "type": "object",
         "title": "Hero image variant",
         "required": ["image", "backgroundUrl"],
@@ -1006,14 +1053,14 @@
             "description": "The URL to the background image"
           },
           "keyHighlights": {
-            "$ref": "#/components/internal/hero-key-highlights"
+            "$ref": "#/components/internal/heroKeyHighlights"
           },
           "dropdown": {
-            "$ref": "#/components/internal/hero-dropdown"
+            "$ref": "#/components/internal/heroDropdown"
           }
         }
       },
-      "hero-floating": {
+      "heroFloating": {
         "type": "object",
         "title": "Hero floating variant",
         "required": ["variant", "title", "backgroundUrl"],
@@ -1072,7 +1119,7 @@
             "enum": ["sm", "md"]
           },
           "dropdown": {
-            "$ref": "#/components/internal/hero-dropdown"
+            "$ref": "#/components/internal/heroDropdown"
           },
           "backgroundUrl": {
             "type": "string",
@@ -1080,11 +1127,11 @@
             "description": "The URL to the background image"
           },
           "keyHighlights": {
-            "$ref": "#/components/internal/hero-key-highlights"
+            "$ref": "#/components/internal/heroKeyHighlights"
           }
         }
       },
-      "hero-center": {
+      "heroCenter": {
         "type": "object",
         "title": "Hero center variant",
         "required": ["variant", "title", "backgroundUrl"],
@@ -1130,14 +1177,14 @@
             "description": "The URL to the background image"
           },
           "keyHighlights": {
-            "$ref": "#/components/internal/hero-key-highlights"
+            "$ref": "#/components/internal/heroKeyHighlights"
           },
           "dropdown": {
-            "$ref": "#/components/internal/hero-dropdown"
+            "$ref": "#/components/internal/heroDropdown"
           }
         }
       },
-      "hero-gradient": {
+      "heroGradient": {
         "type": "object",
         "title": "Hero gradient variant",
         "required": ["variant", "title", "backgroundUrl"],
@@ -1190,7 +1237,7 @@
           }
         }
       },
-      "hero-split": {
+      "heroSplit": {
         "type": "object",
         "title": "Hero split variant",
         "required": ["variant", "title", "backgroundUrl"],
@@ -1249,7 +1296,7 @@
           }
         }
       },
-      "hero-copyled": {
+      "heroCopyled": {
         "type": "object",
         "title": "Hero copy-led variant",
         "required": ["variant", "title"],
@@ -1296,7 +1343,7 @@
           }
         }
       },
-      "hero-floatingimage": {
+      "heroFloatingImage": {
         "type": "object",
         "title": "Hero floating image variant",
         "required": ["variant", "title", "backgroundUrl"],
@@ -1343,7 +1390,7 @@
           }
         }
       },
-      "hero-dropdown": {
+      "heroDropdown": {
         "type": "object",
         "title": "Hero dropdown component",
         "required": ["options"],
@@ -1375,7 +1422,7 @@
           }
         }
       },
-      "hero-key-highlights": {
+      "heroKeyHighlights": {
         "type": "array",
         "title": "Hero key highlights component",
         "required": ["title", "url"],
@@ -1402,7 +1449,7 @@
           }
         }
       },
-      "image-collection-card": {
+      "imageCollectionCard": {
         "type": "object",
         "title": "Image for collection card",
         "description": "An optional image to include in the collection card.",
@@ -1458,40 +1505,6 @@
           }
         }
       },
-      "image": {
-        "type": "object",
-        "title": "Image component",
-        "required": ["type", "src", "alt"],
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": ["image"],
-            "default": "image"
-          },
-          "src": {
-            "type": "string",
-            "title": "Image URL",
-            "description": "The URL to the image to display"
-          },
-          "alt": {
-            "type": "string",
-            "title": "Image alt text",
-            "description": "The alt text for the image"
-          },
-          "width": {
-            "type": "number",
-            "title": "Image width",
-            "description": "The width of the image",
-            "exclusiveMinimum": 0,
-            "maximum": 100
-          },
-          "href": {
-            "type": "string",
-            "title": "URL Link",
-            "description": "The URL to link the image to"
-          }
-        }
-      },
       "listItem": {
         "type": "object",
         "title": "List item component",
@@ -1512,15 +1525,15 @@
           }
         }
       },
-      "orderedlist": {
+      "orderedList": {
         "type": "object",
         "title": "Ordered list component",
         "required": ["type", "content"],
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["orderedlist"],
-            "default": "orderedlist"
+            "enum": ["orderedList"],
+            "default": "orderedList"
           },
           "start": {
             "type": "integer",
@@ -1537,10 +1550,10 @@
                   "$ref": "#/components/native/listItem"
                 },
                 {
-                  "$ref": "#/components/native/orderedlist"
+                  "$ref": "#/components/native/orderedList"
                 },
                 {
-                  "$ref": "#/components/native/unorderedlist"
+                  "$ref": "#/components/native/unorderedList"
                 }
               ]
             }
@@ -1562,7 +1575,14 @@
             "title": "Paragraph content",
             "description": "The content of the paragraph",
             "items": {
-              "$ref": "#/components/native/text"
+              "anyOf": [
+                {
+                  "$ref": "#/components/internal/hardBreak"
+                },
+                {
+                  "$ref": "#/components/native/text"
+                }
+              ]
             }
           }
         }
@@ -1602,7 +1622,7 @@
                     "title": "Table header cells",
                     "minItems": 1,
                     "items": {
-                      "$ref": "#/components/native/table-header-cell"
+                      "$ref": "#/components/native/tableHeaderCell"
                     }
                   }
                 }
@@ -1625,7 +1645,7 @@
                       "title": "Table header cells",
                       "minItems": 1,
                       "items": {
-                        "$ref": "#/components/native/table-header-cell"
+                        "$ref": "#/components/native/tableHeaderCell"
                       }
                     }
                   }
@@ -1645,7 +1665,7 @@
                       "title": "Table cells",
                       "minItems": 1,
                       "items": {
-                        "$ref": "#/components/native/table-cell"
+                        "$ref": "#/components/native/tableCell"
                       }
                     }
                   }
@@ -1655,7 +1675,7 @@
           }
         }
       },
-      "table-cell": {
+      "tableCell": {
         "type": "object",
         "title": "Table cell",
         "required": ["type", "content"],
@@ -1673,19 +1693,19 @@
             "items": {
               "anyOf": [
                 {
-                  "$ref": "#/components/native/divider"
+                  "$ref": "#/components/complex/image"
                 },
                 {
-                  "$ref": "#/components/native/image"
+                  "$ref": "#/components/native/divider"
                 },
                 {
                   "$ref": "#/components/native/paragraph"
                 },
                 {
-                  "$ref": "#/components/native/orderedlist"
+                  "$ref": "#/components/native/orderedList"
                 },
                 {
-                  "$ref": "#/components/native/unorderedlist"
+                  "$ref": "#/components/native/unorderedList"
                 }
               ]
             }
@@ -1704,7 +1724,7 @@
           }
         }
       },
-      "table-header-cell": {
+      "tableHeaderCell": {
         "type": "object",
         "title": "Table header cell",
         "required": ["type", "content"],
@@ -1762,15 +1782,15 @@
           }
         }
       },
-      "unorderedlist": {
+      "unorderedList": {
         "type": "object",
         "title": "Unordered list component",
         "required": ["type", "content"],
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["unorderedlist"],
-            "default": "unorderedlist"
+            "enum": ["unorderedList"],
+            "default": "unorderedList"
           },
           "content": {
             "type": "array",
@@ -1782,10 +1802,10 @@
                   "$ref": "#/components/native/listItem"
                 },
                 {
-                  "$ref": "#/components/native/orderedlist"
+                  "$ref": "#/components/native/orderedList"
                 },
                 {
-                  "$ref": "#/components/native/unorderedlist"
+                  "$ref": "#/components/native/unorderedList"
                 }
               ]
             }
