@@ -27,15 +27,7 @@ export interface LayoutSelectionProps {
   folderId: string
 }
 
-type LayoutDataType = {
-  layoutDisplayName: string
-  layoutTypename: string
-  layoutDescription: string
-  imageSource: string
-  previewJson: object
-}
-
-const LAYOUT_DATA: LayoutDataType[] = [
+const LAYOUT_DATA = [
   {
     layoutDisplayName: 'Default',
     layoutTypename: 'content',
@@ -238,7 +230,9 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                 </Text>
               </HStack>
               <Preview
-                schema={selectedLayout.previewJson as PreviewProps['schema']}
+                layout={selectedLayout.previewJson.layout}
+                content={selectedLayout.previewJson.content}
+                page={selectedLayout.previewJson.page}
               />
               <Box position="absolute" top="0" left="0" w="100%" h="100%" />
             </Box>
