@@ -1,8 +1,8 @@
-import { ArticlePageSchema } from "~/engine"
-import { getBreadcrumbFromSiteMap } from "~/utils"
-import { Skeleton } from "../Skeleton"
-import ArticlePageHeader from "../../components/internal/ArticlePageHeader"
-import { renderPageContent } from "../../render"
+import { ArticlePageSchema } from "~/engine";
+import { getBreadcrumbFromSiteMap } from "~/utils";
+import ArticlePageHeader from "../../components/internal/ArticlePageHeader";
+import { renderPageContent } from "../../render";
+import { Skeleton } from "../Skeleton";
 
 const ArticleLayout = ({
   site,
@@ -14,7 +14,7 @@ const ArticleLayout = ({
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
-  )
+  );
 
   return (
     <Skeleton
@@ -40,7 +40,7 @@ const ArticleLayout = ({
         </div>
       </div>
     </Skeleton>
-  )
-}
+  );
+};
 
-export default ArticleLayout
+export default ArticleLayout;

@@ -1,5 +1,5 @@
-import type { CalloutProps } from "~/interfaces"
-import { Prose } from "../../native"
+import type { CalloutProps } from "~/interfaces";
+import { Prose } from "../../native";
 
 const Callout = ({ content, variant }: CalloutProps) => {
   return (
@@ -8,7 +8,7 @@ const Callout = ({ content, variant }: CalloutProps) => {
     >
       <Prose content={content} />
     </div>
-  )
-}
+  );
+};
 
-export default Callout
+export default Callout;

@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import UnorderedList from "./UnorderedList"
-import type { UnorderedListProps } from "~/interfaces"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { UnorderedListProps } from "~/interfaces";
+import UnorderedList from "./UnorderedList";
 
 export default {
   title: "Next/Components/UnorderedList",
@@ -11,7 +12,7 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
 const Template: StoryFn<UnorderedListProps> = (args) => (
@@ -19,9 +20,9 @@ const Template: StoryFn<UnorderedListProps> = (args) => (
     <p>This is a paragraph that is at the base</p>
     <UnorderedList {...args} />
   </>
-)
+);
 
-export const Simple = Template.bind({})
+export const Simple = Template.bind({});
 Simple.args = {
   content: [
     {
@@ -77,9 +78,9 @@ Simple.args = {
       ],
     },
   ],
-}
+};
 
-export const Nested = Template.bind({})
+export const Nested = Template.bind({});
 Nested.args = {
   content: [
     {
@@ -148,9 +149,9 @@ Nested.args = {
       ],
     },
   ],
-}
+};
 
-export const LongParagraphs = Template.bind({})
+export const LongParagraphs = Template.bind({});
 LongParagraphs.args = {
   content: [
     {
@@ -308,4 +309,4 @@ LongParagraphs.args = {
       ],
     },
   ],
-}
+};

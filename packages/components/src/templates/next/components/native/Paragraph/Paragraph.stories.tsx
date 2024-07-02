@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import type { ParagraphProps } from "~/interfaces"
-import Paragraph from "./Paragraph"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { ParagraphProps } from "~/interfaces";
+import Paragraph from "./Paragraph";
 
 export default {
   title: "Next/Components/Paragraph",
@@ -11,12 +12,12 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<ParagraphProps> = (args) => <Paragraph {...args} />
+const Template: StoryFn<ParagraphProps> = (args) => <Paragraph {...args} />;
 
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   content: [
     {
@@ -91,9 +92,9 @@ Default.args = {
       text: " text.",
     },
   ],
-}
+};
 
-export const Simple = Template.bind({})
+export const Simple = Template.bind({});
 Simple.args = {
   content: [
     {
@@ -101,4 +102,4 @@ Simple.args = {
       text: "This is a simple paragraph",
     },
   ],
-}
+};

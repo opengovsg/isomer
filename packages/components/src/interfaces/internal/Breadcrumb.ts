@@ -1,8 +1,8 @@
 export interface BreadcrumbLink {
-  title: string
-  url: string
+  title: string;
+  url: string;
 }
 export interface BreadcrumbProps {
-  links: BreadcrumbLink[]
-  LinkComponent?: any
+  links: BreadcrumbLink[];
+  LinkComponent?: any;
 }

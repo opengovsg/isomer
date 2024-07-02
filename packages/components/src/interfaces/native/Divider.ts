@@ -1,3 +1,3 @@
 export interface DividerProps {
-  type: "divider"
+  type: "divider";
 }

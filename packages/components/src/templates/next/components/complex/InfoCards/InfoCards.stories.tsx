@@ -1,6 +1,7 @@
-import { Meta, StoryFn } from "@storybook/react"
-import InfoCards from "./InfoCards"
-import type { InfoCardsProps } from "~/interfaces"
+import { Meta, StoryFn } from "@storybook/react";
+
+import type { InfoCardsProps } from "~/interfaces";
+import InfoCards from "./InfoCards";
 
 export default {
   title: "Next/Components/InfoCards",
@@ -11,12 +12,12 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<InfoCardsProps> = (args) => <InfoCards {...args} />
+const Template: StoryFn<InfoCardsProps> = (args) => <InfoCards {...args} />;
 
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   sectionIdx: 0,
   title:
@@ -61,9 +62,9 @@ Default.args = {
       url: "https://www.google.com",
     },
   ],
-}
+};
 
-export const GrayBackground = Template.bind({})
+export const GrayBackground = Template.bind({});
 GrayBackground.args = {
   sectionIdx: 1,
   title:
@@ -105,9 +106,9 @@ GrayBackground.args = {
       url: "https://www.google.com",
     },
   ],
-}
+};
 
-export const Side = Template.bind({})
+export const Side = Template.bind({});
 Side.args = {
   sectionIdx: 0,
   title:
@@ -149,4 +150,4 @@ Side.args = {
       url: "https://www.google.com",
     },
   ],
-}
+};

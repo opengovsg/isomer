@@ -1,19 +1,20 @@
-import { FormControl, Stack } from '@chakra-ui/react'
+import { useEffect } from "react";
+import { useRouter } from "next/router";
+import { FormControl, Stack } from "@chakra-ui/react";
 import {
   Button,
-  Input,
   FormErrorMessage,
   FormLabel,
-} from '@opengovsg/design-system-react'
-import { useRouter } from 'next/router'
-import { useEffect } from 'react'
-import { useZodForm } from '~/lib/form'
-import { trpc } from '~/utils/trpc'
-import { emailSignInSchema } from '~/schemas/auth/email/sign-in'
-import { type VfnStepData } from '../SignInContext'
+  Input,
+} from "@opengovsg/design-system-react";
+
+import { useZodForm } from "~/lib/form";
+import { emailSignInSchema } from "~/schemas/auth/email/sign-in";
+import { trpc } from "~/utils/trpc";
+import { type VfnStepData } from "../SignInContext";
 
 interface EmailInputProps {
-  onSuccess: (props: VfnStepData) => void
+  onSuccess: (props: VfnStepData) => void;
 }
 
 export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
@@ -24,24 +25,24 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
     formState: { errors },
   } = useZodForm({
     schema: emailSignInSchema,
-  })
+  });
 
-  const router = useRouter()
+  const router = useRouter();
 
   const loginMutation = trpc.auth.email.login.useMutation({
     onSuccess,
-    onError: (error) => setError('email', { message: error.message }),
-  })
+    onError: (error) => setError("email", { message: error.message }),
+  });
 
   useEffect(() => {
     if (router.query.error) {
-      setError('email', { message: String(router.query.error) })
+      setError("email", { message: String(router.query.error) });
     }
-  }, [router.query.error, setError])
+  }, [router.query.error, setError]);
 
   const handleSignIn = handleSubmit(({ email }) => {
-    return loginMutation.mutate({ email })
-  })
+    return loginMutation.mutate({ email });
+  });
 
   return (
     <form onSubmit={handleSignIn} noValidate>
@@ -58,7 +59,7 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
           <Input
             placeholder="e.g. jane@open.gov.sg"
             autoFocus
-            {...register('email')}
+            {...register("email")}
           />
           <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
         </FormControl>
@@ -72,5 +73,5 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
         </Button>
       </Stack>
     </form>
-  )
-}
+  );
+};

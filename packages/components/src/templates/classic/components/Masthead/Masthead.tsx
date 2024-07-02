@@ -1,11 +1,12 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import type { MastheadProps } from "~/interfaces"
+import { useState } from "react";
+
+import type { MastheadProps } from "~/interfaces";
 
 export const Masthead = ({ isStaging }: MastheadProps) => {
   const [isMastheadContentVisible, setIsMastheadContentVisible] =
-    useState(false)
+    useState(false);
 
   return (
     <div
@@ -159,7 +160,7 @@ export const Masthead = ({ isStaging }: MastheadProps) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Masthead
+export default Masthead;

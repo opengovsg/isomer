@@ -1,8 +1,8 @@
-@use 'sass:meta';
+@use "sass:meta";
 
-@import '../isomer-template/theme/breakpoints';
-@import '../isomer-template/theme/colors';
-@import '../isomer-template/components/table';
+@import "../isomer-template/theme/breakpoints";
+@import "../isomer-template/theme/colors";
+@import "../isomer-template/components/table";
 
 .preview-styles {
   // NOTE: These css variables all come from sgds.

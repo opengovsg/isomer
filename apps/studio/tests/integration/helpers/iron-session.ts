@@ -1,94 +1,93 @@
-import { type User } from '@prisma/client'
-import { type NextApiResponse, type NextApiRequest } from 'next'
-import {
-  createMocks,
-  type RequestOptions,
-  type ResponseOptions,
-} from 'node-mocks-http'
-import { type Session } from '~/lib/types/session'
-import { createContextInner, type Context } from '~/server/context'
-import { auth } from './auth'
+import type { RequestOptions, ResponseOptions } from "node-mocks-http";
+import { type NextApiRequest, type NextApiResponse } from "next";
+import { type User } from "@prisma/client";
+import { createMocks } from "node-mocks-http";
+
+import type { Context } from "~/server/context";
+import { type Session } from "~/lib/types/session";
+import { createContextInner } from "~/server/context";
+import { auth } from "./auth";
 
 class MockIronStore {
-  private static instance: MockIronStore
+  private static instance: MockIronStore;
 
-  private saved: { [key: string]: string | object | number }
+  private saved: { [key: string]: string | object | number };
 
-  private unsaved: { [key: string]: string | object | number }
+  private unsaved: { [key: string]: string | object | number };
 
   private constructor() {
-    this.saved = {}
-    this.unsaved = {}
+    this.saved = {};
+    this.unsaved = {};
   }
 
   static getOrCreateStore(): MockIronStore {
     if (!MockIronStore.instance) {
-      MockIronStore.instance = new MockIronStore()
+      MockIronStore.instance = new MockIronStore();
     }
-    return MockIronStore.instance
+    return MockIronStore.instance;
   }
 
   get(key: string) {
-    return this.unsaved[key] || undefined
+    return this.unsaved[key] || undefined;
   }
 
   set(key: string, val: string | object | number) {
-    this.unsaved[key] = val
+    this.unsaved[key] = val;
   }
 
   unset(key: string) {
-    delete this.unsaved[key]
+    delete this.unsaved[key];
   }
 
   seal() {
-    this.saved = { ...this.unsaved }
+    this.saved = { ...this.unsaved };
   }
 
   clear() {
-    this.unsaved = {}
+    this.unsaved = {};
   }
 }
 
 export const createMockRequest = async (
   session: Session,
-  reqOptions: RequestOptions = { method: 'GET' },
+  reqOptions: RequestOptions = { method: "GET" },
   resOptions?: ResponseOptions,
 ): Promise<Context> => {
-  const innerContext = await createContextInner({ session })
+  const innerContext = await createContextInner({ session });
 
-  const { req, res } = createMocks(reqOptions, resOptions)
+  const { req, res } = createMocks(reqOptions, resOptions);
 
   return {
     ...innerContext,
     req: req as unknown as NextApiRequest,
     res: res as unknown as NextApiResponse,
-  }
-}
+  };
+};
 
 export const applySession = () => {
-  const store = MockIronStore.getOrCreateStore()
+  const store = MockIronStore.getOrCreateStore();
 
   const session = {
     set: store.set.bind(store),
     get: store.get.bind(store),
     unset: store.unset,
     async save() {
-      store.seal()
+      store.seal();
     },
     destroy() {
-      store.clear()
+      store.clear();
     },
-  } as unknown as Session
+  } as unknown as Session;
 
-  return session
-}
+  return session;
+};
 
 // NOTE: The argument to this function was changed from
 // `Partial<User>` to `User`
 export const applyAuthedSession = async (user: User) => {
-  const authedUser = await auth(user)
-  const session = applySession()
-  session.userId = authedUser.id
-  await session.save()
-  return session
-}
+  const authedUser = await auth(user);
+  const session = applySession();
+  session.userId = authedUser.id;
+  await session.save();
+  return session;
+};

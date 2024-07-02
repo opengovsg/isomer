@@ -1,34 +1,34 @@
 interface BoldMark {
-  type: "bold"
+  type: "bold";
 }
 
 interface CodeMark {
-  type: "code"
+  type: "code";
 }
 
 interface ItalicMark {
-  type: "italic"
+  type: "italic";
 }
 
 interface LinkMark {
-  type: "link"
-  href: string
+  type: "link";
+  href: string;
 }
 
 interface StrikeMark {
-  type: "strike"
+  type: "strike";
 }
 
 interface SubscriptMark {
-  type: "subscript"
+  type: "subscript";
 }
 
 interface SuperscriptMark {
-  type: "superscript"
+  type: "superscript";
 }
 
 interface UnderlineMark {
-  type: "underline"
+  type: "underline";
 }
 
 export type Marks =
@@ -39,10 +39,10 @@ export type Marks =
   | StrikeMark
   | SubscriptMark
   | SuperscriptMark
-  | UnderlineMark
+  | UnderlineMark;
 
 export interface TextProps {
-  type: "text"
-  marks?: Marks[]
-  text: string
+  type: "text";
+  marks?: Marks[];
+  text: string;
 }

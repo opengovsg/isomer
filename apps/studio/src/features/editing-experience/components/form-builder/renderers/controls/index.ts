@@ -1,19 +1,19 @@
 export {
   default as JsonFormsArrayControl,
   jsonFormsArrayControlTester,
-} from './JsonFormsArrayControl'
+} from "./JsonFormsArrayControl";
 export {
   default as JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
-} from './JsonFormsBooleanControl'
+} from "./JsonFormsBooleanControl";
 export {
   default as JsonFormsDropdownControl,
   jsonFormsDropdownControlTester,
-} from './JsonFormsDropdownControl'
+} from "./JsonFormsDropdownControl";
 export {
   default as JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
-} from './JsonFormsIntegerControl'
+} from "./JsonFormsIntegerControl";
 export {
   default as JsonFormsObjectControl,
   jsonFormsObjectControlTester,
@@ -21,16 +21,16 @@ export {
 export {
   default as JsonFormsOneOfControl,
   jsonFormsOneOfControlTester,
-} from './JsonFormsOneOfControl'
+} from "./JsonFormsOneOfControl";
 export {
   default as JsonFormsProseControl,
   jsonFormsProseControlTester,
-} from './JsonFormsProseControl'
+} from "./JsonFormsProseControl";
 export {
   default as JsonFormsRadioControl,
   jsonFormsRadioControlTester,
-} from './JsonFormsRadioControl'
+} from "./JsonFormsRadioControl";
 export {
   default as JsonFormsTextControl,
   jsonFormsTextControlTester,
-} from './JsonFormsTextControl'
+} from "./JsonFormsTextControl";

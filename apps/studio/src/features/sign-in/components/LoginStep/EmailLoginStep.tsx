@@ -1,11 +1,12 @@
-import { Icon, Stack } from '@chakra-ui/react'
-import { Button } from '@opengovsg/design-system-react'
-import { BiLeftArrowAlt } from 'react-icons/bi'
-import { EmailLoginForm } from '../EmailLogin'
-import { useSignInContext } from '../SignInContext'
+import { Icon, Stack } from "@chakra-ui/react";
+import { Button } from "@opengovsg/design-system-react";
+import { BiLeftArrowAlt } from "react-icons/bi";
+
+import { EmailLoginForm } from "../EmailLogin";
+import { useSignInContext } from "../SignInContext";
 
 export const EmailLoginStep = (): JSX.Element => {
-  const { backToInitial } = useSignInContext()
+  const { backToInitial } = useSignInContext();
 
   return (
     <Stack w="100%" gap="1rem">
@@ -19,5 +20,5 @@ export const EmailLoginStep = (): JSX.Element => {
       </Button>
       <EmailLoginForm />
     </Stack>
-  )
-}
+  );
+};

@@ -1,6 +1,6 @@
 interface HomepageSectionWrapperProps {
-  sectionIndex?: number
-  children: JSX.Element | JSX.Element[]
+  sectionIndex?: number;
+  children: JSX.Element | JSX.Element[];
 }
 
 export const HomepageSectionWrapper = ({
@@ -15,5 +15,5 @@ export const HomepageSectionWrapper = ({
     >
       {children}
     </div>
-  )
-}
+  );
+};

@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import type { ArticlePageHeaderProps } from "~/interfaces"
-import ArticlePageHeader from "./ArticlePageHeader"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { ArticlePageHeaderProps } from "~/interfaces";
+import ArticlePageHeader from "./ArticlePageHeader";
 
 export default {
   title: "Next/Internal Components/ArticlePageHeader",
@@ -11,14 +12,14 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
 const Template: StoryFn<ArticlePageHeaderProps> = (args) => (
   <ArticlePageHeader {...args} />
-)
+);
 
-export const SingleSummaryItem = Template.bind({})
+export const SingleSummaryItem = Template.bind({});
 SingleSummaryItem.args = {
   breadcrumb: {
     links: [
@@ -44,9 +45,9 @@ SingleSummaryItem.args = {
   summary: [
     "20 pieces of rhinoceros horns were found in two pieces of transit baggage bound for Laos. The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
   ],
-}
+};
 
-export const MultipleSummaryItems = Template.bind({})
+export const MultipleSummaryItems = Template.bind({});
 MultipleSummaryItems.args = {
   breadcrumb: {
     links: [
@@ -73,4 +74,4 @@ MultipleSummaryItems.args = {
     "20 pieces of rhinoceros horns were found in two pieces of transit baggage bound for Laos.",
     "The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
   ],
-}
+};

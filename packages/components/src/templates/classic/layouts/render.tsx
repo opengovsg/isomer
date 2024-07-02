@@ -1,19 +1,19 @@
-import type { IsomerComponent, IsomerPageSchema } from "~/engine"
+import type { IsomerComponent, IsomerPageSchema } from "~/engine";
 
 interface RenderComponentProps {
-  component: IsomerComponent
-  LinkComponent: any // Next.js link
+  component: IsomerComponent;
+  LinkComponent: any; // Next.js link
 }
 
 export const renderComponent = ({
   component,
   LinkComponent,
 }: RenderComponentProps) => {
-  return <></>
-}
+  return <></>;
+};
 
 const renderLayout = (props: IsomerPageSchema) => {
-  return <></>
-}
+  return <></>;
+};
 
-export default renderLayout
+export default renderLayout;

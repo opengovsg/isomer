@@ -1,5 +1,5 @@
-import type { KeyStatisticsProps } from "~/interfaces"
-import { ComponentContent } from "../../internal/customCssClass"
+import type { KeyStatisticsProps } from "~/interfaces";
+import { ComponentContent } from "../../internal/customCssClass";
 
 const ITEM_WIDTHS: Record<
   KeyStatisticsProps["variant"],
@@ -16,17 +16,17 @@ const ITEM_WIDTHS: Record<
     3: "basis-[calc((100%-5rem)/3)] md:max-w-[calc((100%-2.5rem)/2)]",
     4: "basis-[calc((100%-7.5rem)/4)] md:max-w-[calc((100%-5rem)/3)]",
   },
-}
+};
 
 // This is the maximum number of characters in a key statistic value
 // This is required because we make all columns have the same width. If there is
 // a value that is very large relative to the other values, then there will be
 // a lot of weird white space. 7 characters should fit most use-cases.
 // Example: +$1.23M, +235.2%, $123.4B
-const MAX_CHAR_LIMIT = 7
+const MAX_CHAR_LIMIT = 7;
 
 const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
-  const maxItems = variant === "side" ? 3 : 4
+  const maxItems = variant === "side" ? 3 : 4;
 
   return (
     <div
@@ -56,7 +56,7 @@ const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default KeyStatistics
+export default KeyStatistics;

@@ -88,5 +88,5 @@ export const OgpLogo = (props: React.SVGProps<SVGSVGElement>): JSX.Element => {
         </clipPath>
       </defs>
     </svg>
-  )
-}
+  );
+};

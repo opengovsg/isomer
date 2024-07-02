@@ -3,18 +3,18 @@ import type {
   CollectionCardProps,
   FileCardProps,
   LinkCardProps,
-} from "~/interfaces/internal/CollectionCard"
+} from "~/interfaces/internal/CollectionCard";
 
 const ImageComponent = ({ image }: Pick<CollectionCardProps, "image">) => {
-  if (!image) return null
+  if (!image) return null;
   return (
     <img
       src={image.src}
       alt={image.alt}
       className="max-h-56 w-full rounded-lg object-cover"
     />
-  )
-}
+  );
+};
 
 const ArticleTextComponent = ({
   lastUpdated,
@@ -43,8 +43,8 @@ const ArticleTextComponent = ({
         </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const FileTextComponent = ({
   lastUpdated,
@@ -79,8 +79,8 @@ const FileTextComponent = ({
         })`}</div>
       }
     </div>
-  )
-}
+  );
+};
 
 const ArticleCard = ({
   url,
@@ -103,8 +103,8 @@ const ArticleCard = ({
         <ImageComponent image={image} />
       </div>
     </LinkComponent>
-  )
-}
+  );
+};
 
 const FileCard = ({
   url,
@@ -128,21 +128,21 @@ const FileCard = ({
         <ImageComponent image={image} />
       </div>
     </a>
-  )
-}
+  );
+};
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends any
   ? Omit<T, K>
-  : never
+  : never;
 
 const Card = (props: DistributiveOmit<CollectionCardProps, "type">) => {
   if (props.variant === "file") {
-    return <FileCard {...props} />
+    return <FileCard {...props} />;
   } else if (props.variant === "article" || props.variant === "link") {
-    return <ArticleCard {...props} />
+    return <ArticleCard {...props} />;
   }
 
-  return <></>
-}
+  return <></>;
+};
 
-export default Card
+export default Card;

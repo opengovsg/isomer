@@ -1,12 +1,13 @@
-import { Stack, StackDivider } from '@chakra-ui/react'
-import { useRouter } from 'next/router'
-import Suspense from '~/components/Suspense'
-import { type NextPageWithLayout } from '~/lib/types'
+import { useRouter } from "next/router";
+import { Stack, StackDivider } from "@chakra-ui/react";
+
+import Suspense from "~/components/Suspense";
+import { type NextPageWithLayout } from "~/lib/types";
 
 export function ProfilePostList(): JSX.Element {
-  const { query } = useRouter()
+  const { query } = useRouter();
 
-  return <Stack spacing={0} divider={<StackDivider />} py="1rem" />
+  return <Stack spacing={0} divider={<StackDivider />} py="1rem" />;
 }
 
 const Profile: NextPageWithLayout = () => {
@@ -14,7 +15,7 @@ const Profile: NextPageWithLayout = () => {
     <Suspense fallback={null}>
       <ProfilePostList />
     </Suspense>
-  )
-}
+  );
+};
 
-export default Profile
+export default Profile;

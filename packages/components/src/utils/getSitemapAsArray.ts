@@ -1,18 +1,18 @@
-import type { IsomerSitemap } from "~/engine"
+import type { IsomerSitemap } from "~/engine";
 
 export const getSitemapAsArray = (sitemap: IsomerSitemap) => {
-  let result: IsomerSitemap[] = []
+  let result: IsomerSitemap[] = [];
 
   const traverse = (node: IsomerSitemap) => {
     if (node.permalink) {
-      const { children, ...rest } = node
-      result.push(rest)
+      const { children, ...rest } = node;
+      result.push(rest);
     }
     if (node.children && node.children.length > 0) {
-      node.children.forEach((child) => traverse(child))
+      node.children.forEach((child) => traverse(child));
     }
-  }
+  };
 
-  traverse(sitemap)
-  return result
-}
+  traverse(sitemap);
+  return result;
+};

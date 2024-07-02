@@ -1,31 +1,27 @@
-import { type IsomerComponent } from '@opengovsg/isomer-components'
-import React, {
-  createContext,
-  useState,
-  useContext,
-  useMemo,
-  type PropsWithChildren,
-} from 'react'
-import { type DrawerState } from '~/types/editorDrawer'
+import type { PropsWithChildren } from "react";
+import React, { createContext, useContext, useMemo, useState } from "react";
+import { type IsomerComponent } from "@opengovsg/isomer-components";
+
+import { type DrawerState } from "~/types/editorDrawer";
 
 export interface DrawerContextType {
-  drawerState: DrawerState
-  setDrawerState: (state: DrawerState) => void
-  pageState: IsomerComponent[]
-  setPageState: (state: IsomerComponent[]) => void
-  editorState: IsomerComponent[]
-  setEditorState: (state: IsomerComponent[]) => void
+  drawerState: DrawerState;
+  setDrawerState: (state: DrawerState) => void;
+  pageState: IsomerComponent[];
+  setPageState: (state: IsomerComponent[]) => void;
+  editorState: IsomerComponent[];
+  setEditorState: (state: IsomerComponent[]) => void;
 }
-const EditorDrawerContext = createContext<DrawerContextType | null>(null)
+const EditorDrawerContext = createContext<DrawerContextType | null>(null);
 
 export function EditorDrawerProvider({ children }: PropsWithChildren) {
   const [drawerState, setDrawerState] = useState<DrawerState>({
-    state: 'root',
-  })
+    state: "root",
+  });
   // Current saved state of page
-  const [pageState, setPageState] = useState<IsomerComponent[]>([])
+  const [pageState, setPageState] = useState<IsomerComponent[]>([]);
   // Current edit view of page
-  const [editorState, setEditorState] = useState<IsomerComponent[]>([])
+  const [editorState, setEditorState] = useState<IsomerComponent[]>([]);
 
   const value = useMemo(
     () => ({
@@ -44,23 +40,23 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
       editorState,
       setEditorState,
     ],
-  )
+  );
 
   return (
     <EditorDrawerContext.Provider value={value}>
       {children}
     </EditorDrawerContext.Provider>
-  )
+  );
 }
 
 export const useEditorDrawerContext = () => {
-  const editorDrawerContext = useContext(EditorDrawerContext)
+  const editorDrawerContext = useContext(EditorDrawerContext);
 
   if (!editorDrawerContext) {
     throw new Error(
-      'useEditorDrawer must be used within an EditorDrawerContextProvider',
-    )
+      "useEditorDrawer must be used within an EditorDrawerContextProvider",
+    );
   }
 
-  return editorDrawerContext
-}
+  return editorDrawerContext;
+};

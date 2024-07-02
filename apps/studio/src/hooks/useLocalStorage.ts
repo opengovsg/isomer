@@ -1,7 +1,9 @@
-// Retrieved and modified from https://usehooks-ts.com/react-hook/use-local-storage
+import type { SetStateAction } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { type SetStateAction, useCallback, useEffect, useState } from 'react'
-import { LOCAL_STORAGE_EVENT } from '~/constants/localStorage'
+import { LOCAL_STORAGE_EVENT } from "~/constants/localStorage";
+
+// Retrieved and modified from https://usehooks-ts.com/react-hook/use-local-storage
 
 export const useLocalStorage = <T>(
   key: string,
@@ -11,55 +13,55 @@ export const useLocalStorage = <T>(
   // parse stored json or return initialValue
   const readValue = useCallback(() => {
     // Prevent build error "window is undefined" but keep keep working
-    if (typeof window === 'undefined') {
-      return initialValue
+    if (typeof window === "undefined") {
+      return initialValue;
     }
     try {
-      const item = window.localStorage.getItem(key)
-      return item ? (JSON.parse(item) as T) : initialValue
+      const item = window.localStorage.getItem(key);
+      return item ? (JSON.parse(item) as T) : initialValue;
     } catch (error) {
-      return initialValue
+      return initialValue;
     }
-  }, [initialValue, key])
+  }, [initialValue, key]);
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
-  const [storedValue, setStoredValue] = useState(readValue)
+  const [storedValue, setStoredValue] = useState(readValue);
   // Return a wrapped version of useState's setter function that ...
   // ... persists the new value to localStorage.
   const setValue = (value: SetStateAction<T | undefined>) => {
     try {
       // Allow value to be a function so we have the same API as useState
-      const newValue = value instanceof Function ? value(storedValue) : value
+      const newValue = value instanceof Function ? value(storedValue) : value;
 
       if (newValue === undefined) {
-        window.localStorage.removeItem(key)
+        window.localStorage.removeItem(key);
       } else {
         // Save to local storage
-        window.localStorage.setItem(key, JSON.stringify(newValue))
+        window.localStorage.setItem(key, JSON.stringify(newValue));
         // Save state
       }
-      setStoredValue(newValue)
+      setStoredValue(newValue);
       // We dispatch a custom event so every useLocalStorage hook are notified
-      window.dispatchEvent(new Event(LOCAL_STORAGE_EVENT))
+      window.dispatchEvent(new Event(LOCAL_STORAGE_EVENT));
     } catch {
       // TODO (#2640) Pass in some sort of logger here.
     }
-  }
+  };
   useEffect(() => {
-    setStoredValue(readValue())
-  }, [readValue])
+    setStoredValue(readValue());
+  }, [readValue]);
   useEffect(() => {
     const handleStorageChange = () => {
-      setStoredValue(readValue())
-    }
+      setStoredValue(readValue());
+    };
     // this only works for other documents, not the current one
-    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener("storage", handleStorageChange);
     // this is a custom event, triggered in writeValueToLocalStorage
-    window.addEventListener(LOCAL_STORAGE_EVENT, handleStorageChange)
+    window.addEventListener(LOCAL_STORAGE_EVENT, handleStorageChange);
     return () => {
-      window.removeEventListener('storage', handleStorageChange)
-      window.removeEventListener(LOCAL_STORAGE_EVENT, handleStorageChange)
-    }
-  }, [readValue])
-  return [storedValue, setValue] as const
-}
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener(LOCAL_STORAGE_EVENT, handleStorageChange);
+    };
+  }, [readValue]);
+  return [storedValue, setValue] as const;
+};

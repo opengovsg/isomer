@@ -1,5 +1,5 @@
-import { vi } from 'vitest'
+import { vi } from "vitest";
 
-vi.mock('./src/server/prisma', () => ({
+vi.mock("./src/server/prisma", () => ({
   prisma: vPrisma.client,
-}))
+}));

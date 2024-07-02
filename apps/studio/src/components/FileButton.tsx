@@ -1,74 +1,73 @@
-import {
-  forwardRef,
-  useRef,
-  type ChangeEventHandler,
-  type ComponentPropsWithoutRef,
-  type ForwardedRef,
-  type ReactNode,
-} from 'react'
-import { assignRef, useMergeRefs } from '@chakra-ui/react'
+import type {
+  ChangeEventHandler,
+  ComponentPropsWithoutRef,
+  ForwardedRef,
+  ReactNode,
+} from "react";
+import { forwardRef, useRef } from "react";
+import { assignRef, useMergeRefs } from "@chakra-ui/react";
 
 interface SingleFileButtonProps {
-  value: File | null
+  value: File | null;
 
   /** Determines whether user can pick more than one file */
-  multiple?: false
+  multiple?: false;
 
   /** Called when files are picked */
-  onChange(payload: File | null): void
+  onChange(payload: File | null): void;
 
-  append?: never
+  append?: never;
 }
 
 interface MultipleFileButtonProps {
-  value: File[]
+  value: File[];
 
   /** Determines whether user can pick more than one file */
-  multiple: true
+  multiple: true;
 
   /** Called when files are picked */
-  onChange(payload: File[]): void
+  onChange(payload: File[]): void;
 
   /** Determines whether picked files should be appended to existing value instead of replacing */
-  append?: boolean
+  append?: boolean;
 }
 
 interface CommonFileButtonProps {
   /** Function that receives button props and returns react node that should be rendered */
-  children: (props: { onClick(): void }) => ReactNode
+  children: (props: { onClick(): void }) => ReactNode;
 
   /** File input accept attribute, for example, "image/png,image/jpeg" */
-  accept?: string
+  accept?: string;
 
   /** Input name attribute */
-  name?: string
+  name?: string;
 
   /** Input form attribute */
-  form?: string
+  form?: string;
 
   /** Function that should be called when value changes to null or empty array */
-  resetRef?: ForwardedRef<() => void>
+  resetRef?: ForwardedRef<() => void>;
 
   /** Disables file picker */
-  disabled?: boolean
+  disabled?: boolean;
 
   /**
    * Specifies that, optionally, a new file should be captured,
    * and which device should be used to capture that new media of a type defined
    * by the accept attribute. */
-  capture?: boolean | 'user' | 'environment'
+  capture?: boolean | "user" | "environment";
 
   /** Spreads props to input element used to capture files */
-  inputProps?: ComponentPropsWithoutRef<'input'>
+  inputProps?: ComponentPropsWithoutRef<"input">;
 }
 
 export type FileButtonProps = (
   | SingleFileButtonProps
   | MultipleFileButtonProps
 ) &
-  CommonFileButtonProps
+  CommonFileButtonProps;
 
-type FileButtonComponent = React.FC<FileButtonProps>
+type FileButtonComponent = React.FC<FileButtonProps>;
 
 export const FileButton: FileButtonComponent = forwardRef<
   HTMLInputElement,
@@ -91,46 +90,46 @@ export const FileButton: FileButtonComponent = forwardRef<
     },
     ref,
   ) => {
-    const inputRef = useRef<HTMLInputElement>()
+    const inputRef = useRef<HTMLInputElement>();
 
     const onClick = () => {
-      !disabled && inputRef?.current?.click()
-    }
+      !disabled && inputRef?.current?.click();
+    };
 
     const handleChange: ChangeEventHandler<HTMLInputElement> = (event) => {
       if (multiple) {
-        const nextFiles = Array.from(event.currentTarget.files ?? [])
+        const nextFiles = Array.from(event.currentTarget.files ?? []);
         if (others.append) {
-          onChange([...(value ?? []), ...nextFiles])
+          onChange([...(value ?? []), ...nextFiles]);
         } else {
-          onChange(Array.from(event.currentTarget.files ?? []))
+          onChange(Array.from(event.currentTarget.files ?? []));
         }
       } else {
-        onChange(event.currentTarget.files?.[0] ?? null)
+        onChange(event.currentTarget.files?.[0] ?? null);
       }
-    }
+    };
 
     const reset = () => {
       if (inputRef.current) {
-        inputRef.current.value = ''
+        inputRef.current.value = "";
       }
-    }
+    };
 
-    assignRef(resetRef, reset)
-    const mergedRefs = useMergeRefs(ref, inputRef)
+    assignRef(resetRef, reset);
+    const mergedRefs = useMergeRefs(ref, inputRef);
 
     return (
       <>
         {children({ onClick, ...others })}
 
         <input
-          style={{ display: 'none' }}
+          style={{ display: "none" }}
           type="file"
           accept={accept}
           multiple={multiple}
           // Use onClick event to clear value of target input, each time user clicks on field.
           // This ensures that the onChange event will be triggered for the same file as well.
-          onClick={(event) => ((event.target as HTMLInputElement).value = '')}
+          onClick={(event) => ((event.target as HTMLInputElement).value = "")}
           onChange={handleChange}
           ref={mergedRefs}
           name={name}
@@ -139,8 +138,8 @@ export const FileButton: FileButtonComponent = forwardRef<
           {...inputProps}
         />
       </>
-    )
+    );
   },
-)
+);
 
-FileButton.displayName = 'FileButton'
+FileButton.displayName = "FileButton";

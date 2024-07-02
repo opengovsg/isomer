@@ -2,36 +2,36 @@ import type {
   HeroFloatingProps,
   HeroInfoboxProps,
   HeroSideProps,
-} from "~/interfaces/complex/Hero"
-import { HeroDropdown } from "./HeroDropdown"
+} from "~/interfaces/complex/Hero";
+import { HeroDropdown } from "./HeroDropdown";
 
 type HeroInfoboxVariants =
   | HeroSideProps["variant"]
-  | HeroFloatingProps["variant"]
+  | HeroFloatingProps["variant"];
 
 const BP_BUTTON_CLASSES =
-  "rounded-none box-content appearance-none items-center border border-solid border-[#f0f0f0] shadow-none inline-flex text-base h-9 justify-center px-3 py-[calc(0.375rem-1px)] relative align-top select-none cursor-pointer text-center whitespace-nowrap focus:outline-none active:outline-none disabled:cursor-not-allowed"
+  "rounded-none box-content appearance-none items-center border border-solid border-[#f0f0f0] shadow-none inline-flex text-base h-9 justify-center px-3 py-[calc(0.375rem-1px)] relative align-top select-none cursor-pointer text-center whitespace-nowrap focus:outline-none active:outline-none disabled:cursor-not-allowed";
 
 const bgColor: {
-  [key in NonNullable<HeroInfoboxProps["backgroundColor"]>]: string
+  [key in NonNullable<HeroInfoboxProps["backgroundColor"]>]: string;
 } = {
   black: "bg-canvas-inverse",
   white: "bg-canvas-base",
   gray: "bg-canvas-translucentGrey",
-}
+};
 
 const textColor: {
-  [key in NonNullable<HeroInfoboxProps["backgroundColor"]>]: string
+  [key in NonNullable<HeroInfoboxProps["backgroundColor"]>]: string;
 } = {
   black: "text-content-inverse",
   white: "text-content-default",
   gray: "text-content-inverse",
-}
+};
 
 const width: {
   [key in HeroInfoboxVariants]: {
-    [key in NonNullable<HeroInfoboxProps["size"]>]: string
-  }
+    [key in NonNullable<HeroInfoboxProps["size"]>]: string;
+  };
 } = {
   side: {
     sm: "w-min w-1/3 xl:w-1/2",
@@ -41,12 +41,12 @@ const width: {
     sm: "w-1/3",
     md: "w-1/2",
   },
-}
+};
 
 const padding: {
   [key in HeroInfoboxVariants]: {
-    [key in NonNullable<HeroInfoboxProps["size"]>]: string
-  }
+    [key in NonNullable<HeroInfoboxProps["size"]>]: string;
+  };
 } = {
   side: {
     sm: "p-16",
@@ -56,7 +56,7 @@ const padding: {
     sm: "p-8 xl:p-16",
     md: "p-16",
   },
-}
+};
 
 export const HeroInfoboxDesktop = ({
   variant,
@@ -122,8 +122,8 @@ export const HeroInfoboxDesktop = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export const HeroInfoboxTablet = ({
   title,
@@ -178,8 +178,8 @@ export const HeroInfoboxTablet = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export const HeroInfoboxMobile = ({
   title,
@@ -222,5 +222,5 @@ export const HeroInfoboxMobile = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

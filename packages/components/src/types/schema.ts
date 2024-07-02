@@ -1,4 +1,4 @@
-import type { IsomerComponent } from "./components"
+import type { IsomerComponent } from "./components";
 import type {
   ArticlePageProps,
   CollectionPageProps,
@@ -8,55 +8,55 @@ import type {
   LinkRefProps,
   NotFoundPageProps,
   SearchPageProps,
-} from "./page"
-import type { IsomerSiteProps } from "./site"
+} from "./page";
+import type { IsomerSiteProps } from "./site";
 
 interface BasePageSchema {
-  version: string
-  site: IsomerSiteProps
-  content: IsomerComponent[]
-  LinkComponent?: any // Next.js link
-  ScriptComponent?: any // Next.js script
+  version: string;
+  site: IsomerSiteProps;
+  content: IsomerComponent[];
+  LinkComponent?: any; // Next.js link
+  ScriptComponent?: any; // Next.js script
 }
 
 export interface ArticlePageSchema extends BasePageSchema {
-  layout: "article"
-  page: ArticlePageProps
+  layout: "article";
+  page: ArticlePageProps;
 }
 
 export interface CollectionPageSchema extends BasePageSchema {
-  layout: "collection"
-  page: CollectionPageProps
+  layout: "collection";
+  page: CollectionPageProps;
 }
 
 export interface ContentPageSchema extends BasePageSchema {
-  layout: "content"
-  page: ContentPageProps
+  layout: "content";
+  page: ContentPageProps;
 }
 
 export interface HomePageSchema extends BasePageSchema {
-  layout: "homepage"
-  page: HomePageProps
+  layout: "homepage";
+  page: HomePageProps;
 }
 
 export interface NotFoundPageSchema extends BasePageSchema {
-  layout: "notfound"
-  page: NotFoundPageProps
+  layout: "notfound";
+  page: NotFoundPageProps;
 }
 
 export interface SearchPageSchema extends BasePageSchema {
-  layout: "search"
-  page: SearchPageProps
+  layout: "search";
+  page: SearchPageProps;
 }
 
 export interface FileRefSchema extends BasePageSchema {
-  layout: "file"
-  page: FileRefProps
+  layout: "file";
+  page: FileRefProps;
 }
 
 export interface LinkRefSchema extends BasePageSchema {
-  layout: "link"
-  page: LinkRefProps
+  layout: "link";
+  page: LinkRefProps;
 }
 
 export type IsomerPageSchema =
@@ -67,4 +67,4 @@ export type IsomerPageSchema =
   | NotFoundPageSchema
   | SearchPageSchema
   | FileRefSchema
-  | LinkRefSchema
+  | LinkRefSchema;

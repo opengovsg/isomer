@@ -1,6 +1,7 @@
-import type { StoryFn, Meta } from "@storybook/react"
-import type { HeroProps } from "~/interfaces"
-import Hero from "./Hero"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { HeroProps } from "~/interfaces";
+import Hero from "./Hero";
 
 export default {
   title: "Classic/Components/Hero",
@@ -11,13 +12,13 @@ export default {
       themeOverride: "Isomer Classic",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<HeroProps> = (args) => <Hero {...args} />
+const Template: StoryFn<HeroProps> = (args) => <Hero {...args} />;
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   variant: "center",
   backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
@@ -47,10 +48,10 @@ Default.args = {
       url: "/key-highlight-4",
     },
   ],
-}
+};
 
 // Side layout
-export const SideButton = Template.bind({})
+export const SideButton = Template.bind({});
 SideButton.args = {
   variant: "side",
   backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
@@ -61,9 +62,9 @@ SideButton.args = {
   subtitle: "Free, fast, easy",
   buttonLabel: "Find out if I'm a good fit",
   buttonUrl: "/contact",
-}
+};
 
-export const SideDropdown = Template.bind({})
+export const SideDropdown = Template.bind({});
 SideDropdown.args = {
   variant: "side",
   backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
@@ -89,16 +90,16 @@ SideDropdown.args = {
       },
     ],
   },
-}
+};
 
 // Image only layout
-export const Image = Template.bind({})
+export const Image = Template.bind({});
 Image.args = {
   variant: "image",
   backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
-}
+};
 
-export const ImageWithDropdown = Template.bind({})
+export const ImageWithDropdown = Template.bind({});
 ImageWithDropdown.args = {
   variant: "image",
   backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
@@ -119,10 +120,10 @@ ImageWithDropdown.args = {
       },
     ],
   },
-}
+};
 
 // Floating layout
-export const FloatingButton = Template.bind({})
+export const FloatingButton = Template.bind({});
 FloatingButton.args = {
   variant: "floating",
   backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
@@ -133,9 +134,9 @@ FloatingButton.args = {
   subtitle: "Free, fast, easy",
   buttonLabel: "Find out if I'm a good fit",
   buttonUrl: "/contact",
-}
+};
 
-export const FloatingDropdown = Template.bind({})
+export const FloatingDropdown = Template.bind({});
 FloatingDropdown.args = {
   variant: "floating",
   backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
@@ -161,10 +162,10 @@ FloatingDropdown.args = {
       },
     ],
   },
-}
+};
 
 // Center/Default layout
-export const CenterButton = Template.bind({})
+export const CenterButton = Template.bind({});
 CenterButton.args = {
   variant: "center",
   backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
@@ -172,9 +173,9 @@ CenterButton.args = {
   subtitle: "Free, fast, easy",
   buttonLabel: "Find out if I'm a good fit",
   buttonUrl: "/contact",
-}
+};
 
-export const CenterDropdown = Template.bind({})
+export const CenterDropdown = Template.bind({});
 CenterDropdown.args = {
   variant: "center",
   backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
@@ -197,4 +198,4 @@ CenterDropdown.args = {
       },
     ],
   },
-}
+};

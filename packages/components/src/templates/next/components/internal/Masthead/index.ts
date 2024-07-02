@@ -1,1 +1,1 @@
-export { default } from "./Masthead"
+export { default } from "./Masthead";

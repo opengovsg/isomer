@@ -1,7 +1,8 @@
-import { type NextApiRequest, type NextApiResponse } from 'next'
-import { createOpenApiNextHandler } from 'trpc-openapi'
-import { createContext } from '~/server/context'
-import { appRouter } from '~/server/modules/_app'
+import { type NextApiRequest, type NextApiResponse } from "next";
+import { createOpenApiNextHandler } from "trpc-openapi";
+
+import { createContext } from "~/server/context";
+import { appRouter } from "~/server/modules/_app";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   // Setup CORS
@@ -11,7 +12,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   return createOpenApiNextHandler({
     router: appRouter,
     createContext,
-  })(req, res)
-}
+  })(req, res);
+};
 
-export default handler
+export default handler;

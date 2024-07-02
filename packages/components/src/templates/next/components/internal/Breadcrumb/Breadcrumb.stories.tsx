@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import Breadcrumb from "./Breadcrumb"
-import type { BreadcrumbProps } from "~/interfaces"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { BreadcrumbProps } from "~/interfaces";
+import Breadcrumb from "./Breadcrumb";
 
 export default {
   title: "Next/Internal Components/Breadcrumb",
@@ -11,12 +12,12 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<BreadcrumbProps> = (args) => <Breadcrumb {...args} />
+const Template: StoryFn<BreadcrumbProps> = (args) => <Breadcrumb {...args} />;
 
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   links: [
     {
@@ -32,4 +33,4 @@ Default.args = {
       url: "/irrationality/individuals/pinker-rationality",
     },
   ],
-}
+};

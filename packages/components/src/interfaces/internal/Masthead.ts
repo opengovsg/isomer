@@ -1,4 +1,4 @@
 export interface MastheadProps {
-  isStaging?: boolean
-  LinkComponent?: any
+  isStaging?: boolean;
+  LinkComponent?: any;
 }

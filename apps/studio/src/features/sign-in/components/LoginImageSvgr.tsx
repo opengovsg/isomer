@@ -1,5 +1,5 @@
-import { type SVGProps } from 'react'
-import { chakra } from '@chakra-ui/react'
+import { type SVGProps } from "react";
+import { chakra } from "@chakra-ui/react";
 
 export const LoginImageSvgr = chakra((props: SVGProps<SVGSVGElement>) => (
   <svg
@@ -173,7 +173,7 @@ export const LoginImageSvgr = chakra((props: SVGProps<SVGSVGElement>) => (
     <mask
       id="login-a"
       style={{
-        maskType: 'alpha',
+        maskType: "alpha",
       }}
       maskUnits="userSpaceOnUse"
       x={301}
@@ -335,7 +335,7 @@ export const LoginImageSvgr = chakra((props: SVGProps<SVGSVGElement>) => (
     <mask
       id="login-b"
       style={{
-        maskType: 'alpha',
+        maskType: "alpha",
       }}
       maskUnits="userSpaceOnUse"
       x={16}
@@ -515,7 +515,7 @@ export const LoginImageSvgr = chakra((props: SVGProps<SVGSVGElement>) => (
     <mask
       id="login-c"
       style={{
-        maskType: 'alpha',
+        maskType: "alpha",
       }}
       maskUnits="userSpaceOnUse"
       x={148}
@@ -684,4 +684,4 @@ export const LoginImageSvgr = chakra((props: SVGProps<SVGSVGElement>) => (
       strokeWidth={8.171}
     />
   </svg>
-))
+));

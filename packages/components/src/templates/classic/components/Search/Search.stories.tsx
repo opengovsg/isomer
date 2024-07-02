@@ -1,6 +1,7 @@
-import type { StoryFn, Meta } from "@storybook/react"
-import Search from "./Search"
-import type { SearchProps } from "~/interfaces"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { SearchProps } from "~/interfaces";
+import Search from "./Search";
 
 export default {
   title: "Classic/Components/Search",
@@ -11,13 +12,13 @@ export default {
       themeOverride: "Isomer Classic",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<SearchProps> = (args) => <Search {...args} />
+const Template: StoryFn<SearchProps> = (args) => <Search {...args} />;
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   index: [
     {
@@ -70,4 +71,4 @@ Default.args = {
       url: "/about-isomer/what-is-isomer/isomer-template/",
     },
   ],
-}
+};

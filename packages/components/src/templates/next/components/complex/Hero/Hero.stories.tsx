@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import type { HeroProps } from "~/interfaces"
-import Hero from "./Hero"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { HeroProps } from "~/interfaces";
+import Hero from "./Hero";
 
 export default {
   title: "Next/Components/Hero",
@@ -11,12 +12,12 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<HeroProps> = (args) => <Hero {...args} />
+const Template: StoryFn<HeroProps> = (args) => <Hero {...args} />;
 
-export const Gradient = Template.bind({})
+export const Gradient = Template.bind({});
 Gradient.args = {
   variant: "gradient",
   alignment: "left",
@@ -28,9 +29,9 @@ Gradient.args = {
   buttonUrl: "/",
   secondaryButtonLabel: "Sub CTA",
   secondaryButtonUrl: "/",
-}
+};
 
-export const Split = Template.bind({})
+export const Split = Template.bind({});
 Split.args = {
   variant: "split",
   backgroundColor: "black",
@@ -43,9 +44,9 @@ Split.args = {
   buttonUrl: "/",
   secondaryButtonLabel: "Sub CTA",
   secondaryButtonUrl: "/",
-}
+};
 
-export const Floating = Template.bind({})
+export const Floating = Template.bind({});
 Floating.args = {
   variant: "floating",
   backgroundColor: "black",
@@ -58,9 +59,9 @@ Floating.args = {
   buttonUrl: "/",
   secondaryButtonLabel: "Sub CTA",
   secondaryButtonUrl: "/",
-}
+};
 
-export const CopyLed = Template.bind({})
+export const CopyLed = Template.bind({});
 CopyLed.args = {
   variant: "copyled",
   backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
@@ -71,9 +72,9 @@ CopyLed.args = {
   buttonUrl: "/",
   secondaryButtonLabel: "Sub CTA",
   secondaryButtonUrl: "/",
-}
+};
 
-export const FloatingImage = Template.bind({})
+export const FloatingImage = Template.bind({});
 FloatingImage.args = {
   variant: "floatingimage",
   backgroundUrl: "https://placehold.co/600x400",
@@ -84,4 +85,4 @@ FloatingImage.args = {
   buttonUrl: "/",
   secondaryButtonLabel: "Sub CTA",
   secondaryButtonUrl: "/",
-}
+};

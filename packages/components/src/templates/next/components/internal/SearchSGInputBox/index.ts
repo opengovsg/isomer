@@ -1,1 +1,1 @@
-export { default } from "./SearchSGInputBox"
+export { default } from "./SearchSGInputBox";

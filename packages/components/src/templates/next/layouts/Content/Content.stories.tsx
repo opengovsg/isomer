@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import type { ContentPageSchema } from "~/engine"
-import Content from "./Content"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { ContentPageSchema } from "~/engine";
+import Content from "./Content";
 
 export default {
   title: "Next/Layouts/Content",
@@ -11,12 +12,12 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<ContentPageSchema> = (args) => <Content {...args} />
+const Template: StoryFn<ContentPageSchema> = (args) => <Content {...args} />;
 
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   layout: "content",
   site: {
@@ -965,9 +966,9 @@ Default.args = {
       ],
     },
   ],
-}
+};
 
-export const NoTable = Template.bind({})
+export const NoTable = Template.bind({});
 NoTable.args = {
   layout: "content",
   site: {
@@ -1316,9 +1317,9 @@ NoTable.args = {
       ],
     },
   ],
-}
+};
 
-export const SmallTable = Template.bind({})
+export const SmallTable = Template.bind({});
 SmallTable.args = {
   layout: "content",
   site: {
@@ -1849,4 +1850,4 @@ SmallTable.args = {
       ],
     },
   ],
-}
+};

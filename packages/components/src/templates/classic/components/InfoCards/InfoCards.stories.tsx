@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import InfoCards from "./InfoCards"
-import type { InfoCardsProps } from "~/interfaces"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { InfoCardsProps } from "~/interfaces";
+import InfoCards from "./InfoCards";
 
 export default {
   title: "Classic/Components/InfoCards",
@@ -16,13 +17,13 @@ export default {
       themeOverride: "Isomer Classic",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<InfoCardsProps> = (args) => <InfoCards {...args} />
+const Template: StoryFn<InfoCardsProps> = (args) => <InfoCards {...args} />;
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   sectionIdx: 0,
   cards: [
@@ -41,10 +42,10 @@ Default.args = {
       url: "/",
     },
   ],
-}
+};
 
 // Custom scenario
-export const CustomCard = Template.bind({})
+export const CustomCard = Template.bind({});
 CustomCard.args = {
   sectionIdx: 1,
   cards: [
@@ -56,4 +57,4 @@ CustomCard.args = {
       url: "https://www.google.com",
     },
   ],
-}
+};

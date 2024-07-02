@@ -1,6 +1,7 @@
-import { Meta, StoryFn } from "@storybook/react"
-import InfoCols from "./InfoCols"
-import type { InfoColsProps } from "~/interfaces"
+import { Meta, StoryFn } from "@storybook/react";
+
+import type { InfoColsProps } from "~/interfaces";
+import InfoCols from "./InfoCols";
 
 export default {
   title: "Next/Components/InfoCols",
@@ -11,13 +12,13 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<InfoColsProps> = (args) => <InfoCols {...args} />
+const Template: StoryFn<InfoColsProps> = (args) => <InfoCols {...args} />;
 
 // Setting this as default for now since it's what has been through the most design work
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   sectionIdx: 0,
   title: "MTI Highlights",
@@ -72,9 +73,9 @@ Default.args = {
       icon: "office-building",
     },
   ],
-}
+};
 
-export const GrayBackground = Template.bind({})
+export const GrayBackground = Template.bind({});
 GrayBackground.args = {
   sectionIdx: 1,
   backgroundColor: "gray",
@@ -124,9 +125,9 @@ GrayBackground.args = {
       icon: "bar-chart",
     },
   ],
-}
+};
 
-export const FourInfoBoxes = Template.bind({})
+export const FourInfoBoxes = Template.bind({});
 FourInfoBoxes.args = {
   sectionIdx: 0,
   title: "Highlights",
@@ -161,4 +162,4 @@ FourInfoBoxes.args = {
       icon: "bar-chart",
     },
   ],
-}
+};

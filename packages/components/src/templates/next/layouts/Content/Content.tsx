@@ -1,49 +1,49 @@
-import { ContentPageSchema, IsomerSitemap } from "~/engine"
-import type { SiderailProps } from "~/interfaces"
+import type { SiderailProps } from "~/interfaces";
+import { ContentPageSchema, IsomerSitemap } from "~/engine";
 import {
   getBreadcrumbFromSiteMap,
   getDigestFromText,
   getRandomNumberBetIntervals,
   getTextAsHtml,
-} from "~/utils"
+} from "~/utils";
 import {
   ContentPageHeader,
   Siderail,
   TableOfContents,
-} from "../../components/internal"
-import { renderPageContent } from "../../render"
-import { Skeleton } from "../Skeleton"
+} from "../../components/internal";
+import { renderPageContent } from "../../render";
+import { Skeleton } from "../Skeleton";
 
 const getSiderailFromSiteMap = (
   sitemap: IsomerSitemap,
   permalink: string[],
 ): SiderailProps | null => {
-  let node = sitemap
-  let currentPath = ""
+  let node = sitemap;
+  let currentPath = "";
 
-  let i = 0
+  let i = 0;
   while (i < permalink.length - 1) {
-    currentPath += "/" + permalink[i]
+    currentPath += "/" + permalink[i];
     const nextNode = node.children?.find(
       (node) => node.permalink === currentPath,
-    )
+    );
     if (!nextNode) {
       // TODO: handle this unexpected case where cannot traverse to parent in the sitemap
-      return null
+      return null;
     }
-    node = nextNode
-    i++
+    node = nextNode;
+    i++;
   }
   if (!node.children) {
     // TODO: handle this unexpected case where parent does not contain current page
-    return null
+    return null;
   }
-  const parentTitle = node.title
-  const parentUrl = node.permalink
+  const parentTitle = node.title;
+  const parentUrl = node.permalink;
 
-  const pages = []
+  const pages = [];
   // get all siblings of page
-  const pagePath = "/" + permalink.join("/")
+  const pagePath = "/" + permalink.join("/");
   for (const sibling of node.children) {
     if (sibling.permalink === pagePath) {
       pages.push({
@@ -54,42 +54,42 @@ const getSiderailFromSiteMap = (
           url: child.permalink,
           title: child.title,
         })),
-      })
+      });
     } else {
       pages.push({
         title: sibling.title,
         url: sibling.permalink,
-      })
+      });
     }
   }
   return {
     parentTitle,
     parentUrl,
     pages,
-  }
-}
+  };
+};
 
 const getTableOfContentsFromContent = (
   content: ContentPageSchema["content"],
 ) => {
-  const items = []
+  const items = [];
   for (const block of content) {
     if (block.type === "heading" && block.level === 2) {
       items.push({
         content: getTextAsHtml(block.content),
         anchorLink: "#" + block.id,
-      })
+      });
     }
   }
-  return { items }
-}
+  return { items };
+};
 
 // if block.id is not present for heading level 2, we auto-generate one
 // for use in table of contents anchor links
 const transformContent = (content: ContentPageSchema["content"]) => {
-  const transformedContent: ContentPageSchema["content"] = []
+  const transformedContent: ContentPageSchema["content"] = [];
   for (let i = 0; i < content.length; i++) {
-    const block = content[i]
+    const block = content[i];
     if (
       block.type === "heading" &&
       block.level === 2 &&
@@ -98,15 +98,15 @@ const transformContent = (content: ContentPageSchema["content"]) => {
       // generate a unique hash to auto-generate anchor links
       const anchorId = getDigestFromText(
         `${JSON.stringify(block)}_${getRandomNumberBetIntervals(1, 1000)}`,
-      )
+      );
 
-      transformedContent.push({ ...block, id: anchorId })
+      transformedContent.push({ ...block, id: anchorId });
     } else {
-      transformedContent.push(block)
+      transformedContent.push(block);
     }
   }
-  return transformedContent
-}
+  return transformedContent;
+};
 
 const ContentLayout = ({
   site,
@@ -118,14 +118,14 @@ const ContentLayout = ({
   const sideRail = getSiderailFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
-  )
+  );
   // auto-inject ids for heading level 2 blocks if does not exist
-  const transformedContent = transformContent(content)
-  const tableOfContents = getTableOfContentsFromContent(transformedContent)
+  const transformedContent = transformContent(content);
+  const tableOfContents = getTableOfContentsFromContent(transformedContent);
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
-  )
+  );
   return (
     <Skeleton
       site={site}
@@ -161,7 +161,7 @@ const ContentLayout = ({
         </div>
       </div>
     </Skeleton>
-  )
-}
+  );
+};
 
-export default ContentLayout
+export default ContentLayout;

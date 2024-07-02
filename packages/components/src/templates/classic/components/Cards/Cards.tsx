@@ -1,4 +1,4 @@
-import type { CardsProps } from "~/interfaces"
+import type { CardsProps } from "~/interfaces";
 
 function Cards({ sectionTitle, sectionCaption, cards }: CardsProps) {
   return (
@@ -76,7 +76,7 @@ function Cards({ sectionTitle, sectionCaption, cards }: CardsProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default Cards
+export default Cards;

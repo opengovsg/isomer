@@ -70,5 +70,5 @@ export const IsomerLogo = (
         </clipPath>
       </defs>
     </svg>
-  )
-}
+  );
+};

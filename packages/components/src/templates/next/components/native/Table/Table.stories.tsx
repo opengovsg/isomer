@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import Table from "./Table"
-import type { TableProps } from "~/interfaces"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { TableProps } from "~/interfaces";
+import Table from "./Table";
 
 export default {
   title: "Next/Components/Table",
@@ -11,12 +12,12 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<TableProps> = (args) => <Table {...args} />
+const Template: StoryFn<TableProps> = (args) => <Table {...args} />;
 
-export const Simple = Template.bind({})
+export const Simple = Template.bind({});
 Simple.args = {
   caption: "A table of IIA countries (2024)",
   content: [
@@ -463,9 +464,9 @@ Simple.args = {
       ],
     },
   ],
-}
+};
 
-export const Rowspan = Template.bind({})
+export const Rowspan = Template.bind({});
 Rowspan.args = {
   caption: "A table of IIA countries (2024)",
   content: [
@@ -938,9 +939,9 @@ Rowspan.args = {
       ],
     },
   ],
-}
+};
 
-export const Colspan = Template.bind({})
+export const Colspan = Template.bind({});
 Colspan.args = {
   caption: "A table of IIA countries (2024)",
   content: [
@@ -1442,4 +1443,4 @@ Colspan.args = {
       ],
     },
   ],
-}
+};

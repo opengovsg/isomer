@@ -1,10 +1,10 @@
-import type { IsomerPageSchema } from "~/engine"
+import type { IsomerPageSchema } from "~/engine";
 import {
   Footer,
   Masthead,
   Navbar,
   Notification,
-} from "../../components/internal"
+} from "../../components/internal";
 
 export const Skeleton = ({
   site,
@@ -15,7 +15,7 @@ export const Skeleton = ({
 }: React.PropsWithChildren<
   Pick<IsomerPageSchema, "site" | "page" | "LinkComponent" | "ScriptComponent">
 >) => {
-  const isStaging = site.environment === "staging"
+  const isStaging = site.environment === "staging";
 
   return (
     <>
@@ -43,5 +43,5 @@ export const Skeleton = ({
         {...site.footerItems}
       />
     </>
-  )
-}
+  );
+};

@@ -1,23 +1,22 @@
+import type { StackProps, TabsProps } from "@chakra-ui/react";
 import {
   createStylesContext,
   forwardRef,
   Stack,
-  type StackProps,
-  type TabsProps,
   useMultiStyleConfig,
-} from '@chakra-ui/react'
+} from "@chakra-ui/react";
 
 interface NavigationTabListProps extends StackProps {
-  variant?: TabsProps['variant']
+  variant?: TabsProps["variant"];
 }
 
 export const [NavigationalTabListStylesProvider, useNavigationalTabListStyles] =
-  createStylesContext('NavigationalTabList')
+  createStylesContext("NavigationalTabList");
 
 /** Component to be styled as a tab list, but used for routing instead of conditionally showing tab panels.  */
-export const NavigationTabList = forwardRef<NavigationTabListProps, 'div'>(
+export const NavigationTabList = forwardRef<NavigationTabListProps, "div">(
   ({ onMouseDown, children, variant, ...props }, ref): JSX.Element => {
-    const styles = useMultiStyleConfig('Tabs', { ...props, variant })
+    const styles = useMultiStyleConfig("Tabs", { ...props, variant });
 
     return (
       <NavigationalTabListStylesProvider value={styles}>
@@ -32,6 +31,6 @@ export const NavigationTabList = forwardRef<NavigationTabListProps, 'div'>(
           {children}
         </Stack>
       </NavigationalTabListStylesProvider>
-    )
+    );
   },
-)
+);

@@ -1,5 +1,6 @@
-import { BiSearch } from "react-icons/bi"
-import type { LocalSearchInputBoxProps } from "~/interfaces"
+import { BiSearch } from "react-icons/bi";
+
+import type { LocalSearchInputBoxProps } from "~/interfaces";
 
 const LocalSearchInputBox = ({
   searchUrl,
@@ -17,7 +18,7 @@ const LocalSearchInputBox = ({
         <BiSearch className="mt-0.5 text-2xl" />
       </button>
     </form>
-  )
-}
+  );
+};
 
-export default LocalSearchInputBox
+export default LocalSearchInputBox;

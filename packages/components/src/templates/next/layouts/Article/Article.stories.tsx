@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import type { ArticlePageSchema } from "~/engine"
-import ArticleLayout from "./Article"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { ArticlePageSchema } from "~/engine";
+import ArticleLayout from "./Article";
 
 export default {
   title: "Next/Layouts/Article",
@@ -11,14 +12,14 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
 const Template: StoryFn<ArticlePageSchema> = (args) => (
   <ArticleLayout {...args} />
-)
+);
 
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   layout: "article",
   site: {
@@ -138,4 +139,4 @@ Default.args = {
       ],
     },
   ],
-}
+};

@@ -1,30 +1,29 @@
-import { Fragment } from "react"
-import { Disclosure, Menu, Transition } from "@headlessui/react"
-
-import { BiMenu, BiX, BiSearch } from "react-icons/bi"
+import { Fragment } from "react";
+import { Disclosure, Menu, Transition } from "@headlessui/react";
+import { BiMenu, BiSearch, BiX } from "react-icons/bi";
 
 export type NavbarLink = {
-  type: "single" | "dropdown"
-  name: string
-  eventKey?: string
-  url?: string
-  links?: NavbarLink[]
-}
+  type: "single" | "dropdown";
+  name: string;
+  eventKey?: string;
+  url?: string;
+  links?: NavbarLink[];
+};
 
 function classNames(...classes: any) {
-  return classes.filter(Boolean).join(" ")
+  return classes.filter(Boolean).join(" ");
 }
 
 export interface IsomerNavProps {
-  id?: string
-  logo: { url: string; alt: string }
+  id?: string;
+  logo: { url: string; alt: string };
 
-  links: NavbarLink[]
+  links: NavbarLink[];
   search?: {
-    isEnabled: boolean
-    searchUrl?: string
-  }
-  LinkComponent: any
+    isEnabled: boolean;
+    searchUrl?: string;
+  };
+  LinkComponent: any;
 }
 
 export const IsomerNav = ({
@@ -98,12 +97,12 @@ export const IsomerNav = ({
                                         </LinkComponent>
                                       )}
                                     </Menu.Item>
-                                  )
+                                  );
                                 })}
                               </Menu.Items>
                             </Transition>
                           </Menu>
-                        )
+                        );
                       }
                       return (
                         <LinkComponent
@@ -112,7 +111,7 @@ export const IsomerNav = ({
                         >
                           {link.name}
                         </LinkComponent>
-                      )
+                      );
                     })}
                   </div>
                 </div>
@@ -147,7 +146,7 @@ export const IsomerNav = ({
                       >
                         {link.name}
                       </Disclosure.Button>
-                    )
+                    );
                   }
                   return (
                     <Disclosure.Button
@@ -157,7 +156,7 @@ export const IsomerNav = ({
                     >
                       {link.name}
                     </Disclosure.Button>
-                  )
+                  );
                 })}
               </div>
             </Disclosure.Panel>
@@ -165,7 +164,7 @@ export const IsomerNav = ({
         )}
       </Disclosure>
     </>
-  )
-}
+  );
+};
 
-export default IsomerNav
+export default IsomerNav;

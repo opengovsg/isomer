@@ -1,1 +1,1 @@
-export * from './VersionWrapper'
+export * from "./VersionWrapper";

@@ -1,12 +1,13 @@
-import { Flex, Stack, Text } from '@chakra-ui/react'
-import { Button } from '@opengovsg/design-system-react'
-import Image from 'next/image'
-import { useRouter } from 'next/router'
-import { RestrictedMiniFooter } from '~/components/RestrictedMiniFooter'
+import Image from "next/image";
+import { useRouter } from "next/router";
+import { Flex, Stack, Text } from "@chakra-ui/react";
+import { Button } from "@opengovsg/design-system-react";
+
+import { RestrictedMiniFooter } from "~/components/RestrictedMiniFooter";
 
 // https://nextjs.org/docs/advanced-features/custom-error-page
 const Custom404 = () => {
-  const router = useRouter()
+  const router = useRouter();
 
   return (
     <Flex flexDirection="column" w="100%" h="$100vh">
@@ -18,7 +19,7 @@ const Custom404 = () => {
         px="1rem"
       >
         <Image
-          style={{ maxWidth: '100%' }}
+          style={{ maxWidth: "100%" }}
           aria-hidden
           width="283"
           height="240"
@@ -47,7 +48,7 @@ const Custom404 = () => {
         />
       </Stack>
     </Flex>
-  )
-}
+  );
+};
 
-export default Custom404
+export default Custom404;

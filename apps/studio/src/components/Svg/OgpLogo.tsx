@@ -1,5 +1,5 @@
-import { chakra } from '@chakra-ui/react'
-import { type SVGProps } from 'react'
+import { type SVGProps } from "react";
+import { chakra } from "@chakra-ui/react";
 
 const _OgpLogo = (props: SVGProps<SVGSVGElement>) => (
   <svg
@@ -19,6 +19,6 @@ const _OgpLogo = (props: SVGProps<SVGSVGElement>) => (
       d="m22.6 4.3-1.1 2.1c-.1.2-.1.3-.1.5 0 .1.1.3.2.3 2.8 1.9 4.7 5.1 4.7 8.8 0 3.7-1.9 6.9-4.7 8.8-.1 0-.2.2-.2.3 0 .2 0 .3.1.5l1.1 2.1.2.2c.1 0 .2.1.2.1h.3c.1 0 .1-.1.2-.1 3.8-2.5 6.3-6.9 6.3-11.9s-2.5-9.4-6.3-11.9c-.1 0-.1-.1-.2-.1H23s-.1.1-.2.1l-.2.2"
     />
   </svg>
-)
+);
 
-export const OgpLogo = chakra(_OgpLogo)
+export const OgpLogo = chakra(_OgpLogo);

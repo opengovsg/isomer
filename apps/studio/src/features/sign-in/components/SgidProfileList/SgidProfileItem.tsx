@@ -1,12 +1,12 @@
-import { Stack, Text } from '@chakra-ui/react'
-import { Button } from '@opengovsg/design-system-react'
-import { BiChevronRight } from 'react-icons/bi'
+import { Stack, Text } from "@chakra-ui/react";
+import { Button } from "@opengovsg/design-system-react";
+import { BiChevronRight } from "react-icons/bi";
 
-import { type RouterOutput } from '~/utils/trpc'
+import { type RouterOutput } from "~/utils/trpc";
 
 interface SgidProfileItemProps {
-  profile: RouterOutput['auth']['sgid']['listStoredProfiles'][number]
-  onClick: () => void
+  profile: RouterOutput["auth"]["sgid"]["listStoredProfiles"][number];
+  onClick: () => void;
 }
 
 export const SgidProfileItem = ({ profile, onClick }: SgidProfileItemProps) => {
@@ -25,10 +25,10 @@ export const SgidProfileItem = ({ profile, onClick }: SgidProfileItemProps) => {
           {profile.work_email}
         </Text>
         <Text textStyle="caption-2">
-          {[profile.agency_name, profile.department_name].join(', ')}
+          {[profile.agency_name, profile.department_name].join(", ")}
         </Text>
         <Text textStyle="caption-2">{profile.employment_title}</Text>
       </Stack>
     </Button>
-  )
-}
+  );
+};

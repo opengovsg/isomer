@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react";
 import {
   BiChevronDown,
   BiChevronRight,
@@ -10,9 +10,10 @@ import {
   BiRightArrowAlt,
   BiSearch,
   BiX,
-} from "react-icons/bi"
-import type { NavbarProps } from "~/interfaces"
-import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
+} from "react-icons/bi";
+
+import type { NavbarProps } from "~/interfaces";
+import { LocalSearchInputBox, SearchSGInputBox } from "../../internal";
 
 export const Navbar = ({
   logoUrl,
@@ -22,49 +23,49 @@ export const Navbar = ({
   LinkComponent = "a",
   ScriptComponent = "script",
 }: Omit<NavbarProps, "type">) => {
-  const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
-  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [navbarDesktopHeight, setNavbarDesktopHeight] = useState(0)
-  const [siteHeaderBottomY, setSiteHeaderBottomY] = useState(0)
+  const [openNavItemIdx, setOpenNavItemIdx] = useState(-1);
+  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [navbarDesktopHeight, setNavbarDesktopHeight] = useState(0);
+  const [siteHeaderBottomY, setSiteHeaderBottomY] = useState(0);
 
   // Reference for navigation items bar on desktop
-  const navDesktopRef = useRef<HTMLUListElement>(null)
+  const navDesktopRef = useRef<HTMLUListElement>(null);
 
   // Reference for the site header
-  const siteHeaderRef = useRef<HTMLDivElement>(null)
+  const siteHeaderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onResize = () => {
-      setNavbarDesktopHeight(siteHeaderRef.current?.offsetHeight || 0)
+      setNavbarDesktopHeight(siteHeaderRef.current?.offsetHeight || 0);
       setSiteHeaderBottomY(
         siteHeaderRef.current?.getBoundingClientRect().bottom || 0,
-      )
-    }
+      );
+    };
 
     const handleClickOutside = (event: MouseEvent) => {
       const viewportWidth = Math.max(
         document.documentElement.clientWidth || 0,
         window.innerWidth || 0,
-      )
+      );
 
       if (
         navDesktopRef.current &&
         !navDesktopRef.current.contains(event.target as Node) &&
         viewportWidth >= 1024 // Tailwind's lg breakpoint
       ) {
-        setOpenNavItemIdx(-1)
+        setOpenNavItemIdx(-1);
       }
-    }
+    };
 
-    onResize()
-    window.addEventListener("resize", onResize)
-    document.addEventListener("mousedown", handleClickOutside)
+    onResize();
+    window.addEventListener("resize", onResize);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      window.removeEventListener("resize", onResize)
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      window.removeEventListener("resize", onResize);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <div className="relative flex flex-col">
@@ -99,7 +100,7 @@ export const Navbar = ({
                       {name}
                     </LinkComponent>
                   </li>
-                )
+                );
               }
 
               return (
@@ -111,11 +112,11 @@ export const Navbar = ({
                         : "text-neutral-800"
                     }`}
                     onClick={() => {
-                      setIsSearchOpen(false)
+                      setIsSearchOpen(false);
                       if (openNavItemIdx === idx) {
-                        setOpenNavItemIdx(-1)
+                        setOpenNavItemIdx(-1);
                       } else {
-                        setOpenNavItemIdx(idx)
+                        setOpenNavItemIdx(idx);
                       }
                     }}
                   >
@@ -174,7 +175,7 @@ export const Navbar = ({
                     </div>
                   </div>
                 </li>
-              )
+              );
             })}
           </ul>
         </div>
@@ -210,8 +211,8 @@ export const Navbar = ({
           {isHamburgerOpen ? (
             <button
               onClick={() => {
-                setIsHamburgerOpen(false)
-                setOpenNavItemIdx(-1)
+                setIsHamburgerOpen(false);
+                setOpenNavItemIdx(-1);
               }}
               aria-label="Close navigation menu"
             >
@@ -221,8 +222,8 @@ export const Navbar = ({
           ) : (
             <button
               onClick={() => {
-                setIsHamburgerOpen(true)
-                setIsSearchOpen(false)
+                setIsHamburgerOpen(true);
+                setIsSearchOpen(false);
               }}
               aria-label="Open navigation menu"
               className="ml-5 mt-[3px]"
@@ -273,7 +274,7 @@ export const Navbar = ({
                       {name}
                     </LinkComponent>
                   </li>
-                )
+                );
               }
 
               return (
@@ -288,7 +289,7 @@ export const Navbar = ({
                     </div>
                   </button>
                 </li>
-              )
+              );
             })}
           </ul>
         </div>
@@ -336,7 +337,7 @@ export const Navbar = ({
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

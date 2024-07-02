@@ -1,16 +1,17 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { BiLeftArrowAlt } from "react-icons/bi"
-import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md"
-import type { SiderailProps } from "~/interfaces"
+import { useState } from "react";
+import { BiLeftArrowAlt } from "react-icons/bi";
+import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
+
+import type { SiderailProps } from "~/interfaces";
 
 const SiderailMobile = ({
   parentTitle,
   pages,
   LinkComponent = "a",
 }: Omit<SiderailProps, "type">) => {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false);
   return (
     <div className="relative lg:hidden">
       <button
@@ -62,18 +63,18 @@ const SiderailMobile = ({
                             {title}
                           </LinkComponent>
                         </li>
-                      )
+                      );
                     })}
                   </ul>
                 )}
               </li>
-            )
+            );
           })}
         </ul>
       )}
     </div>
-  )
-}
+  );
+};
 
 const SiderailDesktop = ({
   parentTitle,
@@ -126,17 +127,17 @@ const SiderailDesktop = ({
                           {title}
                         </LinkComponent>
                       </li>
-                    )
+                    );
                   })}
                 </ul>
               )}
             </li>
-          )
+          );
         })}
       </ul>
     </div>
-  )
-}
+  );
+};
 
 export const Siderail = (props: SiderailProps) => {
   return (
@@ -144,7 +145,7 @@ export const Siderail = (props: SiderailProps) => {
       <SiderailMobile {...props} />
       <SiderailDesktop {...props} />
     </>
-  )
-}
+  );
+};
 
-export default Siderail
+export default Siderail;

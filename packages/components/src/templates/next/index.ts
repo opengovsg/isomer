@@ -1,3 +1,3 @@
-export * from "./components"
-export * from "./layouts"
-export * from "./render"
+export * from "./components";
+export * from "./layouts";
+export * from "./render";

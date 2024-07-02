@@ -1,1 +1,1 @@
-export { default } from "./BaseParagraph"
+export { default } from "./BaseParagraph";

@@ -1,6 +1,7 @@
-import type { StoryFn, Meta } from "@storybook/react"
-import Footer from "./Footer"
-import type { FooterProps } from "~/interfaces"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { FooterProps } from "~/interfaces";
+import Footer from "./Footer";
 
 export default {
   title: "Next/Internal Components/Footer",
@@ -11,13 +12,13 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<FooterProps> = (args) => <Footer {...args} />
+const Template: StoryFn<FooterProps> = (args) => <Footer {...args} />;
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   siteName: "Ministry of Trade and Industry",
   isGovernment: true,
@@ -105,9 +106,9 @@ Default.args = {
   privacyStatementLink: "/",
   termsOfUseLink: "/",
   siteMapLink: "/",
-}
+};
 
-export const NonGovernment = Template.bind({})
+export const NonGovernment = Template.bind({});
 NonGovernment.args = {
   siteName: "IsoCon 2024",
   agencyName: "IsoCorp",
@@ -196,4 +197,4 @@ NonGovernment.args = {
   privacyStatementLink: "/",
   termsOfUseLink: "/",
   siteMapLink: "/",
-}
+};

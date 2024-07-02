@@ -1,17 +1,18 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import type { TableProps } from "~/interfaces"
-import BaseParagraph from "../../internal/BaseParagraph"
-import Prose from "../Prose"
+import { useEffect, useRef, useState } from "react";
+
+import type { TableProps } from "~/interfaces";
+import BaseParagraph from "../../internal/BaseParagraph";
+import Prose from "../Prose";
 
 // Determine if the table is larger than the parent container (usually the screen width)
 const getIsTableOverflowing = (tableRef: React.RefObject<HTMLTableElement>) => {
-  const tableRight = tableRef.current?.getBoundingClientRect().right || 0
+  const tableRight = tableRef.current?.getBoundingClientRect().right || 0;
   const parentRight =
-    tableRef.current?.parentElement?.getBoundingClientRect().right || 0
-  return tableRight > parentRight
-}
+    tableRef.current?.parentElement?.getBoundingClientRect().right || 0;
+  return tableRight > parentRight;
+};
 
 // Determine the exact rows of the table that should have a sticky first part
 // This works by first assuming that all rows in the table should have a sticky
@@ -21,42 +22,42 @@ const getIsTableOverflowing = (tableRef: React.RefObject<HTMLTableElement>) => {
 // Example: If row index 2 has a rowSpan of 3, then row index 3 and 4 should not
 // have a sticky first part.
 const getStickyRowIndexes = (tableRows: TableProps["content"]) => {
-  let stickyRowIndexes: number[] = [...Array(tableRows.length).keys()]
+  let stickyRowIndexes: number[] = [...Array(tableRows.length).keys()];
 
   tableRows
     .map((row) => row.content[0])
     .forEach((cell, index) => {
       if (!stickyRowIndexes.includes(index)) {
         // Index has already been removed by an earlier rowSpan
-        return
+        return;
       }
 
       if (cell.rowSpan) {
         // Exclude the next few rows that are covered by the rowSpan
         stickyRowIndexes = stickyRowIndexes.filter(
           (value) => value <= index || value >= index + cell.rowSpan!,
-        )
+        );
       }
-    })
+    });
 
-  return stickyRowIndexes
-}
+  return stickyRowIndexes;
+};
 
 const Table = ({ caption, content }: TableProps) => {
-  const [isTableOverflowing, setIsTableOverflowing] = useState(false)
-  const tableRef = useRef<HTMLTableElement>(null)
-  const stickyRowIndexes = getStickyRowIndexes(content)
+  const [isTableOverflowing, setIsTableOverflowing] = useState(false);
+  const tableRef = useRef<HTMLTableElement>(null);
+  const stickyRowIndexes = getStickyRowIndexes(content);
 
   useEffect(() => {
     const onResize = () =>
-      setIsTableOverflowing(getIsTableOverflowing(tableRef))
+      setIsTableOverflowing(getIsTableOverflowing(tableRef));
 
-    onResize()
-    window.addEventListener("resize", onResize)
+    onResize();
+    window.addEventListener("resize", onResize);
 
     // Cleanup on unmount
-    return () => window.removeEventListener("resize", onResize)
-  }, [])
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   return (
     <div className="overflow-x-auto [&:not(:first-child)]:mt-6">
@@ -73,7 +74,7 @@ const Table = ({ caption, content }: TableProps) => {
         <tbody>
           {content.map((row, index) => {
             const TableCellTag =
-              row.content[0].type === "tableHeader" ? "th" : "td"
+              row.content[0].type === "tableHeader" ? "th" : "td";
 
             return (
               <tr
@@ -104,15 +105,15 @@ const Table = ({ caption, content }: TableProps) => {
                     >
                       <Prose content={cell.content} />
                     </TableCellTag>
-                  )
+                  );
                 })}
               </tr>
-            )
+            );
           })}
         </tbody>
       </table>
     </div>
-  )
-}
+  );
+};
 
-export default Table
+export default Table;

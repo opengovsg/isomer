@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import type { NotFoundPageSchema } from "~/engine"
-import NotFoundLayout from "./NotFound"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { NotFoundPageSchema } from "~/engine";
+import NotFoundLayout from "./NotFound";
 
 export default {
   title: "Next/Layouts/NotFound",
@@ -11,14 +12,14 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
 const Template: StoryFn<NotFoundPageSchema> = (args) => (
   <NotFoundLayout {...args} />
-)
+);
 
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   layout: "notfound",
   site: {
@@ -52,4 +53,4 @@ Default.args = {
     permalink: "/404.html",
     lastModified: "2024-05-02T14:12:57.160Z",
   },
-}
+};

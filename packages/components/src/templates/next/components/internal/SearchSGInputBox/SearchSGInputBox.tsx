@@ -1,4 +1,4 @@
-import type { SearchSGInputBoxProps } from "~/interfaces"
+import type { SearchSGInputBoxProps } from "~/interfaces";
 
 const SearchSGInputBox = ({
   clientId,
@@ -13,7 +13,7 @@ const SearchSGInputBox = ({
       ></ScriptComponent>
       <div id="searchsg-searchbar" />
     </>
-  )
-}
+  );
+};
 
-export default SearchSGInputBox
+export default SearchSGInputBox;

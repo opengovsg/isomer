@@ -1,6 +1,6 @@
-import type { InfopicProps } from "~/interfaces"
-import Button from "../Button"
-import { ComponentContent } from "../../internal/customCssClass"
+import type { InfopicProps } from "~/interfaces";
+import { ComponentContent } from "../../internal/customCssClass";
+import Button from "../Button";
 
 const TextComponent = ({
   title,
@@ -9,7 +9,7 @@ const TextComponent = ({
   buttonUrl,
   className,
 }: Omit<InfopicProps, "type" | "sectionIndex" | "imageSrc" | "imageAlt"> & {
-  className?: string
+  className?: string;
 }) => {
   return (
     <div className={`flex flex-col gap-6 ${className ?? ""}`}>
@@ -23,17 +23,17 @@ const TextComponent = ({
         <Button label={buttonLabel} href={buttonUrl} rightIcon="right-arrow" />
       )}
     </div>
-  )
-}
+  );
+};
 
 const ImageComponent = ({
   src,
   alt,
   className,
 }: {
-  src: InfopicProps["imageSrc"]
-  alt: InfopicProps["imageAlt"]
-  className?: string
+  src: InfopicProps["imageSrc"];
+  alt: InfopicProps["imageAlt"];
+  className?: string;
 }) => {
   return (
     <div
@@ -45,8 +45,8 @@ const ImageComponent = ({
         className="max-h-[22.5rem] w-full object-cover object-center lg:max-h-[38.75rem]"
       />
     </div>
-  )
-}
+  );
+};
 
 const SideBySideInfoPic = ({
   title,
@@ -91,8 +91,8 @@ const SideBySideInfoPic = ({
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
 const SidePartInfoPic = ({
   title,
@@ -139,14 +139,14 @@ const SidePartInfoPic = ({
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
 const InfoPic = (props: InfopicProps) => {
   if (props.variant === "side-by-side") {
-    return <SideBySideInfoPic {...props} />
+    return <SideBySideInfoPic {...props} />;
   }
-  return <SidePartInfoPic {...props} />
-}
+  return <SidePartInfoPic {...props} />;
+};
 
-export default InfoPic
+export default InfoPic;

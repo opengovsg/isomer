@@ -1,9 +1,10 @@
-import { BiRightArrowAlt } from "react-icons/bi"
-import type { SingleCardProps } from "~/interfaces/complex/InfoCards"
+import { BiRightArrowAlt } from "react-icons/bi";
+
+import type { SingleCardProps } from "~/interfaces/complex/InfoCards";
 
 interface CardProps extends SingleCardProps {
-  variant?: "horizontal" | "vertical"
-  className?: string
+  variant?: "horizontal" | "vertical";
+  className?: string;
 }
 
 const ImageComponent = ({
@@ -11,9 +12,9 @@ const ImageComponent = ({
   alt,
   className,
 }: {
-  src: SingleCardProps["imageUrl"]
-  alt: SingleCardProps["imageAlt"]
-  className?: string
+  src: SingleCardProps["imageUrl"];
+  alt: SingleCardProps["imageAlt"];
+  className?: string;
 }) => {
   return (
     <div className={`aspect-h-1 aspect-w-1 overflow-hidden ${className}`}>
@@ -23,8 +24,8 @@ const ImageComponent = ({
         className="h-full w-full object-cover object-center"
       />
     </div>
-  )
-}
+  );
+};
 
 const TextComponent = ({
   title,
@@ -33,11 +34,11 @@ const TextComponent = ({
   className,
   url,
 }: {
-  text: SingleCardProps["description"]
-  title: SingleCardProps["title"]
-  buttonLabel: SingleCardProps["buttonLabel"]
-  className?: string
-  url: string
+  text: SingleCardProps["description"];
+  title: SingleCardProps["title"];
+  buttonLabel: SingleCardProps["buttonLabel"];
+  className?: string;
+  url: string;
 }) => {
   return (
     <div
@@ -73,8 +74,8 @@ const TextComponent = ({
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
 const Card = ({
   title,
@@ -123,7 +124,7 @@ const Card = ({
         </>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Card
+export default Card;

@@ -1,6 +1,6 @@
-import { ParagraphProps } from "./Paragraph"
+import { ParagraphProps } from "./Paragraph";
 
 export interface ListItemProps {
-  type: "listItem"
-  content: ParagraphProps[]
+  type: "listItem";
+  content: ParagraphProps[];
 }

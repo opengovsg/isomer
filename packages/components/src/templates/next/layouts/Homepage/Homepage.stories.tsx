@@ -1,7 +1,8 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import { useEffect } from "react"
-import type { HomePageSchema } from "~/engine"
-import Homepage from "./Homepage"
+import type { Meta, StoryFn } from "@storybook/react";
+import { useEffect } from "react";
+
+import type { HomePageSchema } from "~/engine";
+import Homepage from "./Homepage";
 
 export default {
   title: "Next/Layouts/Homepage",
@@ -12,23 +13,23 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
-const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
+const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4";
 
 // Template for stories
 const Template: StoryFn<HomePageSchema> = (args) => {
   // Note: This is needed because the script tag is not rendered in the storybook
   useEffect(() => {
-    const scriptTag = document.createElement("script")
-    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${TEST_CLIENT_ID}`
-    scriptTag.setAttribute("defer", "")
-    document.body.appendChild(scriptTag)
-  }, [])
-  return <Homepage {...args} />
-}
+    const scriptTag = document.createElement("script");
+    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${TEST_CLIENT_ID}`;
+    scriptTag.setAttribute("defer", "");
+    document.body.appendChild(scriptTag);
+  }, []);
+  return <Homepage {...args} />;
+};
 
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   layout: "homepage",
   site: {
@@ -332,4 +333,4 @@ Default.args = {
       ],
     },
   ],
-}
+};

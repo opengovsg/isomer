@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import KeyStatistics from "./KeyStatistics"
-import type { KeyStatisticsProps } from "~/interfaces"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { KeyStatisticsProps } from "~/interfaces";
+import KeyStatistics from "./KeyStatistics";
 
 export default {
   title: "Next/Components/KeyStatistics",
@@ -11,14 +12,14 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
 const Template: StoryFn<KeyStatisticsProps> = (args) => (
   <KeyStatistics {...args} />
-)
+);
 
-export const Side = Template.bind({})
+export const Side = Template.bind({});
 Side.args = {
   variant: "side",
   title: "Key economic indicators",
@@ -30,9 +31,9 @@ Side.args = {
     { label: "Total Merchandise Trade, Dec 2023 (YoY)", value: "-6.8%" },
     { label: "Industrial Production, Dec 2023 (YoY)", value: "-2.5%" },
   ],
-}
+};
 
-export const SideLong = Template.bind({})
+export const SideLong = Template.bind({});
 SideLong.args = {
   variant: "side",
   title: "Key economic indicators",
@@ -48,9 +49,9 @@ SideLong.args = {
       value: "-2.5%",
     },
   ],
-}
+};
 
-export const Top = Template.bind({})
+export const Top = Template.bind({});
 Top.args = {
   variant: "top",
   title: "Work life in numbers",
@@ -63,9 +64,9 @@ Top.args = {
     { label: "Creative blocks met per single evening", value: "89" },
     { label: "Number of lies in this stat block", value: "4.0" },
   ],
-}
+};
 
-export const TopLong = Template.bind({})
+export const TopLong = Template.bind({});
 TopLong.args = {
   variant: "top",
   title: "Work life in numbers",
@@ -82,4 +83,4 @@ TopLong.args = {
       value: "4.0",
     },
   ],
-}
+};

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from "react";
 import {
   Flex,
   forwardRef,
@@ -6,40 +6,44 @@ import {
   Stack,
   Text,
   VisuallyHidden,
-} from '@chakra-ui/react'
-import { dataAttr } from '@chakra-ui/utils'
-import { useImageAttachmentButtonStyles } from './ImageAttachmentButtonContext'
-import { getReadableFileSize, IconButton } from '@opengovsg/design-system-react'
-import { BiTrash } from 'react-icons/bi'
+} from "@chakra-ui/react";
+import { dataAttr } from "@chakra-ui/utils";
+import {
+  getReadableFileSize,
+  IconButton,
+} from "@opengovsg/design-system-react";
+import { BiTrash } from "react-icons/bi";
+
+import { useImageAttachmentButtonStyles } from "./ImageAttachmentButtonContext";
 
 export interface AttachmentFileInfoProps {
-  file: File
-  handleRemoveFile: () => void
-  imagePreview?: 'small' | 'large'
-  isDisabled?: boolean
-  isReadOnly?: boolean
+  file: File;
+  handleRemoveFile: () => void;
+  imagePreview?: "small" | "large";
+  isDisabled?: boolean;
+  isReadOnly?: boolean;
 }
 
-export const AttachmentFileInfo = forwardRef<AttachmentFileInfoProps, 'div'>(
+export const AttachmentFileInfo = forwardRef<AttachmentFileInfoProps, "div">(
   ({ file, handleRemoveFile, imagePreview, isDisabled, isReadOnly }, ref) => {
-    const [previewSrc, setPreviewSrc] = useState('')
-    const styles = useImageAttachmentButtonStyles()
+    const [previewSrc, setPreviewSrc] = useState("");
+    const styles = useImageAttachmentButtonStyles();
     const readableFileSize = useMemo(
       () => getReadableFileSize(file.size),
       [file.size],
-    )
+    );
 
     useEffect(() => {
-      let objectUrl = ''
+      let objectUrl = "";
       // create the preview
-      if (file.type.startsWith('image/')) {
-        objectUrl = URL.createObjectURL(file)
-        setPreviewSrc(objectUrl)
+      if (file.type.startsWith("image/")) {
+        objectUrl = URL.createObjectURL(file);
+        setPreviewSrc(objectUrl);
       }
 
       // free memory when ever this component is unmounted
-      return () => URL.revokeObjectURL(objectUrl)
-    }, [file])
+      return () => URL.revokeObjectURL(objectUrl);
+    }, [file]);
 
     return (
       <Flex aria-disabled={isDisabled} ref={ref} sx={styles.fileInfoContainer}>
@@ -48,7 +52,7 @@ export const AttachmentFileInfo = forwardRef<AttachmentFileInfoProps, 'div'>(
         </VisuallyHidden>
         {imagePreview && previewSrc && (
           <Image
-            maxH={{ base: '15rem' }}
+            maxH={{ base: "15rem" }}
             alt="uploaded image preview"
             __css={styles.fileInfoImage}
             flex={imagePreview ? 1 : undefined}
@@ -57,7 +61,7 @@ export const AttachmentFileInfo = forwardRef<AttachmentFileInfoProps, 'div'>(
         )}
         <Flex
           __css={styles.fileInfo}
-          flex={imagePreview && imagePreview === 'large' ? 0 : 1}
+          flex={imagePreview && imagePreview === "large" ? 0 : 1}
         >
           <Stack spacing="0.25rem" flexDir="column" aria-hidden>
             <Text textStyle="caption-1" noOfLines={1} title={file.name}>
@@ -81,8 +85,8 @@ export const AttachmentFileInfo = forwardRef<AttachmentFileInfoProps, 'div'>(
           />
         </Flex>
       </Flex>
-    )
+    );
   },
-)
+);
 
-AttachmentFileInfo.displayName = 'AttachmentFileInfo'
+AttachmentFileInfo.displayName = "AttachmentFileInfo";

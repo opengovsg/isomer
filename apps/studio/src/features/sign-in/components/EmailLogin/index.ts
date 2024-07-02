@@ -1,2 +1,2 @@
-export * from './EmailLoginButton'
-export * from './EmailLoginForm'
+export * from "./EmailLoginButton";
+export * from "./EmailLoginForm";

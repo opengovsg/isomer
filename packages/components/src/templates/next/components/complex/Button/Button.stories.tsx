@@ -1,10 +1,12 @@
-import { StoryFn, StoryObj, type Meta } from "@storybook/react"
+import type { Meta } from "@storybook/react";
+import { StoryFn, StoryObj } from "@storybook/react";
+
+import type { ButtonProps } from "~/interfaces/complex/Button";
 import {
   BUTTON_COLOR_SCHEMES,
   BUTTON_VARIANTS,
-  type ButtonProps,
-} from "~/interfaces/complex/Button"
-import Button from "./Button"
+} from "~/interfaces/complex/Button";
+import Button from "./Button";
 
 export default {
   title: "Next/Components/Button",
@@ -15,30 +17,30 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<ButtonProps> = (args) => <Button {...args} />
+const Template: StoryFn<ButtonProps> = (args) => <Button {...args} />;
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   label: "Work with us",
   href: "/faq",
-}
+};
 
-export const WithRightIcon = Template.bind({})
+export const WithRightIcon = Template.bind({});
 WithRightIcon.args = {
   label: "Work with us",
   href: "/faq",
   rightIcon: "right-arrow",
-}
+};
 
-export const LongerButtonText = Template.bind({})
+export const LongerButtonText = Template.bind({});
 LongerButtonText.args = {
   label: "slightly longer button text",
   href: "/faq",
-}
+};
 
 const Buttons = () => {
   return (
@@ -58,15 +60,15 @@ const Buttons = () => {
                   colorScheme={colorScheme}
                   variant={variant}
                 />
-              )
+              );
             })}
           </div>
-        )
+        );
       })}
     </div>
-  )
-}
+  );
+};
 
 export const ColorsAndVariants: StoryObj<ButtonProps> = {
   render: () => <Buttons />,
-}
+};

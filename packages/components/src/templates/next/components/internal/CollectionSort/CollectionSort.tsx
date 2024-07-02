@@ -1,18 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { BiCheck, BiChevronDown } from "react-icons/bi"
-import { SortDirection, SortKey } from "~/interfaces/internal/CollectionSort"
-import CollectionSortProps from "~/templates/next/types/CollectionSort"
+import { useState } from "react";
+import { BiCheck, BiChevronDown } from "react-icons/bi";
+
+import { SortDirection, SortKey } from "~/interfaces/internal/CollectionSort";
+import CollectionSortProps from "~/templates/next/types/CollectionSort";
 
 interface SortConfig {
-  sortBy: SortKey
-  sortDirection: SortDirection
+  sortBy: SortKey;
+  sortDirection: SortDirection;
 }
 
-const SortOptions = ["Most recent", "Least recent"] as const
+const SortOptions = ["Most recent", "Least recent"] as const;
 
-type SortOption = (typeof SortOptions)[number]
+type SortOption = (typeof SortOptions)[number];
 
 const SortOptionToConfigMap: Record<SortOption, SortConfig> = {
   "Most recent": {
@@ -23,7 +24,7 @@ const SortOptionToConfigMap: Record<SortOption, SortConfig> = {
     sortBy: "date",
     sortDirection: "asc",
   },
-}
+};
 
 const SortConfigToOptionMap: Record<
   SortKey,
@@ -33,7 +34,7 @@ const SortConfigToOptionMap: Record<
     desc: "Most recent",
     asc: "Least recent",
   },
-}
+};
 
 const CollectionSort = ({
   sortBy,
@@ -41,8 +42,8 @@ const CollectionSort = ({
   sortDirection,
   setSortDirection,
 }: CollectionSortProps) => {
-  const [showSortOptions, setShowSortOptions] = useState(false)
-  const selectedSortOption = SortConfigToOptionMap[sortBy][sortDirection]
+  const [showSortOptions, setShowSortOptions] = useState(false);
+  const selectedSortOption = SortConfigToOptionMap[sortBy][sortDirection];
 
   return (
     <div className="relative">
@@ -76,9 +77,9 @@ const CollectionSort = ({
                 option === selectedSortOption && "border-focus-outline border-2"
               }`}
               onClick={() => {
-                setSortBy(SortOptionToConfigMap[option].sortBy)
-                setSortDirection(SortOptionToConfigMap[option].sortDirection)
-                setShowSortOptions(false)
+                setSortBy(SortOptionToConfigMap[option].sortBy);
+                setSortDirection(SortOptionToConfigMap[option].sortDirection);
+                setShowSortOptions(false);
               }}
             >
               {option}
@@ -90,7 +91,7 @@ const CollectionSort = ({
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default CollectionSort
+export default CollectionSort;

@@ -1,6 +1,6 @@
-import { HomePageSchema } from "~/engine"
-import { Skeleton } from "../Skeleton"
-import { renderComponent, renderPageContent } from "../../render"
+import { HomePageSchema } from "~/engine";
+import { renderComponent, renderPageContent } from "../../render";
+import { Skeleton } from "../Skeleton";
 
 const HomepageLayout = ({
   site,
@@ -24,7 +24,7 @@ const HomepageLayout = ({
         {renderPageContent({ content, LinkComponent })}
       </div>
     </Skeleton>
-  )
-}
+  );
+};
 
-export default HomepageLayout
+export default HomepageLayout;

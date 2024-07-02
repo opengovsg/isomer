@@ -1,6 +1,6 @@
-import type { InfobarProps } from "~/interfaces"
-import Button from "../Button"
-import { ComponentContent } from "../../internal/customCssClass"
+import type { InfobarProps } from "~/interfaces";
+import { ComponentContent } from "../../internal/customCssClass";
+import Button from "../Button";
 
 const Infobar = ({
   sectionIdx,
@@ -43,7 +43,7 @@ const Infobar = ({
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default Infobar
+export default Infobar;

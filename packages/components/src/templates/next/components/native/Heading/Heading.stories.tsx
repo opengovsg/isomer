@@ -1,7 +1,8 @@
-import { Meta, StoryObj } from "@storybook/react"
-import type { HeadingProps } from "~/interfaces"
-import { HeadingLevels } from "~/interfaces/native/Heading"
-import Heading from "./Heading"
+import { Meta, StoryObj } from "@storybook/react";
+
+import type { HeadingProps } from "~/interfaces";
+import { HeadingLevels } from "~/interfaces/native/Heading";
+import Heading from "./Heading";
 
 export default {
   title: "Next/Components/Heading",
@@ -12,7 +13,7 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
 
@@ -28,12 +29,12 @@ const Headings = () => {
               content={[{ type: "text", text: `This is a heading-${level}` }]}
             />
           </div>
-        )
+        );
       })}
     </div>
-  )
-}
+  );
+};
 
 export const ColorsAndVariants: StoryObj<HeadingProps> = {
   render: () => <Headings />,
-}
+};

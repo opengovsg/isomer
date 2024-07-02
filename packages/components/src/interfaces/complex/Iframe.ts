@@ -1,5 +1,5 @@
 export interface IframeProps {
-  type: "iframe"
-  title: string
-  content: string
+  type: "iframe";
+  title: string;
+  content: string;
 }

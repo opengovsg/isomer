@@ -1,21 +1,21 @@
 import type {
-  HeroProps,
   HeroBackgroundImageProps,
-  HeroKeyHighlightProps,
-  HeroSideProps,
   HeroCenterProps,
   HeroFloatingProps,
   HeroImageProps,
-} from "~/interfaces/complex/Hero"
-import { HeroDropdown } from "./HeroDropdown"
+  HeroKeyHighlightProps,
+  HeroProps,
+  HeroSideProps,
+} from "~/interfaces/complex/Hero";
+import { HeroDropdown } from "./HeroDropdown";
 import {
   HeroInfoboxDesktop,
   HeroInfoboxMobile,
   HeroInfoboxTablet,
-} from "./HeroInfobox"
+} from "./HeroInfobox";
 
 const BP_BUTTON_CLASSES =
-  "rounded-none box-content appearance-none items-center border border-solid border-[#f0f0f0] shadow-none inline-flex text-base h-9 justify-center px-3 py-[calc(0.375rem-1px)] relative align-top select-none cursor-pointer text-center whitespace-nowrap focus:outline-none active:outline-none disabled:cursor-not-allowed"
+  "rounded-none box-content appearance-none items-center border border-solid border-[#f0f0f0] shadow-none inline-flex text-base h-9 justify-center px-3 py-[calc(0.375rem-1px)] relative align-top select-none cursor-pointer text-center whitespace-nowrap focus:outline-none active:outline-none disabled:cursor-not-allowed";
 
 const HeroSide = (
   props: Omit<
@@ -35,8 +35,8 @@ const HeroSide = (
         <HeroInfoboxMobile {...props} />
       </div>
     </div>
-  )
-}
+  );
+};
 
 const HeroImage = ({
   dropdown,
@@ -56,8 +56,8 @@ const HeroImage = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const HeroFloating = (
   props: Omit<
@@ -82,8 +82,8 @@ const HeroFloating = (
         <HeroInfoboxMobile {...props} />
       </div>
     </div>
-  )
-}
+  );
+};
 
 const HeroCenter = ({
   title,
@@ -130,12 +130,12 @@ const HeroCenter = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const HeroKeyHighlights = ({ keyHighlights }: HeroKeyHighlightProps) => {
   if (!keyHighlights || keyHighlights.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -204,8 +204,8 @@ const HeroKeyHighlights = ({ keyHighlights }: HeroKeyHighlightProps) => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
 export const Hero = (props: HeroProps) => {
   return (
@@ -227,7 +227,7 @@ export const Hero = (props: HeroProps) => {
           <HeroKeyHighlights keyHighlights={props.keyHighlights} />
         )}
     </section>
-  )
-}
+  );
+};
 
-export default Hero
+export default Hero;

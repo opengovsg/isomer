@@ -1,1 +1,1 @@
-export { default } from "./Siderail"
+export { default } from "./Siderail";

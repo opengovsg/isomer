@@ -1,6 +1,6 @@
-import type { ArticlePageHeaderProps } from "~/interfaces"
-import BaseParagraph from "../BaseParagraph"
-import Breadcrumb from "../Breadcrumb"
+import type { ArticlePageHeaderProps } from "~/interfaces";
+import BaseParagraph from "../BaseParagraph";
+import Breadcrumb from "../Breadcrumb";
 
 const ArticlePageHeader = ({
   breadcrumb,
@@ -39,7 +39,7 @@ const ArticlePageHeader = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ArticlePageHeader
+export default ArticlePageHeader;

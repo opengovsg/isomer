@@ -1,43 +1,44 @@
+import { useState } from "react";
+import { useRouter } from "next/router";
 import {
   FormControl,
   FormLabel,
   InputGroup,
   InputLeftAddon,
   Stack,
-} from '@chakra-ui/react'
+} from "@chakra-ui/react";
 import {
   Button,
   FormErrorMessage,
   Infobox,
   Input,
-} from '@opengovsg/design-system-react'
-import { useRouter } from 'next/router'
-import { CALLBACK_URL_KEY } from '~/constants/params'
-import { useZodForm } from '~/lib/form'
-import { trpc } from '~/utils/trpc'
-import { useSignInContext } from '../SignInContext'
-import { ResendOtpButton } from './ResendOtpButton'
-import { useLoginState } from '~/features/auth'
-import { emailVerifyOtpSchema } from '~/schemas/auth/email/sign-in'
-import { Controller } from 'react-hook-form'
-import { OTP_LENGTH } from '~/lib/auth'
-import { useInterval } from 'usehooks-ts'
-import { useState } from 'react'
-import { callbackUrlSchema } from '~/schemas/url'
+} from "@opengovsg/design-system-react";
+import { Controller } from "react-hook-form";
+import { useInterval } from "usehooks-ts";
+
+import { CALLBACK_URL_KEY } from "~/constants/params";
+import { useLoginState } from "~/features/auth";
+import { OTP_LENGTH } from "~/lib/auth";
+import { useZodForm } from "~/lib/form";
+import { emailVerifyOtpSchema } from "~/schemas/auth/email/sign-in";
+import { callbackUrlSchema } from "~/schemas/url";
+import { trpc } from "~/utils/trpc";
+import { useSignInContext } from "../SignInContext";
+import { ResendOtpButton } from "./ResendOtpButton";
 
 export const VerificationInput = (): JSX.Element | null => {
-  const [showOtpDelayMessage, setShowOtpDelayMessage] = useState(false)
-  const { setHasLoginStateFlag } = useLoginState()
-  const router = useRouter()
-  const utils = trpc.useContext()
+  const [showOtpDelayMessage, setShowOtpDelayMessage] = useState(false);
+  const { setHasLoginStateFlag } = useLoginState();
+  const router = useRouter();
+  const utils = trpc.useContext();
 
-  const { vfnStepData, timer, setVfnStepData, resetTimer } = useSignInContext()
+  const { vfnStepData, timer, setVfnStepData, resetTimer } = useSignInContext();
 
   useInterval(
     () => setShowOtpDelayMessage(true),
     // Show otp delay info message after 15 seconds.
     showOtpDelayMessage ? null : 15000,
-  )
+  );
 
   const {
     control,
@@ -49,64 +50,66 @@ export const VerificationInput = (): JSX.Element | null => {
   } = useZodForm({
     schema: emailVerifyOtpSchema,
     defaultValues: {
-      email: vfnStepData?.email ?? '',
-      token: '',
+      email: vfnStepData?.email ?? "",
+      token: "",
     },
-  })
+  });
 
   const verifyOtpMutation = trpc.auth.email.verifyOtp.useMutation({
     onSuccess: async () => {
-      setHasLoginStateFlag()
-      await utils.me.get.invalidate()
+      setHasLoginStateFlag();
+      await utils.me.get.invalidate();
       // accessing router.query values returns decoded URI params automatically,
       // so there's no need to call decodeURIComponent manually when accessing the callback url.
-      await router.push(callbackUrlSchema.parse(router.query[CALLBACK_URL_KEY]))
+      await router.push(
+        callbackUrlSchema.parse(router.query[CALLBACK_URL_KEY]),
+      );
     },
     onError: (error) => {
       switch (error.message) {
-        case 'Token is invalid or has expired':
-          setError('token', {
+        case "Token is invalid or has expired":
+          setError("token", {
             message:
-              'This OTP is invalid or has expired, click resend OTP to get a new one',
-          })
-          break
-        case 'Too many attempts':
-          setError('token', {
+              "This OTP is invalid or has expired, click resend OTP to get a new one",
+          });
+          break;
+        case "Too many attempts":
+          setError("token", {
             message:
-              'You have attempted the wrong OTP too many times, click resend OTP to get a new one',
-          })
-          break
+              "You have attempted the wrong OTP too many times, click resend OTP to get a new one",
+          });
+          break;
         default:
-          setError('token', { message: error.message })
+          setError("token", { message: error.message });
       }
     },
-  })
+  });
 
   const resendOtpMutation = trpc.auth.email.login.useMutation({
-    onError: (error) => setError('token', { message: error.message }),
-  })
+    onError: (error) => setError("token", { message: error.message }),
+  });
 
   const handleVerifyOtp = handleSubmit(({ email, token }) => {
-    return verifyOtpMutation.mutate({ email, token })
-  })
+    return verifyOtpMutation.mutate({ email, token });
+  });
 
   const handleResendOtp = () => {
-    if (timer > 0 || !vfnStepData?.email) return
+    if (timer > 0 || !vfnStepData?.email) return;
     return resendOtpMutation.mutate(
       { email: vfnStepData.email },
       {
         onSuccess: ({ email, otpPrefix }) => {
-          setVfnStepData({ email, otpPrefix })
-          resetField('token')
-          setFocus('token')
+          setVfnStepData({ email, otpPrefix });
+          resetField("token");
+          setFocus("token");
           // On success, restart the timer before this can be called again.
-          resetTimer()
+          resetTimer();
         },
       },
-    )
-  }
+    );
+  };
 
-  if (!vfnStepData) return null
+  if (!vfnStepData) return null;
 
   return (
     <form onSubmit={handleVerifyOtp}>
@@ -167,11 +170,11 @@ export const VerificationInput = (): JSX.Element | null => {
             isLoading={resendOtpMutation.isLoading}
             spinnerFontSize="1rem"
             _loading={{
-              justifyContent: 'flex-end',
+              justifyContent: "flex-end",
             }}
           />
         </Stack>
       </Stack>
     </form>
-  )
-}
+  );
+};

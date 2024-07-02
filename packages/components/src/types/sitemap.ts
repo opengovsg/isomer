@@ -1,32 +1,32 @@
-import type { CollectionCardProps } from "~/interfaces"
-import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
-import type { IsomerPageSchema } from "./schema"
+import type { IsomerPageSchema } from "./schema";
+import type { CollectionCardProps } from "~/interfaces";
+import type { FileCardProps } from "~/interfaces/internal/CollectionCard";
 
 interface IsomerBaseSitemap {
-  title: string
-  summary: string
-  lastModified: string
-  permalink: string
-  category?: string
-  image?: CollectionCardProps["image"]
-  date?: CollectionCardProps["lastUpdated"]
-  children?: IsomerSitemap[]
+  title: string;
+  summary: string;
+  lastModified: string;
+  permalink: string;
+  category?: string;
+  image?: CollectionCardProps["image"];
+  date?: CollectionCardProps["lastUpdated"];
+  children?: IsomerSitemap[];
 }
 
 interface IsomerPageSitemap extends IsomerBaseSitemap {
-  layout: Exclude<IsomerPageSchema["layout"], "file" | "link">
+  layout: Exclude<IsomerPageSchema["layout"], "file" | "link">;
 }
 interface IsomerFileSitemap extends IsomerBaseSitemap {
-  layout: "file"
-  ref: string
-  fileDetails: FileCardProps["fileDetails"]
+  layout: "file";
+  ref: string;
+  fileDetails: FileCardProps["fileDetails"];
 }
 interface IsomerLinkSitemap extends IsomerBaseSitemap {
-  layout: "link"
-  ref: string
+  layout: "link";
+  ref: string;
 }
 
 export type IsomerSitemap =
   | IsomerPageSitemap
   | IsomerFileSitemap
-  | IsomerLinkSitemap
+  | IsomerLinkSitemap;

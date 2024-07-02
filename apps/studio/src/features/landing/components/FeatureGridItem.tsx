@@ -1,9 +1,9 @@
-import { Image, Stack, Text } from '@chakra-ui/react'
+import { Image, Stack, Text } from "@chakra-ui/react";
 
 interface FeatureGridItemProps {
-  image?: string
-  title: string
-  description: string
+  image?: string;
+  title: string;
+  description: string;
 }
 
 export const FeatureGridItem = ({
@@ -21,5 +21,5 @@ export const FeatureGridItem = ({
         {description}
       </Text>
     </Stack>
-  )
-}
+  );
+};

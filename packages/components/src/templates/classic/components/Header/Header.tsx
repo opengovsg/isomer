@@ -1,57 +1,62 @@
-import React from "react" // Import React
-import type { HeaderProps } from "~/interfaces"
+import React from "react"; // Import React
+
+import type { HeaderProps } from "~/interfaces";
 
 type Breadcrumb = {
-  name: string
-  href: string
-  current?: boolean
-}
+  name: string;
+  href: string;
+  current?: boolean;
+};
 
 const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
   function findPageDetailsByPermalink(
     permalink: string,
     sitemap: any,
   ): { title: string; breadcrumbs: Breadcrumb[] } {
-    let title: string = ""
-    let breadcrumbs: Breadcrumb[] = []
+    let title: string = "";
+    let breadcrumbs: Breadcrumb[] = [];
 
     function traverse(currentSitemap: any[], permalink: string) {
       for (const entry of currentSitemap) {
-        const fullPath = entry.permalink
-        const pathTitle = entry.title
+        const fullPath = entry.permalink;
+        const pathTitle = entry.title;
 
         // Check if the current path segment is part of the permalink
         if (permalink.startsWith(fullPath)) {
           // If exact match, set title and mark current page in breadcrumbs
           if (permalink === fullPath) {
-            title = pathTitle
-            breadcrumbs.push({ name: pathTitle, href: fullPath, current: true })
+            title = pathTitle;
+            breadcrumbs.push({
+              name: pathTitle,
+              href: fullPath,
+              current: true,
+            });
           } else {
-            breadcrumbs.push({ name: pathTitle, href: fullPath })
+            breadcrumbs.push({ name: pathTitle, href: fullPath });
           }
 
           if (entry.paths && entry.paths.length > 0) {
-            traverse(entry.paths, permalink) // Continue traversing subPaths
+            traverse(entry.paths, permalink); // Continue traversing subPaths
           }
-          break // Stop the loop if a match is found
+          break; // Stop the loop if a match is found
         }
       }
     }
 
     // Start traversing from root, adjusting initial path as empty
-    traverse(sitemap.paths, permalink)
+    traverse(sitemap.paths, permalink);
 
     // Remove 'current' flag from all but the last breadcrumb
     breadcrumbs.forEach((crumb, idx) => {
       if (idx < breadcrumbs.length - 1) {
-        delete crumb.current
+        delete crumb.current;
       }
-    })
+    });
 
-    return { title, breadcrumbs }
+    return { title, breadcrumbs };
   }
 
-  const { title, breadcrumbs } = findPageDetailsByPermalink(permalink, sitemap)
+  const { title, breadcrumbs } = findPageDetailsByPermalink(permalink, sitemap);
 
   return (
     <nav
@@ -92,7 +97,7 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
         </h1>
       </div>
     </nav>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

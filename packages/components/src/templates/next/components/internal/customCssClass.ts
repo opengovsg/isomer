@@ -1,1 +1,1 @@
-export const ComponentContent = "component-content"
+export const ComponentContent = "component-content";

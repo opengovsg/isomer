@@ -1,6 +1,6 @@
-import { NotFoundPageSchema } from "~/engine"
-import { Skeleton } from "../Skeleton"
-import { renderComponent } from "../../render"
+import { NotFoundPageSchema } from "~/engine";
+import { renderComponent } from "../../render";
+import { Skeleton } from "../Skeleton";
 
 const NotFoundLayout = ({
   site,
@@ -32,7 +32,7 @@ const NotFoundLayout = ({
         })}
       </div>
     </Skeleton>
-  )
-}
+  );
+};
 
-export default NotFoundLayout
+export default NotFoundLayout;

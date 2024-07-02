@@ -1,6 +1,7 @@
-import { Meta, StoryFn } from "@storybook/react"
-import InfoPic from "./Infopic"
-import type { InfopicProps } from "~/interfaces"
+import { Meta, StoryFn } from "@storybook/react";
+
+import type { InfopicProps } from "~/interfaces";
+import InfoPic from "./Infopic";
 
 export default {
   title: "Next/Components/Infopic",
@@ -11,13 +12,13 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<InfopicProps> = (args) => <InfoPic {...args} />
+const Template: StoryFn<InfopicProps> = (args) => <InfoPic {...args} />;
 
 // Default scenario
-export const SideBySide = Template.bind({})
+export const SideBySide = Template.bind({});
 SideBySide.args = {
   sectionIndex: 0,
   variant: "side-by-side",
@@ -29,9 +30,9 @@ SideBySide.args = {
     "https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?q=80&w=3795&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   buttonLabel: "Buy one",
   buttonUrl: "https://www.google.com",
-}
+};
 
-export const SideBySideRightVariant = Template.bind({})
+export const SideBySideRightVariant = Template.bind({});
 SideBySideRightVariant.args = {
   sectionIndex: 0,
   variant: "side-by-side",
@@ -43,9 +44,9 @@ SideBySideRightVariant.args = {
   imageSrc: "https://placehold.co/400x300",
   buttonLabel: "Simone's Journey",
   buttonUrl: "https://www.google.com",
-}
+};
 
-export const SidePart = Template.bind({})
+export const SidePart = Template.bind({});
 SidePart.args = {
   sectionIndex: 0,
   variant: "side-part",
@@ -57,9 +58,9 @@ SidePart.args = {
   imageSrc: "https://placehold.co/1000x200",
   buttonLabel: "Primary CTA",
   buttonUrl: "https://www.google.com",
-}
+};
 
-export const SidePartRightVariant = Template.bind({})
+export const SidePartRightVariant = Template.bind({});
 SidePartRightVariant.args = {
   sectionIndex: 0,
   variant: "side-part",
@@ -72,4 +73,4 @@ SidePartRightVariant.args = {
   imageSrc: "https://placehold.co/200x200",
   buttonLabel: "Primary CTA",
   buttonUrl: "https://www.google.com",
-}
+};

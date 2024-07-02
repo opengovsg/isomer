@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import Cards from "./Cards"
-import type { CardsProps } from "~/interfaces"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { CardsProps } from "~/interfaces";
+import Cards from "./Cards";
 
 export default {
   title: "Classic/Components/Cards",
@@ -11,13 +12,13 @@ export default {
       themeOverride: "Isomer Classic",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<CardsProps> = (args) => <Cards {...args} />
+const Template: StoryFn<CardsProps> = (args) => <Cards {...args} />;
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   sectionTitle: "From the blog",
   sectionCaption: "Learn how to grow your business with our expert advice.",
@@ -42,10 +43,10 @@ Default.args = {
       },
     },
   ],
-}
+};
 
 // Custom scenario
-export const CustomCard = Template.bind({})
+export const CustomCard = Template.bind({});
 CustomCard.args = {
   sectionTitle: "From the blog",
   sectionCaption: "Learn how to grow your business with our expert advice.",
@@ -127,4 +128,4 @@ CustomCard.args = {
       },
     },
   ],
-}
+};

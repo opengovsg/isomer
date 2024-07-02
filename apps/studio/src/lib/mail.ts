@@ -1,28 +1,28 @@
-import wretch from 'wretch'
-import { env } from '~/env.mjs'
+import sendgrid from "@sendgrid/mail";
+import wretch from "wretch";
 
-import sendgrid from '@sendgrid/mail'
+import { env } from "~/env.mjs";
 
 type SendMailParams = {
-  recipient: string
-  body: string
-  subject: string
-}
+  recipient: string;
+  body: string;
+  subject: string;
+};
 
 if (env.SENDGRID_API_KEY) {
-  sendgrid.setApiKey(env.SENDGRID_API_KEY)
+  sendgrid.setApiKey(env.SENDGRID_API_KEY);
 }
 
-export const sgClient = env.SENDGRID_API_KEY ? sendgrid : null
+export const sgClient = env.SENDGRID_API_KEY ? sendgrid : null;
 
 export const sendMail = async (params: SendMailParams): Promise<void> => {
   if (env.POSTMAN_API_KEY) {
     return await wretch(
-      'https://api.postman.gov.sg/v1/transactional/email/send',
+      "https://api.postman.gov.sg/v1/transactional/email/send",
     )
       .auth(`Bearer ${env.POSTMAN_API_KEY}`)
       .post(params)
-      .res()
+      .res();
   }
 
   if (sgClient && env.SENDGRID_FROM_ADDRESS) {
@@ -31,13 +31,13 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
       to: params.recipient,
       subject: params.subject,
       html: params.body,
-    })
-    return
+    });
+    return;
   }
 
   console.warn(
-    'POSTMAN_API_KEY or SENDGRID_API_KEY missing. Logging the following mail: ',
+    "POSTMAN_API_KEY or SENDGRID_API_KEY missing. Logging the following mail: ",
     params,
-  )
-  return
-}
+  );
+  return;
+};

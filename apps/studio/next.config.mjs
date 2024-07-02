@@ -2,7 +2,7 @@
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
  * for Docker builds.
  */
-const { env } = await import('./src/env.mjs')
+const { env } = await import("./src/env.mjs");
 
 /*
 TODO: Removing this CSP first
@@ -22,17 +22,17 @@ const ContentSecurityPolicy = `
   img-src * data:;
   frame-src 'self';
   object-src 'none';
-  script-src 'self' ${env.NODE_ENV === 'production' ? '' : "'unsafe-eval'"};
+  script-src 'self' ${env.NODE_ENV === "production" ? "" : "'unsafe-eval'"};
   style-src 'self' https: 'unsafe-inline';
   connect-src 'self' https://schema.isomer.gov.sg https://browser-intake-datadoghq.com https://*.browser-intake-datadoghq.com https://vitals.vercel-insights.com/v1/vitals ${
     // For POSTing presigned URLs to R2 storage.
     env.R2_ACCOUNT_ID
       ? `https://*.${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
-      : ''
+      : ""
   };
   worker-src 'self' blob:;
-  ${env.NODE_ENV === 'production' ? 'upgrade-insecure-requests' : ''}
-`
+  ${env.NODE_ENV === "production" ? "upgrade-insecure-requests" : ""}
+`;
 
 /**
  * @link https://nextjs.org/docs/api-reference/next.config.js/introduction
@@ -51,45 +51,45 @@ const config = {
   /** We run eslint as a separate task in CI */
   eslint: { ignoreDuringBuilds: !!process.env.CI },
   images: {
-    domains: [env.R2_PUBLIC_HOSTNAME ?? ''].filter((d) => d),
+    domains: [env.R2_PUBLIC_HOSTNAME ?? ""].filter((d) => d),
   },
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'Content-Security-Policy',
-            value: ContentSecurityPolicy.replace(/\s{2,}/g, ' ').trim(),
+            key: "Content-Security-Policy",
+            value: ContentSecurityPolicy.replace(/\s{2,}/g, " ").trim(),
           },
           {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
           },
           {
-            key: 'Cross-Origin-Resource-Policy',
-            value: 'same-origin',
+            key: "Cross-Origin-Resource-Policy",
+            value: "same-origin",
           },
           {
-            key: 'Origin-Agent-Cluster',
-            value: '?1',
+            key: "Origin-Agent-Cluster",
+            value: "?1",
           },
           {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
           },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN',
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
           },
         ],
       },
-    ]
+    ];
   },
-}
+};
 
-export default config
+export default config;

@@ -1,33 +1,30 @@
-import {
-  httpBatchLink,
-  loggerLink,
-  TRPCClientError,
-  type TRPCLink,
-} from '@trpc/client'
-import { createTRPCNext } from '@trpc/next'
-import { type inferRouterInputs, type inferRouterOutputs } from '@trpc/server'
-import { type NextPageContext } from 'next'
-import superjson from 'superjson'
-import { type TRPC_ERROR_CODE_KEY } from '@trpc/server/rpc'
-import { observable } from '@trpc/server/observable'
-import { TRPCWithErrorCodeSchema } from '~/utils/error'
+import type { TRPCLink } from "@trpc/client";
+import { type NextPageContext } from "next";
+import { httpBatchLink, loggerLink, TRPCClientError } from "@trpc/client";
+import { createTRPCNext } from "@trpc/next";
+import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
+import { observable } from "@trpc/server/observable";
+import { type TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc";
+import superjson from "superjson";
+
 // ℹ️ Type-only import:
 // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#type-only-imports-and-export
-import type { AppRouter } from '~/server/modules/_app'
-import { LOGGED_IN_KEY } from '~/constants/localStorage'
-import { env } from '~/env.mjs'
+import type { AppRouter } from "~/server/modules/_app";
+import { LOGGED_IN_KEY } from "~/constants/localStorage";
 import {
   APP_VERSION_HEADER_KEY,
   REQUIRE_UPDATE_EVENT,
-} from '~/constants/version'
-import { getBaseUrl } from './getBaseUrl'
+} from "~/constants/version";
+import { env } from "~/env.mjs";
+import { TRPCWithErrorCodeSchema } from "~/utils/error";
+import { getBaseUrl } from "./getBaseUrl";
 
 const NON_RETRYABLE_ERROR_CODES: Set<TRPC_ERROR_CODE_KEY> = new Set([
-  'BAD_REQUEST',
-  'UNAUTHORIZED',
-  'FORBIDDEN',
-  'NOT_FOUND',
-])
+  "BAD_REQUEST",
+  "UNAUTHORIZED",
+  "FORBIDDEN",
+  "NOT_FOUND",
+]);
 
 export const versionLink: TRPCLink<AppRouter> = () => {
   return ({ next, op }) => {
@@ -35,39 +32,39 @@ export const versionLink: TRPCLink<AppRouter> = () => {
       const unsubscribe = next(op).subscribe({
         next(value) {
           if (!value.context) {
-            return observer.next(value)
+            return observer.next(value);
           }
           const response = value.context.response as
             | Partial<Response> // Looser type for caution
-            | undefined
+            | undefined;
           if (!response) {
-            return observer.next(value)
+            return observer.next(value);
           }
-          const { headers } = response
+          const { headers } = response;
           if (!headers) {
-            return observer.next(value)
+            return observer.next(value);
           }
-          const serverVersion = headers.get(APP_VERSION_HEADER_KEY)
+          const serverVersion = headers.get(APP_VERSION_HEADER_KEY);
           if (!serverVersion) {
-            return observer.next(value)
+            return observer.next(value);
           }
-          const clientVersion = env.NEXT_PUBLIC_APP_VERSION
+          const clientVersion = env.NEXT_PUBLIC_APP_VERSION;
           if (clientVersion !== serverVersion) {
-            window.dispatchEvent(new Event(REQUIRE_UPDATE_EVENT))
+            window.dispatchEvent(new Event(REQUIRE_UPDATE_EVENT));
           }
-          return observer.next(value)
+          return observer.next(value);
         },
         error(err) {
-          observer.error(err)
+          observer.error(err);
         },
         complete() {
-          observer.complete()
+          observer.complete();
         },
-      })
-      return unsubscribe
-    })
-  }
-}
+      });
+      return unsubscribe;
+    });
+  };
+};
 
 export const custom401Link: TRPCLink<AppRouter> = () => {
   // here we just got initialized in the app - this happens once per app
@@ -78,36 +75,36 @@ export const custom401Link: TRPCLink<AppRouter> = () => {
     return observable((observer) => {
       const unsubscribe = next(op).subscribe({
         next(value) {
-          observer.next(value)
+          observer.next(value);
         },
         // Handle 401 errors
         error(err) {
-          observer.error(err)
-          if (window !== undefined && err?.data?.code === 'UNAUTHORIZED') {
+          observer.error(err);
+          if (window !== undefined && err?.data?.code === "UNAUTHORIZED") {
             // Clear logged in state on localStorage
             // NOTE: This error is not handled in the /api/[trpc] API route as API routes are invoked
             // on the server and cannot perform redirections.
             // We can think of this handler function as a form of client side auth validity
             // handling, and the /api/[trpc] API route as a form of server side auth validity handling.
-            window.localStorage.removeItem(LOGGED_IN_KEY)
-            window.dispatchEvent(new Event('local-storage'))
+            window.localStorage.removeItem(LOGGED_IN_KEY);
+            window.dispatchEvent(new Event("local-storage"));
           }
         },
         complete() {
-          observer.complete()
+          observer.complete();
         },
-      })
-      return unsubscribe
-    })
-  }
-}
+      });
+      return unsubscribe;
+    });
+  };
+};
 
 const isErrorRetryableOnClient = (error: unknown): boolean => {
-  if (typeof window === 'undefined') return true
-  if (!(error instanceof TRPCClientError)) return true
-  const res = TRPCWithErrorCodeSchema.safeParse(error)
-  return !res.success || !NON_RETRYABLE_ERROR_CODES.has(res.data)
-}
+  if (typeof window === "undefined") return true;
+  if (!(error instanceof TRPCClientError)) return true;
+  const res = TRPCWithErrorCodeSchema.safeParse(error);
+  return !res.success || !NON_RETRYABLE_ERROR_CODES.has(res.data);
+};
 
 /**
  * Extend `NextPageContext` with meta data that can be picked up by `responseMeta()` when server-side rendering
@@ -121,7 +118,7 @@ export interface SSRContext extends NextPageContext {
    *   utils.ssrContext.status = 404;
    * }
    */
-  status?: number
+  status?: number;
 }
 
 /**
@@ -131,7 +128,7 @@ export interface SSRContext extends NextPageContext {
 export const trpc = createTRPCNext<
   AppRouter,
   SSRContext,
-  'ExperimentalSuspense'
+  "ExperimentalSuspense"
 >({
   config({ ctx }) {
     /**
@@ -152,8 +149,8 @@ export const trpc = createTRPCNext<
         // adds pretty logs to your console in development and logs errors in production
         loggerLink({
           enabled: (opts) =>
-            process.env.NODE_ENV === 'development' ||
-            (opts.direction === 'down' && opts.result instanceof Error),
+            process.env.NODE_ENV === "development" ||
+            (opts.direction === "down" && opts.result instanceof Error),
         }),
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,
@@ -163,7 +160,7 @@ export const trpc = createTRPCNext<
            * at runtime, eg, by Datadog RUM
            */
           fetch(url, options) {
-            return fetch(url, options)
+            return fetch(url, options);
           },
           /**
            * Set custom request headers on every request from tRPC
@@ -175,17 +172,17 @@ export const trpc = createTRPCNext<
               // This is so you can pass through things like cookies when we're server-side rendering
 
               // If you're using Node 18, omit the "connection" header
-              const { connection: _connection, ...headers } = ctx.req.headers
+              const { connection: _connection, ...headers } = ctx.req.headers;
               return {
                 ...headers,
                 [APP_VERSION_HEADER_KEY]: env.NEXT_PUBLIC_APP_VERSION,
                 // Optional: inform server that it's an SSR request
-                'x-ssr': '1',
-              }
+                "x-ssr": "1",
+              };
             }
             return {
               [APP_VERSION_HEADER_KEY]: env.NEXT_PUBLIC_APP_VERSION,
-            }
+            };
           },
         }),
       ],
@@ -197,18 +194,18 @@ export const trpc = createTRPCNext<
           queries: {
             staleTime: 1000 * 10, // 10 seconds
             retry: (failureCount, error) => {
-              if (!isErrorRetryableOnClient(error)) return false
-              return failureCount < 3
+              if (!isErrorRetryableOnClient(error)) return false;
+              return failureCount < 3;
             },
           },
           mutations: {
             retry: (_, error) => {
-              return isErrorRetryableOnClient(error)
+              return isErrorRetryableOnClient(error);
             },
           },
         },
       },
-    }
+    };
   },
   /**
    * @link https://trpc.io/docs/ssr
@@ -239,7 +236,7 @@ export const trpc = createTRPCNext<
 
   //   return {};
   // },
-})
+});
 
-export type RouterInput = inferRouterInputs<AppRouter>
-export type RouterOutput = inferRouterOutputs<AppRouter>
+export type RouterInput = inferRouterInputs<AppRouter>;
+export type RouterOutput = inferRouterOutputs<AppRouter>;

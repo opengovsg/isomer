@@ -1,40 +1,40 @@
-import { useCallback } from 'react'
-import { useRouter } from 'next/router'
-import { Divider, Stack } from '@chakra-ui/react'
+import { useCallback } from "react";
+import { useRouter } from "next/router";
+import { Divider, Stack } from "@chakra-ui/react";
 
-import { trpc } from '~/utils/trpc'
-import { SgidProfileItem } from './SgidProfileItem'
-import { SgidProfileListSkeleton } from './SgidProfileListSkeleton'
-import { useLoginState } from '~/features/auth'
-import { CALLBACK_URL_KEY } from '~/constants/params'
-import { withSuspense } from '~/hocs/withSuspense'
-import { callbackUrlSchema } from '~/schemas/url'
+import { CALLBACK_URL_KEY } from "~/constants/params";
+import { useLoginState } from "~/features/auth";
+import { withSuspense } from "~/hocs/withSuspense";
+import { callbackUrlSchema } from "~/schemas/url";
+import { trpc } from "~/utils/trpc";
+import { SgidProfileItem } from "./SgidProfileItem";
+import { SgidProfileListSkeleton } from "./SgidProfileListSkeleton";
 
 const _SgidProfileList = (): JSX.Element => {
-  const router = useRouter()
+  const router = useRouter();
 
-  const { setHasLoginStateFlag } = useLoginState()
+  const { setHasLoginStateFlag } = useLoginState();
 
-  const utils = trpc.useContext()
+  const utils = trpc.useContext();
 
-  const [profiles] = trpc.auth.sgid.listStoredProfiles.useSuspenseQuery()
+  const [profiles] = trpc.auth.sgid.listStoredProfiles.useSuspenseQuery();
   const selectMutation = trpc.auth.sgid.selectProfile.useMutation({
     onSuccess: async () => {
-      setHasLoginStateFlag()
-      await utils.me.get.invalidate()
+      setHasLoginStateFlag();
+      await utils.me.get.invalidate();
       await router.replace(
         callbackUrlSchema.parse(router.query[CALLBACK_URL_KEY]),
-      )
+      );
     },
-  })
+  });
 
   const handleSelectProfile = useCallback(
     (email?: string) => {
-      if (!email) return
-      return selectMutation.mutate({ email })
+      if (!email) return;
+      return selectMutation.mutate({ email });
     },
     [selectMutation],
-  )
+  );
 
   return (
     <Stack divider={<Divider />}>
@@ -46,10 +46,10 @@ const _SgidProfileList = (): JSX.Element => {
         />
       ))}
     </Stack>
-  )
-}
+  );
+};
 
 export const SgidProfileList = withSuspense(
   _SgidProfileList,
   <SgidProfileListSkeleton />,
-)
+);

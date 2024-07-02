@@ -1,18 +1,19 @@
-import { TRPCError } from '@trpc/server'
-import { publicProcedure, router } from '~/server/trpc'
-import { sendMail } from '~/lib/mail'
-import { getBaseUrl } from '~/utils/getBaseUrl'
-import { env } from '~/env.mjs'
-import { formatInTimeZone } from 'date-fns-tz'
+import { TRPCError } from "@trpc/server";
+import { formatInTimeZone } from "date-fns-tz";
+
+import { env } from "~/env.mjs";
+import { sendMail } from "~/lib/mail";
 import {
   emailSignInSchema,
   emailVerifyOtpSchema,
-} from '~/schemas/auth/email/sign-in'
-import { createTokenHash, createVfnPrefix, createVfnToken } from '../auth.util'
-import { verifyToken } from '../auth.service'
-import { VerificationError } from '../auth.error'
-import { defaultMeSelect } from '../../me/me.select'
-import { generateUsername } from '../../me/me.service'
+} from "~/schemas/auth/email/sign-in";
+import { publicProcedure, router } from "~/server/trpc";
+import { getBaseUrl } from "~/utils/getBaseUrl";
+import { defaultMeSelect } from "../../me/me.select";
+import { generateUsername } from "../../me/me.service";
+import { VerificationError } from "../auth.error";
+import { verifyToken } from "../auth.service";
+import { createTokenHash, createVfnPrefix, createVfnToken } from "../auth.util";
 
 export const emailSessionRouter = router({
   // Generate OTP.
@@ -21,12 +22,12 @@ export const emailSessionRouter = router({
     .mutation(async ({ ctx, input: { email } }) => {
       // TODO: instead of storing expires, store issuedAt to calculate when the next otp can be re-issued
       // TODO: rate limit this endpoint also
-      const expires = new Date(Date.now() + env.OTP_EXPIRY * 1000)
-      const token = createVfnToken()
-      const otpPrefix = createVfnPrefix()
-      const hashedToken = createTokenHash(token, email)
+      const expires = new Date(Date.now() + env.OTP_EXPIRY * 1000);
+      const token = createVfnToken();
+      const otpPrefix = createVfnPrefix();
+      const hashedToken = createTokenHash(token, email);
 
-      const url = new URL(getBaseUrl())
+      const url = new URL(getBaseUrl());
 
       // May have one of them fail,
       // so users may get an email but not have the token saved, but that should be fine.
@@ -50,15 +51,15 @@ export const emailSessionRouter = router({
           subject: `Sign in to ${url.host}`,
           body: `Your OTP is ${otpPrefix}-<b>${token}</b>. It will expire on ${formatInTimeZone(
             expires,
-            'Asia/Singapore',
-            'dd MMM yyyy, hh:mmaaa',
+            "Asia/Singapore",
+            "dd MMM yyyy, hh:mmaaa",
           )}.
       Please use this to login to your account.
       <p>If your OTP does not work, please request for a new one.</p>`,
           recipient: email,
         }),
-      ])
-      return { email, otpPrefix }
+      ]);
+      return { email, otpPrefix };
     }),
   verifyOtp: publicProcedure
     .input(emailVerifyOtpSchema)
@@ -67,19 +68,19 @@ export const emailSessionRouter = router({
         await verifyToken(ctx.prisma, {
           token,
           email,
-        })
+        });
       } catch (e) {
         if (e instanceof VerificationError) {
           throw new TRPCError({
-            code: 'BAD_REQUEST',
+            code: "BAD_REQUEST",
             message: e.message,
             cause: e,
-          })
+          });
         }
-        throw e
+        throw e;
       }
 
-      const emailName = email.split('@')[0] ?? 'unknown'
+      const emailName = email.split("@")[0] ?? "unknown";
 
       const user = await ctx.prisma.user.upsert({
         where: { email },
@@ -87,14 +88,14 @@ export const emailSessionRouter = router({
         create: {
           email,
           // TODO: add the phone in later, this is a wip
-          phone: '',
+          phone: "",
           name: emailName,
         },
         select: defaultMeSelect,
-      })
+      });
 
-      ctx.session.userId = user.id
-      await ctx.session.save()
-      return user
+      ctx.session.userId = user.id;
+      await ctx.session.save();
+      return user;
     }),
-})
+});

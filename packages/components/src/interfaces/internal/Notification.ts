@@ -1,3 +1,3 @@
 export interface NotificationProps {
-  content: string
+  content: string;
 }

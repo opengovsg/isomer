@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import type { CollectionPageSchema } from "~/engine"
-import CollectionLayout from "./Collection"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { CollectionPageSchema } from "~/engine";
+import CollectionLayout from "./Collection";
 
 export default {
   title: "Next/Layouts/Collection",
@@ -11,14 +12,14 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
 const Template: StoryFn<CollectionPageSchema> = (args) => (
   <CollectionLayout {...args} />
-)
+);
 
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   layout: "collection",
   site: {
@@ -103,4 +104,4 @@ Default.args = {
     defaultSortBy: "date",
     defaultSortDirection: "desc",
   },
-}
+};

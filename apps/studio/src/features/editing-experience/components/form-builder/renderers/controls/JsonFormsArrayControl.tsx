@@ -1,19 +1,19 @@
-import { Box, Heading } from '@chakra-ui/react'
+import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core";
+import { Box, Heading } from "@chakra-ui/react";
 import {
   createDefaultValue,
   isObjectArrayControl,
   rankWith,
-  type ArrayLayoutProps,
-  type RankedTester,
-} from '@jsonforms/core'
-import { withJsonFormsArrayLayoutProps } from '@jsonforms/react'
-import { Button } from '@opengovsg/design-system-react'
-import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
+} from "@jsonforms/core";
+import { withJsonFormsArrayLayoutProps } from "@jsonforms/react";
+import { Button } from "@opengovsg/design-system-react";
+
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder";
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
   isObjectArrayControl,
-)
+);
 
 export function JsonFormsArrayControl({
   path,
@@ -39,7 +39,7 @@ export function JsonFormsArrayControl({
         Add item
       </Button>
     </Box>
-  )
+  );
 }
 
-export default withJsonFormsArrayLayoutProps(JsonFormsArrayControl)
+export default withJsonFormsArrayLayoutProps(JsonFormsArrayControl);

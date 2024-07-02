@@ -1,6 +1,7 @@
-import { Meta, StoryFn } from "@storybook/react"
-import Callout from "./Callout"
-import type { CalloutProps } from "~/interfaces"
+import { Meta, StoryFn } from "@storybook/react";
+
+import type { CalloutProps } from "~/interfaces";
+import Callout from "./Callout";
 
 export default {
   title: "Next/Components/Callout",
@@ -11,13 +12,13 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<CalloutProps> = (args) => <Callout {...args} />
+const Template: StoryFn<CalloutProps> = (args) => <Callout {...args} />;
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   content: [
     {
@@ -30,4 +31,4 @@ Default.args = {
       ],
     },
   ],
-}
+};

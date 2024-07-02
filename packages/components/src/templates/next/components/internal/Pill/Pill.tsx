@@ -1,5 +1,6 @@
-import { BiX } from "react-icons/bi"
-import type { PillProps } from "~/interfaces"
+import { BiX } from "react-icons/bi";
+
+import type { PillProps } from "~/interfaces";
 
 const Pill = ({ content, onClose }: PillProps) => {
   return (
@@ -11,7 +12,7 @@ const Pill = ({ content, onClose }: PillProps) => {
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Pill
+export default Pill;

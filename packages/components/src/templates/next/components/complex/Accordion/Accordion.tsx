@@ -1,6 +1,7 @@
-import { BiChevronDown } from "react-icons/bi"
-import type { AccordionProps } from "~/interfaces"
-import { Prose } from "../../native"
+import { BiChevronDown } from "react-icons/bi";
+
+import type { AccordionProps } from "~/interfaces";
+import { Prose } from "../../native";
 
 const Accordion = ({ summary, details }: AccordionProps) => {
   return (
@@ -14,7 +15,7 @@ const Accordion = ({ summary, details }: AccordionProps) => {
         <Prose content={details} />
       </div>
     </details>
-  )
-}
+  );
+};
 
-export default Accordion
+export default Accordion;

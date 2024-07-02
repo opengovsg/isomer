@@ -1,1 +1,1 @@
-export * from './SgidProfileList'
+export * from "./SgidProfileList";

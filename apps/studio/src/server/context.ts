@@ -1,16 +1,17 @@
-import type * as trpc from '@trpc/server'
-import type { CreateNextContextOptions } from '@trpc/server/adapters/next'
-import { getIronSession } from 'iron-session'
-import { type SessionData, type Session } from '~/lib/types/session'
-import { type User } from '@prisma/client'
-import { prisma } from './prisma'
-import { db } from './modules/database'
-import { sessionOptions } from './modules/auth/session'
-import { type defaultMeSelect } from './modules/me/me.select'
+import type * as trpc from "@trpc/server";
+import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
+import { type User } from "@prisma/client";
+import { getIronSession } from "iron-session";
+
+import { type Session, type SessionData } from "~/lib/types/session";
+import { sessionOptions } from "./modules/auth/session";
+import { db } from "./modules/database";
+import { type defaultMeSelect } from "./modules/me/me.select";
+import { prisma } from "./prisma";
 
 interface CreateContextOptions {
-  session?: Session
-  user?: Pick<User, keyof typeof defaultMeSelect>
+  session?: Session;
+  user?: Pick<User, keyof typeof defaultMeSelect>;
 }
 
 /**
@@ -22,7 +23,7 @@ export async function createContextInner(opts: CreateContextOptions) {
     session: opts.session,
     prisma,
     db,
-  }
+  };
 }
 
 /**
@@ -34,17 +35,17 @@ export const createContext = async (opts: CreateNextContextOptions) => {
     opts.req,
     opts.res,
     sessionOptions,
-  )
+  );
 
   const innerContext = await createContextInner({
     session,
-  })
+  });
 
   return {
     ...innerContext,
     req: opts.req,
     res: opts.res,
-  }
-}
+  };
+};
 
-export type Context = trpc.inferAsyncReturnType<typeof createContext>
+export type Context = trpc.inferAsyncReturnType<typeof createContext>;

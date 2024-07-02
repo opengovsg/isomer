@@ -264,6 +264,9 @@ importers:
       '@chromatic-com/storybook':
         specifier: ^1.5.0
         version: 1.6.0(react@18.3.1)
+      '@isomer/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
       '@playwright/test':
         specifier: ^1.40.1
         version: 1.45.0
@@ -447,6 +450,9 @@ importers:
       '@chromatic-com/storybook':
         specifier: ^1.5.0
         version: 1.6.0(react@18.3.1)
+      '@isomer/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
       '@storybook/addon-a11y':
         specifier: ^8.1.11
         version: 8.1.11
@@ -608,6 +614,9 @@ importers:
 
   tooling/template:
     dependencies:
+      '@isomer/prettier-config':
+        specifier: workspace:*
+        version: link:../prettier
       '@opengovsg/isomer-components':
         specifier: workspace:*
         version: link:../../packages/components

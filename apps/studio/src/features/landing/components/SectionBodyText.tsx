@@ -1,7 +1,8 @@
-import { Text, type TextProps } from '@chakra-ui/react'
-import { type PropsWithChildren } from 'react'
+import type { TextProps } from "@chakra-ui/react";
+import { type PropsWithChildren } from "react";
+import { Text } from "@chakra-ui/react";
 
-type SectionBodyTextProps = PropsWithChildren<TextProps>
+type SectionBodyTextProps = PropsWithChildren<TextProps>;
 
 export const SectionBodyText = ({
   children,
@@ -11,5 +12,5 @@ export const SectionBodyText = ({
     <Text textStyle="body-1" color="base.content.default" {...textProps}>
       {children}
     </Text>
-  )
-}
+  );
+};

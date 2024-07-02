@@ -1,1 +1,1 @@
-export { default } from "./KeyStatistics"
+export { default } from "./KeyStatistics";

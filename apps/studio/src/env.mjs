@@ -1,26 +1,26 @@
-import { z } from 'zod'
+import { z } from "zod";
 
 // Coerces a string to true if it's "true", false if "false".
 const coerceBoolean = z
   .string()
   // only allow "true" or "false" or empty string
-  .refine((s) => s === 'true' || s === 'false' || s === '')
+  .refine((s) => s === "true" || s === "false" || s === "")
   // transform to boolean
-  .transform((s) => s === 'true')
+  .transform((s) => s === "true")
   // make sure tranform worked
-  .pipe(z.boolean())
+  .pipe(z.boolean());
 
 /**
  * Specify your client-side environment variables schema here. This way you can ensure the app isn't
  * built with invalid env vars. To expose them to the client, prefix them with `NEXT_PUBLIC_`.
  */
 const client = z.object({
-  NEXT_PUBLIC_ENABLE_STORAGE: coerceBoolean.default('false'),
-  NEXT_PUBLIC_ENABLE_SGID: coerceBoolean.default('false'),
+  NEXT_PUBLIC_ENABLE_STORAGE: coerceBoolean.default("false"),
+  NEXT_PUBLIC_ENABLE_SGID: coerceBoolean.default("false"),
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
-  NEXT_PUBLIC_APP_NAME: z.string().default('Starter Kit'),
-  NEXT_PUBLIC_APP_VERSION: z.string().default('0.0.0'),
-})
+  NEXT_PUBLIC_APP_NAME: z.string().default("Starter Kit"),
+  NEXT_PUBLIC_APP_VERSION: z.string().default("0.0.0"),
+});
 
 /** Feature flags */
 const baseR2Schema = z.object({
@@ -31,9 +31,9 @@ const baseR2Schema = z.object({
   R2_BUCKET_NAME: z.string().optional(),
   R2_AVATARS_DIRECTORY: z.string().optional(),
   R2_IMAGES_DIRECTORY: z.string().optional(),
-})
+});
 
-const r2ServerSchema = z.discriminatedUnion('NEXT_PUBLIC_ENABLE_STORAGE', [
+const r2ServerSchema = z.discriminatedUnion("NEXT_PUBLIC_ENABLE_STORAGE", [
   baseR2Schema.extend({
     NEXT_PUBLIC_ENABLE_STORAGE: z.literal(true),
     // Add required keys if flag is enabled.
@@ -45,7 +45,7 @@ const r2ServerSchema = z.discriminatedUnion('NEXT_PUBLIC_ENABLE_STORAGE', [
   baseR2Schema.extend({
     NEXT_PUBLIC_ENABLE_STORAGE: z.literal(false),
   }),
-])
+]);
 
 const baseSgidSchema = z.object({
   SGID_CLIENT_ID: z.string().optional(),
@@ -53,9 +53,9 @@ const baseSgidSchema = z.object({
   // Remember to set SGID redirect URI in SGID dev portal.
   SGID_REDIRECT_URI: z.union([z.string().url(), z.string()]).optional(),
   SGID_PRIVATE_KEY: z.string().optional(),
-})
+});
 
-const sgidServerSchema = z.discriminatedUnion('NEXT_PUBLIC_ENABLE_SGID', [
+const sgidServerSchema = z.discriminatedUnion("NEXT_PUBLIC_ENABLE_SGID", [
   baseSgidSchema.extend({
     NEXT_PUBLIC_ENABLE_SGID: z.literal(true),
     // Add required keys if flag is enabled.
@@ -67,7 +67,7 @@ const sgidServerSchema = z.discriminatedUnion('NEXT_PUBLIC_ENABLE_SGID', [
   baseSgidSchema.extend({
     NEXT_PUBLIC_ENABLE_SGID: z.literal(false),
   }),
-])
+]);
 
 /**
  * Specify your server-side environment variables schema here. This way you can ensure the app isn't
@@ -76,7 +76,7 @@ const sgidServerSchema = z.discriminatedUnion('NEXT_PUBLIC_ENABLE_SGID', [
 const server = z
   .object({
     DATABASE_URL: z.string().url(),
-    NODE_ENV: z.enum(['development', 'test', 'production']),
+    NODE_ENV: z.enum(["development", "test", "production"]),
     OTP_EXPIRY: z.coerce.number().positive().optional().default(600),
     POSTMAN_API_KEY: z.string().optional(),
     SENDGRID_API_KEY: z.string().optional(),
@@ -93,35 +93,35 @@ const server = z
   // Add on refinements as needed for conditional environment variables
   // .superRefine((val, ctx) => ...)
   .superRefine((val, ctx) => {
-    const parse = r2ServerSchema.safeParse(val)
+    const parse = r2ServerSchema.safeParse(val);
     if (!parse.success) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ['NEXT_PUBLIC_ENABLE_STORAGE'],
-        message: 'R2 environment variables are missing',
-      })
+        path: ["NEXT_PUBLIC_ENABLE_STORAGE"],
+        message: "R2 environment variables are missing",
+      });
       parse.error.issues.forEach((issue) => {
-        ctx.addIssue(issue)
-      })
+        ctx.addIssue(issue);
+      });
     }
   })
   .superRefine((val, ctx) => {
-    const parse = sgidServerSchema.safeParse(val)
+    const parse = sgidServerSchema.safeParse(val);
     if (!parse.success) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ['NEXT_PUBLIC_ENABLE_SGID'],
-        message: 'SGID environment variables are missing',
-      })
+        path: ["NEXT_PUBLIC_ENABLE_SGID"],
+        message: "SGID environment variables are missing",
+      });
       parse.error.issues.forEach((issue) => {
-        ctx.addIssue(issue)
-      })
+        ctx.addIssue(issue);
+      });
     }
   })
   .refine((val) => !(val.SENDGRID_API_KEY && !val.SENDGRID_FROM_ADDRESS), {
-    message: 'SENDGRID_FROM_ADDRESS is required when SENDGRID_API_KEY is set',
-    path: ['SENDGRID_FROM_ADDRESS'],
-  })
+    message: "SENDGRID_FROM_ADDRESS is required when SENDGRID_API_KEY is set",
+    path: ["SENDGRID_FROM_ADDRESS"],
+  });
 
 /**
  * You can't destruct `process.env` as a regular object in the Next.js edge runtimes (e.g.
@@ -158,7 +158,7 @@ const processEnv = {
   NEXT_PUBLIC_ENABLE_STORAGE: process.env.NEXT_PUBLIC_ENABLE_STORAGE,
   NEXT_PUBLIC_ENABLE_SGID: process.env.NEXT_PUBLIC_ENABLE_SGID,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-}
+};
 
 // Don't touch the part below
 // --------------------------
@@ -167,52 +167,52 @@ const processEnv = {
 /** @typedef {z.SafeParseReturnType<MergedInput, MergedOutput>} MergedSafeParseReturn */
 
 // @ts-expect-error Types are wonky from refinement
-let env = /** @type {MergedOutput} */ (process.env)
+let env = /** @type {MergedOutput} */ (process.env);
 
 if (!!process.env.SKIP_ENV_VALIDATION == false) {
-  const isServer = typeof window === 'undefined'
+  const isServer = typeof window === "undefined";
 
   const parsed = /** @type {MergedSafeParseReturn} */ (
     isServer
       ? server.safeParse(processEnv) // on server we can validate all env vars
       : client.safeParse(processEnv) // on client we can only validate the ones that are exposed
-  )
+  );
 
   if (parsed.success === false) {
     console.error(
-      '❌ Invalid environment variables:',
+      "❌ Invalid environment variables:",
       parsed.error.flatten().fieldErrors,
-    )
-    throw new Error('Invalid environment variables')
+    );
+    throw new Error("Invalid environment variables");
   }
 
   env = new Proxy(parsed.data, {
     get(target, prop) {
-      if (typeof prop !== 'string') return undefined
+      if (typeof prop !== "string") return undefined;
       // Throw a descriptive error if a server-side env var is accessed on the client
       // Otherwise it would just be returning `undefined` and be annoying to debug
-      if (!isServer && !prop.startsWith('NEXT_PUBLIC_'))
+      if (!isServer && !prop.startsWith("NEXT_PUBLIC_"))
         throw new Error(
-          process.env.NODE_ENV === 'production'
-            ? '❌ Attempted to access a server-side environment variable on the client'
+          process.env.NODE_ENV === "production"
+            ? "❌ Attempted to access a server-side environment variable on the client"
             : `❌ Attempted to access server-side environment variable '${prop}' on the client`,
-        )
-      return target[/** @type {keyof typeof target} */ (prop)]
+        );
+      return target[/** @type {keyof typeof target} */ (prop)];
     },
-  })
+  });
 } else if (process.env.STORYBOOK) {
   const parsed = client
     .partial()
-    .safeParse(JSON.parse(process.env.STORYBOOK_ENVIRONMENT ?? '{}'))
+    .safeParse(JSON.parse(process.env.STORYBOOK_ENVIRONMENT ?? "{}"));
   if (parsed.success === false) {
     console.error(
-      '❌ Invalid environment variables:',
+      "❌ Invalid environment variables:",
       parsed.error.flatten().fieldErrors,
-    )
-    throw new Error('Invalid environment variables')
+    );
+    throw new Error("Invalid environment variables");
   }
   // @ts-expect-error Injection of environment variables is optional
-  env = parsed.data
+  env = parsed.data;
 }
 
-export { env }
+export { env };

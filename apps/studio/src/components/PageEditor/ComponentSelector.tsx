@@ -7,9 +7,9 @@ import {
   Text,
   VStack,
   Wrap,
-} from '@chakra-ui/react'
-import { Button, IconButton } from '@opengovsg/design-system-react'
-import { type IconType } from 'react-icons'
+} from "@chakra-ui/react";
+import { Button, IconButton } from "@opengovsg/design-system-react";
+import { type IconType } from "react-icons";
 import {
   BiCard,
   BiColumns,
@@ -25,16 +25,17 @@ import {
   BiSolidQuoteAltLeft,
   BiText,
   BiX,
-} from 'react-icons/bi'
-import { type SectionType } from './types'
-import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
+} from "react-icons/bi";
+
+import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext";
+import { type SectionType } from "./types";
 
 function Section({ children }: React.PropsWithChildren) {
   return (
     <VStack gap="0.5rem" alignItems="start">
       {children}
     </VStack>
-  )
+  );
 }
 
 function SectionTitle({ title }: { title: string }) {
@@ -42,11 +43,11 @@ function SectionTitle({ title }: { title: string }) {
     <Text textStyle="subhead-3" textColor="base.content.medium">
       {title}
     </Text>
-  )
+  );
 }
 
 function BlockList({ children }: React.PropsWithChildren) {
-  return <Wrap spacing="0">{children}</Wrap>
+  return <Wrap spacing="0">{children}</Wrap>;
 }
 
 function BlockItem({
@@ -56,11 +57,11 @@ function BlockItem({
   sectionType,
   description,
 }: {
-  icon: IconType
-  label: string
-  onProceed: (sectionType: SectionType) => void
-  sectionType: SectionType
-  description: string
+  icon: IconType;
+  label: string;
+  onProceed: (sectionType: SectionType) => void;
+  sectionType: SectionType;
+  description: string;
 }) {
   return (
     <Popover trigger="hover" placement="right">
@@ -90,16 +91,16 @@ function BlockItem({
         </VStack>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
 
 function ComponentSelector() {
   const { setDrawerState, setPageState, setEditorState } =
-    useEditorDrawerContext()
+    useEditorDrawerContext();
   const onProceed = (sectionType: SectionType) => {
     // TODO: add new section to page/editor state
-    setDrawerState({ state: 'root' })
-  }
+    setDrawerState({ state: "root" });
+  };
   return (
     <VStack w="full" gap="0">
       <Flex
@@ -126,7 +127,7 @@ function ComponentSelector() {
           aria-label="Close add component"
           icon={<BiX />}
           onClick={() => {
-            setDrawerState({ state: 'root' })
+            setDrawerState({ state: "root" });
           }}
         />
       </Flex>
@@ -244,7 +245,7 @@ function ComponentSelector() {
         </Section>
       </VStack>
     </VStack>
-  )
+  );
 }
 
-export default ComponentSelector
+export default ComponentSelector;

@@ -1,13 +1,13 @@
 // Replace your-framework with the framework you are using (e.g., react, vue3)
-import { Preview } from "@storybook/react"
 import {
   withThemeByClassName,
   withThemeByDataAttribute,
-} from "@storybook/addon-themes"
-import { MINIMAL_VIEWPORTS } from "@storybook/addon-viewport"
-import "bootstrap-icons/font/bootstrap-icons.css"
+} from "@storybook/addon-themes";
+import { MINIMAL_VIEWPORTS } from "@storybook/addon-viewport";
+import { Preview } from "@storybook/react";
 
-import "../src/index.css"
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "../src/index.css";
 
 const CUSTOM_GENERAL_VIEWPORTS = {
   smallDesktop: {
@@ -45,7 +45,7 @@ const CUSTOM_GENERAL_VIEWPORTS = {
       height: "932px",
     },
   },
-}
+};
 
 const CUSTOM_GSIB_VIEWPORTS = {
   gsibEdgeFav: {
@@ -76,7 +76,7 @@ const CUSTOM_GSIB_VIEWPORTS = {
       height: "683.33px",
     },
   },
-}
+};
 
 const preview: Preview = {
   parameters: {
@@ -88,7 +88,7 @@ const preview: Preview = {
       },
     },
   },
-}
+};
 
 export const decorators: any = [
   withThemeByDataAttribute({
@@ -98,6 +98,6 @@ export const decorators: any = [
     },
     defaultTheme: "Isomer Next",
   }),
-]
+];
 
-export default preview
+export default preview;

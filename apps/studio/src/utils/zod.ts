@@ -1,11 +1,11 @@
-import { z } from 'zod'
+import { z } from "zod";
 
 export const normaliseEmail = z
   .string()
   .trim()
   .toLowerCase()
-  .min(1, 'Please enter an email address.')
-  .email({ message: 'Please enter a valid email address.' })
+  .min(1, "Please enter an email address.")
+  .email({ message: "Please enter a valid email address." });
 
 /**
  * Function to safely parse a JSON string with a Zod schema.
@@ -20,12 +20,12 @@ export const safeSchemaJsonParse = <T extends z.ZodTypeAny>(
   parse: (jsonString: string) => unknown = JSON.parse,
 ): { success: true; data: z.infer<T> } | { success: false; error: Error } => {
   try {
-    const parsed = parse(jsonString)
-    return schema.safeParse(parsed)
+    const parsed = parse(jsonString);
+    return schema.safeParse(parsed);
   } catch (e: unknown) {
     if (e instanceof Error) {
-      return { success: false, error: e }
+      return { success: false, error: e };
     }
-    return { success: false, error: new Error(`Unknown JSON parse error`) }
+    return { success: false, error: new Error(`Unknown JSON parse error`) };
   }
-}
+};

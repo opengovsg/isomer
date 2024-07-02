@@ -1,3 +1,3 @@
 export interface HardBreakProps {
-  type: "hardBreak"
+  type: "hardBreak";
 }

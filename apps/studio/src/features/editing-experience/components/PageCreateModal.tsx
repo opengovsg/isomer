@@ -1,75 +1,76 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
+  Box,
   FormControl,
   FormHelperText,
   FormLabel,
   Input,
   InputGroup,
   InputLeftAddon,
-  Text,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Stack,
-  Box,
-} from '@chakra-ui/react'
+  Text,
+} from "@chakra-ui/react";
 import {
   Button,
   FormErrorMessage,
   ModalCloseButton,
-} from '@opengovsg/design-system-react'
-import { useForm, SubmitHandler } from 'react-hook-form'
+} from "@opengovsg/design-system-react";
+import { SubmitHandler, useForm } from "react-hook-form";
+
 interface PageCreateModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 type PageCreateFormFields = {
-  title: string
-  url: string
-}
+  title: string;
+  url: string;
+};
 
 /* TODO: Can extract these out to a constants file if can be reused */
 const ERROR_MESSAGES = {
-  MIN_LENGTH: 'Minimum length should be 1',
+  MIN_LENGTH: "Minimum length should be 1",
   MAX_LENGTH: (max: number) => `Maximum length should be ${max}`,
   TITLE: {
-    REQUIRED: 'Enter a title for this page',
+    REQUIRED: "Enter a title for this page",
   },
   URL: {
-    REQUIRED: 'Enter a URL for this page.',
+    REQUIRED: "Enter a URL for this page.",
   },
-}
+};
 
 export const PageCreateModal = ({
   isOpen,
   onClose,
 }: PageCreateModalProps): JSX.Element => {
-  const MAX_TITLE_LENGTH = 100
-  const MAX_PAGE_URL_LENGTH = 150
-  const [titleLen, setTitleLen] = useState(0)
-  const [pageUrlLen, setPageUrlLen] = useState(0)
+  const MAX_TITLE_LENGTH = 100;
+  const MAX_PAGE_URL_LENGTH = 150;
+  const [titleLen, setTitleLen] = useState(0);
+  const [pageUrlLen, setPageUrlLen] = useState(0);
 
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<PageCreateFormFields>()
+  } = useForm<PageCreateFormFields>();
 
-  const watchAllFields = watch()
+  const watchAllFields = watch();
 
   useEffect(() => {
-    setTitleLen(watchAllFields.title?.length || 0)
-    setPageUrlLen(watchAllFields.url?.length || 0)
-  }, [watchAllFields])
+    setTitleLen(watchAllFields.title?.length || 0);
+    setPageUrlLen(watchAllFields.url?.length || 0);
+  }, [watchAllFields]);
 
   /* TODO: When integrating with BE */
   const onSubmit: SubmitHandler<PageCreateFormFields> = (data) =>
-    console.log(data)
+    console.log(data);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -82,7 +83,7 @@ export const PageCreateModal = ({
         <ModalCloseButton />
         <form onSubmit={handleSubmit(onSubmit)}>
           <ModalBody>
-            <Stack gap={'1.5em'}>
+            <Stack gap={"1.5em"}>
               <Text fontSize="md" color="base.content.default">
                 You can change these later.
               </Text>
@@ -99,7 +100,7 @@ export const PageCreateModal = ({
                   type="text"
                   placeholder="This is a title for your new page"
                   id="title"
-                  {...register('title', {
+                  {...register("title", {
                     required: ERROR_MESSAGES.TITLE.REQUIRED,
                     validate: (value) =>
                       value.trim().length !== 0 ||
@@ -118,7 +119,7 @@ export const PageCreateModal = ({
                 {errors.title && errors.title.message ? (
                   <FormErrorMessage>{errors.title.message}</FormErrorMessage>
                 ) : (
-                  <FormHelperText mt={'0.5em'} color="base.content.medium">
+                  <FormHelperText mt={"0.5em"} color="base.content.medium">
                     {MAX_TITLE_LENGTH - titleLen} characters left
                   </FormHelperText>
                 )}
@@ -141,9 +142,9 @@ export const PageCreateModal = ({
                   </InputLeftAddon>
                   <Input
                     type="tel"
-                    defaultValue={'hello-world'}
+                    defaultValue={"hello-world"}
                     color="base.content.default"
-                    {...register('url', {
+                    {...register("url", {
                       required: ERROR_MESSAGES.URL.REQUIRED,
                       minLength: {
                         value: 1,
@@ -161,7 +162,7 @@ export const PageCreateModal = ({
                 {errors.url && errors.url.message ? (
                   <FormErrorMessage>{errors.url.message}</FormErrorMessage>
                 ) : (
-                  <FormHelperText mt={'0.5em'} color="base.content.medium">
+                  <FormHelperText mt={"0.5em"} color="base.content.medium">
                     {MAX_PAGE_URL_LENGTH - pageUrlLen} characters left
                   </FormHelperText>
                 )}
@@ -175,7 +176,7 @@ export const PageCreateModal = ({
               mr={5}
               onClick={onClose}
               fontWeight={500}
-              color={'base.content.strong'}
+              color={"base.content.strong"}
             >
               Cancel
             </Button>
@@ -186,7 +187,7 @@ export const PageCreateModal = ({
         </form>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};
 
-export default PageCreateModal
+export default PageCreateModal;

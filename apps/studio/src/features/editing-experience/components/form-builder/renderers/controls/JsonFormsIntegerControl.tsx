@@ -1,3 +1,4 @@
+import type { ControlProps, RankedTester } from "@jsonforms/core";
 import {
   Box,
   FormControl,
@@ -5,7 +6,7 @@ import {
   NumberIncrementStepper,
   NumberInputField,
   NumberInputStepper,
-} from '@chakra-ui/react'
+} from "@chakra-ui/react";
 import {
   and,
   or,
@@ -13,31 +14,30 @@ import {
   schemaMatches,
   schemaTypeIs,
   uiTypeIs,
-  type ControlProps,
-  type RankedTester,
-} from '@jsonforms/core'
-import { withJsonFormsControlProps } from '@jsonforms/react'
+} from "@jsonforms/core";
+import { withJsonFormsControlProps } from "@jsonforms/react";
 import {
   FormErrorMessage,
   FormLabel,
   NumberInput,
-} from '@opengovsg/design-system-react'
-import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
+} from "@opengovsg/design-system-react";
+
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder";
 
 export const jsonFormsIntegerControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.IntegerControl,
   and(
-    uiTypeIs('Control'),
-    or(schemaTypeIs('integer'), schemaTypeIs('number')),
+    uiTypeIs("Control"),
+    or(schemaTypeIs("integer"), schemaTypeIs("number")),
     schemaMatches(
       (schema) =>
-        (Object.prototype.hasOwnProperty.call(schema, 'maximum') ||
-          Object.prototype.hasOwnProperty.call(schema, 'exclusiveMaximum')) &&
-        (Object.prototype.hasOwnProperty.call(schema, 'minimum') ||
-          Object.prototype.hasOwnProperty.call(schema, 'exclusiveMinimum')),
+        (Object.prototype.hasOwnProperty.call(schema, "maximum") ||
+          Object.prototype.hasOwnProperty.call(schema, "exclusiveMaximum")) &&
+        (Object.prototype.hasOwnProperty.call(schema, "minimum") ||
+          Object.prototype.hasOwnProperty.call(schema, "exclusiveMinimum")),
     ),
   ),
-)
+);
 
 export function JsonFormsIntegerControl({
   label,
@@ -54,9 +54,9 @@ export function JsonFormsIntegerControl({
     maximum,
     minimum,
     default: defaultValue,
-  } = schema
-  const min = Number(exclusiveMinimum) + 1 || minimum || 0
-  const max = Number(exclusiveMaximum) - 1 || maximum || 0
+  } = schema;
+  const min = Number(exclusiveMinimum) + 1 || minimum || 0;
+  const max = Number(exclusiveMaximum) - 1 || maximum || 0;
 
   return (
     <Box py={2}>
@@ -77,7 +77,7 @@ export function JsonFormsIntegerControl({
         <FormErrorMessage>{errors}</FormErrorMessage>
       </FormControl>
     </Box>
-  )
+  );
 }
 
-export default withJsonFormsControlProps(JsonFormsIntegerControl)
+export default withJsonFormsControlProps(JsonFormsIntegerControl);

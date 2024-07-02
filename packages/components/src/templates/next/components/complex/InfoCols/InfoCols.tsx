@@ -1,7 +1,7 @@
-import { SUPPORTED_ICONS_MAP, SupportedIconName } from "~/common/icons"
-import type { InfoColsProps } from "~/interfaces"
-import { ComponentContent } from "../../internal/customCssClass"
-import Button from "../Button"
+import type { InfoColsProps } from "~/interfaces";
+import { SUPPORTED_ICONS_MAP, SupportedIconName } from "~/common/icons";
+import { ComponentContent } from "../../internal/customCssClass";
+import Button from "../Button";
 
 const InfoColsHeader = ({
   title,
@@ -17,17 +17,17 @@ const InfoColsHeader = ({
       </p>
     )}
   </div>
-)
+);
 
 const InfoBoxIcon = ({ icon }: { icon?: SupportedIconName }) => {
-  if (!icon) return null
-  const Icon = SUPPORTED_ICONS_MAP[icon]
+  if (!icon) return null;
+  const Icon = SUPPORTED_ICONS_MAP[icon];
   return (
     <div className="rounded-lg bg-site-primary-100 p-2">
       <Icon className="h-auto w-6 text-site-primary" />
     </div>
-  )
-}
+  );
+};
 
 const InfoBoxes = ({
   infoBoxes,
@@ -59,8 +59,8 @@ const InfoBoxes = ({
         </div>
       ))}
     </div>
-  )
-}
+  );
+};
 
 const InfoCols = ({
   backgroundColor,
@@ -69,7 +69,7 @@ const InfoCols = ({
   infoBoxes,
   LinkComponent = "a",
 }: InfoColsProps) => {
-  const bgColor = backgroundColor === "gray" ? "bg-gray-100" : "bg-white"
+  const bgColor = backgroundColor === "gray" ? "bg-gray-100" : "bg-white";
   return (
     <section className={bgColor}>
       <div className={`${ComponentContent} py-24`}>
@@ -79,7 +79,7 @@ const InfoCols = ({
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default InfoCols
+export default InfoCols;

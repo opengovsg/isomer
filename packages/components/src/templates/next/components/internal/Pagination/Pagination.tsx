@@ -1,5 +1,6 @@
-import { BiLeftArrowAlt, BiRightArrowAlt } from "react-icons/bi"
-import type { PaginationProps } from "../../../types/Pagination"
+import { BiLeftArrowAlt, BiRightArrowAlt } from "react-icons/bi";
+
+import type { PaginationProps } from "../../../types/Pagination";
 
 export const Pagination = ({
   totalItems,
@@ -7,7 +8,7 @@ export const Pagination = ({
   currPage,
   setCurrPage,
 }: PaginationProps) => {
-  const totalPages = Math.ceil(totalItems / Math.max(1, itemsPerPage))
+  const totalPages = Math.ceil(totalItems / Math.max(1, itemsPerPage));
 
   return (
     <nav className="grid w-full grid-cols-4" aria-label="Pagination">
@@ -18,7 +19,7 @@ export const Pagination = ({
         disabled={currPage <= 1}
         onClick={() => {
           if (currPage > 1) {
-            setCurrPage(currPage - 1)
+            setCurrPage(currPage - 1);
           }
         }}
       >
@@ -38,7 +39,7 @@ export const Pagination = ({
         disabled={currPage >= totalPages}
         onClick={() => {
           if (currPage < totalPages) {
-            setCurrPage(currPage + 1)
+            setCurrPage(currPage + 1);
           }
         }}
       >
@@ -46,7 +47,7 @@ export const Pagination = ({
         <BiRightArrowAlt className="my-auto text-2xl" />
       </button>
     </nav>
-  )
-}
+  );
+};
 
-export default Pagination
+export default Pagination;

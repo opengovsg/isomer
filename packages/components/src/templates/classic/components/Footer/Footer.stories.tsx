@@ -1,6 +1,7 @@
-import type { StoryFn, Meta } from "@storybook/react"
-import Footer from "./Footer"
-import type { FooterProps } from "~/interfaces"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { FooterProps } from "~/interfaces";
+import Footer from "./Footer";
 
 export default {
   title: "Classic/Components/Footer",
@@ -11,13 +12,13 @@ export default {
       themeOverride: "Isomer Classic",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<FooterProps> = (args) => <Footer {...args} />
+const Template: StoryFn<FooterProps> = (args) => <Footer {...args} />;
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   agencyName: "Isomer Next",
   lastUpdated: "2024-01-28",
@@ -75,4 +76,4 @@ Default.args = {
       ],
     },
   ],
-}
+};

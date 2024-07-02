@@ -4,24 +4,25 @@ import {
   SimpleGrid,
   Stack,
   useMultiStyleConfig,
-} from '@chakra-ui/react'
-import { Button } from '@opengovsg/design-system-react'
-import { BiImageAdd } from 'react-icons/bi'
-import { FileButton } from '~/components/FileButton'
-import { ACCEPTED_FILE_TYPES } from '~/utils/image'
-import { AttachmentFileInfo } from './AttachmentFileInfo'
-import { ImageAttachmentButtonStylesProvider } from './ImageAttachmentButtonContext'
+} from "@chakra-ui/react";
+import { Button } from "@opengovsg/design-system-react";
+import { BiImageAdd } from "react-icons/bi";
+
+import { FileButton } from "~/components/FileButton";
+import { ACCEPTED_FILE_TYPES } from "~/utils/image";
+import { AttachmentFileInfo } from "./AttachmentFileInfo";
+import { ImageAttachmentButtonStylesProvider } from "./ImageAttachmentButtonContext";
 
 export interface ImageAttachmentButtonProps {
-  onChange: (value: File[]) => void
-  value?: File[]
+  onChange: (value: File[]) => void;
+  value?: File[];
 }
 
 export const ImageAttachmentButton = forwardRef<
   ImageAttachmentButtonProps,
-  'button'
+  "button"
 >(({ onChange, value = [] }, ref): JSX.Element => {
-  const styles = useMultiStyleConfig('Attachment', { imagePreview: 'large' })
+  const styles = useMultiStyleConfig("Attachment", { imagePreview: "large" });
 
   return (
     <ImageAttachmentButtonStylesProvider value={styles}>
@@ -37,7 +38,7 @@ export const ImageAttachmentButton = forwardRef<
               key={index}
               file={file}
               handleRemoveFile={() => {
-                onChange(value.filter((_, i) => i !== index))
+                onChange(value.filter((_, i) => i !== index));
               }}
             />
           ))}
@@ -47,7 +48,7 @@ export const ImageAttachmentButton = forwardRef<
           append
           value={value}
           onChange={onChange}
-          accept={ACCEPTED_FILE_TYPES.join(',')}
+          accept={ACCEPTED_FILE_TYPES.join(",")}
         >
           {(fileButtonProps) => {
             return (
@@ -64,12 +65,12 @@ export const ImageAttachmentButton = forwardRef<
                   Add images
                 </Button>
               </Box>
-            )
+            );
           }}
         </FileButton>
       </Stack>
     </ImageAttachmentButtonStylesProvider>
-  )
-})
+  );
+});
 
-ImageAttachmentButton.displayName = 'ImageAttachmentButton'
+ImageAttachmentButton.displayName = "ImageAttachmentButton";

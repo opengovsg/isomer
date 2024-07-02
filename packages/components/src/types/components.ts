@@ -8,16 +8,16 @@ import type {
   HeroProps,
   IframeProps,
   ImageProps,
+  InfobarProps,
   InfoCardsProps,
   InfoColsProps,
-  InfobarProps,
   InfopicProps,
   KeyStatisticsProps,
   OrderedListProps,
   ParagraphProps,
   TableProps,
   UnorderedListProps,
-} from "~/interfaces"
+} from "~/interfaces";
 
 type IsomerComponentProps =
   | AccordionProps
@@ -37,9 +37,9 @@ type IsomerComponentProps =
   | OrderedListProps
   | ParagraphProps
   | TableProps
-  | UnorderedListProps
+  | UnorderedListProps;
 
 export type IsomerComponent = IsomerComponentProps & {
-  sectionIdx?: number
-  indexable?: string[]
-}
+  sectionIdx?: number;
+  indexable?: string[];
+};

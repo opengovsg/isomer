@@ -1,8 +1,9 @@
-import { Meta, StoryFn } from "@storybook/react"
-import { useState } from "react"
-import { SortKey } from "~/interfaces/internal/CollectionSort"
-import CollectionSortProps from "~/templates/next/types/CollectionSort"
-import CollectionSort from "./CollectionSort"
+import { useState } from "react";
+import { Meta, StoryFn } from "@storybook/react";
+
+import { SortKey } from "~/interfaces/internal/CollectionSort";
+import CollectionSortProps from "~/templates/next/types/CollectionSort";
+import CollectionSort from "./CollectionSort";
 
 export default {
   title: "Next/Internal Components/CollectionSort",
@@ -13,12 +14,12 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
 const Template: StoryFn<CollectionSortProps> = (args) => {
-  const [sortBy, setSortBy] = useState<SortKey>(args.sortBy)
-  const [sortDirection, setSortDirection] = useState(args.sortDirection)
+  const [sortBy, setSortBy] = useState<SortKey>(args.sortBy);
+  const [sortDirection, setSortDirection] = useState(args.sortDirection);
   return (
     <CollectionSort
       sortBy={sortBy}
@@ -26,12 +27,12 @@ const Template: StoryFn<CollectionSortProps> = (args) => {
       sortDirection={sortDirection}
       setSortDirection={setSortDirection}
     />
-  )
-}
+  );
+};
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   sortBy: "date",
   sortDirection: "desc",
-}
+};

@@ -1,6 +1,7 @@
-import { BiRightArrowAlt } from "react-icons/bi"
-import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
-import type { InfobarProps } from "~/interfaces"
+import { BiRightArrowAlt } from "react-icons/bi";
+
+import type { InfobarProps } from "~/interfaces";
+import { HomepageSectionWrapper } from "../HomepageSectionWrapper";
 
 const Infobar = ({
   sectionIdx,
@@ -49,7 +50,7 @@ const Infobar = ({
         </div>
       </section>
     </HomepageSectionWrapper>
-  )
-}
+  );
+};
 
-export default Infobar
+export default Infobar;

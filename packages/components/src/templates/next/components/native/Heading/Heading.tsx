@@ -1,5 +1,5 @@
-import type { HeadingProps } from "~/interfaces"
-import { getTextAsHtml } from "~/utils"
+import type { HeadingProps } from "~/interfaces";
+import { getTextAsHtml } from "~/utils";
 
 const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
   if (level === 2) {
@@ -10,7 +10,7 @@ const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
       >
         {getTextAsHtml(content)}
       </h2>
-    )
+    );
   }
   if (level === 3) {
     return (
@@ -20,7 +20,7 @@ const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
       >
         {getTextAsHtml(content)}
       </h3>
-    )
+    );
   }
   if (level === 4) {
     return (
@@ -30,7 +30,7 @@ const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
       >
         {getTextAsHtml(content)}
       </h4>
-    )
+    );
   }
   if (level === 5) {
     return (
@@ -40,7 +40,7 @@ const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
       >
         {getTextAsHtml(content)}
       </h5>
-    )
+    );
   }
   return (
     <h6
@@ -49,7 +49,7 @@ const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
     >
       {getTextAsHtml(content)}
     </h6>
-  )
-}
+  );
+};
 
-export default Heading
+export default Heading;

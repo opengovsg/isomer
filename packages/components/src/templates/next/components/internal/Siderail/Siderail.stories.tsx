@@ -1,6 +1,7 @@
-import { Meta, StoryFn } from "@storybook/react"
-import Siderail from "./Siderail"
-import type { SiderailProps } from "~/interfaces"
+import { Meta, StoryFn } from "@storybook/react";
+
+import type { SiderailProps } from "~/interfaces";
+import Siderail from "./Siderail";
 
 export default {
   title: "Next/Internal Components/Siderail",
@@ -11,13 +12,13 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<SiderailProps> = (args) => <Siderail {...args} />
+const Template: StoryFn<SiderailProps> = (args) => <Siderail {...args} />;
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   parentTitle: "Alice and Peter Tan Research Grant",
   parentUrl: "/",
@@ -68,9 +69,9 @@ Default.args = {
       url: "/item-4",
     },
   ],
-}
+};
 
-export const NoChildren = Template.bind({})
+export const NoChildren = Template.bind({});
 NoChildren.args = {
   parentTitle: "Alice and Peter Tan Research Grant",
   parentUrl: "/",
@@ -93,4 +94,4 @@ NoChildren.args = {
       url: "/item-4",
     },
   ],
-}
+};

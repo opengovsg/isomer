@@ -5,9 +5,9 @@ import type {
   HeroGradientProps,
   HeroProps,
   HeroSplitProps,
-} from "~/interfaces/complex/Hero"
-import { ComponentContent } from "../../internal/customCssClass"
-import Button from "../Button"
+} from "~/interfaces/complex/Hero";
+import { ComponentContent } from "../../internal/customCssClass";
+import Button from "../Button";
 
 const HeroGradient = ({
   alignment = "left",
@@ -64,8 +64,8 @@ const HeroGradient = ({
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
 const HeroSplit = ({
   alignment = "left",
@@ -78,8 +78,8 @@ const HeroSplit = ({
   secondaryButtonUrl,
   backgroundUrl,
 }: HeroSplitProps) => {
-  const bgColor = backgroundColor === "black" ? "bg-canvas-dark" : "bg-white"
-  const textColor = backgroundColor === "black" ? "text-white" : "text-black"
+  const bgColor = backgroundColor === "black" ? "bg-canvas-dark" : "bg-white";
+  const textColor = backgroundColor === "black" ? "text-white" : "text-black";
 
   return (
     <>
@@ -145,8 +145,8 @@ const HeroSplit = ({
         />
       </section>
     </>
-  )
-}
+  );
+};
 
 const HeroFloating = ({
   alignment = "left",
@@ -159,8 +159,8 @@ const HeroFloating = ({
   secondaryButtonUrl,
   backgroundUrl,
 }: Omit<HeroFloatingProps, "variant">) => {
-  const bgColor = backgroundColor === "black" ? "bg-canvas-dark" : "bg-white"
-  const textColor = backgroundColor === "black" ? "text-white" : "text-black"
+  const bgColor = backgroundColor === "black" ? "bg-canvas-dark" : "bg-white";
+  const textColor = backgroundColor === "black" ? "text-white" : "text-black";
 
   return (
     <section className="flex min-h-[15rem] sm:min-h-[22.5rem] md:min-h-[31.25rem]">
@@ -209,8 +209,8 @@ const HeroFloating = ({
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
 const HeroCopyLed = ({
   title,
@@ -257,8 +257,8 @@ const HeroCopyLed = ({
         ></div>
       )}
     </section>
-  )
-}
+  );
+};
 
 const HeroFloatingImage = ({
   title,
@@ -317,8 +317,8 @@ const HeroFloatingImage = ({
         />
       </section>
     </>
-  )
-}
+  );
+};
 
 const Hero = (props: HeroProps) => {
   return (
@@ -329,7 +329,7 @@ const Hero = (props: HeroProps) => {
       {props.variant === "copyled" && <HeroCopyLed {...props} />}
       {props.variant === "floatingimage" && <HeroFloatingImage {...props} />}
     </>
-  )
-}
+  );
+};
 
-export default Hero
+export default Hero;

@@ -1,18 +1,18 @@
-import type { ButtonProps } from "~/interfaces"
-import type { ButtonColorScheme } from "~/interfaces/complex/Button"
-import { SUPPORTED_ICONS_MAP } from "~/common/icons"
+import type { ButtonProps } from "~/interfaces";
+import type { ButtonColorScheme } from "~/interfaces/complex/Button";
+import { SUPPORTED_ICONS_MAP } from "~/common/icons";
 
 const Label = ({ label }: Pick<ButtonProps, "label">) => (
   <span className="text-center text-lg font-medium leading-tight">{label}</span>
-)
+);
 
 const RightIcon = ({ rightIcon }: Pick<ButtonProps, "rightIcon">) => {
   if (!rightIcon) {
-    return null
+    return null;
   }
-  const Icon = SUPPORTED_ICONS_MAP[rightIcon]
-  return <Icon className="h-auto min-w-5" />
-}
+  const Icon = SUPPORTED_ICONS_MAP[rightIcon];
+  return <Icon className="h-auto min-w-5" />;
+};
 
 const BaseButton = ({
   label,
@@ -22,8 +22,8 @@ const BaseButton = ({
   isLinkVariant = false,
   LinkComponent = "a",
 }: Omit<ButtonProps, "type"> & {
-  className?: string
-  isLinkVariant?: boolean
+  className?: string;
+  isLinkVariant?: boolean;
 }) => {
   return (
     <LinkComponent
@@ -38,28 +38,28 @@ const BaseButton = ({
       <Label label={label} />
       <RightIcon rightIcon={rightIcon} />
     </LinkComponent>
-  )
-}
+  );
+};
 
 const SolidButton = (props: Omit<ButtonProps, "type">) => {
   const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
     white: "bg-content-inverse text-content",
     black:
       "bg-interaction-main text-content-inverse hover:bg-interaction-main-hover",
-  }
+  };
   return (
     <BaseButton
       {...props}
       className={`${colorSchemeClassMap[props.colorScheme ?? "black"]}`}
     />
-  )
-}
+  );
+};
 
 const OutlineButton = (props: Omit<ButtonProps, "type">) => {
   const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
     white: "text-content-inverse border-content-inverse hover:bg-transparent",
     black: "text-content border-interaction-main",
-  }
+  };
 
   return (
     <BaseButton
@@ -68,14 +68,14 @@ const OutlineButton = (props: Omit<ButtonProps, "type">) => {
         colorSchemeClassMap[props.colorScheme ?? "black"]
       } border bg-transparent`}
     />
-  )
-}
+  );
+};
 
 const GhostButton = (props: Omit<ButtonProps, "type">) => {
   const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
     white: "text-content-inverse",
     black: "text-content",
-  }
+  };
 
   return (
     <BaseButton
@@ -84,14 +84,14 @@ const GhostButton = (props: Omit<ButtonProps, "type">) => {
         colorSchemeClassMap[props.colorScheme ?? "black"]
       } bg-transparent`}
     />
-  )
-}
+  );
+};
 
 const LinkButton = (props: Omit<ButtonProps, "type">) => {
   const colorSchemeClassMap: Record<ButtonColorScheme, string> = {
     white: "text-content-inverse",
     black: "text-content",
-  }
+  };
 
   return (
     <BaseButton
@@ -101,18 +101,18 @@ const LinkButton = (props: Omit<ButtonProps, "type">) => {
       } hover:underline hover:underline-offset-2`}
       isLinkVariant
     />
-  )
-}
+  );
+};
 
 const Button = (props: Omit<ButtonProps, "type">) => {
   if (props.variant === "outline") {
-    return <OutlineButton {...props} />
+    return <OutlineButton {...props} />;
   } else if (props.variant === "ghost") {
-    return <GhostButton {...props} />
+    return <GhostButton {...props} />;
   } else if (props.variant === "link") {
-    return <LinkButton {...props} />
+    return <LinkButton {...props} />;
   }
-  return <SolidButton {...props} />
-}
+  return <SolidButton {...props} />;
+};
 
-export default Button
+export default Button;

@@ -1,5 +1,6 @@
-import { type Attributes, type ComponentType, type ReactNode } from 'react'
-import Suspense from '~/components/Suspense'
+import { type Attributes, type ComponentType, type ReactNode } from "react";
+
+import Suspense from "~/components/Suspense";
 
 /**
  * Wraps the React Component with Suspense and FallbackComponent while loading.
@@ -27,7 +28,7 @@ export function withSuspense<P>(
       <Suspense fallback={FallbackComponent}>
         <WrappedComponent {...(props as P & Attributes)} />
       </Suspense>
-    )
-  }
-  return WithSuspense
+    );
+  };
+  return WithSuspense;
 }

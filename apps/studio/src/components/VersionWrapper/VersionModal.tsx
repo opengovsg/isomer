@@ -1,31 +1,31 @@
+import { useCallback } from "react";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Button,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   useBreakpointValue,
-} from '@chakra-ui/react'
-import { ModalCloseButton } from '@opengovsg/design-system-react'
-import { useCallback } from 'react'
-import { BiRefresh } from 'react-icons/bi'
+} from "@chakra-ui/react";
+import { ModalCloseButton } from "@opengovsg/design-system-react";
+import { BiRefresh } from "react-icons/bi";
 
 interface VersionModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export const VersionModal = ({ isOpen, onClose }: VersionModalProps) => {
   const onRefresh = useCallback(() => {
-    window.location.reload()
-  }, [])
+    window.location.reload();
+  }, []);
 
   const modalSize = useBreakpointValue({
-    base: 'mobile',
-    md: 'md',
-  })
+    base: "mobile",
+    md: "md",
+  });
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
@@ -49,5 +49,5 @@ export const VersionModal = ({ isOpen, onClose }: VersionModalProps) => {
         </ModalFooter>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};

@@ -1,4 +1,4 @@
-@use './Editor.module.scss';
+@use "./Editor.module.scss";
 
 .tiptap:focus {
   outline: none;
@@ -36,7 +36,7 @@
 
     .selectedCell:after {
       background: rgba(200, 200, 255, 0.2);
-      content: '';
+      content: "";
       left: 0;
       right: 0;
       top: 0;
@@ -86,7 +86,7 @@
     background: #0d0d0d;
     border-radius: 0.5rem;
     color: #fff;
-    font-family: 'JetBrainsMono', monospace;
+    font-family: "JetBrainsMono", monospace;
     padding: 0.75rem 1rem;
 
     code {
@@ -121,7 +121,7 @@
     margin: 2rem 0;
   }
 
-  ul[data-type='taskList'] {
+  ul[data-type="taskList"] {
     list-style: none;
     padding: 0;
 
@@ -141,14 +141,14 @@
     }
   }
 
-  .node-detailGroup * [data-type='details']:first-child {
+  .node-detailGroup * [data-type="details"]:first-child {
     border-top: 0;
   }
-  .node-detailGroup * [data-type='details']:last-child {
+  .node-detailGroup * [data-type="details"]:last-child {
     border-bottom: 0;
   }
 
-  [data-type='details'] {
+  [data-type="details"] {
     display: flex;
     border-bottom: 1px solid #d4d4d4;
     padding: 0.5rem;
@@ -168,8 +168,8 @@
 
       &::after {
         // Using sgds-icons.chevron-down
-        font-family: 'sgds-icons';
-        content: '\E93C';
+        font-family: "sgds-icons";
+        content: "\E93C";
         justify-content: center;
         align-items: center;
         width: 1.5em;
@@ -191,8 +191,8 @@
 
     &.is-open > button::after {
       // Using sgds-icons.chevron-down
-      font-family: 'sgds-icons';
-      content: '\E93C';
+      font-family: "sgds-icons";
+      content: "\E93C";
       transform: rotate(180deg);
     }
 

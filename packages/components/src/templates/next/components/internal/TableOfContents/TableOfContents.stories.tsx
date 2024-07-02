@@ -1,6 +1,7 @@
-import { Meta, StoryFn } from "@storybook/react"
-import TableOfContents from "./TableOfContents"
-import type { TableOfContentsProps } from "~/interfaces"
+import { Meta, StoryFn } from "@storybook/react";
+
+import type { TableOfContentsProps } from "~/interfaces";
+import TableOfContents from "./TableOfContents";
 
 export default {
   title: "Next/Internal Components/TableOfContents",
@@ -11,15 +12,15 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
 const Template: StoryFn<TableOfContentsProps> = (args) => (
   <TableOfContents {...args} />
-)
+);
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   items: [
     {
@@ -35,4 +36,4 @@ Default.args = {
       anchorLink: "#second-paragraph",
     },
   ],
-}
+};

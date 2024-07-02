@@ -1,6 +1,6 @@
 export interface FooterItem {
-  title: string
-  url: string
+  title: string;
+  url: string;
 }
 
 export const SocialMediaTypes = [
@@ -12,30 +12,30 @@ export const SocialMediaTypes = [
   "youtube",
   "github",
   "tiktok",
-] as const
+] as const;
 
-export type SocialMediaType = (typeof SocialMediaTypes)[number]
+export type SocialMediaType = (typeof SocialMediaTypes)[number];
 
 export interface SocialMediaLink {
-  type: SocialMediaType
-  url: string
+  type: SocialMediaType;
+  url: string;
 }
 
 export interface SiteConfigFooterProps {
-  siteNavItems: FooterItem[]
-  customNavItems?: FooterItem[]
-  socialMediaLinks?: SocialMediaLink[]
-  contactUsLink?: string
-  feedbackFormLink?: string
-  privacyStatementLink: string
-  termsOfUseLink: string
-  siteMapLink?: string
+  siteNavItems: FooterItem[];
+  customNavItems?: FooterItem[];
+  socialMediaLinks?: SocialMediaLink[];
+  contactUsLink?: string;
+  feedbackFormLink?: string;
+  privacyStatementLink: string;
+  termsOfUseLink: string;
+  siteMapLink?: string;
 }
 
 export interface FooterProps extends SiteConfigFooterProps {
-  LinkComponent?: any
-  isGovernment?: boolean
-  siteName: string
-  agencyName: string
-  lastUpdated: string
+  LinkComponent?: any;
+  isGovernment?: boolean;
+  siteName: string;
+  agencyName: string;
+  lastUpdated: string;
 }

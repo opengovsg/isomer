@@ -1,1 +1,1 @@
-export { default } from "./CollectionSearch"
+export { default } from "./CollectionSearch";

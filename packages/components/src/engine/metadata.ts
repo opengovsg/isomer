@@ -1,5 +1,5 @@
-import { getSitemapAsArray } from "~/utils"
-import type { IsomerPageSchema, IsomerSitemap } from "~/types"
+import type { IsomerPageSchema, IsomerSitemap } from "~/types";
+import { getSitemapAsArray } from "~/utils";
 
 export const getMetadata = (props: IsomerPageSchema) => {
   const metadata = {
@@ -19,17 +19,17 @@ export const getMetadata = (props: IsomerPageSchema) => {
     twitter: {
       card: "summary_large_image" as const,
     },
-  }
+  };
 
   if (props.page.permalink === "/") {
-    return metadata
+    return metadata;
   }
 
   return {
     ...metadata,
     title: props.page.title,
-  }
-}
+  };
+};
 
 export const getRobotsTxt = (props: IsomerPageSchema) => {
   const rules = [
@@ -37,7 +37,7 @@ export const getRobotsTxt = (props: IsomerPageSchema) => {
       userAgent: "*",
       allow: "/",
     },
-  ]
+  ];
 
   return {
     sitemap: props.site.url ? `${props.site.url}/sitemap.xml` : undefined,
@@ -48,8 +48,8 @@ export const getRobotsTxt = (props: IsomerPageSchema) => {
             disallow: "/",
           }
         : rules,
-  }
-}
+  };
+};
 
 export const getSitemapXml = (sitemap: IsomerSitemap) => {
   return getSitemapAsArray(sitemap)
@@ -57,5 +57,5 @@ export const getSitemapXml = (sitemap: IsomerSitemap) => {
     .map(({ permalink, lastModified }) => ({
       url: permalink,
       lastModified,
-    }))
-}
+    }));
+};

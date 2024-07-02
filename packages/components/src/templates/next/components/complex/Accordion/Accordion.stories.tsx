@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import type { AccordionProps } from "~/interfaces"
-import Accordion from "./Accordion"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { AccordionProps } from "~/interfaces";
+import Accordion from "./Accordion";
 
 export default {
   title: "Next/Components/Accordion",
@@ -11,7 +12,7 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
 const Template: StoryFn<AccordionProps> = (args) => (
@@ -20,9 +21,9 @@ const Template: StoryFn<AccordionProps> = (args) => (
     <Accordion {...args} />
     <Accordion {...args} />
   </>
-)
+);
 
-export const Basic = Template.bind({})
+export const Basic = Template.bind({});
 Basic.args = {
   summary: "Title for accordion item",
   details: [
@@ -36,9 +37,9 @@ Basic.args = {
       ],
     },
   ],
-}
+};
 
-export const LongContent = Template.bind({})
+export const LongContent = Template.bind({});
 LongContent.args = {
   summary:
     "What if I am subject to payment from the Central Repository of Funds but I haven't received the funds yet? What happens then? What if I am subject to payment from the Central Repository of Funds but I haven't received the funds yet? What happens then?",
@@ -91,9 +92,9 @@ LongContent.args = {
       ],
     },
   ],
-}
+};
 
-export const WithImage = Template.bind({})
+export const WithImage = Template.bind({});
 WithImage.args = {
   summary: "Title for accordion item with image",
   details: [
@@ -107,4 +108,4 @@ WithImage.args = {
       alt: "Placeholder image",
     },
   ],
-}
+};

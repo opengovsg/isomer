@@ -1,11 +1,12 @@
-import type { ComponentProps } from 'react'
-import { chakra } from '@chakra-ui/react'
-import NextLink from 'next/link'
-import { useNavigationalTabListStyles } from './NavigationalTabList'
+import type { ComponentProps } from "react";
+import NextLink from "next/link";
+import { chakra } from "@chakra-ui/react";
+
+import { useNavigationalTabListStyles } from "./NavigationalTabList";
 
 interface NavigationTabProps extends ComponentProps<typeof NextLink> {
-  isActive?: boolean
-  isDisabled?: boolean
+  isActive?: boolean;
+  isDisabled?: boolean;
 }
 
 /** Must be nested inside NavigationTabList component, uses styles provided by that component. */
@@ -15,7 +16,7 @@ export const NavigationTab = ({
   children,
   ...props
 }: NavigationTabProps) => {
-  const styles = useNavigationalTabListStyles()
+  const styles = useNavigationalTabListStyles();
 
   if (isDisabled) {
     return (
@@ -27,7 +28,7 @@ export const NavigationTab = ({
       >
         {children}
       </chakra.a>
-    )
+    );
   }
 
   return (
@@ -39,5 +40,5 @@ export const NavigationTab = ({
     >
       {children}
     </chakra.link>
-  )
-}
+  );
+};

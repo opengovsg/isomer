@@ -1,8 +1,8 @@
-import type { ImageProps } from "~/interfaces"
+import type { ImageProps } from "~/interfaces";
 
 const Image = ({ src, alt, width }: Omit<ImageProps, "type">) => (
   <img src={src} alt={alt} width={`${width ?? 100}%`} height={"auto"} />
-)
+);
 
 const ImageComponent = ({ src, alt, width, href }: ImageProps) => {
   return (
@@ -21,7 +21,7 @@ const ImageComponent = ({ src, alt, width, href }: ImageProps) => {
         <Image src={src} alt={alt} width={width}></Image>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default ImageComponent
+export default ImageComponent;

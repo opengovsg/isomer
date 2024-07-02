@@ -1,3 +1,3 @@
 export interface ContentProps {
-  markdown: string
+  markdown: string;
 }

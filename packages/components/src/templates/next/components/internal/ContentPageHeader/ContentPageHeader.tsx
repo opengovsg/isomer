@@ -1,8 +1,8 @@
-import type { ContentPageHeaderProps } from "~/interfaces"
-import { getFormattedDate } from "~/utils"
-import Button from "../../complex/Button"
-import BaseParagraph from "../BaseParagraph"
-import Breadcrumb from "../Breadcrumb"
+import type { ContentPageHeaderProps } from "~/interfaces";
+import { getFormattedDate } from "~/utils";
+import Button from "../../complex/Button";
+import BaseParagraph from "../BaseParagraph";
+import Breadcrumb from "../Breadcrumb";
 
 const ContentPageHeader = ({
   title,
@@ -44,7 +44,7 @@ const ContentPageHeader = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ContentPageHeader
+export default ContentPageHeader;

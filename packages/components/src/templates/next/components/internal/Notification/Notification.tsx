@@ -1,15 +1,16 @@
-"use client"
+"use client";
 
-import { BiX } from "react-icons/bi"
-import { useState } from "react"
-import BaseParagraph from "../BaseParagraph"
-import type { NotificationProps } from "~/interfaces"
+import { useState } from "react";
+import { BiX } from "react-icons/bi";
+
+import type { NotificationProps } from "~/interfaces";
+import BaseParagraph from "../BaseParagraph";
 
 const NotificationBanner = ({ content }: NotificationProps) => {
-  const [isShown, setIsShown] = useState(true)
+  const [isShown, setIsShown] = useState(true);
   const onDismiss = () => {
-    setIsShown(false)
-  }
+    setIsShown(false);
+  };
 
   return (
     isShown && (
@@ -28,7 +29,7 @@ const NotificationBanner = ({ content }: NotificationProps) => {
         </button>
       </div>
     )
-  )
-}
+  );
+};
 
-export default NotificationBanner
+export default NotificationBanner;

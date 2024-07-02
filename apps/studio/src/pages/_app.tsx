@@ -1,27 +1,28 @@
-import '@fontsource/ibm-plex-mono' // Import if using code textStyles.
-import 'inter-ui/inter.css' // Strongly recommended.
-import '../styles/tailwind.css'
-import '../styles/editor/editorStyles.scss'
+import "@fontsource/ibm-plex-mono"; // Import if using code textStyles.
+import "inter-ui/inter.css"; // Strongly recommended.
+import "../styles/tailwind.css";
+import "../styles/editor/editorStyles.scss";
 
-import { Skeleton, Stack } from '@chakra-ui/react'
-import { ThemeProvider } from '@opengovsg/design-system-react'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import type { AppProps, AppType } from 'next/app'
-import Suspense from '~/components/Suspense'
-import { type NextPageWithLayout } from '~/lib/types'
-import { DefaultLayout } from '~/templates/layouts/DefaultLayout'
-import { theme } from '~/theme'
-import { trpc } from '~/utils/trpc'
-import { EnvProvider, FeatureProvider } from '~/components/AppProviders'
-import { LoginStateProvider } from '~/features/auth'
-import { env } from '~/env.mjs'
-import { VersionWrapper } from '~/components/VersionWrapper'
-import { ErrorBoundary } from 'react-error-boundary'
-import { DefaultFallback } from '~/components/ErrorBoundary/DefaultFallback'
+import type { AppProps, AppType } from "next/app";
+import { Skeleton, Stack } from "@chakra-ui/react";
+import { ThemeProvider } from "@opengovsg/design-system-react";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ErrorBoundary } from "react-error-boundary";
+
+import { EnvProvider, FeatureProvider } from "~/components/AppProviders";
+import { DefaultFallback } from "~/components/ErrorBoundary/DefaultFallback";
+import Suspense from "~/components/Suspense";
+import { VersionWrapper } from "~/components/VersionWrapper";
+import { env } from "~/env.mjs";
+import { LoginStateProvider } from "~/features/auth";
+import { type NextPageWithLayout } from "~/lib/types";
+import { DefaultLayout } from "~/templates/layouts/DefaultLayout";
+import { theme } from "~/theme";
+import { trpc } from "~/utils/trpc";
 
 type AppPropsWithAuthAndLayout = AppProps & {
-  Component: NextPageWithLayout
-}
+  Component: NextPageWithLayout;
+};
 
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {
   return (
@@ -34,7 +35,7 @@ const MyApp = ((props: AppPropsWithAuthAndLayout) => {
                 <Stack spacing={0} minH="$100vh">
                   <VersionWrapper />
                   <ChildWithLayout {...props} />
-                  {process.env.NODE_ENV !== 'production' && (
+                  {process.env.NODE_ENV !== "production" && (
                     <ReactQueryDevtools initialIsOpen={false} />
                   )}
                 </Stack>
@@ -44,15 +45,15 @@ const MyApp = ((props: AppPropsWithAuthAndLayout) => {
         </ThemeProvider>
       </LoginStateProvider>
     </EnvProvider>
-  )
-}) as AppType
+  );
+}) as AppType;
 
 // This is needed so suspense will be triggered for anything within the LayoutComponents which uses useSuspenseQuery
 function ChildWithLayout({ Component, pageProps }: AppPropsWithAuthAndLayout) {
   const getLayout =
-    Component.getLayout ?? ((page) => <DefaultLayout>{page}</DefaultLayout>)
+    Component.getLayout ?? ((page) => <DefaultLayout>{page}</DefaultLayout>);
 
-  return <>{getLayout(<Component {...pageProps} />)}</>
+  return <>{getLayout(<Component {...pageProps} />)}</>;
 }
 
-export default trpc.withTRPC(MyApp)
+export default trpc.withTRPC(MyApp);

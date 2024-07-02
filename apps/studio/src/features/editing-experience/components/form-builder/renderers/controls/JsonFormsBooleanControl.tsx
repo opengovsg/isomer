@@ -1,22 +1,19 @@
-import { Box, FormControl } from '@chakra-ui/react'
-import {
-  isBooleanControl,
-  rankWith,
-  type ControlProps,
-  type RankedTester,
-} from '@jsonforms/core'
-import { withJsonFormsControlProps } from '@jsonforms/react'
+import type { ControlProps, RankedTester } from "@jsonforms/core";
+import { Box, FormControl } from "@chakra-ui/react";
+import { isBooleanControl, rankWith } from "@jsonforms/core";
+import { withJsonFormsControlProps } from "@jsonforms/react";
 import {
   FormErrorMessage,
   FormLabel,
   Switch,
-} from '@opengovsg/design-system-react'
-import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
+} from "@opengovsg/design-system-react";
+
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder";
 
 export const jsonFormsBooleanControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.BooleanControl,
   isBooleanControl,
-)
+);
 
 export function JsonFormsBooleanControl({
   data,
@@ -43,7 +40,7 @@ export function JsonFormsBooleanControl({
         <FormErrorMessage>{errors}</FormErrorMessage>
       </FormControl>
     </Box>
-  )
+  );
 }
 
-export default withJsonFormsControlProps(JsonFormsBooleanControl)
+export default withJsonFormsControlProps(JsonFormsBooleanControl);

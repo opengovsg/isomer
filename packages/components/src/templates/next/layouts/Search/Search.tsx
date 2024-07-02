@@ -1,5 +1,5 @@
-import { SearchPageSchema } from "~/engine"
-import { Skeleton } from "../Skeleton"
+import { SearchPageSchema } from "~/engine";
+import { Skeleton } from "../Skeleton";
 
 const SearchLayout = ({
   site,
@@ -9,7 +9,7 @@ const SearchLayout = ({
 }: SearchPageSchema) => {
   const clientId =
     (site.search && site.search.type === "searchSG" && site.search.clientId) ||
-    ""
+    "";
 
   return (
     <Skeleton
@@ -33,7 +33,7 @@ const SearchLayout = ({
         </>
       )}
     </Skeleton>
-  )
-}
+  );
+};
 
-export default SearchLayout
+export default SearchLayout;

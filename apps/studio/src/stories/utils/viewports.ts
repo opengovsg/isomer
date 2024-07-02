@@ -1,4 +1,4 @@
-import { theme } from '~/theme'
+import { theme } from "~/theme";
 
 /**
  * Helper function to convert theme breakpoint into viewport width in px for
@@ -9,9 +9,9 @@ import { theme } from '~/theme'
 const breakpointToViewportWidth = (
   breakpoint: keyof typeof theme.breakpoints,
 ) => {
-  const rem = 16
-  return parseInt(theme.breakpoints[breakpoint]) * rem
-}
+  const rem = 16;
+  return parseInt(theme.breakpoints[breakpoint]) * rem;
+};
 
 /**
  * Viewports mapping viewport key to their width in (pixel) number.
@@ -19,26 +19,26 @@ const breakpointToViewportWidth = (
  */
 export const viewports = {
   xs: 320, // '20rem'
-  sm: breakpointToViewportWidth('sm'),
-  md: breakpointToViewportWidth('md'),
-  lg: breakpointToViewportWidth('lg'),
-  xl: breakpointToViewportWidth('xl'),
-}
+  sm: breakpointToViewportWidth("sm"),
+  md: breakpointToViewportWidth("md"),
+  lg: breakpointToViewportWidth("lg"),
+  xl: breakpointToViewportWidth("xl"),
+};
 
 export const getMobileViewParameters = () => {
   return {
     viewport: {
-      defaultViewport: 'mobile1',
+      defaultViewport: "mobile1",
     },
     chromatic: { viewports: [viewports.xs] },
-  }
-}
+  };
+};
 
 export const getTabletViewParameters = () => {
   return {
     viewport: {
-      defaultViewport: 'tablet',
+      defaultViewport: "tablet",
     },
     chromatic: { viewports: [viewports.md] },
-  }
-}
+  };
+};

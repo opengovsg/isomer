@@ -1,7 +1,7 @@
-import type { ProseContent } from "../native"
+import type { ProseContent } from "../native";
 
 export interface AccordionProps {
-  type: "accordion"
-  summary: string
-  details: ProseContent
+  type: "accordion";
+  summary: string;
+  details: ProseContent;
 }

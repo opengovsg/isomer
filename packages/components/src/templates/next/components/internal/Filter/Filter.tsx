@@ -1,8 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { BiChevronDown } from "react-icons/bi"
-import type { FilterProps } from "../../../types/Filter"
+import { useState } from "react";
+import { BiChevronDown } from "react-icons/bi";
+
+import type { FilterProps } from "../../../types/Filter";
 
 const Filter = ({
   filters,
@@ -11,11 +12,11 @@ const Filter = ({
 }: FilterProps) => {
   const [showFilter, setShowFilter] = useState<Record<string, boolean>>(
     filters.reduce((acc, { id }) => ({ ...acc, [id]: true }), {}),
-  )
+  );
 
   const updateFilterToggle = (filterId: string) => {
-    setShowFilter({ ...showFilter, [filterId]: !showFilter[filterId] })
-  }
+    setShowFilter({ ...showFilter, [filterId]: !showFilter[filterId] });
+  };
 
   return (
     <div className="divide-divider-medium last:border-b-divider-medium flex flex-col divide-y last:border-b">
@@ -67,7 +68,7 @@ const Filter = ({
         </div>
       ))}
     </div>
-  )
-}
+  );
+};
 
-export default Filter
+export default Filter;

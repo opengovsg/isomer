@@ -1,4 +1,4 @@
 export interface PillProps {
-  content: string
-  onClose: () => void
+  content: string;
+  onClose: () => void;
 }

@@ -1,5 +1,6 @@
-import { BiRightArrowAlt } from "react-icons/bi"
-import type { TableOfContentsProps } from "~/interfaces"
+import { BiRightArrowAlt } from "react-icons/bi";
+
+import type { TableOfContentsProps } from "~/interfaces";
 
 const TableOfContents = ({ items }: TableOfContentsProps) => {
   return (
@@ -19,7 +20,7 @@ const TableOfContents = ({ items }: TableOfContentsProps) => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TableOfContents
+export default TableOfContents;

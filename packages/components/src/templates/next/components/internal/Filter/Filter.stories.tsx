@@ -1,7 +1,8 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import { useState } from "react"
-import type { AppliedFilter, FilterProps } from "../../../types/Filter"
-import Filter from "./Filter"
+import type { Meta, StoryFn } from "@storybook/react";
+import { useState } from "react";
+
+import type { AppliedFilter, FilterProps } from "../../../types/Filter";
+import Filter from "./Filter";
 
 export default {
   title: "Next/Internal Components/Filter",
@@ -12,24 +13,24 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
 const Template: StoryFn<
   Omit<FilterProps, "appliedFilters" | "setAppliedFilters">
 > = (args) => {
-  const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([])
+  const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([]);
   return (
     <Filter
       appliedFilters={appliedFilters}
       setAppliedFilters={setAppliedFilters}
       {...args}
     />
-  )
-}
+  );
+};
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   filters: [
     {
@@ -64,4 +65,4 @@ Default.args = {
       ],
     },
   ],
-}
+};

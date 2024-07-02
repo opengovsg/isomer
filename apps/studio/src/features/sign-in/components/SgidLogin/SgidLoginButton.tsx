@@ -1,25 +1,26 @@
-import { Button } from '@opengovsg/design-system-react'
-import { useRouter } from 'next/router'
-import { trpc } from '~/utils/trpc'
-import { Box, Divider, Flex, HStack, Stack, Text } from '@chakra-ui/react'
-import { SingpassFullLogo } from '~/components/Svg/SingpassFullLogo'
-import { getRedirectUrl } from '~/utils/url'
+import { useRouter } from "next/router";
+import { Box, Divider, Flex, HStack, Stack, Text } from "@chakra-ui/react";
+import { Button } from "@opengovsg/design-system-react";
+
+import { SingpassFullLogo } from "~/components/Svg/SingpassFullLogo";
+import { trpc } from "~/utils/trpc";
+import { getRedirectUrl } from "~/utils/url";
 
 export const SgidLoginButton = (): JSX.Element | null => {
-  const router = useRouter()
+  const router = useRouter();
   const sgidLoginMutation = trpc.auth.sgid.login.useMutation({
     onSuccess: async ({ redirectUrl }) => {
-      await router.push(redirectUrl)
+      await router.push(redirectUrl);
     },
-  })
+  });
 
-  const landingUrl = getRedirectUrl(router.query)
+  const landingUrl = getRedirectUrl(router.query);
 
   const handleSgidLogin = () => {
     return sgidLoginMutation.mutate({
       landingUrl,
-    })
-  }
+    });
+  };
 
   return (
     <>
@@ -50,5 +51,5 @@ export const SgidLoginButton = (): JSX.Element | null => {
         <Text textStyle="caption-2">For whitelisted government users only</Text>
       </Stack>
     </>
-  )
-}
+  );
+};

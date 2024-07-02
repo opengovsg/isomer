@@ -1,7 +1,8 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import type { SearchPageSchema } from "~/engine"
-import SearchLayout from "./Search"
-import { useEffect } from "react"
+import type { Meta, StoryFn } from "@storybook/react";
+import { useEffect } from "react";
+
+import type { SearchPageSchema } from "~/engine";
+import SearchLayout from "./Search";
 
 export default {
   title: "Next/Layouts/Search",
@@ -12,31 +13,31 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
-const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
+const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4";
 
 // Template for stories
 const Template: StoryFn<SearchPageSchema> = (args) => {
   // Note: This is needed because the script tag is not rendered in the storybook
   useEffect(() => {
-    if (args.site.search && args.site.search.type !== "searchSG") return
+    if (args.site.search && args.site.search.type !== "searchSG") return;
 
-    const scriptTag = document.createElement("script")
-    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${TEST_CLIENT_ID}&page=result`
-    scriptTag.setAttribute("defer", "")
-    document.body.appendChild(scriptTag)
+    const scriptTag = document.createElement("script");
+    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${TEST_CLIENT_ID}&page=result`;
+    scriptTag.setAttribute("defer", "");
+    document.body.appendChild(scriptTag);
 
     return () => {
-      document.body.removeChild(scriptTag)
-    }
-  }, [])
+      document.body.removeChild(scriptTag);
+    };
+  }, []);
 
-  return <SearchLayout {...args} />
-}
+  return <SearchLayout {...args} />;
+};
 
-export const SearchSG = Template.bind({})
-SearchSG.storyName = "SearchSG"
+export const SearchSG = Template.bind({});
+SearchSG.storyName = "SearchSG";
 SearchSG.args = {
   layout: "search",
   site: {
@@ -70,4 +71,4 @@ SearchSG.args = {
     permalink: "/search",
     lastModified: "2024-05-02T14:12:57.160Z",
   },
-}
+};

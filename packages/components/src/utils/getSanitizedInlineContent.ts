@@ -1,4 +1,4 @@
-import DOMPurify from "isomorphic-dompurify"
+import DOMPurify from "isomorphic-dompurify";
 
 // Sanitize content to only allow paragraph marks and inline elements, and
 // to remove any potentially harmful content
@@ -7,17 +7,17 @@ export const getSanitizedInlineContent = (content: string) => {
     // Add rel="noopener noreferrer nofollow" to all anchor tags and
     // open them in a new tab, if they point to an external site
     if (curr.tagName !== "A") {
-      return curr
+      return curr;
     }
 
-    const href = curr.getAttribute("href")
+    const href = curr.getAttribute("href");
     if (href && (href.startsWith("http://") || href.startsWith("https://"))) {
-      curr.setAttribute("rel", "noopener noreferrer nofollow")
-      curr.setAttribute("target", "_blank")
+      curr.setAttribute("rel", "noopener noreferrer nofollow");
+      curr.setAttribute("target", "_blank");
     }
 
-    return curr
-  })
+    return curr;
+  });
 
   const sanitizedContent = DOMPurify.sanitize(content, {
     ALLOWED_TAGS: [
@@ -36,7 +36,7 @@ export const getSanitizedInlineContent = (content: string) => {
       "code", // code
     ],
     ALLOWED_ATTR: ["href", "rel", "target"],
-  })
+  });
 
-  return sanitizedContent
-}
+  return sanitizedContent;
+};

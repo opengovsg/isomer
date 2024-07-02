@@ -1,12 +1,12 @@
-import { getSanitizedInlineContent } from "~/utils"
-import type { BaseParagraphProps } from "~/interfaces/native/Paragraph"
+import type { BaseParagraphProps } from "~/interfaces/native/Paragraph";
+import { getSanitizedInlineContent } from "~/utils";
 
 export const BaseParagraph = ({
   content,
   className = "",
   id,
 }: BaseParagraphProps) => {
-  const sanitizedContent = getSanitizedInlineContent(content)
+  const sanitizedContent = getSanitizedInlineContent(content);
 
   return (
     <p
@@ -14,7 +14,7 @@ export const BaseParagraph = ({
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
       id={id}
     />
-  )
-}
+  );
+};
 
-export default BaseParagraph
+export default BaseParagraph;

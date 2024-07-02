@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import type { NavbarProps } from "~/interfaces"
-import Navbar from "./Navbar"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { NavbarProps } from "~/interfaces";
+import Navbar from "./Navbar";
 
 export default {
   title: "Next/Internal Components/Navbar",
@@ -11,13 +12,13 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<NavbarProps> = (args) => <Navbar {...args} />
+const Template: StoryFn<NavbarProps> = (args) => <Navbar {...args} />;
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
   logoAlt: "Isomer logo",
@@ -141,4 +142,4 @@ Default.args = {
       url: "/single-item",
     },
   ],
-}
+};

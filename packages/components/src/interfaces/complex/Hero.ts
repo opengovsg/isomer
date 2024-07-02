@@ -1,61 +1,61 @@
 export interface HeroHeadingProps {
-  title: string
-  subtitle?: string
+  title: string;
+  subtitle?: string;
 }
 
 export interface HeroButtonsProps {
-  buttonLabel?: string
-  buttonUrl?: string
-  secondaryButtonLabel?: string
-  secondaryButtonUrl?: string
+  buttonLabel?: string;
+  buttonUrl?: string;
+  secondaryButtonLabel?: string;
+  secondaryButtonUrl?: string;
 }
 
 export interface HeroKeyHighlightProps {
   keyHighlights?: Array<{
-    title: string
-    description: string
-    url: string
-  }>
+    title: string;
+    description: string;
+    url: string;
+  }>;
 }
 
 export interface HeroDropdownProps {
-  title?: string
+  title?: string;
   options: Array<{
-    title: string
-    url: string
-  }>
+    title: string;
+    url: string;
+  }>;
 }
 
 export interface HeroBackgroundImageProps {
-  backgroundUrl: string
+  backgroundUrl: string;
 }
 
 export interface HeroInfoboxProps extends HeroHeadingProps, HeroButtonsProps {
-  alignment?: "left" | "right"
-  backgroundColor?: "black" | "white" | "gray"
-  size?: "sm" | "md"
-  dropdown?: HeroDropdownProps
+  alignment?: "left" | "right";
+  backgroundColor?: "black" | "white" | "gray";
+  size?: "sm" | "md";
+  dropdown?: HeroDropdownProps;
 }
 
 export interface HeroSideProps
   extends HeroInfoboxProps,
     HeroBackgroundImageProps,
     HeroKeyHighlightProps {
-  variant: "side"
+  variant: "side";
 }
 
 export interface HeroImageProps
   extends HeroBackgroundImageProps,
     HeroKeyHighlightProps {
-  variant: "image"
-  dropdown?: HeroDropdownProps
+  variant: "image";
+  dropdown?: HeroDropdownProps;
 }
 
 export interface HeroFloatingProps
   extends HeroInfoboxProps,
     HeroBackgroundImageProps,
     HeroKeyHighlightProps {
-  variant: "floating"
+  variant: "floating";
 }
 
 export interface HeroCenterProps
@@ -63,25 +63,25 @@ export interface HeroCenterProps
     HeroButtonsProps,
     HeroBackgroundImageProps,
     HeroKeyHighlightProps {
-  variant: "center"
-  dropdown?: HeroDropdownProps
+  variant: "center";
+  dropdown?: HeroDropdownProps;
 }
 
 export interface HeroGradientProps
   extends HeroHeadingProps,
     HeroButtonsProps,
     HeroBackgroundImageProps {
-  variant: "gradient"
-  alignment?: "left" | "right"
+  variant: "gradient";
+  alignment?: "left" | "right";
 }
 
 export interface HeroSplitProps
   extends HeroHeadingProps,
     HeroButtonsProps,
     HeroBackgroundImageProps {
-  variant: "split"
-  alignment?: "left" | "right"
-  backgroundColor?: "black" | "white"
+  variant: "split";
+  alignment?: "left" | "right";
+  backgroundColor?: "black" | "white";
 }
 
 export interface HeroCopyLedProps
@@ -89,7 +89,7 @@ export interface HeroCopyLedProps
     HeroButtonsProps,
     Partial<HeroBackgroundImageProps>,
     HeroKeyHighlightProps {
-  variant: "copyled"
+  variant: "copyled";
 }
 
 export interface HeroFloatingImageProps
@@ -97,11 +97,11 @@ export interface HeroFloatingImageProps
     HeroButtonsProps,
     HeroBackgroundImageProps,
     HeroKeyHighlightProps {
-  variant: "floatingimage"
+  variant: "floatingimage";
 }
 
 export type HeroProps = {
-  type: "hero"
+  type: "hero";
 } & (
   | HeroSideProps
   | HeroImageProps
@@ -111,4 +111,4 @@ export type HeroProps = {
   | HeroSplitProps
   | HeroCopyLedProps
   | HeroFloatingImageProps
-)
+);

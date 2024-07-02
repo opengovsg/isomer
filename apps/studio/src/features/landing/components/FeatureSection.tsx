@@ -1,21 +1,22 @@
-import { type FC } from 'react'
-import { Box, Flex, Image, Stack, type StackProps } from '@chakra-ui/react'
+import type { StackProps } from "@chakra-ui/react";
+import { type FC } from "react";
+import { Box, Flex, Image, Stack } from "@chakra-ui/react";
 
-import { LandingSection } from './LandingSection'
-import { SectionHeadingText } from './SectionHeadingText'
+import { LandingSection } from "./LandingSection";
+import { SectionHeadingText } from "./SectionHeadingText";
 
 interface FeatureSectionProps extends StackProps {
-  title: string
-  imgSrc?: string
-  description?: string
+  title: string;
+  imgSrc?: string;
+  description?: string;
 }
 
 export const FeatureSection: FC<FeatureSectionProps> = ({
   children,
   imgSrc,
   title,
-  direction = 'row',
-  align = 'center',
+  direction = "row",
+  align = "center",
   bg,
   description,
   ...wrapProps
@@ -23,7 +24,7 @@ export const FeatureSection: FC<FeatureSectionProps> = ({
   return (
     <LandingSection bg={bg}>
       <Stack
-        spacing={{ base: '2.5rem', lg: '8.25rem' }}
+        spacing={{ base: "2.5rem", lg: "8.25rem" }}
         direction={direction}
         align={align}
         {...wrapProps}
@@ -34,10 +35,10 @@ export const FeatureSection: FC<FeatureSectionProps> = ({
         </Flex>
         {imgSrc ? (
           <Box flex={1} aria-hidden>
-            <Image alt={description ?? 'Feature description'} src={imgSrc} />
+            <Image alt={description ?? "Feature description"} src={imgSrc} />
           </Box>
         ) : null}
       </Stack>
     </LandingSection>
-  )
-}
+  );
+};

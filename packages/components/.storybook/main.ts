@@ -1,4 +1,4 @@
-import { mergeConfig } from "vite"
+import { mergeConfig } from "vite";
 
 export default {
   stories: ["../src/**/*.stories.tsx"],
@@ -17,7 +17,7 @@ export default {
       optimizeDeps: {
         include: ["storybook-dark-mode"],
       },
-    })
+    });
   },
 
   framework: {
@@ -28,4 +28,4 @@ export default {
   docs: {
     autodocs: true,
   },
-}
+};

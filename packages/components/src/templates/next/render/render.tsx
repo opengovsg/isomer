@@ -1,4 +1,4 @@
-import type { IsomerComponent, IsomerPageSchema } from "~/engine"
+import type { IsomerComponent, IsomerPageSchema } from "~/engine";
 import {
   Accordion,
   Button,
@@ -8,16 +8,16 @@ import {
   Hero,
   Iframe,
   Image,
+  Infobar,
   InfoCards,
   InfoCols,
-  Infobar,
   Infopic,
   KeyStatistics,
   OrderedList,
   Paragraph,
   Table,
   UnorderedList,
-} from "../components"
+} from "../components";
 import {
   ArticleLayout,
   CollectionLayout,
@@ -25,12 +25,12 @@ import {
   HomepageLayout,
   NotFoundLayout,
   SearchLayout,
-} from "../layouts"
+} from "../layouts";
 
 interface RenderComponentProps {
-  component: IsomerComponent
-  LinkComponent?: any // Next.js link
-  ScriptComponent?: any // Next.js script
+  component: IsomerComponent;
+  LinkComponent?: any; // Next.js link
+  ScriptComponent?: any; // Next.js script
 }
 
 export const renderComponent = ({
@@ -39,59 +39,59 @@ export const renderComponent = ({
 }: RenderComponentProps) => {
   switch (component.type) {
     case "accordion":
-      return <Accordion {...component} />
+      return <Accordion {...component} />;
     case "button":
-      return <Button {...component} LinkComponent={LinkComponent} />
+      return <Button {...component} LinkComponent={LinkComponent} />;
     case "callout":
-      return <Callout {...component} />
+      return <Callout {...component} />;
     case "divider":
-      return <Divider {...component} />
+      return <Divider {...component} />;
     case "heading":
-      return <Heading {...component} />
+      return <Heading {...component} />;
     case "hero":
-      return <Hero {...component} />
+      return <Hero {...component} />;
     case "iframe":
-      return <Iframe {...component} />
+      return <Iframe {...component} />;
     case "image":
-      return <Image {...component} />
+      return <Image {...component} />;
     case "infobar":
-      return <Infobar {...component} LinkComponent={LinkComponent} />
+      return <Infobar {...component} LinkComponent={LinkComponent} />;
     case "infocards":
-      return <InfoCards {...component} />
+      return <InfoCards {...component} />;
     case "infocols":
-      return <InfoCols {...component} LinkComponent={LinkComponent} />
+      return <InfoCols {...component} LinkComponent={LinkComponent} />;
     case "infopic":
-      return <Infopic {...component} />
+      return <Infopic {...component} />;
     case "keystatistics":
-      return <KeyStatistics {...component} />
+      return <KeyStatistics {...component} />;
     case "orderedList":
-      return <OrderedList {...component} />
+      return <OrderedList {...component} />;
     case "paragraph":
-      return <Paragraph {...component} />
+      return <Paragraph {...component} />;
     case "table":
-      return <Table {...component} />
+      return <Table {...component} />;
     case "unorderedList":
-      return <UnorderedList {...component} />
+      return <UnorderedList {...component} />;
   }
-}
+};
 
 export const renderLayout = (props: IsomerPageSchema) => {
   switch (props.layout) {
     case "article":
-      return <ArticleLayout {...props} />
+      return <ArticleLayout {...props} />;
     case "collection":
-      return <CollectionLayout {...props} />
+      return <CollectionLayout {...props} />;
     case "content":
-      return <ContentLayout {...props} />
+      return <ContentLayout {...props} />;
     case "homepage":
-      return <HomepageLayout {...props} />
+      return <HomepageLayout {...props} />;
     case "notfound":
-      return <NotFoundLayout {...props} />
+      return <NotFoundLayout {...props} />;
     case "search":
-      return <SearchLayout {...props} />
+      return <SearchLayout {...props} />;
     // These are references that we should not render to the user
     case "file":
     case "link":
-      return <></>
+      return <></>;
   }
-}
+};

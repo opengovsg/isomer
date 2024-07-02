@@ -1,21 +1,22 @@
-import { IconType } from "react-icons"
-import { BiLinkExternal } from "react-icons/bi"
+import { IconType } from "react-icons";
+import { BiLinkExternal } from "react-icons/bi";
 import {
   FaFacebook,
   FaInstagram,
   FaLinkedin,
   FaTiktok,
   FaYoutube,
-} from "react-icons/fa"
-import { FaTelegram, FaXTwitter } from "react-icons/fa6"
-import { IoLogoGithub } from "react-icons/io"
-import { IsomerLogo } from "~/assets/IsomerLogo"
-import { OgpLogo } from "~/assets/OgpLogo"
-import type { FooterProps } from "~/interfaces"
+} from "react-icons/fa";
+import { FaTelegram, FaXTwitter } from "react-icons/fa6";
+import { IoLogoGithub } from "react-icons/io";
+
+import type { FooterProps } from "~/interfaces";
 import type {
   FooterItem as FooterItemType,
   SocialMediaType,
-} from "~/interfaces/internal/Footer"
+} from "~/interfaces/internal/Footer";
+import { IsomerLogo } from "~/assets/IsomerLogo";
+import { OgpLogo } from "~/assets/OgpLogo";
 
 const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
   facebook: FaFacebook,
@@ -26,11 +27,11 @@ const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
   youtube: FaYoutube,
   github: IoLogoGithub,
   tiktok: FaTiktok,
-}
+};
 
 const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
-  return <h2 className="text-heading-04">{siteName}</h2>
-}
+  return <h2 className="text-heading-04">{siteName}</h2>;
+};
 
 const FooterItem = ({
   LinkComponent = "a",
@@ -48,7 +49,7 @@ const FooterItem = ({
         {title}
         <BiLinkExternal className="h-auto w-3.5 flex-shrink-0 lg:w-4" />
       </LinkComponent>
-    )
+    );
   }
   return (
     <a
@@ -57,8 +58,8 @@ const FooterItem = ({
     >
       {title}
     </a>
-  )
-}
+  );
+};
 
 const NavSection = ({
   LinkComponent,
@@ -86,8 +87,8 @@ const NavSection = ({
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
 const SocialMediaSection = ({
   socialMediaLinks,
@@ -97,7 +98,7 @@ const SocialMediaSection = ({
       <h3 className="text-subheading-01">Reach us</h3>
       <div className="flex flex-row flex-wrap gap-7">
         {socialMediaLinks?.map((link) => {
-          const Icon = SocialMediaTypeToIconMap[link.type]
+          const Icon = SocialMediaTypeToIconMap[link.type];
           return (
             <a
               key={link.url}
@@ -108,12 +109,12 @@ const SocialMediaSection = ({
             >
               <Icon className="h-auto w-6" />
             </a>
-          )
+          );
         })}
       </div>
     </div>
-  )
-}
+  );
+};
 
 const ContactUsSection = ({
   LinkComponent,
@@ -140,8 +141,8 @@ const ContactUsSection = ({
         />
       )}
     </div>
-  )
-}
+  );
+};
 
 const ReachUsSection = ({
   LinkComponent,
@@ -161,8 +162,8 @@ const ReachUsSection = ({
         feedbackFormLink={feedbackFormLink}
       />
     </div>
-  )
-}
+  );
+};
 
 const LegalSection = ({
   LinkComponent,
@@ -222,8 +223,8 @@ const LegalSection = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const CreditsSection = () => {
   return (
@@ -247,8 +248,8 @@ const CreditsSection = () => {
         <OgpLogo aria-label="ogp-logo" />
       </a>
     </div>
-  )
-}
+  );
+};
 
 // below lg
 const FooterMobile = ({
@@ -293,8 +294,8 @@ const FooterMobile = ({
         <CreditsSection />
       </div>
     </div>
-  )
-}
+  );
+};
 
 // lg and above
 const FooterDesktop = ({
@@ -349,8 +350,8 @@ const FooterDesktop = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const Footer = (props: FooterProps) => {
   return (
@@ -358,7 +359,7 @@ const Footer = (props: FooterProps) => {
       <FooterMobile {...props} />
       <FooterDesktop {...props} />
     </footer>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;

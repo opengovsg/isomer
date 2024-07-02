@@ -1,6 +1,7 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import type { ContentPageHeaderProps } from "~/interfaces"
-import ContentPageHeader from "./ContentPageHeader"
+import type { Meta, StoryFn } from "@storybook/react";
+
+import type { ContentPageHeaderProps } from "~/interfaces";
+import ContentPageHeader from "./ContentPageHeader";
 
 export default {
   title: "Next/Internal Components/ContentPageHeader",
@@ -11,14 +12,14 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
 const Template: StoryFn<ContentPageHeaderProps> = (args) => (
   <ContentPageHeader {...args} />
-)
+);
 
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   title: "Steven Pinker’s Steven Pinker’s Rationality",
   summary:
@@ -41,4 +42,4 @@ Default.args = {
   },
   buttonLabel: "Submit a proposal",
   buttonUrl: "https://www.google.com",
-}
+};

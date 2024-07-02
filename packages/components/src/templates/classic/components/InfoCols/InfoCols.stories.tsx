@@ -1,6 +1,7 @@
-import { Meta, StoryFn } from "@storybook/react"
-import InfoCols from "./InfoCols"
-import type { InfoColsProps } from "~/interfaces"
+import { Meta, StoryFn } from "@storybook/react";
+
+import type { InfoColsProps } from "~/interfaces";
+import InfoCols from "./InfoCols";
 
 export default {
   title: "Classic/Components/InfoCols",
@@ -11,13 +12,13 @@ export default {
       themeOverride: "Isomer Classic",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<InfoColsProps> = (args) => <InfoCols {...args} />
+const Template: StoryFn<InfoColsProps> = (args) => <InfoCols {...args} />;
 
 // Default in CMS is 3 infoboxes
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   sectionIdx: 0,
   title: "Infobar title",
@@ -38,9 +39,9 @@ Default.args = {
       description: "Infobox description",
     },
   ],
-}
+};
 
-export const GrayBackground = Template.bind({})
+export const GrayBackground = Template.bind({});
 GrayBackground.args = {
   sectionIdx: 1,
   title: "Infobar title",
@@ -61,9 +62,9 @@ GrayBackground.args = {
       description: "Infobox description",
     },
   ],
-}
+};
 
-export const NoButton = Template.bind({})
+export const NoButton = Template.bind({});
 NoButton.args = {
   sectionIdx: 0,
   title: "Infobar title",
@@ -82,9 +83,9 @@ NoButton.args = {
       description: "Infobox description",
     },
   ],
-}
+};
 
-export const OneInfoBox = Template.bind({})
+export const OneInfoBox = Template.bind({});
 OneInfoBox.args = {
   sectionIdx: 0,
   title: "Infobar title",
@@ -97,9 +98,9 @@ OneInfoBox.args = {
       description: "Infobox description",
     },
   ],
-}
+};
 
-export const TwoInfoBoxes = Template.bind({})
+export const TwoInfoBoxes = Template.bind({});
 TwoInfoBoxes.args = {
   sectionIdx: 0,
   title: "Infobar title",
@@ -116,9 +117,9 @@ TwoInfoBoxes.args = {
       description: "Infobox description",
     },
   ],
-}
+};
 
-export const ThreeInfoBoxesLongText = Template.bind({})
+export const ThreeInfoBoxesLongText = Template.bind({});
 ThreeInfoBoxesLongText.args = {
   sectionIdx: 0,
   title: "Infobar title",
@@ -139,9 +140,9 @@ ThreeInfoBoxesLongText.args = {
       description: "Long description that should wrap to the next line",
     },
   ],
-}
+};
 
-export const FourInfoBoxes = Template.bind({})
+export const FourInfoBoxes = Template.bind({});
 FourInfoBoxes.args = {
   sectionIdx: 0,
   title: "Infobar title",
@@ -166,9 +167,9 @@ FourInfoBoxes.args = {
       description: "Infobox description",
     },
   ],
-}
+};
 
-export const FourInfoBoxesLongText = Template.bind({})
+export const FourInfoBoxesLongText = Template.bind({});
 FourInfoBoxesLongText.args = {
   sectionIdx: 0,
   title: "Infobar title",
@@ -197,4 +198,4 @@ FourInfoBoxesLongText.args = {
         "Long description that should wrap to the next line. Long description that should wrap to the next line",
     },
   ],
-}
+};

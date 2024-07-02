@@ -1,5 +1,6 @@
-import { BiSearch } from "react-icons/bi"
-import type { CollectionSearchProps } from "../../../types/CollectionSearch"
+import { BiSearch } from "react-icons/bi";
+
+import type { CollectionSearchProps } from "../../../types/CollectionSearch";
 
 const CollectionSearch = ({
   placeholder,
@@ -23,7 +24,7 @@ const CollectionSearch = ({
         onChange={(e) => setSearch(e.target.value)}
       />
     </label>
-  )
-}
+  );
+};
 
-export default CollectionSearch
+export default CollectionSearch;

@@ -1,13 +1,13 @@
-import { IconType } from "react-icons"
+import { IconType } from "react-icons";
 import {
-  BiRightArrowAlt,
+  BiBarChartAlt2,
   BiBuildings,
   BiChart,
   BiGlobe,
   BiGroup,
+  BiRightArrowAlt,
   BiStar,
-  BiBarChartAlt2,
-} from "react-icons/bi"
+} from "react-icons/bi";
 
 export const SUPPORTED_ICON_NAMES = [
   "right-arrow",
@@ -17,11 +17,11 @@ export const SUPPORTED_ICON_NAMES = [
   "office-building",
   "stars",
   "globe",
-] as const
+] as const;
 
-export type SupportedIconName = (typeof SUPPORTED_ICON_NAMES)[number]
+export type SupportedIconName = (typeof SUPPORTED_ICON_NAMES)[number];
 // TODO: use union types to support more icon libraries apart from react-icons
-export type SupportedIconType = IconType
+export type SupportedIconType = IconType;
 export const SUPPORTED_ICONS_MAP: Record<SupportedIconName, SupportedIconType> =
   {
     "right-arrow": BiRightArrowAlt,
@@ -31,4 +31,4 @@ export const SUPPORTED_ICONS_MAP: Record<SupportedIconName, SupportedIconType> =
     "office-building": BiBuildings,
     stars: BiStar,
     globe: BiGlobe,
-  }
+  };

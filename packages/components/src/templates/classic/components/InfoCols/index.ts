@@ -1,1 +1,1 @@
-export { default } from "./InfoCols"
+export { default } from "./InfoCols";

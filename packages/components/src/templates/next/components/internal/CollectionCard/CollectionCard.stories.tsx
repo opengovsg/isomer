@@ -1,6 +1,7 @@
-import { Meta, StoryFn } from "@storybook/react"
-import CollectionCard from "./CollectionCard"
-import type { CollectionCardProps } from "~/interfaces"
+import { Meta, StoryFn } from "@storybook/react";
+
+import type { CollectionCardProps } from "~/interfaces";
+import CollectionCard from "./CollectionCard";
 
 export default {
   title: "Next/Internal Components/CollectionCard",
@@ -11,14 +12,14 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
 const Template: StoryFn<CollectionCardProps> = (args) => (
   <CollectionCard {...args} />
-)
+);
 
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   lastUpdated: "December 2, 2023",
   category: "Research",
@@ -32,9 +33,9 @@ Default.args = {
     alt: "placeholder",
   },
   variant: "article",
-}
+};
 
-export const ArticleWithoutImage = Template.bind({})
+export const ArticleWithoutImage = Template.bind({});
 ArticleWithoutImage.args = {
   lastUpdated: "December 2, 2023",
   category: "Research",
@@ -44,9 +45,9 @@ ArticleWithoutImage.args = {
   description:
     "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year.",
   variant: "article",
-}
+};
 
-export const File = Template.bind({})
+export const File = Template.bind({});
 File.args = {
   lastUpdated: "December 2, 2023",
   category: "Research",
@@ -64,9 +65,9 @@ File.args = {
     type: "pdf",
     size: "2.3 MB",
   },
-}
+};
 
-export const FileWithoutImage = Template.bind({})
+export const FileWithoutImage = Template.bind({});
 FileWithoutImage.args = {
   lastUpdated: "December 2, 2023",
   category: "Research",
@@ -80,4 +81,4 @@ FileWithoutImage.args = {
     type: "pdf",
     size: "2.3 MB",
   },
-}
+};

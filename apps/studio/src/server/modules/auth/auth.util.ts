@@ -1,30 +1,31 @@
-import { customAlphabet } from 'nanoid'
-import { scryptSync, timingSafeEqual } from 'node:crypto'
+import { scryptSync, timingSafeEqual } from "node:crypto";
+import { customAlphabet } from "nanoid";
+
 import {
   OTP_ALPHABET,
   OTP_LENGTH,
   OTP_PREFIX_ALPHABET,
   OTP_PREFIX_LENGTH,
-} from '~/lib/auth'
-import { normaliseEmail } from '~/utils/zod'
+} from "~/lib/auth";
+import { normaliseEmail } from "~/utils/zod";
 
-export const createVfnToken = customAlphabet(OTP_ALPHABET, OTP_LENGTH)
+export const createVfnToken = customAlphabet(OTP_ALPHABET, OTP_LENGTH);
 
 export const createVfnPrefix = customAlphabet(
   OTP_PREFIX_ALPHABET,
   OTP_PREFIX_LENGTH,
-)
+);
 
 export const createTokenHash = (token: string, email: string) => {
-  return scryptSync(token, email, 64).toString('base64')
-}
+  return scryptSync(token, email, 64).toString("base64");
+};
 
 export const compareHash = (token: string, email: string, hash: string) => {
   return timingSafeEqual(
     Buffer.from(hash),
     Buffer.from(createTokenHash(token, email)),
-  )
-}
+  );
+};
 
 /**
  * Returns a provider ID for an account that is tied to a specific POCDEX email from sgID.
@@ -36,5 +37,5 @@ export const createPocdexAccountProviderId = (
   sgidSub: string,
   pocdexEmail: string,
 ) => {
-  return `${sgidSub}-${normaliseEmail.parse(pocdexEmail)}`
-}
+  return `${sgidSub}-${normaliseEmail.parse(pocdexEmail)}`;
+};

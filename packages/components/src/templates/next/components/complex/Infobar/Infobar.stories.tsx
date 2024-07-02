@@ -1,6 +1,7 @@
-import { Meta, StoryFn } from "@storybook/react"
-import Infobar from "./Infobar"
-import { InfobarProps } from "~/interfaces"
+import { Meta, StoryFn } from "@storybook/react";
+
+import { InfobarProps } from "~/interfaces";
+import Infobar from "./Infobar";
 
 export default {
   title: "Next/Components/Infobar",
@@ -11,13 +12,13 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+} as Meta;
 
 // Template for stories
-const Template: StoryFn<InfobarProps> = (args) => <Infobar {...args} />
+const Template: StoryFn<InfobarProps> = (args) => <Infobar {...args} />;
 
 // Default scenario
-export const Default = Template.bind({})
+export const Default = Template.bind({});
 Default.args = {
   sectionIdx: 0,
   title: "This is a place where you can put nice content",
@@ -26,18 +27,18 @@ Default.args = {
   buttonUrl: "https://google.com",
   secondaryButtonLabel: "Secondary CTA",
   secondaryButtonUrl: "https://google.com",
-}
+};
 
-export const OneButton = Template.bind({})
+export const OneButton = Template.bind({});
 OneButton.args = {
   sectionIdx: 0,
   title: "This is a place where you can put nice content",
   description: "About a sentence worth of description here",
   buttonLabel: "Primary CTA",
   buttonUrl: "https://google.com",
-}
+};
 
-export const LongText = Template.bind({})
+export const LongText = Template.bind({});
 LongText.args = {
   sectionIdx: 0,
   title:
@@ -48,4 +49,4 @@ LongText.args = {
   buttonUrl: "https://google.com",
   secondaryButtonLabel: "Secondary CTA",
   secondaryButtonUrl: "https://google.com",
-}
+};

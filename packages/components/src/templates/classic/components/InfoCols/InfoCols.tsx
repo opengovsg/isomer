@@ -1,6 +1,7 @@
-import { BiRightArrowAlt } from "react-icons/bi"
-import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
-import type { InfoColsProps } from "~/interfaces"
+import { BiRightArrowAlt } from "react-icons/bi";
+
+import type { InfoColsProps } from "~/interfaces";
+import { HomepageSectionWrapper } from "../HomepageSectionWrapper";
 
 const InfoColsHeader = ({
   title,
@@ -14,11 +15,11 @@ const InfoColsHeader = ({
       {title}
     </h1>
   </div>
-)
+);
 
 const InfoBoxes = ({ infoBoxes }: Pick<InfoColsProps, "infoBoxes">) => {
   const mdColsClass =
-    infoBoxes.length === 1 ? "md:grid-cols-1" : "md:grid-cols-2"
+    infoBoxes.length === 1 ? "md:grid-cols-1" : "md:grid-cols-2";
 
   // Follows current behaviour: if there are 4 info boxes, xl screen should stay at 2 columns instead of going up to 3
   const xlColsClass =
@@ -26,7 +27,7 @@ const InfoBoxes = ({ infoBoxes }: Pick<InfoColsProps, "infoBoxes">) => {
       ? "xl:grid-cols-1"
       : infoBoxes.length % 2 === 0
         ? "xl:grid-cols-2"
-        : "xl:grid-cols-3"
+        : "xl:grid-cols-3";
 
   return (
     <div
@@ -42,8 +43,8 @@ const InfoBoxes = ({ infoBoxes }: Pick<InfoColsProps, "infoBoxes">) => {
         </div>
       ))}
     </div>
-  )
-}
+  );
+};
 
 const InfoColsFooter = ({
   buttonLabel,
@@ -70,8 +71,8 @@ const InfoColsFooter = ({
         </a>
       </div>
     )
-  )
-}
+  );
+};
 
 const InfoCols = ({
   sectionIdx,
@@ -91,7 +92,7 @@ const InfoCols = ({
         </div>
       </section>
     </HomepageSectionWrapper>
-  )
-}
+  );
+};
 
-export default InfoCols
+export default InfoCols;

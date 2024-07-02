@@ -1,4 +1,4 @@
 export interface HeaderProps {
-  permalink: string
-  sitemap: any
+  permalink: string;
+  sitemap: any;
 }

@@ -1,16 +1,17 @@
-import { useDisclosure, HStack, VStack, Text } from '@chakra-ui/react'
-import { Button } from '@opengovsg/design-system-react'
-import { type NextPageWithLayout } from '~/lib/types'
-import _ from 'lodash'
-import { DashboardTable } from '~/features/dashboard/DashboardTable'
-import PageCreateModal from '~/features/editing-experience/components/PageCreateModal'
+import { HStack, Text, useDisclosure, VStack } from "@chakra-ui/react";
+import { Button } from "@opengovsg/design-system-react";
+import _ from "lodash";
+
+import { DashboardTable } from "~/features/dashboard/DashboardTable";
+import PageCreateModal from "~/features/editing-experience/components/PageCreateModal";
+import { type NextPageWithLayout } from "~/lib/types";
 
 const Dashboard: NextPageWithLayout = () => {
   const {
     isOpen: isPageCreateModalOpen,
     onOpen: onPageCreateModalOpen,
     onClose: onpageCreateModalClose,
-  } = useDisclosure()
+  } = useDisclosure();
   return (
     <VStack bgColor="#F3F5F7" w="100%" p="1.75rem" minH="100vh">
       <Text
@@ -42,7 +43,7 @@ const Dashboard: NextPageWithLayout = () => {
         onClose={onpageCreateModalClose}
       />
     </VStack>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;

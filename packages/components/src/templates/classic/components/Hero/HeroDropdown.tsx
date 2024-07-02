@@ -1,13 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import type { HeroDropdownProps } from "~/interfaces/complex/Hero"
+import { useState } from "react";
+
+import type { HeroDropdownProps } from "~/interfaces/complex/Hero";
 
 const BP_BUTTON_CLASSES =
-  "rounded-none box-content appearance-none items-center border border-solid border-[#f0f0f0] shadow-none inline-flex text-base h-9 justify-center px-3 py-[calc(0.375rem-1px)] relative align-top select-none cursor-pointer text-center whitespace-nowrap focus:outline-none active:outline-none disabled:cursor-not-allowed"
+  "rounded-none box-content appearance-none items-center border border-solid border-[#f0f0f0] shadow-none inline-flex text-base h-9 justify-center px-3 py-[calc(0.375rem-1px)] relative align-top select-none cursor-pointer text-center whitespace-nowrap focus:outline-none active:outline-none disabled:cursor-not-allowed";
 
 export const HeroDropdown = ({ title, options }: HeroDropdownProps) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
     <div className="border-light relative block w-full">
@@ -70,10 +71,10 @@ export const HeroDropdown = ({ title, options }: HeroDropdownProps) => {
                   {optionTitle}
                 </a>
               )
-            )
+            );
           })}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

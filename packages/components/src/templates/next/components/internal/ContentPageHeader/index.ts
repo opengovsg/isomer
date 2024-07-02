@@ -1,1 +1,1 @@
-export { default } from "./ContentPageHeader"
+export { default } from "./ContentPageHeader";

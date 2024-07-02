@@ -1,4 +1,4 @@
 export interface SidePaneProps {
-  sitemap: any
-  currentPermalink: string
+  sitemap: any;
+  currentPermalink: string;
 }

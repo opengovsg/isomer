@@ -1,15 +1,15 @@
-import type { InfoCardsProps } from "~/interfaces"
-import Card from "../../internal/Card"
-import { ComponentContent } from "../../internal/customCssClass"
+import type { InfoCardsProps } from "~/interfaces";
+import Card from "../../internal/Card";
+import { ComponentContent } from "../../internal/customCssClass";
 
 const TitleSection = ({
   title,
   subtitle,
   className = "",
 }: {
-  title: InfoCardsProps["title"]
-  subtitle: InfoCardsProps["subtitle"]
-  className?: string
+  title: InfoCardsProps["title"];
+  subtitle: InfoCardsProps["subtitle"];
+  className?: string;
 }) => {
   return (
     <div
@@ -20,8 +20,8 @@ const TitleSection = ({
         <p className="text-content text-sm sm:text-lg">{subtitle}</p>
       )}
     </div>
-  )
-}
+  );
+};
 
 const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
   return (
@@ -87,7 +87,7 @@ const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
         </div>
       )}
     </section>
-  )
-}
+  );
+};
 
-export default InfoCards
+export default InfoCards;

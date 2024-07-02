@@ -1,14 +1,15 @@
-import { Box, Flex, Icon, SimpleGrid, Stack, Text } from '@chakra-ui/react'
+import Image from "next/image";
+import NextLink from "next/link";
+import { Box, Flex, Icon, SimpleGrid, Stack, Text } from "@chakra-ui/react";
 import {
   Button,
   Link,
   RestrictedFooter,
   useIsMobile,
-} from '@opengovsg/design-system-react'
-import Image from 'next/image'
-import NextLink from 'next/link'
-import { BiRightArrowAlt } from 'react-icons/bi'
-import { OgpLogo } from '~/components/Svg/OgpLogo'
+} from "@opengovsg/design-system-react";
+import { BiRightArrowAlt } from "react-icons/bi";
+
+import { OgpLogo } from "~/components/Svg/OgpLogo";
 import {
   AppPublicHeader,
   FeatureGridItem,
@@ -16,31 +17,31 @@ import {
   LandingSection,
   SectionBodyText,
   SectionHeadingText,
-} from '~/features/landing/components'
-import { SIGN_IN } from '~/lib/routes'
-import { AppGrid } from '~/templates/AppGrid'
+} from "~/features/landing/components";
+import { SIGN_IN } from "~/lib/routes";
+import { AppGrid } from "~/templates/AppGrid";
 
 const LandingPage = () => {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
   return (
     <>
       <AppPublicHeader />
       <LandingSection
         bg="base.canvas.brand-subtle"
-        pt={{ base: '2rem', md: 0 }}
+        pt={{ base: "2rem", md: 0 }}
         px={0}
       >
         <Stack
-          direction={{ base: 'column', lg: 'row' }}
+          direction={{ base: "column", lg: "row" }}
           align="center"
-          spacing={{ base: '1.5rem', md: '3.125rem', lg: '7.5rem' }}
+          spacing={{ base: "1.5rem", md: "3.125rem", lg: "7.5rem" }}
         >
           <Flex flexDir="column" flex={1}>
             <Text
               as="h1"
               textStyle={{
-                base: 'responsive-display.heavy',
-                md: 'responsive-display.heavy-480',
+                base: "responsive-display.heavy",
+                md: "responsive-display.heavy-480",
               }}
               color="base.content.strong"
             >
@@ -98,9 +99,9 @@ const LandingPage = () => {
       </LandingSection>
       <LandingSection bg="base.canvas.brand-subtle">
         <Stack
-          direction={{ base: 'column', lg: 'row' }}
+          direction={{ base: "column", lg: "row" }}
           align="center"
-          spacing={{ base: '1.5rem', md: '3.125rem', lg: '7.5rem' }}
+          spacing={{ base: "1.5rem", md: "3.125rem", lg: "7.5rem" }}
         >
           <Flex flexDir="column" flex={1}>
             <SectionHeadingText>Another call to action</SectionHeadingText>
@@ -126,12 +127,12 @@ const LandingPage = () => {
       </LandingSection>
       <FeatureSection
         title="All the government tools you need to manage your workflow"
-        direction={{ base: 'column', lg: 'row' }}
+        direction={{ base: "column", lg: "row" }}
       >
         <SectionBodyText mt="1rem">
           Check out the <b>Open Government Products Suite</b>, and if you are a
           public officer you can mix and match from our set of productivity and
-          collaboration tools.{' '}
+          collaboration tools.{" "}
           <Link
             as={NextLink}
             href="https://www.open.gov.sg/products/overview"
@@ -147,8 +148,8 @@ const LandingPage = () => {
         <Text
           textAlign="center"
           textStyle={{
-            base: 'responsive-heading.heavy',
-            md: 'responsive-heading.heavy-480',
+            base: "responsive-heading.heavy",
+            md: "responsive-heading.heavy-480",
           }}
           color="white"
           mt="2rem"
@@ -162,7 +163,7 @@ const LandingPage = () => {
         </Box>
       </LandingSection>
       <AppGrid bg="base.canvas.brand-subtle" px="1.5rem">
-        <Box gridColumn={{ base: '1 / -1', md: '2 / 12' }}>
+        <Box gridColumn={{ base: "1 / -1", md: "2 / 12" }}>
           <RestrictedFooter
             // This component can only be used if this is an application created by OGP.
             containerProps={{
@@ -174,7 +175,7 @@ const LandingPage = () => {
         </Box>
       </AppGrid>
     </>
-  )
-}
+  );
+};
 
-export default LandingPage
+export default LandingPage;
