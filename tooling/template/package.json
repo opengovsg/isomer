@@ -9,6 +9,10 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "imports": {
+    "#data/*": "./data/*.json",
+    "#schema/*": "./schema/*.json"
+  },
   "dependencies": {
     "@opengovsg/isomer-components": "workspace:*",
     "autoprefixer": "^10.4.19",

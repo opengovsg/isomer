@@ -1,7 +1,7 @@
-import config from "@/data/config.json"
-import footer from "@/data/footer.json"
-import navbar from "@/data/navbar.json"
-import sitemap from "@/sitemap.json"
+import config from "#data/config"
+import footer from "#data/footer"
+import navbar from "#data/navbar"
+import sitemap from "../../sitemap.json"
 import {
   RenderEngine,
   getMetadata,
@@ -31,7 +31,7 @@ const getSchema = async (
   if (permalink && permalink.length > 0 && typeof permalink !== "string") {
     const joinedPermalink = permalink.join("/")
 
-    const schema = (await import(`@/schema/${joinedPermalink}.json`).then(
+    const schema = (await import(`#schema/${joinedPermalink}`).then(
       (module) => module.default,
     )) as IsomerPageSchema
 
@@ -47,7 +47,7 @@ const getSchema = async (
     return schema
   }
 
-  const schema = (await import(`@/schema/index.json`).then(
+  const schema = (await import(`#schema/index`).then(
     (module) => module.default,
   )) as IsomerPageSchema
 

@@ -1,7 +1,7 @@
-import config from "@/data/config.json"
-import footer from "@/data/footer.json"
-import navbar from "@/data/navbar.json"
-import sitemap from "@/sitemap.json"
+import config from "#data/config"
+import footer from "#data/footer"
+import navbar from "#data/navbar"
+import sitemap from "../sitemap.json"
 import {
   RenderEngine,
   getMetadata,
@@ -26,7 +26,7 @@ export const generateMetadata = async (
   props: never,
   parent: ResolvingMetadata,
 ): Promise<Metadata> => {
-  const schema = (await import(`@/schema/index.json`).then(
+  const schema = (await import(`#schema/index`).then(
     (module) => module.default,
   )) as IsomerPageSchema
   schema.site = {

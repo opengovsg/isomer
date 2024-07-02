@@ -1,4 +1,4 @@
-import sitemapJson from "@/sitemap.json"
+import sitemapJson from "../sitemap.json"
 import { getSitemapXml } from "@opengovsg/isomer-components"
 import type { MetadataRoute } from "next"
 
