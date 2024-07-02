@@ -1,5 +1,14 @@
-name: Tests
-on: [push]
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - production
+  pull_request:
+    types: [opened, synchronize]
+
 jobs:
   tests:
     runs-on: ubuntu-latest
