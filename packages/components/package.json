@@ -12,7 +12,7 @@
     "build-storybook": "storybook build",
     "publish-package": "rollup -c && pnpm publish",
     "clean": "rimraf dist",
-    "build": "pnpm clean && run-p build:* && npm pack",
+    "build": "pnpm clean && run-p build:* && pnpm pack",
     "build:main": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "build:module": "tsc -p tsconfig.module.build.json && tsc-alias -p tsconfig.module.build.json",
     "chromatic": "pnpm dlx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN"
