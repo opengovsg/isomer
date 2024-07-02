@@ -18,7 +18,7 @@ const apiOptions = {
 
 const client = createClient<AppRouter>(
   `${PARAMETERS.BASE_URL}/api/trpc/`,
-  superjson
+  superjson,
 )
 
 export const options: Options = {
@@ -47,7 +47,7 @@ This is a new post!`,
     createOptions({
       ...apiOptions,
       cookies: { 'auth.session-token': session },
-    })
+    }),
   )
 
   check(response, {

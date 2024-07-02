@@ -133,9 +133,9 @@ const nonStrictAuthMiddleware = t.middleware(async ({ next, ctx }) => {
   // this code path is needed if a user does not exist in the database as they were deleted, but the session was active before
   const user = ctx.session?.userId
     ? await prisma.user.findUnique({
-      where: { id: ctx.session.userId },
-      select: defaultMeSelect,
-    })
+        where: { id: ctx.session.userId },
+        select: defaultMeSelect,
+      })
     : null
 
   return next({

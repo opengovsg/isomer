@@ -17,6 +17,7 @@
     "build": "next build",
     "build:theme": "pnpm exec chakra-cli tokens src/theme/index.ts",
     "start": "next start",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
     "lint": "eslint --ext \".js,.ts,.tsx\" --report-unused-disable-directives --report-unused-disable-directives src",
     "lint-fix": "pnpm lint -- --fix",
     "migrate:dev": "prisma migrate dev",
