@@ -21,7 +21,8 @@ import {
   FormErrorMessage,
   ModalCloseButton,
 } from '@opengovsg/design-system-react'
-import { useForm, SubmitHandler } from 'react-hook-form'
+import { useForm, type SubmitHandler } from 'react-hook-form'
+import LayoutSelection from './LayoutSelection'
 interface PageCreateModalProps {
   isOpen: boolean
   onClose: () => void
@@ -43,13 +44,14 @@ const ERROR_MESSAGES = {
     REQUIRED: 'Enter a URL for this page.',
   },
 }
-
-export const PageCreateModal = ({
+export function PageCreateModal({
   isOpen,
   onClose,
-}: PageCreateModalProps): JSX.Element => {
+}: PageCreateModalProps): JSX.Element {
   const MAX_TITLE_LENGTH = 100
   const MAX_PAGE_URL_LENGTH = 150
+
+  // TODO: reset the state when we close the modal?
   const [titleLen, setTitleLen] = useState(0)
   const [pageUrlLen, setPageUrlLen] = useState(0)
 
@@ -67,11 +69,14 @@ export const PageCreateModal = ({
     setPageUrlLen(watchAllFields.url?.length || 0)
   }, [watchAllFields])
 
-  /* TODO: When integrating with BE */
+  // This might need to go into the layout component? or we keep state in this component then pass selectedlayout and setselectedlayout into the component
+  // Prefer to keep page creation states within the layout selection modal? More portable in that case if we want to shift the entry point.
   const onSubmit: SubmitHandler<PageCreateFormFields> = (data) =>
     console.log(data)
 
-  return (
+  const [submitted, setSubmitted] = useState(false)
+
+  let content = (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalCloseButton />
       <ModalOverlay />
@@ -82,7 +87,7 @@ export const PageCreateModal = ({
         <ModalCloseButton />
         <form onSubmit={handleSubmit(onSubmit)}>
           <ModalBody>
-            <Stack gap={'1.5em'}>
+            <Stack gap="1.5em">
               <Text fontSize="md" color="base.content.default">
                 You can change these later.
               </Text>
@@ -118,7 +123,7 @@ export const PageCreateModal = ({
                 {errors.title && errors.title.message ? (
                   <FormErrorMessage>{errors.title.message}</FormErrorMessage>
                 ) : (
-                  <FormHelperText mt={'0.5em'} color="base.content.medium">
+                  <FormHelperText mt="0.5em" color="base.content.medium">
                     {MAX_TITLE_LENGTH - titleLen} characters left
                   </FormHelperText>
                 )}
@@ -141,7 +146,7 @@ export const PageCreateModal = ({
                   </InputLeftAddon>
                   <Input
                     type="tel"
-                    defaultValue={'hello-world'}
+                    defaultValue="hello-world"
                     color="base.content.default"
                     {...register('url', {
                       required: ERROR_MESSAGES.URL.REQUIRED,
@@ -161,25 +166,28 @@ export const PageCreateModal = ({
                 {errors.url && errors.url.message ? (
                   <FormErrorMessage>{errors.url.message}</FormErrorMessage>
                 ) : (
-                  <FormHelperText mt={'0.5em'} color="base.content.medium">
+                  <FormHelperText mt="0.5em" color="base.content.medium">
                     {MAX_PAGE_URL_LENGTH - pageUrlLen} characters left
                   </FormHelperText>
                 )}
               </FormControl>
             </Stack>
           </ModalBody>
-
           <ModalFooter>
             <Button
               variant="link"
               mr={5}
               onClick={onClose}
               fontWeight={500}
-              color={'base.content.strong'}
+              color="base.content.strong"
             >
               Cancel
             </Button>
-            <Button bgColor="interaction.main.default" type="submit">
+            <Button
+              bgColor="interaction.main.default"
+              type="submit"
+              onClick={() => setSubmitted(true)}
+            >
               Create page
             </Button>
           </ModalFooter>
@@ -187,6 +195,19 @@ export const PageCreateModal = ({
       </ModalContent>
     </Modal>
   )
+
+  if (submitted) {
+    content = (
+      <Modal isOpen={isOpen} onClose={onClose} size="full">
+        <ModalOverlay />
+        <ModalContent m="0">
+          {/* Uncomment when ready */}
+          <LayoutSelection />
+        </ModalContent>
+      </Modal>
+    )
+  }
+  return content
 }
 
 export default PageCreateModal

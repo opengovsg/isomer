@@ -16,7 +16,8 @@ import {
   Icon,
 } from '@chakra-ui/react'
 import { Pagination } from '@opengovsg/design-system-react'
-import { useState } from 'react'
+import { usePathname, useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import {
   BiHome,
   BiFileBlank,
@@ -25,59 +26,61 @@ import {
   BiDotsHorizontalRounded,
 } from 'react-icons/bi'
 import { MdOutlineHorizontalRule } from 'react-icons/md'
+import { trpc } from '~/utils/trpc'
 
-export const DashboardTable = (): JSX.Element => {
-  const dummyChildData: {
-    id: string
-    name: string
-    permalink: string
-    type: 'page' | 'folder'
-    status: 'folder' | 'draft' | 'published'
-    lastEditUser: string
-    lastEditDate: Date | 'folder'
-  }[] = [
-    {
-      id: '0001',
-      name: 'Test Page 1',
-      permalink: '/',
-      type: 'page',
-      status: 'draft',
-      lastEditUser: 'user1@test.com',
-      lastEditDate: new Date(),
-    },
-    {
-      id: '0003',
-      name: 'Test Folder 1',
-      permalink: '/testfolder1',
-      type: 'folder',
-      status: 'folder',
-      lastEditUser: 'folder',
-      lastEditDate: 'folder',
-    },
-    {
-      id: '0002',
-      name: 'Test Page 2',
-      permalink: '/testpage2',
-      type: 'page',
-      status: 'published',
-      lastEditUser: 'user2@test.com',
-      lastEditDate: new Date(50000000000),
-    },
-    {
-      id: '0004',
-      name: 'Test Folder 2',
-      permalink: '/testfolder2',
-      type: 'folder',
-      status: 'folder',
-      lastEditUser: 'folder',
-      lastEditDate: 'folder',
-    },
-  ]
+// TODO: add loading state, probably not req for mvp
 
+export default function DashboardTable(): JSX.Element {
+  const router = useRouter()
   const [pageNumber, onPageChange] = useState(1)
-  const [dataToDisplay, setDataToDisplay] = useState(dummyChildData)
+  const [dataToDisplay, setDataToDisplay] = useState<
+    {
+      id: string
+      name: string
+      permalink: string
+      type: 'page' | 'folder'
+      status: 'draft' | 'published' | undefined
+      lastEditUser: string | undefined
+      lastEditDate: Date | undefined
+    }[]
+  >([])
 
   const entriesPerPage = 6
+
+  let { siteId, resourceId } = useParams<{
+    siteId: string
+    resourceId: string
+  }>()
+
+  // console.log(siteId)
+  // console.log(resourceId)
+
+  const { data, error, isLoading } = trpc.folder.readFolder.useQuery(
+    {
+      siteId: Number(siteId),
+      resourceId: Number(resourceId),
+    },
+    { enabled: !!resourceId },
+  )
+
+  useEffect(() => {
+    if (data) {
+      console.log(data)
+      setDataToDisplay(data.children)
+    }
+    // setLoading(isLoading)
+  }, [data])
+
+  // if (!resourceId) {
+  //   // todo: fetch data after setting up root folder trpc endpoint
+  // } else {
+  //   const { data } = await trpc.folder.readFolder
+  //     .useQuery({
+  //       siteId,
+  //       resourceId,
+  //     })
+  //     .setDataToDisplay(data)
+  // }
   return (
     <>
       <TableContainer
@@ -119,12 +122,17 @@ export const DashboardTable = (): JSX.Element => {
               )
               .map((element) => {
                 return (
-                  <Tr>
+                  <Tr key={element.id}>
                     <Td w="min-content">
                       <Checkbox size="sm" w="fit-content" h="fit-content" />
                     </Td>
-
-                    <Td>
+                    {/* Change behavior for double click on folder */}
+                    <Td
+                      onDoubleClick={() =>
+                        router.push(`/${siteId}/dashboard/${element.id}`)
+                      }
+                      cursor="default"
+                    >
                       <HStack spacing="0.75rem">
                         {element.type === 'page' &&
                           element.permalink === '/' && (
@@ -149,20 +157,21 @@ export const DashboardTable = (): JSX.Element => {
                     </Td>
 
                     <Td>
-                      {element.type === 'page' && element.status == 'draft' && (
-                        <Badge
-                          variant="subtle"
-                          colorScheme="warning"
-                          borderRadius="50px"
-                        >
-                          <Icon
-                            as={BiSolidCircle}
-                            color="utility.feedback.warning"
-                            mr="0.25rem"
-                          />
-                          Draft
-                        </Badge>
-                      )}
+                      {element.type === 'page' &&
+                        element.status === 'draft' && (
+                          <Badge
+                            variant="subtle"
+                            colorScheme="warning"
+                            borderRadius="50px"
+                          >
+                            <Icon
+                              as={BiSolidCircle}
+                              color="utility.feedback.warning"
+                              mr="0.25rem"
+                            />
+                            Draft
+                          </Badge>
+                        )}
                       {element.type === 'page' &&
                         element.status == 'published' && (
                           <Badge
