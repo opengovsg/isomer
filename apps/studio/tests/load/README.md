@@ -9,7 +9,7 @@
 1. Build the load test files.
 
    ```
-   npm run test:load:build
+   pnpm test:load:build
    ```
 
 1. Log in to the target environment with a test account and save the session cookie value.

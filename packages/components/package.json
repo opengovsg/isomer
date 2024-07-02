@@ -8,14 +8,14 @@
   "scripts": {
     "rollup": "rollup -c",
     "storybook": "storybook dev -p 6006",
-    "dev": "npm run storybook",
+    "dev": "pnpm storybook",
     "build-storybook": "storybook build",
-    "publish-package": "rollup -c && npm run publish",
+    "publish-package": "rollup -c && pnpm publish",
     "clean": "rimraf dist",
-    "build": "npm run clean && run-p build:* && npm pack",
+    "build": "pnpm clean && run-p build:* && npm pack",
     "build:main": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "build:module": "tsc -p tsconfig.module.build.json && tsc-alias -p tsconfig.module.build.json",
-    "chromatic": "npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN"
+    "chromatic": "pnpm dlx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN"
   },
   "author": {
     "name": "Isomer Team"

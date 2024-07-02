@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next",
-    "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && npm run build",
+    "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && pnpm build",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
