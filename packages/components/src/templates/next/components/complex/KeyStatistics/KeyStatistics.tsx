@@ -30,12 +30,12 @@ const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
 
   return (
     <div
-      className={`${ComponentContent} xs:py-24 flex flex-col gap-16 py-12 lg:gap-24 ${
+      className={`${ComponentContent} flex flex-col gap-16 py-12 xs:py-24 lg:gap-24 ${
         variant === "side" ? "lg:flex-row lg:gap-16" : ""
       }`}
     >
       <h2
-        className={`text-content w-full text-2xl font-semibold sm:text-4xl ${
+        className={`w-full text-2xl font-semibold text-content sm:text-4xl ${
           variant === "side" ? "lg:w-1/3" : "md:max-w-[47.5rem]"
         }`}
       >
@@ -48,7 +48,7 @@ const KeyStatistics = ({ variant, title, statistics }: KeyStatisticsProps) => {
               ITEM_WIDTHS[variant][Math.min(maxItems, statistics.length)]
             }`}
           >
-            <h3 className="text-content-strong xs:text-5xl xs:leading-[3.5rem] text-pretty text-4xl font-semibold leading-[2.75rem]">
+            <h3 className="text-pretty text-4xl font-semibold leading-[2.75rem] text-content-strong xs:text-5xl xs:leading-[3.5rem]">
               {value.slice(0, MAX_CHAR_LIMIT)}
             </h3>
             <p className="text-sm font-medium text-neutral-500">{label}</p>

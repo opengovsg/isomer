@@ -68,7 +68,7 @@ const Table = ({ caption, content }: TableProps) => {
         <caption className="mb-4 caption-top text-left">
           <BaseParagraph
             content={caption}
-            className="text-caption-01 text-content sticky left-0 table-header-group text-balance"
+            className="sticky left-0 table-header-group text-balance text-content text-caption-01"
           />
         </caption>
         <tbody>

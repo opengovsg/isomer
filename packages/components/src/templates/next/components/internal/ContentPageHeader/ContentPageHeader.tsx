@@ -15,7 +15,7 @@ const ContentPageHeader = ({
 }: ContentPageHeaderProps) => {
   return (
     <div className="bg-site-secondary-100">
-      <div className="max-w-container mx-auto">
+      <div className="mx-auto max-w-container">
         <div className="flex max-w-[880px] flex-col gap-8 px-6 py-8 md:px-10 lg:gap-12 lg:py-16">
           <div className="hidden lg:block">
             <Breadcrumb
@@ -24,13 +24,13 @@ const ContentPageHeader = ({
             />
           </div>
           <div className="flex flex-col">
-            <h1 className="text-site-secondary text-[2.75rem] font-semibold leading-tight lg:text-[3.75rem]">
+            <h1 className="text-[2.75rem] font-semibold leading-tight text-site-secondary lg:text-[3.75rem]">
               {title}
             </h1>
             <div className="pt-6 lg:pb-2">{`Last updated ${getFormattedDate(lastUpdated)}`}</div>
             <BaseParagraph
               content={summary}
-              className="text-paragraph-01 text-content"
+              className="text-content text-paragraph-01"
             />
           </div>
           {buttonLabel && buttonUrl && (

@@ -28,7 +28,7 @@ const Prose = ({ content }: ProseProps) => {
             <BaseParagraph
               key={index}
               content={getTextAsHtml(component.content)}
-              className="text-paragraph-01 text-content"
+              className="text-content text-paragraph-01"
             />
           );
         } else if (component.type === "table") {

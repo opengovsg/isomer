@@ -120,7 +120,7 @@ const HeroCenter = ({
                       : ""
                   }
                   target={buttonUrl.startsWith("http") ? "_blank" : ""}
-                  className={`${BP_BUTTON_CLASSES} tracking-wider h-[2.4rem] border-transparent bg-site-secondary px-6 py-[7px] text-base font-semibold uppercase text-content-inverse`}
+                  className={`${BP_BUTTON_CLASSES} h-[2.4rem] border-transparent bg-site-secondary px-6 py-[7px] text-base font-semibold uppercase tracking-wider text-content-inverse`}
                 >
                   {buttonLabel}
                 </a>

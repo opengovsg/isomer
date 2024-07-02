@@ -17,7 +17,7 @@ const Infobar = ({
         <div className="mx-auto flex flex-col items-center gap-3 px-3 pt-10 text-center md:w-1/2">
           <div className="flex flex-col gap-4">
             {subtitle && (
-              <p className="tracking-widest uppercase text-subtitle">
+              <p className="uppercase tracking-widest text-subtitle">
                 {subtitle}
               </p>
             )}
@@ -31,7 +31,7 @@ const Infobar = ({
           {buttonLabel && buttonUrl && (
             <div className="p-3 text-lg font-semibold uppercase">
               <a
-                className="tracking-wide flex gap-2 text-center font-semibold uppercase text-site-secondary underline"
+                className="flex gap-2 text-center font-semibold uppercase tracking-wide text-site-secondary underline"
                 href={buttonUrl}
                 target={buttonUrl.startsWith("http") ? "_blank" : undefined}
                 rel={

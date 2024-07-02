@@ -261,12 +261,12 @@ const CollectionClient = ({
   );
 
   return (
-    <div className="max-w-container mx-auto my-16 flex flex-col items-start gap-16 px-6 md:px-10">
+    <div className="mx-auto my-16 flex max-w-container flex-col items-start gap-16 px-6 md:px-10">
       <div className="flex max-w-[47.8rem] flex-col gap-12">
-        <h1 className="text-heading-01 text-content-strong flex flex-col gap-16">
+        <h1 className="flex flex-col gap-16 text-content-strong text-heading-01">
           {title}
         </h1>
-        <p className="text-paragraph-01 text-content">{subtitle}</p>
+        <p className="text-content text-paragraph-01">{subtitle}</p>
       </div>
 
       <div className="mx-auto w-full">
@@ -295,7 +295,7 @@ const CollectionClient = ({
         <div className="flex w-full flex-col gap-4 lg:w-3/4">
           <div className="flex w-full flex-wrap items-end justify-between gap-6 sm:flex-nowrap">
             <div className="flex h-full w-full flex-col gap-3">
-              <p className="text-content mt-auto text-base">
+              <p className="mt-auto text-base text-content">
                 {appliedFilters.length > 0 || searchValue !== ""
                   ? `${filteredItems.length} search ${
                       filteredItems.length === 1 ? "result" : "results"
@@ -357,7 +357,7 @@ const CollectionClient = ({
                   We couldn’t find articles that match your search.
                 </p>
                 <button
-                  className="text-hyperlink hover:text-hyperlink-hover text-md mx-auto w-fit font-semibold lg:text-lg"
+                  className="text-md mx-auto w-fit font-semibold text-hyperlink hover:text-hyperlink-hover lg:text-lg"
                   onClick={() => {
                     setSearchValue("");
                     setAppliedFilters([]);

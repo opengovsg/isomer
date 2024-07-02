@@ -51,7 +51,7 @@ const CollectionSort = ({
         <button
           className={`flex justify-between gap-6 rounded-[4px] border px-4 py-2.5 ${
             showSortOptions
-              ? "border-focus-outline outline-focus-outline outline outline-1"
+              ? "border-focus-outline outline outline-1 outline-focus-outline"
               : "border-divider-medium"
           }`}
           aria-label={
@@ -73,8 +73,8 @@ const CollectionSort = ({
           {SortOptions.map((option) => (
             <button
               key={option}
-              className={`hover:bg-interaction-main-subtle-hover flex w-full items-center justify-between rounded-[4px] px-4 py-2.5 text-left ${
-                option === selectedSortOption && "border-focus-outline border-2"
+              className={`flex w-full items-center justify-between rounded-[4px] px-4 py-2.5 text-left hover:bg-interaction-main-subtle-hover ${
+                option === selectedSortOption && "border-2 border-focus-outline"
               }`}
               onClick={() => {
                 setSortBy(SortOptionToConfigMap[option].sortBy);

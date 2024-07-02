@@ -10,11 +10,11 @@ const Breadcrumb = ({ links, LinkComponent = "a" }: BreadcrumbProps) => {
         return (
           <div
             key={index}
-            className="text-content-medium flex flex-row items-center gap-1"
+            className="flex flex-row items-center gap-1 text-content-medium"
           >
             <LinkComponent
               href={link.url}
-              className="hover:text-hyperlink-hover active:text-hyperlink underline underline-offset-2"
+              className="underline underline-offset-2 hover:text-hyperlink-hover active:text-hyperlink"
             >
               {link.title}
             </LinkComponent>

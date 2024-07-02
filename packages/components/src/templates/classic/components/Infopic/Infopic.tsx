@@ -29,7 +29,7 @@ const TextComponent = ({
   return (
     <div className="flex flex-col gap-4 lg:px-8">
       {subtitle && (
-        <p className="tracking-widest uppercase text-subtitle">{subtitle}</p>
+        <p className="uppercase tracking-widest text-subtitle">{subtitle}</p>
       )}
       <h1 className="text-5xl font-semibold text-site-secondary">{title}</h1>
       {description && <p className="text-xl text-paragraph">{description}</p>}

@@ -73,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
               <div className="flex items-center">
                 <a
                   href={breadcrumb.href}
-                  className="tracking-wider text-sm font-light uppercase"
+                  className="text-sm font-light uppercase tracking-wider"
                   aria-current={breadcrumb.current ? "page" : undefined}
                 >
                   {breadcrumb.name}
