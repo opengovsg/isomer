@@ -90,9 +90,19 @@ export const updatePageById = (
   })
 }
 
-export const updateBlobById = (props: { id: number; content: string }) => {
+// NOTE: This id here is the page id
+export const updateBlobById = async (props: {
+  id: number
+  content: string
+}) => {
   const { id, content } = props
-  return db.transaction().execute((tx) => {
+  return db.transaction().execute(async (tx) => {
+    const page = await tx
+      .selectFrom('Resource')
+      .where('Resource.id', '=', id)
+      .select('blobId')
+      .executeTakeFirstOrThrow()
+
     return (
       tx
         .updateTable("Blob")
