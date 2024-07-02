@@ -27,16 +27,14 @@ function getUiSchemaWithGroup(
   uiSchema: UISchemaElementWithScope[],
 ) {
   const { groups } = jsonSchema
-  const groupMap = new Map<string, string[]>()
 
   if (!groups) {
     return uiSchema
   }
 
-  // Identify all the properties that have groups
-  groups.forEach(({ label, fields }) => {
-    groupMap.set(label, fields)
-  })
+  const groupMap = new Map<string, string[]>(
+    new Map(groups.map(({ label, fields }) => [label, fields])),
+  )
 
   const propertiesNotInGroup = Object.keys(jsonSchema.properties || {}).filter(
     (property) => !groups.some(({ fields }) => fields.includes(property)),
