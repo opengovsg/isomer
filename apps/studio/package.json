@@ -15,7 +15,7 @@
     "dev": "next dev",
     "prebuild": "run-s generate migrate",
     "build": "next build",
-    "build:theme": "pnpm dlx chakra-cli tokens src/theme/index.ts",
+    "build:theme": "pnpm exec chakra-cli tokens src/theme/index.ts",
     "start": "next start",
     "lint": "eslint --ext \".js,.ts,.tsx\" --report-unused-disable-directives --report-unused-disable-directives src",
     "lint-fix": "pnpm lint -- --fix",
