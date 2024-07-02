@@ -10,8 +10,7 @@
     "lint": "next lint"
   },
   "imports": {
-    "#data/*": "./data/*.json",
-    "#schema/*": "./schema/*.json"
+    "#data/*": "./data/*.json"
   },
   "dependencies": {
     "@opengovsg/isomer-components": "workspace:*",

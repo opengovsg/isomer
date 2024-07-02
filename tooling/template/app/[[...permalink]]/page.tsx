@@ -31,7 +31,7 @@ const getSchema = async (
   if (permalink && permalink.length > 0 && typeof permalink !== "string") {
     const joinedPermalink = permalink.join("/")
 
-    const schema = (await import(`#schema/${joinedPermalink}`).then(
+    const schema = (await import(`'../../schema/${joinedPermalink}`).then(
       (module) => module.default,
     )) as IsomerPageSchema
 
@@ -47,7 +47,7 @@ const getSchema = async (
     return schema
   }
 
-  const schema = (await import(`#schema/index`).then(
+  const schema = (await import('../../schema/index.json').then(
     (module) => module.default,
   )) as IsomerPageSchema
 

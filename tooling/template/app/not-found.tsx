@@ -26,7 +26,7 @@ export const generateMetadata = async (
   props: never,
   parent: ResolvingMetadata,
 ): Promise<Metadata> => {
-  const schema = (await import(`#schema/index`).then(
+  const schema = (await import('../schema/index.json').then(
     (module) => module.default,
   )) as IsomerPageSchema
   schema.site = {
