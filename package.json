@@ -13,7 +13,14 @@
     "test-start": "turbo test-start",
     "clean": "git clean -xdf node_modules",
     "clean:workspaces": "turbo clean",
-    "clean:all": "pnpm clean:workspaces && pnpm clean"
+    "clean:all": "pnpm clean:workspaces && pnpm clean",
+    "format": "turbo format --continue -- --cache --cache-location node_modules/.cache/.prettiercache --ignore-path ./.prettierignore",
+    "format:fix": "turbo format --continue -- --write --cache --cache-location node_modules/.cache/.prettiercache  --ignore-path ./.prettierignore",
+    "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
+    "lint:fix": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
+    "lint:ws": "pnpm dlx sherif@latest",
+    "postinstall": "pnpm lint:ws",
+    "typecheck": "turbo typecheck"
   },
   "author": "Isomer Team",
   "license": "ISC",

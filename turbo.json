@@ -20,7 +20,6 @@
         "!.next/cache/**"
       ]
     },
-    "clean": {},
     "dev": {
       "dependsOn": [
         "db:setup"
@@ -44,6 +43,24 @@
       ]
     },
     "teardown": {},
-    "test-start": {}
+    "test-start": {},
+    "format": {
+      "outputs": ["node_modules/.cache/.prettiercache"],
+      "outputLogs": "new-only"
+    },
+    "lint": {
+      "dependsOn": ["^build"],
+      "outputs": ["node_modules/.cache/.eslintcache"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": ["node_modules/.cache/tsbuildinfo.json"]
+    },
+    "clean": {
+      "cache": false
+    },
+    "//#clean": {
+      "cache": false
+    }
   }
 }
