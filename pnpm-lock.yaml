@@ -8,9 +8,15 @@ importers:
 
   .:
     devDependencies:
+      '@isomer/prettier-config':
+        specifier: workspace:*
+        version: link:tooling/prettier
       turbo:
         specifier: ^2.0.5
         version: 2.0.6
+      typescript:
+        specifier: 5.5.3
+        version: 5.5.3
 
   apps/studio:
     dependencies:

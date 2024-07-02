@@ -25,7 +25,10 @@
   "author": "Isomer Team",
   "license": "ISC",
   "devDependencies": {
-    "turbo": "^2.0.5"
+    "@isomer/prettier-config": "workspace:*",
+    "turbo": "^2.0.5",
+    "typescript": "5.5.3"
   },
-  "packageManager": "pnpm@9.4.0+sha256.b6fd0bfda555e7e584ad7e56b30c68b01d5a04f9ee93989f4b93ca8473c49c74"
+  "packageManager": "pnpm@9.4.0+sha256.b6fd0bfda555e7e584ad7e56b30c68b01d5a04f9ee93989f4b93ca8473c49c74",
+  "prettier": "@isomer/prettier-config"
 }
