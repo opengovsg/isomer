@@ -12,3 +12,5 @@ export const JSON_FORMS_RANKING = {
   GroupLayoutRenderer: 1,
   VerticalLayoutRenderer: 1,
 }
+
+export const ISOMER_SCHEMA_URI = 'https://schema.isomer.gov.sg/next/0.1.0.json'
