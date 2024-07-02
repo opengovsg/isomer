@@ -10,7 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@opengovsg/isomer-components": "file:opengovsg-isomer-components-0.0.13.tgz",
+    "@opengovsg/isomer-components": "workspace:*",
     "autoprefixer": "^10.4.19",
     "dompurify": "^3.0.10",
     "next": "^14.2.4",
