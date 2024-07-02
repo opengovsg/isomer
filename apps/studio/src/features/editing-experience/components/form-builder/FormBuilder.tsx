@@ -13,6 +13,8 @@ import {
   jsonFormsDropdownControlTester,
   JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
+  JsonFormsObjectControl,
+  jsonFormsObjectControlTester,
   JsonFormsOneOfControl,
   jsonFormsOneOfControlTester,
   JsonFormsProseControl,
@@ -26,6 +28,7 @@ import {
 } from './renderers'
 
 const renderers: JsonFormsRendererRegistryEntry[] = [
+  { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
   { tester: jsonFormsArrayControlTester, renderer: JsonFormsArrayControl },
   { tester: jsonFormsBooleanControlTester, renderer: JsonFormsBooleanControl },
   {

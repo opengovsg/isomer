@@ -4,6 +4,7 @@ export const JSON_FORMS_RANKING = {
   DropdownControl: 2,
   IntegerControl: 4,
   TextControl: 1,
+  ObjectControl: 2,
   OneOfControl: 3,
   ProseControl: 2,
   RadioControl: 3,
