@@ -1,10 +1,10 @@
 // Replace your-framework with the framework you are using (e.g., react, vue3)
+import type { Preview } from "@storybook/react";
 import {
   withThemeByClassName,
   withThemeByDataAttribute,
 } from "@storybook/addon-themes";
 import { MINIMAL_VIEWPORTS } from "@storybook/addon-viewport";
-import { Preview } from "@storybook/react";
 
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "../src/index.css";

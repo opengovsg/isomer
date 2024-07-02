@@ -11,12 +11,12 @@ import {
 import { SIGN_IN } from "~/lib/routes";
 import { AppGrid } from "~/templates/AppGrid";
 
-type PublicHeaderLinkProps = {
+interface PublicHeaderLinkProps {
   label: string;
   href: string;
   showOnMobile?: boolean;
   MobileIcon?: As;
-};
+}
 
 export interface AppPublicHeaderProps {
   /** Header links to display, if provided. */

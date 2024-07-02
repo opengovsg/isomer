@@ -3,4 +3,4 @@ export interface LocalSearchProps {
   searchUrl: string;
 }
 
-export interface LocalSearchInputBoxProps extends LocalSearchProps {}
+export type LocalSearchInputBoxProps = LocalSearchProps;

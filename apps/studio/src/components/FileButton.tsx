@@ -93,7 +93,7 @@ export const FileButton: FileButtonComponent = forwardRef<
     const inputRef = useRef<HTMLInputElement>();
 
     const onClick = () => {
-      !disabled && inputRef?.current?.click();
+      !disabled && inputRef.current?.click();
     };
 
     const handleChange: ChangeEventHandler<HTMLInputElement> = (event) => {

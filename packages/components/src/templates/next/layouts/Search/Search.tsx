@@ -1,4 +1,4 @@
-import { SearchPageSchema } from "~/engine";
+import type { SearchPageSchema } from "~/engine";
 import { Skeleton } from "../Skeleton";
 
 const SearchLayout = ({

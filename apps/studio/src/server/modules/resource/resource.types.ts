@@ -12,6 +12,8 @@ export type PageContent = Omit<
 
 export type Page = SetRequired<Resource, "blobId">;
 
-export type Navbar = { items: IsomerSiteProps["navBarItems"] };
+export interface Navbar {
+  items: IsomerSiteProps["navBarItems"];
+}
 
 export type Footer = IsomerSiteProps["footerItems"];

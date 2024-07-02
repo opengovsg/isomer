@@ -9,7 +9,10 @@ import type {
 } from "../../types/Filter";
 import type { CollectionPageSchema } from "~/engine";
 import type { CollectionCardProps } from "~/interfaces";
-import { SortDirection, SortKey } from "~/interfaces/internal/CollectionSort";
+import type {
+  SortDirection,
+  SortKey,
+} from "~/interfaces/internal/CollectionSort";
 import {
   CollectionCard,
   CollectionSearch,

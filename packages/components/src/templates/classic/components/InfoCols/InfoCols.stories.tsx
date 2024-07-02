@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import type { InfoColsProps } from "~/interfaces";
 import InfoCols from "./InfoCols";

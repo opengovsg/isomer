@@ -1,4 +1,4 @@
-import { HomePageSchema } from "~/engine";
+import type { HomePageSchema } from "~/engine";
 import { renderComponent, renderPageContent } from "../../render";
 import { Skeleton } from "../Skeleton";
 

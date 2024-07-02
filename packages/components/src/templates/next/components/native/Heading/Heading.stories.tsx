@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 
 import type { HeadingProps } from "~/interfaces";
 import { HeadingLevels } from "~/interfaces/native/Heading";

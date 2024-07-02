@@ -1,4 +1,4 @@
-import { SupportedIconName } from "~/common/icons";
+import type { SupportedIconName } from "~/common/icons";
 
 export interface InfoBox {
   icon?: SupportedIconName;

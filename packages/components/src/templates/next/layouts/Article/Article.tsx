@@ -1,4 +1,4 @@
-import { ArticlePageSchema } from "~/engine";
+import type { ArticlePageSchema } from "~/engine";
 import { getBreadcrumbFromSiteMap } from "~/utils";
 import ArticlePageHeader from "../../components/internal/ArticlePageHeader";
 import { renderPageContent } from "../../render";

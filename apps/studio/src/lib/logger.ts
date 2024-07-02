@@ -6,7 +6,7 @@ import { pino } from "pino";
 import { env } from "~/env.mjs";
 
 // use syslog protocol levels as per https://datatracker.ietf.org/doc/html/rfc5424#page-10
-const levels: { [level: string]: number } = {
+const levels: Record<string, number> = {
   emerg: 80,
   alert: 70,
   crit: 60,
@@ -17,10 +17,10 @@ const levels: { [level: string]: number } = {
   debug: 10,
 };
 
-type LoggerOptions = {
+interface LoggerOptions {
   path: string;
   clientIp?: string;
-};
+}
 
 export class PinoLogger {
   private static instance: pino.Logger<string>;

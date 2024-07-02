@@ -27,8 +27,8 @@ interface BaseRefProps extends BaseItemProps {
   image?: CollectionCardProps["image"];
 }
 
-export interface FileRefProps extends BaseRefProps {}
-export interface LinkRefProps extends BaseRefProps {}
+export type FileRefProps = BaseRefProps;
+export type LinkRefProps = BaseRefProps;
 
 export interface ArticlePageProps extends BasePageProps {
   category: CollectionCardProps["category"];
@@ -47,6 +47,6 @@ export interface ContentPageProps extends BasePageProps {
     "summary" | "buttonLabel" | "buttonUrl"
   >;
 }
-export interface HomePageProps extends BasePageProps {}
-export interface NotFoundPageProps extends BasePageProps {}
-export interface SearchPageProps extends BasePageProps {}
+export type HomePageProps = BasePageProps;
+export type NotFoundPageProps = BasePageProps;
+export type SearchPageProps = BasePageProps;

@@ -1,7 +1,7 @@
-import { MouseEventHandler } from "react";
+import type { MouseEventHandler } from "react";
+import type { IconType } from "react-icons/lib";
 import { Divider, Icon, Tooltip } from "@chakra-ui/react";
 import { IconButton } from "@opengovsg/design-system-react";
-import { IconType } from "react-icons/lib";
 
 interface MenuItemProps {
   icon?: IconType;

@@ -2,13 +2,14 @@
   "name": "isomer-base-template",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next",
     "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && pnpm build",
     "build": "next build",
+    "lint": "eslint",
     "format": "prettier --check . --ignore-path ../../.gitignore",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "next start"
   },
   "imports": {
     "#data/*": "./data/*.json"
@@ -16,6 +17,7 @@
   "dependencies": {
     "@opengovsg/isomer-components": "workspace:*",
     "@isomer/prettier-config": "workspace:*",
+    "@isomer/eslint-config": "workspace:*",
     "autoprefixer": "^10.4.19",
     "dompurify": "^3.0.10",
     "next": "14.2.4",
@@ -25,8 +27,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.14.9",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.4"
+    "eslint": "^9.6.0"
   },
   "prettier": "@isomer/prettier-config"
 }

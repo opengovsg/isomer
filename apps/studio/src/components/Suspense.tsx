@@ -1,10 +1,5 @@
 import type { ComponentProps } from "react";
-import {
-  // eslint-disable-next-line no-restricted-imports
-  Suspense as ReactSuspense,
-  useEffect,
-  useState,
-} from "react";
+import { Suspense as ReactSuspense, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 export default function Suspense(props: ComponentProps<typeof ReactSuspense>) {

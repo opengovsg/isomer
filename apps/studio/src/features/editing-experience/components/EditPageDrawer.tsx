@@ -4,9 +4,9 @@ import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer";
 import RootStateDrawer from "./RootStateDrawer";
 import TipTapComponent from "./TipTapComponent";
 
-type EditPageDrawerProps = {
+interface EditPageDrawerProps {
   isOpen: boolean;
-};
+}
 
 export function EditPageDrawer({ isOpen: open }: EditPageDrawerProps) {
   const { drawerState: currState } = useEditorDrawerContext();

@@ -1,5 +1,4 @@
-import type { Meta } from "@storybook/react";
-import { StoryFn, StoryObj } from "@storybook/react";
+import type { Meta, StoryFn, StoryObj } from "@storybook/react";
 
 import type { ButtonProps } from "~/interfaces/complex/Button";
 import {

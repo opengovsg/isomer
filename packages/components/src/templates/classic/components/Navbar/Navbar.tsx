@@ -2,13 +2,13 @@ import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { BiMenu, BiSearch, BiX } from "react-icons/bi";
 
-export type NavbarLink = {
+export interface NavbarLink {
   type: "single" | "dropdown";
   name: string;
   eventKey?: string;
   url?: string;
   links?: NavbarLink[];
-};
+}
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");

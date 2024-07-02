@@ -1,8 +1,8 @@
+import type { Meta, StoryFn } from "@storybook/react";
 import { useState } from "react";
-import { Meta, StoryFn } from "@storybook/react";
 
-import { SortKey } from "~/interfaces/internal/CollectionSort";
-import CollectionSortProps from "~/templates/next/types/CollectionSort";
+import type { SortKey } from "~/interfaces/internal/CollectionSort";
+import type CollectionSortProps from "~/templates/next/types/CollectionSort";
 import CollectionSort from "./CollectionSort";
 
 export default {

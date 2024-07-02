@@ -16,7 +16,7 @@ class AuthError extends Error {
     } else {
       super(undefined, message);
     }
-    Error.captureStackTrace?.(this, this.constructor);
+    Error.captureStackTrace(this, this.constructor);
     this.name =
       message instanceof AuthError ? message.name : this.constructor.name;
   }

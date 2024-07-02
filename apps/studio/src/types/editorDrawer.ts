@@ -1,18 +1,18 @@
-export type RootDrawerState = {
+export interface RootDrawerState {
   state: "root";
-};
+}
 
-export type AddNewBlockState = {
+export interface AddNewBlockState {
   state: "addBlock";
-};
+}
 
-export type NativeEditorState = {
+export interface NativeEditorState {
   state: "nativeEditor";
-};
+}
 
-export type ComplexEditorState = {
+export interface ComplexEditorState {
   state: "complexEditor";
-};
+}
 
 export type DrawerState =
   | RootDrawerState

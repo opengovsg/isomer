@@ -8,7 +8,7 @@ const IsomerFooter = ({ agencyName, siteNavItems }: FooterProps) => {
       <Footer.Top>
         <Footer.Top.Header headerTitle={agencyName} />
         <Footer.Top.ItemGroup>
-          {siteNavItems?.map((item) => {
+          {siteNavItems.map((item) => {
             return (
               <Footer.Top.Item key={`footer-item-${item.title}`}>
                 <a href={item.url} className="-mt-8 font-bold">

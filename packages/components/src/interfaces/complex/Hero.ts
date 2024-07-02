@@ -11,19 +11,19 @@ export interface HeroButtonsProps {
 }
 
 export interface HeroKeyHighlightProps {
-  keyHighlights?: Array<{
+  keyHighlights?: {
     title: string;
     description: string;
     url: string;
-  }>;
+  }[];
 }
 
 export interface HeroDropdownProps {
   title?: string;
-  options: Array<{
+  options: {
     title: string;
     url: string;
-  }>;
+  }[];
 }
 
 export interface HeroBackgroundImageProps {

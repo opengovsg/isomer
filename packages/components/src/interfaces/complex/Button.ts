@@ -1,4 +1,4 @@
-import { SupportedIconName } from "~/common/icons";
+import type { SupportedIconName } from "~/common/icons";
 
 // Theme specific config
 export const BUTTON_COLOR_SCHEMES = ["black", "white"] as const;

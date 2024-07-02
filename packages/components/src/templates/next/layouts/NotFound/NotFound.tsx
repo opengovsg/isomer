@@ -1,4 +1,4 @@
-import { NotFoundPageSchema } from "~/engine";
+import type { NotFoundPageSchema } from "~/engine";
 import { renderComponent } from "../../render";
 import { Skeleton } from "../Skeleton";
 

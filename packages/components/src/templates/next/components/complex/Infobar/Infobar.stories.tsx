@@ -1,6 +1,6 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
-import { InfobarProps } from "~/interfaces";
+import type { InfobarProps } from "~/interfaces";
 import Infobar from "./Infobar";
 
 export default {

@@ -1,10 +1,11 @@
+import type { MenuButtonProps, MenuListProps } from "@chakra-ui/react";
+import type { Editor } from "@tiptap/react";
+import type { IconType } from "react-icons/lib";
 import {
   Box,
   Divider,
   HStack,
   Icon,
-  MenuButtonProps,
-  MenuListProps,
   Popover,
   PopoverBody,
   PopoverContent,
@@ -13,7 +14,6 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { Button, Menu } from "@opengovsg/design-system-react";
-import { Editor } from "@tiptap/react";
 import {
   BiBold,
   BiChevronDown,
@@ -32,7 +32,6 @@ import {
   BiUnderline,
   BiUndo,
 } from "react-icons/bi";
-import { IconType } from "react-icons/lib";
 import { MdSubscript, MdSuperscript } from "react-icons/md";
 
 import { MenuItem } from "./MenuItem";
@@ -305,8 +304,8 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
           {item.type === "vertical-list" && (
             <Menu>
               {({ isOpen }) => {
-                const activeItem = item.items.find(
-                  (subItem) => subItem.isActive && subItem.isActive(),
+                const activeItem = item.items.find((subItem) =>
+                  subItem.isActive?.(),
                 );
 
                 return (

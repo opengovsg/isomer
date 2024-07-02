@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import type { PillProps } from "~/interfaces";
 import Pill from "./Pill";

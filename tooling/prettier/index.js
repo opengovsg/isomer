@@ -3,7 +3,7 @@
 /** @typedef {import("@ianvs/prettier-plugin-sort-imports").PluginConfig} SortImportsConfig */
 
 /** @type { PrettierConfig | SortImportsConfig | TailwindConfig } */
-const config = {
+module.exports = {
   plugins: [
     "@ianvs/prettier-plugin-sort-imports",
     "prettier-plugin-tailwindcss",
@@ -27,5 +27,3 @@ const config = {
   importOrderParserPlugins: ["typescript", "jsx", "decorators-legacy"],
   importOrderTypeScriptVersion: "5.5.3",
 };
-
-export default config;

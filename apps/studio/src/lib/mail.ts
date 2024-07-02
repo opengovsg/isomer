@@ -3,11 +3,11 @@ import wretch from "wretch";
 
 import { env } from "~/env.mjs";
 
-type SendMailParams = {
+interface SendMailParams {
   recipient: string;
   body: string;
   subject: string;
-};
+}
 
 if (env.SENDGRID_API_KEY) {
   sendgrid.setApiKey(env.SENDGRID_API_KEY);

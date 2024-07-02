@@ -1,5 +1,5 @@
+import type { ContentPageSchema, IsomerSitemap } from "~/engine";
 import type { SiderailProps } from "~/interfaces";
-import { ContentPageSchema, IsomerSitemap } from "~/engine";
 import {
   getBreadcrumbFromSiteMap,
   getDigestFromText,
