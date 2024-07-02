@@ -12,6 +12,7 @@ import {
   type Navbar,
   type Footer,
 } from '~/server/modules/resource/resource.types'
+import cuid2 from '@paralleldrive/cuid2'
 import { db } from '../src/server/modules/database'
 
 const MOCK_PHONE_NUMBER = '123456789'
@@ -216,6 +217,7 @@ async function main() {
       return db
         .insertInto('User')
         .values({
+          id: cuid2.createId(),
           name,
           email: `${name}@open.gov.sg`,
           phone: MOCK_PHONE_NUMBER,

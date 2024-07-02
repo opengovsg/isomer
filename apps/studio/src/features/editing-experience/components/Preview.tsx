@@ -30,7 +30,6 @@ export default function Preview({ layout, content, page }: IsomerPageSchema) {
         navBarItems: navbar.items,
         footerItems: footer,
       }}
-      // @ts-expect-error blah
       layout={layout}
       // TODO: remove this cast and add validation
       content={content}

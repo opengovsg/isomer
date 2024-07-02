@@ -53,7 +53,7 @@ export const updatePageById = (
   })
 }
 
-export const updateBlobById = (props: { id: number; content: Page }) => {
+export const updateBlobById = (props: { id: number; content: string }) => {
   const { id, content } = props
   return db.transaction().execute((tx) => {
     return (

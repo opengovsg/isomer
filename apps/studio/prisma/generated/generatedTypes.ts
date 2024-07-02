@@ -24,7 +24,7 @@ export type Navbar = {
 export type Permission = {
   id: GeneratedAlways<number>
   resourceId: number
-  userId: number
+  userId: string
   role: RoleType
 }
 export type Resource = {
@@ -40,11 +40,11 @@ export type Site = {
   config: unknown
 }
 export type SiteMember = {
-  userId: number
+  userId: string
   siteId: number
 }
 export type User = {
-  id: GeneratedAlways<number>
+  id: string
   name: string
   email: string
   phone: string

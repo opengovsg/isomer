@@ -1,5 +1,6 @@
 import { Grid, GridItem } from '@chakra-ui/react'
-import Ajv from 'ajv'
+import { type IsomerComponent } from '@opengovsg/isomer-components'
+import Ajv, { type ValidateFunction } from 'ajv'
 import { useEffect, useState } from 'react'
 import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import EditPageDrawer from '~/features/editing-experience/components/EditPageDrawer'
@@ -12,7 +13,7 @@ const ISOMER_SCHEMA_URI = 'https://schema.isomer.gov.sg/next/0.1.0.json'
 
 const EditPage: NextPageWithLayout = () => {
   const [, setJsonSchema] = useState(null)
-  const [validate, setValidate] = useState(null)
+  const [validate, setValidate] = useState<ValidateFunction | null>(null)
 
   const { setDrawerState, pageState, setPageState, setEditorState } =
     useEditorDrawerContext()
