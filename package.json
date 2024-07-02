@@ -23,8 +23,5 @@
   "devDependencies": {
     "turbo": "^2.0.5"
   },
-  "dependencies": {
-    "sass": "^1.77.6"
-  },
   "packageManager": "npm@10.2.3"
 }
