@@ -5,13 +5,15 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "clean": "turbo clean",
     "dev": "turbo run dev",
     "setup:test": "turbo setup:test",
     "storybook": "turbo run storybook --parallel",
     "storybook:build": "turbo run storybook:build --parallel",
     "teardown": "turbo teardown",
-    "test-start": "turbo test-start"
+    "test-start": "turbo test-start",
+    "clean": "git clean -xdf node_modules",
+    "clean:workspaces": "turbo clean",
+    "clean:all": "pnpm clean:workspaces && pnpm clean"
   },
   "author": "Isomer Team",
   "license": "ISC",
