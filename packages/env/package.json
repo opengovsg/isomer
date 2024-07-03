@@ -1,0 +1,22 @@
+{
+  "name": "@isomer/env",
+  "version": "0.0.0",
+  "main": "./src/env.mjs",
+  "types": "./build/types/env.mjs",
+  "type": "module",
+  "scripts": {
+    "prepare": "pnpm build",
+    "build": "tsc",
+    "clean": "git clean -xdf .turbo node_modules build"
+  },
+  "devDependencies": {
+    "@isomer/eslint-config": "workspace:*",
+    "@isomer/prettier-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "^20.14.9"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "prettier": "@isomer/prettier-config"
+}

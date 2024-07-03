@@ -1,0 +1,16 @@
+{
+  "extends": "@isomer/tsconfig/internal-package.json",
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "ES2022"],
+    "jsx": "preserve",
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
+    // !! Cannot use paths in internal packages because the consuming app will be confused
+    "paths": {},
+    "baseUrl": "./src",
+    "strict": true,
+    "allowJs": true,
+    "outDir": "./build/types"
+  },
+  "include": ["**/*.ts", "**/*.cjs", "**/*.mjs"],
+  "exclude": ["node_modules"]
+}
