@@ -1,3 +1,4 @@
+import { prisma } from "@isomer/db/prisma";
 import { env } from "@isomer/env";
 import {
   applySession,
@@ -6,21 +7,20 @@ import {
 import { describe, expect, it } from "vitest";
 
 import * as mailLib from "~/lib/mail";
-import { prisma } from "~/server/prisma";
 import { createTokenHash } from "../../auth.util";
 import { emailSessionRouter } from "../email.router";
 
-describe("auth.email", async () => {
+describe("auth.email", () => {
   let caller: Awaited<ReturnType<typeof emailSessionRouter.createCaller>>;
   let session: ReturnType<typeof applySession>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     session = applySession();
-    const ctx = await createMockRequest(session);
+    const ctx = createMockRequest(session);
     caller = emailSessionRouter.createCaller(ctx);
   });
 
-  describe("login", async () => {
+  describe("login", () => {
     const TEST_VALID_EMAIL = "test@open.gov.sg";
     it("should throw if email is not provided", async () => {
       // Act

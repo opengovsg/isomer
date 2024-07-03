@@ -82,6 +82,13 @@ export default tseslint.config(
     languageOptions: { parserOptions: { project: true } },
   },
   {
+    files: ["**/*.spec.ts", "**/*.spec.tsx", "**/*.test.ts", "**/*.test.tsx"],
+    rules: {
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "no-restricted-syntax": "off",
+    },
+  },
+  {
     linterOptions: { reportUnusedDisableDirectives: true },
   },
 );

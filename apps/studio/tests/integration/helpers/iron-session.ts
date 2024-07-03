@@ -1,6 +1,6 @@
+import type { User } from "@isomer/db/prisma";
 import type { RequestOptions, ResponseOptions } from "node-mocks-http";
 import { type NextApiRequest, type NextApiResponse } from "next";
-import { type User } from "@prisma/client";
 import { createMocks } from "node-mocks-http";
 
 import type { Context } from "~/server/context";
@@ -9,7 +9,7 @@ import { createContextInner } from "~/server/context";
 import { auth } from "./auth";
 
 class MockIronStore {
-  private static instance: MockIronStore;
+  private static instance: MockIronStore | undefined;
 
   private saved: Record<string, string | object | number>;
 
@@ -48,12 +48,12 @@ class MockIronStore {
   }
 }
 
-export const createMockRequest = async (
+export const createMockRequest = (
   session: Session,
   reqOptions: RequestOptions = { method: "GET" },
   resOptions?: ResponseOptions,
-): Promise<Context> => {
-  const innerContext = await createContextInner({ session });
+): Context => {
+  const innerContext = createContextInner({ session });
 
   const { req, res } = createMocks(reqOptions, resOptions);
 
@@ -70,7 +70,9 @@ export const applySession = () => {
   const session = {
     set: store.set.bind(store),
     get: store.get.bind(store),
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     unset: store.unset,
+    // eslint-disable-next-line @typescript-eslint/require-await
     async save() {
       store.seal();
     },

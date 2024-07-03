@@ -53,6 +53,7 @@ export function JsonFormsIntegerControl({
     exclusiveMinimum,
     maximum,
     minimum,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     default: defaultValue,
   } = schema;
   const min = Number(exclusiveMinimum) + 1 || minimum || 0;
@@ -63,6 +64,7 @@ export function JsonFormsIntegerControl({
       <FormControl isRequired={required}>
         <FormLabel description={description}>{label}</FormLabel>
         <NumberInput
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           defaultValue={defaultValue || min}
           min={min}
           max={max}

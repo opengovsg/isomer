@@ -8,7 +8,7 @@ interface EditPageDrawerProps {
   isOpen: boolean;
 }
 
-export function EditPageDrawer({ isOpen: open }: EditPageDrawerProps) {
+export function EditPageDrawer({ isOpen: _open }: EditPageDrawerProps) {
   const { drawerState: currState } = useEditorDrawerContext();
 
   switch (currState.state) {

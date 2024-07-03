@@ -100,7 +100,7 @@ export const FileButton: FileButtonComponent = forwardRef<
       if (multiple) {
         const nextFiles = Array.from(event.currentTarget.files ?? []);
         if (others.append) {
-          onChange([...(value ?? []), ...nextFiles]);
+          onChange([...value, ...nextFiles]);
         } else {
           onChange(Array.from(event.currentTarget.files ?? []));
         }

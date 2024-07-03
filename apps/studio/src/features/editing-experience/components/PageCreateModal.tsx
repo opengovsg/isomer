@@ -1,7 +1,4 @@
-import type { SubmitHandler } from "react-hook-form";
-import React, { useEffect, useState } from "react";
 import {
-  Box,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -22,56 +19,60 @@ import {
   FormErrorMessage,
   ModalCloseButton,
 } from "@opengovsg/design-system-react";
-import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { useZodForm } from "~/lib/form";
 
 interface PageCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface PageCreateFormFields {
-  title: string;
-  url: string;
-}
+const MAX_TITLE_LENGTH = 100;
+const MAX_PAGE_URL_LENGTH = 150;
 
-/* TODO: Can extract these out to a constants file if can be reused */
-const ERROR_MESSAGES = {
-  MIN_LENGTH: "Minimum length should be 1",
-  MAX_LENGTH: (max: number) => `Maximum length should be ${max}`,
-  TITLE: {
-    REQUIRED: "Enter a title for this page",
-  },
-  URL: {
-    REQUIRED: "Enter a URL for this page.",
-  },
-};
+const pageCreateSchema = z.object({
+  title: z
+    .string({
+      required_error: "Enter a title for this page",
+    })
+    .min(1, { message: "Title should be at least 1 character" })
+    .max(MAX_TITLE_LENGTH, {
+      message: `Title should be at most ${MAX_TITLE_LENGTH} characters`,
+    })
+    .default(""),
+  url: z
+    .string({
+      required_error: "Enter a URL for this page",
+    })
+    .min(1, { message: "URL should be at least 1 character" })
+    .max(MAX_PAGE_URL_LENGTH, {
+      message: `URL should be at most ${MAX_PAGE_URL_LENGTH} characters`,
+    })
+    .default(""),
+});
 
 export const PageCreateModal = ({
   isOpen,
   onClose,
 }: PageCreateModalProps): JSX.Element => {
-  const MAX_TITLE_LENGTH = 100;
-  const MAX_PAGE_URL_LENGTH = 150;
-  const [titleLen, setTitleLen] = useState(0);
-  const [pageUrlLen, setPageUrlLen] = useState(0);
-
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<PageCreateFormFields>();
+  } = useZodForm({
+    schema: pageCreateSchema,
+  });
 
   const watchAllFields = watch();
-
-  useEffect(() => {
-    setTitleLen(watchAllFields.title.length || 0);
-    setPageUrlLen(watchAllFields.url.length || 0);
-  }, [watchAllFields]);
+  const titleLen = watchAllFields.title?.length ?? 0;
+  const pageUrlLen = watchAllFields.url?.length ?? 0;
 
   /* TODO: When integrating with BE */
-  const onSubmit: SubmitHandler<PageCreateFormFields> = (data) =>
+  const onSubmit = handleSubmit((data) => {
     console.log(data);
+  });
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -82,7 +83,7 @@ export const PageCreateModal = ({
           Tell us about your new page
         </ModalHeader>
         <ModalCloseButton />
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={onSubmit}>
           <ModalBody>
             <Stack gap={"1.5em"}>
               <Text fontSize="md" color="base.content.default">
@@ -101,20 +102,7 @@ export const PageCreateModal = ({
                   type="text"
                   placeholder="This is a title for your new page"
                   id="title"
-                  {...register("title", {
-                    required: ERROR_MESSAGES.TITLE.REQUIRED,
-                    validate: (value) =>
-                      value.trim().length !== 0 ||
-                      ERROR_MESSAGES.TITLE.REQUIRED,
-                    minLength: {
-                      value: 1,
-                      message: ERROR_MESSAGES.MIN_LENGTH,
-                    },
-                    maxLength: {
-                      value: MAX_TITLE_LENGTH,
-                      message: ERROR_MESSAGES.MAX_LENGTH(MAX_TITLE_LENGTH),
-                    },
-                  })}
+                  {...register("title")}
                   isInvalid={!!errors.title}
                 />
                 {errors.title?.message ? (
@@ -145,17 +133,7 @@ export const PageCreateModal = ({
                     type="tel"
                     defaultValue={"hello-world"}
                     color="base.content.default"
-                    {...register("url", {
-                      required: ERROR_MESSAGES.URL.REQUIRED,
-                      minLength: {
-                        value: 1,
-                        message: ERROR_MESSAGES.MIN_LENGTH,
-                      },
-                      maxLength: {
-                        value: MAX_PAGE_URL_LENGTH,
-                        message: ERROR_MESSAGES.MAX_LENGTH(MAX_PAGE_URL_LENGTH),
-                      },
-                    })}
+                    {...register("url")}
                     isInvalid={!!errors.url}
                   />
                 </InputGroup>

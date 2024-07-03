@@ -95,6 +95,7 @@ const UnmemoedRichText = forwardRef<TextAreaFieldProps, "div">(
           // },
         }),
       ],
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       content: safeJsonParse(value),
       editable: !isReadOnly,
       onCreate: ({ editor }) => {
@@ -122,6 +123,7 @@ const UnmemoedRichText = forwardRef<TextAreaFieldProps, "div">(
     useEffect(() => {
       if (!editor) return;
       if (defaultValue) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         editor.commands.setContent(safeJsonParse(defaultValue));
       }
       if (!defaultValue && !value) {

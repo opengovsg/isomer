@@ -24,6 +24,7 @@ export default function RootStateDrawer() {
     const updatedBlocks = Array.from(pageState);
     // Remove block at source index
     const [movedBlock] = updatedBlocks.splice(result.source.index, 1);
+    if (!movedBlock) return;
     // Insert at destination index
     updatedBlocks.splice(result.destination.index, 0, movedBlock);
 

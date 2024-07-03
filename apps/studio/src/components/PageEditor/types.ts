@@ -1,7 +1,7 @@
 export interface CustomRendererProps {
-  data: any;
-  rootSchema: any;
-  handleChange(path: string, value: any): void;
+  data: unknown;
+  rootSchema: unknown;
+  handleChange(path: string, value: unknown): void;
   path: string;
 }
 

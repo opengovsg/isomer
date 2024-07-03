@@ -34,7 +34,7 @@ export function JsonFormsBooleanControl({
         <Switch
           id={id}
           isDisabled={!enabled}
-          checked={data || false}
+          checked={!!data || false}
           onChange={(e) => handleChange(path, e.target.checked)}
         />
         <FormErrorMessage>{errors}</FormErrorMessage>

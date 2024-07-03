@@ -26,6 +26,7 @@ export function JsonFormsDropdownControl({
   options,
   schema,
 }: ControlProps & OwnPropsOfEnum) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [dropdownValue, setDropdownValue] = useState(data || "");
 
   if (!options || (options.length === 1 && !!schema.default)) {
@@ -34,6 +35,7 @@ export function JsonFormsDropdownControl({
 
   const items = options.map((option) => ({
     label: option.label.charAt(0).toUpperCase() + option.label.slice(1),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     value: option.value,
   }));
 
@@ -42,6 +44,7 @@ export function JsonFormsDropdownControl({
       <FormControl isRequired={required}>
         <FormLabel description={description}>{label}</FormLabel>
         <SingleSelect
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           value={dropdownValue}
           name={label}
           items={items}

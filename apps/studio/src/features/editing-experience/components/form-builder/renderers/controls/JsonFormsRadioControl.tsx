@@ -39,7 +39,7 @@ export function JsonFormsRadioControl({
             <Radio
               my={1}
               key={option.label}
-              value={option.value}
+              value={String(option.value)}
               allowDeselect={false}
             >
               {option.label.charAt(0).toUpperCase() + option.label.slice(1)}

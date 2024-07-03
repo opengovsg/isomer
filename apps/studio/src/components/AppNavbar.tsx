@@ -51,7 +51,7 @@ export function AppNavbar(): JSX.Element {
           spacing={{ base: "0.75rem", md: "1.5rem" }}
         >
           <AvatarMenu
-            name={me.name ?? undefined}
+            name={me.name}
             variant="subtle"
             bg="base.canvas.brand-subtle"
             menuListProps={{ maxWidth: "19rem" }}

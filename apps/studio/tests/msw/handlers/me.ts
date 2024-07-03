@@ -1,4 +1,4 @@
-import { type User } from "@prisma/client";
+import type { User } from "@isomer/db/prisma";
 import { TRPCError } from "@trpc/server";
 
 import { mockTrpcErrorResponse, trpcMsw } from "../mockTrpc";

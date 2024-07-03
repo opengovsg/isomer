@@ -27,7 +27,7 @@ export function JsonFormsProseControl({
       <FormControl isRequired={required}>
         <FormLabel description={description}>{label}</FormLabel>
         <Textarea
-          value={data || ""}
+          value={String(data ?? "")}
           onChange={(e) => handleChange(path, e.target.value)}
           placeholder={label}
         />

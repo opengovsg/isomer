@@ -4,8 +4,9 @@ import { RenderEngine } from "@opengovsg/isomer-components";
 import { trpc } from "~/utils/trpc";
 
 export default function Preview({ layout, content, page }: IsomerPageSchema) {
-  const [{ theme, isGovernment, sitemap, name }] =
-    trpc.site.getConfig.useSuspenseQuery({ id: 1 });
+  const [{ theme, isGovernment, name }] = trpc.site.getConfig.useSuspenseQuery({
+    id: 1,
+  });
   const [{ content: footer }] = trpc.site.getFooter.useSuspenseQuery({
     id: 1,
   });

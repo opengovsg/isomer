@@ -10,6 +10,7 @@ const breakpointToViewportWidth = (
   breakpoint: keyof typeof theme.breakpoints,
 ) => {
   const rem = 16;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
   return parseInt(theme.breakpoints[breakpoint]) * rem;
 };
 

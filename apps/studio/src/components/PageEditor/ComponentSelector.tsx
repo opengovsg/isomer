@@ -95,9 +95,8 @@ function BlockItem({
 }
 
 function ComponentSelector() {
-  const { setDrawerState, setPageState, setEditorState } =
-    useEditorDrawerContext();
-  const onProceed = (sectionType: SectionType) => {
+  const { setDrawerState } = useEditorDrawerContext();
+  const onProceed = (_sectionType: SectionType) => {
     // TODO: add new section to page/editor state
     setDrawerState({ state: "root" });
   };

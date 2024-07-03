@@ -1,6 +1,7 @@
 import { modalAnatomy as parts } from "@chakra-ui/anatomy";
 import { createMultiStyleConfigHelpers, defineStyle } from "@chakra-ui/react";
 
+// eslint-disable-next-line @typescript-eslint/unbound-method
 const { definePartsStyle, defineMultiStyleConfig } =
   createMultiStyleConfigHelpers(parts.keys);
 

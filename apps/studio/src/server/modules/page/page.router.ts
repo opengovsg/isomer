@@ -23,7 +23,7 @@ const pageProcedure = protectedProcedure;
 export const pageRouter = router({
   readPageAndBlob: pageProcedure
     .input(getEditPageSchema)
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { pageId } = input;
       const page = await getFullPageById(pageId);
       const pageName: string = page.name;
@@ -43,7 +43,7 @@ export const pageRouter = router({
 
   updatePage: pageProcedure
     .input(updatePageSchema)
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       await updatePageById({ ...input, id: input.pageId });
 
       return input;
@@ -51,16 +51,14 @@ export const pageRouter = router({
 
   updatePageBlob: pageProcedure
     .input(updatePageBlobSchema)
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       await updateBlobById({ ...input, id: input.pageId });
 
       return input;
     }),
 
-  createPage: pageProcedure
-    .input(createPageSchema)
-    .query(async ({ input, ctx }) => {
-      return { pageId: "" };
-    }),
+  createPage: pageProcedure.input(createPageSchema).query(() => {
+    return { pageId: "" };
+  }),
   // TODO: Delete page stuff here
 });

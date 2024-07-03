@@ -1,7 +1,6 @@
 import type { ValidateFunction } from "ajv";
 import { useEffect, useState } from "react";
 import { Grid, GridItem } from "@chakra-ui/react";
-import { type IsomerComponent } from "@opengovsg/isomer-components";
 import Ajv from "ajv";
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext";
@@ -32,14 +31,16 @@ const EditPage: NextPageWithLayout = () => {
         console.log(schema);
         const ajv = new Ajv({ strict: false });
         const validateFn = ajv.compile(schema);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         setJsonSchema(schema);
         setValidate(() => validateFn);
       });
   };
 
+  // TODO: Bad use of useEffect, see https://react.dev/learn/you-might-not-need-an-effect.
   useEffect(() => {
     if (validate === null) {
-      loadSchema();
+      void loadSchema();
     }
   }, [validate]);
 

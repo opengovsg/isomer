@@ -345,6 +345,9 @@ importers:
       eslint:
         specifier: ^9.6.0
         version: 9.6.0
+      k6:
+        specifier: ^0.0.0
+        version: 0.0.0
       k6-trpc:
         specifier: ^1.0.0
         version: 1.0.0(@trpc/server@10.45.0)(@types/k6@0.46.3)
@@ -7592,6 +7595,9 @@ packages:
     peerDependencies:
       '@trpc/server': ^10.35.0
       '@types/k6': ^0.46.0
+
+  k6@0.0.0:
+    resolution: {integrity: sha512-GAQSWayS2+LjbH5bkRi+pMPYyP1JSp7o+4j58ANZ762N/RH/SdlAT3CHHztnn8s/xgg8kYNM24Gd2IPo9b5W+g==}
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -20218,6 +20224,8 @@ snapshots:
     dependencies:
       '@trpc/server': 10.45.0
       '@types/k6': 0.46.3
+
+  k6@0.0.0: {}
 
   keyv@4.5.4:
     dependencies:

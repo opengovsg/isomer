@@ -75,7 +75,7 @@ export const DashboardTable = (): JSX.Element => {
   ];
 
   const [pageNumber, onPageChange] = useState(1);
-  const [dataToDisplay, setDataToDisplay] = useState(dummyChildData);
+  const [dataToDisplay, _setDataToDisplay] = useState(dummyChildData);
 
   const entriesPerPage = 6;
   return (

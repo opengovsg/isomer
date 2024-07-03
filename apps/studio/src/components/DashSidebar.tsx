@@ -16,15 +16,13 @@ import {
 import { BiFace, BiHomeSmile, BiMenu } from "react-icons/bi";
 
 import { ADMIN_DASHBAR_WIDTHS, ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts";
-import { useMe } from "~/features/me/api";
 import { HOME, PROFILE, SETTINGS_PROFILE } from "~/lib/routes";
 
 export function DashSidebar() {
   const [showWhenSmallMobile, setShowWhenSmallMobile] = useState(false);
   const isMobile = useIsMobile();
-  const { me } = useMe();
   const breakpointValue = useBreakpoint();
-  const { pathname, query } = useRouter();
+  const { pathname } = useRouter();
 
   const mobileButtonProps = {
     zIndex: "overlay",

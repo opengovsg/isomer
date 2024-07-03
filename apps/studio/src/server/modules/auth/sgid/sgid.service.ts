@@ -1,13 +1,11 @@
 import type { PrismaClient } from "@isomer/db/prisma";
 
-import { createPocdexAccountProviderId } from "../auth.util";
 import { type SgidSessionProfile } from "./sgid.utils";
 
 export const upsertSgidAccountAndUser = async ({
   prisma,
   pocdexEmail,
   name,
-  sub,
 }: {
   prisma: PrismaClient;
   pocdexEmail: NonNullable<SgidSessionProfile["list"][number]["work_email"]>;
@@ -28,12 +26,6 @@ export const upsertSgidAccountAndUser = async ({
         phone: "",
       },
     });
-
-    // Link user to account
-    const pocdexProviderAccountId = createPocdexAccountProviderId(
-      sub,
-      pocdexEmail,
-    );
 
     return user;
   });

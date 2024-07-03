@@ -35,6 +35,7 @@ const MyApp = ((props: AppPropsWithAuthAndLayout) => {
                 <Stack spacing={0} minH="$100vh">
                   <VersionWrapper />
                   <ChildWithLayout {...props} />
+                  {/* eslint-disable-next-line no-restricted-properties */}
                   {process.env.NODE_ENV !== "production" && (
                     <ReactQueryDevtools initialIsOpen={false} />
                   )}

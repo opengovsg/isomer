@@ -1,3 +1,4 @@
+import type { Content } from "@tiptap/react";
 import { Box, Text as ChakraText, Flex, Icon, VStack } from "@chakra-ui/react";
 import { Button, IconButton } from "@opengovsg/design-system-react";
 import { Blockquote } from "@tiptap/extension-blockquote";
@@ -33,7 +34,7 @@ type NativeComponentType = "paragraph" | "image";
 
 export interface TipTapComponentProps {
   type: NativeComponentType;
-  data: any;
+  data: Content;
   path: string;
 }
 
@@ -48,9 +49,8 @@ const typeMapping = {
   },
 };
 
-function TipTapComponent({ type, data, path }: TipTapComponentProps) {
-  const { setDrawerState, setPageState, setEditorState } =
-    useEditorDrawerContext();
+function TipTapComponent({ type, data }: TipTapComponentProps) {
+  const { setDrawerState } = useEditorDrawerContext();
   const editor = useEditor({
     extensions: [
       Blockquote,
@@ -98,7 +98,7 @@ function TipTapComponent({ type, data, path }: TipTapComponentProps) {
       Underline,
     ],
     content: data,
-    onUpdate({ editor }) {
+    onUpdate() {
       // TODO: set editor state - content is retrieved via editor.getJSON().content
     },
   });

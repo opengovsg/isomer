@@ -1,4 +1,4 @@
-import { type Prisma, type PrismaClient } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@isomer/db/prisma";
 
 import { VerificationError } from "./auth.error";
 import { compareHash } from "./auth.util";

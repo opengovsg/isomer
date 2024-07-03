@@ -30,6 +30,7 @@ export const registerWithDebounce = <
     ...useFormRegisterReturn,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onChange: async (e: any) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       await onChange(e);
       await debouncedValidate();
     },

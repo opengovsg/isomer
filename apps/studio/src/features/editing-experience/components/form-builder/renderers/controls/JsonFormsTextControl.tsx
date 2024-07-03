@@ -25,7 +25,7 @@ export function JsonFormsTextControl({
         <FormLabel description={description}>{label}</FormLabel>
         <Input
           type="text"
-          value={data || ""}
+          value={String(data ?? "")}
           onChange={(e) => handleChange(path, e.target.value)}
           placeholder={label}
         />
