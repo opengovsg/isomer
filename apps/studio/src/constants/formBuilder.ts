@@ -1,3 +1,4 @@
+// Rankings are adapted from JSONForms' Material Renderers package
 export const JSON_FORMS_RANKING = {
   ArrayControl: 3,
   BooleanControl: 2,
@@ -8,5 +9,6 @@ export const JSON_FORMS_RANKING = {
   OneOfControl: 3,
   ProseControl: 2,
   RadioControl: 3,
+  GroupLayoutRenderer: 1,
   VerticalLayoutRenderer: 1,
 }
