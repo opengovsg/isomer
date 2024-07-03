@@ -5,13 +5,12 @@ import {
   type LayoutProps,
   type RankedTester,
   type UISchemaElement,
-  type VerticalLayout,
 } from '@jsonforms/core'
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from '@jsonforms/react'
 import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
-import { type IsomerJsonSchema } from '~/types/schema'
+import { isVerticalLayout, type IsomerJsonSchema } from '~/types/schema'
 
-interface UISchemaElementWithScope extends UISchemaElement {
+type UISchemaElementWithScope = UISchemaElement & {
   scope?: string
   label?: string
   elements?: UISchemaElementWithScope[]
@@ -89,11 +88,11 @@ export function JsonFormsVerticalLayoutRenderer({
   renderers,
   cells,
 }: LayoutProps) {
-  const { elements } = uischema as VerticalLayout
-  const newElements = getUiSchemaWithGroup(
-    schema as IsomerJsonSchema,
-    elements as UISchemaElementWithScope[],
-  )
+  // Note: We have to perform this check here due to inaccuracies in JSONForms'
+  // type definitions.
+  // Ref: https://github.com/eclipsesource/jsonforms/blob/c3cead71d08ff11837bdeb5fbea66e5313137218/packages/material-renderers/src/layouts/MaterialVerticalLayout.tsx#L57
+  const elements = isVerticalLayout(uischema) ? uischema.elements : []
+  const newElements = getUiSchemaWithGroup(schema, elements)
 
   return (
     <VStack spacing={2}>

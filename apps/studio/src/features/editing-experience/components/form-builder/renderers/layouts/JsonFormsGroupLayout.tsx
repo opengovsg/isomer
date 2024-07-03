@@ -11,15 +11,11 @@ import {
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from '@jsonforms/react'
 import React from 'react'
 import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
+import { isGroupLayout } from '~/types/schema'
 
 export const jsonFormsGroupLayoutTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.GroupLayoutRenderer,
-  or(
-    uiTypeIs('Group'),
-    schemaMatches((schema) =>
-      Object.prototype.hasOwnProperty.call(schema, 'group'),
-    ),
-  ),
+  uiTypeIs('Group'),
 )
 
 const GroupComponent = React.memo(function GroupComponent({
@@ -32,7 +28,10 @@ const GroupComponent = React.memo(function GroupComponent({
   renderers,
   cells,
 }: LayoutProps) {
-  const { elements } = uischema as GroupLayout
+  // Note: We have to perform this check here due to inaccuracies in JSONForms'
+  // type definitions.
+  // Ref: https://github.com/eclipsesource/jsonforms/blob/c3cead71d08ff11837bdeb5fbea66e5313137218/packages/material-renderers/src/layouts/MaterialGroupLayout.tsx#L52
+  const elements = isGroupLayout(uischema) ? uischema.elements : []
 
   if (!visible) {
     return null
