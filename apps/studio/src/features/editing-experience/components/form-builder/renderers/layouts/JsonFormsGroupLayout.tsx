@@ -1,10 +1,7 @@
 import { Box, Divider, Heading, VStack } from '@chakra-ui/react'
 import {
-  or,
   rankWith,
-  schemaMatches,
   uiTypeIs,
-  type GroupLayout,
   type LayoutProps,
   type RankedTester,
 } from '@jsonforms/core'
