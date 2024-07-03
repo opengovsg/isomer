@@ -5,6 +5,8 @@ import { type IsomerComponent } from "@opengovsg/isomer-components"
 import { type DrawerState } from "~/types/editorDrawer"
 
 export interface DrawerContextType {
+  currActiveIdx: number
+  setCurrActiveIdx: (currActiveIdx: number) => void
   drawerState: DrawerState
   setDrawerState: (state: DrawerState) => void
   pageState: IsomerComponent[]
@@ -25,6 +27,8 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
 
   const value = useMemo(
     () => ({
+      currActiveIdx,
+      setCurrActiveIdx,
       drawerState,
       setDrawerState,
       pageState,
@@ -33,6 +37,8 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
       setEditorState,
     }),
     [
+      currActiveIdx,
+      setCurrActiveIdx,
       drawerState,
       setDrawerState,
       pageState,
