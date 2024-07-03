@@ -4,7 +4,7 @@
   "globalEnv": ["NODE_ENV", "DATABASE_URL", "SESSION_SECRET"],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^db:generate", "^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "dev": {
