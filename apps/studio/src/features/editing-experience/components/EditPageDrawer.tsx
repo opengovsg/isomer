@@ -1,24 +1,46 @@
-import ComponentSelector from "~/components/PageEditor/ComponentSelector"
-import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
-import RootStateDrawer from "./RootStateDrawer"
-import TipTapComponent from "./TipTapComponent"
+import {
+  type ImageProps,
+  type ParagraphProps,
+} from '@opengovsg/isomer-components/dist/cjs/interfaces'
+import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
+import ComponentSelector from '~/components/PageEditor/ComponentSelector'
+import { type IsomerComponent } from '@opengovsg/isomer-components'
+import RootStateDrawer from './RootStateDrawer'
+import TipTapComponent from './TipTapComponent'
+import ComplexEditorStateDrawer from './ComplexEditorStateDrawer'
 
-interface EditPageDrawerProps {
+function narrowToTiptap(component: IsomerComponent): ParagraphProps {
+  // TODO: get rid of the cast here
+  return component as ParagraphProps
+}
+
+type EditPageDrawerProps = {
   isOpen: boolean
 }
 
 export function EditPageDrawer({ isOpen: open }: EditPageDrawerProps) {
-  const { drawerState: currState } = useEditorDrawerContext()
+  const {
+    pageState,
+    drawerState: currState,
+    currActiveIdx,
+  } = useEditorDrawerContext()
 
   switch (currState.state) {
     case "root":
       return <RootStateDrawer />
     case "addBlock":
       return <ComponentSelector />
-    case "nativeEditor":
-      return <TipTapComponent data="test" path="test" type="paragraph" />
-    case "complexEditor":
+    case 'nativeEditor': {
+      const component = narrowToTiptap(pageState[currActiveIdx]!)
+      return (
+        <TipTapComponent
+          data={component.content}
+          path="test"
+          type={component.type}
+        />
+      )
+    }
+    case 'complexEditor':
       return <ComplexEditorStateDrawer />
     default:
       return <h1>Edit Page Drawer</h1>
