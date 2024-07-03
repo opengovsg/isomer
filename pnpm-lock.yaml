@@ -11,6 +11,9 @@ importers:
       '@isomer/prettier-config':
         specifier: workspace:*
         version: link:tooling/prettier
+      '@turbo/gen':
+        specifier: ^2.0.6
+        version: 2.0.6(@types/node@20.14.9)(typescript@5.5.3)
       turbo:
         specifier: ^2.0.5
         version: 2.0.6

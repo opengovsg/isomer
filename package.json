@@ -26,6 +26,7 @@
   "license": "ISC",
   "devDependencies": {
     "@isomer/prettier-config": "workspace:*",
+    "@turbo/gen": "^2.0.6",
     "turbo": "^2.0.5",
     "typescript": "5.5.3"
   },
