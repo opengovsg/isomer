@@ -17,7 +17,7 @@ export default function robots(): MetadataRoute.Robots {
     site: {
       ...config.site,
       navBarItems: navbar,
-      // @ts-ignore blah
+      // @ts-expect-error type mismatch
       footerItems: footer,
       lastUpdated,
     },

@@ -21,19 +21,20 @@ const lastUpdated =
   timeNow.getFullYear();
 
 export const generateMetadata = async (
-  props: never,
-  parent: ResolvingMetadata,
+  _props: never,
+  _parent: ResolvingMetadata,
 ): Promise<Metadata> => {
   const schema = (await import("../schema/index.json").then(
     (module) => module.default,
   )) as IsomerPageSchema;
   schema.site = {
     ...config.site,
+    // eslint-disable-next-line no-restricted-properties
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-    // @ts-ignore blah
+    // @ts-expect-error type mismatch
     siteMap: sitemap,
     navBarItems: navbar,
-    // @ts-ignore blah
+    // @ts-expect-error type mismatch
     footerItems: footer,
     lastUpdated,
   };
@@ -50,11 +51,12 @@ const NotFound = () => {
         version={PAGE_SCHEMA_VERSION}
         site={{
           ...config.site,
+          // eslint-disable-next-line no-restricted-properties
           environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-          // @ts-ignore blah
+          // @ts-expect-error type mismatch
           siteMap: sitemap,
           navBarItems: navbar,
-          // @ts-ignore blah
+          // @ts-expect-error type mismatch
           footerItems: footer,
         }}
         layout="notfound"

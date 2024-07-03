@@ -29,15 +29,17 @@ const lastUpdated =
 const getSchema = async (
   permalink: DynamicPageProps["params"]["permalink"],
 ) => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (permalink && permalink.length > 0 && typeof permalink !== "string") {
     const joinedPermalink = permalink.join("/");
 
     const schema = (await import(`../../schema/${joinedPermalink}`).then(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       (module) => module.default,
     )) as IsomerPageSchema;
 
     const lastModified =
-      // @ts-ignore blah
+      // @ts-expect-error type mismatch
       getSitemapXml(sitemap).find(
         ({ url }) => permalink.join("/") === url.replace(/^\//, ""),
       )?.lastModified || new Date().toISOString();
@@ -53,7 +55,7 @@ const getSchema = async (
   )) as IsomerPageSchema;
 
   const lastModified =
-    // @ts-ignore blah
+    // @ts-expect-error type mismatch
     getSitemapXml(sitemap).find(({ url }) => url === "/")?.lastModified ||
     new Date().toISOString();
 
@@ -64,7 +66,7 @@ const getSchema = async (
 };
 
 export const generateStaticParams = () => {
-  // @ts-ignore blah
+  // @ts-expect-error type mismatch
   return getSitemapXml(sitemap).map(({ url }) => ({
     permalink: url.replace(/^\//, "").split("/"),
   }));
@@ -72,17 +74,18 @@ export const generateStaticParams = () => {
 
 export const generateMetadata = async (
   { params }: DynamicPageProps,
-  parent: ResolvingMetadata,
+  _parent: ResolvingMetadata,
 ): Promise<Metadata> => {
   const { permalink } = params;
   const schema = await getSchema(permalink);
   schema.site = {
     ...config.site,
+    // eslint-disable-next-line no-restricted-properties
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-    // @ts-ignore blah
+    // @ts-expect-error type mismatch
     siteMap: sitemap,
     navBarItems: navbar,
-    // @ts-ignore blah
+    // @ts-expect-error type mismatch
     footerItems: footer,
     lastUpdated,
   };
@@ -99,11 +102,12 @@ const Page = async ({ params }: DynamicPageProps) => {
         version={renderSchema.version}
         site={{
           ...config.site,
+          // eslint-disable-next-line no-restricted-properties
           environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-          // @ts-ignore blah
+          // @ts-expect-error type mismatch
           siteMap: sitemap,
           navBarItems: navbar,
-          // @ts-ignore blah
+          // @ts-expect-error type mismatch
           footerItems: footer,
           lastUpdated,
         }}
