@@ -29,6 +29,13 @@ import {
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { type SectionType } from "./types"
+} from 'react-icons/bi'
+import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
+import { type DrawerState } from '~/types/editorDrawer'
+import { type IsomerComponent } from '@opengovsg/isomer-components'
+import { trpc } from '~/utils/trpc'
+import { type SectionType } from './types'
+import { DEFAULT_BLOCKS } from './constants'
 
 function Section({ children }: React.PropsWithChildren) {
   return (
@@ -95,8 +102,13 @@ function BlockItem({
 }
 
 function ComponentSelector() {
-  const { setDrawerState, setPageState, setEditorState } =
-    useEditorDrawerContext()
+  const { pageState, setDrawerState, setPageState } = useEditorDrawerContext()
+  const { mutate } = trpc.page.updatePageBlob.useMutation()
+  // TODO: get this dynamically
+  const pageId = 1
+  const [page] = trpc.page.readPageAndBlob.useSuspenseQuery({
+    pageId,
+  })
   const onProceed = (sectionType: SectionType) => {
     // TODO: add new section to page/editor state
     setDrawerState({ state: "root" })
