@@ -10,11 +10,7 @@ import {
 } from "@opengovsg/isomer-components";
 import cuid2 from "@paralleldrive/cuid2";
 
-import {
-  type Footer,
-  type Navbar,
-} from "~/server/modules/resource/resource.types";
-import { db } from "../src/server/modules/database";
+import { db } from "../instance";
 
 const MOCK_PHONE_NUMBER = "123456789";
 
@@ -86,7 +82,7 @@ const PAGE_BLOB = {
     },
   ],
 };
-const NAV_BAR_ITEMS: Navbar["items"] = [
+const NAV_BAR_ITEMS = [
   {
     name: "Expandable nav item",
     url: "/item-one",
@@ -190,7 +186,7 @@ async function main() {
         privacyStatementLink: "/privacy",
         termsOfUseLink: "/terms-of-use",
         siteNavItems: FOOTER_ITEMS,
-      } satisfies Footer,
+      },
     })
     .execute();
 
@@ -198,7 +194,7 @@ async function main() {
     .insertInto("Navbar")
     .values({
       siteId,
-      content: { items: NAV_BAR_ITEMS } satisfies Navbar,
+      content: { items: NAV_BAR_ITEMS },
     })
     .execute();
 
@@ -233,6 +229,7 @@ main()
     console.error(e);
     process.exit(1);
   })
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   .finally(async () => {
     await db.destroy();
   });
