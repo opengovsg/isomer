@@ -1,3 +1,5 @@
+import { type IsomerComponent } from '@opengovsg/isomer-components'
+
 export interface CustomRendererProps {
   data: any
   rootSchema: any
@@ -5,17 +7,4 @@ export interface CustomRendererProps {
   path: string
 }
 
-export type SectionType =
-  | "paragraph"
-  | "image"
-  | "statistics"
-  | "callout"
-  | "textWithButton"
-  | "textWithImage"
-  | "cards"
-  | "columns"
-  | "accordion"
-  | "divider"
-  | "youtube"
-  | "googleMaps"
-  | "formsg"
+export type SectionType = IsomerComponent['type']
