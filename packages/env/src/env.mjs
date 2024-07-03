@@ -75,6 +75,19 @@ const sgidServerSchema = z.discriminatedUnion("NEXT_PUBLIC_ENABLE_SGID", [
  */
 const server = z
   .object({
+    LOG_LEVEL: z
+      .enum([
+        "silent",
+        "debug",
+        "info",
+        "notice",
+        "warning",
+        "error",
+        "critical",
+        "alert",
+        "emergency",
+      ])
+      .default("info"),
     DATABASE_URL: z.string().url(),
     NODE_ENV: z.enum(["development", "test", "production"]),
     OTP_EXPIRY: z.coerce.number().positive().optional().default(600),
@@ -132,6 +145,7 @@ const server = z
  */
 const processEnv = {
   // Server-side env vars
+  LOG_LEVEL: process.env.LOG_LEVEL,
   NODE_ENV: process.env.NODE_ENV,
   DATABASE_URL: process.env.DATABASE_URL,
   OTP_EXPIRY: process.env.OTP_EXPIRY,
