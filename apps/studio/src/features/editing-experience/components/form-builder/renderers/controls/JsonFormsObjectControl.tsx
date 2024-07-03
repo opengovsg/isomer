@@ -1,19 +1,22 @@
+import type {
+  RankedTester,
+  StatePropsOfControlWithDetail,
+} from "@jsonforms/core";
+import { useMemo } from "react";
 import {
-  Generate,
   findUISchema,
+  Generate,
   isObjectControl,
   rankWith,
-  type RankedTester,
-  type StatePropsOfControlWithDetail,
-} from '@jsonforms/core'
-import { JsonFormsDispatch, withJsonFormsDetailProps } from '@jsonforms/react'
-import { useMemo } from 'react'
-import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
+} from "@jsonforms/core";
+import { JsonFormsDispatch, withJsonFormsDetailProps } from "@jsonforms/react";
+
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder";
 
 export const jsonFormsObjectControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ObjectControl,
   isObjectControl,
-)
+);
 
 export function JsonFormsObjectControl({
   path,
@@ -29,20 +32,20 @@ export function JsonFormsObjectControl({
   const detailUiSchema = useMemo(
     () =>
       findUISchema(
-        uischemas || [],
+        uischemas ?? [],
         schema,
         uischema.scope,
         path,
         () =>
-          Generate.uiSchema(schema, 'VerticalLayout', undefined, rootSchema),
+          Generate.uiSchema(schema, "VerticalLayout", undefined, rootSchema),
         uischema,
         rootSchema,
       ),
     [uischemas, schema, uischema, path, rootSchema],
-  )
+  );
 
   if (!visible) {
-    return null
+    return null;
   }
 
   return (
@@ -55,7 +58,7 @@ export function JsonFormsObjectControl({
       renderers={renderers}
       cells={cells}
     />
-  )
+  );
 }
 
-export default withJsonFormsDetailProps(JsonFormsObjectControl)
+export default withJsonFormsDetailProps(JsonFormsObjectControl);

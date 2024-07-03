@@ -17,7 +17,7 @@ export {
 export {
   default as JsonFormsObjectControl,
   jsonFormsObjectControlTester,
-} from './JsonFormsObjectControl'
+} from "./JsonFormsObjectControl";
 export {
   default as JsonFormsOneOfControl,
   jsonFormsOneOfControlTester,

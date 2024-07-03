@@ -3,23 +3,23 @@ import {
   type JsonSchema,
   type UISchemaElement,
   type VerticalLayout,
-} from '@jsonforms/core'
+} from "@jsonforms/core";
 
 export type IsomerJsonSchema = JsonSchema & {
-  groups?: Array<{
-    label: string
-    fields: string[]
-  }>
-}
+  groups?: {
+    label: string;
+    fields: string[];
+  }[];
+};
 
 export function isGroupLayout(
   uischema: UISchemaElement,
 ): uischema is GroupLayout {
-  return uischema.type === 'Group' && 'elements' in uischema
+  return uischema.type === "Group" && "elements" in uischema;
 }
 
 export function isVerticalLayout(
   uischema: UISchemaElement,
 ): uischema is VerticalLayout {
-  return uischema.type === 'VerticalLayout' && 'elements' in uischema
+  return uischema.type === "VerticalLayout" && "elements" in uischema;
 }

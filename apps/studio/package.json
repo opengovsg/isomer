@@ -9,6 +9,7 @@
     "build:theme": "pnpm exec chakra-cli tokens src/theme/index.ts",
     "start": "next start",
     "format": "prettier --check . --ignore-path ../../.gitignore",
+    "format:fix": "prettier --write . --ignore-path ../../.gitignore",
     "lint": "eslint",
     "test": "run-s test:*",
     "test:unit": "dotenv -e .env.test vitest run",
@@ -19,7 +20,8 @@
     "test-start": "start-server-and-test start http://127.0.0.1:3000 test",
     "postinstall": "pnpm build:theme",
     "storybook": "storybook dev -p 6007",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "clean": "git clean -xdf .next .turbo node_modules build"
   },
   "prettier": "@isomer/prettier-config",
   "dependencies": {

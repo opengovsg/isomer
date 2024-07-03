@@ -1,33 +1,32 @@
-import { type JsonFormsRendererRegistryEntry } from '@jsonforms/core'
-import { JsonForms } from '@jsonforms/react'
+import { useState } from "react";
+import { type JsonFormsRendererRegistryEntry } from "@jsonforms/core";
+import { JsonForms } from "@jsonforms/react";
 
-import { useState } from 'react'
-import IsomerSchema from '../../data/0.1.0.json'
-
+import IsomerSchema from "../../data/0.1.0.json";
 import {
   JsonFormsArrayControl,
-  JsonFormsBooleanControl,
-  JsonFormsDropdownControl,
-  JsonFormsIntegerControl,
-  JsonFormsObjectControl,
-  JsonFormsOneOfControl,
-  JsonFormsProseControl,
-  JsonFormsRadioControl,
-  JsonFormsTextControl,
   jsonFormsArrayControlTester,
+  JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
+  JsonFormsDropdownControl,
   jsonFormsDropdownControlTester,
   jsonFormsGroupLayoutRenderer,
   jsonFormsGroupLayoutTester,
+  JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
+  JsonFormsObjectControl,
   jsonFormsObjectControlTester,
+  JsonFormsOneOfControl,
   jsonFormsOneOfControlTester,
+  JsonFormsProseControl,
   jsonFormsProseControlTester,
+  JsonFormsRadioControl,
   jsonFormsRadioControlTester,
+  JsonFormsTextControl,
   jsonFormsTextControlTester,
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
-} from './renderers'
+} from "./renderers";
 
 const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
@@ -44,31 +43,32 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsRadioControlTester, renderer: JsonFormsRadioControl },
   {
     tester: jsonFormsGroupLayoutTester,
+
     renderer: jsonFormsGroupLayoutRenderer,
   },
   {
     tester: jsonFormsVerticalLayoutTester,
     renderer: jsonFormsVerticalLayoutRenderer,
   },
-]
+];
 
 export interface FormBuilderProps {
-  component: keyof typeof IsomerSchema.components.complex
+  component: keyof typeof IsomerSchema.components.complex;
 }
 
 export default function FormBuilder({
   component,
 }: FormBuilderProps): JSX.Element {
-  const { properties, ...rest } = IsomerSchema.components.complex[component]
+  const { properties, ...rest } = IsomerSchema.components.complex[component];
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { type, ...props } = properties
+  const { type, ...props } = properties;
   const schema = {
     ...rest,
     properties: props,
     components: IsomerSchema.components,
-  }
+  };
 
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState({});
 
   return (
     <JsonForms
@@ -76,9 +76,10 @@ export default function FormBuilder({
       data={formData}
       renderers={renderers}
       onChange={({ data }) => {
-        console.log(data)
-        setFormData(data)
+        console.log(data);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        setFormData(data);
       }}
     />
-  )
+  );
 }

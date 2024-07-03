@@ -1,19 +1,16 @@
-import { Box, Divider, Heading, VStack } from '@chakra-ui/react'
-import {
-  rankWith,
-  uiTypeIs,
-  type LayoutProps,
-  type RankedTester,
-} from '@jsonforms/core'
-import { JsonFormsDispatch, withJsonFormsLayoutProps } from '@jsonforms/react'
-import React from 'react'
-import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
-import { isGroupLayout } from '~/types/schema'
+import type { LayoutProps, RankedTester } from "@jsonforms/core";
+import React from "react";
+import { Box, Divider, Heading, VStack } from "@chakra-ui/react";
+import { rankWith, uiTypeIs } from "@jsonforms/core";
+import { JsonFormsDispatch, withJsonFormsLayoutProps } from "@jsonforms/react";
+
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder";
+import { isGroupLayout } from "~/types/schema";
 
 export const jsonFormsGroupLayoutTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.GroupLayoutRenderer,
-  uiTypeIs('Group'),
-)
+  uiTypeIs("Group"),
+);
 
 const GroupComponent = React.memo(function GroupComponent({
   visible,
@@ -28,10 +25,10 @@ const GroupComponent = React.memo(function GroupComponent({
   // Note: We have to perform this check here due to inaccuracies in JSONForms'
   // type definitions.
   // Ref: https://github.com/eclipsesource/jsonforms/blob/c3cead71d08ff11837bdeb5fbea66e5313137218/packages/material-renderers/src/layouts/MaterialGroupLayout.tsx#L52
-  const elements = isGroupLayout(uischema) ? uischema.elements : []
+  const elements = isGroupLayout(uischema) ? uischema.elements : [];
 
   if (!visible) {
-    return null
+    return null;
   }
 
   return (
@@ -43,7 +40,6 @@ const GroupComponent = React.memo(function GroupComponent({
         </Heading>
       </Box>
       {elements.map((element, index) => (
-        // eslint-disable-next-line react/no-array-index-key
         <Box key={`${path}-${index}`} w="100%">
           <JsonFormsDispatch
             uischema={element}
@@ -56,8 +52,8 @@ const GroupComponent = React.memo(function GroupComponent({
         </Box>
       ))}
     </VStack>
-  )
-})
+  );
+});
 
 export function JsonFormsGroupLayoutRenderer({
   uischema,
@@ -82,7 +78,7 @@ export function JsonFormsGroupLayoutRenderer({
       cells={cells}
       label={label}
     />
-  )
+  );
 }
 
-export default withJsonFormsLayoutProps(JsonFormsGroupLayoutRenderer)
+export default withJsonFormsLayoutProps(JsonFormsGroupLayoutRenderer);
