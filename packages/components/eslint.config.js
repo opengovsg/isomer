@@ -4,7 +4,7 @@ import reactConfig from "@isomer/eslint-config/react";
 /** @type {import('typescript-eslint').Config} */
 export default [
   {
-    ignores: ["!.storybook"],
+    ignores: ["!.storybook", "dist"],
   },
   ...baseConfig,
   ...reactConfig,
