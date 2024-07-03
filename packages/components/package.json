@@ -67,7 +67,7 @@
     "tsc-alias": "^1.8.10",
     "tslib": "^2.6.3",
     "typescript": "^5.5.2",
-    "vite": "^5.2.10"
+    "vite": "^5.3.3"
   },
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
