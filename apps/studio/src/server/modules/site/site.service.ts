@@ -1,9 +1,8 @@
+import { db } from "@isomer/db/instance";
 import {
   type IsomerGeneratedSiteProps,
   type IsomerSiteConfigProps,
 } from "@opengovsg/isomer-components";
-
-import { db } from "../database";
 
 export const getSiteConfig = async (siteId: number) => {
   const { config, name } = await db

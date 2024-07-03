@@ -1,4 +1,5 @@
-import { db } from "../database";
+import { db } from "@isomer/db/instance";
+
 import { type Footer, type Navbar, type Page } from "./resource.types";
 
 export const getPages = () => {

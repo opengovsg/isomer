@@ -1,11 +1,11 @@
 import type * as trpc from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
+import { db } from "@isomer/db/instance";
 import { type User } from "@prisma/client";
 import { getIronSession } from "iron-session";
 
 import { type Session, type SessionData } from "~/lib/types/session";
 import { sessionOptions } from "./modules/auth/session";
-import { db } from "./modules/database";
 import { type defaultMeSelect } from "./modules/me/me.select";
 import { prisma } from "./prisma";
 
