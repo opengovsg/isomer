@@ -1,4 +1,4 @@
-import { type PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@isomer/db/prisma";
 
 import { createPocdexAccountProviderId } from "../auth.util";
 import { type SgidSessionProfile } from "./sgid.utils";

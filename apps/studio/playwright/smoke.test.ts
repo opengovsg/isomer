@@ -1,6 +1,5 @@
+import { env } from "@isomer/env";
 import { expect, test } from "@playwright/test";
-
-import { env } from "~/env.mjs";
 
 test.setTimeout(35e3);
 

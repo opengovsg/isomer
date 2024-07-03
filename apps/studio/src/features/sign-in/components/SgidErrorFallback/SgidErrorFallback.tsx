@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import { useMemo } from "react";
 import { useRouter } from "next/router";
+import get from "lodash/get";
 import { type FallbackProps } from "react-error-boundary";
 import { z } from "zod";
 
@@ -23,5 +24,10 @@ export const SgidErrorFallback: ComponentType<FallbackProps> = ({ error }) => {
     return HOME;
   }, [router.query.state]);
 
-  return <SgidErrorModal message={error.message} redirectUrl={redirectUrl} />;
+  return (
+    <SgidErrorModal
+      message={String(get(error, "message", "Something went wrong"))}
+      redirectUrl={redirectUrl}
+    />
+  );
 };

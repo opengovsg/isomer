@@ -1,7 +1,6 @@
+import type { env } from "@isomer/env";
 import type { PropsWithChildren } from "react";
 import { createContext } from "react";
-
-import { type env } from "~/env.mjs";
 
 // This file allows us to pass in environment variables to our app.
 // Used to allow overriding of environment variables in storybook tests.

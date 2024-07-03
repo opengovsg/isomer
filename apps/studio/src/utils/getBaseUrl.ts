@@ -1,4 +1,4 @@
-import { env } from "~/env.mjs";
+import { env } from "@isomer/env";
 
 /**
  * Retrieves the base URL for the current environment.

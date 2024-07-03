@@ -1,11 +1,11 @@
 import type { AuthorizationUrlParams } from "@opengovsg/sgid-client";
+import { env } from "@isomer/env";
 import { generatePkcePair } from "@opengovsg/sgid-client";
 import { TRPCError } from "@trpc/server";
 import { set } from "lodash";
 import { z } from "zod";
 
 import type { SgidUserInfo } from "./sgid.utils";
-import { env } from "~/env.mjs";
 import { SGID } from "~/lib/errors/auth.sgid";
 import { SIGN_IN, SIGN_IN_SELECT_PROFILE_SUBROUTE } from "~/lib/routes";
 import { APP_SGID_SCOPE, sgid } from "~/lib/sgid";
@@ -33,13 +33,6 @@ export const sgidRouter = router({
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "SGID is not enabled",
-        });
-      }
-      if (!ctx.session) {
-        // Redirect back to sign in page.
-        throw new TRPCError({
-          code: "UNPROCESSABLE_CONTENT",
-          message: "Session object missing in context",
         });
       }
 

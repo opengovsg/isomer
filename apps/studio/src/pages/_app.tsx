@@ -5,6 +5,7 @@ import "../styles/editor/editorStyles.scss";
 
 import type { AppProps, AppType } from "next/app";
 import { Skeleton, Stack } from "@chakra-ui/react";
+import { env } from "@isomer/env";
 import { ThemeProvider } from "@opengovsg/design-system-react";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ErrorBoundary } from "react-error-boundary";
@@ -13,7 +14,6 @@ import { EnvProvider, FeatureProvider } from "~/components/AppProviders";
 import { DefaultFallback } from "~/components/ErrorBoundary/DefaultFallback";
 import Suspense from "~/components/Suspense";
 import { VersionWrapper } from "~/components/VersionWrapper";
-import { env } from "~/env.mjs";
 import { LoginStateProvider } from "~/features/auth";
 import { type NextPageWithLayout } from "~/lib/types";
 import { DefaultLayout } from "~/templates/layouts/DefaultLayout";

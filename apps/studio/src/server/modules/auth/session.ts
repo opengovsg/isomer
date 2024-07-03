@@ -1,6 +1,5 @@
+import { env } from "@isomer/env";
 import { type SessionOptions } from "iron-session";
-
-import { env } from "~/env.mjs";
 
 export const sessionOptions: SessionOptions = {
   password: {

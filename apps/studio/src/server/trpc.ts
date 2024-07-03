@@ -8,18 +8,18 @@
  * @see https://trpc.io/docs/v10/procedures
  */
 
+import { db } from "@isomer/db/instance";
+import { env } from "@isomer/env";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { type OpenApiMeta } from "trpc-openapi";
 import { ZodError } from "zod";
 
 import { APP_VERSION_HEADER_KEY } from "~/constants/version";
-import { env } from "~/env.mjs";
 import { createBaseLogger } from "~/lib/logger";
 import getIP from "~/utils/getClientIp";
 import { type Context } from "./context";
-import { defaultMeSelect } from "./modules/me/me.select";
-import { prisma } from "./prisma";
+import { defaultKyselyMeSelect } from "./modules/me/me.select";
 
 const t = initTRPC
   .meta<OpenApiMeta>()
@@ -117,12 +117,13 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
   }
 
   // this code path is needed if a user does not exist in the database as they were deleted, but the session was active before
-  const user = await prisma.user.findUnique({
-    where: { id: ctx.session.userId },
-    select: defaultMeSelect,
-  });
+  const user = await db
+    .selectFrom("User")
+    .where("User.id", "=", ctx.session.userId)
+    .select(defaultKyselyMeSelect)
+    .executeTakeFirst();
 
-  if (user === null) {
+  if (!user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
@@ -136,15 +137,16 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
 const nonStrictAuthMiddleware = t.middleware(async ({ next, ctx }) => {
   // this code path is needed if a user does not exist in the database as they were deleted, but the session was active before
   const user = ctx.session?.userId
-    ? await prisma.user.findUnique({
-        where: { id: ctx.session.userId },
-        select: defaultMeSelect,
-      })
+    ? await db
+        .selectFrom("User")
+        .where("User.id", "=", ctx.session.userId)
+        .select(defaultKyselyMeSelect)
+        .executeTakeFirst()
     : null;
 
   return next({
     ctx: {
-      user,
+      user: user ?? null,
     },
   });
 });

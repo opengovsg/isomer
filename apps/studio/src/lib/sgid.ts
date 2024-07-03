@@ -1,7 +1,6 @@
 import type { SgidClientParams } from "@opengovsg/sgid-client";
+import { env } from "@isomer/env";
 import SgidClient from "@opengovsg/sgid-client";
-
-import { env } from "~/env.mjs";
 
 /**
  * Update if you need to change the scope of the sgID request. \

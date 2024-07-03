@@ -1,4 +1,4 @@
-import { type User } from "@prisma/client";
+import type { User } from "@isomer/db";
 import { type IronSession } from "iron-session";
 
 import { type SgidSessionProfile } from "~/server/modules/auth/sgid/sgid.utils";

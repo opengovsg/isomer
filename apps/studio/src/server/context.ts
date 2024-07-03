@@ -1,24 +1,23 @@
+import type { User } from "@isomer/db";
 import type * as trpc from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { db } from "@isomer/db/instance";
-import { type User } from "@prisma/client";
+import { prisma } from "@isomer/db/prisma";
 import { getIronSession } from "iron-session";
 
 import { type Session, type SessionData } from "~/lib/types/session";
 import { sessionOptions } from "./modules/auth/session";
-import { type defaultMeSelect } from "./modules/me/me.select";
-import { prisma } from "./prisma";
 
 interface CreateContextOptions {
   session?: Session;
-  user?: Pick<User, keyof typeof defaultMeSelect>;
+  user?: Pick<User, "id" | "name" | "email">;
 }
 
 /**
  * Inner function for `createContext` where we create the context.
  * This is useful for testing when we don't want to mock Next.js' request/response
  */
-export async function createContextInner(opts: CreateContextOptions) {
+export function createContextInner(opts: CreateContextOptions) {
   return {
     session: opts.session,
     prisma,
@@ -37,7 +36,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
     sessionOptions,
   );
 
-  const innerContext = await createContextInner({
+  const innerContext = createContextInner({
     session,
   });
 

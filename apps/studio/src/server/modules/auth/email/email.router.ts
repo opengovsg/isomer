@@ -1,7 +1,7 @@
+import { env } from "@isomer/env";
 import { TRPCError } from "@trpc/server";
 import { formatInTimeZone } from "date-fns-tz";
 
-import { env } from "~/env.mjs";
 import { sendMail } from "~/lib/mail";
 import {
   emailSignInSchema,
@@ -10,7 +10,6 @@ import {
 import { publicProcedure, router } from "~/server/trpc";
 import { getBaseUrl } from "~/utils/getBaseUrl";
 import { defaultMeSelect } from "../../me/me.select";
-import { generateUsername } from "../../me/me.service";
 import { VerificationError } from "../auth.error";
 import { verifyToken } from "../auth.service";
 import { createTokenHash, createVfnPrefix, createVfnToken } from "../auth.util";

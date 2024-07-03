@@ -1,7 +1,6 @@
+import { env } from "@isomer/env";
 import sendgrid from "@sendgrid/mail";
 import wretch from "wretch";
-
-import { env } from "~/env.mjs";
 
 interface SendMailParams {
   recipient: string;

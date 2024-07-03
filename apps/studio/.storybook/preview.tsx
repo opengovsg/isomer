@@ -3,6 +3,7 @@ import "inter-ui/inter.css";
 
 import { useCallback, useMemo, useState } from "react";
 import { Box, Skeleton } from "@chakra-ui/react";
+import { env } from "@isomer/env";
 import { ThemeProvider } from "@opengovsg/design-system-react";
 import { withThemeFromJSXProvider } from "@storybook/addon-themes";
 import {
@@ -26,7 +27,6 @@ import type { EnvContextReturn } from "~/components/AppProviders";
 import { EnvProvider, FeatureContext } from "~/components/AppProviders";
 import { DefaultFallback } from "~/components/ErrorBoundary";
 import Suspense from "~/components/Suspense";
-import { env } from "~/env.mjs";
 import { LoginStateContext } from "~/features/auth";
 import { type AppRouter } from "~/server/modules/_app";
 import { theme } from "~/theme";
@@ -154,7 +154,7 @@ const LoginStateDecorator: Decorator<Args> = (story, { parameters }) => {
 export const MockDateDecorator: Decorator<Args> = (story, { parameters }) => {
   mockdate.reset();
 
-  if (!parameters.mockdate) {
+  if (!parameters.mockdate || typeof parameters.mockdate !== "string") {
     return story();
   }
 

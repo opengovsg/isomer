@@ -1,4 +1,5 @@
-import { Prisma } from "@prisma/client";
+import type { SelectFromExpr } from "@isomer/db";
+import { Prisma } from "@isomer/db/prisma";
 
 /**
  * Default selector for when retrieving logged in user.
@@ -10,3 +11,9 @@ export const defaultMeSelect = Prisma.validator<Prisma.UserSelect>()({
   email: true,
   name: true,
 });
+
+export const defaultKyselyMeSelect = [
+  "User.id",
+  "User.email",
+  "User.name",
+] satisfies SelectFromExpr<"User">[];

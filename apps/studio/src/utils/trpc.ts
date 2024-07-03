@@ -1,5 +1,6 @@
 import type { TRPCLink } from "@trpc/client";
 import { type NextPageContext } from "next";
+import { env } from "@isomer/env";
 import { httpBatchLink, loggerLink, TRPCClientError } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
@@ -15,7 +16,6 @@ import {
   APP_VERSION_HEADER_KEY,
   REQUIRE_UPDATE_EVENT,
 } from "~/constants/version";
-import { env } from "~/env.mjs";
 import { TRPCWithErrorCodeSchema } from "~/utils/error";
 import { getBaseUrl } from "./getBaseUrl";
 

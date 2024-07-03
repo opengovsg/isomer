@@ -19,7 +19,7 @@ export const useSignInContext = () => {
 
   if (context === undefined) {
     throw new Error(
-      `Must use sign in context within ${SignInContextProvider}.name`,
+      `Must use sign in context within ${SignInContextProvider.name}`,
     );
   }
 

@@ -1,10 +1,10 @@
+import { env } from "@isomer/env";
 import {
   applySession,
   createMockRequest,
 } from "tests/integration/helpers/iron-session";
 import { describe, expect, it } from "vitest";
 
-import { env } from "~/env.mjs";
 import * as mailLib from "~/lib/mail";
 import { prisma } from "~/server/prisma";
 import { createTokenHash } from "../../auth.util";

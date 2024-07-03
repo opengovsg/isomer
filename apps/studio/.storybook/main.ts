@@ -15,6 +15,7 @@ const config: StorybookConfig = {
   ],
 
   framework: {
+    // @ts-expect-error type inference
     name: getAbsolutePath("@storybook/nextjs"),
     options: {},
   },
@@ -30,6 +31,7 @@ const config: StorybookConfig = {
   env: (config) => ({
     ...config,
     SKIP_ENV_VALIDATION: "true",
+    // eslint-disable-next-line no-restricted-properties
     STORYBOOK_ENVIRONMENT: JSON.stringify(process.env),
   }),
 
@@ -41,6 +43,6 @@ const config: StorybookConfig = {
 };
 export default config;
 
-function getAbsolutePath(value: string): any {
+function getAbsolutePath(value: string) {
   return dirname(require.resolve(join(value, "package.json")));
 }
