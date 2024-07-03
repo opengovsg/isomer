@@ -111,7 +111,20 @@ function ComponentSelector() {
   })
   const onProceed = (sectionType: SectionType) => {
     // TODO: add new section to page/editor state
-    setDrawerState({ state: "root" })
+    // NOTE: Only paragraph should go to tiptap editor
+    // the rest should use json forms
+    const nextState: DrawerState['state'] =
+      sectionType === 'paragraph' ? 'nativeEditor' : 'complexEditor'
+    // TODO: Remove assertion after default blocks all in
+    const newComponent: IsomerComponent = DEFAULT_BLOCKS[sectionType]!
+
+    const nextPageState = [...pageState, newComponent]
+    setPageState(nextPageState)
+    setDrawerState({ state: nextState })
+    mutate({
+      pageId,
+      content: JSON.stringify({ ...page.content, content: nextPageState }),
+    })
   }
   return (
     <VStack w="full" gap="0">
