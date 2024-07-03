@@ -1,9 +1,8 @@
-import type { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 
-import type { ButtonProps } from "~/interfaces";
 import Button from "./Button";
 
-export default {
+const meta: Meta<typeof Button> = {
   title: "Classic/Components/Button",
   component: Button,
   argTypes: {},
@@ -12,26 +11,29 @@ export default {
       themeOverride: "Isomer Classic",
     },
   },
-} as Meta;
+};
 
-// Template for stories
-const Template: StoryFn<ButtonProps> = (args) => <Button {...args} />;
+export default meta;
+type Story = StoryObj<typeof Button>;
 
 // Default scenario
-export const Default = Template.bind({});
-Default.args = {
-  label: "Button text",
-  href: "/faq",
+export const Default: Story = {
+  args: {
+    label: "Button text",
+    href: "/faq",
+  },
 };
 
-export const ExternalLinkButton = Template.bind({});
-ExternalLinkButton.args = {
-  label: "Button text",
-  href: "https://www.google.com",
+export const ExternalLinkButton: Story = {
+  args: {
+    label: "Button text",
+    href: "https://www.google.com",
+  },
 };
 
-export const LongerButtonText = Template.bind({});
-LongerButtonText.args = {
-  label: "slightly longer button text",
-  href: "/faq",
+export const LongerButtonText: Story = {
+  args: {
+    label: "slightly longer button text",
+    href: "/faq",
+  },
 };

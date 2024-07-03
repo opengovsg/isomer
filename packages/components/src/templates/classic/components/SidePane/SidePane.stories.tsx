@@ -1,10 +1,10 @@
-import type { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 
 import type { SidePaneProps } from "~/interfaces";
 import Sitemap from "../../../../sitemap.json";
 import SidePane from "./SidePane";
 
-export default {
+const meta: Meta<SidePaneProps> = {
   title: "Classic/Components/SidePane",
   component: SidePane,
   argTypes: {},
@@ -13,14 +13,14 @@ export default {
       themeOverride: "Isomer Classic",
     },
   },
-} as Meta;
-
-// Template for stories
-const Template: StoryFn<SidePaneProps> = (args) => <SidePane {...args} />;
+};
+export default meta;
+type Story = StoryObj<typeof SidePane>;
 
 // Default scenario
-export const Default = Template.bind({});
-Default.args = {
-  currentPermalink: "/about-isomer/what-is-isomer/overview/",
-  sitemap: Sitemap,
+export const Default: Story = {
+  args: {
+    currentPermalink: "/about-isomer/what-is-isomer/overview/",
+    sitemap: Sitemap,
+  },
 };

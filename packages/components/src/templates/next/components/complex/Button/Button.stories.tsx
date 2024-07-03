@@ -1,4 +1,4 @@
-import type { Meta, StoryFn, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 
 import type { ButtonProps } from "~/interfaces/complex/Button";
 import {
@@ -7,7 +7,7 @@ import {
 } from "~/interfaces/complex/Button";
 import Button from "./Button";
 
-export default {
+const meta: Meta<ButtonProps> = {
   title: "Next/Components/Button",
   component: Button,
   argTypes: {},
@@ -16,29 +16,31 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta;
-
-// Template for stories
-const Template: StoryFn<ButtonProps> = (args) => <Button {...args} />;
+};
+export default meta;
+type Story = StoryObj<typeof Button>;
 
 // Default scenario
-export const Default = Template.bind({});
-Default.args = {
-  label: "Work with us",
-  href: "/faq",
+export const Default: Story = {
+  args: {
+    label: "Work with us",
+    href: "/faq",
+  },
 };
 
-export const WithRightIcon = Template.bind({});
-WithRightIcon.args = {
-  label: "Work with us",
-  href: "/faq",
-  rightIcon: "right-arrow",
+export const WithRightIcon: Story = {
+  args: {
+    label: "Work with us",
+    href: "/faq",
+    rightIcon: "right-arrow",
+  },
 };
 
-export const LongerButtonText = Template.bind({});
-LongerButtonText.args = {
-  label: "slightly longer button text",
-  href: "/faq",
+export const LongerButtonText: Story = {
+  args: {
+    label: "slightly longer button text",
+    href: "/faq",
+  },
 };
 
 const Buttons = () => {
@@ -68,6 +70,6 @@ const Buttons = () => {
   );
 };
 
-export const ColorsAndVariants: StoryObj<ButtonProps> = {
+export const ColorsAndVariants: Story = {
   render: () => <Buttons />,
 };

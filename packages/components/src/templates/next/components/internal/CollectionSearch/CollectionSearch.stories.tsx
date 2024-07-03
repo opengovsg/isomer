@@ -1,30 +1,33 @@
-import type { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 
 import type { CollectionSearchProps } from "../../../types/CollectionSearch";
 import CollectionSearch from "./CollectionSearch";
 
-export default {
+// Template for stories
+const Template = (
+  props: Omit<CollectionSearchProps, "search" | "setSearch">,
+) => {
+  const [search, setSearch] = useState<string>("");
+  return <CollectionSearch search={search} setSearch={setSearch} {...props} />;
+};
+
+const meta: Meta<typeof Template> = {
   title: "Next/Internal Components/CollectionSearch",
-  component: CollectionSearch,
+  component: Template,
   argTypes: {},
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta;
-
-// Template for stories
-const Template: StoryFn<Omit<CollectionSearchProps, "search" | "setSearch">> = (
-  args,
-) => {
-  const [search, setSearch] = useState<string>("");
-  return <CollectionSearch search={search} setSearch={setSearch} {...args} />;
 };
+export default meta;
+type Story = StoryObj<typeof CollectionSearch>;
 
 // Default scenario
-export const Default = Template.bind({});
-Default.args = {
-  placeholder: "Search for a publication",
+export const Default: Story = {
+  args: {
+    placeholder: "Search for a publication",
+  },
 };

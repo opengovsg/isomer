@@ -1,28 +1,30 @@
-import type { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 
 import type { DividerProps } from "~/interfaces";
 import BaseParagraph from "../../internal/BaseParagraph";
 import Divider from "./Divider";
 
-export default {
+// Template for stories
+const Template = (props: DividerProps) => (
+  <>
+    <BaseParagraph content="This paragraph appears before the divider." />
+    <Divider {...props} />
+    <BaseParagraph content="This will appear after the divider." />
+  </>
+);
+
+const meta: Meta<DividerProps> = {
   title: "Next/Components/Divider",
   component: Divider,
+  render: Template,
   argTypes: {},
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta;
+};
+export default meta;
+type Story = StoryObj<typeof Divider>;
 
-// Template for stories
-const Template: StoryFn<DividerProps> = (args) => (
-  <>
-    <BaseParagraph content="This paragraph appears before the divider." />
-    <Divider {...args} />
-    <BaseParagraph content="This will appear after the divider." />
-  </>
-);
-
-export const Default = Template.bind({});
-Default.args = {};
+export const Default: Story = {};

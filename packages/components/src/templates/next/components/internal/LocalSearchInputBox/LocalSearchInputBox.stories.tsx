@@ -1,9 +1,9 @@
-import type { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 
 import type { LocalSearchInputBoxProps } from "~/interfaces";
 import LocalSearchInputBox from "./LocalSearchInputBox";
 
-export default {
+const meta: Meta<LocalSearchInputBoxProps> = {
   title: "Next/Internal Components/LocalSearchInputBox",
   component: LocalSearchInputBox,
   argTypes: {},
@@ -12,12 +12,11 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta;
+  args: {
+    searchUrl: "/search",
+  },
+};
+export default meta;
+type Story = StoryObj<typeof LocalSearchInputBox>;
 
-// Template for stories
-const Template: StoryFn<Omit<LocalSearchInputBoxProps, "searchUrl">> = (
-  args,
-) => <LocalSearchInputBox searchUrl="/search" {...args} />;
-
-export const Default = Template.bind({});
-Default.args = {};
+export const Default: Story = {};

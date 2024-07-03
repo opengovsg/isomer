@@ -1,22 +1,11 @@
-import type { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import { useEffect } from "react";
 
 import type { SearchSGInputBoxProps } from "~/interfaces";
 import SearchSGInputBox from "./SearchSGInputBox";
 
-export default {
-  title: "Next/Internal Components/SearchSGInputBox",
-  component: SearchSGInputBox,
-  argTypes: {},
-  parameters: {
-    themes: {
-      themeOverride: "Isomer Next",
-    },
-  },
-} as Meta;
-
 // Template for stories
-const Template: StoryFn<Omit<SearchSGInputBoxProps, "clientId">> = (args) => {
+const Template = (props: Omit<SearchSGInputBoxProps, "clientId">) => {
   const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4";
 
   // Note: This is needed because the script tag is not rendered in the storybook
@@ -27,8 +16,21 @@ const Template: StoryFn<Omit<SearchSGInputBoxProps, "clientId">> = (args) => {
     document.body.appendChild(scriptTag);
   }, []);
 
-  return <SearchSGInputBox clientId={TEST_CLIENT_ID} {...args} />;
+  return <SearchSGInputBox clientId={TEST_CLIENT_ID} {...props} />;
 };
 
-export const Default = Template.bind({});
-Default.args = {};
+const meta: Meta<SearchSGInputBoxProps> = {
+  title: "Next/Internal Components/SearchSGInputBox",
+  component: SearchSGInputBox,
+  render: Template,
+  argTypes: {},
+  parameters: {
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+  },
+};
+export default meta;
+type Story = StoryObj<typeof SearchSGInputBox>;
+
+export const Default: Story = {};
