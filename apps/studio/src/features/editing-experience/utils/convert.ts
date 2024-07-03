@@ -1,5 +1,8 @@
-// NOTE: Taken as is from
-// https://github.com/isomerpages/isomer-next-playground/blob/4462aeb9c762ffe6d828ced4b0e95527302f9469/src/components/NewEditor/MainTiptapEditor.tsx#L32
+import { type ParagraphProps } from '@opengovsg/isomer-components/dist/cjs/interfaces'
+import { type JSONContent } from '@tiptap/react'
+import _, { mapValues } from 'lodash'
+import { type ZodType, z } from 'zod'
+
 export const convertToTiptap: any = (value: any) => {
   const keys = Object.keys(value)
 
@@ -22,48 +25,52 @@ export const convertToTiptap: any = (value: any) => {
   }
 }
 
-export const convertFromTiptap: any = (value: any) => {
-  const keys = Object.keys(value)
+const convertFromTiptapRecursive = (value: JSONContent): any => {
+  if (value.content) {
+    const { content, ...rest } = value
 
-  if (!keys.includes('content')) {
-    if (keys.includes('attrs')) {
-      const { attrs, ...rest } = value
-      return {
-        ...rest,
-        ...Object.fromEntries(
-          Object.keys(attrs).map((key) => {
-            if (attrs[key] === null) {
-              return [key, '']
-            }
-
-            return [key, attrs[key]]
-          }),
-        ),
-      }
-    }
-    return { ...value }
-  }
-
-  const { content, ...rest } = value
-
-  if (keys.includes('attrs')) {
     const { attrs, ...last } = rest
+    const newAttrs = mapValues(attrs, (a) => {
+      return a === null ? '' : a
+    })
+
     return {
       ...last,
-      ...Object.fromEntries(
-        Object.keys(attrs).map((key) => {
-          if (attrs[key] === null) {
-            return [key, '']
-          }
-
-          return [key, attrs[key]]
-        }),
-      ),
-      content: content.map((node: any) => convertFromTiptap(node)),
+      ...newAttrs,
+      content: content.map((node: any) => convertFromTiptapRecursive(node)),
     }
   }
-  return {
-    ...rest,
-    content: value.content.map((node: any) => convertFromTiptap(node)),
+
+  // no content, have attrs
+  if (value.attrs) {
+    const newAttrs = mapValues(value.attrs, (a) => {
+      return a === null ? '' : a
+    })
+
+    return { ...value, ...newAttrs }
   }
+
+  // no content and no attrs
+  return value
+}
+
+const baseSchema: ZodType<{
+  type: string
+  content?: unknown[]
+}> = z.object({
+  type: z.string(),
+  content: z.array(z.lazy(() => baseSchema)).optional(),
+})
+
+const docSchema = z.object({
+  type: z.literal('doc'),
+  content: z.array(baseSchema),
+})
+
+// NOTE: Precondition: this must be the output of `editor.getJSON`
+// and must have only 1 node with type === "doc"
+export const convertFromTiptap = (value: JSONContent): ParagraphProps[] => {
+  docSchema.parse(value)
+
+  return value.content?.map(convertFromTiptapRecursive) ?? []
 }
