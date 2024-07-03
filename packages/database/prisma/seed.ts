@@ -9,8 +9,9 @@ import {
   type IsomerSitemap,
 } from "@opengovsg/isomer-components";
 import cuid2 from "@paralleldrive/cuid2";
+import { PrismaClient } from "@prisma/client";
 
-import { db } from "../instance";
+const prisma = new PrismaClient({ errorFormat: "pretty" });
 
 const MOCK_PHONE_NUMBER = "123456789";
 
@@ -150,9 +151,8 @@ const FOOTER_ITEMS = [
 ];
 
 async function main() {
-  const { id: siteId } = await db
-    .insertInto("Site")
-    .values({
+  const { id: siteId } = await prisma.site.upsert({
+    create: {
       name: "Ministry of Trade and Industry",
       config: {
         theme: "isomer-next",
@@ -172,13 +172,13 @@ async function main() {
       } satisfies IsomerSiteConfigProps & {
         siteMap: IsomerGeneratedSiteProps["siteMap"];
       },
-    })
-    .returning("id")
-    .executeTakeFirstOrThrow();
+    },
+    update: {},
+    where: { name: "Ministry of Trade and Industry" },
+  });
 
-  await db
-    .insertInto("Footer")
-    .values({
+  await prisma.footer.upsert({
+    create: {
       siteId,
       content: {
         contactUsLink: "/contact-us",
@@ -187,39 +187,53 @@ async function main() {
         termsOfUseLink: "/terms-of-use",
         siteNavItems: FOOTER_ITEMS,
       },
-    })
-    .execute();
+    },
+    update: {},
+    where: { siteId },
+  });
 
-  await db
-    .insertInto("Navbar")
-    .values({
+  await prisma.navbar.upsert({
+    create: {
       siteId,
       content: { items: NAV_BAR_ITEMS },
-    })
-    .execute();
+    },
+    update: {},
+    where: { siteId },
+  });
 
-  const { id: blobId } = await db
-    .insertInto("Blob")
-    .values({ content: PAGE_BLOB })
-    .returning("id")
-    .executeTakeFirstOrThrow();
+  const { id: blobId } = await prisma.blob.upsert({
+    create: {
+      id: 1,
+      content: PAGE_BLOB,
+    },
+    update: {},
+    where: { id: 1 },
+  });
 
-  await db
-    .insertInto("Resource")
-    .values({ blobId, name: "Home", siteId })
-    .executeTakeFirstOrThrow();
+  await prisma.resource.upsert({
+    create: {
+      id: 1,
+      blobId,
+      name: "Home",
+      siteId,
+    },
+    update: {},
+    where: { id: 1 },
+  });
 
   await Promise.all(
     ISOMER_ADMINS.map((name) => {
-      return db
-        .insertInto("User")
-        .values({
+      const email = `${name}@open.gov.sg`;
+      return prisma.user.upsert({
+        create: {
           id: cuid2.createId(),
           name,
-          email: `${name}@open.gov.sg`,
+          email,
           phone: MOCK_PHONE_NUMBER,
-        })
-        .executeTakeFirstOrThrow();
+        },
+        update: {},
+        where: { email },
+      });
     }),
   );
 }
@@ -231,5 +245,5 @@ main()
   })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   .finally(async () => {
-    await db.destroy();
+    await prisma.$disconnect();
   });
