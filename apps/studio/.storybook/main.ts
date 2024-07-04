@@ -10,7 +10,6 @@ const config: StorybookConfig = {
     getAbsolutePath('@storybook/addon-themes'),
     getAbsolutePath('@storybook/addon-a11y'),
     getAbsolutePath('@storybook/addon-mdx-gfm'),
-    '@chromatic-com/storybook',
   ],
 
   framework: {
