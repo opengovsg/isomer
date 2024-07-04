@@ -1,23 +1,15 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { FilterProps } from "../../../types/Filter";
-import Filter from "./Filter";
+import Filter from "./Filter"
 
-const meta: Meta<FilterProps> = {
+const meta: Meta<typeof Filter> = {
   title: "Next/Internal Components/Filter",
   component: Filter,
-  argTypes: {},
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Filter>;
-
-// Default scenario
-export const Default: Story = {
   args: {
     filters: [
       {
@@ -52,5 +44,11 @@ export const Default: Story = {
         ],
       },
     ],
+    appliedFilters: [],
   },
-};
+}
+export default meta
+type Story = StoryObj<typeof Filter>
+
+// Default scenario
+export const Default: Story = {}
