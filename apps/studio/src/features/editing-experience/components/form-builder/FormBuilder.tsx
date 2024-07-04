@@ -63,10 +63,8 @@ function getComponentSubschema(
     return {}
   }
 
-  const { properties, ...rest } = isomerJsonSchema.components.complex[component]
   return {
-    ...rest,
-    properties,
+    ...isomerJsonSchema.components.complex[component],
     components: isomerJsonSchema.components,
   }
 }
