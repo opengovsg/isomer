@@ -1,8 +1,9 @@
-import { Meta, StoryFn } from "@storybook/react"
-import Pill from "./Pill"
-import type { PillProps } from "~/interfaces"
+import type { Meta, StoryObj } from "@storybook/react";
 
-export default {
+import type { PillProps } from "~/interfaces";
+import Pill from "./Pill";
+
+const meta: Meta<PillProps> = {
   title: "Next/Internal Components/Pill",
   component: Pill,
   argTypes: {},
@@ -11,12 +12,13 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+};
+export default meta;
+type Story = StoryObj<typeof Pill>;
 
-const Template: StoryFn<PillProps> = (args) => <Pill {...args} />
-
-export const Default = Template.bind({})
-Default.args = {
-  content: "Press Release",
-  onClose: () => window.alert("Closed pill"),
-}
+export const Default: Story = {
+  args: {
+    content: "Press Release",
+    onClose: () => window.alert("Closed pill"),
+  },
+};

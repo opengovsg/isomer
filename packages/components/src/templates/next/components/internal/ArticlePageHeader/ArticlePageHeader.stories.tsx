@@ -1,8 +1,9 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import type { ArticlePageHeaderProps } from "~/interfaces"
-import ArticlePageHeader from "./ArticlePageHeader"
+import type { Meta, StoryObj } from "@storybook/react";
 
-export default {
+import type { ArticlePageHeaderProps } from "~/interfaces";
+import ArticlePageHeader from "./ArticlePageHeader";
+
+const meta: Meta<ArticlePageHeaderProps> = {
   title: "Next/Internal Components/ArticlePageHeader",
   component: ArticlePageHeader,
   argTypes: {},
@@ -11,66 +12,65 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
+};
+export default meta;
+type Story = StoryObj<typeof ArticlePageHeader>;
 
-// Template for stories
-const Template: StoryFn<ArticlePageHeaderProps> = (args) => (
-  <ArticlePageHeader {...args} />
-)
-
-export const SingleSummaryItem = Template.bind({})
-SingleSummaryItem.args = {
-  breadcrumb: {
-    links: [
-      {
-        title: "Newsroom",
-        url: "/newsroom",
-      },
-      {
-        title: "News",
-        url: "/newsroom/news",
-      },
-      {
-        title:
-          "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
-        url: "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
-      },
+export const SingleSummaryItem: Story = {
+  args: {
+    breadcrumb: {
+      links: [
+        {
+          title: "Newsroom",
+          url: "/newsroom",
+        },
+        {
+          title: "News",
+          url: "/newsroom/news",
+        },
+        {
+          title:
+            "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
+          url: "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
+        },
+      ],
+    },
+    category: "NParks Happenings",
+    title:
+      "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
+    date: "1 May 2024",
+    summary: [
+      "20 pieces of rhinoceros horns were found in two pieces of transit baggage bound for Laos. The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
     ],
   },
-  category: "NParks Happenings",
-  title:
-    "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
-  date: "1 May 2024",
-  summary: [
-    "20 pieces of rhinoceros horns were found in two pieces of transit baggage bound for Laos. The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
-  ],
-}
+};
 
-export const MultipleSummaryItems = Template.bind({})
-MultipleSummaryItems.args = {
-  breadcrumb: {
-    links: [
-      {
-        title: "Newsroom",
-        url: "/newsroom",
-      },
-      {
-        title: "News",
-        url: "/newsroom/news",
-      },
-      {
-        title:
-          "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
-        url: "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
-      },
+export const MultipleSummaryItems: Story = {
+  args: {
+    breadcrumb: {
+      links: [
+        {
+          title: "Newsroom",
+          url: "/newsroom",
+        },
+        {
+          title: "News",
+          url: "/newsroom/news",
+        },
+        {
+          title:
+            "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
+          url: "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
+        },
+      ],
+    },
+    category: "NParks Happenings",
+    title:
+      "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
+    date: "1 May 2024",
+    summary: [
+      "20 pieces of rhinoceros horns were found in two pieces of transit baggage bound for Laos.",
+      "The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
     ],
   },
-  category: "NParks Happenings",
-  title:
-    "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
-  date: "1 May 2024",
-  summary: [
-    "20 pieces of rhinoceros horns were found in two pieces of transit baggage bound for Laos.",
-    "The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
-  ],
-}
+};
