@@ -1,0 +1,16 @@
+"filename", "language", "TypeScript", "TypeScript JSX", "JSON with Comments", "comment", "blank", "total"
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/prisma/generate.cts", "TypeScript", 115, 0, 0, 1, 21, 137
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/prisma/generated/selectableTypes.ts", "TypeScript", 11, 0, 0, 1, 3, 15
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/src/features/editing-experience/components/PageCreateModal.stories.tsx", "TypeScript JSX", 0, 24, 0, 0, 6, 30
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/src/features/editing-experience/components/PageCreateModal.tsx", "TypeScript JSX", 0, 26, 0, 14, 3, 43
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/src/schemas/page.ts", "TypeScript", 19, 0, 0, 1, 1, 21
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/src/server/modules/database/index.ts", "TypeScript", 2, 0, 0, 0, 0, 2
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/src/server/modules/database/types.ts", "TypeScript", 16, 0, 0, 11, 7, 34
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/src/server/modules/database/utils.ts", "TypeScript", 44, 0, 0, 10, 8, 62
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/src/server/modules/page/page.router.ts", "TypeScript", 2, 0, 0, 0, 0, 2
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/src/server/modules/resource/resource.types.ts", "TypeScript", 0, 0, 0, 0, 1, 1
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/src/theme/components/Modal.ts", "TypeScript", 19, 0, 0, 1, 1, 21
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/tests/integration/helpers/auth.ts", "TypeScript", 0, 0, 0, 0, -1, -1
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/tsconfig.json", "JSON with Comments", 0, 0, 3, 0, 0, 3
+"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/apps/studio/vitest.config.ts", "TypeScript", 1, 0, 0, 0, 0, 1
+"Total", "-", 229, 50, 3, 39, 50, 371

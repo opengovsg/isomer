@@ -2,21 +2,29 @@ import { db } from "../database"
 import { type Footer, type Navbar, type Page } from "./resource.types"
 
 export const getPages = () => {
+  // TODO: write a test to verify this query behaviour
   return (
     db
       .selectFrom("Resource")
-      // TODO: write a test to verify this query behaviour
-      .where("blobId", "!=", null)
+      // fetch pages where either a draft exists or a published blob exists
+      .where((eb) =>
+        eb.or([
+          eb("publishedBlobId", "!=", null),
+          eb("draftBlobId", "!=", null),
+        ]),
+      )
       .selectAll()
       .execute()
   )
 }
 
 export const getFolders = () =>
+  // TODO: write a test to verify this query behaviour
   db
     .selectFrom("Resource")
-    // TODO: write a test to verify this query behaviour
-    .where("blobId", "=", null)
+    // fetch pages where both draft and published blobs are null
+    .where("publishedBlobId", "is", null)
+    .where("draftBlobId", "is", null)
     .selectAll()
     .execute()
 
@@ -25,17 +33,27 @@ const getById = (id: number) =>
   db.selectFrom("Resource").where("Resource.id", "=", id)
 
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
-export const getFullPageById = (id: number) => {
+export const getFullPageById = async (id: number) => {
+  // Check if draft blob exists and return that preferentially
+  const draftBlob = await getById(id)
+    .where("Resource.draftBlobId", "is not", null)
+    .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
+    .selectAll()
+    .executeTakeFirst()
+  if (draftBlob) return draftBlob
+
   return getById(id)
-    .where("Resource.blobId", "is not", null)
-    .innerJoin("Blob", "Resource.blobId", "Blob.id")
+    .where("Resource.publishedBlobId", "is not", null)
+    .innerJoin("Blob", "Resource.publishedBlobId", "Blob.id")
     .selectAll()
     .executeTakeFirstOrThrow()
 }
 
 export const getPageById = (id: number) => {
   return getById(id)
-    .where("blobId", "!=", null)
+    .where((eb) =>
+      eb.or([eb("publishedBlobId", "!=", null), eb("draftBlobId", "!=", null)]),
+    )
     .selectAll()
     .executeTakeFirstOrThrow()
 }
