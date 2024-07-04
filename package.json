@@ -16,7 +16,8 @@
   "workspaces": [
     "docs",
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "tooling/*"
   ],
   "author": "Isomer Team",
   "license": "ISC",
