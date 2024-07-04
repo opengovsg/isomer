@@ -128,7 +128,7 @@
     "@types/pg": "^8.11.6",
     "@types/react": "^18.3.3",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
-    "@typescript-eslint/parser": "^7.14.1",
+    "@typescript-eslint/parser": "^7.15.0",
     "autoprefixer": "^10.4.19",
     "clean-webpack-plugin": "^4.0.0",
     "dotenv-cli": "^7.3.0",
