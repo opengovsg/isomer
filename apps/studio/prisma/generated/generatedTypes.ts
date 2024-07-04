@@ -33,7 +33,8 @@ export interface Resource {
   name: string
   siteId: number
   parentId: number | null
-  blobId: number | null
+  publishedBlobId: number | null
+  draftBlobId: number | null
 }
 export interface Site {
   id: GeneratedAlways<number>

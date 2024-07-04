@@ -32,13 +32,17 @@ model Resource {
   siteId   Int
   site     Site      @relation(fields: [siteId], references: [id])
   parentId Int?
-  parent   Resource? @relation("parentRelation", fields: [parentId], references: [id])
-  blobId   Int?      @unique
-  blob     Blob?     @relation(fields: [blobId], references: [id])
+  parent   Resource? @relation("ParentRelation", fields: [parentId], references: [id])
 
-  children Resource[] @relation("parentRelation")
+  children Resource[] @relation("ParentRelation")
 
   permission Permission[]
+
+  publishedBlob   Blob? @relation("PublishedBlob", fields: [publishedBlobId], references: [id])
+  publishedBlobId Int?  @unique
+
+  draftBlob   Blob? @relation("DraftBlob", fields: [draftBlobId], references: [id])
+  draftBlobId Int?  @unique
 }
 
 model User {
@@ -95,8 +99,8 @@ model Blob {
   id      Int  @id @default(autoincrement())
   content Json
 
-  // Should the blob be deleted on deletion of the resource? 
-  resource Resource?
+  publishedResource Resource? @relation("PublishedBlob")
+  draftResource     Resource? @relation("DraftBlob")
 }
 
 model SiteMember {
