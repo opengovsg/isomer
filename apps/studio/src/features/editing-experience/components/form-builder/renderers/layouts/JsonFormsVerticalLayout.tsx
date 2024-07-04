@@ -8,7 +8,7 @@ import {
 } from '@jsonforms/core'
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from '@jsonforms/react'
 import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
-import { isVerticalLayout, type IsomerJsonSchema } from '~/types/schema'
+import { isVerticalLayout, type IsomerExtendedJsonSchema } from '~/types/schema'
 
 type UISchemaElementWithScope = UISchemaElement & {
   scope?: string
@@ -22,7 +22,7 @@ export const jsonFormsVerticalLayoutTester: RankedTester = rankWith(
 )
 
 function getUiSchemaWithGroup(
-  jsonSchema: IsomerJsonSchema,
+  jsonSchema: IsomerExtendedJsonSchema,
   uiSchema: UISchemaElementWithScope[],
 ) {
   const { groups } = jsonSchema

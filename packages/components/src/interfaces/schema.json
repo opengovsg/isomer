@@ -1,0 +1,1827 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schema.isomer.gov.sg/next/0.1.0.json",
+  "title": "Isomer Next Page JSON",
+  "type": "object",
+  "required": ["version"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "The version of the Isomer Next schema to use",
+      "default": "0.1.0"
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/layouts/homepage"
+    },
+    {
+      "$ref": "#/layouts/content"
+    },
+    {
+      "$ref": "#/layouts/collection"
+    },
+    {
+      "$ref": "#/layouts/article"
+    },
+    {
+      "$ref": "#/layouts/file"
+    },
+    {
+      "$ref": "#/layouts/link"
+    }
+  ],
+  "definitions": {
+    "contentComponents": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/components/complex/accordion"
+          },
+          {
+            "$ref": "#/components/complex/button"
+          },
+          {
+            "$ref": "#/components/complex/callout"
+          },
+          {
+            "$ref": "#/components/complex/hero"
+          },
+          {
+            "$ref": "#/components/complex/iframe"
+          },
+          {
+            "$ref": "#/components/complex/image"
+          },
+          {
+            "$ref": "#/components/complex/infobar"
+          },
+          {
+            "$ref": "#/components/complex/infocards"
+          },
+          {
+            "$ref": "#/components/complex/infocols"
+          },
+          {
+            "$ref": "#/components/complex/infopic"
+          },
+          {
+            "$ref": "#/components/complex/keystatistics"
+          },
+          {
+            "$ref": "#/components/native/divider"
+          },
+          {
+            "$ref": "#/components/native/heading"
+          },
+          {
+            "$ref": "#/components/native/orderedList"
+          },
+          {
+            "$ref": "#/components/native/paragraph"
+          },
+          {
+            "$ref": "#/components/native/table"
+          },
+          {
+            "$ref": "#/components/native/unorderedList"
+          }
+        ]
+      }
+    },
+    "pageMetadata": {
+      "type": "object",
+      "required": ["title"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "Page title"
+        },
+        "description": {
+          "type": "string",
+          "title": "Page description",
+          "description": "The summary of the page for SEO purposes"
+        },
+        "noIndex": {
+          "type": "boolean",
+          "description": "Whether to exclude the page from search results"
+        }
+      }
+    }
+  },
+  "layouts": {
+    "homepage": {
+      "type": "object",
+      "title": "Homepage layout",
+      "required": ["layout", "page", "content"],
+      "properties": {
+        "layout": {
+          "type": "string",
+          "enum": ["homepage"],
+          "default": "homepage"
+        },
+        "page": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/pageMetadata"
+            }
+          ]
+        },
+        "content": {
+          "type": "array",
+          "title": "Page content",
+          "$ref": "#/definitions/contentComponents"
+        }
+      }
+    },
+    "content": {
+      "type": "object",
+      "title": "Content page layout",
+      "required": ["layout", "page", "content"],
+      "properties": {
+        "layout": {
+          "type": "string",
+          "enum": ["content"],
+          "default": "content"
+        },
+        "page": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/pageMetadata"
+            },
+            {
+              "type": "object",
+              "required": ["contentPageHeader"],
+              "properties": {
+                "contentPageHeader": {
+                  "$ref": "#/components/internal/contentPageHeader"
+                }
+              }
+            }
+          ]
+        },
+        "content": {
+          "type": "array",
+          "title": "Page content",
+          "$ref": "#/definitions/contentComponents"
+        }
+      }
+    },
+    "collection": {
+      "type": "object",
+      "title": "Collection page layout",
+      "required": ["layout", "page"],
+      "properties": {
+        "layout": {
+          "type": "string",
+          "enum": ["collection"],
+          "default": "collection"
+        },
+        "page": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/pageMetadata"
+            },
+            {
+              "type": "object",
+              "required": ["defaultSortBy", "defaultSortDirection", "subtitle"],
+              "properties": {
+                "defaultSortBy": {
+                  "type": "string",
+                  "description": "The default field to sort the collection items by",
+                  "enum": ["date"]
+                },
+                "defaultSortDirection": {
+                  "type": "string",
+                  "description": "The default direction to sort the collection items by",
+                  "enum": ["asc", "desc"]
+                },
+                "subtitle": {
+                  "type": "string",
+                  "description": "The subtitle of the collection"
+                }
+              }
+            }
+          ]
+        },
+        "content": {
+          "type": "array",
+          "title": "Page content",
+          "description": "This should be empty for collection pages, make sure to remove any items here.",
+          "default": [],
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    "article": {
+      "type": "object",
+      "title": "Article page layout",
+      "required": ["layout", "page", "content"],
+      "properties": {
+        "layout": {
+          "type": "string",
+          "enum": ["article"],
+          "default": "article"
+        },
+        "page": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/pageMetadata"
+            },
+            {
+              "type": "object",
+              "required": ["category", "date", "articlePageHeader"],
+              "properties": {
+                "category": {
+                  "type": "string",
+                  "title": "Category of the article",
+                  "description": "The category is used for filtering in the parent collection page."
+                },
+                "date": {
+                  "type": "string",
+                  "title": "Date of the article"
+                },
+                "image": {
+                  "$ref": "#/components/internal/imageCollectionCard"
+                },
+                "articlePageHeader": {
+                  "$ref": "#/components/internal/articlePageHeader"
+                }
+              }
+            }
+          ]
+        },
+        "content": {
+          "type": "array",
+          "title": "Page content",
+          "$ref": "#/definitions/contentComponents"
+        }
+      }
+    },
+    "file": {
+      "type": "object",
+      "title": "File reference layout",
+      "required": ["layout", "page"],
+      "properties": {
+        "layout": {
+          "type": "string",
+          "enum": ["file"],
+          "default": "file"
+        },
+        "page": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/pageMetadata"
+            },
+            {
+              "required": ["ref", "category", "date"],
+              "properties": {
+                "ref": {
+                  "type": "string",
+                  "title": "URL of the actual file",
+                  "description": "The link that users will open immediately when they click on the file item in the parent collection page."
+                },
+                "category": {
+                  "type": "string",
+                  "title": "Category of the file item",
+                  "description": "The category is used for filtering in the parent collection page."
+                },
+                "date": {
+                  "type": "string",
+                  "title": "Date of the file item"
+                },
+                "image": {
+                  "$ref": "#/components/internal/imageCollectionCard"
+                }
+              }
+            }
+          ]
+        },
+        "content": {
+          "type": "array",
+          "title": "Page content",
+          "description": "This should be empty for file pages, make sure to remove any items here.",
+          "default": [],
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "title": "Link reference layout",
+      "required": ["layout", "page"],
+      "properties": {
+        "layout": {
+          "type": "string",
+          "enum": ["link"],
+          "default": "link"
+        },
+        "page": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/pageMetadata"
+            },
+            {
+              "required": ["ref", "category", "date"],
+              "properties": {
+                "ref": {
+                  "type": "string",
+                  "title": "URL of the actual link",
+                  "description": "The link that users will open immediately when they click on the link item in the parent collection page."
+                },
+                "category": {
+                  "type": "string",
+                  "title": "Category of the link item",
+                  "description": "The category is used for filtering in the parent collection page."
+                },
+                "date": {
+                  "type": "string",
+                  "title": "Date of the link item"
+                },
+                "image": {
+                  "$ref": "#/components/internal/imageCollectionCard"
+                }
+              }
+            }
+          ]
+        },
+        "content": {
+          "type": "array",
+          "title": "Page content",
+          "description": "This should be empty for link pages, make sure to remove any items here.",
+          "default": [],
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "complex": {
+      "accordion": {
+        "type": "object",
+        "title": "Accordion component",
+        "required": ["type", "summary", "details"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["accordion"],
+            "default": "accordion"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Accordion summary",
+            "description": "The summary for the accordion"
+          },
+          "details": {
+            "type": "array",
+            "format": "prose",
+            "title": "Accordion contents",
+            "description": "The contents inside the accordion",
+            "minItems": 1,
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/complex/image"
+                },
+                {
+                  "$ref": "#/components/native/divider"
+                },
+                {
+                  "$ref": "#/components/native/heading"
+                },
+                {
+                  "$ref": "#/components/native/orderedList"
+                },
+                {
+                  "$ref": "#/components/native/paragraph"
+                },
+                {
+                  "$ref": "#/components/native/table"
+                },
+                {
+                  "$ref": "#/components/native/unorderedList"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "button": {
+        "type": "object",
+        "title": "Button component",
+        "required": ["type", "label", "href"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["button"],
+            "default": "button"
+          },
+          "label": {
+            "type": "string",
+            "title": "Button label",
+            "description": "The text to display on the button"
+          },
+          "href": {
+            "type": "string",
+            "title": "Button URL",
+            "description": "The URL to link the button to"
+          },
+          "colorScheme": {
+            "type": "string",
+            "title": "Button color scheme",
+            "description": "The color scheme of the button to use",
+            "enum": ["black", "white"]
+          },
+          "variant": {
+            "type": "string",
+            "title": "Button variant",
+            "description": "The variant of the button to use",
+            "enum": ["link", "solid", "outline", "ghost"]
+          },
+          "rounded": {
+            "type": "boolean",
+            "title": "Button rounded",
+            "description": "Whether to have the button corners be rounded"
+          },
+          "leftIcon": {
+            "type": "string",
+            "title": "Button left icon",
+            "description": "The icon to display on the left of the button's text",
+            "enum": ["right-arrow", "bar-chart"]
+          },
+          "rightIcon": {
+            "type": "string",
+            "title": "Button right icon",
+            "description": "The icon to display on the right of the button's text",
+            "enum": ["right-arrow", "bar-chart"]
+          }
+        }
+      },
+      "callout": {
+        "type": "object",
+        "title": "Callout component",
+        "required": ["type", "content", "variant"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["callout"],
+            "default": "callout"
+          },
+          "variant": {
+            "type": "string",
+            "title": "Callout variant",
+            "description": "The variant of the callout to use",
+            "enum": ["info", "success", "warning", "critical"]
+          },
+          "content": {
+            "type": "array",
+            "format": "prose",
+            "title": "Callout content",
+            "description": "The content to display in the callout",
+            "minItems": 1,
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/complex/image"
+                },
+                {
+                  "$ref": "#/components/native/divider"
+                },
+                {
+                  "$ref": "#/components/native/heading"
+                },
+                {
+                  "$ref": "#/components/native/orderedList"
+                },
+                {
+                  "$ref": "#/components/native/paragraph"
+                },
+                {
+                  "$ref": "#/components/native/table"
+                },
+                {
+                  "$ref": "#/components/native/unorderedList"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "hero": {
+        "type": "object",
+        "title": "Hero component",
+        "description": "The hero component is used to display a large banner at the top of the homepage.",
+        "required": ["type", "variant"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["hero"],
+            "default": "hero"
+          }
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/internal/heroSide"
+          },
+          {
+            "$ref": "#/components/internal/heroImage"
+          },
+          {
+            "$ref": "#/components/internal/heroFloating"
+          },
+          {
+            "$ref": "#/components/internal/heroCenter"
+          },
+          {
+            "$ref": "#/components/internal/heroGradient"
+          },
+          {
+            "$ref": "#/components/internal/heroSplit"
+          },
+          {
+            "$ref": "#/components/internal/heroCopyled"
+          },
+          {
+            "$ref": "#/components/internal/heroFloatingImage"
+          }
+        ]
+      },
+      "iframe": {
+        "type": "object",
+        "title": "Iframe component",
+        "description": "The iframe component is used to embed a whitelisted external webpage within the current page.",
+        "required": ["type", "title", "content"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["iframe"],
+            "default": "iframe"
+          },
+          "title": {
+            "type": "string",
+            "title": "Iframe title",
+            "description": "The title of the iframe"
+          },
+          "content": {
+            "type": "string",
+            "title": "Iframe content",
+            "description": "The full iframe embed code to display, should only contain the <iframe> tag"
+          }
+        }
+      },
+      "image": {
+        "type": "object",
+        "title": "Image component",
+        "required": ["type", "src", "alt"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["image"],
+            "default": "image"
+          },
+          "src": {
+            "type": "string",
+            "title": "Image URL",
+            "description": "The URL to the image to display"
+          },
+          "alt": {
+            "type": "string",
+            "title": "Image alt text",
+            "description": "The alt text for the image"
+          },
+          "width": {
+            "type": "integer",
+            "title": "Image width",
+            "description": "The width of the image",
+            "exclusiveMinimum": 0,
+            "maximum": 100
+          },
+          "href": {
+            "type": "string",
+            "title": "URL Link",
+            "description": "The URL to link the image to"
+          }
+        }
+      },
+      "infobar": {
+        "type": "object",
+        "title": "Infobar component",
+        "required": ["type", "title"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["infobar"],
+            "default": "infobar"
+          },
+          "title": {
+            "type": "string",
+            "title": "Infobar title",
+            "description": "The title of the Infobar"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Infobar content",
+            "description": "The subtitle of the Infobar"
+          },
+          "description": {
+            "type": "string",
+            "title": "Infobar description",
+            "description": "The content of the Infobar"
+          },
+          "buttonLabel": {
+            "type": "string",
+            "title": "Button label",
+            "description": "The label of the button to display"
+          },
+          "buttonUrl": {
+            "type": "string",
+            "title": "Button URL",
+            "description": "The URL to link the button to"
+          },
+          "secondaryButtonLabel": {
+            "type": "string",
+            "title": "Secondary Button label",
+            "description": "The label of the secondary button to display"
+          },
+          "secondaryButtonUrl": {
+            "type": "string",
+            "title": "Secondary Button URL",
+            "description": "The URL to link the secondary button to"
+          }
+        }
+      },
+      "infocards": {
+        "type": "object",
+        "title": "Infocards component",
+        "required": ["type", "variant", "cards"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["infocards"],
+            "default": "infocards"
+          },
+          "variant": {
+            "type": "string",
+            "title": "Infocards variant",
+            "description": "The variant of the Infocards component to use",
+            "enum": ["side", "top"],
+            "format": "radio"
+          },
+          "title": {
+            "type": "string",
+            "title": "Infocards title",
+            "description": "The title of the Infocards component"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Infocards content",
+            "description": "The subtitle of the Infocards component"
+          },
+          "cards": {
+            "type": "array",
+            "title": "Infocards cards",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["title", "url", "imageUrl", "imageAlt"],
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "title": "Card title",
+                  "description": "The title of the card"
+                },
+                "url": {
+                  "type": "string",
+                  "title": "Card URL",
+                  "description": "The URL to link the card to"
+                },
+                "imageUrl": {
+                  "type": "string",
+                  "title": "Card image URL",
+                  "description": "The URL to the image to display for the card"
+                },
+                "imageAlt": {
+                  "type": "string",
+                  "title": "Card image alt text",
+                  "description": "The alt text for the image"
+                },
+                "text": {
+                  "type": "string",
+                  "title": "Card content",
+                  "description": "The content of the card"
+                },
+                "buttonLabel": {
+                  "type": "string",
+                  "title": "Button label",
+                  "description": "The label of the button to display"
+                }
+              }
+            }
+          }
+        }
+      },
+      "infocols": {
+        "type": "object",
+        "title": "Infocols component",
+        "required": ["type", "title", "infoBoxes"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["infocols"],
+            "default": "infocols"
+          },
+          "title": {
+            "type": "string",
+            "title": "Infocols title",
+            "description": "The title of the Infocols component"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Infocols content",
+            "description": "The subtitle of the Infocols component"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "title": "Infocols background color",
+            "description": "The background color to use for the Infocols component"
+          },
+          "buttonLabel": {
+            "type": "string",
+            "title": "Button label",
+            "description": "The label of the button to display"
+          },
+          "buttonUrl": {
+            "type": "string",
+            "title": "Button URL",
+            "description": "The URL to link the button to"
+          },
+          "infoBoxes": {
+            "type": "array",
+            "title": "Infocols columns",
+            "minItems": 1,
+            "maxItems": 6,
+            "items": {
+              "type": "object",
+              "required": ["title"],
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "title": "Column title",
+                  "description": "The title of the column"
+                },
+                "description": {
+                  "type": "string",
+                  "title": "Column content",
+                  "description": "The content of the column"
+                },
+                "icon": {
+                  "type": "string",
+                  "title": "Column icon",
+                  "description": "The icon to display for the column",
+                  "enum": ["right-arrow", "bar-chart"]
+                },
+                "buttonLabel": {
+                  "type": "string",
+                  "title": "Button label",
+                  "description": "The label of the button to display"
+                },
+                "buttonUrl": {
+                  "type": "string",
+                  "title": "Button URL",
+                  "description": "The URL to link the button to"
+                }
+              }
+            }
+          }
+        }
+      },
+      "infopic": {
+        "type": "object",
+        "title": "Infopic component",
+        "required": ["type", "title", "imageSrc"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["infopic"],
+            "default": "infopic"
+          },
+          "title": {
+            "type": "string",
+            "title": "Infopic title",
+            "description": "The title of the Infopic component"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Infopic subtitle",
+            "description": "The subtitle of the Infopic component"
+          },
+          "description": {
+            "type": "string",
+            "title": "Infopic description",
+            "description": "The content of the Infopic component"
+          },
+          "imageSrc": {
+            "type": "string",
+            "title": "Infopic image URL",
+            "description": "The URL to the image to display"
+          },
+          "imageAlt": {
+            "type": "string",
+            "title": "Infopic image alt text",
+            "description": "The alt text for the image"
+          },
+          "buttonLabel": {
+            "type": "string",
+            "title": "Button label",
+            "description": "The label of the button to display"
+          },
+          "buttonUrl": {
+            "type": "string",
+            "title": "Button URL",
+            "description": "The URL to link the button to"
+          },
+          "isTextOnRight": {
+            "type": "boolean",
+            "title": "Infopic text position",
+            "description": "Whether to display the text on the right of the image"
+          },
+          "variant": {
+            "type": "string",
+            "title": "Infopic variant",
+            "description": "The variant of the Infopic component to use",
+            "enum": ["side-by-side", "side-part"]
+          }
+        }
+      },
+      "keystatistics": {
+        "type": "object",
+        "title": "Keystatistics component",
+        "required": ["type", "variant", "title", "statistics"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["keystatistics"],
+            "default": "keystatistics"
+          },
+          "variant": {
+            "type": "string",
+            "title": "KeyStatistics variant",
+            "description": "The variant of the KeyStatistics component to use",
+            "enum": ["side", "top"]
+          },
+          "title": {
+            "type": "string",
+            "title": "KeyStatistics title",
+            "description": "The title of the KeyStatistics component"
+          },
+          "statistics": {
+            "type": "array",
+            "title": "KeyStatistics statistics",
+            "minItems": 1,
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "required": ["label", "value"],
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "title": "Statistic label",
+                  "description": "The label of the statistic"
+                },
+                "value": {
+                  "type": "string",
+                  "title": "Statistic value",
+                  "description": "The value of the statistic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "internal": {
+      "articlePageHeader": {
+        "type": "object",
+        "title": "Article page header",
+        "description": "The article page header is used to display the title, summary, breadcrumbs, category and date of an article page.",
+        "properties": {
+          "summary": {
+            "type": "array",
+            "title": "Page summary",
+            "description": "The summary of the article page's content. Having multiple items will display them as a list.",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "contentPageHeader": {
+        "type": "object",
+        "title": "Content page header",
+        "description": "The content page header is used to display the title, summary, and breadcrumbs of a content page.",
+        "required": ["summary"],
+        "properties": {
+          "summary": {
+            "type": "string",
+            "title": "Page summary",
+            "description": "The summary of the page's content"
+          },
+          "buttonLabel": {
+            "type": "string",
+            "title": "Button label",
+            "description": "The label of the button to display"
+          },
+          "buttonUrl": {
+            "type": "string",
+            "title": "Button URL",
+            "description": "The URL to link the button to"
+          }
+        }
+      },
+      "hardBreak": {
+        "type": "object",
+        "title": "Line break component",
+        "description": "A line break that forces a new line",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["hardBreak"],
+            "default": "hardBreak"
+          }
+        }
+      },
+      "heroSide": {
+        "type": "object",
+        "title": "Hero side variant",
+        "required": ["variant", "title", "backgroundUrl"],
+        "groups": [
+          {
+            "label": "Primary call-to-action",
+            "fields": ["buttonLabel", "buttonUrl"]
+          },
+          {
+            "label": "Secondary call-to-action",
+            "fields": ["secondaryButtonLabel", "secondaryButtonUrl"]
+          }
+        ],
+        "properties": {
+          "variant": {
+            "type": "string",
+            "enum": ["side"],
+            "default": "side"
+          },
+          "title": {
+            "type": "string",
+            "title": "Hero title",
+            "description": "The title of the hero banner"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Hero content",
+            "description": "The content of the hero banner"
+          },
+          "buttonLabel": {
+            "type": "string",
+            "title": "Button label",
+            "description": "The label of the main CTA button to display"
+          },
+          "buttonUrl": {
+            "type": "string",
+            "title": "Button URL",
+            "description": "The URL to link the main CTA button to"
+          },
+          "secondaryButtonLabel": {
+            "type": "string",
+            "title": "Secondary Button label",
+            "description": "The label of the secondary button to display"
+          },
+          "secondaryButtonUrl": {
+            "type": "string",
+            "title": "Secondary Button URL",
+            "description": "The URL to link the secondary button to"
+          },
+          "alignment": {
+            "type": "string",
+            "title": "Hero alignment",
+            "description": "The position to align the hero content to",
+            "enum": ["left", "right"]
+          },
+          "backgroundColor": {
+            "type": "string",
+            "title": "Hero background color",
+            "description": "The background color of the hero banner",
+            "enum": ["black", "white", "gray"]
+          },
+          "size": {
+            "type": "string",
+            "title": "Hero size",
+            "description": "The size of the hero banner",
+            "enum": ["sm", "md"]
+          },
+          "dropdown": {
+            "$ref": "#/components/internal/heroDropdown"
+          },
+          "backgroundUrl": {
+            "type": "string",
+            "title": "Hero background image URL",
+            "description": "The URL to the background image"
+          },
+          "keyHighlights": {
+            "$ref": "#/components/internal/heroKeyHighlights"
+          }
+        }
+      },
+      "heroImage": {
+        "type": "object",
+        "title": "Hero image variant",
+        "required": ["image", "backgroundUrl"],
+        "properties": {
+          "variant": {
+            "type": "string",
+            "enum": ["image"],
+            "default": "image"
+          },
+          "backgroundUrl": {
+            "type": "string",
+            "title": "Hero background image URL",
+            "description": "The URL to the background image"
+          },
+          "keyHighlights": {
+            "$ref": "#/components/internal/heroKeyHighlights"
+          },
+          "dropdown": {
+            "$ref": "#/components/internal/heroDropdown"
+          }
+        }
+      },
+      "heroFloating": {
+        "type": "object",
+        "title": "Hero floating variant",
+        "required": ["variant", "title", "backgroundUrl"],
+        "properties": {
+          "variant": {
+            "type": "string",
+            "enum": ["floating"],
+            "default": "floating"
+          },
+          "title": {
+            "type": "string",
+            "title": "Hero title",
+            "description": "The title of the hero banner"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Hero content",
+            "description": "The content of the hero banner"
+          },
+          "buttonLabel": {
+            "type": "string",
+            "title": "Button label",
+            "description": "The label of the main CTA button to display"
+          },
+          "buttonUrl": {
+            "type": "string",
+            "title": "Button URL",
+            "description": "The URL to link the main CTA button to"
+          },
+          "secondaryButtonLabel": {
+            "type": "string",
+            "title": "Secondary Button label",
+            "description": "The label of the secondary button to display"
+          },
+          "secondaryButtonUrl": {
+            "type": "string",
+            "title": "Secondary Button URL",
+            "description": "The URL to link the secondary button to"
+          },
+          "alignment": {
+            "type": "string",
+            "title": "Hero alignment",
+            "description": "The position to align the hero content to",
+            "enum": ["left", "right"]
+          },
+          "backgroundColor": {
+            "type": "string",
+            "title": "Hero background color",
+            "description": "The background color of the hero banner",
+            "enum": ["black", "white", "gray"]
+          },
+          "size": {
+            "type": "string",
+            "title": "Hero size",
+            "description": "The size of the hero banner",
+            "enum": ["sm", "md"]
+          },
+          "dropdown": {
+            "$ref": "#/components/internal/heroDropdown"
+          },
+          "backgroundUrl": {
+            "type": "string",
+            "title": "Hero background image URL",
+            "description": "The URL to the background image"
+          },
+          "keyHighlights": {
+            "$ref": "#/components/internal/heroKeyHighlights"
+          }
+        }
+      },
+      "heroCenter": {
+        "type": "object",
+        "title": "Hero center variant",
+        "required": ["variant", "title", "backgroundUrl"],
+        "properties": {
+          "variant": {
+            "type": "string",
+            "enum": ["center"],
+            "default": "center"
+          },
+          "title": {
+            "type": "string",
+            "title": "Hero title",
+            "description": "The title of the hero banner"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Hero content",
+            "description": "The content of the hero banner"
+          },
+          "buttonLabel": {
+            "type": "string",
+            "title": "Button label",
+            "description": "The label of the main CTA button to display"
+          },
+          "buttonUrl": {
+            "type": "string",
+            "title": "Button URL",
+            "description": "The URL to link the main CTA button to"
+          },
+          "secondaryButtonLabel": {
+            "type": "string",
+            "title": "Secondary Button label",
+            "description": "The label of the secondary button to display"
+          },
+          "secondaryButtonUrl": {
+            "type": "string",
+            "title": "Secondary Button URL",
+            "description": "The URL to link the secondary button to"
+          },
+          "backgroundUrl": {
+            "type": "string",
+            "title": "Hero background image URL",
+            "description": "The URL to the background image"
+          },
+          "keyHighlights": {
+            "$ref": "#/components/internal/heroKeyHighlights"
+          },
+          "dropdown": {
+            "$ref": "#/components/internal/heroDropdown"
+          }
+        }
+      },
+      "heroGradient": {
+        "type": "object",
+        "title": "Hero gradient variant",
+        "required": ["variant", "title", "backgroundUrl"],
+        "properties": {
+          "variant": {
+            "type": "string",
+            "enum": ["gradient"],
+            "default": "gradient"
+          },
+          "title": {
+            "type": "string",
+            "title": "Hero title",
+            "description": "The title of the hero banner"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Hero content",
+            "description": "The content of the hero banner"
+          },
+          "buttonLabel": {
+            "type": "string",
+            "title": "Button label",
+            "description": "The label of the main CTA button to display"
+          },
+          "buttonUrl": {
+            "type": "string",
+            "title": "Button URL",
+            "description": "The URL to link the main CTA button to"
+          },
+          "secondaryButtonLabel": {
+            "type": "string",
+            "title": "Secondary Button label",
+            "description": "The label of the secondary button to display"
+          },
+          "secondaryButtonUrl": {
+            "type": "string",
+            "title": "Secondary Button URL",
+            "description": "The URL to link the secondary button to"
+          },
+          "backgroundUrl": {
+            "type": "string",
+            "title": "Hero background image URL",
+            "description": "The URL to the background image"
+          },
+          "alignment": {
+            "type": "string",
+            "title": "Hero alignment",
+            "description": "The position to align the hero content to",
+            "enum": ["left", "right"]
+          }
+        }
+      },
+      "heroSplit": {
+        "type": "object",
+        "title": "Hero split variant",
+        "required": ["variant", "title", "backgroundUrl"],
+        "properties": {
+          "variant": {
+            "type": "string",
+            "enum": ["split"],
+            "default": "split"
+          },
+          "title": {
+            "type": "string",
+            "title": "Hero title",
+            "description": "The title of the hero banner"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Hero content",
+            "description": "The content of the hero banner"
+          },
+          "buttonLabel": {
+            "type": "string",
+            "title": "Button label",
+            "description": "The label of the main CTA button to display"
+          },
+          "buttonUrl": {
+            "type": "string",
+            "title": "Button URL",
+            "description": "The URL to link the main CTA button to"
+          },
+          "secondaryButtonLabel": {
+            "type": "string",
+            "title": "Secondary Button label",
+            "description": "The label of the secondary button to display"
+          },
+          "secondaryButtonUrl": {
+            "type": "string",
+            "title": "Secondary Button URL",
+            "description": "The URL to link the secondary button to"
+          },
+          "backgroundUrl": {
+            "type": "string",
+            "title": "Hero background image URL",
+            "description": "The URL to the background image"
+          },
+          "alignment": {
+            "type": "string",
+            "title": "Hero alignment",
+            "description": "The position to align the hero content to",
+            "enum": ["left", "right"]
+          },
+          "backgroundColor": {
+            "type": "string",
+            "title": "Hero background color",
+            "description": "The background color of the hero banner",
+            "enum": ["black", "white"]
+          }
+        }
+      },
+      "heroCopyled": {
+        "type": "object",
+        "title": "Hero copy-led variant",
+        "required": ["variant", "title"],
+        "properties": {
+          "variant": {
+            "type": "string",
+            "enum": ["copyled"],
+            "default": "copyled"
+          },
+          "title": {
+            "type": "string",
+            "title": "Hero title",
+            "description": "The title of the hero banner"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Hero content",
+            "description": "The content of the hero banner"
+          },
+          "buttonLabel": {
+            "type": "string",
+            "title": "Button label",
+            "description": "The label of the main CTA button to display"
+          },
+          "buttonUrl": {
+            "type": "string",
+            "title": "Button URL",
+            "description": "The URL to link the main CTA button to"
+          },
+          "secondaryButtonLabel": {
+            "type": "string",
+            "title": "Secondary Button label",
+            "description": "The label of the secondary button to display"
+          },
+          "secondaryButtonUrl": {
+            "type": "string",
+            "title": "Secondary Button URL",
+            "description": "The URL to link the secondary button to"
+          },
+          "backgroundUrl": {
+            "type": "string",
+            "title": "Hero background image URL",
+            "description": "The URL to the background image"
+          }
+        }
+      },
+      "heroFloatingImage": {
+        "type": "object",
+        "title": "Hero floating image variant",
+        "required": ["variant", "title", "backgroundUrl"],
+        "properties": {
+          "variant": {
+            "type": "string",
+            "enum": ["floatingimage"],
+            "default": "floatingimage"
+          },
+          "title": {
+            "type": "string",
+            "title": "Hero title",
+            "description": "The title of the hero banner"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Hero content",
+            "description": "The content of the hero banner"
+          },
+          "buttonLabel": {
+            "type": "string",
+            "title": "Button label",
+            "description": "The label of the main CTA button to display"
+          },
+          "buttonUrl": {
+            "type": "string",
+            "title": "Button URL",
+            "description": "The URL to link the main CTA button to"
+          },
+          "secondaryButtonLabel": {
+            "type": "string",
+            "title": "Secondary Button label",
+            "description": "The label of the secondary button to display"
+          },
+          "secondaryButtonUrl": {
+            "type": "string",
+            "title": "Secondary Button URL",
+            "description": "The URL to link the secondary button to"
+          },
+          "backgroundUrl": {
+            "type": "string",
+            "title": "Hero background image URL",
+            "description": "The URL to the background image"
+          }
+        }
+      },
+      "heroDropdown": {
+        "type": "object",
+        "title": "Hero dropdown component",
+        "required": ["options"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Dropdown label",
+            "description": "The label of the dropdown"
+          },
+          "options": {
+            "type": "array",
+            "title": "Dropdown options",
+            "items": {
+              "type": "object",
+              "required": ["title", "url"],
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "title": "Dropdown item label",
+                  "description": "The label of the dropdown item"
+                },
+                "url": {
+                  "type": "string",
+                  "title": "Dropdown item URL",
+                  "description": "The URL to link the dropdown item to"
+                }
+              }
+            }
+          }
+        }
+      },
+      "heroKeyHighlights": {
+        "type": "array",
+        "title": "Hero key highlights component",
+        "required": ["title", "url"],
+        "maxItems": 4,
+        "items": {
+          "type": "object",
+          "required": ["title", "url"],
+          "properties": {
+            "title": {
+              "type": "string",
+              "title": "Key highlight label",
+              "description": "The label of the key highlight"
+            },
+            "description": {
+              "type": "string",
+              "title": "Key highlight description",
+              "description": "The description of the key highlight"
+            },
+            "url": {
+              "type": "string",
+              "title": "Key highlight URL",
+              "description": "The URL to link the key highlight to"
+            }
+          }
+        }
+      },
+      "imageCollectionCard": {
+        "type": "object",
+        "title": "Image for collection card",
+        "description": "An optional image to include in the collection card.",
+        "properties": {
+          "src": {
+            "type": "string",
+            "title": "Image URL",
+            "description": "The URL to the image to display"
+          },
+          "alt": {
+            "type": "string",
+            "title": "Image alt text",
+            "description": "The alt text for the image"
+          }
+        }
+      }
+    },
+    "native": {
+      "divider": {
+        "type": "object",
+        "title": "Divider component",
+        "description": "A horizontal rule that serves as a divider to separate content",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["divider"],
+            "default": "divider"
+          }
+        }
+      },
+      "heading": {
+        "type": "object",
+        "title": "Heading component",
+        "required": ["type", "content", "level"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["heading"],
+            "default": "heading"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/native/text"
+            }
+          },
+          "level": {
+            "type": "integer",
+            "title": "Heading level",
+            "description": "The level of the heading to use",
+            "enum": [2, 3, 4, 5, 6]
+          }
+        }
+      },
+      "listItem": {
+        "type": "object",
+        "title": "List item component",
+        "required": ["type", "content"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["listItem"],
+            "default": "listItem"
+          },
+          "content": {
+            "type": "array",
+            "title": "List item contents",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/native/paragraph"
+            }
+          }
+        }
+      },
+      "orderedList": {
+        "type": "object",
+        "title": "Ordered list component",
+        "required": ["type", "content"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["orderedList"],
+            "default": "orderedList"
+          },
+          "start": {
+            "type": "integer",
+            "title": "Starting number",
+            "description": "The number to start the ordered list from"
+          },
+          "content": {
+            "type": "array",
+            "title": "List items",
+            "minItems": 1,
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/native/listItem"
+                },
+                {
+                  "$ref": "#/components/native/orderedList"
+                },
+                {
+                  "$ref": "#/components/native/unorderedList"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "paragraph": {
+        "type": "object",
+        "title": "Paragraph component",
+        "required": ["type", "content"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["paragraph"],
+            "default": "paragraph"
+          },
+          "content": {
+            "type": "array",
+            "title": "Paragraph content",
+            "description": "The content of the paragraph",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/internal/hardBreak"
+                },
+                {
+                  "$ref": "#/components/native/text"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "table": {
+        "type": "object",
+        "title": "Table component",
+        "required": ["type", "caption", "content"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["table"],
+            "default": "table"
+          },
+          "caption": {
+            "type": "string",
+            "title": "Table caption",
+            "description": "The caption of the table"
+          },
+          "content": {
+            "type": "array",
+            "title": "Table rows",
+            "minItems": 1,
+            "items": [
+              {
+                "type": "object",
+                "title": "Table header row",
+                "required": ["type", "content"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["tableRow"],
+                    "default": "tableRow"
+                  },
+                  "content": {
+                    "type": "array",
+                    "title": "Table header cells",
+                    "minItems": 1,
+                    "items": {
+                      "$ref": "#/components/native/tableHeaderCell"
+                    }
+                  }
+                }
+              }
+            ],
+            "additionalItems": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "title": "Table header row",
+                  "required": ["type", "content"],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["tableRow"],
+                      "default": "tableRow"
+                    },
+                    "content": {
+                      "type": "array",
+                      "title": "Table header cells",
+                      "minItems": 1,
+                      "items": {
+                        "$ref": "#/components/native/tableHeaderCell"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "title": "Table row",
+                  "required": ["type", "content"],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["tableRow"],
+                      "default": "tableRow"
+                    },
+                    "content": {
+                      "type": "array",
+                      "title": "Table cells",
+                      "minItems": 1,
+                      "items": {
+                        "$ref": "#/components/native/tableCell"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "tableCell": {
+        "type": "object",
+        "title": "Table cell",
+        "required": ["type", "content"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["tableCell"],
+            "default": "tableCell"
+          },
+          "content": {
+            "type": "array",
+            "title": "Table cell contents",
+            "description": "The contents of the table cell",
+            "minItems": 1,
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/complex/image"
+                },
+                {
+                  "$ref": "#/components/native/divider"
+                },
+                {
+                  "$ref": "#/components/native/paragraph"
+                },
+                {
+                  "$ref": "#/components/native/orderedList"
+                },
+                {
+                  "$ref": "#/components/native/unorderedList"
+                }
+              ]
+            }
+          },
+          "colSpan": {
+            "type": "integer",
+            "title": "Table cell column span",
+            "description": "The number of columns the cell spans",
+            "minimum": 1
+          },
+          "rowSpan": {
+            "type": "integer",
+            "title": "Table cell row span",
+            "description": "The number of rows the cell spans",
+            "minimum": 1
+          }
+        }
+      },
+      "tableHeaderCell": {
+        "type": "object",
+        "title": "Table header cell",
+        "required": ["type", "content"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["tableHeader"],
+            "default": "tableHeader"
+          },
+          "content": {
+            "type": "array",
+            "title": "Table header cell contents",
+            "description": "The contents of the table header cell",
+            "items": {
+              "$ref": "#/components/native/paragraph"
+            }
+          },
+          "colSpan": {
+            "type": "integer",
+            "title": "Table header cell column span",
+            "description": "The number of columns the header cell spans",
+            "minimum": 1
+          },
+          "rowSpan": {
+            "type": "integer",
+            "title": "Table header cell row span",
+            "description": "The number of rows the header cell spans",
+            "minimum": 1
+          }
+        }
+      },
+      "text": {
+        "type": "object",
+        "title": "Text content",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["text"],
+            "default": "text"
+          },
+          "marks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "unorderedList": {
+        "type": "object",
+        "title": "Unordered list component",
+        "required": ["type", "content"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["unorderedList"],
+            "default": "unorderedList"
+          },
+          "content": {
+            "type": "array",
+            "title": "List items",
+            "minItems": 1,
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/native/listItem"
+                },
+                {
+                  "$ref": "#/components/native/orderedList"
+                },
+                {
+                  "$ref": "#/components/native/unorderedList"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

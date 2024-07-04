@@ -3,26 +3,39 @@ import { useEffect } from 'react'
 import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import EditPageDrawer from '~/features/editing-experience/components/EditPageDrawer'
 import Preview from '~/features/editing-experience/components/Preview'
-import { type NextPageWithLayout } from '~/lib/types'
 import { PageEditingLayout } from '~/templates/layouts/PageEditingLayout'
 import { trpc } from '~/utils/trpc'
 
-function EditPage(): NextPageWithLayout {
-  const { setDrawerState, pageState, setPageState, setEditorState } =
-    useEditorDrawerContext()
+function EditPage(): JSX.Element {
+  const {
+    setDrawerState,
+    pageState,
+    setPageState,
+    setEditorState,
+    setIsomerJsonSchema,
+  } = useEditorDrawerContext()
 
   const [{ content: page }] = trpc.page.readPageAndBlob.useSuspenseQuery({
     pageId: 1,
   })
+  const [{ schema }] = trpc.page.getIsomerJsonSchema.useSuspenseQuery()
 
   useEffect(() => {
     setDrawerState({
-      state: 'root',
+      state: 'complexEditor',
     })
     const blocks = page.content
     setEditorState(blocks)
     setPageState(blocks)
-  }, [page.content, setDrawerState, setEditorState, setPageState])
+    setIsomerJsonSchema(schema)
+  }, [
+    page.content,
+    setDrawerState,
+    setEditorState,
+    setPageState,
+    setIsomerJsonSchema,
+    schema,
+  ])
 
   return (
     <Grid

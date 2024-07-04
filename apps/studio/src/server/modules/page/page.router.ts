@@ -1,4 +1,4 @@
-import { ISOMER_SCHEMA_URI } from '~/constants/formBuilder'
+import { schema, type IsomerPageSchema } from '@opengovsg/isomer-components'
 import {
   createPageSchema,
   getEditPageSchema,
@@ -42,10 +42,7 @@ export const pageRouter = router({
     }),
 
   getIsomerJsonSchema: publicProcedure.query(async () => {
-    const schema = (await fetch(ISOMER_SCHEMA_URI).then((response) =>
-      response.json(),
-    )) as IsomerJsonSchema
-    return { schema }
+    return { schema: schema satisfies IsomerJsonSchema }
   }),
 
   updatePage: pageProcedure

@@ -2,7 +2,6 @@ import type {
   AccordionProps,
   ButtonProps,
   CalloutProps,
-  CardsProps,
   DividerProps,
   HeadingProps,
   HeroProps,
@@ -23,7 +22,6 @@ export type IsomerComplexComponentProps =
   | AccordionProps
   | ButtonProps
   | CalloutProps
-  | CardsProps
   | HeroProps
   | IframeProps
   | ImageProps

@@ -5,8 +5,8 @@ import Ajv from 'ajv'
 import { useState } from 'react'
 
 import { type IsomerComplexComponentProps } from '@opengovsg/isomer-components'
+import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import { type IsomerJsonSchema } from '~/types/schema'
-import { trpc } from '~/utils/trpc'
 import {
   JsonFormsArrayControl,
   JsonFormsBooleanControl,
@@ -55,6 +55,22 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   },
 ]
 
+function getComponentSubschema(
+  isomerJsonSchema: IsomerJsonSchema | null,
+  component: IsomerComplexComponentProps['type'],
+) {
+  if (!isomerJsonSchema) {
+    return {}
+  }
+
+  const { properties, ...rest } = isomerJsonSchema.components.complex[component]
+  return {
+    ...rest,
+    properties,
+    components: isomerJsonSchema.components,
+  }
+}
+
 export interface FormBuilderProps {
   component: IsomerComplexComponentProps['type']
 }
@@ -62,26 +78,13 @@ export interface FormBuilderProps {
 export default function FormBuilder({
   component,
 }: FormBuilderProps): JSX.Element {
-  const [jsonSchema, setJsonSchema] = useState<IsomerJsonSchema | null>(null)
+  const { isomerJsonSchema } = useEditorDrawerContext()
+  const subSchema = getComponentSubschema(isomerJsonSchema, component)
   const [formData, setFormData] = useState({})
-
-  trpc.page.getIsomerJsonSchema.useQuery(undefined, {
-    onSuccess({ schema }) {
-      const { properties, ...rest } = schema.components.complex[component]
-      const { type: _, ...props } = properties
-      const subSchema = {
-        ...rest,
-        properties: props,
-        components: schema.components,
-      }
-
-      setJsonSchema(subSchema)
-    },
-  })
 
   return (
     <JsonForms
-      schema={jsonSchema || {}}
+      schema={subSchema || {}}
       data={formData}
       renderers={renderers}
       onChange={({ data }) => {
