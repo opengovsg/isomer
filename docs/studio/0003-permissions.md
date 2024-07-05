@@ -1,4 +1,4 @@
-# 3. permissions
+# 3. Permissions
 
 Date: 2024-06-27
 
@@ -19,7 +19,8 @@ For example, the site has the structure (A -> B -> C), such that A is the root l
 
 ## Decision
 
-We will use role-based access control for our permissions model, and we will use [casl](https://casl.js.org/v6/en/) for the implementation of the library
+1. We will use role-based access control for our permissions model, and we will use [casl](https://casl.js.org/v6/en/) for the implementation of the library
+2. This RBAC model will apply on a **site-wide** basis for most sites. If the site requests for more granular permissions, we will grant them permissions on the root folder level (1 level down from site)
 
 ## Consequences
 

@@ -1,4 +1,4 @@
-# 4. database schema
+# 4. Database Schema
 
 Date: 2024-06-27
 
@@ -12,7 +12,7 @@ We need to implement a database schema to store both our pages and folders in ou
 
 ## Decision
 
-1. We will combine both page/folders into 1 schema and use a json blob to represent the content of the page instead of separating.
+1. We will combine both page/folders into 1 schema and use `JSONB` to represent the content of the page instead of separating.
 2. We will use an adjacency list method (via `parentId` inside our db) for our pages/folder to refer to their parents
 
 ## Consequences
@@ -23,3 +23,5 @@ We need to implement a database schema to store both our pages and folders in ou
 
    for example, if i rename B to D (no lock now) whilst someone is renaming C to E, the end result could either be A/D and A/B/C (both go through)
    or A/C/E and A/D.
+
+3. Using `JSONB` also allows querying + indexing of the json blob (at the first level). This makes retrieval of top level properties easier. See [here](https://www.postgresql.org/docs/current/functions-json.html) for more details
