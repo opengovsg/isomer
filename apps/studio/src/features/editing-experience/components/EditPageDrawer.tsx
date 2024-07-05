@@ -1,17 +1,18 @@
 import {
-  type ImageProps,
-  type ParagraphProps,
-} from '@opengovsg/isomer-components/dist/cjs/interfaces'
+  type IsomerComponent,
+  type IsomerNativeComponentProps,
+} from '@opengovsg/isomer-components'
 import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import ComponentSelector from '~/components/PageEditor/ComponentSelector'
-import { type IsomerComponent } from '@opengovsg/isomer-components'
 import RootStateDrawer from './RootStateDrawer'
 import TipTapComponent from './TipTapComponent'
 import ComplexEditorStateDrawer from './ComplexEditorStateDrawer'
 
-function narrowToTiptap(component: IsomerComponent): ParagraphProps {
+function narrowToTiptap(
+  component: IsomerComponent,
+): IsomerNativeComponentProps {
   // TODO: get rid of the cast here
-  return component as ParagraphProps
+  return component as IsomerNativeComponentProps
 }
 
 type EditPageDrawerProps = {

@@ -1,74 +1,68 @@
-import { Box, Text as ChakraText, Flex, Icon, VStack } from "@chakra-ui/react"
-import { Button, IconButton } from "@opengovsg/design-system-react"
-import { Blockquote } from "@tiptap/extension-blockquote"
-import { Bold } from "@tiptap/extension-bold"
-import { BulletList } from "@tiptap/extension-bullet-list"
-import { Document } from "@tiptap/extension-document"
-import { Dropcursor } from "@tiptap/extension-dropcursor"
-import { Gapcursor } from "@tiptap/extension-gapcursor"
-import { Heading } from "@tiptap/extension-heading"
-import { History } from "@tiptap/extension-history"
-import { HorizontalRule } from "@tiptap/extension-horizontal-rule"
-import { Italic } from "@tiptap/extension-italic"
-import { ListItem } from "@tiptap/extension-list-item"
-import { OrderedList } from "@tiptap/extension-ordered-list"
-import { Paragraph } from "@tiptap/extension-paragraph"
-import { Strike } from "@tiptap/extension-strike"
-import { Subscript } from "@tiptap/extension-subscript"
-import { Superscript } from "@tiptap/extension-superscript"
-import TableCell from "@tiptap/extension-table-cell"
-import TableHeader from "@tiptap/extension-table-header"
-import TableRow from "@tiptap/extension-table-row"
-import { Text } from "@tiptap/extension-text"
-import Underline from "@tiptap/extension-underline"
-import { EditorContent, useEditor } from "@tiptap/react"
-// import type { CustomRendererProps } from './types'
-import { BiImage, BiText, BiX } from "react-icons/bi"
+import { Box, Flex, Icon, VStack, Text as ChakraText } from '@chakra-ui/react'
+import { Button, IconButton } from '@opengovsg/design-system-react'
+import { HardBreak } from '@tiptap/extension-hard-break'
+import { Blockquote } from '@tiptap/extension-blockquote'
+import { Bold } from '@tiptap/extension-bold'
+import { BulletList } from '@tiptap/extension-bullet-list'
+import { Document } from '@tiptap/extension-document'
+import { Dropcursor } from '@tiptap/extension-dropcursor'
+import { Gapcursor } from '@tiptap/extension-gapcursor'
+import { Heading } from '@tiptap/extension-heading'
+import { History } from '@tiptap/extension-history'
+import { HorizontalRule } from '@tiptap/extension-horizontal-rule'
+import { Italic } from '@tiptap/extension-italic'
+import { ListItem } from '@tiptap/extension-list-item'
+import { OrderedList } from '@tiptap/extension-ordered-list'
+import { Paragraph } from '@tiptap/extension-paragraph'
+import { Strike } from '@tiptap/extension-strike'
+import { Subscript } from '@tiptap/extension-subscript'
+import { Superscript } from '@tiptap/extension-superscript'
+import { Text } from '@tiptap/extension-text'
+import TableCell from '@tiptap/extension-table-cell'
+import TableHeader from '@tiptap/extension-table-header'
+import TableRow from '@tiptap/extension-table-row'
+import { type Content, EditorContent, useEditor } from '@tiptap/react'
+import { BiText, BiX } from 'react-icons/bi'
+import Underline from '@tiptap/extension-underline'
+import { MenuBar } from '~/components/PageEditor/MenuBar'
 
-import { MenuBar } from "~/components/PageEditor/MenuBar"
-import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { Table } from "./extensions/Table"
-
-type NativeComponentType = "paragraph" | "image"
+import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
+import { type IsomerNativeComponentProps } from '@opengovsg/isomer-components'
+import { Table } from './extensions/Table'
+import { validateAsProse } from '../utils/convert'
 
 export interface TipTapComponentProps {
-  type: NativeComponentType
-  data: any
+  type: IsomerNativeComponentProps['type']
+  data: Content
   path: string
 }
 
 const typeMapping = {
-  paragraph: {
+  prose: {
     icon: BiText,
-    title: "Paragraph",
-  },
-  image: {
-    icon: BiImage,
-    title: "Image",
+    title: 'Prose',
   },
 }
 
 function TipTapComponent({ type, data, path }: TipTapComponentProps) {
-  const { setDrawerState, setPageState, setEditorState } =
-    useEditorDrawerContext()
+  const { setDrawerState, setPageState, pageState } = useEditorDrawerContext()
   const editor = useEditor({
     extensions: [
       Blockquote,
       Bold,
       BulletList.extend({
-        name: "unorderedlist",
-      }),
-      BulletList.configure({
+        name: 'unorderedList',
+      }).configure({
         HTMLAttributes: {
           class: "list-disc",
         },
       }),
-      // Code,
-      // CodeBlock,
-      Document,
+      Document.extend({
+        name: 'prose',
+      }),
       Dropcursor,
       Gapcursor,
-      // HardBreak,
+      HardBreak,
       Heading,
       History,
       HorizontalRule.extend({
@@ -77,9 +71,8 @@ function TipTapComponent({ type, data, path }: TipTapComponentProps) {
       Italic,
       ListItem,
       OrderedList.extend({
-        name: "orderedlist",
-      }),
-      OrderedList.configure({
+        name: 'orderedList',
+      }).configure({
         HTMLAttributes: {
           class: "list-decimal",
         },
@@ -171,8 +164,9 @@ function TipTapComponent({ type, data, path }: TipTapComponentProps) {
         <Button
           onClick={() => {
             // TODO: save page and update pageState
-            console.log("saving")
-            setDrawerState({ state: "root" })
+            // TODO: write conversion layer
+            setPageState([...pageState, validateAsProse(editor.getJSON())])
+            setDrawerState({ state: 'root' })
           }}
         >
           Save

@@ -16,7 +16,7 @@ function EditPage(): JSX.Element {
 
   useEffect(() => {
     setDrawerState({
-      state: "complexEditor",
+      state: 'root',
     })
     const blocks = page.content
     setEditorState(blocks)
