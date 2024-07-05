@@ -20,7 +20,6 @@ import {
   BiMap,
   BiMovie,
   BiQuestionMark,
-  BiRuler,
   BiSolidHandUp,
   BiSolidQuoteAltLeft,
   BiText,
@@ -102,7 +101,8 @@ function BlockItem({
 }
 
 function ComponentSelector() {
-  const { pageState, setDrawerState, setPageState } = useEditorDrawerContext()
+  const { setCurrActiveIdx, pageState, setDrawerState, setPageState } =
+    useEditorDrawerContext()
   const { mutate } = trpc.page.updatePageBlob.useMutation()
   // TODO: get this dynamically
   const pageId = 1
@@ -121,6 +121,7 @@ function ComponentSelector() {
     const nextPageState = [...pageState, newComponent]
     setPageState(nextPageState)
     setDrawerState({ state: nextState })
+    setCurrActiveIdx(nextPageState.length - 1)
     mutate({
       pageId,
       content: JSON.stringify({ ...page.content, content: nextPageState }),
