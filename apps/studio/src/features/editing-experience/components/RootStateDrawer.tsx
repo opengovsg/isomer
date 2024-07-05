@@ -15,8 +15,13 @@ import { MdOutlineDragIndicator } from "react-icons/md"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 export default function RootStateDrawer() {
-  const { setDrawerState, pageState, setPageState, setEditorState } =
-    useEditorDrawerContext()
+  const {
+    setDrawerState,
+    pageState,
+    setPageState,
+    setEditorState,
+    setCurrActiveIdx,
+  } = useEditorDrawerContext()
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return
@@ -77,8 +82,13 @@ export default function RootStateDrawer() {
                           w="100%"
                           gap={0}
                           onClick={() => {
-                            console.log("huh")
-                            setDrawerState({ state: "nativeEditor" })
+                            setCurrActiveIdx(index)
+                            // TODO: we should automatically do this probably?
+                            const nextState =
+                              pageState[index]?.type === 'prose'
+                                ? 'nativeEditor'
+                                : 'complexEditor'
+                            setDrawerState({ state: nextState })
                           }}
                         >
                           <HStack
