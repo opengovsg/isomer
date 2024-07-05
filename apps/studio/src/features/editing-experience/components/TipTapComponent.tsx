@@ -28,13 +28,13 @@ import { MenuBar } from '~/components/PageEditor/MenuBar'
 
 import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import { type IsomerNativeComponentProps } from '@opengovsg/isomer-components'
+import { cloneDeep } from 'lodash'
 import { Table } from './extensions/Table'
 import { validateAsProse } from '../utils/convert'
 
 export interface TipTapComponentProps {
   type: IsomerNativeComponentProps['type']
   data: Content
-  path: string
 }
 
 const typeMapping = {
@@ -44,8 +44,9 @@ const typeMapping = {
   },
 }
 
-function TipTapComponent({ type, data, path }: TipTapComponentProps) {
-  const { setDrawerState, setPageState, pageState } = useEditorDrawerContext()
+function TipTapComponent({ type, data }: TipTapComponentProps) {
+  const { setDrawerState, setPageState, currActiveIdx } =
+    useEditorDrawerContext()
   const editor = useEditor({
     extensions: [
       Blockquote,
@@ -91,13 +92,10 @@ function TipTapComponent({ type, data, path }: TipTapComponentProps) {
       Underline,
     ],
     content: data,
-    onUpdate({ editor }) {
-      // TODO: set editor state - content is retrieved via editor.getJSON().content
-    },
   })
 
   // TODO: Add a loading state or use suspsense
-  if (!editor) return <></>
+  if (!editor) return null
   return (
     <VStack bg="white" h="100%" gap="0">
       <Flex
@@ -163,9 +161,14 @@ function TipTapComponent({ type, data, path }: TipTapComponentProps) {
       >
         <Button
           onClick={() => {
-            // TODO: save page and update pageState
-            // TODO: write conversion layer
-            setPageState([...pageState, validateAsProse(editor.getJSON())])
+            const content = validateAsProse(editor.getJSON())
+            setPageState((oldState) => {
+              // TODO: performance - this is a full clone
+              // of the object, which is expensive
+              const newState = cloneDeep(oldState)
+              newState[currActiveIdx] = content
+              return newState
+            })
             setDrawerState({ state: 'root' })
           }}
         >

@@ -33,13 +33,7 @@ export function EditPageDrawer({ isOpen: open }: EditPageDrawerProps) {
       return <ComponentSelector />
     case 'nativeEditor': {
       const component = narrowToTiptap(pageState[currActiveIdx]!)
-      return (
-        <TipTapComponent
-          data={component.content}
-          path="test"
-          type={component.type}
-        />
-      )
+      return <TipTapComponent data={component} type={component.type} />
     }
     case 'complexEditor':
       return <ComplexEditorStateDrawer />

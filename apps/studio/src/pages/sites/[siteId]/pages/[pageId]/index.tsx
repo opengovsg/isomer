@@ -1,5 +1,5 @@
 import { Grid, GridItem } from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import EditPageDrawer from '~/features/editing-experience/components/EditPageDrawer'
 import Preview from '~/features/editing-experience/components/Preview'
