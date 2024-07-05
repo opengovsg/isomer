@@ -13,7 +13,7 @@ import {
 } from '@jsonforms/core'
 import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
 import { Attachment, FormLabel } from '@opengovsg/design-system-react'
-import { Box, FormControl } from '@chakra-ui/react'
+import { Box, FormControl, Text } from '@chakra-ui/react'
 import { withJsonFormsControlProps } from '@jsonforms/react'
 import { useEffect, useState } from 'react'
 
@@ -43,7 +43,9 @@ export function JsonFormsImageControl({
     const fetchImage = async () => {
       const res = await fetch(data)
       const blob = await res.blob()
-      const filename = 'current'
+      const splitUrl = data.split('.')
+      const extension = splitUrl[splitUrl.length - 1]
+      const filename = `image.${extension}`
       setSelectedFile(new File([blob], filename, { type: blob.type }))
     }
     if (data) {
@@ -65,7 +67,7 @@ export function JsonFormsImageControl({
             console.log(file?.name)
             if (file) {
               // TODO: file attached, upload file
-              const newImgUrl = 'replace_with_image_url'
+              const newImgUrl = '/assets/restricted-ogp-logo-full.svg'
               handleChange(path, newImgUrl)
               console.log('new url', newImgUrl)
             } else {
@@ -83,6 +85,9 @@ export function JsonFormsImageControl({
           maxSize={MAX_IMG_FILE_SIZE_BYTES}
           accept={['image/*']}
         />
+        <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
+          {`Maximum file size: ${MAX_IMG_FILE_SIZE_BYTES / 1000000} MB`}
+        </Text>
       </FormControl>
     </Box>
   )
