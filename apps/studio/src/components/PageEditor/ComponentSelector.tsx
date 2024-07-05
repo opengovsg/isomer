@@ -126,6 +126,7 @@ function ComponentSelector() {
       content: JSON.stringify({ ...page.content, content: nextPageState }),
     })
   }
+
   return (
     <VStack w="full" gap="0">
       <Flex
@@ -197,14 +198,14 @@ function ComponentSelector() {
               label="Text with button"
               icon={BiSolidHandUp}
               onProceed={onProceed}
-              sectionType="textWithButton"
+              sectionType="infobar"
               description="TODO"
             />
             <BlockItem
               label="Text with image"
               icon={BiImages}
               onProceed={onProceed}
-              sectionType="textWithImage"
+              sectionType="infopic"
               description="TODO"
             />
           </BlockList>
@@ -217,7 +218,7 @@ function ComponentSelector() {
               label="Cards"
               icon={BiCard}
               onProceed={onProceed}
-              sectionType="cards"
+              sectionType="infocards"
               description="TODO"
             />
             <BlockItem
