@@ -19,7 +19,6 @@ function EditPage(): JSX.Element {
       state: 'root',
     })
     const blocks = page.content
-    setEditorState(blocks)
     setPageState(blocks)
   }, [page.content, setDrawerState, setEditorState, setPageState])
 

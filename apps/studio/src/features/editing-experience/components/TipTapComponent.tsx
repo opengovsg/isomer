@@ -21,7 +21,12 @@ import { Text } from '@tiptap/extension-text'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
-import { type Content, EditorContent, useEditor } from '@tiptap/react'
+import {
+  type Content,
+  EditorContent,
+  useEditor,
+  type JSONContent,
+} from '@tiptap/react'
 import { BiText, BiX } from 'react-icons/bi'
 import Underline from '@tiptap/extension-underline'
 import { MenuBar } from '~/components/PageEditor/MenuBar'
@@ -34,7 +39,6 @@ import { validateAsProse } from '../utils/convert'
 
 export interface TipTapComponentProps {
   type: IsomerNativeComponentProps['type']
-  data: Content
 }
 
 const typeMapping = {
@@ -44,9 +48,21 @@ const typeMapping = {
   },
 }
 
-function TipTapComponent({ type, data }: TipTapComponentProps) {
-  const { setDrawerState, setPageState, currActiveIdx } =
+function TipTapComponent({ type }: TipTapComponentProps) {
+  const { setDrawerState, setPageState, currActiveIdx, editorState } =
     useEditorDrawerContext()
+
+  const updatePageState = (editorContent: JSONContent) => {
+    const content = validateAsProse(editorContent)
+    setPageState((oldState) => {
+      // TODO: performance - this is a full clone
+      // of the object, which is expensive
+      const newState = cloneDeep(oldState)
+      newState[currActiveIdx] = content
+      return newState
+    })
+  }
+
   const editor = useEditor({
     extensions: [
       Blockquote,
@@ -91,7 +107,11 @@ function TipTapComponent({ type, data }: TipTapComponentProps) {
       Text,
       Underline,
     ],
-    content: data,
+    content: editorState[currActiveIdx]! as IsomerNativeComponentProps,
+    onUpdate: (e) => {
+      const jsonContent = e.editor.getJSON()
+      updatePageState(jsonContent)
+    },
   })
 
   // TODO: Add a loading state or use suspsense
@@ -117,7 +137,10 @@ function TipTapComponent({ type, data }: TipTapComponentProps) {
           color="interaction.sub.default"
           aria-label="Close add component"
           icon={<BiX />}
-          onClick={() => setDrawerState({ state: "root" })}
+          onClick={() => {
+            setPageState(editorState)
+            setDrawerState({ state: 'root' })
+          }}
         />
       </Flex>
       <Box
@@ -139,6 +162,7 @@ function TipTapComponent({ type, data }: TipTapComponentProps) {
             as={EditorContent}
             editor={editor}
             w="100%"
+            maxW="30vw"
             flex="1 1 auto"
             overflowX="hidden"
             overflowY="auto"
@@ -161,14 +185,8 @@ function TipTapComponent({ type, data }: TipTapComponentProps) {
       >
         <Button
           onClick={() => {
-            const content = validateAsProse(editor.getJSON())
-            setPageState((oldState) => {
-              // TODO: performance - this is a full clone
-              // of the object, which is expensive
-              const newState = cloneDeep(oldState)
-              newState[currActiveIdx] = content
-              return newState
-            })
+            const jsonContent = editor.getJSON()
+            updatePageState(jsonContent)
             setDrawerState({ state: 'root' })
           }}
         >
