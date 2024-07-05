@@ -34,3 +34,7 @@ export {
   default as JsonFormsTextControl,
   jsonFormsTextControlTester,
 } from './JsonFormsTextControl'
+export {
+  default as JsonFormsImageControl,
+  jsonFormsImageControlTester,
+} from './JsonFormsImageControl'
