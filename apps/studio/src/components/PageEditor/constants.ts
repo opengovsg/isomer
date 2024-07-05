@@ -5,21 +5,23 @@ export const DEFAULT_BLOCKS: Record<
   IsomerComponent['type'],
   IsomerComponent | undefined
 > = {
-  paragraph: {
-    type: 'paragraph',
+  prose: {
+    type: 'prose',
     content: [
       {
-        type: 'text',
-        text: '',
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text: '',
+          },
+        ],
       },
     ],
   },
   accordion: undefined,
   button: undefined,
   callout: undefined,
-  cards: undefined,
-  divider: undefined,
-  heading: undefined,
   hero: undefined,
   iframe: undefined,
   image: undefined,
@@ -28,7 +30,4 @@ export const DEFAULT_BLOCKS: Record<
   infocols: undefined,
   infopic: undefined,
   keystatistics: undefined,
-  orderedList: undefined,
-  table: undefined,
-  unorderedList: undefined,
-} as const
+}
