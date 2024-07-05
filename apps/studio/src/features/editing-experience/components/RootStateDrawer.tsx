@@ -35,7 +35,6 @@ export default function RootStateDrawer() {
     }
 
     setPageState(updatedBlocks)
-    setEditorState(updatedBlocks)
   }
 
   return (
@@ -88,6 +87,8 @@ export default function RootStateDrawer() {
                               pageState[index]?.type === 'prose'
                                 ? 'nativeEditor'
                                 : 'complexEditor'
+                            // NOTE: SNAPSHOT
+                            setEditorState(pageState)
                             setDrawerState({ state: nextState })
                           }}
                         >
