@@ -1,25 +1,18 @@
-import React from 'react'
-import { Meta, StoryFn } from '@storybook/react'
-import type { LayoutSelectionProps } from './LayoutSelection'
+import { Meta, StoryObj } from '@storybook/react'
 import LayoutSelection from './LayoutSelection'
 
-export default {
+const meta: Meta<typeof LayoutSelection> = {
   title: 'Components/LayoutSelection',
   component: LayoutSelection,
-  argTypes: {},
-  parameters: {},
-} as Meta
+}
+export default meta
+type Story = StoryObj<typeof LayoutSelection>
 
-// Template for stories
-const Template: StoryFn<LayoutSelectionProps> = (args) => (
-  <LayoutSelection {...args} />
-)
-
-// Default scenario
-export const Default = Template.bind({})
-Default.args = {
-  pageName: 'Sample Page',
-  pageUrl: '/sample-page',
-  siteId: '1',
-  folderId: '1',
+export const Default: Story = {
+  args: {
+    pageName: 'Sample Page',
+    pageUrl: '/sample-page',
+    siteId: '1',
+    folderId: '1',
+  },
 }

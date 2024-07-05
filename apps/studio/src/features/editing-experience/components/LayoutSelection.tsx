@@ -1,6 +1,6 @@
 // Component for layout selection
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
   Box,
   Grid,
@@ -18,6 +18,7 @@ import Preview, {
 } from '~/features/editing-experience/components/Preview'
 import articleLayoutPreview from '~/features/editing-experience/data/articleLayoutPreview.json'
 import contentLayoutPreview from '~/features/editing-experience/data/contentLayoutPreview.json'
+import { dataAttr } from '../utils'
 
 export interface LayoutSelectionProps {
   pageName: string
@@ -44,8 +45,6 @@ const LAYOUT_DATA = [
     previewJson: articleLayoutPreview,
   },
 ] as const
-
-const dataAttr = (value: unknown) => (!!value ? true : undefined) // Keeping this here for now, might shift out to a utils file when necessary.
 
 // TODO: Make this headless by getting the LAYOUT_DATA from the schema. Find somewhere in the schema for layoutDescription & image(fetch this too or generate it)
 function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
@@ -104,7 +103,7 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                       data-active={dataAttr(
                         selectedLayout.layoutTypename ===
                           layoutEntry.layoutTypename,
-                      )} // have to use null so that React will not parse this jsx attribute. having the [data-active] selection attribute will trigger _active.
+                      )}
                       _active={{
                         borderColor: 'base.divider.brand',
                         bgColor: 'interaction.muted.main.active',
@@ -222,11 +221,10 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                 padding="0.5rem 0.75rem"
               >
                 <Text textStyle="caption-2">
-                  {`You're previewing the`}&nbsp;
+                  You&apos;re previewing the&nbsp;
                 </Text>
                 <Text textStyle="caption-1">
-                  {selectedLayout.layoutDisplayName}
-                  {` Layout`}
+                  {`${selectedLayout.layoutDisplayName} Layout`}
                 </Text>
               </HStack>
               <Preview
