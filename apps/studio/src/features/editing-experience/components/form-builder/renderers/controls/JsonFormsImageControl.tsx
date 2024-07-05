@@ -15,43 +15,73 @@ import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
 import { Attachment, FormLabel } from '@opengovsg/design-system-react'
 import { Box, FormControl } from '@chakra-ui/react'
 import { withJsonFormsControlProps } from '@jsonforms/react'
+import { useEffect, useState } from 'react'
+
+const MAX_IMG_FILE_SIZE_BYTES = 5000000
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,
   and(
     schemaMatches((schema) => {
-      console.log('Schema being tested:', schema)
       return schema.format === 'image'
     }),
     isStringControl,
   ),
 )
 export function JsonFormsImageControl({
+  data,
   label,
-  schema,
   handleChange,
-  errors,
   path,
   description,
   required,
 }: ControlProps) {
+  const [selectedFile, setSelectedFile] = useState<File | undefined>()
+
+  useEffect(() => {
+    // file should always reflect the linked URL image
+    const fetchImage = async () => {
+      const res = await fetch(data)
+      const blob = await res.blob()
+      const filename = 'current'
+      setSelectedFile(new File([blob], filename, { type: blob.type }))
+    }
+    if (data) {
+      fetchImage().catch((error) =>
+        console.error('Error in fetching current image:', error),
+      )
+    }
+  }, [data])
   return (
     <Box py={2}>
-      <FormControl>
-        <FormLabel description="Image Upload">{label}</FormLabel>
+      <FormControl isRequired={required}>
+        <FormLabel description={description}>{label}</FormLabel>
         <Attachment
-          name="Image"
+          name="image-upload"
+          imagePreview="large"
           multiple={false}
-          value={undefined}
+          value={selectedFile}
           onChange={(file) => {
             console.log(file?.name)
+            if (file) {
+              // TODO: file attached, upload file
+              const newImgUrl = 'replace_with_image_url'
+              handleChange(path, newImgUrl)
+              console.log('new url', newImgUrl)
+            } else {
+              handleChange(path, '')
+            }
+            console.log(file)
+            setSelectedFile(file)
           }}
           onError={(error) => {
-            console.log(error)
+            console.log('file attachment error ', error)
           }}
           onRejection={(rejections) => {
             console.log(rejections)
           }}
+          maxSize={MAX_IMG_FILE_SIZE_BYTES}
+          accept={['image/*']}
         />
       </FormControl>
     </Box>
