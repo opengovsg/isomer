@@ -10,7 +10,11 @@ export const listItemSchemaBuilder = <T extends TSchema, U extends TSchema>(
     {
       type: Type.Literal("listItem"),
       content: Type.Array(
-        Type.Union([ParagraphSchema, orderedListSchema, unorderedListSchema]),
+        Type.Union([
+          Type.Ref(ParagraphSchema),
+          Type.Ref(orderedListSchema),
+          Type.Ref(unorderedListSchema),
+        ]),
         {
           title: "List item contents",
           minItems: 1,

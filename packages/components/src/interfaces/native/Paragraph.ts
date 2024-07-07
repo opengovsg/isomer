@@ -19,6 +19,7 @@ export const ParagraphSchema = Type.Object(
     ),
   },
   {
+    $id: "components-native-paragraph",
     title: "Paragraph component",
     description: "A paragraph of text",
   },

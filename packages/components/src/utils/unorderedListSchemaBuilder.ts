@@ -1,4 +1,4 @@
-import { Type, type Static, type TSchema } from "@sinclair/typebox"
+import { Type, type TSchema } from "@sinclair/typebox"
 
 export const unorderedListSchemaBuilder = <T extends TSchema>(
   listItemSchema: T,
@@ -12,6 +12,7 @@ export const unorderedListSchemaBuilder = <T extends TSchema>(
       }),
     },
     {
+      $id: "components-native-unorderedList",
       title: "Unordered list component",
       description: "A list of items as bullet points",
     },
