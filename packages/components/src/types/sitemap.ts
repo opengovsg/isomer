@@ -1,6 +1,6 @@
 import type { CollectionCardProps } from "~/interfaces"
 import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
-import type { IsomerPageSchema } from "./schema"
+import type { IsomerPageSchemaType } from "./schema"
 
 interface IsomerBaseSitemap {
   title: string
@@ -14,7 +14,7 @@ interface IsomerBaseSitemap {
 }
 
 interface IsomerPageSitemap extends IsomerBaseSitemap {
-  layout: Exclude<IsomerPageSchema["layout"], "file" | "link">
+  layout: Exclude<IsomerPageSchemaType["layout"], "file" | "link">
 }
 interface IsomerFileSitemap extends IsomerBaseSitemap {
   layout: "file"

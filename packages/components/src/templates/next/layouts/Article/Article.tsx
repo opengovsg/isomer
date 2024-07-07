@@ -1,8 +1,8 @@
-import { ArticlePageSchema } from "~/engine"
+import { type ArticlePageSchemaType } from "~/engine"
 import { getBreadcrumbFromSiteMap } from "~/utils"
-import { Skeleton } from "../Skeleton"
 import ArticlePageHeader from "../../components/internal/ArticlePageHeader"
 import { renderPageContent } from "../../render"
+import { Skeleton } from "../Skeleton"
 
 const ArticleLayout = ({
   site,
@@ -10,7 +10,7 @@ const ArticleLayout = ({
   content,
   LinkComponent,
   ScriptComponent,
-}: ArticlePageSchema) => {
+}: ArticlePageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),

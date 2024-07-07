@@ -1,4 +1,4 @@
-import type { IsomerPageSchema } from "~/engine"
+import type { IsomerPageSchemaType } from "~/engine"
 import {
   Footer,
   Masthead,
@@ -13,7 +13,10 @@ export const Skeleton = ({
   ScriptComponent,
   children,
 }: React.PropsWithChildren<
-  Pick<IsomerPageSchema, "site" | "page" | "LinkComponent" | "ScriptComponent">
+  Pick<
+    IsomerPageSchemaType,
+    "site" | "page" | "LinkComponent" | "ScriptComponent"
+  >
 >) => {
   const isStaging = site.environment === "staging"
 

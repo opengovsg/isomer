@@ -4,7 +4,10 @@ import { JsonForms } from '@jsonforms/react'
 import Ajv from 'ajv'
 import { useState } from 'react'
 
-import { type IsomerComplexComponentProps } from '@opengovsg/isomer-components'
+import {
+  IsomerComplexComponentsMap,
+  type IsomerComplexComponentProps,
+} from '@opengovsg/isomer-components'
 import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import { type IsomerJsonSchema } from '~/types/schema'
 import {
@@ -57,8 +60,10 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
 
 function getComponentSubschema(
   isomerJsonSchema: IsomerJsonSchema | null,
-  component: IsomerComplexComponentProps['type'],
+  component: keyof typeof IsomerComplexComponentsMap,
 ) {
+  return IsomerComplexComponentsMap[component]
+
   if (!isomerJsonSchema) {
     return {}
   }

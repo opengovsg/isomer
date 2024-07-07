@@ -114,68 +114,50 @@ export const Default: Story = {
     },
     content: [
       {
-        type: "heading",
-        id: "section1",
-        level: 2,
+        type: "prose",
         content: [
           {
-            type: "text",
-            text: "What does the Irrationality Principle support?",
+            type: "heading",
+            attrs: {
+              id: "section1",
+              level: 2,
+            },
+            content: [
+              {
+                type: "text",
+                text: "What does the Irrationality Principle support?",
+              },
+            ],
           },
         ],
       },
       {
         type: "callout",
         variant: "info",
+        content: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        type: "prose",
         content: [
           {
             type: "paragraph",
             content: [
               {
                 type: "text",
-                text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        content: [
-          {
-            type: "text",
-            text: "Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
-          },
-        ],
-      },
-      {
-        type: "unorderedList",
-        content: [
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
-                  },
-                ],
+                text: "Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
               },
             ],
           },
@@ -190,7 +172,21 @@ export const Default: Story = {
                     content: [
                       {
                         type: "text",
-                        text: "Like this, you might have a list of equipments to bring to the luncheon",
+                        text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
                       },
                     ],
                   },
@@ -204,16 +200,12 @@ export const Default: Story = {
                     content: [
                       {
                         type: "paragraph",
-                        content: [{ type: "text", text: "Luncheon meat" }],
-                      },
-                    ],
-                  },
-                  {
-                    type: "listItem",
-                    content: [
-                      {
-                        type: "paragraph",
-                        content: [{ type: "text", text: "Spam" }],
+                        content: [
+                          {
+                            type: "text",
+                            text: "Like this, you might have a list of equipments to bring to the luncheon",
+                          },
+                        ],
                       },
                     ],
                   },
@@ -225,8 +217,42 @@ export const Default: Story = {
                         content: [
                           {
                             type: "paragraph",
+                            content: [{ type: "text", text: "Luncheon meat" }],
+                          },
+                        ],
+                      },
+                      {
+                        type: "listItem",
+                        content: [
+                          {
+                            type: "paragraph",
+                            content: [{ type: "text", text: "Spam" }],
+                          },
+                        ],
+                      },
+                      {
+                        type: "unorderedList",
+                        content: [
+                          {
+                            type: "listItem",
                             content: [
-                              { type: "text", text: "Another level below" },
+                              {
+                                type: "paragraph",
+                                content: [
+                                  { type: "text", text: "Another level below" },
+                                ],
+                              },
+                            ],
+                          },
+                          {
+                            type: "listItem",
+                            content: [
+                              {
+                                type: "paragraph",
+                                content: [
+                                  { type: "text", text: "This is very deep" },
+                                ],
+                              },
                             ],
                           },
                         ],
@@ -236,9 +262,7 @@ export const Default: Story = {
                         content: [
                           {
                             type: "paragraph",
-                            content: [
-                              { type: "text", text: "This is very deep" },
-                            ],
+                            content: [{ type: "text", text: "hello" }],
                           },
                         ],
                       },
@@ -249,7 +273,7 @@ export const Default: Story = {
                     content: [
                       {
                         type: "paragraph",
-                        content: [{ type: "text", text: "hello" }],
+                        content: [{ type: "text", text: "Back out again" }],
                       },
                     ],
                   },
@@ -260,270 +284,79 @@ export const Default: Story = {
                 content: [
                   {
                     type: "paragraph",
-                    content: [{ type: "text", text: "Back out again" }],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: "heading",
-        id: "section2",
-        level: 2,
-        content: [{ type: "text", text: "Checklist for sheer irrationality" }],
-      },
-      {
-        type: "heading",
-        id: "section1",
-        level: 3,
-        content: [{ type: "text", text: "If you are a small business" }],
-      },
-      {
-        type: "paragraph",
-        content: [{ type: "text", text: "Your business must have:" }],
-      },
-      {
-        type: "unorderedList",
-        content: [
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "(Suitable for those interested in the interdisciplinary study of cognitive science and psychology.)",
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Practical applications of rationality in daily life are elucidated by Pinker, offering actionable insights for better decision-making. (Beneficial for individuals seeking practical strategies to improve their decision-making processes.)",
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: "table",
-        caption: "A table of IIA countries (2024)",
-        content: [
-          {
-            type: "tableRow",
-            content: [
-              {
-                type: "tableHeader",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Countries" }],
-                  },
-                ],
-              },
-              {
-                type: "tableHeader",
-                content: [
-                  {
-                    type: "paragraph",
                     content: [
-                      { type: "text", text: "Date of Entry into Force" },
+                      {
+                        type: "text",
+                        text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
+                      },
                     ],
                   },
                 ],
               },
-              {
-                type: "tableHeader",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "IIA Text" }],
-                  },
-                ],
-              },
-              {
-                type: "tableHeader",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Some numbers" }],
-                  },
-                ],
-              },
-              {
-                type: "tableHeader",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Remarks" }],
-                  },
-                ],
-              },
             ],
           },
           {
-            type: "tableRow",
+            type: "heading",
+            attrs: {
+              id: "section2",
+              level: 2,
+            },
+            content: [
+              { type: "text", text: "Checklist for sheer irrationality" },
+            ],
+          },
+          {
+            type: "heading",
+            attrs: {
+              id: "section1",
+              level: 3,
+            },
+            content: [{ type: "text", text: "If you are a small business" }],
+          },
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Your business must have:" }],
+          },
+          {
+            type: "unorderedList",
             content: [
               {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "ASEAN" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "2 Aug 1998" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
+                type: "listItem",
                 content: [
                   {
                     type: "paragraph",
                     content: [
                       {
                         type: "text",
-                        text: "<a href='https://www.asean.org/asean/asean-agreements-on-investment/'>EN download (3.2 MB)</a>",
+                        text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
                       },
                     ],
                   },
                 ],
               },
               {
-                type: "tableCell",
+                type: "listItem",
                 content: [
                   {
                     type: "paragraph",
-                    content: [{ type: "text", text: "123,456" }],
+                    content: [
+                      {
+                        type: "text",
+                        text: "(Suitable for those interested in the interdisciplinary study of cognitive science and psychology.)",
+                      },
+                    ],
                   },
                 ],
               },
               {
-                type: "tableCell",
+                type: "listItem",
                 content: [
                   {
                     type: "paragraph",
                     content: [
                       {
                         type: "text",
-                        text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
-                      },
-                    ],
-                  },
-                  {
-                    type: "paragraph",
-                    content: [
-                      {
-                        type: "text",
-                        text: "The ASEAN Member States are parties to the following FTAs with Investment chapters (which also contain provisions on investment promotion):",
-                      },
-                    ],
-                  },
-                  {
-                    type: "unorderedList",
-                    content: [
-                      {
-                        type: "listItem",
-                        content: [
-                          {
-                            type: "paragraph",
-                            content: [
-                              {
-                                type: "text",
-                                text: "<a href='https://google.com'>AANZFTA</a>",
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                      {
-                        type: "listItem",
-                        content: [
-                          {
-                            type: "paragraph",
-                            content: [
-                              {
-                                type: "text",
-                                text: "<a href='https://google.com'>ACFTA</a>",
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                      {
-                        type: "listItem",
-                        content: [
-                          {
-                            type: "paragraph",
-                            content: [
-                              {
-                                type: "text",
-                                text: "<a href='https://google.com'>AKFTA</a>",
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                      {
-                        type: "listItem",
-                        content: [
-                          {
-                            type: "paragraph",
-                            content: [
-                              {
-                                type: "text",
-                                text: "<a href='https://google.com'>AIFTA</a>",
-                              },
-                            ],
-                          },
-                        ],
+                        text: "Practical applications of rationality in daily life are elucidated by Pinker, offering actionable insights for better decision-making. (Beneficial for individuals seeking practical strategies to improve their decision-making processes.)",
                       },
                     ],
                   },
@@ -532,124 +365,184 @@ export const Default: Story = {
             ],
           },
           {
-            type: "tableRow",
+            type: "table",
+            attrs: {
+              caption: "A table of IIA countries (2024)",
+            },
             content: [
               {
-                type: "tableCell",
+                type: "tableRow",
                 content: [
                   {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Bahrain" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "8 Dec 2004" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
+                    type: "tableHeader",
                     content: [
                       {
-                        type: "text",
-                        text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Countries" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableHeader",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          { type: "text", text: "Date of Entry into Force" },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableHeader",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "IIA Text" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableHeader",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Some numbers" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableHeader",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Remarks" }],
                       },
                     ],
                   },
                 ],
               },
               {
-                type: "tableCell",
+                type: "tableRow",
                 content: [
                   {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "123,456" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
+                    type: "tableCell",
                     content: [
                       {
-                        type: "text",
-                        text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
+                        type: "paragraph",
+                        content: [{ type: "text", text: "ASEAN" }],
                       },
                     ],
                   },
                   {
-                    type: "paragraph",
+                    type: "tableCell",
                     content: [
                       {
-                        type: "text",
-                        text: "The ASEAN Member States are parties to the following FTAs with Investment chapters (which also contain provisions on investment promotion):",
+                        type: "paragraph",
+                        content: [{ type: "text", text: "2 Aug 1998" }],
                       },
                     ],
                   },
                   {
-                    type: "orderedList",
+                    type: "tableCell",
                     content: [
                       {
-                        type: "listItem",
+                        type: "paragraph",
                         content: [
                           {
-                            type: "paragraph",
-                            content: [
-                              {
-                                type: "text",
-                                text: "<a href='https://google.com'>AANZFTA</a>",
-                              },
-                            ],
+                            type: "text",
+                            text: "<a href='https://www.asean.org/asean/asean-agreements-on-investment/'>EN download (3.2 MB)</a>",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "123,456" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          {
+                            type: "text",
+                            text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
                           },
                         ],
                       },
                       {
-                        type: "listItem",
+                        type: "paragraph",
                         content: [
                           {
-                            type: "paragraph",
-                            content: [
-                              {
-                                type: "text",
-                                text: "<a href='https://google.com'>ACFTA</a>",
-                              },
-                            ],
+                            type: "text",
+                            text: "The ASEAN Member States are parties to the following FTAs with Investment chapters (which also contain provisions on investment promotion):",
                           },
                         ],
                       },
                       {
-                        type: "listItem",
+                        type: "unorderedList",
                         content: [
                           {
-                            type: "paragraph",
+                            type: "listItem",
                             content: [
                               {
-                                type: "text",
-                                text: "<a href='https://google.com'>AKFTA</a>",
+                                type: "paragraph",
+                                content: [
+                                  {
+                                    type: "text",
+                                    text: "<a href='https://google.com'>AANZFTA</a>",
+                                  },
+                                ],
                               },
                             ],
                           },
-                        ],
-                      },
-                      {
-                        type: "listItem",
-                        content: [
                           {
-                            type: "paragraph",
+                            type: "listItem",
                             content: [
                               {
-                                type: "text",
-                                text: "<a href='https://google.com'>AIFTA</a>",
+                                type: "paragraph",
+                                content: [
+                                  {
+                                    type: "text",
+                                    text: "<a href='https://google.com'>ACFTA</a>",
+                                  },
+                                ],
+                              },
+                            ],
+                          },
+                          {
+                            type: "listItem",
+                            content: [
+                              {
+                                type: "paragraph",
+                                content: [
+                                  {
+                                    type: "text",
+                                    text: "<a href='https://google.com'>AKFTA</a>",
+                                  },
+                                ],
+                              },
+                            ],
+                          },
+                          {
+                            type: "listItem",
+                            content: [
+                              {
+                                type: "paragraph",
+                                content: [
+                                  {
+                                    type: "text",
+                                    text: "<a href='https://google.com'>AIFTA</a>",
+                                  },
+                                ],
                               },
                             ],
                           },
@@ -659,185 +552,325 @@ export const Default: Story = {
                   },
                 ],
               },
-            ],
-          },
-          {
-            type: "tableRow",
-            content: [
               {
-                type: "tableCell",
+                type: "tableRow",
                 content: [
                   {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Bangladesh" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "19 Nov 2004" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
+                    type: "tableCell",
                     content: [
                       {
-                        type: "text",
-                        text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Bahrain" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "8 Dec 2004" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          {
+                            type: "text",
+                            text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "123,456" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          {
+                            type: "text",
+                            text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
+                          },
+                        ],
+                      },
+                      {
+                        type: "paragraph",
+                        content: [
+                          {
+                            type: "text",
+                            text: "The ASEAN Member States are parties to the following FTAs with Investment chapters (which also contain provisions on investment promotion):",
+                          },
+                        ],
+                      },
+                      {
+                        type: "orderedList",
+                        content: [
+                          {
+                            type: "listItem",
+                            content: [
+                              {
+                                type: "paragraph",
+                                content: [
+                                  {
+                                    type: "text",
+                                    text: "<a href='https://google.com'>AANZFTA</a>",
+                                  },
+                                ],
+                              },
+                            ],
+                          },
+                          {
+                            type: "listItem",
+                            content: [
+                              {
+                                type: "paragraph",
+                                content: [
+                                  {
+                                    type: "text",
+                                    text: "<a href='https://google.com'>ACFTA</a>",
+                                  },
+                                ],
+                              },
+                            ],
+                          },
+                          {
+                            type: "listItem",
+                            content: [
+                              {
+                                type: "paragraph",
+                                content: [
+                                  {
+                                    type: "text",
+                                    text: "<a href='https://google.com'>AKFTA</a>",
+                                  },
+                                ],
+                              },
+                            ],
+                          },
+                          {
+                            type: "listItem",
+                            content: [
+                              {
+                                type: "paragraph",
+                                content: [
+                                  {
+                                    type: "text",
+                                    text: "<a href='https://google.com'>AIFTA</a>",
+                                  },
+                                ],
+                              },
+                            ],
+                          },
+                        ],
                       },
                     ],
                   },
                 ],
               },
               {
-                type: "tableCell",
+                type: "tableRow",
                 content: [
                   {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "123,456" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Some text" }],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: "tableRow",
-            content: [
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Belarus" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "13 Jan 2001" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
+                    type: "tableCell",
                     content: [
                       {
-                        type: "text",
-                        text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Bangladesh" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "19 Nov 2004" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          {
+                            type: "text",
+                            text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "123,456" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Some text" }],
                       },
                     ],
                   },
                 ],
               },
               {
-                type: "tableCell",
+                type: "tableRow",
                 content: [
                   {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "123,456" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  { type: "paragraph", content: [{ type: "text", text: "" }] },
-                ],
-              },
-            ],
-          },
-          {
-            type: "tableRow",
-            content: [
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Belgium and Luxembourg" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "27 Nov 1980" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
+                    type: "tableCell",
                     content: [
                       {
-                        type: "text",
-                        text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Belarus" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "13 Jan 2001" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          {
+                            type: "text",
+                            text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "123,456" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "" }],
                       },
                     ],
                   },
                 ],
               },
               {
-                type: "tableCell",
+                type: "tableRow",
                 content: [
                   {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "123,456" }],
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          { type: "text", text: "Belgium and Luxembourg" },
+                        ],
+                      },
+                    ],
                   },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  { type: "paragraph", content: [{ type: "text", text: "" }] },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "27 Nov 1980" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          {
+                            type: "text",
+                            text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "123,456" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "" }],
+                      },
+                    ],
+                  },
                 ],
               },
             ],
           },
-        ],
-      },
-      {
-        type: "paragraph",
-        content: [{ type: "text", text: "This is yet another paragraph" }],
-      },
-      {
-        type: "heading",
-        id: "section3",
-        level: 4,
-        content: [{ type: "text", text: "But then, if you are listed" }],
-      },
-      {
-        type: "paragraph",
-        content: [
           {
-            type: "text",
-            text: "In the realm of human cognition, irrationality often reigns supreme, defying the logic that ostensibly governs our decisions and actions. It manifests in myriad ways, from the subtle biases that influence our perceptions to the outright contradictions that confound our rational minds. We find ourselves ensnared in cognitive dissonance, grappling with conflicting beliefs and emotions that lead us astray from the path of reason. Despite our best intentions, we succumb to the allure of irrationality, surrendering to the whims of impulse and emotion. Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
+            type: "paragraph",
+            content: [{ type: "text", text: "This is yet another paragraph" }],
+          },
+          {
+            type: "heading",
+            attrs: {
+              id: "section3",
+              level: 4,
+            },
+            content: [{ type: "text", text: "But then, if you are listed" }],
+          },
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "In the realm of human cognition, irrationality often reigns supreme, defying the logic that ostensibly governs our decisions and actions. It manifests in myriad ways, from the subtle biases that influence our perceptions to the outright contradictions that confound our rational minds. We find ourselves ensnared in cognitive dissonance, grappling with conflicting beliefs and emotions that lead us astray from the path of reason. Despite our best intentions, we succumb to the allure of irrationality, surrendering to the whims of impulse and emotion. Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
+              },
+            ],
           },
         ],
       },
@@ -1067,68 +1100,50 @@ export const NoTable: Story = {
     },
     content: [
       {
-        type: "heading",
-        id: "section1",
-        level: 2,
+        type: "prose",
         content: [
           {
-            type: "text",
-            text: "What does the Irrationality Principle support?",
+            type: "heading",
+            attrs: {
+              id: "section1",
+              level: 2,
+            },
+            content: [
+              {
+                type: "text",
+                text: "What does the Irrationality Principle support?",
+              },
+            ],
           },
         ],
       },
       {
         type: "callout",
         variant: "info",
+        content: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        type: "prose",
         content: [
           {
             type: "paragraph",
             content: [
               {
                 type: "text",
-                text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        content: [
-          {
-            type: "text",
-            text: "Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
-          },
-        ],
-      },
-      {
-        type: "unorderedList",
-        content: [
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
-                  },
-                ],
+                text: "Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
               },
             ],
           },
@@ -1143,7 +1158,21 @@ export const NoTable: Story = {
                     content: [
                       {
                         type: "text",
-                        text: "Like this, you might have a list of equipments to bring to the luncheon",
+                        text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
                       },
                     ],
                   },
@@ -1157,16 +1186,12 @@ export const NoTable: Story = {
                     content: [
                       {
                         type: "paragraph",
-                        content: [{ type: "text", text: "Luncheon meat" }],
-                      },
-                    ],
-                  },
-                  {
-                    type: "listItem",
-                    content: [
-                      {
-                        type: "paragraph",
-                        content: [{ type: "text", text: "Spam" }],
+                        content: [
+                          {
+                            type: "text",
+                            text: "Like this, you might have a list of equipments to bring to the luncheon",
+                          },
+                        ],
                       },
                     ],
                   },
@@ -1178,8 +1203,42 @@ export const NoTable: Story = {
                         content: [
                           {
                             type: "paragraph",
+                            content: [{ type: "text", text: "Luncheon meat" }],
+                          },
+                        ],
+                      },
+                      {
+                        type: "listItem",
+                        content: [
+                          {
+                            type: "paragraph",
+                            content: [{ type: "text", text: "Spam" }],
+                          },
+                        ],
+                      },
+                      {
+                        type: "unorderedList",
+                        content: [
+                          {
+                            type: "listItem",
                             content: [
-                              { type: "text", text: "Another level below" },
+                              {
+                                type: "paragraph",
+                                content: [
+                                  { type: "text", text: "Another level below" },
+                                ],
+                              },
+                            ],
+                          },
+                          {
+                            type: "listItem",
+                            content: [
+                              {
+                                type: "paragraph",
+                                content: [
+                                  { type: "text", text: "This is very deep" },
+                                ],
+                              },
                             ],
                           },
                         ],
@@ -1189,9 +1248,7 @@ export const NoTable: Story = {
                         content: [
                           {
                             type: "paragraph",
-                            content: [
-                              { type: "text", text: "This is very deep" },
-                            ],
+                            content: [{ type: "text", text: "hello" }],
                           },
                         ],
                       },
@@ -1202,7 +1259,7 @@ export const NoTable: Story = {
                     content: [
                       {
                         type: "paragraph",
-                        content: [{ type: "text", text: "hello" }],
+                        content: [{ type: "text", text: "Back out again" }],
                       },
                     ],
                   },
@@ -1213,107 +1270,106 @@ export const NoTable: Story = {
                 content: [
                   {
                     type: "paragraph",
-                    content: [{ type: "text", text: "Back out again" }],
+                    content: [
+                      {
+                        type: "text",
+                        text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
+                      },
+                    ],
                   },
                 ],
               },
             ],
           },
           {
-            type: "listItem",
+            type: "heading",
+            attrs: {
+              id: "section2",
+              level: 2,
+            },
+            content: [
+              { type: "text", text: "Checklist for sheer irrationality" },
+            ],
+          },
+          {
+            type: "heading",
+            attrs: {
+              id: "section1",
+              level: 3,
+            },
+            content: [{ type: "text", text: "If you are a small business" }],
+          },
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Your business must have:" }],
+          },
+          {
+            type: "unorderedList",
             content: [
               {
-                type: "paragraph",
+                type: "listItem",
                 content: [
                   {
-                    type: "text",
-                    text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        text: "(Suitable for those interested in the interdisciplinary study of cognitive science and psychology.)",
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        text: "Practical applications of rationality in daily life are elucidated by Pinker, offering actionable insights for better decision-making. (Beneficial for individuals seeking practical strategies to improve their decision-making processes.)",
+                      },
+                    ],
                   },
                 ],
               },
             ],
           },
-        ],
-      },
-      {
-        type: "heading",
-        id: "section2",
-        level: 2,
-        content: [{ type: "text", text: "Checklist for sheer irrationality" }],
-      },
-      {
-        type: "heading",
-        id: "section1",
-        level: 3,
-        content: [{ type: "text", text: "If you are a small business" }],
-      },
-      {
-        type: "paragraph",
-        content: [{ type: "text", text: "Your business must have:" }],
-      },
-      {
-        type: "unorderedList",
-        content: [
           {
-            type: "listItem",
+            type: "paragraph",
+            content: [{ type: "text", text: "This is yet another paragraph" }],
+          },
+          {
+            type: "heading",
+            attrs: {
+              id: "section3",
+              level: 4,
+            },
+            content: [{ type: "text", text: "But then, if you are listed" }],
+          },
+          {
+            type: "paragraph",
             content: [
               {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
-                  },
-                ],
+                type: "text",
+                text: "In the realm of human cognition, irrationality often reigns supreme, defying the logic that ostensibly governs our decisions and actions. It manifests in myriad ways, from the subtle biases that influence our perceptions to the outright contradictions that confound our rational minds. We find ourselves ensnared in cognitive dissonance, grappling with conflicting beliefs and emotions that lead us astray from the path of reason. Despite our best intentions, we succumb to the allure of irrationality, surrendering to the whims of impulse and emotion. Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
               },
             ],
-          },
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "(Suitable for those interested in the interdisciplinary study of cognitive science and psychology.)",
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Practical applications of rationality in daily life are elucidated by Pinker, offering actionable insights for better decision-making. (Beneficial for individuals seeking practical strategies to improve their decision-making processes.)",
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        content: [{ type: "text", text: "This is yet another paragraph" }],
-      },
-      {
-        type: "heading",
-        id: "section3",
-        level: 4,
-        content: [{ type: "text", text: "But then, if you are listed" }],
-      },
-      {
-        type: "paragraph",
-        content: [
-          {
-            type: "text",
-            text: "In the realm of human cognition, irrationality often reigns supreme, defying the logic that ostensibly governs our decisions and actions. It manifests in myriad ways, from the subtle biases that influence our perceptions to the outright contradictions that confound our rational minds. We find ourselves ensnared in cognitive dissonance, grappling with conflicting beliefs and emotions that lead us astray from the path of reason. Despite our best intentions, we succumb to the allure of irrationality, surrendering to the whims of impulse and emotion. Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
           },
         ],
       },
@@ -1419,68 +1475,50 @@ export const SmallTable: Story = {
     },
     content: [
       {
-        type: "heading",
-        id: "section1",
-        level: 2,
+        type: "prose",
         content: [
           {
-            type: "text",
-            text: "What does the Irrationality Principle support?",
+            type: "heading",
+            attrs: {
+              id: "section1",
+              level: 2,
+            },
+            content: [
+              {
+                type: "text",
+                text: "What does the Irrationality Principle support?",
+              },
+            ],
           },
         ],
       },
       {
         type: "callout",
         variant: "info",
+        content: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        type: "prose",
         content: [
           {
             type: "paragraph",
             content: [
               {
                 type: "text",
-                text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        content: [
-          {
-            type: "text",
-            text: "Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
-          },
-        ],
-      },
-      {
-        type: "unorderedList",
-        content: [
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
-                  },
-                ],
+                text: "Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
               },
             ],
           },
@@ -1495,7 +1533,21 @@ export const SmallTable: Story = {
                     content: [
                       {
                         type: "text",
-                        text: "Like this, you might have a list of equipments to bring to the luncheon",
+                        text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        text: "Steven Pinker's Rationality: An Overview Steven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An OverviewSteven Pinker's Rationality: An Overview",
                       },
                     ],
                   },
@@ -1509,16 +1561,12 @@ export const SmallTable: Story = {
                     content: [
                       {
                         type: "paragraph",
-                        content: [{ type: "text", text: "Luncheon meat" }],
-                      },
-                    ],
-                  },
-                  {
-                    type: "listItem",
-                    content: [
-                      {
-                        type: "paragraph",
-                        content: [{ type: "text", text: "Spam" }],
+                        content: [
+                          {
+                            type: "text",
+                            text: "Like this, you might have a list of equipments to bring to the luncheon",
+                          },
+                        ],
                       },
                     ],
                   },
@@ -1530,8 +1578,42 @@ export const SmallTable: Story = {
                         content: [
                           {
                             type: "paragraph",
+                            content: [{ type: "text", text: "Luncheon meat" }],
+                          },
+                        ],
+                      },
+                      {
+                        type: "listItem",
+                        content: [
+                          {
+                            type: "paragraph",
+                            content: [{ type: "text", text: "Spam" }],
+                          },
+                        ],
+                      },
+                      {
+                        type: "unorderedList",
+                        content: [
+                          {
+                            type: "listItem",
                             content: [
-                              { type: "text", text: "Another level below" },
+                              {
+                                type: "paragraph",
+                                content: [
+                                  { type: "text", text: "Another level below" },
+                                ],
+                              },
+                            ],
+                          },
+                          {
+                            type: "listItem",
+                            content: [
+                              {
+                                type: "paragraph",
+                                content: [
+                                  { type: "text", text: "This is very deep" },
+                                ],
+                              },
                             ],
                           },
                         ],
@@ -1541,9 +1623,7 @@ export const SmallTable: Story = {
                         content: [
                           {
                             type: "paragraph",
-                            content: [
-                              { type: "text", text: "This is very deep" },
-                            ],
+                            content: [{ type: "text", text: "hello" }],
                           },
                         ],
                       },
@@ -1554,7 +1634,7 @@ export const SmallTable: Story = {
                     content: [
                       {
                         type: "paragraph",
-                        content: [{ type: "text", text: "hello" }],
+                        content: [{ type: "text", text: "Back out again" }],
                       },
                     ],
                   },
@@ -1565,289 +1645,294 @@ export const SmallTable: Story = {
                 content: [
                   {
                     type: "paragraph",
-                    content: [{ type: "text", text: "Back out again" }],
+                    content: [
+                      {
+                        type: "text",
+                        text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
+                      },
+                    ],
                   },
                 ],
               },
             ],
           },
           {
-            type: "listItem",
+            type: "heading",
+            attrs: {
+              id: "section2",
+              level: 2,
+            },
+            content: [
+              { type: "text", text: "Checklist for sheer irrationality" },
+            ],
+          },
+          {
+            type: "paragraph",
             content: [
               {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
-                  },
-                ],
+                type: "text",
+                text: "In the realm of human cognition, irrationality often reigns supreme, defying the logic that ostensibly governs our decisions and actions.",
               },
             ],
           },
-        ],
-      },
-      {
-        type: "heading",
-        id: "section2",
-        level: 2,
-        content: [{ type: "text", text: "Checklist for sheer irrationality" }],
-      },
-      {
-        type: "paragraph",
-        content: [
           {
-            type: "text",
-            text: "In the realm of human cognition, irrationality often reigns supreme, defying the logic that ostensibly governs our decisions and actions.",
+            type: "heading",
+            attrs: {
+              id: "section1",
+              level: 3,
+            },
+            content: [{ type: "text", text: "If you are a small business" }],
           },
-        ],
-      },
-      {
-        type: "heading",
-        id: "section1",
-        level: 3,
-        content: [{ type: "text", text: "If you are a small business" }],
-      },
-      {
-        type: "paragraph",
-        content: [{ type: "text", text: "Your business must have:" }],
-      },
-      {
-        type: "unorderedList",
-        content: [
           {
-            type: "listItem",
+            type: "paragraph",
+            content: [{ type: "text", text: "Your business must have:" }],
+          },
+          {
+            type: "unorderedList",
             content: [
               {
-                type: "paragraph",
+                type: "listItem",
                 content: [
                   {
-                    type: "text",
-                    text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        text: "Through Pinker's exploration, readers gain a deeper appreciation for the complexities and nuances of human rationality. (Engaging for individuals curious about the intricacies of human behavior and decision-making processes.)",
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        text: "(Suitable for those interested in the interdisciplinary study of cognitive science and psychology.)",
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        text: "Practical applications of rationality in daily life are elucidated by Pinker, offering actionable insights for better decision-making. (Beneficial for individuals seeking practical strategies to improve their decision-making processes.)",
+                      },
+                    ],
                   },
                 ],
               },
             ],
           },
           {
-            type: "listItem",
+            type: "table",
+            attrs: {
+              caption: "A table of IIA countries (2024)",
+            },
             content: [
               {
-                type: "paragraph",
+                type: "tableRow",
                 content: [
                   {
-                    type: "text",
-                    text: "(Suitable for those interested in the interdisciplinary study of cognitive science and psychology.)",
+                    type: "tableHeader",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Countries" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableHeader",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Some text" }],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "tableRow",
+                content: [
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "ASEAN" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Some text here" }],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "tableRow",
+                content: [
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Bahrain" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Some text here" }],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "tableRow",
+                content: [
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Bangladesh" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Some text here" }],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "tableRow",
+                content: [
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Belarus" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Some text here" }],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "tableRow",
+                content: [
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          { type: "text", text: "Belgium and Luxembourg" },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Some text here" }],
+                      },
+                    ],
                   },
                 ],
               },
             ],
           },
           {
-            type: "listItem",
+            type: "paragraph",
+            content: [{ type: "text", text: "This is yet another paragraph" }],
+          },
+          {
+            type: "heading",
+            attrs: {
+              id: "section3",
+              level: 3,
+            },
             content: [
               {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Practical applications of rationality in daily life are elucidated by Pinker, offering actionable insights for better decision-making. (Beneficial for individuals seeking practical strategies to improve their decision-making processes.)",
-                  },
-                ],
+                type: "text",
+                text: "Test this is a long heading that comes right before a h4",
               },
             ],
           },
-        ],
-      },
-      {
-        type: "table",
-        caption: "A table of IIA countries (2024)",
-        content: [
           {
-            type: "tableRow",
+            type: "paragraph",
             content: [
               {
-                type: "tableHeader",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Countries" }],
-                  },
-                ],
-              },
-              {
-                type: "tableHeader",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Some text" }],
-                  },
-                ],
+                type: "text",
+                text: "What if got some small text here like the section below this is going to explain blah blah",
               },
             ],
           },
           {
-            type: "tableRow",
+            type: "heading",
+            attrs: {
+              id: "section3",
+              level: 4,
+            },
+            content: [{ type: "text", text: "But then, if you are listed" }],
+          },
+          {
+            type: "paragraph",
             content: [
               {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "ASEAN" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Some text here" }],
-                  },
-                ],
+                type: "text",
+                text: "In the realm of human cognition, irrationality often reigns supreme, defying the logic that ostensibly governs our decisions and actions. It manifests in myriad ways, from the subtle biases that influence our perceptions to the outright contradictions that confound our rational minds. We find ourselves ensnared in cognitive dissonance, grappling with conflicting beliefs and emotions that lead us astray from the path of reason.",
               },
             ],
           },
           {
-            type: "tableRow",
+            type: "paragraph",
             content: [
               {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Bahrain" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Some text here" }],
-                  },
-                ],
+                type: "text",
+                text: "Despite our best intentions, we succumb to the allure of irrationality, surrendering to the whims of impulse and emotion. Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
               },
             ],
-          },
-          {
-            type: "tableRow",
-            content: [
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Bangladesh" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Some text here" }],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: "tableRow",
-            content: [
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Belarus" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Some text here" }],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: "tableRow",
-            content: [
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Belgium and Luxembourg" }],
-                  },
-                ],
-              },
-              {
-                type: "tableCell",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Some text here" }],
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        content: [{ type: "text", text: "This is yet another paragraph" }],
-      },
-      {
-        type: "heading",
-        id: "section3",
-        level: 3,
-        content: [
-          {
-            type: "text",
-            text: "Test this is a long heading that comes right before a h4",
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        content: [
-          {
-            type: "text",
-            text: "What if got some small text here like the section below this is going to explain blah blah",
-          },
-        ],
-      },
-      {
-        type: "heading",
-        id: "section3",
-        level: 4,
-        content: [{ type: "text", text: "But then, if you are listed" }],
-      },
-      {
-        type: "paragraph",
-        content: [
-          {
-            type: "text",
-            text: "In the realm of human cognition, irrationality often reigns supreme, defying the logic that ostensibly governs our decisions and actions. It manifests in myriad ways, from the subtle biases that influence our perceptions to the outright contradictions that confound our rational minds. We find ourselves ensnared in cognitive dissonance, grappling with conflicting beliefs and emotions that lead us astray from the path of reason.",
-          },
-        ],
-      },
-      {
-        type: "paragraph",
-        content: [
-          {
-            type: "text",
-            text: "Despite our best intentions, we succumb to the allure of irrationality, surrendering to the whims of impulse and emotion. Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
           },
         ],
       },

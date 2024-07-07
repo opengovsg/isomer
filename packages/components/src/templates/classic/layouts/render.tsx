@@ -1,4 +1,4 @@
-import type { IsomerComponent, IsomerPageSchema } from "~/engine"
+import type { IsomerComponent, IsomerPageSchemaType } from "~/engine"
 
 interface RenderComponentProps {
   component: IsomerComponent
@@ -12,7 +12,7 @@ export const renderComponent = ({
   return <></>
 }
 
-const renderLayout = (props: IsomerPageSchema) => {
+const renderLayout = (props: IsomerPageSchemaType) => {
   return <></>
 }
 

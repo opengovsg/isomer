@@ -167,7 +167,9 @@ export const Nested: Story = {
 
 export const NonStandardStart: Story = {
   args: {
-    start: 10,
+    attrs: {
+      start: 10,
+    },
     content: [
       {
         type: "listItem",

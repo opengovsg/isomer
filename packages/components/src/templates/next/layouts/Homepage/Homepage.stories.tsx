@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useEffect } from "react";
 
-import type { HomePageSchema } from "~/engine";
+import type { HomePageSchemaType } from "~/engine";
 import Homepage from "./Homepage";
 
 // Template for stories
-const Template = (props: HomePageSchema) => {
+const Template = (props: HomePageSchemaType) => {
   // Note: This is needed because the script tag is not rendered in the storybook
   useEffect(() => {
     const scriptTag = document.createElement("script");

@@ -22,8 +22,7 @@ const Headings = () => {
         return (
           <div className="mb-4">
             <Heading
-              id={Math.random().toString()}
-              level={level}
+              attrs={{ level }}
               content={[{ type: "text", text: `This is a heading-${level}` }]}
             />
           </div>

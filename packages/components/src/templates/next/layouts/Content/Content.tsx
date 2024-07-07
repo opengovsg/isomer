@@ -1,4 +1,4 @@
-import { ContentPageSchema, IsomerSitemap } from "~/engine"
+import type { ContentPageSchemaType, IsomerSitemap } from "~/engine"
 import type { SiderailProps } from "~/interfaces"
 import {
   getBreadcrumbFromSiteMap,
@@ -70,37 +70,59 @@ const getSiderailFromSiteMap = (
 }
 
 const getTableOfContentsFromContent = (
-  content: ContentPageSchema["content"],
+  content: ContentPageSchemaType["content"],
 ) => {
-  const items = []
-  for (const block of content) {
-    if (block.type === "heading" && block.level === 2) {
-      items.push({
-        content: getTextAsHtml(block.content),
-        anchorLink: "#" + block.id,
-      })
-    }
+  return {
+    items: content.flatMap((block) => {
+      if (block.type !== "prose") {
+        return []
+      }
+
+      const result = []
+
+      for (const component of block.content) {
+        if (component.type === "heading" && component.attrs.level === 2) {
+          result.push({
+            content: getTextAsHtml(component.content),
+            anchorLink: "#" + component.attrs.id,
+          })
+        }
+      }
+
+      return result
+    }),
   }
-  return { items }
 }
 
 // if block.id is not present for heading level 2, we auto-generate one
 // for use in table of contents anchor links
-const transformContent = (content: ContentPageSchema["content"]) => {
-  const transformedContent: ContentPageSchema["content"] = []
+const transformContent = (content: ContentPageSchemaType["content"]) => {
+  const transformedContent: ContentPageSchemaType["content"] = []
   for (let i = 0; i < content.length; i++) {
     const block = content[i]
-    if (
-      block.type === "heading" &&
-      block.level === 2 &&
-      block.id === undefined
-    ) {
-      // generate a unique hash to auto-generate anchor links
-      const anchorId = getDigestFromText(
-        `${JSON.stringify(block)}_${getRandomNumberBetIntervals(1, 1000)}`,
-      )
 
-      transformedContent.push({ ...block, id: anchorId })
+    if (block.type === "prose") {
+      const transformedBlock = {
+        ...block,
+        content: block.content.map((component) => {
+          if (
+            component.type === "heading" &&
+            component.attrs.level === 2 &&
+            component.attrs.id === undefined
+          ) {
+            // generate a unique hash to auto-generate anchor links
+            const anchorId = getDigestFromText(
+              `${JSON.stringify(component)}_${getRandomNumberBetIntervals(1, 1000)}`,
+            )
+
+            return { ...component, id: anchorId }
+          } else {
+            return component
+          }
+        }),
+      }
+
+      transformedContent.push(transformedBlock)
     } else {
       transformedContent.push(block)
     }
@@ -114,7 +136,7 @@ const ContentLayout = ({
   content,
   LinkComponent,
   ScriptComponent,
-}: ContentPageSchema) => {
+}: ContentPageSchemaType) => {
   const sideRail = getSiderailFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),

@@ -1,4 +1,4 @@
-import { SearchPageSchema } from "~/engine"
+import { type SearchPageSchemaType } from "~/engine"
 import { Skeleton } from "../Skeleton"
 
 const SearchLayout = ({
@@ -6,7 +6,7 @@ const SearchLayout = ({
   page,
   LinkComponent = "a",
   ScriptComponent = "script",
-}: SearchPageSchema) => {
+}: SearchPageSchemaType) => {
   const clientId =
     (site.search && site.search.type === "searchSG" && site.search.clientId) ||
     ""

@@ -1,3 +1,14 @@
-export interface DividerProps {
-  type: "divider"
-}
+import { Type, type Static } from "@sinclair/typebox"
+
+export const DividerSchema = Type.Object(
+  {
+    type: Type.Literal("divider"),
+  },
+  {
+    title: "Divider component",
+    description:
+      "A horizontal rule that serves as a divider to separate content",
+  },
+)
+
+export type DividerProps = Static<typeof DividerSchema>

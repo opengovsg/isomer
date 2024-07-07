@@ -1,7 +1,10 @@
 import type { HeadingProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils"
 
-const Heading = ({ id, content, level }: Omit<HeadingProps, "type">) => {
+const Heading = ({
+  attrs: { id, level },
+  content,
+}: Omit<HeadingProps, "type">) => {
   if (level === 2) {
     return (
       <h2

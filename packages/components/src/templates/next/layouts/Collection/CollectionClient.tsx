@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import type { CollectionPageSchema } from "~/engine"
+import type { CollectionPageSchemaType } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
 import { SortDirection, SortKey } from "~/interfaces/internal/CollectionSort"
 import {
@@ -19,8 +19,8 @@ import type {
 } from "../../types/Filter"
 
 interface CollectionClientProps {
-  page: CollectionPageSchema["page"]
-  LinkComponent: CollectionPageSchema["LinkComponent"]
+  page: CollectionPageSchemaType["page"]
+  LinkComponent: CollectionPageSchemaType["LinkComponent"]
   items: CollectionCardProps[]
 }
 

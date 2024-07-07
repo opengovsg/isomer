@@ -1,7 +1,7 @@
 import { getSitemapAsArray } from "~/utils"
-import type { IsomerPageSchema, IsomerSitemap } from "~/types"
+import type { IsomerPageSchemaType, IsomerSitemap } from "~/types"
 
-export const getMetadata = (props: IsomerPageSchema) => {
+export const getMetadata = (props: IsomerPageSchemaType) => {
   const metadata = {
     metadataBase: props.site.url ? new URL(props.site.url) : undefined,
     description: props.page.description || undefined,
@@ -31,7 +31,7 @@ export const getMetadata = (props: IsomerPageSchema) => {
   }
 }
 
-export const getRobotsTxt = (props: IsomerPageSchema) => {
+export const getRobotsTxt = (props: IsomerPageSchemaType) => {
   const rules = [
     {
       userAgent: "*",

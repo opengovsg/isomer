@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import type { CollectionPageSchema } from "~/engine";
+import { type CollectionPageSchemaType } from "~/engine";
 import CollectionLayout from "./Collection";
 
-const meta: Meta<CollectionPageSchema> = {
+const meta: Meta<CollectionPageSchemaType> = {
   title: "Next/Layouts/Collection",
   component: CollectionLayout,
   argTypes: {},

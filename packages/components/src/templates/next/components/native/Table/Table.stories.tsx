@@ -17,7 +17,9 @@ type Story = StoryObj<typeof Table>;
 
 export const Simple: Story = {
   args: {
-    caption: "A table of IIA countries (2024)",
+    attrs: {
+      caption: "A table of IIA countries (2024)",
+    },
     content: [
       {
         type: "tableRow",
@@ -491,14 +493,18 @@ export const Simple: Story = {
 
 export const Rowspan: Story = {
   args: {
-    caption: "A table of IIA countries (2024)",
+    attrs: {
+      caption: "A table of IIA countries (2024)",
+    },
     content: [
       {
         type: "tableRow",
         content: [
           {
             type: "tableHeader",
-            rowSpan: 2,
+            attrs: {
+              rowspan: 2,
+            },
             content: [
               {
                 type: "paragraph",
@@ -513,7 +519,9 @@ export const Rowspan: Story = {
           },
           {
             type: "tableHeader",
-            colSpan: 4,
+            attrs: {
+              colspan: 4,
+            },
             content: [
               {
                 type: "paragraph",
@@ -985,14 +993,18 @@ export const Rowspan: Story = {
 
 export const Colspan: Story = {
   args: {
-    caption: "A table of IIA countries (2024)",
+    attrs: {
+      caption: "A table of IIA countries (2024)",
+    },
     content: [
       {
         type: "tableRow",
         content: [
           {
             type: "tableHeader",
-            colSpan: 5,
+            attrs: {
+              colspan: 5,
+            },
             content: [
               {
                 type: "paragraph",
@@ -1012,7 +1024,9 @@ export const Colspan: Story = {
         content: [
           {
             type: "tableHeader",
-            colSpan: 3,
+            attrs: {
+              colspan: 3,
+            },
             content: [
               {
                 type: "paragraph",
@@ -1027,7 +1041,9 @@ export const Colspan: Story = {
           },
           {
             type: "tableHeader",
-            colSpan: 2,
+            attrs: {
+              colspan: 2,
+            },
             content: [
               {
                 type: "paragraph",
