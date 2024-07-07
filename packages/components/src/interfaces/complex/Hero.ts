@@ -221,21 +221,28 @@ const HeroFloatingImageSchema = Type.Composite([
   }),
 ])
 
-export const HeroSchema = Type.Intersect([
-  Type.Object({
-    type: Type.Literal("hero"),
-  }),
-  Type.Union([
-    HeroSideSchema,
-    HeroImageSchema,
-    HeroFloatingSchema,
-    HeroCenterSchema,
-    HeroGradientSchema,
-    HeroSplitSchema,
-    HeroCopyLedSchema,
-    HeroFloatingImageSchema,
-  ]),
-])
+export const HeroSchema = Type.Intersect(
+  [
+    Type.Object({
+      type: Type.Literal("hero"),
+    }),
+    Type.Union([
+      HeroSideSchema,
+      HeroImageSchema,
+      HeroFloatingSchema,
+      HeroCenterSchema,
+      HeroGradientSchema,
+      HeroSplitSchema,
+      HeroCopyLedSchema,
+      HeroFloatingImageSchema,
+    ]),
+  ],
+  {
+    title: "Hero component",
+    description:
+      "The hero component is used to display a large banner at the top of the homepage.",
+  },
+)
 
 export type HeroKeyHighlightProps = Static<typeof HeroKeyHighlightSchema>
 export type HeroDropdownProps = Static<typeof HeroDropdownSchema>
