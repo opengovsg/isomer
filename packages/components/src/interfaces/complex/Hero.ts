@@ -137,89 +137,129 @@ const HeroInfoboxSchema = Type.Composite([
   }),
 ])
 
-const HeroSideSchema = Type.Composite([
-  HeroInfoboxSchema,
-  HeroBackgroundImageSchema,
-  HeroKeyHighlightSchema,
-  Type.Object({
-    variant: Type.Literal("side"),
-  }),
-])
+const HeroSideSchema = Type.Composite(
+  [
+    HeroInfoboxSchema,
+    HeroBackgroundImageSchema,
+    HeroKeyHighlightSchema,
+    Type.Object({
+      variant: Type.Literal("side"),
+    }),
+  ],
+  {
+    title: "Hero side variant",
+  },
+)
 
-const HeroImageSchema = Type.Composite([
-  HeroBackgroundImageSchema,
-  HeroKeyHighlightSchema,
-  Type.Object({
-    variant: Type.Literal("image"),
-    dropdown: Type.Optional(HeroDropdownSchema),
-  }),
-])
+const HeroImageSchema = Type.Composite(
+  [
+    HeroBackgroundImageSchema,
+    HeroKeyHighlightSchema,
+    Type.Object({
+      variant: Type.Literal("image"),
+      dropdown: Type.Optional(HeroDropdownSchema),
+    }),
+  ],
+  {
+    title: "Hero image variant",
+  },
+)
 
-const HeroFloatingSchema = Type.Composite([
-  HeroInfoboxSchema,
-  HeroBackgroundImageSchema,
-  HeroKeyHighlightSchema,
-  Type.Object({
-    variant: Type.Literal("floating"),
-  }),
-])
+const HeroFloatingSchema = Type.Composite(
+  [
+    HeroInfoboxSchema,
+    HeroBackgroundImageSchema,
+    HeroKeyHighlightSchema,
+    Type.Object({
+      variant: Type.Literal("floating"),
+    }),
+  ],
+  {
+    title: "Hero floating variant",
+  },
+)
 
-const HeroCenterSchema = Type.Composite([
-  HeroHeadingSchema,
-  HeroButtonsSchema,
-  HeroBackgroundImageSchema,
-  HeroKeyHighlightSchema,
-  Type.Object({
-    variant: Type.Literal("center"),
-    dropdown: Type.Optional(HeroDropdownSchema),
-  }),
-])
+const HeroCenterSchema = Type.Composite(
+  [
+    HeroHeadingSchema,
+    HeroButtonsSchema,
+    HeroBackgroundImageSchema,
+    HeroKeyHighlightSchema,
+    Type.Object({
+      variant: Type.Literal("center"),
+      dropdown: Type.Optional(HeroDropdownSchema),
+    }),
+  ],
+  {
+    title: "Hero centre variant",
+  },
+)
 
-const HeroGradientSchema = Type.Composite([
-  HeroHeadingSchema,
-  HeroButtonsSchema,
-  HeroBackgroundImageSchema,
-  HeroContentAlignmentSchema,
-  Type.Object({
-    variant: Type.Literal("gradient"),
-  }),
-])
+const HeroGradientSchema = Type.Composite(
+  [
+    HeroHeadingSchema,
+    HeroButtonsSchema,
+    HeroBackgroundImageSchema,
+    HeroContentAlignmentSchema,
+    Type.Object({
+      variant: Type.Literal("gradient"),
+    }),
+  ],
+  {
+    title: "Hero gradient variant",
+  },
+)
 
-const HeroSplitSchema = Type.Composite([
-  HeroHeadingSchema,
-  HeroButtonsSchema,
-  HeroBackgroundImageSchema,
-  HeroContentAlignmentSchema,
-  Type.Object({
-    variant: Type.Literal("split"),
-    backgroundColor: Type.Optional(
-      Type.Union([Type.Literal("black"), Type.Literal("white")], {
-        title: "Hero background color",
-        description: "The background color of the hero banner",
-      }),
-    ),
-  }),
-])
+const HeroSplitSchema = Type.Composite(
+  [
+    HeroHeadingSchema,
+    HeroButtonsSchema,
+    HeroBackgroundImageSchema,
+    HeroContentAlignmentSchema,
+    Type.Object({
+      variant: Type.Literal("split"),
+      backgroundColor: Type.Optional(
+        Type.Union([Type.Literal("black"), Type.Literal("white")], {
+          title: "Hero background color",
+          description: "The background color of the hero banner",
+        }),
+      ),
+    }),
+  ],
+  {
+    title: "Hero split variant",
+  },
+)
 
-const HeroCopyLedSchema = Type.Composite([
-  HeroHeadingSchema,
-  HeroButtonsSchema,
-  Type.Partial(HeroBackgroundImageSchema),
-  HeroKeyHighlightSchema,
-  Type.Object({
-    variant: Type.Literal("copyled"),
-  }),
-])
+const HeroCopyLedSchema = Type.Composite(
+  [
+    HeroHeadingSchema,
+    HeroButtonsSchema,
+    Type.Partial(HeroBackgroundImageSchema),
+    HeroKeyHighlightSchema,
+    Type.Object({
+      variant: Type.Literal("copyled"),
+    }),
+  ],
+  {
+    title: "Hero copy-led variant",
+  },
+)
 
-const HeroFloatingImageSchema = Type.Composite([
-  HeroHeadingSchema,
-  HeroButtonsSchema,
-  HeroBackgroundImageSchema,
-  HeroKeyHighlightSchema,
-  Type.Object({
-    variant: Type.Literal("floatingimage"),
-  }),
-])
+const HeroFloatingImageSchema = Type.Composite(
+  [
+    HeroHeadingSchema,
+    HeroButtonsSchema,
+    HeroBackgroundImageSchema,
+    HeroKeyHighlightSchema,
+    Type.Object({
+      variant: Type.Literal("floatingimage"),
+    }),
+  ],
+  {
+    title: "Hero floating image variant",
+  },
+)
 
 export const HeroSchema = Type.Intersect(
   [

@@ -19,9 +19,13 @@ export {
   jsonFormsObjectControlTester,
 } from './JsonFormsObjectControl'
 export {
-  default as JsonFormsOneOfControl,
-  jsonFormsOneOfControlTester,
-} from './JsonFormsOneOfControl'
+  default as JsonFormsAnyOfControl,
+  jsonFormsAnyOfControlTester,
+} from './JsonFormsAnyOfControl'
+export {
+  default as JsonFormsAllOfControl,
+  jsonFormsAllOfControlTester,
+} from './JsonFormsAllOfControl'
 export {
   default as JsonFormsProseControl,
   jsonFormsProseControlTester,
