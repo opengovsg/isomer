@@ -148,6 +148,16 @@ const HeroSideSchema = Type.Composite(
   ],
   {
     title: "Hero side variant",
+    groups: [
+      {
+        label: "Primary call-to-action",
+        fields: ["buttonLabel", "buttonUrl"],
+      },
+      {
+        label: "Secondary call-to-action",
+        fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
+      },
+    ],
   },
 )
 
