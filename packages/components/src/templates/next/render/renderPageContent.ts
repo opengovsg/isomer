@@ -1,5 +1,5 @@
-import { renderComponent } from "~/templates/next/render"
 import type { IsomerComponent } from "~/types"
+import { renderComponent } from "~/templates/next/render"
 
 export const renderPageContent = ({
   content,
