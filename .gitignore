@@ -13,6 +13,7 @@ out/
 
 # production
 build
+!tooling/build
 
 # misc
 .DS_Store
