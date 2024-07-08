@@ -7,8 +7,13 @@ import { PageEditingLayout } from '~/templates/layouts/PageEditingLayout'
 import { trpc } from '~/utils/trpc'
 
 function EditPage(): JSX.Element {
-  const { setDrawerState, pageState, setPageState, setEditorState } =
-    useEditorDrawerContext()
+  const {
+    setDrawerState,
+    pageState,
+    setPageState,
+    setSnapshot: setEditorState,
+    setIsomerJsonSchema,
+  } = useEditorDrawerContext()
 
   const [{ content: page }] = trpc.page.readPageAndBlob.useSuspenseQuery({
     pageId: 1,
