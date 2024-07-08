@@ -35,10 +35,6 @@
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
-  "prettier": {
-    "singleQuote": true,
-    "semi": false
-  },
   "dependencies": {
     "@aws-sdk/client-s3": "3.485.0",
     "@aws-sdk/s3-request-presigner": "3.485.0",
@@ -167,5 +163,6 @@
   },
   "msw": {
     "workerDirectory": "public"
-  }
+  },
+  "prettier": "@isomer/prettier-config"
 }
