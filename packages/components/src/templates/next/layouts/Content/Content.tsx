@@ -74,7 +74,7 @@ const getTableOfContentsFromContent = (
 ) => {
   return {
     items: content.flatMap((block) => {
-      if (block.type !== "prose") {
+      if (block.type !== "prose" || !block.content) {
         return []
       }
 
@@ -101,7 +101,7 @@ const transformContent = (content: ContentPageSchemaType["content"]) => {
   for (let i = 0; i < content.length; i++) {
     const block = content[i]
 
-    if (block.type === "prose") {
+    if (block.type === "prose" && block.content) {
       const transformedBlock = {
         ...block,
         content: block.content.map((component) => {
