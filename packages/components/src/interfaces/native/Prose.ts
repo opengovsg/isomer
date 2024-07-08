@@ -8,20 +8,22 @@ import { UnorderedListSchema } from "./UnorderedList"
 
 export const ProseSchema = Type.Object({
   type: Type.Literal("prose"),
-  content: Type.Array(
-    Type.Union([
-      DividerSchema,
-      HeadingSchema,
-      OrderedListSchema,
-      ParagraphSchema,
-      TableSchema,
-      UnorderedListSchema,
-    ]),
-    {
-      title: "Content block",
-      description: "A collection of native content components.",
-      minItems: 1,
-    },
+  content: Type.Optional(
+    Type.Array(
+      Type.Union([
+        DividerSchema,
+        HeadingSchema,
+        OrderedListSchema,
+        ParagraphSchema,
+        TableSchema,
+        UnorderedListSchema,
+      ]),
+      {
+        title: "Content block",
+        description: "A collection of native content components.",
+        minItems: 1,
+      },
+    ),
   ),
 })
 

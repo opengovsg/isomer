@@ -87,8 +87,8 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
                   return (
                     <TableCellTag
                       key={cellIndex}
-                      colSpan={cell.attrs?.colspan}
-                      rowSpan={cell.attrs?.rowspan}
+                      colSpan={cell.attrs?.colspan || 1}
+                      rowSpan={cell.attrs?.rowspan || 1}
                       className={`border-divide-subtle max-w-40 break-words border-b border-r px-4 py-3.5 align-top first:border-l last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ol]:text-sm [&_p]:text-sm [&_ul]:mt-0 [&_ul]:ps-5 ${
                         cell.type === "tableHeader"
                           ? "bg-utility-neutral"

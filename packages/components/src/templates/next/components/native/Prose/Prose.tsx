@@ -8,6 +8,10 @@ import Table from "../Table"
 import UnorderedList from "../UnorderedList"
 
 const Prose = ({ content }: ProseProps) => {
+  if (!content) {
+    return <></>
+  }
+
   return (
     <>
       {content.map((component, index) => {
