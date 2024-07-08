@@ -74,11 +74,11 @@ jobs:
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
-      - name: Build
-        run: npm run build
-
       - name: Start test containers
         run: npm run setup:test
+
+      - name: Build
+        run: npm run build
 
       - name: Test
         run: npm run test-start
