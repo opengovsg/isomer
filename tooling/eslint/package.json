@@ -23,6 +23,7 @@
     "typescript-eslint": "^7.15.0"
   },
   "devDependencies": {
+    "@eslint/compat": "^1.1.0",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
     "eslint": "^9.6.0",
