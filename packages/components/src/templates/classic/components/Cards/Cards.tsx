@@ -32,8 +32,7 @@ function Cards({ sectionTitle, sectionCaption, cards }: CardsProps) {
                   <time dateTime={post.datetime} className="text-gray-500">
                     {post.date}
                   </time>
-                  {post.category &&
-                    post.category.href &&
+                  {post.category?.href &&
                     post.category.title && (
                       <a
                         href={post.category.href}

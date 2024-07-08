@@ -2,7 +2,7 @@ import React from "react" // Import React
 
 import type { HeaderProps } from "~/interfaces"
 
-type Breadcrumb = {
+interface Breadcrumb {
   name: string
   href: string
   current?: boolean
@@ -13,8 +13,8 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
     permalink: string,
     sitemap: any,
   ): { title: string; breadcrumbs: Breadcrumb[] } {
-    let title: string = ""
-    let breadcrumbs: Breadcrumb[] = []
+    let title = ""
+    const breadcrumbs: Breadcrumb[] = []
 
     function traverse(currentSitemap: any[], permalink: string) {
       for (const entry of currentSitemap) {

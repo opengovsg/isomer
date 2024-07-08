@@ -1,7 +1,7 @@
 import type { IsomerSitemap } from "~/engine"
 
 export const getSitemapAsArray = (sitemap: IsomerSitemap) => {
-  let result: IsomerSitemap[] = []
+  const result: IsomerSitemap[] = []
 
   const traverse = (node: IsomerSitemap) => {
     if (node.permalink) {
