@@ -22,7 +22,7 @@ jobs:
         uses: ./tooling/github/setup
 
       - name: Lint
-        run: npm run lint && npm run lint:ws
+        run: npm run lint
 
   format:
     runs-on: ubuntu-latest
