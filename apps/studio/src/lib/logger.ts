@@ -44,6 +44,7 @@ export class PinoLogger {
     }
     return pino(
       {
+        // eslint-disable-next-line no-restricted-properties
         level: process.env.PINO_LOG_LEVEL || "info",
         customLevels: levels,
         useOnlyCustomLevels: true,

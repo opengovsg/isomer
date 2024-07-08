@@ -13,10 +13,10 @@ export const useMe = () => {
   const logout = useCallback(
     (redirectToSignIn = true) => {
       return logoutMutation.mutate(undefined, {
-        onSuccess: async () => {
+        onSuccess: () => {
           removeLoginStateFlag()
           if (redirectToSignIn) {
-            await Router.push("/sign-in")
+            void Router.push("/sign-in")
           }
         },
       })

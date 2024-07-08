@@ -25,6 +25,7 @@ export default function RootStateDrawer() {
     // Remove block at source index
     const [movedBlock] = updatedBlocks.splice(result.source.index, 1)
     // Insert at destination index
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     updatedBlocks.splice(result.destination.index, 0, movedBlock!)
 
     setPageState(updatedBlocks)

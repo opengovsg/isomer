@@ -48,12 +48,12 @@ class MockIronStore {
   }
 }
 
-export const createMockRequest = async (
+export const createMockRequest = (
   session: Session,
   reqOptions: RequestOptions = { method: "GET" },
   resOptions?: ResponseOptions,
-): Promise<Context> => {
-  const innerContext = await createContextInner({ session })
+): Context => {
+  const innerContext = createContextInner({ session })
 
   const { req, res } = createMocks(reqOptions, resOptions)
 
@@ -71,6 +71,7 @@ export const applySession = () => {
     set: store.set.bind(store),
     get: store.get.bind(store),
     unset: store.unset,
+    // eslint-disable-next-line @typescript-eslint/require-await
     async save() {
       store.seal()
     },

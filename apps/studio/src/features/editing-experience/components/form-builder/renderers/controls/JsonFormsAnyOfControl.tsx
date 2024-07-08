@@ -27,7 +27,7 @@ export function JsonFormsAnyOfControl({
   label,
 }: CombinatorRendererProps) {
   const anyOfRenderInfos = createCombinatorRenderInfos(
-    schema.anyOf || [],
+    schema.anyOf ?? [],
     rootSchema,
     "anyOf",
     uischema,

@@ -14,6 +14,7 @@ const config: StorybookConfig = {
   ],
 
   framework: {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     name: getAbsolutePath("@storybook/nextjs"),
     options: {},
   },
@@ -29,6 +30,7 @@ const config: StorybookConfig = {
   env: (config) => ({
     ...config,
     SKIP_ENV_VALIDATION: "true",
+    // eslint-disable-next-line no-restricted-properties
     STORYBOOK_ENVIRONMENT: JSON.stringify(process.env),
   }),
 
