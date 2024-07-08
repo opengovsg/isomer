@@ -2,6 +2,7 @@
   "name": "isomer-studio",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
     "generate": "prisma generate && eslint --fix prisma/generated && prettier --write prisma/generated",
     "db:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
