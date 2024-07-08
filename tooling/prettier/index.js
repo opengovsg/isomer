@@ -8,6 +8,10 @@ module.exports = {
     "@ianvs/prettier-plugin-sort-imports",
     "prettier-plugin-tailwindcss",
   ],
+  bracketSpacing: true,
+  semi: false,
+  singleQuote: false,
+  useTabs: false,
   tailwindFunctions: ["cn", "cva", "tv"],
   importOrder: [
     "<TYPES>",
