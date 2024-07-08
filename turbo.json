@@ -25,6 +25,18 @@
       "inputs": ["!storybook-static/**"],
       "outputs": ["storybook-static/**"]
     },
+    "format": {
+      "outputs": ["node_modules/.cache/.prettiercache"],
+      "outputLogs": "new-only"
+    },
+    "lint": {
+      "dependsOn": ["^build"],
+      "outputs": ["node_modules/.cache/.eslintcache"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": ["node_modules/.cache/tsbuildinfo.json"]
+    },
     "teardown": {},
     "test-start": {}
   }
