@@ -191,7 +191,7 @@ export const sgidRouter = router({
       }
     }),
   listStoredProfiles: publicProcedure.query(({ ctx }) => {
-    const profiles = ctx.session?.sgid?.profiles
+    const profiles = ctx.session.sgid?.profiles
 
     trpcAssert(profiles, {
       message: "Error logging in via sgID: profile is invalid",
@@ -201,7 +201,7 @@ export const sgidRouter = router({
 
     const hasExpired = profiles.expiry < Date.now()
     if (hasExpired) {
-      ctx.session?.destroy()
+      ctx.session.destroy()
     }
 
     trpcAssert(!hasExpired, {

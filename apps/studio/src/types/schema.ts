@@ -6,10 +6,10 @@ import {
 } from "@jsonforms/core"
 
 export type IsomerExtendedJsonSchema = JsonSchema & {
-  groups?: Array<{
+  groups?: {
     label: string
     fields: string[]
-  }>
+  }[]
 }
 
 export function isGroupLayout(

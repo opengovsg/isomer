@@ -19,7 +19,7 @@ import { env } from "~/env.mjs"
 import { TRPCWithErrorCodeSchema } from "~/utils/error"
 import { getBaseUrl } from "./getBaseUrl"
 
-const NON_RETRYABLE_ERROR_CODES: Set<TRPC_ERROR_CODE_KEY> = new Set([
+const NON_RETRYABLE_ERROR_CODES = new Set<TRPC_ERROR_CODE_KEY>([
   "BAD_REQUEST",
   "UNAUTHORIZED",
   "FORBIDDEN",
@@ -80,7 +80,7 @@ export const custom401Link: TRPCLink<AppRouter> = () => {
         // Handle 401 errors
         error(err) {
           observer.error(err)
-          if (window !== undefined && err?.data?.code === "UNAUTHORIZED") {
+          if (window !== undefined && err.data?.code === "UNAUTHORIZED") {
             // Clear logged in state on localStorage
             // NOTE: This error is not handled in the /api/[trpc] API route as API routes are invoked
             // on the server and cannot perform redirections.

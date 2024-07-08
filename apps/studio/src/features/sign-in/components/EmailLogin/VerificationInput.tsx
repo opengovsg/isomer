@@ -125,7 +125,7 @@ export const VerificationInput = (): JSX.Element | null => {
             name="token"
             render={({ field: { onChange, value, ...field } }) => (
               <InputGroup>
-                <InputLeftAddon>{vfnStepData?.otpPrefix}-</InputLeftAddon>
+                <InputLeftAddon>{vfnStepData.otpPrefix}-</InputLeftAddon>
                 <Input
                   autoFocus
                   autoCapitalize="true"

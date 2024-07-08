@@ -1,3 +1,4 @@
+import type { SubmitHandler } from "react-hook-form"
 import React, { useEffect, useState } from "react"
 import {
   Box,
@@ -21,14 +22,14 @@ import {
   FormErrorMessage,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import { SubmitHandler, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 
 interface PageCreateModalProps {
   isOpen: boolean
   onClose: () => void
 }
 
-type PageCreateFormFields = {
+interface PageCreateFormFields {
   title: string
   url: string
 }
@@ -64,8 +65,8 @@ export const PageCreateModal = ({
   const watchAllFields = watch()
 
   useEffect(() => {
-    setTitleLen(watchAllFields.title?.length || 0)
-    setPageUrlLen(watchAllFields.url?.length || 0)
+    setTitleLen(watchAllFields.title.length || 0)
+    setPageUrlLen(watchAllFields.url.length || 0)
   }, [watchAllFields])
 
   /* TODO: When integrating with BE */
@@ -116,7 +117,7 @@ export const PageCreateModal = ({
                   })}
                   isInvalid={!!errors.title}
                 />
-                {errors.title && errors.title.message ? (
+                {errors.title?.message ? (
                   <FormErrorMessage>{errors.title.message}</FormErrorMessage>
                 ) : (
                   <FormHelperText mt={"0.5em"} color="base.content.medium">
@@ -159,7 +160,7 @@ export const PageCreateModal = ({
                   />
                 </InputGroup>
 
-                {errors.url && errors.url.message ? (
+                {errors.url?.message ? (
                   <FormErrorMessage>{errors.url.message}</FormErrorMessage>
                 ) : (
                   <FormHelperText mt={"0.5em"} color="base.content.medium">

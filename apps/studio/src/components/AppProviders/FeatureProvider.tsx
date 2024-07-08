@@ -3,7 +3,7 @@ import { createContext, useContext } from "react"
 
 import { useEnv } from "~/hooks/useEnv"
 
-type FeatureContextProps = {
+interface FeatureContextProps {
   storage: boolean
   sgid: boolean
 }
