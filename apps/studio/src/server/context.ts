@@ -18,7 +18,7 @@ interface CreateContextOptions {
  * Inner function for `createContext` where we create the context.
  * This is useful for testing when we don't want to mock Next.js' request/response
  */
-export async function createContextInner(opts: CreateContextOptions) {
+export function createContextInner(opts: CreateContextOptions) {
   return {
     session: opts.session,
     prisma,
@@ -37,7 +37,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
     sessionOptions,
   )
 
-  const innerContext = await createContextInner({
+  const innerContext = createContextInner({
     session,
   })
 

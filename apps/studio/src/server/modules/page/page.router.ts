@@ -57,10 +57,8 @@ export const pageRouter = router({
       return input
     }),
 
-  createPage: pageProcedure
-    .input(createPageSchema)
-    .query(async ({ input, ctx }) => {
-      return { pageId: "" }
-    }),
+  createPage: pageProcedure.input(createPageSchema).query(({ input, ctx }) => {
+    return { pageId: "" }
+  }),
   // TODO: Delete page stuff here
 })

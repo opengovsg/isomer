@@ -36,7 +36,7 @@ function getUiSchemaWithGroup(
     new Map(groups.map(({ label, fields }) => [label, fields])),
   )
 
-  const propertiesNotInGroup = Object.keys(jsonSchema.properties || {}).filter(
+  const propertiesNotInGroup = Object.keys(jsonSchema.properties ?? {}).filter(
     (property) => !groups.some(({ fields }) => fields.includes(property)),
   )
 
@@ -60,7 +60,7 @@ function getUiSchemaWithGroup(
 
     if (group) {
       const { label } = group
-      const groupFields = groupMap.get(label) || []
+      const groupFields = groupMap.get(label) ?? []
       const groupElements = uiSchema.filter((el) =>
         groupFields.includes(el.scope?.split("/").pop() || ""),
       )

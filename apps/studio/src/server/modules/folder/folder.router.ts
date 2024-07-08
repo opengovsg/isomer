@@ -1,11 +1,10 @@
-/* eslint-disable import/prefer-default-export */
 import { createFolderSchema, readFolderSchema } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 
 export const folderRouter = router({
   create: protectedProcedure
     .input(createFolderSchema)
-    .mutation(async ({ ctx, input }) => {
+    .mutation(({ ctx, input }) => {
       return { folderId: "" }
     }),
   readFolder: protectedProcedure

@@ -32,7 +32,7 @@ export function JsonFormsObjectControl({
   const detailUiSchema = useMemo(
     () =>
       findUISchema(
-        uischemas || [],
+        uischemas ?? [],
         schema,
         uischema.scope,
         path,
