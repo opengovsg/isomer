@@ -106,6 +106,9 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@isomer/eslint-config": "*",
+    "@isomer/prettier-config": "*",
+    "@isomer/tsconfig": "*",
     "@babel/plugin-transform-class-properties": "^7.24.7",
     "@babel/plugin-transform-object-rest-spread": "^7.24.7",
     "@babel/preset-env": "^7.24.7",
