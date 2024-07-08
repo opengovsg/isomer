@@ -1,10 +1,12 @@
-import { useRouter } from 'next/router'
-import { useMemo, type PropsWithChildren } from 'react'
-import { useLoginState } from '~/features/auth'
-import { SIGN_IN } from '~/lib/routes'
-import { FullscreenSpinner } from '../FullscreenSpinner'
-import { appendWithRedirect } from '~/utils/url'
-import { callbackUrlSchema } from '~/schemas/url'
+import type { PropsWithChildren } from "react"
+import { useMemo } from "react"
+import { useRouter } from "next/router"
+
+import { useLoginState } from "~/features/auth"
+import { SIGN_IN } from "~/lib/routes"
+import { callbackUrlSchema } from "~/schemas/url"
+import { appendWithRedirect } from "~/utils/url"
+import { FullscreenSpinner } from "../FullscreenSpinner"
 
 interface EnforceLoginStatePageWrapperProps {
   /**
@@ -17,7 +19,7 @@ interface EnforceLoginStatePageWrapperProps {
 const Redirect = ({ redirectTo }: EnforceLoginStatePageWrapperProps) => {
   const router = useRouter()
   const redirectUrl = useMemo(() => {
-    if (typeof window === 'undefined') return encodeURIComponent('/')
+    if (typeof window === "undefined") return encodeURIComponent("/")
     const { pathname, search, hash } = window.location
     return encodeURIComponent(`${pathname}${search}${hash}`)
   }, [])

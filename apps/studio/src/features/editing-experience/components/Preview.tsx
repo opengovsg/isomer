@@ -1,5 +1,7 @@
-import { type IsomerSchema, RenderEngine } from '@opengovsg/isomer-components'
-import { trpc } from '~/utils/trpc'
+import type { IsomerSchema } from "@opengovsg/isomer-components"
+import { RenderEngine } from "@opengovsg/isomer-components"
+
+import { trpc } from "~/utils/trpc"
 
 export default function Preview(props: IsomerSchema) {
   const [{ theme, isGovernment, sitemap, name }] =
@@ -20,12 +22,12 @@ export default function Preview(props: IsomerSchema) {
         // TODO: fixup all the typing errors
         // @ts-expect-error blah
         // TODO: dynamically generate sitemap
-        siteMap: { title: 'Home', permalink: '/', children: [] },
+        siteMap: { title: "Home", permalink: "/", children: [] },
         theme,
-        logoUrl: 'https://www.isomer.gov.sg/images/isomer-logo.svg',
+        logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
         isGovernment,
-        environment: 'production',
-        lastUpdated: '3 Apr 2024',
+        environment: "production",
+        lastUpdated: "3 Apr 2024",
         navBarItems: navbar.items,
         footerItems: footer,
       }}

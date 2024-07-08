@@ -1,14 +1,14 @@
-import { useCallback } from 'react'
-import { useRouter } from 'next/router'
-import { Divider, Stack } from '@chakra-ui/react'
+import { useCallback } from "react"
+import { useRouter } from "next/router"
+import { Divider, Stack } from "@chakra-ui/react"
 
-import { trpc } from '~/utils/trpc'
-import { SgidProfileItem } from './SgidProfileItem'
-import { SgidProfileListSkeleton } from './SgidProfileListSkeleton'
-import { useLoginState } from '~/features/auth'
-import { CALLBACK_URL_KEY } from '~/constants/params'
-import { withSuspense } from '~/hocs/withSuspense'
-import { callbackUrlSchema } from '~/schemas/url'
+import { CALLBACK_URL_KEY } from "~/constants/params"
+import { useLoginState } from "~/features/auth"
+import { withSuspense } from "~/hocs/withSuspense"
+import { callbackUrlSchema } from "~/schemas/url"
+import { trpc } from "~/utils/trpc"
+import { SgidProfileItem } from "./SgidProfileItem"
+import { SgidProfileListSkeleton } from "./SgidProfileListSkeleton"
 
 const _SgidProfileList = (): JSX.Element => {
   const router = useRouter()

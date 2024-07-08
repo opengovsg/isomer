@@ -1,22 +1,23 @@
+import { useMemo, useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/router"
 import {
   Box,
   CloseButton,
-  IconButton,
   Flex,
+  IconButton,
   useBreakpoint,
-} from '@chakra-ui/react'
+} from "@chakra-ui/react"
 import {
   SidebarContainer,
   SidebarItem,
   useIsMobile,
-} from '@opengovsg/design-system-react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import { useMemo, useState } from 'react'
-import { BiFace, BiHomeSmile, BiMenu } from 'react-icons/bi'
-import { ADMIN_DASHBAR_WIDTHS, ADMIN_NAVBAR_HEIGHT } from '~/constants/layouts'
-import { useMe } from '~/features/me/api'
-import { HOME, PROFILE, SETTINGS_PROFILE } from '~/lib/routes'
+} from "@opengovsg/design-system-react"
+import { BiFace, BiHomeSmile, BiMenu } from "react-icons/bi"
+
+import { ADMIN_DASHBAR_WIDTHS, ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
+import { useMe } from "~/features/me/api"
+import { HOME, PROFILE, SETTINGS_PROFILE } from "~/lib/routes"
 
 export function DashSidebar() {
   const [showWhenSmallMobile, setShowWhenSmallMobile] = useState(false)
@@ -26,14 +27,14 @@ export function DashSidebar() {
   const { pathname, query } = useRouter()
 
   const mobileButtonProps = {
-    zIndex: 'overlay',
-    colorScheme: 'neutral',
-    border: '0px',
-    borderRight: '1px',
+    zIndex: "overlay",
+    colorScheme: "neutral",
+    border: "0px",
+    borderRight: "1px",
     boxSize: ADMIN_NAVBAR_HEIGHT,
-    borderRadius: '0px',
-    borderColor: 'base.divider.medium',
-    display: { base: 'inline-flex', sm: 'none' },
+    borderRadius: "0px",
+    borderColor: "base.divider.medium",
+    display: { base: "inline-flex", sm: "none" },
   }
 
   const isProfileActive = useMemo(() => {
@@ -41,12 +42,12 @@ export function DashSidebar() {
     if (pathname.startsWith(`${PROFILE}/[username]`)) return true
   }, [pathname])
 
-  const showText = isMobile && breakpointValue === 'sm'
+  const showText = isMobile && breakpointValue === "sm"
 
   return (
     <Box
-      position={{ base: 'fixed', sm: 'relative' }}
-      zIndex={{ base: '20', sm: '1' }}
+      position={{ base: "fixed", sm: "relative" }}
+      zIndex={{ base: "20", sm: "1" }}
     >
       {showWhenSmallMobile ? (
         <CloseButton
@@ -67,7 +68,7 @@ export function DashSidebar() {
       )}
       <Flex
         bg="white"
-        borderTop={showWhenSmallMobile ? '1px solid' : undefined}
+        borderTop={showWhenSmallMobile ? "1px solid" : undefined}
         borderRight="1px solid"
         borderColor="base.divider.medium"
         pos="fixed"
@@ -83,9 +84,9 @@ export function DashSidebar() {
         top={ADMIN_NAVBAR_HEIGHT}
         pt={0}
         pb="0.5rem"
-        w={{ base: showWhenSmallMobile ? '100%' : 0, sm: 'fit-content' }}
+        w={{ base: showWhenSmallMobile ? "100%" : 0, sm: "fit-content" }}
         transition={{
-          base: 'opacity 0.2s, width 0.2s',
+          base: "opacity 0.2s, width 0.2s",
           sm: undefined,
         }}
       >
@@ -96,30 +97,30 @@ export function DashSidebar() {
             href={HOME}
             isActive={pathname === HOME}
             title="Home"
-            px={{ base: '1.125rem', sm: '0.75rem', md: '1rem' }}
-            borderRadius={{ base: 0, md: 'md' }}
+            px={{ base: "1.125rem", sm: "0.75rem", md: "1rem" }}
+            borderRadius={{ base: 0, md: "md" }}
             onClick={() => setShowWhenSmallMobile(false)}
             display={{
-              base: showWhenSmallMobile ? 'flex' : 'none',
-              sm: 'flex',
+              base: showWhenSmallMobile ? "flex" : "none",
+              sm: "flex",
             }}
           >
-            {showText ? '' : 'Home'}
+            {showText ? "" : "Home"}
           </SidebarItem>
           <SidebarItem
             icon={BiFace}
             as={Link}
             isActive={isProfileActive}
             title="Profile"
-            px={{ base: '1.125rem', sm: '0.75rem', md: '1rem' }}
-            borderRadius={{ base: 0, md: 'md' }}
+            px={{ base: "1.125rem", sm: "0.75rem", md: "1rem" }}
+            borderRadius={{ base: 0, md: "md" }}
             onClick={() => setShowWhenSmallMobile(false)}
             display={{
-              base: showWhenSmallMobile ? 'flex' : 'none',
-              sm: 'flex',
+              base: showWhenSmallMobile ? "flex" : "none",
+              sm: "flex",
             }}
           >
-            {showText ? '' : 'Profile'}
+            {showText ? "" : "Profile"}
           </SidebarItem>
         </SidebarContainer>
       </Flex>

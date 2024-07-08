@@ -1,7 +1,7 @@
-import { Divider, Skeleton, Stack, Text } from '@chakra-ui/react'
-import { Button } from '@opengovsg/design-system-react'
-import { times } from 'lodash'
-import { BiChevronRight } from 'react-icons/bi'
+import { Divider, Skeleton, Stack, Text } from "@chakra-ui/react"
+import { Button } from "@opengovsg/design-system-react"
+import { times } from "lodash"
+import { BiChevronRight } from "react-icons/bi"
 
 export const SgidProfileListSkeleton = (): JSX.Element => {
   return (

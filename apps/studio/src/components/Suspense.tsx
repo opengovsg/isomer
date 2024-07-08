@@ -1,11 +1,11 @@
-import { useRouter } from 'next/router'
+import type { ComponentProps } from "react"
 import {
-  type ComponentProps,
   // eslint-disable-next-line no-restricted-imports
   Suspense as ReactSuspense,
   useEffect,
   useState,
-} from 'react'
+} from "react"
+import { useRouter } from "next/router"
 
 export default function Suspense(props: ComponentProps<typeof ReactSuspense>) {
   // Tracking mounted state is needed so we only attempt to render and fire the queries within the suspense wrapper on mount instead

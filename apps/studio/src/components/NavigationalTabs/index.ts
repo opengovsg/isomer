@@ -1,2 +1,2 @@
-export * from './NavigationalTab'
-export * from './NavigationalTabList'
+export * from "./NavigationalTab"
+export * from "./NavigationalTabList"

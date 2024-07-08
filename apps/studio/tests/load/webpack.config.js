@@ -1,29 +1,29 @@
-const path = require('path')
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
-const GlobEntries = require('webpack-glob-entries')
+const path = require("path")
+const { CleanWebpackPlugin } = require("clean-webpack-plugin")
+const GlobEntries = require("webpack-glob-entries")
 
 module.exports = {
-  mode: 'production',
-  entry: GlobEntries(path.join(__dirname, '*.test.ts')),
+  mode: "production",
+  entry: GlobEntries(path.join(__dirname, "*.test.ts")),
   output: {
-    path: path.join(__dirname, 'build'),
-    libraryTarget: 'commonjs',
-    filename: '[name].js',
+    path: path.join(__dirname, "build"),
+    libraryTarget: "commonjs",
+    filename: "[name].js",
   },
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: [".ts", ".js"],
   },
   module: {
     rules: [
       {
         test: /\.ts$/,
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
           options: {
-            presets: ['@babel/preset-env', '@babel/preset-typescript'],
+            presets: ["@babel/preset-env", "@babel/preset-typescript"],
             plugins: [
-              '@babel/plugin-transform-class-properties',
-              '@babel/plugin-transform-object-rest-spread',
+              "@babel/plugin-transform-class-properties",
+              "@babel/plugin-transform-object-rest-spread",
             ],
           },
         },

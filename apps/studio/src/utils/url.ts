@@ -1,6 +1,7 @@
-import { type ParsedUrlQuery } from 'querystring'
-import { CALLBACK_URL_KEY } from '~/constants/params'
-import { getBaseUrl } from './getBaseUrl'
+import { type ParsedUrlQuery } from "querystring"
+
+import { CALLBACK_URL_KEY } from "~/constants/params"
+import { getBaseUrl } from "./getBaseUrl"
 
 export const appendWithRedirect = (url: string, redirectUrl?: string) => {
   if (!redirectUrl || !isRelativeUrl(redirectUrl)) {

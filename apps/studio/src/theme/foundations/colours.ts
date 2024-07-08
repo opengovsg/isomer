@@ -1,7 +1,7 @@
 export const colours = {
   base: {
     canvas: {
-      light: '#babecb',
+      light: "#babecb",
     },
   },
 }

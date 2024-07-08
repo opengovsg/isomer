@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
-import Link from 'next/link'
+import { useMemo } from "react"
+import Link from "next/link"
 import {
   Button,
   Modal,
@@ -10,11 +10,11 @@ import {
   ModalOverlay,
   useBreakpointValue,
   useDisclosure,
-} from '@chakra-ui/react'
+} from "@chakra-ui/react"
 
-import { SIGN_IN } from '~/lib/routes'
-import { SGID } from '~/lib/errors/auth.sgid'
-import { appendWithRedirect } from '~/utils/url'
+import { SGID } from "~/lib/errors/auth.sgid"
+import { SIGN_IN } from "~/lib/routes"
+import { appendWithRedirect } from "~/utils/url"
 
 interface SgidErrorModalProps {
   message: string
@@ -27,21 +27,21 @@ export const SgidErrorModal = ({
 }: SgidErrorModalProps) => {
   const { onClose } = useDisclosure()
   const modalSize = useBreakpointValue({
-    base: 'mobile',
-    md: 'md',
+    base: "mobile",
+    md: "md",
   })
 
   const modalText = useMemo(() => {
     switch (message) {
       case SGID.noPocdex:
         return {
-          header: 'You do not have a valid government email address',
-          body: 'You must be a government employee to sign in with Singpass. Please sign in using your email address instead.',
+          header: "You do not have a valid government email address",
+          body: "You must be a government employee to sign in with Singpass. Please sign in using your email address instead.",
         }
       default:
         return {
-          header: 'An unknown error has occurred',
-          body: 'Please try logging in again.',
+          header: "An unknown error has occurred",
+          body: "Please try logging in again.",
         }
     }
   }, [message])
