@@ -18,6 +18,7 @@
     "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:fix": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:ws": "npx sherif@latest",
+    "lint:ws:fix": "npx sherif@latest --fix",
     "postinstall": "npm run lint:ws"
   },
   "workspaces": [
