@@ -3,7 +3,7 @@ import type { HeadingProps } from "~/interfaces"
 import { HeadingLevels } from "~/interfaces/native/Heading"
 import Heading from "./Heading"
 
-export default {
+const meta: Meta<typeof Heading> = {
   title: "Next/Components/Heading",
   component: Heading,
   argTypes: {},
@@ -12,9 +12,8 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
-
-// Template for stories
+}
+export default meta
 
 const Headings = () => {
   return (

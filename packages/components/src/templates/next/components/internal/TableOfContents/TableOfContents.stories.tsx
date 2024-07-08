@@ -1,8 +1,9 @@
-import { Meta, StoryFn } from "@storybook/react"
-import TableOfContents from "./TableOfContents"
-import type { TableOfContentsProps } from "~/interfaces"
+import type { Meta, StoryObj } from "@storybook/react";
 
-export default {
+import type { TableOfContentsProps } from "~/interfaces";
+import TableOfContents from "./TableOfContents";
+
+const meta: Meta<TableOfContentsProps> = {
   title: "Next/Internal Components/TableOfContents",
   component: TableOfContents,
   argTypes: {},
@@ -11,28 +12,26 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
-
-// Template for stories
-const Template: StoryFn<TableOfContentsProps> = (args) => (
-  <TableOfContents {...args} />
-)
+};
+export default meta;
+type Story = StoryObj<typeof TableOfContents>;
 
 // Default scenario
-export const Default = Template.bind({})
-Default.args = {
-  items: [
-    {
-      content: "What does the New Idea Scheme proposal support?",
-      anchorLink: "#introduction",
-    },
-    {
-      content: "What does the New Idea Scheme proposal support?",
-      anchorLink: "#first-paragraph",
-    },
-    {
-      content: "Something else",
-      anchorLink: "#second-paragraph",
-    },
-  ],
-}
+export const Default: Story = {
+  args: {
+    items: [
+      {
+        content: "What does the New Idea Scheme proposal support?",
+        anchorLink: "#introduction",
+      },
+      {
+        content: "What does the New Idea Scheme proposal support?",
+        anchorLink: "#first-paragraph",
+      },
+      {
+        content: "Something else",
+        anchorLink: "#second-paragraph",
+      },
+    ],
+  },
+};
