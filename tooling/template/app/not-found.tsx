@@ -1,14 +1,11 @@
+import type { IsomerPageSchema } from "@opengovsg/isomer-components"
+import type { Metadata, ResolvingMetadata } from "next"
+import Link from "next/link"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
-import {
-  RenderEngine,
-  getMetadata,
-  type IsomerPageSchema,
-} from "@opengovsg/isomer-components"
-import type { Metadata, ResolvingMetadata } from "next"
-import Link from "next/link"
+import { getMetadata, RenderEngine } from "@opengovsg/isomer-components"
 
 const PAGE_TITLE = "404: Page not found"
 const PAGE_DESCRIPTION = "The page that you are accessing does not exist"
@@ -23,8 +20,8 @@ const lastUpdated =
   timeNow.getFullYear()
 
 export const generateMetadata = async (
-  props: never,
-  parent: ResolvingMetadata,
+  _props: never,
+  _parent: ResolvingMetadata,
 ): Promise<Metadata> => {
   const schema = (await import(`@/schema/index.json`).then(
     (module) => module.default,
@@ -32,10 +29,10 @@ export const generateMetadata = async (
   schema.site = {
     ...config.site,
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-    // @ts-ignore blah
+    // @ts-expect-error to fix when types are proper
     siteMap: sitemap,
     navBarItems: navbar,
-    // @ts-ignore blah
+    // @ts-expect-error to fix when types are proper
     footerItems: footer,
     lastUpdated,
   }
@@ -53,10 +50,10 @@ const NotFound = () => {
         site={{
           ...config.site,
           environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-          // @ts-ignore blah
+          // @ts-expect-error to fix when types are proper
           siteMap: sitemap,
           navBarItems: navbar,
-          // @ts-ignore blah
+          // @ts-expect-error to fix when types are proper
           footerItems: footer,
         }}
         layout="notfound"
