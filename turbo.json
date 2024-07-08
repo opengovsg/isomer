@@ -1,30 +1,15 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [
-    "**/.env",
-    "tsconfig.json"
-  ],
-  "globalEnv": [
-    "NODE_ENV",
-    "DATABASE_URL",
-    "SESSION_SECRET"
-  ],
+  "ui": "tui",
+  "globalDependencies": ["**/.env", "tsconfig.json"],
+  "globalEnv": ["NODE_ENV", "DATABASE_URL", "SESSION_SECRET"],
   "tasks": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**",
-        ".next/**",
-        "!.next/cache/**"
-      ]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "clean": {},
     "dev": {
-      "dependsOn": [
-        "db:setup"
-      ],
+      "dependsOn": ["db:setup"],
       "cache": false,
       "persistent": true
     },
@@ -36,12 +21,8 @@
       "cache": false
     },
     "storybook:build": {
-      "inputs": [
-        "!storybook-static/**"
-      ],
-      "outputs": [
-        "storybook-static/**"
-      ]
+      "inputs": ["!storybook-static/**"],
+      "outputs": ["storybook-static/**"]
     },
     "teardown": {},
     "test-start": {}
