@@ -35,16 +35,14 @@ const getAvailableFilters = (items: CollectionCardProps[]): FilterType[] => {
   items.forEach(({ category, variant, lastUpdated }) => {
     // Step 1: Get all available categories
     if (category in categories) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      categories[category]! += 1
+      categories[category] += 1
     } else {
       categories[category] = 1
     }
 
     // Step 2: Get all available variants
     if (variant in variants) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      variants[variant]! += 1
+      variants[variant] += 1
     } else {
       variants[variant] = 1
     }
@@ -52,8 +50,7 @@ const getAvailableFilters = (items: CollectionCardProps[]): FilterType[] => {
     // Step 3: Get all available years
     const year = new Date(lastUpdated).getFullYear().toString()
     if (year in years) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      years[year]! += 1
+      years[year] += 1
     } else {
       years[year] = 1
     }
