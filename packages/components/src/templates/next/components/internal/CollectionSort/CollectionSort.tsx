@@ -3,7 +3,10 @@
 import { useState } from "react"
 import { BiCheck, BiChevronDown } from "react-icons/bi"
 
-import type { SortDirection, SortKey } from "~/interfaces/internal/CollectionSort"
+import type {
+  SortDirection,
+  SortKey,
+} from "~/interfaces/internal/CollectionSort"
 import type CollectionSortProps from "~/templates/next/types/CollectionSort"
 
 interface SortConfig {

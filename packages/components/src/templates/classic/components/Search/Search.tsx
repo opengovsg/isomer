@@ -45,7 +45,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
       .map((result) => {
         // Directly access the matching document in the `index` prop by ID
         const fullDocument = index.find((doc) => doc.id === result.id)
-        return fullDocument || result
+        return fullDocument ?? result
       })
       .filter((result): result is SearchRecord => !!result)
 

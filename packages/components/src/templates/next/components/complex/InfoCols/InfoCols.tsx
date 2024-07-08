@@ -1,5 +1,5 @@
+import type { SupportedIconName } from "~/common/icons"
 import type { InfoColsProps } from "~/interfaces"
-import type { SupportedIconName } from "~/common/icons";
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { ComponentContent } from "../../internal/customCssClass"
 import Button from "../Button"
