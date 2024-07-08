@@ -1,6 +1,13 @@
 import { Type, type Static, type TSchema } from "@sinclair/typebox"
-import { ParagraphSchema } from "./Paragraph"
+import { ParagraphProps, ParagraphSchema } from "./Paragraph"
 import { orderedListSchemaBuilder, unorderedListSchemaBuilder } from "~/utils"
+import { OrderedListProps } from "./OrderedList"
+import { UnorderedListProps } from "./UnorderedList"
+
+interface ListItem {
+  type: "listItem"
+  content: Array<ParagraphProps | OrderedListProps | UnorderedListProps>
+}
 
 export const listItemSchemaBuilder = <T extends TSchema, U extends TSchema>(
   orderedListSchema: T,
@@ -28,10 +35,15 @@ export const listItemSchemaBuilder = <T extends TSchema, U extends TSchema>(
     },
   )
 
-export const ListItemSchema = Type.Recursive((listItemSchema) =>
-  listItemSchemaBuilder(
-    orderedListSchemaBuilder(listItemSchema),
-    unorderedListSchemaBuilder(listItemSchema),
+// NOTE: The ListItem interface and the underlying ListItemSchema needs to be
+// in sync with each other. Unsafe is used here to bypass errors in TypeScript
+// where the type instantiation is too deep.
+export const ListItemSchema = Type.Unsafe<ListItem>(
+  Type.Recursive((listItemSchema) =>
+    listItemSchemaBuilder(
+      orderedListSchemaBuilder(listItemSchema),
+      unorderedListSchemaBuilder(listItemSchema),
+    ),
   ),
 )
 
