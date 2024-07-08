@@ -25,16 +25,18 @@
       "inputs": ["!storybook-static/**"],
       "outputs": ["storybook-static/**"]
     },
+    "generate": {},
     "format": {
+      "dependsOn": ["^build", "isomer-studio#generate"],
       "outputs": ["node_modules/.cache/.prettiercache"],
       "outputLogs": "new-only"
     },
     "lint": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "isomer-studio#generate"],
       "outputs": ["node_modules/.cache/.eslintcache"]
     },
     "typecheck": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "isomer-studio#generate"],
       "outputs": ["node_modules/.cache/tsbuildinfo.json"]
     },
     "teardown": {},
