@@ -1,5 +1,5 @@
 import { Kysely, PostgresDialect } from "kysely"
-import { Pool } from "pg"
+import pg from "pg"
 import { type DB } from "prisma/generated/generatedTypes"
 
 import { env } from "~/env.mjs"
@@ -8,7 +8,7 @@ const connectionString = `${env.DATABASE_URL}`
 
 // TODO: Add ssl option later
 const dialect = new PostgresDialect({
-  pool: new Pool({
+  pool: new pg.Pool({
     connectionString,
   }),
 })
