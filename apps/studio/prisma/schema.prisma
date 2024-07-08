@@ -42,7 +42,7 @@ model Resource {
 }
 
 model User {
-  id            Int     @id @default(autoincrement())
+  id            String  @id @default(cuid())
   name          String
   email         String  @unique
   phone         String
@@ -56,7 +56,7 @@ model Permission {
   id         Int      @id @default(autoincrement())
   resourceId Int
   resource   Resource @relation(fields: [resourceId], references: [id])
-  userId     Int
+  userId     String 
   user       User     @relation(fields: [userId], references: [id])
   role       RoleType
 
@@ -100,7 +100,7 @@ model Blob {
 }
 
 model SiteMember {
-  userId Int
+  userId String 
   user   User @relation(fields: [userId], references: [id])
   siteId Int
   site   Site @relation(fields: [siteId], references: [id])

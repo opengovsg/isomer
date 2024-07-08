@@ -970,6 +970,16 @@
         "type": "object",
         "title": "Hero side variant",
         "required": ["variant", "title", "backgroundUrl"],
+        "groups": [
+          {
+            "label": "Primary call-to-action",
+            "fields": ["buttonLabel", "buttonUrl"]
+          },
+          {
+            "label": "Secondary call-to-action",
+            "fields": ["secondaryButtonLabel", "secondaryButtonUrl"]
+          }
+        ],
         "properties": {
           "variant": {
             "type": "string",

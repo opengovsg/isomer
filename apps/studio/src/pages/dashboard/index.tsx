@@ -1,6 +1,5 @@
-import { useDisclosure } from '@chakra-ui/react'
+import { useDisclosure, HStack, VStack, Text } from '@chakra-ui/react'
 import { Button } from '@opengovsg/design-system-react'
-import { HStack, VStack, Text } from '@chakra-ui/react'
 import { type NextPageWithLayout } from '~/lib/types'
 import _ from 'lodash'
 import { DashboardTable } from '~/features/dashboard/DashboardTable'

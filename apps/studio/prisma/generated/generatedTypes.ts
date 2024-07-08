@@ -21,11 +21,12 @@ export type Navbar = {
     content: unknown;
 };
 export type Permission = {
-    id: GeneratedAlways<number>;
-    resourceId: number;
-    userId: number;
-    role: RoleType;
-};
+
+  id: GeneratedAlways<number>
+  resourceId: number
+  userId: string
+  role: RoleType
+}
 export type Resource = {
     id: GeneratedAlways<number>;
     name: string;
@@ -39,16 +40,16 @@ export type Site = {
     config: unknown;
 };
 export type SiteMember = {
-    userId: number;
-    siteId: number;
-};
+  userId: string
+  siteId: number
+}
 export type User = {
-    id: GeneratedAlways<number>;
-    name: string;
-    email: string;
-    phone: string;
-    preferredName: string | null;
-};
+  id: string
+  name: string
+  email: string
+  phone: string
+  preferredName: string | null
+}
 export type VerificationToken = {
     identifier: string;
     token: string;
