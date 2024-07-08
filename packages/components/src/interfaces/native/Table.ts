@@ -1,8 +1,8 @@
 import { Type, type Static } from "@sinclair/typebox"
-import { DividerSchema } from "./Divider"
-import { OrderedListSchema } from "./OrderedList"
-import { ParagraphSchema } from "./Paragraph"
-import { UnorderedListSchema } from "./UnorderedList"
+import { DividerProps, DividerSchema } from "./Divider"
+import { OrderedListProps, OrderedListSchema } from "./OrderedList"
+import { ParagraphProps, ParagraphSchema } from "./Paragraph"
+import { UnorderedListProps, UnorderedListSchema } from "./UnorderedList"
 
 const TableBaseCellSchema = Type.Object({
   colspan: Type.Optional(
@@ -21,23 +21,39 @@ const TableBaseCellSchema = Type.Object({
   ),
 })
 
-const TableCellSchema = Type.Object({
-  type: Type.Literal("tableCell"),
-  attrs: Type.Optional(TableBaseCellSchema),
-  content: Type.Array(
-    Type.Union([
-      Type.Ref(DividerSchema),
-      Type.Ref(ParagraphSchema),
-      Type.Ref(OrderedListSchema),
-      Type.Ref(UnorderedListSchema),
-    ]),
-    {
-      title: "Table cell contents",
-      description: "The contents of the table cell",
-      minItems: 1,
-    },
-  ),
-})
+type TableCellProps = {
+  type: "tableCell"
+  attrs?: Static<typeof TableBaseCellSchema>
+  content: (
+    | DividerProps
+    | ParagraphProps
+    | OrderedListProps
+    | UnorderedListProps
+  )[]
+}
+
+// NOTE: The TableCellProps interface and the underlying TableCellSchema needs
+// to be in sync with each other. Unsafe is used here to bypass errors in
+// TypeScript where the type instantiation is too deep.
+const TableCellSchema = Type.Unsafe<TableCellProps>(
+  Type.Object({
+    type: Type.Literal("tableCell"),
+    attrs: Type.Optional(TableBaseCellSchema),
+    content: Type.Array(
+      Type.Union([
+        Type.Ref(DividerSchema),
+        Type.Ref(ParagraphSchema),
+        Type.Ref(OrderedListSchema),
+        Type.Ref(UnorderedListSchema),
+      ]),
+      {
+        title: "Table cell contents",
+        description: "The contents of the table cell",
+        minItems: 1,
+      },
+    ),
+  }),
+)
 
 const TableHeaderCellSchema = Type.Object({
   type: Type.Literal("tableHeader"),

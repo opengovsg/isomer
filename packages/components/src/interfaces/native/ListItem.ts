@@ -6,7 +6,7 @@ import { UnorderedListProps } from "./UnorderedList"
 
 interface ListItem {
   type: "listItem"
-  content: Array<ParagraphProps | OrderedListProps | UnorderedListProps>
+  content: (ParagraphProps | OrderedListProps | UnorderedListProps)[]
 }
 
 export const listItemSchemaBuilder = <T extends TSchema, U extends TSchema>(

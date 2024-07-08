@@ -1,10 +1,10 @@
 import {
-  type IsomerPageSchema,
+  type IsomerPageSchemaType,
   RenderEngine,
 } from '@opengovsg/isomer-components'
 import { trpc } from '~/utils/trpc'
 
-export default function Preview({ layout, content, page }: IsomerPageSchema) {
+export default function Preview(props: IsomerPageSchemaType) {
   const [{ theme, isGovernment, sitemap, name }] =
     trpc.site.getConfig.useSuspenseQuery({ id: 1 })
   const [{ content: footer }] = trpc.site.getFooter.useSuspenseQuery({
@@ -16,6 +16,8 @@ export default function Preview({ layout, content, page }: IsomerPageSchema) {
 
   return (
     <RenderEngine
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...props}
       site={{
         siteName: name,
         // TODO: fixup all the typing errors
@@ -30,10 +32,6 @@ export default function Preview({ layout, content, page }: IsomerPageSchema) {
         navBarItems: navbar.items,
         footerItems: footer,
       }}
-      layout={layout}
-      // TODO: remove this cast and add validation
-      content={content}
-      page={page}
     />
   )
 }
