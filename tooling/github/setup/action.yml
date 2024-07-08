@@ -10,7 +10,7 @@ runs:
         cache: "npm"
 
     - shell: bash
-      run: pnpm add -g turbo
+      run: npm i -g turbo
 
     - shell: bash
       run: npm ci
