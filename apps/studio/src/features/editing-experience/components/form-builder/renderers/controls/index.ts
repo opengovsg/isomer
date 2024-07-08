@@ -15,6 +15,10 @@ export {
   jsonFormsIntegerControlTester,
 } from './JsonFormsIntegerControl'
 export {
+  default as JsonFormsObjectControl,
+  jsonFormsObjectControlTester,
+} from './JsonFormsObjectControl'
+export {
   default as JsonFormsOneOfControl,
   jsonFormsOneOfControlTester,
 } from './JsonFormsOneOfControl'

@@ -1,1 +1,7 @@
 * @opengovsg/isomer-engineers
+
+# Don't automatically assign reviewers on PRs that only modify these files.
+# As they have no owner listed, these files are not owned by anyone.
+# Mostly to avoid dependabot noise
+package.json
+package-lock.json
