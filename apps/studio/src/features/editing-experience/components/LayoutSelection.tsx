@@ -13,9 +13,7 @@ import {
 } from '@chakra-ui/react'
 import { Button, Link } from '@opengovsg/design-system-react'
 import { BiLeftArrowAlt, BiRightArrowAlt, BiShow } from 'react-icons/bi'
-import Preview, {
-  type PreviewProps,
-} from '~/features/editing-experience/components/Preview'
+import Preview from '~/features/editing-experience/components/Preview'
 import articleLayoutPreview from '~/features/editing-experience/data/articleLayoutPreview.json'
 import contentLayoutPreview from '~/features/editing-experience/data/contentLayoutPreview.json'
 import { dataAttr } from '../utils'
