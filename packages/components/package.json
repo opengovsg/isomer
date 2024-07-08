@@ -1,20 +1,21 @@
 {
   "name": "@opengovsg/isomer-components",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/isomerpages"
+  },
   "version": "0.0.13",
   "description": "Isomer component library",
-  "sideEffects": false,
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/**"
-  ],
   "scripts": {
+    "rollup": "rollup -c",
     "storybook": "storybook dev -p 6006",
     "dev": "npm run storybook",
     "build-storybook": "storybook build",
+    "publish-package": "rollup -c && npm run publish",
     "prebuild": "rimraf dist",
-    "build": "tsup",
+    "build": "run-p build:* && npm pack",
+    "build:main": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "build:module": "tsc -p tsconfig.module.build.json && tsc-alias -p tsconfig.module.build.json",
+    "chromatic": "npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN",
     "clean": "rm -rf .turbo node_modules",
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "lint": "eslint",
@@ -27,7 +28,7 @@
   "devDependencies": {
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
-    "@isomer/tsconfig": "*",
+    "@chromatic-com/storybook": "^1.6.1",
     "@storybook/addon-a11y": "^8.0.9",
     "@storybook/addon-essentials": "^8.0.9",
     "@storybook/addon-interactions": "^8.0.9",
@@ -44,11 +45,21 @@
     "@types/dompurify": "^3.0.5",
     "@types/lunr": "^2.3.7",
     "@types/react": "^18.3.3",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.16",
     "bootstrap-icons": "^1.11.3",
     "chromatic": "^11.5.3",
     "eslint": "^9.2.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.2",
     "npm-run-all": "^4.1.5",
     "postcss": "^8.4.39",
     "prettier": "^3.2.5",
@@ -60,10 +71,34 @@
     "tailwindcss": "^3.4.3",
     "tsc-alias": "^1.8.10",
     "tslib": "^2.6.3",
-    "tsup": "^8.1.0",
     "typescript": "^5.5.2",
     "vite": "^5.3.3"
   },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./templates/classic": {
+      "import": "./dist/esm/templates/classic/index.js",
+      "require": "./dist/cjs/templates/classic/index.js"
+    },
+    "./templates/next": {
+      "import": "./dist/esm/templates/next/index.js",
+      "require": "./dist/cjs/templates/next/index.js"
+    }
+  },
+  "files": [
+    "dist/cjs",
+    "dist/esm",
+    "!**/*.spec.*",
+    "!**/*.stories.*",
+    "!**/*.json",
+    "README.md"
+  ],
+  "types": "dist/cjs/index.d.ts",
   "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
