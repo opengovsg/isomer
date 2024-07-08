@@ -35,14 +35,16 @@ const getAvailableFilters = (items: CollectionCardProps[]): FilterType[] => {
   items.forEach(({ category, variant, lastUpdated }) => {
     // Step 1: Get all available categories
     if (category in categories) {
-      categories[category] += 1
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      categories[category]! += 1
     } else {
       categories[category] = 1
     }
 
     // Step 2: Get all available variants
     if (variant in variants) {
-      variants[variant] += 1
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      variants[variant]! += 1
     } else {
       variants[variant] = 1
     }
@@ -50,7 +52,8 @@ const getAvailableFilters = (items: CollectionCardProps[]): FilterType[] => {
     // Step 3: Get all available years
     const year = new Date(lastUpdated).getFullYear().toString()
     if (year in years) {
-      years[year] += 1
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      years[year]! += 1
     } else {
       years[year] = 1
     }
@@ -207,21 +210,21 @@ const updateAppliedFilters = (
     (filter) => filter.id === filterId,
   )
   if (filterIndex > -1) {
-    const itemIndex = appliedFilters[filterIndex].items.findIndex(
+    const itemIndex = appliedFilters[filterIndex]?.items.findIndex(
       (item) => item.id === itemId,
     )
-    if (itemIndex > -1) {
+    if (itemIndex && itemIndex > -1) {
       const newAppliedFilters = [...appliedFilters]
-      newAppliedFilters[filterIndex].items.splice(itemIndex, 1)
+      newAppliedFilters[filterIndex]?.items.splice(itemIndex, 1)
 
-      if (newAppliedFilters[filterIndex].items.length === 0) {
+      if (newAppliedFilters[filterIndex]?.items.length === 0) {
         newAppliedFilters.splice(filterIndex, 1)
       }
 
       setAppliedFilters(newAppliedFilters)
     } else {
       const newAppliedFilters = [...appliedFilters]
-      newAppliedFilters[filterIndex].items.push({ id: itemId })
+      newAppliedFilters[filterIndex]?.items.push({ id: itemId })
       setAppliedFilters(newAppliedFilters)
     }
   } else {

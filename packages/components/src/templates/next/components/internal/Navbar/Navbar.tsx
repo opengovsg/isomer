@@ -310,11 +310,11 @@ export const Navbar = ({
               aria-label="Return to main navigation menu"
             >
               <BiLeftArrowAlt className="text-2xl" />
-              <h5 className="text-md">{items[openNavItemIdx].name}</h5>
+              <h5 className="text-md">{items[openNavItemIdx]?.name}</h5>
             </button>
 
             <ul className="flex flex-row flex-wrap gap-x-36 gap-y-5 px-9 py-4 md:gap-y-8">
-              {items[openNavItemIdx].items?.map(
+              {items[openNavItemIdx]?.items?.map(
                 ({ name, url, description }) => (
                   <li key={name} className="w-full md:w-1/3">
                     <div className="flex flex-col gap-1">

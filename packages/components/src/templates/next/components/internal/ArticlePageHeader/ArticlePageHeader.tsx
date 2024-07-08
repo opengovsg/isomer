@@ -26,7 +26,8 @@ const ArticlePageHeader = ({
 
         <div className="text-xl tracking-tight text-gray-500 md:text-2xl">
           {summary.length === 1 ? (
-            <BaseParagraph content={summary[0]} />
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            <BaseParagraph content={summary[0]!} />
           ) : (
             <ul className="list-disc ps-7">
               {summary.map((item) => (
