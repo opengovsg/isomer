@@ -20,8 +20,8 @@ module.exports = {
     "^(expo(.*)$)|^(expo$)",
     "<THIRD_PARTY_MODULES>",
     "",
-    "<TYPES>^@dgs",
-    "^@dgs/(.*)$",
+    "<TYPES>^@isomer",
+    "^@isomer/(.*)$",
     "",
     "<TYPES>^[.|..|~]",
     "^~/",
@@ -30,4 +30,4 @@ module.exports = {
   ],
   importOrderParserPlugins: ["typescript", "jsx", "decorators-legacy"],
   importOrderTypeScriptVersion: "5.5.3",
-};
+}
