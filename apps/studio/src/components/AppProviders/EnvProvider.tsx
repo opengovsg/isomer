@@ -1,8 +1,10 @@
+import type { PropsWithChildren } from "react"
+import { createContext } from "react"
+
+import { type env } from "~/env.mjs"
+
 // This file allows us to pass in environment variables to our app.
 // Used to allow overriding of environment variables in storybook tests.
-import { createContext, type PropsWithChildren } from 'react'
-
-import { type env } from '~/env.mjs'
 
 // Typescript magic to only select keys from object T that start with a prefix S.
 type PickStartsWith<T extends object, S extends string> = {
@@ -10,7 +12,7 @@ type PickStartsWith<T extends object, S extends string> = {
 }
 
 export interface EnvContextReturn {
-  env: PickStartsWith<typeof env, 'NEXT_PUBLIC'>
+  env: PickStartsWith<typeof env, "NEXT_PUBLIC">
 }
 
 export const EnvContext = createContext<EnvContextReturn | undefined>(undefined)

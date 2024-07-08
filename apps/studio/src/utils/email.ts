@@ -1,4 +1,4 @@
-import isEmail from 'validator/lib/isEmail'
+import isEmail from "validator/lib/isEmail"
 
 export const getEmailDomain = (email?: string) => {
   if (!email) {
@@ -7,7 +7,7 @@ export const getEmailDomain = (email?: string) => {
   if (!isEmail(email)) {
     return undefined
   }
-  return email.split('@').pop()
+  return email.split("@").pop()
 }
 
 /**
@@ -15,6 +15,6 @@ export const getEmailDomain = (email?: string) => {
  */
 export const isGovEmail = (value: unknown) => {
   return (
-    typeof value === 'string' && isEmail(value) && value.endsWith('.gov.sg')
+    typeof value === "string" && isEmail(value) && value.endsWith(".gov.sg")
   )
 }

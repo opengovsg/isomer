@@ -1,9 +1,9 @@
-import { format } from 'date-fns/format'
+import { format } from "date-fns/format"
 
 export const formatRelativeTime = (
   date?: Date | null,
   baseDate?: Date | null,
-  formatStr = 'MMM dd',
+  formatStr = "MMM dd",
 ) => {
   if (date === null || date === undefined) return
 
@@ -27,7 +27,7 @@ export const formatRelativeTime = (
     t = format(date, formatStr)
   }
   if (isFuture) {
-    return 'in ' + t
+    return "in " + t
   } else {
     return t
   }

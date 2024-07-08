@@ -1,76 +1,76 @@
+import { useState } from "react"
 import {
-  Text,
-  TableContainer,
-  Table,
-  Thead,
-  Tr,
-  Th,
+  Badge,
+  Box,
   Checkbox,
   HStack,
+  Icon,
+  IconButton,
+  Table,
+  TableContainer,
   Tbody,
   Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
   VStack,
-  Badge,
-  IconButton,
-  Box,
-  Icon,
-} from '@chakra-ui/react'
-import { Pagination } from '@opengovsg/design-system-react'
-import { useState } from 'react'
+} from "@chakra-ui/react"
+import { Pagination } from "@opengovsg/design-system-react"
 import {
-  BiHome,
+  BiDotsHorizontalRounded,
   BiFileBlank,
   BiFolder,
+  BiHome,
   BiSolidCircle,
-  BiDotsHorizontalRounded,
-} from 'react-icons/bi'
-import { MdOutlineHorizontalRule } from 'react-icons/md'
+} from "react-icons/bi"
+import { MdOutlineHorizontalRule } from "react-icons/md"
 
 export const DashboardTable = (): JSX.Element => {
   const dummyChildData: {
     id: string
     name: string
     permalink: string
-    type: 'page' | 'folder'
-    status: 'folder' | 'draft' | 'published'
+    type: "page" | "folder"
+    status: "folder" | "draft" | "published"
     lastEditUser: string
-    lastEditDate: Date | 'folder'
+    lastEditDate: Date | "folder"
   }[] = [
     {
-      id: '0001',
-      name: 'Test Page 1',
-      permalink: '/',
-      type: 'page',
-      status: 'draft',
-      lastEditUser: 'user1@test.com',
+      id: "0001",
+      name: "Test Page 1",
+      permalink: "/",
+      type: "page",
+      status: "draft",
+      lastEditUser: "user1@test.com",
       lastEditDate: new Date(),
     },
     {
-      id: '0003',
-      name: 'Test Folder 1',
-      permalink: '/testfolder1',
-      type: 'folder',
-      status: 'folder',
-      lastEditUser: 'folder',
-      lastEditDate: 'folder',
+      id: "0003",
+      name: "Test Folder 1",
+      permalink: "/testfolder1",
+      type: "folder",
+      status: "folder",
+      lastEditUser: "folder",
+      lastEditDate: "folder",
     },
     {
-      id: '0002',
-      name: 'Test Page 2',
-      permalink: '/testpage2',
-      type: 'page',
-      status: 'published',
-      lastEditUser: 'user2@test.com',
+      id: "0002",
+      name: "Test Page 2",
+      permalink: "/testpage2",
+      type: "page",
+      status: "published",
+      lastEditUser: "user2@test.com",
       lastEditDate: new Date(50000000000),
     },
     {
-      id: '0004',
-      name: 'Test Folder 2',
-      permalink: '/testfolder2',
-      type: 'folder',
-      status: 'folder',
-      lastEditUser: 'folder',
-      lastEditDate: 'folder',
+      id: "0004",
+      name: "Test Folder 2",
+      permalink: "/testfolder2",
+      type: "folder",
+      status: "folder",
+      lastEditUser: "folder",
+      lastEditDate: "folder",
     },
   ]
 
@@ -126,30 +126,30 @@ export const DashboardTable = (): JSX.Element => {
 
                     <Td>
                       <HStack spacing="0.75rem">
-                        {element.type === 'page' &&
-                          element.permalink === '/' && (
+                        {element.type === "page" &&
+                          element.permalink === "/" && (
                             <BiHome size="1.25rem" />
                           )}
-                        {element.type === 'page' &&
-                          element.permalink !== '/' && (
+                        {element.type === "page" &&
+                          element.permalink !== "/" && (
                             <BiFileBlank size="1.25rem" />
                           )}
-                        {element.type === 'folder' && (
+                        {element.type === "folder" && (
                           <BiFolder size="1.25rem" />
                         )}
 
                         <VStack alignItems="flex-start">
                           <Text textStyle="subhead-2">{element.name}</Text>
                           <Text textStyle="caption-2">
-                            {element.type === 'page' && element.permalink}
-                            {element.type === 'folder' && '0 pages'}
+                            {element.type === "page" && element.permalink}
+                            {element.type === "folder" && "0 pages"}
                           </Text>
                         </VStack>
                       </HStack>
                     </Td>
 
                     <Td>
-                      {element.type === 'page' && element.status == 'draft' && (
+                      {element.type === "page" && element.status == "draft" && (
                         <Badge
                           variant="subtle"
                           colorScheme="warning"
@@ -163,8 +163,8 @@ export const DashboardTable = (): JSX.Element => {
                           Draft
                         </Badge>
                       )}
-                      {element.type === 'page' &&
-                        element.status == 'published' && (
+                      {element.type === "page" &&
+                        element.status == "published" && (
                           <Badge
                             variant="subtle"
                             colorScheme="success"
@@ -178,12 +178,12 @@ export const DashboardTable = (): JSX.Element => {
                             Published
                           </Badge>
                         )}
-                      {element.type === 'folder' && <MdOutlineHorizontalRule />}
+                      {element.type === "folder" && <MdOutlineHorizontalRule />}
                     </Td>
 
                     <Td>
                       <HStack justifyContent="space-between">
-                        {element.type === 'page' && (
+                        {element.type === "page" && (
                           <VStack alignSelf="stretch" alignItems="flex-start">
                             <Text
                               textColor="base.content.strong"
@@ -199,19 +199,19 @@ export const DashboardTable = (): JSX.Element => {
                                 (new Date().getTime() -
                                   (element.lastEditDate as Date).getTime()) /
                                   (1000 * 3600 * 24),
-                              )}{' '}
+                              )}{" "}
                               Days Ago
                             </Text>
                           </VStack>
                         )}
 
-                        {element.type === 'folder' && (
+                        {element.type === "folder" && (
                           <MdOutlineHorizontalRule />
                         )}
                         <IconButton
                           variant="clear"
                           colorScheme="neutral"
-                          aria-label={'Manage'}
+                          aria-label={"Manage"}
                           icon={<BiDotsHorizontalRounded size="1.5rem" />}
                         />
                       </HStack>

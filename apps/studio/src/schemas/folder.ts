@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from "zod"
 
 const MAX_FOLDER_TITLE_LENGTH = 100
 const MAX_FOLDER_PERMALINK_LENGTH = 200

@@ -2,13 +2,14 @@
  *
  * This is an example router, you can delete this file and then update `../pages/api/trpc/[trpc].tsx`
  */
-import { z } from 'zod'
-import { env } from '~/env.mjs'
-import { protectedProcedure, router } from '~/server/trpc'
-import { updateMeSchema } from '~/schemas/me'
-import { TRPCError } from '@trpc/server'
-import { Prisma } from '@prisma/client'
-import { defaultMeSelect } from './me.select'
+import { Prisma } from "@prisma/client"
+import { TRPCError } from "@trpc/server"
+import { z } from "zod"
+
+import { env } from "~/env.mjs"
+import { updateMeSchema } from "~/schemas/me"
+import { protectedProcedure, router } from "~/server/trpc"
+import { defaultMeSelect } from "./me.select"
 
 export const meRouter = router({
   get: protectedProcedure.query(async ({ ctx }) => {
@@ -41,15 +42,15 @@ export const meRouter = router({
         })
       } catch (e) {
         if (e instanceof Prisma.PrismaClientKnownRequestError) {
-          if (e.code === 'P2002') {
-            ctx.logger.info('Username conflict', {
+          if (e.code === "P2002") {
+            ctx.logger.info("Username conflict", {
               userId: ctx.user.id,
               chosen: input.username,
             })
 
             throw new TRPCError({
-              message: 'That username has been taken. Please choose another.',
-              code: 'CONFLICT',
+              message: "That username has been taken. Please choose another.",
+              code: "CONFLICT",
               cause: e,
             })
           }

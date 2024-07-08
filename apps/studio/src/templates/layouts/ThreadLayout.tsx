@@ -1,3 +1,3 @@
-import { AdminLayout } from './AdminLayout'
+import { AdminLayout } from "./AdminLayout"
 
 export const ThreadLayout = AdminLayout

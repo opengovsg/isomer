@@ -1,12 +1,12 @@
 /* eslint-disable import/prefer-default-export */
-import { protectedProcedure, router } from '~/server/trpc'
-import { createFolderSchema, readFolderSchema } from '~/schemas/folder'
+import { createFolderSchema, readFolderSchema } from "~/schemas/folder"
+import { protectedProcedure, router } from "~/server/trpc"
 
 export const folderRouter = router({
   create: protectedProcedure
     .input(createFolderSchema)
     .mutation(async ({ ctx, input }) => {
-      return { folderId: '' }
+      return { folderId: "" }
     }),
   readFolder: protectedProcedure
     .input(readFolderSchema)
@@ -17,32 +17,32 @@ export const folderRouter = router({
       // 2. Page status(draft, published)
 
       const folderResult = await ctx.db
-        .selectFrom('Resource')
-        .selectAll('Resource')
-        .where('id', '=', input.resourceId)
+        .selectFrom("Resource")
+        .selectAll("Resource")
+        .where("id", "=", input.resourceId)
         .executeTakeFirstOrThrow()
       const childrenResult = await ctx.db
-        .selectFrom('Resource')
-        .selectAll('Resource')
-        .where('parentId', '=', input.resourceId)
+        .selectFrom("Resource")
+        .selectAll("Resource")
+        .where("parentId", "=", input.resourceId)
         .execute()
       const children = childrenResult.map((c) => {
         if (c.blobId) {
           return {
             id: c.id,
             name: c.name,
-            type: 'page',
+            type: "page",
             lastEditDate: new Date(0),
-            lastEditUser: 'Coming Soon',
-            permalink: '/placeholder',
-            status: 'published',
+            lastEditUser: "Coming Soon",
+            permalink: "/placeholder",
+            status: "published",
           }
         }
         return {
           id: c.id,
           name: c.name,
-          type: 'folder',
-          permalink: '/placeholder',
+          type: "folder",
+          permalink: "/placeholder",
         }
       })
 

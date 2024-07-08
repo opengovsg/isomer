@@ -1,7 +1,7 @@
-import wretch from 'wretch'
-import { env } from '~/env.mjs'
+import sendgrid from "@sendgrid/mail"
+import wretch from "wretch"
 
-import sendgrid from '@sendgrid/mail'
+import { env } from "~/env.mjs"
 
 type SendMailParams = {
   recipient: string
@@ -18,7 +18,7 @@ export const sgClient = env.SENDGRID_API_KEY ? sendgrid : null
 export const sendMail = async (params: SendMailParams): Promise<void> => {
   if (env.POSTMAN_API_KEY) {
     return await wretch(
-      'https://api.postman.gov.sg/v1/transactional/email/send',
+      "https://api.postman.gov.sg/v1/transactional/email/send",
     )
       .auth(`Bearer ${env.POSTMAN_API_KEY}`)
       .post(params)
@@ -36,7 +36,7 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
   }
 
   console.warn(
-    'POSTMAN_API_KEY or SENDGRID_API_KEY missing. Logging the following mail: ',
+    "POSTMAN_API_KEY or SENDGRID_API_KEY missing. Logging the following mail: ",
     params,
   )
   return

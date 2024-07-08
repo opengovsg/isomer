@@ -1,6 +1,7 @@
-import { z } from 'zod'
-import { sgid } from '~/lib/sgid'
-import { safeSchemaJsonParse } from '~/utils/zod'
+import { z } from "zod"
+
+import { sgid } from "~/lib/sgid"
+import { safeSchemaJsonParse } from "~/utils/zod"
 
 const pocdexSgidSchema = z.array(
   z.object({
@@ -15,8 +16,8 @@ const pocdexSgidSchema = z.array(
 const expectedUserInfo = z.object({
   sub: z.string(),
   data: z.object({
-    'myinfo.name': z.string(),
-    'pocdex.public_officer_details': z.string().transform((value, ctx) => {
+    "myinfo.name": z.string(),
+    "pocdex.public_officer_details": z.string().transform((value, ctx) => {
       const result = safeSchemaJsonParse(pocdexSgidSchema, value)
       if (!result.success) {
         ctx.addIssue({
@@ -33,7 +34,7 @@ export type SgidUserInfo = z.infer<typeof expectedUserInfo>
 
 export const sgidSessionProfileSchema = z.object({
   list: pocdexSgidSchema,
-  name: expectedUserInfo.shape.data.shape['myinfo.name'],
+  name: expectedUserInfo.shape.data.shape["myinfo.name"],
   sub: expectedUserInfo.shape.sub,
   expiry: z.number(),
 })
@@ -49,7 +50,7 @@ export const getUserInfo = async ({
   nonce?: string
 }) => {
   if (!sgid) {
-    throw new Error('SGID is not enabled')
+    throw new Error("SGID is not enabled")
   }
 
   const { sub, accessToken } = await sgid.callback({

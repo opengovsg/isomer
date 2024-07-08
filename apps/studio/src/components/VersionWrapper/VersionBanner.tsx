@@ -1,4 +1,4 @@
-import { Banner } from '@opengovsg/design-system-react'
+import { Banner } from "@opengovsg/design-system-react"
 
 export const VersionBanner = () => {
   return (

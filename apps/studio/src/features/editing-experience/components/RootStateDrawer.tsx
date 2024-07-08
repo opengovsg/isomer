@@ -1,21 +1,18 @@
+import type { DropResult } from "@hello-pangea/dnd"
 import {
-  VStack,
-  HStack,
   Box,
-  Divider,
-  Spacer,
   Button,
+  Divider,
+  HStack,
+  Spacer,
   Text,
-} from '@chakra-ui/react'
-import {
-  type DropResult,
-  DragDropContext,
-  Droppable,
-  Draggable,
-} from '@hello-pangea/dnd'
-import { BsPlus } from 'react-icons/bs'
-import { MdOutlineDragIndicator } from 'react-icons/md'
-import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
+  VStack,
+} from "@chakra-ui/react"
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import { BsPlus } from "react-icons/bs"
+import { MdOutlineDragIndicator } from "react-icons/md"
+
+import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 export default function RootStateDrawer() {
   const { setDrawerState, pageState, setPageState, setEditorState } =
@@ -78,8 +75,8 @@ export default function RootStateDrawer() {
                           w="100%"
                           gap={0}
                           onClick={() => {
-                            console.log('huh')
-                            setDrawerState({ state: 'nativeEditor' })
+                            console.log("huh")
+                            setDrawerState({ state: "nativeEditor" })
                           }}
                         >
                           <HStack
@@ -92,9 +89,9 @@ export default function RootStateDrawer() {
                           >
                             <MdOutlineDragIndicator
                               style={{
-                                marginLeft: '0.75rem',
-                                width: '1.5rem',
-                                height: '1.5rem',
+                                marginLeft: "0.75rem",
+                                width: "1.5rem",
+                                height: "1.5rem",
                               }}
                             />
                             <Text px="3" fontWeight={500}>
@@ -124,9 +121,9 @@ export default function RootStateDrawer() {
         <Button
           w="100%"
           variant="outline"
-          onClick={() => setDrawerState({ state: 'addBlock' })}
+          onClick={() => setDrawerState({ state: "addBlock" })}
         >
-          <BsPlus style={{ height: '1.25rem', width: '1.25rem' }} />
+          <BsPlus style={{ height: "1.25rem", width: "1.25rem" }} />
           Add a new block
         </Button>
       </Box>

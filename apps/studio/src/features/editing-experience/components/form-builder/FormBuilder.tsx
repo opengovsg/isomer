@@ -1,39 +1,36 @@
-import { type JsonFormsRendererRegistryEntry } from '@jsonforms/core'
-import { JsonForms } from '@jsonforms/react'
+import type { IsomerComplexComponentProps } from "@opengovsg/isomer-components"
+import { useState } from "react"
+import { type JsonFormsRendererRegistryEntry } from "@jsonforms/core"
+import { JsonForms } from "@jsonforms/react"
+import { IsomerComplexComponentsMap } from "@opengovsg/isomer-components"
+import Ajv from "ajv"
 
-import Ajv from 'ajv'
-import { useState } from 'react'
-
-import {
-  IsomerComplexComponentsMap,
-  type IsomerComplexComponentProps,
-} from '@opengovsg/isomer-components'
 import {
   JsonFormsAllOfControl,
-  JsonFormsAnyOfControl,
-  JsonFormsArrayControl,
-  JsonFormsBooleanControl,
-  JsonFormsDropdownControl,
-  JsonFormsIntegerControl,
-  JsonFormsObjectControl,
-  JsonFormsProseControl,
-  JsonFormsRadioControl,
-  JsonFormsTextControl,
   jsonFormsAllOfControlTester,
+  JsonFormsAnyOfControl,
   jsonFormsAnyOfControlTester,
+  JsonFormsArrayControl,
   jsonFormsArrayControlTester,
+  JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
+  JsonFormsDropdownControl,
   jsonFormsDropdownControlTester,
   jsonFormsGroupLayoutRenderer,
   jsonFormsGroupLayoutTester,
+  JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
+  JsonFormsObjectControl,
   jsonFormsObjectControlTester,
+  JsonFormsProseControl,
   jsonFormsProseControlTester,
+  JsonFormsRadioControl,
   jsonFormsRadioControlTester,
+  JsonFormsTextControl,
   jsonFormsTextControlTester,
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
-} from './renderers'
+} from "./renderers"
 
 const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
@@ -60,7 +57,7 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
 ]
 
 export interface FormBuilderProps {
-  component: IsomerComplexComponentProps['type']
+  component: IsomerComplexComponentProps["type"]
 }
 
 export default function FormBuilder({

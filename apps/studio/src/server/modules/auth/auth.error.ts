@@ -7,7 +7,7 @@ class AuthError extends Error {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         cause: { err: message, ...(message.cause as any), ...cause },
       })
-    } else if (typeof message === 'string') {
+    } else if (typeof message === "string") {
       if (cause instanceof Error) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         cause = { err: cause, ...(cause.cause as any) }

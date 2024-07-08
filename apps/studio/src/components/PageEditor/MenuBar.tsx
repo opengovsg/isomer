@@ -11,9 +11,9 @@ import {
   PopoverTrigger,
   Text,
   VStack,
-} from '@chakra-ui/react'
-import { Button, Menu } from '@opengovsg/design-system-react'
-import { Editor } from '@tiptap/react'
+} from "@chakra-ui/react"
+import { Button, Menu } from "@opengovsg/design-system-react"
+import { Editor } from "@tiptap/react"
 import {
   BiBold,
   BiChevronDown,
@@ -31,14 +31,14 @@ import {
   BiTable,
   BiUnderline,
   BiUndo,
-} from 'react-icons/bi'
-import { MdSubscript, MdSuperscript } from 'react-icons/md'
-import { IconType } from 'react-icons/lib'
+} from "react-icons/bi"
+import { IconType } from "react-icons/lib"
+import { MdSubscript, MdSuperscript } from "react-icons/md"
 
-import { MenuItem } from './MenuItem'
+import { MenuItem } from "./MenuItem"
 
 interface MenuBarItem {
-  type: 'item'
+  type: "item"
   title: string
   icon?: IconType
   textStyle?: string
@@ -49,21 +49,21 @@ interface MenuBarItem {
 }
 
 interface MenuBarDivider {
-  type: 'divider'
+  type: "divider"
   isHidden?: boolean
 }
 
 interface MenuBarVerticalList {
-  type: 'vertical-list'
-  buttonWidth: MenuButtonProps['width']
-  menuWidth: MenuListProps['width']
+  type: "vertical-list"
+  buttonWidth: MenuButtonProps["width"]
+  menuWidth: MenuListProps["width"]
   defaultTitle: string
   items: MenuBarItem[]
   isHidden?: boolean
 }
 
 interface MenuBarHorizontalList {
-  type: 'horizontal-list'
+  type: "horizontal-list"
   label: string
   defaultIcon: IconType
   items: MenuBarItem[]
@@ -79,7 +79,7 @@ interface MenuBarDetailedItem {
 }
 
 interface MenuBarDetailedList {
-  type: 'detailed-list'
+  type: "detailed-list"
   label: string
   icon: IconType
   items: MenuBarDetailedItem[]
@@ -96,51 +96,51 @@ type MenuBarEntry =
 export const MenuBar = ({ editor }: { editor: Editor }) => {
   const items: MenuBarEntry[] = [
     {
-      type: 'vertical-list',
-      buttonWidth: '9rem',
-      menuWidth: '19rem',
-      defaultTitle: 'Heading 1',
+      type: "vertical-list",
+      buttonWidth: "9rem",
+      menuWidth: "19rem",
+      defaultTitle: "Heading 1",
       items: [
         {
-          type: 'item',
-          title: 'Title',
-          textStyle: 'h1',
+          type: "item",
+          title: "Title",
+          textStyle: "h1",
           useSecondaryColor: true,
           action: () =>
             editor.chain().focus().toggleHeading({ level: 1 }).run(),
-          isActive: () => editor.isActive('heading', { level: 1 }),
+          isActive: () => editor.isActive("heading", { level: 1 }),
         },
         {
-          type: 'item',
-          title: 'Heading 1',
-          textStyle: 'h2',
+          type: "item",
+          title: "Heading 1",
+          textStyle: "h2",
           useSecondaryColor: true,
           action: () =>
             editor.chain().focus().toggleHeading({ level: 2 }).run(),
-          isActive: () => editor.isActive('heading', { level: 2 }),
+          isActive: () => editor.isActive("heading", { level: 2 }),
         },
         {
-          type: 'item',
-          title: 'Heading 2',
-          textStyle: 'h3',
+          type: "item",
+          title: "Heading 2",
+          textStyle: "h3",
           useSecondaryColor: true,
           action: () =>
             editor.chain().focus().toggleHeading({ level: 3 }).run(),
-          isActive: () => editor.isActive('heading', { level: 3 }),
+          isActive: () => editor.isActive("heading", { level: 3 }),
         },
         {
-          type: 'item',
-          title: 'Heading 3',
-          textStyle: 'h4',
+          type: "item",
+          title: "Heading 3",
+          textStyle: "h4",
           useSecondaryColor: true,
           action: () =>
             editor.chain().focus().toggleHeading({ level: 4 }).run(),
-          isActive: () => editor.isActive('heading', { level: 4 }),
+          isActive: () => editor.isActive("heading", { level: 4 }),
         },
         {
-          type: 'item',
-          title: 'Quote block',
-          textStyle: 'body-1',
+          type: "item",
+          title: "Quote block",
+          textStyle: "body-1",
           useSecondaryColor: true,
           leftItem: (
             <Divider
@@ -152,90 +152,90 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
             />
           ),
           action: () => editor.chain().focus().toggleBlockquote().run(),
-          isActive: () => editor.isActive('blockquote'),
+          isActive: () => editor.isActive("blockquote"),
         },
         {
-          type: 'item',
-          title: 'Paragraph',
-          textStyle: 'body-1',
+          type: "item",
+          title: "Paragraph",
+          textStyle: "body-1",
           action: () =>
             editor.chain().focus().clearNodes().unsetAllMarks().run(),
-          isActive: () => editor.isActive('paragraph'),
+          isActive: () => editor.isActive("paragraph"),
         },
       ],
     },
     {
-      type: 'divider',
+      type: "divider",
     },
     {
-      type: 'item',
+      type: "item",
       icon: BiBold,
-      title: 'Bold',
+      title: "Bold",
       action: () => editor.chain().focus().toggleBold().run(),
-      isActive: () => editor.isActive('bold'),
+      isActive: () => editor.isActive("bold"),
     },
     {
-      type: 'item',
+      type: "item",
       icon: BiItalic,
-      title: 'Italicise',
+      title: "Italicise",
       action: () => editor.chain().focus().toggleItalic().run(),
-      isActive: () => editor.isActive('italic'),
+      isActive: () => editor.isActive("italic"),
     },
     {
-      type: 'item',
+      type: "item",
       icon: BiUnderline,
-      title: 'Underline',
+      title: "Underline",
       action: () => editor.chain().focus().toggleUnderline().run(),
-      isActive: () => editor.isActive('underline'),
+      isActive: () => editor.isActive("underline"),
     },
     {
-      type: 'item',
+      type: "item",
       icon: BiStrikethrough,
-      title: 'Strikethrough',
+      title: "Strikethrough",
       action: () => editor.chain().focus().toggleStrike().run(),
-      isActive: () => editor.isActive('strike'),
+      isActive: () => editor.isActive("strike"),
     },
     {
-      type: 'item',
+      type: "item",
       icon: MdSuperscript,
-      title: 'Superscript',
+      title: "Superscript",
       action: () => editor.chain().focus().toggleSuperscript().run(),
-      isActive: () => editor.isActive('superscript'),
+      isActive: () => editor.isActive("superscript"),
     },
     {
-      type: 'item',
+      type: "item",
       icon: MdSubscript,
-      title: 'Subscript',
+      title: "Subscript",
       action: () => editor.chain().focus().toggleSubscript().run(),
-      isActive: () => editor.isActive('subscript'),
+      isActive: () => editor.isActive("subscript"),
     },
     {
-      type: 'divider',
+      type: "divider",
     },
     {
-      type: 'horizontal-list',
-      label: 'Lists',
+      type: "horizontal-list",
+      label: "Lists",
       defaultIcon: BiListOl,
       items: [
         {
-          type: 'item',
+          type: "item",
           icon: BiListOl,
-          title: 'Ordered list',
+          title: "Ordered list",
           action: () => editor.chain().focus().toggleOrderedList().run(),
-          isActive: () => editor.isActive('orderedList'),
+          isActive: () => editor.isActive("orderedList"),
         },
 
         {
-          type: 'item',
+          type: "item",
           icon: BiListUl,
-          title: 'Bullet list',
+          title: "Bullet list",
           action: () => editor.chain().focus().toggleBulletList().run(),
-          isActive: () => editor.isActive('bulletList'),
+          isActive: () => editor.isActive("bulletList"),
         },
       ],
     },
     {
-      type: 'divider',
+      type: "divider",
     },
     // {
     //   type: 'item',
@@ -244,9 +244,9 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
     //   action: () => showModal('hyperlink'),
     // },
     {
-      type: 'item',
+      type: "item",
       icon: BiTable,
-      title: 'Add table',
+      title: "Add table",
       action: () =>
         editor
           .chain()
@@ -262,18 +262,18 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
     //   action: () => showModal('files'),
     // },
     {
-      type: 'divider',
+      type: "divider",
     },
     {
-      type: 'item',
+      type: "item",
       icon: BiUndo,
-      title: 'Undo',
+      title: "Undo",
       action: () => editor.chain().focus().undo().run(),
     },
     {
-      type: 'item',
+      type: "item",
       icon: BiRedo,
-      title: 'Redo',
+      title: "Redo",
       action: () => editor.chain().focus().redo().run(),
     },
   ]
@@ -293,7 +293,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
     >
       {items.map((item) => (
         <>
-          {item.type === 'divider' && !item.isHidden && (
+          {item.type === "divider" && !item.isHidden && (
             <Divider
               orientation="vertical"
               borderColor="base.divider.strong"
@@ -302,7 +302,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
             />
           )}
 
-          {item.type === 'vertical-list' && (
+          {item.type === "vertical-list" && (
             <Menu>
               {({ isOpen }) => {
                 const activeItem = item.items.find(
@@ -332,7 +332,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
                             <Text
                               textStyle={subItem.textStyle}
                               fontWeight={
-                                subItem.textStyle !== 'body-1' ? 400 : undefined
+                                subItem.textStyle !== "body-1" ? 400 : undefined
                               }
                               color="chakra-body-text"
                             >
@@ -356,15 +356,15 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
             </Menu>
           )}
 
-          {item.type === 'horizontal-list' && (
+          {item.type === "horizontal-list" && (
             <Popover placement="bottom">
               {({ isOpen }) => (
                 <>
                   <PopoverTrigger>
                     <HStack>
                       <Button
-                        _hover={{ bg: 'gray.100' }}
-                        _active={{ bg: 'gray.200' }}
+                        _hover={{ bg: "gray.100" }}
+                        _active={{ bg: "gray.200" }}
                         bgColor="transparent"
                         border="none"
                         h="1.75rem"
@@ -406,12 +406,12 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
             </Popover>
           )}
 
-          {item.type === 'detailed-list' && !item.isHidden && (
+          {item.type === "detailed-list" && !item.isHidden && (
             <Popover placement="bottom" offset={[0, 16]}>
               <PopoverTrigger>
                 <Button
-                  _hover={{ bg: 'gray.100' }}
-                  _active={{ bg: 'gray.200' }}
+                  _hover={{ bg: "gray.100" }}
+                  _active={{ bg: "gray.200" }}
                   bgColor="transparent"
                   border="none"
                   h="1.75rem"
@@ -446,7 +446,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
                             py="0.25rem"
                             aria-label={item.label}
                             borderRadius={0}
-                            _hover={{ bg: 'base.canvas.brand-subtle' }}
+                            _hover={{ bg: "base.canvas.brand-subtle" }}
                           >
                             <HStack
                               w="100%"
@@ -479,7 +479,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
             </Popover>
           )}
 
-          {item.type === 'item' && <MenuItem {...item} />}
+          {item.type === "item" && <MenuItem {...item} />}
         </>
       ))}
     </HStack>

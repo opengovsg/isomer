@@ -1,25 +1,26 @@
-import { dirname, join } from 'path'
-import type { StorybookConfig } from '@storybook/nextjs'
+import { dirname, join } from "path"
+import type { StorybookConfig } from "@storybook/nextjs"
+
 const config: StorybookConfig = {
-  stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
+  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
 
   addons: [
-    getAbsolutePath('@storybook/addon-links'),
-    getAbsolutePath('@storybook/addon-essentials'),
-    getAbsolutePath('@storybook/addon-interactions'),
-    getAbsolutePath('@storybook/addon-themes'),
-    getAbsolutePath('@storybook/addon-a11y'),
-    getAbsolutePath('@storybook/addon-mdx-gfm'),
+    getAbsolutePath("@storybook/addon-links"),
+    getAbsolutePath("@storybook/addon-essentials"),
+    getAbsolutePath("@storybook/addon-interactions"),
+    getAbsolutePath("@storybook/addon-themes"),
+    getAbsolutePath("@storybook/addon-a11y"),
+    getAbsolutePath("@storybook/addon-mdx-gfm"),
   ],
 
   framework: {
-    name: getAbsolutePath('@storybook/nextjs'),
+    name: getAbsolutePath("@storybook/nextjs"),
     options: {},
   },
 
   docs: {},
 
-  staticDirs: ['../public'],
+  staticDirs: ["../public"],
 
   core: {
     disableTelemetry: true,
@@ -27,18 +28,18 @@ const config: StorybookConfig = {
 
   env: (config) => ({
     ...config,
-    SKIP_ENV_VALIDATION: 'true',
+    SKIP_ENV_VALIDATION: "true",
     STORYBOOK_ENVIRONMENT: JSON.stringify(process.env),
   }),
 
   typescript: {
     check: false,
     skipCompiler: false,
-    reactDocgen: 'react-docgen-typescript',
+    reactDocgen: "react-docgen-typescript",
   },
 }
 export default config
 
 function getAbsolutePath(value: string): any {
-  return dirname(require.resolve(join(value, 'package.json')))
+  return dirname(require.resolve(join(value, "package.json")))
 }

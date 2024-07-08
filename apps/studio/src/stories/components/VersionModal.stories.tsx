@@ -1,11 +1,11 @@
-import { Box } from '@chakra-ui/react'
-import { type Meta, type StoryObj } from '@storybook/react'
+import { Box } from "@chakra-ui/react"
+import { type Meta, type StoryObj } from "@storybook/react"
 
-import { getMobileViewParameters } from '../utils/viewports'
-import { VersionModal } from '~/components/VersionWrapper/VersionModal'
+import { VersionModal } from "~/components/VersionWrapper/VersionModal"
+import { getMobileViewParameters } from "../utils/viewports"
 
 const meta: Meta<typeof VersionModal> = {
-  title: 'Components/Version Modal',
+  title: "Components/Version Modal",
   component: VersionModal,
   // Required for Chromatic to know the dimensions of the snapshot to take,
   // since the modal is rendered in a portal and Chromatic only detects the
@@ -18,13 +18,13 @@ const meta: Meta<typeof VersionModal> = {
     ),
   ],
   parameters: {
-    layout: 'fullscreen',
+    layout: "fullscreen",
     // Prevent flaky tests due to modal animating in.
     chromatic: { delay: 200 },
   },
   args: {
     isOpen: true,
-    onClose: () => console.log('close'),
+    onClose: () => console.log("close"),
   },
 }
 

@@ -1,6 +1,6 @@
-import { publicProcedure, router } from '~/server/trpc'
-import { emailSessionRouter } from './email/email.router'
-import { sgidRouter } from './sgid/sgid.router'
+import { publicProcedure, router } from "~/server/trpc"
+import { emailSessionRouter } from "./email/email.router"
+import { sgidRouter } from "./sgid/sgid.router"
 
 export const authRouter = router({
   email: emailSessionRouter,

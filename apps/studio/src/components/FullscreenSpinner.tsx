@@ -1,5 +1,5 @@
-import { Container } from '@chakra-ui/react'
-import { Spinner } from '@opengovsg/design-system-react'
+import { Container } from "@chakra-ui/react"
+import { Spinner } from "@opengovsg/design-system-react"
 
 export const FullscreenSpinner = (): JSX.Element => {
   return (

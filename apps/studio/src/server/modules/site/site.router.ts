@@ -1,7 +1,7 @@
-import { protectedProcedure, router } from '~/server/trpc'
-import { getConfigSchema } from '~/schemas/site'
-import { getSiteConfig } from './site.service'
-import { getFooter, getNavBar } from '../resource/resource.service'
+import { getConfigSchema } from "~/schemas/site"
+import { protectedProcedure, router } from "~/server/trpc"
+import { getFooter, getNavBar } from "../resource/resource.service"
+import { getSiteConfig } from "./site.service"
 
 export const siteRouter = router({
   getConfig: protectedProcedure

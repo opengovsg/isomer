@@ -1,6 +1,6 @@
-import { Kysely, PostgresDialect } from 'kysely'
-import { Pool } from 'pg'
-import { type DB } from 'prisma/generated/generatedTypes'
+import { Kysely, PostgresDialect } from "kysely"
+import { Pool } from "pg"
+import { type DB } from "prisma/generated/generatedTypes"
 
 const connectionString = `${process.env.DATABASE_URL}`
 
@@ -12,6 +12,6 @@ const dialect = new PostgresDialect({
 })
 
 export const db: Kysely<DB> = new Kysely<DB>({
-  log: process.env.NODE_ENV === 'development' ? ['error'] : undefined,
+  log: process.env.NODE_ENV === "development" ? ["error"] : undefined,
   dialect,
 })

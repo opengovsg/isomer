@@ -1,17 +1,17 @@
 export type RootDrawerState = {
-  state: 'root'
+  state: "root"
 }
 
 export type AddNewBlockState = {
-  state: 'addBlock'
+  state: "addBlock"
 }
 
 export type NativeEditorState = {
-  state: 'nativeEditor'
+  state: "nativeEditor"
 }
 
 export type ComplexEditorState = {
-  state: 'complexEditor'
+  state: "complexEditor"
 }
 
 export type DrawerState =
