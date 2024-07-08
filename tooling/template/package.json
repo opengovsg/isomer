@@ -7,7 +7,10 @@
     "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && npm run build",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "format:fix": "prettier --write . --ignore-path ../../.gitignore"
   },
   "dependencies": {
     "@opengovsg/isomer-components": "*",
@@ -19,8 +22,10 @@
     "typescript": "^5.4.5"
   },
   "devDependencies": {
-    "@types/node": "^20.12.8",
-    "eslint": "^8",
-    "eslint-config-next": "14.1.0"
-  }
+    "@isomer/eslint-config": "*",
+    "@isomer/prettier-config": "*",
+    "@isomer/tsconfig": "*",
+    "@types/node": "^20.12.8"
+  },
+  "prettier": "@isomer/prettier-config"
 }
