@@ -1,26 +1,58 @@
-name: Tests
-on: [push]
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - production
+  pull_request:
+    types: [opened, synchronize]
+
+env:
+  LOG_LEVEL: silent
+
 jobs:
-  tests:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        node: ["18.x"]
-        os: [ubuntu-latest]
+  lint:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: Use Node ${{ matrix.node }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node }}
-          cache: "npm" # You can active this cache when your repo has a lockfile
+      - name: Setup
+        uses: ./tooling/github/setup
 
-      - name: Install deps (with cache)
-        run: npm install
+      - name: Lint
+        run: npm run lint && npm run lint:ws
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./tooling/github/setup
+
+      - name: Format
+        run: npm run format
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./tooling/github/setup
+
+      - name: Typecheck
+        run: npm run typecheck
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./tooling/github/setup
 
       - name: Install playwright
         run: npx playwright install chromium
@@ -55,7 +87,6 @@ jobs:
         run: npm run teardown
 
       - name: Upload test results
-        if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
           name: test results
