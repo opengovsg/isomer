@@ -5,6 +5,7 @@
   "globalEnv": ["NODE_ENV", "DATABASE_URL", "SESSION_SECRET"],
   "tasks": {
     "build": {
+      "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "clean": {},
