@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
-import siteConfig from "./data/config.json"
 import { NextPreset } from "@opengovsg/isomer-components"
+
+import siteConfig from "./data/config.json"
 
 const config = {
   content: [
