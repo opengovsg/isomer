@@ -34,7 +34,7 @@ interface SignInContextProviderProps {
   delayForResendSeconds?: number
 }
 
-export type VfnStepData = {
+export interface VfnStepData {
   email: string
   otpPrefix: string
 }

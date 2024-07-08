@@ -11,9 +11,9 @@ import { auth } from "./auth"
 class MockIronStore {
   private static instance: MockIronStore
 
-  private saved: { [key: string]: string | object | number }
+  private saved: Record<string, string | object | number>
 
-  private unsaved: { [key: string]: string | object | number }
+  private unsaved: Record<string, string | object | number>
 
   private constructor() {
     this.saved = {}

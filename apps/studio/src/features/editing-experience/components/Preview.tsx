@@ -15,7 +15,6 @@ export default function Preview(props: IsomerSchema) {
 
   return (
     <RenderEngine
-      // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
       site={{
         siteName: name,

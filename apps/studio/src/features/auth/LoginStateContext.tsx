@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext } from "react"
 import { LOGGED_IN_KEY } from "~/constants/localStorage"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
 
-type LoginStateContextReturn = {
+interface LoginStateContextReturn {
   hasLoginStateFlag?: boolean
   setHasLoginStateFlag: () => void
   removeLoginStateFlag: () => void

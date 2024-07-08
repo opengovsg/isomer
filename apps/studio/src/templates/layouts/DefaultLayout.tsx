@@ -3,7 +3,9 @@ import Head from "next/head"
 
 import { useEnv } from "~/hooks/useEnv"
 
-type DefaultLayoutProps = { children: ReactNode }
+interface DefaultLayoutProps {
+  children: ReactNode
+}
 
 export const DefaultLayout = ({ children }: DefaultLayoutProps) => {
   const { env } = useEnv()

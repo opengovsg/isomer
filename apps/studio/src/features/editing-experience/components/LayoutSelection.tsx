@@ -238,7 +238,6 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                   {`${selectedLayout.layoutDisplayName} Layout`}
                 </Text>
               </HStack>
-              {/* eslint-disable-next-line react/jsx-props-no-spreading */}
               <Preview {...selectedLayout.previewJson} />
               <Box position="absolute" top="0" left="0" w="100%" h="100%" />
             </Box>
