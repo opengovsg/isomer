@@ -1,4 +1,5 @@
 import React from "react" // Import React
+
 import type { HeaderProps } from "~/interfaces"
 
 type Breadcrumb = {
@@ -25,7 +26,11 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
           // If exact match, set title and mark current page in breadcrumbs
           if (permalink === fullPath) {
             title = pathTitle
-            breadcrumbs.push({ name: pathTitle, href: fullPath, current: true })
+            breadcrumbs.push({
+              name: pathTitle,
+              href: fullPath,
+              current: true,
+            })
           } else {
             breadcrumbs.push({ name: pathTitle, href: fullPath })
           }
@@ -68,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
               <div className="flex items-center">
                 <a
                   href={breadcrumb.href}
-                  className="tracking-wider text-sm font-light uppercase"
+                  className="text-sm font-light uppercase tracking-wider"
                   aria-current={breadcrumb.current ? "page" : undefined}
                 >
                   {breadcrumb.name}

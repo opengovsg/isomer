@@ -9,13 +9,14 @@ import {
 } from "react-icons/fa"
 import { FaTelegram, FaXTwitter } from "react-icons/fa6"
 import { IoLogoGithub } from "react-icons/io"
-import { IsomerLogo } from "~/assets/IsomerLogo"
-import { OgpLogo } from "~/assets/OgpLogo"
+
 import type { FooterProps } from "~/interfaces"
 import type {
   FooterItem as FooterItemType,
   SocialMediaType,
 } from "~/interfaces/internal/Footer"
+import { IsomerLogo } from "~/assets/IsomerLogo"
+import { OgpLogo } from "~/assets/OgpLogo"
 
 const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
   facebook: FaFacebook,
@@ -267,7 +268,7 @@ const FooterMobile = ({
   siteMapLink,
 }: FooterProps) => {
   return (
-    <div className="flex flex-col gap-14 px-6 py-16 md:p-20 lg:hidden ">
+    <div className="flex flex-col gap-14 px-6 py-16 md:p-20 lg:hidden">
       <SiteNameSection siteName={siteName} />
       <NavSection
         siteNavItems={navItems}

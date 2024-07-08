@@ -1,4 +1,5 @@
 import { Footer } from "@govtechsg/sgds-react/Footer"
+
 import type { FooterProps } from "~/interfaces"
 
 const IsomerFooter = ({ agencyName, siteNavItems }: FooterProps) => {

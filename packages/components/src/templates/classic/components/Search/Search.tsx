@@ -1,11 +1,12 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
+import DOMPurify from "isomorphic-dompurify"
 import MiniSearch from "minisearch"
 import { BiChevronsLeft, BiChevronsRight } from "react-icons/bi"
+
 import type { SearchProps } from "~/interfaces"
 import type { SearchRecord } from "~/interfaces/internal/Search"
-import DOMPurify from "isomorphic-dompurify"
 
 const Search: React.FC<SearchProps> = ({ index }) => {
   const [searchTerm, setSearchTerm] = useState<string>("")
