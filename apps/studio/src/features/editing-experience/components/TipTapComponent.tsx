@@ -49,7 +49,7 @@ const typeMapping = {
 }
 
 function TipTapComponent({ type }: TipTapComponentProps) {
-  const { setDrawerState, setPageState, currActiveIdx, editorState } =
+  const { setDrawerState, setPageState, currActiveIdx, snapshot: editorState } =
     useEditorDrawerContext()
 
   const updatePageState = (editorContent: JSONContent) => {
