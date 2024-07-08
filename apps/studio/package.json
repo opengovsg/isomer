@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "generate": "prisma generate",
+    "generate": "prisma generate && npm run lint:fix && npm run format:fix",
     "db:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
     "db:sleep": "sleep 3",
     "db:seed": "prisma db seed",
@@ -18,7 +18,9 @@
     "build:theme": "npx chakra-cli tokens src/theme/index.ts",
     "start": "next start",
     "format": "prettier --check . --ignore-path ../../.gitignore",
+    "format:fix": "prettier --write . --ignore-path ../../.gitignore",
     "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "typecheck": "tsc --noEmit",
     "migrate:dev": "prisma migrate dev",
     "migrate": "prisma migrate deploy",
