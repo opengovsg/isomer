@@ -1,4 +1,5 @@
 import { BiChevronDown } from "react-icons/bi"
+
 import type { SidePaneProps } from "~/interfaces"
 
 export type SectionWithSiblings = {
@@ -52,7 +53,7 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
             {parentNodeSiblings.siblings.map((sibling, index) => (
               <li
                 key={index}
-                className={`list-none py-2  ${
+                className={`list-none py-2 ${
                   currentPermalink === sibling.permalink ? "font-bold" : ""
                 }`}
               >

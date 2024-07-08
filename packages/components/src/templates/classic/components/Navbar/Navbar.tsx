@@ -1,7 +1,6 @@
 import { Fragment } from "react"
 import { Disclosure, Menu, Transition } from "@headlessui/react"
-
-import { BiMenu, BiX, BiSearch } from "react-icons/bi"
+import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 
 export type NavbarLink = {
   type: "single" | "dropdown"

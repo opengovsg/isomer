@@ -1,5 +1,5 @@
-import { getSitemapAsArray } from "~/utils"
 import type { IsomerPageSchemaType, IsomerSitemap } from "~/types"
+import { getSitemapAsArray } from "~/utils"
 
 export const getMetadata = (props: IsomerPageSchemaType) => {
   const metadata = {

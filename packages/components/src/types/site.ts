@@ -1,6 +1,6 @@
+import type { IsomerSitemap } from "./sitemap"
 import type { NavbarProps } from "~/interfaces"
 import type { SiteConfigFooterProps } from "~/interfaces/internal/Footer"
-import type { IsomerSitemap } from "./sitemap"
 
 export interface IsomerGeneratedSiteProps {
   siteMap: IsomerSitemap

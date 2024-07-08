@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+
 import type { TableProps } from "~/interfaces"
 import BaseParagraph from "../../internal/BaseParagraph"
 import Divider from "../Divider"
@@ -70,7 +71,7 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
         <caption className="mb-4 caption-top text-left">
           <BaseParagraph
             content={caption}
-            className="text-caption-01 text-content sticky left-0 table-header-group text-balance"
+            className="sticky left-0 table-header-group text-balance text-content text-caption-01"
           />
         </caption>
         <tbody>

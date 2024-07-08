@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
-import plugin from "tailwindcss/plugin"
 import defaultTheme from "tailwindcss/defaultTheme"
+import plugin from "tailwindcss/plugin"
 
 export default {
   theme: {

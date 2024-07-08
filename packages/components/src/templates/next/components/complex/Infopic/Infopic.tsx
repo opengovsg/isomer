@@ -1,6 +1,6 @@
 import type { InfopicProps } from "~/interfaces"
-import Button from "../Button"
 import { ComponentContent } from "../../internal/customCssClass"
+import Button from "../Button"
 
 const TextComponent = ({
   title,
