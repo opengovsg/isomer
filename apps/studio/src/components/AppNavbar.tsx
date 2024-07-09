@@ -1,15 +1,16 @@
-import { Flex, HStack } from '@chakra-ui/react'
+import Image from "next/image"
+import NextLink from "next/link"
+import { Flex, HStack } from "@chakra-ui/react"
 import {
   AvatarMenu,
   AvatarMenuDivider,
   Link,
   Menu,
-} from '@opengovsg/design-system-react'
-import Image from 'next/image'
-import NextLink from 'next/link'
-import { ADMIN_NAVBAR_HEIGHT } from '~/constants/layouts'
-import { useMe } from '~/features/me/api'
-import { SETTINGS_PROFILE } from '~/lib/routes'
+} from "@opengovsg/design-system-react"
+
+import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
+import { useMe } from "~/features/me/api"
+import { SETTINGS_PROFILE } from "~/lib/routes"
 
 export function AppNavbar(): JSX.Element {
   const { me, logout } = useMe()
@@ -22,8 +23,8 @@ export function AppNavbar(): JSX.Element {
         w="100%"
         justify="space-between"
         align="center"
-        px={{ base: '1.5rem', md: '1.8rem', xl: '2rem' }}
-        pl={{ base: `calc(1rem + ${ADMIN_NAVBAR_HEIGHT})`, sm: '1.5rem' }}
+        px={{ base: "1.5rem", md: "1.8rem", xl: "2rem" }}
+        pl={{ base: `calc(1rem + ${ADMIN_NAVBAR_HEIGHT})`, sm: "1.5rem" }}
         py="0.375rem"
         bg="white"
         borderBottomWidth="1px"
@@ -33,7 +34,7 @@ export function AppNavbar(): JSX.Element {
         <Link
           as={NextLink}
           href="/home"
-          mx={{ base: 'auto', sm: 0 }}
+          mx={{ base: "auto", sm: 0 }}
           transition="margin 0.1s"
         >
           <Image
@@ -47,13 +48,13 @@ export function AppNavbar(): JSX.Element {
         </Link>
         <HStack
           textStyle="subhead-1"
-          spacing={{ base: '0.75rem', md: '1.5rem' }}
+          spacing={{ base: "0.75rem", md: "1.5rem" }}
         >
           <AvatarMenu
-            name={me?.name ?? undefined}
+            name={me.name ?? undefined}
             variant="subtle"
             bg="base.canvas.brand-subtle"
-            menuListProps={{ maxWidth: '19rem' }}
+            menuListProps={{ maxWidth: "19rem" }}
           >
             <Menu.Item as={NextLink} href={SETTINGS_PROFILE}>
               Edit profile

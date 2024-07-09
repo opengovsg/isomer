@@ -1,22 +1,20 @@
-import { Box, FormControl, RadioGroup } from '@chakra-ui/react'
-import {
-  and,
-  isEnumControl,
-  rankWith,
-  schemaMatches,
-  type ControlProps,
-  type OwnPropsOfEnum,
-  type RankedTester,
-} from '@jsonforms/core'
-import { withJsonFormsEnumProps } from '@jsonforms/react'
-import { FormLabel, Radio } from '@opengovsg/design-system-react'
-import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
+import type {
+  ControlProps,
+  OwnPropsOfEnum,
+  RankedTester,
+} from "@jsonforms/core"
+import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
+import { and, isEnumControl, rankWith, schemaMatches } from "@jsonforms/core"
+import { withJsonFormsEnumProps } from "@jsonforms/react"
+import { FormLabel, Radio } from "@opengovsg/design-system-react"
+
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsRadioControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.RadioControl,
   and(
     isEnumControl,
-    schemaMatches((schema) => schema.format === 'radio'),
+    schemaMatches((schema) => schema.format === "radio"),
   ),
 )
 

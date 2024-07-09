@@ -1,13 +1,13 @@
-import { Box } from '@chakra-ui/react'
+import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
+import { Box } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
   isAllOfControl,
   rankWith,
-  type CombinatorRendererProps,
-  type RankedTester,
-} from '@jsonforms/core'
-import { JsonFormsDispatch, withJsonFormsAllOfProps } from '@jsonforms/react'
-import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
+} from "@jsonforms/core"
+import { JsonFormsDispatch, withJsonFormsAllOfProps } from "@jsonforms/react"
+
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsAllOfControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.AllOfControl,
@@ -26,7 +26,7 @@ export function JsonFormsAllOfControl({
   const allOfRenderInfos = createCombinatorRenderInfos(
     schema.allOf || [],
     rootSchema,
-    'allOf',
+    "allOf",
     uischema,
     path,
     uischemas,

@@ -1,5 +1,6 @@
-import { type User } from 'prisma/generated/generatedTypes'
-import { prisma } from '~/server/prisma'
+import { type User } from "prisma/generated/generatedTypes"
+
+import { prisma } from "~/server/prisma"
 
 export const auth = (user: User) => {
   if (user.id) {

@@ -1,19 +1,20 @@
+import { type ContentPageSchemaType } from "@opengovsg/isomer-components"
+
 import {
   createPageSchema,
   getEditPageSchema,
   updatePageBlobSchema,
   updatePageSchema,
-} from '~/schemas/page'
-import { protectedProcedure, publicProcedure, router } from '~/server/trpc'
+} from "~/schemas/page"
+import { protectedProcedure, publicProcedure, router } from "~/server/trpc"
 import {
   getFooter,
   getFullPageById,
   getNavBar,
   updateBlobById,
   updatePageById,
-} from '../resource/resource.service'
-import { getSiteConfig } from '../site/site.service'
-import { type ContentPageSchemaType } from '@opengovsg/isomer-components'
+} from "../resource/resource.service"
+import { getSiteConfig } from "../site/site.service"
 
 // TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page
@@ -56,10 +57,8 @@ export const pageRouter = router({
       return input
     }),
 
-  createPage: pageProcedure
-    .input(createPageSchema)
-    .query(async ({ input, ctx }) => {
-      return { pageId: '' }
-    }),
+  createPage: pageProcedure.input(createPageSchema).query(({ input, ctx }) => {
+    return { pageId: "" }
+  }),
   // TODO: Delete page stuff here
 })

@@ -1,18 +1,11 @@
-import {
-  createContext,
-  type Dispatch,
-  type PropsWithChildren,
-  useContext,
-  useState,
-  useCallback,
-  type SetStateAction,
-} from 'react'
-import { useInterval } from 'usehooks-ts'
+import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
+import { createContext, useCallback, useContext, useState } from "react"
+import { useInterval } from "usehooks-ts"
 
 interface SignInState {
   timer: number
   resetTimer: () => void
-  state: 'initial' | 'email'
+  state: "initial" | "email"
   vfnStepData: VfnStepData | undefined
   setVfnStepData: Dispatch<SetStateAction<VfnStepData | undefined>>
   proceedToEmail: () => void
@@ -26,7 +19,7 @@ export const useSignInContext = () => {
 
   if (context === undefined) {
     throw new Error(
-      `Must use sign in context within ${SignInContextProvider}.name`,
+      `Must use sign in context within ${SignInContextProvider.name}`,
     )
   }
 
@@ -41,7 +34,7 @@ interface SignInContextProviderProps {
   delayForResendSeconds?: number
 }
 
-export type VfnStepData = {
+export interface VfnStepData {
   email: string
   otpPrefix: string
 }
@@ -50,7 +43,7 @@ export const SignInContextProvider = ({
   children,
   delayForResendSeconds = 60,
 }: PropsWithChildren<SignInContextProviderProps>) => {
-  const [state, setState] = useState<'initial' | 'email'>('initial')
+  const [state, setState] = useState<"initial" | "email">("initial")
   const [vfnStepData, setVfnStepData] = useState<VfnStepData>()
   const [timer, setTimer] = useState(delayForResendSeconds)
 
@@ -60,11 +53,11 @@ export const SignInContextProvider = ({
   )
 
   const proceedToEmail = useCallback(() => {
-    setState('email')
+    setState("email")
   }, [])
 
   const backToInitial = useCallback(() => {
-    setState('initial')
+    setState("initial")
     setVfnStepData(undefined)
   }, [])
 

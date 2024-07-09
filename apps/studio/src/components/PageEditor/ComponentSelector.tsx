@@ -7,9 +7,9 @@ import {
   Text,
   VStack,
   Wrap,
-} from '@chakra-ui/react'
-import { Button, IconButton } from '@opengovsg/design-system-react'
-import { type IconType } from 'react-icons'
+} from "@chakra-ui/react"
+import { Button, IconButton } from "@opengovsg/design-system-react"
+import { type IconType } from "react-icons"
 import {
   BiCard,
   BiColumns,
@@ -25,9 +25,10 @@ import {
   BiSolidQuoteAltLeft,
   BiText,
   BiX,
-} from 'react-icons/bi'
-import { type SectionType } from './types'
-import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
+} from "react-icons/bi"
+
+import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { type SectionType } from "./types"
 
 function Section({ children }: React.PropsWithChildren) {
   return (
@@ -98,7 +99,7 @@ function ComponentSelector() {
     useEditorDrawerContext()
   const onProceed = (sectionType: SectionType) => {
     // TODO: add new section to page/editor state
-    setDrawerState({ state: 'root' })
+    setDrawerState({ state: "root" })
   }
   return (
     <VStack w="full" gap="0">
@@ -126,7 +127,7 @@ function ComponentSelector() {
           aria-label="Close add component"
           icon={<BiX />}
           onClick={() => {
-            setDrawerState({ state: 'root' })
+            setDrawerState({ state: "root" })
           }}
         />
       </Flex>

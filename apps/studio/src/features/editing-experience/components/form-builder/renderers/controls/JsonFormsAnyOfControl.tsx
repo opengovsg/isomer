@@ -1,15 +1,15 @@
-import { Box, FormControl } from '@chakra-ui/react'
+import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
+import { useState } from "react"
+import { Box, FormControl } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
   isAnyOfControl,
   rankWith,
-  type CombinatorRendererProps,
-  type RankedTester,
-} from '@jsonforms/core'
-import { JsonFormsDispatch, withJsonFormsAnyOfProps } from '@jsonforms/react'
-import { FormLabel, SingleSelect } from '@opengovsg/design-system-react'
-import { useState } from 'react'
-import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
+} from "@jsonforms/core"
+import { JsonFormsDispatch, withJsonFormsAnyOfProps } from "@jsonforms/react"
+import { FormLabel, SingleSelect } from "@opengovsg/design-system-react"
+
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsAnyOfControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.AnyOfControl,
@@ -27,9 +27,9 @@ export function JsonFormsAnyOfControl({
   label,
 }: CombinatorRendererProps) {
   const anyOfRenderInfos = createCombinatorRenderInfos(
-    schema.anyOf || [],
+    schema.anyOf ?? [],
     rootSchema,
-    'anyOf',
+    "anyOf",
     uischema,
     path,
     uischemas,
@@ -40,7 +40,7 @@ export function JsonFormsAnyOfControl({
     value: anyOfRenderInfo.label,
   }))
 
-  const [variant, setVariant] = useState(anyOfRenderInfos[0]?.label || '')
+  const [variant, setVariant] = useState(anyOfRenderInfos[0]?.label || "")
 
   return (
     <Box py={2}>

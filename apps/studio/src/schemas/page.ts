@@ -1,6 +1,6 @@
-import { z } from 'zod'
+import { z } from "zod"
 
-const PAGE_LAYOUTS = ['content'] as const
+const PAGE_LAYOUTS = ["content"] as const
 
 export const getEditPageSchema = z.object({
   pageId: z.number().min(1),
@@ -23,7 +23,7 @@ export const createPageSchema = z.object({
   pageName: z.string(),
   pageTitle: z.string(),
   // TODO: add the actual layouts in here
-  layout: z.enum(PAGE_LAYOUTS).default('content'),
+  layout: z.enum(PAGE_LAYOUTS).default("content"),
   siteId: z.number().min(1),
   // NOTE: implies that top level pages are allowed
   folderId: z.number().min(1).optional(),

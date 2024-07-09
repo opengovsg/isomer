@@ -1,10 +1,11 @@
-import { Flex } from '@chakra-ui/react'
-import { useRouter } from 'next/router'
-import { BackBannerButton } from '~/components/BackBannerButton'
-import { APP_GRID_COLUMN, APP_GRID_TEMPLATE_COLUMN } from '~/constants/layouts'
-import { type NextPageWithLayout } from '~/lib/types'
-import { AppGrid } from '~/templates/AppGrid'
-import { ThreadLayout } from '~/templates/layouts/ThreadLayout'
+import { useRouter } from "next/router"
+import { Flex } from "@chakra-ui/react"
+
+import { BackBannerButton } from "~/components/BackBannerButton"
+import { APP_GRID_COLUMN, APP_GRID_TEMPLATE_COLUMN } from "~/constants/layouts"
+import { type NextPageWithLayout } from "~/lib/types"
+import { AppGrid } from "~/templates/AppGrid"
+import { ThreadLayout } from "~/templates/layouts/ThreadLayout"
 
 const Thread: NextPageWithLayout = () => {
   const router = useRouter()
@@ -14,7 +15,7 @@ const Thread: NextPageWithLayout = () => {
         templateColumns={APP_GRID_TEMPLATE_COLUMN}
         bg="base.canvas.brand-subtle"
         py="1rem"
-        px={{ base: '1rem', lg: 0 }}
+        px={{ base: "1rem", lg: 0 }}
       >
         <BackBannerButton
           gridColumn={APP_GRID_COLUMN}
@@ -28,7 +29,7 @@ const Thread: NextPageWithLayout = () => {
         bg="white"
         pb="2.5rem"
         templateColumns={APP_GRID_TEMPLATE_COLUMN}
-        px={{ base: '1rem', lg: 0 }}
+        px={{ base: "1rem", lg: 0 }}
       />
     </Flex>
   )

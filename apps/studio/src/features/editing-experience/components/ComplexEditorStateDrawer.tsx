@@ -1,5 +1,6 @@
-import { Box } from '@chakra-ui/react'
-import FormBuilder from './form-builder/FormBuilder'
+import { Box } from "@chakra-ui/react"
+
+import FormBuilder from "./form-builder/FormBuilder"
 
 export default function ComplexEditorStateDrawer(): JSX.Element {
   return (

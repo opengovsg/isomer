@@ -6,16 +6,16 @@ export interface CustomRendererProps {
 }
 
 export type SectionType =
-  | 'paragraph'
-  | 'image'
-  | 'statistics'
-  | 'callout'
-  | 'textWithButton'
-  | 'textWithImage'
-  | 'cards'
-  | 'columns'
-  | 'accordion'
-  | 'divider'
-  | 'youtube'
-  | 'googleMaps'
-  | 'formsg'
+  | "paragraph"
+  | "image"
+  | "statistics"
+  | "callout"
+  | "textWithButton"
+  | "textWithImage"
+  | "cards"
+  | "columns"
+  | "accordion"
+  | "divider"
+  | "youtube"
+  | "googleMaps"
+  | "formsg"

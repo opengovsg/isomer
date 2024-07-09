@@ -1,9 +1,10 @@
-import { type User } from '@prisma/client'
-import { type IronSession } from 'iron-session'
-import { type SgidSessionProfile } from '~/server/modules/auth/sgid/sgid.utils'
+import { type User } from "@prisma/client"
+import { type IronSession } from "iron-session"
 
-export type SessionData = {
-  userId?: User['id']
+import { type SgidSessionProfile } from "~/server/modules/auth/sgid/sgid.utils"
+
+export interface SessionData {
+  userId?: User["id"]
   sgid?: {
     sessionState?: {
       codeVerifier: string

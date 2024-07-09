@@ -1,4 +1,4 @@
 export enum AccountProvider {
-  Email = 'email',
-  SgidPocdex = 'sgid-pocdex',
+  Email = "email",
+  SgidPocdex = "sgid-pocdex",
 }

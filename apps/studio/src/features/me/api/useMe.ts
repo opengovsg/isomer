@@ -1,7 +1,8 @@
-import { useCallback } from 'react'
-import Router from 'next/router'
-import { trpc } from '~/utils/trpc'
-import { useLoginState } from '~/features/auth'
+import { useCallback } from "react"
+import Router from "next/router"
+
+import { useLoginState } from "~/features/auth"
+import { trpc } from "~/utils/trpc"
 
 export const useMe = () => {
   const [me] = trpc.me.get.useSuspenseQuery()
@@ -12,10 +13,10 @@ export const useMe = () => {
   const logout = useCallback(
     (redirectToSignIn = true) => {
       return logoutMutation.mutate(undefined, {
-        onSuccess: async () => {
+        onSuccess: () => {
           removeLoginStateFlag()
           if (redirectToSignIn) {
-            await Router.push('/sign-in')
+            void Router.push("/sign-in")
           }
         },
       })

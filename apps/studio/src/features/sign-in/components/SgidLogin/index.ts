@@ -1,1 +1,1 @@
-export * from './SgidLoginButton'
+export * from "./SgidLoginButton"

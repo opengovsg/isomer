@@ -1,8 +1,8 @@
 export {
   default as jsonFormsGroupLayoutRenderer,
   jsonFormsGroupLayoutTester,
-} from './JsonFormsGroupLayout'
+} from "./JsonFormsGroupLayout"
 export {
   default as jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
-} from './JsonFormsVerticalLayout'
+} from "./JsonFormsVerticalLayout"

@@ -28,6 +28,7 @@
   "devDependencies": {
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
+    "@chromatic-com/storybook": "^1.6.1",
     "@storybook/addon-a11y": "^8.0.9",
     "@storybook/addon-essentials": "^8.0.9",
     "@storybook/addon-interactions": "^8.0.9",

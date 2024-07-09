@@ -1,12 +1,13 @@
-import { customAlphabet } from 'nanoid'
-import { scryptSync, timingSafeEqual } from 'node:crypto'
+import { scryptSync, timingSafeEqual } from "node:crypto"
+import { customAlphabet } from "nanoid"
+
 import {
   OTP_ALPHABET,
   OTP_LENGTH,
   OTP_PREFIX_ALPHABET,
   OTP_PREFIX_LENGTH,
-} from '~/lib/auth'
-import { normaliseEmail } from '~/utils/zod'
+} from "~/lib/auth"
+import { normaliseEmail } from "~/utils/zod"
 
 export const createVfnToken = customAlphabet(OTP_ALPHABET, OTP_LENGTH)
 
@@ -16,7 +17,7 @@ export const createVfnPrefix = customAlphabet(
 )
 
 export const createTokenHash = (token: string, email: string) => {
-  return scryptSync(token, email, 64).toString('base64')
+  return scryptSync(token, email, 64).toString("base64")
 }
 
 export const compareHash = (token: string, email: string, hash: string) => {

@@ -1,20 +1,19 @@
-import { type User } from '@prisma/client'
-import { type NextApiResponse, type NextApiRequest } from 'next'
-import {
-  createMocks,
-  type RequestOptions,
-  type ResponseOptions,
-} from 'node-mocks-http'
-import { type Session } from '~/lib/types/session'
-import { createContextInner, type Context } from '~/server/context'
-import { auth } from './auth'
+import type { RequestOptions, ResponseOptions } from "node-mocks-http"
+import { type NextApiRequest, type NextApiResponse } from "next"
+import { type User } from "@prisma/client"
+import { createMocks } from "node-mocks-http"
+
+import type { Context } from "~/server/context"
+import { type Session } from "~/lib/types/session"
+import { createContextInner } from "~/server/context"
+import { auth } from "./auth"
 
 class MockIronStore {
   private static instance: MockIronStore
 
-  private saved: { [key: string]: string | object | number }
+  private saved: Record<string, string | object | number>
 
-  private unsaved: { [key: string]: string | object | number }
+  private unsaved: Record<string, string | object | number>
 
   private constructor() {
     this.saved = {}
@@ -49,12 +48,12 @@ class MockIronStore {
   }
 }
 
-export const createMockRequest = async (
+export const createMockRequest = (
   session: Session,
-  reqOptions: RequestOptions = { method: 'GET' },
+  reqOptions: RequestOptions = { method: "GET" },
   resOptions?: ResponseOptions,
-): Promise<Context> => {
-  const innerContext = await createContextInner({ session })
+): Context => {
+  const innerContext = createContextInner({ session })
 
   const { req, res } = createMocks(reqOptions, resOptions)
 
@@ -72,6 +71,7 @@ export const applySession = () => {
     set: store.set.bind(store),
     get: store.get.bind(store),
     unset: store.unset,
+    // eslint-disable-next-line @typescript-eslint/require-await
     async save() {
       store.seal()
     },

@@ -1,12 +1,11 @@
-import {
-  forwardRef,
-  useRef,
-  type ChangeEventHandler,
-  type ComponentPropsWithoutRef,
-  type ForwardedRef,
-  type ReactNode,
-} from 'react'
-import { assignRef, useMergeRefs } from '@chakra-ui/react'
+import type {
+  ChangeEventHandler,
+  ComponentPropsWithoutRef,
+  ForwardedRef,
+  ReactNode,
+} from "react"
+import { forwardRef, useRef } from "react"
+import { assignRef, useMergeRefs } from "@chakra-ui/react"
 
 interface SingleFileButtonProps {
   value: File | null
@@ -56,10 +55,10 @@ interface CommonFileButtonProps {
    * Specifies that, optionally, a new file should be captured,
    * and which device should be used to capture that new media of a type defined
    * by the accept attribute. */
-  capture?: boolean | 'user' | 'environment'
+  capture?: boolean | "user" | "environment"
 
   /** Spreads props to input element used to capture files */
-  inputProps?: ComponentPropsWithoutRef<'input'>
+  inputProps?: ComponentPropsWithoutRef<"input">
 }
 
 export type FileButtonProps = (
@@ -94,7 +93,7 @@ export const FileButton: FileButtonComponent = forwardRef<
     const inputRef = useRef<HTMLInputElement>()
 
     const onClick = () => {
-      !disabled && inputRef?.current?.click()
+      !disabled && inputRef.current?.click()
     }
 
     const handleChange: ChangeEventHandler<HTMLInputElement> = (event) => {
@@ -112,7 +111,7 @@ export const FileButton: FileButtonComponent = forwardRef<
 
     const reset = () => {
       if (inputRef.current) {
-        inputRef.current.value = ''
+        inputRef.current.value = ""
       }
     }
 
@@ -124,13 +123,13 @@ export const FileButton: FileButtonComponent = forwardRef<
         {children({ onClick, ...others })}
 
         <input
-          style={{ display: 'none' }}
+          style={{ display: "none" }}
           type="file"
           accept={accept}
           multiple={multiple}
           // Use onClick event to clear value of target input, each time user clicks on field.
           // This ensures that the onChange event will be triggered for the same file as well.
-          onClick={(event) => ((event.target as HTMLInputElement).value = '')}
+          onClick={(event) => ((event.target as HTMLInputElement).value = "")}
           onChange={handleChange}
           ref={mergedRefs}
           name={name}
@@ -143,4 +142,4 @@ export const FileButton: FileButtonComponent = forwardRef<
   },
 )
 
-FileButton.displayName = 'FileButton'
+FileButton.displayName = "FileButton"
