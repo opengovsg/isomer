@@ -24,8 +24,10 @@ export default function RootStateDrawer() {
     const updatedBlocks = Array.from(pageState)
     // Remove block at source index
     const [movedBlock] = updatedBlocks.splice(result.source.index, 1)
-    // Insert at destination index
-    updatedBlocks.splice(result.destination.index, 0, movedBlock)
+    if (movedBlock) {
+      // Insert at destination index
+      updatedBlocks.splice(result.destination.index, 0, movedBlock)
+    }
 
     setPageState(updatedBlocks)
     setEditorState(updatedBlocks)
