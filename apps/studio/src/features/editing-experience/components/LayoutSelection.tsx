@@ -11,7 +11,10 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import { Button, Link } from '@opengovsg/design-system-react'
-import { type ISOMER_PAGE_LAYOUTS } from '@opengovsg/isomer-components'
+import {
+  type ISOMER_PAGE_LAYOUTS,
+  type IsomerSchema,
+} from '@opengovsg/isomer-components'
 import { useState } from 'react'
 import { BiLeftArrowAlt, BiRightArrowAlt, BiShow } from 'react-icons/bi'
 import Preview from '~/features/editing-experience/components/Preview'
@@ -27,16 +30,21 @@ export interface LayoutSelectionProps {
   folderId: string
 }
 
-type LayoutDataType =
-  (typeof ISOMER_PAGE_LAYOUTS)[keyof typeof ISOMER_PAGE_LAYOUTS]
+interface LayoutDataType {
+  layoutDisplayName: string
+  layoutTypename: (typeof ISOMER_PAGE_LAYOUTS)[keyof typeof ISOMER_PAGE_LAYOUTS]
+  layoutDescription: string
+  imageSource: string
+  previewJson: IsomerSchema
+}
 
-const LAYOUT_DATA = [
+const LAYOUT_DATA: LayoutDataType[] = [
   {
     layoutDisplayName: 'Default',
     layoutTypename: 'content',
     layoutDescription: 'This is the most basic layout for your content.',
     imageSource: '/assets/layout-card/default_layout_card.webp',
-    previewJson: contentLayoutPreview,
+    previewJson: contentLayoutPreview as IsomerSchema,
   },
   {
     layoutDisplayName: 'Article',
@@ -44,9 +52,9 @@ const LAYOUT_DATA = [
     layoutDescription:
       'Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches',
     imageSource: '/assets/layout-card/article_layout_card.webp',
-    previewJson: articleLayoutPreview,
+    previewJson: articleLayoutPreview as IsomerSchema,
   },
-] as const
+]
 
 // TODO: Make this headless by getting the LAYOUT_DATA from the schema. Find somewhere in the schema for layoutDescription & image(fetch this too or generate it)
 function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
@@ -229,11 +237,8 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                   {`${selectedLayout.layoutDisplayName} Layout`}
                 </Text>
               </HStack>
-              <Preview
-                layout={selectedLayout.previewJson.layout}
-                content={selectedLayout.previewJson.content}
-                page={selectedLayout.previewJson.page}
-              />
+              {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+              <Preview {...selectedLayout.previewJson} />
               <Box position="absolute" top="0" left="0" w="100%" h="100%" />
             </Box>
           </GridItem>

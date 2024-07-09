@@ -38,7 +38,7 @@ function EditPage(): JSX.Element {
       <GridItem colSpan={2} overflow="scroll">
         {/* TODO: the version here should be obtained from the schema  */}
         {/* and not from the page */}
-        <Preview {...page} content={pageState} />
+        <Preview {...page} version="0.1.0" content={pageState} />
       </GridItem>
     </Grid>
   )

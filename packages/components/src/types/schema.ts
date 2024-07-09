@@ -110,6 +110,8 @@ export const IsomerPageSchema = Type.Intersect([
   ]),
 ])
 
+export type IsomerSchema = Static<typeof IsomerPageSchema>
+
 interface BasePageAdditionalProps {
   site: IsomerSiteProps
   LinkComponent?: any // Next.js link

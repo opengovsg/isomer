@@ -1,10 +1,7 @@
-import {
-  type IsomerPageSchemaType,
-  RenderEngine,
-} from '@opengovsg/isomer-components'
+import { type IsomerSchema, RenderEngine } from '@opengovsg/isomer-components'
 import { trpc } from '~/utils/trpc'
 
-export default function Preview(props: IsomerPageSchemaType) {
+export default function Preview(props: IsomerSchema) {
   const [{ theme, isGovernment, sitemap, name }] =
     trpc.site.getConfig.useSuspenseQuery({ id: 1 })
   const [{ content: footer }] = trpc.site.getFooter.useSuspenseQuery({
