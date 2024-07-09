@@ -17,6 +17,7 @@ export default function robots(): MetadataRoute.Robots {
     site: {
       ...config.site,
       navBarItems: navbar,
+      // TODO: fixup all the typing errors
       // @ts-expect-error to fix when types are proper
       footerItems: footer,
       lastUpdated,
