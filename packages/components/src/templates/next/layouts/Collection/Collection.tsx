@@ -1,5 +1,5 @@
+import type { CollectionPageSchemaType, IsomerSitemap } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
-import type { CollectionPageSchema, IsomerSitemap } from "~/engine"
 import { getSitemapAsArray } from "~/utils"
 import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
@@ -90,7 +90,7 @@ const CollectionLayout = ({
   page,
   LinkComponent,
   ScriptComponent,
-}: CollectionPageSchema) => {
+}: CollectionPageSchemaType) => {
   const { permalink } = page
   const { siteMap } = site
 

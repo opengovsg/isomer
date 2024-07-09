@@ -1,9 +1,9 @@
 import { type IsomerComponent } from '@opengovsg/isomer-components'
-import React, {
+import {
   createContext,
-  useState,
   useContext,
   useMemo,
+  useState,
   type PropsWithChildren,
 } from 'react'
 import { type DrawerState } from '~/types/editorDrawer'

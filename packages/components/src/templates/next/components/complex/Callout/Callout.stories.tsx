@@ -1,8 +1,9 @@
-import { Meta, StoryFn } from "@storybook/react"
-import Callout from "./Callout"
-import type { CalloutProps } from "~/interfaces"
+import type { Meta, StoryObj } from "@storybook/react";
 
-export default {
+import type { CalloutProps } from "~/interfaces";
+import Callout from "./Callout";
+
+const meta: Meta<CalloutProps> = {
   title: "Next/Components/Callout",
   component: Callout,
   argTypes: {},
@@ -11,23 +12,26 @@ export default {
       themeOverride: "Isomer Next",
     },
   },
-} as Meta
-
-// Template for stories
-const Template: StoryFn<CalloutProps> = (args) => <Callout {...args} />
+};
+export default meta;
+type Story = StoryObj<typeof Callout>;
 
 // Default scenario
-export const Default = Template.bind({})
-Default.args = {
-  content: [
-    {
-      type: "paragraph",
+export const Default: Story = {
+  args: {
+    content: {
+      type: "prose",
       content: [
         {
-          type: "text",
-          text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+            },
+          ],
         },
       ],
     },
-  ],
-}
+  },
+};

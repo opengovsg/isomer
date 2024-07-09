@@ -1,4 +1,3 @@
-import React from 'react'
 import { Box } from '@chakra-ui/react'
 import FormBuilder from './form-builder/FormBuilder'
 

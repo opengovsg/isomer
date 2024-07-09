@@ -1,11 +1,10 @@
-import { protectedProcedure, router } from '~/server/trpc'
 import {
   createPageSchema,
   getEditPageSchema,
   updatePageBlobSchema,
   updatePageSchema,
 } from '~/schemas/page'
-import { type IsomerPageSchema } from '@opengovsg/isomer-components'
+import { protectedProcedure, publicProcedure, router } from '~/server/trpc'
 import {
   getFooter,
   getFullPageById,
@@ -14,6 +13,7 @@ import {
   updatePageById,
 } from '../resource/resource.service'
 import { getSiteConfig } from '../site/site.service'
+import { type ContentPageSchemaType } from '@opengovsg/isomer-components'
 
 // TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page
@@ -35,7 +35,7 @@ export const pageRouter = router({
         pageName,
         navbar,
         footer,
-        content: content as IsomerPageSchema,
+        content: content as ContentPageSchemaType,
         ...siteMeta,
       }
     }),

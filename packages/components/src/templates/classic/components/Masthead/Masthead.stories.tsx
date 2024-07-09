@@ -1,8 +1,9 @@
-import type { StoryFn, Meta } from "@storybook/react"
-import Masthead from "./Masthead"
-import type { MastheadProps } from "~/interfaces"
+import type { Meta, StoryObj } from "@storybook/react";
 
-export default {
+import type { MastheadProps } from "~/interfaces";
+import Masthead from "./Masthead";
+
+const meta: Meta<MastheadProps> = {
   title: "Classic/Components/Masthead",
   component: Masthead,
   argTypes: {},
@@ -11,18 +12,19 @@ export default {
       themeOverride: "Isomer Classic",
     },
   },
-} as Meta
-
-// Template for stories
-const Template: StoryFn<MastheadProps> = (args) => <Masthead {...args} />
+};
+export default meta;
+type Story = StoryObj<typeof Masthead>;
 
 // Default scenario
-export const Default = Template.bind({})
-Default.args = {
-  isStaging: false,
-}
+export const Default: Story = {
+  args: {
+    isStaging: false,
+  },
+};
 
-export const Staging = Template.bind({})
-Staging.args = {
-  isStaging: true,
-}
+export const Staging: Story = {
+  args: {
+    isStaging: true,
+  },
+};

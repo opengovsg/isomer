@@ -5,7 +5,7 @@ import {
   type VerticalLayout,
 } from '@jsonforms/core'
 
-export type IsomerJsonSchema = JsonSchema & {
+export type IsomerExtendedJsonSchema = JsonSchema & {
   groups?: Array<{
     label: string
     fields: string[]

@@ -604,7 +604,7 @@
             "description": "The alt text for the image"
           },
           "width": {
-            "type": "number",
+            "type": "integer",
             "title": "Image width",
             "description": "The width of the image",
             "exclusiveMinimum": 0,
@@ -678,7 +678,8 @@
             "type": "string",
             "title": "Infocards variant",
             "description": "The variant of the Infocards component to use",
-            "enum": ["side", "top"]
+            "enum": ["side", "top"],
+            "format": "radio"
           },
           "title": {
             "type": "string",
@@ -969,6 +970,16 @@
         "type": "object",
         "title": "Hero side variant",
         "required": ["variant", "title", "backgroundUrl"],
+        "groups": [
+          {
+            "label": "Primary call-to-action",
+            "fields": ["buttonLabel", "buttonUrl"]
+          },
+          {
+            "label": "Secondary call-to-action",
+            "fields": ["secondaryButtonLabel", "secondaryButtonUrl"]
+          }
+        ],
         "properties": {
           "variant": {
             "type": "string",

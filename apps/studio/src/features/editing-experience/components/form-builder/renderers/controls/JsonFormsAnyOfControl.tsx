@@ -1,22 +1,22 @@
 import { Box, FormControl } from '@chakra-ui/react'
 import {
   createCombinatorRenderInfos,
-  isOneOfControl,
+  isAnyOfControl,
   rankWith,
   type CombinatorRendererProps,
   type RankedTester,
 } from '@jsonforms/core'
-import { JsonFormsDispatch, withJsonFormsOneOfProps } from '@jsonforms/react'
+import { JsonFormsDispatch, withJsonFormsAnyOfProps } from '@jsonforms/react'
 import { FormLabel, SingleSelect } from '@opengovsg/design-system-react'
 import { useState } from 'react'
 import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
 
-export const jsonFormsOneOfControlTester: RankedTester = rankWith(
-  JSON_FORMS_RANKING.OneOfControl,
-  isOneOfControl,
+export const jsonFormsAnyOfControlTester: RankedTester = rankWith(
+  JSON_FORMS_RANKING.AnyOfControl,
+  isAnyOfControl,
 )
 
-export function JsonFormsOneOfControl({
+export function JsonFormsAnyOfControl({
   schema,
   path,
   renderers,
@@ -25,27 +25,27 @@ export function JsonFormsOneOfControl({
   uischema,
   uischemas,
   label,
-  description,
 }: CombinatorRendererProps) {
-  const oneOfRenderInfos = createCombinatorRenderInfos(
-    schema.oneOf || [],
+  const anyOfRenderInfos = createCombinatorRenderInfos(
+    schema.anyOf || [],
     rootSchema,
-    'oneOf',
+    'anyOf',
     uischema,
     path,
     uischemas,
   )
-  const variants = oneOfRenderInfos.map((oneOfRenderInfo) => ({
-    label: oneOfRenderInfo.label,
-    value: oneOfRenderInfo.label,
+
+  const variants = anyOfRenderInfos.map((anyOfRenderInfo) => ({
+    label: anyOfRenderInfo.label,
+    value: anyOfRenderInfo.label,
   }))
 
-  const [variant, setVariant] = useState(oneOfRenderInfos[0]?.label || '')
+  const [variant, setVariant] = useState(anyOfRenderInfos[0]?.label || '')
 
   return (
     <Box py={2}>
       <FormControl isRequired>
-        <FormLabel description={description}>{label}</FormLabel>
+        <FormLabel>Variant</FormLabel>
         <SingleSelect
           value={variant}
           name={label}
@@ -55,13 +55,13 @@ export function JsonFormsOneOfControl({
         />
       </FormControl>
 
-      {oneOfRenderInfos.map(
-        (oneOfRenderInfo) =>
-          variant === oneOfRenderInfo.label && (
+      {anyOfRenderInfos.map(
+        (anyOfRenderInfo) =>
+          variant === anyOfRenderInfo.label && (
             <JsonFormsDispatch
-              key={oneOfRenderInfo.label}
-              uischema={oneOfRenderInfo.uischema}
-              schema={oneOfRenderInfo.schema}
+              key={anyOfRenderInfo.label}
+              uischema={anyOfRenderInfo.uischema}
+              schema={anyOfRenderInfo.schema}
               path={path}
               renderers={renderers}
               cells={cells}
@@ -72,4 +72,4 @@ export function JsonFormsOneOfControl({
   )
 }
 
-export default withJsonFormsOneOfProps(JsonFormsOneOfControl)
+export default withJsonFormsAnyOfProps(JsonFormsAnyOfControl)

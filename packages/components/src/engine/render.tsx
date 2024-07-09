@@ -1,7 +1,7 @@
-import type { IsomerPageSchema } from "~/engine"
+import type { IsomerPageSchemaType } from "~/engine"
 import { renderLayout as renderNextLayout } from "~/templates/next"
 
-export const RenderEngine = (props: IsomerPageSchema) => {
+export const RenderEngine = (props: IsomerPageSchemaType) => {
   if (props.site.theme === "isomer-next") {
     return renderNextLayout(props)
   }

@@ -1,9 +1,9 @@
-import type { Meta, StoryFn } from "@storybook/react"
-import Header from "./Header"
-import Sitemap from "../../../../sitemap.json"
-import type { HeaderProps } from "~/interfaces"
+import type { Meta, StoryObj } from "@storybook/react";
 
-export default {
+import Sitemap from "../../../../sitemap.json";
+import Header from "./Header";
+
+const meta: Meta<typeof Header> = {
   title: "Classic/Components/Header",
   component: Header,
   argTypes: {},
@@ -12,14 +12,14 @@ export default {
       themeOverride: "Isomer Classic",
     },
   },
-} as Meta
-
-// Template for stories
-const Template: StoryFn<HeaderProps> = (args) => <Header {...args} />
+};
+export default meta;
+type Story = StoryObj<typeof Header>;
 
 // Default scenario
-export const Default = Template.bind({})
-Default.args = {
-  permalink: "/hello/world",
-  sitemap: Sitemap,
-}
+export const Default: Story = {
+  args: {
+    permalink: "/hello/world",
+    sitemap: Sitemap,
+  },
+};

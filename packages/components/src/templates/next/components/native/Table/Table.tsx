@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from "react"
 import type { TableProps } from "~/interfaces"
 import BaseParagraph from "../../internal/BaseParagraph"
-import Prose from "../Prose"
+import Divider from "../Divider"
+import OrderedList from "../OrderedList"
+import Paragraph from "../Paragraph"
+import UnorderedList from "../UnorderedList"
 
 // Determine if the table is larger than the parent container (usually the screen width)
 const getIsTableOverflowing = (tableRef: React.RefObject<HTMLTableElement>) => {
@@ -25,16 +28,16 @@ const getStickyRowIndexes = (tableRows: TableProps["content"]) => {
 
   tableRows
     .map((row) => row.content[0])
-    .forEach((cell, index) => {
+    .forEach(({ attrs }, index) => {
       if (!stickyRowIndexes.includes(index)) {
         // Index has already been removed by an earlier rowSpan
         return
       }
 
-      if (cell.rowSpan) {
+      if (attrs && attrs.rowspan) {
         // Exclude the next few rows that are covered by the rowSpan
         stickyRowIndexes = stickyRowIndexes.filter(
-          (value) => value <= index || value >= index + cell.rowSpan!,
+          (value) => value <= index || value >= index + attrs.rowspan!,
         )
       }
     })
@@ -42,7 +45,7 @@ const getStickyRowIndexes = (tableRows: TableProps["content"]) => {
   return stickyRowIndexes
 }
 
-const Table = ({ caption, content }: TableProps) => {
+const Table = ({ attrs: { caption }, content }: TableProps) => {
   const [isTableOverflowing, setIsTableOverflowing] = useState(false)
   const tableRef = useRef<HTMLTableElement>(null)
   const stickyRowIndexes = getStickyRowIndexes(content)
@@ -84,8 +87,8 @@ const Table = ({ caption, content }: TableProps) => {
                   return (
                     <TableCellTag
                       key={cellIndex}
-                      colSpan={cell.colSpan}
-                      rowSpan={cell.rowSpan}
+                      colSpan={cell.attrs?.colspan || 1}
+                      rowSpan={cell.attrs?.rowspan || 1}
                       className={`border-divide-subtle max-w-40 break-words border-b border-r px-4 py-3.5 align-top first:border-l last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ol]:text-sm [&_p]:text-sm [&_ul]:mt-0 [&_ul]:ps-5 ${
                         cell.type === "tableHeader"
                           ? "bg-utility-neutral"
@@ -102,7 +105,20 @@ const Table = ({ caption, content }: TableProps) => {
                           : ""
                       }`}
                     >
-                      <Prose content={cell.content} />
+                      {cell.content.map((cellContent, index) => {
+                        if (cellContent.type === "divider") {
+                          return <Divider key={index} {...cellContent} />
+                        } else if (cellContent.type === "orderedList") {
+                          return <OrderedList key={index} {...cellContent} />
+                        } else if (cellContent.type === "paragraph") {
+                          return <Paragraph key={index} {...cellContent} />
+                        } else if (cellContent.type === "unorderedList") {
+                          return <UnorderedList key={index} {...cellContent} />
+                        } else {
+                          const _: never = cellContent
+                          return <></>
+                        }
+                      })}
                     </TableCellTag>
                   )
                 })}

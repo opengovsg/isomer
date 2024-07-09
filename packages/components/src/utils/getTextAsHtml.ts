@@ -15,7 +15,11 @@ const MARK_DOM_MAPPING: Record<MarkTypes, string> = {
 }
 
 // Converts the text node with marks into the appropriate HTML
-export const getTextAsHtml = (content: (HardBreakProps | TextProps)[]) => {
+export const getTextAsHtml = (content?: (HardBreakProps | TextProps)[]) => {
+  if (!content) {
+    return ""
+  }
+
   return content
     .map((node) => {
       if (node.type === "hardBreak") {
