@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { ContentPageHeaderProps } from "~/interfaces";
-import ContentPageHeader from "./ContentPageHeader";
+import type { ContentPageHeaderProps } from "~/interfaces"
+import ContentPageHeader from "./ContentPageHeader"
 
 const meta: Meta<ContentPageHeaderProps> = {
   title: "Next/Internal Components/ContentPageHeader",
@@ -12,9 +12,9 @@ const meta: Meta<ContentPageHeaderProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof ContentPageHeader>;
+}
+export default meta
+type Story = StoryObj<typeof ContentPageHeader>
 
 export const Default: Story = {
   args: {
@@ -40,4 +40,4 @@ export const Default: Story = {
     buttonLabel: "Submit a proposal",
     buttonUrl: "https://www.google.com",
   },
-};
+}

@@ -10,7 +10,7 @@ import { trpc } from "~/utils/trpc"
 import { SgidProfileItem } from "./SgidProfileItem"
 import { SgidProfileListSkeleton } from "./SgidProfileListSkeleton"
 
-const _SgidProfileList = (): JSX.Element => {
+const SuspendibleSgidProfileList = (): JSX.Element => {
   const router = useRouter()
 
   const { setHasLoginStateFlag } = useLoginState()
@@ -50,6 +50,6 @@ const _SgidProfileList = (): JSX.Element => {
 }
 
 export const SgidProfileList = withSuspense(
-  _SgidProfileList,
+  SuspendibleSgidProfileList,
   <SgidProfileListSkeleton />,
 )

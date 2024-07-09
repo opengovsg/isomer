@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { InfopicProps } from "~/interfaces";
-import InfoPic from "./Infopic";
+import type { InfopicProps } from "~/interfaces"
+import InfoPic from "./Infopic"
 
 const meta: Meta<InfopicProps> = {
   title: "Next/Components/Infopic",
@@ -12,9 +12,9 @@ const meta: Meta<InfopicProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof InfoPic>;
+}
+export default meta
+type Story = StoryObj<typeof InfoPic>
 
 // Default scenario
 export const SideBySide: Story = {
@@ -30,7 +30,7 @@ export const SideBySide: Story = {
     buttonLabel: "Buy one",
     buttonUrl: "https://www.google.com",
   },
-};
+}
 
 export const SideBySideRightVariant: Story = {
   args: {
@@ -45,7 +45,7 @@ export const SideBySideRightVariant: Story = {
     buttonLabel: "Simone's Journey",
     buttonUrl: "https://www.google.com",
   },
-};
+}
 
 export const SidePart: Story = {
   args: {
@@ -60,7 +60,7 @@ export const SidePart: Story = {
     buttonLabel: "Primary CTA",
     buttonUrl: "https://www.google.com",
   },
-};
+}
 
 export const SidePartRightVariant: Story = {
   args: {
@@ -76,4 +76,4 @@ export const SidePartRightVariant: Story = {
     buttonLabel: "Primary CTA",
     buttonUrl: "https://www.google.com",
   },
-};
+}

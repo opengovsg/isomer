@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { AccordionProps } from "~/interfaces";
-import Accordion from "./Accordion";
+import type { AccordionProps } from "~/interfaces"
+import Accordion from "./Accordion"
 
 // Template for stories
 const Template = (props: AccordionProps) => {
@@ -11,8 +11,8 @@ const Template = (props: AccordionProps) => {
       <Accordion {...props} />
       <Accordion {...props} />
     </>
-  );
-};
+  )
+}
 
 const meta: Meta<typeof Accordion> = {
   title: "Next/Components/Accordion",
@@ -23,9 +23,9 @@ const meta: Meta<typeof Accordion> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Accordion>;
+}
+export default meta
+type Story = StoryObj<typeof Accordion>
 
 export const Basic: Story = {
   args: {
@@ -45,7 +45,7 @@ export const Basic: Story = {
       ],
     },
   },
-};
+}
 
 export const LongContent: Story = {
   args: {
@@ -108,4 +108,4 @@ export const LongContent: Story = {
       ],
     },
   },
-};
+}

@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import Table from "./Table";
+import Table from "./Table"
 
 const meta: Meta<typeof Table> = {
   title: "Next/Components/Table",
@@ -11,9 +11,9 @@ const meta: Meta<typeof Table> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Table>;
+}
+export default meta
+type Story = StoryObj<typeof Table>
 
 export const Simple: Story = {
   args: {
@@ -489,7 +489,7 @@ export const Simple: Story = {
       },
     ],
   },
-};
+}
 
 export const Rowspan: Story = {
   args: {
@@ -989,7 +989,7 @@ export const Rowspan: Story = {
       },
     ],
   },
-};
+}
 
 export const Colspan: Story = {
   args: {
@@ -1526,4 +1526,4 @@ export const Colspan: Story = {
       },
     ],
   },
-};
+}

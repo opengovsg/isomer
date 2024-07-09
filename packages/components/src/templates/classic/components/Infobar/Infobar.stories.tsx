@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import Infobar from "./Infobar";
+import Infobar from "./Infobar"
 
 const meta: Meta<typeof Infobar> = {
   title: "Classic/Components/Infobar",
@@ -11,9 +11,9 @@ const meta: Meta<typeof Infobar> = {
       themeOverride: "Isomer Classic",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Infobar>;
+}
+export default meta
+type Story = StoryObj<typeof Infobar>
 
 // Default scenario
 export const Default: Story = {
@@ -25,7 +25,7 @@ export const Default: Story = {
     buttonLabel: "Button text",
     buttonUrl: "https://google.com",
   },
-};
+}
 
 export const GrayBackground: Story = {
   args: {
@@ -36,7 +36,7 @@ export const GrayBackground: Story = {
     buttonLabel: "Button text",
     buttonUrl: "https://google.com",
   },
-};
+}
 
 export const TitleAndDescriptionOnly: Story = {
   args: {
@@ -44,7 +44,7 @@ export const TitleAndDescriptionOnly: Story = {
     title: "Infobar title",
     description: "About a sentence worth of description here",
   },
-};
+}
 
 export const LongText: Story = {
   args: {
@@ -56,4 +56,4 @@ export const LongText: Story = {
     buttonLabel: "Button text button text button text",
     buttonUrl: "https://google.com",
   },
-};
+}

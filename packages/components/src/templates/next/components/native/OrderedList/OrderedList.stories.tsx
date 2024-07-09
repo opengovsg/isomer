@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { OrderedListProps } from "~/interfaces";
-import OrderedList from "./OrderedList";
+import type { OrderedListProps } from "~/interfaces"
+import OrderedList from "./OrderedList"
 
 // Template for stories
 const Template = (props: OrderedListProps) => (
@@ -9,7 +9,7 @@ const Template = (props: OrderedListProps) => (
     <p>This is a paragraph that is at the base</p>
     <OrderedList {...props} />
   </>
-);
+)
 
 const meta: Meta<OrderedListProps> = {
   title: "Next/Components/OrderedList",
@@ -21,9 +21,9 @@ const meta: Meta<OrderedListProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof OrderedList>;
+}
+export default meta
+type Story = StoryObj<typeof OrderedList>
 
 export const Simple: Story = {
   args: {
@@ -82,7 +82,7 @@ export const Simple: Story = {
       },
     ],
   },
-};
+}
 
 export const Nested: Story = {
   args: {
@@ -175,7 +175,7 @@ export const Nested: Story = {
       },
     ],
   },
-};
+}
 
 export const NonStandardStart: Story = {
   args: {
@@ -215,7 +215,7 @@ export const NonStandardStart: Story = {
       },
     ],
   },
-};
+}
 
 export const LongParagraphs: Story = {
   args: {
@@ -376,4 +376,4 @@ export const LongParagraphs: Story = {
       },
     ],
   },
-};
+}

@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { InfopicProps } from "~/interfaces";
-import InfoPic from "./Infopic";
+import type { InfopicProps } from "~/interfaces"
+import InfoPic from "./Infopic"
 
 const meta: Meta<InfopicProps> = {
   title: "Classic/Components/Infopic",
@@ -12,9 +12,9 @@ const meta: Meta<InfopicProps> = {
       themeOverride: "Isomer Classic",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof InfoPic>;
+}
+export default meta
+type Story = StoryObj<typeof InfoPic>
 
 // Default scenario
 export const Default: Story = {
@@ -28,7 +28,7 @@ export const Default: Story = {
     buttonLabel: "View more resources",
     buttonUrl: "https://www.google.com",
   },
-};
+}
 
 export const DefaultGrayBackground: Story = {
   args: {
@@ -41,7 +41,7 @@ export const DefaultGrayBackground: Story = {
     buttonLabel: "View more resources",
     buttonUrl: "https://www.google.com",
   },
-};
+}
 
 export const DefaultRight: Story = {
   args: {
@@ -55,7 +55,7 @@ export const DefaultRight: Story = {
     buttonLabel: "View more resources",
     buttonUrl: "https://www.google.com",
   },
-};
+}
 
 export const TitleAndDescriptionOnly: Story = {
   args: {
@@ -65,7 +65,7 @@ export const TitleAndDescriptionOnly: Story = {
     imageAlt: "alt",
     imageSrc: "https://placehold.co/200x200",
   },
-};
+}
 
 export const InvalidImage: Story = {
   args: {
@@ -78,4 +78,4 @@ export const InvalidImage: Story = {
     buttonLabel: "View more resources",
     buttonUrl: "https://www.google.com",
   },
-};
+}

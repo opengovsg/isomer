@@ -1,4 +1,6 @@
-import { type Static, Type } from "@sinclair/typebox"
+import type { Static } from "@sinclair/typebox"
+import { Type } from "@sinclair/typebox"
+
 import {
   AccordionSchema,
   ButtonSchema,
@@ -6,9 +8,9 @@ import {
   HeroSchema,
   IframeSchema,
   ImageSchema,
+  InfobarSchema,
   InfoCardsSchema,
   InfoColsSchema,
-  InfobarSchema,
   InfopicSchema,
   KeyStatisticsSchema,
   ProseSchema,

@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { CalloutProps } from "~/interfaces";
-import Callout from "./Callout";
+import type { CalloutProps } from "~/interfaces"
+import Callout from "./Callout"
 
 const meta: Meta<CalloutProps> = {
   title: "Next/Components/Callout",
@@ -12,9 +12,9 @@ const meta: Meta<CalloutProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Callout>;
+}
+export default meta
+type Story = StoryObj<typeof Callout>
 
 // Default scenario
 export const Default: Story = {
@@ -34,4 +34,4 @@ export const Default: Story = {
       ],
     },
   },
-};
+}

@@ -1,6 +1,8 @@
-import { Type, type Static } from "@sinclair/typebox"
-import { listItemSchemaBuilder } from "./ListItem"
+import type { Static } from "@sinclair/typebox"
+import { Type } from "@sinclair/typebox"
+
 import { orderedListSchemaBuilder, unorderedListSchemaBuilder } from "~/utils"
+import { listItemSchemaBuilder } from "./ListItem"
 
 export const OrderedListSchema = orderedListSchemaBuilder(
   Type.Recursive((listItemSchema) =>
