@@ -193,22 +193,8 @@ export const Default: Story = {
                 ],
               },
               {
-                type: "unorderedList",
+                type: "listItem",
                 content: [
-                  {
-                    type: "listItem",
-                    content: [
-                      {
-                        type: "paragraph",
-                        content: [
-                          {
-                            type: "text",
-                            text: "Like this, you might have a list of equipments to bring to the luncheon",
-                          },
-                        ],
-                      },
-                    ],
-                  },
                   {
                     type: "unorderedList",
                     content: [
@@ -217,41 +203,10 @@ export const Default: Story = {
                         content: [
                           {
                             type: "paragraph",
-                            content: [{ type: "text", text: "Luncheon meat" }],
-                          },
-                        ],
-                      },
-                      {
-                        type: "listItem",
-                        content: [
-                          {
-                            type: "paragraph",
-                            content: [{ type: "text", text: "Spam" }],
-                          },
-                        ],
-                      },
-                      {
-                        type: "unorderedList",
-                        content: [
-                          {
-                            type: "listItem",
                             content: [
                               {
-                                type: "paragraph",
-                                content: [
-                                  { type: "text", text: "Another level below" },
-                                ],
-                              },
-                            ],
-                          },
-                          {
-                            type: "listItem",
-                            content: [
-                              {
-                                type: "paragraph",
-                                content: [
-                                  { type: "text", text: "This is very deep" },
-                                ],
+                                type: "text",
+                                text: "Like this, you might have a list of equipments to bring to the luncheon",
                               },
                             ],
                           },
@@ -261,19 +216,87 @@ export const Default: Story = {
                         type: "listItem",
                         content: [
                           {
-                            type: "paragraph",
-                            content: [{ type: "text", text: "hello" }],
+                            type: "unorderedList",
+                            content: [
+                              {
+                                type: "listItem",
+                                content: [
+                                  {
+                                    type: "paragraph",
+                                    content: [
+                                      { type: "text", text: "Luncheon meat" },
+                                    ],
+                                  },
+                                ],
+                              },
+                              {
+                                type: "listItem",
+                                content: [
+                                  {
+                                    type: "paragraph",
+                                    content: [{ type: "text", text: "Spam" }],
+                                  },
+                                ],
+                              },
+                              {
+                                type: "listItem",
+                                content: [
+                                  {
+                                    type: "unorderedList",
+                                    content: [
+                                      {
+                                        type: "listItem",
+                                        content: [
+                                          {
+                                            type: "paragraph",
+                                            content: [
+                                              {
+                                                type: "text",
+                                                text: "Another level below",
+                                              },
+                                            ],
+                                          },
+                                        ],
+                                      },
+                                      {
+                                        type: "listItem",
+                                        content: [
+                                          {
+                                            type: "paragraph",
+                                            content: [
+                                              {
+                                                type: "text",
+                                                text: "This is very deep",
+                                              },
+                                            ],
+                                          },
+                                        ],
+                                      },
+                                    ],
+                                  },
+                                ],
+                              },
+                              {
+                                type: "listItem",
+                                content: [
+                                  {
+                                    type: "paragraph",
+                                    content: [{ type: "text", text: "hello" }],
+                                  },
+                                ],
+                              },
+                            ],
                           },
                         ],
                       },
-                    ],
-                  },
-                  {
-                    type: "listItem",
-                    content: [
                       {
-                        type: "paragraph",
-                        content: [{ type: "text", text: "Back out again" }],
+                        type: "listItem",
+                        content: [
+                          {
+                            type: "paragraph",
+                            content: [{ type: "text", text: "Back out again" }],
+                          },
+                        ],
                       },
                     ],
                   },
@@ -1179,22 +1202,8 @@ export const NoTable: Story = {
                 ],
               },
               {
-                type: "unorderedList",
+                type: "listItem",
                 content: [
-                  {
-                    type: "listItem",
-                    content: [
-                      {
-                        type: "paragraph",
-                        content: [
-                          {
-                            type: "text",
-                            text: "Like this, you might have a list of equipments to bring to the luncheon",
-                          },
-                        ],
-                      },
-                    ],
-                  },
                   {
                     type: "unorderedList",
                     content: [
@@ -1203,41 +1212,10 @@ export const NoTable: Story = {
                         content: [
                           {
                             type: "paragraph",
-                            content: [{ type: "text", text: "Luncheon meat" }],
-                          },
-                        ],
-                      },
-                      {
-                        type: "listItem",
-                        content: [
-                          {
-                            type: "paragraph",
-                            content: [{ type: "text", text: "Spam" }],
-                          },
-                        ],
-                      },
-                      {
-                        type: "unorderedList",
-                        content: [
-                          {
-                            type: "listItem",
                             content: [
                               {
-                                type: "paragraph",
-                                content: [
-                                  { type: "text", text: "Another level below" },
-                                ],
-                              },
-                            ],
-                          },
-                          {
-                            type: "listItem",
-                            content: [
-                              {
-                                type: "paragraph",
-                                content: [
-                                  { type: "text", text: "This is very deep" },
-                                ],
+                                type: "text",
+                                text: "Like this, you might have a list of equipments to bring to the luncheon",
                               },
                             ],
                           },
@@ -1247,19 +1225,87 @@ export const NoTable: Story = {
                         type: "listItem",
                         content: [
                           {
-                            type: "paragraph",
-                            content: [{ type: "text", text: "hello" }],
+                            type: "unorderedList",
+                            content: [
+                              {
+                                type: "listItem",
+                                content: [
+                                  {
+                                    type: "paragraph",
+                                    content: [
+                                      { type: "text", text: "Luncheon meat" },
+                                    ],
+                                  },
+                                ],
+                              },
+                              {
+                                type: "listItem",
+                                content: [
+                                  {
+                                    type: "paragraph",
+                                    content: [{ type: "text", text: "Spam" }],
+                                  },
+                                ],
+                              },
+                              {
+                                type: "listItem",
+                                content: [
+                                  {
+                                    type: "unorderedList",
+                                    content: [
+                                      {
+                                        type: "listItem",
+                                        content: [
+                                          {
+                                            type: "paragraph",
+                                            content: [
+                                              {
+                                                type: "text",
+                                                text: "Another level below",
+                                              },
+                                            ],
+                                          },
+                                        ],
+                                      },
+                                      {
+                                        type: "listItem",
+                                        content: [
+                                          {
+                                            type: "paragraph",
+                                            content: [
+                                              {
+                                                type: "text",
+                                                text: "This is very deep",
+                                              },
+                                            ],
+                                          },
+                                        ],
+                                      },
+                                    ],
+                                  },
+                                ],
+                              },
+                              {
+                                type: "listItem",
+                                content: [
+                                  {
+                                    type: "paragraph",
+                                    content: [{ type: "text", text: "hello" }],
+                                  },
+                                ],
+                              },
+                            ],
                           },
                         ],
                       },
-                    ],
-                  },
-                  {
-                    type: "listItem",
-                    content: [
                       {
-                        type: "paragraph",
-                        content: [{ type: "text", text: "Back out again" }],
+                        type: "listItem",
+                        content: [
+                          {
+                            type: "paragraph",
+                            content: [{ type: "text", text: "Back out again" }],
+                          },
+                        ],
                       },
                     ],
                   },
@@ -1554,22 +1600,8 @@ export const SmallTable: Story = {
                 ],
               },
               {
-                type: "unorderedList",
+                type: "listItem",
                 content: [
-                  {
-                    type: "listItem",
-                    content: [
-                      {
-                        type: "paragraph",
-                        content: [
-                          {
-                            type: "text",
-                            text: "Like this, you might have a list of equipments to bring to the luncheon",
-                          },
-                        ],
-                      },
-                    ],
-                  },
                   {
                     type: "unorderedList",
                     content: [
@@ -1578,41 +1610,10 @@ export const SmallTable: Story = {
                         content: [
                           {
                             type: "paragraph",
-                            content: [{ type: "text", text: "Luncheon meat" }],
-                          },
-                        ],
-                      },
-                      {
-                        type: "listItem",
-                        content: [
-                          {
-                            type: "paragraph",
-                            content: [{ type: "text", text: "Spam" }],
-                          },
-                        ],
-                      },
-                      {
-                        type: "unorderedList",
-                        content: [
-                          {
-                            type: "listItem",
                             content: [
                               {
-                                type: "paragraph",
-                                content: [
-                                  { type: "text", text: "Another level below" },
-                                ],
-                              },
-                            ],
-                          },
-                          {
-                            type: "listItem",
-                            content: [
-                              {
-                                type: "paragraph",
-                                content: [
-                                  { type: "text", text: "This is very deep" },
-                                ],
+                                type: "text",
+                                text: "Like this, you might have a list of equipments to bring to the luncheon",
                               },
                             ],
                           },
@@ -1622,19 +1623,87 @@ export const SmallTable: Story = {
                         type: "listItem",
                         content: [
                           {
-                            type: "paragraph",
-                            content: [{ type: "text", text: "hello" }],
+                            type: "unorderedList",
+                            content: [
+                              {
+                                type: "listItem",
+                                content: [
+                                  {
+                                    type: "paragraph",
+                                    content: [
+                                      { type: "text", text: "Luncheon meat" },
+                                    ],
+                                  },
+                                ],
+                              },
+                              {
+                                type: "listItem",
+                                content: [
+                                  {
+                                    type: "paragraph",
+                                    content: [{ type: "text", text: "Spam" }],
+                                  },
+                                ],
+                              },
+                              {
+                                type: "listItem",
+                                content: [
+                                  {
+                                    type: "unorderedList",
+                                    content: [
+                                      {
+                                        type: "listItem",
+                                        content: [
+                                          {
+                                            type: "paragraph",
+                                            content: [
+                                              {
+                                                type: "text",
+                                                text: "Another level below",
+                                              },
+                                            ],
+                                          },
+                                        ],
+                                      },
+                                      {
+                                        type: "listItem",
+                                        content: [
+                                          {
+                                            type: "paragraph",
+                                            content: [
+                                              {
+                                                type: "text",
+                                                text: "This is very deep",
+                                              },
+                                            ],
+                                          },
+                                        ],
+                                      },
+                                    ],
+                                  },
+                                ],
+                              },
+                              {
+                                type: "listItem",
+                                content: [
+                                  {
+                                    type: "paragraph",
+                                    content: [{ type: "text", text: "hello" }],
+                                  },
+                                ],
+                              },
+                            ],
                           },
                         ],
                       },
-                    ],
-                  },
-                  {
-                    type: "listItem",
-                    content: [
                       {
-                        type: "paragraph",
-                        content: [{ type: "text", text: "Back out again" }],
+                        type: "listItem",
+                        content: [
+                          {
+                            type: "paragraph",
+                            content: [{ type: "text", text: "Back out again" }],
+                          },
+                        ],
                       },
                     ],
                   },
