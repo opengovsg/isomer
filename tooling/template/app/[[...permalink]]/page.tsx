@@ -100,7 +100,7 @@ const Page = async ({ params }: DynamicPageProps) => {
   return (
     <>
       <RenderEngine
-        version={renderSchema.version}
+        {...renderSchema}
         site={{
           ...config.site,
           environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
@@ -113,9 +113,6 @@ const Page = async ({ params }: DynamicPageProps) => {
           footerItems: footer,
           lastUpdated,
         }}
-        layout={renderSchema.layout}
-        page={renderSchema.page}
-        content={renderSchema.content}
         LinkComponent={Link}
       />
     </>
