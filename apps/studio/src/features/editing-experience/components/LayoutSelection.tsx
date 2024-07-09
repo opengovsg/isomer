@@ -1,17 +1,18 @@
 // Component for layout selection
 
-import { useState } from 'react'
 import {
   Box,
   Grid,
   GridItem,
   HStack,
+  Icon,
   Image,
   Text,
   VStack,
-  Icon,
 } from '@chakra-ui/react'
 import { Button, Link } from '@opengovsg/design-system-react'
+import { type ISOMER_PAGE_LAYOUTS } from '@opengovsg/isomer-components'
+import { useState } from 'react'
 import { BiLeftArrowAlt, BiRightArrowAlt, BiShow } from 'react-icons/bi'
 import Preview from '~/features/editing-experience/components/Preview'
 import articleLayoutPreview from '~/features/editing-experience/data/articleLayoutPreview.json'
@@ -25,6 +26,9 @@ export interface LayoutSelectionProps {
   siteId: string
   folderId: string
 }
+
+type LayoutDataType =
+  (typeof ISOMER_PAGE_LAYOUTS)[keyof typeof ISOMER_PAGE_LAYOUTS]
 
 const LAYOUT_DATA = [
   {
