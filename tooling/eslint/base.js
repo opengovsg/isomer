@@ -1,8 +1,8 @@
 /// <reference types="./types.d.ts" />
 
-import eslint from "@eslint/js";
-import importPlugin from "eslint-plugin-import";
-import tseslint from "typescript-eslint";
+import eslint from "@eslint/js"
+import importPlugin from "eslint-plugin-import"
+import tseslint from "typescript-eslint"
 
 /**
  * All packages that leverage t3-env should use this rule
@@ -29,7 +29,7 @@ export const restrictEnvAccess = tseslint.config({
       },
     ],
   },
-});
+})
 
 export default tseslint.config(
   {
@@ -91,4 +91,4 @@ export default tseslint.config(
   {
     linterOptions: { reportUnusedDisableDirectives: true },
   },
-);
+)

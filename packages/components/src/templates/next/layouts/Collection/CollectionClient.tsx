@@ -207,21 +207,21 @@ const updateAppliedFilters = (
     (filter) => filter.id === filterId,
   )
   if (filterIndex > -1) {
-    const itemIndex = appliedFilters[filterIndex].items.findIndex(
+    const itemIndex = appliedFilters[filterIndex]?.items.findIndex(
       (item) => item.id === itemId,
     )
-    if (itemIndex > -1) {
+    if (itemIndex && itemIndex > -1) {
       const newAppliedFilters = [...appliedFilters]
-      newAppliedFilters[filterIndex].items.splice(itemIndex, 1)
+      newAppliedFilters[filterIndex]?.items.splice(itemIndex, 1)
 
-      if (newAppliedFilters[filterIndex].items.length === 0) {
+      if (newAppliedFilters[filterIndex]?.items.length === 0) {
         newAppliedFilters.splice(filterIndex, 1)
       }
 
       setAppliedFilters(newAppliedFilters)
     } else {
       const newAppliedFilters = [...appliedFilters]
-      newAppliedFilters[filterIndex].items.push({ id: itemId })
+      newAppliedFilters[filterIndex]?.items.push({ id: itemId })
       setAppliedFilters(newAppliedFilters)
     }
   } else {

@@ -1,5 +1,5 @@
-import { fixupPluginRules } from "@eslint/compat";
-import nextPlugin from "@next/eslint-plugin-next";
+import { fixupPluginRules } from "@eslint/compat"
+import nextPlugin from "@next/eslint-plugin-next"
 
 /** @type {Awaited<import('typescript-eslint').Config>} */
 export default [
@@ -13,4 +13,4 @@ export default [
       ...nextPlugin.configs["core-web-vitals"].rules,
     },
   },
-];
+]
