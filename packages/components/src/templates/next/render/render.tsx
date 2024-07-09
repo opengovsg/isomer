@@ -1,10 +1,8 @@
-import type { IsomerComponent, IsomerPageSchema } from "~/engine"
+import type { IsomerComponent, IsomerPageSchemaType } from "~/engine"
 import {
   Accordion,
   Button,
   Callout,
-  Divider,
-  Heading,
   Hero,
   Iframe,
   Image,
@@ -13,10 +11,7 @@ import {
   Infobar,
   Infopic,
   KeyStatistics,
-  OrderedList,
-  Paragraph,
-  Table,
-  UnorderedList,
+  Prose,
 } from "../components"
 import {
   ArticleLayout,
@@ -44,10 +39,6 @@ export const renderComponent = ({
       return <Button {...component} LinkComponent={LinkComponent} />
     case "callout":
       return <Callout {...component} />
-    case "divider":
-      return <Divider {...component} />
-    case "heading":
-      return <Heading {...component} />
     case "hero":
       return <Hero {...component} />
     case "iframe":
@@ -64,18 +55,15 @@ export const renderComponent = ({
       return <Infopic {...component} />
     case "keystatistics":
       return <KeyStatistics {...component} />
-    case "orderedList":
-      return <OrderedList {...component} />
-    case "paragraph":
-      return <Paragraph {...component} />
-    case "table":
-      return <Table {...component} />
-    case "unorderedList":
-      return <UnorderedList {...component} />
+    case "prose":
+      return <Prose {...component} />
+    default:
+      const _: never = component
+      return <></>
   }
 }
 
-export const renderLayout = (props: IsomerPageSchema) => {
+export const renderLayout = (props: IsomerPageSchemaType) => {
   switch (props.layout) {
     case "article":
       return <ArticleLayout {...props} />
@@ -92,6 +80,9 @@ export const renderLayout = (props: IsomerPageSchema) => {
     // These are references that we should not render to the user
     case "file":
     case "link":
+      return <></>
+    default:
+      const _: never = props
       return <></>
   }
 }

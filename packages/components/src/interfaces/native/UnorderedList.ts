@@ -1,7 +1,14 @@
-import type { ListItemProps } from "./ListItem"
-import type { OrderedListProps } from "./OrderedList"
+import { Type, type Static } from "@sinclair/typebox"
+import { orderedListSchemaBuilder, unorderedListSchemaBuilder } from "~/utils"
+import { listItemSchemaBuilder } from "./ListItem"
 
-export interface UnorderedListProps {
-  type: "unorderedList"
-  content: (ListItemProps | OrderedListProps | UnorderedListProps)[]
-}
+export const UnorderedListSchema = unorderedListSchemaBuilder(
+  Type.Recursive((listItemSchema) =>
+    listItemSchemaBuilder(
+      orderedListSchemaBuilder(listItemSchema),
+      unorderedListSchemaBuilder(listItemSchema),
+    ),
+  ),
+)
+
+export type UnorderedListProps = Static<typeof UnorderedListSchema>

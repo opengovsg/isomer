@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useEffect } from "react";
 
-import type { SearchPageSchema } from "~/engine";
+import type { SearchPageSchemaType } from "~/engine";
 import SearchLayout from "./Search";
 
 // Template for stories
-const Template = (props: SearchPageSchema) => {
+const Template = (props: SearchPageSchemaType) => {
   // Note: This is needed because the script tag is not rendered in the storybook
   useEffect(() => {
     if (props.site.search && props.site.search.type !== "searchSG") return;

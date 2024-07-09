@@ -1,10 +1,12 @@
 import type { UnorderedListProps } from "~/interfaces"
-import Prose from "../Prose"
+import ListItem from "../ListItem"
 
 const UnorderedList = ({ content }: UnorderedListProps) => {
   return (
     <ul className="mt-6 list-disc ps-8">
-      <Prose content={content} />
+      {content.map((item, index) => (
+        <ListItem key={index} {...item} />
+      ))}
     </ul>
   )
 }

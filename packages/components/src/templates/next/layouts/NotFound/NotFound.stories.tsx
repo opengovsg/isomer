@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import type { NotFoundPageSchema } from "~/engine";
+import type { NotFoundPageSchemaType } from "~/engine";
 import NotFoundLayout from "./NotFound";
 
-const meta: Meta<NotFoundPageSchema> = {
+const meta: Meta<NotFoundPageSchemaType> = {
   title: "Next/Layouts/NotFound",
   component: NotFoundLayout,
   argTypes: {},
@@ -14,7 +14,7 @@ const meta: Meta<NotFoundPageSchema> = {
   },
 };
 export default meta;
-type Story = StoryObj<NotFoundPageSchema>;
+type Story = StoryObj<NotFoundPageSchemaType>;
 
 export const Default: Story = {
   args: {

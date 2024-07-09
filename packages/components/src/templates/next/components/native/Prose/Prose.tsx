@@ -1,15 +1,17 @@
 import type { ProseProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
-import Image from "../../complex/Image"
 import BaseParagraph from "../../internal/BaseParagraph"
 import Divider from "../Divider"
 import Heading from "../Heading"
-import ListItem from "../ListItem"
 import OrderedList from "../OrderedList"
 import Table from "../Table"
 import UnorderedList from "../UnorderedList"
 
 const Prose = ({ content }: ProseProps) => {
+  if (!content) {
+    return <></>
+  }
+
   return (
     <>
       {content.map((component, index) => {
@@ -17,10 +19,6 @@ const Prose = ({ content }: ProseProps) => {
           return <Divider key={index} {...component} />
         } else if (component.type === "heading") {
           return <Heading key={index} {...component} />
-        } else if (component.type === "image") {
-          return <Image key={index} {...component} />
-        } else if (component.type === "listItem") {
-          return <ListItem key={index} {...component} />
         } else if (component.type === "orderedList") {
           return <OrderedList key={index} {...component} />
         } else if (component.type === "paragraph") {
@@ -36,6 +34,7 @@ const Prose = ({ content }: ProseProps) => {
         } else if (component.type === "unorderedList") {
           return <UnorderedList key={index} {...component} />
         } else {
+          const _: never = component
           return <></>
         }
       })}

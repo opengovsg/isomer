@@ -4,19 +4,23 @@ import { JsonForms } from '@jsonforms/react'
 import Ajv from 'ajv'
 import { useState } from 'react'
 
-import { type IsomerComplexComponentProps } from '@opengovsg/isomer-components'
-import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
-import { type IsomerJsonSchema } from '~/types/schema'
 import {
+  IsomerComplexComponentsMap,
+  type IsomerComplexComponentProps,
+} from '@opengovsg/isomer-components'
+import {
+  JsonFormsAllOfControl,
+  JsonFormsAnyOfControl,
   JsonFormsArrayControl,
   JsonFormsBooleanControl,
   JsonFormsDropdownControl,
   JsonFormsIntegerControl,
   JsonFormsObjectControl,
-  JsonFormsOneOfControl,
   JsonFormsProseControl,
   JsonFormsRadioControl,
   JsonFormsTextControl,
+  jsonFormsAllOfControlTester,
+  jsonFormsAnyOfControlTester,
   jsonFormsArrayControlTester,
   jsonFormsBooleanControlTester,
   jsonFormsDropdownControlTester,
@@ -24,7 +28,6 @@ import {
   jsonFormsGroupLayoutTester,
   jsonFormsIntegerControlTester,
   jsonFormsObjectControlTester,
-  jsonFormsOneOfControlTester,
   jsonFormsProseControlTester,
   jsonFormsRadioControlTester,
   jsonFormsTextControlTester,
@@ -42,7 +45,8 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   },
   { tester: jsonFormsIntegerControlTester, renderer: JsonFormsIntegerControl },
   { tester: jsonFormsTextControlTester, renderer: JsonFormsTextControl },
-  { tester: jsonFormsOneOfControlTester, renderer: JsonFormsOneOfControl },
+  { tester: jsonFormsAllOfControlTester, renderer: JsonFormsAllOfControl },
+  { tester: jsonFormsAnyOfControlTester, renderer: JsonFormsAnyOfControl },
   { tester: jsonFormsProseControlTester, renderer: JsonFormsProseControl },
   { tester: jsonFormsRadioControlTester, renderer: JsonFormsRadioControl },
   {
@@ -55,20 +59,6 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   },
 ]
 
-function getComponentSubschema(
-  isomerJsonSchema: IsomerJsonSchema | null,
-  component: IsomerComplexComponentProps['type'],
-) {
-  if (!isomerJsonSchema) {
-    return {}
-  }
-
-  return {
-    ...isomerJsonSchema.components.complex[component],
-    components: isomerJsonSchema.components,
-  }
-}
-
 export interface FormBuilderProps {
   component: IsomerComplexComponentProps['type']
 }
@@ -76,8 +66,7 @@ export interface FormBuilderProps {
 export default function FormBuilder({
   component,
 }: FormBuilderProps): JSX.Element {
-  const { isomerJsonSchema } = useEditorDrawerContext()
-  const subSchema = getComponentSubschema(isomerJsonSchema, component)
+  const subSchema = IsomerComplexComponentsMap[component]
   const [formData, setFormData] = useState({})
 
   return (

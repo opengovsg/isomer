@@ -100,36 +100,20 @@ export const Nested: Story = {
         ],
       },
       {
-        type: "orderedList",
-        start: 10,
+        type: "listItem",
         content: [
           {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "Item 3" }],
-              },
-            ],
-          },
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "Item 4" }],
-              },
-            ],
-          },
-          {
-            type: "unorderedList",
+            type: "orderedList",
+            attrs: {
+              start: 10,
+            },
             content: [
               {
                 type: "listItem",
                 content: [
                   {
                     type: "paragraph",
-                    content: [{ type: "text", text: "Item 5" }],
+                    content: [{ type: "text", text: "Item 3" }],
                   },
                 ],
               },
@@ -138,18 +122,46 @@ export const Nested: Story = {
                 content: [
                   {
                     type: "paragraph",
-                    content: [{ type: "text", text: "Item 6" }],
+                    content: [{ type: "text", text: "Item 4" }],
                   },
                 ],
               },
-            ],
-          },
-          {
-            type: "listItem",
-            content: [
               {
-                type: "paragraph",
-                content: [{ type: "text", text: "Item 7" }],
+                type: "listItem",
+                content: [
+                  {
+                    type: "unorderedList",
+                    content: [
+                      {
+                        type: "listItem",
+                        content: [
+                          {
+                            type: "paragraph",
+                            content: [{ type: "text", text: "Item 5" }],
+                          },
+                        ],
+                      },
+                      {
+                        type: "listItem",
+                        content: [
+                          {
+                            type: "paragraph",
+                            content: [{ type: "text", text: "Item 6" }],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Item 7" }],
+                  },
+                ],
               },
             ],
           },
@@ -167,7 +179,9 @@ export const Nested: Story = {
 
 export const NonStandardStart: Story = {
   args: {
-    start: 10,
+    attrs: {
+      start: 10,
+    },
     content: [
       {
         type: "listItem",

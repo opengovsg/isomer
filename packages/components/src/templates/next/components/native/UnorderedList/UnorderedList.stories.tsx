@@ -100,36 +100,17 @@ export const Nested: Story = {
         ],
       },
       {
-        type: "unorderedList",
+        type: "listItem",
         content: [
           {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "Item 3" }],
-              },
-            ],
-          },
-          {
-            type: "listItem",
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "Item 4" }],
-              },
-            ],
-          },
-          {
-            type: "orderedList",
-            start: 10,
+            type: "unorderedList",
             content: [
               {
                 type: "listItem",
                 content: [
                   {
                     type: "paragraph",
-                    content: [{ type: "text", text: "Item 5" }],
+                    content: [{ type: "text", text: "Item 3" }],
                   },
                 ],
               },
@@ -138,18 +119,49 @@ export const Nested: Story = {
                 content: [
                   {
                     type: "paragraph",
-                    content: [{ type: "text", text: "Item 6" }],
+                    content: [{ type: "text", text: "Item 4" }],
                   },
                 ],
               },
-            ],
-          },
-          {
-            type: "listItem",
-            content: [
               {
-                type: "paragraph",
-                content: [{ type: "text", text: "Item 7" }],
+                type: "listItem",
+                content: [
+                  {
+                    type: "orderedList",
+                    attrs: {
+                      start: 10,
+                    },
+                    content: [
+                      {
+                        type: "listItem",
+                        content: [
+                          {
+                            type: "paragraph",
+                            content: [{ type: "text", text: "Item 5" }],
+                          },
+                        ],
+                      },
+                      {
+                        type: "listItem",
+                        content: [
+                          {
+                            type: "paragraph",
+                            content: [{ type: "text", text: "Item 6" }],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Item 7" }],
+                  },
+                ],
               },
             ],
           },

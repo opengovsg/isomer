@@ -1,3 +1,3 @@
 export * from "./engine"
-export { schema } from "./interfaces"
+export { IsomerPageSchema as schema } from "./types/schema"
 export * from "./presets"

@@ -7,7 +7,6 @@ import {
   type PropsWithChildren,
 } from 'react'
 import { type DrawerState } from '~/types/editorDrawer'
-import { type IsomerJsonSchema } from '~/types/schema'
 
 export interface DrawerContextType {
   drawerState: DrawerState
@@ -16,8 +15,6 @@ export interface DrawerContextType {
   setPageState: (state: IsomerComponent[]) => void
   editorState: IsomerComponent[]
   setEditorState: (state: IsomerComponent[]) => void
-  isomerJsonSchema: IsomerJsonSchema | null
-  setIsomerJsonSchema: (schema: IsomerJsonSchema) => void
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
@@ -29,9 +26,6 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
   const [pageState, setPageState] = useState<IsomerComponent[]>([])
   // Current edit view of page
   const [editorState, setEditorState] = useState<IsomerComponent[]>([])
-  // Isomer page schema
-  const [isomerJsonSchema, setIsomerJsonSchema] =
-    useState<IsomerJsonSchema | null>(null)
 
   const value = useMemo(
     () => ({
@@ -41,8 +35,6 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
       setPageState,
       editorState,
       setEditorState,
-      isomerJsonSchema,
-      setIsomerJsonSchema,
     }),
     [
       drawerState,
@@ -51,8 +43,6 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
       setPageState,
       editorState,
       setEditorState,
-      isomerJsonSchema,
-      setIsomerJsonSchema,
     ],
   )
 

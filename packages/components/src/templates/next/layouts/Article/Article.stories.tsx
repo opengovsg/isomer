@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import type { ArticlePageSchema } from "~/engine";
+import { type ArticlePageSchemaType } from "~/types";
 import ArticleLayout from "./Article";
 
-const meta: Meta<ArticlePageSchema> = {
+const meta: Meta<ArticlePageSchemaType> = {
   title: "Next/Layouts/Article",
   component: ArticleLayout,
   argTypes: {},
@@ -109,29 +109,34 @@ export const Default: Story = {
         alt: "A man is serving food out of a blue food",
       },
       {
-        type: "paragraph",
+        type: "prose",
         content: [
           {
-            type: "text",
-            text: "Singapore - In a bid to foster community spirit and celebrate the rich tapestry of its diverse population, Singapore is gearing up to host its first-ever Citizens' Festival. This unprecedented event promises to be a dazzling extravaganza filled with entertainment, cultural showcases, and gastronomic delights.",
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "Singapore - In a bid to foster community spirit and celebrate the rich tapestry of its diverse population, Singapore is gearing up to host its first-ever Citizens' Festival. This unprecedented event promises to be a dazzling extravaganza filled with entertainment, cultural showcases, and gastronomic delights.",
+              },
+            ],
           },
-        ],
-      },
-      {
-        type: "paragraph",
-        content: [
           {
-            type: "text",
-            text: "One of the highlights of the festival is the Cultural Village, where visitors can immerse themselves in the sights, sounds, and flavors of Singapore's various ethnic communities. From traditional Malay dance performances to Chinese calligraphy demonstrations and Indian culinary workshops, attendees will have the opportunity to gain a deeper appreciation for the country's multicultural heritage.",
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "One of the highlights of the festival is the Cultural Village, where visitors can immerse themselves in the sights, sounds, and flavors of Singapore's various ethnic communities. From traditional Malay dance performances to Chinese calligraphy demonstrations and Indian culinary workshops, attendees will have the opportunity to gain a deeper appreciation for the country's multicultural heritage.",
+              },
+            ],
           },
-        ],
-      },
-      {
-        type: "paragraph",
-        content: [
           {
-            type: "text",
-            text: "This is a Chat-GPT4 generated article for visual testing purposes.",
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "This is a Chat-GPT4 generated article for visual testing purposes.",
+              },
+            ],
           },
         ],
       },

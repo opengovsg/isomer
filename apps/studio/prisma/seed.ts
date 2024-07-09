@@ -8,11 +8,11 @@ import {
   type IsomerSiteConfigProps,
   type IsomerSitemap,
 } from '@opengovsg/isomer-components'
-import {
-  type Navbar,
-  type Footer,
-} from '~/server/modules/resource/resource.types'
 import cuid2 from '@paralleldrive/cuid2'
+import {
+  type Footer,
+  type Navbar,
+} from '~/server/modules/resource/resource.types'
 import { db } from '../src/server/modules/database'
 
 const MOCK_PHONE_NUMBER = '123456789'
@@ -153,6 +153,15 @@ const FOOTER_ITEMS = [
 ]
 
 async function main() {
+  const siteMap: IsomerSitemap = {
+    title: 'Home',
+    permalink: '/',
+    children: [],
+    layout: 'content',
+    summary: 'something',
+    lastModified: '',
+  }
+
   const { id: siteId } = await db
     .insertInto('Site')
     .values({
@@ -163,14 +172,7 @@ async function main() {
         logoUrl: '',
         search: undefined,
         // TODO: Remove siteMap as it is a generated field
-        siteMap: {
-          title: 'Home',
-          permalink: '/',
-          children: [],
-          layout: 'content',
-          summary: 'something',
-          lastModified: '',
-        } satisfies IsomerSitemap,
+        siteMap,
         isGovernment: true,
       } satisfies IsomerSiteConfigProps & {
         siteMap: IsomerGeneratedSiteProps['siteMap']

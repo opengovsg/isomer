@@ -1,35 +1,70 @@
-interface BoldMark {
-  type: "bold"
-}
+import { Type, type Static } from "@sinclair/typebox"
 
-interface CodeMark {
-  type: "code"
-}
+const BoldMarkSchema = Type.Object({
+  type: Type.Literal("bold"),
+})
 
-interface ItalicMark {
-  type: "italic"
-}
+const CodeMarkSchema = Type.Object({
+  type: Type.Literal("code"),
+})
 
-interface LinkMark {
-  type: "link"
-  href: string
-}
+const ItalicMarkSchema = Type.Object({
+  type: Type.Literal("italic"),
+})
 
-interface StrikeMark {
-  type: "strike"
-}
+const LinkMarkSchema = Type.Object({
+  type: Type.Literal("link"),
+  href: Type.String(),
+})
 
-interface SubscriptMark {
-  type: "subscript"
-}
+const StrikeMarkSchema = Type.Object({
+  type: Type.Literal("strike"),
+})
 
-interface SuperscriptMark {
-  type: "superscript"
-}
+const SubscriptMarkSchema = Type.Object({
+  type: Type.Literal("subscript"),
+})
 
-interface UnderlineMark {
-  type: "underline"
-}
+const SuperscriptMarkSchema = Type.Object({
+  type: Type.Literal("superscript"),
+})
+
+const UnderlineMarkSchema = Type.Object({
+  type: Type.Literal("underline"),
+})
+
+export const TextSchema = Type.Object(
+  {
+    type: Type.Literal("text"),
+    marks: Type.Optional(
+      Type.Array(
+        Type.Union([
+          BoldMarkSchema,
+          CodeMarkSchema,
+          ItalicMarkSchema,
+          LinkMarkSchema,
+          StrikeMarkSchema,
+          SubscriptMarkSchema,
+          SuperscriptMarkSchema,
+          UnderlineMarkSchema,
+        ]),
+      ),
+    ),
+    text: Type.String(),
+  },
+  {
+    title: "Text content",
+  },
+)
+
+type BoldMark = Static<typeof BoldMarkSchema>
+type CodeMark = Static<typeof CodeMarkSchema>
+type ItalicMark = Static<typeof ItalicMarkSchema>
+type LinkMark = Static<typeof LinkMarkSchema>
+type StrikeMark = Static<typeof StrikeMarkSchema>
+type SubscriptMark = Static<typeof SubscriptMarkSchema>
+type SuperscriptMark = Static<typeof SuperscriptMarkSchema>
+type UnderlineMark = Static<typeof UnderlineMarkSchema>
 
 export type Marks =
   | BoldMark
@@ -41,8 +76,4 @@ export type Marks =
   | SuperscriptMark
   | UnderlineMark
 
-export interface TextProps {
-  type: "text"
-  marks?: Marks[]
-  text: string
-}
+export type TextProps = Static<typeof TextSchema>
