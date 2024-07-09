@@ -5,7 +5,7 @@ import UnorderedList from "../UnorderedList"
 
 const ListItem = ({ content }: ListItemProps) => {
   return (
-    <li className="my-5 pl-2 [&_p]:inline">
+    <li className="my-5 pl-2 [&:has(>_ol)]:list-none [&:has(>_ul)]:list-none [&_>_p]:inline">
       {content.map((item, index) => {
         if (item.type === "paragraph") {
           return <Paragraph key={index} {...item} />
