@@ -10,7 +10,7 @@ export const BUTTON_SIZES = ["base", "sm"] as const
 
 export const ButtonSchema = Type.Object(
   {
-    type: Type.Literal("button"),
+    type: Type.Literal("button", { default: "button" }),
     label: Type.String({
       title: "Button label",
       description: "The text to display on the button",
@@ -25,6 +25,7 @@ export const ButtonSchema = Type.Object(
         {
           title: "Button color scheme",
           description: "The color scheme to use for the button",
+          type: "string",
         },
       ),
     ),
@@ -34,6 +35,7 @@ export const ButtonSchema = Type.Object(
         {
           title: "Button variant",
           description: "The variant to use for the button",
+          type: "string",
         },
       ),
     ),
@@ -43,6 +45,7 @@ export const ButtonSchema = Type.Object(
         {
           title: "Button size",
           description: "The size to use for the button",
+          type: "string",
         },
       ),
     ),
@@ -58,6 +61,7 @@ export const ButtonSchema = Type.Object(
         {
           title: "Button left icon",
           description: "The icon to display on the left of the button's text",
+          type: "string",
         },
       ),
     ),
@@ -67,6 +71,7 @@ export const ButtonSchema = Type.Object(
         {
           title: "Button right icon",
           description: "The icon to display on the right of the button's text",
+          type: "string",
         },
       ),
     ),

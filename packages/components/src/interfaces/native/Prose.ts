@@ -26,8 +26,13 @@ export const ProseSchema = Type.Object({
         minItems: 1,
       },
     ),
-  ),
-})
+  },
+  {
+    $id: "components-native-prose",
+    title: "Content block",
+    description: "A collection of native content components.",
+  },
+)
 
 export type ProseProps = Static<typeof ProseSchema>
 export type ProseContent = ProseProps["content"]

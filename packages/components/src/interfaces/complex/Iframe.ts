@@ -3,7 +3,7 @@ import { Type } from "@sinclair/typebox"
 
 export const IframeSchema = Type.Object(
   {
-    type: Type.Literal("iframe"),
+    type: Type.Literal("iframe", { default: "iframe" }),
     title: Type.String({
       title: "Iframe title",
       description: "The title of the iframe",

@@ -3,7 +3,7 @@ import { Type } from "@sinclair/typebox"
 
 export const DividerSchema = Type.Object(
   {
-    type: Type.Literal("divider"),
+    type: Type.Literal("divider", { default: "divider" }),
   },
   {
     $id: "components-native-divider",

@@ -6,7 +6,7 @@ export const orderedListSchemaBuilder = <T extends TSchema>(
 ) =>
   Type.Object(
     {
-      type: Type.Literal("orderedList"),
+      type: Type.Literal("orderedList", { default: "orderedList" }),
       attrs: Type.Optional(
         Type.Object({
           start: Type.Optional(

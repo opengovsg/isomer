@@ -9,7 +9,7 @@ export type HeadingLevel = (typeof HeadingLevels)[number]
 
 export const HeadingSchema = Type.Object(
   {
-    type: Type.Literal("heading"),
+    type: Type.Literal("heading", { default: "heading" }),
     attrs: Type.Object({
       // Used for anchor links
       id: Type.Optional(
@@ -23,6 +23,7 @@ export const HeadingSchema = Type.Object(
         {
           title: "Heading level",
           description: "The level of the heading to use",
+          type: "integer",
         },
       ),
     }),

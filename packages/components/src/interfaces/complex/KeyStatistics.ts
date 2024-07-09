@@ -3,10 +3,11 @@ import { Type } from "@sinclair/typebox"
 
 export const KeyStatisticsSchema = Type.Object(
   {
-    type: Type.Literal("keystatistics"),
+    type: Type.Literal("keystatistics", { default: "keystatistics" }),
     variant: Type.Union([Type.Literal("side"), Type.Literal("top")], {
       title: "KeyStatistics variant",
       description: "The variant of the KeyStatistics component to use",
+      type: "string",
     }),
     title: Type.String({
       title: "KeyStatistics title",

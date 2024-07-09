@@ -3,7 +3,7 @@ import { Type } from "@sinclair/typebox"
 
 export const InfobarSchema = Type.Object(
   {
-    type: Type.Literal("infobar"),
+    type: Type.Literal("infobar", { default: "infobar" }),
     // TODO: Remove this property, only used in classic theme
     sectionIdx: Type.Optional(Type.Number()),
     title: Type.String({
