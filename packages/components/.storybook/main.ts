@@ -1,6 +1,7 @@
+import type { StorybookConfig } from "@storybook/react-vite"
 import { mergeConfig } from "vite"
 
-export default {
+const config: StorybookConfig = {
   stories: ["../src/**/*.stories.tsx"],
   addons: [
     "@storybook/addon-links",
@@ -8,8 +9,7 @@ export default {
     "@storybook/addon-themes",
     "@storybook/addon-a11y",
   ],
-
-  async viteFinal(config: any) {
+  viteFinal(config) {
     // Merge custom configuration into the default config
     return mergeConfig(config, {
       // Add dependencies to pre-optimization
@@ -28,3 +28,5 @@ export default {
     autodocs: true,
   },
 }
+
+export default config

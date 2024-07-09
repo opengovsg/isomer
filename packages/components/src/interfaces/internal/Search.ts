@@ -1,4 +1,4 @@
-export type SearchRecord = {
+export interface SearchRecord {
   id: string
   title: string
   content: string

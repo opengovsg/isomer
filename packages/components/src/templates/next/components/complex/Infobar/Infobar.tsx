@@ -1,6 +1,6 @@
 import type { InfobarProps } from "~/interfaces"
-import Button from "../Button"
 import { ComponentContent } from "../../internal/customCssClass"
+import Button from "../Button"
 
 const Infobar = ({
   title,

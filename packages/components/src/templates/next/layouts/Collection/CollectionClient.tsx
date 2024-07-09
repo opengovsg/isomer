@@ -3,7 +3,10 @@
 import { useState } from "react"
 import type { CollectionPageSchemaType } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
-import { SortDirection, SortKey } from "~/interfaces/internal/CollectionSort"
+import type {
+  SortDirection,
+  SortKey,
+} from "~/interfaces/internal/CollectionSort"
 import {
   CollectionCard,
   CollectionSearch,

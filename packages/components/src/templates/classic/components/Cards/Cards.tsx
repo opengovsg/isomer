@@ -32,16 +32,14 @@ function Cards({ sectionTitle, sectionCaption, cards }: CardsProps) {
                   <time dateTime={post.datetime} className="text-gray-500">
                     {post.date}
                   </time>
-                  {post.category &&
-                    post.category.href &&
-                    post.category.title && (
-                      <a
-                        href={post.category.href}
-                        className="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100"
-                      >
-                        {post.category.title}
-                      </a>
-                    )}
+                  {post.category?.href && post.category.title && (
+                    <a
+                      href={post.category.href}
+                      className="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100"
+                    >
+                      {post.category.title}
+                    </a>
+                  )}
                 </div>
                 <div className="group relative">
                   <h3 className="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">

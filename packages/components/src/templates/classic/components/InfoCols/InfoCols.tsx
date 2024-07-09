@@ -1,6 +1,7 @@
 import { BiRightArrowAlt } from "react-icons/bi"
-import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
+
 import type { InfoColsProps } from "~/interfaces"
+import { HomepageSectionWrapper } from "../HomepageSectionWrapper"
 
 const InfoColsHeader = ({
   title,
@@ -8,7 +9,7 @@ const InfoColsHeader = ({
 }: Pick<InfoColsProps, "title" | "subtitle">) => (
   <div className="flex flex-col gap-4">
     {subtitle && (
-      <p className="tracking-widest uppercase text-subtitle">{subtitle}</p>
+      <p className="uppercase tracking-widest text-subtitle">{subtitle}</p>
     )}
     <h1 className="text-5xl font-semibold leading-tight text-site-secondary">
       {title}
@@ -54,7 +55,7 @@ const InfoColsFooter = ({
     buttonUrl && (
       <div className="text-lg font-semibold uppercase">
         <a
-          className="tracking-wide flex gap-2 text-center font-semibold uppercase text-site-secondary underline"
+          className="flex gap-2 text-center font-semibold uppercase tracking-wide text-site-secondary underline"
           href={buttonUrl}
           target={buttonUrl.startsWith("http") ? "_blank" : undefined}
           rel={
