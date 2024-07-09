@@ -2,7 +2,6 @@ import type {
   AccordionProps,
   ButtonProps,
   CalloutProps,
-  CardsProps,
   DividerProps,
   HeadingProps,
   HeroProps,
@@ -19,13 +18,10 @@ import type {
   UnorderedListProps,
 } from "~/interfaces"
 
-type IsomerComponentProps =
+export type IsomerComplexComponentProps =
   | AccordionProps
   | ButtonProps
   | CalloutProps
-  | CardsProps
-  | DividerProps
-  | HeadingProps
   | HeroProps
   | IframeProps
   | ImageProps
@@ -34,10 +30,18 @@ type IsomerComponentProps =
   | InfoColsProps
   | InfopicProps
   | KeyStatisticsProps
+
+export type IsomerNativeComponentProps =
+  | DividerProps
+  | HeadingProps
   | OrderedListProps
   | ParagraphProps
   | TableProps
   | UnorderedListProps
+
+type IsomerComponentProps =
+  | IsomerComplexComponentProps
+  | IsomerNativeComponentProps
 
 export type IsomerComponent = IsomerComponentProps & {
   sectionIdx?: number

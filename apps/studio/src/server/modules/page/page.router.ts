@@ -1,11 +1,12 @@
-import { protectedProcedure, router } from '~/server/trpc'
+import { schema, type IsomerPageSchema } from '@opengovsg/isomer-components'
 import {
   createPageSchema,
   getEditPageSchema,
   updatePageBlobSchema,
   updatePageSchema,
 } from '~/schemas/page'
-import { type IsomerPageSchema } from '@opengovsg/isomer-components'
+import { protectedProcedure, publicProcedure, router } from '~/server/trpc'
+import { type IsomerJsonSchema } from '~/types/schema'
 import {
   getFooter,
   getFullPageById,
@@ -39,6 +40,10 @@ export const pageRouter = router({
         ...siteMeta,
       }
     }),
+
+  getIsomerJsonSchema: publicProcedure.query(async () => {
+    return { schema: schema satisfies IsomerJsonSchema }
+  }),
 
   updatePage: pageProcedure
     .input(updatePageSchema)

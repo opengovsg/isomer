@@ -4,12 +4,26 @@ import {
   type UISchemaElement,
   type VerticalLayout,
 } from '@jsonforms/core'
+import {
+  type IsomerNativeComponentProps,
+  type IsomerComplexComponentProps,
+} from '@opengovsg/isomer-components'
 
-export type IsomerJsonSchema = JsonSchema & {
+export type IsomerExtendedJsonSchema = JsonSchema & {
   groups?: Array<{
     label: string
     fields: string[]
   }>
+}
+
+export type IsomerJsonSchema = IsomerExtendedJsonSchema & {
+  components: {
+    complex: Record<
+      IsomerComplexComponentProps['type'],
+      IsomerExtendedJsonSchema
+    >
+    native: Record<IsomerNativeComponentProps['type'], IsomerExtendedJsonSchema>
+  }
 }
 
 export function isGroupLayout(
