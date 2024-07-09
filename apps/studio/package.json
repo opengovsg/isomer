@@ -33,7 +33,8 @@
     "test-dev:unit": "dotenv -e .env.test vitest",
     "test-start": "start-server-and-test start http://127.0.0.1:3000 test",
     "storybook": "storybook dev -p 6007",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "clean": "git clean -xdf .next .turbo node_modules build"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
