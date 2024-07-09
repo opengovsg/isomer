@@ -19,7 +19,7 @@ export default function Preview(props: IsomerSchema) {
       site={{
         siteName: name,
         // TODO: fixup all the typing errors
-        // @ts-expect-error blah
+        // @ts-expect-error to fix when types are proper
         // TODO: dynamically generate sitemap
         siteMap: { title: "Home", permalink: "/", children: [] },
         theme,

@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import Hero from "./Hero";
+import Hero from "./Hero"
 
 const meta: Meta<typeof Hero> = {
   title: "Classic/Components/Hero",
@@ -11,9 +11,9 @@ const meta: Meta<typeof Hero> = {
       themeOverride: "Isomer Classic",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Hero>;
+}
+export default meta
+type Story = StoryObj<typeof Hero>
 
 // Default scenario
 export const Default: Story = {
@@ -47,7 +47,7 @@ export const Default: Story = {
       },
     ],
   },
-};
+}
 
 // Side layout
 export const SideButton: Story = {
@@ -62,7 +62,7 @@ export const SideButton: Story = {
     buttonLabel: "Find out if I'm a good fit",
     buttonUrl: "/contact",
   },
-};
+}
 
 export const SideDropdown: Story = {
   args: {
@@ -91,7 +91,7 @@ export const SideDropdown: Story = {
       ],
     },
   },
-};
+}
 
 // Image only layout
 export const Image: Story = {
@@ -99,7 +99,7 @@ export const Image: Story = {
     variant: "image",
     backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
   },
-};
+}
 
 export const ImageWithDropdown: Story = {
   args: {
@@ -123,7 +123,7 @@ export const ImageWithDropdown: Story = {
       ],
     },
   },
-};
+}
 
 // Floating layout
 export const FloatingButton: Story = {
@@ -138,7 +138,7 @@ export const FloatingButton: Story = {
     buttonLabel: "Find out if I'm a good fit",
     buttonUrl: "/contact",
   },
-};
+}
 
 export const FloatingDropdown: Story = {
   args: {
@@ -167,7 +167,7 @@ export const FloatingDropdown: Story = {
       ],
     },
   },
-};
+}
 
 // Center/Default layout
 export const CenterButton: Story = {
@@ -179,7 +179,7 @@ export const CenterButton: Story = {
     buttonLabel: "Find out if I'm a good fit",
     buttonUrl: "/contact",
   },
-};
+}
 
 export const CenterDropdown: Story = {
   args: {
@@ -205,4 +205,4 @@ export const CenterDropdown: Story = {
       ],
     },
   },
-};
+}

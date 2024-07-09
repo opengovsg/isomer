@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { CollectionCardProps } from "~/interfaces";
-import CollectionCard from "./CollectionCard";
+import type { CollectionCardProps } from "~/interfaces"
+import CollectionCard from "./CollectionCard"
 
 const meta: Meta<CollectionCardProps> = {
   title: "Next/Internal Components/CollectionCard",
@@ -12,9 +12,9 @@ const meta: Meta<CollectionCardProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof CollectionCard>;
+}
+export default meta
+type Story = StoryObj<typeof CollectionCard>
 
 export const Default: Story = {
   args: {
@@ -31,7 +31,7 @@ export const Default: Story = {
     },
     variant: "article",
   },
-};
+}
 
 export const ArticleWithoutImage: Story = {
   args: {
@@ -44,7 +44,7 @@ export const ArticleWithoutImage: Story = {
       "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year.",
     variant: "article",
   },
-};
+}
 
 export const File: Story = {
   args: {
@@ -65,7 +65,7 @@ export const File: Story = {
       size: "2.3 MB",
     },
   },
-};
+}
 
 export const FileWithoutImage: Story = {
   args: {
@@ -82,4 +82,4 @@ export const FileWithoutImage: Story = {
       size: "2.3 MB",
     },
   },
-};
+}

@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import { type ArticlePageSchemaType } from "~/types";
-import ArticleLayout from "./Article";
+import { type ArticlePageSchemaType } from "~/types"
+import ArticleLayout from "./Article"
 
 const meta: Meta<ArticlePageSchemaType> = {
   title: "Next/Layouts/Article",
@@ -12,9 +12,9 @@ const meta: Meta<ArticlePageSchemaType> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof ArticleLayout>;
+}
+export default meta
+type Story = StoryObj<typeof ArticleLayout>
 
 export const Default: Story = {
   args: {
@@ -142,4 +142,4 @@ export const Default: Story = {
       },
     ],
   },
-};
+}

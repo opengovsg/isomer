@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import Content from "./Content";
+import Content from "./Content"
 
 const meta: Meta<typeof Content> = {
   title: "Next/Layouts/Content",
@@ -11,9 +11,9 @@ const meta: Meta<typeof Content> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Content>;
+}
+export default meta
+type Story = StoryObj<typeof Content>
 
 export const Default: Story = {
   args: {
@@ -1023,7 +1023,7 @@ export const Default: Story = {
       },
     ],
   },
-};
+}
 
 export const NoTable: Story = {
   args: {
@@ -1421,7 +1421,7 @@ export const NoTable: Story = {
       },
     ],
   },
-};
+}
 
 export const SmallTable: Story = {
   args: {
@@ -2007,4 +2007,4 @@ export const SmallTable: Story = {
       },
     ],
   },
-};
+}

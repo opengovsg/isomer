@@ -35,9 +35,10 @@ const getStickyRowIndexes = (tableRows: TableProps["content"]) => {
         return
       }
 
-      if (attrs && attrs.rowspan) {
+      if (attrs?.rowspan) {
         // Exclude the next few rows that are covered by the rowSpan
         stickyRowIndexes = stickyRowIndexes.filter(
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           (value) => value <= index || value >= index + attrs.rowspan!,
         )
       }
@@ -107,17 +108,20 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
                       }`}
                     >
                       {cell.content.map((cellContent, index) => {
-                        if (cellContent.type === "divider") {
-                          return <Divider key={index} {...cellContent} />
-                        } else if (cellContent.type === "orderedList") {
-                          return <OrderedList key={index} {...cellContent} />
-                        } else if (cellContent.type === "paragraph") {
-                          return <Paragraph key={index} {...cellContent} />
-                        } else if (cellContent.type === "unorderedList") {
-                          return <UnorderedList key={index} {...cellContent} />
-                        } else {
-                          const _: never = cellContent
-                          return <></>
+                        switch (cellContent.type) {
+                          case "divider":
+                            return <Divider key={index} {...cellContent} />
+                          case "orderedList":
+                            return <OrderedList key={index} {...cellContent} />
+                          case "paragraph":
+                            return <Paragraph key={index} {...cellContent} />
+                          case "unorderedList":
+                            return (
+                              <UnorderedList key={index} {...cellContent} />
+                            )
+                          default:
+                            const _: never = cellContent
+                            return <></>
                         }
                       })}
                     </TableCellTag>

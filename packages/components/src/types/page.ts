@@ -1,4 +1,6 @@
-import { Type, type Static } from "@sinclair/typebox"
+import type { Static } from "@sinclair/typebox"
+import { Type } from "@sinclair/typebox"
+
 import { ArticlePageHeaderSchema, ContentPageHeaderSchema } from "~/interfaces"
 import { SortDirections, SortKeys } from "~/interfaces/internal/CollectionSort"
 
@@ -120,7 +122,7 @@ export const SearchPageMetaSchema = BasePageSchema
 export const FileRefMetaSchema = BaseRefSchema
 export const LinkRefMetaSchema = BaseRefSchema
 
-type BaseItemAdditionalProps = {
+interface BaseItemAdditionalProps {
   permalink: string
   lastModified: string
 }

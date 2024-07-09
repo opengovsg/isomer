@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { UnorderedListProps } from "~/interfaces";
-import UnorderedList from "./UnorderedList";
+import type { UnorderedListProps } from "~/interfaces"
+import UnorderedList from "./UnorderedList"
 
 // Template for stories
 const Template = (props: UnorderedListProps) => (
@@ -9,7 +9,7 @@ const Template = (props: UnorderedListProps) => (
     <p>This is a paragraph that is at the base</p>
     <UnorderedList {...props} />
   </>
-);
+)
 
 const meta: Meta<UnorderedListProps> = {
   title: "Next/Components/UnorderedList",
@@ -21,9 +21,9 @@ const meta: Meta<UnorderedListProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof UnorderedList>;
+}
+export default meta
+type Story = StoryObj<typeof UnorderedList>
 
 export const Simple: Story = {
   args: {
@@ -82,7 +82,7 @@ export const Simple: Story = {
       },
     ],
   },
-};
+}
 
 export const Nested: Story = {
   args: {
@@ -175,7 +175,7 @@ export const Nested: Story = {
       },
     ],
   },
-};
+}
 
 export const LongParagraphs: Story = {
   args: {
@@ -336,4 +336,4 @@ export const LongParagraphs: Story = {
       },
     ],
   },
-};
+}

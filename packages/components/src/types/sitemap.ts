@@ -1,7 +1,7 @@
+import type { ISOMER_PAGE_LAYOUTS } from "./schema"
+import type { ValueOf } from "./utils"
 import type { CollectionCardProps } from "~/interfaces"
 import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
-import { ISOMER_PAGE_LAYOUTS } from "./schema"
-import type { ValueOf } from "./utils"
 
 interface IsomerBaseSitemap {
   title: string

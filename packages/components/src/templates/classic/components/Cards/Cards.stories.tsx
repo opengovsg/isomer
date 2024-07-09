@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import Cards from "./Cards";
+import Cards from "./Cards"
 
 const meta: Meta<typeof Cards> = {
   title: "Classic/Components/Cards",
@@ -11,9 +11,9 @@ const meta: Meta<typeof Cards> = {
       themeOverride: "Isomer Classic",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Cards>;
+}
+export default meta
+type Story = StoryObj<typeof Cards>
 
 // Default scenario
 export const Default: Story = {
@@ -42,7 +42,7 @@ export const Default: Story = {
       },
     ],
   },
-};
+}
 
 // Custom scenario
 export const CustomCard: Story = {
@@ -128,4 +128,4 @@ export const CustomCard: Story = {
       },
     ],
   },
-};
+}

@@ -1,4 +1,4 @@
-import type { IsomerPageSchema } from "@opengovsg/isomer-components"
+import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
 import type { Metadata, ResolvingMetadata } from "next"
 import Link from "next/link"
 import config from "@/data/config.json"
@@ -25,13 +25,15 @@ export const generateMetadata = async (
 ): Promise<Metadata> => {
   const schema = (await import(`@/schema/index.json`).then(
     (module) => module.default,
-  )) as IsomerPageSchema
+  )) as IsomerPageSchemaType
   schema.site = {
     ...config.site,
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+    // TODO: fixup all the typing errors
     // @ts-expect-error to fix when types are proper
     siteMap: sitemap,
     navBarItems: navbar,
+    // TODO: fixup all the typing errors
     // @ts-expect-error to fix when types are proper
     footerItems: footer,
     lastUpdated,
@@ -50,9 +52,11 @@ const NotFound = () => {
         site={{
           ...config.site,
           environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+          // TODO: fixup all the typing errors
           // @ts-expect-error to fix when types are proper
           siteMap: sitemap,
           navBarItems: navbar,
+          // TODO: fixup all the typing errors
           // @ts-expect-error to fix when types are proper
           footerItems: footer,
         }}

@@ -1,5 +1,5 @@
-import type { IsomerPageSchema } from "@opengovsg/isomer-components"
-import type { Metadata } from "next"
+import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
+import type { Metadata, ResolvingMetadata } from "next"
 import Link from "next/link"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
@@ -28,16 +28,15 @@ const lastUpdated =
 const getSchema = async (
   permalink: DynamicPageProps["params"]["permalink"],
 ) => {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (permalink && permalink.length > 0 && typeof permalink !== "string") {
     const joinedPermalink = permalink.join("/")
 
     const schema = (await import(`@/schema/${joinedPermalink}.json`).then(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       (module) => module.default,
-    )) as IsomerPageSchema
+    )) as IsomerPageSchemaType
 
     const lastModified =
+      // TODO: fixup all the typing errors
       // @ts-expect-error to fix when types are proper
       getSitemapXml(sitemap).find(
         ({ url }) => permalink.join("/") === url.replace(/^\//, ""),
@@ -51,9 +50,10 @@ const getSchema = async (
 
   const schema = (await import(`@/schema/index.json`).then(
     (module) => module.default,
-  )) as IsomerPageSchema
+  )) as IsomerPageSchemaType
 
   const lastModified =
+    // TODO: fixup all the typing errors
     // @ts-expect-error to fix when types are proper
     getSitemapXml(sitemap).find(({ url }) => url === "/")?.lastModified ||
     new Date().toISOString()
@@ -65,23 +65,27 @@ const getSchema = async (
 }
 
 export const generateStaticParams = () => {
+  // TODO: fixup all the typing errors
   // @ts-expect-error to fix when types are proper
   return getSitemapXml(sitemap).map(({ url }) => ({
     permalink: url.replace(/^\//, "").split("/"),
   }))
 }
 
-export const generateMetadata = async ({
-  params,
-}: DynamicPageProps): Promise<Metadata> => {
+export const generateMetadata = async (
+  { params }: DynamicPageProps,
+  parent: ResolvingMetadata,
+): Promise<Metadata> => {
   const { permalink } = params
   const schema = await getSchema(permalink)
   schema.site = {
     ...config.site,
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+    // TODO: fixup all the typing errors
     // @ts-expect-error to fix when types are proper
     siteMap: sitemap,
     navBarItems: navbar,
+    // TODO: fixup all the typing errors
     // @ts-expect-error to fix when types are proper
     footerItems: footer,
     lastUpdated,
@@ -96,20 +100,19 @@ const Page = async ({ params }: DynamicPageProps) => {
   return (
     <>
       <RenderEngine
-        version={renderSchema.version}
+        {...renderSchema}
         site={{
           ...config.site,
           environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+          // TODO: fixup all the typing errors
           // @ts-expect-error to fix when types are proper
           siteMap: sitemap,
           navBarItems: navbar,
+          // TODO: fixup all the typing errors
           // @ts-expect-error to fix when types are proper
           footerItems: footer,
           lastUpdated,
         }}
-        layout={renderSchema.layout}
-        page={renderSchema.page}
-        content={renderSchema.content}
         LinkComponent={Link}
       />
     </>

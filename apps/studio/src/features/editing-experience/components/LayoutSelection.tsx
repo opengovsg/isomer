@@ -60,6 +60,7 @@ const LAYOUT_DATA: LayoutDataType[] = [
 // TODO: Make this headless by getting the LAYOUT_DATA from the schema. Find somewhere in the schema for layoutDescription & image(fetch this too or generate it)
 function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
   const [selectedLayout, setSelectedLayout] = useState<LayoutDataType>(
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     LAYOUT_DATA[0]!,
   )
 

@@ -1,20 +1,20 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { useEffect } from "react";
+import type { Meta, StoryObj } from "@storybook/react"
+import { useEffect } from "react"
 
-import type { HomePageSchemaType } from "~/engine";
-import Homepage from "./Homepage";
+import type { HomePageSchemaType } from "~/engine"
+import Homepage from "./Homepage"
 
 // Template for stories
 const Template = (props: HomePageSchemaType) => {
   // Note: This is needed because the script tag is not rendered in the storybook
   useEffect(() => {
-    const scriptTag = document.createElement("script");
-    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${TEST_CLIENT_ID}`;
-    scriptTag.setAttribute("defer", "");
-    document.body.appendChild(scriptTag);
-  }, []);
-  return <Homepage {...props} />;
-};
+    const scriptTag = document.createElement("script")
+    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${TEST_CLIENT_ID}`
+    scriptTag.setAttribute("defer", "")
+    document.body.appendChild(scriptTag)
+  }, [])
+  return <Homepage {...props} />
+}
 
 const meta: Meta<typeof Homepage> = {
   title: "Next/Layouts/Homepage",
@@ -26,11 +26,11 @@ const meta: Meta<typeof Homepage> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Homepage>;
+}
+export default meta
+type Story = StoryObj<typeof Homepage>
 
-const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4";
+const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
 
 export const Default: Story = {
   args: {
@@ -337,4 +337,4 @@ export const Default: Story = {
       },
     ],
   },
-};
+}

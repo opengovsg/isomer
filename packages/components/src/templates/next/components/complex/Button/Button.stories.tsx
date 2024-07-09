@@ -1,11 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { ButtonProps } from "~/interfaces/complex/Button";
+import type { ButtonProps } from "~/interfaces/complex/Button"
 import {
   BUTTON_COLOR_SCHEMES,
   BUTTON_VARIANTS,
-} from "~/interfaces/complex/Button";
-import Button from "./Button";
+} from "~/interfaces/complex/Button"
+import Button from "./Button"
 
 const meta: Meta<ButtonProps> = {
   title: "Next/Components/Button",
@@ -16,9 +16,9 @@ const meta: Meta<ButtonProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Button>;
+}
+export default meta
+type Story = StoryObj<typeof Button>
 
 // Default scenario
 export const Default: Story = {
@@ -26,7 +26,7 @@ export const Default: Story = {
     label: "Work with us",
     href: "/faq",
   },
-};
+}
 
 export const WithRightIcon: Story = {
   args: {
@@ -34,14 +34,14 @@ export const WithRightIcon: Story = {
     href: "/faq",
     rightIcon: "right-arrow",
   },
-};
+}
 
 export const LongerButtonText: Story = {
   args: {
     label: "slightly longer button text",
     href: "/faq",
   },
-};
+}
 
 const Buttons = () => {
   return (
@@ -61,15 +61,15 @@ const Buttons = () => {
                   colorScheme={colorScheme}
                   variant={variant}
                 />
-              );
+              )
             })}
           </div>
-        );
+        )
       })}
     </div>
-  );
-};
+  )
+}
 
 export const ColorsAndVariants: Story = {
   render: () => <Buttons />,
-};
+}

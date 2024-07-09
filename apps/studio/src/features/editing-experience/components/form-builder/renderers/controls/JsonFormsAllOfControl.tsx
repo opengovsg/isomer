@@ -24,7 +24,7 @@ export function JsonFormsAllOfControl({
   uischemas,
 }: CombinatorRendererProps) {
   const allOfRenderInfos = createCombinatorRenderInfos(
-    schema.allOf || [],
+    schema.allOf ?? [],
     rootSchema,
     "allOf",
     uischema,

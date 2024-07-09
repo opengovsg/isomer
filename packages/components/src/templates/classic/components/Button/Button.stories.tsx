@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import Button from "./Button";
+import Button from "./Button"
 
 const meta: Meta<typeof Button> = {
   title: "Classic/Components/Button",
@@ -11,10 +11,10 @@ const meta: Meta<typeof Button> = {
       themeOverride: "Isomer Classic",
     },
   },
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof Button>;
+export default meta
+type Story = StoryObj<typeof Button>
 
 // Default scenario
 export const Default: Story = {
@@ -22,18 +22,18 @@ export const Default: Story = {
     label: "Button text",
     href: "/faq",
   },
-};
+}
 
 export const ExternalLinkButton: Story = {
   args: {
     label: "Button text",
     href: "https://www.google.com",
   },
-};
+}
 
 export const LongerButtonText: Story = {
   args: {
     label: "slightly longer button text",
     href: "/faq",
   },
-};
+}

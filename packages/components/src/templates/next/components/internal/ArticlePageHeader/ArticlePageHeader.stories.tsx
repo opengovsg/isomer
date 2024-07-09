@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { ArticlePageHeaderProps } from "~/interfaces";
-import ArticlePageHeader from "./ArticlePageHeader";
+import type { ArticlePageHeaderProps } from "~/interfaces"
+import ArticlePageHeader from "./ArticlePageHeader"
 
 const meta: Meta<ArticlePageHeaderProps> = {
   title: "Next/Internal Components/ArticlePageHeader",
@@ -12,9 +12,9 @@ const meta: Meta<ArticlePageHeaderProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof ArticlePageHeader>;
+}
+export default meta
+type Story = StoryObj<typeof ArticlePageHeader>
 
 export const SingleSummaryItem: Story = {
   args: {
@@ -43,7 +43,7 @@ export const SingleSummaryItem: Story = {
       "20 pieces of rhinoceros horns were found in two pieces of transit baggage bound for Laos. The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
     ],
   },
-};
+}
 
 export const MultipleSummaryItems: Story = {
   args: {
@@ -73,4 +73,4 @@ export const MultipleSummaryItems: Story = {
       "The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
     ],
   },
-};
+}

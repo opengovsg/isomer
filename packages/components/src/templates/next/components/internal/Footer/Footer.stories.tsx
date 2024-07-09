@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { FooterProps } from "~/interfaces";
-import Footer from "./Footer";
+import type { FooterProps } from "~/interfaces"
+import Footer from "./Footer"
 
 const meta: Meta<FooterProps> = {
   title: "Next/Internal Components/Footer",
@@ -12,9 +12,9 @@ const meta: Meta<FooterProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Footer>;
+}
+export default meta
+type Story = StoryObj<typeof Footer>
 
 // Default scenario
 export const Default: Story = {
@@ -106,7 +106,7 @@ export const Default: Story = {
     termsOfUseLink: "/",
     siteMapLink: "/",
   },
-};
+}
 
 export const NonGovernment: Story = {
   args: {
@@ -198,4 +198,4 @@ export const NonGovernment: Story = {
     termsOfUseLink: "/",
     siteMapLink: "/",
   },
-};
+}
