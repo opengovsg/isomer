@@ -1,8 +1,8 @@
+import type { MetadataRoute } from "next"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
 import { getRobotsTxt } from "@opengovsg/isomer-components"
-import type { MetadataRoute } from "next"
 
 const timeNow = new Date()
 const lastUpdated =
@@ -17,7 +17,7 @@ export default function robots(): MetadataRoute.Robots {
     site: {
       ...config.site,
       navBarItems: navbar,
-      // @ts-ignore blah
+      // @ts-expect-error to fix when types are proper
       footerItems: footer,
       lastUpdated,
     },

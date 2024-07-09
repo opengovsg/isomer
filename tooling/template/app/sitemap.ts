@@ -1,8 +1,8 @@
+import type { MetadataRoute } from "next"
 import sitemapJson from "@/sitemap.json"
 import { getSitemapXml } from "@opengovsg/isomer-components"
-import type { MetadataRoute } from "next"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  // @ts-ignore blah
+  // @ts-expect-error to fix when types are proper
   return getSitemapXml(sitemapJson)
 }
