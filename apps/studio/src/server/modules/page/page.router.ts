@@ -21,12 +21,7 @@ import {
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
 
-const typeCompiler = generatetypecompiler()
-
-function generatetypecompiler() {
-  console.log("generated typecompiler")
-  return TypeCompiler.Compile(IsomerPageSchema)
-}
+const typeCompiler = TypeCompiler.Compile(IsomerPageSchema)
 
 // TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page
@@ -35,18 +30,14 @@ const validatedPageProcedure = pageProcedure.use(async ({ next, rawInput }) => {
   if (
     typeof rawInput === "object" &&
     rawInput != null &&
-    "pageId" in rawInput &&
     "content" in rawInput
   ) {
-    const objRawInput = rawInput as { pageId: number; content: string }
     // NOTE: content will be the entire page schema for now...
-    if (!typeCompiler.Check(JSON.parse(objRawInput.content))) {
+    if (!typeCompiler.Check(JSON.parse(rawInput.content as string))) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Schema validation failed.",
       })
-    } else {
-      console.log("validator: valid")
     }
   } else {
     throw new TRPCError({
