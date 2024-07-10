@@ -26,9 +26,6 @@ import {
   BiX,
 } from "react-icons/bi"
 
-import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { type SectionType } from "./types"
-} from 'react-icons/bi'
 import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import { type DrawerState } from '~/types/editorDrawer'
 import { type IsomerComponent } from '@opengovsg/isomer-components'
