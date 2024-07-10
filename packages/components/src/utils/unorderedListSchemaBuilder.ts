@@ -13,7 +13,6 @@ export const unorderedListSchemaBuilder = <T extends TSchema>(
       }),
     },
     {
-      $id: "components-native-unorderedList",
       title: "Unordered list component",
       description: "A list of items as bullet points",
     },

@@ -21,9 +21,9 @@ export const listItemSchemaBuilder = <T extends TSchema, U extends TSchema>(
       type: Type.Literal("listItem"),
       content: Type.Array(
         Type.Union([
-          Type.Ref(ParagraphSchema),
-          Type.Ref(orderedListSchema),
-          Type.Ref(unorderedListSchema),
+          ParagraphSchema,
+          orderedListSchema,
+          unorderedListSchema,
         ]),
         {
           title: "List item contents",
