@@ -98,17 +98,8 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
       type: "vertical-list",
       buttonWidth: "9rem",
       menuWidth: "19rem",
-      defaultTitle: "Heading 1",
+      defaultTitle: "Heading options",
       items: [
-        {
-          type: "item",
-          title: "Title",
-          textStyle: "h1",
-          useSecondaryColor: true,
-          action: () =>
-            editor.chain().focus().toggleHeading({ level: 1 }).run(),
-          isActive: () => editor.isActive("heading", { level: 1 }),
-        },
         {
           type: "item",
           title: "Heading 1",
