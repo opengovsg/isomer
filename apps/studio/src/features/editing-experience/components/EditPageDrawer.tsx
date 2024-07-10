@@ -1,30 +1,34 @@
-import {
-  type IsomerComponent,
-  type IsomerNativeComponentProps,
-} from '@opengovsg/isomer-components'
 import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import ComponentSelector from '~/components/PageEditor/ComponentSelector'
 import RootStateDrawer from './RootStateDrawer'
 import TipTapComponent from './TipTapComponent'
 import ComplexEditorStateDrawer from './ComplexEditorStateDrawer'
+import { IsomerNativeComponentsMap } from '@opengovsg/isomer-components'
+import { TypeCompiler } from '@sinclair/typebox/compiler'
+import type { ProseProps } from '@opengovsg/isomer-components/dist/cjs/interfaces'
 
-function narrowToTiptap(
-  component: IsomerComponent,
-): IsomerNativeComponentProps {
-  // TODO: get rid of the cast here
-  return component as IsomerNativeComponentProps
-}
 
-type EditPageDrawerProps = {
-  isOpen: boolean
-}
-
-export function EditPageDrawer({ isOpen: open }: EditPageDrawerProps) {
+export function EditPageDrawer() {
   const {
     pageState,
     drawerState: currState,
     currActiveIdx,
   } = useEditorDrawerContext()
+
+  const proseSchema = IsomerNativeComponentsMap.prose
+  const compiled = TypeCompiler.Compile(proseSchema)
+
+  const inferAsProse = (component?: typeof pageState[number]): ProseProps => {
+    if (!component) {
+      throw new Error(`Expected component of type prose but got undefined`)
+    }
+
+    if (compiled.Check(component)) {
+      return component
+    }
+
+    throw new Error(`Expected component of type prose but got type ${component.type}`)
+  }
 
   switch (currState.state) {
     case "root":
@@ -32,8 +36,8 @@ export function EditPageDrawer({ isOpen: open }: EditPageDrawerProps) {
     case "addBlock":
       return <ComponentSelector />
     case 'nativeEditor': {
-      const component = narrowToTiptap(pageState[currActiveIdx]!)
-      return <TipTapComponent data={component} type={component.type} />
+      const component = pageState[currActiveIdx]
+      return <TipTapComponent content={inferAsProse(component)} />
     }
     case 'complexEditor':
       return <ComplexEditorStateDrawer />

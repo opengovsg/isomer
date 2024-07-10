@@ -22,7 +22,6 @@ import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 import {
-  type Content,
   EditorContent,
   useEditor,
   type JSONContent,
@@ -32,28 +31,21 @@ import Underline from '@tiptap/extension-underline'
 import { MenuBar } from '~/components/PageEditor/MenuBar'
 
 import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
-import { type IsomerNativeComponentProps } from '@opengovsg/isomer-components'
 import { cloneDeep } from 'lodash'
 import { Table } from './extensions/Table'
-import { validateAsProse } from '../utils/convert'
+import type { ProseProps } from '@opengovsg/isomer-components/dist/cjs/interfaces'
 
-export interface TipTapComponentProps {
-  type: IsomerNativeComponentProps['type']
+interface TipTapComponentProps {
+  content: ProseProps
 }
 
-const typeMapping = {
-  prose: {
-    icon: BiText,
-    title: 'Prose',
-  },
-}
-
-function TipTapComponent({ type }: TipTapComponentProps) {
+function TipTapComponent({ content }: TipTapComponentProps) {
   const { setDrawerState, setPageState, currActiveIdx, snapshot: editorState } =
     useEditorDrawerContext()
 
   const updatePageState = (editorContent: JSONContent) => {
-    const content = validateAsProse(editorContent)
+    // TODO: actual validation 
+    const content = editorContent as ProseProps
     setPageState((oldState) => {
       // TODO: performance - this is a full clone
       // of the object, which is expensive
@@ -80,7 +72,9 @@ function TipTapComponent({ type }: TipTapComponentProps) {
       Dropcursor,
       Gapcursor,
       HardBreak,
-      Heading,
+      Heading.configure({
+        levels: [2, 3, 4, 6]
+      }),
       History,
       HorizontalRule.extend({
         name: "divider",
@@ -107,7 +101,7 @@ function TipTapComponent({ type }: TipTapComponentProps) {
       Text,
       Underline,
     ],
-    content: editorState[currActiveIdx]! as IsomerNativeComponentProps,
+    content,
     onUpdate: (e) => {
       const jsonContent = e.editor.getJSON()
       updatePageState(jsonContent)
@@ -126,9 +120,9 @@ function TipTapComponent({ type }: TipTapComponentProps) {
         w="100%"
         alignItems="center"
       >
-        <Icon as={typeMapping[type].icon} color="blue.600" />
+        <Icon as={BiText} color="blue.600" />
         <ChakraText pl="0.75rem" textStyle="h5" w="100%">
-          {typeMapping[type].title}
+          Prose
         </ChakraText>
         <IconButton
           size="lg"
