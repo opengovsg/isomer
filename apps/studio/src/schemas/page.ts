@@ -24,18 +24,18 @@ export const createPageSchema = z.object({
     .string({
       required_error: "Enter a title for this page",
     })
-    .min(1, { message: "Minimum length should be 1" })
-    .max(150, { message: "Maximum length should be 150" }),
+    .min(1, { message: "Enter a title for this page" })
+    .max(150, { message: "Page title should be shorter than 150 characters." }),
   pageUrl: z
     .string({
-      required_error: "Enter a valid URL for this page.",
+      required_error: "Enter a URL for this page.",
     })
     // TODO(ISOM-1187): Add tests for this regex, to ensure frontend is synchronized with backend
     .regex(/^[a-z0-9\-]+$/, {
       message: "Only lowercase alphanumeric characters and hyphens are allowed",
     })
-    .min(1, { message: "Minimum length should be 1" })
-    .max(250, { message: "Maximum length should be 250" }),
+    .min(1, { message: "Enter a URL for this page" })
+    .max(250, { message: "Page URL should be shorter than 250 characters." }),
   // TODO: add the actual layouts in here
   layout: z.enum(PAGE_LAYOUTS).default("content"),
   siteId: z.number().min(1),
