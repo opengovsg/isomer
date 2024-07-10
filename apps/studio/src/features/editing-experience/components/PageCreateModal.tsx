@@ -1,4 +1,5 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
+import { useEffect } from "react"
 import {
   FormControl,
   FormHelperText,
@@ -27,6 +28,16 @@ import { createPageSchema } from "~/schemas/page"
 
 type PageCreateModalProps = Pick<UseDisclosureReturn, "isOpen" | "onClose">
 
+const generatePageUrl = (value: string) => {
+  return (
+    value
+      .toLowerCase()
+      // TODO(ISOM-1187): Add storybook snapshot test
+      // Replace non-alphanum characters with hyphen for UX
+      .replace(/[^a-z0-9]/g, "-")
+  )
+}
+
 export const PageCreateModal = ({
   isOpen,
   onClose,
@@ -39,6 +50,8 @@ export const PageCreateModal = ({
     handleSubmit,
     control,
     watch,
+    getFieldState,
+    setValue,
     formState: { errors },
   } = useZodForm({
     schema: createPageSchema.omit({
@@ -52,6 +65,23 @@ export const PageCreateModal = ({
   })
 
   const [title, url] = watch(["pageTitle", "pageUrl"])
+
+  /**
+   * To nip broken links from the bud, the ideal interaction for this is:
+   * As user edits the Page title, Page URL is updated as an hyphenated form of the page title.
+   * If user edits Page URL, the “syncing” stops.
+   *
+   * 1. adds page title A
+   * 2. edits page url A
+   * 3. deletes page title A
+   * 4. resets to page url
+   * 5. starts typing new page title B -> page url syncs w new page title B
+   */
+  useEffect(() => {
+    if (!getFieldState("pageUrl").isDirty) {
+      setValue("pageUrl", generatePageUrl(title))
+    }
+  }, [getFieldState, setValue, title])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -119,14 +149,7 @@ export const PageCreateModal = ({
                       <Input
                         {...field}
                         onChange={(e) => {
-                          // Only allow lowercase alphanumeric characters and hyphens
-                          onChange(
-                            e.target.value
-                              .toLowerCase()
-                              // TODO(ISOM-1187): Add storybook snapshot test
-                              // Replace non-alphanum characters with hyphen for UX
-                              .replace(/[^a-z0-9]/g, "-"),
-                          )
+                          onChange(generatePageUrl(e.target.value))
                         }}
                       />
                     )}
