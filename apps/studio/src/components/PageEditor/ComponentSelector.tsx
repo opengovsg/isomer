@@ -113,9 +113,9 @@ function ComponentSelector() {
     const nextState: DrawerState['state'] =
       sectionType === 'prose' ? 'nativeEditor' : 'complexEditor'
     // TODO: Remove assertion after default blocks all in
-    const newComponent: IsomerComponent = DEFAULT_BLOCKS[sectionType]!
+    const newComponent: IsomerComponent | undefined = DEFAULT_BLOCKS[sectionType]
 
-    const nextPageState = [...pageState, newComponent]
+    const nextPageState = !!newComponent ? [...pageState, newComponent] : pageState
     setPageState(nextPageState)
     setDrawerState({ state: nextState })
     setCurrActiveIdx(nextPageState.length - 1)
