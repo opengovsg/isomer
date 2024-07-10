@@ -123,10 +123,9 @@ export const PageCreateModal = ({
                           onChange(
                             e.target.value
                               .toLowerCase()
-                              // Replace spacebar with hyphen for UX
                               // TODO(ISOM-1187): Add storybook snapshot test
-                              .replace(/\s/g, "-")
-                              .replace(/[^a-z0-9\-]/g, ""),
+                              // Replace non-alphanum characters with hyphen for UX
+                              .replace(/[^a-z0-9]/g, "-"),
                           )
                         }}
                       />
