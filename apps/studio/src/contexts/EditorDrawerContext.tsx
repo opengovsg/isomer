@@ -19,8 +19,6 @@ export interface DrawerContextType {
   setPageState: Dispatch<SetStateAction<IsomerComponent[]>>
   snapshot: IsomerComponent[]
   setSnapshot: (state: IsomerComponent[]) => void
-  isomerJsonSchema: IsomerJsonSchema | null
-  setIsomerJsonSchema: (schema: IsomerJsonSchema) => void
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
@@ -33,8 +31,6 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
   // Current edit view of page
   const [snapshot, setSnapshot] = useState<IsomerComponent[]>([])
   // Isomer page schema
-  const [isomerJsonSchema, setIsomerJsonSchema] =
-    useState<IsomerJsonSchema | null>(null)
   const [currActiveIdx, setCurrActiveIdx] = useState(0)
 
   const value = useMemo(
@@ -47,8 +43,6 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
       setPageState,
       snapshot,
       setSnapshot,
-      isomerJsonSchema,
-      setIsomerJsonSchema,
     }),
     [
       currActiveIdx,
@@ -59,8 +53,6 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
       setPageState,
       snapshot,
       setSnapshot,
-      isomerJsonSchema,
-      setIsomerJsonSchema,
     ],
   )
 
