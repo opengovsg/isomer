@@ -1,4 +1,7 @@
-import { type ContentPageSchemaType } from "@opengovsg/isomer-components"
+import type { ContentPageSchemaType } from "@opengovsg/isomer-components"
+import { IsomerPageSchema } from "@opengovsg/isomer-components"
+import { TypeCompiler } from "@sinclair/typebox/compiler"
+import { TRPCError } from "@trpc/server"
 
 import {
   createPageSchema,
@@ -7,18 +10,53 @@ import {
   updatePageSchema,
 } from "~/schemas/page"
 import { protectedProcedure, publicProcedure, router } from "~/server/trpc"
+import { safeJsonParse } from "~/utils/safeJsonParse"
 import {
   getFooter,
   getFullPageById,
   getNavBar,
+  getPageById,
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
 
+const typeCompiler = generatetypecompiler()
+
+function generatetypecompiler() {
+  console.log("generated typecompiler")
+  return TypeCompiler.Compile(IsomerPageSchema)
+}
+
 // TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page
 const pageProcedure = protectedProcedure
+const validatedPageProcedure = pageProcedure.use(async ({ next, rawInput }) => {
+  if (
+    typeof rawInput === "object" &&
+    rawInput != null &&
+    "pageId" in rawInput &&
+    "content" in rawInput
+  ) {
+    const objRawInput = rawInput as { pageId: number; content: string }
+    // NOTE: content will be the entire page schema for now...
+    if (!typeCompiler.Check(JSON.parse(objRawInput.content))) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Schema validation failed.",
+      })
+    } else {
+      console.log("validator: valid")
+    }
+  } else {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Missing request parameters.",
+    })
+  }
+
+  return next()
+})
 
 export const pageRouter = router({
   readPageAndBlob: pageProcedure
@@ -49,7 +87,7 @@ export const pageRouter = router({
       return input
     }),
 
-  updatePageBlob: pageProcedure
+  updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input, ctx }) => {
       await updateBlobById({ ...input, id: input.pageId })
