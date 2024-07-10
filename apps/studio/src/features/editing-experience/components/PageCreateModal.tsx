@@ -24,7 +24,11 @@ import {
 import { Controller } from "react-hook-form"
 
 import { useZodForm } from "~/lib/form"
-import { createPageSchema } from "~/schemas/page"
+import {
+  createPageSchema,
+  MAX_PAGE_URL_LENGTH,
+  MAX_TITLE_LENGTH,
+} from "~/schemas/page"
 
 type PageCreateModalProps = Pick<UseDisclosureReturn, "isOpen" | "onClose">
 
@@ -42,9 +46,6 @@ export const PageCreateModal = ({
   isOpen,
   onClose,
 }: PageCreateModalProps): JSX.Element => {
-  const MAX_TITLE_LENGTH = 100
-  const MAX_PAGE_URL_LENGTH = 150
-
   const {
     register,
     handleSubmit,
