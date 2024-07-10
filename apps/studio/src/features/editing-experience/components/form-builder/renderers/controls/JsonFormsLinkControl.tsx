@@ -51,6 +51,7 @@ export function JsonFormsLinkControl({
       label: "Email",
     },
   ]
+  const dataString = data && typeof data === "string" ? data : ""
 
   return (
     <Box py={2}>
@@ -73,7 +74,7 @@ export function JsonFormsLinkControl({
             <TabPanel>
               <Input
                 type="text"
-                value={data || ""}
+                value={dataString}
                 onChange={(e) => handleChange(path, e.target.value)}
                 placeholder="Page permalink"
               />
@@ -81,7 +82,7 @@ export function JsonFormsLinkControl({
             <TabPanel>
               <Input
                 type="text"
-                value={data || ""}
+                value={dataString}
                 onChange={(e) => handleChange(path, e.target.value)}
                 placeholder="https://www.isomer.gov.sg"
               />
@@ -89,7 +90,7 @@ export function JsonFormsLinkControl({
             <TabPanel>
               <Input
                 type="text"
-                value={data || ""}
+                value={dataString}
                 onChange={(e) => handleChange(path, e.target.value)}
                 placeholder="File link"
               />
@@ -98,8 +99,8 @@ export function JsonFormsLinkControl({
               <Input
                 type="text"
                 value={
-                  data && data.startsWith("mailto:")
-                    ? data.slice("mailto:".length)
+                  dataString.startsWith("mailto:")
+                    ? dataString.slice("mailto:".length)
                     : ""
                 }
                 onChange={(e) => handleChange(path, `mailto:${e.target.value}`)}
