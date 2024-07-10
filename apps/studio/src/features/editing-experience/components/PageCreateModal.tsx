@@ -29,6 +29,7 @@ import {
   MAX_PAGE_URL_LENGTH,
   MAX_TITLE_LENGTH,
 } from "~/schemas/page"
+import { trpc } from "~/utils/trpc"
 
 type PageCreateModalProps = Pick<UseDisclosureReturn, "isOpen" | "onClose">
 
@@ -67,6 +68,8 @@ export const PageCreateModal = ({
 
   const [title, url] = watch(["pageTitle", "pageUrl"])
 
+  const { mutate, isLoading } = trpc.page.createPage.useMutation()
+
   /**
    * To nip broken links from the bud, the ideal interaction for this is:
    * As user edits the Page title, Page URL is updated as an hyphenated form of the page title.
@@ -84,27 +87,40 @@ export const PageCreateModal = ({
     }
   }, [getFieldState, setValue, title])
 
+  const handleCreatePage = handleSubmit((values) => {
+    mutate({
+      ...values,
+      // TODO: Add siteId to the form
+      siteId: 1,
+      folderId: 1,
+    })
+  })
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalCloseButton />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      closeOnOverlayClick={!isLoading}
+      closeOnEsc={!isLoading}
+    >
+      <ModalCloseButton disabled={isLoading} isDisabled={isLoading} />
       <ModalOverlay />
       <ModalContent>
         <ModalHeader color="base.content.strong">
           Tell us about your new page
         </ModalHeader>
         <ModalCloseButton />
-        <form
-          onSubmit={handleSubmit((values) => {
-            console.log(values)
-          })}
-        >
+        <form onSubmit={handleCreatePage}>
           <ModalBody>
             <Stack gap={"1.5em"}>
               <Text fontSize="md" color="base.content.default">
                 You can change these later.
               </Text>
               {/* Section 1: Page Title */}
-              <FormControl isInvalid={!!errors.pageTitle}>
+              <FormControl
+                isInvalid={!!errors.pageTitle}
+                isReadOnly={isLoading}
+              >
                 <FormLabel color="base.content.strong">
                   Page title
                   <FormHelperText color="base.content.default">
@@ -129,7 +145,7 @@ export const PageCreateModal = ({
               </FormControl>
 
               {/* Section 2: Page URL */}
-              <FormControl isInvalid={!!errors.pageUrl}>
+              <FormControl isInvalid={!!errors.pageUrl} isReadOnly={isLoading}>
                 <FormLabel>
                   Page URL
                   <FormHelperText>
@@ -173,12 +189,17 @@ export const PageCreateModal = ({
               variant="link"
               mr={5}
               onClick={onClose}
+              isDisabled={isLoading}
               fontWeight={500}
               color={"base.content.strong"}
             >
               Cancel
             </Button>
-            <Button bgColor="interaction.main.default" type="submit">
+            <Button
+              bgColor="interaction.main.default"
+              type="submit"
+              isLoading={isLoading}
+            >
               Create page
             </Button>
           </ModalFooter>
