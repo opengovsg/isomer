@@ -20,8 +20,22 @@ export const updatePageBlobSchema = getEditPageSchema.extend({
 })
 
 export const createPageSchema = z.object({
-  pageName: z.string(),
-  pageTitle: z.string(),
+  pageTitle: z
+    .string({
+      required_error: "Enter a title for this page",
+    })
+    .min(1, { message: "Minimum length should be 1" })
+    .max(100, { message: "Maximum length should be 100" }),
+  pageUrl: z
+    .string({
+      required_error: "Enter a valid URL for this page.",
+    })
+    // TODO(ISOM-1187): Add tests for this regex, to ensure frontend is synchronized with backend
+    .regex(/^[a-z0-9\-]+$/, {
+      message: "Only lowercase alphanumeric characters and hyphens are allowed",
+    })
+    .min(1, { message: "Minimum length should be 1" })
+    .max(150, { message: "Maximum length should be 150" }),
   // TODO: add the actual layouts in here
   layout: z.enum(PAGE_LAYOUTS).default("content"),
   siteId: z.number().min(1),
