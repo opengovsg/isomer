@@ -1,7 +1,5 @@
-import type { SubmitHandler } from "react-hook-form"
-import React, { useEffect, useState } from "react"
+import type { UseDisclosureReturn } from "@chakra-ui/react"
 import {
-  Box,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -22,29 +20,12 @@ import {
   FormErrorMessage,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import { useForm } from "react-hook-form"
+import { Controller } from "react-hook-form"
 
-interface PageCreateModalProps {
-  isOpen: boolean
-  onClose: () => void
-}
+import { useZodForm } from "~/lib/form"
+import { createPageSchema } from "~/schemas/page"
 
-interface PageCreateFormFields {
-  title: string
-  url: string
-}
-
-/* TODO: Can extract these out to a constants file if can be reused */
-const ERROR_MESSAGES = {
-  MIN_LENGTH: "Minimum length should be 1",
-  MAX_LENGTH: (max: number) => `Maximum length should be ${max}`,
-  TITLE: {
-    REQUIRED: "Enter a title for this page",
-  },
-  URL: {
-    REQUIRED: "Enter a URL for this page.",
-  },
-}
+type PageCreateModalProps = Pick<UseDisclosureReturn, "isOpen" | "onClose">
 
 export const PageCreateModal = ({
   isOpen,
@@ -52,26 +33,25 @@ export const PageCreateModal = ({
 }: PageCreateModalProps): JSX.Element => {
   const MAX_TITLE_LENGTH = 100
   const MAX_PAGE_URL_LENGTH = 150
-  const [titleLen, setTitleLen] = useState(0)
-  const [pageUrlLen, setPageUrlLen] = useState(0)
 
   const {
     register,
     handleSubmit,
+    control,
     watch,
     formState: { errors },
-  } = useForm<PageCreateFormFields>()
+  } = useZodForm({
+    schema: createPageSchema.omit({
+      siteId: true,
+      folderId: true,
+    }),
+    defaultValues: {
+      pageTitle: "",
+      pageUrl: "",
+    },
+  })
 
-  const watchAllFields = watch()
-
-  useEffect(() => {
-    setTitleLen(watchAllFields.title.length || 0)
-    setPageUrlLen(watchAllFields.url.length || 0)
-  }, [watchAllFields])
-
-  /* TODO: When integrating with BE */
-  const onSubmit: SubmitHandler<PageCreateFormFields> = (data) =>
-    console.log(data)
+  const [title, url] = watch(["pageTitle", "pageUrl"])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -82,14 +62,18 @@ export const PageCreateModal = ({
           Tell us about your new page
         </ModalHeader>
         <ModalCloseButton />
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form
+          onSubmit={handleSubmit((values) => {
+            console.log(values)
+          })}
+        >
           <ModalBody>
             <Stack gap={"1.5em"}>
               <Text fontSize="md" color="base.content.default">
                 You can change these later.
               </Text>
               {/* Section 1: Page Title */}
-              <FormControl isInvalid={!!errors.title}>
+              <FormControl isInvalid={!!errors.pageTitle}>
                 <FormLabel color="base.content.strong">
                   Page title
                   <FormHelperText color="base.content.default">
@@ -98,36 +82,23 @@ export const PageCreateModal = ({
                 </FormLabel>
 
                 <Input
-                  type="text"
                   placeholder="This is a title for your new page"
                   id="title"
-                  {...register("title", {
-                    required: ERROR_MESSAGES.TITLE.REQUIRED,
-                    validate: (value) =>
-                      value.trim().length !== 0 ||
-                      ERROR_MESSAGES.TITLE.REQUIRED,
-                    minLength: {
-                      value: 1,
-                      message: ERROR_MESSAGES.MIN_LENGTH,
-                    },
-                    maxLength: {
-                      value: MAX_TITLE_LENGTH,
-                      message: ERROR_MESSAGES.MAX_LENGTH(MAX_TITLE_LENGTH),
-                    },
-                  })}
-                  isInvalid={!!errors.title}
+                  {...register("pageTitle")}
                 />
-                {errors.title?.message ? (
-                  <FormErrorMessage>{errors.title.message}</FormErrorMessage>
+                {errors.pageTitle?.message ? (
+                  <FormErrorMessage>
+                    {errors.pageTitle.message}
+                  </FormErrorMessage>
                 ) : (
                   <FormHelperText mt={"0.5em"} color="base.content.medium">
-                    {MAX_TITLE_LENGTH - titleLen} characters left
+                    {MAX_TITLE_LENGTH - title.length} characters left
                   </FormHelperText>
                 )}
               </FormControl>
 
               {/* Section 2: Page URL */}
-              <FormControl isInvalid={!!errors.url}>
+              <FormControl isInvalid={!!errors.pageUrl}>
                 <FormLabel>
                   Page URL
                   <FormHelperText>
@@ -136,35 +107,38 @@ export const PageCreateModal = ({
                 </FormLabel>
                 <InputGroup>
                   <InputLeftAddon
-                    bgColor="interaction.support.disabled"
+                    bg="interaction.support.disabled"
                     color="base.divider.strong"
                   >
                     your-site.gov.sg/
                   </InputLeftAddon>
-                  <Input
-                    type="tel"
-                    defaultValue={"hello-world"}
-                    color="base.content.default"
-                    {...register("url", {
-                      required: ERROR_MESSAGES.URL.REQUIRED,
-                      minLength: {
-                        value: 1,
-                        message: ERROR_MESSAGES.MIN_LENGTH,
-                      },
-                      maxLength: {
-                        value: MAX_PAGE_URL_LENGTH,
-                        message: ERROR_MESSAGES.MAX_LENGTH(MAX_PAGE_URL_LENGTH),
-                      },
-                    })}
-                    isInvalid={!!errors.url}
+                  <Controller
+                    control={control}
+                    name="pageUrl"
+                    render={({ field: { onChange, ...field } }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          // Only allow lowercase alphanumeric characters and hyphens
+                          onChange(
+                            e.target.value
+                              .toLowerCase()
+                              // Replace spacebar with hyphen for UX
+                              // TODO(ISOM-1187): Add storybook snapshot test
+                              .replace(/\s/g, "-")
+                              .replace(/[^a-z0-9\-]/g, ""),
+                          )
+                        }}
+                      />
+                    )}
                   />
                 </InputGroup>
 
-                {errors.url?.message ? (
-                  <FormErrorMessage>{errors.url.message}</FormErrorMessage>
+                {errors.pageUrl?.message ? (
+                  <FormErrorMessage>{errors.pageUrl.message}</FormErrorMessage>
                 ) : (
                   <FormHelperText mt={"0.5em"} color="base.content.medium">
-                    {MAX_PAGE_URL_LENGTH - pageUrlLen} characters left
+                    {MAX_PAGE_URL_LENGTH - url.length} characters left
                   </FormHelperText>
                 )}
               </FormControl>
