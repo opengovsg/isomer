@@ -1,11 +1,12 @@
 import { Box } from "@chakra-ui/react"
 import { type Meta, type StoryObj } from "@storybook/react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import { VersionModal } from "~/components/VersionWrapper/VersionModal"
-import { getMobileViewParameters } from "../utils/viewports"
 
 const meta: Meta<typeof VersionModal> = {
-  title: "Components/Version Modal",
+  title: "Components/VersionModal",
   component: VersionModal,
   // Required for Chromatic to know the dimensions of the snapshot to take,
   // since the modal is rendered in a portal and Chromatic only detects the
@@ -32,7 +33,9 @@ export default meta
 
 type Story = StoryObj<typeof VersionModal>
 
-export const Default: Story = {}
-export const Mobile: Story = {
-  parameters: getMobileViewParameters(),
+export const Default: Story = {
+  name: "VersionModal",
+  parameters: {
+    chromatic: withChromaticModes(["desktop", "mobile"]),
+  },
 }

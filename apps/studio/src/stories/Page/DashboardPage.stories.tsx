@@ -19,4 +19,6 @@ const meta: Meta<typeof DashboardPage> = {
 export default meta
 type Story = StoryObj<typeof DashboardPage>
 
-export const Default: Story = {}
+export const Default: Story = {
+  name: "Dashboard Page",
+}

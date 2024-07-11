@@ -117,9 +117,9 @@ export const DashboardTable = (): JSX.Element => {
                 (pageNumber - 1) * entriesPerPage,
                 pageNumber * entriesPerPage,
               )
-              .map((element) => {
+              .map((element, index) => {
                 return (
-                  <Tr>
+                  <Tr key={index}>
                     <Td w="min-content">
                       <Checkbox size="sm" w="fit-content" h="fit-content" />
                     </Td>

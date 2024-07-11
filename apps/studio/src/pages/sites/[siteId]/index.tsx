@@ -5,15 +5,16 @@ import _ from "lodash"
 import { DashboardTable } from "~/features/dashboard/DashboardTable"
 import PageCreateModal from "~/features/editing-experience/components/PageCreateModal"
 import { type NextPageWithLayout } from "~/lib/types"
+import { AdminLayout } from "~/templates/layouts/AdminLayout"
 
-const Dashboard: NextPageWithLayout = () => {
+const SitePage: NextPageWithLayout = () => {
   const {
     isOpen: isPageCreateModalOpen,
     onOpen: onPageCreateModalOpen,
     onClose: onpageCreateModalClose,
   } = useDisclosure()
   return (
-    <VStack bgColor="#F3F5F7" w="100%" p="1.75rem" minH="100vh">
+    <VStack w="100%" p="1.75rem">
       <Text
         alignSelf="flex-start"
         textColor="base.content.default"
@@ -46,4 +47,5 @@ const Dashboard: NextPageWithLayout = () => {
   )
 }
 
-export default Dashboard
+SitePage.getLayout = AdminLayout
+export default SitePage
