@@ -20,18 +20,19 @@ import {
   BiMap,
   BiMovie,
   BiQuestionMark,
+  BiRuler,
   BiSolidHandUp,
   BiSolidQuoteAltLeft,
   BiText,
   BiX,
 } from "react-icons/bi"
 
-import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import { type DrawerState } from '~/types/editorDrawer'
 import { type IsomerComponent } from '@opengovsg/isomer-components'
 import { trpc } from '~/utils/trpc'
-import { type SectionType } from './types'
 import { DEFAULT_BLOCKS } from './constants'
+import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { type SectionType } from "./types"
 
 function Section({ children }: React.PropsWithChildren) {
   return (
@@ -98,32 +99,36 @@ function BlockItem({
 }
 
 function ComponentSelector() {
-  const { setCurrActiveIdx, pageState, setDrawerState, setPageState, setSnapshot } =
-    useEditorDrawerContext()
+  const { setCurrActiveIdx, pageState, setDrawerState, setPageState, setSnapshot , setAddedBlock } = useEditorDrawerContext()
+
   const { mutate } = trpc.page.updatePageBlob.useMutation()
   // TODO: get this dynamically
   const pageId = 1
   const [page] = trpc.page.readPageAndBlob.useSuspenseQuery({
     pageId,
   })
+
   const onProceed = (sectionType: SectionType) => {
     // TODO: add new section to page/editor state
     // NOTE: Only paragraph should go to tiptap editor
     // the rest should use json forms
     const nextState: DrawerState['state'] =
       sectionType === 'prose' ? 'nativeEditor' : 'complexEditor'
-    // TODO: Remove assertion after default blocks all in
     const newComponent: IsomerComponent | undefined = DEFAULT_BLOCKS[sectionType]
-
     const nextPageState = !!newComponent ? [...pageState, newComponent] : pageState
+
     setPageState(nextPageState)
     setDrawerState({ state: nextState })
     setCurrActiveIdx(nextPageState.length - 1)
     setSnapshot(pageState)
+    // TODO: Decide if this is a good idea...
+    if (sectionType !== "prose") { setAddedBlock(sectionType) }
+
     mutate({
       pageId,
       content: JSON.stringify({ ...page.content, content: nextPageState }),
     })
+
   }
 
   return (
@@ -161,7 +166,7 @@ function ComponentSelector() {
           <SectionTitle title="Basic Building Blocks" />
           <BlockList>
             <BlockItem
-              label="Prose"
+              label="Paragraph"
               icon={BiText}
               onProceed={onProceed}
               sectionType="prose"
@@ -197,7 +202,7 @@ function ComponentSelector() {
               label="Text with button"
               icon={BiSolidHandUp}
               onProceed={onProceed}
-              sectionType="infobar"
+              sectionType="button"
               description="TODO"
             />
             <BlockItem
@@ -211,7 +216,6 @@ function ComponentSelector() {
         </Section>
         <Section>
           <SectionTitle title="Organise Content" />
-          {/* TODO: this should map over the schema and take values + components from there */}
           <BlockList>
             <BlockItem
               label="Cards"
@@ -234,6 +238,13 @@ function ComponentSelector() {
               sectionType="accordion"
               description="TODO"
             />
+            <BlockItem
+              label="Divider"
+              icon={BiRuler}
+              onProceed={onProceed}
+              sectionType="divider"
+              description="TODO"
+            />
           </BlockList>
         </Section>
         <Section>
@@ -243,21 +254,21 @@ function ComponentSelector() {
               label="YouTube"
               icon={BiMovie}
               onProceed={onProceed}
-              sectionType="iframe"
+              sectionType="youtube"
               description="TODO"
             />
             <BlockItem
               label="Google Maps"
               icon={BiMap}
               onProceed={onProceed}
-              sectionType="iframe"
+              sectionType="googleMaps"
               description="TODO"
             />
             <BlockItem
               label="FormSG"
               icon={BiQuestionMark}
               onProceed={onProceed}
-              sectionType="iframe"
+              sectionType="formsg"
               description="TODO"
             />
           </BlockList>
