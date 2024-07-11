@@ -203,6 +203,8 @@ const preview: Preview = {
   loaders: [mswLoader],
   decorators,
   parameters: {
+    // More on how to position stories at: https://storybook.js.org/docs/react/configure/story-layout
+    layout: "fullscreen",
     viewport,
     /**
      * If tablet view is needed, add it on a per-story basis.
