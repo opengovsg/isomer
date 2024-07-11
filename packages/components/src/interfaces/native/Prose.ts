@@ -28,7 +28,6 @@ export const ProseSchema = Type.Object({
     ),
   },
   {
-    $id: "components-native-prose",
     title: "Content block",
     description: "A collection of native content components.",
   },
