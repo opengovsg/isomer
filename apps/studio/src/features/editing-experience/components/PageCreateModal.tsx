@@ -38,7 +38,6 @@ const generatePageUrl = (value: string) => {
   return (
     value
       .toLowerCase()
-      // TODO(ISOM-1187): Add storybook snapshot test
       // Replace non-alphanum characters with hyphen for UX
       .replace(/[^a-z0-9]/g, "-")
   )
@@ -143,9 +142,9 @@ const PageCreateModalContent = ({
   })
   return (
     <ModalContent>
+      <ModalCloseButton isDisabled={isLoading} />
       <ModalHeader color="base.content.strong">
         Tell us about your new page
-        <ModalCloseButton isDisabled={isLoading} />
       </ModalHeader>
       <form onSubmit={handleCreatePage}>
         <ModalBody>
