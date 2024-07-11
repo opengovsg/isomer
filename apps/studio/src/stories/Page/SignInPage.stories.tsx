@@ -13,8 +13,6 @@ const meta: Meta<typeof SignInPage> = {
   title: "Pages/Sign In Page",
   component: SignInPage,
   parameters: {
-    // More on how to position stories at: https://storybook.js.org/docs/react/configure/story-layout
-    layout: "fullscreen",
     loginState: false,
     msw: {
       handlers: [
