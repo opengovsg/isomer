@@ -7,6 +7,7 @@ export default defineConfig({
     exclude: [...configDefaults.exclude, "**/playwright/**", "tests/load/**"],
     alias: {
       "~/": fileURLToPath(new URL("./src/", import.meta.url)),
+      "~prisma": fileURLToPath(new URL("./prisma/", import.meta.url)),
     },
     environment: "vprisma",
     setupFiles: ["vitest-environment-vprisma/setup", "vitest.setup.ts"],

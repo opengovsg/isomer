@@ -1,6 +1,6 @@
+import { type DB } from "~prisma/generated/generatedTypes"
 import { Kysely, PostgresDialect } from "kysely"
 import pg from "pg"
-import { type DB } from "prisma/generated/generatedTypes"
 
 import { env } from "~/env.mjs"
 
