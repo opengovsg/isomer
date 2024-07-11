@@ -102,7 +102,7 @@
     "js-base64": "^3.7.7",
     "js-md5": "^0.8.3",
     "markdown-to-jsx": "^7.4.7",
-    "minisearch": "^6.3.0",
+    "minisearch": "^7.0.0",
     "react-icons": "^5.2.0"
   },
   "prettier": "@isomer/prettier-config"
