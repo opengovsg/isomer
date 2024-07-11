@@ -22,3 +22,11 @@ type Story = StoryObj<typeof DashboardPage>
 export const Default: Story = {
   name: "Dashboard Page",
 }
+
+export const Loading: Story = {
+  parameters: {
+    msw: {
+      handlers: [meHandlers.me(), sitesHandlers.list.loading()],
+    },
+  },
+}

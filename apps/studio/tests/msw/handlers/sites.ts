@@ -1,7 +1,13 @@
+import type { DelayMode } from "msw"
+import { delay } from "msw"
+
 import { trpcMsw } from "../mockTrpc"
 
-const siteListQuery = () => {
-  return trpcMsw.site.list.query(() => {
+const siteListQuery = (wait?: DelayMode | number) => {
+  return trpcMsw.site.list.query(async () => {
+    if (wait !== undefined) {
+      await delay(wait)
+    }
     return [
       {
         id: 1,
@@ -14,5 +20,6 @@ const siteListQuery = () => {
 export const sitesHandlers = {
   list: {
     default: siteListQuery,
+    loading: () => siteListQuery("infinite"),
   },
 }
