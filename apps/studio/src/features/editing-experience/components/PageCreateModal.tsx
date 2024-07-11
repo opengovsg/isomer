@@ -164,7 +164,6 @@ const PageCreateModalContent = ({
 
               <Input
                 placeholder="This is a title for your new page"
-                id="title"
                 {...register("pageTitle")}
               />
               {errors.pageTitle?.message ? (
