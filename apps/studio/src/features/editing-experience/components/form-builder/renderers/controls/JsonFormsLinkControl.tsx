@@ -21,7 +21,7 @@ export const jsonFormsLinkControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.LinkControl,
   and(
     isStringControl,
-    schemaMatches((schema) => schema.format === "uri"),
+    schemaMatches((schema) => schema.format === "link"),
   ),
 )
 

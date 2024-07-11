@@ -18,7 +18,7 @@ export const ButtonSchema = Type.Object(
     href: Type.String({
       title: "Button URL",
       description: "The URL to navigate to when the button is clicked",
-      format: "uri",
+      format: "link",
     }),
     colorScheme: Type.Optional(
       Type.Union(
