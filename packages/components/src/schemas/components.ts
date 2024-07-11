@@ -1,5 +1,3 @@
-import type { TSchema } from "@sinclair/typebox"
-
 import {
   AccordionSchema,
   ButtonSchema,

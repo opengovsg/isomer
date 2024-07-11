@@ -16,7 +16,7 @@ const definitions = {
 
 export const schema: TSchema = {
   $schema: "http://json-schema.org/draft-07/schema#",
-  title: "Isomer Next Page JSON",
+  title: "Isomer Next Page Schema",
   ...IsomerPageSchema,
   ...definitions,
 }
