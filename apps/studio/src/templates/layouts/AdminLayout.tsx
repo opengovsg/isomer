@@ -1,27 +1,28 @@
-import { Flex, Grid } from "@chakra-ui/react"
+import { Flex } from "@chakra-ui/react"
 
 import { AppNavbar } from "~/components/AppNavbar"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
-import { DashSidebar } from "~/components/DashSidebar"
-import { APP_GRID_TEMPLATE_AREA } from "~/constants/layouts"
+import { APP_GRID_COLUMN } from "~/constants/layouts"
 import { type GetLayout } from "~/lib/types"
+import { AppGrid } from "../AppGrid"
 
 export const AdminLayout: GetLayout = (page) => {
   return (
     <EnforceLoginStatePageWrapper>
       <Flex minH="$100vh" flexDir="column" bg="base.canvas.alt" pos="relative">
-        <Grid
-          flex={1}
-          width="100vw"
-          gridColumnGap={{ base: 0, md: "1rem" }}
-          gridTemplate={APP_GRID_TEMPLATE_AREA}
-        >
-          <AppNavbar />
-          <DashSidebar />
-          <Flex flex={1} bg="base.canvas.alt">
+        <AppNavbar />
+        <AppGrid flex={1}>
+          <Flex
+            flex={1}
+            bg="base.canvas.alt"
+            justifyItems="center"
+            gridColumn={APP_GRID_COLUMN}
+            maxW="57rem"
+            width="100%"
+          >
             {page}
           </Flex>
-        </Grid>
+        </AppGrid>
       </Flex>
     </EnforceLoginStatePageWrapper>
   )
