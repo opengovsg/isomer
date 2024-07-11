@@ -13,12 +13,12 @@ export const ProseSchema = Type.Object({
   content: Type.Optional(
     Type.Array(
       Type.Union([
-        DividerSchema,
-        HeadingSchema,
-        OrderedListSchema,
-        ParagraphSchema,
-        TableSchema,
-        UnorderedListSchema,
+        Type.Ref(DividerSchema),
+        Type.Ref(HeadingSchema),
+        Type.Ref(OrderedListSchema),
+        Type.Ref(ParagraphSchema),
+        Type.Ref(TableSchema),
+        Type.Ref(UnorderedListSchema),
       ]),
       {
         title: "Content block",
