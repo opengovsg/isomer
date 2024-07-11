@@ -1,11 +1,10 @@
 import { HStack, Text, useDisclosure, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import _ from "lodash"
 
 import { DashboardTable } from "~/features/dashboard/DashboardTable"
 import PageCreateModal from "~/features/editing-experience/components/PageCreateModal"
 import { type NextPageWithLayout } from "~/lib/types"
-import { AdminLayout } from "~/templates/layouts/AdminLayout"
+import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
 
 const SitePage: NextPageWithLayout = () => {
   const {
@@ -47,5 +46,5 @@ const SitePage: NextPageWithLayout = () => {
   )
 }
 
-SitePage.getLayout = AdminLayout
+SitePage.getLayout = AdminCmsSidebarLayout
 export default SitePage
