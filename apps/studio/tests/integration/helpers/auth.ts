@@ -1,4 +1,4 @@
-import { type User } from "prisma/generated/generatedTypes"
+import { type User } from "~prisma/generated/generatedTypes"
 
 import { prisma } from "~/server/prisma"
 

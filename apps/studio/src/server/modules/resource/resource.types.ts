@@ -2,7 +2,7 @@ import {
   type IsomerPageSchemaType,
   type IsomerSiteProps,
 } from "@opengovsg/isomer-components"
-import { type Resource } from "prisma/generated/generatedTypes"
+import { type Resource } from "~prisma/generated/generatedTypes"
 import { type SetRequired } from "type-fest"
 
 export type PageContent = Omit<
