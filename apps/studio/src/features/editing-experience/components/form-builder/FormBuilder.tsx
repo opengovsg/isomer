@@ -1,8 +1,8 @@
-import type { IsomerComplexComponentProps } from "@opengovsg/isomer-components"
+import type { IsomerComponentTypes } from "@opengovsg/isomer-components"
 import { useState } from "react"
 import { type JsonFormsRendererRegistryEntry } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
-import { IsomerComplexComponentsMap } from "@opengovsg/isomer-components"
+import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 
 import {
@@ -57,13 +57,13 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
 ]
 
 export interface FormBuilderProps {
-  component: IsomerComplexComponentProps["type"]
+  component: IsomerComponentTypes
 }
 
 export default function FormBuilder({
   component,
 }: FormBuilderProps): JSX.Element {
-  const subSchema = IsomerComplexComponentsMap[component]
+  const subSchema = getComponentSchema(component)
   const [formData, setFormData] = useState({})
 
   return (

@@ -117,6 +117,7 @@ export const TableSchema = Type.Object(
     ),
   },
   {
+    $id: "components-native-table",
     title: "Table component",
   },
 )

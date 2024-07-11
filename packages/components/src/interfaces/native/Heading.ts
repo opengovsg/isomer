@@ -29,6 +29,7 @@ export const HeadingSchema = Type.Object(
     content: Type.Array(TextSchema),
   },
   {
+    $id: "components-native-heading",
     title: "Heading component",
     description: "A heading element that defines a title for a section",
   },
