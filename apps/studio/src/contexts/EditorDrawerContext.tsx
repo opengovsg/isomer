@@ -8,6 +8,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from 'react'
+import type { SectionType } from '~/components/PageEditor/types'
 import { type DrawerState } from '~/types/editorDrawer'
 
 export interface DrawerContextType {
@@ -19,6 +20,8 @@ export interface DrawerContextType {
   setPageState: Dispatch<SetStateAction<IsomerComponent[]>>
   snapshot: IsomerComponent[]
   setSnapshot: (state: IsomerComponent[]) => void
+  addedBlock: Exclude<SectionType, "prose">,
+  setAddedBlock: (addedBlock: Exclude<SectionType, "prose">) => void
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
@@ -32,6 +35,8 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
   const [snapshot, setSnapshot] = useState<IsomerComponent[]>([])
   // Isomer page schema
   const [currActiveIdx, setCurrActiveIdx] = useState(0)
+  // NOTE: Give a default value first so we don't have to do null checking everytime
+  const [addedBlock, setAddedBlock] = useState<Exclude<SectionType, "prose">>("button")
 
   const value = useMemo(
     () => ({
@@ -43,17 +48,10 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
       setPageState,
       snapshot,
       setSnapshot,
+      addedBlock,
+      setAddedBlock
     }),
-    [
-      currActiveIdx,
-      setCurrActiveIdx,
-      drawerState,
-      setDrawerState,
-      pageState,
-      setPageState,
-      snapshot,
-      setSnapshot,
-    ],
+    [currActiveIdx, drawerState, pageState, snapshot, addedBlock],
   )
 
   return (

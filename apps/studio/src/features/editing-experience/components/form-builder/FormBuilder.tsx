@@ -68,7 +68,7 @@ export default function FormBuilder({
 
   return (
     <JsonForms
-      schema={subSchema || {}}
+      schema={subSchema}
       data={formData}
       renderers={renderers}
       onChange={({ data }) => {
