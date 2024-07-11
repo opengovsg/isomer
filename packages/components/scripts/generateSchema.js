@@ -1,12 +1,5 @@
 /* eslint-disable no-undef */
-const {
-  schema,
-  DividerSchema,
-  ParagraphSchema,
-  OrderedListSchema,
-  UnorderedListSchema,
-  ProseSchema,
-} = require("@opengovsg/isomer-components")
+const { schema } = require("@opengovsg/isomer-components")
 const fs = require("fs")
 const path = require("path")
 
@@ -16,22 +9,9 @@ const path = require("path")
  * form builders when migrating content to Isomer Next.
  */
 
-const jsonOutput = JSON.stringify(
-  {
-    ...schema,
-    components: {
-      divider: DividerSchema,
-      paragraph: ParagraphSchema,
-      orderedList: OrderedListSchema,
-      unorderedList: UnorderedListSchema,
-      prose: ProseSchema,
-    },
-  },
-  null,
-  2,
-)
+const jsonOutput = JSON.stringify(schema, null, 2)
   // Replace all references via IDs to references via the schema path
-  .replace(/"\$ref": "components-native-/g, '"$ref": "#/components/')
+  .replace(/"\$ref": "components-native-/g, '"$ref": "#/components/native/')
   // Remove all instances of $id since we no longer need it
   .replace(/^.*\$id.*\n?/gm, "")
 const outputPath = path.resolve(__dirname, "../../../docs/next", "0.1.0.json")
