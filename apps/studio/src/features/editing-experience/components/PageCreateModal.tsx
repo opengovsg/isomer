@@ -1,7 +1,7 @@
-import type { SubmitHandler } from "react-hook-form"
-import React, { useEffect, useState } from "react"
+import type { UseDisclosureReturn } from "@chakra-ui/react"
+import type { z } from "zod"
+import { useEffect } from "react"
 import {
-  Box,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -22,173 +22,216 @@ import {
   FormErrorMessage,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
-import { useForm } from "react-hook-form"
+import { Controller } from "react-hook-form"
 
-interface PageCreateModalProps {
-  isOpen: boolean
-  onClose: () => void
+import { useZodForm } from "~/lib/form"
+import {
+  createPageSchema,
+  MAX_PAGE_URL_LENGTH,
+  MAX_TITLE_LENGTH,
+} from "~/schemas/page"
+import { trpc } from "~/utils/trpc"
+
+type PageCreateModalProps = Pick<UseDisclosureReturn, "isOpen" | "onClose">
+
+const generatePageUrl = (value: string) => {
+  return (
+    value
+      .toLowerCase()
+      // Replace non-alphanum characters with hyphen for UX
+      .replace(/[^a-z0-9]/g, "-")
+  )
 }
 
-interface PageCreateFormFields {
-  title: string
-  url: string
-}
+const clientCreatePageSchema = createPageSchema.omit({
+  siteId: true,
+  folderId: true,
+})
 
-/* TODO: Can extract these out to a constants file if can be reused */
-const ERROR_MESSAGES = {
-  MIN_LENGTH: "Minimum length should be 1",
-  MAX_LENGTH: (max: number) => `Maximum length should be ${max}`,
-  TITLE: {
-    REQUIRED: "Enter a title for this page",
-  },
-  URL: {
-    REQUIRED: "Enter a URL for this page.",
-  },
-}
+type ClientCreatePageSchema = z.input<typeof clientCreatePageSchema>
 
 export const PageCreateModal = ({
   isOpen,
   onClose,
 }: PageCreateModalProps): JSX.Element => {
-  const MAX_TITLE_LENGTH = 100
-  const MAX_PAGE_URL_LENGTH = 150
-  const [titleLen, setTitleLen] = useState(0)
-  const [pageUrlLen, setPageUrlLen] = useState(0)
+  const { mutate, isLoading } = trpc.page.createPage.useMutation({
+    onSuccess: onClose,
+    // TOOD: Error handling
+  })
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<PageCreateFormFields>()
-
-  const watchAllFields = watch()
-
-  useEffect(() => {
-    setTitleLen(watchAllFields.title.length || 0)
-    setPageUrlLen(watchAllFields.url.length || 0)
-  }, [watchAllFields])
-
-  /* TODO: When integrating with BE */
-  const onSubmit: SubmitHandler<PageCreateFormFields> = (data) =>
-    console.log(data)
+  const submitCallback = (values: ClientCreatePageSchema) => {
+    mutate({
+      ...values,
+      // TODO: Add siteId to the form
+      siteId: 1,
+      folderId: 1,
+    })
+  }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalCloseButton />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      closeOnOverlayClick={!isLoading}
+      closeOnEsc={!isLoading}
+    >
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader color="base.content.strong">
-          Tell us about your new page
-        </ModalHeader>
-        <ModalCloseButton />
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <ModalBody>
-            <Stack gap={"1.5em"}>
-              <Text fontSize="md" color="base.content.default">
-                You can change these later.
-              </Text>
-              {/* Section 1: Page Title */}
-              <FormControl isInvalid={!!errors.title}>
-                <FormLabel color="base.content.strong">
-                  Page title
-                  <FormHelperText color="base.content.default">
-                    Title should be descriptive
-                  </FormHelperText>
-                </FormLabel>
-
-                <Input
-                  type="text"
-                  placeholder="This is a title for your new page"
-                  id="title"
-                  {...register("title", {
-                    required: ERROR_MESSAGES.TITLE.REQUIRED,
-                    validate: (value) =>
-                      value.trim().length !== 0 ||
-                      ERROR_MESSAGES.TITLE.REQUIRED,
-                    minLength: {
-                      value: 1,
-                      message: ERROR_MESSAGES.MIN_LENGTH,
-                    },
-                    maxLength: {
-                      value: MAX_TITLE_LENGTH,
-                      message: ERROR_MESSAGES.MAX_LENGTH(MAX_TITLE_LENGTH),
-                    },
-                  })}
-                  isInvalid={!!errors.title}
-                />
-                {errors.title?.message ? (
-                  <FormErrorMessage>{errors.title.message}</FormErrorMessage>
-                ) : (
-                  <FormHelperText mt={"0.5em"} color="base.content.medium">
-                    {MAX_TITLE_LENGTH - titleLen} characters left
-                  </FormHelperText>
-                )}
-              </FormControl>
-
-              {/* Section 2: Page URL */}
-              <FormControl isInvalid={!!errors.url}>
-                <FormLabel>
-                  Page URL
-                  <FormHelperText>
-                    URL should be short and simple
-                  </FormHelperText>
-                </FormLabel>
-                <InputGroup>
-                  <InputLeftAddon
-                    bgColor="interaction.support.disabled"
-                    color="base.divider.strong"
-                  >
-                    your-site.gov.sg/
-                  </InputLeftAddon>
-                  <Input
-                    type="tel"
-                    defaultValue={"hello-world"}
-                    color="base.content.default"
-                    {...register("url", {
-                      required: ERROR_MESSAGES.URL.REQUIRED,
-                      minLength: {
-                        value: 1,
-                        message: ERROR_MESSAGES.MIN_LENGTH,
-                      },
-                      maxLength: {
-                        value: MAX_PAGE_URL_LENGTH,
-                        message: ERROR_MESSAGES.MAX_LENGTH(MAX_PAGE_URL_LENGTH),
-                      },
-                    })}
-                    isInvalid={!!errors.url}
-                  />
-                </InputGroup>
-
-                {errors.url?.message ? (
-                  <FormErrorMessage>{errors.url.message}</FormErrorMessage>
-                ) : (
-                  <FormHelperText mt={"0.5em"} color="base.content.medium">
-                    {MAX_PAGE_URL_LENGTH - pageUrlLen} characters left
-                  </FormHelperText>
-                )}
-              </FormControl>
-            </Stack>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button
-              variant="link"
-              mr={5}
-              onClick={onClose}
-              fontWeight={500}
-              color={"base.content.strong"}
-            >
-              Cancel
-            </Button>
-            <Button bgColor="interaction.main.default" type="submit">
-              Create page
-            </Button>
-          </ModalFooter>
-        </form>
-      </ModalContent>
+      <PageCreateModalContent
+        key={String(isOpen)}
+        onSubmit={submitCallback}
+        isLoading={isLoading}
+        onClose={onClose}
+      />
     </Modal>
   )
 }
 
 export default PageCreateModal
+
+const PageCreateModalContent = ({
+  onSubmit,
+  isLoading,
+  onClose,
+}: {
+  onSubmit: (values: ClientCreatePageSchema) => void
+  isLoading: boolean
+  onClose: () => void
+}) => {
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    getFieldState,
+    setValue,
+    formState: { errors },
+  } = useZodForm({
+    schema: createPageSchema.omit({
+      siteId: true,
+      folderId: true,
+    }),
+    defaultValues: {
+      pageTitle: "",
+      pageUrl: "",
+    },
+  })
+
+  const [title, url] = watch(["pageTitle", "pageUrl"])
+
+  /**
+   * As user edits the Page title, Page URL is updated as an hyphenated form of the page title.
+   * If user edits Page URL, the “syncing” stops.
+   *
+   * 1. adds page title A
+   * 2. edits page url A
+   * 3. deletes page title A
+   * 4. resets to page url
+   * 5. starts typing new page title B -> page url syncs w new page title B
+   */
+  useEffect(() => {
+    // This allows the syncing to happen only when the page title is not dirty
+    // Dirty means user has changed the value AND the value is not the same as the default value of "".
+    // Once the value has been cleared, dirty state will reset.
+    if (!getFieldState("pageUrl").isDirty) {
+      setValue("pageUrl", generatePageUrl(title))
+    }
+  }, [getFieldState, setValue, title])
+
+  const handleCreatePage = handleSubmit((values) => {
+    onSubmit(values)
+  })
+  return (
+    <ModalContent>
+      <ModalCloseButton isDisabled={isLoading} />
+      <ModalHeader color="base.content.strong">
+        Tell us about your new page
+      </ModalHeader>
+      <form onSubmit={handleCreatePage}>
+        <ModalBody>
+          <Stack gap={"1.5em"}>
+            <Text fontSize="md" color="base.content.default">
+              You can change these later.
+            </Text>
+            {/* Section 1: Page Title */}
+            <FormControl isInvalid={!!errors.pageTitle} isReadOnly={isLoading}>
+              <FormLabel color="base.content.strong">
+                Page title
+                <FormHelperText color="base.content.default">
+                  Title should be descriptive
+                </FormHelperText>
+              </FormLabel>
+
+              <Input
+                placeholder="This is a title for your new page"
+                {...register("pageTitle")}
+              />
+              {errors.pageTitle?.message ? (
+                <FormErrorMessage>{errors.pageTitle.message}</FormErrorMessage>
+              ) : (
+                <FormHelperText mt={"0.5em"} color="base.content.medium">
+                  {MAX_TITLE_LENGTH - title.length} characters left
+                </FormHelperText>
+              )}
+            </FormControl>
+
+            {/* Section 2: Page URL */}
+            <FormControl isInvalid={!!errors.pageUrl} isReadOnly={isLoading}>
+              <FormLabel>
+                Page URL
+                <FormHelperText>URL should be short and simple</FormHelperText>
+              </FormLabel>
+              <InputGroup>
+                <InputLeftAddon
+                  bg="interaction.support.disabled"
+                  color="base.divider.strong"
+                >
+                  your-site.gov.sg/
+                </InputLeftAddon>
+                <Controller
+                  control={control}
+                  name="pageUrl"
+                  render={({ field: { onChange, ...field } }) => (
+                    <Input
+                      {...field}
+                      onChange={(e) => {
+                        onChange(generatePageUrl(e.target.value))
+                      }}
+                    />
+                  )}
+                />
+              </InputGroup>
+
+              {errors.pageUrl?.message ? (
+                <FormErrorMessage>{errors.pageUrl.message}</FormErrorMessage>
+              ) : (
+                <FormHelperText mt={"0.5em"} color="base.content.medium">
+                  {MAX_PAGE_URL_LENGTH - url.length} characters left
+                </FormHelperText>
+              )}
+            </FormControl>
+          </Stack>
+        </ModalBody>
+
+        <ModalFooter>
+          <Button
+            variant="link"
+            mr={5}
+            onClick={onClose}
+            isDisabled={isLoading}
+            fontWeight={500}
+            color={"base.content.strong"}
+          >
+            Cancel
+          </Button>
+          <Button
+            bgColor="interaction.main.default"
+            type="submit"
+            isLoading={isLoading}
+          >
+            Create page
+          </Button>
+        </ModalFooter>
+      </form>
+    </ModalContent>
+  )
+}
