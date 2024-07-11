@@ -1,6 +1,6 @@
 import type { TRPCLink } from "@trpc/client"
 import { type NextPageContext } from "next"
-import { httpBatchLink, loggerLink, TRPCClientError } from "@trpc/client"
+import { httpLink, loggerLink, TRPCClientError } from "@trpc/client"
 import { createTRPCNext } from "@trpc/next"
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server"
 import { observable } from "@trpc/server/observable"
@@ -154,7 +154,7 @@ export const trpc = createTRPCNext<
             process.env.NODE_ENV === "development" ||
             (opts.direction === "down" && opts.result instanceof Error),
         }),
-        httpBatchLink({
+        httpLink({
           url: `${getBaseUrl()}/api/trpc`,
           /**
            * Provide a function that will invoke the current global
