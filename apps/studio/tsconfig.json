@@ -19,7 +19,9 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"],
-      "~prisma/*": ["./prisma/*"]
+      "~prisma/*": ["./prisma/*"],
+      "~server/db/*": ["./src/server/modules/database/*"],
+      "~server/db": ["./src/server/modules/database/index"]
     },
     "types": ["vitest/globals", "vitest-environment-vprisma"]
   },
