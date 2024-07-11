@@ -40,7 +40,7 @@ interface TipTapComponentProps {
 }
 
 function TipTapComponent({ content }: TipTapComponentProps) {
-  const { setDrawerState, setPageState, currActiveIdx, snapshot: editorState } =
+  const { setDrawerState, setPageState, currActiveIdx, snapshot } =
     useEditorDrawerContext()
 
   const updatePageState = (editorContent: JSONContent) => {
@@ -132,7 +132,7 @@ function TipTapComponent({ content }: TipTapComponentProps) {
           aria-label="Close add component"
           icon={<BiX />}
           onClick={() => {
-            setPageState(editorState)
+            setPageState(snapshot)
             setDrawerState({ state: 'root' })
           }}
         />
