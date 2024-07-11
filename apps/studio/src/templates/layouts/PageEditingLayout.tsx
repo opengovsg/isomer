@@ -2,7 +2,6 @@ import { Flex, Grid } from "@chakra-ui/react"
 
 import { AppNavbar } from "~/components/AppNavbar"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
-import { DashSidebar } from "~/components/DashSidebar"
 import { APP_GRID_TEMPLATE_AREA } from "~/constants/layouts"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { type GetLayout } from "~/lib/types"

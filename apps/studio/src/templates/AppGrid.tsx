@@ -7,6 +7,7 @@ import { Grid } from "@chakra-ui/react"
  */
 export const AppGrid = (props: GridProps) => (
   <Grid
+    px={{ base: "0.5rem", md: "2rem" }}
     columnGap={{ base: "0.5rem", lg: "1rem" }}
     templateColumns={{ base: "repeat(4, 1fr)", md: "repeat(12, 1fr)" }}
     {...props}

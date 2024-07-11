@@ -33,7 +33,7 @@ export function AppNavbar(): JSX.Element {
       >
         <Link
           as={NextLink}
-          href="/home"
+          href="/dashboard"
           mx={{ base: "auto", sm: 0 }}
           transition="margin 0.1s"
         >
