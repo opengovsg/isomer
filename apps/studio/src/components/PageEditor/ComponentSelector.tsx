@@ -98,7 +98,7 @@ function BlockItem({
 }
 
 function ComponentSelector() {
-  const { setCurrActiveIdx, pageState, setDrawerState, setPageState } =
+  const { setCurrActiveIdx, pageState, setDrawerState, setPageState, setSnapshot } =
     useEditorDrawerContext()
   const { mutate } = trpc.page.updatePageBlob.useMutation()
   // TODO: get this dynamically
@@ -119,6 +119,7 @@ function ComponentSelector() {
     setPageState(nextPageState)
     setDrawerState({ state: nextState })
     setCurrActiveIdx(nextPageState.length - 1)
+    setSnapshot(pageState)
     mutate({
       pageId,
       content: JSON.stringify({ ...page.content, content: nextPageState }),
