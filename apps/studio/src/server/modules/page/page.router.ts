@@ -1,5 +1,6 @@
 import type { ContentPageSchemaType } from "@opengovsg/isomer-components"
 import { IsomerPageSchema } from "@opengovsg/isomer-components"
+import { safeJsonParse } from "@opengovsg/sgid-client"
 import { TypeCompiler } from "@sinclair/typebox/compiler"
 import { TRPCError } from "@trpc/server"
 
@@ -9,13 +10,11 @@ import {
   updatePageBlobSchema,
   updatePageSchema,
 } from "~/schemas/page"
-import { protectedProcedure, publicProcedure, router } from "~/server/trpc"
-import { safeJsonParse } from "~/utils/safeJsonParse"
+import { protectedProcedure, router } from "~/server/trpc"
 import {
   getFooter,
   getFullPageById,
   getNavBar,
-  getPageById,
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
@@ -33,10 +32,11 @@ const validatedPageProcedure = pageProcedure.use(async ({ next, rawInput }) => {
     "content" in rawInput
   ) {
     // NOTE: content will be the entire page schema for now...
-    if (!typeCompiler.Check(JSON.parse(rawInput.content as string))) {
+    if (!typeCompiler.Check(safeJsonParse(rawInput.content as string))) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Schema validation failed.",
+        cause: typeCompiler.Errors(safeJsonParse(rawInput.content as string)),
       })
     }
   } else {
@@ -81,6 +81,7 @@ export const pageRouter = router({
   updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input, ctx }) => {
+      console.log("schema val passed!")
       await updateBlobById({ ...input, id: input.pageId })
 
       return input
