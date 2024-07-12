@@ -20,14 +20,14 @@ const Filter = ({
 
   return (
     <div className="flex flex-col divide-y divide-divider-medium last:border-b last:border-b-divider-medium">
-      <h5 className="py-5 text-xl font-semibold">Filter by</h5>
+      <p className="pb-3 text-lg text-gray-800 font-semibold">Filters</p>
       {filters.map(({ id, label, items }) => (
         <div className="py-4" key={id}>
           <button
             className="flex w-full flex-row"
             onClick={() => updateFilterToggle(id)}
           >
-            <h5 className="text-lg text-content-medium">{label}</h5>
+            <h5 className="text-base text-gray-700 font-semibold">{label}</h5>
             <div className="flex-1"></div>
             <BiChevronDown
               className={`text-2xl text-content-medium transition-all duration-300 ease-in-out ${
@@ -37,7 +37,7 @@ const Filter = ({
           </button>
 
           <div
-            className={`flex w-full flex-col gap-3 pt-4 text-content-medium ${
+            className={`flex w-full flex-col pt-4 text-content-medium ${
               showFilter[id] ? "block" : "hidden"
             }`}
           >
@@ -45,11 +45,11 @@ const Filter = ({
               <label
                 key={itemId}
                 htmlFor={itemId}
-                className="flex w-full flex-row rounded px-1 py-2 align-middle hover:bg-interaction-main-subtle-hover has-[:focus]:ring-2 has-[:focus]:ring-focus-outline"
+                className="flex w-full flex-row rounded px-2 py-2 align-middle hover:bg-interaction-main-subtle-hover "
               >
                 <input
                   type="checkbox"
-                  className="h-6 w-6 rounded border-2 border-divider-medium text-interaction-main focus:ring-0 group-focus:ring-2 group-focus:ring-focus-outline"
+                  className="h-4 w-4 rounded border-2 my-1 border-gray-300 text-interaction-main "
                   id={itemId}
                   name={itemId}
                   checked={
@@ -59,7 +59,7 @@ const Filter = ({
                   }
                   onChange={() => setAppliedFilters(id, itemId)}
                 />
-                <p className="ml-4 inline-block break-words text-paragraph-02">
+                <p className="ml-3 inline-block break-words text-base text-gray-700">
                   {itemLabel} ({count.toLocaleString()})
                 </p>
               </label>
