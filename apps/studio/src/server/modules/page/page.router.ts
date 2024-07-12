@@ -1,8 +1,7 @@
 import type { ContentPageSchemaType } from "@opengovsg/isomer-components"
-import { IsomerPageSchema } from "@opengovsg/isomer-components"
-import { safeJsonParse } from "@opengovsg/sgid-client"
-import { TypeCompiler } from "@sinclair/typebox/compiler"
+import { schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import Ajv from "ajv"
 
 import {
   createPageSchema,
@@ -11,6 +10,7 @@ import {
   updatePageSchema,
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
+import { safeJsonParse } from "~/utils/safeJsonParse"
 import {
   getFooter,
   getFullPageById,
@@ -20,37 +20,40 @@ import {
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
 
-const typeCompiler = TypeCompiler.Compile(IsomerPageSchema)
+const ajv = new Ajv({ allErrors: true, strict: false })
+const schemaValidator = ajv.compile(schema)
 
 // TODO: Need to do validation like checking for existence of the page
-// and whether the user has write-access to said page
-const pageProcedure = protectedProcedure
-const validatedPageProcedure = pageProcedure.use(async ({ next, rawInput }) => {
-  if (
-    typeof rawInput === "object" &&
-    rawInput != null &&
-    "content" in rawInput
-  ) {
-    // NOTE: content will be the entire page schema for now...
-    if (!typeCompiler.Check(safeJsonParse(rawInput.content as string))) {
+// and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
+
+const validatedPageProcedure = protectedProcedure.use(
+  async ({ next, rawInput }) => {
+    if (
+      typeof rawInput === "object" &&
+      rawInput != null &&
+      "content" in rawInput
+    ) {
+      // NOTE: content will be the entire page schema for now...
+      if (!schemaValidator(safeJsonParse(rawInput.content as string))) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Schema validation failed.",
+          cause: schemaValidator.errors,
+        })
+      }
+    } else {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "Schema validation failed.",
-        cause: typeCompiler.Errors(safeJsonParse(rawInput.content as string)),
+        message: "Missing request parameters.",
       })
     }
-  } else {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Missing request parameters.",
-    })
-  }
 
-  return next()
-})
+    return next()
+  },
+)
 
 export const pageRouter = router({
-  readPageAndBlob: pageProcedure
+  readPageAndBlob: protectedProcedure
     .input(getEditPageSchema)
     .query(async ({ input, ctx }) => {
       const { pageId } = input
@@ -70,7 +73,7 @@ export const pageRouter = router({
       }
     }),
 
-  updatePage: pageProcedure
+  updatePage: protectedProcedure
     .input(updatePageSchema)
     .mutation(async ({ input, ctx }) => {
       await updatePageById({ ...input, id: input.pageId })
@@ -87,7 +90,7 @@ export const pageRouter = router({
       return input
     }),
 
-  createPage: pageProcedure
+  createPage: protectedProcedure
     .input(createPageSchema)
     .mutation(({ input, ctx }) => {
       return { pageId: "" }
