@@ -1,6 +1,10 @@
+import type { ControlProps, RankedTester } from "@jsonforms/core"
+import { useEffect, useState } from "react"
+import { Box, FormControl, Text } from "@chakra-ui/react"
 import {
   and,
   isBooleanControl,
+  isEnabled,
   isStringControl,
   or,
   rankWith,
@@ -8,25 +12,20 @@ import {
   schemaTypeIs,
   scopeEndsWith,
   uiTypeIs,
-  type ControlProps,
-  type RankedTester,
-} from '@jsonforms/core'
-import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
-import { Attachment, FormLabel } from '@opengovsg/design-system-react'
-import { Box, FormControl, Text } from '@chakra-ui/react'
-import { withJsonFormsControlProps } from '@jsonforms/react'
-import { useEffect, useState } from 'react'
+} from "@jsonforms/core"
+import { withJsonFormsControlProps } from "@jsonforms/react"
+import { Attachment, FormLabel } from "@opengovsg/design-system-react"
 
-const MAX_IMG_FILE_SIZE_BYTES = 5000000
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { trpc } from "~/utils/trpc"
+import {
+  IMAGE_UPLOAD_ACCEPTED_MIME_TYPES,
+  MAX_IMG_FILE_SIZE_BYTES,
+} from "./constants"
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,
-  and(
-    schemaMatches((schema) => {
-      return schema.format === 'image'
-    }),
-    isStringControl,
-  ),
+  and(schemaMatches((schema) => schema.format === "image")),
 )
 export function JsonFormsImageControl({
   data,
@@ -38,22 +37,44 @@ export function JsonFormsImageControl({
 }: ControlProps) {
   const [selectedFile, setSelectedFile] = useState<File | undefined>()
 
-  useEffect(() => {
-    // file should always reflect the linked URL image
-    const fetchImage = async () => {
-      const res = await fetch(data)
-      const blob = await res.blob()
-      const splitUrl = data.split('.')
-      const extension = splitUrl[splitUrl.length - 1]
-      const filename = `image.${extension}`
-      setSelectedFile(new File([blob], filename, { type: blob.type }))
+  async function dataURLToFile(dataURL: string): Promise<File | undefined> {
+    try {
+      const response = await fetch(dataURL)
+      const blob = await response.blob()
+      const mimeType = response.headers.get("Content-Type") || ""
+
+      return new File([blob], "Currently selected image", { type: mimeType })
+    } catch (error) {
+      return undefined
     }
-    if (data) {
-      fetchImage().catch((error) =>
-        console.error('Error in fetching current image:', error),
-      )
-    }
-  }, [data])
+  }
+
+  trpc.page.readImageInPage.useQuery(
+    {
+      imageUrlInSchema: data,
+    },
+    {
+      enabled: !!data,
+      async onSettled(queryData, error) {
+        if (!!error) {
+          // handle fetch error
+          console.log("image fetch error!")
+        }
+        if (!!queryData && !!queryData.imageDataURL) {
+          // Convert dataURL to file
+          // TODO: Figure out the CSP issue with feth
+          console.log("RECIEVE IMAGE", queryData.imageDataURL)
+          const file = await dataURLToFile(queryData.imageDataURL)
+          if (!!file) {
+            setSelectedFile(file)
+          } else {
+            console.log("Error setting selected file!")
+          }
+        }
+      },
+    },
+  )
+
   return (
     <Box py={2}>
       <FormControl isRequired={required}>
@@ -67,26 +88,24 @@ export function JsonFormsImageControl({
             console.log(file?.name)
             if (file) {
               // TODO: file attached, upload file
-              const newImgUrl = '/assets/restricted-ogp-logo-full.svg'
+              const newImgUrl = "https://picsum.photos/200/300"
               handleChange(path, newImgUrl)
-              console.log('new url', newImgUrl)
+              console.log("new url", newImgUrl)
             } else {
-              handleChange(path, '')
+              handleChange(path, "")
             }
-            console.log(file)
-            setSelectedFile(file)
           }}
           onError={(error) => {
-            console.log('file attachment error ', error)
+            console.log("file attachment error ", error)
           }}
           onRejection={(rejections) => {
             console.log(rejections)
           }}
           maxSize={MAX_IMG_FILE_SIZE_BYTES}
-          accept={['image/*']}
+          accept={IMAGE_UPLOAD_ACCEPTED_MIME_TYPES}
         />
         <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
-          {`Maximum file size: ${MAX_IMG_FILE_SIZE_BYTES / 1000000} MB`}
+          {`Maximum file size: ${MAX_IMG_FILE_SIZE_BYTES / 1000000} MB`}``
         </Text>
       </FormControl>
     </Box>

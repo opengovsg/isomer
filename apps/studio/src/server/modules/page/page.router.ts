@@ -3,6 +3,7 @@ import { type ContentPageSchemaType } from "@opengovsg/isomer-components"
 import {
   createPageSchema,
   getEditPageSchema,
+  readImageInPageSchema,
   updatePageBlobSchema,
   updatePageSchema,
 } from "~/schemas/page"
@@ -63,4 +64,20 @@ export const pageRouter = router({
       return { pageId: "" }
     }),
   // TODO: Delete page stuff here
+
+  readImageInPage: pageProcedure
+    .input(readImageInPageSchema)
+    .query(async ({ input, ctx }) => {
+      // NOTE: If image is not publically accessible, might need to add logic to get it
+      const res = await fetch(input.imageUrlInSchema)
+      const blob = await res.blob()
+      const arrayBuffer = await blob.arrayBuffer()
+      const base64String = Buffer.from(arrayBuffer).toString("base64")
+      const splitUrl = input.imageUrlInSchema.split(".")
+      const extension = splitUrl[splitUrl.length - 1]
+      const base64Data = `data:image/${extension};base64,${base64String}`
+      return { imageDataURL: base64Data }
+    }),
+
+  //TODO: Might proxy image upload through backend too.
 })
