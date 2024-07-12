@@ -238,7 +238,7 @@ const CollectionClient = ({
   LinkComponent,
   items,
 }: CollectionClientProps) => {
-  const ITEMS_PER_PAGE = 6
+  const ITEMS_PER_PAGE = 10
   const { defaultSortBy, defaultSortDirection, subtitle, title } = page
 
   const [sortBy, setSortBy] = useState<SortKey>(defaultSortBy)
@@ -264,24 +264,29 @@ const CollectionClient = ({
   )
 
   return (
-    <div className="mx-auto my-16 flex max-w-container flex-col items-start gap-16 px-6 md:px-10">
-      <div className="flex max-w-[47.8rem] flex-col gap-12">
-        <h1 className="flex flex-col gap-16 text-content-strong text-heading-01">
-          {title}
-        </h1>
-        <p className="text-content text-paragraph-01">{subtitle}</p>
+    <div>
+      <div className="bg-[#F1F3F4]">
+        <div className="mx-auto pt-10 pb-12 flex max-w-container flex-col items-start gap-8 sm:gap-10 px-6 md:px-10">
+          <div className="flex max-w-[53.75rem] flex-col gap-5 sm:gap-9">
+            <h1 className="flex flex-col gap-16 text-content-strong text-5xl font-semibold sm:text-heading-01">
+              {title}
+            </h1>
+            <p className="text-gray-700 text-xl sm:text-2xl">{subtitle}</p>
+            <div className="mx-auto w-full">
+            <CollectionSearch
+              placeholder={`Search for ${page.title.toLowerCase()}`}
+              search={searchValue}
+              setSearch={setSearchValue}
+            />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="mx-auto w-full">
-        <CollectionSearch
-          placeholder={`Search for ${page.title.toLowerCase()}`}
-          search={searchValue}
-          setSearch={setSearchValue}
-        />
-      </div>
-
-      <div className="flex w-full flex-col justify-between gap-10 lg:flex-row">
-        <div className="w-full lg:w-1/4">
+      
+    <div className="mx-auto my-16 flex max-w-container flex-col items-start gap-10 px-6 md:px-10">
+      <div className="flex w-full flex-col justify-between gap-20 lg:flex-row">
+        <div className="w-full lg:w-72">
           <Filter
             filters={filters}
             appliedFilters={appliedFilters}
@@ -295,10 +300,10 @@ const CollectionClient = ({
             }
           />
         </div>
-        <div className="flex w-full flex-col gap-4 lg:w-3/4">
-          <div className="flex w-full flex-wrap items-end justify-between gap-6 sm:flex-nowrap">
+        <div className="flex w-full flex-col lg:w-3/4">
+          <div className="flex w-full flex-wrap items-end justify-between gap-6 pb-3 border-b border-b-divider-medium sm:flex-nowrap">
             <div className="flex h-full w-full flex-col gap-3">
-              <p className="mt-auto text-base text-content">
+              <p className="mt-auto text-lg text-gray-600">
                 {appliedFilters.length > 0 || searchValue !== ""
                   ? `${filteredItems.length} search ${
                       filteredItems.length === 1 ? "result" : "results"
@@ -335,6 +340,7 @@ const CollectionClient = ({
                 </div>
               )}*/}
             </div>
+            {/* Commenting out sort temporarily
             <div className="w-full shrink-0 sm:w-[260px]">
               <CollectionSort
                 sortBy={sortBy}
@@ -343,6 +349,7 @@ const CollectionClient = ({
                 setSortDirection={setSortDirection}
               />
             </div>
+            */}
           </div>
           <div className="flex h-full w-full flex-col gap-0">
             {paginatedItems.length > 0 &&
@@ -384,7 +391,7 @@ const CollectionClient = ({
 
       {paginatedItems.length > 0 && (
         <div className="w-full">
-          <div className="sm:ml-auto sm:max-w-96">
+          <div className="mx-auto md:float-right">
             <Pagination
               totalItems={filteredItems.length}
               itemsPerPage={ITEMS_PER_PAGE}
@@ -394,6 +401,7 @@ const CollectionClient = ({
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
