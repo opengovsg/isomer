@@ -1,4 +1,4 @@
-import { BiLeftArrowAlt, BiRightArrowAlt } from "react-icons/bi"
+import { BiChevronRight, BiChevronLeft } from "react-icons/bi"
 
 import type { PaginationProps } from "../../../types/Pagination"
 
@@ -11,10 +11,10 @@ export const Pagination = ({
   const totalPages = Math.ceil(totalItems / Math.max(1, itemsPerPage))
 
   return (
-    <nav className="grid w-full grid-cols-4" aria-label="Pagination">
+    <nav className="flex w-full flex-row gap-3" aria-label="Pagination">
       {/* Previous button */}
       <button
-        className="flex cursor-pointer flex-row gap-1 justify-self-end p-1 align-middle hover:bg-interaction-main-subtle-hover disabled:cursor-not-allowed disabled:text-neutral-400 disabled:hover:bg-transparent"
+        className="flex cursor-pointer flex-row gap-1 justify-self-end p-1 align-middle hover:bg-interaction-main-subtle-hover disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent"
         aria-label="Previous page"
         disabled={currPage <= 1}
         onClick={() => {
@@ -23,18 +23,17 @@ export const Pagination = ({
           }
         }}
       >
-        <BiLeftArrowAlt className="my-auto text-2xl" />
-        <p className="hidden text-lg underline xs:inline">Previous</p>
+        <BiChevronLeft className="my-auto text-2xl" />
       </button>
 
       {/* Page number */}
-      <p className="col-span-2 my-auto justify-self-center xs:text-lg xs:leading-8">
+      <p className="col-span-2 my-auto justify-self-center text-base text-gray-700 leading-6">
         Page {currPage} of {totalPages}
       </p>
 
       {/* Next button */}
       <button
-        className="flex cursor-pointer flex-row gap-1 justify-self-start p-1 align-middle hover:bg-interaction-main-subtle-hover disabled:cursor-not-allowed disabled:text-neutral-400 disabled:hover:bg-transparent sm:justify-self-end"
+        className="flex cursor-pointer flex-row gap-1 justify-self-start p-1 align-middle hover:bg-interaction-main-subtle-hover disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:bg-transparent sm:justify-self-end"
         aria-label="Next page"
         disabled={currPage >= totalPages}
         onClick={() => {
@@ -43,8 +42,7 @@ export const Pagination = ({
           }
         }}
       >
-        <p className="hidden text-lg underline xs:inline">Next</p>
-        <BiRightArrowAlt className="my-auto text-2xl" />
+        <BiChevronRight className="my-auto text-2xl" />
       </button>
     </nav>
   )
