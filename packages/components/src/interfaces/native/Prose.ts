@@ -1,4 +1,6 @@
-import { Type, type Static } from "@sinclair/typebox"
+import type { Static } from "@sinclair/typebox"
+import { Type } from "@sinclair/typebox"
+
 import { DividerSchema } from "./Divider"
 import { HeadingSchema } from "./Heading"
 import { OrderedListSchema } from "./OrderedList"
@@ -11,12 +13,12 @@ export const ProseSchema = Type.Object({
   content: Type.Optional(
     Type.Array(
       Type.Union([
-        DividerSchema,
-        HeadingSchema,
-        OrderedListSchema,
-        ParagraphSchema,
-        TableSchema,
-        UnorderedListSchema,
+        Type.Ref(DividerSchema),
+        Type.Ref(HeadingSchema),
+        Type.Ref(OrderedListSchema),
+        Type.Ref(ParagraphSchema),
+        Type.Ref(TableSchema),
+        Type.Ref(UnorderedListSchema),
       ]),
       {
         title: "Content block",

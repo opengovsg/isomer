@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+
 import type { MastheadProps } from "~/interfaces"
 
 export const Masthead = ({

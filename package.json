@@ -11,12 +11,21 @@
     "storybook": "dotenv -- turbo run storybook --parallel",
     "storybook:build": "turbo run storybook:build --parallel",
     "teardown": "turbo teardown",
-    "test-start": "turbo test-start"
+    "test-start": "turbo test-start",
+    "typecheck": "turbo typecheck",
+    "format": "turbo format --continue -- --cache --cache-location node_modules/.cache/.prettiercache --ignore-path ./.prettierignore",
+    "format:fix": "turbo format --continue -- --write --cache --cache-location node_modules/.cache/.prettiercache  --ignore-path ./.prettierignore",
+    "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
+    "lint:fix": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
+    "lint:ws": "npx sherif@0.10.0",
+    "lint:ws:fix": "npx sherif@0.10.0 --fix",
+    "postinstall": "npm run lint:ws"
   },
   "workspaces": [
     "docs",
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "tooling/*"
   ],
   "author": "Isomer Team",
   "license": "ISC",

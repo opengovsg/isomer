@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { SearchProps } from "~/interfaces";
-import Search from "./Search";
+import type { SearchProps } from "~/interfaces"
+import Search from "./Search"
 
 const meta: Meta<SearchProps> = {
   title: "Classic/Components/Search",
@@ -12,9 +12,9 @@ const meta: Meta<SearchProps> = {
       themeOverride: "Isomer Classic",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Search>;
+}
+export default meta
+type Story = StoryObj<typeof Search>
 
 // Default scenario
 export const Default: Story = {
@@ -71,4 +71,4 @@ export const Default: Story = {
       },
     ],
   },
-};
+}

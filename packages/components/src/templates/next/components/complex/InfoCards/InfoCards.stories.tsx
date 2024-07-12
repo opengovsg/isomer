@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { InfoCardsProps } from "~/interfaces";
-import InfoCards from "./InfoCards";
+import type { InfoCardsProps } from "~/interfaces"
+import InfoCards from "./InfoCards"
 
 const meta: Meta<InfoCardsProps> = {
   title: "Next/Components/InfoCards",
@@ -12,9 +12,9 @@ const meta: Meta<InfoCardsProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof InfoCards>;
+}
+export default meta
+type Story = StoryObj<typeof InfoCards>
 
 export const Default: Story = {
   args: {
@@ -62,7 +62,7 @@ export const Default: Story = {
       },
     ],
   },
-};
+}
 
 export const GrayBackground: Story = {
   args: {
@@ -107,7 +107,7 @@ export const GrayBackground: Story = {
       },
     ],
   },
-};
+}
 
 export const Side: Story = {
   args: {
@@ -152,4 +152,4 @@ export const Side: Story = {
       },
     ],
   },
-};
+}

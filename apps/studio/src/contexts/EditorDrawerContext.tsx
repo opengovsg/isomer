@@ -1,12 +1,8 @@
-import { type IsomerComponent } from '@opengovsg/isomer-components'
-import {
-  createContext,
-  useContext,
-  useMemo,
-  useState,
-  type PropsWithChildren,
-} from 'react'
-import { type DrawerState } from '~/types/editorDrawer'
+import type { PropsWithChildren } from "react"
+import { createContext, useContext, useMemo, useState } from "react"
+import { type IsomerComponent } from "@opengovsg/isomer-components"
+
+import { type DrawerState } from "~/types/editorDrawer"
 
 export interface DrawerContextType {
   drawerState: DrawerState
@@ -20,7 +16,7 @@ const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
 export function EditorDrawerProvider({ children }: PropsWithChildren) {
   const [drawerState, setDrawerState] = useState<DrawerState>({
-    state: 'root',
+    state: "root",
   })
   // Current saved state of page
   const [pageState, setPageState] = useState<IsomerComponent[]>([])
@@ -58,7 +54,7 @@ export const useEditorDrawerContext = () => {
 
   if (!editorDrawerContext) {
     throw new Error(
-      'useEditorDrawer must be used within an EditorDrawerContextProvider',
+      "useEditorDrawer must be used within an EditorDrawerContextProvider",
     )
   }
 

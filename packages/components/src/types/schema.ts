@@ -1,4 +1,17 @@
-import { Type, type Static } from "@sinclair/typebox"
+import type { Static } from "@sinclair/typebox"
+import { Type } from "@sinclair/typebox"
+
+import type {
+  ArticlePageProps,
+  CollectionPageProps,
+  ContentPageProps,
+  FileRefProps,
+  HomePageProps,
+  LinkRefProps,
+  NotFoundPageProps,
+  SearchPageProps,
+} from "./page"
+import type { IsomerSiteProps } from "./site"
 import { IsomerComponentsSchemas } from "./components"
 import {
   ArticlePageMetaSchema,
@@ -7,16 +20,7 @@ import {
   FileRefMetaSchema,
   HomePageMetaSchema,
   LinkRefMetaSchema,
-  type ArticlePageProps,
-  type CollectionPageProps,
-  type ContentPageProps,
-  type FileRefProps,
-  type HomePageProps,
-  type LinkRefProps,
-  type NotFoundPageProps,
-  type SearchPageProps,
 } from "./page"
-import type { IsomerSiteProps } from "./site"
 
 export const ISOMER_PAGE_LAYOUTS = {
   Article: "article",

@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { InfobarProps } from "~/interfaces";
-import Infobar from "./Infobar";
+import type { InfobarProps } from "~/interfaces"
+import Infobar from "./Infobar"
 
 const meta: Meta<InfobarProps> = {
   title: "Next/Components/Infobar",
@@ -12,9 +12,9 @@ const meta: Meta<InfobarProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Infobar>;
+}
+export default meta
+type Story = StoryObj<typeof Infobar>
 
 // Default scenario
 export const Default: Story = {
@@ -27,7 +27,7 @@ export const Default: Story = {
     secondaryButtonLabel: "Secondary CTA",
     secondaryButtonUrl: "https://google.com",
   },
-};
+}
 
 export const OneButton: Story = {
   args: {
@@ -37,7 +37,7 @@ export const OneButton: Story = {
     buttonLabel: "Primary CTA",
     buttonUrl: "https://google.com",
   },
-};
+}
 
 export const LongText: Story = {
   args: {
@@ -51,4 +51,4 @@ export const LongText: Story = {
     secondaryButtonLabel: "Secondary CTA",
     secondaryButtonUrl: "https://google.com",
   },
-};
+}

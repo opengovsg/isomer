@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import Paragraph from "./Paragraph";
+import Paragraph from "./Paragraph"
 
 const meta: Meta<typeof Paragraph> = {
   title: "Next/Components/Paragraph",
@@ -11,9 +11,9 @@ const meta: Meta<typeof Paragraph> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Paragraph>;
+}
+export default meta
+type Story = StoryObj<typeof Paragraph>
 
 export const Default: Story = {
   args: {
@@ -91,7 +91,7 @@ export const Default: Story = {
       },
     ],
   },
-};
+}
 
 export const Simple: Story = {
   args: {
@@ -102,4 +102,4 @@ export const Simple: Story = {
       },
     ],
   },
-};
+}

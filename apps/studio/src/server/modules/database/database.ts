@@ -1,17 +1,20 @@
-import { Kysely, PostgresDialect } from 'kysely'
-import { Pool } from 'pg'
-import { type DB } from 'prisma/generated/generatedTypes'
+import { type DB } from "~prisma/generated/generatedTypes"
+import { Kysely, PostgresDialect } from "kysely"
+import pg from "pg"
 
-const connectionString = `${process.env.DATABASE_URL}`
+import { env } from "~/env.mjs"
+
+const connectionString = `${env.DATABASE_URL}`
 
 // TODO: Add ssl option later
 const dialect = new PostgresDialect({
-  pool: new Pool({
+  pool: new pg.Pool({
     connectionString,
   }),
 })
 
 export const db: Kysely<DB> = new Kysely<DB>({
-  log: process.env.NODE_ENV === 'development' ? ['error'] : undefined,
+  // eslint-disable-next-line no-restricted-properties
+  log: process.env.NODE_ENV === "development" ? ["error"] : undefined,
   dialect,
 })

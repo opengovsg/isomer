@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { NavbarProps } from "~/interfaces";
-import Navbar from "./Navbar";
+import type { NavbarProps } from "~/interfaces"
+import Navbar from "./Navbar"
 
 const meta: Meta<NavbarProps> = {
   title: "Next/Internal Components/Navbar",
@@ -12,9 +12,9 @@ const meta: Meta<NavbarProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Navbar>;
+}
+export default meta
+type Story = StoryObj<typeof Navbar>
 
 // Default scenario
 export const Default: Story = {
@@ -144,4 +144,4 @@ export const Default: Story = {
       },
     ],
   },
-};
+}

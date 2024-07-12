@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { SiderailProps } from "~/interfaces";
-import Siderail from "./Siderail";
+import type { SiderailProps } from "~/interfaces"
+import Siderail from "./Siderail"
 
 const meta: Meta<SiderailProps> = {
   title: "Next/Internal Components/Siderail",
@@ -12,9 +12,9 @@ const meta: Meta<SiderailProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Siderail>;
+}
+export default meta
+type Story = StoryObj<typeof Siderail>
 
 // Default scenario
 export const Default: Story = {
@@ -69,7 +69,7 @@ export const Default: Story = {
       },
     ],
   },
-};
+}
 
 export const NoChildren: Story = {
   args: {
@@ -95,4 +95,4 @@ export const NoChildren: Story = {
       },
     ],
   },
-};
+}

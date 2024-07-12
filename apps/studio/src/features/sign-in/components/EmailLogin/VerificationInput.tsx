@@ -1,29 +1,30 @@
+import { useState } from "react"
+import { useRouter } from "next/router"
 import {
   FormControl,
   FormLabel,
   InputGroup,
   InputLeftAddon,
   Stack,
-} from '@chakra-ui/react'
+} from "@chakra-ui/react"
 import {
   Button,
   FormErrorMessage,
   Infobox,
   Input,
-} from '@opengovsg/design-system-react'
-import { useRouter } from 'next/router'
-import { CALLBACK_URL_KEY } from '~/constants/params'
-import { useZodForm } from '~/lib/form'
-import { trpc } from '~/utils/trpc'
-import { useSignInContext } from '../SignInContext'
-import { ResendOtpButton } from './ResendOtpButton'
-import { useLoginState } from '~/features/auth'
-import { emailVerifyOtpSchema } from '~/schemas/auth/email/sign-in'
-import { Controller } from 'react-hook-form'
-import { OTP_LENGTH } from '~/lib/auth'
-import { useInterval } from 'usehooks-ts'
-import { useState } from 'react'
-import { callbackUrlSchema } from '~/schemas/url'
+} from "@opengovsg/design-system-react"
+import { Controller } from "react-hook-form"
+import { useInterval } from "usehooks-ts"
+
+import { CALLBACK_URL_KEY } from "~/constants/params"
+import { useLoginState } from "~/features/auth"
+import { OTP_LENGTH } from "~/lib/auth"
+import { useZodForm } from "~/lib/form"
+import { emailVerifyOtpSchema } from "~/schemas/auth/email/sign-in"
+import { callbackUrlSchema } from "~/schemas/url"
+import { trpc } from "~/utils/trpc"
+import { useSignInContext } from "../SignInContext"
+import { ResendOtpButton } from "./ResendOtpButton"
 
 export const VerificationInput = (): JSX.Element | null => {
   const [showOtpDelayMessage, setShowOtpDelayMessage] = useState(false)
@@ -49,8 +50,8 @@ export const VerificationInput = (): JSX.Element | null => {
   } = useZodForm({
     schema: emailVerifyOtpSchema,
     defaultValues: {
-      email: vfnStepData?.email ?? '',
-      token: '',
+      email: vfnStepData?.email ?? "",
+      token: "",
     },
   })
 
@@ -64,26 +65,26 @@ export const VerificationInput = (): JSX.Element | null => {
     },
     onError: (error) => {
       switch (error.message) {
-        case 'Token is invalid or has expired':
-          setError('token', {
+        case "Token is invalid or has expired":
+          setError("token", {
             message:
-              'This OTP is invalid or has expired, click resend OTP to get a new one',
+              "This OTP is invalid or has expired, click resend OTP to get a new one",
           })
           break
-        case 'Too many attempts':
-          setError('token', {
+        case "Too many attempts":
+          setError("token", {
             message:
-              'You have attempted the wrong OTP too many times, click resend OTP to get a new one',
+              "You have attempted the wrong OTP too many times, click resend OTP to get a new one",
           })
           break
         default:
-          setError('token', { message: error.message })
+          setError("token", { message: error.message })
       }
     },
   })
 
   const resendOtpMutation = trpc.auth.email.login.useMutation({
-    onError: (error) => setError('token', { message: error.message }),
+    onError: (error) => setError("token", { message: error.message }),
   })
 
   const handleVerifyOtp = handleSubmit(({ email, token }) => {
@@ -97,8 +98,8 @@ export const VerificationInput = (): JSX.Element | null => {
       {
         onSuccess: ({ email, otpPrefix }) => {
           setVfnStepData({ email, otpPrefix })
-          resetField('token')
-          setFocus('token')
+          resetField("token")
+          setFocus("token")
           // On success, restart the timer before this can be called again.
           resetTimer()
         },
@@ -124,7 +125,7 @@ export const VerificationInput = (): JSX.Element | null => {
             name="token"
             render={({ field: { onChange, value, ...field } }) => (
               <InputGroup>
-                <InputLeftAddon>{vfnStepData?.otpPrefix}-</InputLeftAddon>
+                <InputLeftAddon>{vfnStepData.otpPrefix}-</InputLeftAddon>
                 <Input
                   autoFocus
                   autoCapitalize="true"
@@ -167,7 +168,7 @@ export const VerificationInput = (): JSX.Element | null => {
             isLoading={resendOtpMutation.isLoading}
             spinnerFontSize="1rem"
             _loading={{
-              justifyContent: 'flex-end',
+              justifyContent: "flex-end",
             }}
           />
         </Stack>

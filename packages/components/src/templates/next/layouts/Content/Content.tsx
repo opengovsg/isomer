@@ -98,9 +98,7 @@ const getTableOfContentsFromContent = (
 // for use in table of contents anchor links
 const transformContent = (content: ContentPageSchemaType["content"]) => {
   const transformedContent: ContentPageSchemaType["content"] = []
-  for (let i = 0; i < content.length; i++) {
-    const block = content[i]
-
+  for (const block of content) {
     if (block.type === "prose" && block.content) {
       const transformedBlock = {
         ...block,
@@ -167,7 +165,7 @@ const ContentLayout = ({
         LinkComponent={LinkComponent}
         lastUpdated={page.lastModified}
       />
-      <div className="max-w-container mx-auto flex justify-center gap-[120px] px-6 py-16 md:px-10">
+      <div className="mx-auto flex max-w-container justify-center gap-[120px] px-6 py-16 md:px-10">
         {sideRail && (
           <div className="hidden w-full max-w-[240px] lg:block">
             <Siderail {...sideRail} LinkComponent={LinkComponent} />

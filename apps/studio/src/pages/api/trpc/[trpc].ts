@@ -1,9 +1,10 @@
 /**
  * This file contains tRPC's HTTP response handler
  */
-import * as trpcNext from '@trpc/server/adapters/next'
-import { createContext } from '~/server/context'
-import { appRouter } from '~/server/modules/_app'
+import * as trpcNext from "@trpc/server/adapters/next"
+
+import { createContext } from "~/server/context"
+import { appRouter } from "~/server/modules/_app"
 
 export default trpcNext.createNextApiHandler({
   router: appRouter,
@@ -15,7 +16,7 @@ export default trpcNext.createNextApiHandler({
    * @link https://trpc.io/docs/error-handling
    */
   onError({ error, ctx }) {
-    if (error.code === 'UNAUTHORIZED') {
+    if (error.code === "UNAUTHORIZED") {
       ctx?.session?.destroy()
     }
   },
@@ -23,7 +24,7 @@ export default trpcNext.createNextApiHandler({
    * Enable query batching
    */
   batching: {
-    enabled: true,
+    enabled: false,
   },
   /**
    * @link https://trpc.io/docs/caching#api-response-caching

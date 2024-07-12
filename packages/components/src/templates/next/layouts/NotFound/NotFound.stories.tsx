@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { NotFoundPageSchemaType } from "~/engine";
-import NotFoundLayout from "./NotFound";
+import type { NotFoundPageSchemaType } from "~/engine"
+import NotFoundLayout from "./NotFound"
 
 const meta: Meta<NotFoundPageSchemaType> = {
   title: "Next/Layouts/NotFound",
@@ -12,9 +12,9 @@ const meta: Meta<NotFoundPageSchemaType> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<NotFoundPageSchemaType>;
+}
+export default meta
+type Story = StoryObj<NotFoundPageSchemaType>
 
 export const Default: Story = {
   args: {
@@ -51,4 +51,4 @@ export const Default: Story = {
       lastModified: "2024-05-02T14:12:57.160Z",
     },
   },
-};
+}

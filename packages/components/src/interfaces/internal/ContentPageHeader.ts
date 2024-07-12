@@ -1,4 +1,6 @@
-import { Type, type Static } from "@sinclair/typebox"
+import type { Static } from "@sinclair/typebox"
+import { Type } from "@sinclair/typebox"
+
 import type { BreadcrumbProps } from "./Breadcrumb"
 
 export const ContentPageHeaderSchema = Type.Object(

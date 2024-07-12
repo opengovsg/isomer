@@ -1,6 +1,6 @@
-import { createStylesContext } from '@chakra-ui/react'
+import { createStylesContext } from "@chakra-ui/react"
 
 export const [
   ImageAttachmentButtonStylesProvider,
   useImageAttachmentButtonStyles,
-] = createStylesContext('Attachment')
+] = createStylesContext("Attachment")

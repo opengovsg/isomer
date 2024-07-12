@@ -1,8 +1,11 @@
-import Head from 'next/head'
-import { type ReactNode } from 'react'
-import { useEnv } from '~/hooks/useEnv'
+import { type ReactNode } from "react"
+import Head from "next/head"
 
-type DefaultLayoutProps = { children: ReactNode }
+import { useEnv } from "~/hooks/useEnv"
+
+interface DefaultLayoutProps {
+  children: ReactNode
+}
 
 export const DefaultLayout = ({ children }: DefaultLayoutProps) => {
   const { env } = useEnv()

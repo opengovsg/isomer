@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { PillProps } from "~/interfaces";
-import Pill from "./Pill";
+import type { PillProps } from "~/interfaces"
+import Pill from "./Pill"
 
 const meta: Meta<PillProps> = {
   title: "Next/Internal Components/Pill",
@@ -12,13 +12,13 @@ const meta: Meta<PillProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Pill>;
+}
+export default meta
+type Story = StoryObj<typeof Pill>
 
 export const Default: Story = {
   args: {
     content: "Press Release",
     onClose: () => window.alert("Closed pill"),
   },
-};
+}

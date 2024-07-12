@@ -1,41 +1,38 @@
-import { type JsonFormsRendererRegistryEntry } from '@jsonforms/core'
-import { JsonForms } from '@jsonforms/react'
+import type { IsomerComponentTypes } from "@opengovsg/isomer-components"
+import { useState } from "react"
+import { type JsonFormsRendererRegistryEntry } from "@jsonforms/core"
+import { JsonForms } from "@jsonforms/react"
+import { getComponentSchema } from "@opengovsg/isomer-components"
+import Ajv from "ajv"
 
-import Ajv from 'ajv'
-import { useState } from 'react'
-
-import {
-  IsomerComplexComponentsMap,
-  type IsomerComplexComponentProps,
-} from '@opengovsg/isomer-components'
 import {
   JsonFormsAllOfControl,
-  JsonFormsAnyOfControl,
-  JsonFormsArrayControl,
-  JsonFormsBooleanControl,
-  JsonFormsDropdownControl,
-  JsonFormsImageControl,
-  JsonFormsIntegerControl,
-  JsonFormsObjectControl,
-  JsonFormsProseControl,
-  JsonFormsRadioControl,
-  JsonFormsTextControl,
   jsonFormsAllOfControlTester,
+  JsonFormsAnyOfControl,
   jsonFormsAnyOfControlTester,
+  JsonFormsArrayControl,
   jsonFormsArrayControlTester,
+  JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
+  JsonFormsDropdownControl,
   jsonFormsDropdownControlTester,
   jsonFormsGroupLayoutRenderer,
   jsonFormsGroupLayoutTester,
+  JsonFormsImageControl,
   jsonFormsImageControlTester,
+  JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
+  JsonFormsObjectControl,
   jsonFormsObjectControlTester,
+  JsonFormsProseControl,
   jsonFormsProseControlTester,
+  JsonFormsRadioControl,
   jsonFormsRadioControlTester,
+  JsonFormsTextControl,
   jsonFormsTextControlTester,
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
-} from './renderers'
+} from "./renderers"
 
 const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
@@ -63,13 +60,13 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
 ]
 
 export interface FormBuilderProps {
-  component: IsomerComplexComponentProps['type']
+  component: IsomerComponentTypes
 }
 
 export default function FormBuilder({
   component,
 }: FormBuilderProps): JSX.Element {
-  const subSchema = IsomerComplexComponentsMap[component]
+  const subSchema = getComponentSchema(component)
   const [formData, setFormData] = useState({})
 
   return (

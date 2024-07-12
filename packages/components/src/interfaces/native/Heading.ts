@@ -1,4 +1,6 @@
-import { Type, type Static } from "@sinclair/typebox"
+import type { Static } from "@sinclair/typebox"
+import { Type } from "@sinclair/typebox"
+
 import { TextSchema } from "./Text"
 
 // excludes 1 as it should only be used for the page title i.e ContentPageHeader
@@ -27,6 +29,7 @@ export const HeadingSchema = Type.Object(
     content: Type.Array(TextSchema),
   },
   {
+    $id: "components-native-heading",
     title: "Heading component",
     description: "A heading element that defines a title for a section",
   },

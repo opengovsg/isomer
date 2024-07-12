@@ -18,12 +18,12 @@
     "noUncheckedIndexedAccess": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": ["./src/*"],
+      "~prisma/*": ["./prisma/*"],
+      "~server/db/*": ["./src/server/modules/database/*"],
+      "~server/db": ["./src/server/modules/database/index"]
     },
-    "types": [
-      "vitest/globals",
-      "vitest-environment-vprisma",
-    ]
+    "types": ["vitest/globals", "vitest-environment-vprisma"]
   },
   "include": [
     ".storybook/**/*.tsx",

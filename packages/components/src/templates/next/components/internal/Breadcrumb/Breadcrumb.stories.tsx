@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { BreadcrumbProps } from "~/interfaces";
-import Breadcrumb from "./Breadcrumb";
+import type { BreadcrumbProps } from "~/interfaces"
+import Breadcrumb from "./Breadcrumb"
 
 const meta: Meta<BreadcrumbProps> = {
   title: "Next/Internal Components/Breadcrumb",
@@ -12,9 +12,9 @@ const meta: Meta<BreadcrumbProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Breadcrumb>;
+}
+export default meta
+type Story = StoryObj<typeof Breadcrumb>
 
 export const Default: Story = {
   args: {
@@ -33,4 +33,4 @@ export const Default: Story = {
       },
     ],
   },
-};
+}

@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import Hero from "./Hero";
+import Hero from "./Hero"
 
 const meta: Meta<typeof Hero> = {
   title: "Next/Components/Hero",
@@ -11,10 +11,10 @@ const meta: Meta<typeof Hero> = {
       themeOverride: "Isomer Next",
     },
   },
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof Hero>;
+export default meta
+type Story = StoryObj<typeof Hero>
 
 export const Gradient: Story = {
   args: {
@@ -29,7 +29,7 @@ export const Gradient: Story = {
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
   },
-};
+}
 
 export const Split: Story = {
   args: {
@@ -45,7 +45,7 @@ export const Split: Story = {
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
   },
-};
+}
 
 export const Floating: Story = {
   args: {
@@ -61,7 +61,7 @@ export const Floating: Story = {
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
   },
-};
+}
 
 export const CopyLed: Story = {
   args: {
@@ -75,7 +75,7 @@ export const CopyLed: Story = {
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
   },
-};
+}
 
 export const FloatingImage: Story = {
   args: {
@@ -89,4 +89,4 @@ export const FloatingImage: Story = {
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
   },
-};
+}

@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import Sitemap from "../../../../sitemap.json";
-import Header from "./Header";
+import Sitemap from "../../../../sitemap.json"
+import Header from "./Header"
 
 const meta: Meta<typeof Header> = {
   title: "Classic/Components/Header",
@@ -12,9 +12,9 @@ const meta: Meta<typeof Header> = {
       themeOverride: "Isomer Classic",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Header>;
+}
+export default meta
+type Story = StoryObj<typeof Header>
 
 // Default scenario
 export const Default: Story = {
@@ -22,4 +22,4 @@ export const Default: Story = {
     permalink: "/hello/world",
     sitemap: Sitemap,
   },
-};
+}

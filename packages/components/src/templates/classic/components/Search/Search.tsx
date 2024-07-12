@@ -1,11 +1,12 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
+import DOMPurify from "isomorphic-dompurify"
 import MiniSearch from "minisearch"
 import { BiChevronsLeft, BiChevronsRight } from "react-icons/bi"
+
 import type { SearchProps } from "~/interfaces"
 import type { SearchRecord } from "~/interfaces/internal/Search"
-import DOMPurify from "isomorphic-dompurify"
 
 const Search: React.FC<SearchProps> = ({ index }) => {
   const [searchTerm, setSearchTerm] = useState<string>("")
@@ -44,7 +45,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
       .map((result) => {
         // Directly access the matching document in the `index` prop by ID
         const fullDocument = index.find((doc) => doc.id === result.id)
-        return fullDocument || result
+        return fullDocument ?? result
       })
       .filter((result): result is SearchRecord => !!result)
 

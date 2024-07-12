@@ -1,13 +1,13 @@
-import { Box } from '@chakra-ui/react'
-import { Tag } from '@opengovsg/design-system-react'
+import { forwardRef } from "react"
+import { Box } from "@chakra-ui/react"
+import { Tag } from "@opengovsg/design-system-react"
 import {
-  useEditor,
-  EditorContent,
   BubbleMenu,
+  EditorContent,
   FloatingMenu,
-} from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import { forwardRef } from 'react'
+  useEditor,
+} from "@tiptap/react"
+import StarterKit from "@tiptap/starter-kit"
 
 interface TiptapProps {
   value: string
@@ -32,7 +32,7 @@ export const Tiptap = forwardRef<HTMLInputElement, TiptapProps>(
               cursor="pointer"
               borderRightRadius={0}
               onClick={() => editor.chain().focus().toggleBold().run()}
-              colorScheme={editor.isActive('bold') ? 'main' : 'sub'}
+              colorScheme={editor.isActive("bold") ? "main" : "sub"}
             >
               Bold
             </Tag>
@@ -40,7 +40,7 @@ export const Tiptap = forwardRef<HTMLInputElement, TiptapProps>(
               cursor="pointer"
               borderRadius={0}
               onClick={() => editor.chain().focus().toggleItalic().run()}
-              colorScheme={editor.isActive('italic') ? 'main' : 'sub'}
+              colorScheme={editor.isActive("italic") ? "main" : "sub"}
             >
               Italic
             </Tag>
@@ -48,7 +48,7 @@ export const Tiptap = forwardRef<HTMLInputElement, TiptapProps>(
               cursor="pointer"
               borderLeftRadius={0}
               onClick={() => editor.chain().focus().toggleStrike().run()}
-              colorScheme={editor.isActive('strike') ? 'main' : 'sub'}
+              colorScheme={editor.isActive("strike") ? "main" : "sub"}
             >
               Strike
             </Tag>
@@ -63,7 +63,7 @@ export const Tiptap = forwardRef<HTMLInputElement, TiptapProps>(
                 editor.chain().focus().toggleHeading({ level: 1 }).run()
               }
               colorScheme={
-                editor.isActive('heading', { level: 1 }) ? 'main' : 'sub'
+                editor.isActive("heading", { level: 1 }) ? "main" : "sub"
               }
               borderRightRadius={0}
             >
@@ -73,7 +73,7 @@ export const Tiptap = forwardRef<HTMLInputElement, TiptapProps>(
               cursor="pointer"
               borderRadius={0}
               colorScheme={
-                editor.isActive('heading', { level: 2 }) ? 'main' : 'sub'
+                editor.isActive("heading", { level: 2 }) ? "main" : "sub"
               }
               onClick={() =>
                 editor.chain().focus().toggleHeading({ level: 2 }).run()
@@ -84,7 +84,7 @@ export const Tiptap = forwardRef<HTMLInputElement, TiptapProps>(
             <Tag
               cursor="pointer"
               borderLeftRadius={0}
-              colorScheme={editor.isActive('bulletList') ? 'main' : 'sub'}
+              colorScheme={editor.isActive("bulletList") ? "main" : "sub"}
               onClick={() => editor.chain().focus().toggleBulletList().run()}
             >
               Bullet List
@@ -98,4 +98,4 @@ export const Tiptap = forwardRef<HTMLInputElement, TiptapProps>(
   },
 )
 
-Tiptap.displayName = 'Tiptap'
+Tiptap.displayName = "Tiptap"

@@ -1,18 +1,15 @@
-import { Box, Divider, Heading, VStack } from '@chakra-ui/react'
-import {
-  rankWith,
-  uiTypeIs,
-  type LayoutProps,
-  type RankedTester,
-} from '@jsonforms/core'
-import { JsonFormsDispatch, withJsonFormsLayoutProps } from '@jsonforms/react'
-import React from 'react'
-import { JSON_FORMS_RANKING } from '~/constants/formBuilder'
-import { isGroupLayout } from '~/types/schema'
+import type { LayoutProps, RankedTester } from "@jsonforms/core"
+import React from "react"
+import { Box, Divider, Heading, VStack } from "@chakra-ui/react"
+import { rankWith, uiTypeIs } from "@jsonforms/core"
+import { JsonFormsDispatch, withJsonFormsLayoutProps } from "@jsonforms/react"
+
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { isGroupLayout } from "~/types/schema"
 
 export const jsonFormsGroupLayoutTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.GroupLayoutRenderer,
-  uiTypeIs('Group'),
+  uiTypeIs("Group"),
 )
 
 const GroupComponent = React.memo(function GroupComponent({
@@ -43,7 +40,6 @@ const GroupComponent = React.memo(function GroupComponent({
         </Heading>
       </Box>
       {elements.map((element, index) => (
-        // eslint-disable-next-line react/no-array-index-key
         <Box key={`${path}-${index}`} w="100%">
           <JsonFormsDispatch
             uischema={element}

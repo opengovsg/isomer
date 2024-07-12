@@ -1,27 +1,25 @@
-import { type User } from '@prisma/client'
-import { TRPCError } from '@trpc/server'
-import { mockTrpcErrorResponse, trpcMsw } from '../mockTrpc'
+import { type User } from "@prisma/client"
+import { TRPCError } from "@trpc/server"
+
+import { trpcMsw } from "../mockTrpc"
 
 export const defaultUser: User = {
-  id: 'cljcnahpn0000xlwynuea40lv',
-  email: 'test@example.com',
-  name: 'Test User',
-  phone: '12345678',
-  preferredName: 'test',
+  id: "cljcnahpn0000xlwynuea40lv",
+  email: "test@example.com",
+  name: "Test User",
+  phone: "12345678",
+  preferredName: "test",
 }
 
 const defaultMeGetQuery = () => {
-  return trpcMsw.me.get.query((_req, res, ctx) => {
-    return res(ctx.status(200), ctx.data(defaultUser))
+  return trpcMsw.me.get.query(() => {
+    return defaultUser
   })
 }
 
 const unauthorizedMeGetQuery = () => {
-  return trpcMsw.me.get.query((_req, res, ctx) => {
-    return res(
-      ctx.status(401),
-      ctx.json(mockTrpcErrorResponse(new TRPCError({ code: 'UNAUTHORIZED' }))),
-    )
+  return trpcMsw.me.get.query(() => {
+    throw new TRPCError({ code: "UNAUTHORIZED" })
   })
 }
 

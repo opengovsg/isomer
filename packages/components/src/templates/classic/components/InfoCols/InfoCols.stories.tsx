@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { InfoColsProps } from "~/interfaces";
-import InfoCols from "./InfoCols";
+import type { InfoColsProps } from "~/interfaces"
+import InfoCols from "./InfoCols"
 
 const meta: Meta<InfoColsProps> = {
   title: "Classic/Components/InfoCols",
@@ -12,9 +12,9 @@ const meta: Meta<InfoColsProps> = {
       themeOverride: "Isomer Classic",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof InfoCols>;
+}
+export default meta
+type Story = StoryObj<typeof InfoCols>
 
 // Default in CMS is 3 infoboxes
 export const Default: Story = {
@@ -39,7 +39,7 @@ export const Default: Story = {
       },
     ],
   },
-};
+}
 
 export const GrayBackground: Story = {
   args: {
@@ -63,7 +63,7 @@ export const GrayBackground: Story = {
       },
     ],
   },
-};
+}
 
 export const NoButton: Story = {
   args: {
@@ -85,7 +85,7 @@ export const NoButton: Story = {
       },
     ],
   },
-};
+}
 
 export const OneInfoBox: Story = {
   args: {
@@ -101,7 +101,7 @@ export const OneInfoBox: Story = {
       },
     ],
   },
-};
+}
 
 export const TwoInfoBoxes: Story = {
   args: {
@@ -121,7 +121,7 @@ export const TwoInfoBoxes: Story = {
       },
     ],
   },
-};
+}
 
 export const ThreeInfoBoxesLongText: Story = {
   args: {
@@ -145,7 +145,7 @@ export const ThreeInfoBoxesLongText: Story = {
       },
     ],
   },
-};
+}
 
 export const FourInfoBoxes: Story = {
   args: {
@@ -173,7 +173,7 @@ export const FourInfoBoxes: Story = {
       },
     ],
   },
-};
+}
 
 export const FourInfoBoxesLongText: Story = {
   args: {
@@ -205,4 +205,4 @@ export const FourInfoBoxesLongText: Story = {
       },
     ],
   },
-};
+}

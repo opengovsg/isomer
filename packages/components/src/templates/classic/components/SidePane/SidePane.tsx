@@ -1,7 +1,8 @@
 import { BiChevronDown } from "react-icons/bi"
+
 import type { SidePaneProps } from "~/interfaces"
 
-export type SectionWithSiblings = {
+export interface SectionWithSiblings {
   parentTitle?: string
   parentPermalink?: string
   siblings: any[]
@@ -52,7 +53,7 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
             {parentNodeSiblings.siblings.map((sibling, index) => (
               <li
                 key={index}
-                className={`list-none py-2  ${
+                className={`list-none py-2 ${
                   currentPermalink === sibling.permalink ? "font-bold" : ""
                 }`}
               >
@@ -72,7 +73,7 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
                     {sibling.permalink ===
                       sectionWithSiblings?.parentPermalink &&
                       sectionWithSiblings?.siblings &&
-                      sectionWithSiblings?.siblings.length > 0 && (
+                      sectionWithSiblings.siblings.length > 0 && (
                         <a className="cursor-pointer">
                           <BiChevronDown className="mx-3 mt-2.5 h-5 w-5 text-headings" />
                         </a>

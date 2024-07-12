@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { ImageProps } from "~/interfaces";
-import Image from "./Image";
+import type { ImageProps } from "~/interfaces"
+import Image from "./Image"
 
 const meta: Meta<ImageProps> = {
   title: "Next/Components/Image",
@@ -12,9 +12,9 @@ const meta: Meta<ImageProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof Image>;
+}
+export default meta
+type Story = StoryObj<typeof Image>
 
 // Default scenario
 export const Default: Story = {
@@ -22,7 +22,7 @@ export const Default: Story = {
     src: "https://placehold.co/200x200",
     alt: "alt",
   },
-};
+}
 
 export const HalfWidth: Story = {
   args: {
@@ -30,7 +30,7 @@ export const HalfWidth: Story = {
     alt: "alt",
     width: 50,
   },
-};
+}
 
 export const ImageWithExternalLink: Story = {
   args: {
@@ -38,7 +38,7 @@ export const ImageWithExternalLink: Story = {
     alt: "alt",
     href: "https://www.google.com",
   },
-};
+}
 
 export const ImageWithInternalLink: Story = {
   args: {
@@ -46,4 +46,4 @@ export const ImageWithInternalLink: Story = {
     alt: "alt",
     href: "/faq",
   },
-};
+}

@@ -1,14 +1,14 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from "@storybook/react"
 
-import LandingPage from '~/pages/index'
-import { getMobileViewParameters } from '../utils/viewports'
+import LandingPage from "~/pages/index"
+import { getMobileViewParameters } from "../utils/viewports"
 
 const meta: Meta<typeof LandingPage> = {
-  title: 'Pages/Landing Page',
+  title: "Pages/Landing Page",
   component: LandingPage,
   parameters: {
     // More on how to position stories at: https://storybook.js.org/docs/react/configure/story-layout
-    layout: 'fullscreen',
+    layout: "fullscreen",
   },
 }
 

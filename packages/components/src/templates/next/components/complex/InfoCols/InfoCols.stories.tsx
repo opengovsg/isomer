@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import type { InfoColsProps } from "~/interfaces";
-import InfoCols from "./InfoCols";
+import type { InfoColsProps } from "~/interfaces"
+import InfoCols from "./InfoCols"
 
 const meta: Meta<InfoColsProps> = {
   title: "Next/Components/InfoCols",
@@ -12,9 +12,9 @@ const meta: Meta<InfoColsProps> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<InfoColsProps>;
+}
+export default meta
+type Story = StoryObj<InfoColsProps>
 
 // Setting this as default for now since it's what has been through the most design work
 export const Default: Story = {
@@ -73,7 +73,7 @@ export const Default: Story = {
       },
     ],
   },
-};
+}
 
 export const GrayBackground: Story = {
   args: {
@@ -126,7 +126,7 @@ export const GrayBackground: Story = {
       },
     ],
   },
-};
+}
 
 export const FourInfoBoxes: Story = {
   args: {
@@ -164,4 +164,4 @@ export const FourInfoBoxes: Story = {
       },
     ],
   },
-};
+}

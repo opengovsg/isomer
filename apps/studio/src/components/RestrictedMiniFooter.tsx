@@ -1,6 +1,6 @@
-import { Link, Text } from '@chakra-ui/react'
-import NextLink from 'next/link'
-import Image from 'next/image'
+import Image from "next/image"
+import NextLink from "next/link"
+import { Link, Text } from "@chakra-ui/react"
 
 export const RestrictedMiniFooter = (): JSX.Element => {
   return (
@@ -14,7 +14,7 @@ export const RestrictedMiniFooter = (): JSX.Element => {
       textTransform="uppercase"
       fontSize="0.625rem"
     >
-      Built by{' '}
+      Built by{" "}
       <Link as={NextLink} title="To OGP homepage" href="https://open.gov.sg">
         <Image
           src="/assets/restricted-ogp-logo-full.svg"

@@ -1,18 +1,19 @@
-import { TRPCError } from '@trpc/server'
-import { publicProcedure, router } from '~/server/trpc'
-import { sendMail } from '~/lib/mail'
-import { getBaseUrl } from '~/utils/getBaseUrl'
-import { env } from '~/env.mjs'
-import { formatInTimeZone } from 'date-fns-tz'
+import { TRPCError } from "@trpc/server"
+import { formatInTimeZone } from "date-fns-tz"
+
+import { env } from "~/env.mjs"
+import { sendMail } from "~/lib/mail"
 import {
   emailSignInSchema,
   emailVerifyOtpSchema,
-} from '~/schemas/auth/email/sign-in'
-import { createTokenHash, createVfnPrefix, createVfnToken } from '../auth.util'
-import { verifyToken } from '../auth.service'
-import { VerificationError } from '../auth.error'
-import { defaultMeSelect } from '../../me/me.select'
-import { generateUsername } from '../../me/me.service'
+} from "~/schemas/auth/email/sign-in"
+import { publicProcedure, router } from "~/server/trpc"
+import { getBaseUrl } from "~/utils/getBaseUrl"
+import { defaultMeSelect } from "../../me/me.select"
+import { generateUsername } from "../../me/me.service"
+import { VerificationError } from "../auth.error"
+import { verifyToken } from "../auth.service"
+import { createTokenHash, createVfnPrefix, createVfnToken } from "../auth.util"
 
 export const emailSessionRouter = router({
   // Generate OTP.
@@ -50,8 +51,8 @@ export const emailSessionRouter = router({
           subject: `Sign in to ${url.host}`,
           body: `Your OTP is ${otpPrefix}-<b>${token}</b>. It will expire on ${formatInTimeZone(
             expires,
-            'Asia/Singapore',
-            'dd MMM yyyy, hh:mmaaa',
+            "Asia/Singapore",
+            "dd MMM yyyy, hh:mmaaa",
           )}.
       Please use this to login to your account.
       <p>If your OTP does not work, please request for a new one.</p>`,
@@ -71,7 +72,7 @@ export const emailSessionRouter = router({
       } catch (e) {
         if (e instanceof VerificationError) {
           throw new TRPCError({
-            code: 'BAD_REQUEST',
+            code: "BAD_REQUEST",
             message: e.message,
             cause: e,
           })
@@ -79,7 +80,7 @@ export const emailSessionRouter = router({
         throw e
       }
 
-      const emailName = email.split('@')[0] ?? 'unknown'
+      const emailName = email.split("@")[0] ?? "unknown"
 
       const user = await ctx.prisma.user.upsert({
         where: { email },
@@ -87,7 +88,7 @@ export const emailSessionRouter = router({
         create: {
           email,
           // TODO: add the phone in later, this is a wip
-          phone: '',
+          phone: "",
           name: emailName,
         },
         select: defaultMeSelect,

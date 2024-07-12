@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react"
 
-import { type CollectionPageSchemaType } from "~/engine";
-import CollectionLayout from "./Collection";
+import { type CollectionPageSchemaType } from "~/engine"
+import CollectionLayout from "./Collection"
 
 const meta: Meta<CollectionPageSchemaType> = {
   title: "Next/Layouts/Collection",
@@ -12,9 +12,9 @@ const meta: Meta<CollectionPageSchemaType> = {
       themeOverride: "Isomer Next",
     },
   },
-};
-export default meta;
-type Story = StoryObj<typeof CollectionLayout>;
+}
+export default meta
+type Story = StoryObj<typeof CollectionLayout>
 
 export const Default: Story = {
   args: {
@@ -103,4 +103,4 @@ export const Default: Story = {
       defaultSortDirection: "desc",
     },
   },
-};
+}

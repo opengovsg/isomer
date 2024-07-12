@@ -1,6 +1,7 @@
 import React from "react"
-import Markdown from "markdown-to-jsx"
 import { decode } from "js-base64"
+import Markdown from "markdown-to-jsx"
+
 import type { ContentProps } from "~/interfaces"
 
 const HtmlElement = ({ children, ...props }: any) => (

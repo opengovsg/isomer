@@ -1,5 +1,6 @@
-import { z } from 'zod'
-import { ACCEPTED_FILE_TYPES } from '~/utils/image'
+import { z } from "zod"
+
+import { ACCEPTED_FILE_TYPES } from "~/utils/image"
 
 export const presignImageInputSchema = z.object({
   fileContentType: z.enum(ACCEPTED_FILE_TYPES),

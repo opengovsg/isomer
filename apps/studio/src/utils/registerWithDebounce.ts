@@ -1,5 +1,5 @@
 // https://github.com/react-hook-form/react-hook-form/issues/40#issuecomment-1139970269
-import { debounce } from 'lodash'
+import { debounce } from "lodash"
 import {
   type FieldPath,
   type FieldValues,
@@ -7,7 +7,7 @@ import {
   type UseFormRegister,
   type UseFormRegisterReturn,
   type UseFormTrigger,
-} from 'react-hook-form'
+} from "react-hook-form"
 
 /**
  * Replacement of register from react-hook-form with debounce

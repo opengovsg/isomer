@@ -11,6 +11,7 @@ import {
   BiSearch,
   BiX,
 } from "react-icons/bi"
+
 import type { NavbarProps } from "~/interfaces"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
 
@@ -70,7 +71,7 @@ export const Navbar = ({
     <div className="relative flex flex-col">
       {/* Site header */}
       <div
-        className="max-w-container mx-auto flex w-full flex-row gap-4 px-6 py-6 lg:px-10"
+        className="mx-auto flex w-full max-w-container flex-row gap-4 px-6 py-6 lg:px-10"
         ref={siteHeaderRef}
       >
         {/* Logo */}
@@ -127,13 +128,13 @@ export const Navbar = ({
                   <div
                     className={`${
                       openNavItemIdx === idx ? "absolute" : "hidden"
-                    } left-0 z-20 w-full border-y  border-y-gray-100 bg-white px-4`}
+                    } left-0 z-20 w-full border-y border-y-gray-100 bg-white px-4`}
                     style={{
                       top: `${navbarDesktopHeight}px`,
                     }}
                   >
                     <div className="mx-auto flex w-full max-w-screen-xl flex-col py-12">
-                      <div className="max-w-container mx-auto flex w-full flex-row items-start px-10 pb-12">
+                      <div className="mx-auto flex w-full max-w-container flex-row items-start px-10 pb-12">
                         <div className="flex flex-col gap-1">
                           <h6 className="text-2xl font-semibold">{name}</h6>
                           <p className="text-gray-700">{description}</p>
@@ -145,7 +146,7 @@ export const Navbar = ({
                         <button
                           onClick={() => setOpenNavItemIdx(-1)}
                           aria-label="Close navigation item"
-                          className="text-content text-sm lg:text-base"
+                          className="text-sm text-content lg:text-base"
                         >
                           Close
                           <BiX className="-mt-0.5 ml-1 inline text-2xl" />
@@ -153,12 +154,12 @@ export const Navbar = ({
                       </div>
 
                       <div className="overflow-auto">
-                        <ul className="max-w-container mx-auto flex w-full flex-row flex-wrap gap-x-36 gap-y-8 px-10">
+                        <ul className="mx-auto flex w-full max-w-container flex-row flex-wrap gap-x-36 gap-y-8 px-10">
                           {subItems.map((subItem) => (
                             <li key={subItem.name} className="w-2/5">
                               <div className="flex flex-col gap-1">
                                 <LinkComponent href={subItem.url}>
-                                  <p className="text-content text-pretty text-lg font-semibold hover:underline hover:underline-offset-2">
+                                  <p className="text-pretty text-lg font-semibold text-content hover:underline hover:underline-offset-2">
                                     {subItem.name}
                                     <BiRightArrowAlt className="-mt-0.5 inline h-auto w-5" />
                                   </p>
@@ -238,7 +239,7 @@ export const Navbar = ({
         <div
           className={`${
             isSearchOpen ? "block" : "hidden"
-          } max-w-container mx-auto mb-4 w-full px-6 lg:px-10`}
+          } mx-auto mb-4 w-full max-w-container px-6 lg:px-10`}
         >
           {search.type === "localSearch" && (
             <LocalSearchInputBox searchUrl={search.searchUrl} />
@@ -267,7 +268,7 @@ export const Navbar = ({
                 return (
                   <li key={Math.random()} className="w-full py-3">
                     <LinkComponent
-                      className="text-content hover:text-content-medium text-md block w-full"
+                      className="text-md block w-full text-content hover:text-content-medium"
                       href={url}
                     >
                       {name}
@@ -309,22 +310,22 @@ export const Navbar = ({
               aria-label="Return to main navigation menu"
             >
               <BiLeftArrowAlt className="text-2xl" />
-              <h5 className="text-md">{items[openNavItemIdx].name}</h5>
+              <h5 className="text-md">{items[openNavItemIdx]?.name}</h5>
             </button>
 
             <ul className="flex flex-row flex-wrap gap-x-36 gap-y-5 px-9 py-4 md:gap-y-8">
-              {items[openNavItemIdx].items?.map(
+              {items[openNavItemIdx]?.items?.map(
                 ({ name, url, description }) => (
                   <li key={name} className="w-full md:w-1/3">
                     <div className="flex flex-col gap-1">
                       <LinkComponent
                         href={url}
-                        className="text-paragraph-01 text-content-medium md:text-content"
+                        className="text-content-medium text-paragraph-01 md:text-content"
                       >
                         {name}
                         <BiRightArrowAlt className="-mt-0.5 ml-1 hidden text-lg md:inline" />
                       </LinkComponent>
-                      <p className="text-paragraph-02 text-content-medium hidden md:block">
+                      <p className="hidden text-content-medium text-paragraph-02 md:block">
                         {description}
                       </p>
                     </div>

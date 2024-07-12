@@ -1,25 +1,18 @@
-import {
-  Box,
-  type BoxProps,
-  Flex,
-  type FlexProps,
-  forwardRef,
-} from '@chakra-ui/react'
-import { memo, useEffect, useMemo, useState } from 'react'
+import type { BoxProps, FlexProps } from "@chakra-ui/react"
+import { memo, useEffect, useMemo, useState } from "react"
+import { Box, Flex, forwardRef } from "@chakra-ui/react"
+import { dataAttr } from "@chakra-ui/utils"
+import Link from "@tiptap/extension-link"
+import Placeholder from "@tiptap/extension-placeholder"
+import { EditorContent, useEditor } from "@tiptap/react"
+import StarterKit from "@tiptap/starter-kit"
+import { merge } from "lodash"
 
-import { dataAttr } from '@chakra-ui/utils'
-import Link from '@tiptap/extension-link'
-import { EditorContent, useEditor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
+import { safeJsonParse } from "~/utils/safeJsonParse"
+import { TIP_TAP_STYLES } from "./constants"
+import { MenuBar } from "./RichTextMenu"
 
-import { safeJsonParse } from '~/utils/safeJsonParse'
-
-import Placeholder from '@tiptap/extension-placeholder'
-import { merge } from 'lodash'
-import { TIP_TAP_STYLES } from './constants'
-import { MenuBar } from './RichTextMenu'
-
-interface TextAreaFieldProps extends Omit<FlexProps, 'value' | 'onChange'> {
+interface TextAreaFieldProps extends Omit<FlexProps, "value" | "onChange"> {
   value?: string
   defaultValue?: string
   isReadOnly?: boolean
@@ -27,7 +20,7 @@ interface TextAreaFieldProps extends Omit<FlexProps, 'value' | 'onChange'> {
   placeholder?: string
 }
 
-const ReadonlyContainer = forwardRef<BoxProps, 'div'>(
+const ReadonlyContainer = forwardRef<BoxProps, "div">(
   ({ children, ...boxProps }, ref) => {
     return (
       <Box
@@ -36,8 +29,8 @@ const ReadonlyContainer = forwardRef<BoxProps, 'div'>(
         textStyle="body-2"
         color="base.content.default"
         sx={{
-          '.ProseMirror': {
-            minH: 'auto',
+          ".ProseMirror": {
+            minH: "auto",
           },
         }}
       >
@@ -47,7 +40,7 @@ const ReadonlyContainer = forwardRef<BoxProps, 'div'>(
   },
 )
 
-const EditorContainer = forwardRef<BoxProps, 'div'>(
+const EditorContainer = forwardRef<BoxProps, "div">(
   ({ children, ...boxProps }, ref) => {
     return (
       <Box
@@ -68,14 +61,14 @@ const EditorContainer = forwardRef<BoxProps, 'div'>(
   },
 )
 
-const UnmemoedRichText = forwardRef<TextAreaFieldProps, 'div'>(
+const UnmemoedRichText = forwardRef<TextAreaFieldProps, "div">(
   (
     {
       isReadOnly,
       value,
       defaultValue,
       onChange,
-      placeholder = 'Add details and give concrete examples to explain how you feel.',
+      placeholder = "Add details and give concrete examples to explain how you feel.",
       sx,
       ...flexProps
     },

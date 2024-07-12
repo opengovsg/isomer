@@ -1,15 +1,16 @@
-import { ButtonGroup, type StackProps } from '@chakra-ui/react'
+import type { StackProps } from "@chakra-ui/react"
+import { ButtonGroup } from "@chakra-ui/react"
 
 export const ResponsiveModalButtonGroup = (props: StackProps): JSX.Element => {
   return (
     <ButtonGroup
       w="100%"
       justifyContent={{
-        md: 'flex-end',
+        md: "flex-end",
       }}
       flexDirection={{
-        base: 'row-reverse',
-        md: 'row',
+        base: "row-reverse",
+        md: "row",
       }}
       {...props}
     />

@@ -1,5 +1,6 @@
 // Component for layout selection
 
+import { useState } from "react"
 import {
   Box,
   Grid,
@@ -9,18 +10,18 @@ import {
   Image,
   Text,
   VStack,
-} from '@chakra-ui/react'
-import { Button, Link } from '@opengovsg/design-system-react'
+} from "@chakra-ui/react"
+import { Button, Link } from "@opengovsg/design-system-react"
 import {
   type ISOMER_PAGE_LAYOUTS,
   type IsomerSchema,
-} from '@opengovsg/isomer-components'
-import { useState } from 'react'
-import { BiLeftArrowAlt, BiRightArrowAlt, BiShow } from 'react-icons/bi'
-import Preview from '~/features/editing-experience/components/Preview'
-import articleLayoutPreview from '~/features/editing-experience/data/articleLayoutPreview.json'
-import contentLayoutPreview from '~/features/editing-experience/data/contentLayoutPreview.json'
-import { dataAttr } from '../utils'
+} from "@opengovsg/isomer-components"
+import { BiLeftArrowAlt, BiRightArrowAlt, BiShow } from "react-icons/bi"
+
+import Preview from "~/features/editing-experience/components/Preview"
+import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
+import contentLayoutPreview from "~/features/editing-experience/data/contentLayoutPreview.json"
+import { dataAttr } from "../utils"
 
 export interface LayoutSelectionProps {
   pageName: string
@@ -40,18 +41,18 @@ interface LayoutDataType {
 
 const LAYOUT_DATA: LayoutDataType[] = [
   {
-    layoutDisplayName: 'Default',
-    layoutTypename: 'content',
-    layoutDescription: 'This is the most basic layout for your content.',
-    imageSource: '/assets/layout-card/default_layout_card.webp',
+    layoutDisplayName: "Default",
+    layoutTypename: "content",
+    layoutDescription: "This is the most basic layout for your content.",
+    imageSource: "/assets/layout-card/default_layout_card.webp",
     previewJson: contentLayoutPreview as IsomerSchema,
   },
   {
-    layoutDisplayName: 'Article',
-    layoutTypename: 'article',
+    layoutDisplayName: "Article",
+    layoutTypename: "article",
     layoutDescription:
-      'Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches',
-    imageSource: '/assets/layout-card/article_layout_card.webp',
+      "Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches",
+    imageSource: "/assets/layout-card/article_layout_card.webp",
     previewJson: articleLayoutPreview as IsomerSchema,
   },
 ]
@@ -59,6 +60,7 @@ const LAYOUT_DATA: LayoutDataType[] = [
 // TODO: Make this headless by getting the LAYOUT_DATA from the schema. Find somewhere in the schema for layoutDescription & image(fetch this too or generate it)
 function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
   const [selectedLayout, setSelectedLayout] = useState<LayoutDataType>(
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     LAYOUT_DATA[0]!,
   )
 
@@ -115,17 +117,17 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                           layoutEntry.layoutTypename,
                       )}
                       _active={{
-                        borderColor: 'base.divider.brand',
-                        bgColor: 'interaction.muted.main.active',
+                        borderColor: "base.divider.brand",
+                        bgColor: "interaction.muted.main.active",
                         _groupHover: {
                           // Override the group hover behavior
-                          bgColor: 'interaction.main-subtle.default',
-                          borderColor: 'base.divider.brand',
+                          bgColor: "interaction.main-subtle.default",
+                          borderColor: "base.divider.brand",
                         },
                       }}
                       _groupHover={{
-                        borderColor: 'interaction.main-subtle.hover',
-                        bgColor: 'interaction.main-subtle.default',
+                        borderColor: "interaction.main-subtle.hover",
+                        bgColor: "interaction.main-subtle.default",
                       }}
                       transition="border-color 300ms ease-out, opacity 300ms ease-out, background-color 300ms ease-out"
                     >
@@ -186,10 +188,10 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                           selectedLayout.layoutTypename ===
                             layoutEntry.layoutTypename,
                         )}
-                        _active={{ textColor: 'base.content.brand' }}
+                        _active={{ textColor: "base.content.brand" }}
                         mb="0.5rem"
                         transition="color 300ms ease-out"
-                        _groupHover={{ textColor: 'base.content.brand' }}
+                        _groupHover={{ textColor: "base.content.brand" }}
                       >
                         {layoutEntry.layoutDisplayName} layout
                       </Text>
@@ -237,7 +239,6 @@ function LayoutSelection(props: LayoutSelectionProps): JSX.Element {
                   {`${selectedLayout.layoutDisplayName} Layout`}
                 </Text>
               </HStack>
-              {/* eslint-disable-next-line react/jsx-props-no-spreading */}
               <Preview {...selectedLayout.previewJson} />
               <Box position="absolute" top="0" left="0" w="100%" h="100%" />
             </Box>

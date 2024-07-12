@@ -52,6 +52,6 @@
     "src/**/*.test.tsx",
     "src/**/*.stories.tsx"
   ],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "dist"],
   "compileOnSave": false
 }

@@ -1,12 +1,12 @@
-import { IconType } from "react-icons"
+import type { IconType } from "react-icons"
 import {
-  BiRightArrowAlt,
+  BiBarChartAlt2,
   BiBuildings,
   BiChart,
   BiGlobe,
   BiGroup,
+  BiRightArrowAlt,
   BiStar,
-  BiBarChartAlt2,
 } from "react-icons/bi"
 
 export const SUPPORTED_ICON_NAMES = [

@@ -1,8 +1,8 @@
 // Hehe ripped from OpenSpace
 
-import { Divider, Icon, IconButton, Tooltip, Wrap } from '@chakra-ui/react'
-import { type Editor } from '@tiptap/react'
-import { type IconType } from 'react-icons'
+import { Divider, Icon, IconButton, Tooltip, Wrap } from "@chakra-ui/react"
+import { type Editor } from "@tiptap/react"
+import { type IconType } from "react-icons"
 import {
   BiBold,
   BiCode,
@@ -14,118 +14,118 @@ import {
   BiStrikethrough,
   BiText,
   BiUndo,
-} from 'react-icons/bi'
-import { VscHorizontalRule } from 'react-icons/vsc'
-import { MdFormatClear } from 'react-icons/md'
-import { TbBlockquote, TbH1, TbH2 } from 'react-icons/tb'
+} from "react-icons/bi"
+import { MdFormatClear } from "react-icons/md"
+import { TbBlockquote, TbH1, TbH2 } from "react-icons/tb"
+import { VscHorizontalRule } from "react-icons/vsc"
 
 type MenuButton =
   | {
-      type: 'button'
+      type: "button"
       label: string
       icon: IconType
       onClick: (editor: Editor) => void
       isActive?: (editor: Editor) => boolean
     }
   | {
-      type: 'divider'
+      type: "divider"
     }
 
 const MENU_BUTTONS: MenuButton[] = [
   {
-    type: 'button',
-    label: 'Bold',
+    type: "button",
+    label: "Bold",
     onClick: (editor: Editor) => editor.chain().focus().toggleBold().run(),
     icon: BiBold,
-    isActive: (editor: Editor) => editor.isActive('bold'),
+    isActive: (editor: Editor) => editor.isActive("bold"),
   },
   {
-    type: 'button',
-    label: 'Italic',
+    type: "button",
+    label: "Italic",
     onClick: (editor: Editor) => editor.chain().focus().toggleItalic().run(),
     icon: BiItalic,
-    isActive: (editor: Editor) => editor.isActive('italic'),
+    isActive: (editor: Editor) => editor.isActive("italic"),
   },
   {
-    type: 'button',
-    label: 'Strike',
+    type: "button",
+    label: "Strike",
     icon: BiStrikethrough,
     onClick: (editor: Editor) => editor.chain().focus().toggleStrike().run(),
-    isActive: (editor: Editor) => editor.isActive('strike'),
+    isActive: (editor: Editor) => editor.isActive("strike"),
   },
 
-  { type: 'divider' },
+  { type: "divider" },
   {
-    type: 'button',
-    label: 'Paragraph',
+    type: "button",
+    label: "Paragraph",
     icon: BiText,
     onClick: (editor: Editor) => editor.chain().focus().setParagraph().run(),
-    isActive: (editor: Editor) => editor.isActive('paragraph'),
+    isActive: (editor: Editor) => editor.isActive("paragraph"),
   },
   {
-    type: 'button',
-    label: 'Heading 1',
+    type: "button",
+    label: "Heading 1",
     icon: TbH1,
     onClick: (editor: Editor) =>
       editor.chain().focus().toggleHeading({ level: 1 }).run(),
-    isActive: (editor: Editor) => editor.isActive('heading', { level: 1 }),
+    isActive: (editor: Editor) => editor.isActive("heading", { level: 1 }),
   },
   {
-    type: 'button',
-    label: 'Heading 2',
+    type: "button",
+    label: "Heading 2",
     icon: TbH2,
     onClick: (editor: Editor) =>
       editor.chain().focus().toggleHeading({ level: 2 }).run(),
-    isActive: (editor: Editor) => editor.isActive('heading', { level: 2 }),
+    isActive: (editor: Editor) => editor.isActive("heading", { level: 2 }),
   },
   {
-    type: 'button',
-    label: 'Bullet List',
+    type: "button",
+    label: "Bullet List",
     icon: BiListUl,
     onClick: (editor: Editor) =>
       editor.chain().focus().toggleBulletList().run(),
-    isActive: (editor: Editor) => editor.isActive('bulletList'),
+    isActive: (editor: Editor) => editor.isActive("bulletList"),
   },
   {
-    type: 'button',
-    label: 'Ordered List',
+    type: "button",
+    label: "Ordered List",
     icon: BiListOl,
     onClick: (editor: Editor) =>
       editor.chain().focus().toggleOrderedList().run(),
-    isActive: (editor: Editor) => editor.isActive('orderedList'),
+    isActive: (editor: Editor) => editor.isActive("orderedList"),
   },
   {
-    type: 'divider',
+    type: "divider",
   },
   {
-    type: 'button',
-    label: 'Code',
+    type: "button",
+    label: "Code",
     icon: BiCode,
     onClick: (editor: Editor) => editor.chain().focus().toggleCode().run(),
-    isActive: (editor: Editor) => editor.isActive('code'),
+    isActive: (editor: Editor) => editor.isActive("code"),
   },
   {
-    type: 'button',
-    label: 'Code Block',
+    type: "button",
+    label: "Code Block",
     icon: BiCodeBlock,
     onClick: (editor: Editor) => editor.chain().focus().toggleCodeBlock().run(),
-    isActive: (editor: Editor) => editor.isActive('codeBlock'),
+    isActive: (editor: Editor) => editor.isActive("codeBlock"),
   },
 
   {
-    type: 'button',
-    label: 'Blockquote',
+    type: "button",
+    label: "Blockquote",
     icon: TbBlockquote,
     onClick: (editor: Editor) =>
       editor.chain().focus().toggleBlockquote().run(),
-    isActive: (editor: Editor) => editor.isActive('blockquote'),
+    isActive: (editor: Editor) => editor.isActive("blockquote"),
   },
   {
-    type: 'divider',
+    type: "divider",
   },
   {
-    type: 'button',
-    label: 'Horizontal Rule',
+    type: "button",
+    label: "Horizontal Rule",
     icon: VscHorizontalRule,
     onClick: (editor: Editor) =>
       editor.chain().focus().setHorizontalRule().run(),
@@ -136,21 +136,21 @@ const MENU_BUTTONS: MenuButton[] = [
   //   onClick: (editor: Editor) => editor.chain().focus().setHardBreak().run(),
   // },
   {
-    type: 'button',
-    label: 'Clear Format',
+    type: "button",
+    label: "Clear Format",
     icon: MdFormatClear,
     onClick: (editor: Editor) =>
       editor.chain().focus().clearNodes().unsetAllMarks().run(),
   },
   {
-    type: 'button',
-    label: 'Undo',
+    type: "button",
+    label: "Undo",
     icon: BiUndo,
     onClick: (editor: Editor) => editor.chain().focus().undo().run(),
   },
   {
-    type: 'button',
-    label: 'Redo',
+    type: "button",
+    label: "Redo",
     icon: BiRedo,
     onClick: (editor: Editor) => editor.chain().focus().redo().run(),
   },
@@ -171,7 +171,7 @@ export const MenuBar = ({ editor }: { editor: Editor | null }) => {
       borderTopRadius="sm"
     >
       {MENU_BUTTONS.map((button, index) => {
-        if (button.type === 'divider') {
+        if (button.type === "divider") {
           return (
             <Divider
               orientation="vertical"

@@ -1,12 +1,9 @@
-import {
-  createContext,
-  type FC,
-  type PropsWithChildren,
-  useContext,
-} from 'react'
-import { useEnv } from '~/hooks/useEnv'
+import type { FC, PropsWithChildren } from "react"
+import { createContext, useContext } from "react"
 
-type FeatureContextProps = {
+import { useEnv } from "~/hooks/useEnv"
+
+interface FeatureContextProps {
   storage: boolean
   sgid: boolean
 }

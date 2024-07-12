@@ -1,10 +1,12 @@
-import 'pino-pretty'
-import { pino } from 'pino'
-import { env } from '~/env.mjs'
-import { nanoid } from 'nanoid'
+import "pino-pretty"
+
+import { nanoid } from "nanoid"
+import { pino } from "pino"
+
+import { env } from "~/env.mjs"
 
 // use syslog protocol levels as per https://datatracker.ietf.org/doc/html/rfc5424#page-10
-const levels: { [level: string]: number } = {
+const levels: Record<string, number> = {
   emerg: 80,
   alert: 70,
   crit: 60,
@@ -15,7 +17,7 @@ const levels: { [level: string]: number } = {
   debug: 10,
 }
 
-type LoggerOptions = {
+interface LoggerOptions {
   path: string
   clientIp?: string
 }
@@ -29,9 +31,9 @@ export class PinoLogger {
   }
   private static createBaseLogger = (): pino.Logger<string> => {
     let transport
-    if (env.NODE_ENV === 'development' || env.NODE_ENV === 'test') {
+    if (env.NODE_ENV === "development" || env.NODE_ENV === "test") {
       transport = pino.transport({
-        target: 'pino-pretty',
+        target: "pino-pretty",
         options: {
           colorize: true,
           hideObject: true,
@@ -42,7 +44,8 @@ export class PinoLogger {
     }
     return pino(
       {
-        level: process.env.PINO_LOG_LEVEL || 'info',
+        // eslint-disable-next-line no-restricted-properties
+        level: process.env.PINO_LOG_LEVEL || "info",
         customLevels: levels,
         useOnlyCustomLevels: true,
         timestamp: () => `,"timestamp":"${new Date(Date.now()).toISOString()}"`,
