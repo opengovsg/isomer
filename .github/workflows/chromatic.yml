@@ -1,5 +1,5 @@
 # Workflow name
-name: "Chromatic for Isomer Components"
+name: "Chromatic"
 
 # Event for the workflow
 on:
@@ -12,59 +12,76 @@ on:
 
 # List of jobs
 jobs:
-  chromatic:
-    # Operating System
+  # JOB to run change detection
+  changes:
     runs-on: ubuntu-latest
-    # Only run if the user is not a bot
-    if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') }}
-    environment: staging
-    # Job steps
+    # Set job outputs to values from filter step
+    outputs:
+      ui: ${{ steps.filter.outputs.ui }}
+      studio: ${{ steps.filter.outputs.studio }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # 👈 Required to retrieve git history
-
-      - name: Check for changes
-        uses: dorny/paths-filter@v2
+      - uses: actions/checkout@v4
+      # For pull requests it's not necessary to checkout the code
+      - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
-            components:
-              - '.github/workflows/chromatic.yml'
-              - 'packages/components/.storybook/**'
-              - 'packages/components/src/**'
-              - 'packages/components/package.json'
-              - 'packages/components/package-lock.json'
-              - 'packages/components/tailwind.config.js'
-
-      - name: Set environment variable to run Chromatic build
-        if: ${{ steps.filter.outputs.components == 'true' }}
-        run: echo "ISOMER_RUN_CHROMATIC_BUILD=true" >> $GITHUB_ENV
-
-      # This extra step is not in the original chromatic workflow.
-      # This is to pin the version of node (18.x) used.
-      - name: Setup Node.js
-        if: ${{ env.ISOMER_RUN_CHROMATIC_BUILD == 'true' }}
-        uses: actions/setup-node@v3
+            ui:
+              - 'packages/components/**'
+            studio:
+              - 'apps/studio/**'
+  ui:
+    needs: changes
+    # Only run if the user is not a bot and has changes
+    if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.changes.outputs.ui == 'true' }}
+    # Operating System
+    runs-on: ubuntu-latest
+    environment: staging
+    # Job steps
+    steps:
+      - uses: actions/checkout@v4
         with:
-          node-version: "18.x"
-          cache: "npm"
-
-      - name: Install dependencies
-        if: ${{ env.ISOMER_RUN_CHROMATIC_BUILD == 'true' }}
-        run: npm ci
+          fetch-depth: 0 # Required for v4
+      - name: Setup
+        uses: ./tooling/github/setup
 
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        if: ${{ env.ISOMER_RUN_CHROMATIC_BUILD == 'true' }}
-        uses: chromaui/action@v1
+        uses: chromaui/action@latest
         # Chromatic GitHub Action options
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          # 👇 Chromatic projectToken, refer to the manage page to obtain it.
-          projectToken: ${{ secrets.CHROMATIC_COMPONENTS_PROJECT_TOKEN }}
-          # onlyChanged: true
-          branchName: ${{ github.ref_name }}
-          autoAcceptChanges: main
           workingDir: packages/components
+          storybookBaseDir: packages/components
+          projectToken: ${{ secrets.CHROMATIC_COMPONENTS_PROJECT_TOKEN }}
+          onlyChanged: true
+          exitOnceUploaded: true
+          autoAcceptChanges: main
+          # Skip running Chromatic on dependabot PRs
+          skip: dependabot/**
+  studio:
+    needs: changes
+    # Only run if the user is not a bot and has changes
+    if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.changes.outputs.studio == 'true' }}
+    # Operating System
+    runs-on: ubuntu-latest
+    environment: staging
+    # Job steps
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for v4
+      - name: Setup
+        uses: ./tooling/github/setup
+      # 👇 Adds Chromatic as a step in the workflow
+      - name: Publish to Chromatic
+        uses: chromaui/action@latest
+        # Chromatic GitHub Action options
+        with:
+          workingDir: apps/studio
+          storybookBaseDir: apps/studio
+          projectToken: ${{ secrets.CHROMATIC_STUDIO_PROJECT_TOKEN }}
+          onlyChanged: true
+          exitOnceUploaded: true
+          autoAcceptChanges: main
+          # Skip running Chromatic on dependabot PRs
+          skip: dependabot/**

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate": "prisma generate && eslint --fix prisma/generated && prettier --write prisma/generated",
+    "generate": "prisma generate && tsx prisma/generate.cts && eslint --fix prisma/generated && prettier --write prisma/generated",
     "db:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
     "db:sleep": "sleep 3",
     "db:seed": "prisma db seed",
@@ -86,7 +86,7 @@
     "kysely": "^0.27.3",
     "lodash": "^4.17.21",
     "nanoid": "^5.0.6",
-    "next": "14.2.3",
+    "next": "14.2.5",
     "nric": "^1.2.2",
     "pg": "^8.12.0",
     "pino": "^9.2.0",

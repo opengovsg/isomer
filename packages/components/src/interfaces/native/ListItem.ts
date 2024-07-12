@@ -28,6 +28,7 @@ export const listItemSchemaBuilder = <T extends TSchema, U extends TSchema>(
       ),
     },
     {
+      $id: "components-native-listItem",
       title: "List item component",
       description:
         "A list item that can contain paragraphs or nested ordered lists and unordered lists",

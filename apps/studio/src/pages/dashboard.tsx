@@ -19,23 +19,7 @@ const Home: NextPageWithLayout = () => {
       left={{ base: 0, sm: undefined }}
       minH={`calc(100% - ${ADMIN_NAVBAR_HEIGHT})`}
     >
-      <AppGrid
-        templateColumns={APP_GRID_TEMPLATE_COLUMN}
-        px={{ base: "1rem", lg: 0 }}
-        bg="base.canvas.brand-subtle"
-        py="1rem"
-      >
-        <Box gridColumn={APP_GRID_COLUMN} />
-      </AppGrid>
-      <AppGrid
-        flex={1}
-        bg="white"
-        pb="2.5rem"
-        templateColumns={APP_GRID_TEMPLATE_COLUMN}
-        px={{ base: "1rem", lg: 0 }}
-      >
-        <Suspense fallback={null} />
-      </AppGrid>
+      Hello
     </Flex>
   )
 }
