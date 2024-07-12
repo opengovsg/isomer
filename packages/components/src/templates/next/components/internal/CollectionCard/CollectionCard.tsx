@@ -26,23 +26,20 @@ const ArticleTextComponent = ({
   "lastUpdated" | "category" | "title" | "description"
 >) => {
   return (
-    <div className="flex flex-col gap-3 sm:gap-8">
-      <div className={`flex flex-col gap-3`}>
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-8">
         <div className="flex flex-col gap-1 sm:flex-row sm:gap-2">
-          <p className="text-content-medium text-caption-01">{lastUpdated}</p>
-          <p className="hidden text-content-medium text-caption-01 sm:block">
-            |
-          </p>
-          <p className="text-content-strong text-caption-01">{category}</p>
+          <p className="text-gray-600 w-[140px] text-sm">{lastUpdated}</p>
         </div>
-        <h4 className="line-clamp-3 text-heading-04 sm:line-clamp-2">
-          {title}
-        </h4>
-        <p className="line-clamp-3 text-content-medium text-paragraph-02 sm:line-clamp-2">
-          {description}
-        </p>
+        <div className="flex flex-col gap-2">
+          <h4 className="line-clamp-3 text-gray-700 text-xl font-semibold transition ease-in duration-150 underline decoration-transparent hover:decoration-inherit sm:line-clamp-2">
+            {title}
+          </h4>
+          <p className="line-clamp-3 text-gray-700 text-base sm:line-clamp-2">
+            {description}
+          </p>
+          <p className="text-content-strong text-caption-01 mt-1">{category}</p>
+        </div>
       </div>
-    </div>
   )
 }
 
@@ -57,28 +54,20 @@ const FileTextComponent = ({
   "lastUpdated" | "category" | "title" | "description" | "fileDetails"
 >) => {
   return (
-    <div className="flex flex-col gap-3 sm:gap-8">
-      <div className={`flex flex-col gap-3`}>
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-8">
         <div className="flex flex-col gap-1 sm:flex-row sm:gap-2">
-          <p className="text-content-medium text-caption-01">{lastUpdated}</p>
-          <p className="hidden text-content-medium text-caption-01 sm:block">
-            |
-          </p>
-          <p className="text-content-strong text-caption-01">{category}</p>
+          <p className="text-gray-600 w-[140px] text-sm">{lastUpdated}</p>
         </div>
-        <h4 className="line-clamp-3 text-heading-04 sm:line-clamp-2">
-          {`(${fileDetails.type.toUpperCase()}) ${title}`}
-        </h4>
-        <p className="line-clamp-3 text-content-medium text-paragraph-02 sm:line-clamp-2">
-          {description}
-        </p>
+        <div className="flex flex-col gap-2">
+          <h4 className="line-clamp-3 text-gray-700 text-xl font-semibold transition ease-in duration-150 underline decoration-transparent hover:decoration-inherit sm:line-clamp-2">
+          {`[${fileDetails.type.toUpperCase() + ", " + fileDetails.size}] ${title}`}
+          </h4>
+          <p className="line-clamp-3 text-gray-700 text-base sm:line-clamp-2">
+            {description}
+          </p>
+          <p className="text-content-strong text-caption-01 mt-1">{category}</p>
+        </div>
       </div>
-      {
-        <div className="text-hyperlink underline underline-offset-2 text-paragraph-01">{`Download (${fileDetails.type.toUpperCase()}, ${
-          fileDetails.size
-        })`}</div>
-      }
-    </div>
   )
 }
 
@@ -93,7 +82,7 @@ const ArticleCard = ({
 }: Omit<ArticleCardProps | LinkCardProps, "type">) => {
   return (
     <LinkComponent href={url}>
-      <div className="flex flex-col gap-6 border-y border-divider-medium py-6 text-content hover:text-hyperlink-hover sm:flex-row">
+      <div className="flex flex-col gap-6 border-b border-divider-medium py-6 sm:py-5 text-content hover:text-hyperlink-hover sm:flex-row">
         <ArticleTextComponent
           lastUpdated={lastUpdated}
           category={category}
@@ -117,7 +106,7 @@ const FileCard = ({
 }: Omit<FileCardProps, "type">) => {
   return (
     <a href={url}>
-      <div className="flex flex-col gap-6 border-y border-divider-medium py-6 text-content hover:text-hyperlink-hover sm:flex-row">
+      <div className="flex flex-col gap-6 border-b border-divider-medium py-6 text-content hover:text-hyperlink-hover sm:flex-row">
         <FileTextComponent
           lastUpdated={lastUpdated}
           category={category}
