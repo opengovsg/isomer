@@ -49,10 +49,10 @@ const TableCellSchema = Type.Unsafe<TableCellProps>(
     attrs: Type.Optional(TableBaseCellSchema),
     content: Type.Array(
       Type.Union([
-        DividerSchema,
-        ParagraphSchema,
-        OrderedListSchema,
-        UnorderedListSchema,
+        Type.Ref(DividerSchema),
+        Type.Ref(ParagraphSchema),
+        Type.Ref(OrderedListSchema),
+        Type.Ref(UnorderedListSchema),
       ]),
       {
         title: "Table cell contents",
@@ -66,7 +66,7 @@ const TableCellSchema = Type.Unsafe<TableCellProps>(
 const TableHeaderCellSchema = Type.Object({
   type: Type.Literal("tableHeader"),
   attrs: Type.Optional(TableBaseCellSchema),
-  content: Type.Array(ParagraphSchema, {
+  content: Type.Array(Type.Ref(ParagraphSchema), {
     title: "Table header cell contents",
     description: "The contents of the table header cell",
     minItems: 1,

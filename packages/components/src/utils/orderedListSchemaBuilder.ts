@@ -23,6 +23,7 @@ export const orderedListSchemaBuilder = <T extends TSchema>(
       }),
     },
     {
+      $id: "components-native-orderedList",
       title: "Ordered list component",
       description: "A list of items that have numbers as bullets",
     },
