@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { meHandlers } from "tests/msw/handlers/me"
+import { pageHandlers } from "tests/msw/handlers/page"
 
 import SitePage from "~/pages/sites/[siteId]"
 
@@ -9,7 +10,7 @@ const meta: Meta<typeof SitePage> = {
   parameters: {
     getLayout: SitePage.getLayout,
     msw: {
-      handlers: [meHandlers.me()],
+      handlers: [meHandlers.me(), pageHandlers.list.default()],
     },
   },
   decorators: [],
