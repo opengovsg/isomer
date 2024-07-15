@@ -28,7 +28,7 @@ export function JsonFormsDropdownControl({
 }: ControlProps & OwnPropsOfEnum) {
   const [dropdownValue, setDropdownValue] = useState(data || "")
 
-  if (!options || (options.length === 1 && !!schema.default)) {
+  if (!options || (options.length === 1 && !!schema.const)) {
     return null
   }
 

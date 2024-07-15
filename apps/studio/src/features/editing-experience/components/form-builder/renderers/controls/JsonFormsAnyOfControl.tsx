@@ -35,25 +35,31 @@ export function JsonFormsAnyOfControl({
     uischemas,
   )
 
-  const variants = anyOfRenderInfos.map((anyOfRenderInfo) => ({
-    label: anyOfRenderInfo.label,
-    value: anyOfRenderInfo.label,
-  }))
+  const variants = anyOfRenderInfos.map((anyOfRenderInfo) => {
+    const option = String(anyOfRenderInfo.schema.const || anyOfRenderInfo.label)
+
+    return {
+      label: option.charAt(0).toUpperCase() + option.slice(1),
+      value: option,
+    }
+  })
 
   const [variant, setVariant] = useState(anyOfRenderInfos[0]?.label || "")
 
   return (
-    <Box py={2}>
-      <FormControl isRequired>
-        <FormLabel>Variant</FormLabel>
-        <SingleSelect
-          value={variant}
-          name={label}
-          items={variants}
-          isClearable={false}
-          onChange={setVariant}
-        />
-      </FormControl>
+    <>
+      <Box py={2}>
+        <FormControl isRequired>
+          <FormLabel>{label || "Variant"}</FormLabel>
+          <SingleSelect
+            value={variant}
+            name={label}
+            items={variants}
+            isClearable={false}
+            onChange={setVariant}
+          />
+        </FormControl>
+      </Box>
 
       {anyOfRenderInfos.map(
         (anyOfRenderInfo) =>
@@ -68,7 +74,7 @@ export function JsonFormsAnyOfControl({
             />
           ),
       )}
-    </Box>
+    </>
   )
 }
 
