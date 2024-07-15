@@ -70,7 +70,7 @@ export const pageRouter = router({
         type: "page",
         status: "draft",
         lastEditUser: "user1@test.com",
-        lastEditDate: new Date(),
+        lastEditDate: new Date("2024-07-15T09:16:46.640Z"),
       },
       {
         id: "0003",
@@ -88,7 +88,7 @@ export const pageRouter = router({
         type: "page",
         status: "published",
         lastEditUser: "user2@test.com",
-        lastEditDate: new Date(50000000000),
+        lastEditDate: new Date("2024-06-15T09:16:46.640Z"),
       },
       {
         id: "0004",
