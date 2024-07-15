@@ -25,6 +25,7 @@ export function JsonFormsAnyOfControl({
   uischema,
   uischemas,
   label,
+  handleChange,
 }: CombinatorRendererProps) {
   const anyOfRenderInfos = createCombinatorRenderInfos(
     schema.anyOf ?? [],
@@ -35,7 +36,7 @@ export function JsonFormsAnyOfControl({
     uischemas,
   )
 
-  const variants = anyOfRenderInfos.map((anyOfRenderInfo) => {
+  const options = anyOfRenderInfos.map((anyOfRenderInfo) => {
     const option = String(anyOfRenderInfo.schema.const || anyOfRenderInfo.label)
 
     return {
@@ -44,7 +45,12 @@ export function JsonFormsAnyOfControl({
     }
   })
 
-  const [variant, setVariant] = useState(anyOfRenderInfos[0]?.label || "")
+  const [variant, setVariant] = useState("")
+
+  const onChange = (value: string) => {
+    setVariant(value)
+    handleChange(path, value)
+  }
 
   return (
     <>
@@ -54,9 +60,9 @@ export function JsonFormsAnyOfControl({
           <SingleSelect
             value={variant}
             name={label}
-            items={variants}
+            items={options}
             isClearable={false}
-            onChange={setVariant}
+            onChange={onChange}
           />
         </FormControl>
       </Box>

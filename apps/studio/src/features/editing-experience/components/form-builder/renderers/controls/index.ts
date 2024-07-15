@@ -7,6 +7,10 @@ export {
   jsonFormsBooleanControlTester,
 } from "./JsonFormsBooleanControl"
 export {
+  default as JsonFormsConstControl,
+  jsonFormsConstControlTester,
+} from "./JsonFormsConstControl"
+export {
   default as JsonFormsDropdownControl,
   jsonFormsDropdownControlTester,
 } from "./JsonFormsDropdownControl"
