@@ -62,6 +62,8 @@ export const ResourceTable = (): JSX.Element => {
     keepPreviousData: true, // Required for table to show previous data while fetching next page
   })
 
+  const totalRowCount = resources?.length ?? 0
+
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 25,
@@ -92,7 +94,8 @@ export const ResourceTable = (): JSX.Element => {
         minWidth: "1000px",
         overflowX: "auto",
       }}
-      totalRowCount={resources?.length ?? 0}
+      totalRowCount={totalRowCount}
+      totalRowCountString={`${totalRowCount} item${totalRowCount === 1 ? "" : "s"} in collection`}
     />
   )
 }

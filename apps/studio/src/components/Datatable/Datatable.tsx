@@ -7,6 +7,7 @@ import {
   Table,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
@@ -24,6 +25,10 @@ export interface DatatableProps<D> extends TableProps {
    */
   totalRowCount?: number
   pagination?: boolean
+  /**
+   * If provided, this string will be used to display the total row count.
+   */
+  totalRowCountString?: string
   isFetching?: boolean
   tablePropOverrides?: Record<string, { td: TableCellProps }>
   emptyPlaceholder?: React.ReactElement
@@ -41,6 +46,7 @@ export const Datatable = <T extends object>({
   isFetching,
   pagination,
   totalRowCount,
+  totalRowCountString,
   tablePropOverrides,
   emptyPlaceholder,
   overflow = "auto",
@@ -141,14 +147,21 @@ export const Datatable = <T extends object>({
           </Tbody>
         </Table>
       </Box>
-      {pagination && (
-        <Flex alignSelf="flex-end" px="1rem" py="2rem">
-          <DatatablePagination
-            instance={instance}
-            totalRowCount={totalRowCount}
-          />
-        </Flex>
-      )}
+      <Flex py="1rem" gap="1rem">
+        {totalRowCountString && (
+          <Text textStyle="caption-2" color="base.content.medium">
+            {totalRowCountString}
+          </Text>
+        )}
+        {pagination && (
+          <Flex ml="auto">
+            <DatatablePagination
+              instance={instance}
+              totalRowCount={totalRowCount}
+            />
+          </Flex>
+        )}
+      </Flex>
     </Flex>
   )
 }
