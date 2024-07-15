@@ -12,8 +12,6 @@ export const inferAsProse = (component?: IsomerComponent): ProseProps => {
     throw new Error(`Expected component of type prose but got undefined`)
   }
 
-  // NOTE: Why does this work actually 
-  console.log(proseSchema)
   const ajv = new Ajv({ strict: false })
   const validate = ajv.compile(proseSchema)
 
@@ -21,6 +19,6 @@ export const inferAsProse = (component?: IsomerComponent): ProseProps => {
     return component as ProseProps
   }
 
-  throw new Error(`Expected component of type prose but got type ${component.type}`)
+  throw new Error(`Expected component of type prose but got type ${JSON.stringify(component)}`)
 }
 
