@@ -4,7 +4,7 @@ import { meHandlers } from "tests/msw/handlers/me"
 import SitePage from "~/pages/sites/[siteId]"
 
 const meta: Meta<typeof SitePage> = {
-  title: "pages/site/[siteId]",
+  title: "Pages/Site Management/Site Page",
   component: SitePage,
   parameters: {
     getLayout: SitePage.getLayout,
