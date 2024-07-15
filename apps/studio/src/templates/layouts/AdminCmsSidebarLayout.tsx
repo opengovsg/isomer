@@ -1,17 +1,27 @@
 import { useRouter } from "next/router"
 import { Flex } from "@chakra-ui/react"
-import { BiCog, BiFolder, BiGroup } from "react-icons/bi"
+import {
+  BiCog,
+  BiFolder,
+  BiGroup,
+  BiHelpCircle,
+  BiLinkExternal,
+  BiLogOut,
+} from "react-icons/bi"
 
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { CmsSidebar, CmsSidebarContainer } from "~/components/CmsSidebar"
+import { useMe } from "~/features/me/api"
 import { type GetLayout } from "~/lib/types"
 
 export const AdminCmsSidebarLayout: GetLayout = (page) => {
   const router = useRouter()
   const siteId = String(router.query.siteId)
 
-  const navItems: CmsSidebarItem[] = [
+  const { logout } = useMe()
+
+  const pageNavItems: CmsSidebarItem[] = [
     {
       icon: BiFolder,
       label: "Team spaces",
@@ -24,10 +34,36 @@ export const AdminCmsSidebarLayout: GetLayout = (page) => {
     { icon: BiCog, label: "Settings", href: `/sites/${siteId}/settings` },
   ]
 
+  const userNavItems: CmsSidebarItem[] = [
+    {
+      icon: BiLinkExternal,
+      label: "Open live site",
+      // TOOD: Replace with actual live site URL
+      href: `/home`,
+    },
+    {
+      icon: BiHelpCircle,
+      label: "Isomer Guide ",
+      href: "https://guide.isomer.gov.sg/",
+    },
+    {
+      icon: BiLogOut,
+      label: "Sign out",
+      onClick: logout,
+    },
+  ]
+
   return (
     <EnforceLoginStatePageWrapper>
       <Flex minH="$100vh" flexDir="row" bg="base.canvas.alt" pos="relative">
-        <CmsSidebarContainer sidebar={<CmsSidebar navItems={navItems} />}>
+        <CmsSidebarContainer
+          sidebar={
+            <CmsSidebar
+              topNavItems={pageNavItems}
+              bottomNavItems={userNavItems}
+            />
+          }
+        >
           {page}
         </CmsSidebarContainer>
       </Flex>
