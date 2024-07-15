@@ -23,6 +23,7 @@ const columnsHelper = createColumnHelper<ResourceTableData>()
 
 const columns = [
   columnsHelper.accessor("name", {
+    minSize: 300,
     header: () => <TableHeader>Title</TableHeader>,
     cell: ({ row }) => (
       <TitleCell
@@ -33,11 +34,13 @@ const columns = [
     ),
   }),
   columnsHelper.accessor("status", {
+    size: 100,
     header: () => <TableHeader>Status</TableHeader>,
     cell: ({ row }) => <StatusCell status={row.original.status} />,
   }),
   columnsHelper.accessor(createAccessor(["lastEditDate", "lastEditUser"]), {
     id: "edit_details",
+    size: 120,
     header: () => <TableHeader>Last edited</TableHeader>,
     cell: ({ row }) => (
       <LastEditCell
@@ -50,7 +53,7 @@ const columns = [
     id: "resource_menu",
     header: () => <TableHeader>Actions</TableHeader>,
     cell: ({ row }) => <ResourceTableMenu resourceId={row.original.id} />,
-    size: 2.25,
+    size: 24,
   }),
 ]
 
@@ -86,6 +89,8 @@ export const ResourceTable = (): JSX.Element => {
       instance={tableInstance}
       sx={{
         tableLayout: "auto",
+        minWidth: "1000px",
+        overflowX: "auto",
       }}
       totalRowCount={resources?.length ?? 0}
     />

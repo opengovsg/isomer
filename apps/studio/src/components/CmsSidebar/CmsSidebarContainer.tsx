@@ -39,7 +39,7 @@ export function CmsSidebarContainer({
           {sidebar}
         </Box>
       </GridItem>
-      <GridItem as="main" area="main">
+      <GridItem as="main" area="main" overflow="hidden">
         {children}
       </GridItem>
     </Grid>

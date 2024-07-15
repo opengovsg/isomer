@@ -31,7 +31,8 @@ const sizes = {
       ...textStyles["body-2"],
     },
     td: {
-      p: "1rem",
+      py: "0.5rem",
+      px: "1rem",
     },
   }),
 }
