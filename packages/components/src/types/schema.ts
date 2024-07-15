@@ -36,6 +36,7 @@ export const ISOMER_PAGE_LAYOUTS = {
 const BasePageSchema = Type.Object({
   version: Type.String({
     description: "The version of the Isomer Next schema to use",
+    default: "0.1.0",
   }),
 })
 
