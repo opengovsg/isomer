@@ -33,7 +33,7 @@ import { MenuBar } from '~/components/PageEditor/MenuBar'
 import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import { cloneDeep } from 'lodash'
 import { Table } from './extensions/Table'
-import type { ProseProps } from '@opengovsg/isomer-components/dist/cjs/interfaces'
+import type { ProseProps } from '@opengovsg/isomer-components'
 
 interface TipTapComponentProps {
   content: ProseProps
