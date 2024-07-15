@@ -20,7 +20,6 @@ import {
   BiMap,
   BiMovie,
   BiQuestionMark,
-  BiRuler,
   BiSolidHandUp,
   BiSolidQuoteAltLeft,
   BiText,
@@ -99,7 +98,7 @@ function BlockItem({
 }
 
 function ComponentSelector() {
-  const { setCurrActiveIdx, pageState, setDrawerState, setPageState, setSnapshot , setAddedBlock } = useEditorDrawerContext()
+  const { setCurrActiveIdx, pageState, setDrawerState, setPageState, setSnapshot, setAddedBlock } = useEditorDrawerContext()
 
   const { mutate } = trpc.page.updatePageBlob.useMutation()
   // TODO: get this dynamically
@@ -238,13 +237,6 @@ function ComponentSelector() {
               sectionType="accordion"
               description="TODO"
             />
-            <BlockItem
-              label="Divider"
-              icon={BiRuler}
-              onProceed={onProceed}
-              sectionType="divider"
-              description="TODO"
-            />
           </BlockList>
         </Section>
         <Section>
@@ -254,21 +246,21 @@ function ComponentSelector() {
               label="YouTube"
               icon={BiMovie}
               onProceed={onProceed}
-              sectionType="youtube"
+              sectionType="iframe"
               description="TODO"
             />
             <BlockItem
               label="Google Maps"
               icon={BiMap}
               onProceed={onProceed}
-              sectionType="googleMaps"
+              sectionType="iframe"
               description="TODO"
             />
             <BlockItem
               label="FormSG"
               icon={BiQuestionMark}
               onProceed={onProceed}
-              sectionType="formsg"
+              sectionType="iframe"
               description="TODO"
             />
           </BlockList>
