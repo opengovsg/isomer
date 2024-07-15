@@ -36,6 +36,6 @@ type Story = StoryObj<typeof VersionModal>
 export const Default: Story = {
   name: "VersionModal",
   parameters: {
-    chromatic: withChromaticModes(["desktop", "mobile"]),
+    chromatic: withChromaticModes(["gsib", "mobile"]),
   },
 }

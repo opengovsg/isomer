@@ -19,6 +19,6 @@ type Story = StoryObj<typeof LandingPage>
 export const Default: Story = {
   name: "Landing Page",
   parameters: {
-    chromatic: withChromaticModes(["desktop", "mobile"]),
+    chromatic: withChromaticModes(["gsib", "mobile"]),
   },
 }

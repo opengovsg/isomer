@@ -210,13 +210,13 @@ const preview: Preview = {
      * ```
      * export const SomeStory: Story = {
      *   parameters: {
-     *     chromatic: withChromaticModes(["desktop, tablet"]),
+     *     chromatic: withChromaticModes(["gsib", "desktop", "tablet"]),
      *   }
      * }
      * ```
      */
     chromatic: {
-      ...withChromaticModes(["desktop"]),
+      ...withChromaticModes(["gsib"]),
       prefersReducedMotion: "reduce",
     },
     actions: { argTypesRegex: "^on[A-Z].*" },

@@ -11,6 +11,9 @@ export const modes = {
   tablet: {
     viewport: "md",
   },
+  gsib: {
+    viewport: "lg",
+  },
   desktop: {
     viewport: "xl",
   },

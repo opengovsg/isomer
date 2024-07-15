@@ -33,13 +33,13 @@ type Story = StoryObj<typeof SignInPage>
 
 export const Default: Story = {
   parameters: {
-    chromatic: withChromaticModes(["desktop", "mobile"]),
+    chromatic: withChromaticModes(["gsib", "mobile"]),
   },
 }
 
 export const WithSgidLogin: Story = {
   parameters: {
-    chromatic: withChromaticModes(["desktop", "mobile"]),
+    chromatic: withChromaticModes(["gsib", "mobile"]),
     features: {
       sgid: true,
     },
