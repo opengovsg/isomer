@@ -1,6 +1,14 @@
-import { MenuButton, MenuItem, MenuList } from "@chakra-ui/react"
+import { MenuButton, MenuList } from "@chakra-ui/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
-import { BiDotsHorizontalRounded, BiEdit } from "react-icons/bi"
+import {
+  BiCog,
+  BiDotsHorizontalRounded,
+  BiDuplicate,
+  BiFolderOpen,
+  BiTrash,
+} from "react-icons/bi"
+
+import { MenuItem } from "~/components/Menu"
 
 export const ResourceTableMenu = ({
   resourceId: _resourceId,
@@ -8,7 +16,7 @@ export const ResourceTableMenu = ({
   resourceId: string
 }) => {
   return (
-    <Menu isLazy>
+    <Menu isLazy size="sm">
       <MenuButton
         aria-label="Options"
         as={IconButton}
@@ -18,7 +26,14 @@ export const ResourceTableMenu = ({
       />
       <MenuList>
         {/* TODO: Open edit modal depending on resource  */}
-        <MenuItem icon={<BiEdit />}>Edit</MenuItem>
+        <MenuItem icon={<BiCog fontSize="1rem" />}>Edit page settings</MenuItem>
+        <MenuItem icon={<BiDuplicate fontSize="1rem" />}>
+          Duplicate page
+        </MenuItem>
+        <MenuItem icon={<BiFolderOpen fontSize="1rem" />}>Move to...</MenuItem>
+        <MenuItem colorScheme="critical" icon={<BiTrash fontSize="1rem" />}>
+          Delete
+        </MenuItem>
       </MenuList>
     </Menu>
   )
