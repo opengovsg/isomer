@@ -61,6 +61,7 @@
     "@tanstack/match-sorter-utils": "^8.15.1",
     "@tanstack/react-query": "^4.36.1",
     "@tanstack/react-query-devtools": "^4.36.1",
+    "@tanstack/react-table": "^8.19.3",
     "@tiptap/extension-blockquote": "^2.4.0",
     "@tiptap/extension-bold": "^2.4.0",
     "@tiptap/extension-bullet-list": "^2.4.0",
