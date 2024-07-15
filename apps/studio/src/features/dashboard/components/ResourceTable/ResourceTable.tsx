@@ -1,14 +1,11 @@
 import type { PaginationState } from "@tanstack/react-table"
 import { useState } from "react"
-import { MenuButton, MenuItem, MenuList } from "@chakra-ui/react"
-import { IconButton, Menu } from "@opengovsg/design-system-react"
 import {
   createColumnHelper,
   getCoreRowModel,
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { BiDotsHorizontalRounded, BiEdit } from "react-icons/bi"
 
 import type { RouterOutput } from "~/utils/trpc"
 import { TableHeader } from "~/components/Datatable"
@@ -16,34 +13,13 @@ import { createAccessor, Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 import { trpc } from "~/utils/trpc"
 import { LastEditCell } from "./LastEditCell"
+import { ResourceTableMenu } from "./ResourceTableMenu"
 import { StatusCell } from "./StatusCell"
 import { TitleCell } from "./TitleCell"
 
 type ResourceTableData = RouterOutput["page"]["list"][number]
 
 const columnsHelper = createColumnHelper<ResourceTableData>()
-
-export const ResourceTableMenu = ({
-  resourceId: _resourceId,
-}: {
-  resourceId: string
-}) => {
-  return (
-    <Menu isLazy>
-      <MenuButton
-        aria-label="Options"
-        as={IconButton}
-        colorScheme="neutral"
-        icon={<BiDotsHorizontalRounded />}
-        variant="clear"
-      />
-      <MenuList>
-        {/* TODO: Open edit modal depending on resource  */}
-        <MenuItem icon={<BiEdit />}>Edit</MenuItem>
-      </MenuList>
-    </Menu>
-  )
-}
 
 const columns = [
   columnsHelper.accessor("name", {
