@@ -53,7 +53,7 @@ const StorybookEnvDecorator: Decorator = (story) => {
   return <EnvProvider env={mockEnv}>{story()}</EnvProvider>
 }
 
-const SetupDecorator: Decorator = (story) => {
+const SetupDecorator: Decorator = (Story) => {
   const [queryClient] = useState(
     new QueryClient({
       defaultOptions: {
@@ -76,7 +76,7 @@ const SetupDecorator: Decorator = (story) => {
       <Suspense fallback={<Skeleton width="100vw" height="100vh" />}>
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
-            {story()}
+            <Story />
           </QueryClientProvider>
         </trpc.Provider>
       </Suspense>
@@ -186,17 +186,17 @@ export const MockDateDecorator: Decorator<Args> = (story, { parameters }) => {
 
 const decorators: Decorator[] = [
   WithLayoutDecorator,
-  StorybookEnvDecorator,
+  MockDateDecorator,
   MockFeatureFlagsDecorator,
-  LoginStateDecorator,
   SetupDecorator,
+  StorybookEnvDecorator,
   withThemeFromJSXProvider<ReactRenderer>({
     themes: {
       default: theme,
     },
     Provider: ThemeProvider,
   }) as Decorator, // FIXME: Remove this cast when types are fixed
-  MockDateDecorator,
+  LoginStateDecorator,
 ]
 
 const preview: Preview = {
