@@ -53,6 +53,56 @@ const validatedPageProcedure = protectedProcedure.use(
 )
 
 export const pageRouter = router({
+  list: protectedProcedure.query(() => {
+    const dummyChildData: {
+      id: string
+      name: string
+      permalink: string
+      type: "page" | "folder"
+      status: "folder" | "draft" | "published"
+      lastEditUser: string
+      lastEditDate: Date | "folder"
+    }[] = [
+      {
+        id: "0001",
+        name: "Test Page 1",
+        permalink: "/",
+        type: "page",
+        status: "draft",
+        lastEditUser: "user1@test.com",
+        lastEditDate: new Date(),
+      },
+      {
+        id: "0003",
+        name: "Test Folder 1",
+        permalink: "/testfolder1",
+        type: "folder",
+        status: "folder",
+        lastEditUser: "folder",
+        lastEditDate: "folder",
+      },
+      {
+        id: "0002",
+        name: "Test Page 2",
+        permalink: "/testpage2",
+        type: "page",
+        status: "published",
+        lastEditUser: "user2@test.com",
+        lastEditDate: new Date(50000000000),
+      },
+      {
+        id: "0004",
+        name: "Test Folder 2",
+        permalink: "/testfolder2",
+        type: "folder",
+        status: "folder",
+        lastEditUser: "folder",
+        lastEditDate: "folder",
+      },
+    ]
+    // TODO: Implement actual data fetching
+    return dummyChildData
+  }),
   readPageAndBlob: protectedProcedure
     .input(getEditPageSchema)
     .query(async ({ input, ctx }) => {
