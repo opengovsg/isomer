@@ -10,6 +10,7 @@ import {
   Th,
   Thead,
   Tr,
+  useMultiStyleConfig,
 } from "@chakra-ui/react"
 import { flexRender } from "@tanstack/react-table"
 
@@ -46,6 +47,7 @@ export const Datatable = <T extends object>({
   ...tableProps
 }: DatatableProps<T>): JSX.Element => {
   const { rows } = instance.getRowModel()
+  const styles = useMultiStyleConfig("Table", tableProps)
 
   return (
     <Flex flexDirection="column" layerStyle="shadow" pos="relative">
@@ -78,7 +80,7 @@ export const Datatable = <T extends object>({
           </Flex>
         </>
       )}
-      <Box overflow={overflow}>
+      <Box overflow={overflow} sx={styles.container}>
         <Table sx={{ tableLayout: "fixed" }} {...tableProps} pos="relative">
           <Thead>
             {instance.getHeaderGroups().map((headerGroup) => (

@@ -1,7 +1,7 @@
 import { HStack, Text, useDisclosure, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 
-import { DashboardTable } from "~/features/dashboard/DashboardTable"
+import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import PageCreateModal from "~/features/editing-experience/components/PageCreateModal"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
@@ -37,7 +37,7 @@ const SitePage: NextPageWithLayout = () => {
           Create a new page
         </Button>
       </HStack>
-      <DashboardTable />
+      <ResourceTable />
       <PageCreateModal
         isOpen={isPageCreateModalOpen}
         onClose={onpageCreateModalClose}
