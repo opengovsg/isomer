@@ -42,6 +42,7 @@ export interface Permission {
 }
 export interface Resource {
   id: GeneratedAlways<number>
+  title: string | null
   permalink: string
   siteId: number
   parentId: number | null
