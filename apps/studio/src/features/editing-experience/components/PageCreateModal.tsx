@@ -198,6 +198,8 @@ const PageCreateModalContent = ({
                   name="permalink"
                   render={({ field: { onChange, ...field } }) => (
                     <Input
+                      borderLeftRadius={0}
+                      placeholder="URL will be autopopulated if left untouched"
                       {...field}
                       onChange={(e) => {
                         onChange(generatePageUrl(e.target.value))
