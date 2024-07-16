@@ -6,8 +6,8 @@ set -x
 # Download package.json and package-lock.json files from central repo #
 #######################################################################
 
-curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/package.json -o package.json
-curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/package-lock.json -o package-lock.json
+# curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/package.json -o package.json
+# curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/package-lock.json -o package-lock.json
 curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/tailwind.config.js -o tailwind.config.js
 
 #######################
