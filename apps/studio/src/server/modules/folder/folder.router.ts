@@ -29,24 +29,22 @@ export const folderRouter = router({
         if (c.draftBlobId || c.mainBlobId) {
           return {
             id: c.id,
-            name: c.name,
+            permalink: c.permalink,
             type: "page",
             lastEditDate: new Date(0),
             lastEditUser: "Coming Soon",
-            permalink: "/placeholder",
             status: "published",
           }
         }
         return {
           id: c.id,
-          name: c.name,
+          permalink: c.permalink,
           type: "folder",
-          permalink: "/placeholder",
         }
       })
 
       const { parentId } = folderResult
-      const folderName = folderResult.name
+      const folderName = folderResult.permalink
 
       return {
         folderName,

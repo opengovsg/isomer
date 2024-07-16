@@ -187,7 +187,7 @@ export const pageRouter = router({
           message: "Resource not found",
         })
       }
-      const pageName: string = page.name
+      const pageName = page.permalink
       const siteMeta = await getSiteConfig(page.siteId)
       const navbar = await getNavBar(page.siteId)
       const footer = await getFooter(page.siteId)
@@ -205,7 +205,7 @@ export const pageRouter = router({
     }),
   createPage: protectedProcedure
     .input(createPageSchema)
-    .mutation(async ({ input: { pageTitle, siteId, folderId } }) => {
+    .mutation(async ({ input: { pageUrl, siteId, folderId } }) => {
       // TODO: Validate whether folderId actually is a folder instead of a page
       // TODO: Validate whether siteId is a valid site
       // TODO: Validate user has write-access to the site
@@ -226,7 +226,7 @@ export const pageRouter = router({
         const addedResource = await tx
           .insertInto("Resource")
           .values({
-            name: pageTitle,
+            permalink: pageUrl,
             siteId,
             parentId: folderId,
             draftBlobId: blob.id,
