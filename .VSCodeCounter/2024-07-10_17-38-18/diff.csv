@@ -1,6 +1,0 @@
-"filename", "language", "YAML", "Markdown", "comment", "blank", "total"
-"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/.github/dependabot.yml", "YAML", -12, 0, -1, -1, -14
-"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/.github/pull_request_template.md", "Markdown", 0, -29, 0, -27, -56
-"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/.github/workflows/chromatic.yml", "YAML", -50, 0, -12, -9, -71
-"/Users/harishv/Documents/Code/isomer/isomer-next/isomer/.github/workflows/ci.yml", "YAML", -71, 0, -3, -21, -95
-"Total", "-", -133, -29, -16, -58, -236
