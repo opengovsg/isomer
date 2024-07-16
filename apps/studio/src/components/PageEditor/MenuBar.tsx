@@ -17,20 +17,12 @@ import { Button, Menu } from "@opengovsg/design-system-react"
 import {
   BiBold,
   BiChevronDown,
-  BiChevronUp,
-  BiCodeAlt,
-  BiFile,
-  BiImageAdd,
-  BiItalic,
-  BiLink,
-  BiListOl,
-  BiListUl,
-  BiPlus,
-  BiRedo,
+  BiChevronUp, BiItalic, BiListOl,
+  BiListUl, BiRedo,
   BiStrikethrough,
   BiTable,
   BiUnderline,
-  BiUndo,
+  BiUndo
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
@@ -226,45 +218,6 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
     },
     {
       type: "divider",
-    },
-    // {
-    //   type: 'item',
-    //   icon: BiLink,
-    //   title: 'Add link',
-    //   action: () => showModal('hyperlink'),
-    // },
-    {
-      type: "item",
-      icon: BiTable,
-      title: "Add table",
-      action: () =>
-        editor
-          .chain()
-          .focus()
-          // NOTE: Default to smallest multi table
-          .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-          .run(),
-    },
-    // {
-    //   type: 'item',
-    //   icon: BiFile,
-    //   title: 'Add file',
-    //   action: () => showModal('files'),
-    // },
-    {
-      type: "divider",
-    },
-    {
-      type: "item",
-      icon: BiUndo,
-      title: "Undo",
-      action: () => editor.chain().focus().undo().run(),
-    },
-    {
-      type: "item",
-      icon: BiRedo,
-      title: "Redo",
-      action: () => editor.chain().focus().redo().run(),
     },
   ]
 
