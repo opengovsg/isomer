@@ -38,11 +38,14 @@ model Resource {
 
   permission Permission[]
 
-  publishedBlob   Blob? @relation("PublishedBlob", fields: [publishedBlobId], references: [id])
-  publishedBlobId Int?  @unique
+  mainBlob   Blob? @relation("MainBlob", fields: [mainBlobId], references: [id])
+  mainBlobId Int?  @unique
 
   draftBlob   Blob? @relation("DraftBlob", fields: [draftBlobId], references: [id])
   draftBlobId Int?  @unique
+
+  isPublished Boolean? @default(false)
+  isFolder    Boolean
 }
 
 model User {
@@ -99,8 +102,8 @@ model Blob {
   id      Int  @id @default(autoincrement())
   content Json
 
-  publishedResource Resource? @relation("PublishedBlob")
-  draftResource     Resource? @relation("DraftBlob")
+  mainResource  Resource? @relation("MainBlob")
+  draftResource Resource? @relation("DraftBlob")
 }
 
 model SiteMember {
