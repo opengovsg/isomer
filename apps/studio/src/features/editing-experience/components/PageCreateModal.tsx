@@ -1,6 +1,6 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
-import type { z } from "zod"
 import { useEffect } from "react"
+import { useRouter } from "next/router"
 import {
   FormControl,
   FormHelperText,
@@ -23,6 +23,7 @@ import {
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
 import { Controller } from "react-hook-form"
+import { z } from "zod"
 
 import { useZodForm } from "~/lib/form"
 import {
@@ -50,10 +51,17 @@ const clientCreatePageSchema = createPageSchema.omit({
 
 type ClientCreatePageSchema = z.input<typeof clientCreatePageSchema>
 
+const pageCreateQuerySchema = z.object({
+  siteId: z.coerce.number(),
+  resourceId: z.coerce.number().optional(),
+})
+
 export const PageCreateModal = ({
   isOpen,
   onClose,
 }: PageCreateModalProps): JSX.Element => {
+  const { query } = useRouter()
+  const { siteId, resourceId } = pageCreateQuerySchema.parse(query)
   const { mutate, isLoading } = trpc.page.createPage.useMutation({
     onSuccess: onClose,
     // TOOD: Error handling
@@ -63,8 +71,8 @@ export const PageCreateModal = ({
     mutate({
       ...values,
       // TODO: Add siteId to the form
-      siteId: 1,
-      folderId: 1,
+      siteId,
+      folderId: resourceId,
     })
   }
 
