@@ -13,7 +13,6 @@ import { BsPlus } from "react-icons/bs"
 import { MdOutlineDragIndicator } from "react-icons/md"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { isDefined } from "~/utils/filter"
 
 export default function RootStateDrawer() {
   const {
@@ -27,7 +26,7 @@ export default function RootStateDrawer() {
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return
 
-    const updatedBlocks = Array.from(pageState).filter(isDefined)
+    const updatedBlocks = Array.from(pageState)
     // Remove block at source index
     const [movedBlock] = updatedBlocks.splice(result.source.index, 1)
     if (movedBlock) {
@@ -74,7 +73,7 @@ export default function RootStateDrawer() {
                     <Draggable
                       // TODO: Determine key + draggable id
                       key={index}
-                      draggableId={`${block?.type}-${index}`}
+                      draggableId={`${block.type}-${index}`}
                       index={index}
                     >
                       {(provided) => (
@@ -109,7 +108,7 @@ export default function RootStateDrawer() {
                               }}
                             />
                             <Text px="3" fontWeight={500}>
-                              {block?.type}
+                              {block.type}
                             </Text>
                           </HStack>
                           <Divider />
