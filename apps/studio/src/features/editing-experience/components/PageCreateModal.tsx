@@ -117,12 +117,12 @@ const PageCreateModalContent = ({
       folderId: true,
     }),
     defaultValues: {
-      pageTitle: "",
-      pageUrl: "",
+      title: "",
+      permalink: "",
     },
   })
 
-  const [title, url] = watch(["pageTitle", "pageUrl"])
+  const [title, url] = watch(["title", "permalink"])
 
   /**
    * As user edits the Page title, Page URL is updated as an hyphenated form of the page title.
@@ -138,8 +138,8 @@ const PageCreateModalContent = ({
     // This allows the syncing to happen only when the page title is not dirty
     // Dirty means user has changed the value AND the value is not the same as the default value of "".
     // Once the value has been cleared, dirty state will reset.
-    if (!getFieldState("pageUrl").isDirty) {
-      setValue("pageUrl", generatePageUrl(title))
+    if (!getFieldState("permalink").isDirty) {
+      setValue("permalink", generatePageUrl(title))
     }
   }, [getFieldState, setValue, title])
 
@@ -159,7 +159,7 @@ const PageCreateModalContent = ({
               You can change these later.
             </Text>
             {/* Section 1: Page Title */}
-            <FormControl isInvalid={!!errors.pageTitle} isReadOnly={isLoading}>
+            <FormControl isInvalid={!!errors.title} isReadOnly={isLoading}>
               <FormLabel color="base.content.strong">
                 Page title
                 <FormHelperText color="base.content.default">
@@ -169,10 +169,10 @@ const PageCreateModalContent = ({
 
               <Input
                 placeholder="This is a title for your new page"
-                {...register("pageTitle")}
+                {...register("title")}
               />
-              {errors.pageTitle?.message ? (
-                <FormErrorMessage>{errors.pageTitle.message}</FormErrorMessage>
+              {errors.title?.message ? (
+                <FormErrorMessage>{errors.title.message}</FormErrorMessage>
               ) : (
                 <FormHelperText mt={"0.5em"} color="base.content.medium">
                   {MAX_TITLE_LENGTH - title.length} characters left
@@ -181,7 +181,7 @@ const PageCreateModalContent = ({
             </FormControl>
 
             {/* Section 2: Page URL */}
-            <FormControl isInvalid={!!errors.pageUrl} isReadOnly={isLoading}>
+            <FormControl isInvalid={!!errors.permalink} isReadOnly={isLoading}>
               <FormLabel>
                 Page URL
                 <FormHelperText>URL should be short and simple</FormHelperText>
@@ -195,7 +195,7 @@ const PageCreateModalContent = ({
                 </InputLeftAddon>
                 <Controller
                   control={control}
-                  name="pageUrl"
+                  name="permalink"
                   render={({ field: { onChange, ...field } }) => (
                     <Input
                       {...field}
@@ -207,8 +207,8 @@ const PageCreateModalContent = ({
                 />
               </InputGroup>
 
-              {errors.pageUrl?.message ? (
-                <FormErrorMessage>{errors.pageUrl.message}</FormErrorMessage>
+              {errors.permalink?.message ? (
+                <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
               ) : (
                 <FormHelperText mt={"0.5em"} color="base.content.medium">
                   {MAX_PAGE_URL_LENGTH - url.length} characters left

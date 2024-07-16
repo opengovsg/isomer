@@ -205,38 +205,43 @@ export const pageRouter = router({
     }),
   createPage: protectedProcedure
     .input(createPageSchema)
-    .mutation(async ({ input: { pageUrl, siteId, folderId } }) => {
-      // TODO: Validate whether folderId actually is a folder instead of a page
-      // TODO: Validate whether siteId is a valid site
-      // TODO: Validate user has write-access to the site
-      const resource = await db.transaction().execute(async (tx) => {
-        const blob = await tx
-          .insertInto("Blob")
-          .values({
-            content: {
-              page: { title: "" },
-              layout: "homepage",
-              content: [],
-              version: "0.1.0",
-            },
-          })
-          .returning("Blob.id")
-          .executeTakeFirstOrThrow()
+    .mutation(
+      async ({
+        input: { permalink: pageUrl, siteId, folderId, title: pageTitle },
+      }) => {
+        // TODO: Validate whether folderId actually is a folder instead of a page
+        // TODO: Validate whether siteId is a valid site
+        // TODO: Validate user has write-access to the site
+        const resource = await db.transaction().execute(async (tx) => {
+          const blob = await tx
+            .insertInto("Blob")
+            .values({
+              content: {
+                // TODO: Remove title from content blob after all titles are retrieved from Resource
+                page: { title: pageTitle },
+                layout: "homepage",
+                content: [],
+                version: "0.1.0",
+              },
+            })
+            .returning("Blob.id")
+            .executeTakeFirstOrThrow()
 
-        const addedResource = await tx
-          .insertInto("Resource")
-          .values({
-            permalink: pageUrl,
-            siteId,
-            parentId: folderId,
-            draftBlobId: blob.id,
-            type: ResourceType.Page,
-          })
-          .returning("Resource.id")
-          .executeTakeFirstOrThrow()
-        return addedResource
-      })
-
-      return { pageId: resource.id }
-    }),
+          const addedResource = await tx
+            .insertInto("Resource")
+            .values({
+              title: pageTitle,
+              permalink: pageUrl,
+              siteId,
+              parentId: folderId,
+              draftBlobId: blob.id,
+              type: ResourceType.Page,
+            })
+            .returning("Resource.id")
+            .executeTakeFirstOrThrow()
+          return addedResource
+        })
+        return { pageId: resource.id }
+      },
+    ),
 })

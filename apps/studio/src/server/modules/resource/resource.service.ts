@@ -7,7 +7,8 @@ import { type Page } from "./resource.types"
 // Specify the default columns to return from the Resource table
 const defaultResourceSelect: SelectExpression<DB, "Resource">[] = [
   "Resource.id",
-  "Resource.name",
+  "Resource.title",
+  "Resource.permalink",
   "Resource.siteId",
   "Resource.parentId",
   "Resource.mainBlobId",
