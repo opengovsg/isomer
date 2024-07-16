@@ -8,13 +8,15 @@ import {
   BiTrash,
 } from "react-icons/bi"
 
+import type { ResourceTableData } from "./types"
 import { MenuItem } from "~/components/Menu"
 
-export const ResourceTableMenu = ({
-  resourceId: _resourceId,
-}: {
-  resourceId: string
-}) => {
+interface ResourceTableMenuProps {
+  resourceId: ResourceTableData["id"]
+  type: ResourceTableData["type"]
+}
+
+export const ResourceTableMenu = ({ type }: ResourceTableMenuProps) => {
   return (
     <Menu isLazy size="sm">
       <MenuButton
@@ -26,10 +28,20 @@ export const ResourceTableMenu = ({
       />
       <MenuList>
         {/* TODO: Open edit modal depending on resource  */}
-        <MenuItem icon={<BiCog fontSize="1rem" />}>Edit page settings</MenuItem>
-        <MenuItem icon={<BiDuplicate fontSize="1rem" />}>
-          Duplicate page
-        </MenuItem>
+        {type === "page" ? (
+          <>
+            <MenuItem icon={<BiCog fontSize="1rem" />}>
+              Edit page settings
+            </MenuItem>
+            <MenuItem icon={<BiDuplicate fontSize="1rem" />}>
+              Duplicate page
+            </MenuItem>
+          </>
+        ) : (
+          <MenuItem icon={<BiCog fontSize="1rem" />}>
+            Edit folder settings
+          </MenuItem>
+        )}
         <MenuItem icon={<BiFolderOpen fontSize="1rem" />}>Move to...</MenuItem>
         <MenuItem colorScheme="critical" icon={<BiTrash fontSize="1rem" />}>
           Delete

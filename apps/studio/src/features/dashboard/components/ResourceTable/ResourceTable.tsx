@@ -52,7 +52,12 @@ const columns = [
   columnsHelper.display({
     id: "resource_menu",
     header: () => <TableHeader>Actions</TableHeader>,
-    cell: ({ row }) => <ResourceTableMenu resourceId={row.original.id} />,
+    cell: ({ row }) => (
+      <ResourceTableMenu
+        resourceId={row.original.id}
+        type={row.original.type}
+      />
+    ),
     size: 24,
   }),
 ]
