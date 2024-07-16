@@ -1,6 +1,16 @@
-import { Box, HStack, Text, useDisclosure, VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import {
+  Box,
+  HStack,
+  MenuButton,
+  MenuList,
+  Text,
+  useDisclosure,
+  VStack,
+} from "@chakra-ui/react"
+import { Button, Menu } from "@opengovsg/design-system-react"
+import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 
+import { MenuItem } from "~/components/Menu"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import PageCreateModal from "~/features/editing-experience/components/PageCreateModal"
 import { type NextPageWithLayout } from "~/lib/types"
@@ -10,7 +20,7 @@ const SitePage: NextPageWithLayout = () => {
   const {
     isOpen: isPageCreateModalOpen,
     onOpen: onPageCreateModalOpen,
-    onClose: onpageCreateModalClose,
+    onClose: onPageCreateModalClose,
   } = useDisclosure()
   return (
     <>
@@ -21,14 +31,23 @@ const SitePage: NextPageWithLayout = () => {
           </Text>
           <HStack w="100%" justify="space-between" align="center" gap={0}>
             <Box />
-            <HStack gap="0.25rem" justifySelf="flex-end">
-              <Button variant="outline" size="xs">
-                Create a folder
-              </Button>
-              <Button onClick={onPageCreateModalOpen} size="xs">
-                Create a new page
-              </Button>
-            </HStack>
+            <Menu isLazy size="sm">
+              <MenuButton as={Button} size="xs" justifySelf="flex-end">
+                Create new...
+              </MenuButton>
+              <MenuList>
+                <MenuItem icon={<BiFolder fontSize="1rem" />}>Folder</MenuItem>
+                <MenuItem
+                  onClick={onPageCreateModalOpen}
+                  icon={<BiFileBlank fontSize="1rem" />}
+                >
+                  Page
+                </MenuItem>
+                <MenuItem icon={<BiData fontSize="1rem" />}>
+                  Collection
+                </MenuItem>
+              </MenuList>
+            </Menu>
           </HStack>
         </VStack>
         <Box width="100%">
@@ -37,7 +56,7 @@ const SitePage: NextPageWithLayout = () => {
       </VStack>
       <PageCreateModal
         isOpen={isPageCreateModalOpen}
-        onClose={onpageCreateModalClose}
+        onClose={onPageCreateModalClose}
       />
     </>
   )
