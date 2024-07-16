@@ -93,6 +93,7 @@ export const CollectionPageMetaSchema = Type.Composite([
       {
         title: "Default sort by",
         description: "The default field to sort the collection items by",
+        type: "string",
       },
     ),
     defaultSortDirection: Type.Union(
@@ -100,6 +101,7 @@ export const CollectionPageMetaSchema = Type.Composite([
       {
         title: "Default sort direction",
         description: "The default direction to sort the collection items by",
+        type: "string",
       },
     ),
     subtitle: Type.String({

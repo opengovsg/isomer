@@ -20,6 +20,7 @@ export const InfoBoxSchema = Type.Object({
       {
         title: "Column icon",
         description: "The icon to display for the column",
+        type: "string",
       },
     ),
   ),
@@ -56,6 +57,7 @@ export const InfoColsSchema = Type.Object(
       Type.Union([Type.Literal("white"), Type.Literal("gray")], {
         title: "Infocols background color",
         description: "The background color to use for the Infocols component",
+        type: "string",
       }),
     ),
     buttonLabel: Type.Optional(

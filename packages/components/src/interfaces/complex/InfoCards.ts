@@ -40,6 +40,7 @@ export const InfoCardsSchema = Type.Object(
     variant: Type.Union([Type.Literal("side"), Type.Literal("top")], {
       title: "Infocards variant",
       description: "The variant of the infocards component to use",
+      type: "string",
       format: "radio",
     }),
     title: Type.Optional(
