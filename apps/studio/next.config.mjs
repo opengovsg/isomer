@@ -19,7 +19,7 @@ const ContentSecurityPolicy = `
   font-src 'self' https: data:;
   form-action 'self';
   frame-ancestors 'self';
-  img-src * data:;
+  img-src * data: blob:;
   frame-src 'self';
   object-src 'none';
   script-src 'self' ${env.NODE_ENV === "production" ? "" : "'unsafe-eval'"};

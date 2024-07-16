@@ -52,3 +52,7 @@ export const createPageSchema = z.object({
 export const readImageInPageSchema = z.object({
   imageUrlInSchema: z.string(),
 })
+
+export const uploadImageGetURLSchema = z.object({
+  imageDataURL: z.string(),
+})

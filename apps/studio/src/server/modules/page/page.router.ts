@@ -1,11 +1,13 @@
 import { type ContentPageSchemaType } from "@opengovsg/isomer-components"
 
+import { BlobToImageDataURL } from "~/features/editing-experience/components/form-builder/renderers/controls/utils"
 import {
   createPageSchema,
   getEditPageSchema,
   readImageInPageSchema,
   updatePageBlobSchema,
   updatePageSchema,
+  uploadImageGetURLSchema,
 } from "~/schemas/page"
 import { protectedProcedure, publicProcedure, router } from "~/server/trpc"
 import {
@@ -71,13 +73,15 @@ export const pageRouter = router({
       // NOTE: If image is not publically accessible, might need to add logic to get it
       const res = await fetch(input.imageUrlInSchema)
       const blob = await res.blob()
-      const arrayBuffer = await blob.arrayBuffer()
-      const base64String = Buffer.from(arrayBuffer).toString("base64")
       const splitUrl = input.imageUrlInSchema.split(".")
-      const extension = splitUrl[splitUrl.length - 1]
-      const base64Data = `data:image/${extension};base64,${base64String}`
+      const extension = splitUrl[splitUrl.length - 1] || ""
+      const base64Data = await BlobToImageDataURL(blob, extension)
       return { imageDataURL: base64Data }
     }),
-
-  //TODO: Might proxy image upload through backend too.
+  uploadImageGetURL: pageProcedure
+    .input(uploadImageGetURLSchema)
+    .mutation(async ({ input, ctx }) => {
+      // TODO: Perform image upload logic here
+      return { uploadedImageURL: "https://picsum.photos/200/300.jpg" }
+    }),
 })
