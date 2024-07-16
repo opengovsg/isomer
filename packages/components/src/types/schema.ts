@@ -50,7 +50,7 @@ export const ArticlePageSchema = Type.Object({
 export const CollectionPageSchema = Type.Object({
   layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Collection),
   page: CollectionPageMetaSchema,
-  content: Type.Array(Type.Null(), {
+  content: Type.Array(IsomerComponentsSchemas, {
     title: "Page content",
     description:
       "This should be empty for collection pages, make sure to remove any items here.",
@@ -79,7 +79,7 @@ export const HomePageSchema = Type.Object({
 export const FileRefSchema = Type.Object({
   layout: Type.Literal(ISOMER_PAGE_LAYOUTS.File),
   page: FileRefMetaSchema,
-  content: Type.Array(Type.Null(), {
+  content: Type.Array(IsomerComponentsSchemas, {
     title: "Page content",
     description:
       "This should be empty for file pages, make sure to remove any items here.",
@@ -92,7 +92,7 @@ export const FileRefSchema = Type.Object({
 export const LinkRefSchema = Type.Object({
   layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Link),
   page: LinkRefMetaSchema,
-  content: Type.Array(Type.Null(), {
+  content: Type.Array(IsomerComponentsSchemas, {
     title: "Page content",
     description:
       "This should be empty for link pages, make sure to remove any items here.",
