@@ -1,5 +1,36 @@
+import { type DB } from "~prisma/generated/generatedTypes"
+import { SelectExpression } from "kysely"
+
 import { db } from "../database"
 import { type Footer, type Navbar, type Page } from "./resource.types"
+
+// Specify the default columns to return from the Resource table
+const defaultResourceSelect: SelectExpression<DB, "Resource">[] = [
+  "Resource.id",
+  "Resource.name",
+  "Resource.siteId",
+  "Resource.parentId",
+  "Resource.mainBlobId",
+  "Resource.draftBlobId",
+  "Resource.isFolder",
+  "Resource.isPublished",
+]
+const defaultResourceWithBlobSelect: SelectExpression<
+  DB,
+  "Resource" | "Blob"
+>[] = [...defaultResourceSelect, "Blob.content"]
+
+const defaultNavbarSelect: SelectExpression<DB, "Navbar">[] = [
+  "Navbar.id",
+  "Navbar.siteId",
+  "Navbar.content",
+]
+
+const defaultFooterSelect: SelectExpression<DB, "Footer">[] = [
+  "Footer.id",
+  "Footer.siteId",
+  "Footer.content",
+]
 
 export const getPages = () => {
   // TODO: write a test to verify this query behaviour
@@ -10,14 +41,18 @@ export const getPages = () => {
       .where((eb) =>
         eb.or([eb("mainBlobId", "!=", null), eb("draftBlobId", "!=", null)]),
       )
-      .selectAll()
+      .select(defaultResourceSelect)
       .execute()
   )
 }
 
 export const getFolders = () =>
   // TODO: write a test to verify this query behaviour
-  db.selectFrom("Resource").where("isFolder", "is", true).selectAll().execute()
+  db
+    .selectFrom("Resource")
+    .where("isFolder", "is", true)
+    .select(defaultResourceSelect)
+    .execute()
 
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
 const getById = (id: number) =>
@@ -29,14 +64,14 @@ export const getFullPageById = async (id: number) => {
   const draftBlob = await getById(id)
     .where("Resource.draftBlobId", "is not", null)
     .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
-    .selectAll()
+    .select(defaultResourceWithBlobSelect)
     .executeTakeFirst()
   if (draftBlob) return draftBlob
 
   return getById(id)
     .where("Resource.mainBlobId", "is not", null)
     .innerJoin("Blob", "Resource.mainBlobId", "Blob.id")
-    .selectAll()
+    .select(defaultResourceWithBlobSelect)
     .executeTakeFirstOrThrow()
 }
 
@@ -45,7 +80,7 @@ export const getPageById = (id: number) => {
     .where((eb) =>
       eb.or([eb("mainBlobId", "!=", null), eb("draftBlobId", "!=", null)]),
     )
-    .selectAll()
+    .select(defaultResourceSelect)
     .executeTakeFirstOrThrow()
 }
 
@@ -82,7 +117,7 @@ export const getNavBar = async (siteId: number) => {
   const { content, ...rest } = await db
     .selectFrom("Navbar")
     .where("siteId", "=", siteId)
-    .selectAll()
+    .select(defaultNavbarSelect)
     // NOTE: Throwing here is acceptable because each site should have a navbar
     .executeTakeFirstOrThrow()
 
@@ -93,7 +128,7 @@ export const getFooter = async (siteId: number) => {
   const { content, ...rest } = await db
     .selectFrom("Footer")
     .where("siteId", "=", siteId)
-    .selectAll()
+    .select(defaultFooterSelect)
     // NOTE: Throwing here is acceptable because each site should have a footer
     .executeTakeFirstOrThrow()
 
