@@ -1,8 +1,8 @@
-import type { SelectExpression } from "kysely"
 import { type DB } from "~prisma/generated/generatedTypes"
+import { SelectExpression } from "kysely"
 
 import { db } from "../database"
-import { type Footer, type Navbar, type Page } from "./resource.types"
+import { type Page } from "./resource.types"
 
 // Specify the default columns to return from the Resource table
 const defaultResourceSelect: SelectExpression<DB, "Resource">[] = [
@@ -90,19 +90,12 @@ export const updatePageById = (
   })
 }
 
-// NOTE: This id here is the page id
-export const updateBlobById = async (props: {
+export const updateBlobById = (props: {
   id: number
-  content: string
+  content: PrismaJson.BlobJsonContent
 }) => {
   const { id, content } = props
-  return db.transaction().execute(async (tx) => {
-    const page = await tx
-      .selectFrom("Resource")
-      .where("Resource.id", "=", id)
-      .select("draftBlobId")
-      .executeTakeFirstOrThrow()
-
+  return db.transaction().execute((tx) => {
     return (
       tx
         .updateTable("Blob")
@@ -124,7 +117,7 @@ export const getNavBar = async (siteId: number) => {
     // NOTE: Throwing here is acceptable because each site should have a navbar
     .executeTakeFirstOrThrow()
 
-  return { ...rest, content: content as Navbar }
+  return { ...rest, content }
 }
 
 export const getFooter = async (siteId: number) => {
@@ -135,7 +128,7 @@ export const getFooter = async (siteId: number) => {
     // NOTE: Throwing here is acceptable because each site should have a footer
     .executeTakeFirstOrThrow()
 
-  return { ...rest, content: content as Footer }
+  return { ...rest, content }
 }
 
 export const moveResource = async (
