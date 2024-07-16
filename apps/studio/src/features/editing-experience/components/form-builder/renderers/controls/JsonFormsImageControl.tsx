@@ -1,10 +1,13 @@
-// don't use backend to render, proxy once on load, 3 states, cache locally till success
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { useEffect, useState } from "react"
 import { Box, FormControl, Text } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-import { Attachment, FormLabel } from "@opengovsg/design-system-react"
+import {
+  Attachment,
+  FormErrorMessage,
+  FormLabel,
+} from "@opengovsg/design-system-react"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { trpc } from "~/utils/trpc"
@@ -25,6 +28,7 @@ export function JsonFormsImageControl({
   data,
   label,
   handleChange,
+  errors,
   path,
   description,
   required,
@@ -32,7 +36,7 @@ export function JsonFormsImageControl({
   const [selectedFile, setSelectedFile] = useState<File | undefined>()
   const [pendingFile, setPendingFile] = useState<File | undefined>()
   const [shouldFetchImage, setShouldFetchImage] = useState(false)
-
+  const [errorMessage, setErrorMessage] = useState("")
   useEffect(() => {
     if (!!data) {
       setShouldFetchImage(true)
@@ -46,10 +50,14 @@ export function JsonFormsImageControl({
   const uploadImageMutation = trpc.page.uploadImageGetURL.useMutation({
     onSettled(data, error) {
       if (!!error) {
+        setErrorMessage(
+          "Unable to upload image, please check your connection or try again.",
+        )
         console.log("upload mutation error", error)
       } else {
         const newImgUrl = data?.uploadedImageURL
         setSelectedFile(pendingFile)
+        setErrorMessage("")
         handleChange(path, newImgUrl)
         console.log("new file url", newImgUrl)
       }
@@ -70,6 +78,7 @@ export function JsonFormsImageControl({
           if (!!file) {
             setSelectedFile(file)
           } else {
+            setErrorMessage("Previous selected image is not found.")
             console.log("Error setting selected file!")
           }
         }
@@ -79,7 +88,7 @@ export function JsonFormsImageControl({
 
   return (
     <Box py={2}>
-      <FormControl isRequired={required}>
+      <FormControl isRequired={required} isInvalid={errorMessage !== ""}>
         <FormLabel description={description}>{label}</FormLabel>
         <Attachment
           name="image-upload"
@@ -107,10 +116,12 @@ export function JsonFormsImageControl({
             }
           }}
           onError={(error) => {
+            setErrorMessage("An error occured, please try again")
             console.log("File attachment error ", error)
           }}
           onRejection={(rejections) => {
-            console.log(rejections)
+            setErrorMessage("Please check your file size or file type.")
+            console.log(rejections, rejections.length)
           }}
           maxSize={MAX_IMG_FILE_SIZE_BYTES}
           accept={IMAGE_UPLOAD_ACCEPTED_MIME_TYPES}
@@ -118,6 +129,7 @@ export function JsonFormsImageControl({
         <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
           {`Maximum file size: ${MAX_IMG_FILE_SIZE_BYTES / 1000000} MB`}
         </Text>
+        <FormErrorMessage>{errorMessage}</FormErrorMessage>
       </FormControl>
     </Box>
   )
