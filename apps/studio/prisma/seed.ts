@@ -3,17 +3,10 @@
  *
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
-import {
-  type IsomerGeneratedSiteProps,
-  type IsomerSiteConfigProps,
-  type IsomerSitemap,
-} from "@opengovsg/isomer-components"
+import type { IsomerSchema, IsomerSitemap } from "@opengovsg/isomer-components"
 import cuid2 from "@paralleldrive/cuid2"
 
-import {
-  type Footer,
-  type Navbar,
-} from "~/server/modules/resource/resource.types"
+import type { Navbar } from "~/server/modules/resource/resource.types"
 import { db } from "../src/server/modules/database"
 
 const MOCK_PHONE_NUMBER = "123456789"
@@ -29,7 +22,7 @@ const ISOMER_ADMINS = [
   "hanpu",
 ]
 
-const PAGE_BLOB = {
+const PAGE_BLOB: IsomerSchema = {
   version: "0.1.0",
   layout: "homepage",
   page: {
@@ -40,7 +33,6 @@ const PAGE_BLOB = {
       type: "hero",
       variant: "gradient",
       alignment: "left",
-      backgroundColor: "black",
       title: "Ministry of Trade and Industry",
       subtitle:
         "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
@@ -172,11 +164,7 @@ async function main() {
         siteName: "MTI",
         logoUrl: "",
         search: undefined,
-        // TODO: Remove siteMap as it is a generated field
-        siteMap,
         isGovernment: true,
-      } satisfies IsomerSiteConfigProps & {
-        siteMap: IsomerGeneratedSiteProps["siteMap"]
       },
     })
     .returning("id")
@@ -192,7 +180,7 @@ async function main() {
         privacyStatementLink: "/privacy",
         termsOfUseLink: "/terms-of-use",
         siteNavItems: FOOTER_ITEMS,
-      } satisfies Footer,
+      },
     })
     .execute()
 
@@ -200,7 +188,7 @@ async function main() {
     .insertInto("Navbar")
     .values({
       siteId,
-      content: { items: NAV_BAR_ITEMS } satisfies Navbar,
+      content: NAV_BAR_ITEMS,
     })
     .execute()
 
