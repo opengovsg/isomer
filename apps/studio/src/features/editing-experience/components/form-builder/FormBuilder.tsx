@@ -31,6 +31,7 @@ import {
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
 } from "./renderers"
+import { Box } from "@chakra-ui/react"
 
 const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
@@ -67,15 +68,16 @@ export default function FormBuilder({
   const [formData, setFormData] = useState({})
 
   return (
-    <JsonForms
-      schema={subSchema}
-      data={formData}
-      renderers={renderers}
-      onChange={({ data }) => {
-        console.log(data)
-        setFormData(data)
-      }}
-      ajv={new Ajv({ strict: false })}
-    />
+    <Box h="100%">
+      <JsonForms
+        schema={subSchema}
+        data={formData}
+        renderers={renderers}
+        onChange={({ data }) => {
+          console.log(data)
+          setFormData(data)
+        }}
+        ajv={new Ajv({ strict: false })}
+      /></Box>
   )
 }

@@ -34,6 +34,7 @@ import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
 import { cloneDeep } from 'lodash'
 import { Table } from './extensions/Table'
 import type { ProseProps } from '@opengovsg/isomer-components'
+import { TiptapEditor } from './form-builder/renderers/TipTapEditor'
 
 interface TipTapComponentProps {
   content: ProseProps
@@ -55,61 +56,6 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     })
   }
 
-  const editor = useEditor({
-    extensions: [
-      Blockquote,
-      Bold,
-      BulletList.extend({
-        name: 'unorderedList',
-      }).configure({
-        HTMLAttributes: {
-          class: "list-disc",
-        },
-      }),
-      Document.extend({
-        name: 'prose',
-      }),
-      Dropcursor,
-      Gapcursor,
-      HardBreak,
-      Heading.configure({
-        levels: [2, 3, 4, 6]
-      }),
-      History,
-      HorizontalRule.extend({
-        name: "divider",
-      }),
-      Italic,
-      ListItem,
-      OrderedList.extend({
-        name: 'orderedList',
-      }).configure({
-        HTMLAttributes: {
-          class: "list-decimal",
-        },
-      }),
-      Paragraph,
-      Strike,
-      Superscript,
-      Subscript,
-      Table.configure({
-        resizable: false,
-      }),
-      TableRow,
-      TableHeader,
-      TableCell,
-      Text,
-      Underline,
-    ],
-    content,
-    onUpdate: (e) => {
-      const jsonContent = e.editor.getJSON()
-      updatePageState(jsonContent)
-    },
-  })
-
-  // TODO: Add a loading state or use suspsense
-  if (!editor) return null
   return (
     <VStack bg="white" h="100%" gap="0">
       <Flex
@@ -137,37 +83,8 @@ function TipTapComponent({ content }: TipTapComponentProps) {
           }}
         />
       </Flex>
-      <Box
-        p="2rem"
-        h="100%"
-        backgroundColor="gray.50"
-        flex="1"
-        maxH="calc(100vh - 12.875rem)"
-      >
-        <VStack
-          border="1px solid"
-          borderColor="base.divider.strong"
-          h="100%"
-          w="100%"
-          gap="0"
-        >
-          <MenuBar editor={editor} />
-          <Box
-            as={EditorContent}
-            editor={editor}
-            w="100%"
-            maxW="30vw"
-            flex="1 1 auto"
-            overflowX="hidden"
-            overflowY="auto"
-            px="2rem"
-            py="1rem"
-            h="100%"
-            backgroundColor="white"
-            onClick={() => editor.chain().focus().run()}
-            cursor="text"
-          />
-        </VStack>
+      <Box p="2rem" h="100%">
+        <TiptapEditor data={content} handleChange={updatePageState} />
       </Box>
       <Flex
         px="2rem"
@@ -179,8 +96,6 @@ function TipTapComponent({ content }: TipTapComponentProps) {
       >
         <Button
           onClick={() => {
-            const jsonContent = editor.getJSON()
-            updatePageState(jsonContent)
             setDrawerState({ state: 'root' })
           }}
         >
