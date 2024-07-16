@@ -8,10 +8,7 @@ export const getPages = () => {
       .selectFrom("Resource")
       // fetch pages where either a draft exists or a published blob exists
       .where((eb) =>
-        eb.or([
-          eb("publishedBlobId", "!=", null),
-          eb("draftBlobId", "!=", null),
-        ]),
+        eb.or([eb("mainBlobId", "!=", null), eb("draftBlobId", "!=", null)]),
       )
       .selectAll()
       .execute()
@@ -20,13 +17,7 @@ export const getPages = () => {
 
 export const getFolders = () =>
   // TODO: write a test to verify this query behaviour
-  db
-    .selectFrom("Resource")
-    // fetch pages where both draft and published blobs are null
-    .where("publishedBlobId", "is", null)
-    .where("draftBlobId", "is", null)
-    .selectAll()
-    .execute()
+  db.selectFrom("Resource").where("isFolder", "is", true).selectAll().execute()
 
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
 const getById = (id: number) =>
@@ -43,8 +34,8 @@ export const getFullPageById = async (id: number) => {
   if (draftBlob) return draftBlob
 
   return getById(id)
-    .where("Resource.publishedBlobId", "is not", null)
-    .innerJoin("Blob", "Resource.publishedBlobId", "Blob.id")
+    .where("Resource.mainBlobId", "is not", null)
+    .innerJoin("Blob", "Resource.mainBlobId", "Blob.id")
     .selectAll()
     .executeTakeFirstOrThrow()
 }
@@ -52,7 +43,7 @@ export const getFullPageById = async (id: number) => {
 export const getPageById = (id: number) => {
   return getById(id)
     .where((eb) =>
-      eb.or([eb("publishedBlobId", "!=", null), eb("draftBlobId", "!=", null)]),
+      eb.or([eb("mainBlobId", "!=", null), eb("draftBlobId", "!=", null)]),
     )
     .selectAll()
     .executeTakeFirstOrThrow()
