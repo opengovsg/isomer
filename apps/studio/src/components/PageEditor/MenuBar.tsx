@@ -18,11 +18,7 @@ import {
   BiBold,
   BiChevronDown,
   BiChevronUp, BiItalic, BiListOl,
-  BiListUl, BiRedo,
-  BiStrikethrough,
-  BiTable,
-  BiUnderline,
-  BiUndo
+  BiListUl, BiStrikethrough, BiUnderline
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
@@ -216,9 +212,6 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
         },
       ],
     },
-    {
-      type: "divider",
-    },
   ]
 
   return (
@@ -229,6 +222,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
       pl="0.75rem"
       pr="0.25rem"
       py="0.25rem"
+      w="100%"
       borderBottom="1px solid"
       borderColor="base.divider.strong"
       borderTopRadius="0.25rem"
