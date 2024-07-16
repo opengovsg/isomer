@@ -54,6 +54,7 @@ const columns = [
     header: () => <TableHeader>Actions</TableHeader>,
     cell: ({ row }) => (
       <ResourceTableMenu
+        title={row.original.name}
         resourceId={row.original.id}
         type={row.original.type}
       />

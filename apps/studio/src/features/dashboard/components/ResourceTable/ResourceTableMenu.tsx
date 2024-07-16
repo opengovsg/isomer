@@ -12,15 +12,16 @@ import type { ResourceTableData } from "./types"
 import { MenuItem } from "~/components/Menu"
 
 interface ResourceTableMenuProps {
+  title: ResourceTableData["name"]
   resourceId: ResourceTableData["id"]
   type: ResourceTableData["type"]
 }
 
-export const ResourceTableMenu = ({ type }: ResourceTableMenuProps) => {
+export const ResourceTableMenu = ({ title, type }: ResourceTableMenuProps) => {
   return (
     <Menu isLazy size="sm">
       <MenuButton
-        aria-label="Options"
+        aria-label={`Options for ${title}`}
         as={IconButton}
         colorScheme="neutral"
         icon={<BiDotsHorizontalRounded />}
