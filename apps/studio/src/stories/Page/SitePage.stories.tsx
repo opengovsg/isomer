@@ -13,6 +13,13 @@ const meta: Meta<typeof SitePage> = {
     msw: {
       handlers: [meHandlers.me(), pageHandlers.list.default()],
     },
+    nextjs: {
+      router: {
+        query: {
+          siteId: "1",
+        },
+      },
+    },
   },
   decorators: [],
 }
