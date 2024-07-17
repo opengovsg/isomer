@@ -30,8 +30,13 @@ export function JsonFormsDropdownControl({
 
   // Use the default value if it exists
   useEffect(() => {
-    handleChange(path, schema.default || schema.const)
-  }, [path, schema.default, schema.const, handleChange])
+    if (data !== undefined || data !== "") {
+      return
+    }
+    const value = schema.default || schema.const
+    setDropdownValue(value)
+    handleChange(path, value)
+  }, [path, schema.default, schema.const, handleChange, data])
 
   if (!options || (options.length === 1 && !!schema.const)) {
     return null
