@@ -30,7 +30,7 @@ const validatedPageProcedure = protectedProcedure.use(
   async ({ next, rawInput }) => {
     if (
       typeof rawInput === "object" &&
-      rawInput != null &&
+      rawInput !== null &&
       "content" in rawInput
     ) {
       // NOTE: content will be the entire page schema for now...
