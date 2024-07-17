@@ -3,6 +3,7 @@ import {
   HStack,
   MenuButton,
   MenuList,
+  Portal,
   Text,
   useDisclosure,
   VStack,
@@ -35,18 +36,22 @@ const SitePage: NextPageWithLayout = () => {
               <MenuButton as={Button} size="xs" justifySelf="flex-end">
                 Create new...
               </MenuButton>
-              <MenuList>
-                <MenuItem icon={<BiFolder fontSize="1rem" />}>Folder</MenuItem>
-                <MenuItem
-                  onClick={onPageCreateModalOpen}
-                  icon={<BiFileBlank fontSize="1rem" />}
-                >
-                  Page
-                </MenuItem>
-                <MenuItem icon={<BiData fontSize="1rem" />}>
-                  Collection
-                </MenuItem>
-              </MenuList>
+              <Portal>
+                <MenuList>
+                  <MenuItem icon={<BiFolder fontSize="1rem" />}>
+                    Folder
+                  </MenuItem>
+                  <MenuItem
+                    onClick={onPageCreateModalOpen}
+                    icon={<BiFileBlank fontSize="1rem" />}
+                  >
+                    Page
+                  </MenuItem>
+                  <MenuItem icon={<BiData fontSize="1rem" />}>
+                    Collection
+                  </MenuItem>
+                </MenuList>
+              </Portal>
             </Menu>
           </HStack>
         </VStack>
