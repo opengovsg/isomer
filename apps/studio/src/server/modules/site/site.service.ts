@@ -3,7 +3,7 @@ import {
   type IsomerSiteConfigProps,
 } from "@opengovsg/isomer-components"
 
-import { db } from "../database"
+import { db, sql } from "../database"
 
 export const getSiteConfig = async (siteId: number) => {
   const { config, name } = await db
@@ -25,4 +25,29 @@ export const getSiteConfig = async (siteId: number) => {
     sitemap,
     name,
   }
+}
+
+// Note: This overwrites the full site config
+export const setSiteConfig = async (
+  siteId: number,
+  config: IsomerSiteConfigProps,
+) => {
+  return db
+    .updateTable("Site")
+    .set({ config })
+    .where("id", "=", siteId)
+    .executeTakeFirstOrThrow()
+}
+
+export const setSiteNotification = async (
+  siteId: number,
+  notificationStr: string,
+) => {
+  return db
+    .updateTable("Site")
+    .set({
+      config: sql`jsonb_set(config, '{"notification"}', to_jsonb(${notificationStr}::text))`,
+    })
+    .where("id", "=", siteId)
+    .executeTakeFirstOrThrow()
 }
