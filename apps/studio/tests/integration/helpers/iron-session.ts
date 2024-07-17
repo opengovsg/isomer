@@ -59,7 +59,7 @@ export const createMockRequest = (
     {
       ...reqOptions,
       headers: {
-        'content-type': 'application/json', // will always be application/json
+        "content-type": "application/json", // will always be application/json
         ...reqOptions.headers,
       },
     },
