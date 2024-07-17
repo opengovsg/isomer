@@ -13,6 +13,7 @@ import {
   getNavBar,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
+import { createDefaultPage } from "./page.service"
 
 const ajv = new Ajv({ allErrors: true, strict: false })
 const schemaValidator = ajv.compile(schema)
@@ -101,9 +102,9 @@ export const pageRouter = router({
   createPage: protectedProcedure
     .input(createPageSchema)
     .mutation(
-      async ({
-        input: { permalink: pageUrl, siteId, folderId, title: pageTitle },
-      }) => {
+      async ({ input: { permalink, siteId, folderId, title, layout } }) => {
+        const newPage = createDefaultPage({ title, layout })
+
         // TODO: Validate whether folderId actually is a folder instead of a page
         // TODO: Validate whether siteId is a valid site
         // TODO: Validate user has write-access to the site
@@ -111,13 +112,7 @@ export const pageRouter = router({
           const blob = await tx
             .insertInto("Blob")
             .values({
-              content: {
-                // TODO: Remove title from content blob after all titles are retrieved from Resource
-                page: { title: pageTitle },
-                layout: "homepage",
-                content: [],
-                version: "0.1.0",
-              },
+              content: newPage,
             })
             .returning("Blob.id")
             .executeTakeFirstOrThrow()
@@ -125,8 +120,8 @@ export const pageRouter = router({
           const addedResource = await tx
             .insertInto("Resource")
             .values({
-              title: pageTitle,
-              permalink: pageUrl,
+              title,
+              permalink,
               siteId,
               parentId: folderId,
               draftBlobId: blob.id,

@@ -14,7 +14,7 @@ import { z } from "zod"
 
 import { MenuItem } from "~/components/Menu"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
-import PageCreateModal from "~/features/editing-experience/components/PageCreateModal"
+import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
@@ -68,7 +68,7 @@ const SitePage: NextPageWithLayout = () => {
           <ResourceTable siteId={siteId} />
         </Box>
       </VStack>
-      <PageCreateModal
+      <CreatePageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}
         siteId={siteId}

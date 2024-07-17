@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { userEvent, within } from "@storybook/test"
 
-import PageCreateModal from "./PageCreateModal"
+import { CreatePageModal } from "./CreatePageModal"
 
-const meta: Meta<typeof PageCreateModal> = {
-  title: "Components/PageCreateModal",
-  component: PageCreateModal,
+const meta: Meta<typeof CreatePageModal> = {
+  title: "Components/CreatePageModal",
+  component: CreatePageModal,
   decorators: [],
   args: {
     isOpen: true,
