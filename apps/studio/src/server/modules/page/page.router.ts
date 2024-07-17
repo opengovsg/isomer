@@ -80,7 +80,7 @@ export const pageRouter = router({
     }),
   uploadImageGetURL: pageProcedure
     .input(uploadImageGetURLSchema)
-    .mutation(async ({ input, ctx }) => {
+    .mutation(({ input, ctx }) => {
       // TODO: Perform image upload logic here
       return { uploadedImageURL: "https://picsum.photos/200/300.jpg" }
     }),

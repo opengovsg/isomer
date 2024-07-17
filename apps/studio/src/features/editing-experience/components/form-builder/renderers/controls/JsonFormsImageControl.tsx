@@ -28,7 +28,6 @@ export function JsonFormsImageControl({
   data,
   label,
   handleChange,
-  errors,
   path,
   description,
   required,
@@ -48,19 +47,18 @@ export function JsonFormsImageControl({
 
   // NOTE: Run once only if initial load has non empty data(imageURL).
   const uploadImageMutation = trpc.page.uploadImageGetURL.useMutation({
-    onSettled(data, error) {
-      if (!!error) {
-        setErrorMessage(
-          "Unable to upload image, please check your connection or try again.",
-        )
-        console.log("upload mutation error", error)
-      } else {
-        const newImgUrl = data?.uploadedImageURL
-        setSelectedFile(pendingFile)
-        setErrorMessage("")
-        handleChange(path, newImgUrl)
-        console.log("new file url", newImgUrl)
-      }
+    onSuccess: (data) => {
+      const newImgUrl = data.uploadedImageURL
+      setSelectedFile(pendingFile)
+      setErrorMessage("")
+      handleChange(path, newImgUrl)
+      console.log("new file url", newImgUrl)
+    },
+    onError: (error) => {
+      setErrorMessage(
+        "Unable to upload image, please check your connection or try again.",
+      )
+      console.log("upload mutation error", error)
     },
   })
   trpc.page.readImageInPage.useQuery(
@@ -107,7 +105,6 @@ export function JsonFormsImageControl({
                   console.log("Error converting image to dataurl, ", reason),
                 )
               // TODO: file attached, upload file. Below code could be in callback of upload TRPC call.
-              // Upload succeeded, note the race condition that we could have removed the file while uploading it!
             } else {
               // NOTE: Do we need to update backend on removal of file?
               handleChange(path, "")
@@ -116,12 +113,13 @@ export function JsonFormsImageControl({
             }
           }}
           onError={(error) => {
-            setErrorMessage("An error occured, please try again")
+            setErrorMessage("An error occured, please try again: " + error)
             console.log("File attachment error ", error)
           }}
           onRejection={(rejections) => {
-            setErrorMessage("Please check your file size or file type.")
-            console.log(rejections, rejections.length)
+            if (rejections[0]?.errors[0]) {
+              setErrorMessage(rejections[0].errors[0].message)
+            }
           }}
           maxSize={MAX_IMG_FILE_SIZE_BYTES}
           accept={IMAGE_UPLOAD_ACCEPTED_MIME_TYPES}
