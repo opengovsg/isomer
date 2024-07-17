@@ -14,8 +14,6 @@ import {
   jsonFormsArrayControlTester,
   JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
-  JsonFormsConstControl,
-  jsonFormsConstControlTester,
   JsonFormsDropdownControl,
   jsonFormsDropdownControlTester,
   jsonFormsGroupLayoutRenderer,
@@ -38,7 +36,6 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
   { tester: jsonFormsArrayControlTester, renderer: JsonFormsArrayControl },
   { tester: jsonFormsBooleanControlTester, renderer: JsonFormsBooleanControl },
-  { tester: jsonFormsConstControlTester, renderer: JsonFormsConstControl },
   {
     tester: jsonFormsDropdownControlTester,
     renderer: JsonFormsDropdownControl,
