@@ -94,10 +94,7 @@ const loggerWithVersionMiddleware = loggerMiddleware.unstable_pipe(
 )
 
 const contentTypeHeaderMiddleware = t.middleware(async ({ ctx, next }) => {
-  if (
-    ctx.req.body &&
-    !ctx.req.headers['content-type']?.startsWith('application/json')
-  ) {
+  if (ctx.req.body && ctx.req.headers['content-type'] !== 'application/json') {
     throw new TRPCError({
       code: 'BAD_REQUEST',
       message: 'Invalid Content-Type',
