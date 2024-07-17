@@ -1,4 +1,4 @@
-import type { LayoutProps, TableCellProps, TableProps } from "@chakra-ui/react"
+import type { LayoutProps, TableProps } from "@chakra-ui/react"
 import type { Table as ReactTable } from "@tanstack/react-table"
 import {
   Box,
@@ -30,7 +30,6 @@ export interface DatatableProps<D> extends TableProps {
    */
   totalRowCountString?: string
   isFetching?: boolean
-  tablePropOverrides?: Record<string, { td: TableCellProps }>
   emptyPlaceholder?: React.ReactElement
   overflow?: LayoutProps["overflow"]
 }
@@ -47,7 +46,6 @@ export const Datatable = <T extends object>({
   pagination,
   totalRowCount,
   totalRowCountString,
-  tablePropOverrides,
   emptyPlaceholder,
   overflow = "auto",
   ...tableProps
@@ -102,12 +100,7 @@ export const Datatable = <T extends object>({
                     pos="relative"
                     px={0}
                     style={{
-                      width:
-                        header.getSize() === Number.MAX_SAFE_INTEGER
-                          ? "auto"
-                          : header.getSize() === Number.MIN_SAFE_INTEGER
-                            ? "fit-content"
-                            : header.getSize(),
+                      width: header.getSize(),
                     }}
                   >
                     <Flex align="center">
@@ -128,12 +121,7 @@ export const Datatable = <T extends object>({
                 <Tr key={row.id} borderBottomWidth="1px">
                   {row.getVisibleCells().map((cell) => {
                     return (
-                      <Td
-                        key={cell.id}
-                        verticalAlign="center"
-                        {...tablePropOverrides?.[cell.column.id]?.td}
-                        {...tablePropOverrides?.[cell.id]?.td}
-                      >
+                      <Td key={cell.id} verticalAlign="center">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),
