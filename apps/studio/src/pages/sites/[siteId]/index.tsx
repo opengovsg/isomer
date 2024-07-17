@@ -1,3 +1,4 @@
+import { useRouter } from "next/router"
 import {
   Box,
   HStack,
@@ -24,6 +25,8 @@ const sitePageSchema = z.object({
 })
 
 const SitePage: NextPageWithLayout = () => {
+  const { query } = useRouter()
+  const { siteId } = sitePageSchema.parse(query)
   const {
     isOpen: isPageCreateModalOpen,
     onOpen: onPageCreateModalOpen,
@@ -65,7 +68,7 @@ const SitePage: NextPageWithLayout = () => {
           </HStack>
         </VStack>
         <Box width="100%">
-          <ResourceTable />
+          <ResourceTable siteId={siteId} />
         </Box>
       </VStack>
       <PageCreateModal

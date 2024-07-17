@@ -9,12 +9,10 @@ import {
 
 import type { RouterOutput } from "~/utils/trpc"
 import { TableHeader } from "~/components/Datatable"
-import { createAccessor, Datatable } from "~/components/Datatable/Datatable"
+import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 import { trpc } from "~/utils/trpc"
-import { LastEditCell } from "./LastEditCell"
 import { ResourceTableMenu } from "./ResourceTableMenu"
-import { StatusCell } from "./StatusCell"
 import { TitleCell } from "./TitleCell"
 
 type ResourceTableData = RouterOutput["page"]["list"][number]
@@ -22,30 +20,14 @@ type ResourceTableData = RouterOutput["page"]["list"][number]
 const columnsHelper = createColumnHelper<ResourceTableData>()
 
 const columns = [
-  columnsHelper.accessor("name", {
+  columnsHelper.accessor("title", {
     minSize: 300,
     header: () => <TableHeader>Title</TableHeader>,
     cell: ({ row }) => (
       <TitleCell
-        title={row.original.name}
-        permalink={row.original.permalink}
-        type={row.original.type}
-      />
-    ),
-  }),
-  columnsHelper.accessor("status", {
-    size: 100,
-    header: () => <TableHeader>Status</TableHeader>,
-    cell: ({ row }) => <StatusCell status={row.original.status} />,
-  }),
-  columnsHelper.accessor(createAccessor(["lastEditDate", "lastEditUser"]), {
-    id: "edit_details",
-    size: 120,
-    header: () => <TableHeader>Last edited</TableHeader>,
-    cell: ({ row }) => (
-      <LastEditCell
-        date={row.original.lastEditDate}
-        email={row.original.lastEditUser}
+        title={row.original.title}
+        permalink={`/${row.original.permalink}`}
+        type={row.original.mainBlobId ? "page" : "folder"}
       />
     ),
   }),
@@ -54,19 +36,33 @@ const columns = [
     header: () => <TableHeader>Actions</TableHeader>,
     cell: ({ row }) => (
       <ResourceTableMenu
-        title={row.original.name}
+        title={row.original.title}
         resourceId={row.original.id}
-        type={row.original.type}
+        type={row.original.mainBlobId ? "page" : "folder"}
       />
     ),
     size: 24,
   }),
 ]
 
-export const ResourceTable = (): JSX.Element => {
-  const { data: resources } = trpc.page.list.useQuery(undefined, {
-    keepPreviousData: true, // Required for table to show previous data while fetching next page
-  })
+interface ResourceTableProps {
+  siteId: number
+  resourceId?: number
+}
+
+export const ResourceTable = ({
+  siteId,
+  resourceId,
+}: ResourceTableProps): JSX.Element => {
+  const { data: resources } = trpc.page.list.useQuery(
+    {
+      siteId,
+      resourceId,
+    },
+    {
+      keepPreviousData: true, // Required for table to show previous data while fetching next page
+    },
+  )
 
   const totalRowCount = resources?.length ?? 0
 
