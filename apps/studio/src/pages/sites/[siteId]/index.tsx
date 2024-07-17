@@ -10,12 +10,18 @@ import {
 } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
+import { z } from "zod"
 
 import { MenuItem } from "~/components/Menu"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import PageCreateModal from "~/features/editing-experience/components/PageCreateModal"
+import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
+
+const sitePageSchema = z.object({
+  siteId: z.coerce.number(),
+})
 
 const SitePage: NextPageWithLayout = () => {
   const {
@@ -23,6 +29,9 @@ const SitePage: NextPageWithLayout = () => {
     onOpen: onPageCreateModalOpen,
     onClose: onPageCreateModalClose,
   } = useDisclosure()
+
+  const { siteId } = useQueryParse(sitePageSchema)
+
   return (
     <>
       <VStack w="100%" p="1.75rem" gap="1rem">
@@ -62,6 +71,7 @@ const SitePage: NextPageWithLayout = () => {
       <PageCreateModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}
+        siteId={siteId}
       />
     </>
   )
