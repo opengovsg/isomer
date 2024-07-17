@@ -28,6 +28,7 @@ export const getSiteConfig = async (siteId: number) => {
 }
 
 // Note: This overwrites the full site config
+// TODO: Should triger immediate re-publish of site
 export const setSiteConfig = async (
   siteId: number,
   config: IsomerSiteConfigProps,
@@ -39,6 +40,7 @@ export const setSiteConfig = async (
     .executeTakeFirstOrThrow()
 }
 
+// TODO: Should triger immediate re-publish of site
 export const setSiteNotification = async (
   siteId: number,
   notificationStr: string,
