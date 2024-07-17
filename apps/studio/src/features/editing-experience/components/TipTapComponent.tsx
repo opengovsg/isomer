@@ -1,14 +1,12 @@
-import { Box, Flex, Icon, VStack, Text as ChakraText } from '@chakra-ui/react'
-import { Button, IconButton } from '@opengovsg/design-system-react'
-import {
-  type JSONContent,
-} from '@tiptap/react'
-import { BiText, BiX } from 'react-icons/bi'
+import type { ProseProps } from "@opengovsg/isomer-components"
+import { Box, Text as ChakraText, Flex, Icon, VStack } from "@chakra-ui/react"
+import { Button, IconButton } from "@opengovsg/design-system-react"
+import { type JSONContent } from "@tiptap/react"
+import { cloneDeep } from "lodash"
+import { BiText, BiX } from "react-icons/bi"
 
-import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
-import { cloneDeep } from 'lodash'
-import type { ProseProps } from '@opengovsg/isomer-components'
-import { TiptapEditor } from './form-builder/renderers/TipTapEditor'
+import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { TiptapEditor } from "./form-builder/renderers/TipTapEditor"
 
 interface TipTapComponentProps {
   content: ProseProps
@@ -19,7 +17,7 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     useEditorDrawerContext()
 
   const updatePageState = (editorContent: JSONContent) => {
-    // TODO: actual validation 
+    // TODO: actual validation
     const content = editorContent as ProseProps
     setPageState((oldState) => {
       // TODO: performance - this is a full clone
@@ -53,7 +51,7 @@ function TipTapComponent({ content }: TipTapComponentProps) {
           icon={<BiX />}
           onClick={() => {
             setPageState(snapshot)
-            setDrawerState({ state: 'root' })
+            setDrawerState({ state: "root" })
           }}
         />
       </Flex>
@@ -70,7 +68,7 @@ function TipTapComponent({ content }: TipTapComponentProps) {
       >
         <Button
           onClick={() => {
-            setDrawerState({ state: 'root' })
+            setDrawerState({ state: "root" })
           }}
         >
           Save

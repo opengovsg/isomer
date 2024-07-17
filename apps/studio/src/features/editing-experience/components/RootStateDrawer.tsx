@@ -84,9 +84,9 @@ export default function RootStateDrawer() {
                             setCurrActiveIdx(index)
                             // TODO: we should automatically do this probably?
                             const nextState =
-                              pageState[index]?.type === 'prose'
-                                ? 'nativeEditor'
-                                : 'complexEditor'
+                              pageState[index]?.type === "prose"
+                                ? "nativeEditor"
+                                : "complexEditor"
                             // NOTE: SNAPSHOT
                             setEditorState(pageState)
                             setDrawerState({ state: nextState })

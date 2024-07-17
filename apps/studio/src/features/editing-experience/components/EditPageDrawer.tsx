@@ -1,10 +1,9 @@
-import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
-import ComponentSelector from '~/components/PageEditor/ComponentSelector'
-import RootStateDrawer from './RootStateDrawer'
-import TipTapComponent from './TipTapComponent'
-import ComplexEditorStateDrawer from './ComplexEditorStateDrawer'
-import { inferAsProse } from '../utils'
-
+import ComponentSelector from "~/components/PageEditor/ComponentSelector"
+import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { inferAsProse } from "../utils"
+import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
+import RootStateDrawer from "./RootStateDrawer"
+import TipTapComponent from "./TipTapComponent"
 
 export function EditPageDrawer() {
   const {
@@ -18,11 +17,11 @@ export function EditPageDrawer() {
       return <RootStateDrawer />
     case "addBlock":
       return <ComponentSelector />
-    case 'nativeEditor': {
+    case "nativeEditor": {
       const component = pageState[currActiveIdx]
       return <TipTapComponent content={inferAsProse(component)} />
     }
-    case 'complexEditor':
+    case "complexEditor":
       return <ComplexEditorStateDrawer />
     default:
       return <h1>Edit Page Drawer</h1>

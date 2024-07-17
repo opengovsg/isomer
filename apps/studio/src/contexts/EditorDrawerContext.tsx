@@ -1,15 +1,9 @@
-import { type IsomerComponent } from '@opengovsg/isomer-components'
-import {
-  createContext,
-  useContext,
-  useMemo,
-  useState,
-  type PropsWithChildren,
-  type Dispatch,
-  type SetStateAction,
-} from 'react'
-import type { SectionType } from '~/components/PageEditor/types'
-import { type DrawerState } from '~/types/editorDrawer'
+import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
+import { createContext, useContext, useMemo, useState } from "react"
+import { type IsomerComponent } from "@opengovsg/isomer-components"
+
+import type { SectionType } from "~/components/PageEditor/types"
+import { type DrawerState } from "~/types/editorDrawer"
 
 export interface DrawerContextType {
   currActiveIdx: number
@@ -20,7 +14,7 @@ export interface DrawerContextType {
   setPageState: Dispatch<SetStateAction<IsomerComponent[]>>
   snapshot: IsomerComponent[]
   setSnapshot: (state: IsomerComponent[]) => void
-  addedBlock: Exclude<SectionType, "prose">,
+  addedBlock: Exclude<SectionType, "prose">
   setAddedBlock: (addedBlock: Exclude<SectionType, "prose">) => void
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
@@ -36,7 +30,8 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
   // Isomer page schema
   const [currActiveIdx, setCurrActiveIdx] = useState(0)
   // NOTE: Give a default value first so we don't have to do null checking everytime
-  const [addedBlock, setAddedBlock] = useState<Exclude<SectionType, "prose">>("button")
+  const [addedBlock, setAddedBlock] =
+    useState<Exclude<SectionType, "prose">>("button")
 
   const value = useMemo(
     () => ({
@@ -49,7 +44,7 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
       snapshot,
       setSnapshot,
       addedBlock,
-      setAddedBlock
+      setAddedBlock,
     }),
     [currActiveIdx, drawerState, pageState, snapshot, addedBlock],
   )

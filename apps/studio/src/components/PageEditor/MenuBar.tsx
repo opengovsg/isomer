@@ -17,8 +17,12 @@ import { Button, Menu } from "@opengovsg/design-system-react"
 import {
   BiBold,
   BiChevronDown,
-  BiChevronUp, BiItalic, BiListOl,
-  BiListUl, BiStrikethrough, BiUnderline
+  BiChevronUp,
+  BiItalic,
+  BiListOl,
+  BiListUl,
+  BiStrikethrough,
+  BiUnderline,
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 

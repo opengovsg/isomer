@@ -2,8 +2,8 @@ import { Box, Heading, HStack, Icon } from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
 import { BiDollar, BiX } from "react-icons/bi"
 
-import FormBuilder from "./form-builder/FormBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import FormBuilder from "./form-builder/FormBuilder"
 
 export default function ComplexEditorStateDrawer(): JSX.Element {
   const { addedBlock: component } = useEditorDrawerContext()

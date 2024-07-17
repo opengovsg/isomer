@@ -1,4 +1,4 @@
-import { type IsomerComponent } from '@opengovsg/isomer-components'
+import { type IsomerComponent } from "@opengovsg/isomer-components"
 
 export interface CustomRendererProps {
   data: any
@@ -7,4 +7,4 @@ export interface CustomRendererProps {
   path: string
 }
 
-export type SectionType = IsomerComponent['type']
+export type SectionType = IsomerComponent["type"]

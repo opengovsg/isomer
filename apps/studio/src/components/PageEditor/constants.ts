@@ -1,19 +1,19 @@
-import { type IsomerComponent } from '@opengovsg/isomer-components'
+import { type IsomerComponent } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
-  IsomerComponent['type'],
+  IsomerComponent["type"],
   IsomerComponent | undefined
 > = {
   prose: {
-    type: 'prose',
+    type: "prose",
     content: [
       {
-        type: 'paragraph',
+        type: "paragraph",
         content: [
           {
-            type: 'text',
-            text: '',
+            type: "text",
+            text: "",
           },
         ],
       },

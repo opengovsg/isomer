@@ -9,6 +9,7 @@ import {
   Wrap,
 } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
+import { type IsomerComponent } from "@opengovsg/isomer-components"
 import { type IconType } from "react-icons"
 import {
   BiCard,
@@ -26,11 +27,10 @@ import {
   BiX,
 } from "react-icons/bi"
 
-import { type DrawerState } from '~/types/editorDrawer'
-import { type IsomerComponent } from '@opengovsg/isomer-components'
-import { trpc } from '~/utils/trpc'
-import { DEFAULT_BLOCKS } from './constants'
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { type DrawerState } from "~/types/editorDrawer"
+import { trpc } from "~/utils/trpc"
+import { DEFAULT_BLOCKS } from "./constants"
 import { type SectionType } from "./types"
 
 function Section({ children }: React.PropsWithChildren) {
@@ -98,7 +98,14 @@ function BlockItem({
 }
 
 function ComponentSelector() {
-  const { setCurrActiveIdx, pageState, setDrawerState, setPageState, setSnapshot, setAddedBlock } = useEditorDrawerContext()
+  const {
+    setCurrActiveIdx,
+    pageState,
+    setDrawerState,
+    setPageState,
+    setSnapshot,
+    setAddedBlock,
+  } = useEditorDrawerContext()
 
   const { mutate } = trpc.page.updatePageBlob.useMutation()
   // TODO: get this dynamically
@@ -111,23 +118,27 @@ function ComponentSelector() {
     // TODO: add new section to page/editor state
     // NOTE: Only paragraph should go to tiptap editor
     // the rest should use json forms
-    const nextState: DrawerState['state'] =
-      sectionType === 'prose' ? 'nativeEditor' : 'complexEditor'
-    const newComponent: IsomerComponent | undefined = DEFAULT_BLOCKS[sectionType]
-    const nextPageState = !!newComponent ? [...pageState, newComponent] : pageState
+    const nextState: DrawerState["state"] =
+      sectionType === "prose" ? "nativeEditor" : "complexEditor"
+    const newComponent: IsomerComponent | undefined =
+      DEFAULT_BLOCKS[sectionType]
+    const nextPageState = !!newComponent
+      ? [...pageState, newComponent]
+      : pageState
 
     setPageState(nextPageState)
     setDrawerState({ state: nextState })
     setCurrActiveIdx(nextPageState.length - 1)
     setSnapshot(pageState)
     // TODO: Decide if this is a good idea...
-    if (sectionType !== "prose") { setAddedBlock(sectionType) }
+    if (sectionType !== "prose") {
+      setAddedBlock(sectionType)
+    }
 
     mutate({
       pageId,
       content: JSON.stringify({ ...page.content, content: nextPageState }),
     })
-
   }
 
   return (

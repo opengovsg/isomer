@@ -1,10 +1,11 @@
-import { Grid, GridItem } from '@chakra-ui/react'
-import { useEffect } from 'react'
-import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
-import EditPageDrawer from '~/features/editing-experience/components/EditPageDrawer'
-import Preview from '~/features/editing-experience/components/Preview'
-import { PageEditingLayout } from '~/templates/layouts/PageEditingLayout'
-import { trpc } from '~/utils/trpc'
+import { useEffect } from "react"
+import { Grid, GridItem } from "@chakra-ui/react"
+
+import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import EditPageDrawer from "~/features/editing-experience/components/EditPageDrawer"
+import Preview from "~/features/editing-experience/components/Preview"
+import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
+import { trpc } from "~/utils/trpc"
 
 function EditPage(): JSX.Element {
   const {
@@ -20,7 +21,7 @@ function EditPage(): JSX.Element {
 
   useEffect(() => {
     setDrawerState({
-      state: 'root',
+      state: "root",
     })
     const blocks = page.content
     setPageState(blocks)

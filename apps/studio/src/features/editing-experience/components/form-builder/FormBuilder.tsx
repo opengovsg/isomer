@@ -1,5 +1,6 @@
 import type { IsomerComponentTypes } from "@opengovsg/isomer-components"
 import { useState } from "react"
+import { Box } from "@chakra-ui/react"
 import { type JsonFormsRendererRegistryEntry } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
@@ -31,7 +32,6 @@ import {
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
 } from "./renderers"
-import { Box } from "@chakra-ui/react"
 
 const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
@@ -78,6 +78,7 @@ export default function FormBuilder({
           setFormData(data)
         }}
         ajv={new Ajv({ strict: false })}
-      /></Box>
+      />
+    </Box>
   )
 }
