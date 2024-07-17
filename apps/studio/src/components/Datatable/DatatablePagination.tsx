@@ -3,7 +3,6 @@ import { type Table } from "@tanstack/react-table"
 
 export interface DataTablePaginationProps<D> {
   instance: Table<D>
-  pageSizeOptions?: number[]
   totalRowCount?: number
 }
 
