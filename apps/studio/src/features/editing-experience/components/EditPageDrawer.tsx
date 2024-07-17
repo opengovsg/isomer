@@ -1,6 +1,11 @@
-import type { ProseProps } from "@opengovsg/isomer-components/dist/cjs/interfaces"
-import { getComponentSchema } from "@opengovsg/isomer-components"
-import Ajv from "ajv"
+import { useEditorDrawerContext } from '~/contexts/EditorDrawerContext'
+import ComponentSelector from '~/components/PageEditor/ComponentSelector'
+import RootStateDrawer from './RootStateDrawer'
+import TipTapComponent from './TipTapComponent'
+import ComplexEditorStateDrawer from './ComplexEditorStateDrawer'
+import type { ProseProps } from '@opengovsg/isomer-components/dist/cjs/interfaces'
+import { getComponentSchema } from '@opengovsg/isomer-components'
+import Ajv from 'ajv'
 
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
