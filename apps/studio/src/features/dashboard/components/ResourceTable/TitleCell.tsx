@@ -2,11 +2,12 @@ import { HStack, Icon, Text, VStack } from "@chakra-ui/react"
 import { BiFileBlank, BiFolder } from "react-icons/bi"
 
 import type { ResourceTableData } from "./types"
+import type { ResourceType } from "~/utils/resource"
 
 export interface TitleCellProps {
-  title: ResourceTableData["name"]
+  title: ResourceTableData["title"]
   permalink?: ResourceTableData["permalink"]
-  type: ResourceTableData["type"]
+  type: ResourceType
 }
 
 export const TitleCell = ({
@@ -22,7 +23,7 @@ export const TitleCell = ({
         color="base.content.strong"
       />
       <VStack spacing="0.25rem" align="start">
-        <Text title={title} textStyle="subhead-2" noOfLines={1}>
+        <Text title={title ?? ""} textStyle="subhead-2" noOfLines={1}>
           {title}
         </Text>
         <Text
