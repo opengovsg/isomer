@@ -33,31 +33,17 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
   // Isomer page schema
   const [currActiveIdx, setCurrActiveIdx] = useState(0)
 
-  const value = useMemo(
-    () => ({
-      currActiveIdx,
-      setCurrActiveIdx,
-      drawerState,
-      setDrawerState,
-      pageState,
-      setPageState,
-      snapshot,
-      setSnapshot,
-    }),
-    [
-      currActiveIdx,
-      setCurrActiveIdx,
-      drawerState,
-      setDrawerState,
-      pageState,
-      setPageState,
-      snapshot,
-      setSnapshot,
-    ],
-  )
-
   return (
-    <EditorDrawerContext.Provider value={value}>
+    <EditorDrawerContext.Provider value={{
+      currActiveIdx,
+      setCurrActiveIdx,
+      drawerState,
+      setDrawerState,
+      pageState,
+      setPageState,
+      snapshot,
+      setSnapshot,
+    }}>
       {children}
     </EditorDrawerContext.Provider>
   )
