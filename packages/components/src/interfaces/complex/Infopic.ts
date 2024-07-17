@@ -25,6 +25,7 @@ export const InfopicSchema = Type.Object(
     imageSrc: Type.String({
       title: "Infopic image URL",
       description: "The URL to the image",
+      format: "image",
     }),
     imageAlt: Type.Optional(
       Type.String({

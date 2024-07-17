@@ -7,6 +7,7 @@ export const ImageSchema = Type.Object(
     src: Type.String({
       title: "Image source URL",
       description: "The source URL of the image",
+      format: "image",
     }),
     alt: Type.String({
       title: "Image alt text",

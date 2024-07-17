@@ -13,6 +13,7 @@ export const SingleCardSchema = Type.Object({
   imageUrl: Type.String({
     title: "Card image URL",
     description: "The URL of the image to display on the card",
+    format: "image",
   }),
   imageAlt: Type.String({
     title: "Card image alt text",
