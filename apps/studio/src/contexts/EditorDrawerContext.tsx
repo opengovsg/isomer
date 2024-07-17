@@ -2,7 +2,6 @@ import { type IsomerComponent } from '@opengovsg/isomer-components'
 import {
   createContext,
   useContext,
-  useMemo,
   useState,
   type PropsWithChildren,
   type Dispatch,

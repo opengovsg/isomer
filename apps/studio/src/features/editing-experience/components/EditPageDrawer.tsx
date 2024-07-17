@@ -3,9 +3,9 @@ import ComponentSelector from '~/components/PageEditor/ComponentSelector'
 import RootStateDrawer from './RootStateDrawer'
 import TipTapComponent from './TipTapComponent'
 import ComplexEditorStateDrawer from './ComplexEditorStateDrawer'
-import { IsomerNativeComponentsMap } from '@opengovsg/isomer-components'
-import { TypeCompiler } from '@sinclair/typebox/compiler'
 import type { ProseProps } from '@opengovsg/isomer-components/dist/cjs/interfaces'
+import { getComponentSchema } from '@opengovsg/isomer-components'
+import Ajv from 'ajv'
 
 
 export function EditPageDrawer() {
@@ -15,15 +15,17 @@ export function EditPageDrawer() {
     currActiveIdx,
   } = useEditorDrawerContext()
 
-  const proseSchema = IsomerNativeComponentsMap.prose
-  const compiled = TypeCompiler.Compile(proseSchema)
+  const proseSchema = getComponentSchema("prose")
+
+  const ajv = new Ajv({ allErrors: true, strict: false });
+  const validate = ajv.compile<ProseProps>(proseSchema);
 
   const inferAsProse = (component?: typeof pageState[number]): ProseProps => {
     if (!component) {
       throw new Error(`Expected component of type prose but got undefined`)
     }
 
-    if (compiled.Check(component)) {
+    if (validate(component)) {
       return component
     }
 
