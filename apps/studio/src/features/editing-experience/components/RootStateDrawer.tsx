@@ -28,7 +28,6 @@ export default function RootStateDrawer() {
 
   const router = useRouter()
   const pageId = Number(router.query.pageId)
-
   const { mutate } = trpc.page.reorderBlock.useMutation()
   const toast = useToast({ status: "error" })
 
@@ -47,16 +46,21 @@ export default function RootStateDrawer() {
     // we rollback to what we passed them
     const updatedBlocks = Array.from(pageState)
     const [movedBlock] = updatedBlocks.splice(from, 1)
-    // Insert at destination index
-    updatedBlocks.splice(to, 0, movedBlock as any)
-    setPageState(updatedBlocks)
+
+    if (!!movedBlock) {
+      updatedBlocks.splice(to, 0, movedBlock)
+      setPageState(updatedBlocks)
+    }
 
     // NOTE: drive an update to the db with the updated index
-    // TODO: update teh page state when we get it back from db
     mutate({ pageId, from, to, blocks: pageState }, {
       onError: (error, variables) => {
         // NOTE: rollback to last known good state
-        setPageState(variables.blocks as any)
+        // @ts-expect-error Our zod validator runs between frontend and backend
+        // and the error type is automatically inferred from the zod validator.
+        // However, the type that we use on `pageState` is the full type 
+        // because `Preview` (amongst other things) requires the other properties on the actual schema type
+        setPageState(variables.blocks)
         toast({ title: "Failed to update blocks", description: error.message })
       }
     })

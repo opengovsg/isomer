@@ -1,4 +1,4 @@
-import type { ContentPageSchemaType } from "@opengovsg/isomer-components"
+import type { ContentPageSchemaType, IsomerComponent } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
@@ -91,17 +91,19 @@ export const pageRouter = router({
       const fullPage = await getFullPageById(pageId)
 
       if (!fullPage.content || !fullPage.blobId) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "No content found for the requested page" })
+        // TODO: we should probably ping on call
+        throw new TRPCError({ code: "NOT_FOUND", message: "Unable to load content for the requested page, please contact Isomer Support" })
       }
 
       const actualBlocks = (fullPage.content as { content: unknown[] }).content
 
       if (!isEqual(blocks, actualBlocks)) {
-        throw new TRPCError({ code: "CONFLICT", message: "The content of your page was previously updated, please refresh and try again" })
+        throw new TRPCError({ code: "CONFLICT", message: "Someone on your team has changed this page, refresh the page and try again" })
       }
 
       if (from >= actualBlocks.length || to >= actualBlocks.length || from < 0 || to < 0) {
-        throw new TRPCError({ code: "UNPROCESSABLE_CONTENT", message: "Please ensure that you are dragging blocks to a valid position" });
+        // NOTE: If this happens, this indicates that either our dnd libary on our frontend has a
+        throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" });
       }
 
       const [movedBlock] = actualBlocks.splice(from, 1)
