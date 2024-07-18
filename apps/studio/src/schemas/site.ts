@@ -10,5 +10,5 @@ export const getNotificationSchema = z.object({
 
 export const setNotificationSchema = z.object({
   siteId: z.number().min(1),
-  notification: z.string(),
+  notification: z.string().min(1),
 })
