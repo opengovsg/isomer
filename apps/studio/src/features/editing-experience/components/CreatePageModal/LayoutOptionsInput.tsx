@@ -13,36 +13,12 @@ import {
 import { Badge } from "@opengovsg/design-system-react"
 import { BiShow } from "react-icons/bi"
 
+import type { Layout } from "./constants"
 import { NextImage } from "~/components/NextImage"
+import { LAYOUT_RENDER_DATA, LAYOUT_TYPES } from "./constants"
 
-const LAYOUT_TYPES = ["content", "article"] as const
-type Layout = (typeof LAYOUT_TYPES)[number]
 interface LayoutTileProps extends UseRadioProps {
   value: Layout
-}
-
-const LAYOUT_RENDER_DATA: Record<
-  Layout,
-  {
-    title: string
-    description: string
-    imageSrc: string
-    altText: string
-  }
-> = {
-  content: {
-    title: "Default layout",
-    description: "This is the most basic layout for your content.",
-    imageSrc: "/assets/layout-card/default_layout_card.webp",
-    altText: "Image preview of Default layout",
-  },
-  article: {
-    title: "Article layout",
-    description:
-      "Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches",
-    imageSrc: "/assets/layout-card/article_layout_card.webp",
-    altText: "Image preview of Article layout",
-  },
 }
 
 const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(

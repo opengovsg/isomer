@@ -1,6 +1,7 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { useMemo } from "react"
 import {
+  Box,
   Flex,
   ModalBody,
   ModalHeader,
@@ -14,6 +15,7 @@ import { Controller } from "react-hook-form"
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import contentLayoutPreview from "~/features/editing-experience/data/contentLayoutPreview.json"
 import Preview from "../Preview"
+import { LAYOUT_RENDER_DATA } from "./constants"
 import { useCreatePageWizard } from "./CreatePageWizardContext"
 import { LayoutOptionsInput } from "./LayoutOptionsInput"
 
@@ -62,9 +64,12 @@ export const CreatePageLayoutScreen = () => {
           </Wrap>
         </Stack>
       </ModalHeader>
-      <ModalBody p={0} overflow="hidden">
+      <ModalBody p={0} overflow="hidden" bg="base.canvas.alt">
         <Flex height="100%">
           <Stack
+            borderRight="1px solid"
+            borderColor="base.divider.medium"
+            bg="white"
             maxWidth={{ base: "100%", md: "22.75rem" }}
             p="2rem"
             flexDir="row"
@@ -76,8 +81,24 @@ export const CreatePageLayoutScreen = () => {
               render={({ field }) => <LayoutOptionsInput {...field} />}
             />
           </Stack>
-          <Stack flex={1} overflow="auto">
-            {layoutPreview && !isMobile && <Preview {...layoutPreview} />}
+          <Stack flex={1} overflow="auto" px="2.5rem" pt="2rem">
+            {layout && layoutPreview && !isMobile && (
+              <Box shadow="md" borderTopRadius="8px">
+                <Flex
+                  borderTopRadius="8px"
+                  width="100%"
+                  bg="slate.200"
+                  color="white"
+                  textStyle="caption-2"
+                  py="0.5rem"
+                  px="1rem"
+                  justify="center"
+                >
+                  You're previewing the {LAYOUT_RENDER_DATA[layout].title}
+                </Flex>
+                <Preview {...layoutPreview} />
+              </Box>
+            )}
           </Stack>
         </Flex>
       </ModalBody>
