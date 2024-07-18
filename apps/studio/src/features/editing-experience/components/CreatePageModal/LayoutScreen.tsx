@@ -7,7 +7,7 @@ import {
   ModalHeader,
   Stack,
 } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button, useIsMobile } from "@opengovsg/design-system-react"
 import { Controller } from "react-hook-form"
 import { BiLeftArrowAlt } from "react-icons/bi"
 
@@ -23,6 +23,7 @@ import {
 import { LayoutOptionsInput } from "./LayoutOptionsInput"
 
 export const CreatePageLayoutScreen = () => {
+  const isMobile = useIsMobile()
   const { setCurrentStep, formMethods, siteId, folderId, onClose } =
     useCreatePageWizard()
 
@@ -75,7 +76,12 @@ export const CreatePageLayoutScreen = () => {
       </ModalHeader>
       <ModalBody p={0} overflow="hidden">
         <Flex height="100%">
-          <Stack maxWidth="22.75rem" p="2rem" flexDir="row" overflow="auto">
+          <Stack
+            maxWidth={{ base: "100%", md: "22.75rem" }}
+            p="2rem"
+            flexDir="row"
+            overflow="auto"
+          >
             <Controller
               control={control}
               name="layout"
@@ -83,7 +89,7 @@ export const CreatePageLayoutScreen = () => {
             />
           </Stack>
           <Stack flex={1} overflow="auto">
-            {layoutPreview && <Preview {...layoutPreview} />}
+            {layoutPreview && !isMobile && <Preview {...layoutPreview} />}
           </Stack>
         </Flex>
       </ModalBody>
