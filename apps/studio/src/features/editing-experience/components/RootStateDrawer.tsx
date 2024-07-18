@@ -13,28 +13,38 @@ import { BsPlus } from "react-icons/bs"
 import { MdOutlineDragIndicator } from "react-icons/md"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { trpc } from "~/utils/trpc"
+import { useRouter } from "next/router"
 
 export default function RootStateDrawer() {
   const {
     setDrawerState,
     pageState,
-    setPageState,
-    setSnapshot: setEditorState,
+    setSnapshot,
     setCurrActiveIdx,
+    setPageState
   } = useEditorDrawerContext()
+
+  const router = useRouter()
+  const pageId = Number(router.query.pageId)
+
+  const { variables, mutate, isLoading } = trpc.page.reorderBlock.useMutation()
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return
 
     const updatedBlocks = Array.from(pageState)
-    // Remove block at source index
-    const [movedBlock] = updatedBlocks.splice(result.source.index, 1)
-    if (movedBlock) {
-      // Insert at destination index
-      updatedBlocks.splice(result.destination.index, 0, movedBlock)
-    }
+    const from = result.source.index
+    const to = result.destination.index
 
+    // NOTE: drive an update to the db with the updated index
+    // TODO: update teh page state when we get it back from db
     setPageState(updatedBlocks)
+    mutate({ pageId, from, to, blocks: pageState }, {
+      // onSuccess: (data) => {
+      //   console.log("data", data)
+      // }
+    })
   }
 
   return (
@@ -88,7 +98,7 @@ export default function RootStateDrawer() {
                                 ? "nativeEditor"
                                 : "complexEditor"
                             // NOTE: SNAPSHOT
-                            setEditorState(pageState)
+                            setSnapshot(pageState)
                             setDrawerState({ state: nextState })
                           }}
                         >

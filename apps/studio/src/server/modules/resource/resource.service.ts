@@ -81,13 +81,11 @@ export const updatePageById = (
   page: Partial<Omit<Page, "id">> & { id: number },
 ) => {
   const { id, ...rest } = page
-  return db.transaction().execute((tx) => {
-    return tx
-      .updateTable("Resource")
-      .set(rest)
-      .where("id", "=", id)
-      .executeTakeFirstOrThrow()
-  })
+  return db
+    .updateTable("Resource")
+    .set(rest)
+    .where("id", "=", id)
+    .executeTakeFirstOrThrow()
 }
 
 // NOTE: This id here is the page id
@@ -103,13 +101,16 @@ export const updateBlobById = async (props: {
       .select("blobId")
       .executeTakeFirstOrThrow()
 
+    if (!page.blobId) {
+      throw new Error()
+    }
+
     return (
       tx
         .updateTable("Blob")
-        .innerJoin("Resource", "Resource.id", "id")
         // NOTE: This works because a page has a 1-1 relation with a blob
         .set({ content })
-        .where("Resource.id", "=", id)
+        .where("Blob.id", "=", page.blobId)
         .executeTakeFirstOrThrow()
     )
   })

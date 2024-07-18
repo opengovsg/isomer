@@ -6,6 +6,7 @@ import Ajv from "ajv"
 import {
   createPageSchema,
   getEditPageSchema,
+  reorderBlobSchema,
   updatePageBlobSchema,
   updatePageSchema,
 } from "~/schemas/page"
@@ -16,9 +17,10 @@ import {
   getFullPageById,
   getNavBar,
   updateBlobById,
-  updatePageById,
+  updatePageById
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
+import { isEqual } from "lodash"
 
 const ajv = new Ajv({ allErrors: true, strict: false })
 const schemaValidator = ajv.compile(schema)
@@ -58,10 +60,12 @@ export const pageRouter = router({
     .query(async ({ input, ctx }) => {
       const { pageId } = input
       const page = await getFullPageById(pageId)
+
       const pageName: string = page.name
       const siteMeta = await getSiteConfig(page.siteId)
       const navbar = await getNavBar(page.siteId)
       const footer = await getFooter(page.siteId)
+
       const { content } = page
 
       return {
@@ -72,6 +76,53 @@ export const pageRouter = router({
         ...siteMeta,
       }
     }),
+
+  reorderBlock: protectedProcedure
+    .input(reorderBlobSchema).mutation(async ({
+      input: {
+        pageId,
+        from,
+        to,
+        blocks,
+      }, ctx
+    }) => {
+      // NOTE: we have to check against the page's content that we retrieve from db 
+      // we adopt a strict check such that we allow the update iff the checksum is the same 
+      const fullPage = await getFullPageById(pageId)
+
+
+      if (!fullPage.content) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
+      if (!fullPage.blobId) {
+        throw new TRPCError({ code: "BAD_REQUEST" })
+      }
+
+      const content = (fullPage.content as { content: unknown[] }).content
+      // console.log(JSON.stringify(blocks), "CONTENT \n", JSON.stringify(content))
+
+      // if (!isEqual(blocks, content)) {
+      //   throw new TRPCError({ code: "CONFLICT" })
+      // }
+
+      if (from >= content.length || to >= content.length) {
+        throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" });
+      }
+
+      const [movedBlock] = content.splice(from, 1)
+      // Insert at destination index
+      content.splice(to, 0, movedBlock)
+
+      console.log(" IAM HERE")
+      await updateBlobById({
+        id: fullPage.blobId, content: JSON.stringify(content)
+      })
+
+      // NOTE: user given content and db state is the same at this point
+      return content
+    }),
+
 
   updatePage: protectedProcedure
     .input(updatePageSchema)

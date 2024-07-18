@@ -9,6 +9,15 @@ export const getEditPageSchema = z.object({
   pageId: z.number().min(1),
 })
 
+export const reorderBlobSchema = z.object({
+  pageId: z.number().min(1),
+  from: z.number().min(0),
+  to: z.number().min(0),
+  blocks: z.array(z.object({
+    type: z.string(),
+  }).passthrough())
+})
+
 export const updatePageSchema = getEditPageSchema.extend({
   // NOTE: We allow both to be empty now,
   // in which case this is a no-op.
