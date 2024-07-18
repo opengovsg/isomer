@@ -44,8 +44,18 @@ model Resource {
   draftBlob   Blob? @relation("DraftBlob", fields: [draftBlobId], references: [id])
   draftBlobId Int?  @unique
 
-  isPublished Boolean? @default(false)
-  isFolder    Boolean
+  state ResourceState? @default(Draft)
+  type  ResourceType
+}
+
+enum ResourceState {
+  Draft
+  Published
+}
+
+enum ResourceType {
+  Page
+  Folder
 }
 
 model User {

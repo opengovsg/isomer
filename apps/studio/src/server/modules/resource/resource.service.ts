@@ -12,8 +12,8 @@ const defaultResourceSelect: SelectExpression<DB, "Resource">[] = [
   "Resource.parentId",
   "Resource.mainBlobId",
   "Resource.draftBlobId",
-  "Resource.isFolder",
-  "Resource.isPublished",
+  "Resource.type",
+  "Resource.state",
 ]
 const defaultResourceWithBlobSelect: SelectExpression<
   DB,
@@ -50,7 +50,7 @@ export const getFolders = () =>
   // TODO: write a test to verify this query behaviour
   db
     .selectFrom("Resource")
-    .where("isFolder", "is", true)
+    .where("type", "is", "Folder")
     .select(defaultResourceSelect)
     .execute()
 

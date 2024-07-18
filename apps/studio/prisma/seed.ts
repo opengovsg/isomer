@@ -212,7 +212,7 @@ async function main() {
 
   await db
     .insertInto("Resource")
-    .values({ mainBlobId: blobId, name: "Home", siteId, isFolder: false })
+    .values({ mainBlobId: blobId, name: "Home", siteId, type: "Page" })
     .executeTakeFirstOrThrow()
 
   await Promise.all(

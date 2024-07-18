@@ -4,9 +4,15 @@
   - You are about to drop the column `blobId` on the `Resource` table. All the data in the column will be lost.
   - A unique constraint covering the columns `[mainBlobId]` on the table `Resource` will be added. If there are existing duplicate values, this will fail.
   - A unique constraint covering the columns `[draftBlobId]` on the table `Resource` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `isFolder` to the `Resource` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `type` to the `Resource` table without a default value. This is not possible if the table is not empty.
 
 */
+-- CreateEnum
+CREATE TYPE "ResourceState" AS ENUM ('Draft', 'Published');
+
+-- CreateEnum
+CREATE TYPE "ResourceType" AS ENUM ('Page', 'Folder');
+
 -- DropForeignKey
 ALTER TABLE "Resource" DROP CONSTRAINT "Resource_blobId_fkey";
 
@@ -16,9 +22,9 @@ DROP INDEX "Resource_blobId_key";
 -- AlterTable
 ALTER TABLE "Resource" DROP COLUMN "blobId",
 ADD COLUMN     "draftBlobId" INTEGER,
-ADD COLUMN     "isFolder" BOOLEAN NOT NULL,
-ADD COLUMN     "isPublished" BOOLEAN DEFAULT false,
-ADD COLUMN     "mainBlobId" INTEGER;
+ADD COLUMN     "mainBlobId" INTEGER,
+ADD COLUMN     "state" "ResourceState" DEFAULT 'Draft',
+ADD COLUMN     "type" "ResourceType" NOT NULL;
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Resource_mainBlobId_key" ON "Resource"("mainBlobId");
