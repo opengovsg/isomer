@@ -8,17 +8,17 @@
  * @see https://trpc.io/docs/v10/procedures
  */
 
-import { initTRPC, TRPCError } from '@trpc/server'
-import superjson from 'superjson'
-import { ZodError } from 'zod'
+import { initTRPC, TRPCError } from "@trpc/server"
+import superjson from "superjson"
+import { ZodError } from "zod"
 
-import { APP_VERSION_HEADER_KEY } from '~/constants/version'
-import { env } from '~/env.mjs'
-import { createBaseLogger } from '~/lib/logger'
-import getIP from '~/utils/getClientIp'
-import { type Context } from './context'
-import { defaultMeSelect } from './modules/me/me.select'
-import { prisma } from './prisma'
+import { APP_VERSION_HEADER_KEY } from "~/constants/version"
+import { env } from "~/env.mjs"
+import { createBaseLogger } from "~/lib/logger"
+import getIP from "~/utils/getClientIp"
+import { type Context } from "./context"
+import { defaultMeSelect } from "./modules/me/me.select"
+import { prisma } from "./prisma"
 
 const t = initTRPC.context<Context>().create({
   /**
@@ -34,7 +34,7 @@ const t = initTRPC.context<Context>().create({
       data: {
         ...shape.data,
         zodError:
-          error.code === 'BAD_REQUEST' && error.cause instanceof ZodError
+          error.code === "BAD_REQUEST" && error.cause instanceof ZodError
             ? error.cause.flatten()
             : null,
       },
@@ -77,12 +77,12 @@ const loggerWithVersionMiddleware = loggerMiddleware.unstable_pipe(
     const clientVersion = req.headers[APP_VERSION_HEADER_KEY.toLowerCase()]
 
     if (clientVersion && serverVersion !== clientVersion) {
-      logger.warn('Application version mismatch', {
+      logger.warn("Application version mismatch", {
         clientVersion,
         serverVersion,
       })
     } else if (!clientVersion) {
-      logger.warn('Client version not available', {
+      logger.warn("Client version not available", {
         serverVersion,
       })
     }
@@ -94,10 +94,10 @@ const loggerWithVersionMiddleware = loggerMiddleware.unstable_pipe(
 )
 
 const contentTypeHeaderMiddleware = t.middleware(async ({ ctx, next }) => {
-  if (ctx.req.body && ctx.req.headers['content-type'] !== 'application/json') {
+  if (ctx.req.body && ctx.req.headers["content-type"] !== "application/json") {
     throw new TRPCError({
-      code: 'BAD_REQUEST',
-      message: 'Invalid Content-Type',
+      code: "BAD_REQUEST",
+      message: "Invalid Content-Type",
     })
   }
   return next()
@@ -105,7 +105,7 @@ const contentTypeHeaderMiddleware = t.middleware(async ({ ctx, next }) => {
 
 const baseMiddleware = t.middleware(async ({ ctx, next }) => {
   if (ctx.session === undefined) {
-    throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
+    throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
   }
   return next({
     ctx: {
@@ -116,7 +116,7 @@ const baseMiddleware = t.middleware(async ({ ctx, next }) => {
 
 const authMiddleware = t.middleware(async ({ next, ctx }) => {
   if (!ctx.session?.userId) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' })
+    throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 
   // this code path is needed if a user does not exist in the database as they were deleted, but the session was active before
@@ -126,7 +126,7 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
   })
 
   if (user === null) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' })
+    throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 
   return next({
