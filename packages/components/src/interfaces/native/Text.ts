@@ -6,7 +6,7 @@ const BoldMarkSchema = Type.Object(
     type: Type.Literal("bold", { default: "bold" }),
   },
   {
-    title: "Bold mark",
+    title: "Bold",
   },
 )
 
@@ -15,7 +15,7 @@ const CodeMarkSchema = Type.Object(
     type: Type.Literal("code", { default: "code" }),
   },
   {
-    title: "Code mark",
+    title: "Code",
   },
 )
 
@@ -24,7 +24,7 @@ const ItalicMarkSchema = Type.Object(
     type: Type.Literal("italic", { default: "italic" }),
   },
   {
-    title: "Italic mark",
+    title: "Italic",
   },
 )
 
@@ -43,7 +43,7 @@ const StrikeMarkSchema = Type.Object(
     type: Type.Literal("strike", { default: "strike" }),
   },
   {
-    title: "Strike mark",
+    title: "Strikethrough",
   },
 )
 
@@ -52,7 +52,7 @@ const SubscriptMarkSchema = Type.Object(
     type: Type.Literal("subscript", { default: "subscript" }),
   },
   {
-    title: "Subscript mark",
+    title: "Subscript",
   },
 )
 
@@ -61,7 +61,7 @@ const SuperscriptMarkSchema = Type.Object(
     type: Type.Literal("superscript", { default: "superscript" }),
   },
   {
-    title: "Superscript mark",
+    title: "Superscript",
   },
 )
 
@@ -70,7 +70,7 @@ const UnderlineMarkSchema = Type.Object(
     type: Type.Literal("underline", { default: "underline" }),
   },
   {
-    title: "Underline mark",
+    title: "Underline",
   },
 )
 
