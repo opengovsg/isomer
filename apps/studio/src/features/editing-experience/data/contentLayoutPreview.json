@@ -6,8 +6,7 @@
       "summary": "Our organisation's vision, mission, structure and values"
     },
     "title": "About MTI",
-    "description": "Our organisation's vision, mission, structure and values",
-    "permalink": "/"
+    "description": "Our organisation's vision, mission, structure and values"
   },
   "content": [
     {
@@ -15,7 +14,9 @@
       "content": [
         {
           "type": "heading",
-          "level": 2,
+          "attrs": {
+            "level": 2
+          },
           "content": [
             {
               "type": "text",
@@ -36,7 +37,9 @@
         },
         {
           "type": "heading",
-          "level": 2,
+          "attrs": {
+            "level": 2
+          },
           "content": [
             {
               "type": "text",
