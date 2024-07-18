@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { siteHandlers } from "tests/msw/handlers/site"
 
 import LayoutSelection from "./LayoutSelection"
-import { siteHandlers } from "tests/msw/handlers/site"
 
 const meta: Meta<typeof LayoutSelection> = {
   title: "Components/LayoutSelection",
