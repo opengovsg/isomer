@@ -119,27 +119,32 @@ const processDanglingDirectory = async (fullPath, relativePath, name) => {
   const children = await getSiteMapChildrenEntries(fullPath, relativePath)
   // TODO: Improve the content for generated index pages
   const listOfChildPages = {
-    type: "unorderedList",
-    content: children.map((child) => ({
-      type: "listItem",
-      content: [
-        {
-          type: "paragraph",
+    type: "prose",
+    content: [
+      {
+        type: "unorderedList",
+        content: children.map((child) => ({
+          type: "listItem",
           content: [
             {
-              type: "text",
-              marks: [
+              type: "paragraph",
+              content: [
                 {
-                  type: "link",
-                  href: child.permalink,
+                  type: "text",
+                  marks: [
+                    {
+                      type: "link",
+                      href: child.permalink,
+                    },
+                  ],
+                  text: child.title,
                 },
               ],
-              text: child.title,
             },
           ],
-        },
-      ],
-    })),
+        })),
+      }
+    ]
   }
 
   const pageName = name.replace(/-/g, " ")
