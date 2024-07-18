@@ -18,6 +18,7 @@ export const CreatePageModalScreen = () => {
       display="flex"
       flexDir="column"
       flex={1}
+      overflow="hidden"
       keyProp={currentStep}
       custom={direction}
     >

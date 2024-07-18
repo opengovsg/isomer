@@ -1,3 +1,5 @@
+import { format } from "date-fns"
+
 export const createDefaultPage = ({
   title,
   layout,
@@ -26,7 +28,7 @@ export const createDefaultPage = ({
         layout: "article",
         page: {
           title,
-          date: "15 Feb 2024",
+          date: format(new Date(), "dd-MM-yyyy"),
           category: "Feature Articles",
           articlePageHeader: {
             summary: [],

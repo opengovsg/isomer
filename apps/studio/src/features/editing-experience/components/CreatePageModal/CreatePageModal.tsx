@@ -20,7 +20,7 @@ export const CreatePageModal = ({
   return (
     <Modal size="full" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent height="$100vh" overflow="hidden">
         <ModalCloseButton />
         <CreatePageWizardProvider
           onClose={onClose}

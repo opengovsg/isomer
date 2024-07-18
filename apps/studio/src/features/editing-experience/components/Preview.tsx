@@ -1,9 +1,11 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
+import { Skeleton } from "@chakra-ui/react"
 import { RenderEngine } from "@opengovsg/isomer-components"
 
+import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
-export default function Preview(props: IsomerSchema) {
+function SuspendablePreview(props: IsomerSchema) {
   const [{ theme, isGovernment, sitemap, name }] =
     trpc.site.getConfig.useSuspenseQuery({ id: 1 })
   const [{ content: footer }] = trpc.site.getFooter.useSuspenseQuery({
@@ -33,3 +35,9 @@ export default function Preview(props: IsomerSchema) {
     />
   )
 }
+
+const Preview = withSuspense(
+  SuspendablePreview,
+  <Skeleton width="100%" height="100%" />,
+)
+export default Preview
