@@ -1,38 +1,78 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-const BoldMarkSchema = Type.Object({
-  type: Type.Literal("bold", { default: "bold" }),
-})
+const BoldMarkSchema = Type.Object(
+  {
+    type: Type.Literal("bold", { default: "bold" }),
+  },
+  {
+    title: "Bold mark",
+  },
+)
 
-const CodeMarkSchema = Type.Object({
-  type: Type.Literal("code", { default: "code" }),
-})
+const CodeMarkSchema = Type.Object(
+  {
+    type: Type.Literal("code", { default: "code" }),
+  },
+  {
+    title: "Code mark",
+  },
+)
 
-const ItalicMarkSchema = Type.Object({
-  type: Type.Literal("italic", { default: "italic" }),
-})
+const ItalicMarkSchema = Type.Object(
+  {
+    type: Type.Literal("italic", { default: "italic" }),
+  },
+  {
+    title: "Italic mark",
+  },
+)
 
-const LinkMarkSchema = Type.Object({
-  type: Type.Literal("link", { default: "link" }),
-  href: Type.String(),
-})
+const LinkMarkSchema = Type.Object(
+  {
+    type: Type.Literal("link", { default: "link" }),
+    href: Type.String(),
+  },
+  {
+    title: "Hyperlink",
+  },
+)
 
-const StrikeMarkSchema = Type.Object({
-  type: Type.Literal("strike", { default: "strike" }),
-})
+const StrikeMarkSchema = Type.Object(
+  {
+    type: Type.Literal("strike", { default: "strike" }),
+  },
+  {
+    title: "Strike mark",
+  },
+)
 
-const SubscriptMarkSchema = Type.Object({
-  type: Type.Literal("subscript", { default: "subscript" }),
-})
+const SubscriptMarkSchema = Type.Object(
+  {
+    type: Type.Literal("subscript", { default: "subscript" }),
+  },
+  {
+    title: "Subscript mark",
+  },
+)
 
-const SuperscriptMarkSchema = Type.Object({
-  type: Type.Literal("superscript", { default: "superscript" }),
-})
+const SuperscriptMarkSchema = Type.Object(
+  {
+    type: Type.Literal("superscript", { default: "superscript" }),
+  },
+  {
+    title: "Superscript mark",
+  },
+)
 
-const UnderlineMarkSchema = Type.Object({
-  type: Type.Literal("underline", { default: "underline" }),
-})
+const UnderlineMarkSchema = Type.Object(
+  {
+    type: Type.Literal("underline", { default: "underline" }),
+  },
+  {
+    title: "Underline mark",
+  },
+)
 
 export const TextSchema = Type.Object(
   {
