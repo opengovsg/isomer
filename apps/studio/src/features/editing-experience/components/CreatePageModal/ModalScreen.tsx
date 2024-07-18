@@ -3,8 +3,8 @@ import {
   CreatePageFlowStates,
   useCreatePageWizard,
 } from "./CreatePageWizardContext"
+import { CreatePageDetailsScreen } from "./DetailsScreen"
 import { CreatePageLayoutScreen } from "./LayoutScreen"
-import { CreatePageSetupScreen } from "./SetupScreen"
 
 /**
  * @preconditions Requires CreateFormWizardProvider parent
@@ -22,7 +22,9 @@ export const CreatePageModalScreen = () => {
       keyProp={currentStep}
       custom={direction}
     >
-      {currentStep === CreatePageFlowStates.Setup && <CreatePageSetupScreen />}
+      {currentStep === CreatePageFlowStates.Details && (
+        <CreatePageDetailsScreen />
+      )}
       {currentStep === CreatePageFlowStates.Layout && (
         <CreatePageLayoutScreen />
       )}

@@ -1,6 +1,5 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import { Modal, ModalContent, ModalOverlay } from "@chakra-ui/react"
-import { ModalCloseButton } from "@opengovsg/design-system-react"
 
 import { CreatePageWizardProvider } from "./CreatePageWizardContext"
 import { CreatePageModalScreen } from "./ModalScreen"
@@ -21,7 +20,6 @@ export const CreatePageModal = ({
     <Modal size="full" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent height="$100vh" overflow="hidden">
-        <ModalCloseButton />
         <CreatePageWizardProvider
           onClose={onClose}
           siteId={siteId}

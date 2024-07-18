@@ -1,15 +1,14 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { PropsWithChildren } from "react"
-import type { UseFormReturn } from "react-hook-form"
-import type { z } from "zod"
 import { createContext, useContext, useState } from "react"
 
 import { useZodForm } from "~/lib/form"
 import { createPageSchema } from "~/schemas/page"
+import { trpc } from "~/utils/trpc"
 
 export enum CreatePageFlowStates {
-  Setup = "setup",
   Layout = "layout",
+  Details = "details",
 }
 
 const createPageFormSchema = createPageSchema.omit({
@@ -23,15 +22,9 @@ interface CreatePageWizardPassthroughProps
   folderId?: number
 }
 
-export interface CreatePageWizardContextReturn
-  extends CreatePageWizardPassthroughProps {
-  currentStep: CreatePageFlowStates
-  direction: number
-  setCurrentStep: React.Dispatch<
-    React.SetStateAction<[CreatePageFlowStates, -1 | 1 | 0]>
-  >
-  formMethods: UseFormReturn<z.input<typeof createPageFormSchema>>
-}
+export type CreatePageWizardContextReturn = ReturnType<
+  typeof useCreatePageWizardContext
+>
 
 const CreatePageWizardContext = createContext<
   CreatePageWizardContextReturn | undefined
@@ -48,7 +41,7 @@ export const useCreatePageWizard = (): CreatePageWizardContextReturn => {
 }
 
 export const INITIAL_STEP_STATE: [CreatePageFlowStates, -1 | 1 | 0] = [
-  CreatePageFlowStates.Setup,
+  CreatePageFlowStates.Layout,
   -1,
 ]
 
@@ -57,6 +50,8 @@ const useCreatePageWizardContext = (
 ) => {
   const [[currentStep, direction], setCurrentStep] =
     useState(INITIAL_STEP_STATE)
+
+  const { siteId, folderId } = passthroughProps
 
   const formMethods = useZodForm({
     schema: createPageFormSchema,
@@ -67,11 +62,41 @@ const useCreatePageWizardContext = (
     },
   })
 
+  const utils = trpc.useUtils()
+
+  const { mutate, isLoading } = trpc.page.createPage.useMutation({
+    onSuccess: async () => {
+      await utils.page.list.invalidate()
+      passthroughProps.onClose()
+    },
+    // TOOD: Error handling
+  })
+
+  const handleCreatePage = formMethods.handleSubmit((values) => {
+    mutate({
+      siteId,
+      folderId,
+      ...values,
+    })
+  })
+
+  const handleNextToDetailScreen = () => {
+    setCurrentStep([CreatePageFlowStates.Details, 1])
+  }
+
+  const handleBackToLayoutScreen = () => {
+    setCurrentStep([CreatePageFlowStates.Layout, -1])
+  }
+
   return {
     currentStep,
     direction,
     setCurrentStep,
     formMethods,
+    handleCreatePage,
+    isLoading,
+    handleNextToDetailScreen,
+    handleBackToLayoutScreen,
     ...passthroughProps,
   }
 }

@@ -3,56 +3,28 @@ import { useMemo } from "react"
 import {
   Flex,
   ModalBody,
-  ModalFooter,
   ModalHeader,
   Stack,
+  Text,
+  Wrap,
 } from "@chakra-ui/react"
 import { Button, useIsMobile } from "@opengovsg/design-system-react"
 import { Controller } from "react-hook-form"
-import { BiLeftArrowAlt } from "react-icons/bi"
 
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import contentLayoutPreview from "~/features/editing-experience/data/contentLayoutPreview.json"
-import { textStyles } from "~/theme/foundations/textStyles"
-import { trpc } from "~/utils/trpc"
 import Preview from "../Preview"
-import {
-  CreatePageFlowStates,
-  useCreatePageWizard,
-} from "./CreatePageWizardContext"
+import { useCreatePageWizard } from "./CreatePageWizardContext"
 import { LayoutOptionsInput } from "./LayoutOptionsInput"
 
 export const CreatePageLayoutScreen = () => {
   const isMobile = useIsMobile()
-  const { setCurrentStep, formMethods, siteId, folderId, onClose } =
+  const { formMethods, onClose, handleNextToDetailScreen } =
     useCreatePageWizard()
 
-  const utils = trpc.useUtils()
+  const { watch, control } = formMethods
 
-  const { mutate, isLoading } = trpc.page.createPage.useMutation({
-    onSuccess: async () => {
-      await utils.page.list.invalidate()
-      onClose()
-    },
-    // TOOD: Error handling
-  })
-
-  const { watch, handleSubmit, control } = formMethods
-
-  const pageTitle = watch("title")
   const layout = watch("layout")
-
-  const handleBack = () => {
-    setCurrentStep([CreatePageFlowStates.Setup, -1])
-  }
-
-  const onSubmit = handleSubmit((values) => {
-    mutate({
-      siteId,
-      folderId,
-      ...values,
-    })
-  })
 
   const layoutPreview: IsomerSchema | undefined = useMemo(() => {
     switch (layout) {
@@ -72,7 +44,23 @@ export const CreatePageLayoutScreen = () => {
         borderBottom="1px solid"
         borderColor="base.divider.medium"
       >
-        Choose a layout for “{pageTitle}”
+        <Stack justify="space-between" flexDir={{ base: "column", md: "row" }}>
+          <Text>Create a new page: Choose a layout</Text>
+          <Wrap
+            shouldWrapChildren
+            flexDirection="row"
+            justify={{ base: "flex-end", md: "flex-start" }}
+            align="center"
+            gap="0.75rem"
+          >
+            <Button variant="clear" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button onClick={handleNextToDetailScreen}>
+              Next: Page title and URL
+            </Button>
+          </Wrap>
+        </Stack>
       </ModalHeader>
       <ModalBody p={0} overflow="hidden">
         <Flex height="100%">
@@ -93,27 +81,6 @@ export const CreatePageLayoutScreen = () => {
           </Stack>
         </Flex>
       </ModalBody>
-      <ModalFooter>
-        <Stack
-          width="100%"
-          flexDirection="row"
-          justify="space-between"
-          align="center"
-        >
-          <Button
-            variant="link"
-            {...textStyles["subhead-2"]}
-            leftIcon={<BiLeftArrowAlt fontSize="1.25rem" />}
-            onClick={handleBack}
-            isDisabled={isLoading}
-          >
-            Back to page details
-          </Button>
-          <Button isLoading={isLoading} onClick={onSubmit}>
-            Create new page
-          </Button>
-        </Stack>
-      </ModalFooter>
     </>
   )
 }
