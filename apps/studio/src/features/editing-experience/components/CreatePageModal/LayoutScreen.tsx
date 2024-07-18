@@ -25,8 +25,13 @@ export const CreatePageLayoutScreen = () => {
         color="base.content.strong"
         borderBottom="1px solid"
         borderColor="base.divider.medium"
+        py="0.75rem"
       >
-        <Stack justify="space-between" flexDir={{ base: "column", md: "row" }}>
+        <Stack
+          align="center"
+          justify="space-between"
+          flexDir={{ base: "column", md: "row" }}
+        >
           <Text>Create a new page: Choose a layout</Text>
           <Wrap
             shouldWrapChildren
