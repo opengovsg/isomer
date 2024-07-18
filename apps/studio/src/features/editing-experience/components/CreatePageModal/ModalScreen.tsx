@@ -1,4 +1,5 @@
-import { XMotionBox } from "~/components/Motionbox"
+import { Box } from "@chakra-ui/react"
+
 import {
   CreatePageFlowStates,
   useCreatePageWizard,
@@ -11,23 +12,16 @@ import { CreatePageLayoutScreen } from "./LayoutScreen"
  * Display screen content depending on the current step (with animation).
  */
 export const CreatePageModalScreen = () => {
-  const { direction, currentStep } = useCreatePageWizard()
+  const { currentStep } = useCreatePageWizard()
 
   return (
-    <XMotionBox
-      display="flex"
-      flexDir="column"
-      flex={1}
-      overflow="hidden"
-      keyProp={currentStep}
-      custom={direction}
-    >
+    <Box display="flex" flexDir="column" flex={1} overflow="hidden">
       {currentStep === CreatePageFlowStates.Details && (
         <CreatePageDetailsScreen />
       )}
       {currentStep === CreatePageFlowStates.Layout && (
         <CreatePageLayoutScreen />
       )}
-    </XMotionBox>
+    </Box>
   )
 }

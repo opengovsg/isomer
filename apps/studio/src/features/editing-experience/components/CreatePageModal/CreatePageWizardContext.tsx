@@ -43,18 +43,16 @@ export const useCreatePageWizard = (): CreatePageWizardContextReturn => {
   return context
 }
 
-export const INITIAL_STEP_STATE: [CreatePageFlowStates, -1 | 1 | 0] = [
-  CreatePageFlowStates.Layout,
-  -1,
-]
+export const INITIAL_STEP_STATE: CreatePageFlowStates =
+  CreatePageFlowStates.Layout
 
 const useCreatePageWizardContext = ({
   siteId,
   folderId,
   onClose,
 }: CreatePageWizardProps) => {
-  const [[currentStep, direction], setCurrentStep] =
-    useState(INITIAL_STEP_STATE)
+  const [currentStep, setCurrentStep] =
+    useState<CreatePageFlowStates>(INITIAL_STEP_STATE)
 
   const formMethods = useZodForm({
     schema: createPageFormSchema,
@@ -96,16 +94,15 @@ const useCreatePageWizardContext = ({
   })
 
   const handleNextToDetailScreen = () => {
-    setCurrentStep([CreatePageFlowStates.Details, 1])
+    setCurrentStep(CreatePageFlowStates.Details)
   }
 
   const handleBackToLayoutScreen = () => {
-    setCurrentStep([CreatePageFlowStates.Layout, -1])
+    setCurrentStep(CreatePageFlowStates.Layout)
   }
 
   return {
     currentStep,
-    direction,
     formMethods,
     handleCreatePage,
     isLoading,
