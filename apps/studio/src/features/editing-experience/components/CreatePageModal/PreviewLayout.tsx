@@ -1,4 +1,4 @@
-import { Box, Flex, Stack } from "@chakra-ui/react"
+import { Box, Flex, Stack, Text } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
 
 import Preview from "../Preview"
@@ -10,9 +10,15 @@ export const PreviewLayout = (): JSX.Element => {
   const { layoutPreviewJson, currentLayout } = useCreatePageWizard()
 
   return (
-    <Stack flex={1} overflow="auto" px="2.5rem" pt="2rem" bg="base.canvas.alt">
+    <Stack
+      flex={1}
+      overflow="hidden"
+      px="2.5rem"
+      pt="2rem"
+      bg="base.canvas.alt"
+    >
       {!isMobile && (
-        <Box shadow="md" borderTopRadius="8px">
+        <Box shadow="md" borderTopRadius="8px" height="100%">
           {currentLayout && (
             <Flex
               borderTopRadius="8px"
@@ -23,11 +29,15 @@ export const PreviewLayout = (): JSX.Element => {
               py="0.5rem"
               px="1rem"
               justify="center"
+              whiteSpace="pre"
             >
-              You're previewing the {LAYOUT_RENDER_DATA[currentLayout].title}
+              You're previewing the{" "}
+              <Text as="span" textStyle="caption-1">
+                {LAYOUT_RENDER_DATA[currentLayout].title}
+              </Text>
             </Flex>
           )}
-          <Box bg="white">
+          <Box bg="white" overflow="auto" height="100%">
             <Preview {...layoutPreviewJson} />
           </Box>
         </Box>

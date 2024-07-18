@@ -19,7 +19,7 @@ export const LAYOUT_RENDER_DATA: Record<
   article: {
     title: "Article layout",
     description:
-      "Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches",
+      "Designed for the perfect reading experience. Use this layout for text-heavy content, such as news, press releases, and speeches.",
     imageSrc: "/assets/layout-card/article_layout_card.webp",
     altText: "Image preview of Article layout",
   },

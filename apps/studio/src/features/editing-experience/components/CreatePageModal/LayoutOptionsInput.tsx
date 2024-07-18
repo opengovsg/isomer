@@ -39,6 +39,8 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
 
     const { title, description, imageSrc, altText } = LAYOUT_RENDER_DATA[value]
 
+    const isSelected = !!input.checked
+
     return (
       <Box as="label">
         <input {...input} />
@@ -54,15 +56,18 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
           <Box
             borderWidth="2px"
             borderRadius="8px"
-            bg="interaction.muted.main.active"
+            bg="interaction.muted.main.hover"
             borderColor="base.divider.medium"
             _groupChecked={{
               borderColor: "base.divider.brand",
+              bg: "interaction.muted.main.active",
             }}
             transitionProperty="common"
             transitionDuration="normal"
             _groupHover={{
-              borderColor: "interaction.main-subtle.hover",
+              borderColor: isSelected
+                ? "base.divider.brand"
+                : "interaction.main-subtle.hover",
             }}
             px="2rem"
             pt="1.5rem"
@@ -70,7 +75,7 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
           >
             <Flex
               borderRadius="8px"
-              opacity={isHover ? 1 : 0}
+              opacity={isHover && !isSelected ? 1 : 0}
               transitionProperty="common"
               transitionDuration="normal"
               flexDirection="column"
@@ -86,9 +91,7 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
               gap="0.25rem"
             >
               <BiShow fontSize="1.25rem" />
-              <Text textStyle="caption-1">
-                {input.checked ? "Previewing" : "Click to preview"}
-              </Text>
+              <Text textStyle="caption-1">Click to preview</Text>
             </Flex>
             <NextImage
               width={240}
@@ -115,7 +118,7 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
               >
                 {title}
               </Text>
-              {input.checked && (
+              {isSelected && (
                 <Badge h="min-content" variant="subtle" size="xs">
                   Previewing
                 </Badge>
