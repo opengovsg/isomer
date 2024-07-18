@@ -1,7 +1,11 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useMemo, useState } from "react"
+import { merge } from "lodash"
 
+import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
+import contentLayoutPreview from "~/features/editing-experience/data/contentLayoutPreview.json"
 import { useZodForm } from "~/lib/form"
 import { createPageSchema } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
@@ -16,8 +20,7 @@ const createPageFormSchema = createPageSchema.omit({
   folderId: true,
 })
 
-interface CreatePageWizardPassthroughProps
-  extends Pick<UseDisclosureReturn, "onClose"> {
+interface CreatePageWizardProps extends Pick<UseDisclosureReturn, "onClose"> {
   siteId: number
   folderId?: number
 }
@@ -45,13 +48,13 @@ export const INITIAL_STEP_STATE: [CreatePageFlowStates, -1 | 1 | 0] = [
   -1,
 ]
 
-const useCreatePageWizardContext = (
-  passthroughProps: CreatePageWizardPassthroughProps,
-) => {
+const useCreatePageWizardContext = ({
+  siteId,
+  folderId,
+  onClose,
+}: CreatePageWizardProps) => {
   const [[currentStep, direction], setCurrentStep] =
     useState(INITIAL_STEP_STATE)
-
-  const { siteId, folderId } = passthroughProps
 
   const formMethods = useZodForm({
     schema: createPageFormSchema,
@@ -62,12 +65,24 @@ const useCreatePageWizardContext = (
     },
   })
 
+  const [layout, title] = formMethods.watch(["layout", "title"])
+
+  const layoutPreviewJson: IsomerSchema = useMemo(() => {
+    const jsonPreview =
+      layout === "content" ? contentLayoutPreview : articleLayoutPreview
+    return merge(jsonPreview, {
+      page: {
+        title: title || "Page title here",
+      },
+    }) as IsomerSchema
+  }, [layout, title])
+
   const utils = trpc.useUtils()
 
   const { mutate, isLoading } = trpc.page.createPage.useMutation({
     onSuccess: async () => {
       await utils.page.list.invalidate()
-      passthroughProps.onClose()
+      onClose()
     },
     // TOOD: Error handling
   })
@@ -91,20 +106,21 @@ const useCreatePageWizardContext = (
   return {
     currentStep,
     direction,
-    setCurrentStep,
     formMethods,
     handleCreatePage,
     isLoading,
     handleNextToDetailScreen,
     handleBackToLayoutScreen,
-    ...passthroughProps,
+    layoutPreviewJson,
+    onClose,
+    currentLayout: layout,
   }
 }
 
 export const CreatePageWizardProvider = ({
   children,
   ...passthroughProps
-}: PropsWithChildren<CreatePageWizardPassthroughProps>): JSX.Element => {
+}: PropsWithChildren<CreatePageWizardProps>): JSX.Element => {
   const values = useCreatePageWizardContext(passthroughProps)
   return (
     <CreatePageWizardContext.Provider value={values}>

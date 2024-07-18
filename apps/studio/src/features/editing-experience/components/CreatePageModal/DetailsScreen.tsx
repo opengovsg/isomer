@@ -18,6 +18,7 @@ import { Controller } from "react-hook-form"
 
 import { MAX_PAGE_URL_LENGTH, MAX_TITLE_LENGTH } from "~/schemas/page"
 import { useCreatePageWizard } from "./CreatePageWizardContext"
+import { PreviewLayout } from "./PreviewLayout"
 
 const generatePageUrl = (value: string) => {
   return (
@@ -43,6 +44,7 @@ export const CreatePageDetailsScreen = () => {
     watch,
     getFieldState,
     setValue,
+    trigger,
     formState: { errors },
   } = formMethods
 
@@ -64,8 +66,9 @@ export const CreatePageDetailsScreen = () => {
     // Once the value has been cleared, dirty state will reset.
     if (!getFieldState("permalink").isDirty) {
       setValue("permalink", generatePageUrl(title))
+      void trigger("permalink")
     }
-  }, [getFieldState, setValue, title])
+  }, [getFieldState, setValue, title, trigger])
 
   return (
     <>
@@ -99,9 +102,9 @@ export const CreatePageDetailsScreen = () => {
           </Wrap>
         </Stack>
       </ModalHeader>
-      <ModalBody p={0} overflow="hidden">
+      <ModalBody p={0} overflow="hidden" bg="white">
         <Flex height="100%">
-          <Stack gap="2rem" my="auto" px="3rem">
+          <Stack height="100%" gap="2rem" mt="10vh" px="3rem" py="1rem">
             <Stack>
               <Text as="h2" textStyle="h4">
                 What is your page about?
@@ -174,9 +177,7 @@ export const CreatePageDetailsScreen = () => {
               </FormControl>
             </Stack>
           </Stack>
-          <Stack flex={1} overflow="auto">
-            {/* {layoutPreview && !isMobile && <Preview {...layoutPreview} />} */}
-          </Stack>
+          <PreviewLayout />
         </Flex>
       </ModalBody>
     </>
