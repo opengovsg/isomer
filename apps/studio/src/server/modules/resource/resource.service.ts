@@ -34,16 +34,11 @@ const defaultFooterSelect: SelectExpression<DB, "Footer">[] = [
 
 export const getPages = () => {
   // TODO: write a test to verify this query behaviour
-  return (
-    db
-      .selectFrom("Resource")
-      // fetch pages where either a draft exists or a published blob exists
-      .where((eb) =>
-        eb.or([eb("mainBlobId", "!=", null), eb("draftBlobId", "!=", null)]),
-      )
-      .select(defaultResourceSelect)
-      .execute()
-  )
+  return db
+    .selectFrom("Resource")
+    .where("type", "is", "Page")
+    .select(defaultResourceSelect)
+    .execute()
 }
 
 export const getFolders = () =>
@@ -55,20 +50,20 @@ export const getFolders = () =>
     .execute()
 
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
-const getById = (id: number) =>
+const getByResourceId = (id: number) =>
   db.selectFrom("Resource").where("Resource.id", "=", id)
 
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
 export const getFullPageById = async (id: number) => {
   // Check if draft blob exists and return that preferentially
-  const draftBlob = await getById(id)
+  const draftBlob = await getByResourceId(id)
     .where("Resource.draftBlobId", "is not", null)
     .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
     .executeTakeFirst()
   if (draftBlob) return draftBlob
 
-  return getById(id)
+  return getByResourceId(id)
     .where("Resource.mainBlobId", "is not", null)
     .innerJoin("Blob", "Resource.mainBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
@@ -76,10 +71,8 @@ export const getFullPageById = async (id: number) => {
 }
 
 export const getPageById = (id: number) => {
-  return getById(id)
-    .where((eb) =>
-      eb.or([eb("mainBlobId", "!=", null), eb("draftBlobId", "!=", null)]),
-    )
+  return getByResourceId(id)
+    .where("type", "is", "Page")
     .select(defaultResourceSelect)
     .executeTakeFirstOrThrow()
 }
