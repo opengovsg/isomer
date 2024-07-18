@@ -90,37 +90,30 @@ export const pageRouter = router({
       // we adopt a strict check such that we allow the update iff the checksum is the same 
       const fullPage = await getFullPageById(pageId)
 
-
-      if (!fullPage.content) {
-        throw new TRPCError({ code: "NOT_FOUND" })
+      if (!fullPage.content || !fullPage.blobId) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "No content found for the requested page" })
       }
 
-      if (!fullPage.blobId) {
-        throw new TRPCError({ code: "BAD_REQUEST" })
+      const actualBlocks = (fullPage.content as { content: unknown[] }).content
+
+      if (!isEqual(blocks, actualBlocks)) {
+        throw new TRPCError({ code: "CONFLICT", message: "The content of your page was previously updated, please refresh and try again" })
       }
 
-      const content = (fullPage.content as { content: unknown[] }).content
-      // console.log(JSON.stringify(blocks), "CONTENT \n", JSON.stringify(content))
-
-      // if (!isEqual(blocks, content)) {
-      //   throw new TRPCError({ code: "CONFLICT" })
-      // }
-
-      if (from >= content.length || to >= content.length) {
-        throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" });
+      if (from >= actualBlocks.length || to >= actualBlocks.length || from < 0 || to < 0) {
+        throw new TRPCError({ code: "UNPROCESSABLE_CONTENT", message: "Please ensure that you are dragging blocks to a valid position" });
       }
 
-      const [movedBlock] = content.splice(from, 1)
+      const [movedBlock] = actualBlocks.splice(from, 1)
       // Insert at destination index
-      content.splice(to, 0, movedBlock)
+      actualBlocks.splice(to, 0, movedBlock)
 
-      console.log(" IAM HERE")
       await updateBlobById({
-        id: fullPage.blobId, content: JSON.stringify(content)
+        id: fullPage.blobId, content: JSON.stringify({ ...fullPage.content, content: actualBlocks })
       })
 
       // NOTE: user given content and db state is the same at this point
-      return content
+      return actualBlocks
     }),
 
 

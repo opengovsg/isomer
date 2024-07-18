@@ -15,6 +15,7 @@ import { MdOutlineDragIndicator } from "react-icons/md"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { trpc } from "~/utils/trpc"
 import { useRouter } from "next/router"
+import { useToast } from "@opengovsg/design-system-react"
 
 export default function RootStateDrawer() {
   const {
@@ -28,22 +29,36 @@ export default function RootStateDrawer() {
   const router = useRouter()
   const pageId = Number(router.query.pageId)
 
-  const { variables, mutate, isLoading } = trpc.page.reorderBlock.useMutation()
+  const { mutate } = trpc.page.reorderBlock.useMutation()
+  const toast = useToast({ status: "error" })
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return
 
-    const updatedBlocks = Array.from(pageState)
+
     const from = result.source.index
     const to = result.destination.index
 
+    if (from >= pageState.length || to >= pageState.length || from < 0 || to < 0) return
+
+
+    // NOTE: We eagerly update their page state here 
+    // and if it fails on the backend, 
+    // we rollback to what we passed them
+    const updatedBlocks = Array.from(pageState)
+    const [movedBlock] = updatedBlocks.splice(from, 1)
+    // Insert at destination index
+    updatedBlocks.splice(to, 0, movedBlock as any)
+    setPageState(updatedBlocks)
+
     // NOTE: drive an update to the db with the updated index
     // TODO: update teh page state when we get it back from db
-    setPageState(updatedBlocks)
     mutate({ pageId, from, to, blocks: pageState }, {
-      // onSuccess: (data) => {
-      //   console.log("data", data)
-      // }
+      onError: (error, variables) => {
+        // NOTE: rollback to last known good state
+        setPageState(variables.blocks as any)
+        toast({ title: "Failed to update blocks", description: error.message })
+      }
     })
   }
 
@@ -94,10 +109,9 @@ export default function RootStateDrawer() {
                             setCurrActiveIdx(index)
                             // TODO: we should automatically do this probably?
                             const nextState =
-                              pageState[index]?.type === "prose"
-                                ? "nativeEditor"
-                                : "complexEditor"
-                            // NOTE: SNAPSHOT
+                              pageState[index]?.type === 'prose'
+                                ? 'nativeEditor'
+                                : 'complexEditor'
                             setSnapshot(pageState)
                             setDrawerState({ state: nextState })
                           }}
