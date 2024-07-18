@@ -1,4 +1,5 @@
 import { Box } from "@chakra-ui/react"
+import { useAutoAnimate } from "@formkit/auto-animate/react"
 
 import {
   CreatePageFlowStates,
@@ -13,9 +14,15 @@ import { CreatePageLayoutScreen } from "./LayoutScreen"
  */
 export const CreatePageModalScreen = () => {
   const { currentStep } = useCreatePageWizard()
-
+  const [parent] = useAutoAnimate()
   return (
-    <Box display="flex" flexDir="column" flex={1} overflow="hidden">
+    <Box
+      display="flex"
+      flexDir="column"
+      flex={1}
+      overflow="hidden"
+      ref={parent}
+    >
       {currentStep === CreatePageFlowStates.Details && (
         <CreatePageDetailsScreen />
       )}
