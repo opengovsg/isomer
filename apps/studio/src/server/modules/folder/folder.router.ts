@@ -26,7 +26,7 @@ export const folderRouter = router({
         .where("parentId", "=", input.resourceId)
         .execute()
       const children = childrenResult.map((c) => {
-        if (c.blobId) {
+        if (c.draftBlobId || c.mainBlobId) {
           return {
             id: c.id,
             name: c.name,

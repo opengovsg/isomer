@@ -32,13 +32,30 @@ model Resource {
   siteId   Int
   site     Site      @relation(fields: [siteId], references: [id])
   parentId Int?
-  parent   Resource? @relation("parentRelation", fields: [parentId], references: [id])
-  blobId   Int?      @unique
-  blob     Blob?     @relation(fields: [blobId], references: [id])
+  parent   Resource? @relation("ParentRelation", fields: [parentId], references: [id])
 
-  children Resource[] @relation("parentRelation")
+  children Resource[] @relation("ParentRelation")
 
   permission Permission[]
+
+  mainBlob   Blob? @relation("MainBlob", fields: [mainBlobId], references: [id])
+  mainBlobId Int?  @unique
+
+  draftBlob   Blob? @relation("DraftBlob", fields: [draftBlobId], references: [id])
+  draftBlobId Int?  @unique
+
+  state ResourceState? @default(Draft)
+  type  ResourceType
+}
+
+enum ResourceState {
+  Draft
+  Published
+}
+
+enum ResourceType {
+  Page
+  Folder
 }
 
 model User {
@@ -95,8 +112,8 @@ model Blob {
   id      Int  @id @default(autoincrement())
   content Json
 
-  // Should the blob be deleted on deletion of the resource? 
-  resource Resource?
+  mainResource  Resource? @relation("MainBlob")
+  draftResource Resource? @relation("DraftBlob")
 }
 
 model SiteMember {

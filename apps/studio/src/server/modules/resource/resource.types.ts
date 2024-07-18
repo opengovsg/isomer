@@ -11,7 +11,8 @@ export type PageContent = Omit<
   "layout" | "LinkComponent" | "ScriptComponent"
 >
 
-export type Page = SetRequired<Resource, "blobId">
+// TODO: Technically mainBlobId is not required before 1st publish
+export type Page = SetRequired<Resource, "mainBlobId">
 
 export interface Navbar {
   items: IsomerSiteProps["navBarItems"]
