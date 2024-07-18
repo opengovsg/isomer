@@ -110,6 +110,7 @@ const HeroContentAlignmentSchema = Type.Object({
     Type.Union([Type.Literal("left"), Type.Literal("right")], {
       title: "Hero alignment",
       description: "The position to align the hero content to",
+      type: "string",
     }),
   ),
 })
@@ -125,6 +126,7 @@ const HeroInfoboxSchema = Type.Composite([
         {
           title: "Hero background color",
           description: "The background color of the hero banner",
+          type: "string",
         },
       ),
     ),
@@ -132,6 +134,7 @@ const HeroInfoboxSchema = Type.Composite([
       Type.Union([Type.Literal("sm"), Type.Literal("md")], {
         title: "Hero size",
         description: "The size of the hero banner",
+        type: "string",
       }),
     ),
     dropdown: Type.Optional(HeroDropdownSchema),
@@ -144,7 +147,7 @@ const HeroSideSchema = Type.Composite(
     HeroBackgroundImageSchema,
     HeroKeyHighlightSchema,
     Type.Object({
-      variant: Type.Literal("side"),
+      variant: Type.Literal("side", { default: "side" }),
     }),
   ],
   {
@@ -167,7 +170,7 @@ const HeroImageSchema = Type.Composite(
     HeroBackgroundImageSchema,
     HeroKeyHighlightSchema,
     Type.Object({
-      variant: Type.Literal("image"),
+      variant: Type.Literal("image", { default: "image" }),
       dropdown: Type.Optional(HeroDropdownSchema),
     }),
   ],
@@ -182,7 +185,7 @@ const HeroFloatingSchema = Type.Composite(
     HeroBackgroundImageSchema,
     HeroKeyHighlightSchema,
     Type.Object({
-      variant: Type.Literal("floating"),
+      variant: Type.Literal("floating", { default: "floating" }),
     }),
   ],
   {
@@ -197,7 +200,7 @@ const HeroCenterSchema = Type.Composite(
     HeroBackgroundImageSchema,
     HeroKeyHighlightSchema,
     Type.Object({
-      variant: Type.Literal("center"),
+      variant: Type.Literal("center", { default: "center" }),
       dropdown: Type.Optional(HeroDropdownSchema),
     }),
   ],
@@ -213,7 +216,7 @@ const HeroGradientSchema = Type.Composite(
     HeroBackgroundImageSchema,
     HeroContentAlignmentSchema,
     Type.Object({
-      variant: Type.Literal("gradient"),
+      variant: Type.Literal("gradient", { default: "gradient" }),
     }),
   ],
   {
@@ -228,11 +231,12 @@ const HeroSplitSchema = Type.Composite(
     HeroBackgroundImageSchema,
     HeroContentAlignmentSchema,
     Type.Object({
-      variant: Type.Literal("split"),
+      variant: Type.Literal("split", { default: "split" }),
       backgroundColor: Type.Optional(
         Type.Union([Type.Literal("black"), Type.Literal("white")], {
           title: "Hero background color",
           description: "The background color of the hero banner",
+          type: "string",
         }),
       ),
     }),
@@ -249,7 +253,7 @@ const HeroCopyLedSchema = Type.Composite(
     Type.Partial(HeroBackgroundImageSchema),
     HeroKeyHighlightSchema,
     Type.Object({
-      variant: Type.Literal("copyled"),
+      variant: Type.Literal("copyled", { default: "copyled" }),
     }),
   ],
   {
@@ -264,7 +268,7 @@ const HeroFloatingImageSchema = Type.Composite(
     HeroBackgroundImageSchema,
     HeroKeyHighlightSchema,
     Type.Object({
-      variant: Type.Literal("floatingimage"),
+      variant: Type.Literal("floatingimage", { default: "floatingimage" }),
     }),
   ],
   {
@@ -275,7 +279,7 @@ const HeroFloatingImageSchema = Type.Composite(
 export const HeroSchema = Type.Intersect(
   [
     Type.Object({
-      type: Type.Literal("hero"),
+      type: Type.Literal("hero", { default: "hero" }),
     }),
     Type.Union([
       HeroSideSchema,

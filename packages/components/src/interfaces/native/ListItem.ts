@@ -18,7 +18,7 @@ export const listItemSchemaBuilder = <T extends TSchema, U extends TSchema>(
 ) =>
   Type.Object(
     {
-      type: Type.Literal("listItem"),
+      type: Type.Literal("listItem", { default: "listItem" }),
       content: Type.Array(
         Type.Union([
           Type.Ref(ParagraphSchema),

@@ -12,7 +12,7 @@ export interface BaseParagraphProps {
 
 export const ParagraphSchema = Type.Object(
   {
-    type: Type.Literal("paragraph"),
+    type: Type.Literal("paragraph", { default: "paragraph" }),
     content: Type.Optional(
       Type.Array(Type.Union([HardBreakSchema, TextSchema]), {
         title: "Paragraph content",

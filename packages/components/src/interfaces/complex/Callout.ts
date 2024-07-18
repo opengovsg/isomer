@@ -12,13 +12,14 @@ export const CALLOUT_VARIANTS = [
 
 export const CalloutSchema = Type.Object(
   {
-    type: Type.Literal("callout"),
-    content: ProseSchema,
+    type: Type.Literal("callout", { default: "callout" }),
+    content: Type.Ref(ProseSchema),
     variant: Type.Union(
       CALLOUT_VARIANTS.map((variant) => Type.Literal(variant)),
       {
         title: "Callout variant",
         description: "The variant of the callout to use",
+        type: "string",
       },
     ),
   },

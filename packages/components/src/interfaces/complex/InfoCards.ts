@@ -34,12 +34,13 @@ export const SingleCardSchema = Type.Object({
 
 export const InfoCardsSchema = Type.Object(
   {
-    type: Type.Literal("infocards"),
+    type: Type.Literal("infocards", { default: "infocards" }),
     // TODO: Remove this property, only used in classic theme
     sectionIdx: Type.Optional(Type.Number()),
     variant: Type.Union([Type.Literal("side"), Type.Literal("top")], {
       title: "Infocards variant",
       description: "The variant of the infocards component to use",
+      type: "string",
       format: "radio",
     }),
     title: Type.Optional(
