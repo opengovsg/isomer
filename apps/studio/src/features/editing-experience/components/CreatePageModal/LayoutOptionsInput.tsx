@@ -72,20 +72,20 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
           role="group"
           {...checkbox}
           cursor="pointer"
+          onMouseEnter={() => setIsHover(true)}
+          onMouseLeave={() => setIsHover(false)}
         >
           <Box
             borderWidth="2px"
             borderRadius="8px"
             bg="interaction.muted.main.active"
             borderColor="base.divider.medium"
-            onMouseEnter={() => setIsHover(true)}
-            onMouseLeave={() => setIsHover(false)}
             _groupChecked={{
               borderColor: "base.divider.brand",
             }}
             transitionProperty="common"
             transitionDuration="normal"
-            _hover={{
+            _groupHover={{
               borderColor: "interaction.main-subtle.hover",
             }}
             px="2rem"
@@ -126,20 +126,25 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
             />
           </Box>
           <Stack>
-            <Text
-              textStyle="h6"
-              color="base.content.strong"
-              _groupChecked={{
-                color: "base.content.brand",
-              }}
-            >
-              {title}{" "}
+            <Stack flexDir="row" align="center">
+              <Text
+                textStyle="h6"
+                color="base.content.strong"
+                _groupChecked={{
+                  color: "base.content.brand",
+                }}
+                _groupHover={{
+                  color: "base.content.brand",
+                }}
+              >
+                {title}
+              </Text>
               {input.checked && (
-                <Badge variant="subtle" size="xs">
+                <Badge h="min-content" variant="subtle" size="xs">
                   Previewing
                 </Badge>
               )}
-            </Text>
+            </Stack>
             <Text textStyle="body-1" color="base.content.default">
               {description}
             </Text>
