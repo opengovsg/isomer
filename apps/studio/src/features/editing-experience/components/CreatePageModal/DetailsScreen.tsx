@@ -44,7 +44,6 @@ export const CreatePageDetailsScreen = () => {
     watch,
     getFieldState,
     setValue,
-    trigger,
     formState: { errors },
   } = formMethods
 
@@ -61,14 +60,16 @@ export const CreatePageDetailsScreen = () => {
    * 5. starts typing new page title B -> page url syncs w new page title B
    */
   useEffect(() => {
+    const permalinkFieldState = getFieldState("permalink")
     // This allows the syncing to happen only when the page title is not dirty
     // Dirty means user has changed the value AND the value is not the same as the default value of "".
     // Once the value has been cleared, dirty state will reset.
-    if (!getFieldState("permalink").isDirty) {
-      setValue("permalink", generatePageUrl(title))
-      void trigger("permalink")
+    if (!permalinkFieldState.isDirty) {
+      setValue("permalink", generatePageUrl(title), {
+        shouldValidate: !!title,
+      })
     }
-  }, [getFieldState, setValue, title, trigger])
+  }, [getFieldState, setValue, title])
 
   return (
     <>
