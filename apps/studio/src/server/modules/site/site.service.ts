@@ -39,16 +39,25 @@ export const setSiteConfig = async (
     .where("id", "=", siteId)
     .executeTakeFirstOrThrow()
 }
+export const getNotification = async (siteId: number) => {
+  const result = await db
+    .selectFrom("Site")
+    .select(sql`config ->> 'notification'`.as("notification"))
+    .where("id", "=", siteId)
+    .executeTakeFirstOrThrow()
+
+  return result.notification
+}
 
 // TODO: Should triger immediate re-publish of site
 export const setSiteNotification = async (
   siteId: number,
-  notificationStr: string,
+  notification: string,
 ) => {
   return db
     .updateTable("Site")
     .set({
-      config: sql`jsonb_set(config, '{"notification"}', to_jsonb(${notificationStr}::text))`,
+      config: sql`jsonb_set(config, '{"notification"}', to_jsonb(${notification}::text))`,
     })
     .where("id", "=", siteId)
     .executeTakeFirstOrThrow()

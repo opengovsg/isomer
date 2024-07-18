@@ -4,7 +4,11 @@ export const getConfigSchema = z.object({
   id: z.number().min(1),
 })
 
+export const getNotificationSchema = z.object({
+  siteId: z.number().min(1),
+})
+
 export const setNotificationSchema = z.object({
-  id: z.number().min(1),
-  notificationStr: z.string(),
+  siteId: z.number().min(1),
+  notification: z.string(),
 })
