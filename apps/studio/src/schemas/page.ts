@@ -10,12 +10,14 @@ export const MAX_PAGE_URL_LENGTH = 250
 
 export const getEditPageSchema = z.object({
   pageId: z.number().min(1),
+  siteId: z.number().min(1),
 })
 
 export const reorderBlobSchema = z.object({
   pageId: z.number().min(1),
   from: z.number().min(0),
   to: z.number().min(0),
+  siteId: z.number().min(0),
   blocks: z.array(
     z
       .object({

@@ -1,4 +1,5 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
+import z from "zod"
 import { schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
@@ -18,6 +19,8 @@ import {
   getFooter,
   getFullPageById,
   getNavBar,
+  updateBlobById,
+  updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage } from "./page.service"
@@ -110,12 +113,12 @@ export const pageRouter = router({
 
   reorderBlock: protectedProcedure
     .input(reorderBlobSchema)
-    .mutation(async ({ input: { pageId, from, to, blocks }, ctx }) => {
+    .mutation(async ({ input: { pageId, from, to, blocks, siteId }, ctx }) => {
       // NOTE: we have to check against the page's content that we retrieve from db
       // we adopt a strict check such that we allow the update iff the checksum is the same
-      const fullPage = await getFullPageById(pageId)
+      const fullPage = await getFullPageById({ resourceId: pageId, siteId })
 
-      if (!fullPage.content) {
+      if (!fullPage?.content) {
         // TODO: we should probably ping on call
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -149,7 +152,7 @@ export const pageRouter = router({
       actualBlocks.splice(to, 0, movedBlock)
 
       await updateBlobById({
-        id: fullPage.blobId,
+        id: (fullPage.draftBlobId ?? fullPage.mainBlobId)!,
         content: JSON.stringify({ ...fullPage.content, content: actualBlocks }),
       })
 
@@ -168,7 +171,6 @@ export const pageRouter = router({
   updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input, ctx }) => {
-      console.log("schema val passed!")
       await updateBlobById({ ...input, id: input.pageId })
 
       return input

@@ -120,15 +120,13 @@ export const updateBlobById = async (props: {
       .select("draftBlobId")
       .executeTakeFirstOrThrow()
 
-    if (!page.draftBlobId) {
-      throw new Error()
-    }
-
     return (
       tx
         .updateTable("Blob")
         // NOTE: This works because a page has a 1-1 relation with a blob
-        .set({ content })
+        // @ts-expect-error we do this cast because we type it as string 
+        // but actually it is a json type
+        .set({ content: content as unknown })
         .where("Blob.id", "=", page.draftBlobId)
         .executeTakeFirstOrThrow()
     )

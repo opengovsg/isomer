@@ -53,8 +53,8 @@ function EditPage(): JSX.Element {
         {/* TODO: the version here should be obtained from the schema  */}
         {/* and not from the page */}
         <Preview {...page} version="0.1.0" content={previewPageState} />
-      </GridItem >
-    </Grid >
+      </GridItem>
+    </Grid>
   )
 }
 

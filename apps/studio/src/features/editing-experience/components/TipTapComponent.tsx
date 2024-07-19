@@ -38,6 +38,7 @@ interface TipTapComponentProps {
 
 function TipTapComponent({ content }: TipTapComponentProps) {
   const {
+    savedPageState,
     setDrawerState,
     setSavedPageState,
     previewPageState,
