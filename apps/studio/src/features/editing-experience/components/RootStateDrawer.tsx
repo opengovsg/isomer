@@ -10,9 +10,9 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import { getComponentSchema } from "@opengovsg/isomer-components"
 import { BiGridVertical } from "react-icons/bi"
 import { BsPlus } from "react-icons/bs"
-import { getComponentSchema } from "@opengovsg/isomer-components"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 

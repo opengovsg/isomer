@@ -1,10 +1,10 @@
 import { Box, Heading, HStack, Icon } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
+import { getComponentSchema } from "@opengovsg/isomer-components"
 import { BiDollar, BiX } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import FormBuilder from "./form-builder/FormBuilder"
-import { getComponentSchema } from "@opengovsg/isomer-components"
 
 export default function ComplexEditorStateDrawer(): JSX.Element {
   const {
