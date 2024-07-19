@@ -194,13 +194,21 @@ async function main() {
 
   const { id: blobId } = await db
     .insertInto("Blob")
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore deep type instantiation
     .values({ content: PAGE_BLOB })
     .returning("id")
     .executeTakeFirstOrThrow()
 
   await db
     .insertInto("Resource")
-    .values({ mainBlobId: blobId, permalink: "home", siteId, type: "Page" })
+    .values({
+      mainBlobId: blobId,
+      permalink: "home",
+      siteId,
+      type: "Page",
+      title: "Home",
+    })
     .executeTakeFirstOrThrow()
 
   await Promise.all(

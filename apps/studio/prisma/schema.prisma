@@ -35,7 +35,7 @@ model VerificationToken {
 
 model Resource {
   id        Int       @id @default(autoincrement())
-  title     String?
+  title     String
   permalink String
   siteId    Int
   site      Site      @relation(fields: [siteId], references: [id])
