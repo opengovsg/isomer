@@ -37,7 +37,13 @@ export const PreviewLayout = (): JSX.Element => {
               </Text>
             </Flex>
           )}
-          <Box bg="white" overflow="auto" height="100%">
+          <Box
+            bg="white"
+            overflow="auto"
+            height="100%"
+            // Key used to reset the scroll to the top whenever layout changes
+            key={currentLayout}
+          >
             <Preview {...layoutPreviewJson} />
           </Box>
         </Box>
