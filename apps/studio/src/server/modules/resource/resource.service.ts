@@ -1,5 +1,5 @@
+import type { SelectExpression } from "kysely"
 import { type DB } from "~prisma/generated/generatedTypes"
-import { SelectExpression } from "kysely"
 
 import { db } from "../database"
 import { type Footer, type Navbar, type Page } from "./resource.types"
@@ -90,9 +90,19 @@ export const updatePageById = (
   })
 }
 
-export const updateBlobById = (props: { id: number; content: string }) => {
+// NOTE: This id here is the page id
+export const updateBlobById = async (props: {
+  id: number
+  content: string
+}) => {
   const { id, content } = props
-  return db.transaction().execute((tx) => {
+  return db.transaction().execute(async (tx) => {
+    const page = await tx
+      .selectFrom("Resource")
+      .where("Resource.id", "=", id)
+      .select("draftBlobId")
+      .executeTakeFirstOrThrow()
+
     return (
       tx
         .updateTable("Blob")
