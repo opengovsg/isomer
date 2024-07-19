@@ -13,7 +13,7 @@ export const getEditPageSchema = z.object({
 })
 
 export const createPageSchema = z.object({
-  pageTitle: z
+  title: z
     .string({
       required_error: "Enter a title for this page",
     })
@@ -21,7 +21,7 @@ export const createPageSchema = z.object({
     .max(MAX_TITLE_LENGTH, {
       message: `Page title should be shorter than ${MAX_TITLE_LENGTH} characters.`,
     }),
-  pageUrl: z
+  permalink: z
     .string({
       required_error: "Enter a URL for this page.",
     })

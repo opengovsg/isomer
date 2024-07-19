@@ -36,7 +36,7 @@ export const PageResourceMenu: Story = {
     await waitFor(async () => {
       const screen = within(canvasElement)
       const pageMenuButton = screen.getByRole("button", {
-        name: "Options for Test Page 1",
+        name: "Options for Test page 1",
       })
       await userEvent.click(pageMenuButton)
     })
@@ -48,7 +48,7 @@ export const FolderResourceMenu: Story = {
     await waitFor(async () => {
       const screen = within(canvasElement)
       const folderMenuButton = screen.getByRole("button", {
-        name: "Options for Test Folder 1",
+        name: "Options for Test folder 1",
       })
       await userEvent.click(folderMenuButton)
     })

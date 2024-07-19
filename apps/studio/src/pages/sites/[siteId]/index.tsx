@@ -65,7 +65,7 @@ const SitePage: NextPageWithLayout = () => {
           </HStack>
         </VStack>
         <Box width="100%">
-          <ResourceTable />
+          <ResourceTable siteId={siteId} />
         </Box>
       </VStack>
       <PageCreateModal

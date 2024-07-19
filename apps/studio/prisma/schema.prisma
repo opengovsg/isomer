@@ -34,12 +34,13 @@ model VerificationToken {
 }
 
 model Resource {
-  id       Int       @id @default(autoincrement())
-  name     String
-  siteId   Int
-  site     Site      @relation(fields: [siteId], references: [id])
-  parentId Int?
-  parent   Resource? @relation("ParentRelation", fields: [parentId], references: [id])
+  id        Int       @id @default(autoincrement())
+  title     String
+  permalink String
+  siteId    Int
+  site      Site      @relation(fields: [siteId], references: [id])
+  parentId  Int?
+  parent    Resource? @relation("ParentRelation", fields: [parentId], references: [id])
 
   children Resource[] @relation("ParentRelation")
 
