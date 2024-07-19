@@ -98,9 +98,9 @@ export const updateBlobById = async (props: {
   const { id, content } = props
   return db.transaction().execute(async (tx) => {
     const page = await tx
-      .selectFrom('Resource')
-      .where('Resource.id', '=', id)
-      .select('blobId')
+      .selectFrom("Resource")
+      .where("Resource.id", "=", id)
+      .select("blobId")
       .executeTakeFirstOrThrow()
 
     return (
