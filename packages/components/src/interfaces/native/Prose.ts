@@ -25,7 +25,7 @@ export const ProseSchema = Type.Object(
           title: "Content block",
           description: "A collection of native content components.",
           minItems: 1,
-          format: "prose"
+          format: "prose",
         },
       ),
     ),

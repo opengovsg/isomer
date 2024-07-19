@@ -1,5 +1,5 @@
-import { type DB } from "~prisma/generated/generatedTypes"
 import type { SelectExpression } from "kysely"
+import { type DB } from "~prisma/generated/generatedTypes"
 
 import { db } from "../database"
 import { type Footer, type Navbar, type Page } from "./resource.types"
@@ -100,7 +100,7 @@ export const updateBlobById = async (props: {
     const page = await tx
       .selectFrom("Resource")
       .where("Resource.id", "=", id)
-      // NOTE: We update the draft first 
+      // NOTE: We update the draft first
       // Main should only be updated at build
       .select("draftBlobId")
       .executeTakeFirstOrThrow()
