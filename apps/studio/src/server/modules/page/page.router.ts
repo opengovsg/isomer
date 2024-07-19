@@ -176,6 +176,8 @@ export const pageRouter = router({
   updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input, ctx }) => {
+      // @ts-expect-error we need this because we sanitise as a string 
+      // but this accepts a nested JSON object
       await updateBlobById({ ...input, id: input.pageId })
 
       return input
