@@ -3,18 +3,11 @@
  *
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
-import {
-  type IsomerGeneratedSiteProps,
-  type IsomerSiteConfigProps,
-  type IsomerSitemap,
-} from "@opengovsg/isomer-components"
+import type { IsomerSchema, IsomerSitemap } from "@opengovsg/isomer-components"
 import cuid2 from "@paralleldrive/cuid2"
 
-import {
-  type Footer,
-  type Navbar,
-} from "~/server/modules/resource/resource.types"
-import { db } from "../src/server/modules/database"
+import type { Navbar } from "~/server/modules/resource/resource.types"
+import { db, jsonb } from "../src/server/modules/database"
 
 const MOCK_PHONE_NUMBER = "123456789"
 
@@ -29,7 +22,7 @@ const ISOMER_ADMINS = [
   "hanpu",
 ]
 
-const PAGE_BLOB = {
+const PAGE_BLOB: IsomerSchema = {
   version: "0.1.0",
   layout: "homepage",
   page: {
@@ -40,7 +33,6 @@ const PAGE_BLOB = {
       type: "hero",
       variant: "gradient",
       alignment: "left",
-      backgroundColor: "black",
       title: "Ministry of Trade and Industry",
       subtitle:
         "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
@@ -167,17 +159,13 @@ async function main() {
     .insertInto("Site")
     .values({
       name: "Ministry of Trade and Industry",
-      config: {
+      config: jsonb({
         theme: "isomer-next",
         siteName: "MTI",
         logoUrl: "",
         search: undefined,
-        // TODO: Remove siteMap as it is a generated field
-        siteMap,
         isGovernment: true,
-      } satisfies IsomerSiteConfigProps & {
-        siteMap: IsomerGeneratedSiteProps["siteMap"]
-      },
+      }),
     })
     .returning("id")
     .executeTakeFirstOrThrow()
@@ -186,13 +174,13 @@ async function main() {
     .insertInto("Footer")
     .values({
       siteId,
-      content: {
+      content: jsonb({
         contactUsLink: "/contact-us",
         feedbackFormLink: "https://www.form.gov.sg",
         privacyStatementLink: "/privacy",
         termsOfUseLink: "/terms-of-use",
         siteNavItems: FOOTER_ITEMS,
-      } satisfies Footer,
+      }),
     })
     .execute()
 
@@ -200,19 +188,25 @@ async function main() {
     .insertInto("Navbar")
     .values({
       siteId,
-      content: { items: NAV_BAR_ITEMS } satisfies Navbar,
+      content: jsonb(NAV_BAR_ITEMS),
     })
     .execute()
 
   const { id: blobId } = await db
     .insertInto("Blob")
-    .values({ content: PAGE_BLOB })
+    .values({ content: jsonb(PAGE_BLOB) })
     .returning("id")
     .executeTakeFirstOrThrow()
 
   await db
     .insertInto("Resource")
-    .values({ blobId, name: "Home", siteId })
+    .values({
+      mainBlobId: blobId,
+      permalink: "home",
+      siteId,
+      type: "Page",
+      title: "Home",
+    })
     .executeTakeFirstOrThrow()
 
   await Promise.all(

@@ -1,8 +1,8 @@
-import type { ContentPageSchemaType } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
 import { createId } from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
+import { z } from "zod"
 
 import { BlobToImageDataURL } from "~/features/editing-experience/components/form-builder/renderers/controls/utils"
 import {
@@ -15,14 +15,14 @@ import {
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
+import { db, ResourceType } from "../database"
 import {
   getFooter,
   getFullPageById,
   getNavBar,
-  updateBlobById,
-  updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
+import { createDefaultPage } from "./page.service"
 
 const ajv = new Ajv({ allErrors: true, strict: false })
 const schemaValidator = ajv.compile(schema)
@@ -57,12 +57,42 @@ const validatedPageProcedure = protectedProcedure.use(
 )
 
 export const pageRouter = router({
+  list: protectedProcedure
+    .input(
+      z.object({
+        siteId: z.number(),
+        resourceId: z.number().optional(),
+      }),
+    )
+    .query(async ({ input: { siteId, resourceId } }) => {
+      let query = db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+
+      if (resourceId) {
+        query = query.where("Resource.parentId", "=", resourceId)
+      }
+      return query
+        .select([
+          "Resource.id",
+          "Resource.permalink",
+          "Resource.title",
+          "Resource.mainBlobId",
+          "Resource.draftBlobId",
+        ])
+        .execute()
+    }),
   readPageAndBlob: protectedProcedure
     .input(getEditPageSchema)
-    .query(async ({ input, ctx }) => {
-      const { pageId } = input
-      const page = await getFullPageById(pageId)
-      const pageName: string = page.name
+    .query(async ({ input: { pageId, siteId } }) => {
+      const page = await getFullPageById({ resourceId: pageId, siteId })
+      if (!page) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+      const pageName = page.permalink
       const siteMeta = await getSiteConfig(page.siteId)
       const navbar = await getNavBar(page.siteId)
       const footer = await getFooter(page.siteId)
@@ -72,34 +102,47 @@ export const pageRouter = router({
         pageName,
         navbar,
         footer,
-        content: content as ContentPageSchemaType,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore type instantiation is excessively deep and possibly infinite
+        content,
         ...siteMeta,
       }
     }),
-
-  updatePage: protectedProcedure
-    .input(updatePageSchema)
-    .mutation(async ({ input, ctx }) => {
-      await updatePageById({ ...input, id: input.pageId })
-
-      return input
-    }),
-
-  updatePageBlob: validatedPageProcedure
-    .input(updatePageBlobSchema)
-    .mutation(async ({ input, ctx }) => {
-      console.log("schema val passed!")
-      await updateBlobById({ ...input, id: input.pageId })
-
-      return input
-    }),
-
   createPage: protectedProcedure
     .input(createPageSchema)
-    .mutation(({ input, ctx }) => {
-      return { pageId: "" }
-    }),
-  // TODO: Delete page stuff here
+    .mutation(
+      async ({ input: { permalink, siteId, folderId, title, layout } }) => {
+        const newPage = createDefaultPage({ title, layout })
+
+        // TODO: Validate whether folderId actually is a folder instead of a page
+        // TODO: Validate whether siteId is a valid site
+        // TODO: Validate user has write-access to the site
+        const resource = await db.transaction().execute(async (tx) => {
+          const blob = await tx
+            .insertInto("Blob")
+            .values({
+              content: newPage,
+            })
+            .returning("Blob.id")
+            .executeTakeFirstOrThrow()
+
+          const addedResource = await tx
+            .insertInto("Resource")
+            .values({
+              title,
+              permalink,
+              siteId,
+              parentId: folderId,
+              draftBlobId: blob.id,
+              type: ResourceType.Page,
+            })
+            .returning("Resource.id")
+            .executeTakeFirstOrThrow()
+          return addedResource
+        })
+        return { pageId: resource.id }
+      },
+    ),
 
   readImageInPage: protectedProcedure
     .input(readImageInPageSchema)

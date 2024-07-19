@@ -1,42 +1,82 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-const BoldMarkSchema = Type.Object({
-  type: Type.Literal("bold"),
-})
+const BoldMarkSchema = Type.Object(
+  {
+    type: Type.Literal("bold", { default: "bold" }),
+  },
+  {
+    title: "Bold",
+  },
+)
 
-const CodeMarkSchema = Type.Object({
-  type: Type.Literal("code"),
-})
+const CodeMarkSchema = Type.Object(
+  {
+    type: Type.Literal("code", { default: "code" }),
+  },
+  {
+    title: "Code",
+  },
+)
 
-const ItalicMarkSchema = Type.Object({
-  type: Type.Literal("italic"),
-})
+const ItalicMarkSchema = Type.Object(
+  {
+    type: Type.Literal("italic", { default: "italic" }),
+  },
+  {
+    title: "Italic",
+  },
+)
 
-const LinkMarkSchema = Type.Object({
-  type: Type.Literal("link"),
-  href: Type.String(),
-})
+const LinkMarkSchema = Type.Object(
+  {
+    type: Type.Literal("link", { default: "link" }),
+    href: Type.String(),
+  },
+  {
+    title: "Hyperlink",
+  },
+)
 
-const StrikeMarkSchema = Type.Object({
-  type: Type.Literal("strike"),
-})
+const StrikeMarkSchema = Type.Object(
+  {
+    type: Type.Literal("strike", { default: "strike" }),
+  },
+  {
+    title: "Strikethrough",
+  },
+)
 
-const SubscriptMarkSchema = Type.Object({
-  type: Type.Literal("subscript"),
-})
+const SubscriptMarkSchema = Type.Object(
+  {
+    type: Type.Literal("subscript", { default: "subscript" }),
+  },
+  {
+    title: "Subscript",
+  },
+)
 
-const SuperscriptMarkSchema = Type.Object({
-  type: Type.Literal("superscript"),
-})
+const SuperscriptMarkSchema = Type.Object(
+  {
+    type: Type.Literal("superscript", { default: "superscript" }),
+  },
+  {
+    title: "Superscript",
+  },
+)
 
-const UnderlineMarkSchema = Type.Object({
-  type: Type.Literal("underline"),
-})
+const UnderlineMarkSchema = Type.Object(
+  {
+    type: Type.Literal("underline", { default: "underline" }),
+  },
+  {
+    title: "Underline",
+  },
+)
 
 export const TextSchema = Type.Object(
   {
-    type: Type.Literal("text"),
+    type: Type.Literal("text", { default: "text" }),
     marks: Type.Optional(
       Type.Array(
         Type.Union([

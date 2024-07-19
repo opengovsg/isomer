@@ -5,12 +5,12 @@ import { ProseSchema } from "../native"
 
 export const AccordionSchema = Type.Object(
   {
-    type: Type.Literal("accordion"),
+    type: Type.Literal("accordion", { default: "accordion" }),
     summary: Type.String({
       title: "Accordion summary",
       description: "The summary for the accordion",
     }),
-    details: ProseSchema,
+    details: Type.Ref(ProseSchema),
   },
   { title: "Accordion component" },
 )

@@ -17,7 +17,6 @@ export const AdminLayout: GetLayout = (page) => {
             bg="base.canvas.alt"
             justifyItems="center"
             gridColumn={APP_GRID_COLUMN}
-            maxW="57rem"
             width="100%"
           >
             {page}

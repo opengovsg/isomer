@@ -9,6 +9,7 @@ import {
   Wrap,
 } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
+import { type IsomerComponent } from "@opengovsg/isomer-components"
 import { type IconType } from "react-icons"
 import {
   BiCard,
@@ -20,7 +21,6 @@ import {
   BiMap,
   BiMovie,
   BiQuestionMark,
-  BiRuler,
   BiSolidHandUp,
   BiSolidQuoteAltLeft,
   BiText,
@@ -28,6 +28,9 @@ import {
 } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { type DrawerState } from "~/types/editorDrawer"
+import { trpc } from "~/utils/trpc"
+import { DEFAULT_BLOCKS } from "./constants"
 import { type SectionType } from "./types"
 
 function Section({ children }: React.PropsWithChildren) {
@@ -95,12 +98,32 @@ function BlockItem({
 }
 
 function ComponentSelector() {
-  const { setDrawerState, setPageState, setEditorState } =
-    useEditorDrawerContext()
+  const {
+    setCurrActiveIdx,
+    pageState,
+    setDrawerState,
+    setPageState,
+    setSnapshot,
+  } = useEditorDrawerContext()
   const onProceed = (sectionType: SectionType) => {
     // TODO: add new section to page/editor state
-    setDrawerState({ state: "root" })
+    // NOTE: Only paragraph should go to tiptap editor
+    // the rest should use json forms
+    const nextState: DrawerState["state"] =
+      sectionType === "prose" ? "nativeEditor" : "complexEditor"
+    // TODO: Remove assertion after default blocks all in
+    const newComponent: IsomerComponent | undefined =
+      DEFAULT_BLOCKS[sectionType]
+
+    const nextPageState = !!newComponent
+      ? [...pageState, newComponent]
+      : pageState
+    setPageState(nextPageState)
+    setDrawerState({ state: nextState })
+    setCurrActiveIdx(nextPageState.length - 1)
+    setSnapshot(pageState)
   }
+
   return (
     <VStack w="full" gap="0">
       <Flex
@@ -136,10 +159,10 @@ function ComponentSelector() {
           <SectionTitle title="Basic Building Blocks" />
           <BlockList>
             <BlockItem
-              label="Paragraph"
+              label="Prose"
               icon={BiText}
               onProceed={onProceed}
-              sectionType="paragraph"
+              sectionType="prose"
               description="Add text to your page - lists, headings, paragraph, and links."
             />
             <BlockItem
@@ -158,7 +181,7 @@ function ComponentSelector() {
               label="Statistics"
               icon={BiDollar}
               onProceed={onProceed}
-              sectionType="statistics"
+              sectionType="keystatistics"
               description="TODO"
             />
             <BlockItem
@@ -172,33 +195,34 @@ function ComponentSelector() {
               label="Text with button"
               icon={BiSolidHandUp}
               onProceed={onProceed}
-              sectionType="textWithButton"
+              sectionType="infobar"
               description="TODO"
             />
             <BlockItem
               label="Text with image"
               icon={BiImages}
               onProceed={onProceed}
-              sectionType="textWithImage"
+              sectionType="infopic"
               description="TODO"
             />
           </BlockList>
         </Section>
         <Section>
           <SectionTitle title="Organise Content" />
+          {/* TODO: this should map over the schema and take values + components from there */}
           <BlockList>
             <BlockItem
               label="Cards"
               icon={BiCard}
               onProceed={onProceed}
-              sectionType="cards"
+              sectionType="infocards"
               description="TODO"
             />
             <BlockItem
               label="Columns"
               icon={BiColumns}
               onProceed={onProceed}
-              sectionType="columns"
+              sectionType="infocols"
               description="TODO"
             />
             <BlockItem
@@ -206,13 +230,6 @@ function ComponentSelector() {
               icon={BiExpandVertical}
               onProceed={onProceed}
               sectionType="accordion"
-              description="TODO"
-            />
-            <BlockItem
-              label="Divider"
-              icon={BiRuler}
-              onProceed={onProceed}
-              sectionType="divider"
               description="TODO"
             />
           </BlockList>
@@ -224,21 +241,21 @@ function ComponentSelector() {
               label="YouTube"
               icon={BiMovie}
               onProceed={onProceed}
-              sectionType="youtube"
+              sectionType="iframe"
               description="TODO"
             />
             <BlockItem
               label="Google Maps"
               icon={BiMap}
               onProceed={onProceed}
-              sectionType="googleMaps"
+              sectionType="iframe"
               description="TODO"
             />
             <BlockItem
               label="FormSG"
               icon={BiQuestionMark}
               onProceed={onProceed}
-              sectionType="formsg"
+              sectionType="iframe"
               description="TODO"
             />
           </BlockList>

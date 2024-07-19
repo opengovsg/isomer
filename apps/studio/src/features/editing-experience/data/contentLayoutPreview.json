@@ -7,7 +7,7 @@
     },
     "title": "About MTI",
     "description": "Our organisation's vision, mission, structure and values",
-    "permalink": "/"
+    "permalink": "/resources/newsroom/relevant-news/todays-news"
   },
   "content": [
     {
@@ -15,7 +15,9 @@
       "content": [
         {
           "type": "heading",
-          "level": 2,
+          "attrs": {
+            "level": 2
+          },
           "content": [
             {
               "type": "text",
@@ -36,7 +38,9 @@
         },
         {
           "type": "heading",
-          "level": 2,
+          "attrs": {
+            "level": 2
+          },
           "content": [
             {
               "type": "text",

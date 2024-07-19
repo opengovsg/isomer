@@ -3,7 +3,7 @@ import { Type } from "@sinclair/typebox"
 
 export const ImageSchema = Type.Object(
   {
-    type: Type.Literal("image"),
+    type: Type.Literal("image", { default: "image" }),
     src: Type.String({
       title: "Image source URL",
       description: "The source URL of the image",

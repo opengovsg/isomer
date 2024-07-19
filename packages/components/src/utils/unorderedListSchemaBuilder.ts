@@ -6,7 +6,7 @@ export const unorderedListSchemaBuilder = <T extends TSchema>(
 ) =>
   Type.Object(
     {
-      type: Type.Literal("unorderedList"),
+      type: Type.Literal("unorderedList", { default: "unorderedList" }),
       content: Type.Array(listItemSchema, {
         title: "List items",
         minItems: 1,

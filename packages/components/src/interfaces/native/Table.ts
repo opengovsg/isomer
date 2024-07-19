@@ -45,7 +45,7 @@ type TableCellProps = {
 // TypeScript where the type instantiation is too deep.
 const TableCellSchema = Type.Unsafe<TableCellProps>(
   Type.Object({
-    type: Type.Literal("tableCell"),
+    type: Type.Literal("tableCell", { default: "tableCell" }),
     attrs: Type.Optional(TableBaseCellSchema),
     content: Type.Array(
       Type.Union([
@@ -64,7 +64,7 @@ const TableCellSchema = Type.Unsafe<TableCellProps>(
 )
 
 const TableHeaderCellSchema = Type.Object({
-  type: Type.Literal("tableHeader"),
+  type: Type.Literal("tableHeader", { default: "tableHeader" }),
   attrs: Type.Optional(TableBaseCellSchema),
   content: Type.Array(Type.Ref(ParagraphSchema), {
     title: "Table header cell contents",
@@ -75,7 +75,7 @@ const TableHeaderCellSchema = Type.Object({
 
 const TableContentRowSchema = Type.Object(
   {
-    type: Type.Literal("tableRow"),
+    type: Type.Literal("tableRow", { default: "tableRow" }),
     content: Type.Array(TableCellSchema, {
       title: "Table cells",
       minItems: 1,
@@ -88,7 +88,7 @@ const TableContentRowSchema = Type.Object(
 
 const TableHeaderRowSchema = Type.Object(
   {
-    type: Type.Literal("tableRow"),
+    type: Type.Literal("tableRow", { default: "tableRow" }),
     content: Type.Array(TableHeaderCellSchema, {
       title: "Table header cells",
       minItems: 1,
@@ -101,7 +101,7 @@ const TableHeaderRowSchema = Type.Object(
 
 export const TableSchema = Type.Object(
   {
-    type: Type.Literal("table"),
+    type: Type.Literal("table", { default: "table" }),
     attrs: Type.Object({
       caption: Type.String({
         title: "Table caption",

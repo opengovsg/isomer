@@ -10,6 +10,13 @@ generator client {
   provider = "prisma-client-js"
 }
 
+/// Always after the prisma-client-js generator
+/// Generates types for the JSON columns
+/// The relevant types are declared in a separate prisma/types.ts file.
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
 generator kysely {
   provider     = "prisma-kysely"
   readOnlyIds  = true
@@ -27,18 +34,36 @@ model VerificationToken {
 }
 
 model Resource {
-  id       Int       @id @default(autoincrement())
-  name     String
-  siteId   Int
-  site     Site      @relation(fields: [siteId], references: [id])
-  parentId Int?
-  parent   Resource? @relation("parentRelation", fields: [parentId], references: [id])
-  blobId   Int?      @unique
-  blob     Blob?     @relation(fields: [blobId], references: [id])
+  id        Int       @id @default(autoincrement())
+  title     String
+  permalink String
+  siteId    Int
+  site      Site      @relation(fields: [siteId], references: [id])
+  parentId  Int?
+  parent    Resource? @relation("ParentRelation", fields: [parentId], references: [id])
 
-  children Resource[] @relation("parentRelation")
+  children Resource[] @relation("ParentRelation")
 
   permission Permission[]
+
+  mainBlob   Blob? @relation("MainBlob", fields: [mainBlobId], references: [id])
+  mainBlobId Int?  @unique
+
+  draftBlob   Blob? @relation("DraftBlob", fields: [draftBlobId], references: [id])
+  draftBlobId Int?  @unique
+
+  state ResourceState? @default(Draft)
+  type  ResourceType
+}
+
+enum ResourceState {
+  Draft
+  Published
+}
+
+enum ResourceType {
+  Page
+  Folder
 }
 
 model User {
@@ -72,31 +97,41 @@ model Site {
   // This is currently put as `Json` for ease of extensibility
   // when we lock in what we actually want for site-wide config, 
   // we should put this in our db table.
+  /// @kyselyType(PrismaJson.SiteJsonConfig)
+  /// [SiteJsonConfig]
   config      Json
   navbar      Navbar?
   footer      Footer?
 }
 
 model Navbar {
-  id      Int  @id @default(autoincrement())
-  siteId  Int  @unique
-  site    Site @relation(fields: [siteId], references: [id])
+  id     Int  @id @default(autoincrement())
+  siteId Int  @unique
+  site   Site @relation(fields: [siteId], references: [id])
+
+  /// @kyselyType(PrismaJson.NavbarJsonContent)
+  /// [NavbarJsonContent]
   content Json
 }
 
 model Footer {
-  id      Int  @id @default(autoincrement())
-  siteId  Int  @unique
-  site    Site @relation(fields: [siteId], references: [id])
+  id     Int  @id @default(autoincrement())
+  siteId Int  @unique
+  site   Site @relation(fields: [siteId], references: [id])
+
+  /// @kyselyType(PrismaJson.FooterJsonContent)
+  /// [FooterJsonContent]
   content Json
 }
 
 model Blob {
   id      Int  @id @default(autoincrement())
+  /// @kyselyType(PrismaJson.BlobJsonContent)
+  /// [BlobJsonContent]
   content Json
 
-  // Should the blob be deleted on deletion of the resource? 
-  resource Resource?
+  mainResource  Resource? @relation("MainBlob")
+  draftResource Resource? @relation("DraftBlob")
 }
 
 model SiteMember {

@@ -3,7 +3,7 @@ import { Type } from "@sinclair/typebox"
 
 export const InfopicSchema = Type.Object(
   {
-    type: Type.Literal("infopic"),
+    type: Type.Literal("infopic", { default: "infopic" }),
     // TODO: Remove this property, only used in classic theme
     sectionIndex: Type.Optional(Type.Number()),
     title: Type.String({
@@ -55,6 +55,7 @@ export const InfopicSchema = Type.Object(
       Type.Union([Type.Literal("side-by-side"), Type.Literal("side-part")], {
         title: "Infopic variant",
         description: "The variant of the infopic to use",
+        type: "string",
       }),
     ),
   },

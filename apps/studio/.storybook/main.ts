@@ -14,7 +14,7 @@ const config: StorybookConfig = {
   ],
 
   framework: {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    // @ts-expect-error type mismatch
     name: getAbsolutePath("@storybook/nextjs"),
     options: {},
   },
@@ -42,6 +42,6 @@ const config: StorybookConfig = {
 }
 export default config
 
-function getAbsolutePath(value: string): any {
+function getAbsolutePath(value: string) {
   return dirname(require.resolve(join(value, "package.json")))
 }
