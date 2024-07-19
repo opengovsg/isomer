@@ -1,6 +1,9 @@
 import { z } from "zod"
 
-const PAGE_LAYOUTS = ["content"] as const
+const NEW_PAGE_LAYOUT_VALUES = [
+  "article",
+  "content",
+] as const satisfies readonly PrismaJson.BlobJsonContent["layout"][]
 
 export const MAX_TITLE_LENGTH = 150
 export const MAX_PAGE_URL_LENGTH = 250
@@ -33,10 +36,11 @@ export const updatePageSchema = getEditPageSchema.extend({
 
 export const updatePageBlobSchema = getEditPageSchema.extend({
   content: z.string(),
+  siteId: z.number().min(1),
 })
 
 export const createPageSchema = z.object({
-  pageTitle: z
+  title: z
     .string({
       required_error: "Enter a title for this page",
     })
@@ -44,7 +48,7 @@ export const createPageSchema = z.object({
     .max(MAX_TITLE_LENGTH, {
       message: `Page title should be shorter than ${MAX_TITLE_LENGTH} characters.`,
     }),
-  pageUrl: z
+  permalink: z
     .string({
       required_error: "Enter a URL for this page.",
     })
@@ -56,8 +60,7 @@ export const createPageSchema = z.object({
     .max(MAX_PAGE_URL_LENGTH, {
       message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
     }),
-  // TODO: add the actual layouts in here
-  layout: z.enum(PAGE_LAYOUTS).default("content"),
+  layout: z.enum(NEW_PAGE_LAYOUT_VALUES).default("content"),
   siteId: z.number().min(1),
   // NOTE: implies that top level pages are allowed
   folderId: z.number().min(1).optional(),

@@ -4,13 +4,15 @@ import { Flex, HStack } from "@chakra-ui/react"
 import {
   AvatarMenu,
   AvatarMenuDivider,
+  Button,
   Link,
   Menu,
 } from "@opengovsg/design-system-react"
+import { BiLinkExternal } from "react-icons/bi"
 
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useMe } from "~/features/me/api"
-import { SETTINGS_PROFILE } from "~/lib/routes"
+import { DASHBOARD, SETTINGS_PROFILE } from "~/lib/routes"
 
 export function AppNavbar(): JSX.Element {
   const { me, logout } = useMe()
@@ -33,16 +35,16 @@ export function AppNavbar(): JSX.Element {
       >
         <Link
           as={NextLink}
-          href="/dashboard"
+          href={DASHBOARD}
           mx={{ base: "auto", sm: 0 }}
           transition="margin 0.1s"
         >
           <Image
-            // This component can only be used if this is an application created by OGP.
-            src="/assets/restricted-ogp-logo-full.svg"
-            width={233}
-            height={12}
-            alt="OGP Logo"
+            src="/assets/isomer-logo.svg"
+            height={24}
+            width={22}
+            alt="Isomer Logo"
+            aria-hidden
             priority
           />
         </Link>
@@ -50,8 +52,18 @@ export function AppNavbar(): JSX.Element {
           textStyle="subhead-1"
           spacing={{ base: "0.75rem", md: "1.5rem" }}
         >
+          <Button
+            variant="clear"
+            size="xs"
+            rightIcon={<BiLinkExternal fontSize="1.25rem" />}
+            as={NextLink}
+            target="_blank"
+            href="https://go.gov.sg/isomer-issue"
+          >
+            Report an issue
+          </Button>
           <AvatarMenu
-            name={me.name ?? undefined}
+            name={me.name}
             variant="subtle"
             bg="base.canvas.brand-subtle"
             menuListProps={{ maxWidth: "19rem" }}

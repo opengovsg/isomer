@@ -5,14 +5,16 @@ import {
   Button,
   Divider,
   HStack,
+  Icon,
   Spacer,
   Text,
   VStack,
 } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
+import { getComponentSchema } from "@opengovsg/isomer-components"
+import { BiGridVertical } from "react-icons/bi"
 import { BsPlus } from "react-icons/bs"
-import { MdOutlineDragIndicator } from "react-icons/md"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { trpc } from "~/utils/trpc"
@@ -20,12 +22,11 @@ import { trpc } from "~/utils/trpc"
 export default function RootStateDrawer() {
   const {
     setDrawerState,
-    pageState,
-    setSnapshot,
     setCurrActiveIdx,
-    setPageState,
+    savedPageState,
+    setSavedPageState,
+    setPreviewPageState,
   } = useEditorDrawerContext()
-
   const router = useRouter()
   const pageId = Number(router.query.pageId)
   const { mutate } = trpc.page.reorderBlock.useMutation()
@@ -38,8 +39,8 @@ export default function RootStateDrawer() {
     const to = result.destination.index
 
     if (
-      from >= pageState.length ||
-      to >= pageState.length ||
+      from >= savedPageState.length ||
+      to >= savedPageState.length ||
       from < 0 ||
       to < 0
     )
@@ -48,17 +49,18 @@ export default function RootStateDrawer() {
     // NOTE: We eagerly update their page state here
     // and if it fails on the backend,
     // we rollback to what we passed them
-    const updatedBlocks = Array.from(pageState)
+    const updatedBlocks = Array.from()
     const [movedBlock] = updatedBlocks.splice(from, 1)
 
     if (!!movedBlock) {
       updatedBlocks.splice(to, 0, movedBlock)
-      setPageState(updatedBlocks)
+      setPreviewPageState(savedPageState)
+      setSavedPageState(savedPageState)
     }
 
     // NOTE: drive an update to the db with the updated index
     mutate(
-      { pageId, from, to, blocks: pageState },
+      { pageId, from, to, blocks: savedPageState },
       {
         onError: (error, variables) => {
           // NOTE: rollback to last known good state
@@ -66,7 +68,8 @@ export default function RootStateDrawer() {
           // and the error type is automatically inferred from the zod validator.
           // However, the type that we use on `pageState` is the full type
           // because `Preview` (amongst other things) requires the other properties on the actual schema type
-          setPageState(variables.blocks)
+          setPreviewPageState(updatedBlocks)
+          setSavedPageState(updatedBlocks)
           toast({
             title: "Failed to update blocks",
             description: error.message,
@@ -108,7 +111,7 @@ export default function RootStateDrawer() {
                   Custom blocks
                 </Text>
                 <Box w="100%">
-                  {pageState.map((block, index) => (
+                  {savedPageState.map((block, index) => (
                     <Draggable
                       // TODO: Determine key + draggable id
                       key={index}
@@ -123,10 +126,9 @@ export default function RootStateDrawer() {
                             setCurrActiveIdx(index)
                             // TODO: we should automatically do this probably?
                             const nextState =
-                              pageState[index]?.type === "prose"
+                              savedPageState[index]?.type === "prose"
                                 ? "nativeEditor"
                                 : "complexEditor"
-                            setSnapshot(pageState)
                             setDrawerState({ state: nextState })
                           }}
                         >
@@ -138,15 +140,13 @@ export default function RootStateDrawer() {
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                           >
-                            <MdOutlineDragIndicator
-                              style={{
-                                marginLeft: "0.75rem",
-                                width: "1.5rem",
-                                height: "1.5rem",
-                              }}
+                            <Icon
+                              as={BiGridVertical}
+                              fontSize="1.5rem"
+                              ml="0.75rem"
                             />
                             <Text px="3" fontWeight={500}>
-                              {block.type}
+                              {getComponentSchema(block.type).title}
                             </Text>
                           </HStack>
                           <Divider />

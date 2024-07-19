@@ -10,17 +10,29 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
 export interface Blob {
   id: GeneratedAlways<number>
-  content: unknown
+  /**
+   * @kyselyType(PrismaJson.BlobJsonContent)
+   * [BlobJsonContent]
+   */
+  content: PrismaJson.BlobJsonContent
 }
 export interface Footer {
   id: GeneratedAlways<number>
   siteId: number
-  content: unknown
+  /**
+   * @kyselyType(PrismaJson.FooterJsonContent)
+   * [FooterJsonContent]
+   */
+  content: PrismaJson.FooterJsonContent
 }
 export interface Navbar {
   id: GeneratedAlways<number>
   siteId: number
-  content: unknown
+  /**
+   * @kyselyType(PrismaJson.NavbarJsonContent)
+   * [NavbarJsonContent]
+   */
+  content: PrismaJson.NavbarJsonContent
 }
 export interface Permission {
   id: GeneratedAlways<number>
@@ -30,7 +42,8 @@ export interface Permission {
 }
 export interface Resource {
   id: GeneratedAlways<number>
-  name: string
+  title: string
+  permalink: string
   siteId: number
   parentId: number | null
   mainBlobId: number | null
@@ -41,7 +54,11 @@ export interface Resource {
 export interface Site {
   id: GeneratedAlways<number>
   name: string
-  config: unknown
+  /**
+   * @kyselyType(PrismaJson.SiteJsonConfig)
+   * [SiteJsonConfig]
+   */
+  config: PrismaJson.SiteJsonConfig
 }
 export interface SiteMember {
   userId: string

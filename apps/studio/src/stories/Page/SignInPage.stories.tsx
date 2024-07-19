@@ -3,8 +3,9 @@ import { expect, userEvent, within } from "@storybook/test"
 import { authEmailHandlers } from "tests/msw/handlers/auth/email"
 import { meHandlers } from "tests/msw/handlers/me"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import SignInPage from "~/pages/sign-in"
-import { getMobileViewParameters } from "../utils/viewports"
 
 const VALID_AUTH_EMAIL = "test@example.gov.sg"
 
@@ -12,8 +13,7 @@ const meta: Meta<typeof SignInPage> = {
   title: "Pages/Sign In Page",
   component: SignInPage,
   parameters: {
-    // More on how to position stories at: https://storybook.js.org/docs/react/configure/story-layout
-    layout: "fullscreen",
+    loginState: false,
     msw: {
       handlers: [
         meHandlers.unauthorized(),
@@ -29,24 +29,18 @@ const meta: Meta<typeof SignInPage> = {
 export default meta
 type Story = StoryObj<typeof SignInPage>
 
-export const Default: Story = {}
-
-export const WithSgidLogin: Story = {
+export const Default: Story = {
   parameters: {
-    features: {
-      sgid: true,
-    },
+    chromatic: withChromaticModes(["gsib", "mobile"]),
   },
 }
 
-export const Mobile: Story = {
-  parameters: getMobileViewParameters(),
-}
-
-export const MobileWithSgid: Story = {
+export const WithSgidLogin: Story = {
   parameters: {
-    ...WithSgidLogin.parameters,
-    ...Mobile.parameters,
+    chromatic: withChromaticModes(["gsib", "mobile"]),
+    features: {
+      sgid: true,
+    },
   },
 }
 

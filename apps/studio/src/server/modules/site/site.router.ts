@@ -4,6 +4,7 @@ import {
   setNotificationSchema,
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
+import { db } from "../database"
 import { getFooter, getNavBar } from "../resource/resource.service"
 import {
   getNotification,
@@ -12,6 +13,15 @@ import {
 } from "./site.service"
 
 export const siteRouter = router({
+  list: protectedProcedure.query(() => {
+    return (
+      db
+        .selectFrom("Site")
+        // TODO: Only return sites that the user has access to
+        .select(["Site.id", "Site.name"])
+        .execute()
+    )
+  }),
   getConfig: protectedProcedure
     .input(getConfigSchema)
     .query(async ({ input }) => {

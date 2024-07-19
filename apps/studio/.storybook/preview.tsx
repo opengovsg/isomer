@@ -17,10 +17,12 @@ import { createTRPCReact } from "@trpc/react-query"
 import { format } from "date-fns/format"
 import { merge } from "lodash"
 import mockdate from "mockdate"
-import { initialize, mswDecorator } from "msw-storybook-addon"
+import { initialize, mswLoader } from "msw-storybook-addon"
 import { ErrorBoundary } from "react-error-boundary"
 import superjson from "superjson"
 import { z } from "zod"
+
+import { viewport, withChromaticModes } from "@isomer/storybook-config"
 
 import type { EnvContextReturn } from "~/components/AppProviders"
 import { EnvProvider, FeatureContext } from "~/components/AppProviders"
@@ -51,7 +53,7 @@ const StorybookEnvDecorator: Decorator = (story) => {
   return <EnvProvider env={mockEnv}>{story()}</EnvProvider>
 }
 
-const SetupDecorator: Decorator = (story) => {
+const SetupDecorator: Decorator = (Story) => {
   const [queryClient] = useState(
     new QueryClient({
       defaultOptions: {
@@ -74,7 +76,7 @@ const SetupDecorator: Decorator = (story) => {
       <Suspense fallback={<Skeleton width="100vw" height="100vh" />}>
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
-            {story()}
+            <Story />
           </QueryClientProvider>
         </trpc.Provider>
       </Suspense>
@@ -127,7 +129,7 @@ export const MockFeatureFlagsDecorator: Decorator<Args> = (
 
 const LoginStateDecorator: Decorator<Args> = (story, { parameters }) => {
   const [hasLoginStateFlag, setLoginStateFlag] = useState(
-    Boolean(parameters.loginState),
+    Boolean(parameters.loginState ?? true),
   )
 
   const setHasLoginStateFlag = useCallback(() => {
@@ -158,6 +160,7 @@ export const MockDateDecorator: Decorator<Args> = (story, { parameters }) => {
     return story()
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   mockdate.set(parameters.mockdate)
 
   const mockedDate = format(parameters.mockdate, "dd-mm-yyyy HH:mma")
@@ -183,23 +186,41 @@ export const MockDateDecorator: Decorator<Args> = (story, { parameters }) => {
 
 const decorators: Decorator[] = [
   WithLayoutDecorator,
-  StorybookEnvDecorator,
+  MockDateDecorator,
   MockFeatureFlagsDecorator,
-  LoginStateDecorator,
   SetupDecorator,
+  StorybookEnvDecorator,
   withThemeFromJSXProvider<ReactRenderer>({
     themes: {
       default: theme,
     },
     Provider: ThemeProvider,
   }) as Decorator, // FIXME: Remove this cast when types are fixed
-  MockDateDecorator,
-  mswDecorator,
+  LoginStateDecorator,
 ]
 
 const preview: Preview = {
+  loaders: [mswLoader],
   decorators,
   parameters: {
+    // More on how to position stories at: https://storybook.js.org/docs/react/configure/story-layout
+    layout: "fullscreen",
+    viewport,
+    /**
+     * If tablet view is needed, add it on a per-story basis.
+     * @example
+     * ```
+     * export const SomeStory: Story = {
+     *   parameters: {
+     *     chromatic: withChromaticModes(["gsib", "desktop", "tablet"]),
+     *   }
+     * }
+     * ```
+     */
+    chromatic: {
+      ...withChromaticModes(["gsib"]),
+      prefersReducedMotion: "reduce",
+    },
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
       matchers: {
