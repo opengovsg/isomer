@@ -1,13 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { meHandlers } from "tests/msw/handlers/me"
 
 import SitePage from "~/pages/sites/[siteId]"
-import { AdminLayout } from "~/templates/layouts/AdminLayout"
 
 const meta: Meta<typeof SitePage> = {
-  title: "pages/site/[siteId]",
+  title: "Pages/Site Management/Site Page",
   component: SitePage,
   parameters: {
-    getLayout: AdminLayout,
+    getLayout: SitePage.getLayout,
+    msw: {
+      handlers: [meHandlers.me()],
+    },
   },
   decorators: [],
 }
