@@ -1,6 +1,5 @@
 import type {
   ContentPageSchemaType,
-  IsomerComponent,
 } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
@@ -87,7 +86,7 @@ export const pageRouter = router({
       // we adopt a strict check such that we allow the update iff the checksum is the same
       const fullPage = await getFullPageById(pageId)
 
-      if (!fullPage.content || !fullPage.blobId) {
+      if (!fullPage.content) {
         // TODO: we should probably ping on call
         throw new TRPCError({
           code: "NOT_FOUND",

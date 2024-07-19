@@ -1,5 +1,5 @@
 import { type DB } from "~prisma/generated/generatedTypes"
-import { SelectExpression } from "kysely"
+import type { SelectExpression } from "kysely"
 
 import { db } from "../database"
 import { type Footer, type Navbar, type Page } from "./resource.types"
@@ -98,10 +98,12 @@ export const updateBlobById = async (props: {
     const page = await tx
       .selectFrom("Resource")
       .where("Resource.id", "=", id)
-      .select("blobId")
+      // NOTE: We update the draft first 
+      // Main should only be updated at build
+      .select("draftBlobId")
       .executeTakeFirstOrThrow()
 
-    if (!page.blobId) {
+    if (!page.draftBlobId) {
       throw new Error()
     }
 
@@ -110,7 +112,7 @@ export const updateBlobById = async (props: {
         .updateTable("Blob")
         // NOTE: This works because a page has a 1-1 relation with a blob
         .set({ content })
-        .where("Blob.id", "=", page.blobId)
+        .where("Blob.id", "=", page.draftBlobId)
         .executeTakeFirstOrThrow()
     )
   })
