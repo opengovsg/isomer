@@ -1,4 +1,3 @@
-import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { DelayMode } from "msw"
 import { delay } from "msw"
 
@@ -28,9 +27,12 @@ export const sitesHandlers = {
       return trpcMsw.site.getConfig.query(() => {
         return {
           theme: "isomer-next",
+          siteName: "Ministry of Test and Industry",
+          search: undefined,
+          agencyName: "Ministry of Test and Industry",
           isGovernment: true,
-          sitemap: null as unknown as IsomerSitemap,
           name: "Ministry of Trade and Industry",
+          logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
         }
       })
     },
