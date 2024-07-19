@@ -1,3 +1,4 @@
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
@@ -16,7 +17,7 @@ import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage } from "./page.service"
 
 const ajv = new Ajv({ allErrors: true, strict: false })
-const schemaValidator = ajv.compile(schema)
+const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
 // TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure

@@ -9,10 +9,10 @@ export interface DrawerContextType {
   setCurrActiveIdx: (currActiveIdx: number) => void
   drawerState: DrawerState
   setDrawerState: (state: DrawerState) => void
-  pageState: IsomerComponent[]
-  setPageState: Dispatch<SetStateAction<IsomerComponent[]>>
-  snapshot: IsomerComponent[]
-  setSnapshot: (state: IsomerComponent[]) => void
+  savedPageState: IsomerComponent[]
+  setSavedPageState: Dispatch<SetStateAction<IsomerComponent[]>>
+  previewPageState: IsomerComponent[]
+  setPreviewPageState: Dispatch<SetStateAction<IsomerComponent[]>>
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
@@ -20,12 +20,14 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
   const [drawerState, setDrawerState] = useState<DrawerState>({
     state: "root",
   })
+  // Index of the current block being edited
+  const [currActiveIdx, setCurrActiveIdx] = useState<number>(-1)
   // Current saved state of page
-  const [pageState, setPageState] = useState<IsomerComponent[]>([])
-  // Current edit view of page
-  const [snapshot, setSnapshot] = useState<IsomerComponent[]>([])
-  // Isomer page schema
-  const [currActiveIdx, setCurrActiveIdx] = useState(0)
+  const [savedPageState, setSavedPageState] = useState<IsomerComponent[]>([])
+  // State of the page to render in the preview
+  const [previewPageState, setPreviewPageState] = useState<IsomerComponent[]>(
+    [],
+  )
 
   return (
     <EditorDrawerContext.Provider
@@ -34,10 +36,10 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
         setCurrActiveIdx,
         drawerState,
         setDrawerState,
-        pageState,
-        setPageState,
-        snapshot,
-        setSnapshot,
+        savedPageState,
+        setSavedPageState,
+        previewPageState,
+        setPreviewPageState,
       }}
     >
       {children}

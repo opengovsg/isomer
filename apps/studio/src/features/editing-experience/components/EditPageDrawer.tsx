@@ -10,7 +10,7 @@ import TipTapComponent from "./TipTapComponent"
 
 export function EditPageDrawer() {
   const {
-    pageState,
+    previewPageState,
     drawerState: currState,
     currActiveIdx,
   } = useEditorDrawerContext()
@@ -20,7 +20,9 @@ export function EditPageDrawer() {
   const ajv = new Ajv({ allErrors: true, strict: false })
   const validate = ajv.compile<ProseProps>(proseSchema)
 
-  const inferAsProse = (component?: (typeof pageState)[number]): ProseProps => {
+  const inferAsProse = (
+    component?: (typeof previewPageState)[number],
+  ): ProseProps => {
     if (!component) {
       throw new Error(`Expected component of type prose but got undefined`)
     }
@@ -40,12 +42,13 @@ export function EditPageDrawer() {
     case "addBlock":
       return <ComponentSelector />
     case "nativeEditor": {
-      const component = pageState[currActiveIdx]
+      const component = previewPageState[currActiveIdx]
       return <TipTapComponent content={inferAsProse(component)} />
     }
     case "complexEditor":
       return <ComplexEditorStateDrawer />
     default:
+      const _: never = currState
       return <h1>Edit Page Drawer</h1>
   }
 }
