@@ -8,7 +8,7 @@ import {
 
 export const IsomerComponentsSchemas = Type.Union([
   ...Object.values(IsomerComplexComponentsMap),
-  IsomerNativeComponentsMap.prose,
+  Type.Ref(IsomerNativeComponentsMap.prose),
 ])
 
 export type IsomerComponent = Static<typeof IsomerComponentsSchemas>

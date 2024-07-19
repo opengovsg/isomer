@@ -1,4 +1,5 @@
 import type { TSchema } from "@sinclair/typebox"
+import { Type } from "@sinclair/typebox"
 
 import type { IsomerComponentTypes } from "~/types"
 import { IsomerPageSchema } from "~/types"
@@ -26,7 +27,7 @@ export const getComponentSchema = (
 ): TSchema => {
   const componentSchema =
     component === "prose"
-      ? IsomerNativeComponentsMap.prose
+      ? Type.Ref(IsomerNativeComponentsMap.prose)
       : IsomerComplexComponentsMap[component]
 
   return {
