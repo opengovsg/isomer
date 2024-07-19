@@ -1,7 +1,11 @@
-import type { ContentPageSchemaType, IsomerComponent } from "@opengovsg/isomer-components"
+import type {
+  ContentPageSchemaType,
+  IsomerComponent,
+} from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
+import { isEqual } from "lodash"
 
 import {
   createPageSchema,
@@ -17,10 +21,9 @@ import {
   getFullPageById,
   getNavBar,
   updateBlobById,
-  updatePageById
+  updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { isEqual } from "lodash"
 
 const ajv = new Ajv({ allErrors: true, strict: false })
 const schemaValidator = ajv.compile(schema)
@@ -78,32 +81,39 @@ export const pageRouter = router({
     }),
 
   reorderBlock: protectedProcedure
-    .input(reorderBlobSchema).mutation(async ({
-      input: {
-        pageId,
-        from,
-        to,
-        blocks,
-      }, ctx
-    }) => {
-      // NOTE: we have to check against the page's content that we retrieve from db 
-      // we adopt a strict check such that we allow the update iff the checksum is the same 
+    .input(reorderBlobSchema)
+    .mutation(async ({ input: { pageId, from, to, blocks }, ctx }) => {
+      // NOTE: we have to check against the page's content that we retrieve from db
+      // we adopt a strict check such that we allow the update iff the checksum is the same
       const fullPage = await getFullPageById(pageId)
 
       if (!fullPage.content || !fullPage.blobId) {
         // TODO: we should probably ping on call
-        throw new TRPCError({ code: "NOT_FOUND", message: "Unable to load content for the requested page, please contact Isomer Support" })
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "Unable to load content for the requested page, please contact Isomer Support",
+        })
       }
 
       const actualBlocks = (fullPage.content as { content: unknown[] }).content
 
       if (!isEqual(blocks, actualBlocks)) {
-        throw new TRPCError({ code: "CONFLICT", message: "Someone on your team has changed this page, refresh the page and try again" })
+        throw new TRPCError({
+          code: "CONFLICT",
+          message:
+            "Someone on your team has changed this page, refresh the page and try again",
+        })
       }
 
-      if (from >= actualBlocks.length || to >= actualBlocks.length || from < 0 || to < 0) {
+      if (
+        from >= actualBlocks.length ||
+        to >= actualBlocks.length ||
+        from < 0 ||
+        to < 0
+      ) {
         // NOTE: If this happens, this indicates that either our dnd libary on our frontend has a
-        throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" });
+        throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" })
       }
 
       const [movedBlock] = actualBlocks.splice(from, 1)
@@ -111,13 +121,13 @@ export const pageRouter = router({
       actualBlocks.splice(to, 0, movedBlock)
 
       await updateBlobById({
-        id: fullPage.blobId, content: JSON.stringify({ ...fullPage.content, content: actualBlocks })
+        id: fullPage.blobId,
+        content: JSON.stringify({ ...fullPage.content, content: actualBlocks }),
       })
 
       // NOTE: user given content and db state is the same at this point
       return actualBlocks
     }),
-
 
   updatePage: protectedProcedure
     .input(updatePageSchema)

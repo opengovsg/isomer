@@ -105,6 +105,12 @@ function ComponentSelector() {
     setPageState,
     setSnapshot,
   } = useEditorDrawerContext()
+  const { mutate } = trpc.page.updatePageBlob.useMutation()
+  // TODO: get this dynamically
+  const pageId = 1
+  const [page] = trpc.page.readPageAndBlob.useSuspenseQuery({
+    pageId,
+  })
   const onProceed = (sectionType: SectionType) => {
     // TODO: add new section to page/editor state
     // NOTE: Only paragraph should go to tiptap editor

@@ -13,9 +13,13 @@ export const reorderBlobSchema = z.object({
   pageId: z.number().min(1),
   from: z.number().min(0),
   to: z.number().min(0),
-  blocks: z.array(z.object({
-    type: z.string(),
-  }).passthrough())
+  blocks: z.array(
+    z
+      .object({
+        type: z.string(),
+      })
+      .passthrough(),
+  ),
 })
 
 export const updatePageSchema = getEditPageSchema.extend({

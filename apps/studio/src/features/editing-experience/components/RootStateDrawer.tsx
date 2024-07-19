@@ -1,4 +1,5 @@
 import type { DropResult } from "@hello-pangea/dnd"
+import { useRouter } from "next/router"
 import {
   Box,
   Button,
@@ -9,13 +10,12 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import { useToast } from "@opengovsg/design-system-react"
 import { BsPlus } from "react-icons/bs"
 import { MdOutlineDragIndicator } from "react-icons/md"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { trpc } from "~/utils/trpc"
-import { useRouter } from "next/router"
-import { useToast } from "@opengovsg/design-system-react"
 
 export default function RootStateDrawer() {
   const {
@@ -23,7 +23,7 @@ export default function RootStateDrawer() {
     pageState,
     setSnapshot,
     setCurrActiveIdx,
-    setPageState
+    setPageState,
   } = useEditorDrawerContext()
 
   const router = useRouter()
@@ -34,15 +34,19 @@ export default function RootStateDrawer() {
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return
 
-
     const from = result.source.index
     const to = result.destination.index
 
-    if (from >= pageState.length || to >= pageState.length || from < 0 || to < 0) return
+    if (
+      from >= pageState.length ||
+      to >= pageState.length ||
+      from < 0 ||
+      to < 0
+    )
+      return
 
-
-    // NOTE: We eagerly update their page state here 
-    // and if it fails on the backend, 
+    // NOTE: We eagerly update their page state here
+    // and if it fails on the backend,
     // we rollback to what we passed them
     const updatedBlocks = Array.from(pageState)
     const [movedBlock] = updatedBlocks.splice(from, 1)
@@ -53,17 +57,23 @@ export default function RootStateDrawer() {
     }
 
     // NOTE: drive an update to the db with the updated index
-    mutate({ pageId, from, to, blocks: pageState }, {
-      onError: (error, variables) => {
-        // NOTE: rollback to last known good state
-        // @ts-expect-error Our zod validator runs between frontend and backend
-        // and the error type is automatically inferred from the zod validator.
-        // However, the type that we use on `pageState` is the full type 
-        // because `Preview` (amongst other things) requires the other properties on the actual schema type
-        setPageState(variables.blocks)
-        toast({ title: "Failed to update blocks", description: error.message })
-      }
-    })
+    mutate(
+      { pageId, from, to, blocks: pageState },
+      {
+        onError: (error, variables) => {
+          // NOTE: rollback to last known good state
+          // @ts-expect-error Our zod validator runs between frontend and backend
+          // and the error type is automatically inferred from the zod validator.
+          // However, the type that we use on `pageState` is the full type
+          // because `Preview` (amongst other things) requires the other properties on the actual schema type
+          setPageState(variables.blocks)
+          toast({
+            title: "Failed to update blocks",
+            description: error.message,
+          })
+        },
+      },
+    )
   }
 
   return (
@@ -113,9 +123,9 @@ export default function RootStateDrawer() {
                             setCurrActiveIdx(index)
                             // TODO: we should automatically do this probably?
                             const nextState =
-                              pageState[index]?.type === 'prose'
-                                ? 'nativeEditor'
-                                : 'complexEditor'
+                              pageState[index]?.type === "prose"
+                                ? "nativeEditor"
+                                : "complexEditor"
                             setSnapshot(pageState)
                             setDrawerState({ state: nextState })
                           }}
