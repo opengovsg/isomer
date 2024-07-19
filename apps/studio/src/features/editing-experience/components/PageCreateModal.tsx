@@ -1,6 +1,7 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { z } from "zod"
 import { useEffect } from "react"
+import { useRouter } from "next/router"
 import {
   FormControl,
   FormHelperText,
@@ -32,7 +33,11 @@ import {
 } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
 
-type PageCreateModalProps = Pick<UseDisclosureReturn, "isOpen" | "onClose">
+interface PageCreateModalProps
+  extends Pick<UseDisclosureReturn, "isOpen" | "onClose"> {
+  siteId: number
+  folderId?: number
+}
 
 const generatePageUrl = (value: string) => {
   return (
@@ -53,6 +58,8 @@ type ClientCreatePageSchema = z.input<typeof clientCreatePageSchema>
 export const PageCreateModal = ({
   isOpen,
   onClose,
+  siteId,
+  folderId,
 }: PageCreateModalProps): JSX.Element => {
   const { mutate, isLoading } = trpc.page.createPage.useMutation({
     onSuccess: onClose,
@@ -62,9 +69,8 @@ export const PageCreateModal = ({
   const submitCallback = (values: ClientCreatePageSchema) => {
     mutate({
       ...values,
-      // TODO: Add siteId to the form
-      siteId: 1,
-      folderId: 1,
+      siteId,
+      folderId,
     })
   }
 

@@ -27,7 +27,7 @@ export default function Preview(props: IsomerSchema) {
         isGovernment,
         environment: "production",
         lastUpdated: "3 Apr 2024",
-        navBarItems: navbar.items,
+        navBarItems: navbar,
         footerItems: footer,
       }}
     />

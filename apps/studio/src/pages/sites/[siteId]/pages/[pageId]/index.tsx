@@ -1,11 +1,18 @@
 import { useEffect } from "react"
 import { Grid, GridItem } from "@chakra-ui/react"
+import { z } from "zod"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import EditPageDrawer from "~/features/editing-experience/components/EditPageDrawer"
 import Preview from "~/features/editing-experience/components/Preview"
+import { useQueryParse } from "~/hooks/useQueryParse"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
+
+const editPageSchema = z.object({
+  pageId: z.coerce.number(),
+  siteId: z.coerce.number(),
+})
 
 function EditPage(): JSX.Element {
   const {
@@ -14,9 +21,11 @@ function EditPage(): JSX.Element {
     setPageState,
     setSnapshot: setEditorState,
   } = useEditorDrawerContext()
+  const { pageId, siteId } = useQueryParse(editPageSchema)
 
   const [{ content: page }] = trpc.page.readPageAndBlob.useSuspenseQuery({
-    pageId: 1,
+    pageId,
+    siteId,
   })
 
   useEffect(() => {
