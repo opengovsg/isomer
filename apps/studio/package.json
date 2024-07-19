@@ -64,7 +64,7 @@
     "@tanstack/react-query-devtools": "^4.36.1",
     "@tanstack/react-table": "^8.19.3",
     "@tiptap/extension-blockquote": "^2.4.0",
-    "@tiptap/extension-bold": "^2.4.0",
+    "@tiptap/extension-bold": "^2.5.4",
     "@tiptap/extension-bullet-list": "^2.4.0",
     "@tiptap/extension-document": "^2.4.0",
     "@tiptap/extension-dropcursor": "^2.4.0",
