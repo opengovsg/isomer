@@ -48,6 +48,7 @@
     "@chakra-ui/theme-tools": "^2.1.2",
     "@chakra-ui/utils": "^2.0.15",
     "@fontsource/ibm-plex-mono": "^5.0.13",
+    "@formkit/auto-animate": "^0.8.2",
     "@hello-pangea/dnd": "^16.6.0",
     "@hookform/resolvers": "^3.8.0",
     "@jsonforms/core": "^3.3.0",

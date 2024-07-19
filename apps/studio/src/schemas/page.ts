@@ -1,8 +1,9 @@
-import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { z } from "zod"
 
-const LAYOUT_VALUES = [...Object.values(ISOMER_PAGE_LAYOUTS)]
-type LayoutValues = (typeof LAYOUT_VALUES)[number]
+const NEW_PAGE_LAYOUT_VALUES = [
+  "article",
+  "content",
+] as const satisfies readonly PrismaJson.BlobJsonContent["layout"][]
 
 export const MAX_TITLE_LENGTH = 150
 export const MAX_PAGE_URL_LENGTH = 250
@@ -33,9 +34,7 @@ export const createPageSchema = z.object({
     .max(MAX_PAGE_URL_LENGTH, {
       message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
     }),
-  layout: z
-    .enum<string, [LayoutValues]>(LAYOUT_VALUES as [LayoutValues])
-    .default("content"),
+  layout: z.enum(NEW_PAGE_LAYOUT_VALUES).default("content"),
   siteId: z.number().min(1),
   // NOTE: implies that top level pages are allowed
   folderId: z.number().min(1).optional(),
