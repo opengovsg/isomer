@@ -1,0 +1,161 @@
+name: AWS Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: string
+      shortEnv:
+        description: 'Deployment environment, the short version (one of [dev, prod, stg, test, uat, vapt])'
+        required: true
+        type: string
+      aws-account-id:
+        description: 'AWS account ID to use'
+        required: true
+        type: string
+      aws-region:
+        description: 'AWS region to use'
+        required: true
+        default: 'ap-southeast-1'
+        type: string
+      cicd-role:
+        description: 'AWS IAM role to assume by GitHub action runner'
+        required: true
+        type: string
+      ecr-repository:
+        description: 'ECR repository to push image to'
+        required: true
+        type: string
+      ecs-cluster-name:
+        description: 'ECS cluster to deploy to'
+        required: true
+        type: string
+      ecs-task-definition:
+        description: 'ECS task definition to use'
+        required: true
+        type: string
+      ecs-task-definition-path:
+        description: 'ECS task definition path'
+        default: 'ecs-task-definition.json'
+        type: string
+      ecs-service-name:
+        description: 'ECS service to deploy to'
+        required: true
+        type: string
+      ecs-container-name:
+        description: 'Name of container in ECS task definition'
+        required: true
+        type: string
+      codedeploy-application:
+        description: 'CodeDeploy application to use'
+        required: true
+        type: string
+      codedeploy-appspec-path:
+        description: 'CodeDeploy appspec.json/yml file path'
+        default: 'appspec.json'
+        type: string
+      codedeploy-deployment-group:
+        description: 'CodeDeploy deployment group to use'
+        required: true
+        type: string
+    secrets:
+      DATADOG_API_KEY:
+        description: 'Datadog API key for uploading sourcemaps'
+        required: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy staging:
+    name: Deploy staging 
+    runs-on: ubuntu-latest
+    env:
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: network=host
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ inputs.cicd-role }}
+          role-session-name: github-action-application-deploy
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: 'true'
+
+      - name: Build and push image to ECR
+        uses: docker/build-push-action@v3
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ inputs.ecr-repository }}
+          ENV: ${{ inputs.environment }}
+          IMAGE_TAG: ${{ github.sha }}
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          build-args: |
+            ENV=${{env.ENV}}
+
+      - name: Replace AWS_ACCOUNT_ID/ENV in task definition file
+        id: replace-variables
+        run: |
+          sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<ENV>/${{ inputs.environment }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<CPU>/${{ inputs.environment == 'production' && 1024 || 512 }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<MEMORY>/${{ inputs.environment == 'production' && 2048 || 1024 }}/g' ${{ inputs.ecs-task-definition-path }}
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ inputs.ecr-repository }}
+          ENV: ${{ inputs.environment }}
+          IMAGE_TAG: ${{ github.sha }}
+        with:
+          task-definition: ${{ inputs.ecs-task-definition-path }}
+          container-name: ${{ inputs.ecs-container-name }}
+          image: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          cluster: ${{ inputs.ecs-cluster-name }}
+          service: ${{ inputs.ecs-service-name }}
+          wait-for-service-stability: true
+          codedeploy-appspec: ${{ inputs.codedeploy-appspec-path }}
+          codedeploy-application: ${{ inputs.codedeploy-application }}
+          codedeploy-deployment-group: ${{ inputs.codedeploy-deployment-group }}
+
+      # - name: Upload sourcemaps to Datadog
+      #   if: ${{ env.DATADOG_API_KEY != '' }}
+      #   env:
+      #     IMAGE_TAG: ${{ env.LOCAL_IMAGE_TAG }}
+      #   shell: bash
+      #   run: |
+      #     npm install -g @datadog/datadog-ci
+      #     rm -rf assets
+      #     docker cp $(docker create ${IMAGE_TAG}):/opt/nemsw/services/frontend/build/assets assets
+      #     datadog-ci sourcemaps upload assets \
+      #       --service=bright --release-version=${{ github.sha }} --minified-path-prefix=/assets/
