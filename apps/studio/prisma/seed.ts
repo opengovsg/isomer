@@ -7,7 +7,7 @@ import type { IsomerSchema, IsomerSitemap } from "@opengovsg/isomer-components"
 import cuid2 from "@paralleldrive/cuid2"
 
 import type { Navbar } from "~/server/modules/resource/resource.types"
-import { db } from "../src/server/modules/database"
+import { db, jsonb } from "../src/server/modules/database"
 
 const MOCK_PHONE_NUMBER = "123456789"
 
@@ -159,13 +159,13 @@ async function main() {
     .insertInto("Site")
     .values({
       name: "Ministry of Trade and Industry",
-      config: {
+      config: jsonb({
         theme: "isomer-next",
         siteName: "MTI",
         logoUrl: "",
         search: undefined,
         isGovernment: true,
-      },
+      }),
     })
     .returning("id")
     .executeTakeFirstOrThrow()
@@ -174,13 +174,13 @@ async function main() {
     .insertInto("Footer")
     .values({
       siteId,
-      content: {
+      content: jsonb({
         contactUsLink: "/contact-us",
         feedbackFormLink: "https://www.form.gov.sg",
         privacyStatementLink: "/privacy",
         termsOfUseLink: "/terms-of-use",
         siteNavItems: FOOTER_ITEMS,
-      },
+      }),
     })
     .execute()
 
@@ -188,15 +188,13 @@ async function main() {
     .insertInto("Navbar")
     .values({
       siteId,
-      content: NAV_BAR_ITEMS,
+      content: jsonb(NAV_BAR_ITEMS),
     })
     .execute()
 
   const { id: blobId } = await db
     .insertInto("Blob")
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore deep type instantiation
-    .values({ content: PAGE_BLOB })
+    .values({ content: jsonb(PAGE_BLOB) })
     .returning("id")
     .executeTakeFirstOrThrow()
 
