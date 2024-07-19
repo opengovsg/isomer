@@ -10,10 +10,10 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import { BiGridVertical } from "react-icons/bi"
 import { BsPlus } from "react-icons/bs"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { BiGridVertical } from "react-icons/bi"
 
 export default function RootStateDrawer() {
   const {
