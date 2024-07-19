@@ -108,7 +108,7 @@ export const updatePageById = (
 // NOTE: This id here is the page id
 export const updateBlobById = async (props: {
   id: number
-  content: string
+  content: PrismaJson.BlobJsonContent
 }) => {
   const { id, content } = props
   return db.transaction().execute(async (tx) => {
@@ -120,13 +120,16 @@ export const updateBlobById = async (props: {
       .select("draftBlobId")
       .executeTakeFirstOrThrow()
 
+    if (!page.draftBlobId) {
+      // NOTE: no draft for this yet, need to create a new one 
+      return tx.insertInto("Blob").values({ content }).executeTakeFirst()
+    }
+
     return (
       tx
         .updateTable("Blob")
         // NOTE: This works because a page has a 1-1 relation with a blob
-        // @ts-expect-error we do this cast because we type it as string 
-        // but actually it is a json type
-        .set({ content: content as unknown })
+        .set({ content })
         .where("Blob.id", "=", page.draftBlobId)
         .executeTakeFirstOrThrow()
     )

@@ -127,7 +127,7 @@ export const pageRouter = router({
         })
       }
 
-      const actualBlocks = (fullPage.content as { content: unknown[] }).content
+      const actualBlocks = fullPage.content.content
 
       if (!isEqual(blocks, actualBlocks)) {
         throw new TRPCError({
@@ -148,12 +148,13 @@ export const pageRouter = router({
       }
 
       const [movedBlock] = actualBlocks.splice(from, 1)
+      if (!movedBlock) return blocks
       // Insert at destination index
       actualBlocks.splice(to, 0, movedBlock)
 
       await updateBlobById({
         id: (fullPage.draftBlobId ?? fullPage.mainBlobId)!,
-        content: JSON.stringify({ ...fullPage.content, content: actualBlocks }),
+        content: ({ ...fullPage.content, content: actualBlocks }),
       })
 
       // NOTE: user given content and db state is the same at this point
