@@ -29,7 +29,6 @@ import {
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { type DrawerState } from "~/types/editorDrawer"
-import { trpc } from "~/utils/trpc"
 import { DEFAULT_BLOCKS } from "./constants"
 import { type SectionType } from "./types"
 
@@ -100,10 +99,10 @@ function BlockItem({
 function ComponentSelector() {
   const {
     setCurrActiveIdx,
-    pageState,
+    savedPageState,
     setDrawerState,
-    setPageState,
-    setSnapshot,
+    setSavedPageState,
+    setPreviewPageState,
   } = useEditorDrawerContext()
   const onProceed = (sectionType: SectionType) => {
     // TODO: add new section to page/editor state
@@ -116,12 +115,12 @@ function ComponentSelector() {
       DEFAULT_BLOCKS[sectionType]
 
     const nextPageState = !!newComponent
-      ? [...pageState, newComponent]
-      : pageState
-    setPageState(nextPageState)
+      ? [...savedPageState, newComponent]
+      : savedPageState
+    setSavedPageState(nextPageState)
     setDrawerState({ state: nextState })
     setCurrActiveIdx(nextPageState.length - 1)
-    setSnapshot(pageState)
+    setPreviewPageState(nextPageState)
   }
 
   return (

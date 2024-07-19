@@ -57,21 +57,25 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
 ]
 
 export default function FormBuilder(): JSX.Element {
-  const { savedPageState, previewPageState, setPreviewPageState, blockIndex } =
-    useEditorDrawerContext()
+  const {
+    savedPageState,
+    previewPageState,
+    setPreviewPageState,
+    currActiveIdx,
+  } = useEditorDrawerContext()
 
-  if (blockIndex === -1 || blockIndex > savedPageState.length) {
+  if (currActiveIdx === -1 || currActiveIdx > savedPageState.length) {
     return <></>
   }
 
-  const component = savedPageState[blockIndex]
+  const component = savedPageState[currActiveIdx]
 
   if (!component) {
     return <></>
   }
 
   const subSchema = getComponentSchema(component.type)
-  const data = previewPageState[blockIndex]
+  const data = previewPageState[currActiveIdx]
   const ajv = new Ajv({ strict: false })
   const validateFn = ajv.compile<IsomerComponent>(subSchema)
 
@@ -83,7 +87,7 @@ export default function FormBuilder(): JSX.Element {
       onChange={({ data }) => {
         if (validateFn(data)) {
           const newPageState = [...savedPageState]
-          newPageState[blockIndex] = data
+          newPageState[currActiveIdx] = data
           setPreviewPageState(newPageState)
         }
       }}

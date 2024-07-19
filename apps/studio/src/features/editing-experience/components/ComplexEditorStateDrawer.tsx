@@ -7,19 +7,19 @@ import FormBuilder from "./form-builder/FormBuilder"
 
 export default function ComplexEditorStateDrawer(): JSX.Element {
   const {
+    currActiveIdx,
     setDrawerState,
     savedPageState,
     setSavedPageState,
     previewPageState,
     setPreviewPageState,
-    blockIndex,
   } = useEditorDrawerContext()
 
-  if (blockIndex === -1 || blockIndex > savedPageState.length) {
+  if (currActiveIdx === -1 || currActiveIdx > savedPageState.length) {
     return <></>
   }
 
-  const component = savedPageState[blockIndex]
+  const component = savedPageState[currActiveIdx]
 
   if (!component) {
     return <></>
