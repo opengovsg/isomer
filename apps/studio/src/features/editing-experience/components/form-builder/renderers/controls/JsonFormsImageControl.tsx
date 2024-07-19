@@ -1,5 +1,6 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
 import { Box, FormControl, Text } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
@@ -8,6 +9,7 @@ import {
   FormErrorMessage,
   FormLabel,
 } from "@opengovsg/design-system-react"
+import wretch from "wretch"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { trpc } from "~/utils/trpc"
@@ -15,7 +17,6 @@ import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPES,
   MAX_IMG_FILE_SIZE_BYTES,
 } from "./constants"
-import { BlobToImageDataURL, imageDataURLToFile } from "./utils"
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,
@@ -32,13 +33,25 @@ export function JsonFormsImageControl({
   description,
   required,
 }: ControlProps) {
+  const { pageId, siteId } = useParams()
+
   const [selectedFile, setSelectedFile] = useState<File | undefined>()
   const [pendingFile, setPendingFile] = useState<File | undefined>()
-  const [shouldFetchImage, setShouldFetchImage] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
+
   useEffect(() => {
     if (!!data) {
-      setShouldFetchImage(true)
+      wretch(data as string)
+        .get()
+        .blob()
+        .then((blob) => {
+          const splitData = (data as string).split("/")
+          const fileName = splitData[-1] || "Current Image"
+          setSelectedFile(new File([blob], fileName))
+        })
+        .catch((error) => {
+          console.log("error fetching initial image", error)
+        })
     }
     // NOTE: Using empty dependency array because we are checking if fetch is needed only upon initial load.
     // After this load, we are the only editor of this page, and any image url changes are caused by us and we will be caching the file locally.
@@ -46,43 +59,31 @@ export function JsonFormsImageControl({
   }, [])
 
   // NOTE: Run once only if initial load has non empty data(imageURL).
-  const uploadImageMutation = trpc.page.uploadImageGetURL.useMutation({
-    onSuccess: (data) => {
-      const newImgUrl = data.uploadedImageURL
+  const getPresignedMutation =
+    trpc.page.getPresignUrlForImageUpload.useMutation()
+  const uploadImage = async (image: File) => {
+    const { presignedUploadURL, fileURL } =
+      await getPresignedMutation.mutateAsync({
+        pageId: Number(pageId),
+        siteId: Number(siteId),
+      })
+    const response = await wretch(presignedUploadURL)
+      .content(image.type)
+      .put(image)
+      .res()
+    if (response.ok) {
       setSelectedFile(pendingFile)
       setErrorMessage("")
-      handleChange(path, newImgUrl)
-      console.log("new file url", newImgUrl)
-    },
-    onError: (error) => {
+      handleChange(path, fileURL)
+      console.log("new file url", fileURL)
+    } else {
+      setPendingFile(undefined)
       setErrorMessage(
-        "Unable to upload image, please check your connection or try again.",
+        "There is an error uploading your file. Please try again or contact support.",
       )
-      console.log("upload mutation error", error)
-    },
-  })
-  trpc.page.readImageInPage.useQuery(
-    {
-      imageUrlInSchema: data as string,
-    },
-    {
-      enabled: shouldFetchImage,
-      onSettled(queryData, error) {
-        if (!!error) {
-          console.log("Image fetch error!")
-        }
-        if (!!queryData && !!queryData.imageDataURL) {
-          const file = imageDataURLToFile(queryData.imageDataURL)
-          if (!!file) {
-            setSelectedFile(file)
-          } else {
-            setErrorMessage("Previous selected image is not found.")
-            console.log("Error setting selected file!")
-          }
-        }
-      },
-    },
-  )
+      console.log("file upload failure", response)
+    }
+  }
 
   return (
     <Box py={2}>
@@ -97,14 +98,7 @@ export function JsonFormsImageControl({
             console.log(file?.name)
             if (file) {
               setPendingFile(file)
-              BlobToImageDataURL(file, file.type)
-                .then((imageDataURL) => {
-                  uploadImageMutation.mutate({ imageDataURL })
-                })
-                .catch((reason) =>
-                  console.log("Error converting image to dataurl, ", reason),
-                )
-              // TODO: file attached, upload file. Below code could be in callback of upload TRPC call.
+              void uploadImage(file)
             } else {
               // NOTE: Do we need to update backend on removal of file?
               handleChange(path, "")

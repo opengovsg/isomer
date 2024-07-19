@@ -1,5 +1,6 @@
 import type { ContentPageSchemaType } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
+import { createId } from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
 
@@ -7,10 +8,10 @@ import { BlobToImageDataURL } from "~/features/editing-experience/components/for
 import {
   createPageSchema,
   getEditPageSchema,
+  getPresignUrlForImageUploadSchema,
   readImageInPageSchema,
   updatePageBlobSchema,
   updatePageSchema,
-  uploadImageGetURLSchema,
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -100,7 +101,7 @@ export const pageRouter = router({
     }),
   // TODO: Delete page stuff here
 
-  readImageInPage: pageProcedure
+  readImageInPage: protectedProcedure
     .input(readImageInPageSchema)
     .query(async ({ input, ctx }) => {
       // NOTE: If image is not publically accessible, might need to add logic to get it
@@ -111,10 +112,14 @@ export const pageRouter = router({
       const base64Data = await BlobToImageDataURL(blob, extension)
       return { imageDataURL: base64Data }
     }),
-  uploadImageGetURL: pageProcedure
-    .input(uploadImageGetURLSchema)
+  getPresignUrlForImageUpload: protectedProcedure
+    .input(getPresignUrlForImageUploadSchema)
     .mutation(({ input, ctx }) => {
-      // TODO: Perform image upload logic here
-      return { uploadedImageURL: "https://picsum.photos/200/300.jpg" }
+      // TODO: Generate key and presign S3 url.
+      return {
+        presignedUploadURL: "",
+        // fileURL like https://BUCKET.s3.amazonaws.com/key
+        fileURL: "",
+      }
     }),
 })
