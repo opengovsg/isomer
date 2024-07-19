@@ -78,6 +78,7 @@ export const pageRouter = router({
   readPageAndBlob: protectedProcedure
     .input(getEditPageSchema)
     .query(async ({ input: { pageId, siteId } }) => {
+      // TODO: Return blob last modified so the renderer can show last modified
       const page = await getFullPageById({ resourceId: pageId, siteId })
       if (!page) {
         throw new TRPCError({
@@ -85,14 +86,14 @@ export const pageRouter = router({
           message: "Resource not found",
         })
       }
-      const pageName = page.permalink
+      const permalink = page.permalink
       const siteMeta = await getSiteConfig(page.siteId)
       const navbar = await getNavBar(page.siteId)
       const footer = await getFooter(page.siteId)
       const { content } = page
 
       return {
-        pageName,
+        permalink,
         navbar,
         footer,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
