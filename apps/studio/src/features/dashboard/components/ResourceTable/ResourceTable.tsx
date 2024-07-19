@@ -27,7 +27,7 @@ const columns = [
       <TitleCell
         title={row.original.title}
         permalink={`/${row.original.permalink}`}
-        type={row.original.mainBlobId ? "page" : "folder"}
+        type={row.original.type}
       />
     ),
   }),
@@ -38,7 +38,7 @@ const columns = [
       <ResourceTableMenu
         title={row.original.title}
         resourceId={row.original.id}
-        type={row.original.mainBlobId ? "page" : "folder"}
+        type={row.original.type}
       />
     ),
     size: 24,

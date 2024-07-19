@@ -70,6 +70,7 @@ export const pageRouter = router({
           "Resource.title",
           "Resource.mainBlobId",
           "Resource.draftBlobId",
+          "Resource.type",
         ])
         .execute()
     }),
