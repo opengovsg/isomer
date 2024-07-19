@@ -1,9 +1,9 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
-import z from "zod"
 import { schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
 import { isEqual } from "lodash"
+import z from "zod"
 
 import {
   createPageSchema,
@@ -149,12 +149,16 @@ export const pageRouter = router({
 
       const [movedBlock] = actualBlocks.splice(from, 1)
       if (!movedBlock) return blocks
+      if (!fullPage.draftBlobId || !fullPage.mainBlobId) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
       // Insert at destination index
       actualBlocks.splice(to, 0, movedBlock)
 
       await updateBlobById({
-        id: (fullPage.draftBlobId ?? fullPage.mainBlobId)!,
-        content: ({ ...fullPage.content, content: actualBlocks }),
+        id: fullPage.draftBlobId ?? fullPage.mainBlobId,
+        content: { ...fullPage.content, content: actualBlocks },
       })
 
       // NOTE: user given content and db state is the same at this point

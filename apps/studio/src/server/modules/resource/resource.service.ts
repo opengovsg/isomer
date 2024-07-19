@@ -121,7 +121,7 @@ export const updateBlobById = async (props: {
       .executeTakeFirstOrThrow()
 
     if (!page.draftBlobId) {
-      // NOTE: no draft for this yet, need to create a new one 
+      // NOTE: no draft for this yet, need to create a new one
       return tx.insertInto("Blob").values({ content }).executeTakeFirst()
     }
 
