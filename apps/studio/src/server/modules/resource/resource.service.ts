@@ -1,5 +1,5 @@
-import { type DB } from "~prisma/generated/generatedTypes"
 import type { SelectExpression } from "kysely"
+import { type DB } from "~prisma/generated/generatedTypes"
 
 import { db } from "../database"
 import { type Footer, type Navbar, type Page } from "./resource.types"
