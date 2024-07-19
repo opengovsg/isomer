@@ -12,6 +12,7 @@ import {
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { BiGridVertical } from "react-icons/bi"
 import { BsPlus } from "react-icons/bs"
+import { getComponentSchema } from "@opengovsg/isomer-components"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
@@ -107,7 +108,7 @@ export default function RootStateDrawer() {
                               ml="0.75rem"
                             />
                             <Text px="3" fontWeight={500}>
-                              {block.type}
+                              {getComponentSchema(block.type).title}
                             </Text>
                           </HStack>
                           <Divider />

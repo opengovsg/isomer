@@ -4,6 +4,7 @@ import { BiDollar, BiX } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import FormBuilder from "./form-builder/FormBuilder"
+import { getComponentSchema } from "@opengovsg/isomer-components"
 
 export default function ComplexEditorStateDrawer(): JSX.Element {
   const {
@@ -25,6 +26,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     return <></>
   }
 
+  const { title } = getComponentSchema(component.type)
+
   return (
     <Box position="relative" h="100%" w="100%">
       <Box
@@ -45,8 +48,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
               borderRadius="base"
             />
             <Heading as="h3" size="sm" textStyle="h5" fontWeight="semibold">
-              Edit{" "}
-              {component.type.charAt(0).toUpperCase() + component.type.slice(1)}
+              Edit {title}
             </Heading>
           </HStack>
           <IconButton
