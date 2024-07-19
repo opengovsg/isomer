@@ -112,6 +112,7 @@
     "@chakra-ui/cli": "^2.4.1",
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
+    "@isomer/storybook-config": "*",
     "@isomer/tsconfig": "*",
     "@playwright/test": "^1.40.1",
     "@storybook/addon-a11y": "^8.1.10",

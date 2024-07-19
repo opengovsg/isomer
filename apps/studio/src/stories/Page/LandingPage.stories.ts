@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import LandingPage from "~/pages/index"
-import { getMobileViewParameters } from "../utils/viewports"
 
 const meta: Meta<typeof LandingPage> = {
   title: "Pages/Landing Page",
@@ -15,8 +16,9 @@ const meta: Meta<typeof LandingPage> = {
 export default meta
 type Story = StoryObj<typeof LandingPage>
 
-export const Desktop: Story = {}
-
-export const Mobile: Story = {
-  parameters: getMobileViewParameters(),
+export const Default: Story = {
+  name: "Landing Page",
+  parameters: {
+    chromatic: withChromaticModes(["gsib", "mobile"]),
+  },
 }
