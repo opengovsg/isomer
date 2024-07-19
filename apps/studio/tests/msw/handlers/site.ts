@@ -33,19 +33,6 @@ const defaultFooter = {
   siteId: 1,
 }
 
-const defaultNavbar = {
-  content: {
-    items: [
-      {
-        name: "Home",
-        url: "/",
-      },
-    ] satisfies IsomerSiteWideComponentsProps["navBarItems"],
-  },
-  id: 1,
-  siteId: 1,
-}
-
 const defaultConfigGetQuery = () => {
   return trpcMsw.site.getConfig.query(() => defaultSiteConfig)
 }
@@ -55,7 +42,54 @@ const defaultFooterGetQuery = () => {
 }
 
 const defaultNavbarGetQuery = () => {
-  return trpcMsw.site.getNavbar.query(() => defaultNavbar)
+  return trpcMsw.site.getNavbar.query(() => {
+    return {
+      id: 1,
+      siteId: 1,
+      content: [
+        {
+          url: "/item-one",
+          name: "Expandable nav item",
+          items: [
+            {
+              url: "/item-one/pa-network-one",
+              name: "PA's network one",
+              description:
+                "Click here and brace yourself for mild disappointment.",
+            },
+            {
+              url: "/item-one/pa-network-two",
+              name: "PA's network two",
+              description:
+                "Click here and brace yourself for mild disappointment.",
+            },
+            {
+              url: "/item-one/pa-network-three",
+              name: "PA's network three",
+            },
+            {
+              url: "/item-one/pa-network-four",
+              name: "PA's network four",
+              description:
+                "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+            },
+            {
+              url: "/item-one/pa-network-five",
+              name: "PA's network five",
+              description:
+                "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+            },
+            {
+              url: "/item-one/pa-network-six",
+              name: "PA's network six",
+              description:
+                "Click here and brace yourself for mild disappointment.",
+            },
+          ],
+        },
+      ],
+    }
+  })
 }
 
 export const siteHandlers = {
