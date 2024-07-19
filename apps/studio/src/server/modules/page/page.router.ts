@@ -1,6 +1,4 @@
-import type {
-  ContentPageSchemaType,
-} from "@opengovsg/isomer-components"
+import type { ContentPageSchemaType } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
