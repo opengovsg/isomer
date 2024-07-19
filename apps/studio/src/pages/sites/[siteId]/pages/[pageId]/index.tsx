@@ -17,9 +17,9 @@ const editPageSchema = z.object({
 function EditPage(): JSX.Element {
   const {
     setDrawerState,
-    pageState,
-    setPageState,
-    setSnapshot: setEditorState,
+    previewPageState,
+    setSavedPageState,
+    setPreviewPageState,
   } = useEditorDrawerContext()
   const { pageId, siteId } = useQueryParse(editPageSchema)
 
@@ -33,8 +33,9 @@ function EditPage(): JSX.Element {
       state: "root",
     })
     const blocks = page.content
-    setPageState(blocks)
-  }, [page.content, setDrawerState, setEditorState, setPageState])
+    setSavedPageState(blocks)
+    setPreviewPageState(blocks)
+  }, [page.content, setDrawerState, setPreviewPageState, setSavedPageState])
 
   return (
     <Grid
@@ -51,7 +52,7 @@ function EditPage(): JSX.Element {
       <GridItem colSpan={2} overflow="scroll">
         {/* TODO: the version here should be obtained from the schema  */}
         {/* and not from the page */}
-        <Preview {...page} version="0.1.0" content={pageState} />
+        <Preview {...page} version="0.1.0" content={previewPageState} />
       </GridItem>
     </Grid>
   )

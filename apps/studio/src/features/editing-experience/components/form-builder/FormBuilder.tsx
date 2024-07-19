@@ -1,10 +1,10 @@
-import type { IsomerComponentTypes } from "@opengovsg/isomer-components"
-import { useState } from "react"
 import { type JsonFormsRendererRegistryEntry } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 
+import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import {
   JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
@@ -56,24 +56,36 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   },
 ]
 
-export interface FormBuilderProps {
-  component: IsomerComponentTypes
-}
+export default function FormBuilder(): JSX.Element {
+  const { savedPageState, previewPageState, setPreviewPageState, blockIndex } =
+    useEditorDrawerContext()
 
-export default function FormBuilder({
-  component,
-}: FormBuilderProps): JSX.Element {
-  const subSchema = getComponentSchema(component)
-  const [formData, setFormData] = useState({})
+  if (blockIndex === -1 || blockIndex > savedPageState.length) {
+    return <></>
+  }
+
+  const component = savedPageState[blockIndex]
+
+  if (!component) {
+    return <></>
+  }
+
+  const subSchema = getComponentSchema(component.type)
+  const data = previewPageState[blockIndex]
+  const ajv = new Ajv({ strict: false })
+  const validateFn = ajv.compile<IsomerComponent>(subSchema)
 
   return (
     <JsonForms
-      schema={subSchema || {}}
-      data={formData}
+      schema={subSchema}
+      data={data}
       renderers={renderers}
       onChange={({ data }) => {
-        console.log(data)
-        setFormData(data)
+        if (validateFn(data)) {
+          const newPageState = [...savedPageState]
+          newPageState[blockIndex] = data
+          setPreviewPageState(newPageState)
+        }
       }}
       ajv={new Ajv({ strict: false })}
     />

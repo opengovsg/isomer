@@ -46,6 +46,7 @@ export function EditPageDrawer() {
     case "complexEditor":
       return <ComplexEditorStateDrawer />
     default:
+      const _: never = currState
       return <h1>Edit Page Drawer</h1>
   }
 }

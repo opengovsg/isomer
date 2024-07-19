@@ -37,13 +37,19 @@ interface TipTapComponentProps {
 }
 
 function TipTapComponent({ content }: TipTapComponentProps) {
-  const { setDrawerState, setPageState, currActiveIdx, snapshot } =
-    useEditorDrawerContext()
+  const {
+    setDrawerState,
+    savedPageState,
+    setSavedPageState,
+    previewPageState,
+    setPreviewPageState,
+    currActiveIdx,
+  } = useEditorDrawerContext()
 
   const updatePageState = (editorContent: JSONContent) => {
     // TODO: actual validation
     const content = editorContent as ProseProps
-    setPageState((oldState) => {
+    setPreviewPageState((oldState) => {
       // TODO: performance - this is a full clone
       // of the object, which is expensive
       const newState = cloneDeep(oldState)
@@ -129,8 +135,8 @@ function TipTapComponent({ content }: TipTapComponentProps) {
           aria-label="Close add component"
           icon={<BiX />}
           onClick={() => {
-            setPageState(snapshot)
             setDrawerState({ state: "root" })
+            setPreviewPageState(savedPageState)
           }}
         />
       </Flex>
@@ -176,9 +182,8 @@ function TipTapComponent({ content }: TipTapComponentProps) {
       >
         <Button
           onClick={() => {
-            const jsonContent = editor.getJSON()
-            updatePageState(jsonContent)
             setDrawerState({ state: "root" })
+            setSavedPageState(previewPageState)
           }}
         >
           Save
