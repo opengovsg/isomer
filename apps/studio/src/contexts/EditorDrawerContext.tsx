@@ -1,13 +1,8 @@
-import { type IsomerComponent } from '@opengovsg/isomer-components'
-import {
-  createContext,
-  useContext,
-  useState,
-  type PropsWithChildren,
-  type Dispatch,
-  type SetStateAction,
-} from 'react'
-import { type DrawerState } from '~/types/editorDrawer'
+import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
+import { createContext, useContext, useState } from "react"
+import { type IsomerComponent } from "@opengovsg/isomer-components"
+
+import { type DrawerState } from "~/types/editorDrawer"
 
 export interface DrawerContextType {
   currActiveIdx: number
