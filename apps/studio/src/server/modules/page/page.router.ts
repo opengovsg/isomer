@@ -151,7 +151,10 @@ export const pageRouter = router({
       const [movedBlock] = actualBlocks.splice(from, 1)
       if (!movedBlock) return blocks
       if (!fullPage.draftBlobId || !fullPage.mainBlobId) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Please ensure that you have selected a valid page" })
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Please ensure that you have selected a valid page",
+        })
       }
 
       // Insert at destination index
@@ -178,7 +181,7 @@ export const pageRouter = router({
   updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input, ctx }) => {
-      // @ts-expect-error we need this because we sanitise as a string 
+      // @ts-expect-error we need this because we sanitise as a string
       // but this accepts a nested JSON object
       await updateBlobById({ ...input, pageId: input.pageId })
 

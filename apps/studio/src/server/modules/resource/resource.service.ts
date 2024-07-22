@@ -95,7 +95,7 @@ export const getPageById = (args: { resourceId: number; siteId: number }) => {
 }
 
 export const updatePageById = (
-  page: Partial<Omit<Page, "id" | "siteId">> & { id: number, siteId: number },
+  page: Partial<Omit<Page, "id" | "siteId">> & { id: number; siteId: number },
 ) => {
   const { id, ...rest } = page
   return db
@@ -124,8 +124,16 @@ export const updateBlobById = async (props: {
 
     if (!page.draftBlobId) {
       // NOTE: no draft for this yet, need to create a new one
-      const newBlob = await tx.insertInto("Blob").values({ content }).returning("id").executeTakeFirstOrThrow()
-      await tx.updateTable("Resource").where("id", "=", id).set({ draftBlobId: newBlob.id }).execute()
+      const newBlob = await tx
+        .insertInto("Blob")
+        .values({ content })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+      await tx
+        .updateTable("Resource")
+        .where("id", "=", id)
+        .set({ draftBlobId: newBlob.id })
+        .execute()
     }
 
     return (

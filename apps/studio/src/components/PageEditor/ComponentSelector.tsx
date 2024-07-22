@@ -111,7 +111,7 @@ function ComponentSelector() {
   const siteId = 1
   const [page] = trpc.page.readPageAndBlob.useSuspenseQuery({
     pageId,
-    siteId
+    siteId,
   })
   const onProceed = (sectionType: SectionType) => {
     // NOTE: Only paragraph should go to tiptap editor
