@@ -50,15 +50,24 @@ export const getNotification = async (siteId: number) => {
 }
 
 // TODO: Should triger immediate re-publish of site
+// NOTE: Empty string removes a notification
 export const setSiteNotification = async (
   siteId: number,
   notification: string,
 ) => {
-  return db
-    .updateTable("Site")
-    .set({
-      config: sql`jsonb_set(config, '{"notification"}', to_jsonb(${notification}::text))`,
-    })
-    .where("id", "=", siteId)
-    .executeTakeFirstOrThrow()
+  if (notification) {
+    return db
+      .updateTable("Site")
+      .set({
+        config: sql`jsonb_set(config, '{"notification"}', to_jsonb(${notification}::text))`,
+      })
+      .where("id", "=", siteId)
+      .executeTakeFirstOrThrow()
+  } else {
+    return db
+      .updateTable("Site")
+      .set({ config: sql`config - 'notification'` })
+      .where("id", "=", siteId)
+      .executeTakeFirstOrThrow()
+  }
 }

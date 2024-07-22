@@ -41,11 +41,12 @@ export const siteRouter = router({
       return getNavBar(id)
     }),
   getNotification: protectedProcedure
+    // type of notification is any.
     .input(getNotificationSchema)
     .query(async ({ input }) => {
       const { siteId } = input
       const notification = await getNotification(siteId)
-      return notification
+      return notification || ""
     }),
   setNotification: protectedProcedure
     .input(setNotificationSchema)
