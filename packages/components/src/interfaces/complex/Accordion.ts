@@ -1,7 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
+import { InnerProseSchema } from "../native/Prose"
 
-import { ProseSchema } from "../native"
+
 
 export const AccordionSchema = Type.Object(
   {
@@ -10,7 +11,7 @@ export const AccordionSchema = Type.Object(
       title: "Accordion summary",
       description: "The summary for the accordion",
     }),
-    details: Type.Ref(ProseSchema),
+    details: InnerProseSchema,
   },
   { title: "Accordion component" },
 )
