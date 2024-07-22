@@ -37,6 +37,7 @@ model Resource {
   id        Int       @id @default(autoincrement())
   title     String
   permalink String
+  version   Int       @default(1)
   siteId    Int
   site      Site      @relation(fields: [siteId], references: [id])
   parentId  Int?
@@ -54,6 +55,17 @@ model Resource {
 
   state ResourceState? @default(Draft)
   type  ResourceType
+
+  ResourceVersions ResourceVersions[]
+}
+
+model ResourceVersions {
+  id         Int      @id @default(autoincrement())
+  resourceId Int
+  resource   Resource @relation(fields: [resourceId], references: [id])
+  blobId     Int
+  blob       Blob     @relation(fields: [blobId], references: [id])
+  version    Int
 }
 
 enum ResourceState {
@@ -130,8 +142,9 @@ model Blob {
   /// [BlobJsonContent]
   content Json
 
-  mainResource  Resource? @relation("MainBlob")
-  draftResource Resource? @relation("DraftBlob")
+  mainResource     Resource?          @relation("MainBlob")
+  draftResource    Resource?          @relation("DraftBlob")
+  ResourceVersions ResourceVersions[]
 }
 
 model SiteMember {
