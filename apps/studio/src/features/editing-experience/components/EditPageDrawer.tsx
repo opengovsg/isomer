@@ -4,7 +4,6 @@ import Ajv from "ajv"
 
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { inferAsProse } from "../utils"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
 import TipTapComponent from "./TipTapComponent"
