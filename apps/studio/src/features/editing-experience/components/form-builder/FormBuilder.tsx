@@ -91,7 +91,7 @@ export default function FormBuilder(): JSX.Element {
           setPreviewPageState(newPageState)
         }
       }}
-      ajv={new Ajv({ strict: false })}
+      ajv={ajv}
     />
   )
 }
