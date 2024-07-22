@@ -4,7 +4,11 @@ import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
 import { z } from "zod"
 
-import { createPageSchema, getEditPageSchema } from "~/schemas/page"
+import {
+  createPageSchema,
+  getEditPageSchema,
+  publishPageSchema,
+} from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { db, ResourceType } from "../database"
@@ -137,4 +141,34 @@ export const pageRouter = router({
         return { pageId: resource.id }
       },
     ),
+  publishPage: protectedProcedure
+    .input(publishPageSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { pageId, siteId } = input
+      const page = await getFullPageById({ resourceId: pageId, siteId })
+
+      if (!page) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+
+      // TODO: Take a snapshot of the page into a versions table
+
+      // Update DB state - move draftBlobId into publishedBlobId
+      // and clear draftBlobId
+      await db.transaction().execute(async (tx) => {
+        await tx
+          .updateTable("Resource")
+          .set({
+            mainBlobId: page.draftBlobId,
+            draftBlobId: null,
+          })
+          .where("id", "=", pageId)
+          .executeTakeFirstOrThrow()
+      })
+
+      // TODO: initiate a build on CodeBuild via AWS SDK
+    }),
 })

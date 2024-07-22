@@ -39,3 +39,8 @@ export const createPageSchema = z.object({
   // NOTE: implies that top level pages are allowed
   folderId: z.number().min(1).optional(),
 })
+
+export const publishPageSchema = z.object({
+  pageId: z.number().min(1),
+  siteId: z.number().min(1),
+})
