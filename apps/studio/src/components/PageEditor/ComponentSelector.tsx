@@ -129,7 +129,6 @@ function ComponentSelector() {
       ? [...savedPageState, newComponent]
       : savedPageState
 
-    setSavedPageState(nextPageState)
     setDrawerState({ state: nextState })
     setCurrActiveIdx(nextPageState.length - 1)
     setPreviewPageState(nextPageState)
