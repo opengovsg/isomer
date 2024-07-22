@@ -3,8 +3,16 @@ import { Button, IconButton } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { BiDollar, BiX } from "react-icons/bi"
 
+import z from "zod"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import FormBuilder from "./form-builder/FormBuilder"
+import { trpc } from "~/utils/trpc"
+import { useQueryParse } from "~/hooks/useQueryParse"
+
+const complexEditorSchema = z.object({
+  pageId: z.coerce.number(),
+  siteId: z.coerce.number(),
+})
 
 export default function ComplexEditorStateDrawer(): JSX.Element {
   const {
@@ -26,7 +34,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     return <></>
   }
 
+  const { pageId, siteId } = useQueryParse(complexEditorSchema)
+  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery({ siteId, pageId })
   const { title } = getComponentSchema(component.type)
+
+  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation()
 
   return (
     <Box position="relative" h="100%" w="100%" overflow="auto">
@@ -74,7 +86,9 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           onClick={() => {
             setDrawerState({ state: "root" })
             setSavedPageState(previewPageState)
+            mutate({ pageId, siteId, content: JSON.stringify({ ...pageContent, content: previewPageState }) })
           }}
+          isLoading={isLoading}
         >
           Save
         </Button>
