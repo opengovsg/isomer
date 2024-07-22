@@ -1,5 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { type JsonFormsRendererRegistryEntry } from "@jsonforms/core"
+import { and, or, rankWith, schemaTypeIs, type JsonFormsRendererRegistryEntry } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
@@ -31,6 +31,7 @@ import {
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
 } from "./renderers"
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
@@ -54,6 +55,22 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     tester: jsonFormsVerticalLayoutTester,
     renderer: jsonFormsVerticalLayoutRenderer,
   },
+  {
+    tester: jsonFormsVerticalLayoutTester,
+    renderer: jsonFormsVerticalLayoutRenderer,
+  },
+  {
+    // NOTE: If we fall through all our previous testers, 
+    // we render null so that the users don't get visual noise
+    tester: rankWith(
+      JSON_FORMS_RANKING.Catchall,
+      // NOTE: This is just for UAT for `sectionIdx` but we might want to make this a general case
+      and(
+        or(schemaTypeIs("integer"), schemaTypeIs("number")),
+      ),
+    ),
+    renderer: () => null
+  }
 ]
 const ajv = new Ajv({ strict: false, logger: false })
 
