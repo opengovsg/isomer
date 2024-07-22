@@ -95,26 +95,28 @@ export const getPageById = (args: { resourceId: number; siteId: number }) => {
 }
 
 export const updatePageById = (
-  page: Partial<Omit<Page, "id">> & { id: number },
+  page: Partial<Omit<Page, "id" | "siteId">> & { id: number, siteId: number },
 ) => {
   const { id, ...rest } = page
   return db
     .updateTable("Resource")
     .set(rest)
     .where("id", "=", id)
+    .where("siteId", "=", page.siteId)
     .executeTakeFirstOrThrow()
 }
 
-// NOTE: This id here is the page id
 export const updateBlobById = async (props: {
   pageId: number
   content: PrismaJson.BlobJsonContent
+  siteId: number
 }) => {
   const { pageId: id, content } = props
   return db.transaction().execute(async (tx) => {
     const page = await tx
       .selectFrom("Resource")
       .where("Resource.id", "=", id)
+      .where("siteId", "=", props.siteId)
       // NOTE: We update the draft first
       // Main should only be updated at build
       .select("draftBlobId")

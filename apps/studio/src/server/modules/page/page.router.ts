@@ -160,6 +160,7 @@ export const pageRouter = router({
       await updateBlobById({
         pageId: fullPage.draftBlobId ?? fullPage.mainBlobId,
         content: { ...fullPage.content, content: actualBlocks },
+        siteId,
       })
 
       // NOTE: user given content and db state is the same at this point
