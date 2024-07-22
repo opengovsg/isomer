@@ -47,7 +47,6 @@ export default function RootStateDrawer() {
     )
       return
 
-    console.log("saved", savedPageState)
     // NOTE: We eagerly update their page state here
     // and if it fails on the backend,
     // we rollback to what we passed them

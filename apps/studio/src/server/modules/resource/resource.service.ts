@@ -107,10 +107,10 @@ export const updatePageById = (
 
 // NOTE: This id here is the page id
 export const updateBlobById = async (props: {
-  id: number
+  pageId: number
   content: PrismaJson.BlobJsonContent
 }) => {
-  const { id, content } = props
+  const { pageId: id, content } = props
   return db.transaction().execute(async (tx) => {
     const page = await tx
       .selectFrom("Resource")
@@ -122,7 +122,8 @@ export const updateBlobById = async (props: {
 
     if (!page.draftBlobId) {
       // NOTE: no draft for this yet, need to create a new one
-      return tx.insertInto("Blob").values({ content }).executeTakeFirst()
+      const newBlob = await tx.insertInto("Blob").values({ content }).returning("id").executeTakeFirstOrThrow()
+      await tx.updateTable("Resource").where("id", "=", id).set({ draftBlobId: newBlob.id }).execute()
     }
 
     return (

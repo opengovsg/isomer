@@ -114,7 +114,6 @@ function ComponentSelector() {
     siteId
   })
   const onProceed = (sectionType: SectionType) => {
-    // TODO: add new section to page/editor state
     // NOTE: Only paragraph should go to tiptap editor
     // the rest should use json forms
     const nextState: DrawerState["state"] =

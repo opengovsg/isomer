@@ -144,20 +144,21 @@ export const pageRouter = router({
         to < 0
       ) {
         // NOTE: If this happens, this indicates that either our dnd libary on our frontend has a
+        // bug or someone is trying to mess with our frontend
         throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" })
       }
 
       const [movedBlock] = actualBlocks.splice(from, 1)
       if (!movedBlock) return blocks
       if (!fullPage.draftBlobId || !fullPage.mainBlobId) {
-        throw new TRPCError({ code: "NOT_FOUND" })
+        throw new TRPCError({ code: "NOT_FOUND", message: "Please ensure that you have selected a valid page" })
       }
 
       // Insert at destination index
       actualBlocks.splice(to, 0, movedBlock)
 
       await updateBlobById({
-        id: fullPage.draftBlobId ?? fullPage.mainBlobId,
+        pageId: fullPage.draftBlobId ?? fullPage.mainBlobId,
         content: { ...fullPage.content, content: actualBlocks },
       })
 
@@ -178,7 +179,7 @@ export const pageRouter = router({
     .mutation(async ({ input, ctx }) => {
       // @ts-expect-error we need this because we sanitise as a string 
       // but this accepts a nested JSON object
-      await updateBlobById({ ...input, id: input.pageId })
+      await updateBlobById({ ...input, pageId: input.pageId })
 
       return input
     }),
