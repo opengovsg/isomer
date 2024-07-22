@@ -160,16 +160,3 @@ export const moveResource = async (
     .where("id", "=", resourceId)
     .executeTakeFirstOrThrow()
 }
-
-export const moveResource = async (
-  siteId: number,
-  resourceId: number,
-  newParentId: number | null,
-) => {
-  return db
-    .updateTable("Resource")
-    .set({ parentId: newParentId })
-    .where("siteId", "=", siteId)
-    .where("id", "=", resourceId)
-    .executeTakeFirstOrThrow()
-}
