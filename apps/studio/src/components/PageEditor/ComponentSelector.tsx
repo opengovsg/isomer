@@ -265,32 +265,6 @@ function ComponentSelector({ pageId, siteId }: ComponentSelectorProps) {
             />
           </BlockList>
         </Section>
-        <Section>
-          <SectionTitle title="External Content" />
-          <BlockList>
-            <BlockItem
-              label="YouTube"
-              icon={BiMovie}
-              onProceed={onProceed}
-              sectionType="iframe"
-              description="TODO"
-            />
-            <BlockItem
-              label="Google Maps"
-              icon={BiMap}
-              onProceed={onProceed}
-              sectionType="iframe"
-              description="TODO"
-            />
-            <BlockItem
-              label="FormSG"
-              icon={BiQuestionMark}
-              onProceed={onProceed}
-              sectionType="iframe"
-              description="TODO"
-            />
-          </BlockList>
-        </Section>
       </VStack>
     </VStack>
   )
