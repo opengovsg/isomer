@@ -54,7 +54,7 @@ export function JsonFormsAnyOfControl({
 
   return (
     <>
-      <Box py={2}>
+      <Box py="0.5rem">
         <FormControl isRequired>
           <FormLabel>{label || "Variant"}</FormLabel>
           <SingleSelect

@@ -3,7 +3,7 @@ import type {
   OwnPropsOfEnum,
   RankedTester,
 } from "@jsonforms/core"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { Box, FormControl } from "@chakra-ui/react"
 import { isEnumControl, rankWith } from "@jsonforms/core"
 import { withJsonFormsEnumProps } from "@jsonforms/react"
@@ -26,15 +26,12 @@ export function JsonFormsDropdownControl({
   options,
   schema,
 }: ControlProps & OwnPropsOfEnum) {
-  const [dropdownValue, setDropdownValue] = useState(data || "")
-
   // Use the default value if it exists
   useEffect(() => {
     if (data !== undefined || data !== "") {
       return
     }
     const value = schema.default || schema.const
-    setDropdownValue(value)
     handleChange(path, value)
   }, [path, schema.default, schema.const, handleChange, data])
 
@@ -52,12 +49,11 @@ export function JsonFormsDropdownControl({
       <FormControl isRequired={required}>
         <FormLabel description={description}>{label}</FormLabel>
         <SingleSelect
-          value={dropdownValue}
+          value={data}
           name={label}
           items={items}
           isClearable={false}
           onChange={(value) => {
-            setDropdownValue(value)
             handleChange(path, value)
           }}
         />
