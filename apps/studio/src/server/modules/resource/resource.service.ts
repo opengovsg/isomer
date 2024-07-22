@@ -2,12 +2,13 @@ import type { SelectExpression } from "kysely"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import { db } from "../database"
-import { type Footer, type Navbar, type Page } from "./resource.types"
+import { type Page } from "./resource.types"
 
 // Specify the default columns to return from the Resource table
 const defaultResourceSelect: SelectExpression<DB, "Resource">[] = [
   "Resource.id",
-  "Resource.name",
+  "Resource.title",
+  "Resource.permalink",
   "Resource.siteId",
   "Resource.parentId",
   "Resource.mainBlobId",
@@ -50,28 +51,44 @@ export const getFolders = () =>
     .execute()
 
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
-const getByResourceId = (id: number) =>
-  db.selectFrom("Resource").where("Resource.id", "=", id)
+const getById = ({
+  resourceId,
+  siteId,
+}: {
+  resourceId: number
+  siteId: number
+}) =>
+  db
+    .selectFrom("Resource")
+    .where("Resource.id", "=", resourceId)
+    .where("siteId", "=", siteId)
 
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
-export const getFullPageById = async (id: number) => {
+export const getFullPageById = async (args: {
+  resourceId: number
+  siteId: number
+}) => {
   // Check if draft blob exists and return that preferentially
-  const draftBlob = await getByResourceId(id)
+  const draftBlob = await getById(args)
     .where("Resource.draftBlobId", "is not", null)
     .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
     .executeTakeFirst()
-  if (draftBlob) return draftBlob
+  if (draftBlob) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore excessive deep type instantiaton
+    return draftBlob
+  }
 
-  return getByResourceId(id)
+  return getById(args)
     .where("Resource.mainBlobId", "is not", null)
     .innerJoin("Blob", "Resource.mainBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
-    .executeTakeFirstOrThrow()
+    .executeTakeFirst()
 }
 
-export const getPageById = (id: number) => {
-  return getByResourceId(id)
+export const getPageById = (args: { resourceId: number; siteId: number }) => {
+  return getById(args)
     .where("type", "is", "Page")
     .select(defaultResourceSelect)
     .executeTakeFirstOrThrow()
@@ -90,31 +107,22 @@ export const updatePageById = (
   })
 }
 
-// NOTE: This id here is the page id
-export const updateBlobById = async (props: {
+export const updateBlobById = (props: {
   id: number
-  content: string
+  content: PrismaJson.BlobJsonContent
 }) => {
   const { id, content } = props
-  return db.transaction().execute(async (tx) => {
-    const page = await tx
-      .selectFrom("Resource")
+  return (
+    db
+      .updateTable("Blob")
+      .innerJoin("Resource", "Resource.id", "id")
+      // NOTE: This works because a page has a 1-1 relation with a blob
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore excessive deep type instantiaton
+      .set({ content })
       .where("Resource.id", "=", id)
-      // NOTE: We update the draft first
-      // Main should only be updated at build
-      .select("draftBlobId")
       .executeTakeFirstOrThrow()
-
-    return (
-      tx
-        .updateTable("Blob")
-        .innerJoin("Resource", "Resource.id", "id")
-        // NOTE: This works because a page has a 1-1 relation with a blob
-        .set({ content })
-        .where("Resource.id", "=", id)
-        .executeTakeFirstOrThrow()
-    )
-  })
+  )
 }
 
 // TODO: should be selecting from new table
@@ -126,7 +134,7 @@ export const getNavBar = async (siteId: number) => {
     // NOTE: Throwing here is acceptable because each site should have a navbar
     .executeTakeFirstOrThrow()
 
-  return { ...rest, content: content as Navbar }
+  return { ...rest, content }
 }
 
 export const getFooter = async (siteId: number) => {
@@ -137,7 +145,7 @@ export const getFooter = async (siteId: number) => {
     // NOTE: Throwing here is acceptable because each site should have a footer
     .executeTakeFirstOrThrow()
 
-  return { ...rest, content: content as Footer }
+  return { ...rest, content }
 }
 
 export const moveResource = async (

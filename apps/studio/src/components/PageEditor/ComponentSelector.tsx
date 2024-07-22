@@ -100,10 +100,10 @@ function BlockItem({
 function ComponentSelector() {
   const {
     setCurrActiveIdx,
-    pageState,
+    savedPageState,
     setDrawerState,
-    setPageState,
-    setSnapshot,
+    setSavedPageState,
+    setPreviewPageState,
     setAddedBlock,
   } = useEditorDrawerContext()
 
@@ -120,25 +120,17 @@ function ComponentSelector() {
     // the rest should use json forms
     const nextState: DrawerState["state"] =
       sectionType === "prose" ? "nativeEditor" : "complexEditor"
+    // TODO: Remove assertion after default blocks all in
     const newComponent: IsomerComponent | undefined =
       DEFAULT_BLOCKS[sectionType]
-    const nextPageState = !!newComponent
-      ? [...pageState, newComponent]
-      : pageState
 
-    setPageState(nextPageState)
+    const nextPageState = !!newComponent
+      ? [...savedPageState, newComponent]
+      : savedPageState
+    setSavedPageState(nextPageState)
     setDrawerState({ state: nextState })
     setCurrActiveIdx(nextPageState.length - 1)
-    setSnapshot(pageState)
-    // TODO: Decide if this is a good idea...
-    if (sectionType !== "prose") {
-      setAddedBlock(sectionType)
-    }
-
-    mutate({
-      pageId,
-      content: JSON.stringify({ ...page.content, content: nextPageState }),
-    })
+    setPreviewPageState(nextPageState)
   }
 
   return (
@@ -176,7 +168,7 @@ function ComponentSelector() {
           <SectionTitle title="Basic Building Blocks" />
           <BlockList>
             <BlockItem
-              label="Paragraph"
+              label="Prose"
               icon={BiText}
               onProceed={onProceed}
               sectionType="prose"
@@ -212,7 +204,7 @@ function ComponentSelector() {
               label="Text with button"
               icon={BiSolidHandUp}
               onProceed={onProceed}
-              sectionType="button"
+              sectionType="infobar"
               description="TODO"
             />
             <BlockItem
@@ -226,6 +218,7 @@ function ComponentSelector() {
         </Section>
         <Section>
           <SectionTitle title="Organise Content" />
+          {/* TODO: this should map over the schema and take values + components from there */}
           <BlockList>
             <BlockItem
               label="Cards"

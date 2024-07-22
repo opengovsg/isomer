@@ -1,29 +1,30 @@
-import { Box, Flex } from "@chakra-ui/react"
+import { Flex, Text } from "@chakra-ui/react"
+import { Link } from "@opengovsg/design-system-react"
 
-import Suspense from "~/components/Suspense"
-import {
-  ADMIN_NAVBAR_HEIGHT,
-  APP_GRID_COLUMN,
-  APP_GRID_TEMPLATE_COLUMN,
-} from "~/constants/layouts"
+import { SiteList } from "~/features/dashboard/SiteList"
 import { type NextPageWithLayout } from "~/lib/types"
-import { AppGrid } from "~/templates/AppGrid"
 import { AdminLayout } from "~/templates/layouts/AdminLayout"
 
-const Home: NextPageWithLayout = () => {
+const DashboardPage: NextPageWithLayout = () => {
   return (
-    <Flex
-      w="100%"
-      flexDir="column"
-      position={{ base: "absolute", sm: "inherit" }}
-      left={{ base: 0, sm: undefined }}
-      minH={`calc(100% - ${ADMIN_NAVBAR_HEIGHT})`}
-    >
-      Hello
+    <Flex flexDir="column" py="2rem" maxW="57rem" mx="auto" width="100%">
+      <Flex gap="0.75rem" flexDirection="column">
+        <Text as="h3" size="lg" textStyle="h3">
+          My sites
+        </Text>
+        <Text textStyle="body-2">
+          Don't see a site here?{" "}
+          <Link variant="inline" href="mailto:support@isomer.gov.sg">
+            Let us know
+          </Link>
+          .
+        </Text>
+        <SiteList />
+      </Flex>
     </Flex>
   )
 }
 
-Home.getLayout = AdminLayout
+DashboardPage.getLayout = AdminLayout
 
-export default Home
+export default DashboardPage

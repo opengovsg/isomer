@@ -10,12 +10,12 @@ export interface DrawerContextType {
   setCurrActiveIdx: (currActiveIdx: number) => void
   drawerState: DrawerState
   setDrawerState: (state: DrawerState) => void
-  pageState: IsomerComponent[]
-  setPageState: Dispatch<SetStateAction<IsomerComponent[]>>
-  snapshot: IsomerComponent[]
-  setSnapshot: (state: IsomerComponent[]) => void
   addedBlock: Exclude<SectionType, "prose">
   setAddedBlock: (addedBlock: Exclude<SectionType, "prose">) => void
+  savedPageState: IsomerComponent[]
+  setSavedPageState: Dispatch<SetStateAction<IsomerComponent[]>>
+  previewPageState: IsomerComponent[]
+  setPreviewPageState: Dispatch<SetStateAction<IsomerComponent[]>>
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
@@ -23,34 +23,28 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
   const [drawerState, setDrawerState] = useState<DrawerState>({
     state: "root",
   })
+  // Index of the current block being edited
+  const [currActiveIdx, setCurrActiveIdx] = useState<number>(-1)
   // Current saved state of page
-  const [pageState, setPageState] = useState<IsomerComponent[]>([])
-  // Current edit view of page
-  const [snapshot, setSnapshot] = useState<IsomerComponent[]>([])
-  // Isomer page schema
-  const [currActiveIdx, setCurrActiveIdx] = useState(0)
-  // NOTE: Give a default value first so we don't have to do null checking everytime
-  const [addedBlock, setAddedBlock] =
-    useState<Exclude<SectionType, "prose">>("button")
-
-  const value = useMemo(
-    () => ({
-      currActiveIdx,
-      setCurrActiveIdx,
-      drawerState,
-      setDrawerState,
-      pageState,
-      setPageState,
-      snapshot,
-      setSnapshot,
-      addedBlock,
-      setAddedBlock,
-    }),
-    [currActiveIdx, drawerState, pageState, snapshot, addedBlock],
+  const [savedPageState, setSavedPageState] = useState<IsomerComponent[]>([])
+  // State of the page to render in the preview
+  const [previewPageState, setPreviewPageState] = useState<IsomerComponent[]>(
+    [],
   )
 
   return (
-    <EditorDrawerContext.Provider value={value}>
+    <EditorDrawerContext.Provider
+      value={{
+        currActiveIdx,
+        setCurrActiveIdx,
+        drawerState,
+        setDrawerState,
+        savedPageState,
+        setSavedPageState,
+        previewPageState,
+        setPreviewPageState,
+      }}
+    >
       {children}
     </EditorDrawerContext.Provider>
   )

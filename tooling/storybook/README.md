@@ -1,0 +1,1 @@
+# `@isomer/storybook-config`
