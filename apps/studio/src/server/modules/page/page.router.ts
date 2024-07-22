@@ -144,17 +144,6 @@ export const pageRouter = router({
       },
     ),
 
-  readImageInPage: protectedProcedure
-    .input(readImageInPageSchema)
-    .query(async ({ input, ctx }) => {
-      // NOTE: If image is not publically accessible, might need to add logic to get it
-      const res = await fetch(input.imageUrlInSchema)
-      const blob = await res.blob()
-      const splitUrl = input.imageUrlInSchema.split(".")
-      const extension = splitUrl[splitUrl.length - 1] || ""
-      const base64Data = await BlobToImageDataURL(blob, extension)
-      return { imageDataURL: base64Data }
-    }),
   getPresignUrlForImageUpload: protectedProcedure
     .input(getPresignUrlForImageUploadSchema)
     .mutation(({ input, ctx }) => {

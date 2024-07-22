@@ -57,8 +57,6 @@ export function JsonFormsImageControl({
     // After this load, we are the only editor of this page, and any image url changes are caused by us and we will be caching the file locally.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // NOTE: Run once only if initial load has non empty data(imageURL).
   const getPresignedMutation =
     trpc.page.getPresignUrlForImageUpload.useMutation()
   const uploadImage = async (image: File) => {
