@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Divider,
+  Flex,
   HStack,
   Icon,
   Spacer,
@@ -10,11 +11,21 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import { IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
-import { BiGridVertical } from "react-icons/bi"
+import { BiTrash, BiGridVertical } from "react-icons/bi"
 import { BsPlus } from "react-icons/bs"
 
+import z from "zod"
+
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { trpc } from "~/utils/trpc"
+import { useQueryParse } from "~/hooks/useQueryParse"
+
+const editPageSchema = z.object({
+  pageId: z.coerce.number(),
+  siteId: z.coerce.number(),
+})
 
 export default function RootStateDrawer() {
   const {
@@ -24,6 +35,17 @@ export default function RootStateDrawer() {
     setSavedPageState,
     setPreviewPageState,
   } = useEditorDrawerContext()
+  const utils = trpc.useUtils()
+  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery({ siteId, pageId })
+  const { mutate } = trpc.page.reorderBlock.useMutation()
+  const { mutate: updatePageBlob, isLoading: isUpdatingBlob } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: () => {
+      // NOTE: Only need to invalidate the blob because the page is not updated
+      utils.page.readPageAndBlob.invalidate({ siteId, pageId })
+    }
+  })
+  const toast = useToast({ status: "error" })
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return
@@ -83,34 +105,49 @@ export default function RootStateDrawer() {
                         <VStack
                           w="100%"
                           gap={0}
-                          onClick={() => {
-                            setCurrActiveIdx(index)
-                            // TODO: we should automatically do this probably?
-                            const nextState =
-                              savedPageState[index]?.type === "prose"
-                                ? "nativeEditor"
-                                : "complexEditor"
-                            // NOTE: SNAPSHOT
-                            setDrawerState({ state: nextState })
-                          }}
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
                         >
-                          <HStack
-                            w="100%"
-                            py="4"
+                          <Flex py="4" w="100%"
                             bgColor="white"
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
                           >
-                            <Icon
-                              as={BiGridVertical}
-                              fontSize="1.5rem"
-                              ml="0.75rem"
-                            />
-                            <Text px="3" fontWeight={500}>
-                              {getComponentSchema(block.type).title}
-                            </Text>
-                          </HStack>
+
+                            <HStack
+                              bgColor="white"
+                            >
+                              <Box
+                                {...provided.dragHandleProps}
+                              >
+                                <Icon
+                                  as={BiGridVertical}
+                                  fontSize="1.5rem"
+                                  ml="0.75rem"
+                                />
+                              </Box>
+                              <Button variant="clear" onClick={() => {
+                                setCurrActiveIdx(index)
+                                // TODO: we should automatically do this probably?
+                                const nextState =
+                                  savedPageState[index]?.type === "prose"
+                                    ? "nativeEditor"
+                                    : "complexEditor"
+                                setDrawerState({ state: nextState })
+                              }}
+                              >
+                                <Text px="3" fontWeight={500} textColor="base.content.default">
+                                  {/*  NOTE: Because we use `Type.Ref` for prose, */}
+                                  {/* this gets a `$Ref` only and not the concrete values */}
+                                  {block.type === "prose" ? "Prose component" : getComponentSchema(block.type).title}
+                                </Text>
+                              </Button>
+                            </HStack>
+                            <Spacer />
+                            <IconButton fontSize="16px" isLoading={isUpdatingBlob} variant="clear" colorScheme="critical" aria-label="delete item" icon={<BiTrash />} mr="0.75rem" onClick={() => {
+                              const deletionIndex = index
+                              const newContent = savedPageState.slice(0, deletionIndex).concat(savedPageState.slice(deletionIndex + 1))
+                              updatePageBlob({ siteId, pageId, content: JSON.stringify({ ...pageContent, content: newContent }) })
+                            }} />
+                          </Flex>
                           <Divider />
                         </VStack>
                       )}
