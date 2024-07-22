@@ -29,7 +29,6 @@ import {
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { type DrawerState } from "~/types/editorDrawer"
-import { trpc } from "~/utils/trpc"
 import { DEFAULT_BLOCKS } from "./constants"
 import { type SectionType } from "./types"
 

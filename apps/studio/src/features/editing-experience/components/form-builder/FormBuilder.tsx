@@ -68,7 +68,7 @@ export default function FormBuilder(): JSX.Element {
     return <></>
   }
 
-  const component = savedPageState[currActiveIdx]
+  const component = previewPageState[currActiveIdx]
 
   if (!component) {
     return <></>
