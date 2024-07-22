@@ -22,7 +22,6 @@
     "postinstall": "npm run lint:ws"
   },
   "workspaces": [
-    "docs",
     "apps/*",
     "packages/*",
     "tooling/*"

@@ -1,49 +1,81 @@
-import { HStack, Text, useDisclosure, VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
-import _ from "lodash"
+import {
+  Box,
+  HStack,
+  MenuButton,
+  MenuList,
+  Portal,
+  Text,
+  useDisclosure,
+  VStack,
+} from "@chakra-ui/react"
+import { Button, Menu } from "@opengovsg/design-system-react"
+import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
+import { z } from "zod"
 
-import { DashboardTable } from "~/features/dashboard/DashboardTable"
-import PageCreateModal from "~/features/editing-experience/components/PageCreateModal"
+import { MenuItem } from "~/components/Menu"
+import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
+import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
+import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
+import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
 
-const Dashboard: NextPageWithLayout = () => {
+const sitePageSchema = z.object({
+  siteId: z.coerce.number(),
+})
+
+const SitePage: NextPageWithLayout = () => {
   const {
     isOpen: isPageCreateModalOpen,
     onOpen: onPageCreateModalOpen,
-    onClose: onpageCreateModalClose,
+    onClose: onPageCreateModalClose,
   } = useDisclosure()
+
+  const { siteId } = useQueryParse(sitePageSchema)
+
   return (
-    <VStack bgColor="#F3F5F7" w="100%" p="1.75rem" minH="100vh">
-      <Text
-        alignSelf="flex-start"
-        textColor="base.content.default"
-        textStyle="h5"
-      >
-        My Pages
-      </Text>
-      <HStack w="100%" alignItems="end">
-        <Text
-          alignSelf="flex-start"
-          mr="auto"
-          textColor="base.content.default"
-          textStyle="body-2"
-        >
-          Double click a page to start editing.
-        </Text>
-        <Button alignSelf="flex-end" ml="auto" variant="outline" size="xs">
-          Create a folder
-        </Button>
-        <Button onClick={onPageCreateModalOpen} alignSelf="flex-end" size="xs">
-          Create a new page
-        </Button>
-      </HStack>
-      <DashboardTable />
-      <PageCreateModal
+    <>
+      <VStack w="100%" p="1.75rem" gap="1rem">
+        <VStack w="100%" align="start">
+          <Text textColor="base.content.default" textStyle="h5">
+            My Pages
+          </Text>
+          <HStack w="100%" justify="space-between" align="center" gap={0}>
+            <Box />
+            <Menu isLazy size="sm">
+              <MenuButton as={Button} size="xs" justifySelf="flex-end">
+                Create new...
+              </MenuButton>
+              <Portal>
+                <MenuList>
+                  <MenuItem icon={<BiFolder fontSize="1rem" />}>
+                    Folder
+                  </MenuItem>
+                  <MenuItem
+                    onClick={onPageCreateModalOpen}
+                    icon={<BiFileBlank fontSize="1rem" />}
+                  >
+                    Page
+                  </MenuItem>
+                  <MenuItem icon={<BiData fontSize="1rem" />}>
+                    Collection
+                  </MenuItem>
+                </MenuList>
+              </Portal>
+            </Menu>
+          </HStack>
+        </VStack>
+        <Box width="100%">
+          <ResourceTable siteId={siteId} />
+        </Box>
+      </VStack>
+      <CreatePageModal
         isOpen={isPageCreateModalOpen}
-        onClose={onpageCreateModalClose}
+        onClose={onPageCreateModalClose}
+        siteId={siteId}
       />
-    </VStack>
+    </>
   )
 }
 
-export default Dashboard
+SitePage.getLayout = AdminCmsSidebarLayout
+export default SitePage

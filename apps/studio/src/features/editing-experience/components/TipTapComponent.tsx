@@ -1,3 +1,5 @@
+import type { ProseProps } from "@opengovsg/isomer-components/dist/cjs/interfaces"
+import type { JSONContent } from "@tiptap/react"
 import { Box, Text as ChakraText, Flex, Icon, VStack } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
 import { Blockquote } from "@tiptap/extension-blockquote"
@@ -6,6 +8,7 @@ import { BulletList } from "@tiptap/extension-bullet-list"
 import { Document } from "@tiptap/extension-document"
 import { Dropcursor } from "@tiptap/extension-dropcursor"
 import { Gapcursor } from "@tiptap/extension-gapcursor"
+import { HardBreak } from "@tiptap/extension-hard-break"
 import { Heading } from "@tiptap/extension-heading"
 import { History } from "@tiptap/extension-history"
 import { HorizontalRule } from "@tiptap/extension-horizontal-rule"
@@ -22,54 +25,59 @@ import TableRow from "@tiptap/extension-table-row"
 import { Text } from "@tiptap/extension-text"
 import Underline from "@tiptap/extension-underline"
 import { EditorContent, useEditor } from "@tiptap/react"
-// import type { CustomRendererProps } from './types'
-import { BiImage, BiText, BiX } from "react-icons/bi"
+import { cloneDeep } from "lodash"
+import { BiText, BiX } from "react-icons/bi"
 
 import { MenuBar } from "~/components/PageEditor/MenuBar"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { Table } from "./extensions/Table"
 
-type NativeComponentType = "paragraph" | "image"
-
-export interface TipTapComponentProps {
-  type: NativeComponentType
-  data: any
-  path: string
+interface TipTapComponentProps {
+  content: ProseProps
 }
 
-const typeMapping = {
-  paragraph: {
-    icon: BiText,
-    title: "Paragraph",
-  },
-  image: {
-    icon: BiImage,
-    title: "Image",
-  },
-}
+function TipTapComponent({ content }: TipTapComponentProps) {
+  const {
+    setDrawerState,
+    savedPageState,
+    setSavedPageState,
+    previewPageState,
+    setPreviewPageState,
+    currActiveIdx,
+  } = useEditorDrawerContext()
 
-function TipTapComponent({ type, data, path }: TipTapComponentProps) {
-  const { setDrawerState, setPageState, setEditorState } =
-    useEditorDrawerContext()
+  const updatePageState = (editorContent: JSONContent) => {
+    // TODO: actual validation
+    const content = editorContent as ProseProps
+    setPreviewPageState((oldState) => {
+      // TODO: performance - this is a full clone
+      // of the object, which is expensive
+      const newState = cloneDeep(oldState)
+      newState[currActiveIdx] = content
+      return newState
+    })
+  }
+
   const editor = useEditor({
     extensions: [
       Blockquote,
       Bold,
       BulletList.extend({
-        name: "unorderedlist",
-      }),
-      BulletList.configure({
+        name: "unorderedList",
+      }).configure({
         HTMLAttributes: {
           class: "list-disc",
         },
       }),
-      // Code,
-      // CodeBlock,
-      Document,
+      Document.extend({
+        name: "prose",
+      }),
       Dropcursor,
       Gapcursor,
-      // HardBreak,
-      Heading,
+      HardBreak,
+      Heading.configure({
+        levels: [2, 3, 4, 6],
+      }),
       History,
       HorizontalRule.extend({
         name: "divider",
@@ -77,9 +85,8 @@ function TipTapComponent({ type, data, path }: TipTapComponentProps) {
       Italic,
       ListItem,
       OrderedList.extend({
-        name: "orderedlist",
-      }),
-      OrderedList.configure({
+        name: "orderedList",
+      }).configure({
         HTMLAttributes: {
           class: "list-decimal",
         },
@@ -97,14 +104,15 @@ function TipTapComponent({ type, data, path }: TipTapComponentProps) {
       Text,
       Underline,
     ],
-    content: data,
-    onUpdate({ editor }) {
-      // TODO: set editor state - content is retrieved via editor.getJSON().content
+    content,
+    onUpdate: (e) => {
+      const jsonContent = e.editor.getJSON()
+      updatePageState(jsonContent)
     },
   })
 
   // TODO: Add a loading state or use suspsense
-  if (!editor) return <></>
+  if (!editor) return null
   return (
     <VStack bg="white" h="100%" gap="0">
       <Flex
@@ -115,9 +123,9 @@ function TipTapComponent({ type, data, path }: TipTapComponentProps) {
         w="100%"
         alignItems="center"
       >
-        <Icon as={typeMapping[type].icon} color="blue.600" />
+        <Icon as={BiText} color="blue.600" />
         <ChakraText pl="0.75rem" textStyle="h5" w="100%">
-          {typeMapping[type].title}
+          Prose
         </ChakraText>
         <IconButton
           size="lg"
@@ -126,7 +134,10 @@ function TipTapComponent({ type, data, path }: TipTapComponentProps) {
           color="interaction.sub.default"
           aria-label="Close add component"
           icon={<BiX />}
-          onClick={() => setDrawerState({ state: "root" })}
+          onClick={() => {
+            setDrawerState({ state: "root" })
+            setPreviewPageState(savedPageState)
+          }}
         />
       </Flex>
       <Box
@@ -148,6 +159,7 @@ function TipTapComponent({ type, data, path }: TipTapComponentProps) {
             as={EditorContent}
             editor={editor}
             w="100%"
+            maxW="30vw"
             flex="1 1 auto"
             overflowX="hidden"
             overflowY="auto"
@@ -170,9 +182,8 @@ function TipTapComponent({ type, data, path }: TipTapComponentProps) {
       >
         <Button
           onClick={() => {
-            // TODO: save page and update pageState
-            console.log("saving")
             setDrawerState({ state: "root" })
+            setSavedPageState(previewPageState)
           }}
         >
           Save
