@@ -1,4 +1,4 @@
-import { IsomerComponent } from "@opengovsg/isomer-components"
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { createContext, useContext, useState } from "react"
 
@@ -31,7 +31,8 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
   const [previewPageState, setPreviewPageState] = useState<IsomerComponent[]>(
     [],
   )
-  const [addedBlock, setAddedBlock] = useState<Exclude<SectionType, "prose">>("button")
+  const [addedBlock, setAddedBlock] =
+    useState<Exclude<SectionType, "prose">>("button")
 
   return (
     <EditorDrawerContext.Provider
@@ -45,7 +46,7 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
         previewPageState,
         setPreviewPageState,
         addedBlock,
-        setAddedBlock
+        setAddedBlock,
       }}
     >
       {children}

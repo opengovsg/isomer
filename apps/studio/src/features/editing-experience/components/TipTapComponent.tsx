@@ -1,12 +1,12 @@
 import type { ProseProps } from "@opengovsg/isomer-components/dist/cjs/interfaces"
+import type { JSONContent } from "@tiptap/react"
 import { Box, Text as ChakraText, Flex, Icon, VStack } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
+import { cloneDeep } from "lodash"
 import { BiText, BiX } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TiptapEditor } from "./form-builder/renderers/TipTapEditor"
-import { JSONContent } from "@tiptap/react"
-import { cloneDeep } from "lodash"
 
 interface TipTapComponentProps {
   content: ProseProps
@@ -19,7 +19,7 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     setSavedPageState,
     previewPageState,
     setPreviewPageState,
-    currActiveIdx
+    currActiveIdx,
   } = useEditorDrawerContext()
 
   const updatePageState = (editorContent: JSONContent) => {
@@ -33,7 +33,6 @@ function TipTapComponent({ content }: TipTapComponentProps) {
       return newState
     })
   }
-
 
   // TODO: Add a loading state or use suspsense
   return (
@@ -83,7 +82,7 @@ function TipTapComponent({ content }: TipTapComponentProps) {
           Save
         </Button>
       </Flex>
-    </VStack >
+    </VStack>
   )
 }
 

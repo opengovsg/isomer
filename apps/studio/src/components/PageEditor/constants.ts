@@ -1,4 +1,4 @@
-import type { IsomerComponent } from "@opengovsg/isomer-components";
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
@@ -58,12 +58,12 @@ export const DEFAULT_BLOCKS: Record<
         },
       ],
     },
-    variant: "info"
+    variant: "info",
   },
   // NOTE: This can't be added
   hero: undefined,
   // NOTE: Skipping this for now
-  // This is technically 3 components: 
+  // This is technically 3 components:
   // google maps/youtube/formsg
   iframe: undefined,
   // NOTE: Skipping because backend not done
@@ -71,7 +71,7 @@ export const DEFAULT_BLOCKS: Record<
   // NOTE: infobar
   infobar: {
     type: "infobar",
-    title: ""
+    title: "",
   },
   infocards: {
     type: "infocards",
@@ -82,15 +82,13 @@ export const DEFAULT_BLOCKS: Record<
         url: "",
         imageUrl: "",
         imageAlt: "",
-      }
-    ]
+      },
+    ],
   },
   infocols: {
     title: "",
     type: "infocols",
-    infoBoxes: [
-      { title: "" },
-    ],
+    infoBoxes: [{ title: "" }],
   },
   infopic: {
     type: "infopic",
@@ -104,8 +102,8 @@ export const DEFAULT_BLOCKS: Record<
     statistics: [
       {
         label: "",
-        value: ""
-      }
-    ]
+        value: "",
+      },
+    ],
   },
 }
