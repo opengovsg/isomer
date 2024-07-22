@@ -9,7 +9,6 @@ import {
   Wrap,
 } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
-import { type IsomerComponent } from "@opengovsg/isomer-components"
 import { type IconType } from "react-icons"
 import {
   BiCard,
@@ -32,6 +31,7 @@ import { type DrawerState } from "~/types/editorDrawer"
 import { trpc } from "~/utils/trpc"
 import { DEFAULT_BLOCKS } from "./constants"
 import { type SectionType } from "./types"
+import { IsomerComponent } from "@opengovsg/isomer-components"
 
 function Section({ children }: React.PropsWithChildren) {
   return (
@@ -107,11 +107,12 @@ function ComponentSelector() {
     setAddedBlock,
   } = useEditorDrawerContext()
 
-  const { mutate } = trpc.page.updatePageBlob.useMutation()
   // TODO: get this dynamically
   const pageId = 1
+  const siteId = 1
   const [page] = trpc.page.readPageAndBlob.useSuspenseQuery({
     pageId,
+    siteId,
   })
 
   const onProceed = (sectionType: SectionType) => {
@@ -127,10 +128,16 @@ function ComponentSelector() {
     const nextPageState = !!newComponent
       ? [...savedPageState, newComponent]
       : savedPageState
+
     setSavedPageState(nextPageState)
     setDrawerState({ state: nextState })
     setCurrActiveIdx(nextPageState.length - 1)
     setPreviewPageState(nextPageState)
+
+    // TODO: Decide if this is a good idea...
+    if (sectionType !== "prose") {
+      setAddedBlock(sectionType)
+    }
   }
 
   return (
