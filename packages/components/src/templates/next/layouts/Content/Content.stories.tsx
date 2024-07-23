@@ -189,11 +189,6 @@ export const Default: Story = {
                       },
                     ],
                   },
-                ],
-              },
-              {
-                type: "listItem",
-                content: [
                   {
                     type: "unorderedList",
                     content: [
@@ -209,11 +204,6 @@ export const Default: Story = {
                               },
                             ],
                           },
-                        ],
-                      },
-                      {
-                        type: "listItem",
-                        content: [
                           {
                             type: "unorderedList",
                             content: [
@@ -235,11 +225,6 @@ export const Default: Story = {
                                     type: "paragraph",
                                     content: [{ type: "text", text: "Spam" }],
                                   },
-                                ],
-                              },
-                              {
-                                type: "listItem",
-                                content: [
                                   {
                                     type: "unorderedList",
                                     content: [
@@ -1195,11 +1180,6 @@ export const NoTable: Story = {
                       },
                     ],
                   },
-                ],
-              },
-              {
-                type: "listItem",
-                content: [
                   {
                     type: "unorderedList",
                     content: [
@@ -1215,11 +1195,6 @@ export const NoTable: Story = {
                               },
                             ],
                           },
-                        ],
-                      },
-                      {
-                        type: "listItem",
-                        content: [
                           {
                             type: "unorderedList",
                             content: [
@@ -1241,11 +1216,6 @@ export const NoTable: Story = {
                                     type: "paragraph",
                                     content: [{ type: "text", text: "Spam" }],
                                   },
-                                ],
-                              },
-                              {
-                                type: "listItem",
-                                content: [
                                   {
                                     type: "unorderedList",
                                     content: [
@@ -1592,11 +1562,6 @@ export const SmallTable: Story = {
                       },
                     ],
                   },
-                ],
-              },
-              {
-                type: "listItem",
-                content: [
                   {
                     type: "unorderedList",
                     content: [
@@ -1612,11 +1577,6 @@ export const SmallTable: Story = {
                               },
                             ],
                           },
-                        ],
-                      },
-                      {
-                        type: "listItem",
-                        content: [
                           {
                             type: "unorderedList",
                             content: [
@@ -1638,11 +1598,6 @@ export const SmallTable: Story = {
                                     type: "paragraph",
                                     content: [{ type: "text", text: "Spam" }],
                                   },
-                                ],
-                              },
-                              {
-                                type: "listItem",
-                                content: [
                                   {
                                     type: "unorderedList",
                                     content: [
