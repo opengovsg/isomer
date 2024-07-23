@@ -5,37 +5,37 @@ export const InfobarSchema = Type.Object(
   {
     type: Type.Literal("infobar", { default: "infobar" }),
     title: Type.String({
-      title: "Infobar title",
-      description: "The title of the infobar",
+      title: "Title",
     }),
     description: Type.Optional(
       Type.String({
-        title: "Infobar content",
-        description: "The content of the infobar",
+        title: "Description",
       }),
     ),
     buttonLabel: Type.Optional(
       Type.String({
-        title: "Button label",
-        description: "The label for the primary button",
+        title: "Button text",
+        description:
+          "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
       }),
     ),
     buttonUrl: Type.Optional(
       Type.String({
-        title: "Button URL",
-        description: "The URL for the primary button",
+        title: "Button destination",
+        description: "When this is clicked, open:",
       }),
     ),
     secondaryButtonLabel: Type.Optional(
       Type.String({
-        title: "Secondary button label",
-        description: "The label for the secondary button",
+        title: "Secondary button text",
+        description:
+          "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
       }),
     ),
     secondaryButtonUrl: Type.Optional(
       Type.String({
-        title: "Secondary button URL",
-        description: "The URL for the secondary button",
+        title: "Secondary button destination",
+        description: "When this is clicked, open:",
       }),
     ),
   },

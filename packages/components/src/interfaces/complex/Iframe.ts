@@ -4,14 +4,15 @@ import { Type } from "@sinclair/typebox"
 export const IframeSchema = Type.Object(
   {
     type: Type.Literal("iframe", { default: "iframe" }),
-    title: Type.String({
-      title: "Iframe title",
-      description: "The title of the iframe",
-    }),
     content: Type.String({
-      title: "Iframe content",
+      title: "Embed code",
       description:
-        "The full iframe embed code to display, should only contain the <iframe> tag",
+        "Paste in an embed code. Refer to the guide to understand how to embed your content.",
+    }),
+    title: Type.String({
+      title: "Description",
+      description:
+        "Briefly describe what the embedded content is about. This isn’t displayed on the page but is accessible to screen readers.",
     }),
   },
   {

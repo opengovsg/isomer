@@ -5,49 +5,36 @@ export const InfopicSchema = Type.Object(
   {
     type: Type.Literal("infopic", { default: "infopic" }),
     title: Type.String({
-      title: "Infopic title",
-      description: "The title of the Infopic component",
+      title: "Title",
     }),
     description: Type.Optional(
       Type.String({
-        title: "Infopic description",
-        description: "The content of the Infopic component",
+        title: "Description",
       }),
     ),
     imageSrc: Type.String({
-      title: "Infopic image URL",
+      title: "Upload image",
       description: "The URL to the image",
       format: "image",
     }),
     imageAlt: Type.Optional(
       Type.String({
-        title: "Infopic image alt text",
-        description: "The alt text for the image",
+        title: "Alternate text",
+        description:
+          "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
       }),
     ),
     buttonLabel: Type.Optional(
       Type.String({
-        title: "Infopic button label",
-        description: "The label of the button to display",
+        title: "Button text",
+        description:
+          "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
       }),
     ),
     buttonUrl: Type.Optional(
       Type.String({
-        title: "Infopic button URL",
-        description: "The URL the button should navigate to",
-      }),
-    ),
-    isTextOnRight: Type.Optional(
-      Type.Boolean({
-        title: "Infopic text on the right",
-        description: "Whether to display the text on the right of the image",
-      }),
-    ),
-    variant: Type.Optional(
-      Type.Union([Type.Literal("side-by-side"), Type.Literal("side-part")], {
-        title: "Infopic variant",
-        description: "The variant of the infopic to use",
-        type: "string",
+        title: "Button destination",
+        description: "When this is clicked, open:",
       }),
     ),
   },
@@ -61,4 +48,5 @@ export const InfopicSchema = Type.Object(
 export type InfopicProps = Static<typeof InfopicSchema> & {
   sectionIndex?: number // TODO: Remove this property, only used in classic theme
   subtitle?: string // Subtitle that is only used in the classic theme
+  isTextOnRight?: boolean // Automatically determined based on position in page
 }

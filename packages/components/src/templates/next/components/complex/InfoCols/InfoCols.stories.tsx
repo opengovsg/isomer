@@ -75,59 +75,6 @@ export const Default: Story = {
   },
 }
 
-export const GrayBackground: Story = {
-  args: {
-    sectionIdx: 1,
-    backgroundColor: "gray",
-    title: "Highlights",
-    subtitle: "Some of the things that we are working on",
-    infoBoxes: [
-      {
-        title: "Committee of Supply (COS) 2023",
-        description: "Building a Vibrant Economy, Nurturing Enterprises",
-        buttonLabel: "Read article",
-        buttonUrl: "/faq",
-        icon: "bar-chart",
-      },
-      {
-        title: "Committee of Supply (COS) 2023",
-        description: "Building a Vibrant Economy, Nurturing Enterprises",
-        buttonLabel: "Read article",
-        buttonUrl: "https://google.com",
-        icon: "bar-chart",
-      },
-      {
-        title: "Committee of Supply (COS) 2023",
-        description: "Building a Vibrant Economy, Nurturing Enterprises",
-        buttonLabel: "Read article",
-        buttonUrl: "/faq",
-        icon: "bar-chart",
-      },
-      {
-        title: "Committee of Supply (COS) 2023",
-        description: "Building a Vibrant Economy, Nurturing Enterprises",
-        buttonLabel: "Read article",
-        buttonUrl: "https://google.com",
-        icon: "bar-chart",
-      },
-      {
-        title: "Committee of Supply (COS) 2023",
-        description: "Building a Vibrant Economy, Nurturing Enterprises",
-        buttonLabel: "Read article",
-        buttonUrl: "/faq",
-        icon: "bar-chart",
-      },
-      {
-        title: "Committee of Supply (COS) 2023",
-        description: "Building a Vibrant Economy, Nurturing Enterprises",
-        buttonLabel: "Read article",
-        buttonUrl: "https://google.com",
-        icon: "bar-chart",
-      },
-    ],
-  },
-}
-
 export const FourInfoBoxes: Story = {
   args: {
     sectionIdx: 0,
