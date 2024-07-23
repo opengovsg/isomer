@@ -19,7 +19,7 @@ const MAX_CHAR_LIMIT = 7
 const KeyStatistics = ({ title, statistics }: KeyStatisticsProps) => {
   return (
     <div
-      className={`${ComponentContent} flex flex-col gap-16 py-12 xs:py-24 lg:flex-row lg:gap-16 lg:gap-24`}
+      className={`${ComponentContent} flex flex-col gap-16 py-12 xs:py-24 lg:gap-24`}
     >
       <h2 className="w-full text-2xl font-semibold text-content sm:text-4xl md:max-w-[47.5rem]">
         {title}
