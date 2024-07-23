@@ -41,8 +41,6 @@ export const InfoBoxSchema = Type.Object({
 export const InfoColsSchema = Type.Object(
   {
     type: Type.Literal("infocols", { default: "infocols" }),
-    // TODO: Remove this property, only used in classic theme
-    sectionIdx: Type.Optional(Type.Number()),
     title: Type.String({
       title: "Infocols title",
       description: "The title of the Infocols component",
@@ -84,5 +82,6 @@ export const InfoColsSchema = Type.Object(
 )
 
 export type InfoColsProps = Static<typeof InfoColsSchema> & {
+  sectionIdx?: number // TODO: Remove this property, only used in classic theme
   LinkComponent?: any // Next.js link
 }
