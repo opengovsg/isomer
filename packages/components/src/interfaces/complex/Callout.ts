@@ -3,13 +3,6 @@ import { Type } from "@sinclair/typebox"
 
 import { BaseProseSchema } from "../native/Prose"
 
-export const CALLOUT_VARIANTS = [
-  "info",
-  "success",
-  "warning",
-  "critical",
-] as const
-
 export const CalloutSchema = Type.Object(
   {
     type: Type.Literal("callout", { default: "callout" }),

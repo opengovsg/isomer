@@ -5,13 +5,11 @@ import { SUPPORTED_ICON_NAMES } from "~/common/icons"
 
 export const InfoBoxSchema = Type.Object({
   title: Type.String({
-    title: "Column title",
-    description: "The title of the column",
+    title: "Title",
   }),
   description: Type.Optional(
     Type.String({
-      title: "Column content",
-      description: "The content of the column",
+      title: "Description",
     }),
   ),
   icon: Type.Optional(
@@ -26,14 +24,16 @@ export const InfoBoxSchema = Type.Object({
   ),
   buttonLabel: Type.Optional(
     Type.String({
-      title: "Button label",
-      description: "The label of the button",
+      title: "Link text",
+      description:
+        "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
     }),
   ),
   buttonUrl: Type.Optional(
     Type.String({
-      title: "Button URL",
-      description: "The URL the button should navigate to",
+      title: "Link destination",
+      description: "When this is clicked, open:",
+      format: "link",
     }),
   ),
 })
@@ -42,36 +42,15 @@ export const InfoColsSchema = Type.Object(
   {
     type: Type.Literal("infocols", { default: "infocols" }),
     title: Type.String({
-      title: "Infocols title",
-      description: "The title of the Infocols component",
+      title: "Title",
     }),
     subtitle: Type.Optional(
       Type.String({
-        title: "Infocols subtitle",
-        description: "The subtitle of the Infocols component",
-      }),
-    ),
-    backgroundColor: Type.Optional(
-      Type.Union([Type.Literal("white"), Type.Literal("gray")], {
-        title: "Infocols background color",
-        description: "The background color to use for the Infocols component",
-        type: "string",
-      }),
-    ),
-    buttonLabel: Type.Optional(
-      Type.String({
-        title: "Button label",
-        description: "The label of the button",
-      }),
-    ),
-    buttonUrl: Type.Optional(
-      Type.String({
-        title: "Button URL",
-        description: "The URL the button should navigate to",
+        title: "Description",
       }),
     ),
     infoBoxes: Type.Array(InfoBoxSchema, {
-      title: "Infocols columns",
+      title: "Content",
       minItems: 1,
       maxItems: 6,
     }),

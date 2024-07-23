@@ -7,8 +7,7 @@ export const AccordionSchema = Type.Object(
   {
     type: Type.Literal("accordion", { default: "accordion" }),
     summary: Type.String({
-      title: "Accordion summary",
-      description: "The summary for the accordion",
+      title: "Title",
     }),
     details: BaseProseSchema,
   },

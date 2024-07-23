@@ -32,7 +32,6 @@ const PAGE_BLOB: IsomerSchema = {
     {
       type: "hero",
       variant: "gradient",
-      alignment: "left",
       title: "Ministry of Trade and Industry",
       subtitle:
         "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
@@ -73,7 +72,6 @@ const PAGE_BLOB: IsomerSchema = {
           label: "Number of lies in this stat block",
         },
       ],
-      variant: "top",
       title: "Irrationality in numbers",
     },
   ],
