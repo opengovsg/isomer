@@ -163,7 +163,7 @@ export const pageRouter = router({
       actualBlocks.splice(to, 0, movedBlock)
 
       await updateBlobById({
-        pageId: fullPage.draftBlobId ?? fullPage.mainBlobId,
+        pageId,
         content: { ...fullPage.content, content: actualBlocks },
         siteId,
       })
