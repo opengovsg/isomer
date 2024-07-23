@@ -1,6 +1,6 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl } from "@chakra-ui/react"
-import { hasType, rankWith, schemaMatches } from "@jsonforms/core"
+import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Textarea } from "@opengovsg/design-system-react"
 
@@ -8,9 +8,9 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsProseControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ProseControl,
-  schemaMatches(
-    (schema) => hasType(schema, "array") && schema.format === "prose",
-  ),
+  schemaMatches((_, schema) => {
+    return schema.format === "prose"
+  }),
 )
 
 // TODO: Replace this with the Tiptap editor

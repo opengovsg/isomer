@@ -27,7 +27,7 @@ export const HeadingSchema = Type.Object(
         },
       ),
     }),
-    content: Type.Array(TextSchema),
+    content: Type.Optional(Type.Array(TextSchema)),
   },
   {
     $id: "components-native-heading",

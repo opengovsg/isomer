@@ -1,12 +1,12 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import { ProseSchema } from "../native"
+import { BaseProseSchema } from "../native/Prose"
 
 export const CalloutSchema = Type.Object(
   {
     type: Type.Literal("callout", { default: "callout" }),
-    content: Type.Ref(ProseSchema),
+    content: BaseProseSchema,
   },
   {
     title: "Callout component",
