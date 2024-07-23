@@ -38,7 +38,7 @@ const generateProseSchema = (id?: string) => {
     },
     {
       ...(id && { $id: id }),
-      ...BASE_PROSE_META
+      ...BASE_PROSE_META,
     },
   )
 }

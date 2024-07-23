@@ -1,8 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
+
 import { BaseProseSchema } from "../native/Prose"
-
-
 
 export const AccordionSchema = Type.Object(
   {
