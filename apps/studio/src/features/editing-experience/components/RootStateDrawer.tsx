@@ -1,5 +1,4 @@
 import type { DropResult } from "@hello-pangea/dnd"
-import { useRouter } from "next/router"
 import {
   Box,
   Button,
@@ -18,6 +17,8 @@ import { BsPlus } from "react-icons/bs"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { trpc } from "~/utils/trpc"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 
 export default function RootStateDrawer() {
   const {
@@ -27,9 +28,8 @@ export default function RootStateDrawer() {
     setSavedPageState,
     setPreviewPageState,
   } = useEditorDrawerContext()
-  const router = useRouter()
-  const pageId = Number(router.query.pageId)
-  const siteId = Number(router.query.siteId)
+
+  const { pageId, siteId } = useQueryParse(editPageSchema)
   const { mutate } = trpc.page.reorderBlock.useMutation()
   const toast = useToast({ status: "error" })
 

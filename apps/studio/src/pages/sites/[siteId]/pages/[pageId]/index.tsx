@@ -9,7 +9,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
 
-const editPageSchema = z.object({
+export const editPageSchema = z.object({
   pageId: z.coerce.number(),
   siteId: z.coerce.number(),
 })
