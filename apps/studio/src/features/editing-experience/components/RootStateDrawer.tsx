@@ -19,6 +19,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { trpc } from "~/utils/trpc"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
+import { useCallback } from "react"
 
 export default function RootStateDrawer() {
   const {
@@ -33,7 +34,7 @@ export default function RootStateDrawer() {
   const { mutate } = trpc.page.reorderBlock.useMutation()
   const toast = useToast({ status: "error" })
 
-  const onDragEnd = (result: DropResult) => {
+  const onDragEnd = useCallback((result: DropResult) => {
     if (!result.destination) return
 
     const from = result.source.index
@@ -79,7 +80,7 @@ export default function RootStateDrawer() {
         },
       },
     )
-  }
+  }, [mutate, pageId, savedPageState, setPreviewPageState, setSavedPageState, siteId, toast])
 
   return (
     <VStack w="100%" h="100%" gap={10} pt={10}>
