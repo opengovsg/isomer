@@ -50,6 +50,8 @@ interface ComplexEditorNestedDrawerProps {
   path: string
   label: string
   setSelectedIndex: (selectedIndex?: number) => void
+  isRemoveItemDisabled: boolean
+  handleRemoveItem: () => void
 }
 
 function ComplexEditorNestedDrawer({
@@ -61,6 +63,8 @@ function ComplexEditorNestedDrawer({
   path,
   label,
   setSelectedIndex,
+  isRemoveItemDisabled,
+  handleRemoveItem,
 }: ComplexEditorNestedDrawerProps) {
   return (
     <VStack
@@ -73,6 +77,7 @@ function ComplexEditorNestedDrawer({
       bgColor="grey.50"
       w="100%"
       h="100%"
+      zIndex={1}
     >
       <HStack justifyContent="space-between" w="100%">
         <Heading as="h3" size="sm" variant="subhead-1" fontWeight="medium">
@@ -88,7 +93,6 @@ function ComplexEditorNestedDrawer({
           aria-label="Close drawer"
         />
       </HStack>
-
       <Box w="100%" h="100%">
         <JsonFormsDispatch
           renderers={renderers}
@@ -99,6 +103,15 @@ function ComplexEditorNestedDrawer({
           path={path}
         />
       </Box>
+
+      <Button
+        onClick={handleRemoveItem}
+        variant="clear"
+        colorScheme="critical"
+        isDisabled={isRemoveItemDisabled}
+      >
+        Remove item
+      </Button>
     </VStack>
   )
 }
@@ -196,7 +209,6 @@ export function JsonFormsArrayControl({
       >
         {label}
       </Heading>
-
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="blocks">
           {({ droppableProps, innerRef, placeholder }) => (
@@ -275,27 +287,22 @@ export function JsonFormsArrayControl({
           path={composePaths(path, `${selectedIndex}`)}
           label={label}
           setSelectedIndex={setSelectedIndex}
+          isRemoveItemDisabled={minItems !== undefined && data <= minItems}
+          handleRemoveItem={() => handleRemoveItem(path, selectedIndex)}
         />
       )}
 
-      {selectedIndex === undefined ? (
-        <Button
-          onClick={addItem(path, createDefaultValue(schema, rootSchema))}
-          w="100%"
-          variant="outline"
-          isDisabled={maxItems !== undefined && data >= maxItems}
-        >
-          Add item
-        </Button>
-      ) : (
-        <Button
-          onClick={handleRemoveItem(path, selectedIndex)}
-          variant="clear"
-          colorScheme="critical"
-          isDisabled={minItems !== undefined && data <= minItems}
-        >
-          Remove item
-        </Button>
+      {selectedIndex === undefined && (
+        <>
+          <Button
+            onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+            w="100%"
+            variant="outline"
+            isDisabled={maxItems !== undefined && data >= maxItems}
+          >
+            Add item
+          </Button>
+        </>
       )}
     </VStack>
   )
