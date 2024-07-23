@@ -52,7 +52,7 @@ function EditPage(): JSX.Element {
       {/* TODO: Implement preview */}
       <GridItem colSpan={2} overflow="scroll">
         <Box p="2rem" bg="gray.100">
-          <Box borderRadius="8px" bg="white" shadow="md" overflow="hidden">
+          <Box borderRadius="8px" bg="white" shadow="md" overflow="auto">
             <Preview
               siteId={siteId}
               {...page}
