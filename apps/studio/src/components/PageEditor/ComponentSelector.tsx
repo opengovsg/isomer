@@ -132,7 +132,10 @@ function ComponentSelector() {
     setCurrActiveIdx(nextPageState.length - 1)
     setPreviewPageState(nextPageState)
 
-    // TODO: Decide if this is a good idea...
+    // TODO: Decide if setting addedBlocks 
+    // to only be for complex blocks is a good idea 
+    // or if we should combine prose to addedBlocks as well
+    // and handle prose -> complex components in the renderer itself
     if (sectionType !== "prose") {
       setAddedBlock(sectionType)
     }
