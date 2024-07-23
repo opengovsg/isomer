@@ -73,6 +73,7 @@ export const getFullPageById = async (args: {
     .where("Resource.draftBlobId", "is not", null)
     .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
+    .forUpdate()
     .executeTakeFirst()
   if (draftBlob) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -84,6 +85,7 @@ export const getFullPageById = async (args: {
     .where("Resource.mainBlobId", "is not", null)
     .innerJoin("Blob", "Resource.mainBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
+    .forUpdate()
     .executeTakeFirst()
 }
 
