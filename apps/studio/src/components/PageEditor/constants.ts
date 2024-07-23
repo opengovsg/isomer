@@ -48,7 +48,6 @@ export const DEFAULT_BLOCKS: Record<
   },
   callout: {
     type: "callout",
-    variant: "info",
     content: {
       type: "prose",
       content: [
@@ -83,7 +82,6 @@ export const DEFAULT_BLOCKS: Record<
   },
   infocards: {
     type: "infocards",
-    variant: "top",
     title: "This is an optional title of the Infocards component",
     subtitle: "This is an optional subtitle for the Infocards component",
     cards: [
@@ -137,7 +135,6 @@ export const DEFAULT_BLOCKS: Record<
   },
   keystatistics: {
     type: "keystatistics",
-    variant: "top",
     title: "Irrationality in numbers",
     statistics: [
       {
