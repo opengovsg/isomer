@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import { InnerProseSchema } from "../native/Prose"
+import { BaseProseSchema } from "../native/Prose"
 
 export const CALLOUT_VARIANTS = [
   "info",
@@ -13,15 +13,7 @@ export const CALLOUT_VARIANTS = [
 export const CalloutSchema = Type.Object(
   {
     type: Type.Literal("callout", { default: "callout" }),
-    content: InnerProseSchema,
-    variant: Type.Union(
-      CALLOUT_VARIANTS.map((variant) => Type.Literal(variant)),
-      {
-        title: "Callout variant",
-        description: "The variant of the callout to use",
-        type: "string",
-      },
-    ),
+    content: BaseProseSchema,
   },
   {
     title: "Callout component",

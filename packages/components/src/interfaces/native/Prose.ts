@@ -9,11 +9,9 @@ import { TableSchema } from "./Table"
 import { UnorderedListSchema } from "./UnorderedList"
 
 const BASE_PROSE_META = {
-
   title: "Content block",
   description: "A collection of native content components.",
   format: "prose",
-
 }
 
 const generateProseSchema = (id?: string) => {
@@ -46,7 +44,7 @@ const generateProseSchema = (id?: string) => {
 }
 
 export const ProseSchema = generateProseSchema("components-native-prose")
-export const InnerProseSchema = generateProseSchema()
+export const BaseProseSchema = generateProseSchema()
 
 export type ProseProps = Static<typeof ProseSchema>
 export type ProseContent = ProseProps["content"]
