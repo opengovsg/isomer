@@ -23,10 +23,11 @@ function EditPage(): JSX.Element {
   } = useEditorDrawerContext()
   const { pageId, siteId } = useQueryParse(editPageSchema)
 
-  const [{ content: page }] = trpc.page.readPageAndBlob.useSuspenseQuery({
-    pageId,
-    siteId,
-  })
+  const [{ content: page, permalink }] =
+    trpc.page.readPageAndBlob.useSuspenseQuery({
+      pageId,
+      siteId,
+    })
 
   useEffect(() => {
     setDrawerState({
@@ -52,7 +53,13 @@ function EditPage(): JSX.Element {
       <GridItem colSpan={2} overflow="scroll">
         {/* TODO: the version here should be obtained from the schema  */}
         {/* and not from the page */}
-        <Preview {...page} version="0.1.0" content={previewPageState} />
+        <Preview
+          siteId={siteId}
+          {...page}
+          permalink={permalink}
+          version="0.1.0"
+          content={previewPageState}
+        />
       </GridItem>
     </Grid>
   )

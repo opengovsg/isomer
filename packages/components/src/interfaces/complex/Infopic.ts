@@ -4,18 +4,10 @@ import { Type } from "@sinclair/typebox"
 export const InfopicSchema = Type.Object(
   {
     type: Type.Literal("infopic", { default: "infopic" }),
-    // TODO: Remove this property, only used in classic theme
-    sectionIndex: Type.Optional(Type.Number()),
     title: Type.String({
       title: "Infopic title",
       description: "The title of the Infopic component",
     }),
-    subtitle: Type.Optional(
-      Type.String({
-        title: "Infopic subtitle",
-        description: "The subtitle of the Infopic component",
-      }),
-    ),
     description: Type.Optional(
       Type.String({
         title: "Infopic description",
@@ -65,4 +57,7 @@ export const InfopicSchema = Type.Object(
   },
 )
 
-export type InfopicProps = Static<typeof InfopicSchema>
+export type InfopicProps = Static<typeof InfopicSchema> & {
+  sectionIndex?: number // TODO: Remove this property, only used in classic theme
+  subtitle?: string // Subtitle that is only used in the classic theme
+}
