@@ -28,7 +28,7 @@ export const UnsavedSettingModal = ({
       <ModalContent overflow="hidden">
         <ModalHeader>Leave this page without saving your settings?</ModalHeader>
         <ModalCloseButton />
-        <ModalBody>All edits will be lost!</ModalBody>
+        <ModalBody>All edits will be lost.</ModalBody>
         <ModalFooter>
           <Button
             textColor="base.content.strong"
