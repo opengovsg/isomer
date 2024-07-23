@@ -57,7 +57,8 @@ export function JsonFormsAnyOfControl({
     if (indexOfFittingSchema !== undefined) {
       setVariant(options[indexOfFittingSchema]?.label || "")
     }
-  }, [indexOfFittingSchema, options])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>
