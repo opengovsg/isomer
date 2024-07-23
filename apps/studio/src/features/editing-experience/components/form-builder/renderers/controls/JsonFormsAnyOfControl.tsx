@@ -1,5 +1,5 @@
 import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Box, FormControl } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
@@ -26,6 +26,7 @@ export function JsonFormsAnyOfControl({
   uischemas,
   label,
   handleChange,
+  indexOfFittingSchema,
 }: CombinatorRendererProps) {
   const anyOfRenderInfos = createCombinatorRenderInfos(
     schema.anyOf ?? [],
@@ -51,6 +52,12 @@ export function JsonFormsAnyOfControl({
     setVariant(value)
     handleChange(path, value)
   }
+
+  useEffect(() => {
+    if (indexOfFittingSchema !== undefined) {
+      setVariant(options[indexOfFittingSchema]?.label || "")
+    }
+  }, [indexOfFittingSchema, options])
 
   return (
     <>
