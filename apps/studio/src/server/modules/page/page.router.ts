@@ -1,17 +1,12 @@
 import { schema } from "@opengovsg/isomer-components"
-import { createId } from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
 import { z } from "zod"
 
-import { BlobToImageDataURL } from "~/features/editing-experience/components/form-builder/renderers/controls/utils"
 import {
   createPageSchema,
   getEditPageSchema,
   getPresignUrlForImageUploadSchema,
-  readImageInPageSchema,
-  updatePageBlobSchema,
-  updatePageSchema,
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
