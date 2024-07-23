@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import { Button, Center, HStack, Text, VStack } from "@chakra-ui/react"
+import { useRouter } from "next/router"
+import {
+  Button,
+  Center,
+  HStack,
+  Text,
+  useDisclosure,
+  VStack,
+} from "@chakra-ui/react"
 import {
   Infobox,
   Input,
@@ -8,13 +16,14 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 
-import { AppNavbar } from "~/components/AppNavbar"
+import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
 import { trpc } from "~/utils/trpc"
 
 const SiteSettingsPage: NextPageWithLayout = () => {
   const toast = useToast()
+  const router = useRouter()
   const params = useParams<{ siteId: string }>()
 
   const notificationMutation = trpc.site.setNotification.useMutation({
@@ -48,22 +57,49 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     (!notificationEnabled || notificationText.length !== 0)
 
   const onClickUpdate = () => {
-    // Update the site settings
     notificationMutation.mutate({
       siteId: Number(params.siteId),
       notification: notificationEnabled ? notificationText : "",
     })
   }
+
   const [previousNotification] = trpc.site.getNotification.useSuspenseQuery({
     siteId: Number(params.siteId),
   })
+
   useEffect(() => {
     setNotificationEnabled(previousNotification !== "")
     setNotificationText(previousNotification)
   }, [previousNotification])
 
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const [nextURL, setNextURL] = useState("")
+
+  useEffect(() => {
+    const handleRouteChange = (url: string) => {
+      if (notificationFieldChanged) {
+        router.events.off("routeChangeStart", handleRouteChange)
+        setNextURL(url)
+        onOpen()
+        router.events.emit("routeChangeError")
+        throw "Error to abort router route change. Ignore this!"
+      }
+    }
+
+    if (!isOpen) {
+      router.events.on("routeChangeStart", handleRouteChange)
+    }
+    return () => {
+      router.events.off("routeChangeStart", handleRouteChange)
+    }
+  }, [notificationFieldChanged, isOpen, onOpen, router.events])
   return (
     <>
+      <UnsavedSettingModal
+        isOpen={isOpen}
+        onClose={onClose}
+        nextURL={nextURL}
+      />
       <Center pt="5.5rem">
         <VStack w="48rem" alignItems="flex-start" spacing="1.5rem">
           <Text w="full" textStyle="h3-semibold">

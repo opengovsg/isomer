@@ -46,7 +46,7 @@ export const siteRouter = router({
     .query(async ({ input }) => {
       const { siteId } = input
       const notification = await getNotification(siteId)
-      return notification || ""
+      return (notification as string) || ""
     }),
   setNotification: protectedProcedure
     .input(setNotificationSchema)
