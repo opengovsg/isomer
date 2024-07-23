@@ -31,7 +31,23 @@ export default function RootStateDrawer() {
   } = useEditorDrawerContext()
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
-  const { mutate } = trpc.page.reorderBlock.useMutation()
+  const { mutate } = trpc.page.reorderBlock.useMutation({
+    onError: (error, variables) => {
+      // NOTE: rollback to last known good state
+      // @ts-expect-error Our zod validator runs between frontend and backend
+      // and the error type is automatically inferred from the zod validator.
+      // However, the type that we use on `pageState` is the full type
+      // because `Preview` (amongst other things) requires the other properties on the actual schema type
+      setPreviewPageState(variables.blocks)
+      // @ts-expect-error See above
+      setSavedPageState(variables.blocks)
+      toast({
+        title: "Failed to update blocks",
+        description: error.message,
+      })
+    },
+  })
+
   const toast = useToast({ status: "error" })
 
   const onDragEnd = useCallback(
@@ -62,25 +78,7 @@ export default function RootStateDrawer() {
       }
 
       // NOTE: drive an update to the db with the updated index
-      mutate(
-        { pageId, from, to, blocks: savedPageState, siteId },
-        {
-          onError: (error, variables) => {
-            // NOTE: rollback to last known good state
-            // @ts-expect-error Our zod validator runs between frontend and backend
-            // and the error type is automatically inferred from the zod validator.
-            // However, the type that we use on `pageState` is the full type
-            // because `Preview` (amongst other things) requires the other properties on the actual schema type
-            setPreviewPageState(variables.blocks)
-            // @ts-expect-error See above
-            setSavedPageState(variables.blocks)
-            toast({
-              title: "Failed to update blocks",
-              description: error.message,
-            })
-          },
-        },
-      )
+      mutate({ pageId, from, to, blocks: savedPageState, siteId })
     },
     [
       mutate,
