@@ -30,8 +30,19 @@ export const UnsavedSettingModal = ({
         <ModalCloseButton />
         <ModalBody>All edits will be lost!</ModalBody>
         <ModalFooter>
-          <Button onClick={onClose}>Go back to editing</Button>
           <Button
+            textColor="base.content.strong"
+            colorScheme="neutral"
+            variant="clear"
+            size="sm"
+            onClick={onClose}
+            mr="0.25rem"
+          >
+            Go back to editing
+          </Button>
+          <Button
+            colorScheme="critical"
+            size="sm"
             onClick={() => {
               void router.push(nextURL)
             }}
