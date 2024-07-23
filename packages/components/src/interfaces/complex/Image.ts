@@ -5,12 +5,12 @@ export const ImageSchema = Type.Object(
   {
     type: Type.Literal("image", { default: "image" }),
     src: Type.String({
-      title: "Image source URL",
-      description: "The source URL of the image",
+      title: "Upload image",
     }),
     alt: Type.String({
-      title: "Image alt text",
-      description: "The alt text of the image",
+      title: "Alternate text",
+      description:
+        "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
     }),
     width: Type.Optional(
       Type.Integer({
