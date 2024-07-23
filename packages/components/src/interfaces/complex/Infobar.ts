@@ -4,46 +4,38 @@ import { Type } from "@sinclair/typebox"
 export const InfobarSchema = Type.Object(
   {
     type: Type.Literal("infobar", { default: "infobar" }),
-    // TODO: Remove this property, only used in classic theme
-    sectionIdx: Type.Optional(Type.Number()),
     title: Type.String({
-      title: "Infobar title",
-      description: "The title of the infobar",
+      title: "Title",
     }),
-    subtitle: Type.Optional(
-      Type.String({
-        title: "Infobar subtitle",
-        description: "The subtitle of the infobar",
-      }),
-    ),
     description: Type.Optional(
       Type.String({
-        title: "Infobar content",
-        description: "The content of the infobar",
+        title: "Description",
       }),
     ),
     buttonLabel: Type.Optional(
       Type.String({
-        title: "Button label",
-        description: "The label for the primary button",
+        title: "Button text",
+        description:
+          "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
       }),
     ),
     buttonUrl: Type.Optional(
       Type.String({
-        title: "Button URL",
-        description: "The URL for the primary button",
+        title: "Button destination",
+        description: "When this is clicked, open:",
       }),
     ),
     secondaryButtonLabel: Type.Optional(
       Type.String({
-        title: "Secondary button label",
-        description: "The label for the secondary button",
+        title: "Secondary button text",
+        description:
+          "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
       }),
     ),
     secondaryButtonUrl: Type.Optional(
       Type.String({
-        title: "Secondary button URL",
-        description: "The URL for the secondary button",
+        title: "Secondary button destination",
+        description: "When this is clicked, open:",
       }),
     ),
   },
@@ -53,5 +45,7 @@ export const InfobarSchema = Type.Object(
 )
 
 export type InfobarProps = Static<typeof InfobarSchema> & {
+  sectionIdx?: number // TODO: Remove this property, only used in classic theme
+  subtitle?: string // Subtitle that is only used in the classic theme
   LinkComponent?: any // Next.js link
 }

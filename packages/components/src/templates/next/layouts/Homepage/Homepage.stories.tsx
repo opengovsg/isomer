@@ -190,7 +190,6 @@ export const Default: Story = {
       {
         type: "hero",
         variant: "gradient",
-        alignment: "left",
         backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
         title: "Ministry of Trade and Industry",
         subtitle:
@@ -226,7 +225,6 @@ export const Default: Story = {
           "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
         subtitle:
           "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
-        variant: "top",
         cards: [
           {
             title: "A yummy, tipsy evening at Duxton",
@@ -324,7 +322,6 @@ export const Default: Story = {
       },
       {
         type: "keystatistics",
-        variant: "side",
         title: "Key economic indicators",
         statistics: [
           {

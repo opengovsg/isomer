@@ -25,7 +25,10 @@ const TextComponent = ({
   description,
   buttonLabel,
   buttonUrl,
-}: Omit<InfopicProps, "sectionIndex" | "imageSrc" | "imageAlt" | "type">) => {
+}: Pick<
+  InfopicProps,
+  "title" | "subtitle" | "description" | "buttonLabel" | "buttonUrl"
+>) => {
   return (
     <div className="flex flex-col gap-4 lg:px-8">
       {subtitle && (
@@ -58,18 +61,15 @@ const TextComponent = ({
 }
 
 const ImageComponent = ({
-  src,
-  alt,
-}: {
-  src: InfopicProps["imageSrc"]
-  alt: InfopicProps["imageAlt"]
-}) => {
+  imageSrc,
+  imageAlt,
+}: Pick<InfopicProps, "imageSrc" | "imageAlt">) => {
   return (
     <div className="mt-12 md:row-span-2 md:mt-0">
       <div className="aspect-h-1 aspect-w-1 overflow-hidden rounded-lg">
         <img
-          src={src}
-          alt={alt}
+          src={imageSrc}
+          alt={imageAlt}
           className="h-full w-full object-cover object-center"
         />
       </div>
@@ -82,10 +82,10 @@ const InfoPic = ({
   title,
   subtitle,
   description,
-  imageAlt: alt,
-  imageSrc: src,
-  buttonLabel: button,
-  buttonUrl: url,
+  imageAlt,
+  imageSrc,
+  buttonLabel,
+  buttonUrl,
   isTextOnRight,
 }: InfopicProps) => {
   return (
@@ -93,13 +93,13 @@ const InfoPic = ({
       <InfopicContentWrapper shouldShowMobile={false}>
         {isTextOnRight ? (
           <>
-            <ImageComponent src={src} alt={alt} />
+            <ImageComponent imageSrc={imageSrc} imageAlt={imageAlt} />
             <TextComponent
               title={title}
               subtitle={subtitle}
               description={description}
-              buttonLabel={button}
-              buttonUrl={url}
+              buttonLabel={buttonLabel}
+              buttonUrl={buttonUrl}
             />
           </>
         ) : (
@@ -108,10 +108,10 @@ const InfoPic = ({
               title={title}
               subtitle={subtitle}
               description={description}
-              buttonLabel={button}
-              buttonUrl={url}
+              buttonLabel={buttonLabel}
+              buttonUrl={buttonUrl}
             />
-            <ImageComponent src={src} alt={alt} />
+            <ImageComponent imageSrc={imageSrc} imageAlt={imageAlt} />
           </>
         )}
       </InfopicContentWrapper>
@@ -120,10 +120,10 @@ const InfoPic = ({
           title={title}
           subtitle={subtitle}
           description={description}
-          buttonLabel={button}
-          buttonUrl={url}
+          buttonLabel={buttonLabel}
+          buttonUrl={buttonUrl}
         />
-        <ImageComponent src={src} alt={alt} />
+        <ImageComponent imageSrc={imageSrc} imageAlt={imageAlt} />
       </InfopicContentWrapper>
     </HomepageSectionWrapper>
   )

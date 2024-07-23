@@ -1,5 +1,7 @@
+import { useMemo } from "react"
 import { Box, Flex, Stack, Text } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
+import { format } from "date-fns"
 
 import Preview from "../Preview"
 import { LAYOUT_RENDER_DATA } from "./constants"
@@ -7,7 +9,33 @@ import { useCreatePageWizard } from "./CreatePageWizardContext"
 
 export const PreviewLayout = (): JSX.Element => {
   const isMobile = useIsMobile()
-  const { layoutPreviewJson, currentLayout } = useCreatePageWizard()
+  const {
+    layoutPreviewJson,
+    currentLayout,
+    siteId,
+    formMethods: { watch },
+  } = useCreatePageWizard()
+
+  const currentPermalink = watch("permalink", "/")
+
+  const previewOverrides = useMemo(() => {
+    switch (currentLayout) {
+      case "article": {
+        return {
+          page: {
+            date: format(new Date(), "dd MMM yyyy"),
+          },
+        }
+      }
+      case "content": {
+        return {
+          page: {
+            lastModified: new Date().toString(),
+          },
+        }
+      }
+    }
+  }, [currentLayout])
 
   return (
     <Stack
@@ -44,7 +72,12 @@ export const PreviewLayout = (): JSX.Element => {
             // Key used to reset the scroll to the top whenever layout changes
             key={currentLayout}
           >
-            <Preview {...layoutPreviewJson} />
+            <Preview
+              overrides={previewOverrides}
+              siteId={siteId}
+              permalink={currentPermalink}
+              {...layoutPreviewJson}
+            />
           </Box>
         </Box>
       )}

@@ -1,5 +1,5 @@
 import type { PaginationState } from "@tanstack/react-table"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -19,15 +19,17 @@ type ResourceTableData = RouterOutput["page"]["list"][number]
 
 const columnsHelper = createColumnHelper<ResourceTableData>()
 
-const columns = [
+const getColumns = ({ siteId }: ResourceTableProps) => [
   columnsHelper.accessor("title", {
     minSize: 300,
     header: () => <TableHeader>Title</TableHeader>,
     cell: ({ row }) => (
       <TitleCell
+        siteId={siteId}
+        id={row.original.id}
         title={row.original.title}
         permalink={`/${row.original.permalink}`}
-        type={row.original.mainBlobId ? "page" : "folder"}
+        type={row.original.type}
       />
     ),
   }),
@@ -38,7 +40,7 @@ const columns = [
       <ResourceTableMenu
         title={row.original.title}
         resourceId={row.original.id}
-        type={row.original.mainBlobId ? "page" : "folder"}
+        type={row.original.type}
       />
     ),
     size: 24,
@@ -54,6 +56,10 @@ export const ResourceTable = ({
   siteId,
   resourceId,
 }: ResourceTableProps): JSX.Element => {
+  const columns = useMemo(
+    () => getColumns({ siteId, resourceId }),
+    [siteId, resourceId],
+  )
   const { data: resources } = trpc.page.list.useQuery(
     {
       siteId,

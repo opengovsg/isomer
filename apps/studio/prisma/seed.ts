@@ -32,7 +32,6 @@ const PAGE_BLOB: IsomerSchema = {
     {
       type: "hero",
       variant: "gradient",
-      alignment: "left",
       title: "Ministry of Trade and Industry",
       subtitle:
         "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
@@ -73,7 +72,6 @@ const PAGE_BLOB: IsomerSchema = {
           label: "Number of lies in this stat block",
         },
       ],
-      variant: "top",
       title: "Irrationality in numbers",
     },
   ],
@@ -167,6 +165,11 @@ async function main() {
         isGovernment: true,
       }),
     })
+    .onConflict((oc) =>
+      oc
+        .column("name")
+        .doUpdateSet((eb) => ({ name: eb.ref("excluded.name") })),
+    )
     .returning("id")
     .executeTakeFirstOrThrow()
 
@@ -182,6 +185,11 @@ async function main() {
         siteNavItems: FOOTER_ITEMS,
       }),
     })
+    .onConflict((oc) =>
+      oc
+        .column("siteId")
+        .doUpdateSet((eb) => ({ siteId: eb.ref("excluded.siteId") })),
+    )
     .execute()
 
   await db
@@ -190,13 +198,27 @@ async function main() {
       siteId,
       content: jsonb(NAV_BAR_ITEMS),
     })
+    .onConflict((oc) =>
+      oc
+        .column("siteId")
+        .doUpdateSet((eb) => ({ siteId: eb.ref("excluded.siteId") })),
+    )
     .execute()
 
-  const { id: blobId } = await db
-    .insertInto("Blob")
-    .values({ content: jsonb(PAGE_BLOB) })
-    .returning("id")
-    .executeTakeFirstOrThrow()
+  let blobId = 1
+  const dedupeBlobId = await db
+    .selectFrom("Blob")
+    .where("Blob.id", "=", blobId)
+    .select("Blob.id")
+    .executeTakeFirst()
+  if (!dedupeBlobId) {
+    const { id } = await db
+      .insertInto("Blob")
+      .values({ content: jsonb(PAGE_BLOB) })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+    blobId = id
+  }
 
   await db
     .insertInto("Resource")
@@ -207,6 +229,12 @@ async function main() {
       type: "Page",
       title: "Home",
     })
+
+    .onConflict((oc) =>
+      oc
+        .column("mainBlobId")
+        .doUpdateSet((eb) => ({ mainBlobId: eb.ref("excluded.mainBlobId") })),
+    )
     .executeTakeFirstOrThrow()
 
   await Promise.all(
@@ -219,6 +247,11 @@ async function main() {
           email: `${name}@open.gov.sg`,
           phone: MOCK_PHONE_NUMBER,
         })
+        .onConflict((oc) =>
+          oc
+            .column("email")
+            .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
+        )
         .executeTakeFirstOrThrow()
     }),
   )

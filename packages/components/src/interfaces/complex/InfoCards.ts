@@ -3,60 +3,49 @@ import { Type } from "@sinclair/typebox"
 
 export const SingleCardSchema = Type.Object({
   title: Type.String({
-    title: "Card title",
-    description: "The title of the card",
-  }),
-  url: Type.String({
-    title: "Card URL",
-    description: "The URL that the card links to",
-  }),
-  imageUrl: Type.String({
-    title: "Card image URL",
-    description: "The URL of the image to display on the card",
-  }),
-  imageAlt: Type.String({
-    title: "Card image alt text",
-    description: "The alt text for the card image",
+    title: "Title",
   }),
   description: Type.Optional(
     Type.String({
-      title: "Card content",
-      description: "The content of the card",
+      title: "Description",
     }),
   ),
   buttonLabel: Type.Optional(
     Type.String({
-      title: "Button label",
-      description: "The label for the card button",
+      title: "Link text",
+      description:
+        "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
     }),
   ),
+  url: Type.String({
+    title: "Link destination",
+    description: "When this is clicked, open:",
+  }),
+  imageUrl: Type.String({
+    title: "Upload image",
+  }),
+  imageAlt: Type.String({
+    title: "Alternate text",
+    description:
+      "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
+  }),
 })
 
 export const InfoCardsSchema = Type.Object(
   {
     type: Type.Literal("infocards", { default: "infocards" }),
-    // TODO: Remove this property, only used in classic theme
-    sectionIdx: Type.Optional(Type.Number()),
-    variant: Type.Union([Type.Literal("side"), Type.Literal("top")], {
-      title: "Infocards variant",
-      description: "The variant of the infocards component to use",
-      type: "string",
-      format: "radio",
-    }),
     title: Type.Optional(
       Type.String({
-        title: "Infocards section title",
-        description: "The title of the Infocards component",
+        title: "Title",
       }),
     ),
     subtitle: Type.Optional(
       Type.String({
-        title: "Infocards subtitle",
-        description: "The subtitle of the Infocards component",
+        title: "Description",
       }),
     ),
     cards: Type.Array(SingleCardSchema, {
-      title: "Infocards cards",
+      title: "Cards",
       minItems: 1,
     }),
   },
@@ -66,4 +55,6 @@ export const InfoCardsSchema = Type.Object(
 )
 
 export type SingleCardProps = Static<typeof SingleCardSchema>
-export type InfoCardsProps = Static<typeof InfoCardsSchema>
+export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
+  sectionIdx?: number // TODO: Remove this property, only used in classic theme
+}

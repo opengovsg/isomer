@@ -97,11 +97,6 @@ export const Nested: Story = {
         type: "listItem",
         content: [
           { type: "paragraph", content: [{ type: "text", text: "Item 2" }] },
-        ],
-      },
-      {
-        type: "listItem",
-        content: [
           {
             type: "unorderedList",
             content: [
@@ -121,11 +116,6 @@ export const Nested: Story = {
                     type: "paragraph",
                     content: [{ type: "text", text: "Item 4" }],
                   },
-                ],
-              },
-              {
-                type: "listItem",
-                content: [
                   {
                     type: "orderedList",
                     attrs: {

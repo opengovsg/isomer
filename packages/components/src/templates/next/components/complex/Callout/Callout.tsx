@@ -1,7 +1,7 @@
 import type { CalloutProps } from "~/interfaces"
 import { Prose } from "../../native"
 
-const Callout = ({ content, variant }: CalloutProps) => {
+const Callout = ({ content }: CalloutProps) => {
   return (
     <div
       className={`rounded border border-utility-info bg-utility-info-subtle p-6 [&:not(:first-child)]:mt-8`}
