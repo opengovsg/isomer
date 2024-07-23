@@ -4,29 +4,31 @@ import {
   Button,
   Divider,
   HStack,
+  Icon,
   Spacer,
   Text,
   VStack,
 } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import { getComponentSchema } from "@opengovsg/isomer-components"
+import { BiGridVertical } from "react-icons/bi"
 import { BsPlus } from "react-icons/bs"
-import { MdOutlineDragIndicator } from "react-icons/md"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 export default function RootStateDrawer() {
   const {
     setDrawerState,
-    pageState,
-    setPageState,
-    setSnapshot: setEditorState,
     setCurrActiveIdx,
+    savedPageState,
+    setSavedPageState,
+    setPreviewPageState,
   } = useEditorDrawerContext()
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return
 
-    const updatedBlocks = Array.from(pageState)
+    const updatedBlocks = Array.from(savedPageState)
     // Remove block at source index
     const [movedBlock] = updatedBlocks.splice(result.source.index, 1)
     if (movedBlock) {
@@ -34,7 +36,8 @@ export default function RootStateDrawer() {
       updatedBlocks.splice(result.destination.index, 0, movedBlock)
     }
 
-    setPageState(updatedBlocks)
+    setPreviewPageState(updatedBlocks)
+    setSavedPageState(updatedBlocks)
   }
 
   return (
@@ -69,7 +72,7 @@ export default function RootStateDrawer() {
                   Custom blocks
                 </Text>
                 <Box w="100%">
-                  {pageState.map((block, index) => (
+                  {savedPageState.map((block, index) => (
                     <Draggable
                       // TODO: Determine key + draggable id
                       key={index}
@@ -84,11 +87,10 @@ export default function RootStateDrawer() {
                             setCurrActiveIdx(index)
                             // TODO: we should automatically do this probably?
                             const nextState =
-                              pageState[index]?.type === "prose"
+                              savedPageState[index]?.type === "prose"
                                 ? "nativeEditor"
                                 : "complexEditor"
                             // NOTE: SNAPSHOT
-                            setEditorState(pageState)
                             setDrawerState({ state: nextState })
                           }}
                         >
@@ -100,15 +102,13 @@ export default function RootStateDrawer() {
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                           >
-                            <MdOutlineDragIndicator
-                              style={{
-                                marginLeft: "0.75rem",
-                                width: "1.5rem",
-                                height: "1.5rem",
-                              }}
+                            <Icon
+                              as={BiGridVertical}
+                              fontSize="1.5rem"
+                              ml="0.75rem"
                             />
                             <Text px="3" fontWeight={500}>
-                              {block.type}
+                              {getComponentSchema(block.type).title}
                             </Text>
                           </HStack>
                           <Divider />

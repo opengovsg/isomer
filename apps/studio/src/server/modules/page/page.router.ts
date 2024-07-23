@@ -1,3 +1,4 @@
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
@@ -19,8 +20,8 @@ import {
 import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage } from "./page.service"
 
-const ajv = new Ajv({ allErrors: true, strict: false })
-const schemaValidator = ajv.compile(schema)
+const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
+const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
 // TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
@@ -74,12 +75,14 @@ export const pageRouter = router({
           "Resource.title",
           "Resource.mainBlobId",
           "Resource.draftBlobId",
+          "Resource.type",
         ])
         .execute()
     }),
   readPageAndBlob: protectedProcedure
     .input(getEditPageSchema)
     .query(async ({ input: { pageId, siteId } }) => {
+      // TODO: Return blob last modified so the renderer can show last modified
       const page = await getFullPageById({ resourceId: pageId, siteId })
       if (!page) {
         throw new TRPCError({
@@ -87,14 +90,14 @@ export const pageRouter = router({
           message: "Resource not found",
         })
       }
-      const pageName = page.permalink
+      const permalink = page.permalink
       const siteMeta = await getSiteConfig(page.siteId)
       const navbar = await getNavBar(page.siteId)
       const footer = await getFooter(page.siteId)
       const { content } = page
 
       return {
-        pageName,
+        permalink,
         navbar,
         footer,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

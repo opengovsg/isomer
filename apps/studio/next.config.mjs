@@ -10,6 +10,7 @@ TODO: Removing this CSP first
   //   // For displaying images from R2
   //   env.R2_PUBLIC_HOSTNAME ? `https://${env.R2_PUBLIC_HOSTNAME}` : ''
   // };
+  // script-src 'self' ${env.NODE_ENV === "production" ? "" : "'unsafe-eval'"};
 */
 
 // TODO: Stricten the CSP for images
@@ -22,7 +23,7 @@ const ContentSecurityPolicy = `
   img-src * data: blob:;
   frame-src 'self';
   object-src 'none';
-  script-src 'self' ${env.NODE_ENV === "production" ? "" : "'unsafe-eval'"};
+  script-src 'self' 'unsafe-eval';
   style-src 'self' https: 'unsafe-inline';
   connect-src 'self' https://schema.isomer.gov.sg https://browser-intake-datadoghq.com https://*.browser-intake-datadoghq.com https://vitals.vercel-insights.com/v1/vitals ${
     // For POSTing presigned URLs to R2 storage.

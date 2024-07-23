@@ -123,7 +123,11 @@ export function JsonFormsArrayControl({
   translations,
 }: ArrayLayoutProps) {
   const [selectedIndex, setSelectedIndex] = useState<number>()
-  const { maxItems } = Resolve.schema(rootSchema, uischema.scope, rootSchema)
+  const resolvedSchema = Resolve.schema(rootSchema, uischema.scope, rootSchema)
+  const maxItems =
+    // NOTE: resolvedSchema can potentially be undefined
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    resolvedSchema !== undefined ? resolvedSchema.maxItems : undefined
   const handleRemoveItem = useCallback(
     (path: string, index: number) => () => {
       if (selectedIndex === undefined || !removeItems) {

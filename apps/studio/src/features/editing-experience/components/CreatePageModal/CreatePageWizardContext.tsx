@@ -102,6 +102,7 @@ const useCreatePageWizardContext = ({
   }
 
   return {
+    siteId,
     currentStep,
     formMethods,
     handleCreatePage,

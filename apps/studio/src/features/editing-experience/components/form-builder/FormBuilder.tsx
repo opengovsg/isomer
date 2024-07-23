@@ -1,10 +1,10 @@
-import type { IsomerComponentTypes } from "@opengovsg/isomer-components"
-import { useState } from "react"
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { type JsonFormsRendererRegistryEntry } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 
+import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import {
   JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
@@ -58,27 +58,43 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: jsonFormsVerticalLayoutRenderer,
   },
 ]
+const ajv = new Ajv({ strict: false, logger: false })
 
-export interface FormBuilderProps {
-  component: IsomerComponentTypes
-}
+export default function FormBuilder(): JSX.Element {
+  const {
+    savedPageState,
+    previewPageState,
+    setPreviewPageState,
+    currActiveIdx,
+  } = useEditorDrawerContext()
 
-export default function FormBuilder({
-  component,
-}: FormBuilderProps): JSX.Element {
-  const subSchema = getComponentSchema(component)
-  const [formData, setFormData] = useState({})
+  if (currActiveIdx === -1 || currActiveIdx > savedPageState.length) {
+    return <></>
+  }
+
+  const component = savedPageState[currActiveIdx]
+
+  if (!component) {
+    return <></>
+  }
+
+  const subSchema = getComponentSchema(component.type)
+  const data = previewPageState[currActiveIdx]
+  const validateFn = ajv.compile<IsomerComponent>(subSchema)
 
   return (
     <JsonForms
-      schema={subSchema || {}}
-      data={formData}
+      schema={subSchema}
+      data={data}
       renderers={renderers}
       onChange={({ data }) => {
-        console.log(data)
-        setFormData(data)
+        if (validateFn(data)) {
+          const newPageState = [...savedPageState]
+          newPageState[currActiveIdx] = data
+          setPreviewPageState(newPageState)
+        }
       }}
-      ajv={new Ajv({ strict: false })}
+      ajv={ajv}
     />
   )
 }
