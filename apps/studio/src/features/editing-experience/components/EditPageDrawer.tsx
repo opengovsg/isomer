@@ -7,6 +7,8 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
 import TipTapComponent from "./TipTapComponent"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 
 export function EditPageDrawer() {
   const {
@@ -16,6 +18,7 @@ export function EditPageDrawer() {
   } = useEditorDrawerContext()
 
   const proseSchema = getComponentSchema("prose")
+  const { pageId, siteId } = useQueryParse(editPageSchema)
 
   const ajv = new Ajv({ allErrors: true, strict: false })
   const validate = ajv.compile<ProseProps>(proseSchema)
@@ -40,7 +43,7 @@ export function EditPageDrawer() {
     case "root":
       return <RootStateDrawer />
     case "addBlock":
-      return <ComponentSelector />
+      return <ComponentSelector siteId={siteId} pageId={pageId} />
     case "nativeEditor": {
       const component = previewPageState[currActiveIdx]
       return <TipTapComponent content={inferAsProse(component)} />

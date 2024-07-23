@@ -97,7 +97,12 @@ function BlockItem({
   )
 }
 
-function ComponentSelector() {
+interface ComponentSelectorProps {
+  siteId: number
+  pageId: number
+}
+
+function ComponentSelector({ pageId, siteId }: ComponentSelectorProps) {
   const {
     setCurrActiveIdx,
     savedPageState,
@@ -106,9 +111,6 @@ function ComponentSelector() {
     setPreviewPageState,
   } = useEditorDrawerContext()
   const { mutate } = trpc.page.updatePageBlob.useMutation()
-  // TODO: get this dynamically
-  const pageId = 1
-  const siteId = 1
   const [page] = trpc.page.readPageAndBlob.useSuspenseQuery({
     pageId,
     siteId,
