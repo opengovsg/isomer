@@ -4,11 +4,11 @@ import Ajv from "ajv"
 
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
 import TipTapComponent from "./TipTapComponent"
-import { useQueryParse } from "~/hooks/useQueryParse"
-import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 
 export function EditPageDrawer() {
   const {

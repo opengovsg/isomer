@@ -1,4 +1,5 @@
 import type { DropResult } from "@hello-pangea/dnd"
+import { useCallback } from "react"
 import {
   Box,
   Button,
@@ -16,10 +17,9 @@ import { BiGridVertical } from "react-icons/bi"
 import { BsPlus } from "react-icons/bs"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { trpc } from "~/utils/trpc"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
-import { useCallback } from "react"
+import { trpc } from "~/utils/trpc"
 
 export default function RootStateDrawer() {
   const {
@@ -34,53 +34,64 @@ export default function RootStateDrawer() {
   const { mutate } = trpc.page.reorderBlock.useMutation()
   const toast = useToast({ status: "error" })
 
-  const onDragEnd = useCallback((result: DropResult) => {
-    if (!result.destination) return
+  const onDragEnd = useCallback(
+    (result: DropResult) => {
+      if (!result.destination) return
 
-    const from = result.source.index
-    const to = result.destination.index
+      const from = result.source.index
+      const to = result.destination.index
 
-    if (
-      from >= savedPageState.length ||
-      to >= savedPageState.length ||
-      from < 0 ||
-      to < 0
-    )
-      return
+      if (
+        from >= savedPageState.length ||
+        to >= savedPageState.length ||
+        from < 0 ||
+        to < 0
+      )
+        return
 
-    // NOTE: We eagerly update their page state here
-    // and if it fails on the backend,
-    // we rollback to what we passed them
-    const updatedBlocks = Array.from(savedPageState)
-    const [movedBlock] = updatedBlocks.splice(from, 1)
+      // NOTE: We eagerly update their page state here
+      // and if it fails on the backend,
+      // we rollback to what we passed them
+      const updatedBlocks = Array.from(savedPageState)
+      const [movedBlock] = updatedBlocks.splice(from, 1)
 
-    if (!!movedBlock) {
-      updatedBlocks.splice(to, 0, movedBlock)
-      setPreviewPageState(updatedBlocks)
-      setSavedPageState(updatedBlocks)
-    }
+      if (!!movedBlock) {
+        updatedBlocks.splice(to, 0, movedBlock)
+        setPreviewPageState(updatedBlocks)
+        setSavedPageState(updatedBlocks)
+      }
 
-    // NOTE: drive an update to the db with the updated index
-    mutate(
-      { pageId, from, to, blocks: savedPageState, siteId },
-      {
-        onError: (error, variables) => {
-          // NOTE: rollback to last known good state
-          // @ts-expect-error Our zod validator runs between frontend and backend
-          // and the error type is automatically inferred from the zod validator.
-          // However, the type that we use on `pageState` is the full type
-          // because `Preview` (amongst other things) requires the other properties on the actual schema type
-          setPreviewPageState(variables.blocks)
-          // @ts-expect-error See above
-          setSavedPageState(variables.blocks)
-          toast({
-            title: "Failed to update blocks",
-            description: error.message,
-          })
+      // NOTE: drive an update to the db with the updated index
+      mutate(
+        { pageId, from, to, blocks: savedPageState, siteId },
+        {
+          onError: (error, variables) => {
+            // NOTE: rollback to last known good state
+            // @ts-expect-error Our zod validator runs between frontend and backend
+            // and the error type is automatically inferred from the zod validator.
+            // However, the type that we use on `pageState` is the full type
+            // because `Preview` (amongst other things) requires the other properties on the actual schema type
+            setPreviewPageState(variables.blocks)
+            // @ts-expect-error See above
+            setSavedPageState(variables.blocks)
+            toast({
+              title: "Failed to update blocks",
+              description: error.message,
+            })
+          },
         },
-      },
-    )
-  }, [mutate, pageId, savedPageState, setPreviewPageState, setSavedPageState, siteId, toast])
+      )
+    },
+    [
+      mutate,
+      pageId,
+      savedPageState,
+      setPreviewPageState,
+      setSavedPageState,
+      siteId,
+      toast,
+    ],
+  )
 
   return (
     <VStack w="100%" h="100%" gap={10} pt={10}>
