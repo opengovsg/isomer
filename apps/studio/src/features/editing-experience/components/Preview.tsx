@@ -3,7 +3,7 @@ import type {
   IsomerSchema,
 } from "@opengovsg/isomer-components"
 import type { PartialDeep } from "type-fest"
-import { Skeleton, Box } from "@chakra-ui/react"
+import { Skeleton } from "@chakra-ui/react"
 import { RenderEngine } from "@opengovsg/isomer-components"
 import { merge } from "lodash"
 
@@ -37,27 +37,21 @@ function SuspendablePreview({
   })
 
   return (
-    // TODO: should migrate this to a colour token
-    <Box p="2rem" backgroundColor="#EDEDED">
-      {/* TODO: should migrate this to a colour token */}
-      <Box borderRadius="8px" backgroundColor="white" boxShadow="0px 0px 20px 0px #6868684D" overflow="hidden">
-        <RenderEngine
-          {...renderProps}
-          site={{
-            // TODO: fixup all the typing errors
-            // @ts-expect-error to fix when types are proper
-            // TODO: dynamically generate sitemap
-            siteMap: { title: "Home", permalink: "/", children: [] },
-            environment: "production",
-            // TODO: Fetch from DB in the future
-            lastUpdated: "3 Apr 2024",
-            ...siteConfig,
-            navBarItems: navbar,
-            footerItems: footer,
-          }}
-        />
-      </Box>
-    </Box>
+    <RenderEngine
+      {...renderProps}
+      site={{
+        // TODO: fixup all the typing errors
+        // @ts-expect-error to fix when types are proper
+        // TODO: dynamically generate sitemap
+        siteMap: { title: "Home", permalink: "/", children: [] },
+        environment: "production",
+        // TODO: Fetch from DB in the future
+        lastUpdated: "3 Apr 2024",
+        ...siteConfig,
+        navBarItems: navbar,
+        footerItems: footer,
+      }}
+    />
   )
 }
 
