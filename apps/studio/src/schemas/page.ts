@@ -15,8 +15,8 @@ export const getEditPageSchema = z.object({
 
 export const reorderBlobSchema = z.object({
   pageId: z.number().min(1),
-  from: z.number().min(1),
-  to: z.number().min(1),
+  from: z.number().min(0),
+  to: z.number().min(0),
   siteId: z.number().min(1),
   blocks: z.array(
     z
