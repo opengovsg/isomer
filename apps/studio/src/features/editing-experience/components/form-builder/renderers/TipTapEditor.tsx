@@ -13,6 +13,7 @@ import { Heading } from "@tiptap/extension-heading"
 import { History } from "@tiptap/extension-history"
 import { HorizontalRule } from "@tiptap/extension-horizontal-rule"
 import { Italic } from "@tiptap/extension-italic"
+import Link from "@tiptap/extension-link"
 import { ListItem } from "@tiptap/extension-list-item"
 import { OrderedList } from "@tiptap/extension-ordered-list"
 import { Paragraph } from "@tiptap/extension-paragraph"
@@ -33,6 +34,7 @@ interface TiptapEditorProps extends BoxProps {
 export function TiptapEditor({ data, handleChange }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
+      Link,
       Blockquote,
       Bold,
       BulletList.extend({
