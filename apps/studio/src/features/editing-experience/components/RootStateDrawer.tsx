@@ -110,7 +110,9 @@ export default function RootStateDrawer() {
                             <Text px="3" fontWeight={500}>
                               {/*  NOTE: Because we use `Type.Ref` for prose, */}
                               {/* this gets a `$Ref` only and not the concrete values */}
-                              {block.type === "prose" ? "Prose component" : getComponentSchema(block.type).title}
+                              {block.type === "prose"
+                                ? "Prose component"
+                                : getComponentSchema(block.type).title}
                             </Text>
                           </HStack>
                           <Divider />
