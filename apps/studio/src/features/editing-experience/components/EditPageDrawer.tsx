@@ -17,7 +17,7 @@ export function EditPageDrawer() {
 
   const proseSchema = getComponentSchema("prose")
 
-  const ajv = new Ajv({ allErrors: true, strict: false })
+  const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
   const validate = ajv.compile<ProseProps>(proseSchema)
 
   const inferAsProse = (

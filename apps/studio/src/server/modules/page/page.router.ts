@@ -16,7 +16,7 @@ import {
 import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage } from "./page.service"
 
-const ajv = new Ajv({ allErrors: true, strict: false })
+const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
 // TODO: Need to do validation like checking for existence of the page

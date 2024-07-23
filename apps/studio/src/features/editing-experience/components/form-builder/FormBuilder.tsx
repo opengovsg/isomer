@@ -76,7 +76,7 @@ export default function FormBuilder(): JSX.Element {
 
   const subSchema = getComponentSchema(component.type)
   const data = previewPageState[currActiveIdx]
-  const ajv = new Ajv({ strict: false })
+  const ajv = new Ajv({ strict: false, logger: false })
   const validateFn = ajv.compile<IsomerComponent>(subSchema)
 
   return (
@@ -91,7 +91,7 @@ export default function FormBuilder(): JSX.Element {
           setPreviewPageState(newPageState)
         }
       }}
-      ajv={new Ajv({ strict: false })}
+      ajv={ajv}
     />
   )
 }
