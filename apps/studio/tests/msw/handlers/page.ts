@@ -15,6 +15,7 @@ const pageListQuery = (wait?: DelayMode | number) => {
         title: "Test page 1",
         mainBlobId: 3,
         draftBlobId: null,
+        type: "Page",
       },
       {
         id: 5,
@@ -22,6 +23,7 @@ const pageListQuery = (wait?: DelayMode | number) => {
         title: "Test page 2",
         mainBlobId: 4,
         draftBlobId: null,
+        type: "Page",
       },
       {
         id: 6,
@@ -29,6 +31,7 @@ const pageListQuery = (wait?: DelayMode | number) => {
         title: "Test folder 1",
         mainBlobId: null,
         draftBlobId: null,
+        type: "Folder",
       },
     ]
   })

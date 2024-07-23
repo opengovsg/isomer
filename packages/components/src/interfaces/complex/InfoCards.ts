@@ -35,8 +35,6 @@ export const SingleCardSchema = Type.Object({
 export const InfoCardsSchema = Type.Object(
   {
     type: Type.Literal("infocards", { default: "infocards" }),
-    // TODO: Remove this property, only used in classic theme
-    sectionIdx: Type.Optional(Type.Number()),
     variant: Type.Union([Type.Literal("side"), Type.Literal("top")], {
       title: "Infocards variant",
       description: "The variant of the infocards component to use",
@@ -66,4 +64,6 @@ export const InfoCardsSchema = Type.Object(
 )
 
 export type SingleCardProps = Static<typeof SingleCardSchema>
-export type InfoCardsProps = Static<typeof InfoCardsSchema>
+export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
+  sectionIdx?: number // TODO: Remove this property, only used in classic theme
+}

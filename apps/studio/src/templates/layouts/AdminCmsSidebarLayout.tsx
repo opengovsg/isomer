@@ -1,3 +1,4 @@
+import type { PropsWithChildren } from "react"
 import { useRouter } from "next/router"
 import { Flex } from "@chakra-ui/react"
 import {
@@ -16,6 +17,17 @@ import { useMe } from "~/features/me/api"
 import { type GetLayout } from "~/lib/types"
 
 export const AdminCmsSidebarLayout: GetLayout = (page) => {
+  return (
+    <EnforceLoginStatePageWrapper>
+      <Flex minH="$100vh" flexDir="row" bg="base.canvas.alt" pos="relative">
+        <CmsSidebarWrapper>{page}</CmsSidebarWrapper>
+      </Flex>
+    </EnforceLoginStatePageWrapper>
+  )
+}
+
+// Extracted out since this needs to be a child of EnforceLoginStatePageWrapper
+const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
   const router = useRouter()
   const siteId = String(router.query.siteId)
 
@@ -54,19 +66,12 @@ export const AdminCmsSidebarLayout: GetLayout = (page) => {
   ]
 
   return (
-    <EnforceLoginStatePageWrapper>
-      <Flex minH="$100vh" flexDir="row" bg="base.canvas.alt" pos="relative">
-        <CmsSidebarContainer
-          sidebar={
-            <CmsSidebar
-              topNavItems={pageNavItems}
-              bottomNavItems={userNavItems}
-            />
-          }
-        >
-          {page}
-        </CmsSidebarContainer>
-      </Flex>
-    </EnforceLoginStatePageWrapper>
+    <CmsSidebarContainer
+      sidebar={
+        <CmsSidebar topNavItems={pageNavItems} bottomNavItems={userNavItems} />
+      }
+    >
+      {children}
+    </CmsSidebarContainer>
   )
 }

@@ -10,6 +10,10 @@ import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
 import TipTapComponent from "./TipTapComponent"
 
+const proseSchema = getComponentSchema("prose")
+const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
+const validate = ajv.compile<ProseProps>(proseSchema)
+
 export function EditPageDrawer() {
   const {
     previewPageState,
@@ -17,11 +21,7 @@ export function EditPageDrawer() {
     currActiveIdx,
   } = useEditorDrawerContext()
 
-  const proseSchema = getComponentSchema("prose")
   const { pageId, siteId } = useQueryParse(editPageSchema)
-
-  const ajv = new Ajv({ allErrors: true, strict: false })
-  const validate = ajv.compile<ProseProps>(proseSchema)
 
   const inferAsProse = (
     component?: (typeof previewPageState)[number],

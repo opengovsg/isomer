@@ -4,18 +4,10 @@ import { Type } from "@sinclair/typebox"
 export const InfobarSchema = Type.Object(
   {
     type: Type.Literal("infobar", { default: "infobar" }),
-    // TODO: Remove this property, only used in classic theme
-    sectionIdx: Type.Optional(Type.Number()),
     title: Type.String({
       title: "Infobar title",
       description: "The title of the infobar",
     }),
-    subtitle: Type.Optional(
-      Type.String({
-        title: "Infobar subtitle",
-        description: "The subtitle of the infobar",
-      }),
-    ),
     description: Type.Optional(
       Type.String({
         title: "Infobar content",
@@ -53,5 +45,7 @@ export const InfobarSchema = Type.Object(
 )
 
 export type InfobarProps = Static<typeof InfobarSchema> & {
+  sectionIdx?: number // TODO: Remove this property, only used in classic theme
+  subtitle?: string // Subtitle that is only used in the classic theme
   LinkComponent?: any // Next.js link
 }
