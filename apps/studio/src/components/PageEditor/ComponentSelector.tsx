@@ -31,6 +31,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { type DrawerState } from "~/types/editorDrawer"
 import { DEFAULT_BLOCKS } from "./constants"
 import { type SectionType } from "./types"
+import { trpc } from "~/utils/trpc"
 
 function Section({ children }: React.PropsWithChildren) {
   return (
