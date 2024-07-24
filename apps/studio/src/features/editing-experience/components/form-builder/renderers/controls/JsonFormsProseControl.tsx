@@ -1,7 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Flex, FormControl } from "@chakra-ui/react"
-import { hasType, rankWith, schemaMatches } from "@jsonforms/core"
-import { Box, FormControl } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
