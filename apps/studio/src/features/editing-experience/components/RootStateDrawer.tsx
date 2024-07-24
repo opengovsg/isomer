@@ -87,7 +87,6 @@ export default function RootStateDrawer() {
       setPreviewPageState,
       setSavedPageState,
       siteId,
-      toast,
     ],
   )
 
