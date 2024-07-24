@@ -10,7 +10,6 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
-import { cloneDeep } from "lodash"
 import { BiText, BiTrash, BiX } from "react-icons/bi"
 
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
@@ -37,23 +36,28 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     onClose: onDeleteBlockModalClose,
   } = useDisclosure()
 
+  if (!previewPageState || !savedPageState) return
+
   const updatePageState = (editorContent: JSONContent) => {
+    const updatedBlocks = Array.from(previewPageState.content)
     // TODO: actual validation
-    const content = editorContent as ProseProps
-    setPreviewPageState((oldState) => {
-      // TODO: performance - this is a full clone
-      // of the object, which is expensive
-      const newState = cloneDeep(oldState)
-      newState[currActiveIdx] = content
-      return newState
-    })
+    updatedBlocks[currActiveIdx] = editorContent as ProseProps
+    const newPageState = {
+      ...previewPageState,
+      content: updatedBlocks,
+    }
+    setPreviewPageState(newPageState)
   }
 
   const handleDeleteBlock = () => {
-    const updatedBlocks = Array.from(savedPageState)
+    const updatedBlocks = Array.from(savedPageState.content)
     updatedBlocks.splice(currActiveIdx, 1)
-    setSavedPageState(updatedBlocks)
-    setPreviewPageState(updatedBlocks)
+    const newPageState = {
+      ...previewPageState,
+      content: updatedBlocks,
+    }
+    setSavedPageState(newPageState)
+    setPreviewPageState(newPageState)
     onDeleteBlockModalClose()
     setDrawerState({ state: "root" })
   }

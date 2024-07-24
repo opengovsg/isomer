@@ -33,10 +33,9 @@ function EditPage(): JSX.Element {
     setDrawerState({
       state: "root",
     })
-    const blocks = page.content
-    setSavedPageState(blocks)
-    setPreviewPageState(blocks)
-  }, [page.content, setDrawerState, setPreviewPageState, setSavedPageState])
+    setSavedPageState(page)
+    setPreviewPageState(page)
+  }, [page, setDrawerState, setPreviewPageState, setSavedPageState])
 
   return (
     <Grid
@@ -47,18 +46,18 @@ function EditPage(): JSX.Element {
     >
       {/* TODO: Implement sidebar editor */}
       <GridItem colSpan={1} bg="slate.50">
-        <EditPageDrawer />
+        <EditPageDrawer layout={page.layout} />
       </GridItem>
       {/* TODO: Implement preview */}
       <GridItem colSpan={2} overflow="scroll">
         <Box p="2rem" bg="gray.100">
           <Box borderRadius="8px" bg="white" shadow="md" overflow="auto">
             <Preview
-              siteId={siteId}
               {...page}
+              {...previewPageState}
+              siteId={siteId}
               permalink={permalink}
               version="0.1.0"
-              content={previewPageState}
             />
           </Box>
         </Box>

@@ -1,12 +1,11 @@
 import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
-import type { IsomerComponent } from "@opengovsg/isomer-components"
+import type { ValidateFunction } from "ajv"
 import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
-import { getComponentSchema } from "@opengovsg/isomer-components"
+import { type TSchema } from "@sinclair/typebox"
 import Ajv from "ajv"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import {
   JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
@@ -75,38 +74,27 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
 ]
 const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
 
-export default function FormBuilder(): JSX.Element {
-  const {
-    savedPageState,
-    previewPageState,
-    setPreviewPageState,
-    currActiveIdx,
-  } = useEditorDrawerContext()
+interface FormBuilderProps<T> {
+  schema: TSchema
+  validateFn: ValidateFunction<T>
+  data: unknown
+  handleChange: (data: T) => void
+}
 
-  if (currActiveIdx === -1 || currActiveIdx > savedPageState.length) {
-    return <></>
-  }
-
-  const component = previewPageState[currActiveIdx]
-
-  if (!component) {
-    return <></>
-  }
-
-  const subSchema = getComponentSchema(component.type)
-  const data = previewPageState[currActiveIdx]
-  const validateFn = ajv.compile<IsomerComponent>(subSchema)
-
+export default function FormBuilder<T>({
+  schema,
+  validateFn,
+  data,
+  handleChange,
+}: FormBuilderProps<T>): JSX.Element {
   return (
     <JsonForms
-      schema={subSchema}
+      schema={schema}
       data={data}
       renderers={renderers}
       onChange={({ data }) => {
         if (validateFn(data)) {
-          const newPageState = [...savedPageState]
-          newPageState[currActiveIdx] = data
-          setPreviewPageState(newPageState)
+          handleChange(data)
         }
       }}
       ajv={ajv}

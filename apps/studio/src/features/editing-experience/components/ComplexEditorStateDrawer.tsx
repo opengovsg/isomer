@@ -1,3 +1,4 @@
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import {
   Box,
   Flex,
@@ -8,11 +9,14 @@ import {
 } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
+import Ajv from "ajv"
 import { BiDollar, BiTrash, BiX } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import FormBuilder from "./form-builder/FormBuilder"
+
+const ajv = new Ajv({ strict: false, logger: false })
 
 export default function ComplexEditorStateDrawer(): JSX.Element {
   const {
@@ -29,26 +33,47 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     onClose: onDeleteBlockModalClose,
   } = useDisclosure()
 
-  if (currActiveIdx === -1 || currActiveIdx > savedPageState.length) {
+  if (
+    currActiveIdx === -1 ||
+    !previewPageState ||
+    !savedPageState ||
+    currActiveIdx > previewPageState.content.length
+  ) {
     return <></>
   }
 
-  const component = previewPageState[currActiveIdx]
+  const component = previewPageState.content[currActiveIdx]
 
   if (!component) {
     return <></>
   }
 
-  const { title } = getComponentSchema(component.type)
+  const subSchema = getComponentSchema(component.type)
+  const { title } = subSchema
+  const validateFn = ajv.compile<IsomerComponent>(subSchema)
   const componentName = title || "component"
 
   const handleDeleteBlock = () => {
-    const updatedBlocks = Array.from(savedPageState)
+    const updatedBlocks = Array.from(savedPageState.content)
     updatedBlocks.splice(currActiveIdx, 1)
-    setSavedPageState(updatedBlocks)
-    setPreviewPageState(updatedBlocks)
+    const newPageState = {
+      ...previewPageState,
+      content: updatedBlocks,
+    }
+    setSavedPageState(newPageState)
+    setPreviewPageState(newPageState)
     onDeleteBlockModalClose()
     setDrawerState({ state: "root" })
+  }
+
+  const handleChange = (data: IsomerComponent) => {
+    const updatedBlocks = Array.from(previewPageState.content)
+    updatedBlocks[currActiveIdx] = data
+    const newPageState = {
+      ...previewPageState,
+      content: updatedBlocks,
+    }
+    setPreviewPageState(newPageState)
   }
 
   return (
@@ -101,10 +126,16 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             />
           </HStack>
         </Box>
-        <Box px="2rem" py="1rem">
-          <FormBuilder />
-        </Box>
       </Flex>
+
+      <Box px="2rem" py="1rem">
+        <FormBuilder<IsomerComponent>
+          schema={subSchema}
+          validateFn={validateFn}
+          data={component}
+          handleChange={handleChange}
+        />
+      </Box>
 
       <Box
         pos="sticky"
