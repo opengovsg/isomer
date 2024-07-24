@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss"
 import defaultTheme from "tailwindcss/defaultTheme"
 import plugin from "tailwindcss/plugin"
 
+import { colors } from "./colors"
 import { isomerTypography } from "./typography"
 
 const config: Config = {
@@ -12,6 +13,26 @@ const config: Config = {
         sm: "0 0px 10px 0px rgba(191, 191, 191, 0.5)",
       },
       colors: {
+        ...colors,
+        // TODO: Should be injected by the site theme
+        // Currently using MOH theme as an example
+        brand: {
+          canvas: {
+            primary: "#00405F",
+            alt: "#80A0AF",
+            backdrop: "#E6ECEF",
+          },
+          interaction: {
+            DEFAULT: "#00405F",
+            hover: {
+              DEFAULT: "#002E44",
+              inverse: "#002E44",
+            },
+            pressed: "#00283B",
+          },
+        },
+        // Everything below is deprecated and should be removed when
+        // all components are using the new color tokens above
         canvas: {
           DEFAULT: "#ffffff",
           overlay: "#00000066",
@@ -48,6 +69,7 @@ const config: Config = {
           subtle: "#f2f2f2",
         },
         utility: {
+          ...colors.utility,
           info: {
             DEFAULT: "#87bdff",
             subtle: "#e0eeff",
