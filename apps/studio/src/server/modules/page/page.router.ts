@@ -7,7 +7,7 @@ import { z } from "zod"
 import {
   createPageSchema,
   getEditPageSchema,
-  getPresignUrlForImageUploadSchema as getPresignedUrlForImageUploadSchema,
+  getPresignedUrlForImageUploadSchema,
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
