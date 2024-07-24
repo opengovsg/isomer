@@ -93,6 +93,7 @@ function ComplexEditorNestedDrawer({
           aria-label="Close drawer"
         />
       </HStack>
+
       <Box w="100%" h="100%">
         <JsonFormsDispatch
           renderers={renderers}
@@ -102,16 +103,18 @@ function ComplexEditorNestedDrawer({
           uischema={uischema}
           path={path}
         />
-      </Box>
 
-      <Button
-        onClick={handleRemoveItem}
-        variant="clear"
-        colorScheme="critical"
-        isDisabled={isRemoveItemDisabled}
-      >
-        Remove item
-      </Button>
+        <HStack w="100%" justifyContent="center">
+          <Button
+            onClick={handleRemoveItem}
+            variant="clear"
+            colorScheme="critical"
+            isDisabled={isRemoveItemDisabled}
+          >
+            Remove item
+          </Button>
+        </HStack>
+      </Box>
     </VStack>
   )
 }
@@ -288,7 +291,7 @@ export function JsonFormsArrayControl({
           label={label}
           setSelectedIndex={setSelectedIndex}
           isRemoveItemDisabled={minItems !== undefined && data <= minItems}
-          handleRemoveItem={() => handleRemoveItem(path, selectedIndex)}
+          handleRemoveItem={handleRemoveItem(path, selectedIndex)}
         />
       )}
 
