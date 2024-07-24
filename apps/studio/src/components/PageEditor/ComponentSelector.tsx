@@ -28,6 +28,8 @@ import {
 } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 import { type DrawerState } from "~/types/editorDrawer"
 import { trpc } from "~/utils/trpc"
 import { DEFAULT_BLOCKS } from "./constants"
@@ -107,9 +109,7 @@ function ComponentSelector() {
     setAddedBlock,
   } = useEditorDrawerContext()
 
-  // TODO: get this dynamically
-  const pageId = 1
-  const siteId = 1
+  const { pageId, siteId } = useQueryParse(editPageSchema)
   const [page] = trpc.page.readPageAndBlob.useSuspenseQuery({
     pageId,
     siteId,
