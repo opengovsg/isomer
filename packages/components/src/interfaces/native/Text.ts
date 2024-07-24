@@ -56,7 +56,7 @@ const LinkMarkSchema = Type.Unsafe<{
         // defaults to `null` href but href could also be passed as `undefined`
         href: Type.Union([Type.String(), Type.Null()]),
         rel: Type.String(),
-        class: Type.String(),
+        class: Type.Union([Type.String(), Type.Null()]),
       }),
     },
     {
