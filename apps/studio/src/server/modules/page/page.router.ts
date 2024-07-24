@@ -118,7 +118,7 @@ export const pageRouter = router({
 
   reorderBlock: protectedProcedure
     .input(reorderBlobSchema)
-    .mutation(async ({ input: { pageId, from, to, blocks, siteId }, ctx }) => {
+    .mutation(async ({ input: { pageId, from, to, blocks, siteId } }) => {
       // NOTE: we have to check against the page's content that we retrieve from db
       // we adopt a strict check such that we allow the update iff the checksum is the same
 
@@ -169,7 +169,7 @@ export const pageRouter = router({
         // Insert at destination index
         actualBlocks.splice(to, 0, movedBlock)
 
-        await updateBlobById({
+        await updateBlobById(tx, {
           pageId,
           content: { ...fullPage.content, content: actualBlocks },
           siteId,
@@ -182,7 +182,7 @@ export const pageRouter = router({
 
   updatePage: protectedProcedure
     .input(updatePageSchema)
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       await updatePageById({ ...input, id: input.pageId })
 
       return input
@@ -190,7 +190,7 @@ export const pageRouter = router({
 
   updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       // @ts-expect-error we need this because we sanitise as a string
       // but this accepts a nested JSON object
       await updateBlobById({ ...input, pageId: input.pageId })

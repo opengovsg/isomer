@@ -118,45 +118,46 @@ export const updatePageById = (
     .executeTakeFirstOrThrow()
 }
 
-export const updateBlobById = async (props: {
-  pageId: number
-  content: PrismaJson.BlobJsonContent
-  siteId: number
-}) => {
+export const updateBlobById = async (
+  db: SafeKysely,
+  props: {
+    pageId: number
+    content: PrismaJson.BlobJsonContent
+    siteId: number
+  },
+) => {
   const { pageId: id, content } = props
-  return db.transaction().execute(async (tx) => {
-    const page = await tx
-      .selectFrom("Resource")
-      .where("Resource.id", "=", id)
-      .where("siteId", "=", props.siteId)
-      // NOTE: We update the draft first
-      // Main should only be updated at build
-      .select("draftBlobId")
+  const page = await db
+    .selectFrom("Resource")
+    .where("Resource.id", "=", id)
+    .where("siteId", "=", props.siteId)
+    // NOTE: We update the draft first
+    // Main should only be updated at build
+    .select("draftBlobId")
+    .executeTakeFirstOrThrow()
+
+  if (!page.draftBlobId) {
+    // NOTE: no draft for this yet, need to create a new one
+    const newBlob = await db
+      .insertInto("Blob")
+      .values({ content })
+      .returning("id")
       .executeTakeFirstOrThrow()
+    await db
+      .updateTable("Resource")
+      .where("id", "=", id)
+      .set({ draftBlobId: newBlob.id })
+      .execute()
+  }
 
-    if (!page.draftBlobId) {
-      // NOTE: no draft for this yet, need to create a new one
-      const newBlob = await tx
-        .insertInto("Blob")
-        .values({ content })
-        .returning("id")
-        .executeTakeFirstOrThrow()
-      await tx
-        .updateTable("Resource")
-        .where("id", "=", id)
-        .set({ draftBlobId: newBlob.id })
-        .execute()
-    }
-
-    return (
-      tx
-        .updateTable("Blob")
-        // NOTE: This works because a page has a 1-1 relation with a blob
-        .set({ content })
-        .where("Blob.id", "=", page.draftBlobId)
-        .executeTakeFirstOrThrow()
-    )
-  })
+  return (
+    db
+      .updateTable("Blob")
+      // NOTE: This works because a page has a 1-1 relation with a blob
+      .set({ content })
+      .where("Blob.id", "=", page.draftBlobId)
+      .executeTakeFirstOrThrow()
+  )
 }
 
 // TODO: should be selecting from new table
