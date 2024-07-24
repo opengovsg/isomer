@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
 import { useRouter } from "next/router"
 import {
   Button,
@@ -15,16 +14,22 @@ import {
   Toggle,
   useToast,
 } from "@opengovsg/design-system-react"
+import { z } from "zod"
 
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
+import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
 import { trpc } from "~/utils/trpc"
 
+const siteSettingsSchema = z.object({
+  siteId: z.coerce.number(),
+})
+
 const SiteSettingsPage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
-  const params = useParams<{ siteId: string }>()
+  const { siteId } = useQueryParse(siteSettingsSchema)
 
   const notificationMutation = trpc.site.setNotification.useMutation({
     onSuccess: () => {
@@ -36,6 +41,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
       })
     },
     onError: (error) => {
+      // TODO: Remove the console when done
       console.log(error)
       toast({
         title: "Error saving site settings!",
@@ -46,8 +52,16 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     },
   })
 
-  const [notificationEnabled, setNotificationEnabled] = useState(true)
-  const [notificationText, setNotificationText] = useState("")
+  const [previousNotification] = trpc.site.getNotification.useSuspenseQuery({
+    siteId: Number(siteId),
+  })
+
+  const [notificationText, setNotificationText] = useState(
+    previousNotification || "",
+  )
+  const [notificationEnabled, setNotificationEnabled] =
+    useState(notificationText)
+
   const [notificationFieldChanged, setNotificationFieldChanged] =
     useState(false)
 
@@ -58,19 +72,15 @@ const SiteSettingsPage: NextPageWithLayout = () => {
 
   const onClickUpdate = () => {
     notificationMutation.mutate({
-      siteId: Number(params.siteId),
+      siteId: Number(siteId),
       notification: notificationEnabled ? notificationText : "",
     })
   }
 
-  const [previousNotification] = trpc.site.getNotification.useSuspenseQuery({
-    siteId: Number(params.siteId),
-  })
-
-  useEffect(() => {
-    setNotificationEnabled(previousNotification !== "")
-    setNotificationText(previousNotification)
-  }, [previousNotification])
+  // useEffect(() => {
+  //   setNotificationEnabled(previousNotification !== "")
+  //   setNotificationText(previousNotification)
+  // }, [previousNotification])
 
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [nextURL, setNextURL] = useState("")

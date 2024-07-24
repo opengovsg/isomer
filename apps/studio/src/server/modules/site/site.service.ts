@@ -42,7 +42,9 @@ export const setSiteConfig = async (
 export const getNotification = async (siteId: number) => {
   const result = await db
     .selectFrom("Site")
-    .select(sql`config ->> 'notification'`.as("notification"))
+    .select((eb) =>
+      eb.ref("Site.config", "->").key("notification").as("notification"),
+    )
     .where("id", "=", siteId)
     .executeTakeFirstOrThrow()
 
