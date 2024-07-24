@@ -29,7 +29,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   const { title } = getComponentSchema(component.type)
 
   return (
-    <Box position="relative" h="100%" w="100%">
+    <Box position="relative" h="100%" w="100%" overflow="auto">
       <Box
         bgColor="base.canvas.default"
         borderBottomColor="base.divider.medium"
@@ -65,7 +65,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           />
         </HStack>
       </Box>
-      <Box px="2rem" py="1.5rem">
+      <Box px="2rem" py="1rem">
         <FormBuilder />
       </Box>
       <Box px="2rem" pb="1.5rem">
