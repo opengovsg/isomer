@@ -152,7 +152,7 @@ export const pageRouter = router({
 
       const [movedBlock] = actualBlocks.splice(from, 1)
       if (!movedBlock) return blocks
-      if (!fullPage.draftBlobId || !fullPage.mainBlobId) {
+      if (!fullPage.draftBlobId && !fullPage.mainBlobId) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Please ensure that you have selected a valid page",
