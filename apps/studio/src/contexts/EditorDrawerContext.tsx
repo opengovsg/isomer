@@ -1,7 +1,8 @@
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { createContext, useContext, useState } from "react"
-import { type IsomerComponent } from "@opengovsg/isomer-components"
 
+import type { SectionType } from "~/components/PageEditor/types"
 import { type DrawerState } from "~/types/editorDrawer"
 
 export interface DrawerContextType {
@@ -9,6 +10,8 @@ export interface DrawerContextType {
   setCurrActiveIdx: (currActiveIdx: number) => void
   drawerState: DrawerState
   setDrawerState: (state: DrawerState) => void
+  addedBlock: Exclude<SectionType, "prose">
+  setAddedBlock: (addedBlock: Exclude<SectionType, "prose">) => void
   savedPageState: IsomerComponent[]
   setSavedPageState: Dispatch<SetStateAction<IsomerComponent[]>>
   previewPageState: IsomerComponent[]
@@ -28,6 +31,8 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
   const [previewPageState, setPreviewPageState] = useState<IsomerComponent[]>(
     [],
   )
+  const [addedBlock, setAddedBlock] =
+    useState<Exclude<SectionType, "prose">>("button")
 
   return (
     <EditorDrawerContext.Provider
@@ -40,6 +45,8 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
         setSavedPageState,
         previewPageState,
         setPreviewPageState,
+        addedBlock,
+        setAddedBlock,
       }}
     >
       {children}

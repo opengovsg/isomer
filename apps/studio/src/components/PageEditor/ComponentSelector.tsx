@@ -1,3 +1,4 @@
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import {
   Flex,
   Popover,
@@ -9,7 +10,6 @@ import {
   Wrap,
 } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
-import { type IsomerComponent } from "@opengovsg/isomer-components"
 import { type IconType } from "react-icons"
 import {
   BiCard,
@@ -28,7 +28,10 @@ import {
 } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 import { type DrawerState } from "~/types/editorDrawer"
+import { trpc } from "~/utils/trpc"
 import { DEFAULT_BLOCKS } from "./constants"
 import { type SectionType } from "./types"
 
@@ -103,7 +106,15 @@ function ComponentSelector() {
     setDrawerState,
     setSavedPageState,
     setPreviewPageState,
+    setAddedBlock,
   } = useEditorDrawerContext()
+
+  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const [page] = trpc.page.readPageAndBlob.useSuspenseQuery({
+    pageId,
+    siteId,
+  })
+
   const onProceed = (sectionType: SectionType) => {
     // TODO: add new section to page/editor state
     // NOTE: Only paragraph should go to tiptap editor
@@ -117,10 +128,18 @@ function ComponentSelector() {
     const nextPageState = !!newComponent
       ? [...savedPageState, newComponent]
       : savedPageState
-    setSavedPageState(nextPageState)
+
     setDrawerState({ state: nextState })
     setCurrActiveIdx(nextPageState.length - 1)
     setPreviewPageState(nextPageState)
+
+    // TODO: Decide if setting addedBlocks
+    // to only be for complex blocks is a good idea
+    // or if we should combine prose to addedBlocks as well
+    // and handle prose -> complex components in the renderer itself
+    if (sectionType !== "prose") {
+      setAddedBlock(sectionType)
+    }
   }
 
   return (
