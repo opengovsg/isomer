@@ -88,29 +88,32 @@ export const pageRouter = router({
     .input(getEditPageSchema)
     .query(async ({ input: { pageId, siteId } }) => {
       // TODO: Return blob last modified so the renderer can show last modified
-      const page = await getFullPageById({ resourceId: pageId, siteId })
-      if (!page) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Resource not found",
-        })
-      }
-      const permalink = page.permalink
-      const siteMeta = await getSiteConfig(page.siteId)
-      const navbar = await getNavBar(page.siteId)
-      const footer = await getFooter(page.siteId)
+      return db.transaction().execute(async (tx) => {
+        const page = await getFullPageById(tx, { resourceId: pageId, siteId })
+        if (!page) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Resource not found",
+          })
+        }
 
-      const { content } = page
+        const permalink = page.permalink
+        const siteMeta = await getSiteConfig(page.siteId)
+        const navbar = await getNavBar(page.siteId)
+        const footer = await getFooter(page.siteId)
 
-      return {
-        permalink,
-        navbar,
-        footer,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore type instantiation is excessively deep and possibly infinite
-        content,
-        ...siteMeta,
-      }
+        const { content } = page
+
+        return {
+          permalink,
+          navbar,
+          footer,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore type instantiation is excessively deep and possibly infinite
+          content,
+          ...siteMeta,
+        }
+      })
     }),
 
   reorderBlock: protectedProcedure
@@ -118,58 +121,63 @@ export const pageRouter = router({
     .mutation(async ({ input: { pageId, from, to, blocks, siteId }, ctx }) => {
       // NOTE: we have to check against the page's content that we retrieve from db
       // we adopt a strict check such that we allow the update iff the checksum is the same
-      const fullPage = await getFullPageById({ resourceId: pageId, siteId })
 
-      if (!fullPage?.content) {
-        // TODO: we should probably ping on call
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message:
-            "Unable to load content for the requested page, please contact Isomer Support",
+      return db.transaction().execute(async (tx) => {
+        const fullPage = await getFullPageById(tx, {
+          resourceId: pageId,
+          siteId,
         })
-      }
+        if (!fullPage?.content) {
+          // TODO: we should probably ping on call
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message:
+              "Unable to load content for the requested page, please contact Isomer Support",
+          })
+        }
 
-      const actualBlocks = fullPage.content.content
+        const actualBlocks = fullPage.content.content
 
-      if (!isEqual(blocks, actualBlocks)) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message:
-            "Someone on your team has changed this page, refresh the page and try again",
+        if (!isEqual(blocks, actualBlocks)) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message:
+              "Someone on your team has changed this page, refresh the page and try again",
+          })
+        }
+
+        if (
+          from >= actualBlocks.length ||
+          to >= actualBlocks.length ||
+          from < 0 ||
+          to < 0
+        ) {
+          // NOTE: If this happens, this indicates that either our dnd libary on our frontend has a
+          // bug or someone is trying to mess with our frontend
+          throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" })
+        }
+
+        const [movedBlock] = actualBlocks.splice(from, 1)
+        if (!movedBlock) return blocks
+        if (!fullPage.draftBlobId && !fullPage.mainBlobId) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Please ensure that you have selected a valid page",
+          })
+        }
+
+        // Insert at destination index
+        actualBlocks.splice(to, 0, movedBlock)
+
+        await updateBlobById({
+          pageId,
+          content: { ...fullPage.content, content: actualBlocks },
+          siteId,
         })
-      }
 
-      if (
-        from >= actualBlocks.length ||
-        to >= actualBlocks.length ||
-        from < 0 ||
-        to < 0
-      ) {
-        // NOTE: If this happens, this indicates that either our dnd libary on our frontend has a
-        // bug or someone is trying to mess with our frontend
-        throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" })
-      }
-
-      const [movedBlock] = actualBlocks.splice(from, 1)
-      if (!movedBlock) return blocks
-      if (!fullPage.draftBlobId && !fullPage.mainBlobId) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Please ensure that you have selected a valid page",
-        })
-      }
-
-      // Insert at destination index
-      actualBlocks.splice(to, 0, movedBlock)
-
-      await updateBlobById({
-        pageId,
-        content: { ...fullPage.content, content: actualBlocks },
-        siteId,
+        // NOTE: user given content and db state is the same at this point
+        return actualBlocks
       })
-
-      // NOTE: user given content and db state is the same at this point
-      return actualBlocks
     }),
 
   updatePage: protectedProcedure

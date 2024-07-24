@@ -1,6 +1,7 @@
-import type { SelectExpression } from "kysely"
+import type { SelectExpression, Transaction } from "kysely"
 import { type DB } from "~prisma/generated/generatedTypes"
 
+import type { SafeKysely } from "../database"
 import { db } from "../database"
 import { type Page } from "./resource.types"
 
@@ -51,25 +52,31 @@ export const getFolders = () =>
     .execute()
 
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
-const getById = ({
-  resourceId,
-  siteId,
-}: {
-  resourceId: number
-  siteId: number
-}) =>
+const getById = (
+  db: SafeKysely,
+  {
+    resourceId,
+    siteId,
+  }: {
+    resourceId: number
+    siteId: number
+  },
+) =>
   db
     .selectFrom("Resource")
     .where("Resource.id", "=", resourceId)
     .where("siteId", "=", siteId)
 
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
-export const getFullPageById = async (args: {
-  resourceId: number
-  siteId: number
-}) => {
+export const getFullPageById = async (
+  tx: Transaction<DB>,
+  args: {
+    resourceId: number
+    siteId: number
+  },
+) => {
   // Check if draft blob exists and return that preferentially
-  const draftBlob = await getById(args)
+  const draftBlob = await getById(tx, args)
     .where("Resource.draftBlobId", "is not", null)
     .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
@@ -81,7 +88,7 @@ export const getFullPageById = async (args: {
     return draftBlob
   }
 
-  return getById(args)
+  return getById(tx, args)
     .where("Resource.mainBlobId", "is not", null)
     .innerJoin("Blob", "Resource.mainBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
@@ -89,8 +96,11 @@ export const getFullPageById = async (args: {
     .executeTakeFirst()
 }
 
-export const getPageById = (args: { resourceId: number; siteId: number }) => {
-  return getById(args)
+export const getPageById = (
+  db: SafeKysely,
+  args: { resourceId: number; siteId: number },
+) => {
+  return getById(db, args)
     .where("type", "is", "Page")
     .select(defaultResourceSelect)
     .executeTakeFirstOrThrow()
