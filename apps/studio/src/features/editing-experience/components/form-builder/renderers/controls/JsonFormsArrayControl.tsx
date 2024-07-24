@@ -110,6 +110,7 @@ function ComplexEditorNestedDrawer({
             variant="clear"
             colorScheme="critical"
             isDisabled={isRemoveItemDisabled}
+            mb="3rem"
           >
             Remove item
           </Button>
@@ -144,9 +145,10 @@ export function JsonFormsArrayControl({
     // NOTE: resolvedSchema can potentially be undefined
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     resolvedSchema !== undefined ? resolvedSchema.maxItems : undefined
+  const isRemoveItemDisabled = minItems !== undefined && data <= minItems
   const handleRemoveItem = useCallback(
     (path: string, index: number) => () => {
-      if (selectedIndex === undefined || !removeItems) {
+      if (selectedIndex === undefined || !removeItems || isRemoveItemDisabled) {
         return
       }
 
@@ -290,22 +292,20 @@ export function JsonFormsArrayControl({
           path={composePaths(path, `${selectedIndex}`)}
           label={label}
           setSelectedIndex={setSelectedIndex}
-          isRemoveItemDisabled={minItems !== undefined && data <= minItems}
+          isRemoveItemDisabled={isRemoveItemDisabled}
           handleRemoveItem={handleRemoveItem(path, selectedIndex)}
         />
       )}
 
       {selectedIndex === undefined && (
-        <>
-          <Button
-            onClick={addItem(path, createDefaultValue(schema, rootSchema))}
-            w="100%"
-            variant="outline"
-            isDisabled={maxItems !== undefined && data >= maxItems}
-          >
-            Add item
-          </Button>
-        </>
+        <Button
+          onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+          w="100%"
+          variant="outline"
+          isDisabled={maxItems !== undefined && data >= maxItems}
+        >
+          Add item
+        </Button>
       )}
     </VStack>
   )
