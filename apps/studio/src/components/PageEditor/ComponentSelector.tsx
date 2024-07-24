@@ -28,8 +28,6 @@ import {
 } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { useQueryParse } from "~/hooks/useQueryParse"
-import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 import { type DrawerState } from "~/types/editorDrawer"
 import { trpc } from "~/utils/trpc"
 import { DEFAULT_BLOCKS } from "./constants"
