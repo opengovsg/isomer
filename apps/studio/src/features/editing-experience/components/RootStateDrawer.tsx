@@ -146,7 +146,9 @@ export default function RootStateDrawer() {
                               w="100%"
                               gap={0}
                               onClick={() => {
-                                setCurrActiveIdx(index)
+                                setCurrActiveIdx(
+                                  isHeroFixedBlock ? index + 1 : index,
+                                )
                                 // TODO: we should automatically do this probably?
                                 const nextState =
                                   savedPageState.content[index]?.type ===

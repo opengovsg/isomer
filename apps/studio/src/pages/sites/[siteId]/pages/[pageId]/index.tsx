@@ -46,7 +46,7 @@ function EditPage(): JSX.Element {
     >
       {/* TODO: Implement sidebar editor */}
       <GridItem colSpan={1} bg="slate.50">
-        <EditPageDrawer />
+        <EditPageDrawer layout={page.layout} />
       </GridItem>
       {/* TODO: Implement preview */}
       <GridItem colSpan={2} overflow="scroll">
