@@ -28,31 +28,41 @@ const ItalicMarkSchema = Type.Object(
   },
 )
 
-const LinkMarkSchema = Type.Object(
-  {
-    type: Type.Literal("link", { default: "link" }),
-    attrs: Type.Object({
-      target: Type.Union([
-        // NOTE: Taken with reference to
-        // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#attr-target
-        // There's technically 1 more property - unfencedTop but we're disallowing
-        // because it allows embedded frames to traverse beyond its root
-        Type.Literal("_blank"),
-        Type.Literal("_self"),
-        Type.Literal("_parent"),
-        Type.Literal("_top"),
-      ]),
-      // NOTE: The href given by tiptap here
-      // https://github.com/ueberdosis/tiptap/blob/main/packages/extension-link/src/link.ts
-      // defaults to `null` href but href could also be passed as `undefined`
-      href: Type.Union([Type.String(), Type.Null(), Type.Undefined()]),
-      rel: Type.String(),
-      class: Type.String(),
-    }),
-  },
-  {
-    title: "Hyperlink",
-  },
+const LinkMarkSchema = Type.Unsafe<{
+  type: "link"
+  attrs: {
+    target: "_blank" | "_self" | "_parent" | "_top"
+    href: string | null
+    rel: string
+    class: string
+  }
+}>(
+  Type.Object(
+    {
+      type: Type.Literal("link", { default: "link" }),
+      attrs: Type.Object({
+        target: Type.Union([
+          // NOTE: Taken with reference to
+          // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#attr-target
+          // There's technically 1 more property - unfencedTop but we're disallowing
+          // because it allows embedded frames to traverse beyond its root
+          Type.Literal("_blank"),
+          Type.Literal("_self"),
+          Type.Literal("_parent"),
+          Type.Literal("_top"),
+        ]),
+        // NOTE: The href given by tiptap here
+        // https://github.com/ueberdosis/tiptap/blob/main/packages/extension-link/src/link.ts
+        // defaults to `null` href but href could also be passed as `undefined`
+        href: Type.Union([Type.String(), Type.Null()]),
+        rel: Type.String(),
+        class: Type.String(),
+      }),
+    },
+    {
+      title: "Hyperlink",
+    },
+  ),
 )
 
 const StrikeMarkSchema = Type.Object(
