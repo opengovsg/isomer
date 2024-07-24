@@ -1,7 +1,7 @@
 import plugin from "tailwindcss/plugin"
 
-export const isomerTypography = plugin(({ addUtilities, theme }) => {
-  addUtilities({
+export const isomerTypography = plugin(({ addComponents, theme }) => {
+  addComponents({
     // Display
     // Large prominent titles
     ".prose-display-xl": {
