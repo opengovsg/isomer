@@ -1,8 +1,11 @@
-/** @type {import('tailwindcss').Config} */
+import type { Config } from "tailwindcss"
 import defaultTheme from "tailwindcss/defaultTheme"
 import plugin from "tailwindcss/plugin"
 
-export default {
+import { isomerTypography } from "./typography"
+
+const config: Config = {
+  content: [],
   theme: {
     extend: {
       boxShadow: {
@@ -102,7 +105,10 @@ export default {
     },
   },
   plugins: [
-    plugin(({ addBase, addUtilities, theme }: any) => {
+    isomerTypography,
+    // !! @deprecated, use isomerTypography plugin instead
+    // Delete after no components are using these classes anymore,
+    plugin(({ addBase, addUtilities, theme }) => {
       addUtilities({
         /* Heading typography tokens */
         ".text-heading-01": {
@@ -248,6 +254,7 @@ export default {
       // Add Inter as a base font
       // CSS taken from https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap
       addBase({
+        // @ts-expect-error Tailwind types did not account for @font-face
         "@font-face": [
           {
             fontFamily: "Inter",
@@ -316,3 +323,5 @@ export default {
     }),
   ],
 }
+
+export default config
