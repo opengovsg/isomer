@@ -27,7 +27,12 @@ export const Default: Story = {
         marks: [
           {
             type: "link",
-            href: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            attrs: {
+              href: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+              target: "_blank",
+              rel: "noreferrer",
+              class: "",
+            },
           },
         ],
         text: "external links",
@@ -41,7 +46,12 @@ export const Default: Story = {
         marks: [
           {
             type: "link",
-            href: "/contact",
+            attrs: {
+              href: "/contact",
+              target: "_blank",
+              rel: "noreferrer",
+              class: "",
+            },
           },
         ],
         text: "internal ones",
