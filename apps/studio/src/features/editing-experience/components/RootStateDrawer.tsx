@@ -14,6 +14,7 @@ import { getComponentSchema } from "@opengovsg/isomer-components"
 import { BiGridVertical } from "react-icons/bi"
 import { BsPlus } from "react-icons/bs"
 
+import { BlockEditingPlaceholder } from "~/components/Svg"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 export default function RootStateDrawer() {
@@ -72,6 +73,26 @@ export default function RootStateDrawer() {
                   Custom blocks
                 </Text>
                 <Box w="100%">
+                  {savedPageState.length === 0 && (
+                    <VStack justifyContent="center" spacing={0} mt="2.75rem">
+                      <BlockEditingPlaceholder />
+                      <Text
+                        mt="0.75rem"
+                        textStyle="subhead-1"
+                        color="base.content.default"
+                      >
+                        Blocks you add will appear here
+                      </Text>
+                      <Text
+                        mt="0.25rem"
+                        textStyle="caption-2"
+                        color="base.content.medium"
+                      >
+                        Click ‘Add a new block’ below to add blocks to this page
+                      </Text>
+                    </VStack>
+                  )}
+
                   {savedPageState.map((block, index) => (
                     <Draggable
                       // TODO: Determine key + draggable id
