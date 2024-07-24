@@ -18,19 +18,11 @@ import {
   BiBold,
   BiChevronDown,
   BiChevronUp,
-  BiCodeAlt,
-  BiFile,
-  BiImageAdd,
   BiItalic,
-  BiLink,
   BiListOl,
   BiListUl,
-  BiPlus,
-  BiRedo,
   BiStrikethrough,
-  BiTable,
   BiUnderline,
-  BiUndo,
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
@@ -224,48 +216,6 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
         },
       ],
     },
-    {
-      type: "divider",
-    },
-    // {
-    //   type: 'item',
-    //   icon: BiLink,
-    //   title: 'Add link',
-    //   action: () => showModal('hyperlink'),
-    // },
-    {
-      type: "item",
-      icon: BiTable,
-      title: "Add table",
-      action: () =>
-        editor
-          .chain()
-          .focus()
-          // NOTE: Default to smallest multi table
-          .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-          .run(),
-    },
-    // {
-    //   type: 'item',
-    //   icon: BiFile,
-    //   title: 'Add file',
-    //   action: () => showModal('files'),
-    // },
-    {
-      type: "divider",
-    },
-    {
-      type: "item",
-      icon: BiUndo,
-      title: "Undo",
-      action: () => editor.chain().focus().undo().run(),
-    },
-    {
-      type: "item",
-      icon: BiRedo,
-      title: "Redo",
-      action: () => editor.chain().focus().redo().run(),
-    },
   ]
 
   return (
@@ -276,6 +226,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
       pl="0.75rem"
       pr="0.25rem"
       py="0.25rem"
+      w="100%"
       borderBottom="1px solid"
       borderColor="base.divider.strong"
       borderTopRadius="0.25rem"
