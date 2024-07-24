@@ -16,43 +16,8 @@ const meta: Meta<KeyStatisticsProps> = {
 export default meta
 type Story = StoryObj<typeof KeyStatistics>
 
-export const Side: Story = {
-  args: {
-    variant: "side",
-    title: "Key economic indicators",
-    statistics: [
-      {
-        label: "Advance GDP Estimates, 4Q 2023 (YoY)",
-        value: "+2.8%",
-      },
-      { label: "Total Merchandise Trade, Dec 2023 (YoY)", value: "-6.8%" },
-      { label: "Industrial Production, Dec 2023 (YoY)", value: "-2.5%" },
-    ],
-  },
-}
-
-export const SideLong: Story = {
-  args: {
-    variant: "side",
-    title: "Key economic indicators",
-    statistics: [
-      {
-        label: "Advance GDP Estimates, 4Q 2023 (YoY)",
-        value: "+$22.8M",
-      },
-      { label: "Total Merchandise Trade, Dec 2023 (YoY)", value: "$9.999M" },
-      {
-        label:
-          "Industrial Production, Dec 2023 (YoY) along with an explanation that is long and wordy",
-        value: "-2.5%",
-      },
-    ],
-  },
-}
-
 export const Top: Story = {
   args: {
-    variant: "top",
     title: "Work life in numbers",
     statistics: [
       {
@@ -68,7 +33,6 @@ export const Top: Story = {
 
 export const TopLong: Story = {
   args: {
-    variant: "top",
     title: "Work life in numbers",
     statistics: [
       {

@@ -23,69 +23,27 @@ const TitleSection = ({
   )
 }
 
-const InfoCards = ({ cards, title, subtitle, variant }: InfoCardsProps) => {
+const InfoCards = ({ cards, title, subtitle }: InfoCardsProps) => {
   return (
     <section>
-      {variant === "side" ? (
-        <div
-          className={`${ComponentContent} mx-auto flex flex-col items-center py-12 lg:flex-row lg:py-24`}
-        >
-          <TitleSection
-            title={title}
-            subtitle={subtitle}
-            className="lg:max-w-60"
-          />
-          <div
-            className={`grid grid-cols-1 gap-8 md:max-lg:hidden lg:grid-cols-3`}
-          >
-            {cards.map((card) => (
-              <Card
-                title={card.title}
-                url={card.url}
-                imageUrl={card.imageUrl}
-                description={card.description}
-                imageAlt={card.imageAlt}
-                buttonLabel={card.buttonLabel}
-                variant="vertical"
-              />
-            ))}
-          </div>
-          <div className={`hidden grid-cols-1 gap-8 md:max-lg:grid`}>
-            {cards.map((card) => (
-              <Card
-                title={card.title}
-                url={card.url}
-                imageUrl={card.imageUrl}
-                description={card.description}
-                imageAlt={card.imageAlt}
-                buttonLabel={card.buttonLabel}
-                variant="horizontal"
-              />
-            ))}
-          </div>
+      <div
+        className={`${ComponentContent} mx-auto flex flex-col items-center py-12 lg:py-24`}
+      >
+        <TitleSection title={title} subtitle={subtitle} />
+        <div className={`grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3`}>
+          {cards.map((card) => (
+            <Card
+              title={card.title}
+              url={card.url}
+              imageUrl={card.imageUrl}
+              description={card.description}
+              imageAlt={card.imageAlt}
+              buttonLabel={card.buttonLabel}
+              variant="vertical"
+            ></Card>
+          ))}
         </div>
-      ) : (
-        <div
-          className={`${ComponentContent} mx-auto flex flex-col items-center py-12 lg:py-24`}
-        >
-          <TitleSection title={title} subtitle={subtitle} />
-          <div
-            className={`grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3`}
-          >
-            {cards.map((card) => (
-              <Card
-                title={card.title}
-                url={card.url}
-                imageUrl={card.imageUrl}
-                description={card.description}
-                imageAlt={card.imageAlt}
-                buttonLabel={card.buttonLabel}
-                variant="vertical"
-              ></Card>
-            ))}
-          </div>
-        </div>
-      )}
+      </div>
     </section>
   )
 }

@@ -1,5 +1,5 @@
 import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Box, FormControl } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
@@ -25,6 +25,8 @@ export function JsonFormsAnyOfControl({
   uischema,
   uischemas,
   label,
+  handleChange,
+  indexOfFittingSchema,
 }: CombinatorRendererProps) {
   const anyOfRenderInfos = createCombinatorRenderInfos(
     schema.anyOf ?? [],
@@ -35,25 +37,43 @@ export function JsonFormsAnyOfControl({
     uischemas,
   )
 
-  const variants = anyOfRenderInfos.map((anyOfRenderInfo) => ({
-    label: anyOfRenderInfo.label,
-    value: anyOfRenderInfo.label,
-  }))
+  const options = anyOfRenderInfos.map((anyOfRenderInfo) => {
+    const option = String(anyOfRenderInfo.schema.const || anyOfRenderInfo.label)
 
-  const [variant, setVariant] = useState(anyOfRenderInfos[0]?.label || "")
+    return {
+      label: option.charAt(0).toUpperCase() + option.slice(1),
+      value: option,
+    }
+  })
+
+  const [variant, setVariant] = useState("")
+
+  const onChange = (value: string) => {
+    setVariant(value)
+    handleChange(path, value)
+  }
+
+  useEffect(() => {
+    if (indexOfFittingSchema !== undefined) {
+      setVariant(options[indexOfFittingSchema]?.label || "")
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
-    <Box py={2}>
-      <FormControl isRequired>
-        <FormLabel>Variant</FormLabel>
-        <SingleSelect
-          value={variant}
-          name={label}
-          items={variants}
-          isClearable={false}
-          onChange={setVariant}
-        />
-      </FormControl>
+    <>
+      <Box py="0.5rem">
+        <FormControl isRequired>
+          <FormLabel>{label || "Variant"}</FormLabel>
+          <SingleSelect
+            value={variant}
+            name={label}
+            items={options}
+            isClearable={false}
+            onChange={onChange}
+          />
+        </FormControl>
+      </Box>
 
       {anyOfRenderInfos.map(
         (anyOfRenderInfo) =>
@@ -68,7 +88,7 @@ export function JsonFormsAnyOfControl({
             />
           ),
       )}
-    </Box>
+    </>
   )
 }
 

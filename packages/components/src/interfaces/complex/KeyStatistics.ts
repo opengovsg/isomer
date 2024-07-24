@@ -4,28 +4,21 @@ import { Type } from "@sinclair/typebox"
 export const KeyStatisticsSchema = Type.Object(
   {
     type: Type.Literal("keystatistics", { default: "keystatistics" }),
-    variant: Type.Union([Type.Literal("side"), Type.Literal("top")], {
-      title: "KeyStatistics variant",
-      description: "The variant of the KeyStatistics component to use",
-      type: "string",
-    }),
     title: Type.String({
-      title: "KeyStatistics title",
-      description: "The title of the KeyStatistics component",
+      title: "Title",
     }),
     statistics: Type.Array(
       Type.Object({
         label: Type.String({
-          title: "Statistic label",
-          description: "The label for the statistic",
+          title: "Description",
         }),
         value: Type.String({
-          title: "Statistic value",
-          description: "The value for the statistic",
+          title: "Number",
+          description: "Keep it succinct. E.g., 3.3%, $12M",
         }),
       }),
       {
-        title: "KeyStatistics statistics",
+        title: "Statistics",
         minItems: 1,
         maxItems: 4,
       },
