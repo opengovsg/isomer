@@ -46,7 +46,7 @@ export function JsonFormsImageControl({
         .blob()
         .then((blob) => {
           const splitData = (data as string).split("/")
-          const fileName = splitData[-1] || "Current Image"
+          const fileName = splitData[-1] || "image"
           setSelectedFile(new File([blob], fileName))
         })
         .catch((error) => {
@@ -58,7 +58,7 @@ export function JsonFormsImageControl({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const getPresignedMutation =
-    trpc.page.getPresignUrlForImageUpload.useMutation()
+    trpc.page.getPresignedUrlForImageUpload.useMutation()
   const uploadImage = async (image: File) => {
     const { presignedUploadURL, fileURL } =
       await getPresignedMutation.mutateAsync({

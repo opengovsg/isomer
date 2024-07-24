@@ -7,7 +7,7 @@ import { z } from "zod"
 import {
   createPageSchema,
   getEditPageSchema,
-  getPresignUrlForImageUploadSchema,
+  getPresignUrlForImageUploadSchema as getPresignedUrlForImageUploadSchema,
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -142,8 +142,8 @@ export const pageRouter = router({
       },
     ),
 
-  getPresignUrlForImageUpload: protectedProcedure
-    .input(getPresignUrlForImageUploadSchema)
+  getPresignedUrlForImageUpload: protectedProcedure
+    .input(getPresignedUrlForImageUploadSchema)
     .mutation(({ input, ctx }) => {
       // TODO: Generate key and presign S3 url.
       return {
