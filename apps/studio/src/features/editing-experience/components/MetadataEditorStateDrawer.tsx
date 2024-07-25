@@ -3,7 +3,6 @@ import type { Static } from "@sinclair/typebox"
 import { Box, Heading, HStack, Icon, IconButton } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
-import { type TSchema } from "@sinclair/typebox"
 import Ajv from "ajv"
 import { BiDollar, BiX } from "react-icons/bi"
 
@@ -25,10 +24,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     return <></>
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-  const metadataSchema: TSchema = getLayoutMetadataSchema(
-    previewPageState.layout,
-  )
+  const metadataSchema = getLayoutMetadataSchema(previewPageState.layout)
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(metadataSchema)
 
   const handleChange = (data: unknown) => {
