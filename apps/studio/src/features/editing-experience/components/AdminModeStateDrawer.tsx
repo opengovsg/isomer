@@ -1,5 +1,12 @@
-import { useState } from "react"
-import { Box, Heading, HStack, Icon, Spacer, Text } from "@chakra-ui/react"
+import {
+  Box,
+  Heading,
+  HStack,
+  Icon,
+  Spacer,
+  Text,
+  useClipboard,
+} from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
 import { BiDollar, BiX } from "react-icons/bi"
 
@@ -7,15 +14,9 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 export default function AdminModeStateDrawer(): JSX.Element {
   const { savedPageState, setDrawerState } = useEditorDrawerContext()
-  const [isCopiedToClipboard, setIsCopiedToClipboard] = useState(false)
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(JSON.stringify(savedPageState, null, 2))
-    setIsCopiedToClipboard(true)
-    setTimeout(() => {
-      setIsCopiedToClipboard(false)
-    }, 2000)
-  }
+  const { onCopy, hasCopied } = useClipboard(
+    JSON.stringify(savedPageState, null, 2),
+  )
 
   return (
     <Box h="100%" w="100%" overflow="auto">
@@ -41,8 +42,8 @@ export default function AdminModeStateDrawer(): JSX.Element {
             </Heading>
           </HStack>
           <Spacer />
-          <Button onClick={handleCopy} variant="clear">
-            {!isCopiedToClipboard ? "Copy to clipboard" : "Copied!"}
+          <Button onClick={onCopy} variant="clear">
+            {!hasCopied ? "Copy to clipboard" : "Copied!"}
           </Button>
           <IconButton
             icon={<Icon as={BiX} />}
