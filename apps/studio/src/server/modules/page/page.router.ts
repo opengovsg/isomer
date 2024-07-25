@@ -62,7 +62,7 @@ export const pageRouter = router({
         .where("Resource.siteId", "=", siteId)
 
       if (resourceId) {
-        query = query.where("Resource.parentId", "=", resourceId)
+        query = query.where("Resource.parentId", "=", String(resourceId))
       }
       return query
         .select([
@@ -126,7 +126,7 @@ export const pageRouter = router({
               title,
               permalink,
               siteId,
-              parentId: folderId,
+              parentId: String(folderId),
               draftBlobId: blob.id,
               type: ResourceType.Page,
             })

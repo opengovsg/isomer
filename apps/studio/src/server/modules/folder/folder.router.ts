@@ -18,12 +18,12 @@ export const folderRouter = router({
       const folderResult = await ctx.db
         .selectFrom("Resource")
         .selectAll("Resource")
-        .where("id", "=", input.resourceId)
+        .where("id", "=", String(input.resourceId))
         .executeTakeFirstOrThrow()
       const childrenResult = await ctx.db
         .selectFrom("Resource")
         .selectAll("Resource")
-        .where("parentId", "=", input.resourceId)
+        .where("parentId", "=", String(input.resourceId))
         .execute()
       const children = childrenResult.map((c) => {
         if (c.draftBlobId || c.mainBlobId) {

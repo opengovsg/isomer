@@ -9,7 +9,7 @@ export type Generated<T> =
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
 export interface Blob {
-  id: GeneratedAlways<number>
+  id: GeneratedAlways<string>
   /**
    * @kyselyType(PrismaJson.BlobJsonContent)
    * [BlobJsonContent]
@@ -36,18 +36,18 @@ export interface Navbar {
 }
 export interface Permission {
   id: GeneratedAlways<number>
-  resourceId: number
+  resourceId: string
   userId: string
   role: RoleType
 }
 export interface Resource {
-  id: GeneratedAlways<number>
+  id: GeneratedAlways<string>
   title: string
   permalink: string
   siteId: number
-  parentId: number | null
-  mainBlobId: number | null
-  draftBlobId: number | null
+  parentId: string | null
+  mainBlobId: string | null
+  draftBlobId: string | null
   state: Generated<ResourceState | null>
   type: ResourceType
 }
