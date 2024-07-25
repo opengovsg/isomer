@@ -20,13 +20,6 @@ const navbarStyles = tv({
       "mx-auto flex w-full max-w-screen-xl gap-x-4 px-6 lg:gap-x-6 lg:px-10",
     navItemContainer: "hidden flex-wrap items-center gap-x-6 lg:flex",
   },
-  variants: {
-    isMenuOpen: {
-      true: {
-        navbarContainer: "sticky top-0 z-10 bg-white",
-      },
-    },
-  },
 })
 
 const { navItemContainer, navbarContainer, navbar, logo, icon } = navbarStyles()
@@ -42,8 +35,6 @@ export const Navbar = ({
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-
-  const isMenuOpen = isHamburgerOpen || openNavItemIdx !== -1
 
   // Reference for navigation items bar on desktop
   const navDesktopRef = useRef<HTMLUListElement>(null)
@@ -70,7 +61,7 @@ export const Navbar = ({
   return (
     <div className="relative flex flex-col">
       {/* Site header */}
-      <div className={navbarContainer({ isMenuOpen })} ref={siteHeaderRef}>
+      <div className={navbarContainer()} ref={siteHeaderRef}>
         <div className={navbar()}>
           {/* Logo */}
           <LinkComponent href="/">
@@ -177,7 +168,7 @@ export const Navbar = ({
       {isHamburgerOpen && (
         <div
           ref={mobileMenuRef}
-          className="border-t border-t-base-divider-subtle"
+          className="border-t-base-divider-subtle absolute left-0 right-0 top-[100%] max-h-[calc(100dvh-4rem)] overflow-auto border-t"
         >
           {items.map((item, index) => (
             <MobileNavItemAccordion
