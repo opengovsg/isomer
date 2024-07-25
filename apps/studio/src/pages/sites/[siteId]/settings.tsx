@@ -16,7 +16,6 @@ import {
   Toggle,
   useToast,
 } from "@opengovsg/design-system-react"
-import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
@@ -39,6 +38,7 @@ interface SettingFormValues {
 const SiteSettingsPage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
+  const trpcUtils = trpc.useUtils()
   const { siteId } = useQueryParse(siteSettingsSchema)
 
   const notificationMutation = trpc.site.setNotification.useMutation({
@@ -47,6 +47,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
         notificationEnabled: notificationEnabled,
         notification: notification,
       })
+      void trpcUtils.site.getNotification.invalidate({ siteId })
       toast({
         title: "Saved site settings!",
         description: "Check your site in 5-10 minutes to view it live.",
@@ -68,6 +69,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
   const [previousNotification] = trpc.site.getNotification.useSuspenseQuery({
     siteId,
   })
+
   console.log("previous notificion", previousNotification)
 
   const { register, handleSubmit, watch, formState, reset } = useZodForm({
