@@ -28,29 +28,24 @@ const ItalicMarkSchema = Type.Object(
   },
 )
 
-const LinkMarkSchema = Type.Unsafe<{
-  type: "link"
-  attrs: {
-    target: "_blank"
-    href: string | null
-  }
-}>(
-  Type.Object(
-    {
-      type: Type.Literal("link", { default: "link" }),
-      attrs: Type.Object({
-        target: Type.Literal("_blank"),
-        // NOTE: The href given by tiptap here
-        // https://github.com/ueberdosis/tiptap/blob/main/packages/extension-link/src/link.ts
-        // defaults to `null` href
-        href: Type.Union([Type.String(), Type.Null()]),
-      }),
-    },
-    {
-      title: "Hyperlink",
-    },
-  ),
+const BaseLinkMarkSchema = Type.Object(
+  {
+    type: Type.Literal("link", { default: "link" }),
+    attrs: Type.Object({
+      target: Type.Literal("_blank"),
+      // NOTE: The href given by tiptap here
+      // https://github.com/ueberdosis/tiptap/blob/main/packages/extension-link/src/link.ts
+      // defaults to `null` href
+      href: Type.Union([Type.String(), Type.Null()]),
+    }),
+  },
+  {
+    title: "Hyperlink",
+  },
 )
+
+const LinkMarkSchema =
+  Type.Unsafe<Static<typeof BaseLinkMarkSchema>>(BaseLinkMarkSchema)
 
 const StrikeMarkSchema = Type.Object(
   {
