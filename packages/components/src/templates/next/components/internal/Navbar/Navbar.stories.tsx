@@ -8,6 +8,7 @@ const meta: Meta<NavbarProps> = {
   component: Navbar,
   argTypes: {},
   parameters: {
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
