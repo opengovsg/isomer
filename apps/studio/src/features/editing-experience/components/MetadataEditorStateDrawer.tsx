@@ -2,14 +2,8 @@ import type { IsomerSchema, schema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Heading, HStack, Icon, IconButton } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import {
-  ArticlePageMetaSchema,
-  CollectionPageSchema,
-  ContentPageMetaSchema,
-  FileRefSchema,
-  HomePageMetaSchema,
-  LinkRefSchema,
-} from "@opengovsg/isomer-components"
+import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
+import { type TSchema } from "@sinclair/typebox"
 import Ajv from "ajv"
 import { BiDollar, BiX } from "react-icons/bi"
 
@@ -18,22 +12,7 @@ import FormBuilder from "./form-builder/FormBuilder"
 
 const ajv = new Ajv({ strict: false, logger: false })
 
-interface MetadataEditorStateDrawerProps {
-  layout: IsomerSchema["layout"]
-}
-
-const LAYOUT_METADATA_MAP = {
-  article: ArticlePageMetaSchema,
-  content: ContentPageMetaSchema,
-  homepage: HomePageMetaSchema,
-  link: LinkRefSchema,
-  collection: CollectionPageSchema,
-  file: FileRefSchema,
-}
-
-export default function MetadataEditorStateDrawer({
-  layout,
-}: MetadataEditorStateDrawerProps): JSX.Element {
+export default function MetadataEditorStateDrawer(): JSX.Element {
   const {
     setDrawerState,
     savedPageState,
@@ -41,12 +20,18 @@ export default function MetadataEditorStateDrawer({
     previewPageState,
     setPreviewPageState,
   } = useEditorDrawerContext()
-  const metadataSchema = LAYOUT_METADATA_MAP[layout]
+
+  if (!previewPageState) {
+    return <></>
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+  const metadataSchema: TSchema = getLayoutMetadataSchema(
+    previewPageState.layout,
+  )
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(metadataSchema)
 
   const handleChange = (data: unknown) => {
-    if (!previewPageState) return
-
     // TODO: Perform actual validation on the data
     const newPageState = {
       ...previewPageState,
@@ -98,7 +83,7 @@ export default function MetadataEditorStateDrawer({
         <FormBuilder<Static<typeof schema>>
           schema={metadataSchema}
           validateFn={validateFn}
-          data={previewPageState?.page}
+          data={previewPageState.page}
           handleChange={(data) => handleChange(data)}
         />
       </Box>

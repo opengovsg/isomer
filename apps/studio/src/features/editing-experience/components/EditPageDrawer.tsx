@@ -1,7 +1,4 @@
-import type {
-  IsomerComponent,
-  IsomerSchema,
-} from "@opengovsg/isomer-components"
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { ProseProps } from "@opengovsg/isomer-components/dist/cjs/interfaces"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
@@ -17,11 +14,7 @@ const proseSchema = getComponentSchema("prose")
 const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
 const validate = ajv.compile<ProseProps>(proseSchema)
 
-interface EditPageDrawerProps {
-  layout: IsomerSchema["layout"]
-}
-
-export function EditPageDrawer({ layout }: EditPageDrawerProps): JSX.Element {
+export function EditPageDrawer(): JSX.Element {
   const {
     previewPageState,
     drawerState: currState,
@@ -42,19 +35,23 @@ export function EditPageDrawer({ layout }: EditPageDrawerProps): JSX.Element {
     )
   }
 
+  if (!previewPageState) {
+    return <></>
+  }
+
   switch (currState.state) {
     case "root":
       return <RootStateDrawer />
     case "addBlock":
       return <ComponentSelector />
     case "nativeEditor": {
-      const component = previewPageState?.content[currActiveIdx]
+      const component = previewPageState.content[currActiveIdx]
       return <TipTapComponent content={inferAsProse(component)} />
     }
     case "complexEditor":
       return <ComplexEditorStateDrawer />
     case "metadataEditor":
-      return <MetadataEditorStateDrawer layout={layout} />
+      return <MetadataEditorStateDrawer />
     default:
       const _: never = currState
       return <h1>Edit Page Drawer</h1>
