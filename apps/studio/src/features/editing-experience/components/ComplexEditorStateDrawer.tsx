@@ -1,41 +1,38 @@
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { Box, Heading, HStack, Icon } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { BiDollar, BiX } from "react-icons/bi"
-
 import z from "zod"
+
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import FormBuilder from "./form-builder/FormBuilder"
-import { trpc } from "~/utils/trpc"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { trpc } from "~/utils/trpc"
+import FormBuilder from "./form-builder/FormBuilder"
 
 const complexEditorSchema = z.object({
   pageId: z.coerce.number(),
   siteId: z.coerce.number(),
 })
 
-export default function ComplexEditorStateDrawer(): JSX.Element {
+interface ComplexEditorStateDrawerProps {
+  component: IsomerComponent
+}
+
+const ComplexEditorStateDrawer = ({
+  component,
+}: ComplexEditorStateDrawerProps) => {
+  const { pageId, siteId } = useQueryParse(complexEditorSchema)
+  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
+    { siteId, pageId },
+  )
   const {
-    currActiveIdx,
     setDrawerState,
     savedPageState,
     setSavedPageState,
     previewPageState,
     setPreviewPageState,
   } = useEditorDrawerContext()
-
-  if (currActiveIdx === -1 || currActiveIdx > savedPageState.length) {
-    return <></>
-  }
-
-  const component = previewPageState[currActiveIdx]
-
-  if (!component) {
-    return <></>
-  }
-
-  const { pageId, siteId } = useQueryParse(complexEditorSchema)
-  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery({ siteId, pageId })
   const { title } = getComponentSchema(component.type)
 
   const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation()
@@ -86,7 +83,14 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           onClick={() => {
             setDrawerState({ state: "root" })
             setSavedPageState(previewPageState)
-            mutate({ pageId, siteId, content: JSON.stringify({ ...pageContent, content: previewPageState }) })
+            mutate({
+              pageId,
+              siteId,
+              content: JSON.stringify({
+                ...pageContent,
+                content: previewPageState,
+              }),
+            })
           }}
           isLoading={isLoading}
         >
@@ -95,4 +99,20 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       </Box>
     </Box>
   )
+}
+
+export default function ComplexEditorStateDrawerContainer(): JSX.Element {
+  const { currActiveIdx, savedPageState, previewPageState } =
+    useEditorDrawerContext()
+  if (currActiveIdx === -1 || currActiveIdx > savedPageState.length) {
+    return <></>
+  }
+
+  const component = previewPageState[currActiveIdx]
+
+  if (!component) {
+    return <></>
+  }
+
+  return <ComplexEditorStateDrawer component={component} />
 }
