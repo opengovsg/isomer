@@ -31,7 +31,7 @@ interface TiptapEditorProps extends BoxProps {
   handleChange: (content: JSONContent) => void
 }
 
-const HEADING_LEVELS: Level[] = [2, 3, 4, 5, 6] as const
+const HEADING_LEVELS: Level[] = [2, 3, 4, 5, 6]
 
 export function TiptapEditor({ data, handleChange }: TiptapEditorProps) {
   const editor = useEditor({
