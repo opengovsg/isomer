@@ -20,15 +20,15 @@ const navbarItemStyles = tv({
   slots: {
     megamenu:
       "absolute left-0 top-[100%] z-20 w-full border-y border-y-gray-100 bg-white px-4",
-    item: "flex flex-row px-2 py-1 align-middle text-base/5 font-medium text-neutral-800",
+    item: "text-base-content-strong hover:text-brand-interaction-hover prose-label-md-medium flex h-[4.25rem] flex-row items-center gap-0.5 border-b-2 border-transparent transition-all motion-reduce:transition-none",
     chevron:
-      "-mt-0.5 ml-1 inline text-2xl/6 transition-transform duration-300 ease-in-out",
+      "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
   },
   variants: {
     isOpen: {
       true: {
-        item: "text-[#766a62]",
-        chevron: "rotate-180",
+        item: "text-brand-interaction border-brand-interaction",
+        chevron: "-rotate-180",
       },
     },
   },
@@ -54,10 +54,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
     if (!items || items.length === 0) {
       return (
         <li>
-          <LinkComponent
-            className="block px-2 py-1 text-base/5 font-medium text-[#1f2937]"
-            href={url}
-          >
+          <LinkComponent className={item({ isOpen })} href={url}>
             {name}
           </LinkComponent>
         </li>
@@ -85,7 +82,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
                 <div className="flex-1" />
 
                 <button
-                  // onClick={() => setOpenNavItemIdx(-1)}
+                  onClick={onCloseMegamenu}
                   aria-label="Close navigation item"
                   className="text-sm text-content lg:text-base"
                 >

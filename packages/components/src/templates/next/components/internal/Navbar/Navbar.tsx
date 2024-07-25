@@ -1,6 +1,12 @@
 "use client"
 
-import { startTransition, useEffect, useRef, useState } from "react"
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import {
   BiChevronRight,
   BiLeftArrowAlt,
@@ -9,11 +15,22 @@ import {
   BiSearch,
   BiX,
 } from "react-icons/bi"
+import { tv } from "tailwind-variants"
 import { useOnClickOutside } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
 import { NavItem } from "./NavItem"
+
+const navbarStyles = tv({
+  slots: {
+    // className="mx-auto flex w-full max-w-container flex-row gap-4 px-6 py-6 lg:px-10"
+    navbar: "flex h-[4.25rem] w-full gap-6 px-10",
+    navItemContainer: "hidden flex-wrap items-center gap-6 md:flex",
+  },
+})
+
+const { navItemContainer, navbar } = navbarStyles()
 
 export const Navbar = ({
   logoUrl,
@@ -33,11 +50,11 @@ export const Navbar = ({
   // Reference for the site header
   const siteHeaderRef = useRef<HTMLDivElement>(null)
 
-  const handleClickOutside = () => {
+  const handleClickOutside = useCallback(() => {
     startTransition(() => {
       setOpenNavItemIdx(-1)
     })
-  }
+  }, [])
 
   const megaMenuRef = useRef(null)
   const activeNavRef = useRef(null)
@@ -48,7 +65,8 @@ export const Navbar = ({
     <div className="relative flex flex-col">
       {/* Site header */}
       <div
-        className="mx-auto flex w-full max-w-container flex-row gap-4 px-6 py-6 lg:px-10"
+        // className="mx-auto flex w-full max-w-container flex-row gap-4 px-6 py-6 lg:px-10"
+        className={navbar()}
         ref={siteHeaderRef}
       >
         {/* Logo */}
@@ -61,32 +79,23 @@ export const Navbar = ({
         </LinkComponent>
 
         {/* Navigation items (for desktop) */}
-        <div className="mx-auto hidden w-full content-center lg:block">
-          <ul
-            className="mt-2 flex flex-row flex-wrap gap-1"
-            ref={navDesktopRef}
-          >
-            {items.map((item, idx) => (
-              <NavItem
-                megaMenuRef={megaMenuRef}
-                ref={openNavItemIdx === idx ? activeNavRef : null}
-                LinkComponent={LinkComponent}
-                {...item}
-                onCloseMegamenu={() => {
-                  startTransition(() => {
-                    setOpenNavItemIdx(-1)
-                  })
-                }}
-                onClick={() => {
-                  setIsSearchOpen(false)
-                  setOpenNavItemIdx((currIdx) => (currIdx === idx ? -1 : idx))
-                }}
-                isOpen={openNavItemIdx === idx}
-                key={`${item.name}-{idx}`}
-              />
-            ))}
-          </ul>
-        </div>
+        <ul className={navItemContainer()} ref={navDesktopRef}>
+          {items.map((item, idx) => (
+            <NavItem
+              megaMenuRef={megaMenuRef}
+              ref={openNavItemIdx === idx ? activeNavRef : null}
+              LinkComponent={LinkComponent}
+              {...item}
+              onCloseMegamenu={handleClickOutside}
+              onClick={() => {
+                setIsSearchOpen(false)
+                setOpenNavItemIdx((currIdx) => (currIdx === idx ? -1 : idx))
+              }}
+              isOpen={openNavItemIdx === idx}
+              key={`${item.name}-{idx}`}
+            />
+          ))}
+        </ul>
 
         {/* Spacer */}
         <div className="flex-1" />
