@@ -58,7 +58,7 @@ export default function AdminModeStateDrawer(): JSX.Element {
         </HStack>
       </Box>
 
-      <Box px="2rem" py="1rem">
+      <Box px="2rem" py="1rem" maxW="33vw" overflow="auto">
         <Text as="pre">{JSON.stringify(savedPageState, null, 2)}</Text>
       </Box>
     </Box>
