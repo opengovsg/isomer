@@ -25,7 +25,7 @@ const navbarStyles = tv({
     navItemContainer: "hidden flex-wrap items-center gap-x-6 lg:flex",
   },
   variants: {
-    isHamburgerOpen: {
+    isMenuOpen: {
       true: {
         navbar: "sticky top-0 z-10 bg-white",
       },
@@ -47,6 +47,8 @@ export const Navbar = ({
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
 
+  const isMenuOpen = isHamburgerOpen || openNavItemIdx !== -1
+
   // Reference for navigation items bar on desktop
   const navDesktopRef = useRef<HTMLUListElement>(null)
 
@@ -67,7 +69,7 @@ export const Navbar = ({
   return (
     <div className="relative flex flex-col">
       {/* Site header */}
-      <div className={navbar({ isHamburgerOpen })} ref={siteHeaderRef}>
+      <div className={navbar({ isMenuOpen })} ref={siteHeaderRef}>
         {/* Logo */}
         <LinkComponent href="/">
           <img src={logoUrl} alt={logoAlt} className={logo()} />
