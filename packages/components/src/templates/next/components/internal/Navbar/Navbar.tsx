@@ -2,9 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import {
-  BiChevronDown,
   BiChevronRight,
-  BiChevronUp,
   BiLeftArrowAlt,
   BiMenu,
   BiRightArrowAlt,
@@ -14,6 +12,7 @@ import {
 
 import type { NavbarProps } from "~/interfaces"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
+import { NavItem } from "./NavItem"
 
 export const Navbar = ({
   logoUrl,
@@ -26,7 +25,6 @@ export const Navbar = ({
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [navbarDesktopHeight, setNavbarDesktopHeight] = useState(0)
   const [siteHeaderBottomY, setSiteHeaderBottomY] = useState(0)
 
   // Reference for navigation items bar on desktop
@@ -37,33 +35,15 @@ export const Navbar = ({
 
   useEffect(() => {
     const onResize = () => {
-      setNavbarDesktopHeight(siteHeaderRef.current?.offsetHeight || 0)
       setSiteHeaderBottomY(
         siteHeaderRef.current?.getBoundingClientRect().bottom || 0,
       )
     }
 
-    const handleClickOutside = (event: MouseEvent) => {
-      const viewportWidth = Math.max(
-        document.documentElement.clientWidth || 0,
-        window.innerWidth || 0,
-      )
-
-      if (
-        navDesktopRef.current &&
-        !navDesktopRef.current.contains(event.target as Node) &&
-        viewportWidth >= 1024 // Tailwind's lg breakpoint
-      ) {
-        setOpenNavItemIdx(-1)
-      }
-    }
-
     onResize()
     window.addEventListener("resize", onResize)
-    document.addEventListener("mousedown", handleClickOutside)
     return () => {
       window.removeEventListener("resize", onResize)
-      document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [])
 
@@ -89,94 +69,21 @@ export const Navbar = ({
             className="mt-2 flex flex-row flex-wrap gap-1"
             ref={navDesktopRef}
           >
-            {items.map(({ name, url, description, items: subItems }, idx) => {
-              if (!subItems || subItems.length === 0) {
-                return (
-                  <li key={`${name}-${idx}`}>
-                    <LinkComponent
-                      className="block px-2 py-1 text-base/5 font-medium text-[#1f2937]"
-                      href={url}
-                    >
-                      {name}
-                    </LinkComponent>
-                  </li>
-                )
-              }
-
-              return (
-                <li key={`${name}-${idx}`}>
-                  <button
-                    className={`flex flex-row px-2 py-1 align-middle text-base/5 font-medium ${
-                      openNavItemIdx === idx
-                        ? "text-[#766a62]"
-                        : "text-neutral-800"
-                    }`}
-                    onClick={() => {
-                      setIsSearchOpen(false)
-                      if (openNavItemIdx === idx) {
-                        setOpenNavItemIdx(-1)
-                      } else {
-                        setOpenNavItemIdx(idx)
-                      }
-                    }}
-                  >
-                    {name}
-                    <BiChevronDown
-                      className={`-mt-0.5 ml-1 inline text-2xl/6 transition-transform duration-300 ease-in-out ${openNavItemIdx !== idx ? "rotate-0" : "rotate-180"}`}
-                    />
-                  </button>
-                  <div
-                    className={`${
-                      openNavItemIdx === idx ? "absolute" : "hidden"
-                    } left-0 z-20 w-full border-y border-y-gray-100 bg-white px-4`}
-                    style={{
-                      top: `${navbarDesktopHeight}px`,
-                    }}
-                  >
-                    <div className="mx-auto flex w-full max-w-screen-xl flex-col py-12">
-                      <div className="mx-auto flex w-full max-w-container flex-row items-start px-10 pb-12">
-                        <div className="flex flex-col gap-1">
-                          <h6 className="text-2xl font-semibold">{name}</h6>
-                          <p className="text-gray-700">{description}</p>
-                        </div>
-
-                        {/* Spacer */}
-                        <div className="flex-1" />
-
-                        <button
-                          onClick={() => setOpenNavItemIdx(-1)}
-                          aria-label="Close navigation item"
-                          className="text-sm text-content lg:text-base"
-                        >
-                          Close
-                          <BiX className="-mt-0.5 ml-1 inline text-2xl" />
-                        </button>
-                      </div>
-
-                      <div className="overflow-auto">
-                        <ul className="mx-auto flex w-full max-w-container flex-row flex-wrap gap-x-36 gap-y-8 px-10">
-                          {subItems.map((subItem) => (
-                            <li key={subItem.name} className="w-2/5">
-                              <div className="flex flex-col gap-1">
-                                <LinkComponent href={subItem.url}>
-                                  <p className="text-pretty text-lg font-semibold text-content hover:underline hover:underline-offset-2">
-                                    {subItem.name}
-                                    <BiRightArrowAlt className="-mt-0.5 inline h-auto w-5" />
-                                  </p>
-                                </LinkComponent>
-                                <p className="text-base text-gray-500">
-                                  {subItem.description}
-                                </p>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              )
-            })}
+            {items.map((item, idx) => (
+              <NavItem
+                LinkComponent={LinkComponent}
+                {...item}
+                onClickOutside={() => {
+                  setOpenNavItemIdx(-1)
+                }}
+                onClick={() => {
+                  setIsSearchOpen(false)
+                  setOpenNavItemIdx(idx)
+                }}
+                isOpen={openNavItemIdx === idx}
+                key={`${item.name}-{idx}`}
+              />
+            ))}
           </ul>
         </div>
 
