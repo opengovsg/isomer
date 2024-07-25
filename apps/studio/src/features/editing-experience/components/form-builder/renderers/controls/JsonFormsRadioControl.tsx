@@ -4,7 +4,7 @@ import type {
   RankedTester,
 } from "@jsonforms/core"
 import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
-import { and, isEnumControl, rankWith, schemaMatches } from "@jsonforms/core"
+import { and, isEnumControl, rankWith } from "@jsonforms/core"
 import { withJsonFormsEnumProps } from "@jsonforms/react"
 import { FormLabel, Radio } from "@opengovsg/design-system-react"
 
@@ -12,10 +12,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsRadioControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.RadioControl,
-  and(
-    isEnumControl,
-    schemaMatches((schema) => schema.format === "radio"),
-  ),
+  and(isEnumControl, (_, schema) => schema.format === "radio"),
 )
 
 export function JsonFormsRadioControl({

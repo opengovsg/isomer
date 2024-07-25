@@ -1,6 +1,6 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Flex, FormControl } from "@chakra-ui/react"
-import { rankWith, schemaMatches } from "@jsonforms/core"
+import { rankWith } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
 
@@ -9,9 +9,9 @@ import { TiptapEditor } from "../TipTapEditor"
 
 export const jsonFormsProseControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ProseControl,
-  schemaMatches((_, schema) => {
+  (_, schema) => {
     return schema.format === "prose"
-  }),
+  },
 )
 
 export function JsonFormsProseControl({
