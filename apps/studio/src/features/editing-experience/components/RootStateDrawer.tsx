@@ -15,6 +15,7 @@ import { BsPlus } from "react-icons/bs"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { ActivateAdminMode } from "./ActivateAdminMode"
 
 export default function RootStateDrawer() {
   const {
@@ -52,6 +53,7 @@ export default function RootStateDrawer() {
 
   return (
     <VStack w="100%" h="100%" gap={10} pt={10}>
+      <ActivateAdminMode />
       {/* TODO: Fixed Blocks Section */}
       <VStack w="100%" align="baseline">
         <Text fontSize="xl" pl={4} fontWeight={500}>

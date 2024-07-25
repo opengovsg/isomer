@@ -5,6 +5,7 @@ import Ajv from "ajv"
 
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import AdminModeStateDrawer from "./AdminModeStateDrawer"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
@@ -42,6 +43,8 @@ export function EditPageDrawer(): JSX.Element {
   switch (currState.state) {
     case "root":
       return <RootStateDrawer />
+    case "adminMode":
+      return <AdminModeStateDrawer />
     case "addBlock":
       return <ComponentSelector />
     case "nativeEditor": {

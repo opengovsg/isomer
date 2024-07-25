@@ -2,6 +2,10 @@ export interface RootDrawerState {
   state: "root"
 }
 
+export interface AdminModeDrawerState {
+  state: "adminMode"
+}
+
 export interface AddNewBlockState {
   state: "addBlock"
 }
@@ -20,6 +24,7 @@ export interface MetadataEditorState {
 
 export type DrawerState =
   | RootDrawerState
+  | AdminModeDrawerState
   | AddNewBlockState
   | NativeEditorState
   | ComplexEditorState
