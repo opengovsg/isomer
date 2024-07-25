@@ -1,4 +1,5 @@
 import { forwardRef } from "react"
+import { FocusScope } from "react-aria"
 import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 import { tv } from "tailwind-variants"
 
@@ -68,50 +69,52 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
           <BiChevronDown className={chevron({ isOpen })} />
         </button>
         {isOpen && (
-          <div ref={megaMenuRef} className={megamenu()}>
-            <div className="mx-auto flex w-full max-w-screen-xl flex-col py-12">
-              <div className="mx-auto flex w-full max-w-container flex-row items-start px-10 pb-12">
-                <div className="flex flex-col gap-1">
-                  <h6 className="text-2xl font-semibold">{name}</h6>
-                  {description && (
-                    <p className="text-gray-700">{description}</p>
-                  )}
+          <FocusScope contain restoreFocus autoFocus>
+            <div ref={megaMenuRef} className={megamenu()}>
+              <div className="mx-auto flex w-full max-w-screen-xl flex-col py-12">
+                <div className="mx-auto flex w-full max-w-container flex-row items-start px-10 pb-12">
+                  <div className="flex flex-col gap-1">
+                    <h6 className="text-2xl font-semibold">{name}</h6>
+                    {description && (
+                      <p className="text-gray-700">{description}</p>
+                    )}
+                  </div>
+
+                  {/* Spacer */}
+                  <div className="flex-1" />
+
+                  <button
+                    onClick={onCloseMegamenu}
+                    aria-label="Close navigation item"
+                    className="text-sm text-content lg:text-base"
+                  >
+                    Close
+                    <BiX className="-mt-0.5 ml-1 inline text-2xl" />
+                  </button>
                 </div>
 
-                {/* Spacer */}
-                <div className="flex-1" />
-
-                <button
-                  onClick={onCloseMegamenu}
-                  aria-label="Close navigation item"
-                  className="text-sm text-content lg:text-base"
-                >
-                  Close
-                  <BiX className="-mt-0.5 ml-1 inline text-2xl" />
-                </button>
-              </div>
-
-              <div className="overflow-auto">
-                <ul className="mx-auto flex w-full max-w-container flex-row flex-wrap gap-x-36 gap-y-8 px-10">
-                  {items.map((subItem) => (
-                    <li key={subItem.name} className="w-2/5">
-                      <div className="flex flex-col gap-1">
-                        <LinkComponent href={subItem.url}>
-                          <p className="text-pretty text-lg font-semibold text-content hover:underline hover:underline-offset-2">
-                            {subItem.name}
-                            <BiRightArrowAlt className="-mt-0.5 inline h-auto w-5" />
+                <div className="overflow-auto">
+                  <ul className="mx-auto flex w-full max-w-container flex-row flex-wrap gap-x-36 gap-y-8 px-10">
+                    {items.map((subItem) => (
+                      <li key={subItem.name} className="w-2/5">
+                        <div className="flex flex-col gap-1">
+                          <LinkComponent href={subItem.url}>
+                            <p className="text-pretty text-lg font-semibold text-content hover:underline hover:underline-offset-2">
+                              {subItem.name}
+                              <BiRightArrowAlt className="-mt-0.5 inline h-auto w-5" />
+                            </p>
+                          </LinkComponent>
+                          <p className="text-base text-gray-500">
+                            {subItem.description}
                           </p>
-                        </LinkComponent>
-                        <p className="text-base text-gray-500">
-                          {subItem.description}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
-          </div>
+          </FocusScope>
         )}
       </li>
     )
