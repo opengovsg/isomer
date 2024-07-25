@@ -13,16 +13,26 @@ import { NavItem } from "./NavItem"
 
 const navbarStyles = tv({
   slots: {
+    overlay:
+      "fixed bottom-0 left-0 right-0 top-0 bg-canvas-overlay bg-opacity-40",
     icon: "my-3 flex h-[2.125rem] w-[2.125rem] items-center justify-center text-[1.25rem] lg:my-[1.1875rem]",
     logo: "my-3 h-10 w-32 max-w-[6.625rem] object-contain object-center lg:h-12 lg:max-w-32",
-    navbarContainer: "flex min-h-16 w-full lg:min-h-[4.25rem]",
+    navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
     navbar:
       "mx-auto flex w-full max-w-screen-xl gap-x-4 px-6 lg:gap-x-6 lg:px-10",
     navItemContainer: "hidden flex-wrap items-center gap-x-6 lg:flex",
   },
+  variants: {
+    isMenuOpen: {
+      true: {
+        navbarContainer: "z-20",
+      },
+    },
+  },
 })
 
-const { navItemContainer, navbarContainer, navbar, logo, icon } = navbarStyles()
+const { overlay, navItemContainer, navbarContainer, navbar, logo, icon } =
+  navbarStyles()
 
 export const Navbar = ({
   logoUrl,
@@ -35,6 +45,8 @@ export const Navbar = ({
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+
+  const isMenuOpen = openNavItemIdx !== -1
 
   // Reference for navigation items bar on desktop
   const navDesktopRef = useRef<HTMLUListElement>(null)
@@ -60,8 +72,11 @@ export const Navbar = ({
 
   return (
     <div className="relative flex flex-col">
+      {isMenuOpen && !isHamburgerOpen && (
+        <div aria-hidden className={overlay()} />
+      )}
       {/* Site header */}
-      <div className={navbarContainer()} ref={siteHeaderRef}>
+      <div className={navbarContainer({ isMenuOpen })} ref={siteHeaderRef}>
         <div className={navbar()}>
           {/* Logo */}
           <LinkComponent href="/">
@@ -168,7 +183,7 @@ export const Navbar = ({
       {isHamburgerOpen && (
         <div
           ref={mobileMenuRef}
-          className="border-t-base-divider-subtle absolute left-0 right-0 top-[100%] max-h-[calc(100dvh-4rem)] overflow-auto border-t"
+          className="border-t-base-divider-subtle absolute left-0 right-0 top-[100%] h-[calc(100dvh-4rem)] overflow-auto border-t"
         >
           {items.map((item, index) => (
             <MobileNavItemAccordion
