@@ -152,9 +152,9 @@ export default function RootStateDrawer() {
       {/* TODO: Add New Block Section */}
       <Box
         w="100%"
-        bgColor="white"
+        bgColor="base.canvas.default"
+        boxShadow="md"
         p="1.5rem 2rem 1.5rem 2rem"
-        boxShadow="0px 0px 10px 0px #BFBFBF80"
       >
         <Button
           w="100%"
