@@ -1,16 +1,9 @@
 "use client"
 
-import {
-  startTransition,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react"
+import { startTransition, useCallback, useRef, useState } from "react"
 import {
   BiChevronRight,
   BiLeftArrowAlt,
-  BiMenu,
   BiRightArrowAlt,
   BiSearch,
   BiX,
@@ -20,17 +13,20 @@ import { useOnClickOutside } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
+import { HamburgerIcon } from "./HamburgerIcon"
 import { NavItem } from "./NavItem"
 
 const navbarStyles = tv({
   slots: {
-    // className="mx-auto flex w-full max-w-container flex-row gap-4 px-6 py-6 lg:px-10"
-    navbar: "flex h-[4.25rem] w-full gap-6 px-10",
-    navItemContainer: "hidden flex-wrap items-center gap-6 md:flex",
+    icon: "my-3 flex h-[2.125rem] w-[2.125rem] items-center justify-center text-[1.25rem] lg:my-[1.1875rem]",
+    logo: "my-3 h-10 w-32 max-w-[6.625rem] object-contain object-center lg:h-12 lg:max-w-32",
+    navbar:
+      "mx-auto flex min-h-16 w-full max-w-screen-xl gap-x-4 px-10 lg:min-h-[4.25rem] lg:gap-x-6",
+    navItemContainer: "hidden flex-wrap items-center gap-x-6 lg:flex",
   },
 })
 
-const { navItemContainer, navbar } = navbarStyles()
+const { navItemContainer, navbar, logo, icon } = navbarStyles()
 
 export const Navbar = ({
   logoUrl,
@@ -64,27 +60,19 @@ export const Navbar = ({
   return (
     <div className="relative flex flex-col">
       {/* Site header */}
-      <div
-        // className="mx-auto flex w-full max-w-container flex-row gap-4 px-6 py-6 lg:px-10"
-        className={navbar()}
-        ref={siteHeaderRef}
-      >
+      <div className={navbar()} ref={siteHeaderRef}>
         {/* Logo */}
-        <LinkComponent href="/" className="my-auto">
-          <img
-            src={logoUrl}
-            alt={logoAlt}
-            className="h-11 w-32 max-w-[110px] object-contain object-center lg:h-12 lg:max-w-[128px]"
-          />
+        <LinkComponent href="/">
+          <img src={logoUrl} alt={logoAlt} className={logo()} />
         </LinkComponent>
 
         {/* Navigation items (for desktop) */}
         <ul className={navItemContainer()} ref={navDesktopRef}>
           {items.map((item, idx) => (
             <NavItem
+              key={`${item.name}-{idx}`}
               megaMenuRef={megaMenuRef}
               ref={openNavItemIdx === idx ? activeNavRef : null}
-              LinkComponent={LinkComponent}
               {...item}
               onCloseMegamenu={handleClickOutside}
               onClick={() => {
@@ -92,7 +80,8 @@ export const Navbar = ({
                 setOpenNavItemIdx((currIdx) => (currIdx === idx ? -1 : idx))
               }}
               isOpen={openNavItemIdx === idx}
-              key={`${item.name}-{idx}`}
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              LinkComponent={LinkComponent}
             />
           ))}
         </ul>
@@ -102,7 +91,7 @@ export const Navbar = ({
 
         {/* Search icon */}
         {search && !isHamburgerOpen && (
-          <div className="my-auto block">
+          <>
             {isSearchOpen ? (
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -115,16 +104,16 @@ export const Navbar = ({
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
                 aria-label="Open search bar"
-                className="mt-[5px]"
+                className={icon()}
               >
-                <BiSearch className="text-2xl" />
+                <BiSearch />
               </button>
             )}
-          </div>
+          </>
         )}
 
         {/* Hamburger menu for small screens */}
-        <div className="my-auto block lg:hidden">
+        <div className="flex lg:hidden">
           {isHamburgerOpen ? (
             <button
               onClick={() => {
@@ -143,9 +132,9 @@ export const Navbar = ({
                 setIsSearchOpen(false)
               }}
               aria-label="Open navigation menu"
-              className="ml-5 mt-[3px]"
+              className={icon()}
             >
-              <BiMenu className="text-2xl" />
+              <HamburgerIcon />
             </button>
           )}
         </div>
@@ -165,6 +154,7 @@ export const Navbar = ({
           {search.type === "searchSG" && (
             <SearchSGInputBox
               clientId={search.clientId}
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               ScriptComponent={ScriptComponent}
             />
           )}
@@ -209,12 +199,7 @@ export const Navbar = ({
 
       {/* Navigation items, second level (for mobile/tablet) */}
       {isHamburgerOpen && openNavItemIdx !== -1 && (
-        <div
-          className="block lg:hidden"
-          style={{
-            height: `calc(100vh - ${siteHeaderBottomY}px)`,
-          }}
-        >
+        <div className="block lg:hidden">
           <div className="px-6 pt-4">
             <button
               className="flex flex-row gap-3 pb-4 pt-2.5"
