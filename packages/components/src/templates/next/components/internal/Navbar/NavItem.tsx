@@ -20,14 +20,14 @@ interface NavbarItemProps
 const navbarItemStyles = tv({
   slots: {
     megamenu: "absolute left-0 right-0 top-[100%] z-20 bg-white shadow-md",
-    item: "text-base-content-strong hover:text-brand-interaction-hover prose-label-md-medium flex h-[4.25rem] flex-row items-center gap-0.5 border-b-2 border-transparent transition-all motion-reduce:transition-none",
+    item: "prose-label-md-medium flex h-[4.25rem] flex-row items-center gap-0.5 border-b-2 border-transparent text-base-content-strong transition-all hover:text-brand-interaction-hover motion-reduce:transition-none",
     chevron:
       "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
   },
   variants: {
     isOpen: {
       true: {
-        item: "text-brand-interaction border-brand-interaction",
+        item: "border-brand-interaction text-brand-interaction",
         chevron: "-rotate-180",
       },
     },
@@ -73,11 +73,11 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
               <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 py-12">
                 <div className="flex w-full flex-row items-start">
                   <div className="flex flex-col gap-1">
-                    <h1 className="text-base-content prose-display-sm">
+                    <h1 className="prose-display-sm text-base-content">
                       {name}
                     </h1>
                     {description && (
-                      <p className="text-base-content-subtle prose-label-sm-regular">
+                      <p className="prose-label-sm-regular text-base-content-subtle">
                         {description}
                       </p>
                     )}
@@ -101,12 +101,12 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
                       <div className="flex flex-col gap-1.5">
                         <LinkComponent
                           href={subItem.url}
-                          className="text-base-content prose-label-md-medium inline-flex items-center gap-1 ring-offset-2 hover:underline focus-visible:ring"
+                          className="prose-label-md-medium inline-flex items-center gap-1 text-base-content ring-offset-2 hover:underline focus-visible:ring"
                         >
                           {subItem.name}
                           <BiRightArrowAlt className="text-[1.25rem]" />
                         </LinkComponent>
-                        <p className="text-base-content-subtle prose-label-sm-regular">
+                        <p className="prose-label-sm-regular text-base-content-subtle">
                           {subItem.description}
                         </p>
                       </div>

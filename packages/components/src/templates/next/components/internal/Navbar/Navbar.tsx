@@ -177,7 +177,7 @@ export const Navbar = ({
       {isHamburgerOpen && (
         <div
           ref={mobileMenuRef}
-          className="border-t-base-divider-subtle border-t"
+          className="border-t border-t-base-divider-subtle"
         >
           {items.map((item, index) => (
             <MobileNavItemAccordion
