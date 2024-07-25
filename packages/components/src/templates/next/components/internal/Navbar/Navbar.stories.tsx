@@ -1,4 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { userEvent, within } from "@storybook/test"
+
+import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
 import type { NavbarProps } from "~/interfaces"
 import Navbar from "./Navbar"
@@ -6,19 +9,6 @@ import Navbar from "./Navbar"
 const meta: Meta<NavbarProps> = {
   title: "Next/Internal Components/Navbar",
   component: Navbar,
-  argTypes: {},
-  parameters: {
-    layout: "fullscreen",
-    themes: {
-      themeOverride: "Isomer Next",
-    },
-  },
-}
-export default meta
-type Story = StoryObj<typeof Navbar>
-
-// Default scenario
-export const Default: Story = {
   args: {
     logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
     logoAlt: "Isomer logo",
@@ -29,6 +19,7 @@ export const Default: Story = {
     items: [
       {
         name: "About us",
+        description: "This is a description of the item.",
         url: "/item-one",
         items: [
           {
@@ -144,5 +135,64 @@ export const Default: Story = {
         url: "/single-item",
       },
     ],
+  },
+  parameters: {
+    layout: "fullscreen",
+    themes: {
+      themeOverride: "Isomer Next",
+    },
+    chromatic: {
+      prefersReducedMotion: "reduce",
+    },
+  },
+}
+export default meta
+type Story = StoryObj<typeof Navbar>
+
+// Default scenario
+export const Default: Story = {
+  parameters: {
+    chromatic: {
+      ...withChromaticModes(["desktop", "mobile"]),
+    },
+  },
+}
+
+export const ExpandFirstItem: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: getViewportByMode("desktop"),
+    },
+    chromatic: withChromaticModes(["desktop"]),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole("button", { name: /about us/i }))
+  },
+}
+
+export const ExpandSearch: Story = {
+  parameters: Default.parameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open search bar/i }),
+    )
+  },
+}
+
+export const ExpandMobile: Story = {
+  parameters: {
+    chromatic: withChromaticModes(["mobile"]),
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+    await userEvent.click(canvas.getByRole("button", { name: /about us/i }))
   },
 }

@@ -8,6 +8,7 @@ const config: StorybookConfig = {
     "@storybook/addon-essentials",
     "@storybook/addon-themes",
     "@storybook/addon-a11y",
+    "@storybook/addon-interactions",
   ],
   viteFinal(config) {
     // Merge custom configuration into the default config
