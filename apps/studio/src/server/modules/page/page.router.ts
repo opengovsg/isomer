@@ -4,11 +4,7 @@ import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
 import { z } from "zod"
 
-import {
-  createPageSchema,
-  getEditPageSchema,
-  getPresignedUrlForImageUploadSchema,
-} from "~/schemas/page"
+import { createPageSchema, getEditPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { db, ResourceType } from "../database"
@@ -141,15 +137,4 @@ export const pageRouter = router({
         return { pageId: resource.id }
       },
     ),
-
-  getPresignedUrlForImageUpload: protectedProcedure
-    .input(getPresignedUrlForImageUploadSchema)
-    .mutation(({ input, ctx }) => {
-      // TODO: Generate key and presign S3 url.
-      return {
-        presignedUploadURL: "",
-        // fileURL like https://BUCKET.s3.amazonaws.com/key
-        fileURL: "",
-      }
-    }),
 })

@@ -39,11 +39,3 @@ export const createPageSchema = z.object({
   // NOTE: implies that top level pages are allowed
   folderId: z.number().min(1).optional(),
 })
-export const readImageInPageSchema = z.object({
-  imageUrlInSchema: z.string(),
-})
-
-export const getPresignedUrlForImageUploadSchema = z.object({
-  siteId: z.number().min(1),
-  pageId: z.number().min(1),
-})
