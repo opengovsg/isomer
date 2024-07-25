@@ -34,8 +34,13 @@ const ComplexEditorStateDrawer = ({
     setPreviewPageState,
   } = useEditorDrawerContext()
   const { title } = getComponentSchema(component.type)
+  const utils = trpc.useUtils()
 
-  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation()
+  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+    },
+  })
 
   return (
     <Box position="relative" h="100%" w="100%" overflow="auto">
