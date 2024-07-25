@@ -193,7 +193,7 @@ export const pageRouter = router({
     .mutation(async ({ input }) => {
       // @ts-expect-error we need this because we sanitise as a string
       // but this accepts a nested JSON object
-      await updateBlobById({ ...input, pageId: input.pageId })
+      await updateBlobById(db, { ...input, pageId: input.pageId })
 
       return input
     }),
