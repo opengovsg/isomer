@@ -97,7 +97,7 @@ const RadioContent = ({
   selectedLinkType,
   data,
   handleChange,
-}: RadioContentProps) => {
+}: RadioContentProps): JSX.Element => {
   switch (selectedLinkType) {
     case "page":
       return (
@@ -164,7 +164,7 @@ export function JsonFormsLinkControl({
   const dataString = data && typeof data === "string" ? data : ""
 
   return (
-    <Box py={2}>
+    <Box py="0.5rem">
       <FormControl isRequired={required}>
         <FormLabel description={description}>{label}</FormLabel>
 
