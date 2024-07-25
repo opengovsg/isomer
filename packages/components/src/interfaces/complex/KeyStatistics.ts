@@ -11,6 +11,7 @@ export const KeyStatisticsSchema = Type.Object(
       Type.Object({
         label: Type.String({
           title: "Description",
+          maxLength: 100,
         }),
         value: Type.String({
           title: "Number",

@@ -10,6 +10,7 @@ export const InfoBoxSchema = Type.Object({
   description: Type.Optional(
     Type.String({
       title: "Description",
+      maxLength: 300,
     }),
   ),
   icon: Type.Optional(
