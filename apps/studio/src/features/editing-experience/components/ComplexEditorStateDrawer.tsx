@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, HStack, Icon, Spacer } from "@chakra-ui/react"
+import { Box, Flex, Heading, HStack, Icon } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { BiDollar, BiX } from "react-icons/bi"
@@ -74,8 +74,9 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       <Box px="2rem" py="1rem">
         <FormBuilder />
       </Box>
-      <Spacer />
       <Box
+        pos="sticky"
+        bottom={0}
         bgColor="base.canvas.default"
         boxShadow="md"
         p="1.5rem 2rem 1.5rem 2rem"
