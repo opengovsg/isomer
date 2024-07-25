@@ -3,17 +3,20 @@ import { useRouter } from "next/router"
 import {
   Button,
   Center,
+  FormControl,
   HStack,
   Text,
   useDisclosure,
   VStack,
 } from "@chakra-ui/react"
 import {
+  FormErrorMessage,
   Infobox,
   Input,
   Toggle,
   useToast,
 } from "@opengovsg/design-system-react"
+import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
@@ -26,6 +29,11 @@ const siteSettingsSchema = z.object({
   siteId: z.coerce.number(),
 })
 
+interface SettingFormValues {
+  notificationEnabled: boolean
+  notificationText: string
+}
+
 const SiteSettingsPage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
@@ -33,7 +41,10 @@ const SiteSettingsPage: NextPageWithLayout = () => {
 
   const notificationMutation = trpc.site.setNotification.useMutation({
     onSuccess: () => {
-      setNotificationFieldChanged(false)
+      reset({
+        notificationEnabled: notificationEnabled,
+        notificationText: notificationText,
+      })
       toast({
         title: "Saved site settings!",
         description: "Check your site in 5-10 minutes to view it live.",
@@ -56,20 +67,6 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     siteId: Number(siteId),
   })
 
-  const [notificationText, setNotificationText] = useState(
-    previousNotification || "",
-  )
-  const [notificationEnabled, setNotificationEnabled] =
-    useState(notificationText)
-
-  const [notificationFieldChanged, setNotificationFieldChanged] =
-    useState(false)
-
-  const remainingCharacters = 100 - notificationText.length
-  const saveEnabled =
-    notificationFieldChanged &&
-    (!notificationEnabled || notificationText.length !== 0)
-
   const onClickUpdate = () => {
     notificationMutation.mutate({
       siteId: Number(siteId),
@@ -77,17 +74,29 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     })
   }
 
-  // useEffect(() => {
-  //   setNotificationEnabled(previousNotification !== "")
-  //   setNotificationText(previousNotification)
-  // }, [previousNotification])
+  const { register, handleSubmit, watch, formState, reset } =
+    useForm<SettingFormValues>({
+      defaultValues: {
+        notificationEnabled: previousNotification !== "",
+        notificationText: previousNotification || "",
+      },
+    })
+
+  const [notificationEnabled, notificationText] = watch([
+    "notificationEnabled",
+    "notificationText",
+  ])
+
+  const { isDirty } = formState
+  const saveEnabled =
+    isDirty && (notificationText.length !== 0 || !notificationEnabled)
 
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [nextURL, setNextURL] = useState("")
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
-      if (notificationFieldChanged) {
+      if (isDirty) {
         router.events.off("routeChangeStart", handleRouteChange)
         setNextURL(url)
         onOpen()
@@ -102,7 +111,8 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     return () => {
       router.events.off("routeChangeStart", handleRouteChange)
     }
-  }, [notificationFieldChanged, isOpen, onOpen, router.events])
+  }, [isOpen, onOpen, router.events, isDirty])
+
   return (
     <>
       <UnsavedSettingModal
@@ -110,74 +120,102 @@ const SiteSettingsPage: NextPageWithLayout = () => {
         onClose={onClose}
         nextURL={nextURL}
       />
-      <Center pt="5.5rem">
-        <VStack w="48rem" alignItems="flex-start" spacing="1.5rem">
-          <Text w="full" textStyle="h3-semibold">
-            Manage site settings
-          </Text>
-          <Infobox textStyle="body-2" textColor="base.content.strong" size="sm">
-            Isomer Next is currently in Beta. To manage site settings that are
-            not displayed here, contact Isomer Support.
-          </Infobox>
-          <VStack w="full" alignItems="flex-start" mt="3rem" spacing="0.75rem">
-            <Text textStyle="h4">General</Text>
-            <HStack w="full" justifyContent="space-between" pt="0.5rem">
-              <Text textColor="base.content.strong" textStyle="subhead-1">
-                Display Site Notifications
+      <form onSubmit={handleSubmit(onClickUpdate)}>
+        <Center pt="5.5rem">
+          <VStack w="48rem" alignItems="flex-start" spacing="1.5rem">
+            <FormControl>
+              <Text w="full" textStyle="h3-semibold">
+                Manage site settings
               </Text>
-              <Toggle
+              <Infobox
+                textStyle="body-2"
+                textColor="base.content.strong"
+                size="sm"
+              >
+                Isomer Next is currently in Beta. To manage site settings that
+                are not displayed here, contact Isomer Support.
+              </Infobox>
+              <VStack
                 w="full"
-                label=""
-                isChecked={notificationEnabled}
-                onChange={(event) => {
-                  setNotificationFieldChanged(true)
-                  setNotificationEnabled(event.target.checked)
-                }}
-              />
-            </HStack>
-            <Text textColor="base.content.medium" textStyle="body-2">
-              The site notification will always be visible on the site until it
-              is dismissed by the user. <br />
-              Use a notification to inform users of key alerts. Do not use a
-              notification to advertise an event or a promotion.
-            </Text>
-            {notificationEnabled && (
-              <>
-                <Text
-                  textColor="base.content.strong"
-                  textStyle="subhead-1"
-                  pt="0.5rem"
-                >
-                  Notification Text
-                </Text>
-                <Input
-                  isDisabled={!notificationEnabled}
-                  placeholder="Notification should be succinct and clear"
-                  onChange={(event) => {
-                    setNotificationFieldChanged(true)
-                    setNotificationText(event.target.value)
-                  }}
-                  maxLength={100}
-                  value={notificationText}
-                />
+                alignItems="flex-start"
+                mt="3rem"
+                spacing="0.75rem"
+              >
+                <Text textStyle="h4">General</Text>
+                <HStack w="full" justifyContent="space-between" pt="0.5rem">
+                  <Text textColor="base.content.strong" textStyle="subhead-1">
+                    Display Site Notifications
+                  </Text>
+
+                  <Toggle
+                    w="full"
+                    label=""
+                    {...register("notificationEnabled")}
+                  />
+                </HStack>
                 <Text textColor="base.content.medium" textStyle="body-2">
-                  {remainingCharacters} characters left
+                  The site notification will always be visible on the site until
+                  it is dismissed by the user. <br />
+                  Use a notification to inform users of key alerts. Do not use a
+                  notification to advertise an event or a promotion.
                 </Text>
-              </>
-            )}
+                {notificationEnabled && (
+                  <>
+                    <Text
+                      textColor="base.content.strong"
+                      textStyle="subhead-1"
+                      pt="0.5rem"
+                    >
+                      Notification Text
+                    </Text>
+                    <Input
+                      isDisabled={!notificationEnabled}
+                      placeholder="Notification should be succinct and clear"
+                      maxLength={100}
+                      value={notificationText}
+                      {...register("notificationText", {
+                        validate: {
+                          required: (value) => {
+                            if (value.length === 0 && notificationEnabled) {
+                              return "Notification must not be empty"
+                            }
+                          },
+                        },
+                        minLength: {
+                          value: 1,
+                          message: "Notification must not be empty",
+                        },
+                        maxLength: {
+                          value: 100,
+                          message:
+                            "Notification must be 100 characters or less",
+                        },
+                      })}
+                    />
+                    <Text textColor="base.content.medium" textStyle="body-2">
+                      {100 - notificationText.length} characters left
+                    </Text>
+                  </>
+                )}
+              </VStack>
+              <HStack justifyContent="flex-end" w="full" gap="1.5rem" pt="4rem">
+                {saveEnabled && (
+                  <Text textColor="base.content.medium" textStyle="caption-2">
+                    Changes will be reflected on your site immediately.
+                  </Text>
+                )}
+                <Button
+                  type="submit"
+                  // onClick={onClickUpdate}
+                  isDisabled={!saveEnabled}
+                >
+                  Save settings
+                </Button>
+              </HStack>
+            </FormControl>
           </VStack>
-          <HStack justifyContent="flex-end" w="full" gap="1.5rem">
-            {saveEnabled && (
-              <Text textColor="base.content.medium" textStyle="caption-2">
-                Changes will be reflected on your site immediately.
-              </Text>
-            )}
-            <Button onClick={onClickUpdate} isDisabled={!saveEnabled}>
-              Save settings
-            </Button>
-          </HStack>
-        </VStack>
-      </Center>
+        </Center>
+      </form>
     </>
   )
 }
