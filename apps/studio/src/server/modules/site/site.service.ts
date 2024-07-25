@@ -33,7 +33,8 @@ export const getNotification = async (siteId: number) => {
     .where("id", "=", siteId)
     .executeTakeFirstOrThrow()
 
-  return result.notification
+  // NOTE: Empty string denotes absence of notification on site.
+  return result.notification || ""
 }
 
 // TODO: Should triger immediate re-publish of site

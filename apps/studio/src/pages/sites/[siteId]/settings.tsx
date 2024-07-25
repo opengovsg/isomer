@@ -21,7 +21,9 @@ import { z } from "zod"
 
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
+import { setNotificationSchema } from "~/schemas/site"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
 import { trpc } from "~/utils/trpc"
 
@@ -43,7 +45,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     onSuccess: () => {
       reset({
         notificationEnabled: notificationEnabled,
-        notificationText: notificationText,
+        notification: notification,
       })
       toast({
         title: "Saved site settings!",
@@ -64,32 +66,30 @@ const SiteSettingsPage: NextPageWithLayout = () => {
   })
 
   const [previousNotification] = trpc.site.getNotification.useSuspenseQuery({
-    siteId: Number(siteId),
+    siteId,
+  })
+  console.log("previous notificion", previousNotification)
+
+  const { register, handleSubmit, watch, formState, reset } = useZodForm({
+    schema: setNotificationSchema
+      .extend({ notificationEnabled: z.boolean() })
+      .omit({ siteId: true })
+      .refine((data) => !data.notificationEnabled || data.notification, {
+        message: "Notification must not be empty",
+        path: ["notification"],
+      }), // <- from the shared schema that the trpc procedure uses
+    defaultValues: {
+      notificationEnabled: previousNotification !== "",
+      notification: previousNotification ? previousNotification : "",
+    },
   })
 
-  const onClickUpdate = () => {
-    notificationMutation.mutate({
-      siteId: Number(siteId),
-      notification: notificationEnabled ? notificationText : "",
-    })
-  }
-
-  const { register, handleSubmit, watch, formState, reset } =
-    useForm<SettingFormValues>({
-      defaultValues: {
-        notificationEnabled: previousNotification !== "",
-        notificationText: previousNotification || "",
-      },
-    })
-
-  const [notificationEnabled, notificationText] = watch([
+  const [notificationEnabled, notification] = watch([
     "notificationEnabled",
-    "notificationText",
+    "notification",
   ])
 
-  const { isDirty } = formState
-  const saveEnabled =
-    isDirty && (notificationText.length !== 0 || !notificationEnabled)
+  const { isDirty, errors } = formState
 
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [nextURL, setNextURL] = useState("")
@@ -113,6 +113,16 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     }
   }, [isOpen, onOpen, router.events, isDirty])
 
+  const onClickUpdate = handleSubmit(
+    ({ notificationEnabled, notification }) => {
+      notificationMutation.mutate({
+        siteId,
+        notification: notificationEnabled ? notification : "",
+      })
+    },
+  )
+
+  console.log("errors", errors)
   return (
     <>
       <UnsavedSettingModal
@@ -120,10 +130,10 @@ const SiteSettingsPage: NextPageWithLayout = () => {
         onClose={onClose}
         nextURL={nextURL}
       />
-      <form onSubmit={handleSubmit(onClickUpdate)}>
+      <form onSubmit={onClickUpdate}>
         <Center pt="5.5rem">
           <VStack w="48rem" alignItems="flex-start" spacing="1.5rem">
-            <FormControl>
+            <FormControl isInvalid={!!errors.notification}>
               <Text w="full" textStyle="h3-semibold">
                 Manage site settings
               </Text>
@@ -168,19 +178,14 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                     >
                       Notification Text
                     </Text>
+
                     <Input
                       isDisabled={!notificationEnabled}
                       placeholder="Notification should be succinct and clear"
                       maxLength={100}
-                      value={notificationText}
-                      {...register("notificationText", {
-                        validate: {
-                          required: (value) => {
-                            if (value.length === 0 && notificationEnabled) {
-                              return "Notification must not be empty"
-                            }
-                          },
-                        },
+                      value={notification}
+                      {...register("notification", {
+                        required: true,
                         minLength: {
                           value: 1,
                           message: "Notification must not be empty",
@@ -193,21 +198,22 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                       })}
                     />
                     <Text textColor="base.content.medium" textStyle="body-2">
-                      {100 - notificationText.length} characters left
+                      {100 - notification.length} characters left
                     </Text>
+                    <FormErrorMessage>
+                      {errors.notification?.message}
+                    </FormErrorMessage>
                   </>
                 )}
               </VStack>
               <HStack justifyContent="flex-end" w="full" gap="1.5rem" pt="4rem">
-                {saveEnabled && (
-                  <Text textColor="base.content.medium" textStyle="caption-2">
-                    Changes will be reflected on your site immediately.
-                  </Text>
-                )}
+                <Text textColor="base.content.medium" textStyle="caption-2">
+                  Changes will be reflected on your site immediately.
+                </Text>
+
                 <Button
                   type="submit"
-                  // onClick={onClickUpdate}
-                  isDisabled={!saveEnabled}
+                  isLoading={notificationMutation.isLoading}
                 >
                   Save settings
                 </Button>
