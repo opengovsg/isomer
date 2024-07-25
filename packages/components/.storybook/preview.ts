@@ -9,6 +9,8 @@ import { MINIMAL_VIEWPORTS } from "@storybook/addon-viewport"
 import "bootstrap-icons/font/bootstrap-icons.css"
 import "../src/index.css"
 
+import { viewport } from "@isomer/storybook-config"
+
 const CUSTOM_GENERAL_VIEWPORTS = {
   smallDesktop: {
     name: "Small Desktop",
@@ -82,6 +84,7 @@ const preview: Preview = {
   parameters: {
     viewport: {
       viewports: {
+        ...viewport.viewports,
         ...MINIMAL_VIEWPORTS,
         ...CUSTOM_GENERAL_VIEWPORTS,
         ...CUSTOM_GSIB_VIEWPORTS,
