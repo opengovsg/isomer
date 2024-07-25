@@ -30,8 +30,6 @@ export const Default: Story = {
             attrs: {
               href: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
               target: "_blank",
-              rel: "noreferrer",
-              class: "",
             },
           },
         ],
@@ -49,8 +47,6 @@ export const Default: Story = {
             attrs: {
               href: "/contact",
               target: "_blank",
-              rel: "noreferrer",
-              class: "",
             },
           },
         ],
