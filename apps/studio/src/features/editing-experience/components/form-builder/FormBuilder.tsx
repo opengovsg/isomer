@@ -55,6 +55,7 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: jsonFormsVerticalLayoutRenderer,
   },
 ]
+const ajv = new Ajv({ strict: false, logger: false })
 
 export default function FormBuilder(): JSX.Element {
   const {
@@ -68,7 +69,7 @@ export default function FormBuilder(): JSX.Element {
     return <></>
   }
 
-  const component = savedPageState[currActiveIdx]
+  const component = previewPageState[currActiveIdx]
 
   if (!component) {
     return <></>
@@ -76,7 +77,6 @@ export default function FormBuilder(): JSX.Element {
 
   const subSchema = getComponentSchema(component.type)
   const data = previewPageState[currActiveIdx]
-  const ajv = new Ajv({ strict: false })
   const validateFn = ajv.compile<IsomerComponent>(subSchema)
 
   return (
@@ -91,7 +91,7 @@ export default function FormBuilder(): JSX.Element {
           setPreviewPageState(newPageState)
         }
       }}
-      ajv={new Ajv({ strict: false })}
+      ajv={ajv}
     />
   )
 }

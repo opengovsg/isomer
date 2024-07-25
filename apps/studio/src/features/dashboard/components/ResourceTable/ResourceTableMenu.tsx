@@ -9,13 +9,12 @@ import {
 } from "react-icons/bi"
 
 import type { ResourceTableData } from "./types"
-import type { ResourceType } from "~/utils/resource"
 import { MenuItem } from "~/components/Menu"
 
 interface ResourceTableMenuProps {
   title: ResourceTableData["title"]
   resourceId: ResourceTableData["id"]
-  type: ResourceType
+  type: ResourceTableData["type"]
 }
 
 export const ResourceTableMenu = ({ title, type }: ResourceTableMenuProps) => {
@@ -31,7 +30,7 @@ export const ResourceTableMenu = ({ title, type }: ResourceTableMenuProps) => {
       <Portal>
         <MenuList>
           {/* TODO: Open edit modal depending on resource  */}
-          {type === "page" ? (
+          {type === "Page" ? (
             <>
               <MenuItem icon={<BiCog fontSize="1rem" />}>
                 Edit page settings

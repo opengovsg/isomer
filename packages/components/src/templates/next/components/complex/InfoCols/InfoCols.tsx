@@ -64,15 +64,13 @@ const InfoBoxes = ({
 }
 
 const InfoCols = ({
-  backgroundColor,
   title,
   subtitle,
   infoBoxes,
   LinkComponent = "a",
 }: InfoColsProps) => {
-  const bgColor = backgroundColor === "gray" ? "bg-gray-100" : "bg-white"
   return (
-    <section className={bgColor}>
+    <section className="bg-white">
       <div className={`${ComponentContent} py-24`}>
         <div className="flex flex-col gap-24">
           <InfoColsHeader title={title} subtitle={subtitle} />
