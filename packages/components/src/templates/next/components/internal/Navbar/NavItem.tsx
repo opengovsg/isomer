@@ -19,8 +19,7 @@ interface NavbarItemProps
 
 const navbarItemStyles = tv({
   slots: {
-    megamenu:
-      "absolute left-0 top-[100%] z-20 w-full border-y border-y-gray-100 bg-white px-4",
+    megamenu: "absolute left-0 right-0 top-[100%] z-20 bg-white shadow-md",
     item: "text-base-content-strong hover:text-brand-interaction-hover prose-label-md-medium flex h-[4.25rem] flex-row items-center gap-0.5 border-b-2 border-transparent transition-all motion-reduce:transition-none",
     chevron:
       "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
@@ -71,12 +70,16 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
         {isOpen && (
           <FocusScope contain restoreFocus autoFocus>
             <div ref={megaMenuRef} className={megamenu()}>
-              <div className="mx-auto flex w-full max-w-screen-xl flex-col py-12">
-                <div className="mx-auto flex w-full max-w-container flex-row items-start px-10 pb-12">
+              <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 py-12">
+                <div className="flex w-full flex-row items-start">
                   <div className="flex flex-col gap-1">
-                    <h6 className="text-2xl font-semibold">{name}</h6>
+                    <h1 className="text-base-content prose-display-sm">
+                      {name}
+                    </h1>
                     {description && (
-                      <p className="text-gray-700">{description}</p>
+                      <p className="text-base-content-subtle prose-label-sm-regular">
+                        {description}
+                      </p>
                     )}
                   </div>
 
@@ -86,32 +89,30 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
                   <button
                     onClick={onCloseMegamenu}
                     aria-label="Close navigation item"
-                    className="text-sm text-content lg:text-base"
+                    className="flex h-[2.125rem] w-[2.125rem] items-center justify-center text-[1.5rem] outline-none ring-offset-2 focus-visible:ring"
                   >
-                    Close
-                    <BiX className="-mt-0.5 ml-1 inline text-2xl" />
+                    <BiX />
                   </button>
                 </div>
 
-                <div className="overflow-auto">
-                  <ul className="mx-auto flex w-full max-w-container flex-row flex-wrap gap-x-36 gap-y-8 px-10">
-                    {items.map((subItem) => (
-                      <li key={subItem.name} className="w-2/5">
-                        <div className="flex flex-col gap-1">
-                          <LinkComponent href={subItem.url}>
-                            <p className="text-pretty text-lg font-semibold text-content hover:underline hover:underline-offset-2">
-                              {subItem.name}
-                              <BiRightArrowAlt className="-mt-0.5 inline h-auto w-5" />
-                            </p>
-                          </LinkComponent>
-                          <p className="text-base text-gray-500">
-                            {subItem.description}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <ul className="grid grid-cols-3 gap-x-16 gap-y-8">
+                  {items.map((subItem) => (
+                    <li key={subItem.name}>
+                      <div className="flex flex-col gap-1.5">
+                        <LinkComponent
+                          href={subItem.url}
+                          className="text-base-content prose-label-md-medium inline-flex items-center gap-1 ring-offset-2 hover:underline focus-visible:ring"
+                        >
+                          {subItem.name}
+                          <BiRightArrowAlt className="text-[1.25rem]" />
+                        </LinkComponent>
+                        <p className="text-base-content-subtle prose-label-sm-regular">
+                          {subItem.description}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </FocusScope>
