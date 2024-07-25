@@ -78,7 +78,7 @@ export const pageRouter = router({
           "Resource.id",
           "Resource.permalink",
           "Resource.title",
-          "Resource.mainBlobId",
+          "Resource.versionId",
           "Resource.draftBlobId",
           "Resource.type",
         ])

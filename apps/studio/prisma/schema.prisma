@@ -33,6 +33,16 @@ model VerificationToken {
   expires    DateTime
 }
 
+model Version {
+  id          BigInt   @id @default(autoincrement())
+  versionNum  BigInt
+  resourceId  BigInt   @unique
+  resource    Resource @relation("CurrentVersion", fields: [resourceId], references: [id])
+  blobId      BigInt
+  blob        Blob     @relation(fields: [blobId], references: [id])
+  publishedAt DateTime @default(now())
+}
+
 model Resource {
   id        BigInt    @id @default(autoincrement())
   title     String
@@ -46,14 +56,23 @@ model Resource {
 
   permission Permission[]
 
-  mainBlob   Blob?   @relation("MainBlob", fields: [mainBlobId], references: [id])
-  mainBlobId BigInt? @unique
+  versionId BigInt?
+  version   Version? @relation("CurrentVersion")
 
-  draftBlob   Blob?   @relation("DraftBlob", fields: [draftBlobId], references: [id])
   draftBlobId BigInt? @unique
+  draftBlob   Blob?   @relation(fields: [draftBlobId], references: [id])
 
   state ResourceState? @default(Draft)
   type  ResourceType
+}
+
+model Blob {
+  id            BigInt    @id @default(autoincrement())
+  /// @kyselyType(PrismaJson.BlobJsonContent)
+  /// [BlobJsonContent]
+  content       Json
+  versions      Version[]
+  draftResource Resource?
 }
 
 enum ResourceState {
@@ -122,16 +141,6 @@ model Footer {
   /// @kyselyType(PrismaJson.FooterJsonContent)
   /// [FooterJsonContent]
   content Json
-}
-
-model Blob {
-  id      BigInt @id @default(autoincrement())
-  /// @kyselyType(PrismaJson.BlobJsonContent)
-  /// [BlobJsonContent]
-  content Json
-
-  mainResource  Resource? @relation("MainBlob")
-  draftResource Resource? @relation("DraftBlob")
 }
 
 model SiteMember {

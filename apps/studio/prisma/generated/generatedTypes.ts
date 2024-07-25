@@ -46,7 +46,7 @@ export interface Resource {
   permalink: string
   siteId: number
   parentId: string | null
-  mainBlobId: string | null
+  versionId: string | null
   draftBlobId: string | null
   state: Generated<ResourceState | null>
   type: ResourceType
@@ -77,6 +77,13 @@ export interface VerificationToken {
   attempts: Generated<number>
   expires: Timestamp
 }
+export interface Version {
+  id: GeneratedAlways<string>
+  versionNum: string
+  resourceId: string
+  blobId: string
+  publishedAt: Generated<Timestamp>
+}
 export interface DB {
   Blob: Blob
   Footer: Footer
@@ -87,4 +94,5 @@ export interface DB {
   SiteMember: SiteMember
   User: User
   VerificationToken: VerificationToken
+  Version: Version
 }

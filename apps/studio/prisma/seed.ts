@@ -223,7 +223,7 @@ async function main() {
   await db
     .insertInto("Resource")
     .values({
-      mainBlobId: String(blobId),
+      draftBlobId: String(blobId),
       permalink: "home",
       siteId,
       type: "Page",
@@ -232,8 +232,8 @@ async function main() {
 
     .onConflict((oc) =>
       oc
-        .column("mainBlobId")
-        .doUpdateSet((eb) => ({ mainBlobId: eb.ref("excluded.mainBlobId") })),
+        .column("draftBlobId")
+        .doUpdateSet((eb) => ({ draftBlobId: eb.ref("excluded.draftBlobId") })),
     )
     .executeTakeFirstOrThrow()
 

@@ -12,7 +12,7 @@ const defaultResourceSelect: SelectExpression<DB, "Resource">[] = [
   "Resource.permalink",
   "Resource.siteId",
   "Resource.parentId",
-  "Resource.mainBlobId",
+  "Resource.versionId",
   "Resource.draftBlobId",
   "Resource.type",
   "Resource.state",
@@ -89,8 +89,9 @@ export const getFullPageById = async (
   }
 
   return getById(tx, args)
-    .where("Resource.mainBlobId", "is not", null)
-    .innerJoin("Blob", "Resource.mainBlobId", "Blob.id")
+    .where("Resource.versionId", "is not", null)
+    .innerJoin("Version", "Resource.versionId", "Version.id")
+    .innerJoin("Blob", "Version.blobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
     .forUpdate()
     .executeTakeFirst()

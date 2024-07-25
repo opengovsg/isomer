@@ -12,3 +12,4 @@ export type Site = Selectable<T.Site>
 export type SiteMember = Selectable<T.SiteMember>
 export type User = Selectable<T.User>
 export type VerificationToken = Selectable<T.VerificationToken>
+export type Version = Selectable<T.Version>
