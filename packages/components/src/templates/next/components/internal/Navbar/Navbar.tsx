@@ -21,8 +21,15 @@ const navbarStyles = tv({
     icon: "my-3 flex h-[2.125rem] w-[2.125rem] items-center justify-center text-[1.25rem] lg:my-[1.1875rem]",
     logo: "my-3 h-10 w-32 max-w-[6.625rem] object-contain object-center lg:h-12 lg:max-w-32",
     navbar:
-      "mx-auto flex min-h-16 w-full max-w-screen-xl gap-x-4 px-10 lg:min-h-[4.25rem] lg:gap-x-6",
+      "mx-auto flex min-h-16 w-full max-w-screen-xl gap-x-4 px-6 lg:min-h-[4.25rem] lg:gap-x-6 lg:px-10",
     navItemContainer: "hidden flex-wrap items-center gap-x-6 lg:flex",
+  },
+  variants: {
+    isHamburgerOpen: {
+      true: {
+        navbar: "sticky top-0 z-10 bg-white",
+      },
+    },
   },
 })
 
@@ -60,7 +67,7 @@ export const Navbar = ({
   return (
     <div className="relative flex flex-col">
       {/* Site header */}
-      <div className={navbar()} ref={siteHeaderRef}>
+      <div className={navbar({ isHamburgerOpen })} ref={siteHeaderRef}>
         {/* Logo */}
         <LinkComponent href="/">
           <img src={logoUrl} alt={logoAlt} className={logo()} />
@@ -120,10 +127,10 @@ export const Navbar = ({
                 setIsHamburgerOpen(false)
                 setOpenNavItemIdx(-1)
               }}
+              className={icon({ className: "text-[1.5rem]" })}
               aria-label="Close navigation menu"
             >
-              Close
-              <BiX className="-mt-0.5 ml-1 inline text-2xl" />
+              <BiX />
             </button>
           ) : (
             <button
