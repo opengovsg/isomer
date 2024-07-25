@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { startTransition, useEffect, useRef, useState } from "react"
 import {
   BiChevronRight,
   BiLeftArrowAlt,
@@ -9,6 +9,7 @@ import {
   BiSearch,
   BiX,
 } from "react-icons/bi"
+import { useOnClickOutside } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
@@ -25,7 +26,6 @@ export const Navbar = ({
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [siteHeaderBottomY, setSiteHeaderBottomY] = useState(0)
 
   // Reference for navigation items bar on desktop
   const navDesktopRef = useRef<HTMLUListElement>(null)
@@ -33,19 +33,16 @@ export const Navbar = ({
   // Reference for the site header
   const siteHeaderRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const onResize = () => {
-      setSiteHeaderBottomY(
-        siteHeaderRef.current?.getBoundingClientRect().bottom || 0,
-      )
-    }
+  const handleClickOutside = () => {
+    startTransition(() => {
+      setOpenNavItemIdx(-1)
+    })
+  }
 
-    onResize()
-    window.addEventListener("resize", onResize)
-    return () => {
-      window.removeEventListener("resize", onResize)
-    }
-  }, [])
+  const megaMenuRef = useRef(null)
+  const activeNavRef = useRef(null)
+
+  useOnClickOutside([activeNavRef, megaMenuRef], handleClickOutside, "mouseup")
 
   return (
     <div className="relative flex flex-col">
@@ -71,14 +68,18 @@ export const Navbar = ({
           >
             {items.map((item, idx) => (
               <NavItem
+                megaMenuRef={megaMenuRef}
+                ref={openNavItemIdx === idx ? activeNavRef : null}
                 LinkComponent={LinkComponent}
                 {...item}
-                onClickOutside={() => {
-                  setOpenNavItemIdx(-1)
+                onCloseMegamenu={() => {
+                  startTransition(() => {
+                    setOpenNavItemIdx(-1)
+                  })
                 }}
                 onClick={() => {
                   setIsSearchOpen(false)
-                  setOpenNavItemIdx(idx)
+                  setOpenNavItemIdx((currIdx) => (currIdx === idx ? -1 : idx))
                 }}
                 isOpen={openNavItemIdx === idx}
                 key={`${item.name}-{idx}`}
@@ -163,12 +164,7 @@ export const Navbar = ({
 
       {/* Navigation items, first level (for mobile/tablet) */}
       {isHamburgerOpen && openNavItemIdx === -1 && (
-        <div
-          className="block lg:hidden"
-          style={{
-            height: `calc(100vh - ${siteHeaderBottomY}px)`,
-          }}
-        >
+        <div className="block lg:hidden">
           <ul className="px-6 pt-4">
             {items.map(({ name, url, items }, idx) => {
               if (!items || items.length === 0) {
