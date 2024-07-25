@@ -149,7 +149,6 @@ export default function RootStateDrawer() {
         </DragDropContext>
       </VStack>
       <Spacer />
-      {/* TODO: Add New Block Section */}
       <Box
         w="100%"
         bgColor="base.canvas.default"
