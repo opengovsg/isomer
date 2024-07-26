@@ -208,7 +208,7 @@ export const Navbar = ({
             top: siteHeaderBottomPx,
           }}
         >
-          <div className="border-t-base-divider-subtle absolute inset-0 overflow-auto border-t bg-white">
+          <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
             {items.map((item, index) => (
               <MobileNavItemAccordion
                 key={`${item.name}-${index}`}
