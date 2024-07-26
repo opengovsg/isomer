@@ -4,11 +4,24 @@ import { userEvent, within } from "@storybook/test"
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
 import type { NavbarProps } from "~/interfaces"
+import Masthead from "../Masthead"
 import Navbar from "./Navbar"
+
+const Renderer = (props: NavbarProps) => {
+  return (
+    <div className="flex min-h-dvh flex-col">
+      <Masthead />
+      <Navbar {...props} />
+      <div className="h-[calc(100vh+300px)] bg-red-500">
+        This mimics content that may overflow in a real preview
+      </div>
+    </div>
+  )
+}
 
 const meta: Meta<NavbarProps> = {
   title: "Next/Internal Components/Navbar",
-  component: Navbar,
+  component: Renderer,
   args: {
     logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
     logoAlt: "Isomer logo",
