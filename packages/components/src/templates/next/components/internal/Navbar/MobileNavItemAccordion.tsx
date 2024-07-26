@@ -18,7 +18,7 @@ const mobileItemStyles = tv({
     sublist: "flex flex-col gap-3.5",
     nestedItem: "text-base-content-medium prose-body-base py-1",
     chevron:
-      "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
+      "text-[1.5rem] transition-transform duration-300 ease-in-out motion-reduce:transition-none",
   },
   variants: {
     isOpen: {

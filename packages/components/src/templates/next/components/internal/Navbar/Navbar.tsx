@@ -15,7 +15,7 @@ import { NavItem } from "./NavItem"
 const navbarStyles = tv({
   slots: {
     overlay: "fixed inset-0 bg-canvas-overlay bg-opacity-40",
-    icon: "my-3 flex h-[2.125rem] w-[2.125rem] items-center justify-center text-[1.25rem] lg:my-[1.1875rem]",
+    icon: "my-3 flex items-center justify-center text-[1.25rem] lg:my-[1.1875rem] lg:h-[2.125rem] lg:w-[2.125rem]",
     logo: "my-3 h-10 w-32 max-w-[6.625rem] object-contain object-center lg:h-12 lg:max-w-32",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
     navbar:
