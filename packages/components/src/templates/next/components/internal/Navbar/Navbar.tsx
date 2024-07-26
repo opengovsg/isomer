@@ -1,6 +1,7 @@
 "use client"
 
 import { startTransition, useCallback, useRef, useState } from "react"
+import { usePreventScroll } from "react-aria"
 import { BiSearch, BiX } from "react-icons/bi"
 import { tv } from "tailwind-variants"
 import { useOnClickOutside } from "usehooks-ts"
@@ -55,14 +56,18 @@ export const Navbar = ({
   const siteHeaderRef = useRef<HTMLDivElement>(null)
 
   const handleClickOutside = useCallback(() => {
-    startTransition(() => {
+    if (!isHamburgerOpen) {
       setOpenNavItemIdx(-1)
-    })
-  }, [])
+    }
+  }, [isHamburgerOpen])
 
   const megaMenuRef = useRef(null)
   const activeNavRef = useRef(null)
   const mobileMenuRef = useRef(null)
+
+  usePreventScroll({
+    isDisabled: !isHamburgerOpen,
+  })
 
   useOnClickOutside(
     [activeNavRef, megaMenuRef, mobileMenuRef],
@@ -183,21 +188,28 @@ export const Navbar = ({
       {isHamburgerOpen && (
         <div
           ref={mobileMenuRef}
-          className="border-t-base-divider-subtle absolute left-0 right-0 top-[100%] h-[calc(100dvh-4rem)] overflow-auto border-t"
+          className="fixed inset-0"
+          style={{
+            top: siteHeaderRef.current?.getBoundingClientRect().bottom,
+          }}
         >
-          {items.map((item, index) => (
-            <MobileNavItemAccordion
-              key={`${item.name}-${index}`}
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              LinkComponent={LinkComponent}
-              index={index}
-              isOpen={index === openNavItemIdx}
-              onClick={() =>
-                setOpenNavItemIdx((currIdx) => (currIdx === index ? -1 : index))
-              }
-              {...item}
-            />
-          ))}
+          <div className="border-t-base-divider-subtle absolute inset-0 z-20 overflow-auto border-t bg-white">
+            {items.map((item, index) => (
+              <MobileNavItemAccordion
+                key={`${item.name}-${index}`}
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                LinkComponent={LinkComponent}
+                index={index}
+                isOpen={index === openNavItemIdx}
+                onClick={() =>
+                  setOpenNavItemIdx((currIdx) =>
+                    currIdx === index ? -1 : index,
+                  )
+                }
+                {...item}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
