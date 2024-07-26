@@ -19,6 +19,7 @@ export const ContentPageHeaderSchema = Type.Object(
       Type.String({
         title: "Button URL",
         description: "The URL the button should link to",
+        format: "link",
       }),
     ),
   },

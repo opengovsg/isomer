@@ -34,6 +34,7 @@ export const InfopicSchema = Type.Object(
       Type.String({
         title: "Button destination",
         description: "When this is clicked, open:",
+        format: "link",
       }),
     ),
   },
