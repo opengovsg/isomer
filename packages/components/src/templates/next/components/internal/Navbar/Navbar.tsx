@@ -47,7 +47,7 @@ export const Navbar = ({
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
 
-  const isMenuOpen = openNavItemIdx !== -1
+  const isMenuOpen = openNavItemIdx !== -1 || isHamburgerOpen
 
   // Reference for navigation items bar on desktop
   const navDesktopRef = useRef<HTMLUListElement>(null)
@@ -66,7 +66,7 @@ export const Navbar = ({
   const mobileMenuRef = useRef(null)
 
   usePreventScroll({
-    isDisabled: !isHamburgerOpen,
+    isDisabled: !isMenuOpen,
   })
 
   useOnClickOutside(
