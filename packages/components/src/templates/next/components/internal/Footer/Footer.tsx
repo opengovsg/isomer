@@ -191,7 +191,7 @@ const LegalSection = ({
           {isGovernment ? "Government of Singapore" : agencyName}, last updated{" "}
           {lastUpdated}
         </p>
-        <div className="prose-body-base flex flex-col gap-3 lg:flex-row lg:gap-8">
+        <div className="prose-body-sm flex flex-col gap-3 lg:flex-row lg:gap-8">
           {isGovernment && (
             <FooterItem
               title="Report Vulnerability"
