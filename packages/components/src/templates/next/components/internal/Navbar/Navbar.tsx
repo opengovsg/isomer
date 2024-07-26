@@ -1,10 +1,10 @@
 "use client"
 
-import { useCallback, useRef, useState } from "react"
+import { startTransition, useCallback, useRef, useState } from "react"
 import { usePreventScroll } from "react-aria"
 import { BiSearch, BiX } from "react-icons/bi"
 import { tv } from "tailwind-variants"
-import { useOnClickOutside } from "usehooks-ts"
+import { useIsomorphicLayoutEffect, useOnClickOutside } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
@@ -38,6 +38,7 @@ export const Navbar = ({
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [siteHeaderBottomPx, setSiteHeaderBottomPx] = useState<number>()
 
   const isMenuOpen = openNavItemIdx !== -1 || isHamburgerOpen
 
@@ -46,6 +47,21 @@ export const Navbar = ({
 
   // Reference for the site header
   const siteHeaderRef = useRef<HTMLDivElement>(null)
+
+  useIsomorphicLayoutEffect(() => {
+    function updateBottomPx() {
+      if (siteHeaderRef.current) {
+        startTransition(() => {
+          setSiteHeaderBottomPx(
+            siteHeaderRef.current?.getBoundingClientRect().bottom,
+          )
+        })
+      }
+    }
+    window.addEventListener("resize", updateBottomPx)
+    updateBottomPx()
+    return () => window.removeEventListener("resize", updateBottomPx)
+  }, [])
 
   const handleClickOutside = useCallback(() => {
     if (!isHamburgerOpen) {
@@ -73,7 +89,7 @@ export const Navbar = ({
         <div
           aria-hidden
           style={{
-            top: siteHeaderRef.current?.getBoundingClientRect().bottom,
+            top: siteHeaderBottomPx,
           }}
           className={overlay()}
         />
@@ -90,7 +106,7 @@ export const Navbar = ({
           <ul className={navItemContainer()} ref={navDesktopRef}>
             {items.map((item, index) => (
               <NavItem
-                top={siteHeaderRef.current?.getBoundingClientRect().bottom}
+                top={siteHeaderBottomPx}
                 key={`${item.name}-${index}`}
                 megaMenuRef={megaMenuRef}
                 ref={openNavItemIdx === index ? activeNavRef : null}
@@ -189,7 +205,7 @@ export const Navbar = ({
           ref={mobileMenuRef}
           className="fixed inset-0"
           style={{
-            top: siteHeaderRef.current?.getBoundingClientRect().bottom,
+            top: siteHeaderBottomPx,
           }}
         >
           <div className="border-t-base-divider-subtle absolute inset-0 overflow-auto border-t bg-white">
