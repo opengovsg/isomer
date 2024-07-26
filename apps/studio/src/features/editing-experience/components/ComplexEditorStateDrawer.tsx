@@ -79,7 +79,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         bottom={0}
         bgColor="base.canvas.default"
         boxShadow="md"
-        p="1.5rem 2rem 1.5rem 2rem"
+        py="1.5rem"
+        px="2rem"
       >
         <Button
           w="100%"

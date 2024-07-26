@@ -151,8 +151,9 @@ export default function RootStateDrawer() {
         w="100%"
         bgColor="base.canvas.default"
         boxShadow="md"
-        p="1.5rem 2rem 1.5rem 2rem"
         pos="sticky"
+        py="1.5rem"
+        px="2rem"
         bottom={0}
       >
         <Button
