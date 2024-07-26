@@ -13,10 +13,10 @@ interface NavItemAccordionProps
 
 const mobileItemStyles = tv({
   slots: {
-    container: "flex flex-col gap-6 border-b border-b-base-divider-subtle",
-    item: "prose-headline-base-medium flex w-full justify-between gap-6 px-6 py-3 text-left text-base-content",
+    container: "border-b-base-divider-subtle flex flex-col gap-6 border-b",
+    item: "text-base-content prose-headline-base-medium flex w-full items-center justify-between gap-6 px-6 py-3 text-left",
     sublist: "flex flex-col gap-3.5",
-    nestedItem: "prose-body-base py-1 text-base-content-medium",
+    nestedItem: "text-base-content-medium prose-body-base py-1",
     chevron:
       "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
   },
