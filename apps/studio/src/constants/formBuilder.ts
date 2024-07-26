@@ -11,6 +11,7 @@ export const JSON_FORMS_RANKING = {
   AnyOfControl: 3,
   ProseControl: 2,
   RadioControl: 3,
+  LinkControl: 3,
   GroupLayoutRenderer: 1,
   VerticalLayoutRenderer: 1,
 }

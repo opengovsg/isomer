@@ -23,6 +23,7 @@ export const InfobarSchema = Type.Object(
       Type.String({
         title: "Button destination",
         description: "When this is clicked, open:",
+        format: "link",
       }),
     ),
     secondaryButtonLabel: Type.Optional(
@@ -36,6 +37,7 @@ export const InfobarSchema = Type.Object(
       Type.String({
         title: "Secondary button destination",
         description: "When this is clicked, open:",
+        format: "link",
       }),
     ),
   },
