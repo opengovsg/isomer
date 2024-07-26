@@ -1,6 +1,6 @@
 "use client"
 
-import { startTransition, useCallback, useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { usePreventScroll } from "react-aria"
 import { BiSearch, BiX } from "react-icons/bi"
 import { tv } from "tailwind-variants"
@@ -14,21 +14,13 @@ import { NavItem } from "./NavItem"
 
 const navbarStyles = tv({
   slots: {
-    overlay:
-      "fixed bottom-0 left-0 right-0 top-0 bg-canvas-overlay bg-opacity-40",
+    overlay: "fixed inset-0 bg-canvas-overlay bg-opacity-40",
     icon: "my-3 flex h-[2.125rem] w-[2.125rem] items-center justify-center text-[1.25rem] lg:my-[1.1875rem]",
     logo: "my-3 h-10 w-32 max-w-[6.625rem] object-contain object-center lg:h-12 lg:max-w-32",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
     navbar:
       "mx-auto flex w-full max-w-screen-xl gap-x-4 px-6 lg:gap-x-6 lg:px-10",
     navItemContainer: "hidden flex-wrap items-center gap-x-6 lg:flex",
-  },
-  variants: {
-    isMenuOpen: {
-      true: {
-        navbarContainer: "z-20",
-      },
-    },
   },
 })
 
@@ -78,10 +70,16 @@ export const Navbar = ({
   return (
     <div className="relative flex flex-col">
       {isMenuOpen && !isHamburgerOpen && (
-        <div aria-hidden className={overlay()} />
+        <div
+          aria-hidden
+          style={{
+            top: siteHeaderRef.current?.getBoundingClientRect().bottom,
+          }}
+          className={overlay()}
+        />
       )}
       {/* Site header */}
-      <div className={navbarContainer({ isMenuOpen })} ref={siteHeaderRef}>
+      <div className={navbarContainer()} ref={siteHeaderRef}>
         <div className={navbar()}>
           {/* Logo */}
           <LinkComponent href="/">
@@ -92,6 +90,7 @@ export const Navbar = ({
           <ul className={navItemContainer()} ref={navDesktopRef}>
             {items.map((item, index) => (
               <NavItem
+                top={siteHeaderRef.current?.getBoundingClientRect().bottom}
                 key={`${item.name}-${index}`}
                 megaMenuRef={megaMenuRef}
                 ref={openNavItemIdx === index ? activeNavRef : null}
@@ -193,7 +192,7 @@ export const Navbar = ({
             top: siteHeaderRef.current?.getBoundingClientRect().bottom,
           }}
         >
-          <div className="border-t-base-divider-subtle absolute inset-0 z-20 overflow-auto border-t bg-white">
+          <div className="border-t-base-divider-subtle absolute inset-0 overflow-auto border-t bg-white">
             {items.map((item, index) => (
               <MobileNavItemAccordion
                 key={`${item.name}-${index}`}
