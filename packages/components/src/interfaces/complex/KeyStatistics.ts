@@ -10,11 +10,12 @@ export const KeyStatisticsSchema = Type.Object(
     statistics: Type.Array(
       Type.Object({
         label: Type.String({
-          title: "Number",
-          description: "Keep it succinct. E.g., 3.3%, $12M",
+          title: "Description",
+          maxLength: 100,
         }),
         value: Type.String({
-          title: "Description",
+          title: "Number",
+          description: "Keep it succinct. E.g., 3.3%, $12M",
         }),
       }),
       {

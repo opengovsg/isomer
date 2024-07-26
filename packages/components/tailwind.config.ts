@@ -1,4 +1,7 @@
 /** @type {import('tailwindcss').Config} */
+import formsPlugin from "@tailwindcss/forms"
+import typographyPlugin from "@tailwindcss/typography"
+
 import classicPreset from "./src/presets/classic"
 import nextPreset from "./src/presets/next"
 
@@ -28,5 +31,5 @@ export default {
       },
     },
   },
-  plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography")],
+  plugins: [formsPlugin, typographyPlugin],
 }
