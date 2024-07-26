@@ -4,7 +4,7 @@ import { Prose } from "../../native"
 const Callout = ({ content }: CalloutProps) => {
   return (
     <div
-      className={`rounded border border-utility-info bg-utility-info-subtle p-6 [&:not(:first-child)]:mt-8`}
+      className={`prose-headline-lg-regular rounded border border-utility-info bg-utility-info-subtle px-5 py-4 [&:not(:first-child)]:mt-7`}
     >
       <Prose {...content} />
     </div>
