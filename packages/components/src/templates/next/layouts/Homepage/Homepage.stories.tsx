@@ -21,7 +21,9 @@ const meta: Meta<typeof Homepage> = {
   component: Homepage,
   render: Template,
   argTypes: {},
+  tags: ["!autodocs"],
   parameters: {
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -33,6 +35,7 @@ type Story = StoryObj<typeof Homepage>
 const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
 
 export const Default: Story = {
+  name: "Homepage",
   args: {
     layout: "homepage",
     site: {

@@ -7,7 +7,9 @@ const meta: Meta<ArticlePageSchemaType> = {
   title: "Next/Layouts/Article",
   component: ArticleLayout,
   argTypes: {},
+  tags: ["!autodocs"],
   parameters: {
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -17,6 +19,7 @@ export default meta
 type Story = StoryObj<typeof ArticleLayout>
 
 export const Default: Story = {
+  name: "Article",
   args: {
     layout: "article",
     site: {

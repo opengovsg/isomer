@@ -7,7 +7,9 @@ const meta: Meta<CollectionPageSchemaType> = {
   title: "Next/Layouts/Collection",
   component: CollectionLayout,
   argTypes: {},
+  tags: ["!autodocs"],
   parameters: {
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -17,6 +19,7 @@ export default meta
 type Story = StoryObj<typeof CollectionLayout>
 
 export const Default: Story = {
+  name: "Collection",
   args: {
     layout: "collection",
     site: {
