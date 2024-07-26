@@ -6,14 +6,10 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import EditPageDrawer from "~/features/editing-experience/components/EditPageDrawer"
 import Preview from "~/features/editing-experience/components/Preview"
 import { PreviewIframe } from "~/features/editing-experience/components/PreviewIframe"
+import { editPageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
-
-export const editPageSchema = z.object({
-  pageId: z.coerce.number(),
-  siteId: z.coerce.number(),
-})
 
 function EditPage(): JSX.Element {
   const {
