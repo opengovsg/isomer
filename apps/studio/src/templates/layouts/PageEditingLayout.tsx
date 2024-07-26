@@ -1,6 +1,5 @@
 import { Flex, Grid } from "@chakra-ui/react"
 
-import { AppNavbar } from "~/components/AppNavbar"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { APP_GRID_TEMPLATE_AREA } from "~/constants/layouts"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"

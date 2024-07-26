@@ -1,24 +1,9 @@
 import Link from "next/link"
-import { useRouter } from "next/router"
-import {
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Button,
-  Flex,
-  HStack,
-  Menu,
-} from "@chakra-ui/react"
-import {
-  AvatarMenu,
-  AvatarMenuDivider,
-  Breadcrumb,
-} from "@opengovsg/design-system-react"
-import { BiLinkExternal } from "react-icons/bi"
+import { BreadcrumbItem, BreadcrumbLink, Flex } from "@chakra-ui/react"
+import { Breadcrumb } from "@opengovsg/design-system-react"
 
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
-import { useMe } from "~/features/me/api"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { DASHBOARD, SETTINGS_PROFILE } from "~/lib/routes"
 import { editPageSchema } from "../schema"
 
 export const SiteEditNavbar = (): JSX.Element => {
