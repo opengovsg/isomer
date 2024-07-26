@@ -1,14 +1,11 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { useState } from "react"
 import { Box, FormControl, Text } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { Attachment, FormLabel, useToast } from "@opengovsg/design-system-react"
-import wretch from "wretch"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { trpc } from "~/utils/trpc"
 import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPES,
   MAX_IMG_FILE_SIZE_BYTES,
@@ -28,7 +25,6 @@ export function JsonFormsImageControl({
   description,
   required,
 }: ControlProps) {
-  const { pageId, siteId } = useParams()
   const toast = useToast()
 
   const [pendingFile, setPendingFile] = useState<File | undefined>()
