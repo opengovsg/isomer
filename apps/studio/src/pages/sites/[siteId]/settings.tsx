@@ -89,13 +89,13 @@ const SiteSettingsPage: NextPageWithLayout = () => {
   const { isDirty, errors } = formState
 
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const [nextURL, setNextURL] = useState("")
+  const [nextUrl, setNextUrl] = useState("")
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
       if (isDirty) {
         router.events.off("routeChangeStart", handleRouteChange)
-        setNextURL(url)
+        setNextUrl(url)
         onOpen()
         router.events.emit("routeChangeError")
         throw "Error to abort router route change. Ignore this!"
@@ -125,7 +125,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
       <UnsavedSettingModal
         isOpen={isOpen}
         onClose={onClose}
-        nextURL={nextURL}
+        nextUrl={nextUrl}
       />
       <form onSubmit={onClickUpdate}>
         <Center pt="5.5rem">

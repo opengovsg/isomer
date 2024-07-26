@@ -13,13 +13,13 @@ import { Button } from "@opengovsg/design-system-react"
 
 interface UnsavedSettingModalProps
   extends Pick<UseDisclosureReturn, "isOpen" | "onClose"> {
-  nextURL: string
+  nextUrl: string
 }
 
 export const UnsavedSettingModal = ({
   isOpen,
   onClose,
-  nextURL,
+  nextUrl: nextURL,
 }: UnsavedSettingModalProps): JSX.Element => {
   const router = useRouter()
   return (
