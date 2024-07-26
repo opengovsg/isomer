@@ -51,7 +51,6 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     },
     onError: (error) => {
       // TODO: Remove the console when done
-      console.log(error)
       toast({
         title: "Error saving site settings!",
         description:
@@ -64,8 +63,6 @@ const SiteSettingsPage: NextPageWithLayout = () => {
   const [previousNotification] = trpc.site.getNotification.useSuspenseQuery({
     siteId,
   })
-
-  console.log("previous notificion", previousNotification)
 
   const { register, handleSubmit, watch, formState, reset } = useZodForm({
     schema: setNotificationSchema
@@ -119,7 +116,6 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     },
   )
 
-  console.log("errors", errors)
   return (
     <>
       <UnsavedSettingModal
