@@ -14,6 +14,11 @@ updates:
         patterns:
           - "@prisma/client"
           - "prisma"
+      react:
+        applies-to: version-updates
+        patterns:
+          - "react"
+          - "react-dom"
       storybook:
         applies-to: version-updates
         patterns:
