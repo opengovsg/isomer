@@ -30,11 +30,6 @@ const siteSettingsSchema = z.object({
   siteId: z.coerce.number(),
 })
 
-interface SettingFormValues {
-  notificationEnabled: boolean
-  notificationText: string
-}
-
 const SiteSettingsPage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
@@ -79,7 +74,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
       .refine((data) => !data.notificationEnabled || data.notification, {
         message: "Notification must not be empty",
         path: ["notification"],
-      }), // <- from the shared schema that the trpc procedure uses
+      }),
     defaultValues: {
       notificationEnabled: previousNotification !== "",
       notification: previousNotification ? previousNotification : "",
