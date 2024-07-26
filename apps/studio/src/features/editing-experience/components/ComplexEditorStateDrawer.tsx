@@ -3,17 +3,12 @@ import { Box, Heading, HStack, Icon } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { BiDollar, BiX } from "react-icons/bi"
-import z from "zod"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 import { trpc } from "~/utils/trpc"
 import FormBuilder from "./form-builder/FormBuilder"
-
-const complexEditorSchema = z.object({
-  pageId: z.coerce.number(),
-  siteId: z.coerce.number(),
-})
 
 interface ComplexEditorStateDrawerProps {
   component: IsomerComponent
@@ -22,7 +17,7 @@ interface ComplexEditorStateDrawerProps {
 const ComplexEditorStateDrawer = ({
   component,
 }: ComplexEditorStateDrawerProps) => {
-  const { pageId, siteId } = useQueryParse(complexEditorSchema)
+  const { pageId, siteId } = useQueryParse(editPageSchema)
   const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
     { siteId, pageId },
   )
