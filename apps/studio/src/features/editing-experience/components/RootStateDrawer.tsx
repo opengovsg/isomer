@@ -5,7 +5,6 @@ import {
   Divider,
   HStack,
   Icon,
-  Spacer,
   Text,
   VStack,
 } from "@chakra-ui/react"
@@ -148,13 +147,14 @@ export default function RootStateDrawer() {
           </Droppable>
         </DragDropContext>
       </VStack>
-      <Spacer />
-      {/* TODO: Add New Block Section */}
       <Box
         w="100%"
-        bgColor="white"
-        p="1.5rem 2rem 1.5rem 2rem"
-        boxShadow="0px 0px 10px 0px #BFBFBF80"
+        bgColor="base.canvas.default"
+        boxShadow="md"
+        pos="sticky"
+        py="1.5rem"
+        px="2rem"
+        bottom={0}
       >
         <Button
           w="100%"
