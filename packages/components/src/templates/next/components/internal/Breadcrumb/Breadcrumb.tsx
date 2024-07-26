@@ -11,14 +11,16 @@ const Breadcrumb = ({ links, LinkComponent = "a" }: BreadcrumbProps) => {
           <div key={index} className="flex flex-row items-center gap-1">
             <LinkComponent
               href={link.url}
-              className={`text-sm underline decoration-transparent underline-offset-2 transition duration-150 ease-in hover:decoration-inherit active:text-hyperlink ${
-                isLast ? "font-medium text-gray-700" : "text-gray-600"
+              className={`underline decoration-transparent underline-offset-4 transition duration-150 ease-in hover:decoration-inherit active:text-interaction-link-active ${
+                isLast
+                  ? "prose-label-md-medium text-base-content-medium"
+                  : "text-base-contentcontent prose-label-md-regular"
               }`}
             >
               {link.title}
             </LinkComponent>
             {!isLast && (
-              <MdChevronRight className="h-auto min-w-6 text-gray-400" />
+              <MdChevronRight className="h-auto min-w-5 fill-base-content-subtle" />
             )}
           </div>
         )
