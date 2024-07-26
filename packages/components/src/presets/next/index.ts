@@ -1,14 +1,38 @@
-/** @type {import('tailwindcss').Config} */
+import type { Config } from "tailwindcss"
 import defaultTheme from "tailwindcss/defaultTheme"
 import plugin from "tailwindcss/plugin"
 
-export default {
+import { colors } from "./colors"
+import { isomerTypography } from "./typography"
+
+const config: Config = {
+  content: [],
   theme: {
     extend: {
       boxShadow: {
         sm: "0 0px 10px 0px rgba(191, 191, 191, 0.5)",
       },
       colors: {
+        ...colors,
+        // TODO: Should be injected by the site theme
+        // Currently using MOH theme as an example
+        brand: {
+          canvas: {
+            primary: "#00405F",
+            alt: "#80A0AF",
+            backdrop: "#E6ECEF",
+          },
+          interaction: {
+            DEFAULT: "#00405F",
+            hover: {
+              DEFAULT: "#002E44",
+              inverse: "#002E44",
+            },
+            pressed: "#00283B",
+          },
+        },
+        // Everything below is deprecated and should be removed when
+        // all components are using the new color tokens above
         canvas: {
           DEFAULT: "#ffffff",
           overlay: "#00000066",
@@ -45,6 +69,7 @@ export default {
           subtle: "#f2f2f2",
         },
         utility: {
+          ...colors.utility,
           info: {
             DEFAULT: "#87bdff",
             subtle: "#e0eeff",
@@ -102,7 +127,10 @@ export default {
     },
   },
   plugins: [
-    plugin(({ addBase, addUtilities, theme }: any) => {
+    isomerTypography,
+    // !! @deprecated, use isomerTypography plugin instead
+    // Delete after no components are using these classes anymore,
+    plugin(({ addBase, addUtilities, theme }) => {
       addUtilities({
         /* Heading typography tokens */
         ".text-heading-01": {
@@ -248,6 +276,7 @@ export default {
       // Add Inter as a base font
       // CSS taken from https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap
       addBase({
+        // @ts-expect-error Tailwind types did not account for @font-face
         "@font-face": [
           {
             fontFamily: "Inter",
@@ -316,3 +345,5 @@ export default {
     }),
   ],
 }
+
+export default config

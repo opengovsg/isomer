@@ -55,7 +55,7 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: jsonFormsVerticalLayoutRenderer,
   },
 ]
-const ajv = new Ajv({ strict: false, logger: false })
+const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
 
 export default function FormBuilder(): JSX.Element {
   const {
