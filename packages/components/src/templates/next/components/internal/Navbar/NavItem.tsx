@@ -21,7 +21,7 @@ interface NavbarItemProps
 const navbarItemStyles = tv({
   slots: {
     megamenu: "max-h-full overflow-auto bg-white shadow-md",
-    item: "text-base-content-strong hover:text-brand-interaction-hover prose-label-md-medium flex h-[4.25rem] flex-row items-center gap-0.5 border-b-2 border-transparent transition-all motion-reduce:transition-none",
+    item: "text-base-content-strong hover:text-brand-interaction-hover prose-label-md-medium flex h-[4.25rem] flex-row items-center gap-0.5 border-b-2 border-transparent transition-colors motion-reduce:transition-none",
     chevron:
       "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
   },
@@ -97,7 +97,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
                     <button
                       onClick={onCloseMegamenu}
                       aria-label="Close navigation item"
-                      className="flex h-[2.125rem] w-[2.125rem] items-center justify-center text-[1.5rem] outline-none ring-offset-2 focus-visible:ring"
+                      className="flex h-[2.125rem] w-[2.125rem] items-center justify-center text-[1.5rem]"
                     >
                       <BiX />
                     </button>
@@ -109,7 +109,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
                         <div className="flex flex-col gap-1.5">
                           <LinkComponent
                             href={subItem.url}
-                            className="text-base-content prose-label-md-medium inline-flex items-center gap-1 ring-offset-2 hover:underline focus-visible:ring"
+                            className="text-base-content prose-label-md-medium inline-flex items-center gap-1 hover:underline"
                           >
                             {subItem.name}
                             <BiRightArrowAlt className="text-[1.25rem]" />
