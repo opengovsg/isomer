@@ -268,7 +268,7 @@ const FooterMobile = ({
   siteMapLink,
 }: FooterProps) => {
   return (
-    <div className="flex flex-col gap-14 px-6 py-16 md:p-20 lg:hidden">
+    <div className="flex flex-col gap-16 px-6 py-11 md:px-10 lg:hidden lg:py-16">
       <SiteNameSection siteName={siteName} />
       <NavSection
         siteNavItems={navItems}
