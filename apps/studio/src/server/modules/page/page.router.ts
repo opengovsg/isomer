@@ -283,9 +283,15 @@ export const pageRouter = router({
             siteId,
           })
         } catch (e) {
-          ctx.logger.error("CodeBuild project creation failure", {
+          const msg = "CodeBuild project creation failure"
+          ctx.logger.error(msg, {
             userId: ctx.user.id,
             siteId,
+          })
+          throw new TRPCError({
+            message: msg,
+            code: "INTERNAL_SERVER_ERROR",
+            cause: e,
           })
         }
 
@@ -296,7 +302,6 @@ export const pageRouter = router({
 
       // initiate new build
       await startProjectById(codeBuildId)
-
       return addedVersionResult
     }),
 })
