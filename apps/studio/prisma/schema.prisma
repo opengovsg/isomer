@@ -116,6 +116,7 @@ model Permission {
 model Site {
   id          Int          @id @default(autoincrement())
   name        String       @unique
+  shortName   String?
   resources   Resource[]
   siteMembers SiteMember[]
   // NOTE: This is `theme/isGovernment/sitemap`
@@ -130,6 +131,7 @@ model Site {
   theme       Json?
   navbar      Navbar?
   footer      Footer?
+  codeBuildId String?
 }
 
 model Navbar {
