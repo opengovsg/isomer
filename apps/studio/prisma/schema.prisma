@@ -34,13 +34,13 @@ model VerificationToken {
 }
 
 model Version {
-  id          BigInt   @id @default(autoincrement())
+  id          BigInt     @id @default(autoincrement())
   versionNum  BigInt
-  resourceId  BigInt   @unique
-  resource    Resource @relation("CurrentVersion", fields: [resourceId], references: [id])
+  resourceId  BigInt
+  resources   Resource[]
   blobId      BigInt
-  blob        Blob     @relation(fields: [blobId], references: [id])
-  publishedAt DateTime @default(now())
+  blob        Blob       @relation(fields: [blobId], references: [id])
+  publishedAt DateTime   @default(now())
 }
 
 model Resource {
@@ -57,7 +57,7 @@ model Resource {
   permission Permission[]
 
   versionId BigInt?
-  version   Version? @relation("CurrentVersion")
+  version   Version? @relation(fields: [versionId], references: [id])
 
   draftBlobId BigInt? @unique
   draftBlob   Blob?   @relation(fields: [draftBlobId], references: [id])
