@@ -5,6 +5,9 @@ import {
   StartBuildCommand,
 } from "@aws-sdk/client-codebuild"
 import { ServiceException } from "@aws-sdk/smithy-client"
+import * as yaml from "yaml"
+
+import buildspec from "./buildspec.json"
 
 const client = new CodeBuildClient({ region: "ap-southeast-1" })
 
@@ -61,6 +64,8 @@ export const createCodeBuildProject = async ({
   projectId: string
   siteId: number
 }): Promise<any> => {
+  const stringifiedBuildspec = yaml.stringify(buildspec)
+
   /* TODO: Things to add
 1. VPC config
 2. Default service role
@@ -71,8 +76,7 @@ export const createCodeBuildProject = async ({
     name: projectId,
     source: {
       type: "NO_SOURCE",
-      buildspec:
-        'version: 0.2\n\nphases:\n  build:\n    commands:\n       - echo "hello"\n',
+      buildspec: stringifiedBuildspec,
     },
     artifacts: {
       type: "NO_ARTIFACTS",
