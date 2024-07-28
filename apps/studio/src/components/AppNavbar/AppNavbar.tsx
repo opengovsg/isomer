@@ -1,5 +1,6 @@
 import Image from "next/image"
 import NextLink from "next/link"
+import { useParams } from "next/navigation"
 import { Flex, HStack } from "@chakra-ui/react"
 import {
   AvatarMenu,
@@ -13,9 +14,12 @@ import { BiLinkExternal } from "react-icons/bi"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useMe } from "~/features/me/api"
 import { DASHBOARD, SETTINGS_PROFILE } from "~/lib/routes"
+import PublishButton from "./PublishButton"
 
 export function AppNavbar(): JSX.Element {
   const { me, logout } = useMe()
+
+  const pathParams = useParams()
 
   return (
     <Flex flex="0 0 auto" gridColumn="1/-1" height={ADMIN_NAVBAR_HEIGHT}>
@@ -62,6 +66,10 @@ export function AppNavbar(): JSX.Element {
           >
             Report an issue
           </Button>
+          <PublishButton
+            pageId={pathParams.pageId as string}
+            siteId={pathParams.siteId as string}
+          />
           <AvatarMenu
             name={me.name}
             variant="subtle"

@@ -1,5 +1,9 @@
 import { format } from "date-fns"
 
+import { db } from "../database"
+import { getPageById, updatePageById } from "../resource/resource.service"
+import { createVersion, getVersionById } from "../version/version.service"
+
 export const createDefaultPage = ({
   title,
   layout,
@@ -41,4 +45,50 @@ export const createDefaultPage = ({
       return articleDefaultPage
     }
   }
+}
+
+export const addNewVersion = async (siteId: number, pageId: number) => {
+  return await db.transaction().execute(async (tx) => {
+    const page = await getPageById({ siteId, resourceId: pageId })
+
+    if (!page.draftBlobId) {
+      return { error: "No drafts to publish for this page" }
+    }
+
+    let newVersionNum = 1
+    if (page.versionId) {
+      const currentVersion = await getVersionById({
+        versionId: page.versionId,
+      })
+      newVersionNum = Number(currentVersion.versionNum) + 1
+    }
+
+    // Create the new version
+    // TODO: To pass in the tx object
+    const newVersion = await createVersion(
+      {
+        versionNum: newVersionNum,
+        resourceId: pageId,
+        blobId: Number(page.draftBlobId),
+      },
+      tx,
+    )
+
+    // Update resource with new versionId and draft to be null
+    await updatePageById({
+      props: {
+        page: {
+          ...page,
+          id: page.id,
+          versionId: newVersion.versionId,
+          draftBlobId: null,
+          state: "Published",
+        },
+        siteId,
+      },
+      tx,
+    })
+
+    return { versionId: newVersion }
+  })
 }

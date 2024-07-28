@@ -8,6 +8,7 @@ import z from "zod"
 import {
   createPageSchema,
   getEditPageSchema,
+  publishPageSchema,
   reorderBlobSchema,
   updatePageBlobSchema,
   updatePageSchema,
@@ -23,7 +24,7 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { createDefaultPage } from "./page.service"
+import { addNewVersion, createDefaultPage } from "./page.service"
 
 const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
@@ -207,4 +208,14 @@ export const pageRouter = router({
         return { pageId: resource.id }
       },
     ),
+  publishPage: protectedProcedure
+    .input(publishPageSchema)
+    .mutation(async ({ input: { siteId, pageId } }) => {
+      /* Step 1: Update DB table to latest state */
+      // Create a new version
+      const addedVersionResult = await addNewVersion(siteId, pageId)
+      return addedVersionResult
+
+      /* TODO: Step 2: Use AWS SDK to start a CodeBuild */
+    }),
 })
