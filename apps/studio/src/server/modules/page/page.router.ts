@@ -15,6 +15,10 @@ import {
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
+import {
+  createCodeBuildProject,
+  startProjectById,
+} from "../aws/codebuild.service"
 import { db, ResourceType } from "../database"
 import {
   getFooter,
@@ -24,7 +28,11 @@ import {
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
-import { getSiteConfig } from "../site/site.service"
+import {
+  getSiteConfig,
+  getSiteNameAndCodeBuildId,
+  setSiteCodeBuildId,
+} from "../site/site.service"
 import { incrementVersion } from "../version/version.service"
 import { createDefaultPage } from "./page.service"
 
@@ -257,5 +265,37 @@ export const pageRouter = router({
       return addedVersionResult
 
       /* TODO: Step 2: Use AWS SDK to start a CodeBuild */
+      const site = await getSiteNameAndCodeBuildId(siteId)
+      let codeBuildId = site.codeBuildId
+      if (!codeBuildId) {
+        // create a codebuild project
+        const projectName = site.shortName || site.name
+        const formattedProjectName = projectName
+          .toLowerCase()
+          .split(" ")
+          .join("-")
+        const projectId = `${formattedProjectName}-${siteId}`
+
+        try {
+          await createCodeBuildProject({
+            projectId,
+            siteId,
+          })
+        } catch (e) {
+          ctx.logger.error("CodeBuild project creation failure", {
+            userId: ctx.user.id,
+            siteId,
+          })
+        }
+
+        // update site to the newly created codebuild project id
+        await setSiteCodeBuildId(siteId, projectId)
+        codeBuildId = projectId
+      }
+
+      // initiate new build
+      await startProjectById(codeBuildId)
+
+      return addedVersionResult
     }),
 })
