@@ -7,11 +7,24 @@ import Ajv from "ajv"
 import { BiDollar, BiX } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
+import { trpc } from "~/utils/trpc"
 import FormBuilder from "./form-builder/FormBuilder"
 
 const ajv = new Ajv({ strict: false, logger: false })
 
 export default function MetadataEditorStateDrawer(): JSX.Element {
+  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const utils = trpc.useUtils()
+  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
+    { siteId, pageId },
+  )
+  const { mutate } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+    },
+  })
   const {
     setDrawerState,
     savedPageState,
@@ -105,6 +118,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
           onClick={() => {
             setDrawerState({ state: "root" })
             setSavedPageState(previewPageState)
+            mutate({
+              pageId,
+              siteId,
+              content: JSON.stringify(previewPageState),
+            })
           }}
         >
           Save changes

@@ -33,6 +33,7 @@ const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
 const validatedPageProcedure = protectedProcedure.use(
   async ({ next, rawInput }) => {
+    console.log(rawInput)
     if (
       typeof rawInput === "object" &&
       rawInput !== null &&

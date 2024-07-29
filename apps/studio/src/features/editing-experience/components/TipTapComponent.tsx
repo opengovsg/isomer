@@ -140,6 +140,11 @@ function TipTapComponent({ content }: TipTapComponentProps) {
               onClick={() => {
                 setDrawerState({ state: "root" })
                 setSavedPageState(previewPageState)
+                mutate({
+                  pageId,
+                  siteId,
+                  content: JSON.stringify(previewPageState),
+                })
               }}
             >
               Save changes

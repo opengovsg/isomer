@@ -174,40 +174,18 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
               onClick={() => {
                 setDrawerState({ state: "root" })
                 setSavedPageState(previewPageState)
+                mutate({
+                  pageId,
+                  siteId,
+                  content: JSON.stringify(previewPageState),
+                })
               }}
+              isLoading={isLoading}
             >
               Save changes
             </Button>
           </Box>
         </HStack>
-      </Box>
-      <Box px="2rem" py="1rem">
-        <FormBuilder<IsomerComponent>
-          schema={subSchema}
-          validateFn={validateFn}
-          data={component}
-          handleChange={handleChange}
-        />
-      </Box>
-      <Box px="2rem" pb="1.5rem">
-        <Button
-          w="100%"
-          onClick={() => {
-            setDrawerState({ state: "root" })
-            setSavedPageState(previewPageState)
-            mutate({
-              pageId,
-              siteId,
-              content: JSON.stringify({
-                ...pageContent,
-                content: previewPageState,
-              }),
-            })
-          }}
-          isLoading={isLoading}
-        >
-          Save
-        </Button>
       </Box>
     </>
   )
