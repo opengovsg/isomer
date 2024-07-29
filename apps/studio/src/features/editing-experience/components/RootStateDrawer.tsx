@@ -18,8 +18,8 @@ import { BsPlus } from "react-icons/bs"
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 import { trpc } from "~/utils/trpc"
+import { editPageSchema } from "../schema"
 import { ActivateAdminMode } from "./ActivateAdminMode"
 
 export default function RootStateDrawer() {
