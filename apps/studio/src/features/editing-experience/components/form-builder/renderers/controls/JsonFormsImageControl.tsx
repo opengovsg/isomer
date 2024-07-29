@@ -42,7 +42,7 @@ export function JsonFormsImageControl({
             if (file) {
               setPendingFile(file)
               // TODO: Upload file logic?
-              handleChange(path, "https://127.0.0.1/dummyurl")
+              handleChange(path, "https://picsum.photos/id/237/200/300")
             } else {
               // NOTE: Do we need to update backend on removal of file?
               handleChange(path, "")
