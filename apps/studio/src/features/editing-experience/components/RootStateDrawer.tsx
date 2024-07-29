@@ -26,9 +26,9 @@ export default function RootStateDrawer() {
   } = useEditorDrawerContext()
 
   const onDragEnd = (result: DropResult) => {
-    if (!result.destination) return
+    if (!result.destination || !savedPageState) return
 
-    const updatedBlocks = Array.from(savedPageState)
+    const updatedBlocks = Array.from(savedPageState.content)
     // Remove block at source index
     const [movedBlock] = updatedBlocks.splice(result.source.index, 1)
     if (movedBlock) {
@@ -36,9 +36,19 @@ export default function RootStateDrawer() {
       updatedBlocks.splice(result.destination.index, 0, movedBlock)
     }
 
-    setPreviewPageState(updatedBlocks)
-    setSavedPageState(updatedBlocks)
+    const newPageState = {
+      ...savedPageState,
+      content: updatedBlocks,
+    }
+
+    setPreviewPageState(newPageState)
+    setSavedPageState(newPageState)
   }
+
+  const isHeroFixedBlock =
+    savedPageState?.layout === "homepage" &&
+    savedPageState.content.length > 0 &&
+    savedPageState.content[0]?.type === "hero"
 
   return (
     <VStack w="100%" h="100%" gap={10} pt={10}>
@@ -47,14 +57,41 @@ export default function RootStateDrawer() {
         <Text fontSize="xl" pl={4} fontWeight={500}>
           Fixed blocks
         </Text>
-        <HStack w="100%" py="4" bgColor="white">
-          <VStack w="100%" align="baseline" pl={1}>
-            <Text px="3" fontWeight={500}>
-              Page header
-            </Text>
-            <Text px="3">Title, summary, and Call-to-Action</Text>
-          </VStack>
-        </HStack>
+
+        {isHeroFixedBlock ? (
+          <Box
+            as="button"
+            onClick={() => {
+              setCurrActiveIdx(0)
+              setDrawerState({ state: "complexEditor" })
+            }}
+            w="100%"
+          >
+            <HStack w="100%" py="4" bgColor="white">
+              <VStack w="100%" align="baseline" pl={1}>
+                <Text px="3" fontWeight={500}>
+                  Hero banner
+                </Text>
+                <Text px="3">Title, subtitle, and Call-to-Action</Text>
+              </VStack>
+            </HStack>
+          </Box>
+        ) : (
+          <Box
+            as="button"
+            onClick={() => setDrawerState({ state: "metadataEditor" })}
+            w="100%"
+          >
+            <HStack w="100%" py="4" bgColor="white">
+              <VStack w="100%" align="baseline" pl={1}>
+                <Text px="3" fontWeight={500}>
+                  Page title and summary
+                </Text>
+                <Text px="3">Click to edit</Text>
+              </VStack>
+            </HStack>
+          </Box>
+        )}
       </VStack>
 
       <VStack justifyContent="space-between" w="100%" h="100%">
@@ -72,7 +109,9 @@ export default function RootStateDrawer() {
                   Custom blocks
                 </Text>
                 <Box w="100%">
-                  {savedPageState.length === 0 && (
+                  {(!savedPageState ||
+                    (isHeroFixedBlock && savedPageState.content.length === 1) ||
+                    savedPageState.content.length === 0) && (
                     <VStack justifyContent="center" spacing={0} mt="2.75rem">
                       <BlockEditingPlaceholder />
                       <Text
@@ -92,54 +131,58 @@ export default function RootStateDrawer() {
                     </VStack>
                   )}
 
-                  {savedPageState.map((block, index) => (
-                    <Draggable
-                      // TODO: Determine key + draggable id
-                      key={index}
-                      draggableId={`${block.type}-${index}`}
-                      index={index}
-                    >
-                      {(provided) => (
-                        <VStack
-                          w="100%"
-                          gap={0}
-                          onClick={() => {
-                            setCurrActiveIdx(index)
-                            // TODO: we should automatically do this probably?
-                            const nextState =
-                              savedPageState[index]?.type === "prose"
-                                ? "nativeEditor"
-                                : "complexEditor"
-                            // NOTE: SNAPSHOT
-                            setDrawerState({ state: nextState })
-                          }}
+                  {!!savedPageState &&
+                    savedPageState.content
+                      .slice(isHeroFixedBlock ? 1 : 0)
+                      .map((block, index) => (
+                        <Draggable
+                          // TODO: Determine key + draggable id
+                          key={index}
+                          draggableId={`${block.type}-${index}`}
+                          index={index}
                         >
-                          <HStack
-                            w="100%"
-                            py="4"
-                            bgColor="white"
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                          >
-                            <Icon
-                              as={BiGridVertical}
-                              fontSize="1.5rem"
-                              ml="0.75rem"
-                            />
-                            <Text px="3" fontWeight={500}>
-                              {/*  NOTE: Because we use `Type.Ref` for prose, */}
-                              {/* this gets a `$Ref` only and not the concrete values */}
-                              {block.type === "prose"
-                                ? "Prose component"
-                                : getComponentSchema(block.type).title}
-                            </Text>
-                          </HStack>
-                          <Divider />
-                        </VStack>
-                      )}
-                    </Draggable>
-                  ))}
+                          {(provided) => (
+                            <VStack
+                              w="100%"
+                              gap={0}
+                              onClick={() => {
+                                setCurrActiveIdx(index)
+                                // TODO: we should automatically do this probably?
+                                const nextState =
+                                  savedPageState.content[index]?.type ===
+                                  "prose"
+                                    ? "nativeEditor"
+                                    : "complexEditor"
+                                // NOTE: SNAPSHOT
+                                setDrawerState({ state: nextState })
+                              }}
+                            >
+                              <HStack
+                                w="100%"
+                                py="4"
+                                bgColor="white"
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                              >
+                                <Icon
+                                  as={BiGridVertical}
+                                  fontSize="1.5rem"
+                                  ml="0.75rem"
+                                />
+                                <Text px="3" fontWeight={500}>
+                                  {/*  NOTE: Because we use `Type.Ref` for prose, */}
+                                  {/* this gets a `$Ref` only and not the concrete values */}
+                                  {block.type === "prose"
+                                    ? "Prose component"
+                                    : getComponentSchema(block.type).title}
+                                </Text>
+                              </HStack>
+                              <Divider />
+                            </VStack>
+                          )}
+                        </Draggable>
+                      ))}
                 </Box>
                 {provided.placeholder}
               </VStack>

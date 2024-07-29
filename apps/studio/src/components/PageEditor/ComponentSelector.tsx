@@ -116,6 +116,8 @@ function ComponentSelector() {
   })
 
   const onProceed = (sectionType: SectionType) => {
+    if (!savedPageState) return
+
     // TODO: add new section to page/editor state
     // NOTE: Only paragraph should go to tiptap editor
     // the rest should use json forms
@@ -125,12 +127,16 @@ function ComponentSelector() {
     const newComponent: IsomerComponent | undefined =
       DEFAULT_BLOCKS[sectionType]
 
-    const nextPageState = !!newComponent
-      ? [...savedPageState, newComponent]
-      : savedPageState
-
+    const updatedBlocks = !!newComponent
+      ? [...savedPageState.content, newComponent]
+      : savedPageState.content
+    const nextPageState = {
+      ...savedPageState,
+      content: updatedBlocks,
+    }
+    setSavedPageState(nextPageState)
     setDrawerState({ state: nextState })
-    setCurrActiveIdx(nextPageState.length - 1)
+    setCurrActiveIdx(nextPageState.content.length - 1)
     setPreviewPageState(nextPageState)
 
     // TODO: Decide if setting addedBlocks
