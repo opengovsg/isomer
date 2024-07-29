@@ -11,8 +11,9 @@ import {
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 
-interface UnsavedSettingModalProps
-  extends Pick<UseDisclosureReturn, "isOpen" | "onClose"> {
+interface UnsavedSettingModalProps {
+  isOpen: boolean
+  onClose: () => void
   nextUrl: string
 }
 

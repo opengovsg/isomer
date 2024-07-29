@@ -6,7 +6,6 @@ import {
   FormControl,
   HStack,
   Text,
-  useDisclosure,
   VStack,
 } from "@chakra-ui/react"
 import {
@@ -82,15 +81,14 @@ const SiteSettingsPage: NextPageWithLayout = () => {
 
   const { isDirty, errors } = formState
 
-  const { isOpen, onOpen, onClose } = useDisclosure()
   const [nextUrl, setNextUrl] = useState("")
+  const isOpen = !!nextUrl
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
       if (isDirty) {
         router.events.off("routeChangeStart", handleRouteChange)
         setNextUrl(url)
-        onOpen()
         router.events.emit("routeChangeError")
         throw "Error to abort router route change. Ignore this!"
       }
@@ -102,7 +100,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     return () => {
       router.events.off("routeChangeStart", handleRouteChange)
     }
-  }, [isOpen, onOpen, router.events, isDirty])
+  }, [isOpen, router.events, isDirty])
 
   const onClickUpdate = handleSubmit(
     ({ notificationEnabled, notification }) => {
@@ -118,7 +116,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     <>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
       <form onSubmit={onClickUpdate}>
