@@ -6,6 +6,7 @@ export const ImageSchema = Type.Object(
     type: Type.Literal("image", { default: "image" }),
     src: Type.String({
       title: "Upload image",
+      format: "image",
     }),
     alt: Type.String({
       title: "Alternate text",
