@@ -135,37 +135,37 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             handleChange={handleChange}
           />
         </Box>
-
-        <Box
-          pos="sticky"
-          bottom={0}
-          bgColor="base.canvas.default"
-          boxShadow="md"
-          py="1.5rem"
-          px="2rem"
-        >
-          <HStack spacing="0.75rem">
-            <IconButton
-              icon={<BiTrash fontSize="1.25rem" />}
-              variant="outline"
-              colorScheme="critical"
-              aria-label="Delete block"
-              onClick={onDeleteBlockModalOpen}
-            />
-            <Box w="100%">
-              <Button
-                w="100%"
-                onClick={() => {
-                  setDrawerState({ state: "root" })
-                  setSavedPageState(previewPageState)
-                }}
-              >
-                Save changes
-              </Button>
-            </Box>
-          </HStack>
-        </Box>
       </Flex>
+
+      <Box
+        pos="sticky"
+        bottom={0}
+        bgColor="base.canvas.default"
+        boxShadow="md"
+        py="1.5rem"
+        px="2rem"
+      >
+        <HStack spacing="0.75rem">
+          <IconButton
+            icon={<BiTrash fontSize="1.25rem" />}
+            variant="outline"
+            colorScheme="critical"
+            aria-label="Delete block"
+            onClick={onDeleteBlockModalOpen}
+          />
+          <Box w="100%">
+            <Button
+              w="100%"
+              onClick={() => {
+                setDrawerState({ state: "root" })
+                setSavedPageState(previewPageState)
+              }}
+            >
+              Save changes
+            </Button>
+          </Box>
+        </HStack>
+      </Box>
     </>
   )
 }
