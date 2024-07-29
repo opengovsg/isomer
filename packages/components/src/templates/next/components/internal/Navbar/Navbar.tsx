@@ -38,7 +38,7 @@ export const Navbar = ({
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [siteHeaderBottomPx, setSiteHeaderBottomPx] = useState<number>()
+  const [, setSiteHeaderBottomPx] = useState<number>()
 
   const isMenuOpen = openNavItemIdx !== -1 || isHamburgerOpen
 
@@ -48,14 +48,17 @@ export const Navbar = ({
   // Reference for the site header
   const siteHeaderRef = useRef<HTMLDivElement>(null)
 
+  const menuTopPosition = siteHeaderRef.current?.getBoundingClientRect().bottom
+
   useIsomorphicLayoutEffect(() => {
     function updateBottomPx() {
       if (siteHeaderRef.current) {
-        startTransition(() => {
-          setSiteHeaderBottomPx(
-            siteHeaderRef.current?.getBoundingClientRect().bottom,
-          )
-        })
+        // Updating this value just to trigger a rerender.
+        // We still use ref's value to get the most updated bottom px every single render
+        // instead of only on resize event.
+        setSiteHeaderBottomPx(
+          siteHeaderRef.current.getBoundingClientRect().bottom,
+        )
       }
     }
     window.addEventListener("resize", updateBottomPx)
@@ -89,7 +92,7 @@ export const Navbar = ({
         <div
           aria-hidden
           style={{
-            top: siteHeaderBottomPx,
+            top: menuTopPosition,
           }}
           className={overlay()}
         />
@@ -106,7 +109,7 @@ export const Navbar = ({
           <ul className={navItemContainer()} ref={navDesktopRef}>
             {items.map((item, index) => (
               <NavItem
-                top={siteHeaderBottomPx}
+                top={menuTopPosition}
                 key={`${item.name}-${index}`}
                 megaMenuRef={megaMenuRef}
                 ref={openNavItemIdx === index ? activeNavRef : null}
