@@ -60,7 +60,7 @@ const getById = ({
 }) =>
   db
     .selectFrom("Resource")
-    .where("Resource.id", "=", resourceId)
+    .where("Resource.id", "=", String(resourceId))
     .where("siteId", "=", siteId)
 
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
@@ -102,7 +102,7 @@ export const updatePageById = (
     return tx
       .updateTable("Resource")
       .set(rest)
-      .where("id", "=", id)
+      .where("id", "=", String(id))
       .executeTakeFirstOrThrow()
   })
 }
@@ -120,7 +120,7 @@ export const updateBlobById = (props: {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore excessive deep type instantiaton
       .set({ content })
-      .where("Resource.id", "=", id)
+      .where("Resource.id", "=", String(id))
       .executeTakeFirstOrThrow()
   )
 }
@@ -155,8 +155,8 @@ export const moveResource = async (
 ) => {
   return db
     .updateTable("Resource")
-    .set({ parentId: newParentId })
+    .set({ parentId: String(newParentId) })
     .where("siteId", "=", siteId)
-    .where("id", "=", resourceId)
+    .where("id", "=", String(resourceId))
     .executeTakeFirstOrThrow()
 }
