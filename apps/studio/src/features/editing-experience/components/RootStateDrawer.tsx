@@ -179,9 +179,12 @@ export default function RootStateDrawer() {
                   )}
 
                   {!!savedPageState &&
-                    savedPageState.content
-                      .slice(isHeroFixedBlock ? 1 : 0)
-                      .map((block, index) => (
+                    savedPageState.content.map((block, index) => {
+                      if (isHeroFixedBlock && index === 0) {
+                        return <></>
+                      }
+
+                      return (
                         <Draggable
                           // TODO: Determine key + draggable id
                           key={index}
@@ -193,9 +196,7 @@ export default function RootStateDrawer() {
                               w="100%"
                               gap={0}
                               onClick={() => {
-                                setCurrActiveIdx(
-                                  isHeroFixedBlock ? index + 1 : index,
-                                )
+                                setCurrActiveIdx(index)
                                 // TODO: we should automatically do this probably?
                                 const nextState =
                                   savedPageState.content[index]?.type ===
@@ -231,7 +232,8 @@ export default function RootStateDrawer() {
                             </VStack>
                           )}
                         </Draggable>
-                      ))}
+                      )
+                    })}
                 </Box>
                 {provided.placeholder}
               </VStack>
