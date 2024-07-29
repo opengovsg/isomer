@@ -64,7 +64,7 @@ const getById = (
 ) =>
   db
     .selectFrom("Resource")
-    .where("Resource.id", "=", resourceId)
+    .where("Resource.id", "=", String(resourceId))
     .where("siteId", "=", siteId)
 
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
@@ -107,15 +107,21 @@ export const getPageById = (
 }
 
 export const updatePageById = (
-  page: Partial<Omit<Page, "id" | "siteId">> & { id: number; siteId: number },
+  page: Partial<Omit<Page, "id" | "siteId" | "parentId">> & {
+    id: number
+    siteId: number
+    parentId?: number
+  },
 ) => {
-  const { id, ...rest } = page
-  return db
-    .updateTable("Resource")
-    .set(rest)
-    .where("id", "=", id)
-    .where("siteId", "=", page.siteId)
-    .executeTakeFirstOrThrow()
+  const { id, parentId, ...rest } = page
+  return db.transaction().execute((tx) => {
+    return tx
+      .updateTable("Resource")
+      .set({ ...rest, ...(parentId && { parentId: String(parentId) }) })
+      .where("siteId", "=", page.siteId)
+      .where("id", "=", String(id))
+      .executeTakeFirstOrThrow()
+  })
 }
 
 export const updateBlobById = async (
@@ -129,7 +135,7 @@ export const updateBlobById = async (
   const { pageId: id, content } = props
   const page = await db
     .selectFrom("Resource")
-    .where("Resource.id", "=", id)
+    .where("Resource.id", "=", String(id))
     .where("siteId", "=", props.siteId)
     // NOTE: We update the draft first
     // Main should only be updated at build
@@ -145,7 +151,7 @@ export const updateBlobById = async (
       .executeTakeFirstOrThrow()
     await db
       .updateTable("Resource")
-      .where("id", "=", id)
+      .where("id", "=", String(id))
       .set({ draftBlobId: newBlob.id })
       .execute()
   }
@@ -190,8 +196,8 @@ export const moveResource = async (
 ) => {
   return db
     .updateTable("Resource")
-    .set({ parentId: newParentId })
+    .set({ parentId: String(newParentId) })
     .where("siteId", "=", siteId)
-    .where("id", "=", resourceId)
+    .where("id", "=", String(resourceId))
     .executeTakeFirstOrThrow()
 }

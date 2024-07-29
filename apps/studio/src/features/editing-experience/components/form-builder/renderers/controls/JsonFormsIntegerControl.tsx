@@ -58,15 +58,23 @@ export function JsonFormsIntegerControl({
   const min = Number(exclusiveMinimum) + 1 || minimum || 0
   const max = Number(exclusiveMaximum) - 1 || maximum || 0
 
+  const onChange = (valueAsString: string, valueAsNumber: number) => {
+    if (valueAsString === "") {
+      handleChange(path, undefined)
+    } else {
+      handleChange(path, valueAsNumber)
+    }
+  }
+
   return (
     <Box py={2}>
-      <FormControl isRequired={required}>
+      <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <NumberInput
           defaultValue={defaultValue || min}
           min={min}
           max={max}
-          onChange={(e) => handleChange(path, e)}
+          onChange={onChange}
         >
           <NumberInputField />
           <NumberInputStepper>
@@ -74,7 +82,9 @@ export function JsonFormsIntegerControl({
             <NumberDecrementStepper />
           </NumberInputStepper>
         </NumberInput>
-        <FormErrorMessage>{errors}</FormErrorMessage>
+        <FormErrorMessage>
+          {label} {errors}
+        </FormErrorMessage>
       </FormControl>
     </Box>
   )

@@ -1,5 +1,6 @@
 import type { BoxProps } from "@chakra-ui/react"
 import type { ControlProps } from "@jsonforms/core"
+import type { Level } from "@tiptap/extension-heading"
 import type { JSONContent } from "@tiptap/react"
 import { Box, VStack } from "@chakra-ui/react"
 import { Blockquote } from "@tiptap/extension-blockquote"
@@ -13,6 +14,7 @@ import { Heading } from "@tiptap/extension-heading"
 import { History } from "@tiptap/extension-history"
 import { HorizontalRule } from "@tiptap/extension-horizontal-rule"
 import { Italic } from "@tiptap/extension-italic"
+import Link from "@tiptap/extension-link"
 import { ListItem } from "@tiptap/extension-list-item"
 import { OrderedList } from "@tiptap/extension-ordered-list"
 import { Paragraph } from "@tiptap/extension-paragraph"
@@ -21,7 +23,7 @@ import { Subscript } from "@tiptap/extension-subscript"
 import { Superscript } from "@tiptap/extension-superscript"
 import { Text } from "@tiptap/extension-text"
 import Underline from "@tiptap/extension-underline"
-import { EditorContent, useEditor } from "@tiptap/react"
+import { EditorContent, textblockTypeInputRule, useEditor } from "@tiptap/react"
 
 import { MenuBar } from "~/components/PageEditor/MenuBar"
 
@@ -30,9 +32,12 @@ interface TiptapEditorProps extends BoxProps {
   handleChange: (content: JSONContent) => void
 }
 
+const HEADING_LEVELS: Level[] = [2, 3, 4, 5, 6]
+
 export function TiptapEditor({ data, handleChange }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
+      Link,
       Blockquote,
       Bold,
       BulletList.extend({
@@ -48,8 +53,25 @@ export function TiptapEditor({ data, handleChange }: TiptapEditorProps) {
       Dropcursor,
       Gapcursor,
       HardBreak,
-      Heading.configure({
-        levels: [2, 3, 4, 6],
+      Heading.extend({
+        // NOTE: Have to override the default input rules
+        // because we should map the number of `#` into
+        // a h<num # + 1>.
+        // eg: # -> h2
+        //     ## -> h3
+        addInputRules() {
+          return HEADING_LEVELS.map((level) => {
+            return textblockTypeInputRule({
+              find: new RegExp(`^(#{1,${level - 1}})\\s$`),
+              type: this.type,
+              getAttributes: {
+                level,
+              },
+            })
+          })
+        },
+      }).configure({
+        levels: HEADING_LEVELS,
       }),
       History,
       HorizontalRule.extend({

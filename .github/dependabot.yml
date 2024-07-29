@@ -4,10 +4,31 @@ updates:
     directory: "/"
     schedule:
       interval: daily
-    ignore:
-      # Storybook packages should be updated together to avoid breaking changes, but dependabot updates them separately.
-      - dependency-name: "storybook*"
-      - dependency-name: "@storybook*"
-      - dependency-name: "prisma*"
-      - dependency-name: "@prisma*"
-      - dependency-name: "@trpc*"
+    groups:
+      babel:
+        applies-to: version-updates
+        patterns:
+          - "@babel/*"
+      prisma:
+        applies-to: version-updates
+        patterns:
+          - "@prisma/client"
+          - "prisma"
+      react:
+        applies-to: version-updates
+        patterns:
+          - "react"
+          - "react-dom"
+      storybook:
+        applies-to: version-updates
+        patterns:
+          - "@storybook/*"
+          - "storybook"
+      tiptap:
+        applies-to: version-updates
+        patterns:
+          - "@tiptap/*"
+      trpc:
+        applies-to: version-updates
+        patterns:
+          - "@trpc/*"

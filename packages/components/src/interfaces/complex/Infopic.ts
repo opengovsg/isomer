@@ -15,6 +15,7 @@ export const InfopicSchema = Type.Object(
     imageSrc: Type.String({
       title: "Upload image",
       description: "The URL to the image",
+      format: "image",
     }),
     imageAlt: Type.Optional(
       Type.String({
@@ -34,6 +35,7 @@ export const InfopicSchema = Type.Object(
       Type.String({
         title: "Button destination",
         description: "When this is clicked, open:",
+        format: "link",
       }),
     ),
   },

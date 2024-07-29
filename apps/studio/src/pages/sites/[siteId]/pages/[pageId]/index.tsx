@@ -33,10 +33,9 @@ function EditPage(): JSX.Element {
     setDrawerState({
       state: "root",
     })
-    const blocks = page.content
-    setSavedPageState(blocks)
-    setPreviewPageState(blocks)
-  }, [page.content, setDrawerState, setPreviewPageState, setSavedPageState])
+    setSavedPageState(page)
+    setPreviewPageState(page)
+  }, [page, setDrawerState, setPreviewPageState, setSavedPageState])
 
   return (
     <Grid
@@ -54,11 +53,11 @@ function EditPage(): JSX.Element {
         <Box p="2rem" bg="gray.100">
           <Box borderRadius="8px" bg="white" shadow="md" overflow="auto">
             <Preview
-              siteId={siteId}
               {...page}
+              {...previewPageState}
+              siteId={siteId}
               permalink={permalink}
               version="0.1.0"
-              content={previewPageState}
             />
           </Box>
         </Box>

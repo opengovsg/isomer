@@ -10,23 +10,23 @@ const pageListQuery = (wait?: DelayMode | number) => {
     }
     return [
       {
-        id: 4,
+        id: "4",
         permalink: "test-page-1",
         title: "Test page 1",
-        mainBlobId: 3,
+        mainBlobId: "3",
         draftBlobId: null,
         type: "Page",
       },
       {
-        id: 5,
+        id: "5",
         permalink: "test-page-2",
         title: "Test page 2",
-        mainBlobId: 4,
+        mainBlobId: "4",
         draftBlobId: null,
         type: "Page",
       },
       {
-        id: 6,
+        id: "6",
         permalink: "folder",
         title: "Test folder 1",
         mainBlobId: null,

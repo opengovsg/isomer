@@ -205,10 +205,10 @@ async function main() {
     )
     .execute()
 
-  let blobId = 1
+  let blobId = BigInt(1)
   const dedupeBlobId = await db
     .selectFrom("Blob")
-    .where("Blob.id", "=", blobId)
+    .where("Blob.id", "=", String(blobId))
     .select("Blob.id")
     .executeTakeFirst()
   if (!dedupeBlobId) {
@@ -217,13 +217,13 @@ async function main() {
       .values({ content: jsonb(PAGE_BLOB) })
       .returning("id")
       .executeTakeFirstOrThrow()
-    blobId = id
+    blobId = BigInt(id)
   }
 
   await db
     .insertInto("Resource")
     .values({
-      mainBlobId: blobId,
+      mainBlobId: String(blobId),
       permalink: "home",
       siteId,
       type: "Page",

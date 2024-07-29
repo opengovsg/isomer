@@ -1,10 +1,11 @@
-import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { type JsonFormsRendererRegistryEntry } from "@jsonforms/core"
+import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
+import type { ValidateFunction } from "ajv"
+import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
-import { getComponentSchema } from "@opengovsg/isomer-components"
+import { type TSchema } from "@sinclair/typebox"
 import Ajv from "ajv"
 
-import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import {
   JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
@@ -18,8 +19,12 @@ import {
   jsonFormsDropdownControlTester,
   jsonFormsGroupLayoutRenderer,
   jsonFormsGroupLayoutTester,
+  JsonFormsImageControl,
+  jsonFormsImageControlTester,
   JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
+  JsonFormsLinkControl,
+  jsonFormsLinkControlTester,
   JsonFormsObjectControl,
   jsonFormsObjectControlTester,
   JsonFormsProseControl,
@@ -41,6 +46,8 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsDropdownControl,
   },
   { tester: jsonFormsIntegerControlTester, renderer: JsonFormsIntegerControl },
+  { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },
+  { tester: jsonFormsLinkControlTester, renderer: JsonFormsLinkControl },
   { tester: jsonFormsTextControlTester, renderer: JsonFormsTextControl },
   { tester: jsonFormsAllOfControlTester, renderer: JsonFormsAllOfControl },
   { tester: jsonFormsAnyOfControlTester, renderer: JsonFormsAnyOfControl },
@@ -54,41 +61,40 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     tester: jsonFormsVerticalLayoutTester,
     renderer: jsonFormsVerticalLayoutRenderer,
   },
+  {
+    tester: jsonFormsVerticalLayoutTester,
+    renderer: jsonFormsVerticalLayoutRenderer,
+  },
+  {
+    // NOTE: If we fall through all our previous testers,
+    // we render null so that the users don't get visual noise
+    tester: rankWith(JSON_FORMS_RANKING.Catchall, () => true),
+    renderer: () => null,
+  },
 ]
-const ajv = new Ajv({ strict: false, logger: false })
+const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
 
-export default function FormBuilder(): JSX.Element {
-  const {
-    savedPageState,
-    previewPageState,
-    setPreviewPageState,
-    currActiveIdx,
-  } = useEditorDrawerContext()
+interface FormBuilderProps<T> {
+  schema: TSchema
+  validateFn: ValidateFunction<T>
+  data: unknown
+  handleChange: (data: T) => void
+}
 
-  if (currActiveIdx === -1 || currActiveIdx > savedPageState.length) {
-    return <></>
-  }
-
-  const component = previewPageState[currActiveIdx]
-
-  if (!component) {
-    return <></>
-  }
-
-  const subSchema = getComponentSchema(component.type)
-  const data = previewPageState[currActiveIdx]
-  const validateFn = ajv.compile<IsomerComponent>(subSchema)
-
+export default function FormBuilder<T>({
+  schema,
+  validateFn,
+  data,
+  handleChange,
+}: FormBuilderProps<T>): JSX.Element {
   return (
     <JsonForms
-      schema={subSchema}
+      schema={schema}
       data={data}
       renderers={renderers}
       onChange={({ data }) => {
         if (validateFn(data)) {
-          const newPageState = [...savedPageState]
-          newPageState[currActiveIdx] = data
-          setPreviewPageState(newPageState)
+          handleChange(data)
         }
       }}
       ajv={ajv}

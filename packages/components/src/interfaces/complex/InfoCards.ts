@@ -23,6 +23,7 @@ export const SingleCardSchema = Type.Object({
   }),
   imageUrl: Type.String({
     title: "Upload image",
+    format: "image",
   }),
   imageAlt: Type.String({
     title: "Alternate text",

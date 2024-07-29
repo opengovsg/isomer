@@ -1,1 +1,1 @@
-export { getComponentSchema, schema } from "./main"
+export { getComponentSchema, getLayoutMetadataSchema, schema } from "./main"

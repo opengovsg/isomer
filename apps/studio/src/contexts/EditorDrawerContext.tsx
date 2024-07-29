@@ -1,4 +1,4 @@
-import type { IsomerComponent } from "@opengovsg/isomer-components"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { createContext, useContext, useState } from "react"
 
@@ -12,10 +12,10 @@ export interface DrawerContextType {
   setDrawerState: (state: DrawerState) => void
   addedBlock: Exclude<SectionType, "prose">
   setAddedBlock: (addedBlock: Exclude<SectionType, "prose">) => void
-  savedPageState: IsomerComponent[]
-  setSavedPageState: Dispatch<SetStateAction<IsomerComponent[]>>
-  previewPageState: IsomerComponent[]
-  setPreviewPageState: Dispatch<SetStateAction<IsomerComponent[]>>
+  savedPageState?: IsomerSchema
+  setSavedPageState: Dispatch<SetStateAction<IsomerSchema | undefined>>
+  previewPageState?: IsomerSchema
+  setPreviewPageState: Dispatch<SetStateAction<IsomerSchema | undefined>>
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
@@ -26,11 +26,13 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
   // Index of the current block being edited
   const [currActiveIdx, setCurrActiveIdx] = useState<number>(-1)
   // Current saved state of page
-  const [savedPageState, setSavedPageState] = useState<IsomerComponent[]>([])
+  const [savedPageState, setSavedPageState] = useState<
+    IsomerSchema | undefined
+  >()
   // State of the page to render in the preview
-  const [previewPageState, setPreviewPageState] = useState<IsomerComponent[]>(
-    [],
-  )
+  const [previewPageState, setPreviewPageState] = useState<
+    IsomerSchema | undefined
+  >()
   const [addedBlock, setAddedBlock] =
     useState<Exclude<SectionType, "prose">>("button")
 

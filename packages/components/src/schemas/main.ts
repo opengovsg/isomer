@@ -1,8 +1,16 @@
 import type { TSchema } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerComponentTypes } from "~/types"
-import { IsomerPageSchema } from "~/types"
+import type { IsomerComponentTypes, IsomerSchema } from "~/types"
+import {
+  ArticlePageMetaSchema,
+  CollectionPageSchema,
+  ContentPageMetaSchema,
+  FileRefSchema,
+  HomePageMetaSchema,
+  IsomerPageSchema,
+  LinkRefSchema,
+} from "~/types"
 import {
   IsomerComplexComponentsMap,
   IsomerNativeComponentsMap,
@@ -34,4 +42,19 @@ export const getComponentSchema = (
     ...componentSchema,
     ...definitions,
   }
+}
+
+const LAYOUT_METADATA_MAP = {
+  article: ArticlePageMetaSchema,
+  content: ContentPageMetaSchema,
+  homepage: HomePageMetaSchema,
+  link: LinkRefSchema,
+  collection: CollectionPageSchema,
+  file: FileRefSchema,
+}
+
+export const getLayoutMetadataSchema = (
+  layout: IsomerSchema["layout"],
+): TSchema => {
+  return LAYOUT_METADATA_MAP[layout]
 }

@@ -35,6 +35,14 @@ export {
   jsonFormsRadioControlTester,
 } from "./JsonFormsRadioControl"
 export {
+  default as JsonFormsLinkControl,
+  jsonFormsLinkControlTester,
+} from "./JsonFormsLinkControl"
+export {
   default as JsonFormsTextControl,
   jsonFormsTextControlTester,
 } from "./JsonFormsTextControl"
+export {
+  default as JsonFormsImageControl,
+  jsonFormsImageControlTester,
+} from "./JsonFormsImageControl"
