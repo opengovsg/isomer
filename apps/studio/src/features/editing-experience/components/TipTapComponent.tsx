@@ -38,6 +38,12 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     onOpen: onDeleteBlockModalOpen,
     onClose: onDeleteBlockModalClose,
   } = useDisclosure()
+  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const { mutate } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+    },
+  })
 
   if (!previewPageState || !savedPageState) return
 
@@ -79,12 +85,6 @@ function TipTapComponent({ content }: TipTapComponentProps) {
 
   const utils = trpc.useUtils()
 
-  const { pageId, siteId } = useQueryParse(editPageSchema)
-  const { mutate } = trpc.page.updatePageBlob.useMutation({
-    onSuccess: async () => {
-      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-    },
-  })
   const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
     { siteId, pageId },
   )
