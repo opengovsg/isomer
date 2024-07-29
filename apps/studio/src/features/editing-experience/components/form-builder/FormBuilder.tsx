@@ -1,6 +1,6 @@
 import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { and, or, rankWith, schemaTypeIs } from "@jsonforms/core"
+import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
