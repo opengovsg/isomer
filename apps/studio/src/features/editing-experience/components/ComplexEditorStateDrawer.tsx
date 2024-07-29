@@ -84,6 +84,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         onClose={onDeleteBlockModalClose}
         onDelete={handleDeleteBlock}
       />
+
       <Flex
         flexDir="column"
         position="relative"
@@ -126,16 +127,16 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             />
           </HStack>
         </Box>
-      </Flex>
 
-      <Box px="2rem" py="1rem">
-        <FormBuilder<IsomerComponent>
-          schema={subSchema}
-          validateFn={validateFn}
-          data={component}
-          handleChange={handleChange}
-        />
-      </Box>
+        <Box px="2rem" py="1rem">
+          <FormBuilder<IsomerComponent>
+            schema={subSchema}
+            validateFn={validateFn}
+            data={component}
+            handleChange={handleChange}
+          />
+        </Box>
+      </Flex>
 
       <Box
         pos="sticky"
