@@ -44,7 +44,7 @@ export type Resource = {
     permalink: string;
     siteId: number;
     parentId: string | null;
-    versionId: string | null;
+    publishedVersionId: string | null;
     draftBlobId: string | null;
     state: Generated<ResourceState | null>;
     type: ResourceType;
@@ -77,10 +77,11 @@ export type VerificationToken = {
 };
 export type Version = {
     id: GeneratedAlways<string>;
-    versionNum: string;
+    versionNum: number;
     resourceId: string;
     blobId: string;
     publishedAt: Generated<Timestamp>;
+    publishedBy: string;
 };
 export type DB = {
     Blob: Blob;

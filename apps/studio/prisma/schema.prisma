@@ -35,12 +35,14 @@ model VerificationToken {
 
 model Version {
   id          BigInt     @id @default(autoincrement())
-  versionNum  BigInt
+  versionNum  Int
   resourceId  BigInt
   resources   Resource[]
   blobId      BigInt
   blob        Blob       @relation(fields: [blobId], references: [id])
   publishedAt DateTime   @default(now())
+  publishedBy String
+  publisher   User       @relation(fields: [publishedBy], references: [id])
 }
 
 model Resource {
@@ -56,8 +58,8 @@ model Resource {
 
   permission Permission[]
 
-  versionId BigInt?
-  version   Version? @relation(fields: [versionId], references: [id])
+  publishedVersionId BigInt?  @unique
+  version            Version? @relation(fields: [publishedVersionId], references: [id])
 
   draftBlobId BigInt? @unique
   draftBlob   Blob?   @relation(fields: [draftBlobId], references: [id])
@@ -94,6 +96,7 @@ model User {
 
   permission  Permission[]
   siteMembers SiteMember[]
+  Version     Version[]
 }
 
 model Permission {
