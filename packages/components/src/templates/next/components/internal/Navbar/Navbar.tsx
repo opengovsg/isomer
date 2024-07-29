@@ -1,6 +1,6 @@
 "use client"
 
-import { startTransition, useCallback, useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { usePreventScroll } from "react-aria"
 import { BiSearch, BiX } from "react-icons/bi"
 import { tv } from "tailwind-variants"
