@@ -155,7 +155,7 @@ export const moveResource = async (
 ) => {
   return db
     .updateTable("Resource")
-    .set({ parentId: String(newParentId) })
+    .set({ parentId: !!newParentId ? String(newParentId) : null })
     .where("siteId", "=", siteId)
     .where("id", "=", String(resourceId))
     .executeTakeFirstOrThrow()
