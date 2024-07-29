@@ -34,23 +34,23 @@ model VerificationToken {
 }
 
 model Resource {
-  id        Int       @id @default(autoincrement())
+  id        BigInt    @id @default(autoincrement())
   title     String
   permalink String
   siteId    Int
   site      Site      @relation(fields: [siteId], references: [id])
-  parentId  Int?
+  parentId  BigInt?
   parent    Resource? @relation("ParentRelation", fields: [parentId], references: [id])
 
   children Resource[] @relation("ParentRelation")
 
   permission Permission[]
 
-  mainBlob   Blob? @relation("MainBlob", fields: [mainBlobId], references: [id])
-  mainBlobId Int?  @unique
+  mainBlob   Blob?   @relation("MainBlob", fields: [mainBlobId], references: [id])
+  mainBlobId BigInt? @unique
 
-  draftBlob   Blob? @relation("DraftBlob", fields: [draftBlobId], references: [id])
-  draftBlobId Int?  @unique
+  draftBlob   Blob?   @relation("DraftBlob", fields: [draftBlobId], references: [id])
+  draftBlobId BigInt? @unique
 
   state ResourceState? @default(Draft)
   type  ResourceType
@@ -79,7 +79,7 @@ model User {
 
 model Permission {
   id         Int      @id @default(autoincrement())
-  resourceId Int
+  resourceId BigInt
   resource   Resource @relation(fields: [resourceId], references: [id])
   userId     String
   user       User     @relation(fields: [userId], references: [id])
@@ -125,7 +125,7 @@ model Footer {
 }
 
 model Blob {
-  id      Int  @id @default(autoincrement())
+  id      BigInt @id @default(autoincrement())
   /// @kyselyType(PrismaJson.BlobJsonContent)
   /// [BlobJsonContent]
   content Json
