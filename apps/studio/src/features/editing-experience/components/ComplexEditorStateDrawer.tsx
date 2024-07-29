@@ -84,6 +84,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         onClose={onDeleteBlockModalClose}
         onDelete={handleDeleteBlock}
       />
+
       <Flex
         flexDir="column"
         position="relative"
