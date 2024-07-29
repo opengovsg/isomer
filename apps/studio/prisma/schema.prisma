@@ -38,7 +38,7 @@ model Version {
   versionNum  Int
   resourceId  BigInt
   resources   Resource[]
-  blobId      BigInt
+  blobId      BigInt     @unique
   blob        Blob       @relation(fields: [blobId], references: [id])
   publishedAt DateTime   @default(now())
   publishedBy String
@@ -73,8 +73,8 @@ model Blob {
   /// @kyselyType(PrismaJson.BlobJsonContent)
   /// [BlobJsonContent]
   content       Json
-  versions      Version[]
   draftResource Resource?
+  version       Version?
 }
 
 enum ResourceState {

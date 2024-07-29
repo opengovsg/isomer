@@ -28,6 +28,9 @@ CREATE TABLE "Version" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Version_blobId_key" ON "Version"("blobId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Resource_publishedVersionId_key" ON "Resource"("publishedVersionId");
 
 -- AddForeignKey
