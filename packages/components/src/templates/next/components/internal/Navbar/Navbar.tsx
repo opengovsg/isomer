@@ -208,7 +208,7 @@ export const Navbar = ({
           ref={mobileMenuRef}
           className="fixed inset-0"
           style={{
-            top: siteHeaderBottomPx,
+            top: menuTopPosition,
           }}
         >
           <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
