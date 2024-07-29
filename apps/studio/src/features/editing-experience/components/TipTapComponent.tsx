@@ -6,6 +6,9 @@ import { cloneDeep } from "lodash"
 import { BiText, BiX } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
+import { trpc } from "~/utils/trpc"
 import { TiptapEditor } from "./form-builder/renderers/TipTapEditor"
 
 interface TipTapComponentProps {
@@ -33,6 +36,18 @@ function TipTapComponent({ content }: TipTapComponentProps) {
       return newState
     })
   }
+
+  const utils = trpc.useUtils()
+
+  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const { mutate } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+    },
+  })
+  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
+    { siteId, pageId },
+  )
 
   // TODO: Add a loading state or use suspsense
   return (
@@ -77,6 +92,14 @@ function TipTapComponent({ content }: TipTapComponentProps) {
           onClick={() => {
             setDrawerState({ state: "root" })
             setSavedPageState(previewPageState)
+            mutate({
+              pageId,
+              siteId,
+              content: JSON.stringify({
+                ...pageContent,
+                content: previewPageState,
+              }),
+            })
           }}
         >
           Save

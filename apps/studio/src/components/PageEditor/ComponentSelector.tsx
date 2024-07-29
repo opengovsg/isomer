@@ -111,7 +111,12 @@ function ComponentSelector({ pageId, siteId }: ComponentSelectorProps) {
     setPreviewPageState,
     setAddedBlock,
   } = useEditorDrawerContext()
-  const { mutate } = trpc.page.updatePageBlob.useMutation()
+  const utils = trpc.useUtils()
+  const { mutate } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+    },
+  })
   const [page] = trpc.page.readPageAndBlob.useSuspenseQuery({
     pageId,
     siteId,

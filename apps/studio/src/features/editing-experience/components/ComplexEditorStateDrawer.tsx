@@ -1,32 +1,41 @@
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { Box, Heading, HStack, Icon } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { BiDollar, BiX } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
+import { trpc } from "~/utils/trpc"
 import FormBuilder from "./form-builder/FormBuilder"
 
-export default function ComplexEditorStateDrawer(): JSX.Element {
+interface ComplexEditorStateDrawerProps {
+  component: IsomerComponent
+}
+
+const ComplexEditorStateDrawer = ({
+  component,
+}: ComplexEditorStateDrawerProps) => {
+  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
+    { siteId, pageId },
+  )
   const {
-    currActiveIdx,
     setDrawerState,
     savedPageState,
     setSavedPageState,
     previewPageState,
     setPreviewPageState,
   } = useEditorDrawerContext()
-
-  if (currActiveIdx === -1 || currActiveIdx > savedPageState.length) {
-    return <></>
-  }
-
-  const component = previewPageState[currActiveIdx]
-
-  if (!component) {
-    return <></>
-  }
-
   const { title } = getComponentSchema(component.type)
+  const utils = trpc.useUtils()
+
+  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+    },
+  })
 
   return (
     <Box position="relative" h="100%" w="100%" overflow="auto">
@@ -74,11 +83,36 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           onClick={() => {
             setDrawerState({ state: "root" })
             setSavedPageState(previewPageState)
+            mutate({
+              pageId,
+              siteId,
+              content: JSON.stringify({
+                ...pageContent,
+                content: previewPageState,
+              }),
+            })
           }}
+          isLoading={isLoading}
         >
           Save
         </Button>
       </Box>
     </Box>
   )
+}
+
+export default function ComplexEditorStateDrawerContainer(): JSX.Element {
+  const { currActiveIdx, savedPageState, previewPageState } =
+    useEditorDrawerContext()
+  if (currActiveIdx === -1 || currActiveIdx > savedPageState.length) {
+    return <></>
+  }
+
+  const component = previewPageState[currActiveIdx]
+
+  if (!component) {
+    return <></>
+  }
+
+  return <ComplexEditorStateDrawer component={component} />
 }
