@@ -17,6 +17,7 @@
     "prebuild": "run-s generate migrate",
     "build": "next build",
     "build:theme": "npx chakra-cli tokens src/theme/index.ts",
+    "build:preview-tw": "NODE_ENV=production npx tailwindcss build -i src/styles/tailwind.css -o public/assets/css/preview-tw.css",
     "start": "next start",
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "format:fix": "prettier --write . --ignore-path ../../.gitignore",
