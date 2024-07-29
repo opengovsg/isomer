@@ -129,6 +129,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
               colorScheme="sub"
               size="sm"
               p="0.625rem"
+              isDisabled={isLoading}
               onClick={() => {
                 setPreviewPageState(savedPageState)
                 setDrawerState({ state: "root" })
@@ -169,8 +170,15 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             <Button
               w="100%"
               onClick={() => {
-                setDrawerState({ state: "root" })
                 setSavedPageState(previewPageState)
+                mutate(
+                  {
+                    pageId,
+                    siteId,
+                    content: JSON.stringify(previewPageState),
+                  },
+                  { onSuccess: () => setDrawerState({ state: "root" }) },
+                )
               }}
             >
               Save changes

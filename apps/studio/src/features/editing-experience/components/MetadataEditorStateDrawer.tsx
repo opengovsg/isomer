@@ -12,6 +12,16 @@ import FormBuilder from "./form-builder/FormBuilder"
 const ajv = new Ajv({ strict: false, logger: false })
 
 export default function MetadataEditorStateDrawer(): JSX.Element {
+  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const utils = trpc.useUtils()
+  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
+    { siteId, pageId },
+  )
+  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+    },
+  })
   const {
     setDrawerState,
     savedPageState,
@@ -73,6 +83,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               colorScheme="sub"
               size="sm"
               p="0.625rem"
+              isDisabled={isLoading}
               onClick={() => {
                 setPreviewPageState(savedPageState)
                 setDrawerState({ state: "root" })
@@ -102,9 +113,19 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
       >
         <Button
           w="100%"
+          isLoading={isLoading}
           onClick={() => {
-            setDrawerState({ state: "root" })
             setSavedPageState(previewPageState)
+            mutate(
+              {
+                pageId,
+                siteId,
+                content: JSON.stringify(previewPageState),
+              },
+              {
+                onSuccess: () => setDrawerState({ state: "root" }),
+              },
+            )
           }}
         >
           Save changes
