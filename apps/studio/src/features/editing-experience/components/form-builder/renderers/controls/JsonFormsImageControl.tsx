@@ -3,7 +3,12 @@ import { useState } from "react"
 import { Box, FormControl, Text } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-import { Attachment, FormLabel, useToast } from "@opengovsg/design-system-react"
+import {
+  Attachment,
+  FormErrorMessage,
+  FormLabel,
+  useToast,
+} from "@opengovsg/design-system-react"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import {
@@ -24,6 +29,7 @@ export function JsonFormsImageControl({
   path,
   description,
   required,
+  errors,
 }: ControlProps) {
   const toast = useToast()
 
@@ -31,9 +37,10 @@ export function JsonFormsImageControl({
 
   return (
     <Box py={2}>
-      <FormControl isRequired={required} isInvalid={!pendingFile}>
+      <FormControl isRequired={required} isInvalid={!pendingFile || !!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <Attachment
+          isRequired
           name="image-upload"
           imagePreview="large"
           multiple={false}
@@ -71,6 +78,11 @@ export function JsonFormsImageControl({
         <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
           {`Maximum file size: ${MAX_IMG_FILE_SIZE_BYTES / 1000000} MB`}
         </Text>
+        {!!errors && (
+          <FormErrorMessage>
+            {label} {errors}
+          </FormErrorMessage>
+        )}
       </FormControl>
     </Box>
   )
