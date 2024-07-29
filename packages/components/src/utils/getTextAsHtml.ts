@@ -34,7 +34,7 @@ export const getTextAsHtml = (content?: (HardBreakProps | TextProps)[]) => {
       node.marks.forEach((mark) => {
         if (mark.type === "link") {
           output = `<${MARK_DOM_MAPPING[mark.type]} href="${
-            mark.href
+            mark.attrs.href
           }">${output}</${MARK_DOM_MAPPING[mark.type]}>`
           return
         }
