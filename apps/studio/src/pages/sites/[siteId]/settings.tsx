@@ -38,10 +38,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
 
   const notificationMutation = trpc.site.setNotification.useMutation({
     onSuccess: () => {
-      reset({
-        notificationEnabled: notificationEnabled,
-        notification: notification,
-      })
+      reset({ notificationEnabled, notification })
       void trpcUtils.site.getNotification.invalidate({ siteId })
       toast({
         title: "Saved site settings!",
@@ -49,7 +46,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
         status: "success",
       })
     },
-    onError: (error) => {
+    onError: () => {
       // TODO: Remove the console when done
       toast({
         title: "Error saving site settings!",
@@ -64,9 +61,9 @@ const SiteSettingsPage: NextPageWithLayout = () => {
     siteId,
   })
 
+  // NOTE: Refining the setNotificationSchema here instead of in site.ts since omit does not work after refine
   const { register, handleSubmit, watch, formState, reset } = useZodForm({
     schema: setNotificationSchema
-      .extend({ notificationEnabled: z.boolean() })
       .omit({ siteId: true })
       .refine((data) => !data.notificationEnabled || data.notification, {
         message: "Notification must not be empty",
@@ -112,6 +109,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
       notificationMutation.mutate({
         siteId,
         notification: notificationEnabled ? notification : "",
+        notificationEnabled: notificationEnabled,
       })
     },
   )
@@ -177,18 +175,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                       placeholder="Notification should be succinct and clear"
                       maxLength={100}
                       value={notification}
-                      {...register("notification", {
-                        required: true,
-                        minLength: {
-                          value: 1,
-                          message: "Notification must not be empty",
-                        },
-                        maxLength: {
-                          value: 100,
-                          message:
-                            "Notification must be 100 characters or less",
-                        },
-                      })}
+                      {...register("notification", {})}
                     />
                     <Text textColor="base.content.medium" textStyle="body-2">
                       {100 - notification.length} characters left
@@ -207,6 +194,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                 <Button
                   type="submit"
                   isLoading={notificationMutation.isLoading}
+                  isDisabled={!isDirty}
                 >
                   Save settings
                 </Button>
