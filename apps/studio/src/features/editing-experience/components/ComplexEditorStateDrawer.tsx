@@ -63,6 +63,16 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     setSavedPageState(newPageState)
     setPreviewPageState(newPageState)
     onDeleteBlockModalClose()
+    // TODO: don't close the modal
+    // until we actually delete the item properly on the backend
+    mutate(
+      {
+        pageId,
+        siteId,
+        content: JSON.stringify(newPageState),
+      },
+      { onSuccess: onDeleteBlockModalClose },
+    )
     setDrawerState({ state: "root" })
   }
 
