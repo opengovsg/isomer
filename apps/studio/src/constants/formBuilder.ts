@@ -16,3 +16,5 @@ export const JSON_FORMS_RANKING = {
   VerticalLayoutRenderer: 1,
   Catchall: -99999999999,
 }
+
+export const PROSE_COMPONENT_NAME = "Prose component"
