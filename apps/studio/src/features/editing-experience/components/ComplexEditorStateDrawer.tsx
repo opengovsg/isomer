@@ -153,6 +153,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
               colorScheme="sub"
               size="sm"
               p="0.625rem"
+              isDisabled={isLoading}
               onClick={() => {
                 if (!_.isEqual(previewPageState, savedPageState)) {
                   onDiscardChangesModalOpen()
@@ -195,13 +196,15 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             <Button
               w="100%"
               onClick={() => {
-                setDrawerState({ state: "root" })
                 setSavedPageState(previewPageState)
-                mutate({
-                  pageId,
-                  siteId,
-                  content: JSON.stringify(previewPageState),
-                })
+                mutate(
+                  {
+                    pageId,
+                    siteId,
+                    content: JSON.stringify(previewPageState),
+                  },
+                  { onSuccess: () => setDrawerState({ state: "root" }) },
+                )
               }}
               isLoading={isLoading}
             >

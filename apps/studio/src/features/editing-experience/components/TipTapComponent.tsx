@@ -47,6 +47,11 @@ function TipTapComponent({ content }: TipTapComponentProps) {
   } = useEditorDrawerContext()
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
+  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+    },
+  })
 
   if (!previewPageState || !savedPageState) return
 
@@ -82,11 +87,6 @@ function TipTapComponent({ content }: TipTapComponentProps) {
 
   const utils = trpc.useUtils()
 
-  const { mutate } = trpc.page.updatePageBlob.useMutation({
-    onSuccess: async () => {
-      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-    },
-  })
   const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
     { siteId, pageId },
   )
@@ -126,6 +126,7 @@ function TipTapComponent({ content }: TipTapComponentProps) {
             colorScheme="neutral"
             color="interaction.sub.default"
             aria-label="Close drawer"
+            isDisabled={isLoading}
             icon={<BiX />}
             onClick={() => {
               if (!_.isEqual(previewPageState, savedPageState)) {
@@ -161,14 +162,17 @@ function TipTapComponent({ content }: TipTapComponentProps) {
             <Button
               w="100%"
               onClick={() => {
-                setDrawerState({ state: "root" })
                 setSavedPageState(previewPageState)
-                mutate({
-                  pageId,
-                  siteId,
-                  content: JSON.stringify(previewPageState),
-                })
+                mutate(
+                  {
+                    pageId,
+                    siteId,
+                    content: JSON.stringify(previewPageState),
+                  },
+                  { onSuccess: () => setDrawerState({ state: "root" }) },
+                )
               }}
+              isLoading={isLoading}
             >
               Save changes
             </Button>
