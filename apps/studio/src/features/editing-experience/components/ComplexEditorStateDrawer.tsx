@@ -155,6 +155,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         boxShadow="md"
         py="1.5rem"
         px="2rem"
+        zIndex={1}
       >
         <HStack spacing="0.75rem">
           <IconButton
