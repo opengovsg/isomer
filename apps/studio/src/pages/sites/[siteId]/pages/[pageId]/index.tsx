@@ -1,5 +1,6 @@
 import { useEffect } from "react"
-import { Box, Grid, GridItem } from "@chakra-ui/react"
+import { Box, Flex, Grid, GridItem } from "@chakra-ui/react"
+import Frame from "react-frame-component"
 import { z } from "zod"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -49,17 +50,34 @@ function EditPage(): JSX.Element {
         <EditPageDrawer />
       </GridItem>
       {/* TODO: Implement preview */}
-      <GridItem colSpan={2} overflow="scroll">
-        <Box p="2rem" bg="gray.100">
-          <Box borderRadius="8px" bg="white" shadow="md" overflow="auto">
-            <Preview
-              {...page}
-              {...previewPageState}
-              siteId={siteId}
-              permalink={permalink}
-              version="0.1.0"
-            />
-          </Box>
+      <GridItem colSpan={2} overflow="auto">
+        <Box p="2rem" bg="gray.100" h="100%">
+          <Flex
+            borderRadius="8px"
+            bg="white"
+            shadow="md"
+            overflow="auto"
+            h="100%"
+          >
+            <Frame
+              style={{
+                flexGrow: 1,
+                border: "none",
+                margin: 0,
+                padding: 0,
+              }}
+              initialContent='<!DOCTYPE html><html><head><link rel="stylesheet" type="text/css" href="/assets/css/preview-tw.css" /></head><body><div id="preview-mount"></div></body></html>'
+              mountTarget="#preview-mount"
+            >
+              <Preview
+                siteId={siteId}
+                {...page}
+                permalink={permalink}
+                version="0.1.0"
+                content={previewPageState}
+              />
+            </Frame>
+          </Flex>
         </Box>
       </GridItem>
     </Grid>
