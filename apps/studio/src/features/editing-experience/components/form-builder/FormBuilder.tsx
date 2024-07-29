@@ -1,9 +1,11 @@
+import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { type JsonFormsRendererRegistryEntry } from "@jsonforms/core"
+import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import {
   JsonFormsAllOfControl,
@@ -56,6 +58,16 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsVerticalLayoutTester,
     renderer: jsonFormsVerticalLayoutRenderer,
+  },
+  {
+    tester: jsonFormsVerticalLayoutTester,
+    renderer: jsonFormsVerticalLayoutRenderer,
+  },
+  {
+    // NOTE: If we fall through all our previous testers,
+    // we render null so that the users don't get visual noise
+    tester: rankWith(JSON_FORMS_RANKING.Catchall, () => true),
+    renderer: () => null,
   },
 ]
 const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
