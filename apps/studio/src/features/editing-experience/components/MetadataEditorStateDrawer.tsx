@@ -20,7 +20,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
     { siteId, pageId },
   )
-  const { mutate } = trpc.page.updatePageBlob.useMutation({
+  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
     },
@@ -86,6 +86,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               colorScheme="sub"
               size="sm"
               p="0.625rem"
+              isDisabled={isLoading}
               onClick={() => {
                 setPreviewPageState(savedPageState)
                 setDrawerState({ state: "root" })
@@ -115,14 +116,19 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
       >
         <Button
           w="100%"
+          isLoading={isLoading}
           onClick={() => {
-            setDrawerState({ state: "root" })
             setSavedPageState(previewPageState)
-            mutate({
-              pageId,
-              siteId,
-              content: JSON.stringify(previewPageState),
-            })
+            mutate(
+              {
+                pageId,
+                siteId,
+                content: JSON.stringify(previewPageState),
+              },
+              {
+                onSuccess: () => setDrawerState({ state: "root" }),
+              },
+            )
           }}
         >
           Save changes

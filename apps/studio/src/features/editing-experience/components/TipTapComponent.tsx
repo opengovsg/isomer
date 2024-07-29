@@ -39,7 +39,7 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     onClose: onDeleteBlockModalClose,
   } = useDisclosure()
   const { pageId, siteId } = useQueryParse(editPageSchema)
-  const { mutate } = trpc.page.updatePageBlob.useMutation({
+  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
     },
@@ -118,6 +118,7 @@ function TipTapComponent({ content }: TipTapComponentProps) {
             colorScheme="neutral"
             color="interaction.sub.default"
             aria-label="Close add component"
+            isDisabled={isLoading}
             icon={<BiX />}
             onClick={() => {
               setDrawerState({ state: "root" })
@@ -150,14 +151,17 @@ function TipTapComponent({ content }: TipTapComponentProps) {
             <Button
               w="100%"
               onClick={() => {
-                setDrawerState({ state: "root" })
                 setSavedPageState(previewPageState)
-                mutate({
-                  pageId,
-                  siteId,
-                  content: JSON.stringify(previewPageState),
-                })
+                mutate(
+                  {
+                    pageId,
+                    siteId,
+                    content: JSON.stringify(previewPageState),
+                  },
+                  { onSuccess: () => setDrawerState({ state: "root" }) },
+                )
               }}
+              isLoading={isLoading}
             >
               Save changes
             </Button>
