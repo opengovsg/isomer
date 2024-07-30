@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useLayoutEffect, useRef, useState } from "react"
 import { usePreventScroll } from "react-aria"
 import { BiSearch, BiX } from "react-icons/bi"
 import { tv } from "tailwind-variants"
@@ -38,7 +38,7 @@ export const Navbar = ({
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [, setSiteHeaderBottomPx] = useState<number>()
+  const [siteHeaderBottomPx, setSiteHeaderBottomPx] = useState<number>()
 
   const isMenuOpen = openNavItemIdx !== -1 || isHamburgerOpen
 
@@ -48,18 +48,13 @@ export const Navbar = ({
   // Reference for the site header
   const siteHeaderRef = useRef<HTMLDivElement>(null)
 
-  const menuTopPosition = siteHeaderRef.current?.getBoundingClientRect().bottom
+  const refreshMenuOffset = useCallback(() => {
+    setSiteHeaderBottomPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
+  }, [])
 
   useResizeObserver({
     ref: siteHeaderRef,
-    onResize: () => {
-      // Updating this value just to trigger a rerender.
-      // We still use ref's value to get the most updated bottom px every single render
-      // instead of only on resize event.
-      setSiteHeaderBottomPx(
-        siteHeaderRef.current?.getBoundingClientRect().bottom,
-      )
-    },
+    onResize: refreshMenuOffset,
   })
 
   const handleClickOutside = useCallback(() => {
@@ -82,13 +77,23 @@ export const Navbar = ({
     "mouseup",
   )
 
+  useLayoutEffect(() => {
+    if (isMenuOpen) {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+      })
+      refreshMenuOffset()
+    }
+  }, [isMenuOpen, refreshMenuOffset])
+
   return (
     <div className="relative flex flex-col">
       {isMenuOpen && !isHamburgerOpen && (
         <div
           aria-hidden
           style={{
-            top: menuTopPosition,
+            top: siteHeaderBottomPx,
           }}
           className={overlay()}
         />
@@ -105,7 +110,7 @@ export const Navbar = ({
           <ul className={navItemContainer()} ref={navDesktopRef}>
             {items.map((item, index) => (
               <NavItem
-                top={menuTopPosition}
+                top={siteHeaderBottomPx}
                 key={`${item.name}-${index}`}
                 megaMenuRef={megaMenuRef}
                 ref={openNavItemIdx === index ? activeNavRef : null}
@@ -204,7 +209,7 @@ export const Navbar = ({
           ref={mobileMenuRef}
           className="fixed inset-0"
           style={{
-            top: menuTopPosition,
+            top: siteHeaderBottomPx,
           }}
         >
           <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
