@@ -126,7 +126,7 @@ export const pageRouter = router({
               title,
               permalink,
               siteId,
-              ...(folderId && { parentId: String(folderId) }),
+              parentId: folderId ? String(folderId) : undefined,
               draftBlobId: blob.id,
               type: ResourceType.Page,
             })
