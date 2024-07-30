@@ -112,9 +112,6 @@ const config: Config = {
       letterSpacing: {
         tight: "-0.022em",
       },
-      spacing: {
-        container: "1240px",
-      },
     },
   },
   plugins: [
