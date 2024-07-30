@@ -19,6 +19,7 @@ export const ImageSchema = Type.Object(
         description: "The width of the image",
         exclusiveMinimum: 0,
         maximum: 100,
+        default: 100,
       }),
     ),
     href: Type.Optional(
