@@ -1,3 +1,5 @@
+import { tv } from "tailwind-variants"
+
 import type { ContentPageSchemaType, IsomerSitemap } from "~/engine"
 import type { SiderailProps } from "~/interfaces"
 import {
@@ -128,6 +130,17 @@ const transformContent = (content: ContentPageSchemaType["content"]) => {
   return transformedContent
 }
 
+const createContentLayoutStyles = tv({
+  slots: {
+    container:
+      "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:gap-6 md:px-10 md:py-16 lg:gap-10",
+    siderailContainer: "col-span-3 hidden md:block",
+    content: "col-span-12 flex flex-col gap-16 md:col-span-9 md:ml-24",
+  },
+})
+
+const compoundStyles = createContentLayoutStyles()
+
 const ContentLayout = ({
   site,
   page,
@@ -160,13 +173,13 @@ const ContentLayout = ({
         LinkComponent={LinkComponent}
         lastUpdated={page.lastModified}
       />
-      <div className="mx-auto flex max-w-container justify-center gap-[120px] px-6 py-16 md:px-10">
+      <div className={compoundStyles.container()}>
         {sideRail && (
-          <div className="hidden w-full max-w-[240px] lg:block">
+          <div className={compoundStyles.siderailContainer()}>
             <Siderail {...sideRail} LinkComponent={LinkComponent} />
           </div>
         )}
-        <div className="flex w-full max-w-[800px] flex-col gap-[90px] overflow-x-auto">
+        <div className={compoundStyles.content()}>
           {tableOfContents.items.length > 1 && (
             <TableOfContents {...tableOfContents} />
           )}
