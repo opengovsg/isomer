@@ -96,7 +96,7 @@ const useCreatePageWizardContext = ({
       },
       {
         onSuccess: ({ pageId }) => {
-          router.push(`/sites/${siteId}/pages/${pageId}`)
+          void router.push(`/sites/${siteId}/pages/${pageId}`)
         },
       },
     )
