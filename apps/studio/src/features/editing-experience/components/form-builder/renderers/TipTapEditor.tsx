@@ -14,15 +14,19 @@ import { Heading } from "@tiptap/extension-heading"
 import { History } from "@tiptap/extension-history"
 import { HorizontalRule } from "@tiptap/extension-horizontal-rule"
 import { Italic } from "@tiptap/extension-italic"
-import Link from "@tiptap/extension-link"
+import { Link } from "@tiptap/extension-link"
 import { ListItem } from "@tiptap/extension-list-item"
 import { OrderedList } from "@tiptap/extension-ordered-list"
 import { Paragraph } from "@tiptap/extension-paragraph"
 import { Strike } from "@tiptap/extension-strike"
 import { Subscript } from "@tiptap/extension-subscript"
 import { Superscript } from "@tiptap/extension-superscript"
+import { Table } from "@tiptap/extension-table"
+import { TableCell } from "@tiptap/extension-table-cell"
+import { TableHeader } from "@tiptap/extension-table-header"
+import { TableRow } from "@tiptap/extension-table-row"
 import { Text } from "@tiptap/extension-text"
-import Underline from "@tiptap/extension-underline"
+import { Underline } from "@tiptap/extension-underline"
 import { EditorContent, textblockTypeInputRule, useEditor } from "@tiptap/react"
 
 import { MenuBar } from "~/components/PageEditor/MenuBar"
@@ -90,6 +94,20 @@ export function TiptapEditor({ data, handleChange }: TiptapEditorProps) {
       Strike,
       Superscript,
       Subscript,
+      Table.extend({
+        addAttributes() {
+          return {
+            caption: {
+              default: "Table caption",
+            },
+          }
+        },
+      }),
+      TableCell,
+      TableHeader.extend({
+        content: "paragraph+",
+      }),
+      TableRow,
       Text,
       Underline,
     ],
