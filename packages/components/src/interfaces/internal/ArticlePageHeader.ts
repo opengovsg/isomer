@@ -9,7 +9,7 @@ export const ArticlePageHeaderSchema = Type.Object({
     title: "Article summary",
     description:
       "The summary of the article page's content. Having multiple items will display them as a list.",
-    minItems: 1,
+    minItems: 0,
   }),
 })
 
