@@ -39,6 +39,8 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     onClose: onDeleteBlockModalClose,
   } = useDisclosure()
 
+  const { pageId, siteId } = useQueryParse(editPageSchema)
+
   if (!previewPageState || !savedPageState) return
 
   const updatePageState = (editorContent: JSONContent) => {
@@ -67,7 +69,6 @@ function TipTapComponent({ content }: TipTapComponentProps) {
 
   const utils = trpc.useUtils()
 
-  const { pageId, siteId } = useQueryParse(editPageSchema)
   const { mutate } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
