@@ -1,4 +1,5 @@
 import type { DropResult } from "@hello-pangea/dnd"
+import { useCallback } from "react"
 import {
   Box,
   Button,
@@ -9,12 +10,16 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import { useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { BiGridVertical } from "react-icons/bi"
 import { BsPlus } from "react-icons/bs"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
+import { trpc } from "~/utils/trpc"
 import { ActivateAdminMode } from "./ActivateAdminMode"
 
 export default function RootStateDrawer() {
@@ -26,25 +31,65 @@ export default function RootStateDrawer() {
     setPreviewPageState,
   } = useEditorDrawerContext()
 
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination || !savedPageState) return
+  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const { mutate } = trpc.page.reorderBlock.useMutation({
+    onError: (error, variables) => {
+      // NOTE: rollback to last known good state
+      // @ts-expect-error Our zod validator runs between frontend and backend
+      // and the error type is automatically inferred from the zod validator.
+      // However, the type that we use on `pageState` is the full type
+      // because `Preview` (amongst other things) requires the other properties on the actual schema type
+      setPreviewPageState(variables.blocks)
+      // @ts-expect-error See above
+      setSavedPageState(variables.blocks)
+      toast({
+        title: "Failed to update blocks",
+        description: error.message,
+      })
+    },
+  })
 
-    const updatedBlocks = Array.from(savedPageState.content)
-    // Remove block at source index
-    const [movedBlock] = updatedBlocks.splice(result.source.index, 1)
-    if (movedBlock) {
-      // Insert at destination index
-      updatedBlocks.splice(result.destination.index, 0, movedBlock)
-    }
+  const toast = useToast({ status: "error" })
 
-    const newPageState = {
-      ...savedPageState,
-      content: updatedBlocks,
-    }
+  const onDragEnd = useCallback(
+    (result: DropResult) => {
+      if (!result.destination || !savedPageState) return
 
-    setPreviewPageState(newPageState)
-    setSavedPageState(newPageState)
-  }
+      const from = result.source.index
+      const to = result.destination.index
+      const contentLength = savedPageState?.content.length ?? 0
+
+      if (from >= contentLength || to >= contentLength || from < 0 || to < 0)
+        return
+
+      // NOTE: We eagerly update their page state here
+      // and if it fails on the backend,
+      // we rollback to what we passed them
+      const updatedBlocks = Array.from(savedPageState.content)
+      const [movedBlock] = updatedBlocks.splice(from, 1)
+
+      if (!!movedBlock) {
+        updatedBlocks.splice(to, 0, movedBlock)
+        const newPageState = {
+          ...savedPageState,
+          content: updatedBlocks,
+        }
+        setPreviewPageState(newPageState)
+        setSavedPageState(newPageState)
+      }
+
+      // NOTE: drive an update to the db with the updated index
+      mutate({ pageId, from, to, blocks: savedPageState.content, siteId })
+    },
+    [
+      mutate,
+      pageId,
+      savedPageState,
+      setPreviewPageState,
+      setSavedPageState,
+      siteId,
+    ],
+  )
 
   const isHeroFixedBlock =
     savedPageState?.layout === "homepage" &&

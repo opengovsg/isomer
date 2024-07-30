@@ -13,6 +13,9 @@ import Ajv from "ajv"
 import { BiDollar, BiTrash, BiX } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
+import { trpc } from "~/utils/trpc"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import FormBuilder from "./form-builder/FormBuilder"
 
@@ -20,13 +23,24 @@ const ajv = new Ajv({ strict: false, logger: false })
 
 export default function ComplexEditorStateDrawer(): JSX.Element {
   const {
-    currActiveIdx,
     setDrawerState,
+    currActiveIdx,
     savedPageState,
     setSavedPageState,
     previewPageState,
     setPreviewPageState,
   } = useEditorDrawerContext()
+  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
+    { siteId, pageId },
+  )
+  const utils = trpc.useUtils()
+
+  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+    },
+  })
   const {
     isOpen: isDeleteBlockModalOpen,
     onOpen: onDeleteBlockModalOpen,
@@ -160,7 +174,13 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
               onClick={() => {
                 setDrawerState({ state: "root" })
                 setSavedPageState(previewPageState)
+                mutate({
+                  pageId,
+                  siteId,
+                  content: JSON.stringify(previewPageState),
+                })
               }}
+              isLoading={isLoading}
             >
               Save changes
             </Button>

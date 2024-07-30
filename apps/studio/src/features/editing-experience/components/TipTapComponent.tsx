@@ -14,6 +14,9 @@ import { BiText, BiTrash, BiX } from "react-icons/bi"
 
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
+import { trpc } from "~/utils/trpc"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { TiptapEditor } from "./form-builder/renderers/TipTapEditor"
 
@@ -23,8 +26,8 @@ interface TipTapComponentProps {
 
 function TipTapComponent({ content }: TipTapComponentProps) {
   const {
-    setDrawerState,
     savedPageState,
+    setDrawerState,
     setSavedPageState,
     previewPageState,
     setPreviewPageState,
@@ -35,6 +38,8 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     onOpen: onDeleteBlockModalOpen,
     onClose: onDeleteBlockModalClose,
   } = useDisclosure()
+
+  const { pageId, siteId } = useQueryParse(editPageSchema)
 
   if (!previewPageState || !savedPageState) return
 
@@ -61,6 +66,17 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     onDeleteBlockModalClose()
     setDrawerState({ state: "root" })
   }
+
+  const utils = trpc.useUtils()
+
+  const { mutate } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+    },
+  })
+  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
+    { siteId, pageId },
+  )
 
   // TODO: Add a loading state or use suspsense
   return (
@@ -125,6 +141,11 @@ function TipTapComponent({ content }: TipTapComponentProps) {
               onClick={() => {
                 setDrawerState({ state: "root" })
                 setSavedPageState(previewPageState)
+                mutate({
+                  pageId,
+                  siteId,
+                  content: JSON.stringify(previewPageState),
+                })
               }}
             >
               Save changes

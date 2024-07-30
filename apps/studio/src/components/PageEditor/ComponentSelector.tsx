@@ -28,8 +28,6 @@ import {
 } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { useQueryParse } from "~/hooks/useQueryParse"
-import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 import { type DrawerState } from "~/types/editorDrawer"
 import { trpc } from "~/utils/trpc"
 import { DEFAULT_BLOCKS } from "./constants"
@@ -99,7 +97,12 @@ function BlockItem({
   )
 }
 
-function ComponentSelector() {
+interface ComponentSelectorProps {
+  siteId: number
+  pageId: number
+}
+
+function ComponentSelector({ pageId, siteId }: ComponentSelectorProps) {
   const {
     setCurrActiveIdx,
     savedPageState,
@@ -108,8 +111,12 @@ function ComponentSelector() {
     setPreviewPageState,
     setAddedBlock,
   } = useEditorDrawerContext()
-
-  const { pageId, siteId } = useQueryParse(editPageSchema)
+  const utils = trpc.useUtils()
+  const { mutate } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+    },
+  })
   const [page] = trpc.page.readPageAndBlob.useSuspenseQuery({
     pageId,
     siteId,

@@ -1,6 +1,7 @@
-import type { SelectExpression } from "kysely"
+import type { SelectExpression, Transaction } from "kysely"
 import { type DB } from "~prisma/generated/generatedTypes"
 
+import type { SafeKysely } from "../database"
 import { db } from "../database"
 import { type Page } from "./resource.types"
 
@@ -51,28 +52,35 @@ export const getFolders = () =>
     .execute()
 
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
-const getById = ({
-  resourceId,
-  siteId,
-}: {
-  resourceId: number
-  siteId: number
-}) =>
+const getById = (
+  db: SafeKysely,
+  {
+    resourceId,
+    siteId,
+  }: {
+    resourceId: number
+    siteId: number
+  },
+) =>
   db
     .selectFrom("Resource")
     .where("Resource.id", "=", String(resourceId))
     .where("siteId", "=", siteId)
 
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
-export const getFullPageById = async (args: {
-  resourceId: number
-  siteId: number
-}) => {
+export const getFullPageById = async (
+  tx: Transaction<DB>,
+  args: {
+    resourceId: number
+    siteId: number
+  },
+) => {
   // Check if draft blob exists and return that preferentially
-  const draftBlob = await getById(args)
+  const draftBlob = await getById(tx, args)
     .where("Resource.draftBlobId", "is not", null)
     .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
+    .forUpdate()
     .executeTakeFirst()
   if (draftBlob) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -80,47 +88,80 @@ export const getFullPageById = async (args: {
     return draftBlob
   }
 
-  return getById(args)
+  return getById(tx, args)
     .where("Resource.mainBlobId", "is not", null)
     .innerJoin("Blob", "Resource.mainBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
+    .forUpdate()
     .executeTakeFirst()
 }
 
-export const getPageById = (args: { resourceId: number; siteId: number }) => {
-  return getById(args)
+export const getPageById = (
+  db: SafeKysely,
+  args: { resourceId: number; siteId: number },
+) => {
+  return getById(db, args)
     .where("type", "is", "Page")
     .select(defaultResourceSelect)
     .executeTakeFirstOrThrow()
 }
 
 export const updatePageById = (
-  page: Partial<Omit<Page, "id">> & { id: number },
+  page: Partial<Omit<Page, "id" | "siteId" | "parentId">> & {
+    id: number
+    siteId: number
+    parentId?: number
+  },
 ) => {
-  const { id, ...rest } = page
+  const { id, parentId, ...rest } = page
   return db.transaction().execute((tx) => {
     return tx
       .updateTable("Resource")
-      .set(rest)
+      .set({ ...rest, ...(parentId && { parentId: String(parentId) }) })
+      .where("siteId", "=", page.siteId)
       .where("id", "=", String(id))
       .executeTakeFirstOrThrow()
   })
 }
 
-export const updateBlobById = (props: {
-  id: number
-  content: PrismaJson.BlobJsonContent
-}) => {
-  const { id, content } = props
+export const updateBlobById = async (
+  db: SafeKysely,
+  props: {
+    pageId: number
+    content: PrismaJson.BlobJsonContent
+    siteId: number
+  },
+) => {
+  const { pageId: id, content } = props
+  const page = await db
+    .selectFrom("Resource")
+    .where("Resource.id", "=", String(id))
+    .where("siteId", "=", props.siteId)
+    // NOTE: We update the draft first
+    // Main should only be updated at build
+    .select("draftBlobId")
+    .executeTakeFirstOrThrow()
+
+  if (!page.draftBlobId) {
+    // NOTE: no draft for this yet, need to create a new one
+    const newBlob = await db
+      .insertInto("Blob")
+      .values({ content })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+    await db
+      .updateTable("Resource")
+      .where("id", "=", String(id))
+      .set({ draftBlobId: newBlob.id })
+      .execute()
+  }
+
   return (
     db
       .updateTable("Blob")
-      .innerJoin("Resource", "Resource.id", "id")
       // NOTE: This works because a page has a 1-1 relation with a blob
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore excessive deep type instantiaton
       .set({ content })
-      .where("Resource.id", "=", String(id))
+      .where("Blob.id", "=", page.draftBlobId)
       .executeTakeFirstOrThrow()
   )
 }

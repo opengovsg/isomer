@@ -13,6 +13,34 @@ export const getEditPageSchema = z.object({
   siteId: z.number().min(1),
 })
 
+export const reorderBlobSchema = z.object({
+  pageId: z.number().min(1),
+  from: z.number().min(0),
+  to: z.number().min(0),
+  siteId: z.number().min(1),
+  blocks: z.array(
+    z
+      .object({
+        type: z.string(),
+      })
+      .passthrough(),
+  ),
+})
+
+export const updatePageSchema = getEditPageSchema.extend({
+  // NOTE: We allow both to be empty now,
+  // in which case this is a no-op.
+  // We are ok w/ this because it doesn't
+  // incur any db writes
+  parentId: z.number().min(1).optional(),
+  pageName: z.string().min(1).optional(),
+})
+
+export const updatePageBlobSchema = getEditPageSchema.extend({
+  content: z.string(),
+  siteId: z.number().min(1),
+})
+
 export const createPageSchema = z.object({
   title: z
     .string({
