@@ -17,7 +17,7 @@ export const Masthead = ({
       className="bg-[#f0f0f0] text-[0.6875rem] text-[#474747] lg:text-sm"
       aria-label="A Singapore Government Agency Website"
     >
-      <div className="mx-auto max-w-container px-6 lg:px-10">
+      <div className="mx-auto max-w-screen-xl px-6 lg:px-10">
         <div className="flex gap-1">
           <svg
             version="1.1"
@@ -79,7 +79,7 @@ export const Masthead = ({
 
       <div
         id="sgds-masthead-content"
-        className={`mx-auto max-w-container px-6 pb-8 pt-4 text-[#474747] lg:px-10 lg:pb-12 lg:pt-10 ${
+        className={`mx-auto max-w-screen-xl px-6 pb-8 pt-4 text-[#474747] lg:px-10 lg:pb-12 lg:pt-10 ${
           isMastheadContentVisible ? "block" : "hidden"
         }`}
       >

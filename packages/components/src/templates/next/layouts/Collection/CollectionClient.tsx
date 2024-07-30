@@ -264,7 +264,7 @@ const CollectionClient = ({
   )
 
   return (
-    <div className="mx-auto my-16 flex max-w-container flex-col items-start gap-16 px-6 md:px-10">
+    <div className="mx-auto my-16 flex max-w-screen-xl flex-col items-start gap-16 px-6 md:px-10">
       <div className="flex max-w-[47.8rem] flex-col gap-12">
         <h1 className="flex flex-col gap-16 text-content-strong text-heading-01">
           {title}
