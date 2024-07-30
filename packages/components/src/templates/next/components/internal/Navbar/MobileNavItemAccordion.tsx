@@ -13,7 +13,7 @@ interface NavItemAccordionProps
 
 const mobileItemStyles = tv({
   slots: {
-    container: "flex flex-col gap-6 border-b border-b-base-divider-subtle",
+    container: "flex flex-col gap-3 border-b border-b-base-divider-subtle",
     item: "prose-headline-base-medium flex w-full items-center justify-between gap-6 px-6 py-3 text-left text-base-content",
     sublist: "flex flex-col gap-3.5",
     nestedItem: "prose-body-base py-1 text-base-content-medium",
