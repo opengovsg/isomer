@@ -58,6 +58,7 @@ export function TiptapEditor({ data, handleChange }: TiptapEditorProps) {
       Gapcursor,
       HardBreak,
       Heading.extend({
+        marks: "",
         // NOTE: Have to override the default input rules
         // because we should map the number of `#` into
         // a h<num # + 1>.
