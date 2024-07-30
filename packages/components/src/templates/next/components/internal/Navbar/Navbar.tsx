@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react"
 import { usePreventScroll } from "react-aria"
 import { BiSearch, BiX } from "react-icons/bi"
 import { tv } from "tailwind-variants"
-import { useIsomorphicLayoutEffect, useOnClickOutside } from "usehooks-ts"
+import { useOnClickOutside, useResizeObserver } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
@@ -50,21 +50,17 @@ export const Navbar = ({
 
   const menuTopPosition = siteHeaderRef.current?.getBoundingClientRect().bottom
 
-  useIsomorphicLayoutEffect(() => {
-    function updateBottomPx() {
-      if (siteHeaderRef.current) {
-        // Updating this value just to trigger a rerender.
-        // We still use ref's value to get the most updated bottom px every single render
-        // instead of only on resize event.
-        setSiteHeaderBottomPx(
-          siteHeaderRef.current.getBoundingClientRect().bottom,
-        )
-      }
-    }
-    window.addEventListener("resize", updateBottomPx)
-    updateBottomPx()
-    return () => window.removeEventListener("resize", updateBottomPx)
-  }, [])
+  useResizeObserver({
+    ref: siteHeaderRef,
+    onResize: () => {
+      // Updating this value just to trigger a rerender.
+      // We still use ref's value to get the most updated bottom px every single render
+      // instead of only on resize event.
+      setSiteHeaderBottomPx(
+        siteHeaderRef.current?.getBoundingClientRect().bottom,
+      )
+    },
+  })
 
   const handleClickOutside = useCallback(() => {
     if (!isHamburgerOpen) {
