@@ -5,7 +5,7 @@ import Frame, { useFrame } from "react-frame-component"
 
 export const PreviewIframe = ({ children }: PropsWithChildren): JSX.Element => {
   // TODO: Add toolbar for users to adjust the width of the iframe
-  const [width, _setWidth] = useState("640px")
+  const [width, _setWidth] = useState("100%")
   return (
     <Flex
       borderRadius="8px"
