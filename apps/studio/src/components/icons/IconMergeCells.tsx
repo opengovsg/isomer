@@ -1,6 +1,6 @@
 import { chakra } from "@chakra-ui/react"
 
-export const BxMergeCells = chakra((props: React.SVGProps<SVGSVGElement>) => {
+export const IconMergeCells = chakra((props: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       width="24"

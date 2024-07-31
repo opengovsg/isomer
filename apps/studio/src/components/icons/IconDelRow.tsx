@@ -1,6 +1,6 @@
 import { chakra } from "@chakra-ui/react"
 
-export const BxDelRow = chakra(
+export const IconDelRow = chakra(
   (props: React.SVGProps<SVGSVGElement>): JSX.Element => {
     return (
       <svg

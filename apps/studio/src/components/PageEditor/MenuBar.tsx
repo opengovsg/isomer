@@ -30,15 +30,15 @@ import {
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
 import {
-  BxAddColLeft,
-  BxAddColRight,
-  BxAddRowAbove,
-  BxAddRowBelow,
-  BxDelCol,
-  BxDelRow,
-  BxMergeCells,
-  BxSplitCell,
-} from "~/assets"
+  IconAddColLeft,
+  IconAddColRight,
+  IconAddRowAbove,
+  IconAddRowBelow,
+  IconDelCol,
+  IconDelRow,
+  IconMergeCells,
+  IconSplitCell,
+} from "~/components/icons"
 import { MenuItem } from "./MenuItem"
 import { TableSettingsModal } from "./TableSettingsModal"
 
@@ -256,42 +256,42 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
     },
     {
       type: "item",
-      icon: () => <Icon as={BxAddColRight} />,
+      icon: () => <Icon as={IconAddColRight} />,
       title: "Add column after",
       action: () => editor.chain().focus().addColumnAfter().run(),
       isHidden: !editor.isActive("table"),
     },
     {
       type: "item",
-      icon: () => <Icon as={BxAddColLeft} />,
+      icon: () => <Icon as={IconAddColLeft} />,
       title: "Add column before",
       action: () => editor.chain().focus().addColumnBefore().run(),
       isHidden: !editor.isActive("table"),
     },
     {
       type: "item",
-      icon: () => <Icon as={BxDelCol} />,
+      icon: () => <Icon as={IconDelCol} />,
       title: "Delete column",
       action: () => editor.chain().focus().deleteColumn().run(),
       isHidden: !editor.isActive("table"),
     },
     {
       type: "item",
-      icon: () => <Icon as={BxAddRowAbove} />,
+      icon: () => <Icon as={IconAddRowAbove} />,
       title: "Add row before",
       action: () => editor.chain().focus().addRowBefore().run(),
       isHidden: !editor.isActive("table"),
     },
     {
       type: "item",
-      icon: () => <Icon as={BxAddRowBelow} />,
+      icon: () => <Icon as={IconAddRowBelow} />,
       title: "Add row after",
       action: () => editor.chain().focus().addRowAfter().run(),
       isHidden: !editor.isActive("table"),
     },
     {
       type: "item",
-      icon: () => <Icon as={BxDelRow} />,
+      icon: () => <Icon as={IconDelRow} />,
       title: "Delete row",
       action: () => editor.chain().focus().deleteRow().run(),
       isHidden: !editor.isActive("table"),
@@ -302,14 +302,14 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
     },
     {
       type: "item",
-      icon: () => <Icon as={BxMergeCells} />,
+      icon: () => <Icon as={IconMergeCells} />,
       title: "Merge cells",
       action: () => editor.chain().focus().mergeCells().run(),
       isHidden: !editor.isActive("table"),
     },
     {
       type: "item",
-      icon: () => <Icon as={BxSplitCell} />,
+      icon: () => <Icon as={IconSplitCell} />,
       title: "Split cell",
       action: () => editor.chain().focus().splitCell().run(),
       isHidden: !editor.isActive("table"),
