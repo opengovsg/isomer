@@ -27,6 +27,7 @@ const meta: Meta<typeof Template> = {
   title: "Next/Layouts/Search",
   component: Template,
   argTypes: {},
+  tags: ["!autodocs"],
   parameters: {
     themes: {
       themeOverride: "Isomer Next",

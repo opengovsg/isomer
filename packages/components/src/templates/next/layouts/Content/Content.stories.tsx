@@ -6,7 +6,9 @@ const meta: Meta<typeof Content> = {
   title: "Next/Layouts/Content",
   component: Content,
   argTypes: {},
+  tags: ["!autodocs"],
   parameters: {
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },

@@ -7,7 +7,9 @@ const meta: Meta<NotFoundPageSchemaType> = {
   title: "Next/Layouts/NotFound",
   component: NotFoundLayout,
   argTypes: {},
+  tags: ["!autodocs"],
   parameters: {
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -17,6 +19,7 @@ export default meta
 type Story = StoryObj<NotFoundPageSchemaType>
 
 export const Default: Story = {
+  name: "NotFound",
   args: {
     layout: "notfound",
     site: {
