@@ -7,6 +7,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { db } from "../database"
 import { getFooter, getNavBar } from "../resource/resource.service"
 import {
+  clearSiteNotification,
   getNotification,
   getSiteConfig,
   setSiteNotification,
@@ -50,8 +51,12 @@ export const siteRouter = router({
   setNotification: protectedProcedure
     .input(setNotificationSchema)
     .mutation(async ({ input, ctx }) => {
-      const { siteId, notification } = input
-      await setSiteNotification(siteId, notification)
+      const { siteId, notification, notificationEnabled } = input
+      if (notificationEnabled) {
+        await setSiteNotification(siteId, notification)
+      } else {
+        await clearSiteNotification(siteId)
+      }
       return input
     }),
 })

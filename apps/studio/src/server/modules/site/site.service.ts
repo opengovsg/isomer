@@ -1,4 +1,5 @@
 import { type IsomerSiteConfigProps } from "@opengovsg/isomer-components"
+import { TRPCError } from "@trpc/server"
 
 import { db, sql } from "../database"
 
@@ -27,14 +28,22 @@ export const setSiteConfig = async (
 export const getNotification = async (siteId: number) => {
   const result = await db
     .selectFrom("Site")
-    .select(sql`config ->> 'notification'`.as("notification"))
+    .select((eb) =>
+      eb.ref("Site.config", "->").key("notification").as("notification"),
+    )
     .where("id", "=", siteId)
-    .executeTakeFirstOrThrow()
-
-  return result.notification
+    .executeTakeFirst()
+  if (!result) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Site not found",
+    })
+  }
+  // NOTE: Empty string denotes absence of notification on site.
+  return result.notification || ""
 }
 
-// TODO: Should triger immediate re-publish of site
+// TODO: Should trigger immediate re-publish of site
 export const setSiteNotification = async (
   siteId: number,
   notification: string,
@@ -44,6 +53,15 @@ export const setSiteNotification = async (
     .set({
       config: sql`jsonb_set(config, '{"notification"}', to_jsonb(${notification}::text))`,
     })
+    .where("id", "=", siteId)
+    .executeTakeFirstOrThrow()
+}
+
+// TODO: Should trigger immediate re-publish of site
+export const clearSiteNotification = async (siteId: number) => {
+  return db
+    .updateTable("Site")
+    .set({ config: sql`config - 'notification'` })
     .where("id", "=", siteId)
     .executeTakeFirstOrThrow()
 }
