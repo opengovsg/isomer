@@ -1,29 +1,45 @@
-import { MdChevronRight } from "react-icons/md"
+import { BiChevronRight } from "react-icons/bi"
+import { tv } from "tailwind-variants"
 
 import type { BreadcrumbProps } from "~/interfaces"
 
+const breadcrumbStyles = tv({
+  slots: {
+    nav: "flex flex-row flex-wrap items-center gap-2 text-base-content",
+    container:
+      "prose-label-md-regular flex flex-row items-center gap-1 last:prose-label-md-medium last:text-base-content-medium",
+    link: "underline decoration-transparent underline-offset-4 transition hover:decoration-inherit active:text-interaction-link-active",
+    icon: "h-5 w-5 flex-shrink-0 text-base-content-subtle",
+  },
+})
+
+const compoundStyles = breadcrumbStyles()
+
 const Breadcrumb = ({ links, LinkComponent = "a" }: BreadcrumbProps) => {
+  const [root, ...rest] = links
   return (
-    <div className="flex flex-row flex-wrap gap-2">
-      {links.map((link, index) => {
-        const isLast = index === links.length - 1
-        return (
-          <div key={index} className="flex flex-row items-center gap-1">
-            <LinkComponent
-              href={link.url}
-              className={`text-sm underline decoration-transparent underline-offset-2 transition duration-150 ease-in hover:decoration-inherit active:text-hyperlink ${
-                isLast ? "font-medium text-gray-700" : "text-gray-600"
-              }`}
-            >
-              {link.title}
-            </LinkComponent>
-            {!isLast && (
-              <MdChevronRight className="h-auto min-w-6 text-gray-400" />
-            )}
-          </div>
-        )
-      })}
-    </div>
+    <nav aria-label="Breadcrumb">
+      <ol role="list" className={compoundStyles.nav()}>
+        <li className={compoundStyles.container()}>
+          <LinkComponent href={root.url} className={compoundStyles.link()}>
+            {root.title}
+          </LinkComponent>
+        </li>
+        {rest.map((link, index) => {
+          return (
+            <li key={index} className={compoundStyles.container()}>
+              <BiChevronRight
+                aria-hidden="true"
+                className={compoundStyles.icon()}
+              />
+              <LinkComponent href={link.url} className={compoundStyles.link()}>
+                {link.title}
+              </LinkComponent>
+            </li>
+          )
+        })}
+      </ol>
+    </nav>
   )
 }
 
