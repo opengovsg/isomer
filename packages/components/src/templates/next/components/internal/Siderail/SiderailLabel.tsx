@@ -10,6 +10,13 @@ const createSiderailLabelStyles = tv({
       "group flex gap-1.5 px-3 py-4 transition hover:text-brand-interaction",
     icon: "h-6 w-6 opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100",
   },
+  variants: {
+    isCurrent: {
+      true: {
+        container: "text-brand-interaction",
+      },
+    },
+  },
 })
 
 const compoundStyles = createSiderailLabelStyles()
@@ -28,7 +35,11 @@ export const SiderailLabel = ({
 }: SiderailLabelProps) => {
   const { LinkComponent } = useSiderailContext()
   if (isCurrent) {
-    return <p className={compoundStyles.container({ className })}>{title}</p>
+    return (
+      <p className={compoundStyles.container({ className, isCurrent })}>
+        {title}
+      </p>
+    )
   }
 
   return (
