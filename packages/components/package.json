@@ -28,6 +28,7 @@
   "devDependencies": {
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
+    "@isomer/storybook-config": "*",
     "@isomer/tsconfig": "*",
     "@storybook/addon-a11y": "^8.1.10",
     "@storybook/addon-essentials": "^8.1.10",
@@ -103,7 +104,11 @@
     "js-md5": "^0.8.3",
     "markdown-to-jsx": "^7.4.7",
     "minisearch": "^6.3.0",
-    "react-icons": "^5.2.0"
+    "react-aria": "^3.34.1",
+    "react-icons": "^5.2.0",
+    "tailwind-merge": "^2.4.0",
+    "tailwind-variants": "^0.2.1",
+    "usehooks-ts": "^3.1.0"
   },
   "prettier": "@isomer/prettier-config"
 }

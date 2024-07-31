@@ -1,6 +1,20 @@
 import twColors from "tailwindcss/colors"
 
 export const colors = {
+  // TODO: Use CSS variables for brand
+  brand: {
+    canvas: {
+      DEFAULT: "#E6ECEF",
+      alt: "#BFCFD7",
+      backdrop: "#80A0AF",
+      inverse: "#00405F",
+    },
+    interaction: {
+      DEFAULT: "#00405F",
+      hover: "#002E44",
+      pressed: "#00283B",
+    },
+  },
   base: {
     canvas: {
       DEFAULT: twColors.white,

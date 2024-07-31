@@ -41,7 +41,7 @@ interface StorybookViewportParameter {
  * An additional `xs` viewport is added (outside of tailwindcss breakpoints)
  * specifically for Chromatic to have a snapshot for the smallest screen size.
  */
-export const viewport: StorybookViewportParameter = {
+export const viewport = {
   viewports: {
     xs: { name: "xs", styles: { width: "320px", height: "100%" } },
     sm: { name: "sm", styles: { width: "480px", height: "100%" } },
@@ -50,4 +50,4 @@ export const viewport: StorybookViewportParameter = {
     xl: { name: "xl", styles: { width: "1440px", height: "100%" } },
     "2xl": { name: "2xl", styles: { width: "1536px", height: "100%" } },
   },
-};
+} as const satisfies StorybookViewportParameter;
