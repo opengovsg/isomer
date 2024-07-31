@@ -26,7 +26,7 @@ export const getSiteNameAndCodeBuildId = async (siteId: number) => {
   return await db
     .selectFrom("Site")
     .where("id", "=", siteId)
-    .select(["Site.codeBuildId", "Site.name", "Site.shortName"])
+    .select(["Site.codeBuildId", "Site.name"])
     .executeTakeFirstOrThrow()
 }
 
