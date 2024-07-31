@@ -26,7 +26,7 @@ export const folderRouter = router({
         .where("parentId", "=", String(input.resourceId))
         .execute()
       const children = childrenResult.map((c) => {
-        if (c.draftBlobId || c.mainBlobId) {
+        if (c.draftBlobId || c.publishedVersionId) {
           return {
             id: c.id,
             permalink: c.permalink,

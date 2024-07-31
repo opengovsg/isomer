@@ -1,4 +1,4 @@
-import type { SelectExpression, Transaction } from "kysely"
+import type { SelectExpression } from "kysely"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { SafeKysely } from "../database"
@@ -12,7 +12,7 @@ const defaultResourceSelect: SelectExpression<DB, "Resource">[] = [
   "Resource.permalink",
   "Resource.siteId",
   "Resource.parentId",
-  "Resource.mainBlobId",
+  "Resource.publishedVersionId",
   "Resource.draftBlobId",
   "Resource.type",
   "Resource.state",
@@ -69,14 +69,14 @@ const getById = (
 
 // NOTE: Throw here to fail early if our invariant that a page has a `blobId` is violated
 export const getFullPageById = async (
-  tx: Transaction<DB>,
+  db: SafeKysely,
   args: {
     resourceId: number
     siteId: number
   },
 ) => {
   // Check if draft blob exists and return that preferentially
-  const draftBlob = await getById(tx, args)
+  const draftBlob = await getById(db, args)
     .where("Resource.draftBlobId", "is not", null)
     .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
@@ -88,9 +88,10 @@ export const getFullPageById = async (
     return draftBlob
   }
 
-  return getById(tx, args)
-    .where("Resource.mainBlobId", "is not", null)
-    .innerJoin("Blob", "Resource.mainBlobId", "Blob.id")
+  return getById(db, args)
+    .where("Resource.publishedVersionId", "is not", null)
+    .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
+    .innerJoin("Blob", "Version.blobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
     .forUpdate()
     .executeTakeFirst()
