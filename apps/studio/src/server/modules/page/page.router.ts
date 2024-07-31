@@ -26,7 +26,8 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { addNewVersion, createDefaultPage } from "./page.service"
+import { addNewVersion } from "../version/version.service"
+import { createDefaultPage } from "./page.service"
 
 const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
