@@ -15,10 +15,7 @@ import {
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import {
-  createCodeBuildProject,
-  startProjectById,
-} from "../aws/codebuild.service"
+import { startProjectById } from "../aws/codebuild.service"
 import { db, ResourceType } from "../database"
 import {
   getFooter,
@@ -28,11 +25,7 @@ import {
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
-import {
-  getSiteConfig,
-  getSiteNameAndCodeBuildId,
-  setSiteCodeBuildId,
-} from "../site/site.service"
+import { getSiteConfig, getSiteNameAndCodeBuildId } from "../site/site.service"
 import { incrementVersion } from "../version/version.service"
 import { createDefaultPage } from "./page.service"
 
@@ -262,45 +255,19 @@ export const pageRouter = router({
         pageId,
         userId: ctx.user.id,
       })
-      return addedVersionResult
 
       /* TODO: Step 2: Use AWS SDK to start a CodeBuild */
       const site = await getSiteNameAndCodeBuildId(siteId)
-      let codeBuildId = site.codeBuildId
+      const codeBuildId = site.codeBuildId
       if (!codeBuildId) {
-        // create a codebuild project
-        const projectName = site.shortName || site.name
-        const formattedProjectName = projectName
-          .toLowerCase()
-          .split(" ")
-          .join("-")
-        const projectId = `${formattedProjectName}-${siteId}`
-
-        try {
-          await createCodeBuildProject({
-            projectId,
-            siteId,
-          })
-        } catch (e) {
-          const msg = "CodeBuild project creation failure"
-          ctx.logger.error(msg, {
-            userId: ctx.user.id,
-            siteId,
-          })
-          throw new TRPCError({
-            message: msg,
-            code: "INTERNAL_SERVER_ERROR",
-            cause: e,
-          })
-        }
-
-        // update site to the newly created codebuild project id
-        await setSiteCodeBuildId(siteId, projectId)
-        codeBuildId = projectId
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "No CodeBuild found for site",
+        })
       }
 
       // initiate new build
-      await startProjectById(codeBuildId)
+      await startProjectById(ctx.logger, codeBuildId)
       return addedVersionResult
     }),
 })
