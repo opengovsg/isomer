@@ -92,7 +92,9 @@ export const pageRouter = router({
   readPage: protectedProcedure
     .input(getPageSchema)
     .query(async ({ input: { pageId, siteId } }) => {
-      return getPageById(db, { resourceId: pageId, siteId })
+      return db.transaction().execute(async (tx) => {
+        return getPageById(tx, { resourceId: pageId, siteId })
+      })
     }),
 
   readPageAndBlob: protectedProcedure
