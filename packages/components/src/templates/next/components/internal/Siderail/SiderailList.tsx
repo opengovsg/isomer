@@ -46,7 +46,7 @@ export const SiderailList = ({
   return (
     <Disclosure defaultOpen={item.isCurrent}>
       {({ open: isOpen }) => (
-        <div
+        <li
           className={twMerge(compoundStyles.container({ isOpen }), className)}
         >
           <div className={compoundStyles.header({ isOpen })}>
@@ -54,7 +54,9 @@ export const SiderailList = ({
               {...item}
               className={compoundStyles.label({ isOpen })}
             />
-            <DisclosureButton>
+            <DisclosureButton
+              aria-label={`${isOpen ? "expand" : "collapse"} ${item.title} section`}
+            >
               {isOpen ? (
                 <BiMinus className={compoundStyles.expandIcon()} />
               ) : (
@@ -63,18 +65,20 @@ export const SiderailList = ({
             </DisclosureButton>
           </div>
           <DisclosurePanel>
-            {item.childPages.map((child, index) => (
-              <div className={compoundStyles.childHeader({ isOpen })}>
-                <SiderailLabel
-                  showIconOnHover
-                  key={index}
-                  {...child}
-                  className={compoundStyles.childLabel({ isOpen })}
-                />
-              </div>
-            ))}
+            <ul>
+              {item.childPages.map((child, index) => (
+                <li className={compoundStyles.childHeader({ isOpen })}>
+                  <SiderailLabel
+                    showIconOnHover
+                    key={index}
+                    {...child}
+                    className={compoundStyles.childLabel({ isOpen })}
+                  />
+                </li>
+              ))}
+            </ul>
           </DisclosurePanel>
-        </div>
+        </li>
       )}
     </Disclosure>
   )

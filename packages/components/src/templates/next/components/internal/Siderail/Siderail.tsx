@@ -27,7 +27,11 @@ const generateSiderailItems = (items: Item[]): JSX.Element[] => {
       )
     }
     // No children
-    return <SiderailLabel key={index} {...item} className={styles} />
+    return (
+      <li>
+        <SiderailLabel key={index} {...item} className={styles} />
+      </li>
+    )
   })
 }
 
@@ -40,11 +44,19 @@ export const Siderail = ({
   const siderailItems = useMemo(() => generateSiderailItems(pages), [pages])
 
   return (
-    <div className="text-base-content">
+    <nav className="text-base-content" role="navigation">
+      <h2 className="sr-only">Pages in this section</h2>
       <SiderailProvider LinkComponent={LinkComponent}>
-        <SiderailParentLabel parentTitle={parentTitle} parentUrl={parentUrl} />
-        <div>{siderailItems}</div>
+        <ul>
+          <li>
+            <SiderailParentLabel
+              parentTitle={parentTitle}
+              parentUrl={parentUrl}
+            />
+          </li>
+          {siderailItems}
+        </ul>
       </SiderailProvider>
-    </div>
+    </nav>
   )
 }
