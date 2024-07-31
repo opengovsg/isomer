@@ -1,18 +1,17 @@
 import twColors from "tailwindcss/colors"
 
 export const colors = {
-  // TODO: Use CSS variables for brand
   brand: {
     canvas: {
-      DEFAULT: "#E6ECEF",
-      alt: "#BFCFD7",
-      backdrop: "#80A0AF",
-      inverse: "#00405F",
+      DEFAULT: "var(--color-brand-canvas-default)",
+      alt: "var(--color-brand-canvas-alt)",
+      backdrop: "var(--color-brand-canvas-backdrop)",
+      inverse: "var(--color-brand-canvas-inverse)",
     },
     interaction: {
-      DEFAULT: "#00405F",
-      hover: "#002E44",
-      pressed: "#00283B",
+      DEFAULT: "var(--color-brand-interaction-default)",
+      hover: "var(--color-brand-interaction-hover)",
+      pressed: "var(--color-brand-interaction-pressed)",
     },
   },
   base: {
@@ -32,7 +31,7 @@ export const colors = {
       subtle: twColors.gray["600"],
       inverse: {
         DEFAULT: twColors.white,
-        subtle: twColors.slate["200"],
+        subtle: twColors.zinc["400"],
       },
     },
     divider: {
@@ -46,8 +45,7 @@ export const colors = {
   },
   link: {
     DEFAULT: twColors.blue["600"],
-    hover: "#0D4FCA",
-    active: "#0B44AC",
+    hover: twColors.blue["700"],
   },
   utility: {
     feedback: {
