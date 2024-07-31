@@ -1,7 +1,6 @@
 import type { ContentPageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils"
 import Button from "../../complex/Button"
-import BaseParagraph from "../BaseParagraph"
 import Breadcrumb from "../Breadcrumb"
 
 const ContentPageHeader = ({
@@ -14,34 +13,26 @@ const ContentPageHeader = ({
   LinkComponent,
 }: ContentPageHeaderProps) => {
   return (
-    <div className="bg-site-secondary-100">
-      <div className="mx-auto max-w-container">
-        <div className="flex max-w-[880px] flex-col gap-8 px-6 py-8 md:px-10 lg:gap-12 lg:py-16">
-          <div className="hidden lg:block">
-            <Breadcrumb
-              links={breadcrumb.links}
-              LinkComponent={LinkComponent}
-            />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-[2.75rem] font-semibold leading-tight text-site-secondary lg:text-[3.75rem]">
-              {title}
-            </h1>
-            <div className="pt-6 lg:pb-2">{`Last updated ${getFormattedDate(lastUpdated)}`}</div>
-            <BaseParagraph
-              content={summary}
-              className="text-content text-paragraph-01"
-            />
+    <div className="bg-site-secondary-100 text-base-content-strong">
+      <div className="mx-auto flex max-w-screen-xl flex-col gap-8 px-6 py-8 md:px-10">
+        <div className="flex flex-col">
+          <Breadcrumb links={breadcrumb.links} LinkComponent={LinkComponent} />
+          <div className="mt-8 flex flex-col gap-5 md:mt-6">
+            <h1 className="prose-display-lg">{title}</h1>
+            <p className="prose-title-lg-regular">{summary}</p>
           </div>
           {buttonLabel && buttonUrl && (
-            <Button
-              label={buttonLabel}
-              href={buttonUrl}
-              rightIcon="right-arrow"
-              LinkComponent={LinkComponent}
-            />
+            <div className="mt-9">
+              <Button
+                label={buttonLabel}
+                href={buttonUrl}
+                rightIcon="right-arrow"
+                LinkComponent={LinkComponent}
+              />
+            </div>
           )}
         </div>
+        <div className="prose-body-sm text-base-content-subtle">{`Last updated ${getFormattedDate(lastUpdated)}`}</div>
       </div>
     </div>
   )
