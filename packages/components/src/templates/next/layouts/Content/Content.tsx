@@ -1,3 +1,5 @@
+import { BiUpArrowAlt } from "react-icons/bi"
+
 import type { ContentPageSchemaType, IsomerSitemap } from "~/engine"
 import type { SiderailProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
@@ -133,7 +135,7 @@ const createContentLayoutStyles = tv({
   slots: {
     container:
       "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-6 xl:gap-10",
-    siderailContainer: "col-span-3 hidden lg:block",
+    siderailContainer: "relative col-span-3 hidden lg:block",
     content: "col-span-12 flex flex-col gap-16 lg:col-span-9 lg:ml-24",
   },
 })
@@ -144,7 +146,7 @@ const ContentLayout = ({
   site,
   page,
   content,
-  LinkComponent,
+  LinkComponent = "a",
   ScriptComponent,
 }: ContentPageSchemaType) => {
   const sideRail = getSiderailFromSiteMap(
@@ -176,6 +178,14 @@ const ContentLayout = ({
         {sideRail && (
           <div className={compoundStyles.siderailContainer()}>
             <Siderail {...sideRail} LinkComponent={LinkComponent} />
+            <LinkComponent
+              href="#"
+              // TODO: Replace LinkComponent with a custom link component with all the styles
+              className="prose-body-base sticky top-8 mt-8 flex items-center text-link underline-offset-4 hover:underline"
+            >
+              <BiUpArrowAlt aria-hidden className="h-6 w-6" />
+              Back to top
+            </LinkComponent>
           </div>
         )}
         <div className={compoundStyles.content()}>
