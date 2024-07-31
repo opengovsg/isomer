@@ -19,11 +19,12 @@ export interface SiderailListProps {
 const createSiderailListStyles = tv({
   slots: {
     header:
-      "flex w-full justify-between gap-2 text-base-content-strong transition",
+      "flex w-full items-start justify-between gap-2 text-base-content-strong transition",
     label: "prose-headline-base-semibold px-3 py-4",
     childHeader: "flex w-full items-center gap-1.5",
     childLabel: "py-2 hover:text-brand-interaction",
     container: "",
+    expandButton: "py-4",
     expandIcon: "h-6 w-6 transition hover:text-brand-interaction",
   },
   variants: {
@@ -55,6 +56,7 @@ export const SiderailList = ({
               className={compoundStyles.label({ isOpen })}
             />
             <DisclosureButton
+              className={compoundStyles.expandButton()}
               aria-label={`${isOpen ? "expand" : "collapse"} ${item.title} section`}
             >
               {isOpen ? (
