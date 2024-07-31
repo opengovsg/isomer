@@ -12,24 +12,36 @@ import { SiderailParentLabel } from "./SiderailParentLabel"
 import { isNestableItem } from "./utils"
 
 const createSiderailStyles = tv({
-  base: "flex flex-col border-b border-b-divider-subtle last:border-b-transparent",
+  slots: {
+    container: "border-b border-b-divider-subtle last:border-b-transparent",
+    label: "flex flex-col",
+  },
 })
+
+const compoundStyles = createSiderailStyles()
 
 // Generate recursive sidebar items if nested
 const generateSiderailItems = (items: Item[]): JSX.Element[] => {
-  const styles = createSiderailStyles()
   return items.map((item, index) => {
     if (isNestableItem(item)) {
       return (
-        <SiderailList key={index} item={item} className={styles}>
+        <SiderailList
+          key={index}
+          item={item}
+          className={compoundStyles.container()}
+        >
           {generateSiderailItems(item.childPages)}
         </SiderailList>
       )
     }
     // No children
     return (
-      <li>
-        <SiderailLabel key={index} {...item} className={styles} />
+      <li className={compoundStyles.container()}>
+        <SiderailLabel
+          key={index}
+          {...item}
+          className={compoundStyles.label()}
+        />
       </li>
     )
   })
