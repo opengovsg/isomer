@@ -8,6 +8,7 @@ import z from "zod"
 import {
   createPageSchema,
   getEditPageSchema,
+  getPageSchema,
   publishPageSchema,
   reorderBlobSchema,
   updatePageBlobSchema,
@@ -20,6 +21,7 @@ import {
   getFooter,
   getFullPageById,
   getNavBar,
+  getPageById,
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
@@ -59,6 +61,39 @@ const validatedPageProcedure = protectedProcedure.use(
 )
 
 export const pageRouter = router({
+  list: protectedProcedure
+    .input(
+      z.object({
+        siteId: z.number(),
+        resourceId: z.number().optional(),
+      }),
+    )
+    .query(async ({ input: { siteId, resourceId } }) => {
+      let query = db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+
+      if (resourceId) {
+        query = query.where("Resource.parentId", "=", String(resourceId))
+      }
+      return query
+        .select([
+          "Resource.id",
+          "Resource.permalink",
+          "Resource.title",
+          "Resource.publishedVersionId",
+          "Resource.draftBlobId",
+          "Resource.type",
+        ])
+        .execute()
+    }),
+
+  readPage: protectedProcedure
+    .input(getPageSchema)
+    .query(async ({ input: { pageId, siteId } }) => {
+      return getPageById(db, { resourceId: pageId, siteId })
+    }),
+
   readPageAndBlob: protectedProcedure
     .input(getEditPageSchema)
     .query(async ({ input: { pageId, siteId } }) => {
@@ -208,12 +243,17 @@ export const pageRouter = router({
         return { pageId: resource.id }
       },
     ),
+
   publishPage: protectedProcedure
     .input(publishPageSchema)
-    .mutation(async ({ input: { siteId, pageId } }) => {
+    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
       /* Step 1: Update DB table to latest state */
       // Create a new version
-      const addedVersionResult = await addNewVersion(siteId, pageId)
+      const addedVersionResult = await addNewVersion({
+        siteId,
+        pageId,
+        userId: ctx.user.id,
+      })
       return addedVersionResult
 
       /* TODO: Step 2: Use AWS SDK to start a CodeBuild */

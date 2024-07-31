@@ -1,34 +1,49 @@
-import { useToast } from "@chakra-ui/react"
+import { Skeleton, useToast } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 
+import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
 interface PublishButtonProps {
-  pageId?: string
-  siteId?: string
+  pageId: number
+  siteId: number
 }
 
-const PublishButton = ({ pageId, siteId }: PublishButtonProps): JSX.Element => {
+const SuspendablePublishButton = ({
+  pageId,
+  siteId,
+}: PublishButtonProps): JSX.Element => {
   const toast = useToast()
+  const utils = trpc.useUtils()
+
+  const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
+
+  const publishFailureMsg =
+    "Failed to publish page. Please contact Isomer support."
+  const publishSuccessMsg = "Page published successfully"
+
   const { mutate, isLoading } = trpc.page.publishPage.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data.versionId) {
         toast({
           status: "success",
-          title: "Page published successfully",
+          title: publishSuccessMsg,
         })
       } else {
+        console.error(data.error)
         toast({
           status: "error",
-          title: data.error,
+          title: publishFailureMsg,
         })
       }
+      await utils.page.readPage.invalidate({ pageId, siteId })
     },
-    onError: () => {
+    onError: async () => {
       toast({
         status: "error",
-        title: "Failed to publish page",
+        title: publishFailureMsg,
       })
+      await utils.page.readPage.invalidate({ pageId, siteId })
     },
   })
 
@@ -44,10 +59,15 @@ const PublishButton = ({ pageId, siteId }: PublishButtonProps): JSX.Element => {
       size="sm"
       onClick={handlePublish}
       isLoading={isLoading}
+      isDisabled={!currPage.draftBlobId}
     >
       Publish
     </Button>
   )
 }
 
+const PublishButton = withSuspense(
+  SuspendablePublishButton,
+  <Skeleton width={"100%"} height={"100%"} />,
+)
 export default PublishButton

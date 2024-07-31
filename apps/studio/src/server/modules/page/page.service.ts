@@ -47,48 +47,52 @@ export const createDefaultPage = ({
   }
 }
 
-export const addNewVersion = async (siteId: number, pageId: number) => {
+export const addNewVersion = async ({
+  siteId,
+  pageId,
+  userId,
+}: {
+  siteId: number
+  pageId: number
+  userId: string
+}) => {
   return await db.transaction().execute(async (tx) => {
-    const page = await getPageById({ siteId, resourceId: pageId })
+    const page = await getPageById(tx, { siteId, resourceId: pageId })
 
     if (!page.draftBlobId) {
       return { error: "No drafts to publish for this page" }
     }
 
     let newVersionNum = 1
-    if (page.versionId) {
+    if (page.publishedVersionId) {
       const currentVersion = await getVersionById({
-        versionId: page.versionId,
+        versionId: page.publishedVersionId,
       })
       newVersionNum = Number(currentVersion.versionNum) + 1
     }
 
     // Create the new version
     // TODO: To pass in the tx object
-    const newVersion = await createVersion(
+    const newVersion = await createVersion(tx, {
+      versionNum: newVersionNum,
+      resourceId: pageId,
+      blobId: Number(page.draftBlobId),
+      publisherId: userId,
+    })
+
+    // Update resource with new versionId and draft to be null
+    await updatePageById(
       {
-        versionNum: newVersionNum,
-        resourceId: pageId,
-        blobId: Number(page.draftBlobId),
+        ...page,
+        id: parseInt(page.id),
+        publishedVersionId: newVersion.versionId,
+        draftBlobId: null,
+        state: "Published",
+        siteId,
+        parentId: page.parentId ? parseInt(page.parentId) : undefined,
       },
       tx,
     )
-
-    // Update resource with new versionId and draft to be null
-    await updatePageById({
-      props: {
-        page: {
-          ...page,
-          id: page.id,
-          versionId: newVersion.versionId,
-          draftBlobId: null,
-          state: "Published",
-        },
-        siteId,
-      },
-      tx,
-    })
-
     return { versionId: newVersion }
   })
 }

@@ -102,7 +102,7 @@ export const getPageById = (
   args: { resourceId: number; siteId: number },
 ) =>
   getById(db, args)
-    .where("type", "is", "Page")
+    .where("type", "=", "Page")
     .select(defaultResourceSelect)
     .executeTakeFirstOrThrow()
 
@@ -112,16 +112,17 @@ export const updatePageById = (
     siteId: number
     parentId?: number
   },
+  dbInstance?: SafeKysely,
 ) => {
+  const dbObj = dbInstance ?? db
   const { id, parentId, ...rest } = page
-  return db.transaction().execute((tx) => {
-    return tx
-      .updateTable("Resource")
-      .set({ ...rest, ...(parentId && { parentId: String(parentId) }) })
-      .where("siteId", "=", page.siteId)
-      .where("id", "=", String(id))
-      .executeTakeFirstOrThrow()
-  })
+
+  return dbObj
+    .updateTable("Resource")
+    .set({ ...rest, ...(parentId && { parentId: String(parentId) }) })
+    .where("siteId", "=", page.siteId)
+    .where("id", "=", String(id))
+    .executeTakeFirstOrThrow()
 }
 
 export const updateBlobById = async (
