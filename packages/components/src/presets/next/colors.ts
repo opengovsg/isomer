@@ -32,7 +32,7 @@ export const colors = {
       subtle: twColors.gray["600"],
       inverse: {
         DEFAULT: twColors.white,
-        subtle: twColors.slate["200"],
+        subtle: twColors.zinc["400"],
       },
     },
     divider: {
@@ -46,8 +46,7 @@ export const colors = {
   },
   link: {
     DEFAULT: twColors.blue["600"],
-    hover: "#0D4FCA",
-    active: "#0B44AC",
+    hover: twColors.blue["700"],
   },
   utility: {
     feedback: {
