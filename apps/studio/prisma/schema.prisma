@@ -94,7 +94,7 @@ model User {
   phone         String
   preferredName String?
 
-  permission  Permission[]
+  permissions Permission[]
   siteMembers SiteMember[]
   versions    Version[]
 }
