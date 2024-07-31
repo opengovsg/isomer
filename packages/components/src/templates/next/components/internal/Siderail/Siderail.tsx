@@ -60,12 +60,10 @@ export const Siderail = ({
       <h2 className="sr-only">Pages in this section</h2>
       <SiderailProvider LinkComponent={LinkComponent}>
         <ul>
-          <li>
-            <SiderailParentLabel
-              parentTitle={parentTitle}
-              parentUrl={parentUrl}
-            />
-          </li>
+          <SiderailParentLabel
+            parentTitle={parentTitle}
+            parentUrl={parentUrl}
+          />
           {siderailItems}
         </ul>
       </SiderailProvider>
