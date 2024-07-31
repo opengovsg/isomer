@@ -1,20 +1,43 @@
 import type { IsomerSchema, schema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
-import { Box, Flex, Heading, HStack, Icon, IconButton } from "@chakra-ui/react"
+import {
+  Box,
+  Flex,
+  Heading,
+  HStack,
+  Icon,
+  IconButton,
+  useDisclosure,
+} from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
+import _ from "lodash"
 import { BiDollar, BiX } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 import { trpc } from "~/utils/trpc"
+import { DiscardChangesModal } from "./DiscardChangesModal"
 import FormBuilder from "./form-builder/FormBuilder"
 
 const ajv = new Ajv({ strict: false, logger: false })
 
 export default function MetadataEditorStateDrawer(): JSX.Element {
+  const {
+    isOpen: isDiscardChangesModalOpen,
+    onOpen: onDiscardChangesModalOpen,
+    onClose: onDiscardChangesModalClose,
+  } = useDisclosure()
+  const {
+    setDrawerState,
+    savedPageState,
+    setSavedPageState,
+    previewPageState,
+    setPreviewPageState,
+  } = useEditorDrawerContext()
+
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const utils = trpc.useUtils()
   const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
@@ -25,13 +48,6 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
     },
   })
-  const {
-    setDrawerState,
-    savedPageState,
-    setSavedPageState,
-    previewPageState,
-    setPreviewPageState,
-  } = useEditorDrawerContext()
 
   if (!previewPageState) {
     return <></>
@@ -50,8 +66,20 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     setPreviewPageState(newPageState)
   }
 
+  const handleDiscardChanges = () => {
+    setPreviewPageState(savedPageState)
+    onDiscardChangesModalClose()
+    setDrawerState({ state: "root" })
+  }
+
   return (
     <>
+      <DiscardChangesModal
+        isOpen={isDiscardChangesModalOpen}
+        onClose={onDiscardChangesModalClose}
+        onDiscard={handleDiscardChanges}
+      />
+
       <Flex
         flexDir="column"
         position="relative"
@@ -87,8 +115,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               size="sm"
               p="0.625rem"
               onClick={() => {
-                setPreviewPageState(savedPageState)
-                setDrawerState({ state: "root" })
+                if (!_.isEqual(previewPageState, savedPageState)) {
+                  onDiscardChangesModalOpen()
+                } else {
+                  handleDiscardChanges()
+                }
               }}
               aria-label="Close drawer"
             />

@@ -10,6 +10,7 @@ import {
 import { Button, IconButton } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
+import _ from "lodash"
 import { BiDollar, BiTrash, BiX } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -17,11 +18,22 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 import { trpc } from "~/utils/trpc"
 import { DeleteBlockModal } from "./DeleteBlockModal"
+import { DiscardChangesModal } from "./DiscardChangesModal"
 import FormBuilder from "./form-builder/FormBuilder"
 
 const ajv = new Ajv({ strict: false, logger: false })
 
 export default function ComplexEditorStateDrawer(): JSX.Element {
+  const {
+    isOpen: isDeleteBlockModalOpen,
+    onOpen: onDeleteBlockModalOpen,
+    onClose: onDeleteBlockModalClose,
+  } = useDisclosure()
+  const {
+    isOpen: isDiscardChangesModalOpen,
+    onOpen: onDiscardChangesModalOpen,
+    onClose: onDiscardChangesModalClose,
+  } = useDisclosure()
   const {
     setDrawerState,
     currActiveIdx,
@@ -30,6 +42,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     previewPageState,
     setPreviewPageState,
   } = useEditorDrawerContext()
+
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
     { siteId, pageId },
@@ -41,11 +54,6 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
     },
   })
-  const {
-    isOpen: isDeleteBlockModalOpen,
-    onOpen: onDeleteBlockModalOpen,
-    onClose: onDeleteBlockModalClose,
-  } = useDisclosure()
 
   if (
     currActiveIdx === -1 ||
@@ -80,6 +88,12 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     setDrawerState({ state: "root" })
   }
 
+  const handleDiscardChanges = () => {
+    setPreviewPageState(savedPageState)
+    onDiscardChangesModalClose()
+    setDrawerState({ state: "root" })
+  }
+
   const handleChange = (data: IsomerComponent) => {
     const updatedBlocks = Array.from(previewPageState.content)
     updatedBlocks[currActiveIdx] = data
@@ -97,6 +111,12 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         isOpen={isDeleteBlockModalOpen}
         onClose={onDeleteBlockModalClose}
         onDelete={handleDeleteBlock}
+      />
+
+      <DiscardChangesModal
+        isOpen={isDiscardChangesModalOpen}
+        onClose={onDiscardChangesModalClose}
+        onDiscard={handleDiscardChanges}
       />
 
       <Flex
@@ -134,8 +154,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
               size="sm"
               p="0.625rem"
               onClick={() => {
-                setPreviewPageState(savedPageState)
-                setDrawerState({ state: "root" })
+                if (!_.isEqual(previewPageState, savedPageState)) {
+                  onDiscardChangesModalOpen()
+                } else {
+                  handleDiscardChanges()
+                }
               }}
               aria-label="Close drawer"
             />

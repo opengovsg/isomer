@@ -10,6 +10,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
+import _ from "lodash"
 import { BiText, BiTrash, BiX } from "react-icons/bi"
 
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
@@ -18,6 +19,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 import { trpc } from "~/utils/trpc"
 import { DeleteBlockModal } from "./DeleteBlockModal"
+import { DiscardChangesModal } from "./DiscardChangesModal"
 import { TiptapEditor } from "./form-builder/renderers/TipTapEditor"
 
 interface TipTapComponentProps {
@@ -26,6 +28,16 @@ interface TipTapComponentProps {
 
 function TipTapComponent({ content }: TipTapComponentProps) {
   const {
+    isOpen: isDeleteBlockModalOpen,
+    onOpen: onDeleteBlockModalOpen,
+    onClose: onDeleteBlockModalClose,
+  } = useDisclosure()
+  const {
+    isOpen: isDiscardChangesModalOpen,
+    onOpen: onDiscardChangesModalOpen,
+    onClose: onDiscardChangesModalClose,
+  } = useDisclosure()
+  const {
     savedPageState,
     setDrawerState,
     setSavedPageState,
@@ -33,11 +45,6 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     setPreviewPageState,
     currActiveIdx,
   } = useEditorDrawerContext()
-  const {
-    isOpen: isDeleteBlockModalOpen,
-    onOpen: onDeleteBlockModalOpen,
-    onClose: onDeleteBlockModalClose,
-  } = useDisclosure()
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
 
@@ -67,6 +74,12 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     setDrawerState({ state: "root" })
   }
 
+  const handleDiscardChanges = () => {
+    setPreviewPageState(savedPageState)
+    onDiscardChangesModalClose()
+    setDrawerState({ state: "root" })
+  }
+
   const utils = trpc.useUtils()
 
   const { mutate } = trpc.page.updatePageBlob.useMutation({
@@ -88,6 +101,12 @@ function TipTapComponent({ content }: TipTapComponentProps) {
         onDelete={handleDeleteBlock}
       />
 
+      <DiscardChangesModal
+        isOpen={isDiscardChangesModalOpen}
+        onClose={onDiscardChangesModalClose}
+        onDiscard={handleDiscardChanges}
+      />
+
       <VStack bg="white" h="100%" gap="0">
         <Flex
           px="2rem"
@@ -106,11 +125,14 @@ function TipTapComponent({ content }: TipTapComponentProps) {
             variant="clear"
             colorScheme="neutral"
             color="interaction.sub.default"
-            aria-label="Close add component"
+            aria-label="Close drawer"
             icon={<BiX />}
             onClick={() => {
-              setDrawerState({ state: "root" })
-              setPreviewPageState(savedPageState)
+              if (!_.isEqual(previewPageState, savedPageState)) {
+                onDiscardChangesModalOpen()
+              } else {
+                handleDiscardChanges()
+              }
             }}
           />
         </Flex>
