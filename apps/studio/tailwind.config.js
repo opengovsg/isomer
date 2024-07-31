@@ -1,6 +1,6 @@
-/** @type {import('tailwindcss').Config} */
 import { NextPreset } from "@opengovsg/isomer-components"
 
+/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",

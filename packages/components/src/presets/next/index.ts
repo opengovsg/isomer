@@ -112,7 +112,6 @@ const config: Config = {
   },
   plugins: [
     isomerTypography,
-    isomerSiteTheme,
     // !! @deprecated, use isomerTypography plugin instead
     // Delete after no components are using these classes anymore,
     plugin(({ addBase, addUtilities, theme }) => {

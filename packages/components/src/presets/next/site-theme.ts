@@ -1,16 +1,35 @@
 import plugin from "tailwindcss/plugin"
 
-export const isomerSiteTheme = plugin(({ addBase }) => {
-  addBase({
-    // TODO: Inject dynamically based on whatever is passed in.
-    ":root": {
-      "--color-brand-canvas-default": "#e6ecef",
-      "--color-brand-canvas-alt": "#bfcfd7",
-      "--color-brand-canvas-backdrop": "#80a0af",
-      "--color-brand-canvas-inverse": "#00405f",
-      "--color-brand-interaction-default": "#00405f",
-      "--color-brand-interaction-hover": "#002e44",
-      "--color-brand-interaction-pressed": "#00283b",
+interface SiteThemeOptions {
+  colors: {
+    canvas: {
+      default: string
+      alt: string
+      backdrop: string
+      inverse: string
+    }
+    interaction: {
+      default: string
+      hover: string
+      pressed: string
+    }
+  }
+}
+
+export const isomerSiteTheme = plugin.withOptions(
+  ({ colors }: SiteThemeOptions) =>
+    ({ addBase }) => {
+      addBase({
+        // TODO: Inject dynamically based on whatever is passed in.
+        ":root": {
+          "--color-brand-canvas-default": colors.canvas.default,
+          "--color-brand-canvas-alt": colors.canvas.alt,
+          "--color-brand-canvas-backdrop": colors.canvas.backdrop,
+          "--color-brand-canvas-inverse": colors.canvas.inverse,
+          "--color-brand-interaction-default": colors.interaction.default,
+          "--color-brand-interaction-hover": colors.interaction.hover,
+          "--color-brand-interaction-pressed": colors.interaction.pressed,
+        },
+      })
     },
-  })
-})
+)
