@@ -157,7 +157,6 @@ async function main() {
     .insertInto("Site")
     .values({
       name: "Ministry of Trade and Industry",
-      shortName: "mti-corp",
       config: jsonb({
         theme: "isomer-next",
         siteName: "MTI",
