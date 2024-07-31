@@ -30,14 +30,6 @@ export const getSiteNameAndCodeBuildId = async (siteId: number) => {
     .executeTakeFirstOrThrow()
 }
 
-export const setSiteCodeBuildId = async (siteId: number, projectId: string) => {
-  return await db
-    .updateTable("Site")
-    .set({ codeBuildId: projectId })
-    .where("id", "=", siteId)
-    .executeTakeFirstOrThrow()
-}
-
 // Note: This overwrites the full site config
 // TODO: Should trigger immediate re-publish of site
 export const setSiteConfig = async (
