@@ -57,7 +57,7 @@ export default function RootStateDrawer() {
 
       const from = result.source.index
       const to = result.destination.index
-      const contentLength = savedPageState?.content.length ?? 0
+      const contentLength = savedPageState.content.length ?? 0
 
       if (from >= contentLength || to >= contentLength || from < 0 || to < 0)
         return
