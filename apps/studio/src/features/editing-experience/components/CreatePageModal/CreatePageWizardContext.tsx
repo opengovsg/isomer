@@ -2,6 +2,7 @@ import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { createContext, useContext, useMemo, useState } from "react"
+import { useRouter } from "next/router"
 import { merge } from "lodash"
 
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
@@ -76,6 +77,7 @@ const useCreatePageWizardContext = ({
   }, [layout, title])
 
   const utils = trpc.useUtils()
+  const router = useRouter()
 
   const { mutate, isLoading } = trpc.page.createPage.useMutation({
     onSuccess: async () => {
@@ -86,11 +88,18 @@ const useCreatePageWizardContext = ({
   })
 
   const handleCreatePage = formMethods.handleSubmit((values) => {
-    mutate({
-      siteId,
-      folderId,
-      ...values,
-    })
+    mutate(
+      {
+        siteId,
+        folderId,
+        ...values,
+      },
+      {
+        onSuccess: ({ pageId }) => {
+          void router.push(`/sites/${siteId}/pages/${pageId}`)
+        },
+      },
+    )
   })
 
   const handleNextToDetailScreen = () => {
