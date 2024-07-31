@@ -59,7 +59,7 @@ model Resource {
   permission Permission[]
 
   publishedVersionId BigInt?  @unique
-  version            Version? @relation(fields: [publishedVersionId], references: [id])
+  publishedVersion   Version? @relation(fields: [publishedVersionId], references: [id])
 
   draftBlobId BigInt? @unique
   draftBlob   Blob?   @relation(fields: [draftBlobId], references: [id])
@@ -96,7 +96,7 @@ model User {
 
   permission  Permission[]
   siteMembers SiteMember[]
-  Version     Version[]
+  versions    Version[]
 }
 
 model Permission {

@@ -10,7 +10,6 @@ export type PageContent = Omit<
   "layout" | "LinkComponent" | "ScriptComponent"
 >
 
-// TODO: Technically mainBlobId is not required before 1st publish
 export type Page = Resource
 
 export interface Navbar {
