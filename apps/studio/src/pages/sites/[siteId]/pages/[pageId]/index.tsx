@@ -50,15 +50,22 @@ function EditPage(): JSX.Element {
         <EditPageDrawer />
       </GridItem>
       {/* TODO: Implement preview */}
-      <GridItem colSpan={2} overflow="auto">
-        <Flex justify="center" p="2rem" bg="gray.100" h="100%">
+      <GridItem colSpan={2}>
+        <Flex
+          shrink={0}
+          justify="flex-start"
+          p="2rem"
+          bg="gray.100"
+          h="100%"
+          overflowX="auto"
+        >
           <PreviewIframe>
             <Preview
-              siteId={siteId}
               {...page}
+              {...previewPageState}
+              siteId={siteId}
               permalink={permalink}
               version="0.1.0"
-              content={previewPageState}
             />
           </PreviewIframe>
         </Flex>

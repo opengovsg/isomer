@@ -8,18 +8,18 @@ export const PreviewIframe = ({ children }: PropsWithChildren): JSX.Element => {
   const [width, _setWidth] = useState("100%")
   return (
     <Flex
-      borderRadius="8px"
       bg="white"
       shadow="md"
       justify="center"
-      overflow="auto"
       w={width}
       h="100%"
+      borderRadius="8px"
     >
       <Frame
         style={{
           // TODO: Inject CSS variables for site theme here.
           width,
+          borderRadius: "8px",
         }}
         head={
           // eslint-disable-next-line @next/next/no-css-tags
