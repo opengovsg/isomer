@@ -9,7 +9,7 @@ import { useOnClickOutside, useResizeObserver } from "usehooks-ts"
 import type { NavbarProps } from "~/interfaces"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
 import { HamburgerIcon } from "./HamburgerIcon"
-import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
+import { MobileNavMenu } from "./MobileNavMenu"
 import { NavItem } from "./NavItem"
 
 const navbarStyles = tv({
@@ -205,31 +205,15 @@ export const Navbar = ({
         </div>
       )}
       {isHamburgerOpen && (
-        <div
+        <MobileNavMenu
           ref={mobileMenuRef}
-          className="fixed inset-0"
-          style={{
-            top: siteHeaderBottomPx,
-          }}
-        >
-          <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
-            {items.map((item, index) => (
-              <MobileNavItemAccordion
-                key={`${item.name}-${index}`}
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                LinkComponent={LinkComponent}
-                index={index}
-                isOpen={index === openNavItemIdx}
-                onClick={() =>
-                  setOpenNavItemIdx((currIdx) =>
-                    currIdx === index ? -1 : index,
-                  )
-                }
-                {...item}
-              />
-            ))}
-          </div>
-        </div>
+          top={siteHeaderBottomPx}
+          items={items}
+          openNavItemIdx={openNavItemIdx}
+          setOpenNavItemIdx={setOpenNavItemIdx}
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          LinkComponent={LinkComponent}
+        />
       )}
     </div>
   )

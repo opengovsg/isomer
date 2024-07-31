@@ -1,10 +1,11 @@
 import { useEffect } from "react"
-import { Box, Grid, GridItem } from "@chakra-ui/react"
+import { Flex, Grid, GridItem } from "@chakra-ui/react"
 import { z } from "zod"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import EditPageDrawer from "~/features/editing-experience/components/EditPageDrawer"
 import Preview from "~/features/editing-experience/components/Preview"
+import { PreviewIframe } from "~/features/editing-experience/components/PreviewIframe"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
@@ -49,9 +50,16 @@ function EditPage(): JSX.Element {
         <EditPageDrawer />
       </GridItem>
       {/* TODO: Implement preview */}
-      <GridItem colSpan={2} overflow="scroll">
-        <Box p="2rem" bg="gray.100">
-          <Box borderRadius="8px" bg="white" shadow="md" overflow="auto">
+      <GridItem colSpan={2}>
+        <Flex
+          shrink={0}
+          justify="flex-start"
+          p="2rem"
+          bg="gray.100"
+          h="100%"
+          overflowX="auto"
+        >
+          <PreviewIframe>
             <Preview
               {...page}
               {...previewPageState}
@@ -59,8 +67,8 @@ function EditPage(): JSX.Element {
               permalink={permalink}
               version="0.1.0"
             />
-          </Box>
-        </Box>
+          </PreviewIframe>
+        </Flex>
       </GridItem>
     </Grid>
   )
