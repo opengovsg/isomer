@@ -256,13 +256,13 @@ export const pageRouter = router({
         userId: ctx.user.id,
       })
 
-      /* TODO: Step 2: Use AWS SDK to start a CodeBuild */
+      /* Step 2: Use AWS SDK to start a CodeBuild */
       const site = await getSiteNameAndCodeBuildId(siteId)
       const codeBuildId = site.codeBuildId
       if (!codeBuildId) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "No CodeBuild found for site",
+          message: "No CodeBuild project ID found for site",
         })
       }
 
