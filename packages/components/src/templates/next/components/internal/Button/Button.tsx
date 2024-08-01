@@ -49,7 +49,7 @@ export const buttonStyles = tv({
     {
       variant: "outline",
       colorScheme: "default",
-      className: "text-brand-canvas-inverse border-brand-canvas-inverse border",
+      className: "border border-brand-canvas-inverse text-brand-canvas-inverse",
     },
     {
       variant: "outline",
