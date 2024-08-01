@@ -24,8 +24,8 @@ export const buttonStyles = tv({
       true: "cursor-not-allowed",
     },
     size: {
-      base: "prose-headline-base-medium px-5 py-3",
-      lg: "prose-headline-lg-medium px-6 py-3.5",
+      base: "prose-headline-base-medium min-h-12 px-5 py-3",
+      lg: "prose-headline-lg-medium min-h-[3.25rem] px-6 py-3.5",
     },
   },
   compoundVariants: [
@@ -79,7 +79,7 @@ export interface ButtonProps
  * You probaby do not want to use this component if you are rendering a link.
  * Use `LinkButton` component instead.
  */
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, colorScheme, size, ...props }, ref) => {
     return (
       <AriaButton
@@ -99,4 +99,3 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   },
 )
 Button.displayName = "Button"
-export default Button
