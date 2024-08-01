@@ -1,1 +1,1 @@
-export * from "./LinkButton"
+export { default, LinkButtonProps } from "./LinkButton"

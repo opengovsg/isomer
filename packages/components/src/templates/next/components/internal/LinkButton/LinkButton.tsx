@@ -1,27 +1,31 @@
 "use client"
 
-import type { LinkProps as AriaLinkProps } from "react-aria-components"
+import type { ElementType } from "react"
 import type { VariantProps } from "tailwind-variants"
-import { Link as AriaLink, composeRenderProps } from "react-aria-components"
+import { composeRenderProps } from "react-aria-components"
 
+import type { LinkProps } from "../Link"
 import { buttonStyles } from "../Button"
+import { Link } from "../Link"
 
 export interface LinkButtonProps
-  extends AriaLinkProps,
-    VariantProps<typeof buttonStyles> {}
+  extends LinkProps,
+    VariantProps<typeof buttonStyles> {
+  LinkComponent?: ElementType
+}
 
 /**
  * Link that looks like a button.
  */
-export default function LinkButton({
+const LinkButton = ({
   className,
   variant,
   size,
   colorScheme,
   ...props
-}: LinkButtonProps) {
+}: LinkButtonProps) => {
   return (
-    <AriaLink
+    <Link
       {...props}
       className={composeRenderProps(className, (className, renderProps) =>
         buttonStyles({ ...renderProps, variant, size, className, colorScheme }),
@@ -29,3 +33,5 @@ export default function LinkButton({
     />
   )
 }
+
+export default LinkButton
