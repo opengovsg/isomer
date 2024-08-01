@@ -7,6 +7,7 @@ import { authRouter } from "./auth/auth.router"
 import { folderRouter } from "./folder/folder.router"
 import { meRouter } from "./me/me.router"
 import { pageRouter } from "./page/page.router"
+import { resourceRouter } from "./resource/resource.router"
 import { siteRouter } from "./site/site.router"
 
 export const appRouter = router({
@@ -17,6 +18,7 @@ export const appRouter = router({
   page: pageRouter,
   folder: folderRouter,
   site: siteRouter,
+  resource: resourceRouter,
 })
 
 export type AppRouter = typeof appRouter

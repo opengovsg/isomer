@@ -1,5 +1,6 @@
 import { MenuButton, MenuList, Portal } from "@chakra-ui/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
+import { useSetAtom } from "jotai"
 import {
   BiCog,
   BiDotsHorizontalRounded,
@@ -10,14 +11,24 @@ import {
 
 import type { ResourceTableData } from "./types"
 import { MenuItem } from "~/components/Menu"
+import { moveResourceAtom } from "~/features/editing-experience/atoms"
 
 interface ResourceTableMenuProps {
   title: ResourceTableData["title"]
   resourceId: ResourceTableData["id"]
   type: ResourceTableData["type"]
+  permalink: ResourceTableData["permalink"]
 }
 
-export const ResourceTableMenu = ({ title, type }: ResourceTableMenuProps) => {
+export const ResourceTableMenu = ({
+  resourceId,
+  title,
+  type,
+  permalink,
+}: ResourceTableMenuProps) => {
+  const setMoveResource = useSetAtom(moveResourceAtom)
+  const handleMoveResourceClick = () =>
+    setMoveResource({ resourceId, title, permalink })
   return (
     <Menu isLazy size="sm">
       <MenuButton
@@ -44,7 +55,11 @@ export const ResourceTableMenu = ({ title, type }: ResourceTableMenuProps) => {
               Edit folder settings
             </MenuItem>
           )}
-          <MenuItem icon={<BiFolderOpen fontSize="1rem" />}>
+          <MenuItem
+            as="button"
+            onClick={handleMoveResourceClick}
+            icon={<BiFolderOpen fontSize="1rem" />}
+          >
             Move to...
           </MenuItem>
           <MenuItem colorScheme="critical" icon={<BiTrash fontSize="1rem" />}>

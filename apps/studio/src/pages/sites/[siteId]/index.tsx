@@ -15,6 +15,7 @@ import { z } from "zod"
 import { MenuItem } from "~/components/Menu"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
+import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
@@ -73,6 +74,7 @@ const SitePage: NextPageWithLayout = () => {
         onClose={onPageCreateModalClose}
         siteId={siteId}
       />
+      <MoveResourceModal />
     </>
   )
 }
