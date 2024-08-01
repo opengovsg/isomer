@@ -104,6 +104,9 @@ const LinkButton = (props: Omit<ButtonProps, "type">) => {
   )
 }
 
+/**
+ * @deprecated use LinkButton instead
+ */
 const Button = (props: Omit<ButtonProps, "type">) => {
   if (props.variant === "outline") {
     return <OutlineButton {...props} />

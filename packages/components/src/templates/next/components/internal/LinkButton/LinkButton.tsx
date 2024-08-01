@@ -17,7 +17,7 @@ export interface LinkButtonProps
 /**
  * Link that looks like a button.
  */
-const LinkButton = ({
+export const LinkButton = ({
   className,
   variant,
   size,
@@ -33,5 +33,3 @@ const LinkButton = ({
     />
   )
 }
-
-export default LinkButton

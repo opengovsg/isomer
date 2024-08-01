@@ -1,6 +1,6 @@
 import type { HeroProps } from "~/interfaces/complex/Hero"
 import { ComponentContent } from "../../internal/customCssClass"
-import Button from "../Button"
+import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
 const Hero = ({
   title,
@@ -27,18 +27,15 @@ const Hero = ({
             {subtitle && <p className="text-paragraph-01">{subtitle}</p>}
             {buttonLabel && buttonUrl && (
               <div className="flex flex-row justify-start gap-4">
-                <Button
-                  colorScheme="white"
-                  label={buttonLabel}
-                  href={buttonUrl}
-                />
+                <LinkButton href={buttonUrl}>{buttonLabel}</LinkButton>
                 {secondaryButtonLabel && secondaryButtonUrl && (
-                  <Button
-                    colorScheme="white"
+                  <LinkButton
+                    colorScheme="inverse"
                     variant="outline"
-                    label={secondaryButtonLabel}
                     href={secondaryButtonUrl}
-                  />
+                  >
+                    {secondaryButtonLabel}
+                  </LinkButton>
                 )}
               </div>
             )}
