@@ -17,8 +17,8 @@ import { BiDollar, BiX } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { editPageSchema } from "~/pages/sites/[siteId]/pages/[pageId]"
 import { trpc } from "~/utils/trpc"
+import { editPageSchema } from "../schema"
 import { DiscardChangesModal } from "./DiscardChangesModal"
 import FormBuilder from "./form-builder/FormBuilder"
 
