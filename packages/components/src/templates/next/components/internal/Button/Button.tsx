@@ -6,9 +6,11 @@ import { forwardRef } from "react"
 import { Button as AriaButton, composeRenderProps } from "react-aria-components"
 import { tv } from "tailwind-variants"
 
+import { focusRing } from "~/utils/focusRing"
+
 export const buttonStyles = tv({
-  // extend: focusRing,
   base: "box-border cursor-pointer rounded text-center transition",
+  extend: focusRing,
   variants: {
     variant: {
       solid: "",
