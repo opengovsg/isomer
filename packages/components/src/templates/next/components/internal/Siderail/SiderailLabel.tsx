@@ -8,7 +8,7 @@ const createSiderailLabelStyles = tv({
   slots: {
     container:
       "group flex w-full flex-row justify-between gap-2 px-3 py-4 transition hover:text-brand-interaction",
-    icon: "-mr-1 h-6 w-6 opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100",
+    icon: "-mr-2 h-6 w-6 opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100",
   },
   variants: {
     isCurrent: {
