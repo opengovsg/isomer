@@ -15,7 +15,7 @@ import {
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { startProjectById } from "../aws/codebuild.service"
+import { startProjectById, stopRunningBuilds } from "../aws/codebuild.service"
 import { db, ResourceType } from "../database"
 import {
   getFooter,
@@ -265,6 +265,9 @@ export const pageRouter = router({
           message: "No CodeBuild project ID found for site",
         })
       }
+
+      // stop any currently running builds for the site
+      await stopRunningBuilds(ctx.logger, codeBuildId)
 
       // initiate new build
       await startProjectById(ctx.logger, codeBuildId)

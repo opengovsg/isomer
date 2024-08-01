@@ -42,9 +42,8 @@
   },
   "dependencies": {
     "@aws-sdk/client-codebuild": "^3.620.0",
-    "@aws-sdk/client-s3": "3.627.0",
-    "@aws-sdk/s3-request-presigner": "3.627.0",
-    "@aws-sdk/smithy-client": "^3.374.0",
+    "@aws-sdk/client-s3": "3.485.0",
+    "@aws-sdk/s3-request-presigner": "3.485.0",
     "@chakra-ui/anatomy": "^2.2.2",
     "@chakra-ui/react": "^2.8.2",
     "@chakra-ui/styled-system": "^2.9.2",
