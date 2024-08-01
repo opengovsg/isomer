@@ -44,7 +44,7 @@ export const buttonStyles = tv({
       variant: "outline",
       colorScheme: "inverse",
       className:
-        "border border-base-divider-inverse text-base-content-inverse hover:bg-base-canvas-inverse-overlay",
+        "border border-base-divider-inverse text-base-content-inverse hover:bg-base-canvas-inverse-overlay/80",
     },
     {
       variant: "outline",
@@ -54,7 +54,7 @@ export const buttonStyles = tv({
     {
       variant: "outline",
       size: "lg",
-      // -1 px for borderz
+      // -1 px for border
       className: "px-[23px] py-[13px]",
     },
     {
