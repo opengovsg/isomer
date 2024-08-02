@@ -1,4 +1,4 @@
-import { tv } from "tailwind-variants"
+import { tv } from "~/lib/tv"
 
 export const focusRing = tv({
   base: "outline outline-offset-2 outline-brand-interaction",

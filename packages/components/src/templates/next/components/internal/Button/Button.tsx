@@ -4,8 +4,8 @@ import type { ButtonProps as AriaButtonProps } from "react-aria-components"
 import type { VariantProps } from "tailwind-variants"
 import { forwardRef } from "react"
 import { Button as AriaButton, composeRenderProps } from "react-aria-components"
-import { tv } from "tailwind-variants"
 
+import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/focusRing"
 
 export const buttonStyles = tv({
