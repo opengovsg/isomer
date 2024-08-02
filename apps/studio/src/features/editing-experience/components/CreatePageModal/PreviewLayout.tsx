@@ -66,14 +66,8 @@ export const PreviewLayout = (): JSX.Element => {
               </Text>
             </Flex>
           )}
-          <Box
-            bg="white"
-            overflow="auto"
-            height="100%"
-            // Key used to reset the scroll to the top whenever layout changes
-            key={currentLayout}
-          >
-            <PreviewIframe>
+          <Box bg="white" overflow="auto" height="100%">
+            <PreviewIframe preventPointerEvents keyForRerender={currentLayout}>
               <Preview
                 overrides={previewOverrides}
                 siteId={siteId}
