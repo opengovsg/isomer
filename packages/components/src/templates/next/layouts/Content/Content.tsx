@@ -153,11 +153,6 @@ const ContentLayout = ({
       LinkComponent={LinkComponent}
       ScriptComponent={ScriptComponent}
     >
-      {sideRail && (
-        <div className="lg:hidden">
-          <Siderail {...sideRail} LinkComponent={LinkComponent} />
-        </div>
-      )}
       <ContentPageHeader
         {...page.contentPageHeader}
         title={page.title}

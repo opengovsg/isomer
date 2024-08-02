@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { SiderailProps } from "~/interfaces"
-import Siderail from "./Siderail"
+import { Siderail } from "./Siderail"
 
 const meta: Meta<SiderailProps> = {
   title: "Next/Internal Components/Siderail",
   component: Siderail,
+  decorators: [(storyFn) => <div className="max-w-sm">{storyFn()}</div>],
   argTypes: {},
   parameters: {
     themes: {

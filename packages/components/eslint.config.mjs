@@ -24,6 +24,25 @@ export default [
         { ignorePrimitives: true },
       ],
       "@typescript-eslint/no-unnecessary-condition": "warn",
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "tailwind-variants",
+              importNames: ["tv"],
+              message:
+                "Please use export from ~/lib/tv instead of the node module",
+            },
+            {
+              name: "tailwind-merge",
+              importNames: ["twMerge"],
+              message:
+                "Please use export from ~/lib/twMerge instead of the node module",
+            },
+          ],
+        },
+      ],
     },
   },
 ]

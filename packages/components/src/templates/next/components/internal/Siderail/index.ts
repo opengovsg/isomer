@@ -1,1 +1,1 @@
-export { default } from "./Siderail"
+export { Siderail as default } from "./Siderail"
