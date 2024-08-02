@@ -1,7 +1,7 @@
 import { BiChevronRight } from "react-icons/bi"
-import { tv } from "tailwind-variants"
 
 import type { BreadcrumbProps } from "~/interfaces"
+import { tv } from "~/lib/tv"
 
 const breadcrumbStyles = tv({
   slots: {

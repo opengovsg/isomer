@@ -6,9 +6,9 @@ import {
 } from "@headlessui/react"
 import { BiMinus, BiPlus } from "react-icons/bi"
 import { twMerge } from "tailwind-merge"
-import { tv } from "tailwind-variants"
 
 import type { ItemWithChild } from "./types"
+import { tv } from "~/lib/tv"
 import { SiderailLabel } from "./SiderailLabel"
 
 export interface SiderailListProps {

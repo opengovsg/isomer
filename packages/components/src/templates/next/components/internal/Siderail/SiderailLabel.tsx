@@ -1,7 +1,7 @@
 import { BiRightArrowAlt } from "react-icons/bi"
-import { tv } from "tailwind-variants"
 
 import type { Item } from "./types"
+import { tv } from "~/lib/tv"
 import { useSiderailContext } from "./SiderailContext"
 
 const createSiderailLabelStyles = tv({

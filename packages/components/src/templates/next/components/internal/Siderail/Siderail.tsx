@@ -1,10 +1,10 @@
 "use client"
 
 import { useMemo } from "react"
-import { tv } from "tailwind-variants"
 
 import type { Item } from "./types"
 import type { SiderailProps } from "~/interfaces"
+import { tv } from "~/lib/tv"
 import { SiderailProvider } from "./SiderailContext"
 import { SiderailLabel } from "./SiderailLabel"
 import { SiderailList } from "./SiderailList"

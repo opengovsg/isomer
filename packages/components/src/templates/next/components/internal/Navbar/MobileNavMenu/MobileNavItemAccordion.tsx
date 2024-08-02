@@ -1,7 +1,7 @@
 import { BiChevronDown } from "react-icons/bi"
-import { tv } from "tailwind-variants"
 
 import type { NavbarItem, NavbarProps } from "~/interfaces/internal/Navbar"
+import { tv } from "~/lib/tv"
 
 interface NavItemAccordionProps
   extends NavbarItem,
