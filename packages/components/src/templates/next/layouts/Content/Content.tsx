@@ -115,8 +115,12 @@ const transformContent = (content: ContentPageSchemaType["content"]) => {
             const anchorId = getDigestFromText(
               `${JSON.stringify(component)}_${getRandomNumberBetIntervals(1, 1000)}`,
             )
+            const newAttrs = {
+              ...component.attrs,
+              id: anchorId,
+            }
 
-            return { ...component, id: anchorId }
+            return { ...component, attrs: newAttrs }
           } else {
             return component
           }
@@ -136,7 +140,17 @@ const createContentLayoutStyles = tv({
     container:
       "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-6 xl:gap-10",
     siderailContainer: "relative col-span-3 hidden lg:block",
-    content: "col-span-12 flex flex-col gap-16 lg:col-span-9 lg:ml-24",
+    content: "col-span-12 flex flex-col gap-16",
+  },
+  variants: {
+    isSideRailPresent: {
+      true: {
+        content: "lg:col-span-9 lg:ml-24",
+      },
+      false: {
+        content: "max-w-[54rem]",
+      },
+    },
   },
 })
 
@@ -149,10 +163,13 @@ const ContentLayout = ({
   LinkComponent = "a",
   ScriptComponent,
 }: ContentPageSchemaType) => {
-  const sideRail = getSiderailFromSiteMap(
-    site.siteMap,
-    page.permalink.split("/").slice(1),
-  )
+  const isParentPageRoot = page.permalink.split("/").length === 2
+
+  // Note: We do not show side rail for first-level pages
+  const sideRail = !isParentPageRoot
+    ? getSiderailFromSiteMap(site.siteMap, page.permalink.split("/").slice(1))
+    : null
+
   // auto-inject ids for heading level 2 blocks if does not exist
   const transformedContent = transformContent(content)
   const tableOfContents = getTableOfContentsFromContent(transformedContent)
@@ -181,14 +198,17 @@ const ContentLayout = ({
             <LinkComponent
               href="#"
               // TODO: Replace LinkComponent with a custom link component with all the styles
-              className="prose-body-base sticky top-8 mt-8 flex items-center text-link underline-offset-4 hover:underline"
+              className="prose-body-base text-link sticky top-8 mt-8 flex items-center underline-offset-4 hover:underline"
             >
               <BiUpArrowAlt aria-hidden className="h-6 w-6" />
               Back to top
             </LinkComponent>
           </div>
         )}
-        <div className={compoundStyles.content()}>
+
+        <div
+          className={compoundStyles.content({ isSideRailPresent: !!sideRail })}
+        >
           {tableOfContents.items.length > 1 && (
             <TableOfContents {...tableOfContents} />
           )}
