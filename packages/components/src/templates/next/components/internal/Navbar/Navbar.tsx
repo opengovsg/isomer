@@ -19,7 +19,7 @@ const navbarStyles = tv({
     logo: "my-3 h-10 w-32 max-w-[6.625rem] object-contain object-center lg:h-12 lg:max-w-32",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
     navbar:
-      "mx-auto flex w-full max-w-screen-xl gap-x-4 px-6 lg:gap-x-6 lg:px-10",
+      "mx-auto flex w-full max-w-screen-xl gap-x-4 pl-6 pr-3 lg:gap-x-6 lg:px-10",
     navItemContainer: "hidden flex-wrap items-center gap-x-6 lg:flex",
   },
 })
