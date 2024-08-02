@@ -1,3 +1,5 @@
+"use client"
+
 /*
  * Copyright 2022 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -14,7 +16,6 @@
  *
  * This is a modified version of the original file.
  */
-
 import type { ElementType } from "react"
 import type {
   LinkProps as BaseLinkProps,
