@@ -17,8 +17,7 @@ export interface SiderailListProps {
 
 const createSiderailListStyles = tv({
   slots: {
-    header:
-      "flex w-full items-start justify-between gap-2 text-base-content-strong transition",
+    header: "flex w-full items-start justify-between gap-2 transition",
     label: "px-3 py-4",
     childHeader: "flex w-full items-center gap-1.5",
     childLabel: "py-2 hover:text-brand-interaction",
