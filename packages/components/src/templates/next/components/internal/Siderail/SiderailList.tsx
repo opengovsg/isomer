@@ -5,7 +5,6 @@ import {
   DisclosurePanel,
 } from "@headlessui/react"
 import { BiMinus, BiPlus } from "react-icons/bi"
-import { twMerge } from "tailwind-merge"
 
 import type { ItemWithChild } from "./types"
 import { tv } from "~/lib/tv"
@@ -47,9 +46,7 @@ export const SiderailList = ({
   return (
     <Disclosure defaultOpen={item.isCurrent}>
       {({ open: isOpen }) => (
-        <li
-          className={twMerge(compoundStyles.container({ isOpen }), className)}
-        >
+        <li className={compoundStyles.container({ isOpen, className })}>
           <div className={compoundStyles.header({ isOpen })}>
             <SiderailLabel
               {...item}
