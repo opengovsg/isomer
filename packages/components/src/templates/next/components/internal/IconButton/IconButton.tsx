@@ -6,8 +6,8 @@ import type { VariantProps } from "tailwind-variants"
 import type { SetRequired } from "type-fest"
 import { forwardRef } from "react"
 import { Button as AriaButton, composeRenderProps } from "react-aria-components"
-import { tv } from "tailwind-variants"
 
+import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/focusRing"
 
 export const iconButtonStyles = tv({
