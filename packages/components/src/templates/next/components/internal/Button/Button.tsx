@@ -9,7 +9,7 @@ import { tv } from "tailwind-variants"
 import { focusRing } from "~/utils/focusRing"
 
 export const buttonStyles = tv({
-  base: "box-border w-fit cursor-pointer rounded text-center transition",
+  base: "box-border h-full w-fit cursor-pointer rounded text-center transition",
   extend: focusRing,
   variants: {
     variant: {
