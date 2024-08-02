@@ -1,12 +1,12 @@
 import { forwardRef } from "react"
 import { FocusScope } from "react-aria"
 import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
-import { tv } from "tailwind-variants"
 
 import type {
   NavbarItem as BaseNavbarItemProps,
   NavbarProps,
 } from "~/interfaces/internal/Navbar"
+import { tv } from "~/lib/tv"
 
 interface NavbarItemProps
   extends BaseNavbarItemProps,

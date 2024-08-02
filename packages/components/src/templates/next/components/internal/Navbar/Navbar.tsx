@@ -3,10 +3,10 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
 import { usePreventScroll } from "react-aria"
 import { BiSearch, BiX } from "react-icons/bi"
-import { tv } from "tailwind-variants"
 import { useOnClickOutside, useResizeObserver } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces"
+import { tv } from "~/lib/tv"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
 import { HamburgerIcon } from "./HamburgerIcon"
 import { MobileNavMenu } from "./MobileNavMenu"
