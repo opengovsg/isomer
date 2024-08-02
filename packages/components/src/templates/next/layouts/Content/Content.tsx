@@ -1,7 +1,6 @@
-import { tv } from "tailwind-variants"
-
 import type { ContentPageSchemaType, IsomerSitemap } from "~/engine"
 import type { SiderailProps } from "~/interfaces"
+import { tv } from "~/lib/tv"
 import {
   getBreadcrumbFromSiteMap,
   getDigestFromText,
