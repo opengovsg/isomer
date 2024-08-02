@@ -84,6 +84,7 @@ export const DEFAULT_BLOCKS: Record<
     type: "infocards",
     title: "This is an optional title of the Infocards component",
     subtitle: "This is an optional subtitle for the Infocards component",
+    isCardsWithImages: true,
     cards: [
       {
         title: "This is the first card",

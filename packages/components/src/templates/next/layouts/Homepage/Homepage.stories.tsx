@@ -228,6 +228,7 @@ export const Default: Story = {
           "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
         subtitle:
           "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
+        isCardsWithImages: true,
         cards: [
           {
             title: "A yummy, tipsy evening at Duxton",
@@ -236,7 +237,6 @@ export const Default: Story = {
               "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
             imageUrl: "https://placehold.co/200x300",
             imageAlt: "alt text",
-            buttonLabel: "Explore with us",
           },
           {
             title: "A yummy, tipsy evening at Duxton",
@@ -245,21 +245,18 @@ export const Default: Story = {
               "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
             imageUrl: "https://placehold.co/200x300",
             imageAlt: "alt text",
-            buttonLabel: "Explore with us",
           },
           {
             title: "A yummy, tipsy evening at Duxton",
             url: "https://www.google.com",
             imageUrl: "https://placehold.co/200x300",
             imageAlt: "alt text",
-            buttonLabel: "Explore with us",
           },
           {
             title: "A yummy, tipsy evening at Duxton",
             url: "https://www.google.com",
             imageUrl: "https://placehold.co/200x300",
             imageAlt: "alt text",
-            buttonLabel: "Explore with us",
           },
         ],
       },
