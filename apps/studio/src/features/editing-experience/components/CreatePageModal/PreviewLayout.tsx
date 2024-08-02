@@ -4,6 +4,7 @@ import { useIsMobile } from "@opengovsg/design-system-react"
 import { format } from "date-fns"
 
 import Preview from "../Preview"
+import { PreviewIframe } from "../PreviewIframe"
 import { LAYOUT_RENDER_DATA } from "./constants"
 import { useCreatePageWizard } from "./CreatePageWizardContext"
 
@@ -65,19 +66,15 @@ export const PreviewLayout = (): JSX.Element => {
               </Text>
             </Flex>
           )}
-          <Box
-            bg="white"
-            overflow="auto"
-            height="100%"
-            // Key used to reset the scroll to the top whenever layout changes
-            key={currentLayout}
-          >
-            <Preview
-              overrides={previewOverrides}
-              siteId={siteId}
-              permalink={currentPermalink}
-              {...layoutPreviewJson}
-            />
+          <Box bg="white" overflow="auto" height="100%">
+            <PreviewIframe preventPointerEvents keyForRerender={currentLayout}>
+              <Preview
+                overrides={previewOverrides}
+                siteId={siteId}
+                permalink={currentPermalink}
+                {...layoutPreviewJson}
+              />
+            </PreviewIframe>
           </Box>
         </Box>
       )}

@@ -3,9 +3,25 @@ import { useEffect, useState } from "react"
 import { Flex } from "@chakra-ui/react"
 import Frame, { useFrame } from "react-frame-component"
 
-export const PreviewIframe = ({ children }: PropsWithChildren): JSX.Element => {
+interface PreviewIframeProps extends PropsWithChildren {
+  preventPointerEvents?: boolean
+  keyForRerender?: string
+}
+
+export const PreviewIframe = ({
+  children,
+  preventPointerEvents,
+  keyForRerender,
+}: PreviewIframeProps): JSX.Element => {
   // TODO: Add toolbar for users to adjust the width of the iframe
   const [width, _setWidth] = useState("100%")
+  const extraProps = preventPointerEvents
+    ? {
+        initialContent: `<!DOCTYPE html><html><head></head><body><div id="frame-root" style="pointer-events: none;"></div></body></html>`,
+        mountTarget: "#frame-root",
+      }
+    : {}
+
   return (
     <Flex
       bg="white"
@@ -21,6 +37,7 @@ export const PreviewIframe = ({ children }: PropsWithChildren): JSX.Element => {
           width,
           borderRadius: "8px",
         }}
+        {...extraProps}
         head={
           // eslint-disable-next-line @next/next/no-css-tags
           <link
@@ -30,7 +47,9 @@ export const PreviewIframe = ({ children }: PropsWithChildren): JSX.Element => {
           />
         }
       >
-        <IframeInnerComponent>{children}</IframeInnerComponent>
+        <IframeInnerComponent key={keyForRerender}>
+          {children}
+        </IframeInnerComponent>
       </Frame>
     </Flex>
   )
