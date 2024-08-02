@@ -1,12 +1,24 @@
 import { createFolderSchema, readFolderSchema } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
+import { db } from "../database"
 
 export const folderRouter = router({
   create: protectedProcedure
     .input(createFolderSchema)
-    .mutation(({ ctx, input }) => {
-      return { folderId: "" }
-    }),
+    .mutation(
+      async ({ ctx, input: { folderTitle, parentFolderId, ...rest } }) => {
+        const folder = await db
+          .insertInto("Resource")
+          .values({
+            ...rest,
+            type: "Folder",
+            title: folderTitle,
+            parentId: parentFolderId ? String(parentFolderId) : null,
+          })
+          .executeTakeFirstOrThrow()
+        return { folderId: folder.insertId }
+      },
+    ),
   readFolder: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input }) => {
