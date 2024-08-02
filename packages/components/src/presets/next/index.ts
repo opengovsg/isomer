@@ -9,7 +9,17 @@ import { isomerTypography } from "./typography"
 const config: Config = {
   content: [],
   theme: {
+    screens: {
+      // breakpoints need to be sorted from smallest to largest in order to work as expected with a min-width breakpoint system
+      // See https://tailwindcss.com/docs/screens#adding-smaller-breakpoints
+      xs: "576px",
+      //
+      ...defaultTheme.screens,
+    },
     extend: {
+      screens: {
+        xl: "1240px",
+      },
       boxShadow: {
         sm: "0 0px 10px 0px rgba(191, 191, 191, 0.5)",
       },
@@ -101,12 +111,6 @@ const config: Config = {
       },
       letterSpacing: {
         tight: "-0.022em",
-      },
-      screens: {
-        xs: "576px",
-      },
-      spacing: {
-        container: "1240px",
       },
     },
   },

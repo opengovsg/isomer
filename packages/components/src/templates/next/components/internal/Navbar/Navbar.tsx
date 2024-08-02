@@ -189,7 +189,7 @@ export const Navbar = ({
         <div
           className={`${
             isSearchOpen ? "block" : "hidden"
-          } mx-auto mb-4 w-full max-w-container px-6 lg:px-10`}
+          } mx-auto mb-4 w-full max-w-screen-xl px-6 lg:px-10`}
         >
           {search.type === "localSearch" && (
             <LocalSearchInputBox searchUrl={search.searchUrl} />
