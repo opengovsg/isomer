@@ -20,7 +20,7 @@ const createSiderailListStyles = tv({
   slots: {
     header:
       "flex w-full items-start justify-between gap-2 text-base-content-strong transition",
-    label: "prose-headline-base-semibold px-3 py-4",
+    label: "px-3 py-4",
     childHeader: "flex w-full items-center gap-1.5",
     childLabel: "py-2 hover:text-brand-interaction",
     container: "",
@@ -31,7 +31,7 @@ const createSiderailListStyles = tv({
     isOpen: {
       true: {
         header: "text-brand-interaction",
-        label: "prose-body-base px-3 py-4",
+        label: "px-3 py-4",
         container: "pb-3",
       },
     },

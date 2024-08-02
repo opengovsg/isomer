@@ -7,13 +7,14 @@ import { useSiderailContext } from "./SiderailContext"
 const createSiderailLabelStyles = tv({
   slots: {
     container:
-      "group flex w-full flex-row justify-between gap-2 px-3 py-4 transition hover:text-brand-interaction",
+      "group prose-body-base flex w-full flex-row justify-between gap-2 px-3 py-4 transition hover:text-brand-interaction",
     icon: "-mr-2 h-6 w-6 shrink-0 opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100",
   },
   variants: {
     isCurrent: {
       true: {
-        container: "text-brand-interaction",
+        container:
+          "prose-headline-base-semibold cursor-default hover:text-inherit",
       },
     },
   },
