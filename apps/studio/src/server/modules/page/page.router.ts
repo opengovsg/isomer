@@ -58,35 +58,6 @@ const validatedPageProcedure = protectedProcedure.use(
 )
 
 export const pageRouter = router({
-  list: protectedProcedure
-    .input(
-      z.object({
-        siteId: z.number(),
-        resourceId: z.number().optional(),
-      }),
-    )
-    .query(async ({ input: { siteId, resourceId } }) => {
-      let query = db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-
-      if (resourceId) {
-        query = query.where("Resource.parentId", "=", String(resourceId))
-      } else {
-        query = query.where("Resource.parentId", "is", null)
-      }
-
-      return query
-        .select([
-          "Resource.id",
-          "Resource.permalink",
-          "Resource.title",
-          "Resource.publishedVersionId",
-          "Resource.draftBlobId",
-          "Resource.type",
-        ])
-        .execute()
-    }),
   readPageAndBlob: protectedProcedure
     .input(getEditPageSchema)
     .query(async ({ input: { pageId, siteId } }) => {

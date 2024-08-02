@@ -81,7 +81,7 @@ const MoveResourceContent = withSuspense(
       },
       onSuccess: () => {
         void utils.page.readPageAndBlob.invalidate()
-        void utils.page.list.invalidate({
+        void utils.resource.list.invalidate({
           // TODO: Update backend `list` to use the proper schema
           resourceId: movedItem?.resourceId
             ? Number(movedItem.resourceId)

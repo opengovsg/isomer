@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server"
 import {
   getChildrenSchema,
   getMetadataSchema,
+  listResourceSchema,
   moveSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
@@ -77,5 +78,29 @@ export const resourceRouter = router({
           ])
           .executeTakeFirst()
       })
+    }),
+  list: protectedProcedure
+    .input(listResourceSchema)
+    .query(async ({ input: { siteId, resourceId } }) => {
+      let query = db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+
+      if (resourceId) {
+        query = query.where("Resource.parentId", "=", String(resourceId))
+      } else {
+        query = query.where("Resource.parentId", "is", null)
+      }
+
+      return query
+        .select([
+          "Resource.id",
+          "Resource.permalink",
+          "Resource.title",
+          "Resource.publishedVersionId",
+          "Resource.draftBlobId",
+          "Resource.type",
+        ])
+        .execute()
     }),
 })

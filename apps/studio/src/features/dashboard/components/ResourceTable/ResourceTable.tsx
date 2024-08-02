@@ -15,7 +15,7 @@ import { trpc } from "~/utils/trpc"
 import { ResourceTableMenu } from "./ResourceTableMenu"
 import { TitleCell } from "./TitleCell"
 
-type ResourceTableData = RouterOutput["page"]["list"][number]
+type ResourceTableData = RouterOutput["resource"]["list"][number]
 
 const columnsHelper = createColumnHelper<ResourceTableData>()
 
@@ -61,7 +61,7 @@ export const ResourceTable = ({
     () => getColumns({ siteId, resourceId }),
     [siteId, resourceId],
   )
-  const { data: resources } = trpc.page.list.useQuery(
+  const { data: resources } = trpc.resource.list.useQuery(
     {
       siteId,
       resourceId,

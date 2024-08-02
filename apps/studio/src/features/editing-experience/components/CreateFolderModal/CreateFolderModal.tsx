@@ -60,7 +60,7 @@ export const CreateFolderModal = ({
     onSettled: onClose,
     onSuccess: () => {
       void utils.site.list.invalidate()
-      void utils.page.list.invalidate()
+      void utils.resource.list.invalidate()
       toast({ title: "Folder created!", status: "success" })
     },
     onError: (err) => {
