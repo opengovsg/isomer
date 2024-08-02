@@ -170,7 +170,6 @@ const ContentLayout = ({
     ? getSiderailFromSiteMap(site.siteMap, page.permalink.split("/").slice(1))
     : null
 
-  console.log(sideRail)
   // auto-inject ids for heading level 2 blocks if does not exist
   const transformedContent = transformContent(content)
   const tableOfContents = getTableOfContentsFromContent(transformedContent)
