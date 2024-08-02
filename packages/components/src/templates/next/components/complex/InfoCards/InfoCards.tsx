@@ -11,7 +11,7 @@ import { Link } from "../../internal/Link"
 
 const createInfoCardsStyles = tv({
   slots: {
-    container: `${ComponentContent} mx-auto flex flex-col py-12 lg:py-24`,
+    container: `${ComponentContent} mx-auto flex flex-col py-12 first:pt-3.5 lg:py-24`,
     headingContainer: "flex flex-col gap-2.5 pb-8 sm:pb-12 lg:max-w-3xl",
     headingTitle: "strong prose-display-md text-base-content-strong",
     headingSubtitle: "prose-headline-lg-regular text-base-content",
@@ -23,7 +23,7 @@ const createInfoCardsStyles = tv({
     cardTextContainer: "flex flex-col gap-3",
     cardTitle: "text-base-content-strong text-heading-04",
     cardTitleArrow: "mb-1 ml-1.5 inline transition group-hover:translate-x-1",
-    cardDescription: "prose-body-base line-clamp-4 text-base-content",
+    cardDescription: "prose-body-base text-base-content line-clamp-4",
   },
   variants: {
     isClickableCard: {
@@ -130,7 +130,9 @@ const InfoCards = ({
   LinkComponent,
 }: InfoCardsProps) => (
   <section className={compoundStyles.container()}>
-    <InfoCardsHeadingSection title={title} subtitle={subtitle} />
+    {(title || subtitle) && (
+      <InfoCardsHeadingSection title={title} subtitle={subtitle} />
+    )}
 
     <div className={compoundStyles.grid()}>
       {isCardsWithImages

@@ -98,7 +98,7 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
   // Check if file is actually an index page for a directory
   const directoryPath = path.join(
     path.dirname(fullPath),
-    path.basename(fullPath, ".json"),
+    path.basename(fullPath, ".json")
   );
   const directoryItemStats = await getDirectoryItemStats(directoryPath);
   const isDirectoryAlsoPresent =
@@ -117,36 +117,14 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
 // Generates sitemap entries and an index file for directories without an index file
 const processDanglingDirectory = async (fullPath, relativePath, name) => {
   const children = await getSiteMapChildrenEntries(fullPath, relativePath);
-  // TODO: Improve the content for generated index pages
   const listOfChildPages = {
-    type: "prose",
-    content: [
-      {
-        type: "unorderedList",
-        content: children.map((child) => ({
-          type: "listItem",
-          content: [
-            {
-              type: "paragraph",
-              content: [
-                {
-                  type: "text",
-                  marks: [
-                    {
-                      type: "link",
-                      attrs: {
-                        href: child.permalink,
-                      },
-                    },
-                  ],
-                  text: child.title,
-                },
-              ],
-            },
-          ],
-        })),
-      },
-    ],
+    type: "infocards",
+    isCardsWithImages: false,
+    cards: children.map((child) => ({
+      title: child.title,
+      url: child.permalink,
+      description: child.summary,
+    })),
   };
 
   const pageName = name.replace(/-/g, " ");
@@ -169,8 +147,8 @@ const processDanglingDirectory = async (fullPath, relativePath, name) => {
         content: [listOfChildPages],
       },
       null,
-      2,
-    ),
+      2
+    )
   );
 
   console.log("Generated missing index file for directory:", relativePath);
@@ -188,7 +166,7 @@ const processDanglingDirectory = async (fullPath, relativePath, name) => {
 const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
   const entries = await fs.readdir(fullPath, { withFileTypes: true });
   const fileEntries = entries.filter(
-    (entry) => entry.isFile() && entry.name.endsWith(".json"),
+    (entry) => entry.isFile() && entry.name.endsWith(".json")
   );
 
   const children = [];
@@ -206,11 +184,11 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
         const childEntry = getSiteMapEntry(
           path.join(fullPath, fileName),
           path.join(relativePath, fileName),
-          fileName,
+          fileName
         );
 
         return childEntry;
-      }),
+      })
     );
 
     children.push(...childEntries.filter((entry) => entry !== null));
@@ -221,15 +199,15 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
     const childEntries = await Promise.all(
       fileEntries
         .filter(
-          (entry) => !(relativePath === "/" && entry.name === "index.json"),
+          (entry) => !(relativePath === "/" && entry.name === "index.json")
         )
         .map((fileEntry) =>
           getSiteMapEntry(
             path.join(fullPath, fileEntry.name),
             path.join(relativePath, fileEntry.name),
-            fileEntry.name,
-          ),
-        ),
+            fileEntry.name
+          )
+        )
     );
 
     children.push(...childEntries.filter((entry) => entry !== null));
@@ -242,19 +220,22 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
       .filter(
         (dirEntry) =>
           !fileEntries.find(
-            (fileEntry) => fileEntry.name === dirEntry.name + ".json",
-          ),
+            (fileEntry) => fileEntry.name === dirEntry.name + ".json"
+          )
       )
       .map((dirEntry) =>
         processDanglingDirectory(
           path.join(fullPath, dirEntry.name),
           path.join(relativePath, dirEntry.name),
-          dirEntry.name,
-        ),
-      ),
+          dirEntry.name
+        )
+      )
   );
 
   children.push(...danglingDirEntries);
+
+  // Ensure that the result is ordered in alphabetical order
+  children.sort((a, b) => a.title.localeCompare(b.title));
 
   return children;
 };
