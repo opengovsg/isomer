@@ -46,3 +46,23 @@ find ./out -type f | wc -l
 cd out/
 echo $(pwd)
 ls -al
+
+# zip
+zip -r ../build.zip .
+cd ../
+echo $(pwd)
+
+# upload to amplify
+echo "Creating deployment in AWS Amplify..."
+DEPLOY_DATA=$(aws amplify create-deployment --app-id "$AMPLIFY_APP_ID" --branch-name "staging")
+JOB_ID=$(echo $DEPLOY_DATA | jq -r '.jobId')
+echo "JOB_ID: $JOB_ID"
+UPLOAD_URL=$(echo $DEPLOY_DATA | jq -r '.zipUploadUrl')
+echo "UPLOAD_URL: $UPLOAD_URL"
+echo "Uploading build artifacts..."
+curl -T build.zip "$UPLOAD_URL"
+
+# start amplify deployment
+echo "Starting deployment..."
+aws amplify start-deployment --app-id "$AMPLIFY_APP_ID" --branch-name "staging" --job-id $JOB_ID
+echo "Deployment created in Amplify successfully"
