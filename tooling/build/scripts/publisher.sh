@@ -32,3 +32,9 @@ curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scrip
 # build
 rm -rf scripts/
 curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/build.sh | bash
+
+ls -al
+find ./out -type f | wc -l
+
+cd out/
+ls -al
