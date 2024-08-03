@@ -2,6 +2,10 @@
 # run recursive.ts
 git clone https://github.com/opengovsg/isomer.git
 cd isomer/
+
+# TODO: remove later
+git checkout 08-03-add_publishing_scripts
+
 npm install
 
 cd packages/components
@@ -17,7 +21,7 @@ npm run start
 # Build site
 # TODO: Fix the schemas for data
 # mv data/ isomer/tooling/template/data/
-mv schema/ ../../../template/schema
+mv schema/ ../../../template/
 cd ../../../template
 npm install
 
