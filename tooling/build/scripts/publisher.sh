@@ -53,7 +53,7 @@ calculate_duration $start_time
 # Build site
 echo "Building site..."
 start_time=$(date +%s)
-rm -rf ../../../template/
+rm -rf ../../../template/schema
 mv schema/ ../../../template/
 cd ../../../template
 echo $(pwd)
@@ -80,7 +80,8 @@ ls -al
 # Zip the build
 echo "Zipping build..."
 start_time=$(date +%s)
-zip -r ../build.zip .
+# we use compression level = 3 to zip faster
+zip -rqX -3 ../build.zip .
 cd ../
 echo $(pwd)
 calculate_duration $start_time
