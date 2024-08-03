@@ -27,6 +27,7 @@ npm run start
 # Build site
 # TODO: Fix the schemas for data
 # mv data/ isomer/tooling/template/data/
+rm -rf ../../../template/schema/
 mv schema/ ../../../template/
 cd ../../../template
 echo $(pwd)
