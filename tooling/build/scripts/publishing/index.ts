@@ -2,7 +2,13 @@ import { Client } from "pg";
 import * as fs from "fs";
 import * as path from "path";
 import * as dotenv from "dotenv";
-import { performance } from "perf_hooks"; // Importing performance module
+import { performance } from "perf_hooks";
+import {
+  GET_ALL_RESOURCES_WITH_FULL_PERMALINKS,
+  GET_NAVBAR,
+  GET_FOOTER,
+  GET_CONFIG,
+} from "./queries";
 
 dotenv.config();
 
@@ -63,45 +69,13 @@ async function main() {
 async function getAllResourcesWithFullPermalinks(
   client: Client
 ): Promise<Resource[]> {
-  const query = `
-      WITH RECURSIVE resource_path (id, title, permalink, parentId, type, content, "fullPermalink") AS (
-        SELECT
-          r.id,
-          r.title,
-          r.permalink,
-          r."parentId",
-          r.type,
-          b."content",
-          r.permalink AS "fullPermalink"
-        FROM
-          public."Resource" r
-          LEFT JOIN public."Version" v ON v."id" = r."publishedVersionId"
-          LEFT JOIN public."Blob" b ON v."blobId" = b.id
-        WHERE
-          r."parentId" IS NULL AND r."siteId" = $1
-  
-        UNION ALL
-  
-        SELECT
-          r.id,
-          r.title,
-          r.permalink,
-          r."parentId",
-          r.type,
-          b."content",
-          CONCAT(path."fullPermalink", '/', r.permalink) AS "fullPermalink"
-        FROM
-          public."Resource" r
-          LEFT JOIN public."Version" v ON v."id" = r."publishedVersionId"
-          LEFT JOIN public."Blob" b ON v."blobId" = b.id
-          INNER JOIN resource_path path ON r."parentId" = path.id
-      )
-      SELECT * FROM resource_path;
-    `;
   const values = [SITE_ID];
 
   try {
-    const res = await client.query(query, values);
+    const res = await client.query(
+      GET_ALL_RESOURCES_WITH_FULL_PERMALINKS,
+      values
+    );
     // console.log("Fetched resources with full permalinks:", res.rows);
     return res.rows;
   } catch (err) {
@@ -159,28 +133,19 @@ async function writeContentToFile(
 async function fetchAndWriteSiteData(client: Client) {
   try {
     // Fetch navbar.json
-    const navbarResult = await client.query(
-      `SELECT content FROM public."Navbar" WHERE "siteId" = $1`,
-      [SITE_ID]
-    );
+    const navbarResult = await client.query(GET_NAVBAR, [SITE_ID]);
     if (navbarResult.rows.length > 0) {
       await writeJsonToFile(navbarResult.rows[0].content, "navbar.json");
     }
 
     // Fetch footer.json
-    const footerResult = await client.query(
-      `SELECT content FROM public."Footer" WHERE "siteId" = $1`,
-      [SITE_ID]
-    );
+    const footerResult = await client.query(GET_FOOTER, [SITE_ID]);
     if (footerResult.rows.length > 0) {
       await writeJsonToFile(footerResult.rows[0].content, "footer.json");
     }
 
     // Fetch config.json
-    const configResult = await client.query(
-      `SELECT config FROM public."Site" WHERE "id" = $1`,
-      [SITE_ID]
-    );
+    const configResult = await client.query(GET_CONFIG, [SITE_ID]);
     if (configResult.rows.length > 0) {
       await writeJsonToFile(configResult.rows[0].config, "config.json");
     }

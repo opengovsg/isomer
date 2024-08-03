@@ -11,7 +11,9 @@ calculate_duration() {
 # Cloning the repository
 echo "Cloning repository..."
 start_time=$(date +%s)
-git clone https://github.com/opengovsg/isomer.git
+
+# TODO: also add single branch checkout with --branch main
+git clone --depth 1 https://github.com/opengovsg/isomer.git
 cd isomer/
 calculate_duration $start_time
 
