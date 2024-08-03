@@ -3,17 +3,23 @@
 git clone https://github.com/opengovsg/isomer.git
 cd isomer/
 
+echo $(pwd)
+
 # TODO: remove later
 git checkout 08-03-add_publishing_scripts
+
+echo $(git branch)
 
 npm install
 
 cd packages/components
 npm run build
 cd ../.. # back to root
+echo $(pwd)
 
 # Fetch from database
 cd tooling/build/scripts/publishing
+echo $(pwd)
 npm install
 npm install ts-node -g
 npm run start
@@ -23,6 +29,7 @@ npm run start
 # mv data/ isomer/tooling/template/data/
 mv schema/ ../../../template/
 cd ../../../template
+echo $(pwd)
 npm install
 
 # prebuild
@@ -37,4 +44,5 @@ ls -al
 find ./out -type f | wc -l
 
 cd out/
+echo $(pwd)
 ls -al
