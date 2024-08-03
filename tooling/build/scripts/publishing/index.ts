@@ -37,20 +37,21 @@ async function main() {
 
     // Process each resource
     for (const resource of resources) {
-      console.log(
-        `Processing resource with id ${resource.id}, fullPermalink: ${resource.fullPermalink}`
-      );
+      //   console.log(
+      //     `Processing resource with id ${resource.id}, fullPermalink: ${resource.fullPermalink}`
+      //   );
       if (resource.type === "Page" && resource.content) {
         await writeContentToFile(
           resource.fullPermalink,
           resource.content,
           resource.parentId
         );
-      } else {
-        console.log(
-          `Skipping resource with id ${resource.id} as it is not a Page or has no content.`
-        );
       }
+      //   else {
+      //     console.log(
+      //       `Skipping resource with id ${resource.id} as it is not a Page or has no content.`
+      //     );
+      //   }
     }
   } finally {
     await client.end();
@@ -101,7 +102,7 @@ async function getAllResourcesWithFullPermalinks(
 
   try {
     const res = await client.query(query, values);
-    console.log("Fetched resources with full permalinks:", res.rows);
+    // console.log("Fetched resources with full permalinks:", res.rows);
     return res.rows;
   } catch (err) {
     console.error("Error fetching resources:", err);
@@ -149,7 +150,7 @@ async function writeContentToFile(
     // Write JSON content to file
     fs.writeFileSync(filePath, JSON.stringify(content, null, 2), "utf-8");
 
-    console.log(`Successfully wrote file: ${filePath}`);
+    // console.log(`Successfully wrote file: ${filePath}`);
   } catch (error) {
     console.error("Error writing content to file:", error);
   }
@@ -198,7 +199,7 @@ async function writeJsonToFile(content: any, filename: string) {
     const filePath = path.join(directoryPath, filename);
     fs.writeFileSync(filePath, JSON.stringify(content, null, 2), "utf-8");
 
-    console.log(`Successfully wrote file: ${filePath}`);
+    // console.log(`Successfully wrote file: ${filePath}`);
   } catch (error) {
     console.error(`Error writing ${filename} to file:`, error);
   }
