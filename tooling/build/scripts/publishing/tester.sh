@@ -1,7 +1,6 @@
 #!/bin/bash
 
-sudo yum update 
-sudo yum install postgresql14
+sudo amazon-linux-extras install postgresql14
 
 # Extract components from DATABASE_URL2
 DATABASE_URL2=${DATABASE_URL2:-""}
