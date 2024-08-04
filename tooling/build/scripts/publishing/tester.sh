@@ -21,11 +21,12 @@ else
   exit 1
 fi
 
-# Try to connect to the database
-PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME -p $DB_PORT -c "\q" 2>/dev/null
+# Try to connect to the database and capture error messages
+connection_error=$(PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME -p $DB_PORT -c "\q" 2>&1)
 
 if [[ $? -eq 0 ]]; then
   echo "Successfully connected to the PostgreSQL database!"
 else
   echo "Error: Failed to connect to the PostgreSQL database."
+  echo "Details: $connection_error"
 fi
