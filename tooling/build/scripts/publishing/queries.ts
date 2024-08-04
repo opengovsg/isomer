@@ -1,39 +1,45 @@
-// queries.ts
-
 export const GET_ALL_RESOURCES_WITH_FULL_PERMALINKS = `
-  WITH RECURSIVE resource_path (id, title, permalink, parentId, type, content, "fullPermalink") AS (
+    WITH RECURSIVE "resourcePath" (id, title, permalink, parentId, type, content, "fullPermalink", "publishedVersionId") AS (
+    -- Base case for all resources
     SELECT
-      r.id,
-      r.title,
-      r.permalink,
-      r."parentId",
-      r.type,
-      b."content",
-      r.permalink AS "fullPermalink"
+        r.id,
+        r.title,
+        r.permalink,
+        r."parentId",
+        r.type,
+        CASE WHEN r.type = 'Page' THEN b."content" ELSE NULL END AS content,
+        r.permalink AS "fullPermalink",
+        r."publishedVersionId"
     FROM
-      public."Resource" r
-      LEFT JOIN public."Version" v ON v."id" = r."publishedVersionId"
-      LEFT JOIN public."Blob" b ON v."blobId" = b.id
+        public."Resource" r
+    LEFT JOIN public."Version" v ON v."id" = r."publishedVersionId"
+    LEFT JOIN public."Blob" b ON v."blobId" = b.id
     WHERE
-      r."parentId" IS NULL AND r."siteId" = $1
+        r."siteId" = $1 AND r."parentId" IS NULL
 
     UNION ALL
 
+    -- Recursive case
     SELECT
-      r.id,
-      r.title,
-      r.permalink,
-      r."parentId",
-      r.type,
-      b."content",
-      CONCAT(path."fullPermalink", '/', r.permalink) AS "fullPermalink"
+        r.id,
+        r.title,
+        r.permalink,
+        r."parentId",
+        r.type,
+        CASE WHEN r.type = 'Page' THEN b."content" ELSE NULL END AS content,
+        CONCAT(path."fullPermalink", '/', r.permalink) AS "fullPermalink",
+        r."publishedVersionId"
     FROM
-      public."Resource" r
-      LEFT JOIN public."Version" v ON v."id" = r."publishedVersionId"
-      LEFT JOIN public."Blob" b ON v."blobId" = b.id
-      INNER JOIN resource_path path ON r."parentId" = path.id
-  )
-  SELECT * FROM resource_path;
+        public."Resource" r
+        LEFT JOIN public."Version" v ON v."id" = r."publishedVersionId"
+        LEFT JOIN public."Blob" b ON v."blobId" = b.id
+
+        -- This join determines if the recursion continues if there are more rows
+        INNER JOIN "resourcePath" path ON r."parentId" = path.id
+    WHERE
+        r."siteId" = $1 AND (r.type = 'Folder' OR (r.type = 'Page' AND b."content" IS NOT NULL))
+    )
+    SELECT * FROM "resourcePath";
 `;
 
 export const GET_NAVBAR = `
