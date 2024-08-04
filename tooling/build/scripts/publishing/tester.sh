@@ -1,7 +1,7 @@
 #!/bin/bash
 
-sudo yum install -y postgresql
-export PATH=$PATH:/usr/pgsql-12/bin
+sudo yum update 
+sudo yum install postgresql14
 
 # Extract components from DATABASE_URL2
 DATABASE_URL2=${DATABASE_URL2:-""}
