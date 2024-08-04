@@ -1,6 +1,13 @@
 #!/bin/bash
 
-sudo amazon-linux-extras install postgresql14
+# Install the repository RPM:
+sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+# Disable the built-in PostgreSQL module:
+sudo dnf -qy module disable postgresql
+
+# Install PostgreSQL:
+sudo dnf install -y postgresql16-server
 
 # Extract components from DATABASE_URL2
 DATABASE_URL2=${DATABASE_URL2:-""}
