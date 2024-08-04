@@ -25,6 +25,13 @@ interface Resource {
   fullPermalink?: string;
 }
 
+// Wrapper function for debug logging
+function logDebug(message: string, ...optionalParams: any[]) {
+  if (process.env.DEBUG === "true") {
+    console.log(message, ...optionalParams);
+  }
+}
+
 async function main() {
   const client = new Client({
     connectionString: DATABASE_URL,
@@ -43,21 +50,20 @@ async function main() {
 
     // Process each resource
     for (const resource of resources) {
-      //   console.log(
-      //     `Processing resource with id ${resource.id}, fullPermalink: ${resource.fullPermalink}`
-      //   );
+      logDebug(
+        `Processing resource with id ${resource.id}, fullPermalink: ${resource.fullPermalink}`
+      );
       if (resource.type === "Page" && resource.content) {
         await writeContentToFile(
           resource.fullPermalink,
           resource.content,
           resource.parentId
         );
+      } else {
+        logDebug(
+          `Skipping resource with id ${resource.id} as it is not a Page or has no content.`
+        );
       }
-      //   else {
-      //     console.log(
-      //       `Skipping resource with id ${resource.id} as it is not a Page or has no content.`
-      //     );
-      //   }
     }
   } finally {
     await client.end();
@@ -76,7 +82,7 @@ async function getAllResourcesWithFullPermalinks(
       GET_ALL_RESOURCES_WITH_FULL_PERMALINKS,
       values
     );
-    // console.log("Fetched resources with full permalinks:", res.rows);
+    logDebug("Fetched resources with full permalinks:", res.rows);
     return res.rows;
   } catch (err) {
     console.error("Error fetching resources:", err);
@@ -124,7 +130,7 @@ async function writeContentToFile(
     // Write JSON content to file
     fs.writeFileSync(filePath, JSON.stringify(content, null, 2), "utf-8");
 
-    // console.log(`Successfully wrote file: ${filePath}`);
+    logDebug(`Successfully wrote file: ${filePath}`);
   } catch (error) {
     console.error("Error writing content to file:", error);
   }
@@ -164,7 +170,7 @@ async function writeJsonToFile(content: any, filename: string) {
     const filePath = path.join(directoryPath, filename);
     fs.writeFileSync(filePath, JSON.stringify(content, null, 2), "utf-8");
 
-    // console.log(`Successfully wrote file: ${filePath}`);
+    logDebug(`Successfully wrote file: ${filePath}`);
   } catch (error) {
     console.error(`Error writing ${filename} to file:`, error);
   }
