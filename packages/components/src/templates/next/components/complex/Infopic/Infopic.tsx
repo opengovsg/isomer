@@ -12,7 +12,7 @@ const infopicStyles = tv({
     imageContainer:
       "relative max-h-[400px] w-full [grid-area:img] md:max-h-[560px] lg:max-h-full",
     content:
-      "max-w-[760px] px-6 pb-16 pt-10 [grid-area:content] md:px-10 md:pb-20 md:pt-16 lg:p-24",
+      "px-6 pb-16 pt-10 [grid-area:content] md:px-10 md:pb-20 md:pt-16 lg:max-w-[676px] lg:p-24",
     title: "prose-display-md",
     description: "prose-body-base mt-6",
     button: "mt-9",
@@ -20,10 +20,12 @@ const infopicStyles = tv({
   variants: {
     isTextOnRight: {
       true: {
-        container: "lg:[grid-template-areas:'content_img']",
+        container: "lg:[grid-template-areas:'img_content']",
+        content: "lg:justify-self-start",
       },
       false: {
-        container: "lg:[grid-template-areas:'img_content']",
+        container: "lg:[grid-template-areas:'content_img']",
+        content: "lg:justify-self-end",
       },
     },
   },
