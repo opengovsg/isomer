@@ -91,10 +91,10 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
                       key={cellIndex}
                       colSpan={cell.attrs?.colspan || 1}
                       rowSpan={cell.attrs?.rowspan || 1}
-                      className={`max-w-40 break-words border-b border-r border-base-divider-subtle px-4 py-3.5 align-top [&_ol]:prose-body-sm [&_p]:prose-body-sm first:border-l last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5 ${
+                      className={`max-w-40 break-words border-b border-r border-base-divider-medium px-4 py-3 align-top first:border-l last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5 ${
                         cell.type === "tableHeader"
-                          ? "prose-label-md-medium bg-base-canvas-backdrop"
-                          : "bg-base-canvas-alt"
+                          ? "bg-base-canvas-backdrop [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium"
+                          : "bg-base-canvas-alt [&_ol]:prose-body-sm [&_p]:prose-body-sm"
                       } ${
                         stickyRowIndexes.includes(index) &&
                         cellIndex === 0 &&
