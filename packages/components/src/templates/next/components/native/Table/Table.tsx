@@ -72,7 +72,7 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
         <caption className="mb-4 caption-top text-left">
           <BaseParagraph
             content={caption}
-            className="sticky left-0 table-header-group text-balance text-content text-caption-01"
+            className="prose-label-md-regular sticky left-0 table-header-group text-balance text-base-content-subtle"
           />
         </caption>
         <tbody>
@@ -83,7 +83,7 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
             return (
               <tr
                 key={index}
-                className="*:first:border-divide-subtle text-left *:first:border-t"
+                className="text-left *:first:border-t *:first:border-base-divider-subtle"
               >
                 {row.content.map((cell, cellIndex) => {
                   return (
@@ -91,10 +91,10 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
                       key={cellIndex}
                       colSpan={cell.attrs?.colspan || 1}
                       rowSpan={cell.attrs?.rowspan || 1}
-                      className={`border-divide-subtle max-w-40 break-words border-b border-r px-4 py-3.5 align-top first:border-l last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ol]:text-sm [&_p]:text-sm [&_ul]:mt-0 [&_ul]:ps-5 ${
+                      className={`max-w-40 break-words border-b border-r border-base-divider-subtle px-4 py-3.5 align-top [&_ol]:prose-body-sm [&_p]:prose-body-sm first:border-l last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5 ${
                         cell.type === "tableHeader"
-                          ? "bg-utility-neutral"
-                          : "bg-utility-neutral-subtle"
+                          ? "prose-label-md-medium bg-base-canvas-backdrop"
+                          : "bg-base-canvas-alt"
                       } ${
                         stickyRowIndexes.includes(index) &&
                         cellIndex === 0 &&
