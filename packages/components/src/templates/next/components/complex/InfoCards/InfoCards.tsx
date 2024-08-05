@@ -1,11 +1,12 @@
+import type { PropsWithChildren } from "react"
 import { BiRightArrowAlt } from "react-icons/bi"
-import { tv } from "tailwind-variants"
 
 import type { InfoCardsProps } from "~/interfaces"
 import type {
   SingleCardNoImageProps,
   SingleCardWithImageProps,
 } from "~/interfaces/complex/InfoCards"
+import { tv } from "~/lib/tv"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 
@@ -23,7 +24,7 @@ const createInfoCardsStyles = tv({
     cardTextContainer: "flex flex-col gap-3",
     cardTitle: "text-base-content-strong text-heading-04",
     cardTitleArrow: "mb-1 ml-1.5 inline transition group-hover:translate-x-1",
-    cardDescription: "prose-body-base text-base-content line-clamp-4",
+    cardDescription: "prose-body-base line-clamp-4 text-base-content",
   },
   variants: {
     isClickableCard: {
@@ -39,7 +40,7 @@ const compoundStyles = createInfoCardsStyles()
 const InfoCardsHeadingSection = ({
   title,
   subtitle,
-}: Pick<InfoCardsProps, "title" | "subtitle">) => (
+}: Pick<InfoCardsProps, "title" | "subtitle">): JSX.Element => (
   <div className={compoundStyles.headingContainer()}>
     <h2 className={compoundStyles.headingTitle()}>{title}</h2>
 
@@ -47,10 +48,30 @@ const InfoCardsHeadingSection = ({
   </div>
 )
 
+const InfoCardContainer = ({
+  url,
+  LinkComponent,
+  children,
+}: PropsWithChildren<
+  Pick<SingleCardNoImageProps, "url" | "LinkComponent">
+>): JSX.Element => {
+  return url ? (
+    <Link
+      href={url}
+      className={compoundStyles.cardContainer()}
+      LinkComponent={LinkComponent}
+    >
+      {children}
+    </Link>
+  ) : (
+    <div className={compoundStyles.cardContainer()}>{children}</div>
+  )
+}
+
 const InfoCardImage = ({
   imageUrl,
   imageAlt,
-}: Pick<SingleCardWithImageProps, "imageUrl" | "imageAlt">) => (
+}: Pick<SingleCardWithImageProps, "imageUrl" | "imageAlt">): JSX.Element => (
   <div className={compoundStyles.cardImageContainer()}>
     <img src={imageUrl} alt={imageAlt} className={compoundStyles.cardImage()} />
   </div>
@@ -60,7 +81,10 @@ const InfoCardText = ({
   title,
   description,
   url,
-}: Pick<SingleCardWithImageProps, "title" | "description" | "url">) => (
+}: Pick<
+  SingleCardWithImageProps,
+  "title" | "description" | "url"
+>): JSX.Element => (
   <div className={compoundStyles.cardTextContainer()}>
     <h4 className={compoundStyles.cardTitle({ isClickableCard: !!url })}>
       {title}
@@ -81,19 +105,11 @@ const InfoCardNoImage = ({
   description,
   url,
   LinkComponent,
-}: SingleCardNoImageProps) => {
-  return url ? (
-    <Link
-      href={url}
-      className={compoundStyles.cardContainer()}
-      LinkComponent={LinkComponent}
-    >
+}: SingleCardNoImageProps): JSX.Element => {
+  return (
+    <InfoCardContainer url={url} LinkComponent={LinkComponent}>
       <InfoCardText title={title} description={description} url={url} />
-    </Link>
-  ) : (
-    <div className={compoundStyles.cardContainer()}>
-      <InfoCardText title={title} description={description} url={url} />
-    </div>
+    </InfoCardContainer>
   )
 }
 
@@ -104,52 +120,41 @@ const InfoCardWithImage = ({
   imageAlt,
   url,
   LinkComponent,
-}: SingleCardWithImageProps) => {
-  return url ? (
-    <Link
-      href={url}
-      className={compoundStyles.cardContainer()}
-      LinkComponent={LinkComponent}
-    >
+}: SingleCardWithImageProps): JSX.Element => {
+  return (
+    <InfoCardContainer url={url} LinkComponent={LinkComponent}>
       <InfoCardImage imageUrl={imageUrl} imageAlt={imageAlt} />
       <InfoCardText title={title} description={description} url={url} />
-    </Link>
-  ) : (
-    <div className={compoundStyles.cardContainer()}>
-      <InfoCardImage imageUrl={imageUrl} imageAlt={imageAlt} />
-      <InfoCardText title={title} description={description} url={url} />
-    </div>
+    </InfoCardContainer>
   )
 }
 
 const InfoCards = ({
   title,
   subtitle,
-  isCardsWithImages,
+  variant,
   cards,
   LinkComponent,
-}: InfoCardsProps) => (
+}: InfoCardsProps): JSX.Element => (
   <section className={compoundStyles.container()}>
     {(title || subtitle) && (
       <InfoCardsHeadingSection title={title} subtitle={subtitle} />
     )}
 
     <div className={compoundStyles.grid()}>
-      {isCardsWithImages
-        ? cards.map((card, idx) => (
-            <InfoCardWithImage
-              key={idx}
-              {...card}
-              LinkComponent={LinkComponent}
-            />
-          ))
-        : cards.map((card, idx) => (
-            <InfoCardNoImage
-              key={idx}
-              {...card}
-              LinkComponent={LinkComponent}
-            />
-          ))}
+      {variant === "cardsWithImages" &&
+        cards.map((card, idx) => (
+          <InfoCardWithImage
+            key={idx}
+            {...card}
+            LinkComponent={LinkComponent}
+          />
+        ))}
+
+      {variant === "cardsWithoutImages" &&
+        cards.map((card, idx) => (
+          <InfoCardNoImage key={idx} {...card} LinkComponent={LinkComponent} />
+        ))}
     </div>
   </section>
 )

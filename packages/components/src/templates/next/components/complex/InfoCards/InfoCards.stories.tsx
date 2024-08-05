@@ -22,7 +22,7 @@ export const WithImage: Story = {
       "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
     subtitle:
       "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
-    isCardsWithImages: true,
+    variant: "cardsWithImages",
     cards: [
       {
         title:
@@ -63,7 +63,7 @@ export const NoImage: Story = {
       "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
     subtitle:
       "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
-    isCardsWithImages: false,
+    variant: "cardsWithoutImages",
     cards: [
       {
         title:

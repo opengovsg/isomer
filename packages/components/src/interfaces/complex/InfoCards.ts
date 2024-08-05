@@ -53,7 +53,7 @@ const InfoCardsBaseSchema = Type.Object({
 
 const InfoCardsWithImageSchema = Type.Object(
   {
-    isCardsWithImages: Type.Literal(true, { default: true }),
+    variant: Type.Literal("cardsWithImages", { default: "cardsWithImages" }),
     cards: Type.Array(SingleCardWithImageSchema, {
       title: "Cards",
       default: [],
@@ -66,7 +66,9 @@ const InfoCardsWithImageSchema = Type.Object(
 
 const InfoCardsNoImageSchema = Type.Object(
   {
-    isCardsWithImages: Type.Literal(false, { default: false }),
+    variant: Type.Literal("cardsWithoutImages", {
+      default: "cardsWithoutImages",
+    }),
     cards: Type.Array(SingleCardNoImageSchema, {
       title: "Cards",
       default: [],

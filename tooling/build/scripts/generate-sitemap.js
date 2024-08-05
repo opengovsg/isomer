@@ -119,7 +119,7 @@ const processDanglingDirectory = async (fullPath, relativePath, name) => {
   const children = await getSiteMapChildrenEntries(fullPath, relativePath);
   const listOfChildPages = {
     type: "infocards",
-    isCardsWithImages: false,
+    variant: "cardsWithoutImages",
     cards: children.map((child) => ({
       title: child.title,
       url: child.permalink,
