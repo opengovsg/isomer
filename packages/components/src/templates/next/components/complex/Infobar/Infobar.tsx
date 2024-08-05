@@ -1,6 +1,6 @@
 import type { InfobarProps } from "~/interfaces"
 import { ComponentContent } from "../../internal/customCssClass"
-import Button from "../Button"
+import { LinkButton } from "../../internal/LinkButton"
 
 const Infobar = ({
   title,
@@ -27,20 +27,18 @@ const Infobar = ({
           </div>
           <div className="flex flex-col items-center gap-x-5 gap-y-4 sm:flex-row">
             {buttonLabel && buttonUrl && (
-              <Button
-                label={buttonLabel}
-                href={buttonUrl}
-                LinkComponent={LinkComponent}
-              />
+              <LinkButton href={buttonUrl} LinkComponent={LinkComponent}>
+                {buttonLabel}
+              </LinkButton>
             )}
             {secondaryButtonLabel && secondaryButtonUrl && (
-              <Button
-                label={secondaryButtonLabel}
+              <LinkButton
                 href={secondaryButtonUrl}
-                colorScheme="black"
                 variant="outline"
                 LinkComponent={LinkComponent}
-              />
+              >
+                {secondaryButtonLabel}
+              </LinkButton>
             )}
           </div>
         </div>

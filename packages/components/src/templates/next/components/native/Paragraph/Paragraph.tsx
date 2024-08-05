@@ -6,7 +6,7 @@ const Paragraph = ({ content }: ParagraphProps) => {
   return (
     <BaseParagraph
       content={getTextAsHtml(content)}
-      className="text-content text-paragraph-01"
+      className="prose-body-base text-base-content"
     />
   )
 }

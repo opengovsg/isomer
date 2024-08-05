@@ -9,7 +9,7 @@ const Heading = ({
     return (
       <h2
         id={id}
-        className="text-content text-heading-02 [&:not(:first-child)]:mt-24"
+        className="prose-display-md text-base-content-strong [&:not(:first-child)]:mt-14"
       >
         {getTextAsHtml(content)}
       </h2>
@@ -19,7 +19,7 @@ const Heading = ({
     return (
       <h3
         id={id}
-        className="text-content text-heading-03 [&:not(:first-child)]:mt-14"
+        className="prose-display-sm text-base-content-strong [&:not(:first-child)]:mt-9"
       >
         {getTextAsHtml(content)}
       </h3>
@@ -29,7 +29,7 @@ const Heading = ({
     return (
       <h4
         id={id}
-        className="text-content text-heading-04 [&:not(:first-child)]:mt-12"
+        className="prose-title-md-semibold text-base-content-strong [&:not(:first-child)]:mt-8"
       >
         {getTextAsHtml(content)}
       </h4>
@@ -39,7 +39,7 @@ const Heading = ({
     return (
       <h5
         id={id}
-        className="text-content text-heading-05 [&:not(:first-child)]:mt-7"
+        className="prose-headline-lg-semibold text-base-content-strong [&:not(:first-child)]:mt-7"
       >
         {getTextAsHtml(content)}
       </h5>
@@ -48,7 +48,7 @@ const Heading = ({
   return (
     <h6
       id={id}
-      className="text-content text-heading-06 [&:not(:first-child)]:mt-7"
+      className="prose-headline-base-semibold text-base-content-strong [&:not(:first-child)]:mt-6"
     >
       {getTextAsHtml(content)}
     </h6>

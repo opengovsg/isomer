@@ -1,7 +1,7 @@
 import type { ContentPageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils"
-import Button from "../../complex/Button"
 import Breadcrumb from "../Breadcrumb"
+import { LinkButton } from "../LinkButton"
 
 const ContentPageHeader = ({
   title,
@@ -23,12 +23,9 @@ const ContentPageHeader = ({
           </div>
           {buttonLabel && buttonUrl && (
             <div className="mt-9">
-              <Button
-                label={buttonLabel}
-                href={buttonUrl}
-                rightIcon="right-arrow"
-                LinkComponent={LinkComponent}
-              />
+              <LinkButton href={buttonUrl} LinkComponent={LinkComponent}>
+                {buttonLabel}
+              </LinkButton>
             </div>
           )}
         </div>

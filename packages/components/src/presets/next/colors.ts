@@ -44,8 +44,8 @@ export const colors = {
     },
   },
   link: {
-    DEFAULT: twColors.blue["600"],
-    hover: twColors.blue["700"],
+    DEFAULT: "#1A56E5",
+    hover: "#1547BE",
   },
   utility: {
     feedback: {
