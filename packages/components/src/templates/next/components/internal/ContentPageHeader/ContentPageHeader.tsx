@@ -13,7 +13,7 @@ const ContentPageHeader = ({
   LinkComponent,
 }: ContentPageHeaderProps) => {
   return (
-    <div className="bg-site-secondary-100 text-base-content-strong">
+    <div className="bg-brand-canvas text-base-content-strong">
       <div className="mx-auto flex max-w-screen-xl flex-col gap-8 px-6 py-8 md:px-10">
         <div className="flex flex-col">
           <Breadcrumb links={breadcrumb.links} LinkComponent={LinkComponent} />
