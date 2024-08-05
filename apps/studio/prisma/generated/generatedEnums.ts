@@ -4,6 +4,7 @@ export const ResourceState = {
 } as const
 export type ResourceState = (typeof ResourceState)[keyof typeof ResourceState]
 export const ResourceType = {
+  RootPage: "RootPage",
   Page: "Page",
   Folder: "Folder",
   Collection: "Collection",
