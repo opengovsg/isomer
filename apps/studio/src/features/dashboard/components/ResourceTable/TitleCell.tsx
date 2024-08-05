@@ -18,15 +18,16 @@ export const TitleCell = ({
   siteId,
   id,
 }: TitleCellProps): JSX.Element => {
-  const linkToResource = useMemo(() => {
-    const resourceType = `${type.toLowerCase()}s`
-    return {
-      pathname: "/sites/[siteId]/[resourceType]/[id]",
-      query: {
-        siteId,
-        resourceType,
-        id,
-      },
+  const linkToResource: string = useMemo(() => {
+    switch (type) {
+      case "RootPage":
+      case "CollectionPage":
+      case "Page":
+        return `/sites/${siteId}/pages/${id}`
+      case "Folder":
+        return `/sites/${siteId}/folders/${id}`
+      case "Collection":
+        return `/sites/${siteId}/collections/${id}`
     }
   }, [id, siteId, type])
 
