@@ -2,24 +2,24 @@
 
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
 import { usePreventScroll } from "react-aria"
-import { BiSearch, BiX } from "react-icons/bi"
+import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useOnClickOutside, useResizeObserver } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
-import { HamburgerIcon } from "./HamburgerIcon"
+import { IconButton } from "../IconButton"
 import { MobileNavMenu } from "./MobileNavMenu"
 import { NavItem } from "./NavItem"
 
 const navbarStyles = tv({
   slots: {
     overlay: "fixed inset-0 bg-canvas-overlay bg-opacity-40",
-    icon: "my-3 flex items-center justify-center text-[1.25rem] lg:my-[1.1875rem] lg:h-[2.125rem] lg:w-[2.125rem]",
+    icon: "my-3 lg:my-[1.1875rem]",
     logo: "my-3 h-10 w-32 max-w-[6.625rem] object-contain object-center lg:h-12 lg:max-w-32",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
     navbar:
-      "mx-auto flex w-full max-w-screen-xl gap-x-4 px-6 lg:gap-x-6 lg:px-10",
+      "mx-auto flex w-full max-w-screen-xl gap-x-4 pl-6 pr-3 lg:gap-x-6 lg:px-10",
     navItemContainer: "hidden flex-wrap items-center gap-x-6 lg:flex",
   },
 })
@@ -132,53 +132,49 @@ export const Navbar = ({
           {/* Spacer */}
           <div className="flex-1" />
 
-          {/* Search icon */}
-          {search && !isHamburgerOpen && (
-            <>
-              {isSearchOpen ? (
-                <button
-                  onClick={() => setIsSearchOpen(!isSearchOpen)}
-                  aria-label="Close search bar"
-                  className={icon({ className: "text-[1.5rem]" })}
-                >
-                  <BiX />
-                </button>
-              ) : (
-                <button
-                  onClick={() => setIsSearchOpen(!isSearchOpen)}
-                  aria-label="Open search bar"
-                  className={icon()}
-                >
-                  <BiSearch />
-                </button>
-              )}
-            </>
-          )}
+          <div className="flex flex-row gap-1">
+            {/* Search icon */}
+            {search && !isHamburgerOpen && (
+              <>
+                {isSearchOpen ? (
+                  <IconButton
+                    onPress={() => setIsSearchOpen(!isSearchOpen)}
+                    aria-label="Close search bar"
+                    icon={BiX}
+                    className={icon()}
+                  />
+                ) : (
+                  <IconButton
+                    onPress={() => setIsSearchOpen(!isSearchOpen)}
+                    aria-label="Open search bar"
+                    icon={BiSearch}
+                    className={icon()}
+                  />
+                )}
+              </>
+            )}
 
-          {/* Hamburger menu for small screens */}
-          <div className="flex lg:hidden">
+            {/* Hamburger menu for small screens */}
             {isHamburgerOpen ? (
-              <button
-                onClick={() => {
+              <IconButton
+                onPress={() => {
                   setIsHamburgerOpen(false)
                   setOpenNavItemIdx(-1)
                 }}
-                className={icon({ className: "text-[1.5rem]" })}
                 aria-label="Close navigation menu"
-              >
-                <BiX />
-              </button>
+                icon={BiX}
+                className={icon({ className: "lg:hidden" })}
+              />
             ) : (
-              <button
-                onClick={() => {
+              <IconButton
+                onPress={() => {
                   setIsHamburgerOpen(true)
                   setIsSearchOpen(false)
                 }}
+                className={icon({ className: "lg:hidden" })}
                 aria-label="Open navigation menu"
-                className={icon()}
-              >
-                <HamburgerIcon />
-              </button>
+                icon={BiMenu}
+              />
             )}
           </div>
         </div>
