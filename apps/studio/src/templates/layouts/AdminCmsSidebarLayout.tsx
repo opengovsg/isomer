@@ -13,6 +13,7 @@ import {
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { CmsSidebar, CmsSidebarContainer } from "~/components/CmsSidebar"
+import { CmsSideNav } from "~/components/CmsSidebar/CmsSideNav"
 import { useMe } from "~/features/me/api"
 import { type GetLayout } from "~/lib/types"
 
@@ -70,6 +71,7 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
       sidebar={
         <CmsSidebar topNavItems={pageNavItems} bottomNavItems={userNavItems} />
       }
+      sidenav={<CmsSideNav siteId={siteId} />}
     >
       {children}
     </CmsSidebarContainer>

@@ -9,7 +9,6 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
-import { uniqueId } from "lodash"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
@@ -22,7 +21,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
 
-const sitePageSchema = z.object({
+export const sitePageSchema = z.object({
   siteId: z.coerce.number(),
 })
 
