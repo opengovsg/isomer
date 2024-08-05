@@ -15,16 +15,16 @@ import { NavItem } from "./NavItem"
 const navbarStyles = tv({
   slots: {
     overlay: "fixed inset-0 bg-canvas-overlay bg-opacity-40",
-    icon: "my-3 lg:my-[1.1875rem]",
-    logo: "my-3 h-10 w-32 max-w-[6.625rem] object-contain object-center lg:h-12 lg:max-w-32",
+    logo: "max-h-[68px] object-contain object-center",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
     navbar:
-      "mx-auto flex w-full max-w-screen-xl gap-x-4 pl-6 pr-3 lg:gap-x-6 lg:px-10",
-    navItemContainer: "hidden flex-wrap items-center gap-x-6 lg:flex",
+      "mx-auto flex w-full max-w-screen-xl justify-between gap-x-2 pl-6 pr-3 lg:px-10",
+    navItemContainer:
+      "hidden flex-1 flex-wrap items-center gap-x-3 pl-2 lg:flex",
   },
 })
 
-const { overlay, navItemContainer, navbarContainer, navbar, logo, icon } =
+const { overlay, navItemContainer, navbarContainer, navbar, logo } =
   navbarStyles()
 
 export const Navbar = ({
@@ -102,7 +102,7 @@ export const Navbar = ({
       <div className={navbarContainer()} ref={siteHeaderRef}>
         <div className={navbar()}>
           {/* Logo */}
-          <LinkComponent href="/">
+          <LinkComponent className="flex" href="/">
             <img src={logoUrl} alt={logoAlt} className={logo()} />
           </LinkComponent>
 
@@ -129,53 +129,53 @@ export const Navbar = ({
             ))}
           </ul>
 
-          {/* Spacer */}
-          <div className="flex-1" />
-
           <div className="flex flex-row gap-1">
             {/* Search icon */}
             {search && !isHamburgerOpen && (
-              <>
+              <div className="flex h-[68px] items-center">
                 {isSearchOpen ? (
                   <IconButton
-                    onPress={() => setIsSearchOpen(!isSearchOpen)}
+                    onPress={() => {
+                      setIsSearchOpen(!isSearchOpen)
+                    }}
                     aria-label="Close search bar"
                     icon={BiX}
-                    className={icon()}
                   />
                 ) : (
                   <IconButton
-                    onPress={() => setIsSearchOpen(!isSearchOpen)}
+                    onPress={() => {
+                      setOpenNavItemIdx(-1)
+                      setIsSearchOpen(!isSearchOpen)
+                    }}
                     aria-label="Open search bar"
                     icon={BiSearch}
-                    className={icon()}
                   />
                 )}
-              </>
+              </div>
             )}
 
             {/* Hamburger menu for small screens */}
-            {isHamburgerOpen ? (
-              <IconButton
-                onPress={() => {
-                  setIsHamburgerOpen(false)
-                  setOpenNavItemIdx(-1)
-                }}
-                aria-label="Close navigation menu"
-                icon={BiX}
-                className={icon({ className: "lg:hidden" })}
-              />
-            ) : (
-              <IconButton
-                onPress={() => {
-                  setIsHamburgerOpen(true)
-                  setIsSearchOpen(false)
-                }}
-                className={icon({ className: "lg:hidden" })}
-                aria-label="Open navigation menu"
-                icon={BiMenu}
-              />
-            )}
+            <div className="flex h-[68px] items-center lg:hidden">
+              {isHamburgerOpen ? (
+                <IconButton
+                  onPress={() => {
+                    setIsHamburgerOpen(false)
+                    setOpenNavItemIdx(-1)
+                  }}
+                  aria-label="Close navigation menu"
+                  icon={BiX}
+                />
+              ) : (
+                <IconButton
+                  onPress={() => {
+                    setIsHamburgerOpen(true)
+                    setIsSearchOpen(false)
+                  }}
+                  aria-label="Open navigation menu"
+                  icon={BiMenu}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>

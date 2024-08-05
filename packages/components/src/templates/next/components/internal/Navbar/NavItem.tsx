@@ -21,7 +21,7 @@ interface NavbarItemProps
 const navbarItemStyles = tv({
   slots: {
     megamenu: "max-h-full overflow-auto bg-white shadow-md",
-    item: "prose-label-md-medium flex h-[4.25rem] flex-row items-center gap-0.5 border-b-2 border-transparent text-base-content-strong transition-colors hover:text-brand-interaction-hover motion-reduce:transition-none",
+    item: "prose-label-md-medium flex h-[4.25rem] flex-row items-center border-b-2 border-transparent text-base-content-strong transition-colors hover:text-brand-interaction-hover motion-reduce:transition-none",
     chevron:
       "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
   },
