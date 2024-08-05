@@ -85,6 +85,8 @@ enum ResourceState {
 enum ResourceType {
   Page
   Folder
+  Collection
+  CollectionPage // Can only live inside `Collection` resources
 }
 
 model User {
