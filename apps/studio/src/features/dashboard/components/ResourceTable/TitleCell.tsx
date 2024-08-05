@@ -1,7 +1,8 @@
+import type { IconType } from "react-icons"
 import { useMemo } from "react"
 import NextLink from "next/link"
 import { HStack, Icon, Text, VStack } from "@chakra-ui/react"
-import { BiFileBlank, BiFolder } from "react-icons/bi"
+import { BiData, BiFile, BiFileBlank, BiFolder } from "react-icons/bi"
 
 import type { ResourceTableData } from "./types"
 
@@ -29,11 +30,24 @@ export const TitleCell = ({
     }
   }, [id, siteId, type])
 
+  const ResourceTypeIcon: IconType = useMemo(() => {
+    switch (type) {
+      case "Page":
+        return BiFileBlank
+      case "Folder":
+        return BiFolder
+      case "Collection":
+        return BiData
+      case "CollectionPage":
+        return BiFile
+    }
+  }, [type])
+
   return (
     <HStack align="center" spacing="0.625rem">
       <Icon
         fontSize="1.25rem"
-        as={type === "Page" ? BiFileBlank : BiFolder}
+        as={ResourceTypeIcon}
         color="base.content.strong"
       />
       <VStack spacing="0.25rem" align="start">
