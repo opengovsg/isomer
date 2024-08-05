@@ -5,7 +5,6 @@ import {
   BiChart,
   BiGlobe,
   BiGroup,
-  BiMinus,
   BiRightArrowAlt,
   BiStar,
 } from "react-icons/bi"
@@ -18,7 +17,6 @@ export const SUPPORTED_ICON_NAMES = [
   "office-building",
   "stars",
   "globe",
-  "minus",
 ] as const
 
 export type SupportedIconName = (typeof SUPPORTED_ICON_NAMES)[number]
@@ -33,5 +31,4 @@ export const SUPPORTED_ICONS_MAP: Record<SupportedIconName, SupportedIconType> =
     "office-building": BiBuildings,
     stars: BiStar,
     globe: BiGlobe,
-    minus: BiMinus,
   }
