@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import type { InfopicProps } from "~/interfaces"
 import { Infopic } from "./Infopic"
 
@@ -11,6 +13,9 @@ const meta: Meta<InfopicProps> = {
     layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
+    },
+    chromatic: {
+      ...withChromaticModes(["desktop", "mobile"]),
     },
   },
   args: {
