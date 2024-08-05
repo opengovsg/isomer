@@ -3,6 +3,7 @@
  */
 import { publicProcedure, router } from "../trpc"
 import { authRouter } from "./auth/auth.router"
+import { collectionRouter } from "./collection/collection.router"
 import { folderRouter } from "./folder/folder.router"
 import { meRouter } from "./me/me.router"
 import { pageRouter } from "./page/page.router"
@@ -14,6 +15,7 @@ export const appRouter = router({
   auth: authRouter,
   page: pageRouter,
   folder: folderRouter,
+  collection: collectionRouter,
   site: siteRouter,
 })
 

@@ -1,7 +1,7 @@
 import type { SelectExpression } from "kysely"
 import { type DB } from "~prisma/generated/generatedTypes"
 
-import type { SafeKysely } from "../database"
+import type { Resource, SafeKysely } from "../database"
 import { db } from "../database"
 import { type Page } from "./resource.types"
 
@@ -50,6 +50,27 @@ export const getFolders = () =>
     .where("type", "is", "Folder")
     .select(defaultResourceSelect)
     .execute()
+
+export const getSiteResourceById = ({
+  siteId,
+  resourceId,
+  type,
+}: {
+  siteId: Resource["siteId"]
+  resourceId: Resource["id"]
+  type?: Resource["type"]
+}) => {
+  let query = db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.id", "=", resourceId)
+    .select(defaultResourceSelect)
+  if (type) {
+    query = query.where("Resource.type", "=", type)
+  }
+
+  return query.executeTakeFirst()
+}
 
 // NOTE: Base method for retrieving a resource - no distinction made on whether `blobId` exists
 const getById = (
