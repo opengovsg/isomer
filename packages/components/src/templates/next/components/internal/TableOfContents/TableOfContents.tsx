@@ -11,7 +11,7 @@ const TableOfContents = ({ items }: TableOfContentsProps) => {
       <div className="prose-body-base flex flex-col gap-3">
         {items.map(({ anchorLink, content }) => (
           <div className="flex flex-row items-start gap-2">
-            <BiMinus className="size-5 shrink-0 fill-base-content-strong" />
+            <BiMinus className="size-5 shrink-0 self-center fill-base-content-strong" />
             <a
               href={anchorLink}
               className="w-fit text-link underline-offset-4 hover:text-link-hover hover:underline"
