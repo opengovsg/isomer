@@ -93,7 +93,7 @@ const preview: Preview = {
      * ```
      * export const SomeStory: Story = {
      *   parameters: {
-     *     chromatic: withChromaticModes(["mobile", "desktop", "tablet"]),
+     *     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
      *   }
      * }
      * ```
