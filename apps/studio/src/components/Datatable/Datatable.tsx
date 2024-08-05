@@ -141,7 +141,7 @@ export const Datatable = <T extends object>({
             {totalRowCountString}
           </Text>
         )}
-        {pagination && (
+        {!!totalRowCount && pagination && (
           <Flex ml="auto">
             <DatatablePagination
               instance={instance}
