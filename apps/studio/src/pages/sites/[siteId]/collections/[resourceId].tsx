@@ -4,13 +4,14 @@ import { BiData } from "react-icons/bi"
 import { z } from "zod"
 
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
-import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
+import { CollectionTable } from "~/features/dashboard/components/CollectionTable"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
 
 const sitePageSchema = z.object({
   siteId: z.coerce.number(),
+  resourceId: z.coerce.number(),
 })
 
 const CollectionResourceListPage: NextPageWithLayout = () => {
@@ -20,7 +21,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
     // onClose: onPageCreateModalClose,
   } = useDisclosure()
 
-  const { siteId } = useQueryParse(sitePageSchema)
+  const { siteId, resourceId } = useQueryParse(sitePageSchema)
 
   return (
     <>
@@ -46,8 +47,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
         </HStack>
         <CollectionBanner />
         <Box width="100%">
-          TODO: Render collection page table instead of resource table
-          <ResourceTable siteId={siteId} />
+          <CollectionTable resourceId={resourceId} siteId={siteId} />
         </Box>
       </Stack>
       {/* <CreateCollectionPageModal
