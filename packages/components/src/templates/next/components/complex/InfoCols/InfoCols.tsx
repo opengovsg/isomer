@@ -1,8 +1,9 @@
+import { BiRightArrowAlt } from "react-icons/bi"
+
 import type { SupportedIconName } from "~/common/icons"
 import type { InfoColsProps } from "~/interfaces"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { ComponentContent } from "../../internal/customCssClass"
-import Button from "../Button"
 
 const InfoColsHeader = ({
   title,
@@ -24,40 +25,35 @@ const InfoBoxIcon = ({ icon }: { icon?: SupportedIconName }) => {
   if (!icon) return null
   const Icon = SUPPORTED_ICONS_MAP[icon]
   return (
-    <div className="rounded-lg bg-site-primary-100 p-2">
-      <Icon className="h-auto w-6 text-site-primary" />
+    <div>
+      <Icon className="h-auto w-6 text-base-content-strong group-hover:text-brand-interaction" />
     </div>
   )
 }
 
 const InfoBoxes = ({
   infoBoxes,
-  LinkComponent,
 }: Pick<InfoColsProps, "infoBoxes" | "LinkComponent">) => {
   return (
     <div className="grid grid-cols-1 gap-x-28 gap-y-20 md:grid-cols-2 xl:grid-cols-3">
       {infoBoxes.map((infoBox, idx) => (
-        <div key={idx} className="flex flex-col items-start gap-5 text-left">
+        <a
+          href={infoBox.buttonUrl}
+          key={idx}
+          className="group flex flex-col items-start gap-3 text-left"
+        >
           <InfoBoxIcon icon={infoBox.icon} />
-          <div className="flex flex-col items-start gap-4 text-left">
-            <div className="flex flex-col items-start gap-4 text-content-strong">
-              <h3 className="line-clamp-2 text-lg font-semibold text-content-strong sm:text-2xl">
-                {infoBox.title}
-              </h3>
-              <p className="line-clamp-4 text-sm text-content sm:text-lg">
-                {infoBox.description}
-              </p>
-            </div>
+          <h3 className="prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-interaction">
+            {infoBox.title}
+          </h3>
+          <p className="text-base-content-default prose-body-base">
+            {infoBox.description}
+          </p>
+          <div className="prose-headline-base-medium inline-flex items-center gap-1 text-base-content-strong">
+            {infoBox.buttonLabel}
+            <BiRightArrowAlt className="text-[1.375rem] transition ease-in group-hover:translate-x-1" />
           </div>
-          {infoBox.buttonLabel && infoBox.buttonUrl && (
-            <Button
-              label={infoBox.buttonLabel}
-              href={infoBox.buttonUrl}
-              variant="link"
-              rightIcon="right-arrow"
-            />
-          )}
-        </div>
+        </a>
       ))}
     </div>
   )
