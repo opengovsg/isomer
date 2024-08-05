@@ -1,24 +1,22 @@
 import { createFolderSchema, readFolderSchema } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
-import { db } from "../database"
+import { db, ResourceType } from "../database"
 
 export const folderRouter = router({
   create: protectedProcedure
     .input(createFolderSchema)
-    .mutation(
-      async ({ ctx, input: { folderTitle, parentFolderId, ...rest } }) => {
-        const folder = await db
-          .insertInto("Resource")
-          .values({
-            ...rest,
-            type: "Folder",
-            title: folderTitle,
-            parentId: parentFolderId ? String(parentFolderId) : null,
-          })
-          .executeTakeFirstOrThrow()
-        return { folderId: folder.insertId }
-      },
-    ),
+    .mutation(async ({ input: { folderTitle, parentFolderId, ...rest } }) => {
+      const folder = await db
+        .insertInto("Resource")
+        .values({
+          ...rest,
+          type: "Folder",
+          title: folderTitle,
+          parentId: parentFolderId ? String(parentFolderId) : null,
+        })
+        .executeTakeFirstOrThrow()
+      return { folderId: folder.insertId }
+    }),
   readFolder: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input }) => {
@@ -42,16 +40,18 @@ export const folderRouter = router({
           return {
             id: c.id,
             permalink: c.permalink,
-            type: "page",
+            type: c.type,
+            title: c.title,
+            state: c.state,
             lastEditDate: new Date(0),
             lastEditUser: "Coming Soon",
-            status: "published",
           }
         }
         return {
           id: c.id,
           permalink: c.permalink,
-          type: "folder",
+          title: c.title,
+          type: ResourceType.Folder,
         }
       })
 
