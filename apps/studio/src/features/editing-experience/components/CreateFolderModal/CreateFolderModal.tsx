@@ -1,4 +1,5 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
+import type { z } from "zod"
 import { useEffect } from "react"
 import {
   Box,
@@ -23,7 +24,6 @@ import {
 } from "@opengovsg/design-system-react"
 import { uniqueId } from "lodash"
 import { BiLink } from "react-icons/bi"
-import { z } from "zod"
 
 import { useZodForm } from "~/lib/form"
 import {
