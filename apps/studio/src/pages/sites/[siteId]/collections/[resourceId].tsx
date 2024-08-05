@@ -8,6 +8,7 @@ import { CollectionTable } from "~/features/dashboard/components/CollectionTable
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
+import { trpc } from "~/utils/trpc"
 
 const sitePageSchema = z.object({
   siteId: z.coerce.number(),
@@ -20,8 +21,13 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
     onOpen: onPageCreateModalOpen,
     // onClose: onPageCreateModalClose,
   } = useDisclosure()
-
   const { siteId, resourceId } = useQueryParse(sitePageSchema)
+
+  // TODO: Handle not found error in error boundary
+  const [metadata] = trpc.collection.getMetadata.useSuspenseQuery({
+    siteId,
+    resourceId,
+  })
 
   return (
     <>
@@ -37,7 +43,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             >
               <BiData />
             </Box>
-            <Text textStyle="h3">Speeches</Text>
+            <Text textStyle="h3">{metadata.title}</Text>
           </HStack>
           <HStack align="center" gap="0.75rem">
             <Button onClick={onPageCreateModalOpen} size="sm">
