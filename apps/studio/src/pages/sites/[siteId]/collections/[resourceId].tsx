@@ -3,6 +3,7 @@ import { Button } from "@opengovsg/design-system-react"
 import { BiData } from "react-icons/bi"
 import { z } from "zod"
 
+import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
@@ -43,6 +44,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             </Button>
           </HStack>
         </HStack>
+        <CollectionBanner />
         <Box width="100%">
           TODO: Render collection page table instead of resource table
           <ResourceTable siteId={siteId} />
