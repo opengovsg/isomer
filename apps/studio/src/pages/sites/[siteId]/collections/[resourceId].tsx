@@ -5,6 +5,7 @@ import { z } from "zod"
 
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
 import { CollectionTable } from "~/features/dashboard/components/CollectionTable"
+import { CreateCollectionPageModal } from "~/features/editing-experience/components/CreateCollectionPageModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
@@ -17,9 +18,9 @@ const sitePageSchema = z.object({
 
 const CollectionResourceListPage: NextPageWithLayout = () => {
   const {
-    // isOpen: isPageCreateModalOpen,
+    isOpen: isPageCreateModalOpen,
     onOpen: onPageCreateModalOpen,
-    // onClose: onPageCreateModalClose,
+    onClose: onPageCreateModalClose,
   } = useDisclosure()
   const { siteId, resourceId } = useQueryParse(sitePageSchema)
 
@@ -56,11 +57,12 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
           <CollectionTable resourceId={resourceId} siteId={siteId} />
         </Box>
       </Stack>
-      {/* <CreateCollectionPageModal
+      <CreateCollectionPageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}
         siteId={siteId}
-      /> */}
+        collectionId={resourceId}
+      />
     </>
   )
 }
