@@ -79,9 +79,9 @@ const MoveResourceContent = withSuspense(
         // TODO: actually close the modal
         setMovedItem(null)
       },
-      onSuccess: () => {
-        void utils.page.readPageAndBlob.invalidate()
-        void utils.resource.list.invalidate({
+      onSuccess: async () => {
+        await utils.page.readPageAndBlob.invalidate()
+        await utils.resource.list.invalidate({
           // TODO: Update backend `list` to use the proper schema
           resourceId: movedItem?.resourceId
             ? Number(movedItem.resourceId)
@@ -89,7 +89,7 @@ const MoveResourceContent = withSuspense(
         })
         // NOTE: We might want to have smarter logic here
         // and invalidate the new + old folders
-        void utils.folder.readFolder.invalidate()
+        await utils.folder.readFolder.invalidate()
         toast({ title: "Resource moved!" })
       },
     })
