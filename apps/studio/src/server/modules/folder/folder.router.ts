@@ -1,24 +1,26 @@
-import { createFolderSchema, readFolderSchema } from "~/schemas/folder"
+import {
+  createFolderSchema,
+  editFolderSchema,
+  readFolderSchema,
+} from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 import { db } from "../database"
 
 export const folderRouter = router({
   create: protectedProcedure
     .input(createFolderSchema)
-    .mutation(
-      async ({ ctx, input: { folderTitle, parentFolderId, ...rest } }) => {
-        const folder = await db
-          .insertInto("Resource")
-          .values({
-            ...rest,
-            type: "Folder",
-            title: folderTitle,
-            parentId: parentFolderId ? String(parentFolderId) : null,
-          })
-          .executeTakeFirstOrThrow()
-        return { folderId: folder.insertId }
-      },
-    ),
+    .mutation(async ({ input: { folderTitle, parentFolderId, ...rest } }) => {
+      const folder = await db
+        .insertInto("Resource")
+        .values({
+          ...rest,
+          type: "Folder",
+          title: folderTitle,
+          parentId: parentFolderId ? String(parentFolderId) : null,
+        })
+        .executeTakeFirstOrThrow()
+      return { folderId: folder.insertId }
+    }),
   readFolder: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input }) => {
@@ -63,5 +65,38 @@ export const folderRouter = router({
         children,
         parentId,
       }
+    }),
+  editFolder: protectedProcedure
+    .input(editFolderSchema)
+    .mutation(async ({ input: { resourceId, permalink, title, siteId } }) => {
+      if (!title && !permalink) {
+        return
+      }
+
+      return db.transaction().execute(async (tx) => {
+        let baseQuery = tx
+          .updateTable("Resource")
+          .where("Resource.id", "=", resourceId)
+          .where("Resource.siteId", "=", Number(siteId))
+          .where("Resource.type", "=", "Folder")
+
+        if (permalink) {
+          baseQuery = baseQuery.set({
+            permalink,
+          })
+        }
+
+        if (title) {
+          baseQuery = baseQuery.set({
+            title,
+          })
+        }
+
+        await baseQuery.execute()
+        return db
+          .selectFrom("Resource")
+          .where("Resource.id", "=", resourceId)
+          .executeTakeFirstOrThrow()
+      })
     }),
 })

@@ -26,3 +26,10 @@ export const readFolderSchema = z.object({
   siteId: z.number().min(1),
   resourceId: z.number().min(1),
 })
+
+export const editFolderSchema = z.object({
+  resourceId: z.string(),
+  permalink: z.optional(z.string()),
+  title: z.optional(z.string()),
+  siteId: z.string(),
+})
