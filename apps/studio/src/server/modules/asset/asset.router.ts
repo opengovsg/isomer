@@ -5,7 +5,7 @@ import { getFileKey, getPresignedPutUrl } from "./asset.service"
 export const assetRouter = router({
   getPresignedPutUrl: protectedProcedure
     .input(getPresignedPutUrlSchema)
-    .query(async ({ input: { siteId, fileName } }) => {
+    .mutation(async ({ ctx, input: { siteId, fileName } }) => {
       const fileKey = getFileKey({
         siteId,
         fileName,
@@ -14,6 +14,16 @@ export const assetRouter = router({
       const presignedPutUrl = await getPresignedPutUrl({
         key: fileKey,
       })
+
+      ctx.logger.info(
+        `Generated presigned PUT URL for ${fileKey} for site ${siteId}`,
+        {
+          userId: ctx.session?.userId,
+          siteId,
+          fileName,
+          fileKey,
+        },
+      )
 
       return {
         fileKey,
