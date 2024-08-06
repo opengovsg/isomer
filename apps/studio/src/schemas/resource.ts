@@ -29,3 +29,8 @@ export const listResourceSchema = z.object({
   siteId: z.number(),
   resourceId: z.number().optional(),
 })
+
+export const getResourceSchema = z.object({
+  siteId: z.number().min(1),
+  resourceId: z.number().min(1),
+})

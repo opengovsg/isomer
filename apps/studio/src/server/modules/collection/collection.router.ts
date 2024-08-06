@@ -4,7 +4,10 @@ import { createCollectionPageSchema } from "~/schemas/page"
 import { getResourceSchema } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
 import { db, ResourceType } from "../database"
-import { getSiteResourceById } from "../resource/resource.service"
+import {
+  defaultResourceSelect,
+  getSiteResourceById,
+} from "../resource/resource.service"
 import {
   createCollectionPageJson,
   createCollectionPdfJson,
@@ -65,5 +68,20 @@ export const collectionRouter = router({
         return addedResource
       })
       return { pageId: resource.id }
+    }),
+  list: protectedProcedure
+    .input(getResourceSchema)
+    .query(async ({ ctx, input }) => {
+      // Things that aren't working yet:
+      // 0. Perm checking
+      // 1. Last Edited user and time
+      // 2. Page status(draft, published)
+
+      return await ctx.db
+        .selectFrom("Resource")
+        .where("parentId", "=", String(input.resourceId))
+        .where("Resource.type", "=", ResourceType.CollectionPage)
+        .select(defaultResourceSelect)
+        .execute()
     }),
 })
