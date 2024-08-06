@@ -25,6 +25,8 @@ const client = z.object({
 /** Feature flags */
 const s3Schema = z.object({
   S3_REGION: z.string().default("us-east-1"),
+  S3_PUBLIC_ASSETS_DOMAIN_NAME: z.string(),
+  S3_UNSAFE_ASSETS_DOMAIN_NAME: z.string(),
   S3_PUBLIC_ASSETS_BUCKET_NAME: z.string(),
   S3_UNSAFE_ASSETS_BUCKET_NAME: z.string(),
 })
@@ -109,6 +111,8 @@ const processEnv = {
   SENDGRID_FROM_ADDRESS: process.env.SENDGRID_FROM_ADDRESS,
   SESSION_SECRET: process.env.SESSION_SECRET,
   S3_REGION: process.env.S3_REGION,
+  S3_PUBLIC_ASSETS_DOMAIN_NAME: process.env.S3_PUBLIC_ASSETS_DOMAIN_NAME,
+  S3_UNSAFE_ASSETS_DOMAIN_NAME: process.env.S3_UNSAFE_ASSETS_DOMAIN_NAME,
   S3_PUBLIC_ASSETS_BUCKET_NAME: process.env.S3_PUBLIC_ASSETS_BUCKET_NAME,
   S3_UNSAFE_ASSETS_BUCKET_NAME: process.env.S3_UNSAFE_ASSETS_BUCKET_NAME,
   SGID_CLIENT_ID: process.env.SGID_CLIENT_ID,
