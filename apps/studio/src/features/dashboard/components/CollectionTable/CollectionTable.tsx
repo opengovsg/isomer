@@ -57,7 +57,7 @@ export const CollectionTable = ({
     () => getColumns({ siteId, resourceId }),
     [siteId, resourceId],
   )
-  const { data } = trpc.folder.readFolder.useQuery(
+  const { data: resources } = trpc.collection.list.useQuery(
     {
       siteId,
       resourceId,
@@ -66,8 +66,6 @@ export const CollectionTable = ({
       keepPreviousData: true, // Required for table to show previous data while fetching next page
     },
   )
-
-  const { children: resources } = data ?? {}
 
   const totalRowCount = resources?.length ?? 0
 
