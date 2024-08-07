@@ -32,7 +32,7 @@ function extractIndexableContent(schemaContent) {
     component.indexable?.forEach((fieldPath) => {
       if (fieldPath === "props.markdown") {
         const decodedStrippedContent = decodeAndStripMarkdown(
-          component.props.markdown
+          component.props.markdown,
         );
         indexableObject.content += decodedStrippedContent + " ";
       }
@@ -62,6 +62,6 @@ readSchemaFiles(schemaDirectory);
 
 fs.writeFileSync(
   path.join(__dirname, "../searchIndex.json"),
-  JSON.stringify(finalIndex, null, 2)
+  JSON.stringify(finalIndex, null, 2),
 );
 console.log("Search index created successfully!");
