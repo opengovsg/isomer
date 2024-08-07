@@ -28,3 +28,19 @@ export interface IsomerSiteConfigProps {
 export type IsomerSiteProps = IsomerGeneratedSiteProps &
   IsomerSiteWideComponentsProps &
   IsomerSiteConfigProps
+
+export interface IsomerSiteThemeProps {
+  colors: {
+    canvas: {
+      default: string
+      alt: string
+      backdrop: string
+      inverse: string
+    }
+    interaction: {
+      default: string
+      hover: string
+      pressed: string
+    }
+  }
+}

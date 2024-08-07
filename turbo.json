@@ -34,6 +34,9 @@
       "outputs": ["storybook-static/**"]
     },
     "generate": {},
+    "isomer-studio#generate": {
+      "dependsOn": ["@opengovsg/isomer-components#build"]
+    },
     "format": {
       "dependsOn": ["^build", "isomer-studio#generate"],
       "outputs": ["node_modules/.cache/.prettiercache"],

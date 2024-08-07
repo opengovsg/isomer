@@ -59,6 +59,11 @@ export interface Site {
    * [SiteJsonConfig]
    */
   config: PrismaJson.SiteJsonConfig
+  /**
+   * @kyselyType(PrismaJson.SiteThemeJson)
+   * [SiteThemeJson]
+   */
+  theme: PrismaJson.SiteThemeJson | null
 }
 export interface SiteMember {
   userId: string
