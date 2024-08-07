@@ -1,13 +1,12 @@
-import type { CSSProperties } from "react"
-import { useEffect, useMemo } from "react"
+import { useEffect } from "react"
 import { Flex, Grid, GridItem } from "@chakra-ui/react"
-import { flatten } from "flat"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import EditPageDrawer from "~/features/editing-experience/components/EditPageDrawer"
 import Preview from "~/features/editing-experience/components/Preview"
 import { PreviewIframe } from "~/features/editing-experience/components/PreviewIframe"
 import { editPageSchema } from "~/features/editing-experience/schema"
+import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
@@ -27,23 +26,7 @@ function EditPage(): JSX.Element {
       siteId,
     })
 
-  // TODO: Export into custom hook
-  const [theme] = trpc.site.getTheme.useSuspenseQuery({ id: siteId })
-  const themeCssVars = useMemo(() => {
-    if (!theme) return
-    // convert theme to css vars
-    const flattenedVars: Record<string, string> = flatten(
-      { color: { brand: { ...theme.colors } } },
-      { delimiter: "-" },
-    )
-    return Object.entries(flattenedVars).reduce(
-      (acc, [key, value]) => {
-        acc[`--${key}`] = value
-        return acc
-      },
-      {} as Record<string, string>,
-    ) as CSSProperties
-  }, [theme])
+  const themeCssVars = useSiteThemeCssVars({ siteId })
 
   useEffect(() => {
     setDrawerState({
