@@ -10,6 +10,22 @@ const pageListQuery = (wait?: DelayMode | number) => {
     }
     return [
       {
+        id: "1",
+        permalink: "",
+        title: "Homepage",
+        publishedVersionId: null,
+        draftBlobId: null,
+        type: "RootPage",
+      },
+      {
+        id: "1",
+        permalink: "newsroom",
+        title: "Press Releases",
+        publishedVersionId: null,
+        draftBlobId: null,
+        type: "Collection",
+      },
+      {
         id: "4",
         permalink: "test-page-1",
         title: "Test page 1",

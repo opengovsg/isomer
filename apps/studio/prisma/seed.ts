@@ -226,7 +226,7 @@ async function main() {
       draftBlobId: String(blobId),
       permalink: "home",
       siteId,
-      type: "Page",
+      type: "RootPage",
       title: "Home",
     })
 
