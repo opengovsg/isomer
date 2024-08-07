@@ -8,7 +8,7 @@ export type Generated<T> =
     : ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
-export interface Blob {
+export type Blob = {
   id: GeneratedAlways<string>
   /**
    * @kyselyType(PrismaJson.BlobJsonContent)
@@ -16,7 +16,7 @@ export interface Blob {
    */
   content: PrismaJson.BlobJsonContent
 }
-export interface Footer {
+export type Footer = {
   id: GeneratedAlways<number>
   siteId: number
   /**
@@ -25,7 +25,7 @@ export interface Footer {
    */
   content: PrismaJson.FooterJsonContent
 }
-export interface Navbar {
+export type Navbar = {
   id: GeneratedAlways<number>
   siteId: number
   /**
@@ -34,13 +34,13 @@ export interface Navbar {
    */
   content: PrismaJson.NavbarJsonContent
 }
-export interface Permission {
+export type Permission = {
   id: GeneratedAlways<number>
   resourceId: string
   userId: string
   role: RoleType
 }
-export interface Resource {
+export type Resource = {
   id: GeneratedAlways<string>
   title: string
   permalink: string
@@ -51,7 +51,7 @@ export interface Resource {
   state: Generated<ResourceState | null>
   type: ResourceType
 }
-export interface Site {
+export type Site = {
   id: GeneratedAlways<number>
   name: string
   /**
@@ -65,24 +65,24 @@ export interface Site {
    */
   theme: PrismaJson.SiteThemeJson | null
 }
-export interface SiteMember {
+export type SiteMember = {
   userId: string
   siteId: number
 }
-export interface User {
+export type User = {
   id: string
   name: string
   email: string
   phone: string
   preferredName: string | null
 }
-export interface VerificationToken {
+export type VerificationToken = {
   identifier: string
   token: string
   attempts: Generated<number>
   expires: Timestamp
 }
-export interface Version {
+export type Version = {
   id: GeneratedAlways<string>
   versionNum: number
   resourceId: string
@@ -90,7 +90,7 @@ export interface Version {
   publishedAt: Generated<Timestamp>
   publishedBy: string
 }
-export interface DB {
+export type DB = {
   Blob: Blob
   Footer: Footer
   Navbar: Navbar
