@@ -2,6 +2,7 @@ import type { KeyStatisticsProps } from "~/interfaces"
 import { ComponentContent } from "../../internal/customCssClass"
 
 const MAX_ITEMS = 4
+
 const ITEM_WIDTHS: Record<number, string> = {
   1: "basis-full",
   2: "basis-[calc((100%-2.5rem)/2)]",
@@ -19,22 +20,24 @@ const MAX_CHAR_LIMIT = 7
 const KeyStatistics = ({ title, statistics }: KeyStatisticsProps) => {
   return (
     <div
-      className={`${ComponentContent} flex flex-col gap-16 py-12 xs:py-24 lg:gap-24`}
+      className={`${ComponentContent} flex flex-col gap-10 py-12 xs:py-24 lg:gap-24`}
     >
-      <h2 className="w-full text-2xl font-semibold text-content sm:text-4xl md:max-w-[47.5rem]">
+      <h2 className="prose-display-md w-full max-w-[47.5rem] text-base-content-strong">
         {title}
       </h2>
-      <div className="flex flex-col flex-wrap justify-center gap-x-8 gap-y-10 md:flex-row">
+      <div className="flex flex-col flex-wrap gap-x-8 gap-y-12 md:flex-row">
         {statistics.slice(0, MAX_ITEMS).map(({ label, value }) => (
           <div
-            className={`flex grow flex-col gap-3 text-center ${
+            className={`flex grow flex-col gap-3 ${
               ITEM_WIDTHS[Math.min(MAX_ITEMS, statistics.length)]
             }`}
           >
-            <h3 className="text-pretty text-4xl font-semibold leading-[2.75rem] text-content-strong xs:text-5xl xs:leading-[3.5rem]">
+            <h3 className="prose-display-lg text-pretty text-brand-canvas-inverse">
               {value.slice(0, MAX_CHAR_LIMIT)}
             </h3>
-            <p className="text-sm font-medium text-neutral-500">{label}</p>
+            <p className="prose-label-md-medium text-base-content-subtle">
+              {label}
+            </p>
           </div>
         ))}
       </div>
