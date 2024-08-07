@@ -135,28 +135,50 @@ const InfoCards = ({
   variant,
   cards,
   LinkComponent,
-}: InfoCardsProps): JSX.Element => (
-  <section className={compoundStyles.container()}>
-    {(title || subtitle) && (
-      <InfoCardsHeadingSection title={title} subtitle={subtitle} />
-    )}
+}: InfoCardsProps): JSX.Element => {
+  const InfoCardtoRender = () => {
+    switch (variant) {
+      case "cardsWithImages":
+        return (
+          <>
+            {cards.map((card, idx) => (
+              <InfoCardWithImage
+                key={idx}
+                {...card}
+                LinkComponent={LinkComponent}
+              />
+            ))}
+          </>
+        )
+      case "cardsWithoutImages":
+        return (
+          <>
+            {cards.map((card, idx) => (
+              <InfoCardNoImage
+                key={idx}
+                {...card}
+                LinkComponent={LinkComponent}
+              />
+            ))}
+          </>
+        )
+      default:
+        const _: never = variant
+        return <></>
+    }
+  }
 
-    <div className={compoundStyles.grid()}>
-      {variant === "cardsWithImages" &&
-        cards.map((card, idx) => (
-          <InfoCardWithImage
-            key={idx}
-            {...card}
-            LinkComponent={LinkComponent}
-          />
-        ))}
+  return (
+    <section className={compoundStyles.container()}>
+      {(title || subtitle) && (
+        <InfoCardsHeadingSection title={title} subtitle={subtitle} />
+      )}
 
-      {variant === "cardsWithoutImages" &&
-        cards.map((card, idx) => (
-          <InfoCardNoImage key={idx} {...card} LinkComponent={LinkComponent} />
-        ))}
-    </div>
-  </section>
-)
+      <div className={compoundStyles.grid()}>
+        <InfoCardtoRender />
+      </div>
+    </section>
+  )
+}
 
 export default InfoCards
