@@ -201,9 +201,7 @@ export const trpc = createTRPCNext<
             },
           },
           mutations: {
-            retry: (_, error) => {
-              return isErrorRetryableOnClient(error)
-            },
+            retry: false,
           },
         },
       },
