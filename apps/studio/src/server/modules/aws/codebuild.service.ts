@@ -49,7 +49,6 @@ export const stopRunningBuilds = async (
       { projectId, error },
       "Unexpected error while stopping running builds",
     )
-
     throw error
   }
 }
