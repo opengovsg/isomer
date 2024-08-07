@@ -13,25 +13,30 @@ const Hero = ({
 }: HeroProps) => {
   return (
     <section
-      className="flex min-h-[15rem] bg-cover bg-center bg-no-repeat sm:min-h-[22.5rem] md:min-h-[31.25rem]"
+      className="flex min-h-[15rem] bg-cover bg-center bg-no-repeat sm:min-h-[22.5rem] lg:min-h-[31.25rem]"
       style={{
         backgroundImage: `url('${backgroundUrl}')`,
       }}
     >
-      <div className="w-full content-center bg-gradient-to-r from-[rgba(0,0,0,95%)] to-[rgba(0,0,0,70%)] md:from-[rgba(0,0,0,75%)] xl:from-[rgba(0,0,0,95%)]">
+      <div className="w-full content-center bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]">
         <div
-          className={`${ComponentContent} flex flex-row justify-start p-10 text-start text-white`}
+          className={`${ComponentContent} flex flex-row justify-start py-16 text-start text-base-content-inverse`}
         >
-          <div className="flex w-full flex-col gap-6 sm:w-3/5 xl:max-w-[520px]">
-            <h1 className="font-bold text-heading-01">{title}</h1>
-            {subtitle && <p className="text-paragraph-01">{subtitle}</p>}
+          <div className="xl:max-w-50% flex w-full flex-col gap-9 sm:w-3/5">
+            <div className="flex flex-col gap-6">
+              <h1 className="prose-display-xl">{title}</h1>
+              {subtitle && <p className="prose-body-base">{subtitle}</p>}
+            </div>
             {buttonLabel && buttonUrl && (
-              <div className="flex flex-row justify-start gap-4">
-                <LinkButton href={buttonUrl}>{buttonLabel}</LinkButton>
+              <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
+                <LinkButton href={buttonUrl} size="lg">
+                  {buttonLabel}
+                </LinkButton>
                 {secondaryButtonLabel && secondaryButtonUrl && (
                   <LinkButton
                     colorScheme="inverse"
                     variant="outline"
+                    size="lg"
                     href={secondaryButtonUrl}
                   >
                     {secondaryButtonLabel}
