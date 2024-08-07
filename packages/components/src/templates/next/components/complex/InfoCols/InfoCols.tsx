@@ -21,19 +21,18 @@ const InfoBoxIcon = ({ icon }: { icon?: SupportedIconName }) => {
   if (!icon) return null
   const Icon = SUPPORTED_ICONS_MAP[icon]
   return (
-    <div>
-      <Icon className="h-auto w-6 text-base-content-strong group-hover:text-brand-interaction" />
-    </div>
+    <Icon className="h-auto w-6 text-base-content-strong group-hover:text-brand-interaction" />
   )
 }
 
 const InfoBoxes = ({
   infoBoxes,
+  LinkComponent,
 }: Pick<InfoColsProps, "infoBoxes" | "LinkComponent">) => {
   return (
     <div className="grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 md:gap-y-12 lg:grid-cols-3">
       {infoBoxes.map((infoBox, idx) => (
-        <a
+        <LinkComponent
           href={infoBox.buttonUrl}
           key={idx}
           className="group flex flex-col items-start gap-3 text-left"
@@ -49,7 +48,7 @@ const InfoBoxes = ({
             {infoBox.buttonLabel}
             <BiRightArrowAlt className="text-[1.375rem] transition ease-in group-hover:translate-x-1" />
           </div>
-        </a>
+        </LinkComponent>
       ))}
     </div>
   )
@@ -66,7 +65,7 @@ const InfoCols = ({
       <div className={`${ComponentContent} py-12 md:py-16`}>
         <div className="flex flex-col gap-12">
           <InfoColsHeader title={title} subtitle={subtitle} />
-          <InfoBoxes infoBoxes={infoBoxes} />
+          <InfoBoxes infoBoxes={infoBoxes} LinkComponent={LinkComponent} />
         </div>
       </div>
     </section>
