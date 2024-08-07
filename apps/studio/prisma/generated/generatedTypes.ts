@@ -8,7 +8,7 @@ export type Generated<T> =
     : ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
-export type Blob = {
+export interface Blob {
   id: GeneratedAlways<string>
   /**
    * @kyselyType(PrismaJson.BlobJsonContent)
@@ -16,7 +16,7 @@ export type Blob = {
    */
   content: PrismaJson.BlobJsonContent
 }
-export type Footer = {
+export interface Footer {
   id: GeneratedAlways<number>
   siteId: number
   /**
@@ -25,7 +25,7 @@ export type Footer = {
    */
   content: PrismaJson.FooterJsonContent
 }
-export type Navbar = {
+export interface Navbar {
   id: GeneratedAlways<number>
   siteId: number
   /**
@@ -34,13 +34,13 @@ export type Navbar = {
    */
   content: PrismaJson.NavbarJsonContent
 }
-export type Permission = {
+export interface Permission {
   id: GeneratedAlways<number>
   resourceId: string
   userId: string
   role: RoleType
 }
-export type Resource = {
+export interface Resource {
   id: GeneratedAlways<string>
   title: string
   permalink: string
@@ -51,7 +51,7 @@ export type Resource = {
   state: Generated<ResourceState | null>
   type: ResourceType
 }
-export type Site = {
+export interface Site {
   id: GeneratedAlways<number>
   name: string
   /**
@@ -65,24 +65,24 @@ export type Site = {
    */
   theme: PrismaJson.SiteThemeJson | null
 }
-export type SiteMember = {
+export interface SiteMember {
   userId: string
   siteId: number
 }
-export type User = {
+export interface User {
   id: string
   name: string
   email: string
   phone: string
   preferredName: string | null
 }
-export type VerificationToken = {
+export interface VerificationToken {
   identifier: string
   token: string
   attempts: Generated<number>
   expires: Timestamp
 }
-export type Version = {
+export interface Version {
   id: GeneratedAlways<string>
   versionNum: number
   resourceId: string
@@ -90,7 +90,7 @@ export type Version = {
   publishedAt: Generated<Timestamp>
   publishedBy: string
 }
-export type DB = {
+export interface DB {
   Blob: Blob
   Footer: Footer
   Navbar: Navbar
