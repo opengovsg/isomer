@@ -1,10 +1,60 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { useState } from "react"
 
+import type { AppliedFilter } from "~/templates/next/types/Filter"
 import Filter from "./Filter"
 
 const meta: Meta<typeof Filter> = {
   title: "Next/Internal Components/Filter",
   component: Filter,
+  render: ({ filters, appliedFilters: _appliedFilters }) => {
+    const [appliedFilters, setAppliedFilters] =
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      useState<AppliedFilter[]>(_appliedFilters)
+    const updateAppliedFilters = (
+      appliedFilters: AppliedFilter[],
+      setAppliedFilters: (appliedFilters: AppliedFilter[]) => void,
+      filterId: string,
+      itemId: string,
+    ) => {
+      const filterIndex = appliedFilters.findIndex(
+        (filter) => filter.id === filterId,
+      )
+      if (filterIndex > -1) {
+        const itemIndex = appliedFilters[filterIndex]?.items.findIndex(
+          (item) => item.id === itemId,
+        )
+        if (itemIndex !== undefined && itemIndex > -1) {
+          const newAppliedFilters = [...appliedFilters]
+          newAppliedFilters[filterIndex]?.items.splice(itemIndex, 1)
+
+          if (newAppliedFilters[filterIndex]?.items.length === 0) {
+            newAppliedFilters.splice(filterIndex, 1)
+          }
+          setAppliedFilters(newAppliedFilters)
+        } else {
+          const newAppliedFilters = [...appliedFilters]
+          newAppliedFilters[filterIndex]?.items.push({ id: itemId })
+          setAppliedFilters(newAppliedFilters)
+        }
+      } else {
+        setAppliedFilters([
+          ...appliedFilters,
+          { id: filterId, items: [{ id: itemId }] },
+        ])
+      }
+    }
+
+    return (
+      <Filter
+        filters={filters}
+        appliedFilters={appliedFilters}
+        setAppliedFilters={(id: string, itemId: string) =>
+          updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
+        }
+      />
+    )
+  },
   parameters: {
     themes: {
       themeOverride: "Isomer Next",

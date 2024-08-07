@@ -211,7 +211,7 @@ const updateAppliedFilters = (
     const itemIndex = appliedFilters[filterIndex]?.items.findIndex(
       (item) => item.id === itemId,
     )
-    if (itemIndex && itemIndex > -1) {
+    if (itemIndex !== undefined && itemIndex > -1) {
       const newAppliedFilters = [...appliedFilters]
       newAppliedFilters[filterIndex]?.items.splice(itemIndex, 1)
 
