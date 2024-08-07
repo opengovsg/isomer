@@ -23,29 +23,13 @@ const client = z.object({
 })
 
 /** Feature flags */
-const baseR2Schema = z.object({
-  R2_ACCESS_KEY_ID: z.string().optional(),
-  R2_ACCOUNT_ID: z.string().optional(),
-  R2_SECRET_ACCESS_KEY: z.string().optional(),
-  R2_PUBLIC_HOSTNAME: z.string().optional(),
-  R2_BUCKET_NAME: z.string().optional(),
-  R2_AVATARS_DIRECTORY: z.string().optional(),
-  R2_IMAGES_DIRECTORY: z.string().optional(),
+const s3Schema = z.object({
+  S3_REGION: z.string().default("us-east-1"),
+  S3_PUBLIC_ASSETS_DOMAIN_NAME: z.string(),
+  S3_UNSAFE_ASSETS_DOMAIN_NAME: z.string(),
+  S3_PUBLIC_ASSETS_BUCKET_NAME: z.string(),
+  S3_UNSAFE_ASSETS_BUCKET_NAME: z.string(),
 })
-
-const r2ServerSchema = z.discriminatedUnion("NEXT_PUBLIC_ENABLE_STORAGE", [
-  baseR2Schema.extend({
-    NEXT_PUBLIC_ENABLE_STORAGE: z.literal(true),
-    // Add required keys if flag is enabled.
-    R2_ACCESS_KEY_ID: z.string().min(1),
-    R2_ACCOUNT_ID: z.string().min(1),
-    R2_SECRET_ACCESS_KEY: z.string().min(1),
-    R2_PUBLIC_HOSTNAME: z.string().min(1),
-  }),
-  baseR2Schema.extend({
-    NEXT_PUBLIC_ENABLE_STORAGE: z.literal(false),
-  }),
-])
 
 const baseSgidSchema = z.object({
   SGID_CLIENT_ID: z.string().optional(),
@@ -86,25 +70,12 @@ const server = z
     ]),
     SESSION_SECRET: z.string().min(32),
   })
+  .merge(s3Schema)
   // Add on schemas as needed that requires conditional validation.
-  .merge(baseR2Schema)
   .merge(baseSgidSchema)
   .merge(client)
   // Add on refinements as needed for conditional environment variables
   // .superRefine((val, ctx) => ...)
-  .superRefine((val, ctx) => {
-    const parse = r2ServerSchema.safeParse(val)
-    if (!parse.success) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["NEXT_PUBLIC_ENABLE_STORAGE"],
-        message: "R2 environment variables are missing",
-      })
-      parse.error.issues.forEach((issue) => {
-        ctx.addIssue(issue)
-      })
-    }
-  })
   .superRefine((val, ctx) => {
     const parse = sgidServerSchema.safeParse(val)
     if (!parse.success) {
@@ -139,13 +110,11 @@ const processEnv = {
   SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
   SENDGRID_FROM_ADDRESS: process.env.SENDGRID_FROM_ADDRESS,
   SESSION_SECRET: process.env.SESSION_SECRET,
-  R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
-  R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
-  R2_BUCKET_NAME: process.env.R2_BUCKET_NAME,
-  R2_AVATARS_DIRECTORY: process.env.R2_AVATARS_DIRECTORY,
-  R2_IMAGES_DIRECTORY: process.env.R2_IMAGES_DIRECTORY,
-  R2_PUBLIC_HOSTNAME: process.env.R2_PUBLIC_HOSTNAME,
-  R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
+  S3_REGION: process.env.S3_REGION,
+  S3_PUBLIC_ASSETS_DOMAIN_NAME: process.env.S3_PUBLIC_ASSETS_DOMAIN_NAME,
+  S3_UNSAFE_ASSETS_DOMAIN_NAME: process.env.S3_UNSAFE_ASSETS_DOMAIN_NAME,
+  S3_PUBLIC_ASSETS_BUCKET_NAME: process.env.S3_PUBLIC_ASSETS_BUCKET_NAME,
+  S3_UNSAFE_ASSETS_BUCKET_NAME: process.env.S3_UNSAFE_ASSETS_BUCKET_NAME,
   SGID_CLIENT_ID: process.env.SGID_CLIENT_ID,
   SGID_CLIENT_SECRET: process.env.SGID_CLIENT_SECRET,
   SGID_PRIVATE_KEY: process.env.SGID_PRIVATE_KEY,

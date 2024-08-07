@@ -40,7 +40,7 @@ export function JsonFormsImageControl({
       <FormControl isRequired={required} isInvalid={!pendingFile || !!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <Attachment
-          isRequired
+          isRequired={required}
           name="image-upload"
           imagePreview="large"
           multiple={false}

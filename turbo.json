@@ -2,7 +2,15 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "globalDependencies": ["**/.env", "tsconfig.json"],
-  "globalEnv": ["NODE_ENV", "DATABASE_URL", "SESSION_SECRET"],
+  "globalEnv": [
+    "NODE_ENV",
+    "DATABASE_URL",
+    "SESSION_SECRET",
+    "S3_PUBLIC_ASSETS_DOMAIN_NAME",
+    "S3_UNSAFE_ASSETS_DOMAIN_NAME",
+    "S3_PUBLIC_ASSETS_BUCKET_NAME",
+    "S3_UNSAFE_ASSETS_BUCKET_NAME"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

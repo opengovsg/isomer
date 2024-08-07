@@ -5,10 +5,24 @@ updates:
     schedule:
       interval: daily
     groups:
+      aws-sdk:
+        applies-to: version-updates
+        patterns:
+          - "@aws-sdk/*"
       babel:
         applies-to: version-updates
         patterns:
           - "@babel/*"
+      lodash:
+        applies-to: version-updates
+        patterns:
+          - "lodash"
+          - "@types/lodash"
+      pg:
+        applies-to: version-updates
+        patterns:
+          - "pg"
+          - "@types/pg"
       prisma:
         applies-to: version-updates
         patterns:
@@ -19,6 +33,12 @@ updates:
         patterns:
           - "react"
           - "react-dom"
+          - "@types/react"
+      react-query:
+        applies-to: version-updates
+        patterns:
+          - "@tanstack/react-query"
+          - "@tanstack/react-query-devtools"
       storybook:
         applies-to: version-updates
         patterns:
@@ -32,3 +52,8 @@ updates:
         applies-to: version-updates
         patterns:
           - "@trpc/*"
+      validator:
+        applies-to: version-updates
+        patterns:
+          - "validator"
+          - "@types/validator"
