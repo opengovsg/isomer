@@ -27,10 +27,15 @@ calculate_duration $start_time
 
 echo $(git branch)
 
+# Perform a clean of npm cache
+# Example of error without this: 
+# npm ERR! EEXIST: file already exists, open '/root/.npm/_cacache/tmp/7746bf9d'
+npm cache clean --force
+
 # Install dependencies
 echo "Installing dependencies..."
 start_time=$(date +%s)
-npm install
+npm ci
 calculate_duration $start_time
 
 # Build components
@@ -47,7 +52,7 @@ echo "Fetching from database..."
 start_time=$(date +%s)
 cd tooling/build/scripts/publishing
 echo $(pwd)
-npm install
+npm ci
 npm install ts-node -g
 npm run start
 calculate_duration $start_time
@@ -59,7 +64,7 @@ rm -rf ../../../template/schema
 mv schema/ ../../../template/
 cd ../../../template
 echo $(pwd)
-npm install
+npm ci
 
 # Prebuild
 echo "Prebuilding..."
