@@ -1,9 +1,10 @@
 "use client"
 
+import type { VariantProps } from "tailwind-variants"
 import { useState } from "react"
 import { BiMinus, BiPlus } from "react-icons/bi"
 
-import type { AccordionProps } from "~/interfaces"
+import type { AccordionProps as BaseAccordionProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { Prose } from "../../native"
 
@@ -20,12 +21,19 @@ const createAccordionStyles = tv({
 
 const accordionStyles = createAccordionStyles()
 
-const Accordion = ({ summary, details }: AccordionProps) => {
+interface AccordionProps
+  extends BaseAccordionProps,
+    VariantProps<typeof createAccordionStyles> {
+  name?: string
+}
+
+const Accordion = ({ summary, details, name }: AccordionProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const Icon = isOpen ? BiMinus : BiPlus
 
   return (
     <details
+      name={name}
       onToggle={(e) => setIsOpen(e.currentTarget.open)}
       open={isOpen}
       className={accordionStyles.details()}
