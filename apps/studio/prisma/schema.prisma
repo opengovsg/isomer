@@ -125,6 +125,9 @@ model Site {
   /// @kyselyType(PrismaJson.SiteJsonConfig)
   /// [SiteJsonConfig]
   config      Json
+  /// @kyselyType(PrismaJson.SiteThemeJson)
+  /// [SiteThemeJson]
+  theme       Json?
   navbar      Navbar?
   footer      Footer?
 }
