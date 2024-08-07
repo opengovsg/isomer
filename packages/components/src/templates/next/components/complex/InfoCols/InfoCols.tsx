@@ -37,7 +37,7 @@ const InfoBoxes = ({
           key={idx}
           className="group flex flex-col items-start gap-3 text-left"
         >
-          <InfoBoxIcon icon={infoBox.icon} />
+          <InfoBoxIcon icon={infoBox.icon} aria-hidden="true" />
           <h3 className="prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-interaction">
             {infoBox.title}
           </h3>
