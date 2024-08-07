@@ -10,6 +10,7 @@ import {
   clearSiteNotification,
   getNotification,
   getSiteConfig,
+  getSiteTheme,
   setSiteNotification,
 } from "./site.service"
 
@@ -28,6 +29,13 @@ export const siteRouter = router({
     .query(async ({ input }) => {
       const { id } = input
       return getSiteConfig(id)
+    }),
+  getTheme: protectedProcedure
+    .input(getConfigSchema)
+    .query(async ({ input }) => {
+      const { id } = input
+      const theme = await getSiteTheme(id)
+      return theme
     }),
   getFooter: protectedProcedure
     .input(getConfigSchema)

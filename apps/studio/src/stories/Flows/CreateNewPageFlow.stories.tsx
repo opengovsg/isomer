@@ -16,6 +16,7 @@ const meta: Meta<typeof SitePage> = {
         meHandlers.me(),
         pageHandlers.list.default(),
         sitesHandlers.getConfig.default(),
+        sitesHandlers.getTheme.default(),
         sitesHandlers.getFooter.default(),
         sitesHandlers.getNavbar.default(),
       ],

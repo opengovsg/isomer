@@ -13,6 +13,16 @@ export const getSiteConfig = async (siteId: number) => {
   return config
 }
 
+export const getSiteTheme = async (siteId: number) => {
+  const { theme } = await db
+    .selectFrom("Site")
+    .where("id", "=", siteId)
+    .select("Site.theme")
+    .executeTakeFirstOrThrow()
+
+  return theme
+}
+
 // Note: This overwrites the full site config
 // TODO: Should triger immediate re-publish of site
 export const setSiteConfig = async (

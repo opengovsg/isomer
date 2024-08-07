@@ -1,8 +1,10 @@
 import { useMemo } from "react"
-import { Box, Flex, Stack, Text } from "@chakra-ui/react"
+import { Box, Flex, Skeleton, Stack, Text } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
 import { format } from "date-fns"
 
+import Suspense from "~/components/Suspense"
+import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import Preview from "../Preview"
 import { PreviewIframe } from "../PreviewIframe"
 import { LAYOUT_RENDER_DATA } from "./constants"
@@ -10,33 +12,7 @@ import { useCreatePageWizard } from "./CreatePageWizardContext"
 
 export const PreviewLayout = (): JSX.Element => {
   const isMobile = useIsMobile()
-  const {
-    layoutPreviewJson,
-    currentLayout,
-    siteId,
-    formMethods: { watch },
-  } = useCreatePageWizard()
-
-  const currentPermalink = watch("permalink", "/")
-
-  const previewOverrides = useMemo(() => {
-    switch (currentLayout) {
-      case "article": {
-        return {
-          page: {
-            date: format(new Date(), "dd MMM yyyy"),
-          },
-        }
-      }
-      case "content": {
-        return {
-          page: {
-            lastModified: new Date().toString(),
-          },
-        }
-      }
-    }
-  }, [currentLayout])
+  const { currentLayout } = useCreatePageWizard()
 
   return (
     <Stack
@@ -67,17 +43,58 @@ export const PreviewLayout = (): JSX.Element => {
             </Flex>
           )}
           <Box bg="white" overflow="auto" height="100%">
-            <PreviewIframe preventPointerEvents keyForRerender={currentLayout}>
-              <Preview
-                overrides={previewOverrides}
-                siteId={siteId}
-                permalink={currentPermalink}
-                {...layoutPreviewJson}
-              />
-            </PreviewIframe>
+            <Suspense fallback={<Skeleton height="100%" />}>
+              <SuspendableLayoutPreview />
+            </Suspense>
           </Box>
         </Box>
       )}
     </Stack>
+  )
+}
+
+const SuspendableLayoutPreview = () => {
+  const {
+    layoutPreviewJson,
+    currentLayout,
+    siteId,
+    formMethods: { watch },
+  } = useCreatePageWizard()
+
+  const themeCssVars = useSiteThemeCssVars({ siteId })
+
+  const currentPermalink = watch("permalink", "/")
+
+  const previewOverrides = useMemo(() => {
+    switch (currentLayout) {
+      case "article": {
+        return {
+          page: {
+            date: format(new Date(), "dd MMM yyyy"),
+          },
+        }
+      }
+      case "content": {
+        return {
+          page: {
+            lastModified: new Date().toString(),
+          },
+        }
+      }
+    }
+  }, [currentLayout])
+  return (
+    <PreviewIframe
+      preventPointerEvents
+      keyForRerender={currentLayout}
+      style={themeCssVars}
+    >
+      <Preview
+        overrides={previewOverrides}
+        siteId={siteId}
+        permalink={currentPermalink}
+        {...layoutPreviewJson}
+      />
+    </PreviewIframe>
   )
 }

@@ -6,6 +6,7 @@ import EditPageDrawer from "~/features/editing-experience/components/EditPageDra
 import Preview from "~/features/editing-experience/components/Preview"
 import { PreviewIframe } from "~/features/editing-experience/components/PreviewIframe"
 import { editPageSchema } from "~/features/editing-experience/schema"
+import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
@@ -24,6 +25,8 @@ function EditPage(): JSX.Element {
       pageId,
       siteId,
     })
+
+  const themeCssVars = useSiteThemeCssVars({ siteId })
 
   useEffect(() => {
     setDrawerState({
@@ -54,7 +57,7 @@ function EditPage(): JSX.Element {
           h="100%"
           overflowX="auto"
         >
-          <PreviewIframe>
+          <PreviewIframe style={themeCssVars}>
             <Preview
               {...page}
               {...previewPageState}
