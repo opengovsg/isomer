@@ -1,5 +1,7 @@
-import { useEffect } from "react"
+import type { CSSProperties } from "react"
+import { useEffect, useMemo } from "react"
 import { Flex, Grid, GridItem } from "@chakra-ui/react"
+import { flatten } from "flat"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import EditPageDrawer from "~/features/editing-experience/components/EditPageDrawer"
@@ -24,6 +26,24 @@ function EditPage(): JSX.Element {
       pageId,
       siteId,
     })
+
+  // TODO: Export into custom hook
+  const [theme] = trpc.site.getTheme.useSuspenseQuery({ id: siteId })
+  const themeCssVars = useMemo(() => {
+    if (!theme) return
+    // convert theme to css vars
+    const flattenedVars: Record<string, string> = flatten(
+      { color: { brand: { ...theme.colors } } },
+      { delimiter: "-" },
+    )
+    return Object.entries(flattenedVars).reduce(
+      (acc, [key, value]) => {
+        acc[`--${key}`] = value
+        return acc
+      },
+      {} as Record<string, string>,
+    ) as CSSProperties
+  }, [theme])
 
   useEffect(() => {
     setDrawerState({
@@ -54,7 +74,7 @@ function EditPage(): JSX.Element {
           h="100%"
           overflowX="auto"
         >
-          <PreviewIframe>
+          <PreviewIframe style={themeCssVars}>
             <Preview
               {...page}
               {...previewPageState}

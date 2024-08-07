@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from "react"
+import type { CSSProperties, PropsWithChildren } from "react"
 import { useEffect, useState } from "react"
 import { Flex } from "@chakra-ui/react"
 import Frame, { useFrame } from "react-frame-component"
@@ -6,12 +6,14 @@ import Frame, { useFrame } from "react-frame-component"
 interface PreviewIframeProps extends PropsWithChildren {
   preventPointerEvents?: boolean
   keyForRerender?: string
+  style?: CSSProperties
 }
 
 export const PreviewIframe = ({
   children,
   preventPointerEvents,
   keyForRerender,
+  style,
 }: PreviewIframeProps): JSX.Element => {
   // TODO: Add toolbar for users to adjust the width of the iframe
   const [width, _setWidth] = useState("100%")
@@ -33,7 +35,6 @@ export const PreviewIframe = ({
     >
       <Frame
         style={{
-          // TODO: Inject CSS variables for site theme here.
           width,
           borderRadius: "8px",
         }}
@@ -47,9 +48,11 @@ export const PreviewIframe = ({
           />
         }
       >
-        <IframeInnerComponent key={keyForRerender}>
-          {children}
-        </IframeInnerComponent>
+        <div style={style}>
+          <IframeInnerComponent key={keyForRerender}>
+            {children}
+          </IframeInnerComponent>
+        </div>
       </Frame>
     </Flex>
   )
