@@ -1,16 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { within } from "@storybook/test"
 
 import Accordion from "./Accordion"
 
 const meta: Meta<typeof Accordion> = {
   title: "Next/Components/Accordion",
   component: Accordion,
-  render: (args) => {
+  render: ({ summary, ...args }) => {
     return (
       <>
-        <Accordion {...args} />
-        <Accordion {...args} />
-        <Accordion {...args} />
+        <Accordion summary={`${summary}1`} {...args} />
+        <Accordion summary={`${summary}2`} {...args} />
+        <Accordion summary={`${summary}3`} {...args} />
       </>
     )
   },
@@ -105,5 +106,13 @@ export const LongContent: Story = {
         },
       ],
     },
+  },
+}
+
+export const Expanded: Story = {
+  args: Basic.args,
+  play: ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    canvas.getByText("Title for accordion item2").click()
   },
 }
