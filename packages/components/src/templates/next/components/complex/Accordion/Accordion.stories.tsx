@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { within } from "@storybook/test"
+import { userEvent, within } from "@storybook/test"
+
+import { withChromaticModes } from "@isomer/storybook-config"
 
 import Accordion from "./Accordion"
 
@@ -18,6 +20,7 @@ const meta: Meta<typeof Accordion> = {
   argTypes: {},
   parameters: {
     layout: "fullscreen",
+    chromatic: withChromaticModes(["desktop", "mobile"]),
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -110,9 +113,9 @@ export const LongContent: Story = {
 }
 
 export const Expanded: Story = {
-  args: Basic.args,
-  play: ({ canvasElement }) => {
+  args: LongContent.args,
+  play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    canvas.getByText("Title for accordion item2").click()
+    await userEvent.click(canvas.getByText(`${LongContent.args?.summary}2`))
   },
 }
