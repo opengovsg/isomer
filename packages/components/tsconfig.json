@@ -12,6 +12,7 @@
     "resolveJsonModule": true /* Include modules imported with .json extension. */,
     "strictBindCallApply": true /* Enable strict 'bind', 'call', and 'apply' methods on functions. */,
     "strict": true /* Enable all strict type-checking options. */,
+    "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
     /* Strict Type-Checking Options */
     // "noImplicitAny": true,

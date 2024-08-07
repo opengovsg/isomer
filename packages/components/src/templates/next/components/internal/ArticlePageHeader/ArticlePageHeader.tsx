@@ -25,7 +25,7 @@ const ArticlePageHeader = ({
         <p className="text-sm text-gray-800">{date}</p>
 
         <div className="text-xl tracking-tight text-gray-500 md:text-2xl">
-          {summary.length === 1 ? (
+          {summary.length === 1 && summary[0] ? (
             <BaseParagraph content={summary[0]} />
           ) : (
             <ul className="list-disc ps-7">

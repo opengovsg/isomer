@@ -29,18 +29,19 @@ const getStickyRowIndexes = (tableRows: TableProps["content"]) => {
 
   tableRows
     .map((row) => row.content[0])
-    .forEach(({ attrs }, index) => {
-      if (!stickyRowIndexes.includes(index)) {
-        // Index has already been removed by an earlier rowSpan
-        return
-      }
-
-      if (attrs?.rowspan) {
-        // Exclude the next few rows that are covered by the rowSpan
-        stickyRowIndexes = stickyRowIndexes.filter(
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          (value) => value <= index || value >= index + attrs.rowspan!,
-        )
+    .forEach((row, index) => {
+      if (row?.attrs) {
+        if (!stickyRowIndexes.includes(index)) {
+          // Index has already been removed by an earlier rowSpan
+          return
+        }
+        const rowspan = row.attrs.rowspan
+        if (rowspan !== undefined) {
+          // Exclude the next few rows that are covered by the rowSpan
+          stickyRowIndexes = stickyRowIndexes.filter(
+            (value) => value <= index || value >= index + rowspan,
+          )
+        }
       }
     })
 
@@ -78,7 +79,7 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
         <tbody>
           {content.map((row, index) => {
             const TableCellTag =
-              row.content[0].type === "tableHeader" ? "th" : "td"
+              row.content[0]?.type === "tableHeader" ? "th" : "td"
 
             return (
               <tr

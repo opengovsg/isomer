@@ -20,11 +20,13 @@ const Breadcrumb = ({ links, LinkComponent = "a" }: BreadcrumbProps) => {
   return (
     <nav aria-label="Breadcrumb">
       <ol role="list" className={compoundStyles.nav()}>
-        <li className={compoundStyles.container()}>
-          <LinkComponent href={root.url} className={compoundStyles.link()}>
-            {root.title}
-          </LinkComponent>
-        </li>
+        {root && (
+          <li className={compoundStyles.container()}>
+            <LinkComponent href={root.url} className={compoundStyles.link()}>
+              {root.title}
+            </LinkComponent>
+          </li>
+        )}
         {rest.map((link, index) => {
           return (
             <li key={index} className={compoundStyles.container()}>
