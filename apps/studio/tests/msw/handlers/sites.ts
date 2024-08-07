@@ -22,6 +22,27 @@ export const sitesHandlers = {
     default: siteListQuery,
     loading: () => siteListQuery("infinite"),
   },
+  getTheme: {
+    default: () => {
+      return trpcMsw.site.getTheme.query(() => {
+        return {
+          colors: {
+            canvas: {
+              default: "#e6ecef",
+              alt: "#bfcfd7",
+              backdrop: "#80a0af",
+              inverse: "#00405f",
+            },
+            interaction: {
+              default: "#00405f",
+              hover: "#002e44",
+              pressed: "#00283b",
+            },
+          },
+        }
+      })
+    },
+  },
   getConfig: {
     default: () => {
       return trpcMsw.site.getConfig.query(() => {
