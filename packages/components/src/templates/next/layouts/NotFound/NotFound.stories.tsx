@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import type { NotFoundPageSchemaType } from "~/engine"
 import NotFoundLayout from "./NotFound"
 
@@ -10,6 +12,7 @@ const meta: Meta<NotFoundPageSchemaType> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
+    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },

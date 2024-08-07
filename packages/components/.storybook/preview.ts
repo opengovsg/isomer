@@ -6,7 +6,7 @@ import { MINIMAL_VIEWPORTS } from "@storybook/addon-viewport"
 import "bootstrap-icons/font/bootstrap-icons.css"
 import "../src/index.css"
 
-import { viewport } from "@isomer/storybook-config"
+import { viewport, withChromaticModes } from "@isomer/storybook-config"
 
 const CUSTOM_GENERAL_VIEWPORTS = {
   smallDesktop: {
@@ -86,6 +86,21 @@ const preview: Preview = {
         ...CUSTOM_GENERAL_VIEWPORTS,
         ...CUSTOM_GSIB_VIEWPORTS,
       },
+    },
+    /**
+     * If tablet view is needed, add it on a per-story basis.
+     * @example
+     * ```
+     * export const SomeStory: Story = {
+     *   parameters: {
+     *     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+     *   }
+     * }
+     * ```
+     */
+    chromatic: {
+      ...withChromaticModes(["desktop"]),
+      prefersReducedMotion: "reduce",
     },
   },
 }

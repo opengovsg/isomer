@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import Content from "./Content"
 
 const meta: Meta<typeof Content> = {
@@ -9,6 +11,7 @@ const meta: Meta<typeof Content> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
+    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },

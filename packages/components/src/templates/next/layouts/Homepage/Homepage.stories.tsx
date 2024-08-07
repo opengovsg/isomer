@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { useEffect } from "react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import type { HomePageSchemaType } from "~/engine"
 import Homepage from "./Homepage"
 
@@ -24,6 +26,7 @@ const meta: Meta<typeof Homepage> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
+    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },

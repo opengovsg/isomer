@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { useEffect } from "react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import type { SearchPageSchemaType } from "~/engine"
 import SearchLayout from "./Search"
 
@@ -29,6 +31,7 @@ const meta: Meta<typeof Template> = {
   argTypes: {},
   tags: ["!autodocs"],
   parameters: {
+    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },

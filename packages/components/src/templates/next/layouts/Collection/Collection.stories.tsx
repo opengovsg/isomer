@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import { type CollectionPageSchemaType } from "~/engine"
 import CollectionLayout from "./Collection"
 
@@ -10,6 +12,7 @@ const meta: Meta<CollectionPageSchemaType> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
+    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
