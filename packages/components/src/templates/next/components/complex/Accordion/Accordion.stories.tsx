@@ -1,24 +1,22 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
-import type { AccordionProps } from "~/interfaces"
 import Accordion from "./Accordion"
-
-// Template for stories
-const Template = (props: AccordionProps) => {
-  return (
-    <>
-      <Accordion {...props} />
-      <Accordion {...props} />
-      <Accordion {...props} />
-    </>
-  )
-}
 
 const meta: Meta<typeof Accordion> = {
   title: "Next/Components/Accordion",
-  component: Template,
+  component: Accordion,
+  render: (args) => {
+    return (
+      <>
+        <Accordion {...args} />
+        <Accordion {...args} />
+        <Accordion {...args} />
+      </>
+    )
+  },
   argTypes: {},
   parameters: {
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
