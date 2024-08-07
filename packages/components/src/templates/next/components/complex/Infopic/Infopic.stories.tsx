@@ -1,44 +1,50 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import type { InfopicProps } from "~/interfaces"
-import InfoPic from "./Infopic"
+import { Infopic } from "./Infopic"
 
 const meta: Meta<InfopicProps> = {
   title: "Next/Components/Infopic",
-  component: InfoPic,
+  component: Infopic,
   argTypes: {},
   parameters: {
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
+    chromatic: {
+      ...withChromaticModes(["desktop", "mobile"]),
+    },
+  },
+  args: {
+    title:
+      "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
+    description:
+      "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
+    imageAlt:
+      "Two rhinos. A rhino is peacefully grazing on grass in a field in front of the other rhino.",
+    imageSrc:
+      "https://images.unsplash.com/photo-1527436826045-8805c615a6df?w=1280",
+    buttonLabel: "Sign up",
+    buttonUrl: "https://open.gov.sg",
   },
 }
 export default meta
-type Story = StoryObj<typeof InfoPic>
+type Story = StoryObj<typeof Infopic>
 
 // Default scenario
-export const SideBySide: Story = {
+export const Default: Story = {}
+
+export const TextOnRight: Story = {
   args: {
-    title: "Lemon. Think small.",
-    description:
-      "Our little car isn't so much of a novelty anymore. An ode to Ogilvy.",
-    imageAlt: "alt",
-    imageSrc:
-      "https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?q=80&w=3795&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    buttonLabel: "Buy one",
-    buttonUrl: "https://www.google.com",
+    isTextOnRight: true,
   },
 }
 
-export const SideBySideRightVariant: Story = {
+export const NoButton: Story = {
   args: {
-    isTextOnRight: true,
-    title: "Meet Simone Yi Ting Tan",
-    description:
-      "Simone is our Management Associate from batch 2024. Simone is currently on her third rotation in the Energy Trading department.",
-    imageAlt: "alt",
-    imageSrc: "https://placehold.co/400x300",
-    buttonLabel: "Simone's Journey",
-    buttonUrl: "https://www.google.com",
+    buttonUrl: "",
   },
 }

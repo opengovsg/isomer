@@ -1,110 +1,73 @@
-import type { InfopicProps } from "~/interfaces"
-import { ComponentContent } from "../../internal/customCssClass"
-import Button from "../Button"
+import type { VariantProps } from "tailwind-variants"
 
-type TextComponentProps = Pick<
-  InfopicProps,
-  "title" | "description" | "buttonLabel" | "buttonUrl"
-> & {
+import type { InfopicProps as BaseInfopicProps } from "~/interfaces"
+import { tv } from "~/lib/tv"
+import { LinkButton } from "../../internal/LinkButton"
+
+const infopicStyles = tv({
+  slots: {
+    container:
+      "grid min-h-[360px] bg-base-canvas-backdrop [grid-template-areas:'img''content'] [grid-template-rows:auto_1fr] lg:grid-cols-2",
+    image: "inset-0 h-full w-full object-cover lg:absolute",
+    imageContainer:
+      "relative max-h-[400px] w-full [grid-area:img] lg:max-h-full",
+    // max-width of content in desktop is HALF of max-w-screen-xl for correct alignment of content
+    // since content is half of screen width in desktop.
+    content:
+      "px-6 pb-16 pt-10 text-base-content [grid-area:content] md:max-w-[760px] md:px-10 md:pb-20 md:pt-16 lg:max-w-[620px] lg:py-24 lg:pl-10",
+    title: "prose-display-md text-base-content-strong",
+    description: "prose-body-base mt-4 md:mt-6",
+    button: "mt-9",
+  },
+  variants: {
+    isTextOnRight: {
+      true: {
+        container: "lg:[grid-template-areas:'img_content']",
+        content: "lg:justify-self-start lg:pl-24",
+      },
+      false: {
+        container: "lg:[grid-template-areas:'content_img']",
+        content: "lg:justify-self-end lg:pr-24",
+      },
+    },
+  },
+})
+
+interface InfopicProps
+  extends Omit<BaseInfopicProps, "type" | "subtitle" | "sectionIndex">,
+    VariantProps<typeof infopicStyles> {
   className?: string
 }
 
-type ImageComponentProps = Pick<InfopicProps, "imageSrc" | "imageAlt"> & {
-  className?: string
-}
-
-const TextComponent = ({
+export const Infopic = ({
+  imageSrc,
   title,
-  description,
   buttonLabel,
   buttonUrl,
-  className,
-}: TextComponentProps) => {
+  description,
+  imageAlt,
+  isTextOnRight,
+  LinkComponent,
+}: InfopicProps): JSX.Element => {
+  const compoundStyles = infopicStyles({ isTextOnRight })
+  const hasLinkButton = buttonLabel && buttonUrl
+
   return (
-    <div className={`flex flex-col gap-6 ${className ?? ""}`}>
-      <div className="flex flex-col gap-4 sm:gap-6">
-        <h1 className="text-2xl font-bold text-content sm:text-4xl">{title}</h1>
-        {description && (
-          <p className="text-sm text-content sm:text-lg">{description}</p>
+    <div className={compoundStyles.container()}>
+      <div className={compoundStyles.content()}>
+        <h3 className={compoundStyles.title()}>{title}</h3>
+        <p className={compoundStyles.description()}>{description}</p>
+        {hasLinkButton && (
+          <div className={compoundStyles.button()}>
+            <LinkButton LinkComponent={LinkComponent} href={buttonUrl}>
+              {buttonLabel}
+            </LinkButton>
+          </div>
         )}
       </div>
-      {buttonLabel && buttonUrl && (
-        <Button label={buttonLabel} href={buttonUrl} rightIcon="right-arrow" />
-      )}
+      <div className={compoundStyles.imageContainer()}>
+        <img className={compoundStyles.image()} alt={imageAlt} src={imageSrc} />
+      </div>
     </div>
   )
 }
-
-const ImageComponent = ({
-  imageSrc,
-  imageAlt,
-  className,
-}: ImageComponentProps) => {
-  return (
-    <div
-      className={`aspect-h-1 aspect-w-1 my-auto overflow-hidden ${className ?? ""}`}
-    >
-      <img
-        src={imageSrc}
-        alt={imageAlt}
-        className="max-h-[22.5rem] w-full object-cover object-center lg:max-h-[38.75rem]"
-      />
-    </div>
-  )
-}
-
-const InfoPic = ({
-  imageSrc,
-  imageAlt,
-  title,
-  description,
-  buttonLabel,
-  buttonUrl,
-  isTextOnRight,
-}: InfopicProps) => {
-  return (
-    <>
-      {/* Mobile-Tablet */}
-      <div className="md:hidden">
-        <div
-          className={`${ComponentContent} flex flex-col gap-10 py-16 sm:px-14 sm:py-12`}
-        >
-          <ImageComponent
-            imageSrc={imageSrc}
-            imageAlt={imageAlt}
-            className="rounded-xl"
-          />
-          <TextComponent
-            title={title}
-            description={description}
-            buttonLabel={buttonLabel}
-            buttonUrl={buttonUrl}
-          />
-        </div>
-      </div>
-      {/* Desktop */}
-      <div className="hidden md:block">
-        <div
-          className={`${ComponentContent} flex ${
-            isTextOnRight ? "flex-row" : "flex-row-reverse"
-          } gap-16 py-24`}
-        >
-          <ImageComponent
-            imageSrc={imageSrc}
-            imageAlt={imageAlt}
-            className="w-1/2 rounded-xl"
-          />
-          <TextComponent
-            title={title}
-            description={description}
-            buttonLabel={buttonLabel}
-            buttonUrl={buttonUrl}
-            className="w-1/2 justify-center"
-          />
-        </div>
-      </div>
-    </>
-  )
-}
-
-export default InfoPic
