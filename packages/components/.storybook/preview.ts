@@ -99,7 +99,6 @@ const preview: Preview = {
      * ```
      */
     chromatic: {
-      ...withChromaticModes(["desktop"]),
       prefersReducedMotion: "reduce",
     },
   },
