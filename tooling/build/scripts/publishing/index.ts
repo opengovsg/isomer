@@ -12,7 +12,12 @@ import {
 
 dotenv.config();
 
-const DATABASE_URL = process.env.DATABASE_URL;
+// Env vars
+const DB_USERNAME = process.env.DB_USERNAME;
+const DB_PASSWORD = process.env.DB_PASSWORD;
+const DB_HOST = process.env.DB_HOST;
+const DB_PORT = process.env.DB_PORT;
+const DB_NAME = process.env.DB_NAME;
 const SITE_ID = Number(process.env.SITE_ID);
 
 interface Resource {
@@ -34,7 +39,11 @@ function logDebug(message: string, ...optionalParams: any[]) {
 
 async function main() {
   const client = new Client({
-    connectionString: DATABASE_URL,
+    user: DB_USERNAME,
+    host: DB_HOST,
+    database: DB_NAME,
+    password: DB_PASSWORD,
+    port: Number(DB_PORT),
   });
 
   const start = performance.now(); // Start profiling
