@@ -96,7 +96,7 @@ calculate_duration $start_time
 # Upload to AWS Amplify
 echo "Uploading to AWS Amplify..."
 start_time=$(date +%s)
-DEPLOY_DATA=$(aws amplify create-deployment --app-id "$AMPLIFY_APP_ID" --branch-name "staging")
+DEPLOY_DATA=$(aws amplify create-deployment --app-id "$AMPLIFY_APP_ID" --branch-name "production")
 JOB_ID=$(echo $DEPLOY_DATA | jq -r '.jobId')
 echo "JOB_ID: $JOB_ID"
 UPLOAD_URL=$(echo $DEPLOY_DATA | jq -r '.zipUploadUrl')
@@ -108,6 +108,6 @@ calculate_duration $start_time
 # Start AWS Amplify deployment
 echo "Starting deployment..."
 start_time=$(date +%s)
-aws amplify start-deployment --app-id "$AMPLIFY_APP_ID" --branch-name "staging" --job-id $JOB_ID
+aws amplify start-deployment --app-id "$AMPLIFY_APP_ID" --branch-name "production" --job-id $JOB_ID
 echo "Deployment created in Amplify successfully"
 calculate_duration $start_time
