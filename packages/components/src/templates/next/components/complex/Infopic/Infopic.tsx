@@ -12,8 +12,8 @@ const infopicStyles = tv({
     imageContainer:
       "relative max-h-[400px] w-full [grid-area:img] md:max-h-[560px] lg:max-h-full",
     content:
-      "px-6 pb-16 pt-10 [grid-area:content] md:max-w-[760px] md:px-10 md:pb-20 md:pt-16 lg:max-w-[676px] lg:p-24",
-    title: "prose-display-md",
+      "px-6 pb-16 pt-10 text-base-content [grid-area:content] md:max-w-[760px] md:px-10 md:pb-20 md:pt-16 lg:max-w-[676px] lg:p-24",
+    title: "prose-display-md text-base-content-strong",
     description: "prose-body-base mt-6",
     button: "mt-9",
   },
