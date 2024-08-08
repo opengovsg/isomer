@@ -264,23 +264,28 @@ const CollectionClient = ({
   )
 
   return (
-    <div className="mx-auto my-16 flex max-w-screen-xl flex-col items-start gap-16 px-6 md:px-10">
-      <div className="flex max-w-[47.8rem] flex-col gap-12">
-        <h1 className="flex flex-col gap-16 text-content-strong text-heading-01">
-          {title}
-        </h1>
-        <p className="text-content text-paragraph-01">{subtitle}</p>
+    <div>
+      <div className="bg-brand-canvas px-6">
+        <div className="mx-auto flex max-w-screen-xl flex-col gap-8 px-6 pb-12 pt-6 md:px-10">
+          <div className="flex max-w-[54rem] flex-col gap-5 md:mt-6">
+            <h1 className="prose-display-lg text-base-content-strong">
+              {title}
+            </h1>
+            <p className="prose-title-lg-regular text-base-content">
+              {subtitle}
+            </p>
+            <div className="mx-auto mt-5 w-full">
+              <CollectionSearch
+                placeholder={`Search for ${page.title.toLowerCase()}`}
+                search={searchValue}
+                setSearch={setSearchValue}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="mx-auto w-full">
-        <CollectionSearch
-          placeholder={`Search for ${page.title.toLowerCase()}`}
-          search={searchValue}
-          setSearch={setSearchValue}
-        />
-      </div>
-
-      <div className="flex w-full flex-col justify-between gap-10 lg:flex-row">
+      <div className="mx-auto flex max-w-screen-xl flex-col justify-center gap-10 px-10 pb-20 pt-16 lg:flex-row">
         <div className="w-full lg:w-1/4">
           <Filter
             filters={filters}
