@@ -9,11 +9,13 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
+import { uniqueId } from "lodash"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
 import { MenuItem } from "~/components/Menu"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
+import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -29,6 +31,11 @@ const SitePage: NextPageWithLayout = () => {
     isOpen: isPageCreateModalOpen,
     onOpen: onPageCreateModalOpen,
     onClose: onPageCreateModalClose,
+  } = useDisclosure()
+  const {
+    isOpen: isFolderCreateModalOpen,
+    onOpen: onFolderCreateModalOpen,
+    onClose: onFolderCreateModalClose,
   } = useDisclosure()
 
   const { siteId } = useQueryParse(sitePageSchema)
@@ -48,7 +55,10 @@ const SitePage: NextPageWithLayout = () => {
               </MenuButton>
               <Portal>
                 <MenuList>
-                  <MenuItem icon={<BiFolder fontSize="1rem" />}>
+                  <MenuItem
+                    onClick={onFolderCreateModalOpen}
+                    icon={<BiFolder fontSize="1rem" />}
+                  >
                     Folder
                   </MenuItem>
                   <MenuItem
@@ -72,6 +82,11 @@ const SitePage: NextPageWithLayout = () => {
       <CreatePageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}
+        siteId={siteId}
+      />
+      <CreateFolderModal
+        isOpen={isFolderCreateModalOpen}
+        onClose={onFolderCreateModalClose}
         siteId={siteId}
       />
       <MoveResourceModal />

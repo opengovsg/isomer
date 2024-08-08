@@ -17,17 +17,9 @@ import { Button, FormErrorMessage } from "@opengovsg/design-system-react"
 import { Controller } from "react-hook-form"
 
 import { MAX_PAGE_URL_LENGTH, MAX_TITLE_LENGTH } from "~/schemas/page"
+import { generateResourceUrl } from "../utils"
 import { useCreatePageWizard } from "./CreatePageWizardContext"
 import { PreviewLayout } from "./PreviewLayout"
-
-const generatePageUrl = (value: string) => {
-  return (
-    value
-      .toLowerCase()
-      // Replace non-alphanum characters with hyphen for UX
-      .replace(/[^a-z0-9]/g, "-")
-  )
-}
 
 export const CreatePageDetailsScreen = () => {
   const {
@@ -65,7 +57,7 @@ export const CreatePageDetailsScreen = () => {
     // Dirty means user has changed the value AND the value is not the same as the default value of "".
     // Once the value has been cleared, dirty state will reset.
     if (!permalinkFieldState.isDirty) {
-      setValue("permalink", generatePageUrl(title), {
+      setValue("permalink", generateResourceUrl(title), {
         shouldValidate: !!title,
       })
     }
@@ -164,7 +156,7 @@ export const CreatePageDetailsScreen = () => {
                         placeholder="URL will be autopopulated if left untouched"
                         {...field}
                         onChange={(e) => {
-                          onChange(generatePageUrl(e.target.value))
+                          onChange(generateResourceUrl(e.target.value))
                         }}
                       />
                     )}
