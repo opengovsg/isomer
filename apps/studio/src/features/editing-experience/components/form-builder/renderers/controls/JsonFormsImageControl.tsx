@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Box, FormControl, Text } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
@@ -11,6 +11,7 @@ import {
 } from "@opengovsg/design-system-react"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPES,
   MAX_IMG_FILE_SIZE_BYTES,
@@ -23,6 +24,7 @@ export const jsonFormsImageControlTester: RankedTester = rankWith(
     schemaMatches((schema) => schema.format === "image"),
   ),
 )
+
 export function JsonFormsImageControl({
   label,
   handleChange,
@@ -30,10 +32,23 @@ export function JsonFormsImageControl({
   description,
   required,
   errors,
+  data,
 }: ControlProps) {
   const toast = useToast()
-
+  const { modifiedAssets, setModifiedAssets } = useEditorDrawerContext()
   const [pendingFile, setPendingFile] = useState<File | undefined>()
+
+  // NOTE: For some reason, we cannot modified the modifiedAssets state directly
+  // from the Attachment component
+  useEffect(() => {
+    const modifiedAsset = modifiedAssets.find((image) => image.path === path)
+
+    if (modifiedAsset) {
+      modifiedAsset.file = pendingFile
+    } else {
+      setModifiedAssets([...modifiedAssets, { path, file: pendingFile }])
+    }
+  }, [modifiedAssets, path, pendingFile, setModifiedAssets])
 
   return (
     <Box py={2}>
@@ -48,8 +63,7 @@ export function JsonFormsImageControl({
           onChange={(file) => {
             if (file) {
               setPendingFile(file)
-              // TODO: Upload file logic?
-              handleChange(path, "https://picsum.photos/id/237/200/300")
+              handleChange(path, URL.createObjectURL(file))
             } else {
               // NOTE: Do we need to update backend on removal of file?
               handleChange(path, "")
