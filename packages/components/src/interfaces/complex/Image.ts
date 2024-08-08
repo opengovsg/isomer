@@ -1,6 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteConfigProps } from "~/types"
+
 export const ImageSchema = Type.Object(
   {
     type: Type.Literal("image", { default: "image" }),
@@ -13,6 +15,11 @@ export const ImageSchema = Type.Object(
       description:
         "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
     }),
+    caption: Type.Optional(
+      Type.String({
+        title: "Image caption"
+      })
+    ),
     width: Type.Optional(
       Type.Integer({
         title: "Image width",
@@ -34,4 +41,7 @@ export const ImageSchema = Type.Object(
   },
 )
 
-export type ImageProps = Static<typeof ImageSchema>
+export type ImageProps = Static<typeof ImageSchema> &
+  Pick<IsomerSiteConfigProps, "assetsBaseUrl"> & {
+    LinkComponent?: any // Next.js link
+  }

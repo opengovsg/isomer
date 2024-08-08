@@ -1,4 +1,8 @@
-import type { IsomerComponent, IsomerPageSchemaType } from "~/engine"
+import type {
+  IsomerComponent,
+  IsomerPageSchemaType,
+  IsomerSiteConfigProps,
+} from "~/engine"
 import {
   Accordion,
   Button,
@@ -24,12 +28,14 @@ import {
 
 interface RenderComponentProps {
   component: IsomerComponent
+  assetsBaseUrl?: IsomerSiteConfigProps["assetsBaseUrl"]
   LinkComponent?: any // Next.js link
   ScriptComponent?: any // Next.js script
 }
 
 export const renderComponent = ({
   component,
+  assetsBaseUrl,
   LinkComponent,
 }: RenderComponentProps) => {
   switch (component.type) {
@@ -44,7 +50,13 @@ export const renderComponent = ({
     case "iframe":
       return <Iframe {...component} />
     case "image":
-      return <Image {...component} />
+      return (
+        <Image
+          {...component}
+          assetsBaseUrl={assetsBaseUrl}
+          LinkComponent={LinkComponent}
+        />
+      )
     case "infobar":
       return <Infobar {...component} LinkComponent={LinkComponent} />
     case "infocards":
