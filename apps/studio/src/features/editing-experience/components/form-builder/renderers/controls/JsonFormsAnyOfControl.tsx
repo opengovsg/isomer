@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { Box, FormControl } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
+  createDefaultValue,
   isAnyOfControl,
   rankWith,
 } from "@jsonforms/core"
@@ -27,7 +28,9 @@ export function JsonFormsAnyOfControl({
   label,
   handleChange,
   indexOfFittingSchema,
+  data,
 }: CombinatorRendererProps) {
+  const [variant, setVariant] = useState("")
   const anyOfRenderInfos = createCombinatorRenderInfos(
     schema.anyOf ?? [],
     rootSchema,
@@ -46,11 +49,21 @@ export function JsonFormsAnyOfControl({
     }
   })
 
-  const [variant, setVariant] = useState("")
-
   const onChange = (value: string) => {
     setVariant(value)
-    handleChange(path, value)
+
+    const newSchema =
+      anyOfRenderInfos[options.findIndex((option) => option.value === value)]
+        ?.schema
+    if (!newSchema) {
+      handleChange(path, {})
+    } else {
+      const newData = createDefaultValue(newSchema, rootSchema)
+      handleChange(path, {
+        ...data,
+        ...newData,
+      })
+    }
   }
 
   useEffect(() => {

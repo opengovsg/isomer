@@ -117,36 +117,14 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
 // Generates sitemap entries and an index file for directories without an index file
 const processDanglingDirectory = async (fullPath, relativePath, name) => {
   const children = await getSiteMapChildrenEntries(fullPath, relativePath);
-  // TODO: Improve the content for generated index pages
   const listOfChildPages = {
-    type: "prose",
-    content: [
-      {
-        type: "unorderedList",
-        content: children.map((child) => ({
-          type: "listItem",
-          content: [
-            {
-              type: "paragraph",
-              content: [
-                {
-                  type: "text",
-                  marks: [
-                    {
-                      type: "link",
-                      attrs: {
-                        href: child.permalink,
-                      },
-                    },
-                  ],
-                  text: child.title,
-                },
-              ],
-            },
-          ],
-        })),
-      },
-    ],
+    type: "infocards",
+    variant: "cardsWithoutImages",
+    cards: children.map((child) => ({
+      title: child.title,
+      url: child.permalink,
+      description: child.summary,
+    })),
   };
 
   const pageName = name.replace(/-/g, " ");
@@ -255,6 +233,9 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
   );
 
   children.push(...danglingDirEntries);
+
+  // Ensure that the result is ordered in alphabetical order
+  children.sort((a, b) => a.title.localeCompare(b.title));
 
   return children;
 };

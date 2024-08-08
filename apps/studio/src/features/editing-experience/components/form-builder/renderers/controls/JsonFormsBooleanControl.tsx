@@ -24,7 +24,12 @@ export function JsonFormsBooleanControl({
   errors,
   path,
   description,
-}: ControlProps) {
+  schema,
+}: ControlProps): JSX.Element {
+  if (schema.const !== undefined) {
+    return <></>
+  }
+
   return (
     <Box py={2}>
       <FormControl>
@@ -34,7 +39,7 @@ export function JsonFormsBooleanControl({
         <Switch
           id={id}
           isDisabled={!enabled}
-          checked={data || false}
+          checked={!!data || false}
           onChange={(e) => handleChange(path, e.target.checked)}
         />
         <FormErrorMessage>{errors}</FormErrorMessage>
