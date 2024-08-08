@@ -117,7 +117,7 @@ export const assetRouter = router({
       }
     }),
 
-  deleteFile: protectedProcedure
+  deleteAsset: protectedProcedure
     .input(deleteAssetSchema)
     .mutation(async ({ ctx, input }) => {
       const { fileKey } = input
