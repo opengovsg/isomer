@@ -17,8 +17,8 @@ export const ImageSchema = Type.Object(
     }),
     caption: Type.Optional(
       Type.String({
-        title: "Image caption"
-      })
+        title: "Image caption",
+      }),
     ),
     width: Type.Optional(
       Type.Integer({
