@@ -23,6 +23,7 @@ export interface IsomerSiteConfigProps {
   favicon?: string
   search: NavbarProps["search"]
   notification?: string
+  assetsBaseUrl?: string
 }
 
 export type IsomerSiteProps = IsomerGeneratedSiteProps &
