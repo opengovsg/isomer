@@ -37,7 +37,8 @@ export const WithImage: Story = {
         title: "Card with short title",
         description:
           "In the labyrinthine expanse of Zandoria, an enigmatic government wields authority through a web of intricate bureaucracy and omnipresent surveillance, shaping the lives of its denizens with meticulous precision and unyielding control.",
-        imageUrl: "https://placehold.co/150x600",
+        imageUrl:
+          "https://craftypixels.com/placeholder-image/800x400/ffffff/000000&text=Image+with+white+background",
         imageAlt: "alt text",
       },
       {
