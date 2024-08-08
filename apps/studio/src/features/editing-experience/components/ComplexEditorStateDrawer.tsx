@@ -44,9 +44,6 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   } = useEditorDrawerContext()
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
-  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
-    { siteId, pageId },
-  )
   const utils = trpc.useUtils()
 
   const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
