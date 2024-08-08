@@ -24,3 +24,8 @@ export const moveSchema = z.object({
   movedResourceId: bigIntSchema,
   destinationResourceId: bigIntSchema,
 })
+
+export const listResourceSchema = z.object({
+  siteId: z.number(),
+  resourceId: z.number().optional(),
+})

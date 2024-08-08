@@ -4,7 +4,7 @@ import { delay } from "msw"
 import { trpcMsw } from "../mockTrpc"
 
 const pageListQuery = (wait?: DelayMode | number) => {
-  return trpcMsw.page.list.query(async () => {
+  return trpcMsw.resource.list.query(async () => {
     if (wait !== undefined) {
       await delay(wait)
     }
