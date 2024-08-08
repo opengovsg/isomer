@@ -1,5 +1,7 @@
 import DOMPurify from "isomorphic-dompurify"
 
+import { isExternalUrl } from "./isExternalUrl"
+
 // Sanitize content to only allow paragraph marks and inline elements, and
 // to remove any potentially harmful content
 export const getSanitizedInlineContent = (content: string) => {
@@ -11,7 +13,7 @@ export const getSanitizedInlineContent = (content: string) => {
     }
 
     const href = curr.getAttribute("href")
-    if (href && (href.startsWith("http://") || href.startsWith("https://"))) {
+    if (href && isExternalUrl(href)) {
       curr.setAttribute("rel", "noopener noreferrer nofollow")
       curr.setAttribute("target", "_blank")
     }
