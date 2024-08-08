@@ -59,6 +59,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
 
   const { mutateAsync: uploadAsset, isLoading: isUploadingAsset } =
     useUploadAssetMutation({ siteId })
+  const { mutateAsync: deleteAsset, isLoading: isDeletingAsset } =
+    trpc.asset.deleteAsset.useMutation()
 
   if (
     currActiveIdx === -1 ||
@@ -161,7 +163,18 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       })
 
       // TODO: Mark removed images/files as deleted
-      // const assetsToDelete = modifiedAssets.filter((asset) => !asset.file)
+      const assetsToDelete = modifiedAssets.filter(
+        (asset) => asset.src !== undefined,
+      )
+      await Promise.all(
+        assetsToDelete.map(({ src }) => {
+          if (!src) {
+            return
+          }
+
+          return deleteAsset({ fileKey: src })
+        }),
+      )
 
       updatedBlocks[currActiveIdx] = newBlock
       newPageState = {
@@ -191,6 +204,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       },
     )
   }
+
+  const isLoading = isSavingPage || isUploadingAsset || isDeletingAsset
 
   return (
     <>
@@ -241,7 +256,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
               colorScheme="sub"
               size="sm"
               p="0.625rem"
-              isDisabled={isSavingPage || isUploadingAsset}
+              isDisabled={isLoading}
               onClick={() => {
                 if (!_.isEqual(previewPageState, savedPageState)) {
                   onDiscardChangesModalOpen()
@@ -281,11 +296,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             onClick={onDeleteBlockModalOpen}
           />
           <Box w="100%">
-            <Button
-              w="100%"
-              onClick={handleSave}
-              isLoading={isSavingPage || isUploadingAsset}
-            >
+            <Button w="100%" onClick={handleSave} isLoading={isLoading}>
               Save changes
             </Button>
           </Box>
