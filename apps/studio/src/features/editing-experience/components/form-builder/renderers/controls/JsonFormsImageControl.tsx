@@ -10,6 +10,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 
+import type { ModifiedAsset } from "~/types/assets"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import {
@@ -32,11 +33,10 @@ export function JsonFormsImageControl({
   description,
   required,
   errors,
-  data,
 }: ControlProps) {
   const toast = useToast()
   const { modifiedAssets, setModifiedAssets } = useEditorDrawerContext()
-  const [pendingFile, setPendingFile] = useState<File | undefined>()
+  const [pendingAsset, setPendingAsset] = useState<ModifiedAsset | undefined>()
 
   // NOTE: For some reason, we cannot modified the modifiedAssets state directly
   // from the Attachment component
@@ -44,30 +44,49 @@ export function JsonFormsImageControl({
     const modifiedAsset = modifiedAssets.find((image) => image.path === path)
 
     if (modifiedAsset) {
-      modifiedAsset.file = pendingFile
-    } else {
-      setModifiedAssets([...modifiedAssets, { path, file: pendingFile }])
+      modifiedAsset.file = pendingAsset?.file
+      modifiedAsset.blobUrl = pendingAsset?.blobUrl
+    } else if (pendingAsset !== undefined) {
+      setModifiedAssets([...modifiedAssets, { ...pendingAsset }])
     }
-  }, [modifiedAssets, path, pendingFile, setModifiedAssets])
+  }, [modifiedAssets, path, pendingAsset, setModifiedAssets])
 
   return (
     <Box py={2}>
-      <FormControl isRequired={required} isInvalid={!pendingFile || !!errors}>
+      <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <Attachment
           isRequired={required}
           name="image-upload"
           imagePreview="large"
           multiple={false}
-          value={pendingFile}
+          value={pendingAsset?.file}
           onChange={(file) => {
             if (file) {
-              setPendingFile(file)
-              handleChange(path, URL.createObjectURL(file))
+              const modifiedAsset: ModifiedAsset = {
+                path,
+                src: pendingAsset?.src,
+                file,
+                blobUrl: URL.createObjectURL(file),
+              }
+
+              setPendingAsset(modifiedAsset)
+              handleChange(path, modifiedAsset.blobUrl)
             } else {
-              // NOTE: Do we need to update backend on removal of file?
+              if (pendingAsset === undefined) {
+                return
+              }
+
+              if (pendingAsset.blobUrl?.startsWith("blob:")) {
+                URL.revokeObjectURL(pendingAsset.blobUrl)
+              }
+
+              setPendingAsset({
+                ...pendingAsset,
+                file: undefined,
+                blobUrl: undefined,
+              })
               handleChange(path, "")
-              setPendingFile(undefined)
             }
           }}
           onError={(error) => {
