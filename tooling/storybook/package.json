@@ -18,6 +18,6 @@
     "@isomer/tsconfig": "*",
     "eslint": "^9.6.0",
     "prettier": "^3.3.2",
-    "typescript": "5.2.2"
+    "typescript": "5.5.4"
   }
 }
