@@ -215,7 +215,7 @@ const LegalSection = ({
           )}
           {isGovernment && (
             <FooterItem
-              title="Reach"
+              title="REACH"
               url={"https://www.reach.gov.sg"}
               LinkComponent={LinkComponent}
             />
