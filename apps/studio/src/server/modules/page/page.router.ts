@@ -72,7 +72,10 @@ export const pageRouter = router({
 
       if (resourceId) {
         query = query.where("Resource.parentId", "=", String(resourceId))
+      } else {
+        query = query.where("Resource.parentId", "is", null)
       }
+
       return query
         .select([
           "Resource.id",
