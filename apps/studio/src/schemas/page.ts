@@ -67,3 +67,32 @@ export const createPageSchema = z.object({
   // NOTE: implies that top level pages are allowed
   folderId: z.number().min(1).optional(),
 })
+
+export const createCollectionPageFormSchema = z
+  .discriminatedUnion("type", [
+    z.object({
+      type: z.literal("pdf"),
+      url: z.string().url(),
+    }),
+    z.object({
+      type: z.literal("page"),
+    }),
+  ])
+  .and(
+    createPageSchema
+      .omit({
+        layout: true,
+        folderId: true,
+        siteId: true,
+      })
+      .extend({
+        category: z.string().optional(),
+      }),
+  )
+
+export const createCollectionPageSchema = createCollectionPageFormSchema.and(
+  z.object({
+    collectionId: z.number().min(1),
+    siteId: z.number().min(1),
+  }),
+)
