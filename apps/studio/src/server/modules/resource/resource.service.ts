@@ -97,12 +97,20 @@ export const getFullPageById = async (
     .executeTakeFirst()
 }
 
+// There are 3 types of pages this get query supports:
+// Page, CollectionPage, RootPage
 export const getPageById = (
   db: SafeKysely,
   args: { resourceId: number; siteId: number },
 ) =>
   getById(db, args)
-    .where("type", "=", "Page")
+    .where((eb) =>
+      eb.or([
+        eb("type", "=", "Page"),
+        eb("type", "=", "CollectionPage"),
+        eb("type", "=", "RootPage"),
+      ]),
+    )
     .select(defaultResourceSelect)
     .executeTakeFirstOrThrow()
 

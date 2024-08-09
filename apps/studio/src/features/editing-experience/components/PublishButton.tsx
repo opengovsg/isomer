@@ -38,7 +38,6 @@ const SuspendablePublishButton = ({
       }
       await utils.page.readPage.invalidate({ pageId, siteId })
     },
-    // TODO: This is not triggered
     onError: async (error) => {
       console.error(`Error occurred when publishing page: ${error.message}`)
       toast({
