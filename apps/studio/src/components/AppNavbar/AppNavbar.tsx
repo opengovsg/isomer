@@ -1,6 +1,5 @@
 import Image from "next/image"
 import NextLink from "next/link"
-import { useParams } from "next/navigation"
 import { Flex, HStack } from "@chakra-ui/react"
 import {
   AvatarMenu,
@@ -14,45 +13,9 @@ import { BiLinkExternal } from "react-icons/bi"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useMe } from "~/features/me/api"
 import { DASHBOARD, SETTINGS_PROFILE } from "~/lib/routes"
-import PublishButton from "./PublishButton"
 
 export function AppNavbar(): JSX.Element {
   const { me, logout } = useMe()
-
-  const pathParams = useParams()
-
-  interface HidePublishButton {
-    showPublish: false
-  }
-
-  interface ShowPublishButton {
-    showPublish: true
-    pageId: number
-    siteId: number
-  }
-
-  type GetPublishButtonResult = HidePublishButton | ShowPublishButton
-
-  const getPublishButtonProps = (): GetPublishButtonResult => {
-    const siteId = pathParams.siteId
-    const pageId = pathParams.pageId
-
-    // Ensure both siteId and pageId are strings and parseable as integers
-    if (typeof siteId !== "string" || typeof pageId !== "string") {
-      return { showPublish: false }
-    }
-
-    const parsedSiteId = parseInt(siteId, 10)
-    const parsedPageId = parseInt(pageId, 10)
-
-    // Check if both parsedSiteId and parsedPageId are valid numbers
-    if (isNaN(parsedSiteId) || isNaN(parsedPageId)) {
-      return { showPublish: false }
-    }
-    return { showPublish: true, siteId: parsedSiteId, pageId: parsedPageId }
-  }
-
-  const publishButtonProps = getPublishButtonProps()
 
   return (
     <Flex flex="0 0 auto" gridColumn="1/-1" height={ADMIN_NAVBAR_HEIGHT}>
@@ -99,12 +62,6 @@ export function AppNavbar(): JSX.Element {
           >
             Report an issue
           </Button>
-          {publishButtonProps.showPublish && (
-            <PublishButton
-              pageId={publishButtonProps.pageId}
-              siteId={publishButtonProps.siteId}
-            />
-          )}
           <AvatarMenu
             name={me.name}
             variant="subtle"
