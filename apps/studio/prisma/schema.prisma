@@ -130,6 +130,7 @@ model Site {
   theme       Json?
   navbar      Navbar?
   footer      Footer?
+  codeBuildId String?
 }
 
 model Navbar {
