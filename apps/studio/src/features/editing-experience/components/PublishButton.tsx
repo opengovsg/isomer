@@ -1,5 +1,5 @@
-import { Skeleton, useToast } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Skeleton } from "@chakra-ui/react"
+import { Button, useToast } from "@opengovsg/design-system-react"
 
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
