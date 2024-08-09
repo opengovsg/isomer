@@ -1,4 +1,5 @@
 import type { SelectExpression } from "kysely"
+import { TRPCError } from "@trpc/server"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { SafeKysely } from "../database"
@@ -45,7 +46,7 @@ const createVersion = async (
   return { versionId: addedVersion.id }
 }
 
-export const addNewVersion = async ({
+export const incrementVersion = async ({
   siteId,
   pageId,
   userId,
@@ -56,12 +57,17 @@ export const addNewVersion = async ({
 }) => {
   return await db
     .transaction()
+    // serialize to prevent discrepancies from
+    // concurrent publishes from other users
     .setIsolationLevel("serializable")
     .execute(async (tx) => {
       const page = await getPageById(tx, { siteId, resourceId: pageId })
 
       if (!page.draftBlobId) {
-        return { error: "No drafts to publish for this page" }
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No drafts to publish for this page",
+        })
       }
 
       let newVersionNum = 1

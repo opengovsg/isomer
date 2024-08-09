@@ -26,7 +26,7 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { addNewVersion } from "../version/version.service"
+import { incrementVersion } from "../version/version.service"
 import { createDefaultPage } from "./page.service"
 
 const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
@@ -250,7 +250,7 @@ export const pageRouter = router({
     .mutation(async ({ ctx, input: { siteId, pageId } }) => {
       /* Step 1: Update DB table to latest state */
       // Create a new version
-      const addedVersionResult = await addNewVersion({
+      const addedVersionResult = await incrementVersion({
         siteId,
         pageId,
         userId: ctx.user.id,
