@@ -23,19 +23,11 @@ const SuspendablePublishButton = ({
   const publishSuccessMsg = "Page published successfully"
 
   const { mutate, isLoading } = trpc.page.publishPage.useMutation({
-    onSuccess: async (data) => {
-      if (data.versionId) {
-        toast({
-          status: "success",
-          title: publishSuccessMsg,
-        })
-      } else {
-        console.error(data.error)
-        toast({
-          status: "error",
-          title: publishFailureMsg,
-        })
-      }
+    onSuccess: async () => {
+      toast({
+        status: "success",
+        title: publishSuccessMsg,
+      })
       await utils.page.readPage.invalidate({ pageId, siteId })
     },
     onError: async (error) => {
