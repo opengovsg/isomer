@@ -13,6 +13,11 @@ export const getEditPageSchema = z.object({
   siteId: z.number().min(1),
 })
 
+export const getPageSchema = z.object({
+  pageId: z.number().min(1),
+  siteId: z.number().min(1),
+})
+
 export const reorderBlobSchema = z.object({
   pageId: z.number().min(1),
   from: z.number().min(0),
@@ -66,4 +71,10 @@ export const createPageSchema = z.object({
   siteId: z.number().min(1),
   // NOTE: implies that top level pages are allowed
   folderId: z.number().min(1).optional(),
+})
+
+// TODO: siteId should be taken from user's context (not input)
+export const publishPageSchema = z.object({
+  pageId: z.number().min(1),
+  siteId: z.number().min(1),
 })

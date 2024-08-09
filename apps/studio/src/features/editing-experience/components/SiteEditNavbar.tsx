@@ -5,9 +5,11 @@ import { Breadcrumb } from "@opengovsg/design-system-react"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editPageSchema } from "../schema"
+import PublishButton from "./PublishButton"
 
 export const SiteEditNavbar = (): JSX.Element => {
-  const { siteId } = useQueryParse(editPageSchema)
+  const { siteId, pageId } = useQueryParse(editPageSchema)
+
   return (
     <Flex flex="0 0 auto" gridColumn="1/-1">
       <Flex
@@ -36,6 +38,12 @@ export const SiteEditNavbar = (): JSX.Element => {
             <BreadcrumbLink href="#">Current page</BreadcrumbLink>
           </BreadcrumbItem>
         </Breadcrumb>
+
+        {pageId && siteId && (
+          <Flex justifyContent={"end"} alignItems={"center"}>
+            <PublishButton pageId={pageId} siteId={siteId} />
+          </Flex>
+        )}
       </Flex>
     </Flex>
   )
