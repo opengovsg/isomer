@@ -1,10 +1,16 @@
 import { Box, HStack, Stack, Text, useDisclosure } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
+import { useAtom } from "jotai"
 import { BiData } from "react-icons/bi"
 import { z } from "zod"
 
+import {
+  DEFAULT_COLLECTION_MODAL_STATE,
+  deleteCollectionModalAtom,
+} from "~/features/dashboard/atoms"
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
 import { CollectionTable } from "~/features/dashboard/components/CollectionTable"
+import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { CreateCollectionPageModal } from "~/features/editing-experience/components/CreateCollectionPageModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
@@ -23,6 +29,9 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
     onClose: onPageCreateModalClose,
   } = useDisclosure()
   const { siteId, resourceId } = useQueryParse(sitePageSchema)
+  const [deleteCollectionModalState, setDeleteCollectionModalState] = useAtom(
+    deleteCollectionModalAtom,
+  )
 
   // TODO: Handle not found error in error boundary
   const [metadata] = trpc.collection.getMetadata.useSuspenseQuery({
@@ -62,6 +71,13 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
         onClose={onPageCreateModalClose}
         siteId={siteId}
         collectionId={resourceId}
+      />
+      <DeleteResourceModal
+        siteId={siteId}
+        {...deleteCollectionModalState}
+        onClose={() =>
+          setDeleteCollectionModalState(DEFAULT_COLLECTION_MODAL_STATE)
+        }
       />
     </>
   )

@@ -75,7 +75,7 @@ const DeleteResourceModalContent = ({
   const utils = trpc.useUtils()
   const toast = useToast()
   const [isChecked, setIsChecked] = useState(false)
-  const { mutate } = trpc.resource.delete.useMutation({
+  const { mutate, isLoading } = trpc.resource.delete.useMutation({
     onSettled: onClose,
     onSuccess: async () => {
       // TODO: here and elsewhere, we should aim to simplify our query pattern
@@ -123,6 +123,7 @@ const DeleteResourceModalContent = ({
             variant="solid"
             colorScheme="critical"
             onClick={onDelete}
+            isLoading={isLoading}
           >
             Delete {label}
           </Button>
