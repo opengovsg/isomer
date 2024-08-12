@@ -17,14 +17,8 @@ import { Menu } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFile, BiFolder, BiHomeAlt } from "react-icons/bi"
 
+import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
-
-const isAllowedToHaveChildren = (resourceType: ResourceType): boolean => {
-  return (
-    resourceType !== ResourceType.Page &&
-    resourceType !== ResourceType.CollectionPage
-  )
-}
 
 interface CmsSideNavProps {
   siteId: string
@@ -151,7 +145,15 @@ const SideNavItem = ({
                   }}
                   onDoubleClick={async () => {
                     const urlType = getResourceType(resourceType)
-                    await router.push({
+                    if (resourceType === "RootPage") {
+                      return router.push({
+                        pathname: "/sites/[siteId]",
+                        query: {
+                          siteId,
+                        },
+                      })
+                    }
+                    return router.push({
                       pathname: "/sites/[siteId]/[resourceType]/[id]",
                       query: {
                         siteId,

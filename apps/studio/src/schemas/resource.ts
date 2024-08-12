@@ -29,3 +29,12 @@ export const listResourceSchema = z.object({
   siteId: z.number(),
   resourceId: z.number().optional(),
 })
+
+export const deleteResourceSchema = z.object({
+  siteId: z.number(),
+  resourceId: z
+    .string()
+    .min(1)
+    .regex(/[0-9]+/)
+    .refine((s) => !s.startsWith("0")),
+})

@@ -36,9 +36,9 @@ const SiteSettingsPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteSettingsSchema)
 
   const notificationMutation = trpc.site.setNotification.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       reset({ notificationEnabled, notification })
-      void trpcUtils.site.getNotification.invalidate({ siteId })
+      await trpcUtils.site.getNotification.invalidate({ siteId })
       toast({
         title: "Saved site settings!",
         description: "Check your site in 5-10 minutes to view it live.",

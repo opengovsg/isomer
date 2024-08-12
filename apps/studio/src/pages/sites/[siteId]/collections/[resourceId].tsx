@@ -5,6 +5,7 @@ import { z } from "zod"
 
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
 import { CollectionTable } from "~/features/dashboard/components/CollectionTable"
+import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { CreateCollectionPageModal } from "~/features/editing-experience/components/CreateCollectionPageModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
@@ -63,6 +64,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
         siteId={siteId}
         collectionId={resourceId}
       />
+      <DeleteResourceModal siteId={siteId} />
     </>
   )
 }
