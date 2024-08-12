@@ -24,7 +24,7 @@ const createInfoCardsStyles = tv({
     cardTextContainer: "flex flex-col gap-2.5 sm:gap-3",
     cardTitle: "prose-headline-lg-semibold text-base-content-strong",
     cardTitleArrow:
-      "ml-1.5 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
+      "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
     cardDescription: "prose-body-base text-base-content",
   },
   variants: {
