@@ -1,5 +1,6 @@
 import { MenuButton, MenuList, Portal } from "@chakra-ui/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useSetAtom } from "jotai"
 import {
   BiCog,
@@ -12,12 +13,14 @@ import {
 import type { ResourceTableData } from "./types"
 import { MenuItem } from "~/components/Menu"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
+import { deleteResourceModalAtom } from "../../atoms"
 
 interface ResourceTableMenuProps {
   title: ResourceTableData["title"]
   resourceId: ResourceTableData["id"]
   type: ResourceTableData["type"]
   permalink: ResourceTableData["permalink"]
+  resourceType: ResourceTableData["type"]
 }
 
 export const ResourceTableMenu = ({
@@ -25,10 +28,13 @@ export const ResourceTableMenu = ({
   title,
   type,
   permalink,
+  resourceType,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
   const handleMoveResourceClick = () =>
     setMoveResource({ resourceId, title, permalink })
+  const setValue = useSetAtom(deleteResourceModalAtom)
+
   return (
     <Menu isLazy size="sm">
       <MenuButton
@@ -62,9 +68,22 @@ export const ResourceTableMenu = ({
           >
             Move to...
           </MenuItem>
-          <MenuItem colorScheme="critical" icon={<BiTrash fontSize="1rem" />}>
-            Delete
-          </MenuItem>
+          {resourceType !== ResourceType.RootPage && (
+            <MenuItem
+              onClick={() => {
+                setValue({
+                  isOpen: true,
+                  title,
+                  resourceId,
+                  resourceType,
+                })
+              }}
+              colorScheme="critical"
+              icon={<BiTrash fontSize="1rem" />}
+            >
+              Delete
+            </MenuItem>
+          )}
         </MenuList>
       </Portal>
     </Menu>
