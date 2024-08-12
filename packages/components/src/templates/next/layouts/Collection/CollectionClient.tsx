@@ -48,11 +48,13 @@ const getAvailableFilters = (items: CollectionCardProps[]): FilterType[] => {
     }
 
     // Step 3: Get all available years
-    const year = new Date(lastUpdated).getFullYear().toString()
-    if (year in years) {
-      years[year] += 1
-    } else {
-      years[year] = 1
+    if (lastUpdated) {
+      const year = new Date(lastUpdated).getFullYear().toString()
+      if (year in years) {
+        years[year] += 1
+      } else {
+        years[year] = 1
+      }
     }
   })
 
@@ -157,6 +159,7 @@ const getFilteredItems = (
       yearFilter &&
       !yearFilter.items.some(
         (filterItem) =>
+          item.lastUpdated &&
           new Date(item.lastUpdated).getFullYear().toString() === filterItem.id,
       )
     ) {
@@ -174,11 +177,11 @@ const getSortedItems = (
 ) => {
   return [...items].sort((a, b) => {
     if (sortBy === "date") {
-      const dateA = new Date(a.lastUpdated)
-      const dateB = new Date(b.lastUpdated)
+      const dateA = a.lastUpdated ? new Date(a.lastUpdated) : undefined
+      const dateB = b.lastUpdated ? new Date(b.lastUpdated) : undefined
       return sortDirection === "asc"
-        ? dateA.getTime() - dateB.getTime()
-        : dateB.getTime() - dateA.getTime()
+        ? (dateA?.getTime() ?? 0) - (dateB?.getTime() ?? 0)
+        : (dateB?.getTime() ?? 0) - (dateA?.getTime() ?? 0)
     }
     return 0
   })
