@@ -97,15 +97,22 @@ export const getFullPageById = async (
     .executeTakeFirst()
 }
 
+// There are 3 types of pages this get query supports:
+// Page, CollectionPage, RootPage
 export const getPageById = (
   db: SafeKysely,
   args: { resourceId: number; siteId: number },
-) => {
-  return getById(db, args)
-    .where("type", "is", "Page")
+) =>
+  getById(db, args)
+    .where((eb) =>
+      eb.or([
+        eb("type", "=", "Page"),
+        eb("type", "=", "CollectionPage"),
+        eb("type", "=", "RootPage"),
+      ]),
+    )
     .select(defaultResourceSelect)
     .executeTakeFirstOrThrow()
-}
 
 export const updatePageById = (
   page: Partial<Omit<Page, "id" | "siteId" | "parentId">> & {
@@ -113,16 +120,17 @@ export const updatePageById = (
     siteId: number
     parentId?: number
   },
+  dbInstance?: SafeKysely,
 ) => {
+  const dbObj = dbInstance ?? db
   const { id, parentId, ...rest } = page
-  return db.transaction().execute((tx) => {
-    return tx
-      .updateTable("Resource")
-      .set({ ...rest, ...(parentId && { parentId: String(parentId) }) })
-      .where("siteId", "=", page.siteId)
-      .where("id", "=", String(id))
-      .executeTakeFirstOrThrow()
-  })
+
+  return dbObj
+    .updateTable("Resource")
+    .set({ ...rest, ...(parentId && { parentId: String(parentId) }) })
+    .where("siteId", "=", page.siteId)
+    .where("id", "=", String(id))
+    .executeTakeFirstOrThrow()
 }
 
 export const updateBlobById = async (

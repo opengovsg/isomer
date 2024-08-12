@@ -1,8 +1,9 @@
 import { type DB } from "~prisma/generated/generatedTypes"
-import { Kysely, PostgresDialect } from "kysely"
+import { PostgresDialect } from "kysely"
 import pg from "pg"
 
 import { env } from "~/env.mjs"
+import { Kysely } from "./types"
 
 const connectionString = `${env.DATABASE_URL}`
 
