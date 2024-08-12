@@ -25,9 +25,10 @@ export const DiscardChangesModal = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>
+        <ModalHeader maxW="90%">
           Are you sure you want to discard your changes?
         </ModalHeader>
+
         <ModalCloseButton />
 
         <ModalBody>
