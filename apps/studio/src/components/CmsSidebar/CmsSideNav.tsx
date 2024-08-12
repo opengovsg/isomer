@@ -51,7 +51,7 @@ export const CmsSideNav = ({ siteId }: CmsSideNavProps) => {
             resourceId={null}
             permalink={"/"}
             siteId={siteId}
-            resourceType="Folder"
+            resourceType="RootPage"
           />
         </Suspense>
       </Box>
@@ -172,16 +172,22 @@ const SideNavItem = ({
               <Suspense fallback={<Skeleton />}>
                 {isExpanded && (
                   <AccordionPanel p="0" pl="1.25rem">
-                    {children.map((props) => {
-                      return (
-                        <SideNavItem
-                          resourceType={props.type}
-                          siteId={siteId}
-                          resourceId={props.id}
-                          permalink={props.permalink}
-                        />
-                      )
-                    })}
+                    {/* NOTE: The root page would already be on top level  */}
+                    {/* so we don't need to display it again here  */}
+                    {children
+                      .filter(({ type }) => {
+                        return type !== ResourceType.RootPage
+                      })
+                      .map((props) => {
+                        return (
+                          <SideNavItem
+                            resourceType={props.type}
+                            siteId={siteId}
+                            resourceId={props.id}
+                            permalink={props.permalink}
+                          />
+                        )
+                      })}
                   </AccordionPanel>
                 )}
               </Suspense>
