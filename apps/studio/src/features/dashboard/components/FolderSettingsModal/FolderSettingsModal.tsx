@@ -23,7 +23,7 @@ import { BiLink } from "react-icons/bi"
 import { generateResourceUrl } from "~/features/editing-experience/components/utils"
 import { useZodForm } from "~/lib/form"
 import {
-  editFolderSchema,
+  baseEditFolderSchema,
   MAX_FOLDER_PERMALINK_LENGTH,
   MAX_FOLDER_TITLE_LENGTH,
 } from "~/schemas/folder"
@@ -71,7 +71,7 @@ const SuspendableModalContent = ({
         title: originalTitle,
         permalink: originalPermalink,
       },
-      schema: editFolderSchema.omit({ siteId: true, resourceId: true }),
+      schema: baseEditFolderSchema.omit({ siteId: true, resourceId: true }),
     })
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
