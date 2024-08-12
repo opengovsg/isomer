@@ -9,10 +9,18 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
+import { useAtom, useSetAtom } from "jotai"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
 import { MenuItem } from "~/components/Menu"
+import {
+  DEFAULT_RESOURCE_MODAL_STATE,
+  deleteResourceModalAtom,
+  folderSettingsModalAtom,
+} from "~/features/dashboard/atoms"
+import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
+import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { CreateCollectionModal } from "~/features/editing-experience/components/CreateCollectionModal"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
@@ -44,6 +52,9 @@ const SitePage: NextPageWithLayout = () => {
   } = useDisclosure()
 
   const { siteId } = useQueryParse(sitePageSchema)
+  const [deleteResourceModalState, setDeleteResourceModalState] = useAtom(
+    deleteResourceModalAtom,
+  )
 
   return (
     <>
@@ -102,7 +113,9 @@ const SitePage: NextPageWithLayout = () => {
         onClose={onCollectionCreateModalClose}
         siteId={siteId}
       />
+      <DeleteResourceModal siteId={siteId} />
       <MoveResourceModal />
+      <FolderSettingsModal />
     </>
   )
 }
