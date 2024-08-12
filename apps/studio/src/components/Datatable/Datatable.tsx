@@ -136,18 +136,11 @@ export const Datatable = <T extends object>({
         </Table>
       </Box>
       <Flex py="1rem" gap="1rem">
-        {totalRowCountString && (
-          <Text textStyle="caption-2" color="base.content.medium">
-            {totalRowCountString}
-          </Text>
-        )}
         {pagination && (
-          <Flex ml="auto">
-            <DatatablePagination
-              instance={instance}
-              totalRowCount={totalRowCount}
-            />
-          </Flex>
+          <DatatablePagination
+            instance={instance}
+            totalRowCount={totalRowCount}
+          />
         )}
       </Flex>
     </Flex>

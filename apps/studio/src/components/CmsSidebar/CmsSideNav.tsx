@@ -122,11 +122,19 @@ const SideNavItem = ({
           return (
             <>
               {/* NOTE: required for focus ring */}
-              <Box p="4px">
+              <Box m="4px">
                 <AccordionButton
                   boxSizing="border-box"
                   disabled={isDisabled}
                   borderRadius="0.25rem"
+                  _focusVisible={{
+                    boxShadow: "none !important",
+                    outline: `2px solid var(--chakra-colors-utility-focus-default)`,
+                    outlineOffset: "0.125rem",
+                    _dark: {
+                      outline: `2px solid var(--chakra-colors-utility-focus-inverse)`,
+                    },
+                  }}
                   _hover={{
                     backgroundColor: "interaction.muted.main.hover",
                   }}

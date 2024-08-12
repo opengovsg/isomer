@@ -49,7 +49,7 @@ const SitePage: NextPageWithLayout = () => {
           <HStack w="100%" justify="space-between" align="center" gap={0}>
             <Box />
             <Menu isLazy size="sm">
-              <MenuButton as={Button} size="xs" justifySelf="flex-end">
+              <MenuButton as={Button} size="md" justifySelf="flex-end">
                 Create new...
               </MenuButton>
               <Portal>

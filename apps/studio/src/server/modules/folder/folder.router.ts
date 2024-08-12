@@ -55,11 +55,11 @@ export const folderRouter = router({
         }
       })
 
-      const { parentId } = folderResult
-      const folderName = folderResult.permalink
+      const { title, permalink, parentId } = folderResult
 
       return {
-        folderName,
+        title,
+        permalink,
         children,
         parentId,
       }
