@@ -18,6 +18,13 @@ import { BiData, BiFile, BiFolder, BiHomeAlt } from "react-icons/bi"
 
 import { trpc } from "~/utils/trpc"
 
+const isAllowedToHaveChildren = (resourceType: ResourceType): boolean => {
+  return (
+    resourceType !== ResourceType.Page &&
+    resourceType !== ResourceType.CollectionPage
+  )
+}
+
 interface CmsSideNavProps {
   siteId: string
 }
@@ -154,7 +161,7 @@ const SideNavItem = ({
                     })
                   }}
                 >
-                  {resourceType === ResourceType.Folder ? (
+                  {isAllowedToHaveChildren(resourceType) ? (
                     <AccordionIcon
                       mr="0.25rem"
                       color="interaction.support.unselected"
