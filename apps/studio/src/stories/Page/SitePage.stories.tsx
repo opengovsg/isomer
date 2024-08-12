@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { userEvent, waitFor, within } from "@storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
+import { resourceHandlers } from "tests/msw/handlers/resource"
 
 import SitePage from "~/pages/sites/[siteId]"
 
@@ -11,7 +12,11 @@ const meta: Meta<typeof SitePage> = {
   parameters: {
     getLayout: SitePage.getLayout,
     msw: {
-      handlers: [meHandlers.me(), pageHandlers.list.default()],
+      handlers: [
+        meHandlers.me(),
+        pageHandlers.list.default(),
+        resourceHandlers.getChildrenOf.default(),
+      ],
     },
     nextjs: {
       router: {
