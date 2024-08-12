@@ -26,6 +26,8 @@ export const resourceRouter = router({
       return resource
     }),
 
+  // TODO: Hint to the frontend that this can never return
+  // a `RootPage`
   getChildrenOf: protectedProcedure
     .input(getChildrenSchema)
     .query(async ({ input: { resourceId } }) => {

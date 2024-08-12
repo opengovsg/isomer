@@ -8,7 +8,9 @@ import {
   AccordionPanel,
   Box,
   Flex,
+  HStack,
   Skeleton,
+  Spacer,
   Text,
   VStack,
 } from "@chakra-ui/react"
@@ -66,7 +68,6 @@ export const CmsSideNav = ({ siteId }: CmsSideNavProps) => {
   )
 }
 
-// TODO: Add this in after #426 is merged
 const ICON_MAPPINGS = {
   [ResourceType.Page]: <BiFile />,
   [ResourceType.Folder]: <BiFolder />,
@@ -161,19 +162,42 @@ const SideNavItem = ({
                     })
                   }}
                 >
-                  {isAllowedToHaveChildren(resourceType) ? (
-                    <AccordionIcon
-                      mr="0.25rem"
-                      color="interaction.support.unselected"
-                    />
-                  ) : (
-                    <Box w="1.5rem"></Box>
-                  )}
-                  {icon}
-                  {/* TODO: add the home text on rhs if is home */}
-                  <Text textStyle="caption-1" ml="0.5rem">
-                    {permalink}
-                  </Text>
+                  <Flex
+                    w="full"
+                    color="base.content.default"
+                    alignItems="center"
+                  >
+                    {isAllowedToHaveChildren(resourceType) ? (
+                      <AccordionIcon
+                        mr="0.25rem"
+                        color="interaction.support.unselected"
+                      />
+                    ) : (
+                      <Box w="1.5rem"></Box>
+                    )}
+                    {icon}
+                    <Text
+                      noOfLines={1}
+                      textAlign="left"
+                      textStyle="caption-1"
+                      ml="0.5rem"
+                    >
+                      {permalink}
+                    </Text>
+                    <Spacer />
+                    {resourceType === ResourceType.RootPage && (
+                      <Text
+                        color="base.content.medium"
+                        textTransform="uppercase"
+                        textStyle="caption-1"
+                        overflow="hidden"
+                        textOverflow="ellipsis"
+                        whiteSpace="nowrap"
+                      >
+                        Home
+                      </Text>
+                    )}
+                  </Flex>
                 </AccordionButton>
               </Box>
               <Suspense fallback={<Skeleton />}>
