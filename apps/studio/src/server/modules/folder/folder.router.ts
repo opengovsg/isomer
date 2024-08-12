@@ -1,24 +1,27 @@
-import { createFolderSchema, readFolderSchema } from "~/schemas/folder"
+import {
+  createFolderSchema,
+  editFolderSchema,
+  readFolderSchema,
+} from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 import { db } from "../database"
+import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
   create: protectedProcedure
     .input(createFolderSchema)
-    .mutation(
-      async ({ ctx, input: { folderTitle, parentFolderId, ...rest } }) => {
-        const folder = await db
-          .insertInto("Resource")
-          .values({
-            ...rest,
-            type: "Folder",
-            title: folderTitle,
-            parentId: parentFolderId ? String(parentFolderId) : null,
-          })
-          .executeTakeFirstOrThrow()
-        return { folderId: folder.insertId }
-      },
-    ),
+    .mutation(async ({ input: { folderTitle, parentFolderId, ...rest } }) => {
+      const folder = await db
+        .insertInto("Resource")
+        .values({
+          ...rest,
+          type: "Folder",
+          title: folderTitle,
+          parentId: parentFolderId ? String(parentFolderId) : null,
+        })
+        .executeTakeFirstOrThrow()
+      return { folderId: folder.insertId }
+    }),
   readFolder: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input }) => {
@@ -63,5 +66,20 @@ export const folderRouter = router({
         children,
         parentId,
       }
+    }),
+  editFolder: protectedProcedure
+    .input(editFolderSchema)
+    .mutation(async ({ input: { resourceId, permalink, title, siteId } }) => {
+      return db
+        .updateTable("Resource")
+        .where("Resource.id", "=", resourceId)
+        .where("Resource.siteId", "=", Number(siteId))
+        .where("Resource.type", "=", "Folder")
+        .set({
+          permalink,
+          title,
+        })
+        .returning(defaultFolderSelect)
+        .execute()
     }),
 })

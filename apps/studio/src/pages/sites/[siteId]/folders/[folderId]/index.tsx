@@ -13,11 +13,11 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Breadcrumb, Button, Menu } from "@opengovsg/design-system-react"
-import { uniqueId } from "lodash"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
 import { MenuItem } from "~/components/Menu"
+import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
@@ -27,8 +27,8 @@ import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout
 import { trpc } from "~/utils/trpc"
 
 const folderPageSchema = z.object({
-  siteId: z.coerce.number(),
-  folderId: z.coerce.number(),
+  siteId: z.string(),
+  folderId: z.string(),
 })
 
 const FolderPage: NextPageWithLayout = () => {
@@ -42,14 +42,18 @@ const FolderPage: NextPageWithLayout = () => {
     onOpen: onFolderCreateModalOpen,
     onClose: onFolderCreateModalClose,
   } = useDisclosure()
+  const {
+    isOpen: isFolderSettingsModalOpen,
+    onOpen: onFolderSettingsModalOpen,
+    onClose: onFolderSettingsModalClose,
+  } = useDisclosure()
 
   const { folderId, siteId } = useQueryParse(folderPageSchema)
 
-  const [{ title, permalink, children, parentId }] =
-    trpc.folder.readFolder.useSuspenseQuery({
-      siteId,
-      resourceId: folderId,
-    })
+  const [{ title, permalink }] = trpc.folder.readFolder.useSuspenseQuery({
+    siteId: parseInt(siteId),
+    resourceId: parseInt(folderId),
+  })
 
   return (
     <>
@@ -78,7 +82,11 @@ const FolderPage: NextPageWithLayout = () => {
             <Spacer />
 
             <HStack>
-              <Button variant="outline" size="md">
+              <Button
+                variant="outline"
+                size="md"
+                onClick={onFolderSettingsModalOpen}
+              >
                 Folder settings
               </Button>
               <Menu isLazy size="sm">
@@ -109,19 +117,27 @@ const FolderPage: NextPageWithLayout = () => {
           </HStack>
         </VStack>
         <Box width="100%">
-          <ResourceTable siteId={siteId} resourceId={folderId} />
+          <ResourceTable
+            siteId={parseInt(siteId)}
+            resourceId={parseInt(folderId)}
+          />
         </Box>
       </VStack>
       <CreatePageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}
-        siteId={siteId}
+        siteId={parseInt(siteId)}
       />
       <CreateFolderModal
         isOpen={isFolderCreateModalOpen}
         onClose={onFolderCreateModalClose}
+        siteId={parseInt(siteId)}
+      />
+      <FolderSettingsModal
+        isOpen={isFolderSettingsModalOpen}
+        onClose={onFolderSettingsModalClose}
         siteId={siteId}
-        key={uniqueId()}
+        resourceId={parseInt(folderId)}
       />
     </>
   )

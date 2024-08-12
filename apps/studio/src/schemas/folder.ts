@@ -26,3 +26,27 @@ export const readFolderSchema = z.object({
   siteId: z.number().min(1),
   resourceId: z.number().min(1),
 })
+
+export const baseEditFolderSchema = z.object({
+  resourceId: z.string(),
+  permalink: z.optional(z.string()),
+  title: z.optional(z.string()),
+  siteId: z.string(),
+})
+
+export const editFolderSchema = baseEditFolderSchema.superRefine(
+  ({ permalink, title }, ctx) => {
+    if (!permalink && !title) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["siteId"],
+        message: "Either permalink or title must be provided.",
+      })
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["title"],
+        message: "Either permalink or title must be provided.",
+      })
+    }
+  },
+)
