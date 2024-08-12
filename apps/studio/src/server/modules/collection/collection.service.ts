@@ -1,3 +1,5 @@
+import { format } from "date-fns"
+
 export const createCollectionPageJson = ({
   title,
 }: {
@@ -5,11 +7,15 @@ export const createCollectionPageJson = ({
   title: string
 }) => {
   return {
-    layout: "content",
+    layout: "article",
     page: {
       title,
-      contentPageHeader: {
-        summary: "",
+      date: format(new Date(), "dd-MM-yyyy"),
+      // TODO: this is actually supposed to be passed from the frontend
+      // which is not done at present
+      category: "Feature Articles",
+      articlePageHeader: {
+        summary: [],
       },
     },
     content: [],
