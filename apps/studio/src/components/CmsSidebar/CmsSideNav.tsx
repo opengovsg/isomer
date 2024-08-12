@@ -145,7 +145,15 @@ const SideNavItem = ({
                   }}
                   onDoubleClick={async () => {
                     const urlType = getResourceType(resourceType)
-                    await router.push({
+                    if (resourceType === "RootPage") {
+                      return router.push({
+                        pathname: "/sites/[siteId]",
+                        query: {
+                          siteId,
+                        },
+                      })
+                    }
+                    return router.push({
                       pathname: "/sites/[siteId]/[resourceType]/[id]",
                       query: {
                         siteId,
