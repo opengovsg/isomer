@@ -7,7 +7,7 @@ import {
   moveSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
-import { db } from "../database"
+import { db, ResourceType } from "../database"
 
 export const resourceRouter = router({
   getMetadataById: protectedProcedure
@@ -26,12 +26,21 @@ export const resourceRouter = router({
       return resource
     }),
 
+  // TODO: Hint to the frontend that this can never return
+  // a `RootPage`
   getChildrenOf: protectedProcedure
     .input(getChildrenSchema)
     .query(async ({ input: { resourceId } }) => {
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
+        .where("Resource.type", "!=", "RootPage")
+        .$narrowType<{
+          type: Extract<
+            "Folder" | "Page" | "Collection" | "CollectionPage",
+            ResourceType
+          >
+        }>()
         .orderBy("type", "asc")
         .orderBy("title", "asc")
 

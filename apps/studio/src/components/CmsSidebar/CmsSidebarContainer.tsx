@@ -15,7 +15,7 @@ export function CmsSidebarContainer({
   return (
     <Grid
       templateAreas={`'sidebar sidenav main'`}
-      templateColumns="auto 1fr"
+      templateColumns="auto 18.75rem 1fr"
       width="100%"
     >
       <GridItem area="sidebar" as="aside" w="full" p={0}>
