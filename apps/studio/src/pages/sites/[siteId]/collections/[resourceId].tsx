@@ -5,8 +5,8 @@ import { BiData } from "react-icons/bi"
 import { z } from "zod"
 
 import {
-  DEFAULT_COLLECTION_MODAL_STATE,
-  deleteCollectionModalAtom,
+  DEFAULT_RESOURCE_MODAL_STATE,
+  deleteResourceModalAtom,
 } from "~/features/dashboard/atoms"
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
 import { CollectionTable } from "~/features/dashboard/components/CollectionTable"
@@ -30,7 +30,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
   } = useDisclosure()
   const { siteId, resourceId } = useQueryParse(sitePageSchema)
   const [deleteCollectionModalState, setDeleteCollectionModalState] = useAtom(
-    deleteCollectionModalAtom,
+    deleteResourceModalAtom,
   )
 
   // TODO: Handle not found error in error boundary
@@ -76,7 +76,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
         siteId={siteId}
         {...deleteCollectionModalState}
         onClose={() =>
-          setDeleteCollectionModalState(DEFAULT_COLLECTION_MODAL_STATE)
+          setDeleteCollectionModalState(DEFAULT_RESOURCE_MODAL_STATE)
         }
       />
     </>

@@ -5,7 +5,7 @@ import { BiCog, BiDotsHorizontalRounded, BiTrash } from "react-icons/bi"
 
 import type { CollectionTableData } from "./types"
 import { MenuItem } from "~/components/Menu"
-import { deleteCollectionModalAtom } from "../../atoms"
+import { deleteResourceModalAtom } from "../../atoms"
 
 interface CollectionTableMenuProps {
   title: CollectionTableData["title"]
@@ -18,7 +18,7 @@ export const CollectionTableMenu = ({
   resourceId,
   resourceType,
 }: CollectionTableMenuProps) => {
-  const setValue = useSetAtom(deleteCollectionModalAtom)
+  const setValue = useSetAtom(deleteResourceModalAtom)
 
   return (
     <Menu isLazy size="sm">
