@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server"
 
 import {
+  deleteResourceSchema,
   getChildrenSchema,
   getMetadataSchema,
   listResourceSchema,
@@ -104,5 +105,17 @@ export const resourceRouter = router({
           "Resource.type",
         ])
         .execute()
+    }),
+  delete: protectedProcedure
+    .input(deleteResourceSchema)
+    .mutation(async ({ input: { siteId, resourceId } }) => {
+      const result = await db
+        .deleteFrom("Resource")
+        .where("Resource.id", "=", String(resourceId))
+        .where("Resource.siteId", "=", siteId)
+        .executeTakeFirst()
+      // NOTE: We need to do this `toString` as the property is a `bigint`
+      // and trpc cannot serialise it, which leads to errors
+      return result.numDeletedRows.toString()
     }),
 })
