@@ -14,6 +14,7 @@ import { z } from "zod"
 
 import { MenuItem } from "~/components/Menu"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
+import { CreateCollectionModal } from "~/features/editing-experience/components/CreateCollectionModal"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
@@ -35,6 +36,11 @@ const SitePage: NextPageWithLayout = () => {
     isOpen: isFolderCreateModalOpen,
     onOpen: onFolderCreateModalOpen,
     onClose: onFolderCreateModalClose,
+  } = useDisclosure()
+  const {
+    isOpen: isCollectionCreateModalOpen,
+    onOpen: onCollectionCreateModalOpen,
+    onClose: onCollectionCreateModalClose,
   } = useDisclosure()
 
   const { siteId } = useQueryParse(sitePageSchema)
@@ -66,7 +72,10 @@ const SitePage: NextPageWithLayout = () => {
                   >
                     Page
                   </MenuItem>
-                  <MenuItem icon={<BiData fontSize="1rem" />}>
+                  <MenuItem
+                    onClick={onCollectionCreateModalOpen}
+                    icon={<BiData fontSize="1rem" />}
+                  >
                     Collection
                   </MenuItem>
                 </MenuList>
@@ -86,6 +95,11 @@ const SitePage: NextPageWithLayout = () => {
       <CreateFolderModal
         isOpen={isFolderCreateModalOpen}
         onClose={onFolderCreateModalClose}
+        siteId={siteId}
+      />
+      <CreateCollectionModal
+        isOpen={isCollectionCreateModalOpen}
+        onClose={onCollectionCreateModalClose}
         siteId={siteId}
       />
       <MoveResourceModal />
