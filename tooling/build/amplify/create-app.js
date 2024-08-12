@@ -3,7 +3,7 @@ const {
   CreateAppCommand,
   CreateBranchCommand,
   StartJobCommand,
-} = require("@aws-sdk/client-amplify");
+} = require("@aws-sdk/client-amplify")
 
 const AMPLIFY_BUILD_SPEC = `
 version: 1
@@ -24,13 +24,13 @@ frontend:
 #     paths:
 #       - .next/cache/**/*
 #       - node_modules/**/*
-`;
+`
 
-const amplifyClient = new AmplifyClient({ region: "ap-southeast-1" });
+const amplifyClient = new AmplifyClient({ region: "ap-southeast-1" })
 
 const createApp = async (appName) => {
-  console.log("Creating app:", appName);
-  let appId = "";
+  console.log("Creating app:", appName)
+  let appId = ""
 
   const params = new CreateAppCommand({
     name: appName,
@@ -41,12 +41,12 @@ const createApp = async (appName) => {
       NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT: "staging",
     },
     customRules: [{ source: "/<*>", target: "/404.html", status: "404" }],
-  });
+  })
 
   await amplifyClient
     .send(params)
     .then((appInfo) => {
-      appId = appInfo.app?.appId;
+      appId = appInfo.app?.appId
 
       const mainBranchParams = new CreateBranchCommand({
         appId,
@@ -56,9 +56,9 @@ const createApp = async (appName) => {
         environmentVariables: {
           NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT: "production",
         },
-      });
+      })
 
-      return amplifyClient.send(mainBranchParams);
+      return amplifyClient.send(mainBranchParams)
     })
     .then(() =>
       amplifyClient.send(
@@ -87,8 +87,8 @@ const createApp = async (appName) => {
           jobType: "RELEASE",
         }),
       ),
-    );
-};
+    )
+}
 
 const main = async () => {
   const apps = [
@@ -99,11 +99,11 @@ const main = async () => {
     "moh-biosafety-next",
     "moh-dc-next",
     "moh-prepare-next",
-  ];
+  ]
 
   for (const app of apps) {
-    await createApp(app);
+    await createApp(app)
   }
-};
+}
 
-main();
+main()
