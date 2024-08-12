@@ -48,6 +48,7 @@ const LAYOUT_METADATA_MAP = {
   article: ArticlePageMetaSchema,
   content: ContentPageMetaSchema,
   homepage: HomePageMetaSchema,
+  index: ContentPageMetaSchema,
   link: LinkRefSchema,
   collection: CollectionPageSchema,
   file: FileRefSchema,
