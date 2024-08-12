@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server"
 
+import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
-import { getResourceSchema } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
 import { db, ResourceType } from "../database"
 import {
@@ -15,7 +15,7 @@ import {
 
 export const collectionRouter = router({
   getMetadata: protectedProcedure
-    .input(getResourceSchema)
+    .input(readFolderSchema)
     .query(async ({ input: { siteId, resourceId } }) => {
       const resource = await getSiteResourceById({
         siteId,
@@ -70,7 +70,7 @@ export const collectionRouter = router({
       return { pageId: resource.id }
     }),
   list: protectedProcedure
-    .input(getResourceSchema)
+    .input(readFolderSchema)
     .query(async ({ ctx, input }) => {
       // Things that aren't working yet:
       // 0. Perm checking
