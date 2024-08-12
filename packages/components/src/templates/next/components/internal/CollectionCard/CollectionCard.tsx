@@ -1,3 +1,5 @@
+"use client"
+
 import { Text } from "react-aria-components"
 
 import type { CollectionCardProps as BaseCollectionCardProps } from "~/interfaces"
