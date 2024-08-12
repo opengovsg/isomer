@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
-import formsPlugin from "@tailwindcss/forms"
 import typographyPlugin from "@tailwindcss/typography"
+import racPlugin from "tailwindcss-react-aria-components"
 
 import classicPreset from "./src/presets/classic"
 import nextPreset from "./src/presets/next"
@@ -31,5 +31,5 @@ export default {
       },
     },
   },
-  plugins: [formsPlugin, typographyPlugin],
+  plugins: [typographyPlugin, racPlugin],
 }
