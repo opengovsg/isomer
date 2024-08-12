@@ -1,6 +1,11 @@
-import { createFolderSchema, readFolderSchema } from "~/schemas/folder"
+import {
+  createFolderSchema,
+  editFolderSchema,
+  readFolderSchema,
+} from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 import { db, ResourceType } from "../database"
+import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
   create: protectedProcedure
@@ -55,13 +60,28 @@ export const folderRouter = router({
         }
       })
 
-      const { parentId } = folderResult
-      const folderName = folderResult.permalink
+      const { title, permalink, parentId } = folderResult
 
       return {
-        folderName,
+        title,
+        permalink,
         children,
         parentId,
       }
+    }),
+  editFolder: protectedProcedure
+    .input(editFolderSchema)
+    .mutation(async ({ input: { resourceId, permalink, title, siteId } }) => {
+      return db
+        .updateTable("Resource")
+        .where("Resource.id", "=", resourceId)
+        .where("Resource.siteId", "=", Number(siteId))
+        .where("Resource.type", "=", "Folder")
+        .set({
+          permalink,
+          title,
+        })
+        .returning(defaultFolderSelect)
+        .execute()
     }),
 })
