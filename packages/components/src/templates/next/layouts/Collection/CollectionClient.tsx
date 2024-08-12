@@ -1,12 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 
-import type {
-  AppliedFilter,
-  AppliedFiltersWithLabel,
-  Filter as FilterType,
-} from "../../types/Filter"
+import type { AppliedFilter } from "../../types/Filter"
 import type { CollectionPageSchemaType } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
 import type {
@@ -20,219 +22,18 @@ import {
   Filter,
   Pagination,
 } from "../../components/internal"
+import {
+  getAvailableFilters,
+  getFilteredItems,
+  getPaginatedItems,
+  getSortedItems,
+  updateAppliedFilters,
+} from "./utils"
 
 interface CollectionClientProps {
   page: CollectionPageSchemaType["page"]
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
   items: CollectionCardProps[]
-}
-
-const getAvailableFilters = (items: CollectionCardProps[]): FilterType[] => {
-  const categories: Record<string, number> = {}
-  const variants: Record<string, number> = {}
-  const years: Record<string, number> = {}
-
-  items.forEach(({ category, variant, lastUpdated }) => {
-    // Step 1: Get all available categories
-    if (category in categories) {
-      categories[category] += 1
-    } else {
-      categories[category] = 1
-    }
-
-    // Step 2: Get all available variants
-    if (variant in variants) {
-      variants[variant] += 1
-    } else {
-      variants[variant] = 1
-    }
-
-    // Step 3: Get all available years
-    if (lastUpdated) {
-      const year = new Date(lastUpdated).getFullYear().toString()
-      if (year in years) {
-        years[year] += 1
-      } else {
-        years[year] = 1
-      }
-    }
-  })
-
-  const availableFilters: FilterType[] = [
-    {
-      id: "category",
-      label: "Category",
-      items: Object.entries(categories).map(([label, count]) => ({
-        id: label.toLowerCase(),
-        label: label.charAt(0).toUpperCase() + label.slice(1),
-        count,
-      })),
-    },
-    {
-      id: "variant",
-      label: "Type",
-      items: Object.entries(variants).map(([label, count]) => ({
-        id: label.toLowerCase(),
-        label: label.charAt(0).toUpperCase() + label.slice(1),
-        count,
-      })),
-    },
-    {
-      id: "year",
-      label: "Year",
-      items: Object.entries(years).map(([label, count]) => ({
-        id: label.toLowerCase(),
-        label,
-        count,
-      })),
-    },
-  ]
-
-  return availableFilters
-}
-
-const getAppliedFiltersWithLabels = (
-  filters: FilterType[],
-  appliedFilters: AppliedFilter[],
-): AppliedFiltersWithLabel[] => {
-  return appliedFilters.flatMap((appliedFilterType) =>
-    appliedFilterType.items.map((appliedFilter) => {
-      const label =
-        filters
-          .find((filterType) => filterType.id === appliedFilterType.id)
-          ?.items.find((filter) => filter.id === appliedFilter.id)?.label ||
-        appliedFilter.id
-
-      return {
-        appliedFilterTypeId: appliedFilterType.id,
-        appliedFilterId: appliedFilter.id,
-        label,
-      }
-    }),
-  )
-}
-
-const getFilteredItems = (
-  items: CollectionCardProps[],
-  appliedFilters: AppliedFilter[],
-  searchValue: string,
-): CollectionCardProps[] => {
-  return items.filter((item) => {
-    // Step 1: Filter based on search value
-    if (
-      searchValue !== "" &&
-      !item.title.toLowerCase().includes(searchValue.toLowerCase()) &&
-      !item.description.toLowerCase().includes(searchValue.toLowerCase())
-    ) {
-      return false
-    }
-
-    // Step 2: Remove items that do not match the applied category filters
-    const categoryFilter = appliedFilters.find(
-      (filter) => filter.id === "category",
-    )
-    if (
-      categoryFilter &&
-      !categoryFilter.items.some(
-        (filterItem) => filterItem.id === item.category.toLowerCase(),
-      )
-    ) {
-      return false
-    }
-
-    // Step 3: Remove items that do not match the applied variant filters
-    const variantFilter = appliedFilters.find(
-      (filter) => filter.id === "variant",
-    )
-    if (
-      variantFilter &&
-      !variantFilter.items.some(
-        (filterItem) => filterItem.id === item.variant.toLowerCase(),
-      )
-    ) {
-      return false
-    }
-
-    // Step 4: Remove items that do not match the applied year filters
-    const yearFilter = appliedFilters.find((filter) => filter.id === "year")
-    if (
-      yearFilter &&
-      !yearFilter.items.some(
-        (filterItem) =>
-          item.lastUpdated &&
-          new Date(item.lastUpdated).getFullYear().toString() === filterItem.id,
-      )
-    ) {
-      return false
-    }
-
-    return true
-  })
-}
-
-const getSortedItems = (
-  items: CollectionCardProps[],
-  sortBy: SortKey,
-  sortDirection: SortDirection,
-) => {
-  return [...items].sort((a, b) => {
-    if (sortBy === "date") {
-      const dateA = a.lastUpdated ? new Date(a.lastUpdated) : undefined
-      const dateB = b.lastUpdated ? new Date(b.lastUpdated) : undefined
-      return sortDirection === "asc"
-        ? (dateA?.getTime() ?? 0) - (dateB?.getTime() ?? 0)
-        : (dateB?.getTime() ?? 0) - (dateA?.getTime() ?? 0)
-    }
-    return 0
-  })
-}
-
-const getPaginatedItems = (
-  items: CollectionCardProps[],
-  itemsPerPage: number,
-  currPage: number,
-) => {
-  const normalizedCurrPage = Math.max(1, currPage)
-
-  return items.slice(
-    (normalizedCurrPage - 1) * itemsPerPage,
-    normalizedCurrPage * itemsPerPage,
-  )
-}
-
-const updateAppliedFilters = (
-  appliedFilters: AppliedFilter[],
-  setAppliedFilters: (appliedFilters: AppliedFilter[]) => void,
-  filterId: string,
-  itemId: string,
-) => {
-  const filterIndex = appliedFilters.findIndex(
-    (filter) => filter.id === filterId,
-  )
-  if (filterIndex > -1) {
-    const itemIndex = appliedFilters[filterIndex]?.items.findIndex(
-      (item) => item.id === itemId,
-    )
-    if (itemIndex !== undefined && itemIndex > -1) {
-      const newAppliedFilters = [...appliedFilters]
-      newAppliedFilters[filterIndex]?.items.splice(itemIndex, 1)
-
-      if (newAppliedFilters[filterIndex]?.items.length === 0) {
-        newAppliedFilters.splice(filterIndex, 1)
-      }
-
-      setAppliedFilters(newAppliedFilters)
-    } else {
-      const newAppliedFilters = [...appliedFilters]
-      newAppliedFilters[filterIndex]?.items.push({ id: itemId })
-      setAppliedFilters(newAppliedFilters)
-    }
-  } else {
-    setAppliedFilters([
-      ...appliedFilters,
-      { id: filterId, items: [{ id: itemId }] },
-    ])
-  }
 }
 
 const CollectionClient = ({
@@ -248,21 +49,57 @@ const CollectionClient = ({
     useState<SortDirection>(defaultSortDirection)
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([])
   const [searchValue, setSearchValue] = useState<string>("")
+
+  // Filter items based on applied filters and search value
+  const [filteredItems, setFilteredItems] = useState(
+    getSortedItems(
+      getFilteredItems(items, appliedFilters, searchValue),
+      sortBy,
+      sortDirection,
+    ),
+  )
   const [currPage, setCurrPage] = useState<number>(1)
 
-  const filters = getAvailableFilters(items)
+  const updateSearchValue = useCallback(
+    (value: string) => {
+      setSearchValue(value)
+      startTransition(() => {
+        setFilteredItems(
+          getSortedItems(
+            getFilteredItems(items, appliedFilters, value),
+            sortBy,
+            sortDirection,
+          ),
+        )
+        setCurrPage(1)
+      })
+    },
+    [appliedFilters, items, sortBy, sortDirection],
+  )
 
-  // Step 1: Filter items based on applied filters and search value
-  const filteredItems = getFilteredItems(items, appliedFilters, searchValue)
+  // Update filtered items when applied filters change
+  useEffect(() => {
+    startTransition(() => {
+      setFilteredItems(
+        getSortedItems(
+          getFilteredItems(items, appliedFilters, searchValue),
+          sortBy,
+          sortDirection,
+        ),
+      )
+    })
+  }, [appliedFilters, items, searchValue, sortBy, sortDirection])
 
-  // Step 2: Sort items based on sort key and sort direction
-  const sortedItems = getSortedItems(filteredItems, sortBy, sortDirection)
+  // Reset current page when filtered items change
+  useEffect(() => {
+    setCurrPage(1)
+  }, [filteredItems])
 
-  // Step 3: Paginate the sorted items
-  const paginatedItems = getPaginatedItems(
-    sortedItems,
-    ITEMS_PER_PAGE,
-    currPage,
+  const filters = useMemo(() => getAvailableFilters(items), [items])
+
+  const paginatedItems = useMemo(
+    () => getPaginatedItems(filteredItems, ITEMS_PER_PAGE, currPage),
+    [currPage, filteredItems],
   )
 
   return (
@@ -278,7 +115,7 @@ const CollectionClient = ({
         <CollectionSearch
           placeholder={`Search for ${page.title.toLowerCase()}`}
           search={searchValue}
-          setSearch={setSearchValue}
+          setSearch={updateSearchValue}
         />
       </div>
 
@@ -315,27 +152,6 @@ const CollectionClient = ({
                   </>
                 )}
               </p>
-              {/* Commenting out applied filter display temporarily
-              {appliedFilters.length > 0 && (
-                <div className="flex flex-row flex-wrap gap-3">
-                  {getAppliedFiltersWithLabels(filters, appliedFilters).map(
-                    (appliedFilter) => (
-                      <Pill
-                        key={`${appliedFilter.appliedFilterTypeId}-${appliedFilter.appliedFilterId}`}
-                        content={appliedFilter.label}
-                        onClose={() =>
-                          updateAppliedFilters(
-                            appliedFilters,
-                            setAppliedFilters,
-                            appliedFilter.appliedFilterTypeId,
-                            appliedFilter.appliedFilterId,
-                          )
-                        }
-                      />
-                    ),
-                  )}
-                </div>
-              )}*/}
             </div>
             <div className="w-full shrink-0 sm:w-[260px]">
               <CollectionSort
@@ -355,7 +171,6 @@ const CollectionClient = ({
                   LinkComponent={LinkComponent}
                 />
               ))}
-
             {paginatedItems.length === 0 && searchValue !== "" && (
               <div className="my-20 flex flex-col gap-3 text-center lg:m-auto">
                 <p className="text-paragraph-01">
@@ -364,7 +179,7 @@ const CollectionClient = ({
                 <button
                   className="text-md mx-auto w-fit font-semibold text-hyperlink hover:text-hyperlink-hover lg:text-lg"
                   onClick={() => {
-                    setSearchValue("")
+                    updateSearchValue("")
                     setAppliedFilters([])
                   }}
                 >
@@ -372,7 +187,6 @@ const CollectionClient = ({
                 </button>
               </div>
             )}
-
             {items.length === 0 && (
               <div className="m-auto flex flex-col gap-3 text-center">
                 <p className="text-paragraph-01">
