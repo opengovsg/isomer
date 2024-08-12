@@ -22,7 +22,6 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { uniqueId } from "lodash"
 import { BiLink } from "react-icons/bi"
 
 import { useZodForm } from "~/lib/form"
@@ -45,7 +44,26 @@ export const CreateFolderModal = ({
   siteId,
   parentFolderId,
 }: CreateFolderModalProps): JSX.Element => {
-  const { setValue, register, handleSubmit, watch, formState, getFieldState } =
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <CreateFolderModalContent
+        isOpen={isOpen}
+        onClose={onClose}
+        siteId={siteId}
+        parentFolderId={parentFolderId}
+      />
+    </Modal>
+  )
+}
+
+const CreateFolderModalContent = ({
+  isOpen,
+  onClose,
+  siteId,
+  parentFolderId,
+}: CreateFolderModalProps) => {
+  const { register, handleSubmit, watch, formState, setValue, getFieldState } =
     useZodForm({
       defaultValues: {
         folderTitle: "",
@@ -73,11 +91,10 @@ export const CreateFolderModal = ({
     },
   })
 
+  const [folderTitle, permalink] = watch(["folderTitle", "permalink"])
   const onSubmit = handleSubmit((data) => {
     mutate({ ...data, parentFolderId, siteId })
   })
-
-  const [folderTitle, permalink] = watch(["folderTitle", "permalink"])
 
   useEffect(() => {
     const permalinkFieldState = getFieldState("permalink")
@@ -92,82 +109,75 @@ export const CreateFolderModal = ({
   }, [getFieldState, setValue, folderTitle])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent key={uniqueId()}>
-        <form onSubmit={onSubmit}>
-          <ModalHeader>Create a new folder </ModalHeader>
-          <ModalCloseButton size="sm" />
-          <ModalBody>
-            <VStack alignItems="flex-start" spacing="1.5rem">
-              <FormControl isInvalid={!!errors.folderTitle}>
-                <FormLabel color="base.content.strong">
-                  Folder name
-                  <FormHelperText color="base.content.default">
-                    This will be the title of the index page of your folder.
-                  </FormHelperText>
-                </FormLabel>
-
-                <Input
-                  placeholder="This is a title for your new folder"
-                  {...register("folderTitle")}
-                />
-                {errors.folderTitle?.message ? (
-                  <FormErrorMessage>
-                    {errors.folderTitle.message}
-                  </FormErrorMessage>
-                ) : (
-                  <FormHelperText mt="0.5rem" color="base.content.medium">
-                    {MAX_FOLDER_TITLE_LENGTH - folderTitle.length} characters
-                    left
-                  </FormHelperText>
-                )}
-              </FormControl>
-              <FormControl isInvalid={!!errors.permalink}>
-                <FormLabel color="base.content.strong">
-                  Folder URL
-                  <FormHelperText color="base.content.default">
-                    This will be applied to every child under this folder.
-                  </FormHelperText>
-                </FormLabel>
-                <Input
-                  placeholder="This is a url for your new page"
-                  {...register("permalink")}
-                />
-                {errors.permalink?.message && (
-                  <FormErrorMessage>
-                    {errors.permalink.message}
-                  </FormErrorMessage>
-                )}
-
-                <Box
-                  mt="0.5rem"
-                  py="0.5rem"
-                  px="0.75rem"
-                  bg="interaction.support.disabled"
-                >
-                  <Icon mr="0.5rem" as={BiLink} />
-                  {permalink}
-                </Box>
-
-                <FormHelperText mt="0.5rem" color="base.content.medium">
-                  {MAX_FOLDER_PERMALINK_LENGTH - permalink.length} characters
-                  left
+    <ModalContent key={String(isOpen)}>
+      <form onSubmit={onSubmit}>
+        <ModalHeader>Create a new folder </ModalHeader>
+        <ModalCloseButton size="sm" />
+        <ModalBody>
+          <VStack alignItems="flex-start" spacing="1.5rem">
+            <FormControl isInvalid={!!errors.folderTitle}>
+              <FormLabel color="base.content.strong">
+                Folder name
+                <FormHelperText color="base.content.default">
+                  This will be the title of the index page of your folder.
                 </FormHelperText>
-              </FormControl>
-            </VStack>
-          </ModalBody>
+              </FormLabel>
 
-          <ModalFooter>
-            <Button mr={3} onClick={onClose} variant="clear">
-              Close
-            </Button>
-            <Button isLoading={isLoading} isDisabled={!isValid} type="submit">
-              Create Folder
-            </Button>
-          </ModalFooter>
-        </form>
-      </ModalContent>
-    </Modal>
+              <Input
+                placeholder="This is a title for your new folder"
+                {...register("folderTitle")}
+              />
+              {errors.folderTitle?.message ? (
+                <FormErrorMessage>
+                  {errors.folderTitle.message}
+                </FormErrorMessage>
+              ) : (
+                <FormHelperText mt="0.5rem" color="base.content.medium">
+                  {MAX_FOLDER_TITLE_LENGTH - folderTitle.length} characters left
+                </FormHelperText>
+              )}
+            </FormControl>
+            <FormControl isInvalid={!!errors.permalink}>
+              <FormLabel color="base.content.strong">
+                Folder URL
+                <FormHelperText color="base.content.default">
+                  This will be applied to every child under this folder.
+                </FormHelperText>
+              </FormLabel>
+              <Input
+                placeholder="This is a url for your new page"
+                {...register("permalink")}
+              />
+              {errors.permalink?.message && (
+                <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
+              )}
+
+              <Box
+                mt="0.5rem"
+                py="0.5rem"
+                px="0.75rem"
+                bg="interaction.support.disabled"
+              >
+                <Icon mr="0.5rem" as={BiLink} />
+                {permalink}
+              </Box>
+
+              <FormHelperText mt="0.5rem" color="base.content.medium">
+                {MAX_FOLDER_PERMALINK_LENGTH - permalink.length} characters left
+              </FormHelperText>
+            </FormControl>
+          </VStack>
+        </ModalBody>
+
+        <ModalFooter>
+          <Button mr={3} onClick={onClose} variant="clear">
+            Close
+          </Button>
+          <Button isLoading={isLoading} isDisabled={!isValid} type="submit">
+            Create Folder
+          </Button>
+        </ModalFooter>
+      </form>
+    </ModalContent>
   )
 }
