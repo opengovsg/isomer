@@ -14,22 +14,24 @@ const createInfoCardsStyles = tv({
   slots: {
     container: `${ComponentContent} mx-auto flex flex-col py-12 first:pt-3.5 lg:py-24`,
     headingContainer: "flex flex-col gap-2.5 pb-8 sm:pb-12 lg:max-w-3xl",
-    headingTitle: "strong prose-display-md text-base-content-strong",
+    headingTitle: "prose-display-md text-base-content-strong",
     headingSubtitle: "prose-headline-lg-regular text-base-content",
     grid: "grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-7 lg:grid-cols-3 lg:gap-x-16 lg:gap-y-12",
     cardContainer: "group flex flex-col gap-5 outline-offset-4",
     cardImageContainer:
-      "h-[11.875rem] w-full overflow-hidden rounded-lg md:h-52",
+      "h-[11.875rem] w-full overflow-hidden rounded-lg border border-base-divider-subtle drop-shadow-none md:h-52",
     cardImage: "h-full w-full object-cover object-center",
-    cardTextContainer: "flex flex-col gap-3",
-    cardTitle: "text-base-content-strong text-heading-04",
-    cardTitleArrow: "mb-1 ml-1.5 inline transition group-hover:translate-x-1",
-    cardDescription: "prose-body-base line-clamp-4 text-base-content",
+    cardTextContainer: "flex flex-col gap-2.5 sm:gap-3",
+    cardTitle: "prose-headline-lg-semibold text-base-content-strong",
+    cardTitleArrow:
+      "ml-1.5 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
+    cardDescription: "prose-body-base text-base-content",
   },
   variants: {
     isClickableCard: {
       true: {
         cardTitle: "group-hover:text-brand-canvas-inverse",
+        cardImageContainer: "group-hover:drop-shadow-md",
       },
     },
   },
@@ -71,8 +73,14 @@ const InfoCardContainer = ({
 const InfoCardImage = ({
   imageUrl,
   imageAlt,
-}: Pick<SingleCardWithImageProps, "imageUrl" | "imageAlt">): JSX.Element => (
-  <div className={compoundStyles.cardImageContainer()}>
+  url,
+}: Pick<
+  SingleCardWithImageProps,
+  "imageUrl" | "imageAlt" | "url"
+>): JSX.Element => (
+  <div
+    className={compoundStyles.cardImageContainer({ isClickableCard: !!url })}
+  >
     <img src={imageUrl} alt={imageAlt} className={compoundStyles.cardImage()} />
   </div>
 )
@@ -123,7 +131,7 @@ const InfoCardWithImage = ({
 }: SingleCardWithImageProps): JSX.Element => {
   return (
     <InfoCardContainer url={url} LinkComponent={LinkComponent}>
-      <InfoCardImage imageUrl={imageUrl} imageAlt={imageAlt} />
+      <InfoCardImage imageUrl={imageUrl} imageAlt={imageAlt} url={url} />
       <InfoCardText title={title} description={description} url={url} />
     </InfoCardContainer>
   )
