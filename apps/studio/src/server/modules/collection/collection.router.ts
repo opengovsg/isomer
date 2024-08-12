@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 
+import { createCollectionSchema } from "~/schemas/collection"
 import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
@@ -8,6 +9,7 @@ import {
   defaultResourceSelect,
   getSiteResourceById,
 } from "../resource/resource.service"
+import { defaultCollectionSelect } from "./collection.select"
 import {
   createCollectionPageJson,
   createCollectionPdfJson,
@@ -29,6 +31,20 @@ export const collectionRouter = router({
         })
       }
       return resource
+    }),
+  create: protectedProcedure
+    .input(createCollectionSchema)
+    .mutation(async ({ input: { collectionTitle, permalink, siteId } }) => {
+      return db
+        .insertInto("Resource")
+        .values({
+          permalink,
+          siteId,
+          type: "Collection",
+          title: collectionTitle,
+        })
+        .returning(defaultCollectionSelect)
+        .executeTakeFirstOrThrow()
     }),
   createCollectionPage: protectedProcedure
     .input(createCollectionPageSchema)
