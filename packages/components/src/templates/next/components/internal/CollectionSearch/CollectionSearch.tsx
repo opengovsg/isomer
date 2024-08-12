@@ -1,6 +1,5 @@
-import { BiSearch } from "react-icons/bi"
-
 import type { CollectionSearchProps } from "../../../types/CollectionSearch"
+import { SearchField } from "../Search"
 
 const CollectionSearch = ({
   placeholder,
@@ -8,22 +7,12 @@ const CollectionSearch = ({
   setSearch,
 }: CollectionSearchProps) => {
   return (
-    <label className="relative block">
-      <span className="sr-only">{placeholder}</span>
-      <span className="absolute inset-y-0 left-0 flex items-center pl-4">
-        <BiSearch className="h-5 w-5 fill-interaction-support-placeholder" />
-      </span>
-      <input
-        className="w-full rounded-lg py-4 pl-[3.25rem] ring-divider-medium placeholder:text-interaction-support-placeholder focus:ring-2 focus:ring-focus-outline active:bg-interaction-main-subtle-hover active:ring-2 active:ring-focus-outline"
-        placeholder={placeholder}
-        type="text"
-        name="search"
-        value={search}
-        role="search"
-        aria-label={placeholder}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-    </label>
+    <SearchField
+      aria-label={placeholder}
+      placeholder={placeholder}
+      value={search}
+      onChange={(value) => setSearch(value)}
+    />
   )
 }
 
