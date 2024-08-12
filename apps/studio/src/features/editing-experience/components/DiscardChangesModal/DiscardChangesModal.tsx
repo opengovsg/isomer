@@ -25,7 +25,7 @@ export const DiscardChangesModal = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader maxW="90%">
+        <ModalHeader pr="4.5rem">
           Are you sure you want to discard your changes?
         </ModalHeader>
 
