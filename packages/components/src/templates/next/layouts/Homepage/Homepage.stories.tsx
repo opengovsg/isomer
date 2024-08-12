@@ -224,26 +224,26 @@ export const Default: Story = {
       },
       {
         type: "infocards",
-        title:
-          "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
+        title: "Section title ministry highlights",
         subtitle:
-          "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
+          "Section subtitle, maximum 150 chars. These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
         variant: "cardsWithImages",
         cards: [
           {
-            title: "A yummy, tipsy evening at Duxton",
+            title: "Card with short title",
             url: "https://www.google.com",
             description:
-              "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
+              "Card description, 200 chars. In the kingdom of Veridonia, the government operates as a benevolent monarchy, guided by ancient traditions and the wisdom of its sovereign.",
             imageUrl: "https://placehold.co/200x300",
             imageAlt: "alt text",
           },
           {
-            title: "A yummy, tipsy evening at Duxton",
+            title: "Hover on me to see me change colors",
             url: "https://www.google.com",
             description:
-              "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile. Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
-            imageUrl: "https://placehold.co/200x300",
+              "Card description, 200 chars. In the kingdom of Veridonia, the government operates as a benevolent monarchy, guided by ancient traditions and the wisdom of its sovereign.",
+            imageUrl:
+              "https://images.unsplash.com/photo-1722260613137-f8f5ac432d69?q=80&w=3570&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             imageAlt: "alt text",
           },
           {
@@ -253,9 +253,8 @@ export const Default: Story = {
             imageAlt: "alt text",
           },
           {
-            title: "A yummy, tipsy evening at Duxton",
-            url: "https://www.google.com",
-            imageUrl: "https://placehold.co/200x300",
+            title: "Testing a card with a larger image and no description",
+            imageUrl: "https://placehold.co/500x500",
             imageAlt: "alt text",
           },
         ],
