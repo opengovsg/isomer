@@ -1,5 +1,9 @@
 import { Skeleton } from "@chakra-ui/react"
-import { Button, useToast } from "@opengovsg/design-system-react"
+import {
+  Button,
+  TouchableTooltip,
+  useToast,
+} from "@opengovsg/design-system-react"
 
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
@@ -47,15 +51,20 @@ const SuspendablePublishButton = ({
       mutate({ pageId: coercedPageId, siteId: coercedSiteId })
   }
   return (
-    <Button
-      variant="solid"
-      size="sm"
-      onClick={handlePublish}
-      isLoading={isLoading}
-      isDisabled={!currPage.draftBlobId}
+    <TouchableTooltip
+      hidden={!!currPage.draftBlobId}
+      label="All changes have been published"
     >
-      Publish
-    </Button>
+      <Button
+        variant="solid"
+        size="sm"
+        onClick={handlePublish}
+        isLoading={isLoading}
+        isDisabled={!currPage.draftBlobId}
+      >
+        Publish
+      </Button>
+    </TouchableTooltip>
   )
 }
 
