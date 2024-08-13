@@ -96,7 +96,11 @@ export const ResourceTable = ({
     <Datatable
       pagination
       emptyPlaceholder={
-        <EmptyTablePlaceholder entityName="x" hasSearchTerm={false} />
+        <EmptyTablePlaceholder
+          entityName="x"
+          groupLabel="folder"
+          hasSearchTerm={false}
+        />
       }
       instance={tableInstance}
       sx={{

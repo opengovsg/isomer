@@ -12,6 +12,11 @@ export const createDefaultPage = ({
       const contentDefaultPage = {
         layout: "content",
         page: {
+          lastModified: new Date().toLocaleDateString(undefined, {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
           title,
           contentPageHeader: {
             summary: "",

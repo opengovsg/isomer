@@ -92,7 +92,11 @@ export const CollectionTable = ({
     <Datatable
       pagination
       emptyPlaceholder={
-        <EmptyTablePlaceholder entityName="x" hasSearchTerm={false} />
+        <EmptyTablePlaceholder
+          groupLabel="collection"
+          entityName="x"
+          hasSearchTerm={false}
+        />
       }
       instance={tableInstance}
       sx={{
