@@ -51,7 +51,7 @@ const FolderPage: NextPageWithLayout = () => {
 
   const { folderId, siteId } = useQueryParse(folderPageSchema)
 
-  const [{ title, permalink }] = trpc.folder.readFolder.useSuspenseQuery({
+  const [{ title }] = trpc.folder.readFolder.useSuspenseQuery({
     siteId: parseInt(siteId),
     resourceId: parseInt(folderId),
   })
@@ -62,7 +62,10 @@ const FolderPage: NextPageWithLayout = () => {
         <VStack w="100%" align="start">
           <Breadcrumb size="sm">
             <BreadcrumbItem>
-              <BreadcrumbLink isCurrentPage href={permalink}>
+              <BreadcrumbLink
+                isCurrentPage
+                href={`/sites/${siteId}/folders/${folderId}`}
+              >
                 <Text color="base.content.default">{title}</Text>
               </BreadcrumbLink>
             </BreadcrumbItem>
