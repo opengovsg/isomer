@@ -19,7 +19,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
-import { DeleteCollectionModalState } from "../../types"
+import { DeleteResourceModalState } from "../../types"
 
 const getResourceLabel = (
   resourceType: ResourceType,
@@ -47,7 +47,7 @@ const getWarningText = (resourceType: ResourceType): string => {
   return "All folders and pages under this folder will be deleted. This cannot be undone."
 }
 
-interface DeleteResourceModalProps extends DeleteCollectionModalState {
+interface DeleteResourceModalProps extends DeleteResourceModalState {
   onClose: () => void
   siteId: number
 }
