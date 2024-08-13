@@ -83,11 +83,11 @@ const DeleteResourceModalContent = ({
       await utils.resource.list.invalidate()
       await utils.resource.getChildrenOf.invalidate()
       await utils.collection.list.invalidate()
-      toast({ title: "Folder created!", status: "success" })
+      toast({ title: `${label} deleted!`, status: "success" })
     },
     onError: (err) => {
       toast({
-        title: "Failed to create folder",
+        title: `Failed to delete ${label}`,
         status: "error",
         // TODO: check if this property is correct
         description: err.message,
