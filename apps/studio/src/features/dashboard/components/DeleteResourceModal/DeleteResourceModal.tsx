@@ -16,6 +16,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
+import _ from "lodash"
 
 import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
@@ -83,7 +84,7 @@ const DeleteResourceModalContent = ({
       await utils.resource.list.invalidate()
       await utils.resource.getChildrenOf.invalidate()
       await utils.collection.list.invalidate()
-      toast({ title: `${label} deleted!`, status: "success" })
+      toast({ title: `${_.upperFirst(label)} deleted!`, status: "success" })
     },
     onError: (err) => {
       toast({
