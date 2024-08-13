@@ -22,9 +22,16 @@ export const getSiteTheme = async (siteId: number) => {
 
   return theme
 }
+export const getSiteNameAndCodeBuildId = async (siteId: number) => {
+  return await db
+    .selectFrom("Site")
+    .where("id", "=", siteId)
+    .select(["Site.codeBuildId", "Site.name"])
+    .executeTakeFirstOrThrow()
+}
 
 // Note: This overwrites the full site config
-// TODO: Should triger immediate re-publish of site
+// TODO: Should trigger immediate re-publish of site
 export const setSiteConfig = async (
   siteId: number,
   config: IsomerSiteConfigProps,

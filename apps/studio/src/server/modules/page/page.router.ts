@@ -3,6 +3,7 @@ import { schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
 import isEqual from "lodash/isEqual"
+import { z } from "zod"
 
 import {
   createPageSchema,
@@ -15,6 +16,7 @@ import {
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
+import { startProjectById, stopRunningBuilds } from "../aws/codebuild.service"
 import { db, ResourceType } from "../database"
 import {
   getFooter,
@@ -24,7 +26,7 @@ import {
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
-import { getSiteConfig } from "../site/site.service"
+import { getSiteConfig, getSiteNameAndCodeBuildId } from "../site/site.service"
 import { incrementVersion } from "../version/version.service"
 import { createDefaultPage } from "./page.service"
 
@@ -254,8 +256,22 @@ export const pageRouter = router({
         pageId,
         userId: ctx.user.id,
       })
-      return addedVersionResult
 
-      /* TODO: Step 2: Use AWS SDK to start a CodeBuild */
+      /* Step 2: Use AWS SDK to start a CodeBuild */
+      const site = await getSiteNameAndCodeBuildId(siteId)
+      const codeBuildId = site.codeBuildId
+      if (!codeBuildId) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "No CodeBuild project ID found for site",
+        })
+      }
+
+      // stop any currently running builds for the site
+      await stopRunningBuilds(ctx.logger, codeBuildId)
+
+      // initiate new build
+      await startProjectById(ctx.logger, codeBuildId)
+      return addedVersionResult
     }),
 })
