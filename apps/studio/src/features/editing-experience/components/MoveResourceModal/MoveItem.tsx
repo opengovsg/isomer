@@ -44,9 +44,6 @@ const SuspendableMoveItem = ({
       w="full"
       justifyContent="flex-start"
       color="base.content.default"
-      // NOTE: Homepage is special - it's a page but
-      // we also use it to represent site root
-      isDisabled={type !== "Folder" || resourceId === movedItem?.resourceId}
       // NOTE: Set special styling because pages should show normally
       // but have no onClick
       // TODO: add permissions for folders that users have no access to
