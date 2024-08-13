@@ -85,11 +85,11 @@ const SuspendableModalContent = ({
         resourceId: parentId ? String(parentId) : null,
       })
       await utils.folder.readFolder.invalidate()
-      toast({ title: "Folder created!", status: "success" })
+      toast({ title: "Folder updated!", status: "success" })
     },
     onError: (err) => {
       toast({
-        title: "Failed to create folder",
+        title: "Failed to update folder",
         status: "error",
         // TODO: check if this property is correct
         description: err.message,
