@@ -8,6 +8,7 @@ import {
   AccordionPanel,
   Box,
   Flex,
+  Icon,
   Skeleton,
   Spacer,
   Text,
@@ -62,11 +63,11 @@ export const CmsSideNav = ({ siteId }: CmsSideNavProps) => {
 }
 
 const ICON_MAPPINGS = {
-  [ResourceType.Page]: <BiFile />,
-  [ResourceType.Folder]: <BiFolder />,
-  [ResourceType.Collection]: <BiData />,
-  [ResourceType.CollectionPage]: <BiFile />,
-  [ResourceType.RootPage]: <BiHomeAlt />,
+  [ResourceType.Page]: BiFile,
+  [ResourceType.Folder]: BiFolder,
+  [ResourceType.Collection]: BiData,
+  [ResourceType.CollectionPage]: BiFile,
+  [ResourceType.RootPage]: BiHomeAlt,
 }
 
 interface SideNavItemProps {
@@ -176,7 +177,7 @@ const SideNavItem = ({
                     ) : (
                       <Box w="1.5rem"></Box>
                     )}
-                    {icon}
+                    <Icon as={icon} flexShrink={0} />
                     <Text
                       noOfLines={1}
                       textAlign="left"
