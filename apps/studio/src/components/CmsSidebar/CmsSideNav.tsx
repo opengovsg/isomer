@@ -8,12 +8,11 @@ import {
   AccordionPanel,
   Box,
   Flex,
+  Icon,
   Skeleton,
   Spacer,
   Text,
-  VStack,
 } from "@chakra-ui/react"
-import { Menu } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFile, BiFolder, BiHomeAlt } from "react-icons/bi"
 
@@ -25,28 +24,8 @@ interface CmsSideNavProps {
 }
 export const CmsSideNav = ({ siteId }: CmsSideNavProps) => {
   return (
-    <Flex flexDir="column">
-      <VStack
-        align="flex-start"
-        spacing="1.5rem"
-        pt="2rem"
-        px="1.25rem"
-        pb="0.75rem"
-        boxShadow="sm"
-      >
-        <Menu>
-          <Menu.Button w="full" variant="outline">
-            Create new
-          </Menu.Button>
-          <Menu.List>
-            <Menu.Item>Create new page</Menu.Item>
-            <Menu.Item>Create new folder</Menu.Item>
-            <Menu.Item>Create new collection</Menu.Item>
-          </Menu.List>
-        </Menu>
-        <Text textStyle="caption-1">Site content</Text>
-      </VStack>
-      <Box mt="4px" px="1.25rem">
+    <Flex flexDir="column" px="1.25rem" py="1.75rem">
+      <Box mt="4px">
         {/* TODO: update the resource id here */}
         <Suspense fallback={<Skeleton />}>
           <SideNavItem
@@ -62,11 +41,11 @@ export const CmsSideNav = ({ siteId }: CmsSideNavProps) => {
 }
 
 const ICON_MAPPINGS = {
-  [ResourceType.Page]: <BiFile />,
-  [ResourceType.Folder]: <BiFolder />,
-  [ResourceType.Collection]: <BiData />,
-  [ResourceType.CollectionPage]: <BiFile />,
-  [ResourceType.RootPage]: <BiHomeAlt />,
+  [ResourceType.Page]: BiFile,
+  [ResourceType.Folder]: BiFolder,
+  [ResourceType.Collection]: BiData,
+  [ResourceType.CollectionPage]: BiFile,
+  [ResourceType.RootPage]: BiHomeAlt,
 }
 
 interface SideNavItemProps {
@@ -109,7 +88,10 @@ const SideNavItem = ({
   const router = useRouter()
 
   return (
-    <Accordion allowToggle>
+    <Accordion
+      defaultIndex={resourceType === ResourceType.RootPage ? 0 : undefined}
+      allowToggle
+    >
       <AccordionItem
         _disabled={{
           textColor: "interaction.support.disabled-content",
@@ -176,7 +158,7 @@ const SideNavItem = ({
                     ) : (
                       <Box w="1.5rem"></Box>
                     )}
-                    {icon}
+                    <Icon as={icon} flexShrink={0} />
                     <Text
                       noOfLines={1}
                       textAlign="left"
