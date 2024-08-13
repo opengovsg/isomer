@@ -21,6 +21,7 @@ import { FolderSettingsModal } from "~/features/dashboard/components/FolderSetti
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
+import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
@@ -127,6 +128,7 @@ const FolderPage: NextPageWithLayout = () => {
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}
         siteId={parseInt(siteId)}
+        folderId={parseInt(folderId)}
       />
       <CreateFolderModal
         isOpen={isFolderCreateModalOpen}
@@ -139,6 +141,7 @@ const FolderPage: NextPageWithLayout = () => {
         siteId={siteId}
         resourceId={parseInt(folderId)}
       />
+      <MoveResourceModal />
     </>
   )
 }
