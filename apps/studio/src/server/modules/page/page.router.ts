@@ -255,8 +255,8 @@ export const pageRouter = router({
           // TODO: Only return sites that the user has access to
           .where("Resource.siteId", "=", siteId)
           .where("Resource.type", "=", "RootPage")
-          .select(["id", "type", "title", "publishedVersionId", "draftBlobId"])
-          .execute()
+          .select(["id", "title", "draftBlobId"])
+          .executeTakeFirstOrThrow()
       )
     }),
   publishPage: protectedProcedure
