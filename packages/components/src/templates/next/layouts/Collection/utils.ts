@@ -1,9 +1,5 @@
 import type { AppliedFilter, Filter as FilterType } from "../../types/Filter"
 import type { CollectionCardProps } from "~/interfaces"
-import type {
-  SortDirection,
-  SortKey,
-} from "~/interfaces/internal/CollectionSort"
 
 export const getAvailableFilters = (
   items: CollectionCardProps[],
@@ -126,24 +122,6 @@ export const getFilteredItems = (
     }
 
     return true
-  })
-}
-
-export const getSortedItems = (
-  items: CollectionCardProps[],
-  sortBy: SortKey,
-  sortDirection: SortDirection,
-) => {
-  return [...items].sort((a, b) => {
-    switch (sortBy) {
-      case "date": {
-        const dateA = a.lastUpdated ? new Date(a.lastUpdated) : undefined
-        const dateB = b.lastUpdated ? new Date(b.lastUpdated) : undefined
-        return sortDirection === "asc"
-          ? (dateA?.getTime() ?? 0) - (dateB?.getTime() ?? 0)
-          : (dateB?.getTime() ?? 0) - (dateA?.getTime() ?? 0)
-      }
-    }
   })
 }
 

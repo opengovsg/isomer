@@ -2,7 +2,6 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import { ArticlePageHeaderSchema, ContentPageHeaderSchema } from "~/interfaces"
-import { SortDirections, SortKeys } from "~/interfaces/internal/CollectionSort"
 
 const BaseItemSchema = Type.Object({
   title: Type.String({
