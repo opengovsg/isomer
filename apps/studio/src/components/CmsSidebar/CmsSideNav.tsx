@@ -14,7 +14,6 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { Menu } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFile, BiFolder, BiHomeAlt } from "react-icons/bi"
 
@@ -35,16 +34,6 @@ export const CmsSideNav = ({ siteId }: CmsSideNavProps) => {
         pb="0.75rem"
         boxShadow="sm"
       >
-        <Menu>
-          <Menu.Button w="full" variant="outline">
-            Create new
-          </Menu.Button>
-          <Menu.List>
-            <Menu.Item>Create new page</Menu.Item>
-            <Menu.Item>Create new folder</Menu.Item>
-            <Menu.Item>Create new collection</Menu.Item>
-          </Menu.List>
-        </Menu>
         <Text textStyle="caption-1">Site content</Text>
       </VStack>
       <Box mt="4px" px="1.25rem">
