@@ -48,9 +48,6 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   const toast = useToast()
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
-  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
-    { siteId, pageId },
-  )
   const utils = trpc.useUtils()
 
   const { mutate: savePage, isLoading: isSavingPage } =
@@ -125,27 +122,41 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
 
       // Upload all new/modified images/files
       const assetsToUpload = modifiedAssets.filter((asset) => !!asset.file)
-      try {
-        await Promise.all(
-          assetsToUpload.map(({ path, file }) => {
-            if (!file) {
-              return
-            }
 
-            return uploadAsset({ file }).then((res) =>
-              _.set(newBlock, path, res.path),
-            )
-          }),
-        )
-      } catch (e) {
-        // All the promises are rejected if any one of them fails
-        toast({
-          title: "Error uploading assets",
-          description:
-            "An error occurred while uploading assets. Please try again later.",
-          status: "error",
+      const isUploadingSuccessful = await Promise.allSettled(
+        assetsToUpload.map(({ path, file }) => {
+          if (!file) {
+            return
+          }
+
+          return uploadAsset({ file }).then((res) => {
+            _.set(newBlock, path, res.path)
+            return path
+          })
+        }),
+      ).then((results) => {
+        // Keep only failed uploads inside modifiedAssets so on subsequent
+        // save attempts, we retry uploading just the failed assets
+        const newModifiedAssets = modifiedAssets.filter(({ path }) => {
+          return !results.some(
+            (result) => result.status === "fulfilled" && result.value === path,
+          )
         })
-      }
+
+        if (newModifiedAssets.length > 0) {
+          toast({
+            title: "Error uploading assets",
+            description:
+              "An error occurred while uploading some assets. Please try again later.",
+            status: "error",
+          })
+
+          setModifiedAssets(newModifiedAssets)
+          return false
+        }
+
+        return true
+      })
 
       // TODO: Mark removed images/files as deleted
       // const assetsToDelete = modifiedAssets.filter((asset) => !asset.file)
@@ -156,8 +167,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         content: updatedBlocks,
       }
 
-      setPreviewPageState(newPageState)
-      setSavedPageState(newPageState)
+      if (!isUploadingSuccessful) {
+        // NOTE: Do not save page if there are errors uploading assets
+        setPreviewPageState(newPageState)
+        return
+      }
     }
 
     savePage(
@@ -169,6 +183,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       {
         onSuccess: () => {
           setModifiedAssets([])
+          setSavedPageState(newPageState)
           setDrawerState({ state: "root" })
         },
       },
