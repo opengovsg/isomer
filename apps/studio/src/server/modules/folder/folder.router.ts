@@ -4,7 +4,7 @@ import {
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
-import { db } from "../database"
+import { db, ResourceType } from "../database"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
@@ -45,16 +45,18 @@ export const folderRouter = router({
           return {
             id: c.id,
             permalink: c.permalink,
-            type: "page",
+            type: c.type,
+            title: c.title,
+            state: c.state,
             lastEditDate: new Date(0),
             lastEditUser: "Coming Soon",
-            status: "published",
           }
         }
         return {
           id: c.id,
           permalink: c.permalink,
-          type: "folder",
+          title: c.title,
+          type: ResourceType.Folder,
         }
       })
 
