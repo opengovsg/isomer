@@ -7,7 +7,7 @@ import {
   Icon,
   useDisclosure,
 } from "@chakra-ui/react"
-import { Button, IconButton } from "@opengovsg/design-system-react"
+import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import _ from "lodash"
@@ -45,6 +45,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     modifiedAssets,
     setModifiedAssets,
   } = useEditorDrawerContext()
+  const toast = useToast()
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
@@ -124,17 +125,27 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
 
       // Upload all new/modified images/files
       const assetsToUpload = modifiedAssets.filter((asset) => !!asset.file)
-      await Promise.all(
-        assetsToUpload.map(({ path, file }) => {
-          if (!file) {
-            return
-          }
+      try {
+        await Promise.all(
+          assetsToUpload.map(({ path, file }) => {
+            if (!file) {
+              return
+            }
 
-          return uploadAsset({ file }).then((res) =>
-            _.set(newBlock, path, res.path),
-          )
-        }),
-      )
+            return uploadAsset({ file }).then((res) =>
+              _.set(newBlock, path, res.path),
+            )
+          }),
+        )
+      } catch (e) {
+        // All the promises are rejected if any one of them fails
+        toast({
+          title: "Error uploading assets",
+          description:
+            "An error occurred while uploading assets. Please try again later.",
+          status: "error",
+        })
+      }
 
       // TODO: Mark removed images/files as deleted
       // const assetsToDelete = modifiedAssets.filter((asset) => !asset.file)
