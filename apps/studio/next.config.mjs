@@ -35,6 +35,7 @@ const ContentSecurityPolicy = `
  */
 /** @type {import("next").NextConfig} */
 const config = {
+  output: "standalone",
   reactStrictMode: true,
   /**
    * Dynamic configuration available for the browser and server.
