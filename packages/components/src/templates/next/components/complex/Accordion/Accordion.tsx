@@ -1,5 +1,3 @@
-"use client"
-
 import type { VariantProps } from "tailwind-variants"
 import { BiMinus, BiPlus } from "react-icons/bi"
 
