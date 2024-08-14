@@ -1,17 +1,43 @@
-import { BiChevronDown } from "react-icons/bi"
+import type { VariantProps } from "tailwind-variants"
+import { BiMinus, BiPlus } from "react-icons/bi"
 
-import type { AccordionProps } from "~/interfaces"
+import type { AccordionProps as BaseAccordionProps } from "~/interfaces"
+import { tv } from "~/lib/tv"
 import { Prose } from "../../native"
+
+const createAccordionStyles = tv({
+  slots: {
+    details:
+      "group border-y border-divider-medium px-4 py-5 has-[+_details]:border-b-0",
+    summary:
+      "prose-headline-lg-medium flex list-none flex-row items-center justify-between gap-3 text-base-content-strong outline-none outline outline-0 outline-offset-2 outline-brand-interaction hover:cursor-pointer focus-visible:outline-2",
+    icon: "h-6 w-6 flex-shrink-0 [&.minus]:hidden [&.minus]:group-open:block [&.plus]:block [&.plus]:group-open:hidden",
+    content: "pt-5 text-base-content-strong",
+  },
+})
+
+const accordionStyles = createAccordionStyles()
+
+interface AccordionProps
+  extends BaseAccordionProps,
+    VariantProps<typeof createAccordionStyles> {}
 
 const Accordion = ({ summary, details }: AccordionProps) => {
   return (
-    <details className="border-y border-divider-medium hover:cursor-pointer has-[+_details]:border-b-0 [&_>_summary_>_svg]:open:rotate-180">
-      <summary className="my-[0.125rem] flex list-none flex-row items-center gap-3 px-4 py-5 font-medium text-content outline-none text-paragraph-01">
+    <details className={accordionStyles.details()}>
+      <summary className={accordionStyles.summary()}>
         {summary}
-        <BiChevronDown className="ml-auto min-w-6 text-2xl transition-all duration-200 ease-in-out" />
+        <BiMinus
+          aria-hidden
+          className={accordionStyles.icon({ className: "minus" })}
+        />
+        <BiPlus
+          aria-hidden
+          className={accordionStyles.icon({ className: "plus" })}
+        />
       </summary>
 
-      <div className="mb-4 ml-4 mr-6 mt-2">
+      <div className={accordionStyles.content()}>
         <Prose {...details} />
       </div>
     </details>

@@ -116,6 +116,13 @@ const config: Config = {
   },
   plugins: [
     isomerTypography,
+    plugin(({ addBase }) => {
+      addBase({
+        "::-webkit-details-marker": {
+          display: "none",
+        },
+      })
+    }),
     // !! @deprecated, use isomerTypography plugin instead
     // Delete after no components are using these classes anymore,
     plugin(({ addBase, addUtilities, theme }) => {

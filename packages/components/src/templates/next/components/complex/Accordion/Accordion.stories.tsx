@@ -1,24 +1,26 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { userEvent, within } from "@storybook/test"
 
-import type { AccordionProps } from "~/interfaces"
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import Accordion from "./Accordion"
-
-// Template for stories
-const Template = (props: AccordionProps) => {
-  return (
-    <>
-      <Accordion {...props} />
-      <Accordion {...props} />
-      <Accordion {...props} />
-    </>
-  )
-}
 
 const meta: Meta<typeof Accordion> = {
   title: "Next/Components/Accordion",
-  component: Template,
+  component: Accordion,
+  render: ({ summary, ...args }) => {
+    return (
+      <>
+        <Accordion summary={`${summary}1`} {...args} />
+        <Accordion summary={`${summary}2`} {...args} />
+        <Accordion summary={`${summary}3`} {...args} />
+      </>
+    )
+  },
   argTypes: {},
   parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["desktop", "mobile"]),
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -107,5 +109,13 @@ export const LongContent: Story = {
         },
       ],
     },
+  },
+}
+
+export const Expanded: Story = {
+  args: LongContent.args,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByText(`${LongContent.args?.summary}2`))
   },
 }
