@@ -107,3 +107,7 @@ export const createCollectionPageSchema = createCollectionPageFormSchema.and(
     siteId: z.number().min(1),
   }),
 )
+
+export const getRootPageSchema = z.object({
+  siteId: z.number().min(1),
+})

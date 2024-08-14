@@ -89,12 +89,13 @@ export const resourceRouter = router({
           .executeTakeFirst()
       })
     }),
-  list: protectedProcedure
+  listWithoutRoot: protectedProcedure
     .input(listResourceSchema)
     .query(async ({ input: { siteId, resourceId } }) => {
       let query = db
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "!=", "RootPage")
 
       if (resourceId) {
         query = query.where("Resource.parentId", "=", String(resourceId))

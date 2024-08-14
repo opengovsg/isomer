@@ -78,7 +78,7 @@ const CreateFolderModalContent = ({
     onSettled: onClose,
     onSuccess: async () => {
       await utils.site.list.invalidate()
-      await utils.resource.list.invalidate()
+      await utils.resource.listWithoutRoot.invalidate()
       toast({ title: "Folder created!", status: "success" })
     },
     onError: (err) => {
