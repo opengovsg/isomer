@@ -15,6 +15,7 @@ export const buttonStyles = tv({
     variant: {
       solid: "",
       outline: "",
+      clear: "",
     },
     colorScheme: {
       default: "",

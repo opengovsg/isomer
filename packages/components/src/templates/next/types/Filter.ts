@@ -29,6 +29,7 @@ export interface FilterProps {
   filters: Filter[]
   appliedFilters: AppliedFilter[]
   setAppliedFilters: (filterId: string, itemId: string) => void
+  handleClearFilter: () => void
 }
 
 export default FilterProps

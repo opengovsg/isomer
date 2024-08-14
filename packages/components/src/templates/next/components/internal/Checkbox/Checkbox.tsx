@@ -51,11 +51,11 @@ const boxStyles = tv({
   variants: {
     isSelected: {
       false:
-        "group-pressed:[--color:theme(colors.base.divider.strong)] border-[--color] bg-white [--color:theme(colors.base.divider.medium)]",
-      true: "group-pressed:[--color:theme(colors.brand.interaction.pressed)] border-[--color] bg-[--color] [--color:theme(colors.brand.interaction.DEFAULT)] forced-colors:![--color:Highlight]",
+        "border-[--color] bg-white [--color:theme(colors.base.divider.medium)] group-pressed:[--color:theme(colors.base.divider.strong)]",
+      true: "border-[--color] bg-[--color] [--color:theme(colors.brand.interaction.DEFAULT)] group-pressed:[--color:theme(colors.brand.interaction.pressed)] forced-colors:![--color:Highlight]",
     },
     isInvalid: {
-      true: "group-pressed:[--color:theme(colors.red.800)] [--color:theme(colors.red.700)] forced-colors:![--color:Mark]",
+      true: "[--color:theme(colors.red.700)] group-pressed:[--color:theme(colors.red.800)] forced-colors:![--color:Mark]",
     },
     isDisabled: {
       true: "[--color:theme(colors.gray.200)] forced-colors:![--color:GrayText]",

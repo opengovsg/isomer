@@ -45,6 +45,10 @@ const meta: Meta<typeof Filter> = {
       }
     }
 
+    const handleClearFilter = () => {
+      setAppliedFilters([])
+    }
+
     return (
       <Filter
         filters={filters}
@@ -52,6 +56,7 @@ const meta: Meta<typeof Filter> = {
         setAppliedFilters={(id: string, itemId: string) =>
           updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
         }
+        handleClearFilter={handleClearFilter}
       />
     )
   },

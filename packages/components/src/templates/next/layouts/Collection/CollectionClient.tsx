@@ -72,6 +72,7 @@ const CollectionClient = ({
             filters={filters}
             appliedFilters={appliedFilters}
             setAppliedFilters={handleAppliedFiltersChange}
+            handleClearFilter={handleClearFilter}
           />
           <Link
             LinkComponent={LinkComponent}

@@ -5,12 +5,14 @@ import { Label } from "react-aria-components"
 import { BiChevronDown } from "react-icons/bi"
 
 import type { FilterProps } from "../../../types/Filter"
+import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 
 export const Filter = ({
   filters,
   appliedFilters,
   setAppliedFilters,
+  handleClearFilter,
 }: FilterProps) => {
   const [showFilter, setShowFilter] = useState<Record<string, boolean>>(
     filters.reduce((acc, { id }) => ({ ...acc, [id]: true }), {}),
@@ -30,10 +32,19 @@ export const Filter = ({
 
   return (
     <aside>
-      <div className="flex flex-row justify-between gap-4 border-b border-b-base-divider-medium pb-3">
+      <div className="flex flex-row items-center justify-between gap-4 border-b border-b-base-divider-medium pb-3">
         <h2 className="prose-headline-lg-semibold text-base-content-strong">
           Filters
         </h2>
+        {appliedFilters.length > 0 && (
+          <Button
+            className="min-h-fit p-0 text-link"
+            variant="clear"
+            onPress={handleClearFilter}
+          >
+            Clear all filters
+          </Button>
+        )}
       </div>
       {filters.map(({ id, label, items }) => (
         <CheckboxGroup
