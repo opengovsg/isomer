@@ -1,12 +1,23 @@
 "use client"
 
 import { useState } from "react"
-import { Label } from "react-aria-components"
+import {
+  Button as AriaButton,
+  composeRenderProps,
+  Label,
+} from "react-aria-components"
 import { BiChevronDown } from "react-icons/bi"
 
 import type { FilterProps } from "../../../types/Filter"
+import { tv } from "~/lib/tv"
+import { focusRing } from "~/utils/focusRing"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
+
+const expandFilterButtonStyle = tv({
+  extend: focusRing,
+  base: "prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-base-content",
+})
 
 export const Filter = ({
   filters,
@@ -52,23 +63,29 @@ export const Filter = ({
           key={id}
           value={appliedItemsById[id] ?? []}
         >
-          <button className="w-full" onClick={() => updateFilterToggle(id)}>
-            <Label className="prose-headline-base-semibold flex w-full flex-row justify-between gap-4 text-base-content">
-              {label}
-              <BiChevronDown
-                aria-hidden
-                className={`text-2xl text-content-medium transition-all duration-300 ease-in-out ${
-                  showFilter[id] ? "rotate-180" : "rotate-0"
-                }`}
-              />
-            </Label>
-          </button>
+          <AriaButton
+            className={composeRenderProps("", (className, renderProps) =>
+              expandFilterButtonStyle({
+                ...renderProps,
+                className,
+              }),
+            )}
+            onPress={() => updateFilterToggle(id)}
+          >
+            <Label>{label}</Label>
+            <BiChevronDown
+              aria-hidden
+              className={`h-6 w-6 text-base-content-strong transition-all duration-300 ease-in-out ${
+                showFilter[id] ? "rotate-180" : "rotate-0"
+              }`}
+            />
+          </AriaButton>
 
           <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
             {items.map(({ id: itemId, label: itemLabel, count }) => (
               <Checkbox
                 key={itemId}
-                className="p-2"
+                className="w-fit cursor-pointer p-2"
                 value={itemId}
                 onChange={() => setAppliedFilters(id, itemId)}
               >
