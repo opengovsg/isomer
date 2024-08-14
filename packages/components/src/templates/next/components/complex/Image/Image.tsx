@@ -67,10 +67,15 @@ const Image = ({
   assetsBaseUrl,
   LinkComponent,
 }: ImageProps) => {
+  const imgSrc =
+    isExternalUrl(src) || assetsBaseUrl === undefined
+      ? src
+      : `${assetsBaseUrl}${src}`
+
   return (
     <ImageContainer href={href} LinkComponent={LinkComponent}>
       <img
-        src={isExternalUrl(src) ? src : `${assetsBaseUrl}${src}`}
+        src={imgSrc}
         alt={alt}
         width={`${width ?? 100}%`}
         height="auto"

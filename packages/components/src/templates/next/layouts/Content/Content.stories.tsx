@@ -1279,6 +1279,7 @@ export const NoTable: Story = {
         type: "localSearch",
         searchUrl: "/search",
       },
+      // TODO: Replace this with a more stable URL
       assetsBaseUrl: "https://cms.isomer.gov.sg",
     },
     page: {
