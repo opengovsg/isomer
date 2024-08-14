@@ -20,11 +20,11 @@ import { Input } from "./Input"
 
 const fieldGroupStyles = tv({
   extend: focusRing,
-  base: "group flex items-center gap-4 overflow-hidden rounded border bg-white py-1 pl-4 forced-colors:bg-[Field]",
+  base: "group flex items-center gap-4 overflow-hidden rounded border-[1.5px] bg-white py-1 pl-4 forced-colors:bg-[Field]",
   variants: {
     isFocusWithin: {
       false:
-        "m-[1px] border-base-divider-medium forced-colors:border-[ButtonBorder]",
+        "m-[0.5px] border-brand-interaction forced-colors:border-[ButtonBorder]",
       true: "outline-utility-focus-default border-2 border-utility-feedback-info bg-interaction-main-subtle-hover outline forced-colors:border-[Highlight]",
     },
     isInvalid: {
