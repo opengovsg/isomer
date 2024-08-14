@@ -7,8 +7,10 @@ export const getPresignedPutUrlSchema = z.object({
   }),
 })
 
-export const deleteAssetSchema = z.object({
-  fileKey: z.string({
-    required_error: "Missing file key",
-  }),
+export const deleteAssetsSchema = z.object({
+  fileKeys: z.array(
+    z.string({
+      required_error: "Missing file keys",
+    }),
+  ),
 })

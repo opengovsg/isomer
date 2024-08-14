@@ -1,4 +1,4 @@
-import { deleteAssetSchema, getPresignedPutUrlSchema } from "~/schemas/asset"
+import { deleteAssetsSchema, getPresignedPutUrlSchema } from "~/schemas/asset"
 import { protectedProcedure, router } from "~/server/trpc"
 import {
   getFileKey,
@@ -35,25 +35,27 @@ export const assetRouter = router({
       }
     }),
 
-  deleteAsset: protectedProcedure
-    .input(deleteAssetSchema)
+  deleteAssets: protectedProcedure
+    .input(deleteAssetsSchema)
     .mutation(async ({ ctx, input }) => {
-      const { fileKey } = input
+      const { fileKeys } = input
 
       try {
         ctx.logger.info({
-          message: `Deleting asset file`,
+          message: `Deleting asset files`,
           merged: {
-            fileKey,
+            fileKeys,
           },
         })
 
-        await markFileAsDeleted({ key: fileKey })
+        await Promise.all(
+          fileKeys.map((fileKey) => markFileAsDeleted({ key: fileKey })),
+        )
       } catch (e) {
         ctx.logger.error({
-          message: `Failed to delete asset file`,
+          message: `Failed to delete asset files`,
           merged: {
-            fileKey,
+            fileKeys,
             error: JSON.stringify(e),
           },
         })

@@ -59,8 +59,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
 
   const { mutateAsync: uploadAsset, isLoading: isUploadingAsset } =
     useUploadAssetMutation({ siteId })
-  const { mutateAsync: deleteAsset, isLoading: isDeletingAsset } =
-    trpc.asset.deleteAsset.useMutation()
+  const { mutate: deleteAssets, isLoading: isDeletingAssets } =
+    trpc.asset.deleteAssets.useMutation()
 
   if (
     currActiveIdx === -1 ||
@@ -162,19 +162,16 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         return true
       })
 
-      // TODO: Mark removed images/files as deleted
-      const assetsToDelete = modifiedAssets.filter(
-        (asset) => asset.src !== undefined,
-      )
-      await Promise.all(
-        assetsToDelete.map(({ src }) => {
-          if (!src) {
-            return
-          }
-
-          return deleteAsset({ fileKey: src })
-        }),
-      )
+      deleteAssets({
+        fileKeys: modifiedAssets
+          .map(({ src }) => src)
+          .reduce<string[]>((acc, curr) => {
+            if (curr !== undefined) {
+              acc.push(curr)
+            }
+            return acc
+          }, []),
+      })
 
       updatedBlocks[currActiveIdx] = newBlock
       newPageState = {
@@ -205,7 +202,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     )
   }
 
-  const isLoading = isSavingPage || isUploadingAsset || isDeletingAsset
+  const isLoading = isSavingPage || isUploadingAsset || isDeletingAssets
 
   return (
     <>
