@@ -9,15 +9,10 @@ import {
 import type { AppliedFilter } from "../../types/Filter"
 import type { CollectionPageSchemaType } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
-import type {
-  SortDirection,
-  SortKey,
-} from "~/interfaces/internal/CollectionSort"
 import {
   getAvailableFilters,
   getFilteredItems,
   getPaginatedItems,
-  getSortedItems,
   updateAppliedFilters,
 } from "./utils"
 
@@ -25,25 +20,14 @@ export const ITEMS_PER_PAGE = 10
 
 interface UseCollectionProps {
   items: CollectionCardProps[]
-  page: CollectionPageSchemaType["page"]
 }
-export const useCollection = ({
-  page: { defaultSortBy, defaultSortDirection },
-  items,
-}: UseCollectionProps) => {
-  const [sortBy, setSortBy] = useState<SortKey>(defaultSortBy)
-  const [sortDirection, setSortDirection] =
-    useState<SortDirection>(defaultSortDirection)
+export const useCollection = ({ items }: UseCollectionProps) => {
   const [appliedFilters, _setAppliedFilters] = useState<AppliedFilter[]>([])
   const [searchValue, _setSearchValue] = useState<string>("")
 
   // Filter items based on applied filters and search value
   const [filteredItems, setFilteredItems] = useState(
-    getSortedItems(
-      getFilteredItems(items, appliedFilters, searchValue),
-      sortBy,
-      sortDirection,
-    ),
+    getFilteredItems(items, appliedFilters, searchValue),
   )
   const [currPage, setCurrPage] = useState<number>(1)
 
@@ -51,17 +35,11 @@ export const useCollection = ({
     (value: string) => {
       _setSearchValue(value)
       startTransition(() => {
-        setFilteredItems(
-          getSortedItems(
-            getFilteredItems(items, appliedFilters, value),
-            sortBy,
-            sortDirection,
-          ),
-        )
+        setFilteredItems(getFilteredItems(items, appliedFilters, value))
         setCurrPage(1)
       })
     },
-    [appliedFilters, items, sortBy, sortDirection],
+    [appliedFilters, items],
   )
 
   const handleAppliedFiltersChange = useCallback(
@@ -79,15 +57,9 @@ export const useCollection = ({
   // Update filtered items when applied filters change
   useEffect(() => {
     startTransition(() => {
-      setFilteredItems(
-        getSortedItems(
-          getFilteredItems(items, appliedFilters, searchValue),
-          sortBy,
-          sortDirection,
-        ),
-      )
+      setFilteredItems(getFilteredItems(items, appliedFilters, searchValue))
     })
-  }, [appliedFilters, items, searchValue, sortBy, sortDirection])
+  }, [appliedFilters, items, searchValue])
 
   // Reset current page when filtered items change
   useEffect(() => {
@@ -115,10 +87,6 @@ export const useCollection = ({
     handleClearFilter,
     appliedFilters,
     handleAppliedFiltersChange,
-    sortBy,
-    setSortBy,
-    sortDirection,
-    setSortDirection,
     currPage,
     setCurrPage,
   }

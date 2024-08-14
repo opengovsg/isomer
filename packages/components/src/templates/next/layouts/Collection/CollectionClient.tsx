@@ -8,7 +8,6 @@ import { tv } from "~/lib/tv"
 import {
   CollectionCard,
   CollectionSearch,
-  CollectionSort,
   Filter,
   Pagination,
 } from "../../components/internal"
@@ -49,13 +48,9 @@ const CollectionClient = ({
     handleAppliedFiltersChange,
     handleSearchValueChange,
     handleClearFilter,
-    sortBy,
-    setSortBy,
-    sortDirection,
-    setSortDirection,
     currPage,
     setCurrPage,
-  } = useCollection({ page, items })
+  } = useCollection({ items })
 
   return (
     <>
@@ -105,14 +100,6 @@ const CollectionClient = ({
                     </>
                   )}
                 </p>
-              </div>
-              <div className="w-full shrink-0 md:w-[260px]">
-                <CollectionSort
-                  sortBy={sortBy}
-                  setSortBy={setSortBy}
-                  sortDirection={sortDirection}
-                  setSortDirection={setSortDirection}
-                />
               </div>
             </div>
             <div className="flex h-full w-full flex-col gap-0">

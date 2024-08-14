@@ -88,22 +88,6 @@ export const ArticlePageMetaSchema = Type.Composite([
 export const CollectionPageMetaSchema = Type.Composite([
   BasePageSchema,
   Type.Object({
-    defaultSortBy: Type.Union(
-      SortKeys.map((key) => Type.Literal(key)),
-      {
-        title: "Default sort by",
-        description: "The default field to sort the collection items by",
-        type: "string",
-      },
-    ),
-    defaultSortDirection: Type.Union(
-      SortDirections.map((dir) => Type.Literal(dir)),
-      {
-        title: "Default sort direction",
-        description: "The default direction to sort the collection items by",
-        type: "string",
-      },
-    ),
     subtitle: Type.String({
       title: "The subtitle of the collection",
     }),
