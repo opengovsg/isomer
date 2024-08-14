@@ -1,3 +1,4 @@
 import type { RouterOutput } from "~/utils/trpc"
 
-export type ResourceTableData = RouterOutput["resource"]["list"][number]
+export type ResourceTableData =
+  RouterOutput["resource"]["listWithoutRoot"][number]
