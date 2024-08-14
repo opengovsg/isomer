@@ -2,6 +2,7 @@ import type { IconType } from "react-icons"
 import { useMemo } from "react"
 import NextLink from "next/link"
 import { HStack, Icon, Text, VStack } from "@chakra-ui/react"
+import { Link } from "@opengovsg/design-system-react"
 import { BiData, BiFile, BiFileBlank, BiFolder, BiHome } from "react-icons/bi"
 
 import type { ResourceTableData } from "./types"
@@ -54,15 +55,18 @@ export const TitleCell = ({
         color="base.content.strong"
       />
       <VStack spacing="0.25rem" align="start">
-        <Text
+        <Link
           as={NextLink}
           href={linkToResource}
           title={title}
           textStyle="subhead-2"
           noOfLines={1}
+          p="0"
+          variant="standalone"
+          colorScheme="neutral"
         >
           {title}
-        </Text>
+        </Link>
         <Text
           title={permalink}
           noOfLines={1}
