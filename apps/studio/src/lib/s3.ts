@@ -1,11 +1,9 @@
 import type {
   CopyObjectCommandInput,
-  GetObjectCommandInput,
   PutObjectCommandInput,
 } from "@aws-sdk/client-s3"
 import {
   CopyObjectCommand,
-  GetObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3"

@@ -152,21 +152,6 @@ const nonStrictAuthMiddleware = t.middleware(async ({ next, ctx }) => {
   })
 })
 
-const eventBridgeMiddleware = t.middleware(async ({ next, ctx }) => {
-  const S3_ASSETS_SCANNING_API_KEY = env.S3_ASSETS_SCANNING_API_KEY
-  if (
-    !ctx.req.headers.authorization ||
-    ctx.req.headers.authorization !== S3_ASSETS_SCANNING_API_KEY
-  ) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Unauthorized event bridge message",
-    })
-  }
-
-  return next()
-})
-
 /**
  * Create a router
  * @see https://trpc.io/docs/v10/router
@@ -181,11 +166,6 @@ export const publicProcedure = t.procedure
   .use(loggerWithVersionMiddleware)
   .use(contentTypeHeaderMiddleware)
   .use(baseMiddleware)
-
-export const eventBridgeProcedure = t.procedure
-  .use(eventBridgeMiddleware)
-  .use(loggerWithVersionMiddleware)
-  .use(contentTypeHeaderMiddleware)
 
 /**
  * Create a protected procedure

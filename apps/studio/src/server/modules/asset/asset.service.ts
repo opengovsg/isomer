@@ -3,7 +3,7 @@ import type { z } from "zod"
 
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { env } from "~/env.mjs"
-import { copyFile, deleteFile, generateSignedPutUrl } from "~/lib/s3"
+import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
 
 const { S3_UNSAFE_ASSETS_BUCKET_NAME, S3_PUBLIC_ASSETS_BUCKET_NAME } = env
 
@@ -21,14 +21,6 @@ export const getPresignedPutUrl = async ({ key }: { key: string }) => {
   return generateSignedPutUrl({
     Bucket: S3_UNSAFE_ASSETS_BUCKET_NAME,
     Key: key,
-  })
-}
-
-export const moveFileToPublicBucket = async ({ key }: { key: string }) => {
-  await copyFile({
-    Key: key,
-    SourceBucket: S3_UNSAFE_ASSETS_BUCKET_NAME,
-    DestinationBucket: S3_PUBLIC_ASSETS_BUCKET_NAME,
   })
 }
 
