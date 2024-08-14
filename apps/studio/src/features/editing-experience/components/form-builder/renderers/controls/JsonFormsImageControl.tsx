@@ -80,6 +80,7 @@ export function JsonFormsImageControl({
       return
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     convertImage(data)
     // NOTE: We only want to run this once if there is initial data provided
     // eslint-disable-next-line react-hooks/exhaustive-deps
