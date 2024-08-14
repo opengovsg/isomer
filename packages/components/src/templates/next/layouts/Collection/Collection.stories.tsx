@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { userEvent, within } from "@storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -17,12 +18,6 @@ const meta: Meta<CollectionPageSchemaType> = {
       themeOverride: "Isomer Next",
     },
   },
-}
-export default meta
-type Story = StoryObj<typeof CollectionLayout>
-
-export const Default: Story = {
-  name: "Collection",
   args: {
     layout: "collection",
     site: {
@@ -106,5 +101,18 @@ export const Default: Story = {
       subtitle:
         "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
     },
+  },
+}
+export default meta
+type Story = StoryObj<typeof CollectionLayout>
+
+export const Default: Story = {
+  name: "Collection",
+}
+
+export const WithFilters: Story = {
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(screen.getByText(/2023 \(1\)/i))
   },
 }
