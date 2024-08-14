@@ -87,7 +87,7 @@ const CollectionClient = ({
           <div className="flex w-full flex-col gap-3">
             <div className="flex w-full flex-col justify-between gap-x-6 gap-y-2 md:flex-row">
               <div className="flex h-full w-full items-center gap-3">
-                <p className="text-base text-content">
+                <p className="prose-headline-lg-regular text-base-content-medium">
                   {appliedFilters.length > 0 || searchValue !== ""
                     ? `${filteredCount} search result${
                         filteredCount === 1 ? "" : "s"
