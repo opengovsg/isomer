@@ -1,3 +1,5 @@
+"use client"
+
 import type { PaginationProps } from "../../../types/Pagination"
 import {
   Pagination,
