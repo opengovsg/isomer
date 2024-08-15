@@ -27,7 +27,7 @@ const createCollectionLayoutStyles = tv({
     container:
       "relative mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-16 md:px-10 lg:gap-6 xl:gap-10",
     filterContainer: "relative col-span-12 pb-10 lg:col-span-3",
-    content: "col-span-12 flex flex-col gap-16 lg:col-span-9 lg:ml-24",
+    content: "col-span-12 flex flex-col gap-8 lg:col-span-9 lg:ml-24",
   },
 })
 
