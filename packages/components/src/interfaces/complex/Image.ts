@@ -40,6 +40,7 @@ export const ImageSchema = Type.Object(
       Type.String({
         title: "URL Link",
         description: "The URL to navigate to when the image is clicked",
+        format: "link",
       }),
     ),
   },
