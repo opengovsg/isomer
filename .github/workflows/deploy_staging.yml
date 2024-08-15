@@ -23,12 +23,12 @@ jobs:
       ecs-cluster-name: "isomer-next-infra-ecs"
       ecs-service-name: "isomer-next-infra-ecs-service"
       ecs-container-name: "studio"
-      ecs-container-port: "3000"
+      ecs-container-port: 3000
       environment: "staging"
       shortEnv: "stg"
       codedeploy-appspec-path: .aws/deploy/appspec.json
       ecs-task-definition-path: ".aws/deploy/task-definition.json"
-      codedeploy-application-name: "isomer-next-infra-ecs-app"
+      codedeploy-application: "isomer-next-infra-ecs-app"
       codedeploy-deployment-group: "isomer-next-infra-ecs-dg"
       path-to-dockerfile: "./apps/studio/Dockerfile"
 

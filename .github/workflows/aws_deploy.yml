@@ -7,6 +7,10 @@ on:
         description: "Deployment environment"
         required: true
         type: string
+      ecs-container-port:
+        description: "Port that ecs listens on for traffic"
+        required: true
+        type: number
       shortEnv:
         description: "Deployment environment, the short version (one of [dev, prod, stg, test, uat, vapt])"
         required: true
@@ -14,7 +18,7 @@ on:
       aws-account-id:
         description: "AWS account ID to use"
         required: true
-        type: string
+        type: number
       aws-region:
         description: "AWS region to use"
         required: true
