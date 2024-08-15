@@ -103,8 +103,8 @@ const server = z
  */
 const processEnv = {
   // Server-side env vars
-  NODE_ENV: process.env.NODE_ENV,
   DATABASE_URL: process.env.DATABASE_URL,
+  NODE_ENV: process.env.NODE_ENV,
   OTP_EXPIRY: process.env.OTP_EXPIRY,
   POSTMAN_API_KEY: process.env.POSTMAN_API_KEY,
   SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
