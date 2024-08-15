@@ -116,6 +116,7 @@ jobs:
     name: Deploy image to ECS
     runs-on: ubuntu-latest
     needs: build
+    environment: ${{ inputs.environment }}
     env:
       DD_API_KEY: ${{ secrets.DD_API_KEY }}
     steps:
@@ -127,7 +128,6 @@ jobs:
 
       - name: Replace AWS_ACCOUNT_ID/ENV in task definition file
         id: replace-variables
-        environment: ${{ inputs.environment }}
         run: |
           sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<ENV>/${{ inputs.environment }}/g' ${{ inputs.ecs-task-definition-path }}

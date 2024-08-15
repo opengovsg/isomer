@@ -11,7 +11,7 @@ on:
 
 # NOTE: This is actually using our federated isomer-staging account
 jobs:
-  deploy staging:
+  deploy_staging:
     name: Deploy app to vapt
     uses: ./.github/workflows/aws_deploy.yml
     # NOTE: deploy in `staging` env to set env specific secrets
