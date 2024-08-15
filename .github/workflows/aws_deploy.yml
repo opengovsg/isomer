@@ -60,6 +60,14 @@ on:
         description: "CodeDeploy deployment group to use"
         required: true
         type: string
+      ecs-task-role:
+        description: "Task role that ecs uses to run our app"
+        required: true
+        type: string
+      ecs-task-exec-role:
+        description: "Task role that ecs uses to deploy our app"
+        required: true
+        type: string
     secrets:
       DD_API_KEY:
         description: "Datadog API key for uploading sourcemaps"
@@ -145,25 +153,23 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: Test
-        run: |
-          ls -a "./.aws/deploy"
-
       - name: Replace variables in task definition file
         id: replace-variables
         run: |
           sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' ${{ inputs.ecs-task-definition-path }}
-          # sed -i 's/<ENV>/${{ inputs.environment }}/g' ${{ inputs.ecs-task-definition-path }}
-          # sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
-          # sed -i 's/<CPU>/${{ inputs.environment == 'production' && 1024 || 512 }}/g' ${{ inputs.ecs-task-definition-path }}
-          # sed -i 's/<MEMORY>/${{ inputs.environment == 'production' && 2048 || 1024 }}/g' ${{ inputs.ecs-task-definition-path }}
-          # sed -i 's/<RDS_READER_ENDPOINT>/${{ secrets.RDS_READER_ENDPOINT }}/g' ${{ inputs.task-definition-path }}
-          # sed -i 's/<DD_COMMIT_SHA>/${{ github.sha }}/g' ${{ inputs.task-definition-path }}
+          sed -i 's/<ENV>/${{ inputs.environment }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<CPU>/${{ inputs.environment == 'production' && 1024 || 512 }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<MEMORY>/${{ inputs.environment == 'production' && 2048 || 1024 }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<RDS_READER_ENDPOINT>/${{ secrets.RDS_READER_ENDPOINT }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<DD_COMMIT_SHA>/${{ github.sha }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<ECS_TASK_ROLE>/${{ inputs.ecs-task-role }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<ECS_TASK_EXEC_ROLE>/${{ inputs.ecs-task-exec-role }}/g' ${{ inputs.ecs-task-definition-path }}
 
       - name: Replace variables in appspec
         run: |
-          sed -i 's/<AWS_ACCOUNT_ID>/${{ secrets.AWS_ACCOUNT_ID }}/g' .aws/deploy/appspec.json
-          sed -i 's/<ENV>/${{ inputs.env}}/g' .aws/deploy/appspec.json
+          sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' .aws/deploy/appspec.json
+          sed -i 's/<ENV>/${{ inputs.environment}}/g' .aws/deploy/appspec.json
           sed -i 's/<CONTAINER_NAME>/${{ inputs.ecs-container-name }}/g' .aws/deploy/appspec.json
           sed -i 's/<CONTAINER_PORT>/${{ inputs.ecs-container-port }}/g' .aws/deploy/appspec.json
 

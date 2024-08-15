@@ -30,6 +30,8 @@ jobs:
       ecs-task-definition-path: .aws/deploy/task-definition.json
       codedeploy-application: "isomer-next-infra-ecs-app"
       codedeploy-deployment-group: "isomer-next-infra-ecs-dg"
+      ecs-task-role: isomer-next-infra-ecs-task-role
+      ecs-task-exec-role: isomer-next-infra-ecs-task-exec-role
 
     secrets:
       DD_API_KEY: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}

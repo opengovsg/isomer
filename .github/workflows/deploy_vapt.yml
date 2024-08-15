@@ -30,6 +30,8 @@ jobs:
       ecs-task-definition-path: .aws/deploy/task-definition.json
       codedeploy-application: "studio-vapt-ecs-app"
       codedeploy-deployment-group: "studio-vapt-ecs-dg"
+      ecs-task-role: studio-vapt-ecs-task-role
+      ecs-task-exec-role: studio-vapt-ecs-task-exec-role
 
     secrets:
       DD_API_KEY: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
