@@ -9,7 +9,7 @@ import {
   CollectionCard,
   CollectionSearch,
   Filter,
-  Pagination,
+  PaginationControls,
 } from "../../components/internal"
 import { Link } from "../../components/internal/Link"
 import CollectionPageHeader from "./CollectionPageHeader"
@@ -139,7 +139,7 @@ const CollectionClient = ({
           {paginatedItems.length > 0 && (
             <div className="w-full">
               <div className="sm:ml-auto sm:max-w-96">
-                <Pagination
+                <PaginationControls
                   totalItems={filteredCount}
                   itemsPerPage={ITEMS_PER_PAGE}
                   currPage={currPage}
