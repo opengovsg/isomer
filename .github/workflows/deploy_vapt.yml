@@ -31,7 +31,7 @@ jobs:
       ecs-task-definition-path: ".aws/deploy/task-definition.json"
       codedeploy-application-name: "isomer-next-infra-ecs-app"
       codedeploy-deployment-group: "isomer-next-infra-ecs-dg"
-      path-to-dockerfile: "Dockerfile"
+      path-to-dockerfile: "./apps/studio/Dockerfile"
 
     secrets:
       DD_API_KEY: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
