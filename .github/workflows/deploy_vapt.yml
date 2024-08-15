@@ -27,7 +27,7 @@ jobs:
       environment: "vapt"
       shortEnv: "vapt"
       codedeploy-appspec-path: .aws/deploy/appspec.json
-      ecs-task-definition-path: ".aws/deploy/task-definition.json"
+      ecs-task-definition-path: "./.aws/deploy/task-definition.json"
       codedeploy-application: "studio-vapt-ecs-app"
       codedeploy-deployment-group: "studio-vapt-ecs-dg"
 
