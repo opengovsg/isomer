@@ -152,7 +152,7 @@ jobs:
       - name: Replace variables in task definition file
         id: replace-variables
         run: |
-          sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' ./.aws/deploy/task-definition.json
+          sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' ${{ inputs.ecs-task-definition-path }}
           # sed -i 's/<ENV>/${{ inputs.environment }}/g' ${{ inputs.ecs-task-definition-path }}
           # sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
           # sed -i 's/<CPU>/${{ inputs.environment == 'production' && 1024 || 512 }}/g' ${{ inputs.ecs-task-definition-path }}

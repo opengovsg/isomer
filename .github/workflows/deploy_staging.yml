@@ -27,7 +27,7 @@ jobs:
       environment: "staging"
       shortEnv: "stg"
       codedeploy-appspec-path: .aws/deploy/appspec.json
-      ecs-task-definition-path: ".aws/deploy/task-definition.json"
+      ecs-task-definition-path: .aws/deploy/task-definition.json
       codedeploy-application: "isomer-next-infra-ecs-app"
       codedeploy-deployment-group: "isomer-next-infra-ecs-dg"
 
