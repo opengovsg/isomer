@@ -40,9 +40,6 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const utils = trpc.useUtils()
-  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
-    { siteId, pageId },
-  )
   const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
