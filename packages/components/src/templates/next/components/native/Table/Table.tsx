@@ -67,7 +67,7 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
   return (
     <div className="overflow-x-auto [&:not(:first-child)]:mt-6">
       <table
-        className="relative w-full border-separate border-spacing-0"
+        className="relative w-full border-collapse border-spacing-0"
         ref={tableRef}
       >
         <caption className="mb-4 caption-top text-left">
