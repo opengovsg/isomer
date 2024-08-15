@@ -45,7 +45,8 @@ const CollectionClient = ({
     filteredCount,
     searchValue,
     appliedFilters,
-    handleAppliedFiltersChange,
+    handleFilterToggle,
+    setAppliedFilters,
     handleSearchValueChange,
     handleClearFilter,
     currPage,
@@ -71,7 +72,8 @@ const CollectionClient = ({
           <Filter
             filters={filters}
             appliedFilters={appliedFilters}
-            setAppliedFilters={handleAppliedFiltersChange}
+            handleFilterToggle={handleFilterToggle}
+            setAppliedFilters={setAppliedFilters}
             handleClearFilter={handleClearFilter}
           />
           <Link

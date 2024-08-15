@@ -53,7 +53,8 @@ const meta: Meta<typeof Filter> = {
       <Filter
         filters={filters}
         appliedFilters={appliedFilters}
-        setAppliedFilters={(id: string, itemId: string) =>
+        setAppliedFilters={setAppliedFilters}
+        handleFilterToggle={(id: string, itemId: string) =>
           updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
         }
         handleClearFilter={handleClearFilter}

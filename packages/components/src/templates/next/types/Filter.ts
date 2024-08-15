@@ -28,7 +28,8 @@ export interface AppliedFilter {
 export interface FilterProps {
   filters: Filter[]
   appliedFilters: AppliedFilter[]
-  setAppliedFilters: (filterId: string, itemId: string) => void
+  setAppliedFilters: (appliedFilters: AppliedFilter[]) => void
+  handleFilterToggle: (filterId: string, itemId: string) => void
   handleClearFilter: () => void
 }
 
