@@ -30,7 +30,6 @@ jobs:
       ecs-task-definition-path: ".aws/deploy/task-definition.json"
       codedeploy-application: "studio-vapt-ecs-app"
       codedeploy-deployment-group: "studio-vapt-ecs-dg"
-      path-to-dockerfile: "./apps/studio/Dockerfile"
 
     secrets:
       DD_API_KEY: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
