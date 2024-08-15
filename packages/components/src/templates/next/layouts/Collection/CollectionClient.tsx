@@ -137,15 +137,13 @@ const CollectionClient = ({
             </div>
           </div>
           {paginatedItems.length > 0 && (
-            <div className="w-full">
-              <div className="sm:ml-auto sm:max-w-96">
-                <PaginationControls
-                  totalItems={filteredCount}
-                  itemsPerPage={ITEMS_PER_PAGE}
-                  currPage={currPage}
-                  setCurrPage={setCurrPage}
-                />
-              </div>
+            <div className="flex w-full justify-center lg:justify-end">
+              <PaginationControls
+                totalItems={filteredCount}
+                itemsPerPage={ITEMS_PER_PAGE}
+                currPage={currPage}
+                setCurrPage={setCurrPage}
+              />
             </div>
           )}
         </div>
