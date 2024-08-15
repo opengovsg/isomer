@@ -77,9 +77,6 @@ jobs:
     name: Build and push image to ECR
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
@@ -101,8 +98,11 @@ jobs:
         with:
           mask-password: "true"
 
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
       - name: Build and push image to ECR
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
@@ -126,9 +126,6 @@ jobs:
       DD_API_KEY: ${{ secrets.DD_API_KEY }}
 
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
@@ -145,10 +142,13 @@ jobs:
         with:
           mask-password: "true"
 
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
       - name: Replace variables in task definition file
         id: replace-variables
         run: |
-          sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' "./.aws/deploy/task-definition.json"
           sed -i 's/<ENV>/${{ inputs.environment }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<CPU>/${{ inputs.environment == 'production' && 1024 || 512 }}/g' ${{ inputs.ecs-task-definition-path }}
