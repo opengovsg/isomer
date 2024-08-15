@@ -124,14 +124,28 @@ jobs:
     environment: ${{ inputs.environment }}
     env:
       DD_API_KEY: ${{ secrets.DD_API_KEY }}
+
     steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ inputs.cicd-role }}
+          role-session-name: github-action-application-deploy
+          aws-region: ${{ inputs.aws-region }}
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         with:
           mask-password: "true"
 
-      - name: Replace AWS_ACCOUNT_ID/ENV in task definition file
+      - name: Replace variables in task definition file
         id: replace-variables
         run: |
           sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' ${{ inputs.ecs-task-definition-path }}
