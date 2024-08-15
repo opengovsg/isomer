@@ -27,7 +27,7 @@ const CollectionPageHeader = ({
             <p className="prose-title-lg-regular">{subtitle}</p>
           </div>
         </div>
-        <div className="max-w-[54rem]">{children}</div>
+        <div className="max-w-[54rem] pb-4">{children}</div>
       </div>
     </div>
   )
