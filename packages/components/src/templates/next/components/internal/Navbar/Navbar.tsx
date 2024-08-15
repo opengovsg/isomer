@@ -1,7 +1,6 @@
 "use client"
 
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
-import { usePreventScroll } from "react-aria"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useOnClickOutside, useResizeObserver } from "usehooks-ts"
 
@@ -64,10 +63,6 @@ export const Navbar = ({
   const megaMenuRef = useRef(null)
   const activeNavRef = useRef(null)
   const mobileMenuRef = useRef(null)
-
-  usePreventScroll({
-    isDisabled: !isMenuOpen,
-  })
 
   useOnClickOutside(
     [activeNavRef, megaMenuRef, mobileMenuRef],
