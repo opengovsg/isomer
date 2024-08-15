@@ -14,7 +14,6 @@ import { NavItem } from "./NavItem"
 
 const navbarStyles = tv({
   slots: {
-    overlay: "fixed inset-0 bg-canvas-overlay bg-opacity-40",
     logo: "max-h-[68px] object-contain object-center",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
     navbar:
@@ -24,8 +23,7 @@ const navbarStyles = tv({
   },
 })
 
-const { overlay, navItemContainer, navbarContainer, navbar, logo } =
-  navbarStyles()
+const { navItemContainer, navbarContainer, navbar, logo } = navbarStyles()
 
 export const Navbar = ({
   logoUrl,
@@ -89,15 +87,6 @@ export const Navbar = ({
 
   return (
     <div className="relative flex flex-col">
-      {isMenuOpen && !isHamburgerOpen && (
-        <div
-          aria-hidden
-          style={{
-            top: siteHeaderBottomPx,
-          }}
-          className={overlay()}
-        />
-      )}
       {/* Site header */}
       <div className={navbarContainer()} ref={siteHeaderRef}>
         <div className={navbar()}>
