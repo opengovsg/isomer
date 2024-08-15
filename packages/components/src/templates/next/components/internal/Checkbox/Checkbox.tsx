@@ -79,16 +79,21 @@ export function Checkbox(props: CheckboxProps) {
       {({ isSelected, isIndeterminate, ...renderProps }) => (
         <>
           <div
-            className={boxStyles({
-              isSelected: isSelected || isIndeterminate,
-              ...renderProps,
-            })}
+            // Used to align icon with text
+            className="flex items-center justify-center before:invisible before:w-0 before:content-['hidden']"
           >
-            {isIndeterminate ? (
-              <BiMinus aria-hidden className={iconStyles} />
-            ) : isSelected ? (
-              <BiCheck aria-hidden className={iconStyles} />
-            ) : null}
+            <div
+              className={boxStyles({
+                isSelected: isSelected || isIndeterminate,
+                ...renderProps,
+              })}
+            >
+              {isIndeterminate ? (
+                <BiMinus aria-hidden className={iconStyles} />
+              ) : isSelected ? (
+                <BiCheck aria-hidden className={iconStyles} />
+              ) : null}
+            </div>
           </div>
           {props.children}
         </>
