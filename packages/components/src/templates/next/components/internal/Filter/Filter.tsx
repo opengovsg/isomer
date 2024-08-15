@@ -1,18 +1,20 @@
 "use client"
 
 import { useState } from "react"
+import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react"
 import {
   Button as AriaButton,
   composeRenderProps,
   Label,
 } from "react-aria-components"
-import { BiChevronDown } from "react-icons/bi"
+import { BiChevronDown, BiChevronRight, BiX } from "react-icons/bi"
 
 import type { FilterProps } from "../../../types/Filter"
 import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/focusRing"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
+import { IconButton } from "../IconButton"
 
 const expandFilterButtonStyle = tv({
   extend: focusRing,
@@ -41,60 +43,158 @@ export const Filter = ({
     }))
   }
 
-  return (
-    <aside>
-      <div className="flex flex-row items-center justify-between gap-4 border-b border-b-base-divider-medium pb-3">
-        <h2 className="prose-headline-lg-semibold text-base-content-strong">
-          Filters
-        </h2>
-        {appliedFilters.length > 0 && (
-          <Button
-            className="min-h-fit p-0 text-link"
-            variant="clear"
-            onPress={handleClearFilter}
-          >
-            Clear all filters
-          </Button>
-        )}
-      </div>
-      {filters.map(({ id, label, items }) => (
-        <CheckboxGroup
-          className="border-b border-b-divider-medium py-4"
-          key={id}
-          value={appliedItemsById[id] ?? []}
-        >
-          <AriaButton
-            className={composeRenderProps("", (className, renderProps) =>
-              expandFilterButtonStyle({
-                ...renderProps,
-                className,
-              }),
-            )}
-            onPress={() => updateFilterToggle(id)}
-          >
-            <Label>{label}</Label>
-            <BiChevronDown
-              aria-hidden
-              className={`h-6 w-6 text-base-content-strong transition-all duration-300 ease-in-out ${
-                showFilter[id] ? "rotate-180" : "rotate-0"
-              }`}
-            />
-          </AriaButton>
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
 
-          <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
-            {items.map(({ id: itemId, label: itemLabel, count }) => (
-              <Checkbox
-                key={itemId}
-                className="w-fit cursor-pointer p-2"
-                value={itemId}
-                onChange={() => setAppliedFilters(id, itemId)}
+  return (
+    <>
+      <Button
+        className="prose-headline-lg-semibold flex w-full items-center justify-between gap-1 rounded border-[1.5px] border-base-content-strong bg-white px-4 py-3.5 text-base-content-strong lg:hidden"
+        variant="unstyled"
+        onPress={() => setMobileFiltersOpen(true)}
+      >
+        Filter results
+        <BiChevronRight className="h-6 w-6 shrink-0" />
+      </Button>
+      <Dialog
+        open={mobileFiltersOpen}
+        onClose={setMobileFiltersOpen}
+        className="relative z-40 lg:hidden"
+      >
+        <DialogBackdrop
+          transition
+          className="fixed inset-0 bg-black bg-opacity-25 transition-opacity duration-300 ease-linear data-[closed]:opacity-0"
+        />
+
+        <div className="fixed inset-0 z-40 flex">
+          <DialogPanel
+            transition
+            className="relative ml-auto flex h-full w-full transform flex-col overflow-y-auto bg-white transition duration-300 ease-in-out data-[closed]:translate-y-full"
+          >
+            <div className="mx-6 flex items-center justify-between border-b border-b-divider-medium pb-3 pt-12 md:mx-10">
+              <h2 className="prose-title-lg-medium text-base-content-medium">
+                Filters
+              </h2>
+              <IconButton
+                icon={BiX}
+                onPress={() => setMobileFiltersOpen(false)}
+                aria-label="Close filter menu"
+              />
+            </div>
+
+            {/* Filters */}
+            <form className="flex-1 px-6 md:px-10">
+              {filters.map(({ id, label, items }) => (
+                <CheckboxGroup
+                  className="border-b border-b-divider-medium py-4 last:border-0"
+                  key={id}
+                  value={appliedItemsById[id] ?? []}
+                >
+                  <AriaButton
+                    className={composeRenderProps(
+                      "",
+                      (className, renderProps) =>
+                        expandFilterButtonStyle({
+                          ...renderProps,
+                          className,
+                        }),
+                    )}
+                    onPress={() => updateFilterToggle(id)}
+                  >
+                    <Label>{label}</Label>
+                    <BiChevronDown
+                      aria-hidden
+                      className={`mr-3 h-6 w-6 text-base-content-strong transition-all duration-300 ease-in-out ${
+                        showFilter[id] ? "rotate-180" : "rotate-0"
+                      }`}
+                    />
+                  </AriaButton>
+
+                  <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
+                    {items.map(({ id: itemId, label: itemLabel, count }) => (
+                      <Checkbox
+                        key={itemId}
+                        className="w-fit cursor-pointer p-2"
+                        value={itemId}
+                        onChange={() => setAppliedFilters(id, itemId)}
+                      >
+                        {itemLabel} ({count.toLocaleString()})
+                      </Checkbox>
+                    ))}
+                  </div>
+                </CheckboxGroup>
+              ))}
+            </form>
+            {/* Sticky action bottom bar */}
+            <div className="sticky bottom-0 left-0 right-0 flex flex-col gap-3 border-t border-t-divider-medium bg-white px-6 pb-12 pt-8 md:px-10">
+              <Button
+                className="w-full"
+                variant="solid"
+                size="lg"
+                onPress={() => setMobileFiltersOpen(false)}
               >
-                {itemLabel} ({count.toLocaleString()})
-              </Checkbox>
-            ))}
-          </div>
-        </CheckboxGroup>
-      ))}
-    </aside>
+                Apply filters
+              </Button>
+              <Button size="lg" className="w-full" variant="outline">
+                Clear all filters
+              </Button>
+            </div>
+          </DialogPanel>
+        </div>
+      </Dialog>
+      <aside className="hidden lg:block">
+        <div className="flex flex-row items-center justify-between gap-4 border-b border-b-base-divider-medium pb-3">
+          <h2 className="prose-headline-lg-semibold text-base-content-strong">
+            Filters
+          </h2>
+          {appliedFilters.length > 0 && (
+            <Button
+              className="min-h-fit p-0 text-link"
+              variant="unstyled"
+              onPress={handleClearFilter}
+            >
+              Clear all filters
+            </Button>
+          )}
+        </div>
+        {filters.map(({ id, label, items }) => (
+          <CheckboxGroup
+            className="border-b border-b-divider-medium py-4"
+            key={id}
+            value={appliedItemsById[id] ?? []}
+          >
+            <AriaButton
+              className={composeRenderProps("", (className, renderProps) =>
+                expandFilterButtonStyle({
+                  ...renderProps,
+                  className,
+                }),
+              )}
+              onPress={() => updateFilterToggle(id)}
+            >
+              <Label>{label}</Label>
+              <BiChevronDown
+                aria-hidden
+                className={`h-6 w-6 text-base-content-strong transition-all duration-300 ease-in-out ${
+                  showFilter[id] ? "rotate-180" : "rotate-0"
+                }`}
+              />
+            </AriaButton>
+
+            <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
+              {items.map(({ id: itemId, label: itemLabel, count }) => (
+                <Checkbox
+                  key={itemId}
+                  className="w-fit cursor-pointer p-2"
+                  value={itemId}
+                  onChange={() => setAppliedFilters(id, itemId)}
+                >
+                  {itemLabel} ({count.toLocaleString()})
+                </Checkbox>
+              ))}
+            </div>
+          </CheckboxGroup>
+        ))}
+      </aside>
+    </>
   )
 }
