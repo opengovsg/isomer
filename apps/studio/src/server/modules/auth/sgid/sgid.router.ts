@@ -43,7 +43,10 @@ export const sgidRouter = router({
         })
       }
 
-      ctx.logger.info({ landingUrl }, `Starting SGID login flow: ${landingUrl}`)
+      ctx.logger.info(
+        { landingUrl },
+        `Starting SGID login flow: ${landingUrl.toString()}`,
+      )
 
       const { codeChallenge, codeVerifier } = generatePkcePair()
       const options: AuthorizationUrlParams = {
