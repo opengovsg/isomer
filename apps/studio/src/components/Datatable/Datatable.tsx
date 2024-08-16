@@ -66,10 +66,9 @@ export const Datatable = <T extends object>({
             bottom={0}
             flex={1}
             left={0}
-            pos="fixed"
+            pos="absolute"
             right={0}
             top={0}
-            w="100vw"
             zIndex={2}
           >
             <Box m="auto">
