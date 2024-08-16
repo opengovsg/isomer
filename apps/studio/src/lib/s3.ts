@@ -11,7 +11,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
 import { env } from "~/env.mjs"
 
-const { S3_REGION, S3_ASSETS_BUCKET_NAME } = env
+const { S3_REGION } = env
 
 export const storage = new S3Client({
   region: S3_REGION,
@@ -24,31 +24,12 @@ export const generateSignedPutUrl = async ({
   return getSignedUrl(
     storage,
     new PutObjectCommand({
-      Bucket: S3_ASSETS_BUCKET_NAME,
+      Bucket,
       Key,
     }),
     {
       expiresIn: 60 * 5, // 5 minutes
     },
-  )
-}
-
-type CopyFileParams = Pick<CopyObjectCommandInput, "Key"> & {
-  SourceBucket: CopyObjectCommandInput["Bucket"]
-  DestinationBucket: CopyObjectCommandInput["Bucket"]
-}
-
-export const copyFile = async ({
-  Key,
-  SourceBucket,
-  DestinationBucket,
-}: CopyFileParams) => {
-  return storage.send(
-    new CopyObjectCommand({
-      Bucket: DestinationBucket,
-      CopySource: `${SourceBucket}/${Key}`,
-      Key,
-    }),
   )
 }
 
