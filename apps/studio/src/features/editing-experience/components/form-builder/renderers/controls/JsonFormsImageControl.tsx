@@ -19,7 +19,7 @@ import {
   MAX_IMG_FILE_SIZE_BYTES,
 } from "./constants"
 
-const { NEXT_PUBLIC_S3_PUBLIC_ASSETS_DOMAIN_NAME } = env
+const { NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME } = env
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,
@@ -70,7 +70,7 @@ export function JsonFormsImageControl({
       const fileName = url.split("/").pop()
       const fileType = `image/${url.split(".").pop()}`
       const imageUrl = url.startsWith("/")
-        ? `${NEXT_PUBLIC_S3_PUBLIC_ASSETS_DOMAIN_NAME}${url}`
+        ? `${NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${url}`
         : url
       const file = await urlToFile(imageUrl, fileName || "", fileType)
       setPendingAsset({ path, src: imageUrl, file })
