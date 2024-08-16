@@ -4,7 +4,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
 import { env } from "~/env.mjs"
 
-const { S3_REGION, S3_UNSAFE_ASSETS_BUCKET_NAME } = env
+const { S3_REGION, S3_ASSETS_BUCKET_NAME } = env
 
 export const storage = new S3Client({
   region: S3_REGION,
@@ -16,7 +16,7 @@ export const generateSignedPutUrl = async ({
   return getSignedUrl(
     storage,
     new PutObjectCommand({
-      Bucket: S3_UNSAFE_ASSETS_BUCKET_NAME,
+      Bucket: S3_ASSETS_BUCKET_NAME,
       Key,
     }),
     {

@@ -7,7 +7,7 @@ import {
   Icon,
   useDisclosure,
 } from "@chakra-ui/react"
-import { Button, IconButton } from "@opengovsg/design-system-react"
+import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import _ from "lodash"
@@ -15,6 +15,7 @@ import { BiDollar, BiTrash, BiX } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
 import { DeleteBlockModal } from "./DeleteBlockModal"
@@ -41,16 +42,23 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     setSavedPageState,
     previewPageState,
     setPreviewPageState,
+    modifiedAssets,
+    setModifiedAssets,
   } = useEditorDrawerContext()
+  const toast = useToast()
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const utils = trpc.useUtils()
 
-  const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
-    onSuccess: async () => {
-      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-    },
-  })
+  const { mutate: savePage, isLoading: isSavingPage } =
+    trpc.page.updatePageBlob.useMutation({
+      onSuccess: async () => {
+        await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+      },
+    })
+
+  const { mutateAsync: uploadAsset, isLoading: isUploadingAsset } =
+    useUploadAssetMutation({ siteId })
 
   if (
     currActiveIdx === -1 ||
@@ -99,6 +107,89 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       content: updatedBlocks,
     }
     setPreviewPageState(newPageState)
+  }
+
+  const handleSave = async () => {
+    let newPageState = previewPageState
+
+    if (modifiedAssets.length > 0) {
+      const updatedBlocks = Array.from(previewPageState.content)
+      const newBlock = _.cloneDeep(updatedBlocks[currActiveIdx])
+
+      if (!newBlock) {
+        return
+      }
+
+      // Upload all new/modified images/files
+      const assetsToUpload = modifiedAssets.filter((asset) => !!asset.file)
+
+      const isUploadingSuccessful = await Promise.allSettled(
+        assetsToUpload.map(({ path, file }) => {
+          if (!file) {
+            return
+          }
+
+          return uploadAsset({ file }).then((res) => {
+            _.set(newBlock, path, res.path)
+            return path
+          })
+        }),
+      ).then((results) => {
+        // Keep only failed uploads inside modifiedAssets so on subsequent
+        // save attempts, we retry uploading just the failed assets
+        const newModifiedAssets = modifiedAssets.filter(({ path }) => {
+          return !results.some(
+            (result) => result.status === "fulfilled" && result.value === path,
+          )
+        })
+
+        if (newModifiedAssets.length > 0) {
+          const failedUploadsCount = newModifiedAssets.length
+          const totalUploadsCount = modifiedAssets.length
+
+          toast({
+            title: "Error uploading assets",
+            description: `An error occurred while uploading ${failedUploadsCount}/${totalUploadsCount} files/images. Please try again later.`,
+            status: "error",
+          })
+
+          setModifiedAssets(newModifiedAssets)
+          return false
+        }
+
+        return true
+      })
+
+      // TODO: Mark removed images/files as deleted
+      // const assetsToDelete = modifiedAssets.filter((asset) => !asset.file)
+
+      updatedBlocks[currActiveIdx] = newBlock
+      newPageState = {
+        ...previewPageState,
+        content: updatedBlocks,
+      }
+
+      if (!isUploadingSuccessful) {
+        // NOTE: Do not save page if there are errors uploading assets
+        setPreviewPageState(newPageState)
+        return
+      }
+    }
+
+    savePage(
+      {
+        pageId,
+        siteId,
+        content: JSON.stringify(newPageState),
+      },
+      {
+        onSuccess: () => {
+          setModifiedAssets([])
+          setSavedPageState(newPageState)
+          setDrawerState({ state: "root" })
+        },
+      },
+    )
   }
 
   return (
@@ -150,7 +241,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
               colorScheme="sub"
               size="sm"
               p="0.625rem"
-              isDisabled={isLoading}
+              isDisabled={isSavingPage || isUploadingAsset}
               onClick={() => {
                 if (!_.isEqual(previewPageState, savedPageState)) {
                   onDiscardChangesModalOpen()
@@ -192,18 +283,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           <Box w="100%">
             <Button
               w="100%"
-              onClick={() => {
-                setSavedPageState(previewPageState)
-                mutate(
-                  {
-                    pageId,
-                    siteId,
-                    content: JSON.stringify(previewPageState),
-                  },
-                  { onSuccess: () => setDrawerState({ state: "root" }) },
-                )
-              }}
-              isLoading={isLoading}
+              onClick={handleSave}
+              isLoading={isSavingPage || isUploadingAsset}
             >
               Save changes
             </Button>
