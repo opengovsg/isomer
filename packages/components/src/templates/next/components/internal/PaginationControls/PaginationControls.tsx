@@ -56,7 +56,7 @@ export function PaginationControls({
         <PaginationItem>
           <PaginationNext
             isDisabled={currPage >= totalPageCount}
-            onPress={() => setCurrPage((p) => Math.min(totalItems, p + 1))}
+            onPress={() => setCurrPage((p) => Math.min(totalPageCount, p + 1))}
           />
         </PaginationItem>
       </PaginationContent>
