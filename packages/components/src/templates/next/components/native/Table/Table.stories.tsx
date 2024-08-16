@@ -1527,3 +1527,473 @@ export const Colspan: Story = {
     ],
   },
 }
+
+export const NestedColumns: Story = {
+  args: {
+    attrs: {
+      caption: "Something per Testing Cycle",
+    },
+    content: [
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableHeader",
+            attrs: {
+              colspan: 3,
+            },
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "Testing Couple",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "Non-testing Couple",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "Something else Couple",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            attrs: {
+              colspan: 3,
+            },
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "ABC",
+                  },
+                  {
+                    type: "text",
+                    marks: [
+                      {
+                        type: "superscript",
+                      },
+                    ],
+                    text: "1",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "75%; up to $3,260",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "55%; up to $2,390",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "35%; up to $1,520",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            attrs: {
+              colspan: 3,
+            },
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "Another type",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "75%; up to $8,990",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "55%; up to $6,590",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "35%; up to $4,190",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            attrs: {
+              rowspan: 3,
+            },
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "TEST-M",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: {
+              rowspan: 2,
+            },
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "Work-up",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "Common",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "75%; up to $8,980",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "55%; up to $6,590",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "35%; up to $4,190",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "Rare",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "75%; up to $23,300",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "55%; up to $17,090",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "35%; up to $10,880",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            attrs: {
+              colspan: 2,
+            },
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "Testing (Common/Rare)",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "75%; up to $4,860",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "55%; up to $3,560",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "35%; up to $2,270",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            attrs: {
+              colspan: 6,
+            },
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    marks: [
+                      {
+                        type: "superscript",
+                      },
+                      {
+                        type: "italic",
+                      },
+                    ],
+                    text: "1",
+                  },
+                  {
+                    type: "text",
+                    marks: [
+                      {
+                        type: "italic",
+                      },
+                    ],
+                    text: "ABC co-funding will only be available at public ZXC centres and must be conducted as part of a TEST cycle to be eligible for co-funding.",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}

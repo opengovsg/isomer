@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 
 import type { TableProps } from "~/interfaces"
+import { tv } from "~/lib/tv"
 import BaseParagraph from "../../internal/BaseParagraph"
 import Divider from "../Divider"
 import OrderedList from "../OrderedList"
@@ -48,6 +49,25 @@ const getStickyRowIndexes = (tableRows: TableProps["content"]) => {
   return stickyRowIndexes
 }
 
+const tableCellStyles = tv({
+  base: "max-w-40 break-words border-r border-t border-base-divider-medium px-4 py-3 align-top last:max-w-full last:border-r-0 last-of-type:border-r [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
+  variants: {
+    isHeader: {
+      true: "bg-base-canvas-backdrop [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
+      false: "bg-base-canvas-alt [&_ol]:prose-body-sm [&_p]:prose-body-sm",
+    },
+    isOverflowing: {
+      true: "border-l shadow-[rgba(191,191,191,0.4)_3px_0px_3px_0px]",
+    },
+    isFirstCell: {
+      true: "sticky left-0 border-l",
+    },
+    isLastRow: {
+      true: "border-b",
+    },
+  },
+})
+
 const Table = ({ attrs: { caption }, content }: TableProps) => {
   const [isTableOverflowing, setIsTableOverflowing] = useState(false)
   const tableRef = useRef<HTMLTableElement>(null)
@@ -82,31 +102,23 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
               row.content[0]?.type === "tableHeader" ? "th" : "td"
 
             return (
-              <tr
-                key={index}
-                className="text-left *:first:border-t *:first:border-base-divider-subtle"
-              >
+              <tr key={index} className="text-left">
                 {row.content.map((cell, cellIndex) => {
                   return (
                     <TableCellTag
                       key={cellIndex}
                       colSpan={cell.attrs?.colspan || 1}
                       rowSpan={cell.attrs?.rowspan || 1}
-                      className={`max-w-40 break-words border-b border-r border-base-divider-medium px-4 py-3 align-top first:border-l last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5 ${
-                        cell.type === "tableHeader"
-                          ? "bg-base-canvas-backdrop [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium"
-                          : "bg-base-canvas-alt [&_ol]:prose-body-sm [&_p]:prose-body-sm"
-                      } ${
-                        stickyRowIndexes.includes(index) &&
-                        cellIndex === 0 &&
-                        isTableOverflowing
-                          ? "shadow-[rgba(191,191,191,0.4)_3px_0px_3px_0px]"
-                          : ""
-                      } ${
-                        stickyRowIndexes.includes(index) && cellIndex === 0
-                          ? "sticky left-0"
-                          : ""
-                      }`}
+                      className={tableCellStyles({
+                        isHeader: cell.type === "tableHeader",
+                        isOverflowing:
+                          stickyRowIndexes.includes(index) &&
+                          cellIndex === 0 &&
+                          isTableOverflowing,
+                        isFirstCell:
+                          stickyRowIndexes.includes(index) && cellIndex === 0,
+                        isLastRow: index === content.length - 1,
+                      })}
                     >
                       {cell.content.map((cellContent, index) => {
                         switch (cellContent.type) {
