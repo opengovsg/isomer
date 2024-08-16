@@ -1,7 +1,7 @@
 export { default as ArticlePageHeader } from "./ArticlePageHeader"
 export { default as BaseParagraph } from "./BaseParagraph"
 export { default as Breadcrumb } from "./Breadcrumb"
-export { default as CollectionCard } from "./CollectionCard"
+export { CollectionCard } from "./CollectionCard"
 export { default as CollectionSearch } from "./CollectionSearch"
 export { default as CollectionSort } from "./CollectionSort"
 export { default as ContentPageHeader } from "./ContentPageHeader"

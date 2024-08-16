@@ -1,148 +1,56 @@
-import type {
-  ArticleCardProps,
-  CollectionCardProps,
-  FileCardProps,
-  LinkCardProps,
-} from "~/interfaces/internal/CollectionCard"
+"use client"
 
-const ImageComponent = ({ image }: Pick<CollectionCardProps, "image">) => {
-  if (!image) return null
-  return (
-    <img
-      src={image.src}
-      alt={image.alt}
-      className="max-h-56 w-full rounded-lg object-cover"
-    />
-  )
-}
+import { Text } from "react-aria-components"
 
-const ArticleTextComponent = ({
+import type { CollectionCardProps as BaseCollectionCardProps } from "~/interfaces"
+import { Link } from "../Link"
+
+type CollectionCardProps = BaseCollectionCardProps
+
+export const CollectionCard = ({
+  LinkComponent,
+  url,
   lastUpdated,
-  category,
   title,
   description,
-}: Pick<
-  ArticleCardProps,
-  "lastUpdated" | "category" | "title" | "description"
->) => {
+  category,
+  image,
+  ...props
+}: CollectionCardProps): JSX.Element => {
+  const file = props.variant === "file" ? props.fileDetails : null
+  const itemTitle = `${file ? `[${file.type.toUpperCase()}, ${file.size}] ` : ""}${title}`
   return (
-    <div className="flex flex-col gap-3 sm:gap-8">
-      <div className={`flex flex-col gap-3`}>
-        <div className="flex flex-col gap-1 sm:flex-row sm:gap-2">
-          <p className="text-content-medium text-caption-01">{lastUpdated}</p>
-          <p className="hidden text-content-medium text-caption-01 sm:block">
-            |
-          </p>
-          <p className="text-content-strong text-caption-01">{category}</p>
-        </div>
-        <h4 className="line-clamp-3 text-heading-04 sm:line-clamp-2">
-          {title}
-        </h4>
-        <p className="line-clamp-3 text-content-medium text-paragraph-02 sm:line-clamp-2">
+    <div className="flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6">
+      <Text className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
+        {lastUpdated}
+      </Text>
+      <div className="flex flex-col gap-3 text-base-content lg:gap-2">
+        <h3 className="inline-block">
+          <Link
+            LinkComponent={LinkComponent}
+            href={url}
+            className="prose-title-md-semibold line-clamp-2 underline-offset-4 hover:underline focus-visible:underline"
+          >
+            <span title={itemTitle}>{itemTitle}</span>
+          </Link>
+        </h3>
+        <Text className="prose-body-base line-clamp-2" title={description}>
           {description}
-        </p>
+        </Text>
+        {/* TODO: Feature enhancement? Filter by category when clicked */}
+        <Text className="prose-label-md mt-3 text-base-content-subtle lg:mt-2">
+          {category}
+        </Text>
       </div>
+      {image && (
+        <div className="relative mt-3 h-[140px] w-full shrink-0 lg:ml-4 lg:mt-0 lg:h-auto lg:w-[320px]">
+          <img
+            className="absolute left-0 h-full w-full rounded object-cover"
+            src={image.src}
+            alt={image.alt}
+          />
+        </div>
+      )}
     </div>
   )
 }
-
-const FileTextComponent = ({
-  lastUpdated,
-  category,
-  title,
-  description,
-  fileDetails,
-}: Pick<
-  FileCardProps,
-  "lastUpdated" | "category" | "title" | "description" | "fileDetails"
->) => {
-  return (
-    <div className="flex flex-col gap-3 sm:gap-8">
-      <div className={`flex flex-col gap-3`}>
-        <div className="flex flex-col gap-1 sm:flex-row sm:gap-2">
-          <p className="text-content-medium text-caption-01">{lastUpdated}</p>
-          <p className="hidden text-content-medium text-caption-01 sm:block">
-            |
-          </p>
-          <p className="text-content-strong text-caption-01">{category}</p>
-        </div>
-        <h4 className="line-clamp-3 text-heading-04 sm:line-clamp-2">
-          {`(${fileDetails.type.toUpperCase()}) ${title}`}
-        </h4>
-        <p className="line-clamp-3 text-content-medium text-paragraph-02 sm:line-clamp-2">
-          {description}
-        </p>
-      </div>
-      {
-        <div className="text-hyperlink underline underline-offset-2 text-paragraph-01">{`Download (${fileDetails.type.toUpperCase()}, ${
-          fileDetails.size
-        })`}</div>
-      }
-    </div>
-  )
-}
-
-const ArticleCard = ({
-  url,
-  lastUpdated,
-  category,
-  title,
-  description,
-  image,
-  LinkComponent = "a",
-}: Omit<ArticleCardProps | LinkCardProps, "type">) => {
-  return (
-    <LinkComponent href={url}>
-      <div className="flex flex-col gap-6 border-y border-divider-medium py-6 text-content hover:text-hyperlink-hover sm:flex-row">
-        <ArticleTextComponent
-          lastUpdated={lastUpdated}
-          category={category}
-          description={description}
-          title={title}
-        />
-        <ImageComponent image={image} />
-      </div>
-    </LinkComponent>
-  )
-}
-
-const FileCard = ({
-  url,
-  lastUpdated,
-  category,
-  title,
-  description,
-  image,
-  fileDetails,
-}: Omit<FileCardProps, "type">) => {
-  return (
-    <a href={url}>
-      <div className="flex flex-col gap-6 border-y border-divider-medium py-6 text-content hover:text-hyperlink-hover sm:flex-row">
-        <FileTextComponent
-          lastUpdated={lastUpdated}
-          category={category}
-          description={description}
-          title={title}
-          fileDetails={fileDetails}
-        />
-        <ImageComponent image={image} />
-      </div>
-    </a>
-  )
-}
-
-type DistributiveOmit<T, K extends PropertyKey> = T extends any
-  ? Omit<T, K>
-  : never
-
-const Card = (props: DistributiveOmit<CollectionCardProps, "type">) => {
-  if (props.variant === "file") {
-    return <FileCard {...props} />
-  } else if (props.variant === "article" || props.variant === "link") {
-    return <ArticleCard {...props} />
-  }
-
-  return <></>
-}
-
-export default Card

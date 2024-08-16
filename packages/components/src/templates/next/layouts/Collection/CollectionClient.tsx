@@ -19,7 +19,6 @@ import {
   CollectionSort,
   Filter,
   Pagination,
-  Pill,
 } from "../../components/internal"
 
 interface CollectionClientProps {
