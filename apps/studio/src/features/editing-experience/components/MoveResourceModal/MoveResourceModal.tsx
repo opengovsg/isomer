@@ -94,7 +94,7 @@ const MoveResourceContent = withSuspense(
         })
         // NOTE: We might want to have smarter logic here
         // and invalidate the new + old folders
-        await utils.folder.readFolder.invalidate()
+        await utils.folder.getMetadata.invalidate()
         toast({ title: "Resource moved!" })
       },
     })

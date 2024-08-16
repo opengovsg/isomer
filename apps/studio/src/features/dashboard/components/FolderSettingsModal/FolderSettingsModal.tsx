@@ -70,7 +70,7 @@ const SuspendableModalContent = ({
   folderId: string
 }) => {
   const [{ title: originalTitle, permalink: originalPermalink, parentId }] =
-    trpc.folder.readFolder.useSuspenseQuery({
+    trpc.folder.getMetadata.useSuspenseQuery({
       siteId,
       resourceId: Number(folderId),
     })
@@ -100,7 +100,7 @@ const SuspendableModalContent = ({
       await utils.resource.getChildrenOf.invalidate({
         resourceId: parentId ? String(parentId) : null,
       })
-      await utils.folder.readFolder.invalidate()
+      await utils.folder.getMetadata.invalidate()
       toast({ title: "Folder updated!", status: "success" })
     },
     onError: (err) => {
