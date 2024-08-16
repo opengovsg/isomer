@@ -1,5 +1,4 @@
-import type { PaginationState } from "@tanstack/react-table"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -11,6 +10,7 @@ import type { RouterOutput } from "~/utils/trpc"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
+import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 import { ResourceTableMenu } from "./ResourceTableMenu"
 import { TitleCell } from "./TitleCell"
@@ -62,34 +62,46 @@ export const ResourceTable = ({
     () => getColumns({ siteId, resourceId }),
     [siteId, resourceId],
   )
-  const { data: resources } = trpc.resource.listWithoutRoot.useQuery(
-    {
+
+  const { data: totalCount = 0, isLoading: isCountLoading } =
+    trpc.resource.countWithoutRoot.useQuery({
       siteId,
       resourceId,
-    },
-    {
-      keepPreviousData: true, // Required for table to show previous data while fetching next page
-    },
-  )
+    })
 
-  const totalRowCount = resources?.length ?? 0
+  const { limit, onPaginationChange, skip, pagination, pageCount } =
+    useTablePagination({
+      pageIndex: 0,
+      pageSize: 25,
+      totalCount,
+    })
 
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 25,
-  })
+  const { data: resources, isFetching } =
+    trpc.resource.listWithoutRoot.useQuery(
+      {
+        siteId,
+        resourceId,
+        limit,
+        offset: skip,
+      },
+      {
+        keepPreviousData: true, // Required for table to show previous data while fetching next page
+      },
+    )
 
   const tableInstance = useReactTable<ResourceTableData>({
     columns,
     data: resources ?? [],
     getCoreRowModel: getCoreRowModel(),
     manualFiltering: true,
+    manualPagination: true,
     autoResetPageIndex: false,
     getPaginationRowModel: getPaginationRowModel(),
-    onPaginationChange: setPagination,
+    onPaginationChange,
     state: {
       pagination,
     },
+    pageCount,
   })
 
   return (
@@ -102,14 +114,14 @@ export const ResourceTable = ({
           hasSearchTerm={false}
         />
       }
+      isFetching={isFetching || isCountLoading}
       instance={tableInstance}
       sx={{
         tableLayout: "auto",
         minWidth: "1000px",
         overflowX: "auto",
       }}
-      totalRowCount={totalRowCount}
-      totalRowCountString={`${totalRowCount} item${totalRowCount === 1 ? "" : "s"} in collection`}
+      totalRowCount={totalCount}
     />
   )
 }

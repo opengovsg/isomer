@@ -1,6 +1,8 @@
 import { TRPCError } from "@trpc/server"
 
+import type { ResourceType } from "../database"
 import {
+  countResourceSchema,
   deleteResourceSchema,
   getChildrenSchema,
   getMetadataSchema,
@@ -8,7 +10,7 @@ import {
   moveSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
-import { db, ResourceType } from "../database"
+import { db } from "../database"
 
 export const resourceRouter = router({
   getMetadataById: protectedProcedure
@@ -88,13 +90,35 @@ export const resourceRouter = router({
           .executeTakeFirst()
       })
     }),
-  listWithoutRoot: protectedProcedure
-    .input(listResourceSchema)
+  countWithoutRoot: protectedProcedure
+    .input(countResourceSchema)
     .query(async ({ input: { siteId, resourceId } }) => {
+      // TODO(perf): If too slow, consider caching this count, but 4-5 million rows should be fine
       let query = db
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "!=", "RootPage")
+
+      if (resourceId) {
+        query = query.where("Resource.parentId", "=", String(resourceId))
+      } else {
+        query = query.where("Resource.parentId", "is", null)
+      }
+
+      const result = await query
+        .select((eb) => [eb.fn.countAll().as("totalCount")])
+        .executeTakeFirst()
+      return Number(result?.totalCount ?? 0)
+    }),
+  listWithoutRoot: protectedProcedure
+    .input(listResourceSchema)
+    .query(async ({ input: { siteId, resourceId, offset, limit } }) => {
+      let query = db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "!=", "RootPage")
+        .offset(offset)
+        .limit(limit)
 
       if (resourceId) {
         query = query.where("Resource.parentId", "=", String(resourceId))

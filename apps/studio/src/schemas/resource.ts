@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { offsetPaginationSchema } from "./pagination"
+
 // NOTE: We want to accept string
 // but validate that the string conforms to bigint.
 // Oddly enough, kysely doesn't allow `bigint` to query
@@ -26,7 +28,7 @@ export const moveSchema = z.object({
   destinationResourceId: bigIntSchema,
 })
 
-export const listResourceSchema = z.object({
+export const countResourceSchema = z.object({
   siteId: z.number(),
   resourceId: z.number().optional(),
 })
@@ -39,3 +41,10 @@ export const deleteResourceSchema = z.object({
     .regex(/[0-9]+/)
     .refine((s) => !s.startsWith("0")),
 })
+
+export const listResourceSchema = z
+  .object({
+    siteId: z.number(),
+    resourceId: z.number().optional(),
+  })
+  .merge(offsetPaginationSchema)
