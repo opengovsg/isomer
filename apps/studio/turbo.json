@@ -7,8 +7,9 @@
       "cache": false
     },
     "build:theme": {},
+    "build:preview-tw": {},
     "build": {
-      "dependsOn": ["generate", "build:theme", "^build"],
+      "dependsOn": ["generate", "build:theme", "^build", "build:preview-tw"],
       "outputs": [".next/**", "!.next/cache/**"]
     }
   }
