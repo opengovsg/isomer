@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { expect, userEvent, within } from "@storybook/test"
+import { expect, userEvent } from "@storybook/test"
 import { authEmailHandlers } from "tests/msw/handlers/auth/email"
 import { meHandlers } from "tests/msw/handlers/me"
 
@@ -45,9 +45,7 @@ export const WithSgidLogin: Story = {
 }
 
 export const InputValidation: Story = {
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement)
-
+  play: async ({ canvas, step }) => {
     await step("Enter invalid email address", async () => {
       await userEvent.type(await canvas.findByLabelText(/email/i), "test")
     })
@@ -63,9 +61,7 @@ export const InputValidation: Story = {
 }
 
 export const VerifyOTP: Story = {
-  play: async ({ canvasElement, step }) => {
-    const canvas = within(canvasElement)
-
+  play: async ({ canvas, step }) => {
     await step("Enter valid email address", async () => {
       await userEvent.type(
         await canvas.findByLabelText(/email/i),

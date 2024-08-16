@@ -40,13 +40,12 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const SelectPageLayout: Story = {
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, canvas }) => {
     await waitFor(async () => {
       // Used to navigate to components rendered in portals, like menus.
       const rootScreen = within(canvasElement.ownerDocument.body)
-      const screen = within(canvasElement)
       await userEvent.click(
-        screen.getByRole("button", {
+        canvas.getByRole("button", {
           name: "Create new...",
         }),
       )

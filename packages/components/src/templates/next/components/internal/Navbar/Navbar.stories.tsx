@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import { userEvent } from "@storybook/test"
 
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
@@ -214,16 +214,14 @@ export const ExpandFirstItem: Story = {
     },
     chromatic: withChromaticModes(["desktop"]),
   },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
+  play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: /about us/i }))
   },
 }
 
 export const ExpandSearch: Story = {
   parameters: Default.parameters,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
+  play: async ({ canvas }) => {
     await userEvent.click(
       canvas.getByRole("button", { name: /open search bar/i }),
     )
@@ -237,8 +235,7 @@ export const ExpandMobile: Story = {
       defaultViewport: getViewportByMode("mobile"),
     },
   },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
+  play: async ({ canvas }) => {
     await userEvent.click(
       canvas.getByRole("button", { name: /open navigation menu/i }),
     )

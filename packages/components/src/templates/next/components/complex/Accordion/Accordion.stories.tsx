@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import { userEvent } from "@storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -141,8 +141,7 @@ export const LongContent: Story = {
 
 export const Expanded: Story = {
   args: LongContent.args,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
+  play: async ({ canvas }) => {
     await userEvent.click(canvas.getByText(`${LongContent.args?.summary}2`))
   },
 }
