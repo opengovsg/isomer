@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { useState } from "react"
 
 import type { AppliedFilter } from "~/templates/next/types/Filter"
-import Filter from "./Filter"
+import { Filter } from "./Filter"
 
 const meta: Meta<typeof Filter> = {
   title: "Next/Internal Components/Filter",
@@ -45,6 +45,10 @@ const meta: Meta<typeof Filter> = {
       }
     }
 
+    const handleClearFilter = () => {
+      setAppliedFilters([])
+    }
+
     return (
       <Filter
         filters={filters}
@@ -52,6 +56,7 @@ const meta: Meta<typeof Filter> = {
         setAppliedFilters={(id: string, itemId: string) =>
           updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
         }
+        handleClearFilter={handleClearFilter}
       />
     )
   },
@@ -102,3 +107,12 @@ type Story = StoryObj<typeof Filter>
 
 // Default scenario
 export const Default: Story = {}
+
+export const WithSomeSelected: Story = {
+  args: {
+    appliedFilters: [
+      { id: "type", items: [{ id: "article" }, { id: "speech" }] },
+      { id: "category", items: [{ id: "checkbox-default-1" }] },
+    ],
+  },
+}
