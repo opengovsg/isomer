@@ -1,6 +1,9 @@
 import { z } from "zod"
 
-import { offsetPaginationSchema } from "./pagination"
+import {
+  infiniteOffsetPaginationSchema,
+  offsetPaginationSchema,
+} from "./pagination"
 
 // NOTE: We want to accept string
 // but validate that the string conforms to bigint.
@@ -18,10 +21,12 @@ export const getMetadataSchema = z.object({
   resourceId: bigIntSchema,
 })
 
-export const getChildrenSchema = z.object({
-  resourceId: z.union([bigIntSchema, z.null()]),
-  siteId: z.string().min(0),
-})
+export const getChildrenSchema = z
+  .object({
+    resourceId: z.union([bigIntSchema, z.null()]),
+    siteId: z.string().min(0),
+  })
+  .merge(infiniteOffsetPaginationSchema)
 
 export const moveSchema = z.object({
   movedResourceId: bigIntSchema,

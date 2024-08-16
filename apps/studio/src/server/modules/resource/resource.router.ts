@@ -28,10 +28,43 @@ export const resourceRouter = router({
 
       return resource
     }),
+  getFolderChildrenOf: protectedProcedure
+    .input(getChildrenSchema)
+    .query(async ({ input: { resourceId, cursor: offset, limit } }) => {
+      let query = db
+        .selectFrom("Resource")
+        .select(["title", "permalink", "type", "id"])
+        .where("Resource.type", "in", ["RootPage", "Folder"])
+        .$narrowType<{
+          type: "Folder" | "RootPage"
+        }>()
+        .orderBy("type", "asc")
+        .orderBy("title", "asc")
+        .offset(offset)
+        .limit(limit + 1)
+      if (resourceId === null) {
+        query = query.where("parentId", "is", null)
+      } else {
+        query = query.where("Resource.parentId", "=", String(resourceId))
+      }
 
+      const result = await query.execute()
+      if (result.length > limit) {
+        // Dont' return the last element, it's just for checking if there are more
+        result.pop()
+        return {
+          items: result,
+          nextOffset: offset + limit,
+        }
+      }
+      return {
+        items: result,
+        nextOffset: null,
+      }
+    }),
   getChildrenOf: protectedProcedure
     .input(getChildrenSchema)
-    .query(async ({ input: { resourceId, siteId } }) => {
+    .query(async ({ input: { resourceId, siteId, cursor: offset, limit } }) => {
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
@@ -45,6 +78,8 @@ export const resourceRouter = router({
         }>()
         .orderBy("type", "asc")
         .orderBy("title", "asc")
+        .offset(offset)
+        .limit(limit + 1)
 
       if (resourceId === null) {
         query = query.where("parentId", "is", null)
@@ -52,7 +87,19 @@ export const resourceRouter = router({
         query = query.where("Resource.parentId", "=", String(resourceId))
       }
 
-      return query.execute()
+      const result = await query.execute()
+      if (result.length > limit) {
+        // Dont' return the last element, it's just for checking if there are more
+        result.pop()
+        return {
+          items: result,
+          nextOffset: offset + limit,
+        }
+      }
+      return {
+        items: result,
+        nextOffset: null,
+      }
     }),
   move: protectedProcedure
     .input(moveSchema)

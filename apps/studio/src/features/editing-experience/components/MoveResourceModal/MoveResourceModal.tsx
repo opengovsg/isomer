@@ -22,9 +22,6 @@ import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "../../types"
 import { withSuspense } from "~/hocs/withSuspense"
-import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]"
-import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 import { moveResourceAtom } from "../../atoms"
 import { MoveItem } from "./MoveItem"
@@ -66,10 +63,17 @@ const MoveResourceContent = withSuspense(
       resourceId,
     })
     const curResourceId = resourceStack[resourceStack.length - 1]?.resourceId
-    const [children] = trpc.resource.getChildrenOf.useSuspenseQuery({
-      resourceId: curResourceId ?? null,
-      siteId: String(siteId),
-    })
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+      trpc.resource.getFolderChildrenOf.useInfiniteQuery(
+        {
+          resourceId: curResourceId ?? null,
+          siteId: String(siteId),
+          limit: 25,
+        },
+        {
+          getNextPageParam: (lastPage) => lastPage.nextOffset,
+        },
+      )
     const utils = trpc.useUtils()
     const toast = useToast({ status: "success" })
     const { mutate, isLoading } = trpc.resource.move.useMutation({
@@ -162,9 +166,8 @@ const MoveResourceContent = withSuspense(
                   </Text>
                 </Flex>
               )}
-              {children
-                .filter((c) => isAllowedToHaveChildren(c.type))
-                .map((child) => {
+              {data?.pages.map(({ items }) =>
+                items.map((child) => {
                   return (
                     <MoveItem
                       {...child}
@@ -178,7 +181,19 @@ const MoveResourceContent = withSuspense(
                       }}
                     />
                   )
-                })}
+                }),
+              )}
+              {hasNextPage && (
+                <Button
+                  variant="link"
+                  pl="2.25rem"
+                  size="xs"
+                  isLoading={isFetchingNextPage}
+                  onClick={() => fetchNextPage()}
+                >
+                  Load more
+                </Button>
+              )}
             </Box>
             {!!moveDest && (
               <Box bg="utility.feedback.warning-subtle" p="0.75rem" w="full">

@@ -4,7 +4,10 @@ export const resourceHandlers = {
   getChildrenOf: {
     default: () => {
       return trpcMsw.resource.getChildrenOf.query(() => {
-        return []
+        return {
+          items: [],
+          nextOffset: null,
+        }
       })
     },
   },
