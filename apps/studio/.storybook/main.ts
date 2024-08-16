@@ -14,7 +14,6 @@ const config: StorybookConfig = {
   ],
 
   framework: {
-    // @ts-expect-error type mismatch
     name: getAbsolutePath("@storybook/nextjs"),
     options: {},
   },
