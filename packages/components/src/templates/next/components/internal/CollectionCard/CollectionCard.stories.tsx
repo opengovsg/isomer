@@ -37,6 +37,13 @@ export const Default: Story = {
   },
 }
 
+export const HideDate: Story = {
+  args: {
+    ...Default.args,
+    lastUpdated: undefined,
+  },
+}
+
 export const ArticleWithoutImage: Story = {
   args: {
     lastUpdated: "December 2, 2023",

@@ -9,7 +9,7 @@ export interface FileDetails {
   size: string
 }
 interface BaseCardProps {
-  lastUpdated: string
+  lastUpdated?: string
   category: string
   title: string
   url: string
