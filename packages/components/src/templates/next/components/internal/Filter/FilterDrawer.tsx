@@ -9,7 +9,7 @@ import {
 } from "react-aria-components"
 import { BiChevronDown, BiX } from "react-icons/bi"
 
-import type { FilterProps } from "../../../types/Filter"
+import type { AppliedFilter, FilterProps } from "../../../types/Filter"
 import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/focusRing"
 import { Button } from "../Button"
@@ -26,6 +26,23 @@ interface FilterDrawerProps extends FilterProps {
   onOpen: (isOpen: boolean) => void
 }
 
+const transform = {
+  toCheckboxes: (appliedFilters: AppliedFilter[]) => {
+    return appliedFilters.reduce(
+      (acc, { id, items }) => ({ ...acc, [id]: items.map(({ id }) => id) }),
+      {} as Record<string, string[]>,
+    )
+  },
+  toAppliedFilters: (holdingFiltersById: Record<string, string[]>) => {
+    return Object.entries(holdingFiltersById)
+      .map(([id, items]) => ({
+        id,
+        items: items.map((id) => ({ id })),
+      }))
+      .filter(({ items }) => items.length > 0)
+  },
+}
+
 const FilterDrawerContent = ({
   onOpen,
   filters,
@@ -38,20 +55,12 @@ const FilterDrawerContent = ({
   )
 
   const [holdingFiltersById, setHoldingFiltersById] = useState(
-    initialAppliedFilters.reduce(
-      (acc, { id, items }) => ({ ...acc, [id]: items.map(({ id }) => id) }),
-      {} as Record<string, string[]>,
-    ),
+    transform.toCheckboxes(initialAppliedFilters),
   )
 
   // Synchronize the applied filters with the holding filters
   useEffect(() => {
-    setHoldingFiltersById(
-      initialAppliedFilters.reduce(
-        (acc, { id, items }) => ({ ...acc, [id]: items.map(({ id }) => id) }),
-        {} as Record<string, string[]>,
-      ),
-    )
+    setHoldingFiltersById(transform.toCheckboxes(initialAppliedFilters))
   }, [initialAppliedFilters])
 
   const updateFilterToggle = (filterId: string) => {
@@ -62,12 +71,7 @@ const FilterDrawerContent = ({
   }
 
   const handleApplyFilters = () => {
-    setAppliedFilters(
-      Object.entries(holdingFiltersById).map(([id, items]) => ({
-        id,
-        items: items.map((id) => ({ id })),
-      })),
-    )
+    setAppliedFilters(transform.toAppliedFilters(holdingFiltersById))
     onOpen(false)
   }
 
