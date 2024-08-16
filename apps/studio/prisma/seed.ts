@@ -255,6 +255,25 @@ async function main() {
         .executeTakeFirstOrThrow()
     }),
   )
+
+  await Promise.all(
+    ['elyas', 'anthony', 'seba'].map((name) => {
+      return db
+        .insertInto("User")
+        .values({
+          id: cuid2.createId(),
+          name,
+          email: `${name}@cure53.de`,
+          phone: MOCK_PHONE_NUMBER,
+        })
+        .onConflict((oc) =>
+          oc
+            .column("email")
+            .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
+        )
+        .executeTakeFirstOrThrow()
+    }),
+  )
 }
 
 main()
