@@ -33,7 +33,7 @@ export const buttonStyles = tv({
       variant: "solid",
       colorScheme: "default",
       className:
-        "bg-brand-canvas-inverse text-base-content-inverse hover:bg-brand-interaction-hover active:bg-brand-interaction-pressed",
+        "bg-brand-canvas-inverse text-base-content-inverse active:bg-brand-interaction-pressed hover:bg-brand-interaction-hover",
     },
     {
       variant: "solid",

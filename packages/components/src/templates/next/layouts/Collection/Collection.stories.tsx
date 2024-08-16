@@ -105,8 +105,6 @@ export const Default: Story = {
       lastModified: "2024-05-02T14:12:57.160Z",
       subtitle:
         "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
-      defaultSortBy: "date",
-      defaultSortDirection: "desc",
     },
   },
 }

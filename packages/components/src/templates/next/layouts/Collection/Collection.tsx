@@ -1,8 +1,9 @@
 import type { CollectionPageSchemaType, IsomerSitemap } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
-import { getSitemapAsArray } from "~/utils"
+import { getBreadcrumbFromSiteMap, getSitemapAsArray } from "~/utils"
 import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
+import CollectionPageHeader from "./CollectionPageHeader"
 
 const getCollectionItems = (
   siteMap: IsomerSitemap,
@@ -95,6 +96,10 @@ const CollectionLayout = ({
   const { siteMap } = site
 
   const items = getCollectionItems(siteMap, permalink)
+  const breadcrumb = getBreadcrumbFromSiteMap(
+    site.siteMap,
+    page.permalink.split("/").slice(1),
+  )
 
   return (
     <Skeleton
@@ -105,6 +110,7 @@ const CollectionLayout = ({
     >
       <CollectionClient
         page={page}
+        breadcrumb={breadcrumb}
         LinkComponent={LinkComponent}
         items={items}
       />

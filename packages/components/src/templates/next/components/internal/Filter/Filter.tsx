@@ -45,7 +45,7 @@ const Filter = ({
               <label
                 key={itemId}
                 htmlFor={itemId}
-                className="flex w-full flex-row rounded px-1 py-2 align-middle hover:bg-interaction-main-subtle-hover has-[:focus]:ring-2 has-[:focus]:ring-focus-outline"
+                className="flex w-full flex-row rounded px-1 py-2 align-middle has-[:focus]:ring-2 has-[:focus]:ring-focus-outline hover:bg-interaction-main-subtle-hover"
               >
                 <input
                   type="checkbox"
