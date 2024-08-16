@@ -87,7 +87,7 @@ export const collectionRouter = router({
     }),
   list: protectedProcedure
     .input(readFolderSchema)
-    .query(async ({ ctx, input }) => {
+    .query(async ({ ctx, input: { resourceId, siteId, limit, offset } }) => {
       // Things that aren't working yet:
       // 0. Perm checking
       // 1. Last Edited user and time
@@ -95,8 +95,11 @@ export const collectionRouter = router({
 
       return await ctx.db
         .selectFrom("Resource")
-        .where("parentId", "=", String(input.resourceId))
+        .where("parentId", "=", String(resourceId))
+        .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "=", ResourceType.CollectionPage)
+        .limit(limit)
+        .offset(offset)
         .select(defaultResourceSelect)
         .execute()
     }),
