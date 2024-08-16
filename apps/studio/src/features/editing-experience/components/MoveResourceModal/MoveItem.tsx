@@ -10,7 +10,7 @@ import type { RouterOutput } from "~/utils/trpc"
 import { moveResourceAtom } from "../../atoms"
 
 type MoveItemProps = Pick<
-  RouterOutput["resource"]["getChildrenOf"][number],
+  RouterOutput["resource"]["getChildrenOf"]["items"][number],
   "permalink" | "type"
 > & {
   onChangeResourceId: () => void
@@ -34,7 +34,7 @@ const SuspendableMoveItem = ({
       case "Collection":
         return <BiData />
     }
-  }, [permalink, type])
+  }, [type])
 
   return (
     <Button
