@@ -144,10 +144,12 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         })
 
         if (newModifiedAssets.length > 0) {
+          const failedUploadsCount = newModifiedAssets.length
+          const totalUploadsCount = modifiedAssets.length
+
           toast({
             title: "Error uploading assets",
-            description:
-              "An error occurred while uploading some assets. Please try again later.",
+            description: `An error occurred while uploading ${failedUploadsCount}/${totalUploadsCount} files/images. Please try again later.`,
             status: "error",
           })
 
