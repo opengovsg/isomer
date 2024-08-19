@@ -27,6 +27,7 @@ export const ISOMER_USABLE_PAGE_LAYOUTS = {
   Collection: "collection",
   Content: "content",
   Homepage: "homepage",
+  Index: "index",
   File: "file",
   Link: "link",
 } as const
@@ -115,6 +116,23 @@ export const HomePageSchema = Type.Object(
   },
 )
 
+export const IndexPageSchema = Type.Object(
+  {
+    layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Index, {
+      default: ISOMER_PAGE_LAYOUTS.Index,
+    }),
+    page: ContentPageMetaSchema,
+    content: Type.Array(IsomerComponentsSchemas, {
+      title: "Page content",
+    }),
+  },
+  {
+    title: "Default",
+    description:
+      "This is a special type of content page layout that is for index pages.",
+  },
+)
+
 export const FileRefSchema = Type.Object(
   {
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.File, {
@@ -166,6 +184,7 @@ export const IsomerPageSchema = Type.Intersect([
     CollectionPageSchema,
     ContentPageSchema,
     HomePageSchema,
+    IndexPageSchema,
     FileRefSchema,
     LinkRefSchema,
   ]),
@@ -205,6 +224,11 @@ export type HomePageSchemaType = Static<typeof HomePageSchema> &
   BasePageAdditionalProps & {
     page: HomePageProps
   }
+
+export type IndexPageSchemaType = Static<typeof IndexPageSchema> &
+  BasePageAdditionalProps & {
+    page: ContentPageProps
+  }
 export type FileRefSchemaType = Static<typeof FileRefSchema> &
   BasePageAdditionalProps & {
     page: FileRefProps
@@ -219,6 +243,7 @@ export type IsomerPageSchemaType =
   | CollectionPageSchemaType
   | ContentPageSchemaType
   | HomePageSchemaType
+  | IndexPageSchemaType
   | NotFoundPageSchemaType
   | SearchPageSchemaType
   | FileRefSchemaType

@@ -130,7 +130,7 @@ const processDanglingDirectory = async (fullPath, relativePath, name) => {
   const pageName = name.replace(/-/g, " ")
   const title = pageName.charAt(0).toUpperCase() + pageName.slice(1)
   const summary = `Pages in ${title}`
-  const layout = "content"
+  const layout = "index"
 
   await fs.writeFile(
     path.join(fullPath + ".json"),

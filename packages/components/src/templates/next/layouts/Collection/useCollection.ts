@@ -22,7 +22,7 @@ interface UseCollectionProps {
   items: CollectionCardProps[]
 }
 export const useCollection = ({ items }: UseCollectionProps) => {
-  const [appliedFilters, _setAppliedFilters] = useState<AppliedFilter[]>([])
+  const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([])
   const [searchValue, _setSearchValue] = useState<string>("")
 
   // Filter items based on applied filters and search value
@@ -42,14 +42,9 @@ export const useCollection = ({ items }: UseCollectionProps) => {
     [appliedFilters, items],
   )
 
-  const handleAppliedFiltersChange = useCallback(
+  const handleFilterToggle = useCallback(
     (id: string, itemId: string) => {
-      return updateAppliedFilters(
-        appliedFilters,
-        _setAppliedFilters,
-        id,
-        itemId,
-      )
+      return updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
     },
     [appliedFilters],
   )
@@ -75,7 +70,7 @@ export const useCollection = ({ items }: UseCollectionProps) => {
 
   const handleClearFilter = useCallback(() => {
     handleSearchValueChange("")
-    _setAppliedFilters([])
+    setAppliedFilters([])
   }, [handleSearchValueChange])
 
   return {
@@ -86,7 +81,8 @@ export const useCollection = ({ items }: UseCollectionProps) => {
     handleSearchValueChange,
     handleClearFilter,
     appliedFilters,
-    handleAppliedFiltersChange,
+    handleFilterToggle,
+    setAppliedFilters,
     currPage,
     setCurrPage,
   }

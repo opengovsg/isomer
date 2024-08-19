@@ -59,6 +59,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
 
   const { mutateAsync: uploadAsset, isLoading: isUploadingAsset } =
     useUploadAssetMutation({ siteId })
+  const { mutate: deleteAssets, isLoading: isDeletingAssets } =
+    trpc.asset.deleteAssets.useMutation()
 
   if (
     currActiveIdx === -1 ||
@@ -123,6 +125,18 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       // Upload all new/modified images/files
       const assetsToUpload = modifiedAssets.filter((asset) => !!asset.file)
 
+      // Delete the original assets for those that have been modified
+      // This is done by deleting the file key stored in the src attribute, as
+      // it would have been replaced by new file keys after uploading
+      const assetsToDelete = modifiedAssets
+        .map(({ src }) => src)
+        .reduce<string[]>((acc, curr) => {
+          if (curr !== undefined) {
+            acc.push(curr)
+          }
+          return acc
+        }, [])
+
       const isUploadingSuccessful = await Promise.allSettled(
         assetsToUpload.map(({ path, file }) => {
           if (!file) {
@@ -148,7 +162,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           const totalUploadsCount = modifiedAssets.length
 
           toast({
-            title: "Error uploading assets",
+            title: "Error uploading files/images",
             description: `An error occurred while uploading ${failedUploadsCount}/${totalUploadsCount} files/images. Please try again later.`,
             status: "error",
           })
@@ -160,8 +174,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         return true
       })
 
-      // TODO: Mark removed images/files as deleted
-      // const assetsToDelete = modifiedAssets.filter((asset) => !asset.file)
+      deleteAssets({ fileKeys: assetsToDelete })
 
       updatedBlocks[currActiveIdx] = newBlock
       newPageState = {
@@ -191,6 +204,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       },
     )
   }
+
+  const isLoading = isSavingPage || isUploadingAsset || isDeletingAssets
 
   return (
     <>
@@ -241,7 +256,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
               colorScheme="sub"
               size="sm"
               p="0.625rem"
-              isDisabled={isSavingPage || isUploadingAsset}
+              isDisabled={isLoading}
               onClick={() => {
                 if (!_.isEqual(previewPageState, savedPageState)) {
                   onDiscardChangesModalOpen()
@@ -281,11 +296,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             onClick={onDeleteBlockModalOpen}
           />
           <Box w="100%">
-            <Button
-              w="100%"
-              onClick={handleSave}
-              isLoading={isSavingPage || isUploadingAsset}
-            >
+            <Button w="100%" onClick={handleSave} isLoading={isLoading}>
               Save changes
             </Button>
           </Box>

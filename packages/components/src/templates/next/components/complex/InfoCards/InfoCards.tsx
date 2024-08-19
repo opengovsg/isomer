@@ -12,7 +12,7 @@ import { Link } from "../../internal/Link"
 
 const createInfoCardsStyles = tv({
   slots: {
-    container: `${ComponentContent} mx-auto flex flex-col py-12 first:pt-3.5 lg:py-24`,
+    container: `${ComponentContent} mx-auto flex flex-col py-12 first:pt-0 lg:py-24`,
     headingContainer: "flex flex-col gap-2.5 pb-8 sm:pb-12 lg:max-w-3xl",
     headingTitle: "prose-display-md text-base-content-strong",
     headingSubtitle: "prose-headline-lg-regular text-base-content",

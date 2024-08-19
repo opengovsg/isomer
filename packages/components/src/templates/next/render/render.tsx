@@ -18,6 +18,7 @@ import {
   CollectionLayout,
   ContentLayout,
   HomepageLayout,
+  IndexPageLayout,
   NotFoundLayout,
   SearchLayout,
 } from "../layouts"
@@ -73,6 +74,8 @@ export const renderLayout = (props: IsomerPageSchemaType) => {
       return <ContentLayout {...props} />
     case "homepage":
       return <HomepageLayout {...props} />
+    case "index":
+      return <IndexPageLayout {...props} />
     case "notfound":
       return <NotFoundLayout {...props} />
     case "search":

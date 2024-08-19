@@ -56,7 +56,7 @@ const config = {
   /** We run eslint as a separate task in CI */
   eslint: { ignoreDuringBuilds: true },
   images: {
-    domains: [env.S3_ASSETS_DOMAIN_NAME ?? ""].filter((d) => d),
+    domains: [env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME ?? ""].filter((d) => d),
   },
   async headers() {
     return [

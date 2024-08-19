@@ -1,4 +1,4 @@
-import { ResourceType } from "@prisma/client"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 export const isAllowedToHaveChildren = (
   resourceType: ResourceType,
