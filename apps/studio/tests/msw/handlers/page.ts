@@ -3,6 +3,14 @@ import { delay } from "msw"
 
 import { trpcMsw } from "../mockTrpc"
 
+const getRootPageQuery = (wait?: DelayMode | number) => {
+  return trpcMsw.page.getRootPage.query(async () => {
+    if (wait !== undefined) {
+      await delay(wait)
+    }
+    return { title: "A mock page", id: "1", draftBlobId: "1" }
+  })
+}
 const pageListQuery = (wait?: DelayMode | number) => {
   return trpcMsw.resource.listWithoutRoot.query(async () => {
     if (wait !== undefined) {
@@ -57,5 +65,9 @@ export const pageHandlers = {
   list: {
     default: pageListQuery,
     loading: () => pageListQuery("infinite"),
+  },
+  getRootPage: {
+    default: getRootPageQuery,
+    loading: () => getRootPageQuery("infinite"),
   },
 }
