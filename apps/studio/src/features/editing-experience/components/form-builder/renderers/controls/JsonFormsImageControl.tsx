@@ -13,13 +13,11 @@ import {
 import type { ModifiedAsset } from "~/types/assets"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { env } from "~/env.mjs"
+import { useEnv } from "~/hooks/useEnv"
 import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPES,
   MAX_IMG_FILE_SIZE_BYTES,
 } from "./constants"
-
-const { NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME } = env
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,
@@ -38,6 +36,9 @@ export function JsonFormsImageControl({
   errors,
   data,
 }: ControlProps) {
+  const {
+    env: { NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME },
+  } = useEnv()
   const toast = useToast()
   const { modifiedAssets, setModifiedAssets } = useEditorDrawerContext()
   const [pendingAsset, setPendingAsset] = useState<ModifiedAsset | undefined>()
