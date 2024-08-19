@@ -13,19 +13,16 @@ import { BiSearch, BiX } from "react-icons/bi"
 
 import type { ClassNames } from "~/utils/rac"
 import { tv } from "~/lib/tv"
-import { focusRing } from "~/utils/focusRing"
 import { composeTailwindRenderProps } from "~/utils/rac"
 import { IconButton } from "./IconButton"
 import { Input } from "./Input"
 
 const fieldGroupStyles = tv({
-  extend: focusRing,
-  base: "group flex items-center gap-4 overflow-hidden rounded border-[1.5px] bg-white py-1 pl-4 forced-colors:bg-[Field]",
+  base: "group flex items-center gap-4 overflow-hidden rounded bg-white py-1 pl-4 shadow-[0_0_0_1.5px] forced-colors:bg-[Field]",
   variants: {
     isFocusWithin: {
-      false:
-        "m-[0.5px] border-brand-interaction forced-colors:border-[ButtonBorder]",
-      true: "outline-utility-focus-default border-2 border-utility-feedback-info bg-interaction-main-subtle-hover outline forced-colors:border-[Highlight]",
+      false: "shadow-brand-interaction forced-colors:border-[ButtonBorder]",
+      true: "bg-interaction-main-subtle-hover shadow-[0_0_0_2px] shadow-utility-feedback-info",
     },
     isInvalid: {
       true: "border-red-600 forced-colors:border-[Mark]",
@@ -72,7 +69,7 @@ export function SearchField({
       {...props}
       className={composeTailwindRenderProps(
         classNames?.container,
-        "group flex min-w-[40px] flex-col gap-2",
+        "group flex flex-col gap-2",
       )}
     >
       <FieldGroup className={classNames?.fieldgroup}>

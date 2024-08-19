@@ -5,6 +5,13 @@ import { Checkbox } from "./Checkbox"
 const meta: Meta<typeof Checkbox> = {
   title: "Next/Internal Components/Checkbox",
   component: Checkbox,
+  decorators: [
+    (Story) => (
+      <div className="max-w-screen-xs">
+        <Story />
+      </div>
+    ),
+  ],
   args: {
     children: "Checkbox",
     isDisabled: false,
@@ -21,6 +28,8 @@ export const Default: Story = {
 
 export const Checked: Story = {
   args: {
+    children:
+      "This is a long label that may wrap into a new line; This is a long label that may wrap into a new line;",
     isSelected: true,
   },
 }
