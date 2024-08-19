@@ -1,5 +1,5 @@
 import { forwardRef } from "react"
-import { FocusScope } from "react-aria"
+import { Dialog } from "@headlessui/react"
 import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 
 import type {
@@ -70,61 +70,61 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
           <BiChevronDown className={chevron({ isOpen })} />
         </button>
         {isOpen && (
-          <FocusScope contain restoreFocus autoFocus>
-            <div
-              className="fixed inset-0"
-              style={{
-                top,
-              }}
-            >
-              <div ref={megaMenuRef} className={megamenu()}>
-                <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 pb-16 pt-12">
-                  <div className="flex w-full flex-row items-start">
-                    <div className="flex flex-col gap-1">
-                      <h1 className="prose-display-sm text-base-content">
-                        {name}
-                      </h1>
-                      {description && (
-                        <p className="prose-label-sm-regular text-base-content-subtle">
-                          {description}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Spacer */}
-                    <div className="flex-1" />
-
-                    <button
-                      onClick={onCloseMegamenu}
-                      aria-label="Close navigation item"
-                      className="flex h-[2.125rem] w-[2.125rem] items-center justify-center text-[1.5rem]"
-                    >
-                      <BiX />
-                    </button>
+          <Dialog
+            open={isOpen}
+            onClose={onCloseMegamenu}
+            className="fixed inset-0 bg-canvas-overlay/40"
+            style={{
+              top,
+            }}
+          >
+            <div ref={megaMenuRef} className={megamenu()}>
+              <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 pb-16 pt-12">
+                <div className="flex w-full flex-row items-start">
+                  <div className="flex flex-col gap-1">
+                    <h1 className="prose-display-sm text-base-content">
+                      {name}
+                    </h1>
+                    {description && (
+                      <p className="prose-label-sm-regular text-base-content-subtle">
+                        {description}
+                      </p>
+                    )}
                   </div>
 
-                  <ul className="grid grid-cols-3 gap-x-16 gap-y-8">
-                    {items.map((subItem) => (
-                      <li key={subItem.name}>
-                        <div className="flex flex-col gap-1.5">
-                          <LinkComponent
-                            href={subItem.url}
-                            className="prose-label-md-medium inline-flex items-center gap-1 text-base-content hover:underline"
-                          >
-                            {subItem.name}
-                            <BiRightArrowAlt className="text-[1.25rem]" />
-                          </LinkComponent>
-                          <p className="prose-label-sm-regular text-base-content-subtle">
-                            {subItem.description}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                  {/* Spacer */}
+                  <div className="flex-1" />
+
+                  <button
+                    onClick={onCloseMegamenu}
+                    aria-label="Close navigation item"
+                    className="flex h-[2.125rem] w-[2.125rem] items-center justify-center text-[1.5rem]"
+                  >
+                    <BiX />
+                  </button>
                 </div>
+
+                <ul className="grid grid-cols-3 gap-x-16 gap-y-8">
+                  {items.map((subItem) => (
+                    <li key={subItem.name}>
+                      <div className="flex flex-col gap-1.5">
+                        <LinkComponent
+                          href={subItem.url}
+                          className="prose-label-md-medium inline-flex items-center gap-1 text-base-content hover:underline"
+                        >
+                          {subItem.name}
+                          <BiRightArrowAlt className="text-[1.25rem]" />
+                        </LinkComponent>
+                        <p className="prose-label-sm-regular text-base-content-subtle">
+                          {subItem.description}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
-          </FocusScope>
+          </Dialog>
         )}
       </li>
     )
