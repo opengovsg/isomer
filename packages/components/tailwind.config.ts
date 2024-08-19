@@ -1,6 +1,9 @@
+/**
+ * This file is only used for storybook. The actual tailwind configuration that
+ * built sites used is in the `tailwind.config.js` file in tooling/templates package.
+ */
+
 /** @type {import('tailwindcss').Config} */
-import typographyPlugin from "@tailwindcss/typography"
-import racPlugin from "tailwindcss-react-aria-components"
 
 import classicPreset from "./src/presets/classic"
 import nextPreset from "./src/presets/next"
@@ -31,5 +34,4 @@ export default {
       },
     },
   },
-  plugins: [typographyPlugin, racPlugin],
 }
