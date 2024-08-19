@@ -25,65 +25,67 @@ import {
 import { BiLink } from "react-icons/bi"
 
 import { useZodForm } from "~/lib/form"
+import { createCollectionSchema } from "~/schemas/collection"
 import {
-  createFolderSchema,
   MAX_FOLDER_PERMALINK_LENGTH,
   MAX_FOLDER_TITLE_LENGTH,
 } from "~/schemas/folder"
 import { trpc } from "~/utils/trpc"
 import { generateResourceUrl } from "../utils"
 
-type CreateFolderProps = z.infer<typeof createFolderSchema>
+type CreateCollectionProps = z.infer<typeof createCollectionSchema>
 
-type CreateFolderModalProps = Pick<UseDisclosureReturn, "isOpen" | "onClose"> &
-  Pick<CreateFolderProps, "siteId" | "parentFolderId">
+type CreateCollectionModalProps = Pick<
+  UseDisclosureReturn,
+  "isOpen" | "onClose"
+> &
+  Pick<CreateCollectionProps, "siteId">
 
-export const CreateFolderModal = ({
+export const CreateCollectionModal = ({
   isOpen,
   onClose,
   siteId,
-  parentFolderId,
-}: CreateFolderModalProps): JSX.Element => {
+}: CreateCollectionModalProps): JSX.Element => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
-      <CreateFolderModalContent
-        key={String(isOpen)}
+      <CreateCollectionModalContent
         isOpen={isOpen}
+        key={String(isOpen)}
         onClose={onClose}
         siteId={siteId}
-        parentFolderId={parentFolderId}
       />
     </Modal>
   )
 }
 
-const CreateFolderModalContent = ({
+const CreateCollectionModalContent = ({
+  isOpen,
   onClose,
   siteId,
-  parentFolderId,
-}: CreateFolderModalProps) => {
+}: CreateCollectionModalProps) => {
   const { register, handleSubmit, watch, formState, setValue, getFieldState } =
     useZodForm({
       defaultValues: {
-        folderTitle: "",
+        collectionTitle: "",
         permalink: "",
       },
-      schema: createFolderSchema.omit({ siteId: true, parentFolderId: true }),
+      schema: createCollectionSchema.omit({
+        siteId: true,
+      }),
     })
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
   const toast = useToast()
-  const { mutate, isLoading } = trpc.folder.create.useMutation({
+  const { mutate, isLoading } = trpc.collection.create.useMutation({
     onSettled: onClose,
     onSuccess: async () => {
-      await utils.site.list.invalidate()
       await utils.resource.list.invalidate()
-      toast({ title: "Folder created!", status: "success" })
+      toast({ title: "Collection created!", status: "success" })
     },
     onError: (err) => {
       toast({
-        title: "Failed to create folder",
+        title: "Failed to create collection",
         status: "error",
         // TODO: check if this property is correct
         description: err.message,
@@ -91,9 +93,9 @@ const CreateFolderModalContent = ({
     },
   })
 
-  const [folderTitle, permalink] = watch(["folderTitle", "permalink"])
+  const [collectionTitle, permalink] = watch(["collectionTitle", "permalink"])
   const onSubmit = handleSubmit((data) => {
-    mutate({ ...data, parentFolderId, siteId })
+    mutate({ ...data, siteId })
   })
 
   useEffect(() => {
@@ -102,46 +104,47 @@ const CreateFolderModalContent = ({
     // Dirty means user has changed the value AND the value is not the same as the default value of "".
     // Once the value has been cleared, dirty state will reset.
     if (!permalinkFieldState.isDirty) {
-      setValue("permalink", generateResourceUrl(folderTitle), {
-        shouldValidate: !!folderTitle,
+      setValue("permalink", generateResourceUrl(collectionTitle), {
+        shouldValidate: !!collectionTitle,
       })
     }
-  }, [getFieldState, setValue, folderTitle])
+  }, [getFieldState, setValue, collectionTitle])
 
   return (
     <ModalContent>
       <form onSubmit={onSubmit}>
-        <ModalHeader>Create a new folder </ModalHeader>
+        <ModalHeader>Create a new collection</ModalHeader>
         <ModalCloseButton size="sm" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.5rem">
-            <FormControl isInvalid={!!errors.folderTitle}>
+            <FormControl isInvalid={!!errors.collectionTitle}>
               <FormLabel color="base.content.strong">
-                Folder name
+                Collection name
                 <FormHelperText color="base.content.default">
-                  This will be the title of the index page of your folder.
+                  This will be the title of the index page of your collection.
                 </FormHelperText>
               </FormLabel>
 
               <Input
-                placeholder="This is a title for your new folder"
-                {...register("folderTitle")}
+                placeholder="This is a title for your new collection"
+                {...register("collectionTitle")}
               />
-              {errors.folderTitle?.message ? (
+              {errors.collectionTitle?.message ? (
                 <FormErrorMessage>
-                  {errors.folderTitle.message}
+                  {errors.collectionTitle.message}
                 </FormErrorMessage>
               ) : (
                 <FormHelperText mt="0.5rem" color="base.content.medium">
-                  {MAX_FOLDER_TITLE_LENGTH - folderTitle.length} characters left
+                  {MAX_FOLDER_TITLE_LENGTH - collectionTitle.length} characters
+                  left
                 </FormHelperText>
               )}
             </FormControl>
             <FormControl isInvalid={!!errors.permalink}>
               <FormLabel color="base.content.strong">
-                Folder URL
+                Collection URL
                 <FormHelperText color="base.content.default">
-                  This will be applied to every child under this folder.
+                  This will be applied to every child under this collection.
                 </FormHelperText>
               </FormLabel>
               <Input
@@ -174,7 +177,7 @@ const CreateFolderModalContent = ({
             Close
           </Button>
           <Button isLoading={isLoading} isDisabled={!isValid} type="submit">
-            Create Folder
+            Create collection
           </Button>
         </ModalFooter>
       </form>
