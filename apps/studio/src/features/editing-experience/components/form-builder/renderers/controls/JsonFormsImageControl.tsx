@@ -13,6 +13,7 @@ import {
 import type { ModifiedAsset } from "~/types/assets"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useEnv } from "~/hooks/useEnv"
 import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPES,
   MAX_IMG_FILE_SIZE_BYTES,
@@ -33,7 +34,11 @@ export function JsonFormsImageControl({
   description,
   required,
   errors,
+  data,
 }: ControlProps) {
+  const {
+    env: { NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME },
+  } = useEnv()
   const toast = useToast()
   const { modifiedAssets, setModifiedAssets } = useEditorDrawerContext()
   const [pendingAsset, setPendingAsset] = useState<ModifiedAsset | undefined>()
@@ -50,6 +55,37 @@ export function JsonFormsImageControl({
       setModifiedAssets([...modifiedAssets, { ...pendingAsset }])
     }
   }, [modifiedAssets, path, pendingAsset, setModifiedAssets])
+
+  useEffect(() => {
+    const urlToFile = async (
+      url: string,
+      filename: string,
+      mimeType: string,
+    ) => {
+      const response = await fetch(url)
+      const blob = await response.blob()
+      return new File([blob], filename, { type: mimeType })
+    }
+
+    async function convertImage(url: string) {
+      const fileName = url.split("/").pop()
+      const fileType = `image/${url.split(".").pop()}`
+      const imageUrl = url.startsWith("/")
+        ? `${NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${url}`
+        : url
+      const file = await urlToFile(imageUrl, fileName || "", fileType)
+      setPendingAsset({ path, src: imageUrl, file })
+    }
+
+    if (!data) {
+      return
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    convertImage(data)
+    // NOTE: We only want to run this once if there is initial data provided
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <Box py={2}>

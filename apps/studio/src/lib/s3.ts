@@ -1,10 +1,13 @@
 import type {
   CopyObjectCommandInput,
   PutObjectCommandInput,
+  PutObjectTaggingCommandInput,
 } from "@aws-sdk/client-s3"
 import {
   CopyObjectCommand,
+  GetObjectTaggingCommand,
   PutObjectCommand,
+  PutObjectTaggingCommand,
   S3Client,
 } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
@@ -36,17 +39,30 @@ export const generateSignedPutUrl = async ({
 export const deleteFile = async ({
   Key,
   Bucket,
-}: Pick<CopyObjectCommandInput, "Key" | "Bucket">) => {
-  return storage.send(
-    new CopyObjectCommand({
+}: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
+  const objectTag = await storage.send(
+    new GetObjectTaggingCommand({
       Bucket,
-      CopySource: `${Bucket}/${Key}`,
       Key,
-      MetadataDirective: "REPLACE",
+    }),
+  )
+
+  const originalTagSet = objectTag.TagSet ?? []
+
+  return storage.send(
+    new PutObjectTaggingCommand({
+      Bucket,
+      Key,
       // NOTE: We perform a soft delete here so the file can be kept available
       // until the page is published
-      Metadata: {
-        deleted: "true",
+      Tagging: {
+        TagSet: [
+          ...originalTagSet.filter(({ Key }) => Key !== "ISOMER_STATUS"),
+          {
+            Key: "ISOMER_STATUS",
+            Value: "DELETED",
+          },
+        ],
       },
     }),
   )
