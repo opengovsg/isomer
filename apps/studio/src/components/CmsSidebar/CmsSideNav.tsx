@@ -12,7 +12,6 @@ import {
   Skeleton,
   Spacer,
   Text,
-  VStack,
 } from "@chakra-ui/react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFile, BiFolder, BiHomeAlt } from "react-icons/bi"

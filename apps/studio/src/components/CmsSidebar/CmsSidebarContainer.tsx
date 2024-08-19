@@ -37,6 +37,7 @@ export function CmsSidebarContainer({
               backgroundColor: "var(--chakra-colors-gray-400)",
             },
           }}
+          bg="utility.ui"
         >
           {sidebar}
         </Box>
