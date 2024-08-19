@@ -36,6 +36,7 @@ const getColumns = ({ siteId }: CollectionTableProps) => [
     header: () => <TableHeader>Actions</TableHeader>,
     cell: ({ row }) => (
       <CollectionTableMenu
+        resourceType={row.original.type}
         title={row.original.title}
         resourceId={row.original.id}
       />
