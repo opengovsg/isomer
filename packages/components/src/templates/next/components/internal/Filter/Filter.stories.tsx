@@ -1,8 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { useState } from "react"
+import { userEvent, waitFor, within } from "@storybook/test"
+
+import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
 import type { AppliedFilter } from "~/templates/next/types/Filter"
-import Filter from "./Filter"
+import { Filter } from "./Filter"
 
 const meta: Meta<typeof Filter> = {
   title: "Next/Internal Components/Filter",
@@ -45,17 +48,26 @@ const meta: Meta<typeof Filter> = {
       }
     }
 
+    const handleClearFilter = () => {
+      setAppliedFilters([])
+    }
+
     return (
       <Filter
         filters={filters}
         appliedFilters={appliedFilters}
-        setAppliedFilters={(id: string, itemId: string) =>
+        setAppliedFilters={setAppliedFilters}
+        handleFilterToggle={(id: string, itemId: string) =>
           updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
         }
+        handleClearFilter={handleClearFilter}
       />
     )
   },
   parameters: {
+    viewport: {
+      defaultViewport: "reset",
+    },
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -101,4 +113,59 @@ export default meta
 type Story = StoryObj<typeof Filter>
 
 // Default scenario
-export const Default: Story = {}
+export const Default: Story = {
+  parameters: {
+    chromatic: withChromaticModes(["desktop"]),
+  },
+}
+
+export const WithSomeSelected: Story = {
+  parameters: {
+    chromatic: withChromaticModes(["desktop"]),
+  },
+  args: {
+    appliedFilters: [
+      { id: "type", items: [{ id: "article" }, { id: "speech" }] },
+      { id: "category", items: [{ id: "checkbox-default-1" }] },
+    ],
+  },
+}
+
+export const MobileFilterButton: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: getViewportByMode("mobile"),
+    },
+    chromatic: withChromaticModes(["mobile"]),
+  },
+  args: WithSomeSelected.args,
+}
+
+export const MobileFilterDrawer: Story = {
+  parameters: MobileFilterButton.parameters,
+  args: MobileFilterButton.args,
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await waitFor(async () => {
+      await userEvent.click(
+        screen.getByRole("button", { name: /filter results/i }),
+      )
+    })
+  },
+}
+
+export const MobileFilterDrawerClearAll: Story = {
+  parameters: MobileFilterButton.parameters,
+  args: MobileFilterButton.args,
+  play: async (context) => {
+    const { canvasElement } = context
+    // Required since drawer is a portal
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const screen = within(canvasElement.parentElement!)
+
+    await MobileFilterDrawer.play?.(context)
+    await userEvent.click(
+      screen.getByRole("button", { name: /clear all filters/i }),
+    )
+  },
+}

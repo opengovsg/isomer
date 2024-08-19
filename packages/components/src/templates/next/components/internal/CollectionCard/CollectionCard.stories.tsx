@@ -1,16 +1,20 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import type { CollectionCardProps } from "~/interfaces"
-import CollectionCard from "./CollectionCard"
+import { CollectionCard } from "./CollectionCard"
 
 const meta: Meta<CollectionCardProps> = {
   title: "Next/Internal Components/CollectionCard",
   component: CollectionCard,
   argTypes: {},
   parameters: {
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
+    chromatic: withChromaticModes(["desktop", "mobile"]),
   },
 }
 export default meta
@@ -30,6 +34,13 @@ export const Default: Story = {
       alt: "placeholder",
     },
     variant: "article",
+  },
+}
+
+export const HideDate: Story = {
+  args: {
+    ...Default.args,
+    lastUpdated: undefined,
   },
 }
 

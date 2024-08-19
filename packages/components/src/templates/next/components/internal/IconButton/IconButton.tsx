@@ -16,7 +16,7 @@ export const iconButtonStyles = tv({
   variants: {
     variant: {
       clear:
-        "bg-transparent hover:bg-base-canvas-backdrop/50 active:bg-base-canvas-backdrop/80",
+        "bg-transparent active:bg-base-canvas-backdrop/80 hover:bg-base-canvas-backdrop/50",
     },
     isDisabled: {
       true: "cursor-not-allowed",

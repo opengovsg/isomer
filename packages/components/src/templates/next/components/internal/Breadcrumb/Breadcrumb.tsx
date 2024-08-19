@@ -8,7 +8,7 @@ const breadcrumbStyles = tv({
     nav: "flex flex-row flex-wrap items-center gap-2 text-base-content",
     container:
       "prose-label-md-regular flex flex-row items-center gap-1 last:prose-label-md-medium last:text-base-content-medium",
-    link: "underline decoration-transparent underline-offset-4 transition hover:decoration-inherit active:text-interaction-link-active",
+    link: "underline decoration-transparent underline-offset-4 transition active:text-interaction-link-active hover:decoration-inherit",
     icon: "h-5 w-5 flex-shrink-0 text-base-content-subtle",
   },
 })

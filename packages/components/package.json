@@ -43,7 +43,6 @@
     "@storybook/react": "^8.1.10",
     "@storybook/react-vite": "^8.0.9",
     "@storybook/test": "^8.1.10",
-    "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.13",
     "@types/dompurify": "^3.0.5",
     "@types/lunr": "^2.3.7",
@@ -104,6 +103,7 @@
     "isomorphic-dompurify": "^2.12.0",
     "js-base64": "^3.7.7",
     "js-md5": "^0.8.3",
+    "lodash": "^4.17.21",
     "markdown-to-jsx": "^7.4.7",
     "minisearch": "^6.3.0",
     "react-aria": "^3.34.1",
@@ -111,6 +111,7 @@
     "react-icons": "^5.2.0",
     "tailwind-merge": "^2.4.0",
     "tailwind-variants": "^0.2.1",
+    "tailwindcss-react-aria-components": "^1.1.4",
     "type-fest": "^4.23.0",
     "usehooks-ts": "^3.1.0"
   },

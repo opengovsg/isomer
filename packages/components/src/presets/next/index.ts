@@ -3,7 +3,6 @@ import defaultTheme from "tailwindcss/defaultTheme"
 import plugin from "tailwindcss/plugin"
 
 import { colors } from "./colors"
-import { isomerSiteTheme } from "./site-theme"
 import { isomerTypography } from "./typography"
 
 const config: Config = {

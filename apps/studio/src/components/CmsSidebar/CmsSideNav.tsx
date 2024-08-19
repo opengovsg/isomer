@@ -9,6 +9,7 @@ import {
   Box,
   Flex,
   Skeleton,
+  Spacer,
   Text,
   VStack,
 } from "@chakra-ui/react"
@@ -16,6 +17,7 @@ import { Menu } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFile, BiFolder, BiHomeAlt } from "react-icons/bi"
 
+import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 
 interface CmsSideNavProps {
@@ -51,7 +53,7 @@ export const CmsSideNav = ({ siteId }: CmsSideNavProps) => {
             resourceId={null}
             permalink={"/"}
             siteId={siteId}
-            resourceType="Folder"
+            resourceType="RootPage"
           />
         </Suspense>
       </Box>
@@ -59,7 +61,6 @@ export const CmsSideNav = ({ siteId }: CmsSideNavProps) => {
   )
 }
 
-// TODO: Add this in after #426 is merged
 const ICON_MAPPINGS = {
   [ResourceType.Page]: <BiFile />,
   [ResourceType.Folder]: <BiFolder />,
@@ -144,7 +145,15 @@ const SideNavItem = ({
                   }}
                   onDoubleClick={async () => {
                     const urlType = getResourceType(resourceType)
-                    await router.push({
+                    if (resourceType === "RootPage") {
+                      return router.push({
+                        pathname: "/sites/[siteId]",
+                        query: {
+                          siteId,
+                        },
+                      })
+                    }
+                    return router.push({
                       pathname: "/sites/[siteId]/[resourceType]/[id]",
                       query: {
                         siteId,
@@ -154,24 +163,49 @@ const SideNavItem = ({
                     })
                   }}
                 >
-                  {resourceType === ResourceType.Folder ? (
-                    <AccordionIcon
-                      mr="0.25rem"
-                      color="interaction.support.unselected"
-                    />
-                  ) : (
-                    <Box w="1.5rem"></Box>
-                  )}
-                  {icon}
-                  {/* TODO: add the home text on rhs if is home */}
-                  <Text textStyle="caption-1" ml="0.5rem">
-                    {permalink}
-                  </Text>
+                  <Flex
+                    w="full"
+                    color="base.content.default"
+                    alignItems="center"
+                  >
+                    {isAllowedToHaveChildren(resourceType) ? (
+                      <AccordionIcon
+                        mr="0.25rem"
+                        color="interaction.support.unselected"
+                      />
+                    ) : (
+                      <Box w="1.5rem"></Box>
+                    )}
+                    {icon}
+                    <Text
+                      noOfLines={1}
+                      textAlign="left"
+                      textStyle="caption-1"
+                      ml="0.5rem"
+                    >
+                      {permalink}
+                    </Text>
+                    <Spacer />
+                    {resourceType === ResourceType.RootPage && (
+                      <Text
+                        color="base.content.medium"
+                        textTransform="uppercase"
+                        textStyle="caption-1"
+                        overflow="hidden"
+                        textOverflow="ellipsis"
+                        whiteSpace="nowrap"
+                      >
+                        Home
+                      </Text>
+                    )}
+                  </Flex>
                 </AccordionButton>
               </Box>
               <Suspense fallback={<Skeleton />}>
                 {isExpanded && (
                   <AccordionPanel p="0" pl="1.25rem">
+                    {/* NOTE: The root page would already be on top level  */}
+                    {/* so we don't need to display it again here  */}
                     {children.map((props) => {
                       return (
                         <SideNavItem

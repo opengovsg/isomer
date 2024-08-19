@@ -3,6 +3,7 @@ import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { createContext, useContext, useState } from "react"
 
 import type { SectionType } from "~/components/PageEditor/types"
+import type { ModifiedAsset } from "~/types/assets"
 import { type DrawerState } from "~/types/editorDrawer"
 
 export interface DrawerContextType {
@@ -16,6 +17,8 @@ export interface DrawerContextType {
   setSavedPageState: Dispatch<SetStateAction<IsomerSchema | undefined>>
   previewPageState?: IsomerSchema
   setPreviewPageState: Dispatch<SetStateAction<IsomerSchema | undefined>>
+  modifiedAssets: ModifiedAsset[]
+  setModifiedAssets: Dispatch<SetStateAction<ModifiedAsset[]>>
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
@@ -35,6 +38,8 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
   >()
   const [addedBlock, setAddedBlock] =
     useState<Exclude<SectionType, "prose">>("button")
+  // Holding state for images/files that have been modified in the page
+  const [modifiedAssets, setModifiedAssets] = useState<ModifiedAsset[]>([])
 
   return (
     <EditorDrawerContext.Provider
@@ -49,6 +54,8 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
         setPreviewPageState,
         addedBlock,
         setAddedBlock,
+        modifiedAssets,
+        setModifiedAssets,
       }}
     >
       {children}

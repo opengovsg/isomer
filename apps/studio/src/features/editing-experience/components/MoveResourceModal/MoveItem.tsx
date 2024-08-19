@@ -4,7 +4,7 @@ import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { useAtomValue } from "jotai"
 import { ErrorBoundary } from "react-error-boundary"
-import { BiData, BiFile, BiFolder, BiHome } from "react-icons/bi"
+import { BiData, BiFile, BiFolder } from "react-icons/bi"
 
 import type { RouterOutput } from "~/utils/trpc"
 import { moveResourceAtom } from "../../atoms"
@@ -31,8 +31,6 @@ const SuspendableMoveItem = ({
       case "CollectionPage":
       case "Page":
         return <BiFile />
-      case "RootPage":
-        return <BiHome />
       case "Collection":
         return <BiData />
     }

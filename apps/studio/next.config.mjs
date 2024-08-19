@@ -3,6 +3,7 @@
  * for Docker builds.
  */
 const { env } = await import("./src/env.mjs")
+const { S3_REGION, S3_ASSETS_BUCKET_NAME } = env
 
 /*
 TODO: Removing this CSP first
@@ -25,7 +26,14 @@ const ContentSecurityPolicy = `
   object-src 'none';
   script-src 'self' 'unsafe-eval';
   style-src 'self' https: 'unsafe-inline';
-  connect-src 'self' https://schema.isomer.gov.sg https://browser-intake-datadoghq.com https://*.browser-intake-datadoghq.com https://vitals.vercel-insights.com/v1/vitals;
+  connect-src
+    'self'
+    https://schema.isomer.gov.sg
+    https://browser-intake-datadoghq.com
+    https://*.browser-intake-datadoghq.com
+    https://vitals.vercel-insights.com/v1/vitals
+    https://${S3_ASSETS_BUCKET_NAME}.s3.${S3_REGION}.amazonaws.com
+    ;
   worker-src 'self' blob:;
   ${env.NODE_ENV === "production" ? "upgrade-insecure-requests" : ""}
 `
@@ -48,10 +56,7 @@ const config = {
   /** We run eslint as a separate task in CI */
   eslint: { ignoreDuringBuilds: true },
   images: {
-    domains: [
-      env.S3_UNSAFE_ASSETS_DOMAIN_NAME ?? "",
-      env.S3_PUBLIC_ASSETS_DOMAIN_NAME ?? "",
-    ].filter((d) => d),
+    domains: [env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME ?? ""].filter((d) => d),
   },
   async headers() {
     return [

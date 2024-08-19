@@ -1,13 +1,14 @@
 import { TRPCError } from "@trpc/server"
 
 import {
+  deleteResourceSchema,
   getChildrenSchema,
   getMetadataSchema,
   listResourceSchema,
   moveSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
-import { db } from "../database"
+import { db, ResourceType } from "../database"
 
 export const resourceRouter = router({
   getMetadataById: protectedProcedure
@@ -26,12 +27,21 @@ export const resourceRouter = router({
       return resource
     }),
 
+  // TODO: Hint to the frontend that this can never return
+  // a `RootPage`
   getChildrenOf: protectedProcedure
     .input(getChildrenSchema)
     .query(async ({ input: { resourceId } }) => {
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
+        .where("Resource.type", "!=", "RootPage")
+        .$narrowType<{
+          type: Extract<
+            "Folder" | "Page" | "Collection" | "CollectionPage",
+            ResourceType
+          >
+        }>()
         .orderBy("type", "asc")
         .orderBy("title", "asc")
 
@@ -102,5 +112,17 @@ export const resourceRouter = router({
           "Resource.type",
         ])
         .execute()
+    }),
+  delete: protectedProcedure
+    .input(deleteResourceSchema)
+    .mutation(async ({ input: { siteId, resourceId } }) => {
+      const result = await db
+        .deleteFrom("Resource")
+        .where("Resource.id", "=", String(resourceId))
+        .where("Resource.siteId", "=", siteId)
+        .executeTakeFirst()
+      // NOTE: We need to do this `toString` as the property is a `bigint`
+      // and trpc cannot serialise it, which leads to errors
+      return result.numDeletedRows.toString()
     }),
 })

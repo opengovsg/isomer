@@ -13,10 +13,12 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Breadcrumb, Button, Menu } from "@opengovsg/design-system-react"
+import { useSetAtom } from "jotai"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
 import { MenuItem } from "~/components/Menu"
+import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
@@ -42,11 +44,7 @@ const FolderPage: NextPageWithLayout = () => {
     onOpen: onFolderCreateModalOpen,
     onClose: onFolderCreateModalClose,
   } = useDisclosure()
-  const {
-    isOpen: isFolderSettingsModalOpen,
-    onOpen: onFolderSettingsModalOpen,
-    onClose: onFolderSettingsModalClose,
-  } = useDisclosure()
+  const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
 
   const { folderId, siteId } = useQueryParse(folderPageSchema)
 
@@ -85,7 +83,11 @@ const FolderPage: NextPageWithLayout = () => {
               <Button
                 variant="outline"
                 size="md"
-                onClick={onFolderSettingsModalOpen}
+                onClick={() =>
+                  setFolderSettingsModalState({
+                    folderId,
+                  })
+                }
               >
                 Folder settings
               </Button>
@@ -133,12 +135,7 @@ const FolderPage: NextPageWithLayout = () => {
         onClose={onFolderCreateModalClose}
         siteId={parseInt(siteId)}
       />
-      <FolderSettingsModal
-        isOpen={isFolderSettingsModalOpen}
-        onClose={onFolderSettingsModalClose}
-        siteId={siteId}
-        resourceId={parseInt(folderId)}
-      />
+      <FolderSettingsModal />
     </>
   )
 }

@@ -1,9 +1,54 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { userEvent, within } from "@storybook/test"
+import flatten from "lodash/flatten"
+import times from "lodash/times"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
+import type { IsomerSitemap } from "~/engine"
 import { type CollectionPageSchemaType } from "~/engine"
 import CollectionLayout from "./Collection"
+
+const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
+  times(10, (index) => [
+    {
+      title: `This is a publication title that is really long because ${index}`,
+      permalink: `/publications/item-one-${index}`,
+      lastModified: "",
+      layout: "article",
+      summary:
+        "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year.",
+      date: "2024-05-07",
+      category: "Category Name",
+    },
+    {
+      title: `Isomer hero banner-${index}`,
+      permalink: `/publications/item-two-${index}`,
+      lastModified: "",
+      layout: "file",
+      summary:
+        "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
+      date: "2024-05-07",
+      category: "Category Name",
+      ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
+      fileDetails: {
+        type: "png",
+        size: "1.2MB",
+      },
+    },
+    {
+      title: `Isomer guide-${index}`,
+      permalink: `/publications/item-three-${index}`,
+      lastModified: "",
+      layout: "link",
+      summary:
+        "Have a look at the Isomer guide to understand how to use the Isomer CMS.",
+      date: "2023-08-12",
+      category: "Category Name",
+      ref: "https://guide.isomer.gov.sg",
+    },
+  ]),
+)
 
 const meta: Meta<CollectionPageSchemaType> = {
   title: "Next/Layouts/Collection",
@@ -17,12 +62,6 @@ const meta: Meta<CollectionPageSchemaType> = {
       themeOverride: "Isomer Next",
     },
   },
-}
-export default meta
-type Story = StoryObj<typeof CollectionLayout>
-
-export const Default: Story = {
-  name: "Collection",
   args: {
     layout: "collection",
     site: {
@@ -40,45 +79,7 @@ export const Default: Story = {
             lastModified: "",
             layout: "collection",
             summary: "",
-            children: [
-              {
-                title:
-                  "This is a publication title that is really long because",
-                permalink: "/publications/item-one",
-                lastModified: "",
-                layout: "article",
-                summary:
-                  "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year.",
-                date: "2024-05-07",
-                category: "Category Name",
-              },
-              {
-                title: "Isomer hero banner",
-                permalink: "/publications/item-two",
-                lastModified: "",
-                layout: "file",
-                summary:
-                  "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
-                date: "2024-05-07",
-                category: "Category Name",
-                ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
-                fileDetails: {
-                  type: "png",
-                  size: "1.2MB",
-                },
-              },
-              {
-                title: "Isomer guide",
-                permalink: "/publications/item-three",
-                lastModified: "",
-                layout: "link",
-                summary:
-                  "Have a look at the Isomer guide to understand how to use the Isomer CMS.",
-                date: "2023-08-12",
-                category: "Category Name",
-                ref: "https://guide.isomer.gov.sg",
-              },
-            ],
+            children: COLLECTION_ITEMS,
           },
         ],
       },
@@ -105,8 +106,19 @@ export const Default: Story = {
       lastModified: "2024-05-02T14:12:57.160Z",
       subtitle:
         "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
-      defaultSortBy: "date",
-      defaultSortDirection: "desc",
     },
+  },
+}
+export default meta
+type Story = StoryObj<typeof CollectionLayout>
+
+export const Default: Story = {
+  name: "Collection",
+}
+
+export const WithFilters: Story = {
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(screen.getByText(/2023 \(10\)/i))
   },
 }

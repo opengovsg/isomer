@@ -6,7 +6,7 @@ import { MINIMAL_VIEWPORTS } from "@storybook/addon-viewport"
 import "bootstrap-icons/font/bootstrap-icons.css"
 import "../src/index.css"
 
-import { viewport, withChromaticModes } from "@isomer/storybook-config"
+import { viewport } from "@isomer/storybook-config"
 
 const CUSTOM_GENERAL_VIEWPORTS = {
   smallDesktop: {

@@ -9,11 +9,20 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
+import { useAtom, useSetAtom } from "jotai"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
 import { MenuItem } from "~/components/Menu"
+import {
+  DEFAULT_RESOURCE_MODAL_STATE,
+  deleteResourceModalAtom,
+  folderSettingsModalAtom,
+} from "~/features/dashboard/atoms"
+import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
+import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
+import { CreateCollectionModal } from "~/features/editing-experience/components/CreateCollectionModal"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
@@ -36,8 +45,16 @@ const SitePage: NextPageWithLayout = () => {
     onOpen: onFolderCreateModalOpen,
     onClose: onFolderCreateModalClose,
   } = useDisclosure()
+  const {
+    isOpen: isCollectionCreateModalOpen,
+    onOpen: onCollectionCreateModalOpen,
+    onClose: onCollectionCreateModalClose,
+  } = useDisclosure()
 
   const { siteId } = useQueryParse(sitePageSchema)
+  const [deleteResourceModalState, setDeleteResourceModalState] = useAtom(
+    deleteResourceModalAtom,
+  )
 
   return (
     <>
@@ -66,7 +83,10 @@ const SitePage: NextPageWithLayout = () => {
                   >
                     Page
                   </MenuItem>
-                  <MenuItem icon={<BiData fontSize="1rem" />}>
+                  <MenuItem
+                    onClick={onCollectionCreateModalOpen}
+                    icon={<BiData fontSize="1rem" />}
+                  >
                     Collection
                   </MenuItem>
                 </MenuList>
@@ -88,7 +108,14 @@ const SitePage: NextPageWithLayout = () => {
         onClose={onFolderCreateModalClose}
         siteId={siteId}
       />
+      <CreateCollectionModal
+        isOpen={isCollectionCreateModalOpen}
+        onClose={onCollectionCreateModalClose}
+        siteId={siteId}
+      />
+      <DeleteResourceModal siteId={siteId} />
       <MoveResourceModal />
+      <FolderSettingsModal />
     </>
   )
 }
