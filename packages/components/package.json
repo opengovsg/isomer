@@ -103,6 +103,7 @@
     "isomorphic-dompurify": "^2.12.0",
     "js-base64": "^3.7.7",
     "js-md5": "^0.8.3",
+    "lodash": "^4.17.21",
     "markdown-to-jsx": "^7.4.7",
     "minisearch": "^6.3.0",
     "react-aria": "^3.34.1",

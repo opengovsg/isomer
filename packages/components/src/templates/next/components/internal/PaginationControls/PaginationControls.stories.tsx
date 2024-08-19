@@ -2,17 +2,23 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { useState } from "react"
 
 import type { PaginationProps } from "../../../types/Pagination"
-import Pagination from "./Pagination"
+import { PaginationControls } from "./PaginationControls"
 
 // Template for stories
 const Template = (props: Omit<PaginationProps, "currPage" | "setCurrPage">) => {
   const [currPage, setCurrPage] = useState<number>(1)
-  return <Pagination {...props} currPage={currPage} setCurrPage={setCurrPage} />
+  return (
+    <PaginationControls
+      {...props}
+      currPage={currPage}
+      setCurrPage={setCurrPage}
+    />
+  )
 }
 
 const meta: Meta<PaginationProps> = {
-  title: "Next/Internal Components/Pagination",
-  component: Pagination,
+  title: "Next/Internal Components/PaginationControls",
+  component: PaginationControls,
   argTypes: {},
   render: Template,
   parameters: {
@@ -22,7 +28,7 @@ const meta: Meta<PaginationProps> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof Pagination>
+type Story = StoryObj<typeof PaginationControls>
 
 export const SinglePage: Story = {
   args: {

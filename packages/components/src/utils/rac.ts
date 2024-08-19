@@ -17,4 +17,9 @@ export function composeTailwindRenderProps<T>(
   return composeRenderProps(className, (className) => twMerge(tw, className))
 }
 
+/**
+ * Function to return undefined if the value is falsy, otherwise true
+ */
+export const dataAttr = (value: unknown) => (!!value ? true : undefined)
+
 // TODO: move focusRing style inside here

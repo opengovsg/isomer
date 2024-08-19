@@ -9,7 +9,7 @@ import {
   CollectionCard,
   CollectionSearch,
   Filter,
-  Pagination,
+  PaginationControls,
 } from "../../components/internal"
 import { Link } from "../../components/internal/Link"
 import CollectionPageHeader from "./CollectionPageHeader"
@@ -27,7 +27,7 @@ const createCollectionLayoutStyles = tv({
     container:
       "relative mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-16 md:px-10 lg:gap-6 xl:gap-10",
     filterContainer: "relative col-span-12 pb-10 lg:col-span-3",
-    content: "col-span-12 flex flex-col gap-16 lg:col-span-9 lg:ml-24",
+    content: "col-span-12 flex flex-col gap-8 lg:col-span-9 lg:ml-24",
   },
 })
 
@@ -137,15 +137,13 @@ const CollectionClient = ({
             </div>
           </div>
           {paginatedItems.length > 0 && (
-            <div className="w-full">
-              <div className="sm:ml-auto sm:max-w-96">
-                <Pagination
-                  totalItems={filteredCount}
-                  itemsPerPage={ITEMS_PER_PAGE}
-                  currPage={currPage}
-                  setCurrPage={setCurrPage}
-                />
-              </div>
+            <div className="flex w-full justify-center lg:justify-end">
+              <PaginationControls
+                totalItems={filteredCount}
+                itemsPerPage={ITEMS_PER_PAGE}
+                currPage={currPage}
+                setCurrPage={setCurrPage}
+              />
             </div>
           )}
         </div>
