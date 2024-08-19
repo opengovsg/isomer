@@ -48,22 +48,15 @@ const getSiderailFromSiteMap = (
   // get all siblings of page
   const pagePath = "/" + permalink.join("/")
   for (const sibling of node.children) {
-    if (sibling.permalink === pagePath) {
-      pages.push({
-        title: sibling.title,
-        url: sibling.permalink,
-        isCurrent: true,
-        childPages: sibling.children?.map((child) => ({
-          url: child.permalink,
-          title: child.title,
-        })),
-      })
-    } else {
-      pages.push({
-        title: sibling.title,
-        url: sibling.permalink,
-      })
-    }
+    pages.push({
+      title: sibling.title,
+      url: sibling.permalink,
+      isCurrent: sibling.permalink === pagePath,
+      childPages: sibling.children?.map((child) => ({
+        url: child.permalink,
+        title: child.title,
+      })),
+    })
   }
   return {
     parentTitle,
