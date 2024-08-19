@@ -16,7 +16,7 @@
     "predev": "run-s migrate",
     "dev": "next dev",
     "prebuild": "run-s generate",
-    "build": "next build",
+    "build": "SKIP_ENV_VALIDATION=true next build",
     "build:theme": "npx chakra-cli tokens src/theme/index.ts",
     "build:preview-tw": "NODE_ENV=production npx tailwindcss build -i src/styles/tailwind.css -o public/assets/css/preview-tw.css &&  prettier --write public/assets/css/preview-tw.css",
     "prestart": "npm run migrate",
@@ -37,7 +37,9 @@
     "test-start": "start-server-and-test start http://127.0.0.1:3000 test",
     "storybook": "storybook dev -p 6007",
     "build-storybook": "storybook build",
-    "clean": "git clean -xdf .next .turbo node_modules build"
+    "clean": "git clean -xdf .next .turbo node_modules build",
+    "jump:vapt": "source .ssh/.env.staging && ssh -L 5433:$DB_HOST:5432 $SSH_USER@$SSH_HOST -i .ssh/studio-vapt-bastion.pem",
+    "migrate:vapt": "source .ssh/.env.staging && npx prisma migrate deploy"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -129,7 +131,8 @@
     "usehooks-ts": "^3.1.0",
     "validator": "^13.11.0",
     "wretch": "^2.8.0",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "prisma": "^5.18.0"
   },
   "devDependencies": {
     "@babel/plugin-transform-class-properties": "^7.24.7",
@@ -170,7 +173,6 @@
     "npm-run-all": "^4.1.5",
     "postcss": "^8.4.39",
     "prettier": "^3.3.2",
-    "prisma": "^5.18.0",
     "start-server-and-test": "^2.0.3",
     "storybook": "^8.1.10",
     "tailwindcss": "^3.4.4",

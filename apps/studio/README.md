@@ -152,3 +152,33 @@ npm run test:e2e   # runs e2e tests
 </table>
 
 ---
+
+## DB migrations
+
+The following steps are needed before you can run migrations on a remote database in a private subnet of an AWS VPC.
+
+First, ensure that you are connected to [AWS VPN](https://www.notion.so/opengov/Instructions-to-use-OGP-s-AWS-VPN-e67226703cac459999b84c02200a3940) as only the VPN is whitelisted to use the EC2 instance<sup>1</sup>.
+
+Next, you will require the correct environment variables and credentials.
+
+- Go into the 1PW Isomer vault and search for the `studio .ssh/.env.<staging | prod>` file.
+- Create a folder named .ssh in the root directory and place the `.env` files there.
+- Search for the credentials from the entry `AWS Isomer Next <env> Bastion SSH Key`- download the file `studio-vapt-bastion.pem`
+- Put these credentials into the .ssh folder also.
+
+Next, run the following command: `npm run jump:vapt`. This sets up the port-forwarding service.
+Finally, run the following command in a separate terminal: `npm run migrate` to run the migration.
+
+What happens under the hood is described below:
+You need to set up a local port-forwarding service that forwards traffic from a specific local port, e.g. 5433, to the database via the bastion host (remember: the bastion host resides in the public subnet of the VPC and thus can be contactable from your computer).
+
+- Open a terminal window and run the following command: `ssh -L 5433:<DB_HOST>:5432 <SSH_USER>@<SSH_HOST> -i <PATH_TO_SSH_HOST_PEM_FILE>`
+- The `DB_HOST`, `SSH_USER` and `SSH_HOST` values can be found in the `ssm` keys on aws
+- The `PEM_FILE` (the actual file) can be found in the `Isomer` 1Password vault as well, under the entry `AWS Isomer Next <env> Bastion SSH Key`. Download the file and save it to your computer. and update the file value for `PATH_TO_SSH_HOST_PEM_FILE`.
+
+Finally, we want to run the migration script.
+
+- Modify the `DATABASE_URL` in the `.env` file so that Prisma connects to the local port-forwarding service at port 5433: `postgres://<DB_USER>:<DB_PASS>@127.0.0.1:5433/<DB_NAME>`
+- Open another terminal window.
+- Run `source .env`
+- Run `npx prisma migrate deploy`

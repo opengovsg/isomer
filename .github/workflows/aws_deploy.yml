@@ -7,6 +7,10 @@ on:
         description: "Deployment environment"
         required: true
         type: string
+      ecs-container-port:
+        description: "Port that ecs listens on for traffic"
+        required: true
+        type: number
       shortEnv:
         description: "Deployment environment, the short version (one of [dev, prod, stg, test, uat, vapt])"
         required: true
@@ -56,6 +60,14 @@ on:
         description: "CodeDeploy deployment group to use"
         required: true
         type: string
+      ecs-task-role:
+        description: "Task role that ecs uses to run our app"
+        required: true
+        type: string
+      ecs-task-exec-role:
+        description: "Task role that ecs uses to deploy our app"
+        required: true
+        type: string
     secrets:
       DD_API_KEY:
         description: "Datadog API key for uploading sourcemaps"
@@ -73,9 +85,6 @@ jobs:
     name: Build and push image to ECR
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
@@ -97,8 +106,11 @@ jobs:
         with:
           mask-password: "true"
 
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
       - name: Build and push image to ECR
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
@@ -106,6 +118,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         with:
           context: .
+          file: "./apps/studio/Dockerfile"
           push: true
           tags: |
             ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
@@ -116,16 +129,31 @@ jobs:
     name: Deploy image to ECS
     runs-on: ubuntu-latest
     needs: build
+    environment: ${{ inputs.environment }}
     env:
       DD_API_KEY: ${{ secrets.DD_API_KEY }}
+
     steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ inputs.cicd-role }}
+          role-session-name: github-action-application-deploy
+          aws-region: ${{ inputs.aws-region }}
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         with:
           mask-password: "true"
 
-      - name: Replace AWS_ACCOUNT_ID/ENV in task definition file
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Replace variables in task definition file
         id: replace-variables
         run: |
           sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' ${{ inputs.ecs-task-definition-path }}
@@ -133,13 +161,16 @@ jobs:
           sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<CPU>/${{ inputs.environment == 'production' && 1024 || 512 }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<MEMORY>/${{ inputs.environment == 'production' && 2048 || 1024 }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<RDS_READER_ENDPOINT>/${{ secrets.RDS_READER_ENDPOINT }}/g' ${{ inputs.task-definition-path }}
-          sed -i 's/<DD_COMMIT_SHA>/${{ github.sha }}/g' ${{ inputs.task-definition-path }}
+          sed -i 's/<RDS_READER_ENDPOINT>/${{ secrets.RDS_READER_ENDPOINT }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<DD_COMMIT_SHA>/${{ github.sha }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<ECS_TASK_ROLE>/${{ inputs.ecs-task-role }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<ECS_TASK_EXEC_ROLE>/${{ inputs.ecs-task-exec-role }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<DD_API_KEY>/${{ secrets.DD_API_KEY }}/g' ${{ inputs.ecs-task-definition-path }}
 
       - name: Replace variables in appspec
         run: |
-          sed -i 's/<AWS_ACCOUNT_ID>/${{ secrets.AWS_ACCOUNT_ID }}/g' .aws/deploy/appspec.json
-          sed -i 's/<ENV>/${{ inputs.env}}/g' .aws/deploy/appspec.json
+          sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' .aws/deploy/appspec.json
+          sed -i 's/<ENV>/${{ inputs.environment}}/g' .aws/deploy/appspec.json
           sed -i 's/<CONTAINER_NAME>/${{ inputs.ecs-container-name }}/g' .aws/deploy/appspec.json
           sed -i 's/<CONTAINER_PORT>/${{ inputs.ecs-container-port }}/g' .aws/deploy/appspec.json
 
