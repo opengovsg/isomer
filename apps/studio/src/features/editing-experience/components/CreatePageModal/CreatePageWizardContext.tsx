@@ -81,7 +81,7 @@ const useCreatePageWizardContext = ({
 
   const { mutate, isLoading } = trpc.page.createPage.useMutation({
     onSuccess: async () => {
-      await utils.resource.list.invalidate()
+      await utils.resource.listWithoutRoot.invalidate()
       onClose()
     },
     // TOOD: Error handling

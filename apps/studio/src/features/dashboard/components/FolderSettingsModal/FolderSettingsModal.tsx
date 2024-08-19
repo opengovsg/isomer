@@ -88,7 +88,7 @@ const SuspendableModalContent = ({
     onSettled: onClose,
     onSuccess: async () => {
       await utils.site.list.invalidate()
-      await utils.resource.list.invalidate()
+      await utils.resource.listWithoutRoot.invalidate()
       await utils.resource.getChildrenOf.invalidate({
         resourceId: parentId ? String(parentId) : null,
       })

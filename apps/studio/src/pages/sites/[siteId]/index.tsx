@@ -22,6 +22,7 @@ import {
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
+import { RootpageRow } from "~/features/dashboard/components/RootpageRow"
 import { CreateCollectionModal } from "~/features/editing-experience/components/CreateCollectionModal"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
@@ -60,9 +61,6 @@ const SitePage: NextPageWithLayout = () => {
     <>
       <VStack w="100%" p="1.75rem" gap="1rem">
         <VStack w="100%" align="start">
-          <Text textColor="base.content.default" textStyle="h5">
-            My Pages
-          </Text>
           <HStack w="100%" justify="space-between" align="center" gap={0}>
             <Box />
             <Menu isLazy size="sm">
@@ -94,6 +92,7 @@ const SitePage: NextPageWithLayout = () => {
             </Menu>
           </HStack>
         </VStack>
+        <RootpageRow siteId={siteId} />
         <Box width="100%">
           <ResourceTable siteId={siteId} />
         </Box>

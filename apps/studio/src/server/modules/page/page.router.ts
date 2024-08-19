@@ -9,6 +9,7 @@ import {
   createPageSchema,
   getEditPageSchema,
   getPageSchema,
+  getRootPageSchema,
   publishPageSchema,
   reorderBlobSchema,
   updatePageBlobSchema,
@@ -245,7 +246,19 @@ export const pageRouter = router({
         return { pageId: resource.id }
       },
     ),
-
+  getRootPage: protectedProcedure
+    .input(getRootPageSchema)
+    .query(async ({ input: { siteId } }) => {
+      return (
+        db
+          .selectFrom("Resource")
+          // TODO: Only return sites that the user has access to
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "=", "RootPage")
+          .select(["id", "title", "draftBlobId"])
+          .executeTakeFirstOrThrow()
+      )
+    }),
   publishPage: protectedProcedure
     .input(publishPageSchema)
     .mutation(async ({ ctx, input: { siteId, pageId } }) => {
