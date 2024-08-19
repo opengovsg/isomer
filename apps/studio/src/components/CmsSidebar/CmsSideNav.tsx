@@ -24,18 +24,8 @@ interface CmsSideNavProps {
 }
 export const CmsSideNav = ({ siteId }: CmsSideNavProps) => {
   return (
-    <Flex flexDir="column">
-      <VStack
-        align="flex-start"
-        spacing="1.5rem"
-        pt="2rem"
-        px="1.25rem"
-        pb="0.75rem"
-        boxShadow="sm"
-      >
-        <Text textStyle="caption-1">Site content</Text>
-      </VStack>
-      <Box mt="4px" px="1.25rem">
+    <Flex flexDir="column" px="1.25rem" py="1.75rem">
+      <Box mt="4px">
         {/* TODO: update the resource id here */}
         <Suspense fallback={<Skeleton />}>
           <SideNavItem
