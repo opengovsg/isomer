@@ -96,7 +96,7 @@ const DeleteResourceModalContent = ({
     onSuccess: async () => {
       // TODO: here and elsewhere, we should aim to simplify our query pattern
       // such that the invalidation logic is clear
-      await utils.resource.list.invalidate()
+      await utils.resource.listWithoutRoot.invalidate()
       await utils.resource.getChildrenOf.invalidate()
       await utils.collection.list.invalidate()
       toast({ title: `${upperFirst(label)} deleted!`, status: "success" })

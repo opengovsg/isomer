@@ -80,7 +80,7 @@ const CreateCollectionModalContent = ({
   const { mutate, isLoading } = trpc.collection.create.useMutation({
     onSettled: onClose,
     onSuccess: async () => {
-      await utils.resource.list.invalidate()
+      await utils.resource.listWithoutRoot.invalidate()
       toast({ title: "Collection created!", status: "success" })
     },
     onError: (err) => {
