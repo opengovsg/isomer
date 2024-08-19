@@ -98,7 +98,10 @@ const SideNavItem = ({
   const router = useRouter()
 
   return (
-    <Accordion allowToggle>
+    <Accordion
+      defaultIndex={resourceType === ResourceType.RootPage ? 0 : undefined}
+      allowToggle
+    >
       <AccordionItem
         _disabled={{
           textColor: "interaction.support.disabled-content",
