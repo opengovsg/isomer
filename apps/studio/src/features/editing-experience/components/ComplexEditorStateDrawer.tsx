@@ -125,6 +125,18 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       // Upload all new/modified images/files
       const assetsToUpload = modifiedAssets.filter((asset) => !!asset.file)
 
+      // Delete the original assets for those that have been modified
+      // This is done by deleting the file key stored in the src attribute, as
+      // it would have been replaced by new file keys after uploading
+      const assetsToDelete = modifiedAssets
+        .map(({ src }) => src)
+        .reduce<string[]>((acc, curr) => {
+          if (curr !== undefined) {
+            acc.push(curr)
+          }
+          return acc
+        }, [])
+
       const isUploadingSuccessful = await Promise.allSettled(
         assetsToUpload.map(({ path, file }) => {
           if (!file) {
@@ -150,7 +162,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           const totalUploadsCount = modifiedAssets.length
 
           toast({
-            title: "Error uploading assets",
+            title: "Error uploading files/images",
             description: `An error occurred while uploading ${failedUploadsCount}/${totalUploadsCount} files/images. Please try again later.`,
             status: "error",
           })
@@ -162,16 +174,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         return true
       })
 
-      deleteAssets({
-        fileKeys: modifiedAssets
-          .map(({ src }) => src)
-          .reduce<string[]>((acc, curr) => {
-            if (curr !== undefined) {
-              acc.push(curr)
-            }
-            return acc
-          }, []),
-      })
+      deleteAssets({ fileKeys: assetsToDelete })
 
       updatedBlocks[currActiveIdx] = newBlock
       newPageState = {

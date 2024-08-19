@@ -1,3 +1,5 @@
+import { TRPCError } from "@trpc/server"
+
 import { deleteAssetsSchema, getPresignedPutUrlSchema } from "~/schemas/asset"
 import { protectedProcedure, router } from "~/server/trpc"
 import {
@@ -40,27 +42,29 @@ export const assetRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { fileKeys } = input
 
-      try {
-        ctx.logger.info({
-          message: `Deleting asset files`,
-          merged: {
-            fileKeys,
-          },
-        })
+      await Promise.allSettled(
+        fileKeys.map((fileKey) => markFileAsDeleted({ key: fileKey })),
+      ).then((results) => {
+        const deleteFailedCounts = results.filter(
+          (result) => result.status === "rejected",
+        ).length
+        const totalDeleteCounts = fileKeys.length
 
-        await Promise.all(
-          fileKeys.map((fileKey) => markFileAsDeleted({ key: fileKey })),
-        )
-      } catch (e) {
-        ctx.logger.error({
-          message: `Failed to delete asset files`,
-          merged: {
-            fileKeys,
-            error: JSON.stringify(e),
-          },
-        })
+        if (deleteFailedCounts > 0) {
+          ctx.logger.error({
+            message: `Failed to delete files/images`,
+            merged: {
+              fileKeys,
+              deleteFailedCounts,
+              totalDeleteCounts,
+            },
+          })
 
-        throw e
-      }
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to delete files/images",
+          })
+        }
+      })
     }),
 })
