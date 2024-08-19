@@ -494,7 +494,8 @@ export const Simple: Story = {
 export const Rowspan: Story = {
   args: {
     attrs: {
-      caption: "A table of IIA countries (2024)",
+      caption:
+        "A table of IIA countries (2024), the quick brown fox jumps over the lazy dog",
     },
     content: [
       {

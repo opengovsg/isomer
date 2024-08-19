@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 
 import type { TableProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
@@ -73,6 +73,8 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
   const tableRef = useRef<HTMLTableElement>(null)
   const stickyRowIndexes = getStickyRowIndexes(content)
 
+  const tableDescriptionId = useId()
+
   useEffect(() => {
     const onResize = () =>
       setIsTableOverflowing(getIsTableOverflowing(tableRef))
@@ -85,66 +87,70 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
   }, [])
 
   return (
-    <div className="overflow-x-auto [&:not(:first-child)]:mt-6">
-      <table
-        className="relative w-full border-separate border-spacing-0"
-        ref={tableRef}
-      >
-        <caption className="mb-4 caption-top text-left">
-          <BaseParagraph
-            content={caption}
-            className="prose-label-md-regular sticky left-0 table-header-group text-balance text-base-content-subtle"
-          />
-        </caption>
-        <tbody>
-          {content.map((row, index) => {
-            const TableCellTag =
-              row.content[0]?.type === "tableHeader" ? "th" : "td"
+    <div className="flex flex-col gap-4">
+      <BaseParagraph
+        id={tableDescriptionId}
+        content={caption}
+        className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
+      />
+      <div className="overflow-x-auto">
+        <table
+          className="w-full border-separate border-spacing-0"
+          aria-describedby={tableDescriptionId}
+          ref={tableRef}
+        >
+          <tbody>
+            {content.map((row, index) => {
+              const TableCellTag =
+                row.content[0]?.type === "tableHeader" ? "th" : "td"
 
-            return (
-              <tr key={index} className="text-left">
-                {row.content.map((cell, cellIndex) => {
-                  return (
-                    <TableCellTag
-                      key={cellIndex}
-                      colSpan={cell.attrs?.colspan || 1}
-                      rowSpan={cell.attrs?.rowspan || 1}
-                      className={tableCellStyles({
-                        isHeader: cell.type === "tableHeader",
-                        isOverflowing:
-                          stickyRowIndexes.includes(index) &&
-                          cellIndex === 0 &&
-                          isTableOverflowing,
-                        isFirstCell:
-                          stickyRowIndexes.includes(index) && cellIndex === 0,
-                        isLastRow: index === content.length - 1,
-                      })}
-                    >
-                      {cell.content.map((cellContent, index) => {
-                        switch (cellContent.type) {
-                          case "divider":
-                            return <Divider key={index} {...cellContent} />
-                          case "orderedList":
-                            return <OrderedList key={index} {...cellContent} />
-                          case "paragraph":
-                            return <Paragraph key={index} {...cellContent} />
-                          case "unorderedList":
-                            return (
-                              <UnorderedList key={index} {...cellContent} />
-                            )
-                          default:
-                            const _: never = cellContent
-                            return <></>
-                        }
-                      })}
-                    </TableCellTag>
-                  )
-                })}
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+              return (
+                <tr key={index} className="text-left">
+                  {row.content.map((cell, cellIndex) => {
+                    return (
+                      <TableCellTag
+                        key={cellIndex}
+                        colSpan={cell.attrs?.colspan || 1}
+                        rowSpan={cell.attrs?.rowspan || 1}
+                        className={tableCellStyles({
+                          isHeader: cell.type === "tableHeader",
+                          isOverflowing:
+                            stickyRowIndexes.includes(index) &&
+                            cellIndex === 0 &&
+                            isTableOverflowing,
+                          isFirstCell:
+                            stickyRowIndexes.includes(index) && cellIndex === 0,
+                          isLastRow: index === content.length - 1,
+                        })}
+                      >
+                        {cell.content.map((cellContent, index) => {
+                          switch (cellContent.type) {
+                            case "divider":
+                              return <Divider key={index} {...cellContent} />
+                            case "orderedList":
+                              return (
+                                <OrderedList key={index} {...cellContent} />
+                              )
+                            case "paragraph":
+                              return <Paragraph key={index} {...cellContent} />
+                            case "unorderedList":
+                              return (
+                                <UnorderedList key={index} {...cellContent} />
+                              )
+                            default:
+                              const _: never = cellContent
+                              return <></>
+                          }
+                        })}
+                      </TableCellTag>
+                    )
+                  })}
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
