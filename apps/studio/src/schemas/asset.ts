@@ -6,3 +6,11 @@ export const getPresignedPutUrlSchema = z.object({
     required_error: "Missing file name",
   }),
 })
+
+export const deleteAssetsSchema = z.object({
+  fileKeys: z.array(
+    z.string({
+      required_error: "Missing file keys",
+    }),
+  ),
+})
