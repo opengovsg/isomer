@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Exit immediately if a command exits with a non-zero status.
+set -e
+# Exit if any command in a pipeline fails.
+set -o pipefail
+
 # Helper function to calculate duration
 calculate_duration() {
   start_time=$1
@@ -28,8 +33,6 @@ calculate_duration $start_time
 echo $(git branch)
 
 # Perform a clean of npm cache
-# Example of error without this: 
-# npm ERR! EEXIST: file already exists, open '/root/.npm/_cacache/tmp/7746bf9d'
 npm cache clean --force
 
 # Install dependencies
