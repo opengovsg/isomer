@@ -75,36 +75,33 @@ const SitePage: NextPageWithLayout = () => {
                 Home
               </Text>
             </HStack>
-            <HStack gap="0.75rem">
-              <Button variant="outline">Folder settings</Button>
-              <Menu isLazy size="sm">
-                <MenuButton as={Button} size="md" justifySelf="flex-end">
-                  Create new...
-                </MenuButton>
-                <Portal>
-                  <MenuList>
-                    <MenuItem
-                      onClick={onFolderCreateModalOpen}
-                      icon={<BiFolder fontSize="1rem" />}
-                    >
-                      Folder
-                    </MenuItem>
-                    <MenuItem
-                      onClick={onPageCreateModalOpen}
-                      icon={<BiFileBlank fontSize="1rem" />}
-                    >
-                      Page
-                    </MenuItem>
-                    <MenuItem
-                      onClick={onCollectionCreateModalOpen}
-                      icon={<BiData fontSize="1rem" />}
-                    >
-                      Collection
-                    </MenuItem>
-                  </MenuList>
-                </Portal>
-              </Menu>
-            </HStack>
+            <Menu isLazy size="sm">
+              <MenuButton as={Button} size="md" justifySelf="flex-end">
+                Create new...
+              </MenuButton>
+              <Portal>
+                <MenuList>
+                  <MenuItem
+                    onClick={onFolderCreateModalOpen}
+                    icon={<BiFolder fontSize="1rem" />}
+                  >
+                    Folder
+                  </MenuItem>
+                  <MenuItem
+                    onClick={onPageCreateModalOpen}
+                    icon={<BiFileBlank fontSize="1rem" />}
+                  >
+                    Page
+                  </MenuItem>
+                  <MenuItem
+                    onClick={onCollectionCreateModalOpen}
+                    icon={<BiData fontSize="1rem" />}
+                  >
+                    Collection
+                  </MenuItem>
+                </MenuList>
+              </Portal>
+            </Menu>
           </HStack>
         </VStack>
         <RootpageRow siteId={siteId} />
