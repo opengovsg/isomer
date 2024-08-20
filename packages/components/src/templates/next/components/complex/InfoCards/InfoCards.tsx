@@ -16,7 +16,7 @@ const createInfoCardsStyles = tv({
     headingContainer: "flex flex-col gap-2.5 pb-8 sm:pb-12 lg:max-w-3xl",
     headingTitle: "prose-display-md text-base-content-strong",
     headingSubtitle: "prose-headline-lg-regular text-base-content",
-    grid: "grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-7 lg:grid-cols-3 lg:gap-x-16 lg:gap-y-12",
+    grid: "grid grid-cols-1 gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
     cardContainer: "group flex flex-col gap-5 outline-offset-4",
     cardImageContainer:
       "h-[11.875rem] w-full overflow-hidden rounded-lg border border-base-divider-subtle drop-shadow-none transition ease-in md:h-52",
@@ -34,6 +34,20 @@ const createInfoCardsStyles = tv({
         cardImageContainer: "group-hover:drop-shadow-md",
       },
     },
+    maxColumns: {
+      1: {
+        grid: "",
+      },
+      2: {
+        grid: "md:grid-cols-2",
+      },
+      3: {
+        grid: "lg:grid-cols-3",
+      },
+    },
+  },
+  defaultVariants: {
+    maxColumns: 3,
   },
 })
 
@@ -143,6 +157,7 @@ const InfoCards = ({
   variant,
   cards,
   LinkComponent,
+  maxColumns,
 }: InfoCardsProps): JSX.Element => {
   const InfoCardtoRender = () => {
     switch (variant) {
@@ -182,7 +197,7 @@ const InfoCards = ({
         <InfoCardsHeadingSection title={title} subtitle={subtitle} />
       )}
 
-      <div className={compoundStyles.grid()}>
+      <div className={compoundStyles.grid({ maxColumns })}>
         <InfoCardtoRender />
       </div>
     </section>

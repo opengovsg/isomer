@@ -100,4 +100,5 @@ export type SingleCardWithImageProps = Static<
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
   LinkComponent?: any // Next.js link
   sectionIdx?: number // TODO: Remove this property, only used in classic theme
+  maxColumns?: 1 | 2 | 3
 }
