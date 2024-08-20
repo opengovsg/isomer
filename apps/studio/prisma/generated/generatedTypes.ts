@@ -64,7 +64,6 @@ export interface Site {
    * [SiteThemeJson]
    */
   theme: PrismaJson.SiteThemeJson | null
-  codeBuildId: string | null
 }
 export interface SiteMember {
   userId: string

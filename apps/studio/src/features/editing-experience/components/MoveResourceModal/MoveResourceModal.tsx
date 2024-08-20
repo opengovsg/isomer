@@ -22,6 +22,7 @@ import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "../../types"
 import { withSuspense } from "~/hocs/withSuspense"
+import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 import { moveResourceAtom } from "../../atoms"
 import { MoveItem } from "./MoveItem"
@@ -157,21 +158,23 @@ const MoveResourceContent = withSuspense(
                   </Text>
                 </Flex>
               )}
-              {children.map((child) => {
-                return (
-                  <MoveItem
-                    {...child}
-                    resourceId={child.id}
-                    key={child.id}
-                    onChangeResourceId={() => {
-                      setResourceStack((prev) => [
-                        ...prev,
-                        { ...child, resourceId: child.id },
-                      ])
-                    }}
-                  />
-                )
-              })}
+              {children
+                .filter((c) => isAllowedToHaveChildren(c.type))
+                .map((child) => {
+                  return (
+                    <MoveItem
+                      {...child}
+                      resourceId={child.id}
+                      key={child.id}
+                      onChangeResourceId={() => {
+                        setResourceStack((prev) => [
+                          ...prev,
+                          { ...child, resourceId: child.id },
+                        ])
+                      }}
+                    />
+                  )
+                })}
             </Box>
             {!!moveDest && (
               <Box bg="utility.feedback.warning-subtle" p="0.75rem" w="full">

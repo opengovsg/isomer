@@ -46,7 +46,11 @@ function SuspendablePreview({
         siteMap: { title: "Home", permalink: "/", children: [] },
         environment: "production",
         // TODO: Fetch from DB in the future
-        lastUpdated: "3 Apr 2024",
+        lastUpdated: new Date().toLocaleDateString(undefined, {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
         ...siteConfig,
         navBarItems: navbar,
         footerItems: footer,
