@@ -94,7 +94,7 @@ export const CollectionTable = ({
       emptyPlaceholder={
         <EmptyTablePlaceholder
           groupLabel="collection"
-          entityName="x"
+          entityName="collection page"
           hasSearchTerm={false}
         />
       }

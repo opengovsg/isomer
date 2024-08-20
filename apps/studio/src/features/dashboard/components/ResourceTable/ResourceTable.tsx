@@ -97,7 +97,7 @@ export const ResourceTable = ({
       pagination
       emptyPlaceholder={
         <EmptyTablePlaceholder
-          entityName="x"
+          entityName="page"
           groupLabel="folder"
           hasSearchTerm={false}
         />
