@@ -135,6 +135,25 @@ export const DEFAULT_BLOCKS: Record<
     description: "This is the description for the infopic component",
     imageSrc: "https://placehold.co/600x400",
   },
+  contentpic: {
+    type: "contentpic",
+    content: {
+      type: "prose",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              text: "Enter the content accompanying the image here",
+              type: "text",
+            },
+          ],
+        },
+      ],
+    },
+    imageSrc: "https://placehold.co/600x400",
+    imageAlt: "This is the alt text for the image",
+  },
   keystatistics: {
     type: "keystatistics",
     title: "Irrationality in numbers",
