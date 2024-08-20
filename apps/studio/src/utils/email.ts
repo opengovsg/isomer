@@ -18,3 +18,9 @@ export const isGovEmail = (value: unknown) => {
     typeof value === "string" && isEmail(value) && value.endsWith(".gov.sg")
   )
 }
+
+export const isVaptEmail = (value: unknown) => {
+  return (
+    typeof value === "string" && isEmail(value) && value.endsWith("@cure53.de")
+  )
+}
