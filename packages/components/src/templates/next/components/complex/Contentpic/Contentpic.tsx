@@ -16,9 +16,7 @@ const compoundStyles = contentpicStyles()
 
 interface ContentpicProps
   extends Omit<BaseContentpicProps, "type">,
-    VariantProps<typeof contentpicStyles> {
-  className?: string
-}
+    VariantProps<typeof contentpicStyles> {}
 
 export const Contentpic = ({
   imageSrc,
