@@ -75,7 +75,6 @@ async function main() {
         resource.content.page = {
           ...resource.content.page,
           title: resource.title,
-          type: resource.type,
         }
 
         await writeContentToFile(
