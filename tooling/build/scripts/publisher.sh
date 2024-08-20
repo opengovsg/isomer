@@ -25,6 +25,7 @@ echo $(pwd)
 # Checkout specific branch
 echo "Checking out branch..."
 start_time=$(date +%s)
+# TODO: update this to use main branch
 git checkout 08-03-add_publishing_scripts
 calculate_duration $start_time
 
@@ -46,6 +47,15 @@ cd packages/components
 npm run build
 cd ../.. # back to root
 echo $(pwd)
+calculate_duration $start_time
+
+# Move build scripts from scripts into the template folder
+echo "Moving build scripts..."
+start_time=$(date +%s)
+cp tooling/build/scripts/preBuild.sh tooling/template/
+chmod +x tooling/template/preBuild.sh
+cp tooling/build/scripts/build.sh tooling/template/
+chmod +x tooling/template/build.sh
 calculate_duration $start_time
 
 # Fetch from database
@@ -70,12 +80,12 @@ npm ci
 # Prebuild
 echo "Prebuilding..."
 rm -rf node_modules && rm -rf .next
-curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash
+./preBuild.sh
 
 # Build
 echo "Building..."
 rm -rf scripts/
-curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/build.sh | bash
+./build.sh
 
 # Check if the 'out' folder exists
 if [ ! -d "./out" ]; then
