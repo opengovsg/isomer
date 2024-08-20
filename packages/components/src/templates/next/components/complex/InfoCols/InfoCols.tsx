@@ -4,6 +4,7 @@ import type { SupportedIconName } from "~/common/icons"
 import type { InfoColsProps } from "~/interfaces"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { ComponentContent } from "../../internal/customCssClass"
+import { Link } from "../../internal/Link"
 
 const InfoColsHeader = ({
   title,
@@ -31,25 +32,30 @@ const InfoBoxes = ({
 }: Pick<InfoColsProps, "infoBoxes" | "LinkComponent">) => {
   return (
     <div className="grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 md:gap-y-12 lg:grid-cols-3">
-      {infoBoxes.map((infoBox, idx) => (
-        <LinkComponent
-          href={infoBox.buttonUrl}
-          key={idx}
-          className="group flex flex-col items-start gap-3 text-left"
-        >
-          <InfoBoxIcon icon={infoBox.icon} aria-hidden="true" />
-          <h3 className="prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-interaction">
-            {infoBox.title}
-          </h3>
-          <p className="prose-body-base text-base-content">
-            {infoBox.description}
-          </p>
-          <div className="prose-headline-base-medium inline-flex items-center gap-1 text-base-content-strong">
-            {infoBox.buttonLabel}
-            <BiRightArrowAlt className="text-[1.375rem] transition ease-in group-hover:translate-x-1" />
-          </div>
-        </LinkComponent>
-      ))}
+      {infoBoxes.map(
+        ({ title, icon, description, buttonUrl, buttonLabel }, idx) => (
+          <Link
+            LinkComponent={LinkComponent}
+            href={buttonUrl}
+            key={idx}
+            className="group flex flex-col items-start gap-3 text-left"
+          >
+            {icon && <InfoBoxIcon icon={icon} aria-hidden="true" />}
+            <h3 className="prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-interaction">
+              {title}
+            </h3>
+            {description && (
+              <p className="prose-body-base text-base-content">{description}</p>
+            )}
+            {buttonLabel && buttonUrl && (
+              <div className="prose-headline-base-medium inline-flex items-center gap-1 text-base-content-strong">
+                {buttonLabel}
+                <BiRightArrowAlt className="text-[1.375rem] transition ease-in group-hover:translate-x-1" />
+              </div>
+            )}
+          </Link>
+        ),
+      )}
     </div>
   )
 }
