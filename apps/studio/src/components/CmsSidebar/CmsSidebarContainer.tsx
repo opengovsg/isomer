@@ -44,6 +44,7 @@ export function CmsSidebarContainer({
       </GridItem>
       <GridItem as="aside" area="sidenav" overflow="hidden">
         <Box
+          bg="utility.ui"
           pos="sticky"
           top={0}
           borderRight="1px solid"
