@@ -1,5 +1,7 @@
 import {
   Box,
+  Breadcrumb,
+  BreadcrumbItem,
   HStack,
   MenuButton,
   MenuList,
@@ -9,16 +11,10 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
-import { useAtom, useSetAtom } from "jotai"
-import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
+import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 
 import { MenuItem } from "~/components/Menu"
-import {
-  DEFAULT_RESOURCE_MODAL_STATE,
-  deleteResourceModalAtom,
-  folderSettingsModalAtom,
-} from "~/features/dashboard/atoms"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
@@ -53,43 +49,62 @@ const SitePage: NextPageWithLayout = () => {
   } = useDisclosure()
 
   const { siteId } = useQueryParse(sitePageSchema)
-  const [deleteResourceModalState, setDeleteResourceModalState] = useAtom(
-    deleteResourceModalAtom,
-  )
 
   return (
     <>
       <VStack w="100%" p="1.75rem" gap="1rem">
         <VStack w="100%" align="start">
+          <Breadcrumb size="sm">
+            <BreadcrumbItem>
+              <Text textStyle="caption-2" color="base.content.default">
+                Home
+              </Text>
+            </BreadcrumbItem>
+          </Breadcrumb>
           <HStack w="100%" justify="space-between" align="center" gap={0}>
-            <Box />
-            <Menu isLazy size="sm">
-              <MenuButton as={Button} size="md" justifySelf="flex-end">
-                Create new...
-              </MenuButton>
-              <Portal>
-                <MenuList>
-                  <MenuItem
-                    onClick={onFolderCreateModalOpen}
-                    icon={<BiFolder fontSize="1rem" />}
-                  >
-                    Folder
-                  </MenuItem>
-                  <MenuItem
-                    onClick={onPageCreateModalOpen}
-                    icon={<BiFileBlank fontSize="1rem" />}
-                  >
-                    Page
-                  </MenuItem>
-                  <MenuItem
-                    onClick={onCollectionCreateModalOpen}
-                    icon={<BiData fontSize="1rem" />}
-                  >
-                    Collection
-                  </MenuItem>
-                </MenuList>
-              </Portal>
-            </Menu>
+            <HStack gap="0.75rem">
+              <Box
+                aria-hidden
+                bg="brand.secondary.100"
+                p="0.5rem"
+                borderRadius="6px"
+              >
+                <BiHomeAlt />
+              </Box>
+              <Text as="h3" textStyle="h3">
+                Home
+              </Text>
+            </HStack>
+            <HStack gap="0.75rem">
+              <Button variant="outline">Folder settings</Button>
+              <Menu isLazy size="sm">
+                <MenuButton as={Button} size="md" justifySelf="flex-end">
+                  Create new...
+                </MenuButton>
+                <Portal>
+                  <MenuList>
+                    <MenuItem
+                      onClick={onFolderCreateModalOpen}
+                      icon={<BiFolder fontSize="1rem" />}
+                    >
+                      Folder
+                    </MenuItem>
+                    <MenuItem
+                      onClick={onPageCreateModalOpen}
+                      icon={<BiFileBlank fontSize="1rem" />}
+                    >
+                      Page
+                    </MenuItem>
+                    <MenuItem
+                      onClick={onCollectionCreateModalOpen}
+                      icon={<BiData fontSize="1rem" />}
+                    >
+                      Collection
+                    </MenuItem>
+                  </MenuList>
+                </Portal>
+              </Menu>
+            </HStack>
           </HStack>
         </VStack>
         <RootpageRow siteId={siteId} />
