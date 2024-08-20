@@ -43,7 +43,7 @@ export const SiderailList = ({
   className,
 }: PropsWithChildren<SiderailListProps>): JSX.Element => {
   return (
-    <Disclosure defaultOpen={item.isCurrent}>
+    <Disclosure>
       {({ open: isOpen }) => (
         <li className={compoundStyles.container({ isOpen, className })}>
           <div className={compoundStyles.header({ isOpen })}>
