@@ -2,8 +2,6 @@
 
 # Exit immediately if a command exits with a non-zero status.
 set -e
-# Exit if any command in a pipeline fails.
-set -o pipefail
 
 # Helper function to calculate duration
 calculate_duration() {
@@ -78,6 +76,12 @@ curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scrip
 echo "Building..."
 rm -rf scripts/
 curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/build.sh | bash
+
+# Check if the 'out' folder exists
+if [ ! -d "./out" ]; then
+  echo "Error: 'out' folder not found. Build failed."
+  exit 1
+fi
 
 ls -al
 find ./out -type f | wc -l
