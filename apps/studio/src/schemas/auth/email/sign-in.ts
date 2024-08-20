@@ -1,11 +1,11 @@
 import { z } from "zod"
 
 import { OTP_LENGTH } from "~/lib/auth"
-import { isGovEmail } from "~/utils/email"
+import { isGovEmail, isVaptEmail } from "~/utils/email"
 import { normaliseEmail } from "~/utils/zod"
 
 export const emailSignInSchema = z.object({
-  email: normaliseEmail.refine(isGovEmail, {
+  email: normaliseEmail.refine((s) => isGovEmail(s) || isVaptEmail(s), {
     message: "Please sign in with an .gov.sg email address.",
   }),
 })
