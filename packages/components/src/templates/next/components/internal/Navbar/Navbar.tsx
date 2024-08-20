@@ -2,7 +2,7 @@
 
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
-import { useOnClickOutside, useResizeObserver } from "usehooks-ts"
+import { useResizeObserver } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
@@ -35,7 +35,7 @@ export const Navbar = ({
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [siteHeaderBottomPx, setSiteHeaderBottomPx] = useState<number>()
+  const [mobileNavbarTopPx, setMobileNavbarTopPx] = useState<number>()
 
   const isMenuOpen = openNavItemIdx !== -1 || isHamburgerOpen
 
@@ -46,7 +46,7 @@ export const Navbar = ({
   const siteHeaderRef = useRef<HTMLDivElement>(null)
 
   const refreshMenuOffset = useCallback(() => {
-    setSiteHeaderBottomPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
+    setMobileNavbarTopPx(siteHeaderRef.current?.getBoundingClientRect().bottom)
   }, [])
 
   useResizeObserver({
@@ -60,25 +60,19 @@ export const Navbar = ({
     }
   }, [isHamburgerOpen])
 
-  const megaMenuRef = useRef(null)
   const activeNavRef = useRef(null)
-  const mobileMenuRef = useRef(null)
-
-  useOnClickOutside(
-    [activeNavRef, megaMenuRef, mobileMenuRef],
-    handleClickOutside,
-    "mouseup",
-  )
+  const mobileCloseButtonRef = useRef(null)
 
   useLayoutEffect(() => {
     if (isMenuOpen) {
       window.scrollTo({
         top: 0,
         left: 0,
+        behavior: isHamburgerOpen ? undefined : "smooth",
       })
       refreshMenuOffset()
     }
-  }, [isMenuOpen, refreshMenuOffset])
+  }, [isHamburgerOpen, isMenuOpen, refreshMenuOffset])
 
   return (
     <div className="relative flex flex-col">
@@ -140,6 +134,7 @@ export const Navbar = ({
             <div className="flex h-[68px] items-center lg:hidden">
               {isHamburgerOpen ? (
                 <IconButton
+                  ref={mobileCloseButtonRef}
                   onPress={() => {
                     setIsHamburgerOpen(false)
                     setOpenNavItemIdx(-1)
@@ -184,11 +179,11 @@ export const Navbar = ({
       )}
       {isHamburgerOpen && (
         <MobileNavMenu
-          ref={mobileMenuRef}
-          top={siteHeaderBottomPx}
+          top={mobileNavbarTopPx}
           items={items}
           openNavItemIdx={openNavItemIdx}
           setOpenNavItemIdx={setOpenNavItemIdx}
+          shards={[mobileCloseButtonRef]}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           LinkComponent={LinkComponent}
         />
