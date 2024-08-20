@@ -26,8 +26,9 @@ const KeyStatistics = ({ title, statistics }: KeyStatisticsProps) => {
         {title}
       </h2>
       <div className="flex flex-col flex-wrap gap-x-8 gap-y-12 md:flex-row">
-        {statistics.slice(0, MAX_ITEMS).map(({ label, value }) => (
+        {statistics.slice(0, MAX_ITEMS).map(({ label, value }, index) => (
           <div
+            key={index}
             className={`flex grow flex-col gap-3 ${
               ITEM_WIDTHS[Math.min(MAX_ITEMS, statistics.length)]
             }`}

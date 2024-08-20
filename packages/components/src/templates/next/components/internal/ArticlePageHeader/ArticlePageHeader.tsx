@@ -29,8 +29,8 @@ const ArticlePageHeader = ({
             <BaseParagraph content={summary[0]} />
           ) : (
             <ul className="list-disc ps-7">
-              {summary.map((item) => (
-                <li key={Math.random()} className="pl-0.5 [&_p]:inline">
+              {summary.map((item, index) => (
+                <li key={index} className="pl-0.5 [&_p]:inline">
                   <BaseParagraph content={item} />
                 </li>
               ))}

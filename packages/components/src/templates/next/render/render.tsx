@@ -28,6 +28,7 @@ import {
 } from "../layouts"
 
 interface RenderComponentProps {
+  elementKey?: number
   component: IsomerComponent
   assetsBaseUrl?: IsomerSiteConfigProps["assetsBaseUrl"]
   LinkComponent?: any // Next.js link
@@ -38,38 +39,54 @@ export const renderComponent = ({
   component,
   assetsBaseUrl,
   LinkComponent,
+  elementKey,
 }: RenderComponentProps) => {
   switch (component.type) {
     case "accordion":
-      return <Accordion {...component} />
+      return <Accordion key={elementKey} {...component} />
     case "button":
-      return <Button {...component} LinkComponent={LinkComponent} />
+      return (
+        <Button key={elementKey} {...component} LinkComponent={LinkComponent} />
+      )
     case "callout":
-      return <Callout {...component} />
+      return <Callout key={elementKey} {...component} />
     case "hero":
-      return <Hero {...component} />
+      return <Hero key={elementKey} {...component} />
     case "iframe":
-      return <Iframe {...component} />
+      return <Iframe key={elementKey} {...component} />
     case "image":
       return (
         <Image
+          key={elementKey}
           {...component}
           assetsBaseUrl={assetsBaseUrl}
           LinkComponent={LinkComponent}
         />
       )
     case "infobar":
-      return <Infobar {...component} LinkComponent={LinkComponent} />
+      return (
+        <Infobar
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+        />
+      )
     case "infocards":
-      return <InfoCards {...component} />
+      return <InfoCards key={elementKey} {...component} />
     case "infocols":
-      return <InfoCols {...component} LinkComponent={LinkComponent} />
+      return (
+        <InfoCols
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+        />
+      )
     case "infopic":
-      return <Infopic {...component} />
+      return <Infopic key={elementKey} {...component} />
     case "keystatistics":
-      return <KeyStatistics {...component} />
+      return <KeyStatistics key={elementKey} {...component} />
     case "prose":
-      return <Prose {...component} />
+      return <Prose key={elementKey} {...component} />
     default:
       const _: never = component
       return <></>
