@@ -94,9 +94,7 @@ export const Navbar = ({
           <ul className={navItemContainer()} ref={navDesktopRef}>
             {items.map((item, index) => (
               <NavItem
-                top={siteHeaderBottomPx}
                 key={`${item.name}-${index}`}
-                megaMenuRef={megaMenuRef}
                 ref={openNavItemIdx === index ? activeNavRef : null}
                 {...item}
                 onCloseMegamenu={handleClickOutside}

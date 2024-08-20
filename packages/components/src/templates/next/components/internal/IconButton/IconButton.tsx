@@ -11,7 +11,7 @@ import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/focusRing"
 
 export const iconButtonStyles = tv({
-  base: "box-border w-fit cursor-pointer rounded text-center transition",
+  base: "box-border flex w-fit cursor-pointer items-center justify-center rounded text-center transition",
   extend: focusRing,
   variants: {
     variant: {
@@ -25,7 +25,7 @@ export const iconButtonStyles = tv({
       default: "",
     },
     size: {
-      base: "flex h-12 w-12 items-center justify-center p-2",
+      base: "h-12 w-12 p-2",
     },
   },
   compoundVariants: [
