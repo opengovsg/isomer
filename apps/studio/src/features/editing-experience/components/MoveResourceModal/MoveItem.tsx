@@ -2,37 +2,29 @@ import { Suspense, useMemo } from "react"
 import { Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
-import { useAtomValue } from "jotai"
 import { ErrorBoundary } from "react-error-boundary"
-import { BiData, BiFile, BiFolder } from "react-icons/bi"
+import { BiFile, BiFolder } from "react-icons/bi"
 
 import type { RouterOutput } from "~/utils/trpc"
-import { moveResourceAtom } from "../../atoms"
 
 type MoveItemProps = Pick<
-  RouterOutput["resource"]["getChildrenOf"]["items"][number],
+  RouterOutput["resource"]["getFolderChildrenOf"]["items"][number],
   "permalink" | "type"
 > & {
   onChangeResourceId: () => void
-  resourceId: string
 }
 
 const SuspendableMoveItem = ({
   permalink,
-  resourceId,
   type,
   onChangeResourceId,
 }: MoveItemProps) => {
-  const movedItem = useAtomValue(moveResourceAtom)
   const icon: JSX.Element = useMemo(() => {
     switch (type) {
       case "Folder":
         return <BiFolder />
-      case "CollectionPage":
-      case "Page":
+      case "RootPage":
         return <BiFile />
-      case "Collection":
-        return <BiData />
     }
   }, [type])
 

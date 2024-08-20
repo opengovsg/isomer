@@ -171,7 +171,6 @@ const MoveResourceContent = withSuspense(
                   return (
                     <MoveItem
                       {...child}
-                      resourceId={child.id}
                       key={child.id}
                       onChangeResourceId={() => {
                         setResourceStack((prev) => [
