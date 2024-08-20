@@ -63,13 +63,21 @@ async function main() {
       logDebug(
         `Processing resource with id ${resource.id}, fullPermalink: ${resource.fullPermalink}`,
       )
-      // assert the resource is a page (we don't need to write folders)
+
+      // Ensure the resource is a page (we don't need to write folders)
       if (
         (resource.type === "Page" ||
           resource.type === "CollectionPage" ||
           resource.type === "RootPage") &&
         resource.content
       ) {
+        // Inject page type and title into content before writing to file
+        resource.content.page = {
+          ...resource.content.page,
+          title: resource.title,
+          type: resource.type,
+        }
+
         await writeContentToFile(
           resource.fullPermalink,
           resource.content,
@@ -117,27 +125,12 @@ async function writeContentToFile(
       return
     }
 
-    let directoryPath: string
-    let fileName: string
+    const directoryPath =
+      parentId === null
+        ? path.join(__dirname, "schema")
+        : path.join(__dirname, "schema", path.dirname(fullPermalink))
 
-    if (parentId === null) {
-      // No enclosing folder if parentId is null
-      directoryPath = path.join(__dirname, "schema")
-      fileName = `${fullPermalink}.json`
-    } else {
-      directoryPath = path.join(
-        __dirname,
-        "schema",
-        path.dirname(fullPermalink),
-      )
-      fileName = `${path.basename(fullPermalink)}.json`
-    }
-
-    if (!directoryPath || !fileName) {
-      console.error("Error: directoryPath or fileName is undefined")
-      return
-    }
-
+    const fileName = `${path.basename(fullPermalink)}.json`
     const filePath = path.join(directoryPath, fileName)
 
     // Create directories if they don't exist
@@ -184,7 +177,7 @@ async function writeJsonToFile(content: any, filename: string) {
     fs.mkdirSync(directoryPath, { recursive: true })
 
     const filePath = path.join(directoryPath, filename)
-    fs.writeFileSync(filePath, JSON.stringify(content, null, 2), "utf-8")
+    fs.writeFileSync(filePath, JSON.stringify(content), "utf-8")
 
     logDebug(`Successfully wrote file: ${filePath}`)
   } catch (error) {

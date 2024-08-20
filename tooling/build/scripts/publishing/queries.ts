@@ -7,7 +7,10 @@ export const GET_ALL_RESOURCES_WITH_FULL_PERMALINKS = `
         r.permalink,
         r."parentId",
         r.type,
-        CASE WHEN r.type = 'Page' THEN b."content" ELSE NULL END AS content,
+        CASE 
+            WHEN r.type IN ('Page', 'CollectionPage', 'RootPage') THEN b."content" 
+            ELSE NULL 
+        END AS content,
         r.permalink AS "fullPermalink",
         r."publishedVersionId"
     FROM
@@ -26,30 +29,36 @@ export const GET_ALL_RESOURCES_WITH_FULL_PERMALINKS = `
         r.permalink,
         r."parentId",
         r.type,
-        CASE WHEN r.type = 'Page' THEN b."content" ELSE NULL END AS content,
+        CASE 
+            WHEN r.type IN ('Page', 'CollectionPage', 'RootPage') THEN b."content" 
+            ELSE NULL 
+        END AS content,
         CONCAT(path."fullPermalink", '/', r.permalink) AS "fullPermalink",
         r."publishedVersionId"
     FROM
         public."Resource" r
-        LEFT JOIN public."Version" v ON v."id" = r."publishedVersionId"
-        LEFT JOIN public."Blob" b ON v."blobId" = b.id
+    LEFT JOIN public."Version" v ON v."id" = r."publishedVersionId"
+    LEFT JOIN public."Blob" b ON v."blobId" = b.id
 
         -- This join determines if the recursion continues if there are more rows
-        INNER JOIN "resourcePath" path ON r."parentId" = path.id
+    INNER JOIN "resourcePath" path ON r."parentId" = path.id
     WHERE
-        r."siteId" = $1 AND (r.type = 'Folder' OR (r.type = 'Page' AND b."content" IS NOT NULL))
+        r."siteId" = $1 
+        AND r.type IN ('Folder', 'Page', 'CollectionPage', 'RootPage')
     )
-    SELECT * FROM "resourcePath";
-`;
+
+    -- We are only concerned with resources where the publishedVersionId exists
+    SELECT * FROM "resourcePath" WHERE "publishedVersionId" IS NOT NULL;
+`
 
 export const GET_NAVBAR = `
   SELECT content FROM public."Navbar" WHERE "siteId" = $1;
-`;
+`
 
 export const GET_FOOTER = `
   SELECT content FROM public."Footer" WHERE "siteId" = $1;
-`;
+`
 
 export const GET_CONFIG = `
   SELECT config FROM public."Site" WHERE "id" = $1;
-`;
+`
