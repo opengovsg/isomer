@@ -49,6 +49,9 @@ const InfoCardsBaseSchema = Type.Object({
       default: "This is an optional description for the Cards component",
     }),
   ),
+  maxColumns: Type.Optional(
+    Type.Union([Type.Literal(1), Type.Literal(2), Type.Literal(3)]),
+  ),
 })
 
 const InfoCardsWithImageSchema = Type.Object(
@@ -100,5 +103,4 @@ export type SingleCardWithImageProps = Static<
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
   LinkComponent?: any // Next.js link
   sectionIdx?: number // TODO: Remove this property, only used in classic theme
-  maxColumns?: 1 | 2 | 3
 }
