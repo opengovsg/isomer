@@ -104,7 +104,7 @@ export const Navbar = ({
                     currIdx === index ? -1 : index,
                   )
                 }}
-                isOpen={openNavItemIdx === index}
+                isOpen={openNavItemIdx === index && !isHamburgerOpen}
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 LinkComponent={LinkComponent}
               />
