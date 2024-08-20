@@ -2,6 +2,7 @@ import { BiChevronRight } from "react-icons/bi"
 
 import type { BreadcrumbProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { Link } from "../Link"
 
 const breadcrumbStyles = tv({
   slots: {
@@ -17,14 +18,19 @@ const compoundStyles = breadcrumbStyles()
 
 const Breadcrumb = ({ links, LinkComponent = "a" }: BreadcrumbProps) => {
   const [root, ...rest] = links
+  const last = rest.pop()
   return (
     <nav aria-label="Breadcrumb">
       <ol role="list" className={compoundStyles.nav()}>
         {root && (
           <li className={compoundStyles.container()}>
-            <LinkComponent href={root.url} className={compoundStyles.link()}>
+            <Link
+              LinkComponent={LinkComponent}
+              href={root.url}
+              className={compoundStyles.link()}
+            >
               {root.title}
-            </LinkComponent>
+            </Link>
           </li>
         )}
         {rest.map((link, index) => {
@@ -34,12 +40,25 @@ const Breadcrumb = ({ links, LinkComponent = "a" }: BreadcrumbProps) => {
                 aria-hidden="true"
                 className={compoundStyles.icon()}
               />
-              <LinkComponent href={link.url} className={compoundStyles.link()}>
+              <Link
+                LinkComponent={LinkComponent}
+                href={link.url}
+                className={compoundStyles.link()}
+              >
                 {link.title}
-              </LinkComponent>
+              </Link>
             </li>
           )
         })}
+        {last && (
+          <li className={compoundStyles.container()}>
+            <BiChevronRight
+              aria-hidden="true"
+              className={compoundStyles.icon()}
+            />
+            <span>{last.title}</span>
+          </li>
+        )}
       </ol>
     </nav>
   )
