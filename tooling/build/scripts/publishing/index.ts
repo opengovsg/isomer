@@ -144,7 +144,7 @@ async function writeContentToFile(
     fs.mkdirSync(directoryPath, { recursive: true })
 
     // Write JSON content to file
-    fs.writeFileSync(filePath, JSON.stringify(content, null, 2), "utf-8")
+    fs.writeFileSync(filePath, JSON.stringify(content), "utf-8")
 
     logDebug(`Successfully wrote file: ${filePath}`)
   } catch (error) {
