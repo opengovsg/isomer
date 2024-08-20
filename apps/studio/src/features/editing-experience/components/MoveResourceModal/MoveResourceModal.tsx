@@ -22,6 +22,8 @@ import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "../../types"
 import { withSuspense } from "~/hocs/withSuspense"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 import { moveResourceAtom } from "../../atoms"
@@ -58,6 +60,7 @@ const MoveResourceContent = withSuspense(
     const [resourceStack, setResourceStack] = useState<PendingMoveResource[]>(
       [],
     )
+    const { siteId } = useQueryParse(sitePageSchema)
     const setMovedItem = useSetAtom(moveResourceAtom)
     const [{ title }] = trpc.resource.getMetadataById.useSuspenseQuery({
       resourceId,
@@ -65,6 +68,7 @@ const MoveResourceContent = withSuspense(
     const curResourceId = resourceStack[resourceStack.length - 1]?.resourceId
     const [children] = trpc.resource.getChildrenOf.useSuspenseQuery({
       resourceId: curResourceId ?? null,
+      siteId: String(siteId),
     })
     const utils = trpc.useUtils()
     const toast = useToast({ status: "success" })
