@@ -125,6 +125,7 @@ const processDanglingDirectory = async (fullPath, relativePath, name) => {
       url: child.permalink,
       description: child.summary,
     })),
+    maxColumns: 1,
   }
 
   const pageName = name.replace(/-/g, " ")
