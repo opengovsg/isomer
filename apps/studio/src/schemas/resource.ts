@@ -18,6 +18,7 @@ export const getMetadataSchema = z.object({
 
 export const getChildrenSchema = z.object({
   resourceId: z.union([bigIntSchema, z.null()]),
+  siteId: z.string().min(0),
 })
 
 export const moveSchema = z.object({

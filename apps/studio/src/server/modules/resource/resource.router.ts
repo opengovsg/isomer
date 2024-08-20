@@ -27,15 +27,14 @@ export const resourceRouter = router({
       return resource
     }),
 
-  // TODO: Hint to the frontend that this can never return
-  // a `RootPage`
   getChildrenOf: protectedProcedure
     .input(getChildrenSchema)
-    .query(async ({ input: { resourceId } }) => {
+    .query(async ({ input: { resourceId, siteId } }) => {
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
         .where("Resource.type", "!=", "RootPage")
+        .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
           type: Extract<
             "Folder" | "Page" | "Collection" | "CollectionPage",

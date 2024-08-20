@@ -82,6 +82,7 @@ const SideNavItem = ({
 }: SideNavItemProps) => {
   const [children] = trpc.resource.getChildrenOf.useSuspenseQuery({
     resourceId,
+    siteId,
   })
 
   const icon = ICON_MAPPINGS[resourceType]
