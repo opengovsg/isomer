@@ -7,6 +7,7 @@ import {
   Accordion,
   Button,
   Callout,
+  Contentpic,
   Hero,
   Iframe,
   Image,
@@ -17,7 +18,6 @@ import {
   KeyStatistics,
   Prose,
 } from "../components"
-import { Contentpic } from "../components/complex/Contentpic"
 import {
   ArticleLayout,
   CollectionLayout,
