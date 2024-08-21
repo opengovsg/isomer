@@ -1,8 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 const meta: Meta = {
   title: "Foundation/Typography",
   tags: ["!autodocs"],
+  parameters: {
+    chromatic: withChromaticModes(["desktop", "tablet", "mobile"]),
+  },
 }
 export default meta
 type Story = StoryObj<typeof meta>
