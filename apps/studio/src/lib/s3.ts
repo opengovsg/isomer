@@ -1,10 +1,8 @@
 import type {
-  CopyObjectCommandInput,
   PutObjectCommandInput,
   PutObjectTaggingCommandInput,
 } from "@aws-sdk/client-s3"
 import {
-  CopyObjectCommand,
   GetObjectTaggingCommand,
   PutObjectCommand,
   PutObjectTaggingCommand,
@@ -14,10 +12,10 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
 import { env } from "~/env.mjs"
 
-const { S3_REGION } = env
+const { NEXT_PUBLIC_S3_REGION } = env
 
 export const storage = new S3Client({
-  region: S3_REGION,
+  region: NEXT_PUBLIC_S3_REGION,
 })
 
 export const generateSignedPutUrl = async ({
