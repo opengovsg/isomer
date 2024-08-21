@@ -12,8 +12,12 @@ const coerceBoolean = z
 
 const s3Schema = z.object({
   NEXT_PUBLIC_S3_REGION: z.string().default("us-east-1"),
-  NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string(),
-  NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME: z.string(),
+  NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z
+    .string()
+    .default("d2k96d2ede95ew.cloudfront.net"),
+  NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME: z
+    .string()
+    .default("isomer-next-infra-vapt-assets-private-ab628e1"),
 })
 
 /**
