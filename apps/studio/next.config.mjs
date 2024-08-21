@@ -33,6 +33,7 @@ const ContentSecurityPolicy = `
     https://vitals.vercel-insights.com/v1/vitals
     https://*.amazonaws.com
     https://placehold.co
+    https://${env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME}.s3.${env.NEXT_PUBLIC_S3_REGION}.amazonaws.com
     ;
   worker-src 'self' blob:;
   ${env.NODE_ENV === "production" ? "upgrade-insecure-requests" : ""}
