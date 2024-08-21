@@ -47,15 +47,17 @@ const Breadcrumb = ({ links, LinkComponent = "a" }: BreadcrumbProps) => {
               >
                 {link.title}
               </Link>
+              {last && index === rest.length - 1 && (
+                <BiChevronRight
+                  aria-hidden="true"
+                  className={compoundStyles.icon()}
+                />
+              )}
             </li>
           )
         })}
         {last && (
           <li className={compoundStyles.container()}>
-            <BiChevronRight
-              aria-hidden="true"
-              className={compoundStyles.icon()}
-            />
             <span>{last.title}</span>
           </li>
         )}
