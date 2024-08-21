@@ -6,9 +6,9 @@
     "NODE_ENV",
     "DATABASE_URL",
     "SESSION_SECRET",
-    "S3_REGION",
+    "NEXT_PUBLIC_S3_REGION",
     "NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME",
-    "S3_ASSETS_BUCKET_NAME"
+    "NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME"
   ],
   "tasks": {
     "build": {

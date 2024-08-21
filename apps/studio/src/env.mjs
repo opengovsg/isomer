@@ -10,24 +10,27 @@ const coerceBoolean = z
   // make sure tranform worked
   .pipe(z.boolean())
 
+const s3Schema = z.object({
+  NEXT_PUBLIC_S3_REGION: z.string().default("us-east-1"),
+  NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string(),
+  NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME: z.string(),
+})
+
 /**
  * Specify your client-side environment variables schema here. This way you can ensure the app isn't
  * built with invalid env vars. To expose them to the client, prefix them with `NEXT_PUBLIC_`.
  */
-const client = z.object({
-  NEXT_PUBLIC_ENABLE_STORAGE: coerceBoolean.default("false"),
-  NEXT_PUBLIC_ENABLE_SGID: coerceBoolean.default("false"),
-  NEXT_PUBLIC_APP_URL: z.string().url().optional(),
-  NEXT_PUBLIC_APP_NAME: z.string().default("Starter Kit"),
-  NEXT_PUBLIC_APP_VERSION: z.string().default("0.0.0"),
-})
+const client = z
+  .object({
+    NEXT_PUBLIC_ENABLE_STORAGE: coerceBoolean.default("false"),
+    NEXT_PUBLIC_ENABLE_SGID: coerceBoolean.default("false"),
+    NEXT_PUBLIC_APP_URL: z.string().url().optional(),
+    NEXT_PUBLIC_APP_NAME: z.string().default("Starter Kit"),
+    NEXT_PUBLIC_APP_VERSION: z.string().default("0.0.0"),
+  })
+  .merge(s3Schema)
 
 /** Feature flags */
-const s3Schema = z.object({
-  S3_REGION: z.string().default("us-east-1"),
-  NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string(),
-  S3_ASSETS_BUCKET_NAME: z.string(),
-})
 
 const baseSgidSchema = z.object({
   SGID_CLIENT_ID: z.string().optional(),
@@ -108,10 +111,11 @@ const processEnv = {
   SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
   SENDGRID_FROM_ADDRESS: process.env.SENDGRID_FROM_ADDRESS,
   SESSION_SECRET: process.env.SESSION_SECRET,
-  S3_REGION: process.env.S3_REGION,
+  NEXT_PUBLIC_S3_REGION: process.env.NEXT_PUBLIC_S3_REGION,
   NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME:
     process.env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
-  S3_ASSETS_BUCKET_NAME: process.env.S3_ASSETS_BUCKET_NAME,
+  NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME:
+    process.env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
   SGID_CLIENT_ID: process.env.SGID_CLIENT_ID,
   SGID_CLIENT_SECRET: process.env.SGID_CLIENT_SECRET,
   SGID_PRIVATE_KEY: process.env.SGID_PRIVATE_KEY,
