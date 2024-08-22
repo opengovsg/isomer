@@ -92,9 +92,14 @@ const PageLinkModalContent = ({
   const destination = watch("destination")
 
   const { data: selectedResource } =
-    trpc.resource.getWithFullPermalink.useQuery({
-      resourceId: destination,
-    })
+    trpc.resource.getWithFullPermalink.useQuery(
+      {
+        resourceId: destination,
+      },
+      {
+        enabled: destination !== "",
+      },
+    )
 
   return (
     <ModalContent>
@@ -245,9 +250,14 @@ const RadioContent = ({
   } = useDisclosure()
   const potentialInternalLinkResourceId = getResourceIdFromReferenceLink(data)
   const { data: potentialInternalLinkResource } =
-    trpc.resource.getWithFullPermalink.useQuery({
-      resourceId: potentialInternalLinkResourceId,
-    })
+    trpc.resource.getWithFullPermalink.useQuery(
+      {
+        resourceId: potentialInternalLinkResourceId,
+      },
+      {
+        enabled: potentialInternalLinkResourceId !== "",
+      },
+    )
 
   switch (selectedLinkType) {
     case "page":
