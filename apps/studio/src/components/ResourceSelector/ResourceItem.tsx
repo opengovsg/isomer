@@ -34,8 +34,6 @@ const SuspendableResourceItem = ({
       case "CollectionPage":
       case "Page":
         return BiFile
-      case "RootPage":
-        return BiHome
       case "Collection":
         return BiData
     }
