@@ -19,6 +19,7 @@ import {
 } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
+import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 
 import { generateResourceUrl } from "~/features/editing-experience/components/utils"
@@ -73,14 +74,21 @@ const SuspendableModalContent = ({
       siteId,
       resourceId: Number(folderId),
     })
-  const { setValue, register, handleSubmit, watch, formState, getFieldState } =
-    useZodForm({
-      defaultValues: {
-        title: originalTitle,
-        permalink: originalPermalink,
-      },
-      schema: baseEditFolderSchema.omit({ siteId: true, resourceId: true }),
-    })
+  const {
+    setValue,
+    register,
+    handleSubmit,
+    watch,
+    control,
+    formState,
+    getFieldState,
+  } = useZodForm({
+    defaultValues: {
+      title: originalTitle,
+      permalink: originalPermalink,
+    },
+    schema: baseEditFolderSchema.omit({ siteId: true, resourceId: true }),
+  })
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
   const toast = useToast()
@@ -158,9 +166,18 @@ const SuspendableModalContent = ({
                   This will be applied to every child under this folder.
                 </FormHelperText>
               </FormLabel>
-              <Input
-                placeholder="This is a url for your new page"
-                {...register("permalink")}
+              <Controller
+                control={control}
+                name="permalink"
+                render={({ field: { onChange, ...field } }) => (
+                  <Input
+                    placeholder="This is a url for your folder"
+                    {...field}
+                    onChange={(e) => {
+                      onChange(generateResourceUrl(e.target.value))
+                    }}
+                  />
+                )}
               />
               {errors.permalink?.message && (
                 <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
