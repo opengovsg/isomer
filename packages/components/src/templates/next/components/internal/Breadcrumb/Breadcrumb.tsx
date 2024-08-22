@@ -6,7 +6,7 @@ import { Link } from "../Link"
 
 const breadcrumbStyles = tv({
   slots: {
-    nav: "flex flex-row flex-wrap items-center gap-2 text-base-content",
+    nav: "flex flex-row flex-wrap items-center gap-1 text-base-content",
     container:
       "prose-label-md-regular flex flex-row items-center gap-1 last:prose-label-md-medium last:text-base-content-medium",
     link: "underline decoration-transparent underline-offset-4 transition active:text-interaction-link-active hover:decoration-inherit",
@@ -31,6 +31,15 @@ const Breadcrumb = ({ links, LinkComponent = "a" }: BreadcrumbProps) => {
             >
               {root.title}
             </Link>
+            {
+              // Edge case, if there is only one child link in the breadcrumb
+              last && rest.length === 0 && (
+                <BiChevronRight
+                  aria-hidden="true"
+                  className={compoundStyles.icon()}
+                />
+              )
+            }
           </li>
         )}
         {rest.map((link, index) => {

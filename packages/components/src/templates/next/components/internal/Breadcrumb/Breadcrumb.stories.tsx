@@ -16,7 +16,7 @@ const meta: Meta<BreadcrumbProps> = {
 export default meta
 type Story = StoryObj<typeof Breadcrumb>
 
-export const Default: Story = {
+export const Grandchild: Story = {
   args: {
     links: [
       {
@@ -30,6 +30,32 @@ export const Default: Story = {
       {
         title: "Steven Pinker's Rationality",
         url: "/irrationality/individuals/pinker-rationality",
+      },
+    ],
+  },
+}
+
+export const SingleChild: Story = {
+  args: {
+    links: [
+      {
+        title: "Irrationality",
+        url: "/irrationality",
+      },
+      {
+        title: "For Individuals",
+        url: "/irrationality/individuals",
+      },
+    ],
+  },
+}
+
+export const NoChildren: Story = {
+  args: {
+    links: [
+      {
+        title: "Irrationality",
+        url: "/irrationality",
       },
     ],
   },
