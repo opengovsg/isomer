@@ -1,6 +1,6 @@
 import type { IconType } from "react-icons"
 import { Suspense, useMemo } from "react"
-import { Box, HStack, Icon, Mark, Text } from "@chakra-ui/react"
+import { Box, HStack, Icon, Mark, Skeleton, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import fuzzysort from "fuzzysort"
@@ -99,7 +99,7 @@ export const ResourceItem = (props: ResourceItemProps) => {
             </Box>
           )}
         >
-          <Suspense>
+          <Suspense fallback={<Skeleton />}>
             <SuspendableResourceItem {...props} />
           </Suspense>
         </ErrorBoundary>
