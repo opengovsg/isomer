@@ -5,7 +5,7 @@ import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { env } from "~/env.mjs"
 import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
 
-const { S3_ASSETS_BUCKET_NAME } = env
+const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
 
 export const getFileKey = ({
   siteId,
@@ -19,7 +19,7 @@ export const getFileKey = ({
 
 export const getPresignedPutUrl = async ({ key }: { key: string }) => {
   return generateSignedPutUrl({
-    Bucket: S3_ASSETS_BUCKET_NAME,
+    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
     Key: key,
   })
 }
@@ -27,6 +27,6 @@ export const getPresignedPutUrl = async ({ key }: { key: string }) => {
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
   await deleteFile({
     Key: key,
-    Bucket: S3_ASSETS_BUCKET_NAME,
+    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
   })
 }

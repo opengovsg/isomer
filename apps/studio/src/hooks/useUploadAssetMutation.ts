@@ -52,7 +52,7 @@ export const useUploadAssetMutation = ({
       await handleUpload({ file, presignedPutUrl })
 
       return {
-        path: fileKey,
+        path: `/${fileKey}`,
       }
     },
     {
