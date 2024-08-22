@@ -24,11 +24,12 @@ export const Grandchild: Story = {
         url: "/irrationality",
       },
       {
-        title: "For Individuals",
+        title: "For Individuals this is a long long long long long long child",
         url: "/irrationality/individuals",
       },
       {
-        title: "Steven Pinker's Rationality",
+        title:
+          "Steven Pinker's Rationality the quick brown fox jumps over the lazy",
         url: "/irrationality/individuals/pinker-rationality",
       },
     ],
