@@ -24,11 +24,11 @@ export const Default: Story = {
   },
 }
 
-export const HalfWidth: Story = {
+export const Smaller: Story = {
   args: {
     src: "https://placehold.co/200x200",
     alt: "alt",
-    width: 50,
+    size: "smaller",
   },
 }
 

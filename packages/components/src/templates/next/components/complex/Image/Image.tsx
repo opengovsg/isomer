@@ -14,28 +14,16 @@ const createImageStyles = tv({
   },
   variants: {
     size: {
-      small: {
-        image: "min-w-full xs:min-w-[67%] md:min-w-[33%] lg:min-w-0",
+      smaller: {
+        image: "min-w-full max-w-full md:min-w-[67%] lg:min-w-[50%]",
       },
-      medium: {
-        image: "min-w-full xs:min-w-[33%] md:min-w-0",
+      default: {
+        image: "min-w-full max-w-full",
       },
-      large: { image: "min-w-0" },
     },
   },
 })
 const compoundStyles = createImageStyles()
-
-// Enforce a certain minimum width of image if screen size is small
-const getWidthSize = (width: ImageProps["width"]) => {
-  if (width === undefined || width >= 66) {
-    return "large"
-  } else if (width >= 40) {
-    return "medium"
-  } else {
-    return "small"
-  }
-}
 
 const ImageContainer = ({
   href,
@@ -62,7 +50,7 @@ const Image = ({
   src,
   alt,
   caption,
-  width,
+  size,
   href,
   assetsBaseUrl,
   LinkComponent,
@@ -77,9 +65,8 @@ const Image = ({
       <img
         src={imgSrc}
         alt={alt}
-        width={`${width ?? 100}%`}
         height="auto"
-        className={compoundStyles.image({ size: getWidthSize(width) })}
+        className={compoundStyles.image({ size: size ?? "default" })}
         onError={({ currentTarget }) => {
           currentTarget.onerror = null
           currentTarget.src = `${assetsBaseUrl}/placeholder_no_image.png`

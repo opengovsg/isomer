@@ -74,6 +74,7 @@ export const DEFAULT_BLOCKS: Record<
     type: "image",
     src: "/images/1.png",
     alt: "Add your alt text here",
+    size: "default",
   },
   infobar: {
     type: "infobar",

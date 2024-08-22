@@ -20,14 +20,21 @@ export const ImageSchema = Type.Object(
         title: "Image caption",
       }),
     ),
-    width: Type.Optional(
-      Type.Integer({
-        title: "Image width",
-        description: "The width of the image",
-        exclusiveMinimum: 0,
-        maximum: 100,
-        default: 100,
-      }),
+    size: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal("default", { title: "Fill page width (recommended)" }),
+          Type.Literal("smaller", { title: "Small" }),
+        ],
+        {
+          title: "Image size",
+          description:
+            "On mobile, images will always fill up to the page width even if you choose “Smaller”.",
+          format: "radio",
+          type: "string",
+          default: "default",
+        },
+      ),
     ),
     href: Type.Optional(
       Type.String({
