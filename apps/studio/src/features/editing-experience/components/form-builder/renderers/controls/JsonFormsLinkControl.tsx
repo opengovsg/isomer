@@ -1,7 +1,7 @@
 import type { UseRadioProps } from "@chakra-ui/react"
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { PropsWithChildren } from "react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/router"
 import {
   Box,
@@ -34,7 +34,7 @@ import { z } from "zod"
 import { ResourceSelector } from "~/components/ResourceSelector"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useZodForm } from "~/lib/form"
-import { getResourceIdFromReferenceLink } from "~/utils/link"
+import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 
 const LINK_TYPES = {
@@ -64,27 +64,27 @@ export const jsonFormsLinkControlTester: RankedTester = rankWith(
   ),
 )
 
-interface PageLinkModalProps {
+interface PageLinkModalContentProps {
   data: string
+  siteId: string
   description?: string
-  isOpen: boolean
   onClose: () => void
   onSave: (destination: string) => void
 }
 
-const PageLinkModal = ({
+const PageLinkModalContent = ({
   data,
+  siteId,
   description,
-  isOpen,
   onClose,
   onSave,
-}: PageLinkModalProps) => {
+}: PageLinkModalContentProps) => {
   const { handleSubmit, setValue, watch } = useZodForm({
     schema: z.object({
       destination: z.string(),
     }),
     defaultValues: {
-      destination: "",
+      destination: getResourceIdFromReferenceLink(data),
     },
   })
 
@@ -96,67 +96,87 @@ const PageLinkModal = ({
       resourceId: destination,
     })
 
-  useEffect(() => {
-    // set default values here instead
-    setValue("destination", getResourceIdFromReferenceLink(data))
-    // only done once per every time the modal is opened
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen])
+  return (
+    <ModalContent>
+      <ModalHeader pr="4.5rem">Edit link</ModalHeader>
+      <ModalCloseButton />
 
+      <ModalBody>
+        <form onSubmit={onSubmit}>
+          <FormControl isRequired>
+            <FormLabel id="destination">
+              {description || "When this link is clicked, open..."}
+            </FormLabel>
+
+            <ResourceSelector
+              siteId={siteId}
+              onChange={(resourceId) => setValue("destination", resourceId)}
+              selectedResourceId={destination}
+            />
+
+            {destination !== "" && (
+              <Box
+                mt="0.5rem"
+                p="0.75rem"
+                borderRadius="0.25rem"
+                bgColor="utility.feedback.info-subtle"
+              >
+                <Text textStyle="caption-1" color="base.content.strong">
+                  You selected /{selectedResource?.fullPermalink || ""}
+                </Text>
+              </Box>
+            )}
+          </FormControl>
+        </form>
+      </ModalBody>
+
+      <ModalFooter>
+        <HStack spacing="0.75rem">
+          <Button
+            variant="clear"
+            onClick={onClose}
+            color="base.content.default"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="solid"
+            onClick={onSubmit}
+            isDisabled={destination === ""}
+          >
+            Save changes
+          </Button>
+        </HStack>
+      </ModalFooter>
+    </ModalContent>
+  )
+}
+
+interface PageLinkModalProps extends PageLinkModalContentProps {
+  isOpen: boolean
+}
+
+const PageLinkModal = ({
+  data,
+  siteId,
+  description,
+  isOpen,
+  onClose,
+  onSave,
+}: PageLinkModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader pr="4.5rem">Edit link</ModalHeader>
-        <ModalCloseButton />
 
-        <ModalBody>
-          <form onSubmit={onSubmit}>
-            <FormControl isRequired>
-              <FormLabel id="destination">
-                {description || "When this link is clicked, open..."}
-              </FormLabel>
-
-              <ResourceSelector
-                onChange={(resourceId) => setValue("destination", resourceId)}
-                selectedResourceId={destination}
-              />
-
-              {destination !== "" && (
-                <Box
-                  mt="0.5rem"
-                  p="0.75rem"
-                  borderRadius="0.25rem"
-                  bgColor="utility.feedback.info-subtle"
-                >
-                  <Text textStyle="caption-1" color="base.content.strong">
-                    You selected /{selectedResource?.fullPermalink || ""}
-                  </Text>
-                </Box>
-              )}
-            </FormControl>
-          </form>
-        </ModalBody>
-
-        <ModalFooter>
-          <HStack spacing="0.75rem">
-            <Button
-              variant="clear"
-              onClick={onClose}
-              color="base.content.default"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="solid"
-              onClick={onSubmit}
-              isDisabled={destination === ""}
-            >
-              Save changes
-            </Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
+      {isOpen && (
+        <PageLinkModalContent
+          data={data}
+          siteId={siteId}
+          description={description}
+          onClose={onClose}
+          onSave={onSave}
+        />
+      )}
     </Modal>
   )
 }
@@ -235,11 +255,15 @@ const RadioContent = ({
         <>
           <PageLinkModal
             data={data}
+            siteId={siteId}
             description={description}
             isOpen={isPageLinkModalOpen}
             onClose={onPageLinkModalClose}
             onSave={(value) => {
-              const referenceId = `[resource:${siteId}:${value}]`
+              const referenceId = getReferenceLink({
+                siteId,
+                resourceId: value,
+              })
               handleChange(referenceId)
               onPageLinkModalClose()
             }}

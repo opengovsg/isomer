@@ -1,5 +1,5 @@
 interface GetReferenceLinkParams {
-  siteId: number
+  siteId: string
   resourceId: string
 }
 

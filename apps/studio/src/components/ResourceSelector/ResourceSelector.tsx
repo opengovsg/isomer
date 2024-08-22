@@ -17,12 +17,14 @@ import { trpc } from "~/utils/trpc"
 import { ResourceItem } from "./ResourceItem"
 
 interface ResourceSelectorProps {
+  siteId: string
   selectedResourceId?: string
   onChange: (resourceId: string) => void
   isDisabledFn?: (resourceId: string) => boolean
 }
 
 export const ResourceSelector = ({
+  siteId,
   selectedResourceId,
   onChange,
   isDisabledFn,
@@ -31,6 +33,7 @@ export const ResourceSelector = ({
   const [searchQuery, setSearchQuery] = useState<string>("")
   const currResourceId = parentIdStack[parentIdStack.length - 1]
   const [children] = trpc.resource.getChildrenOf.useSuspenseQuery({
+    siteId,
     resourceId: currResourceId ?? null,
   })
   const filteredChildren = children.filter((child) =>
@@ -51,6 +54,7 @@ export const ResourceSelector = ({
           type="search"
           placeholder="Start typing to search, or choose from the list below"
           mb="0.5rem"
+          value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </InputGroup>
