@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import type { BreadcrumbProps } from "~/interfaces"
 import Breadcrumb from "./Breadcrumb"
 
@@ -17,6 +19,9 @@ export default meta
 type Story = StoryObj<typeof Breadcrumb>
 
 export const Grandchild: Story = {
+  parameters: {
+    chromatic: withChromaticModes(["desktop", "mobile"]),
+  },
   args: {
     links: [
       {
