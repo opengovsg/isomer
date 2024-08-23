@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { generateBasePermalinkSchema } from "./common"
+
 const NEW_PAGE_LAYOUT_VALUES = [
   "article",
   "content",
@@ -7,6 +9,12 @@ const NEW_PAGE_LAYOUT_VALUES = [
 
 export const MAX_TITLE_LENGTH = 150
 export const MAX_PAGE_URL_LENGTH = 250
+
+const permalinkSchema = generateBasePermalinkSchema("page")
+  .min(1, { message: "Enter a URL for this page" })
+  .max(MAX_PAGE_URL_LENGTH, {
+    message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
+  })
 
 export const getEditPageSchema = z.object({
   pageId: z.number().min(1),
@@ -55,18 +63,7 @@ export const createPageSchema = z.object({
     .max(MAX_TITLE_LENGTH, {
       message: `Page title should be shorter than ${MAX_TITLE_LENGTH} characters.`,
     }),
-  permalink: z
-    .string({
-      required_error: "Enter a URL for this page.",
-    })
-    // Using `*` instead of `+` to allow empty strings, so the correct required error message is shown instead of the regex error message.
-    .regex(/^[a-z0-9\-]*$/, {
-      message: "Only lowercase alphanumeric characters and hyphens are allowed",
-    })
-    .min(1, { message: "Enter a URL for this page" })
-    .max(MAX_PAGE_URL_LENGTH, {
-      message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
-    }),
+  permalink: permalinkSchema,
   layout: z.enum(NEW_PAGE_LAYOUT_VALUES).default("content"),
   siteId: z.number().min(1),
   // NOTE: implies that top level pages are allowed

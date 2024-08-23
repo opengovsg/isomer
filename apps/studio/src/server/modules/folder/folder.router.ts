@@ -56,7 +56,7 @@ export const folderRouter = router({
           id: c.id,
           permalink: c.permalink,
           title: c.title,
-          type: ResourceType.Folder,
+          type: c.type,
         }
       })
 
@@ -76,7 +76,7 @@ export const folderRouter = router({
         .updateTable("Resource")
         .where("Resource.id", "=", resourceId)
         .where("Resource.siteId", "=", Number(siteId))
-        .where("Resource.type", "=", "Folder")
+        .where("Resource.type", "in", ["Folder", "Collection"])
         .set({
           permalink,
           title,
