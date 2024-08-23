@@ -3,13 +3,13 @@ import { Footer, Masthead, Navbar } from "../../components/internal"
 
 export const Skeleton = ({
   site,
+  layout,
   LinkComponent,
-  ScriptComponent,
   children,
 }: React.PropsWithChildren<
   Pick<
     IsomerPageSchemaType,
-    "site" | "page" | "LinkComponent" | "ScriptComponent"
+    "site" | "page" | "layout" | "LinkComponent" | "ScriptComponent"
   >
 >) => {
   const isStaging = site.environment === "staging"
@@ -21,10 +21,10 @@ export const Skeleton = ({
       <Navbar
         logoUrl={site.logoUrl}
         logoAlt={site.siteName}
+        layout={layout}
         search={site.search}
         items={site.navBarItems}
         LinkComponent={LinkComponent}
-        ScriptComponent={ScriptComponent}
       />
 
       {children}

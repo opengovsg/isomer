@@ -7,6 +7,7 @@ import { Skeleton } from "../Skeleton"
 const ArticleLayout = ({
   site,
   page,
+  layout,
   content,
   LinkComponent,
   ScriptComponent,
@@ -20,6 +21,7 @@ const ArticleLayout = ({
     <Skeleton
       site={site}
       page={page}
+      layout={layout}
       LinkComponent={LinkComponent}
       ScriptComponent={ScriptComponent}
     >

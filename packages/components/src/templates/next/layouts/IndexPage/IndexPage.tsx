@@ -28,6 +28,7 @@ const compoundStyles = createIndexPageLayoutStyles()
 const IndexPageLayout = ({
   site,
   page,
+  layout,
   content,
   LinkComponent = "a",
   ScriptComponent,
@@ -47,6 +48,7 @@ const IndexPageLayout = ({
     <Skeleton
       site={site}
       page={page}
+      layout={layout}
       LinkComponent={LinkComponent}
       ScriptComponent={ScriptComponent}
     >

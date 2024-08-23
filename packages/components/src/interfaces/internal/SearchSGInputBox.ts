@@ -1,8 +1,5 @@
-export interface SearchSGProps {
+export interface SearchSGInputBoxProps {
   type: "searchSG"
   clientId: string
-}
-
-export interface SearchSGInputBoxProps extends SearchSGProps {
-  ScriptComponent?: any // Next.js script
+  isOpen?: boolean
 }
