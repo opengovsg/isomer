@@ -67,7 +67,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
           <BiChevronDown className={chevron({ isOpen })} />
         </button>
         {isOpen && (
-          <div className="absolute left-0 right-0 top-full">
+          <div className="absolute left-0 right-0 top-full z-50">
             <div className="absolute bottom-0 left-0 right-0 top-full z-[1] h-screen bg-canvas-overlay/40" />
             <FocusOn
               onClickOutside={onCloseMegamenu}
