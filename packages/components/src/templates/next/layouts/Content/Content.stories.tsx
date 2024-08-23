@@ -40,7 +40,8 @@ export const Default: Story = {
             summary: "",
             children: [
               {
-                title: "Irrationality",
+                title:
+                  "Irrationality this should have a long long long long long long long title that wraps to the max width of the content header, and truncates if necessary",
                 permalink: "/parent/rationality",
                 lastModified: "",
                 layout: "content",
