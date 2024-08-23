@@ -4,7 +4,7 @@ import {
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
-import { db, ResourceType } from "../database"
+import { db } from "../database"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
