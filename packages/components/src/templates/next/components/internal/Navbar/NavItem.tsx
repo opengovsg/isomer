@@ -1,5 +1,5 @@
 import { forwardRef } from "react"
-import { Dialog } from "@headlessui/react"
+import { FocusOn } from "react-focus-on"
 import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 
 import type {
@@ -7,6 +7,7 @@ import type {
   NavbarProps,
 } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
+import { IconButton } from "../IconButton"
 
 interface NavbarItemProps
   extends BaseNavbarItemProps,
@@ -14,8 +15,6 @@ interface NavbarItemProps
   isOpen: boolean
   onClick: () => void
   onCloseMegamenu: () => void
-  megaMenuRef: React.RefObject<HTMLDivElement>
-  top: number | undefined
 }
 
 const navbarItemStyles = tv({
@@ -48,8 +47,6 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
       isOpen,
       onClick,
       onCloseMegamenu,
-      megaMenuRef,
-      top,
     },
     ref,
   ): JSX.Element => {
@@ -70,61 +67,58 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
           <BiChevronDown className={chevron({ isOpen })} />
         </button>
         {isOpen && (
-          <Dialog
-            open={isOpen}
-            onClose={onCloseMegamenu}
-            className="fixed inset-0 bg-canvas-overlay/40"
-            style={{
-              top,
-            }}
-          >
-            <div ref={megaMenuRef} className={megamenu()}>
-              <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 pb-16 pt-12">
-                <div className="flex w-full flex-row items-start">
-                  <div className="flex flex-col gap-1">
-                    <h1 className="prose-display-sm text-base-content">
-                      {name}
-                    </h1>
-                    {description && (
-                      <p className="prose-label-sm-regular text-base-content-subtle">
-                        {description}
-                      </p>
-                    )}
+          <div className="absolute left-0 right-0 top-full">
+            <div className="absolute bottom-0 left-0 right-0 top-full z-[1] h-screen bg-canvas-overlay/40" />
+            <FocusOn
+              onClickOutside={onCloseMegamenu}
+              onEscapeKey={onCloseMegamenu}
+            >
+              <div className={megamenu()}>
+                <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 pb-16 pt-12">
+                  <div className="flex w-full flex-row items-start">
+                    <div className="flex flex-col gap-1">
+                      <h1 className="prose-display-sm text-base-content">
+                        {name}
+                      </h1>
+                      {description && (
+                        <p className="prose-label-sm-regular text-base-content-subtle">
+                          {description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Spacer */}
+                    <div className="flex-1" />
+
+                    <IconButton
+                      icon={BiX}
+                      onPress={onCloseMegamenu}
+                      aria-label="Close navigation item"
+                    />
                   </div>
 
-                  {/* Spacer */}
-                  <div className="flex-1" />
-
-                  <button
-                    onClick={onCloseMegamenu}
-                    aria-label="Close navigation item"
-                    className="flex h-[2.125rem] w-[2.125rem] items-center justify-center text-[1.5rem]"
-                  >
-                    <BiX />
-                  </button>
+                  <ul className="grid grid-cols-3 gap-x-16 gap-y-8">
+                    {items.map((subItem) => (
+                      <li key={subItem.name}>
+                        <div className="flex flex-col gap-1.5">
+                          <LinkComponent
+                            href={subItem.url}
+                            className="prose-label-md-medium inline-flex items-center gap-1 text-base-content hover:underline"
+                          >
+                            {subItem.name}
+                            <BiRightArrowAlt className="text-[1.25rem]" />
+                          </LinkComponent>
+                          <p className="prose-label-sm-regular text-base-content-subtle">
+                            {subItem.description}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-
-                <ul className="grid grid-cols-3 gap-x-16 gap-y-8">
-                  {items.map((subItem) => (
-                    <li key={subItem.name}>
-                      <div className="flex flex-col gap-1.5">
-                        <LinkComponent
-                          href={subItem.url}
-                          className="prose-label-md-medium inline-flex items-center gap-1 text-base-content hover:underline"
-                        >
-                          {subItem.name}
-                          <BiRightArrowAlt className="text-[1.25rem]" />
-                        </LinkComponent>
-                        <p className="prose-label-sm-regular text-base-content-subtle">
-                          {subItem.description}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
               </div>
-            </div>
-          </Dialog>
+            </FocusOn>
+          </div>
         )}
       </li>
     )
