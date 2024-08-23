@@ -3,7 +3,6 @@ import type { CollectionCardProps } from "~/interfaces"
 import { getBreadcrumbFromSiteMap, getSitemapAsArray } from "~/utils"
 import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
-import CollectionPageHeader from "./CollectionPageHeader"
 
 const getCollectionItems = (
   siteMap: IsomerSitemap,
@@ -89,6 +88,7 @@ const getCollectionItems = (
 const CollectionLayout = ({
   site,
   page,
+  layout,
   LinkComponent,
   ScriptComponent,
 }: CollectionPageSchemaType) => {
@@ -105,6 +105,7 @@ const CollectionLayout = ({
     <Skeleton
       site={site}
       page={page}
+      layout={layout}
       LinkComponent={LinkComponent}
       ScriptComponent={ScriptComponent}
     >

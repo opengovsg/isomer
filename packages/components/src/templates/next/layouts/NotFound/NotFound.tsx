@@ -5,6 +5,7 @@ import { Skeleton } from "../Skeleton"
 const NotFoundLayout = ({
   site,
   page,
+  layout,
   LinkComponent = "a",
   ScriptComponent = "script",
 }: NotFoundPageSchemaType) => {
@@ -12,6 +13,7 @@ const NotFoundLayout = ({
     <Skeleton
       site={site}
       page={page}
+      layout={layout}
       LinkComponent={LinkComponent}
       ScriptComponent={ScriptComponent}
     >

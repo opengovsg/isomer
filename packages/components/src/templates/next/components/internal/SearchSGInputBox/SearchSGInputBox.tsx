@@ -1,19 +1,23 @@
+"use client"
+
+import { useEffect } from "react"
+import { usePathname } from "next/navigation"
+
 import type { SearchSGInputBoxProps } from "~/interfaces"
 
 const SearchSGInputBox = ({
   clientId,
-  ScriptComponent = "script",
 }: Omit<SearchSGInputBoxProps, "type">) => {
-  return (
-    <>
-      <ScriptComponent
-        id="searchsg-config"
-        src={`https://api.search.gov.sg/v1/searchconfig.js?clientId=${clientId}`}
-        defer
-      ></ScriptComponent>
-      <div id="searchsg-searchbar" />
-    </>
-  )
+  const pathname = usePathname()
+
+  useEffect(() => {
+    const scriptTag = document.createElement("script")
+    scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${clientId}`
+    scriptTag.setAttribute("defer", "")
+    document.body.appendChild(scriptTag)
+  }, [clientId, pathname])
+
+  return <div id="searchsg-searchbar" />
 }
 
 export default SearchSGInputBox

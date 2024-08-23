@@ -1,7 +1,6 @@
 import { BiUpArrowAlt } from "react-icons/bi"
 
-import type { ContentPageSchemaType, IsomerSitemap } from "~/engine"
-import type { SiderailProps } from "~/interfaces"
+import type { ContentPageSchemaType } from "~/engine"
 import { tv } from "~/lib/tv"
 import {
   getBreadcrumbFromSiteMap,
@@ -105,6 +104,7 @@ const compoundStyles = createContentLayoutStyles()
 const ContentLayout = ({
   site,
   page,
+  layout,
   content,
   LinkComponent = "a",
   ScriptComponent,
@@ -127,6 +127,7 @@ const ContentLayout = ({
     <Skeleton
       site={site}
       page={page}
+      layout={layout}
       LinkComponent={LinkComponent}
       ScriptComponent={ScriptComponent}
     >

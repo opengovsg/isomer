@@ -27,10 +27,10 @@ const { navItemContainer, navbarContainer, navbar, logo } = navbarStyles()
 export const Navbar = ({
   logoUrl,
   logoAlt,
+  layout,
   search,
   items,
   LinkComponent = "a",
-  ScriptComponent = "script",
 }: Omit<NavbarProps, "type">) => {
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
@@ -107,7 +107,7 @@ export const Navbar = ({
 
           <div className="flex flex-row gap-1">
             {/* Search icon */}
-            {search && !isHamburgerOpen && (
+            {search && !isHamburgerOpen && layout !== "search" && (
               <div className="flex h-[68px] items-center">
                 {isSearchOpen ? (
                   <IconButton
@@ -158,7 +158,7 @@ export const Navbar = ({
       </div>
 
       {/* Search bar */}
-      {search && (
+      {search && layout !== "search" && (
         <div
           className={`${
             isSearchOpen ? "block" : "hidden"
@@ -169,11 +169,7 @@ export const Navbar = ({
           )}
 
           {search.type === "searchSG" && (
-            <SearchSGInputBox
-              clientId={search.clientId}
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              ScriptComponent={ScriptComponent}
-            />
+            <SearchSGInputBox clientId={search.clientId} />
           )}
         </div>
       )}

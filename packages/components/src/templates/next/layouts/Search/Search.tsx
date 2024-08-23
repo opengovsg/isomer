@@ -4,6 +4,7 @@ import { Skeleton } from "../Skeleton"
 const SearchLayout = ({
   site,
   page,
+  layout,
   LinkComponent = "a",
   ScriptComponent = "script",
 }: SearchPageSchemaType) => {
@@ -15,6 +16,7 @@ const SearchLayout = ({
     <Skeleton
       site={site}
       page={page}
+      layout={layout}
       LinkComponent={LinkComponent}
       ScriptComponent={ScriptComponent}
     >
@@ -29,7 +31,7 @@ const SearchLayout = ({
             src={`https://api.search.gov.sg/v1/searchconfig.js?clientId=${clientId}&page=result`}
             defer
           />
-          <div id="searchsg-result-container" />
+          <div id="searchsg-result-container" className="h-[29.25rem]" />
         </>
       )}
     </Skeleton>

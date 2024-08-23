@@ -5,6 +5,7 @@ import { Skeleton } from "../Skeleton"
 const HomepageLayout = ({
   site,
   page,
+  layout,
   content,
   LinkComponent,
   ScriptComponent,
@@ -13,6 +14,7 @@ const HomepageLayout = ({
     <Skeleton
       site={site}
       page={page}
+      layout={layout}
       LinkComponent={LinkComponent}
       ScriptComponent={ScriptComponent}
     >
