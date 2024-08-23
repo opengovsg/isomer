@@ -22,6 +22,8 @@ import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "../../types"
 import { withSuspense } from "~/hocs/withSuspense"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
 import { moveResourceAtom } from "../../atoms"
 import { MoveItem } from "./MoveItem"
