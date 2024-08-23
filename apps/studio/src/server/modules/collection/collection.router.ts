@@ -98,6 +98,8 @@ export const collectionRouter = router({
         .where("parentId", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "=", ResourceType.CollectionPage)
+        .orderBy("Resource.type", "asc")
+        .orderBy("Resource.title", "asc")
         .limit(limit)
         .offset(offset)
         .select(defaultResourceSelect)
