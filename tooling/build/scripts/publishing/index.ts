@@ -124,14 +124,19 @@ async function writeContentToFile(
       return
     }
 
-    const sanitizedPermalink = path
-      // NOTE: normalization here will remove dual backslashes
-      // and also strip .. filepaths except as a prefix
-      .normalize(fullPermalink)
-      // NOTE: this matches on a leading ../
-      // or a leading ..\
-      // or a plain .. without any paths
-      .replace(/^(\.\.(\/|\\|$))+/, "")
+    // NOTE: do a join with ./ here so that
+    // we don't end up with an absolute path to a special unix folder
+    const sanitizedPermalink = path.join(
+      "./",
+      path
+        // NOTE: normalization here will remove dual backslashes
+        // and also strip .. filepaths except as a prefix
+        .normalize(fullPermalink)
+        // NOTE: this matches on a leading ../
+        // or a leading ..\
+        // or a plain .. without any paths
+        .replace(/^(\.\.(\/|\\|$))+/, ""),
+    )
 
     const directoryPath =
       parentId === null
