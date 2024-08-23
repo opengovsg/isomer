@@ -143,7 +143,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                 <Text textStyle="h4">General</Text>
                 <HStack w="full" justifyContent="space-between" pt="0.5rem">
                   <Text textColor="base.content.strong" textStyle="subhead-1">
-                    Display Site Notifications
+                    Display site notification
                   </Text>
 
                   <Toggle
@@ -165,7 +165,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                       textStyle="subhead-1"
                       pt="0.5rem"
                     >
-                      Notification Text
+                      Notification text
                     </Text>
 
                     <Input
@@ -175,9 +175,11 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                       value={notification}
                       {...register("notification", {})}
                     />
-                    <Text textColor="base.content.medium" textStyle="body-2">
-                      {100 - notification.length} characters left
-                    </Text>
+                    {!errors.notification?.message && (
+                      <Text textColor="base.content.medium" textStyle="body-2">
+                        {100 - notification.length} characters left
+                      </Text>
+                    )}
                     <FormErrorMessage>
                       {errors.notification?.message}
                     </FormErrorMessage>
