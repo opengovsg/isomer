@@ -12,6 +12,7 @@ const SearchSGInputBox = ({
 
   useEffect(() => {
     const scriptTag = document.createElement("script")
+    scriptTag.id = "searchsg-config"
     scriptTag.src = `https://api.search.gov.sg/v1/searchconfig.js?clientId=${clientId}`
     scriptTag.setAttribute("defer", "")
     document.body.appendChild(scriptTag)

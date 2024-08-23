@@ -1,5 +1,6 @@
 import { type SearchPageSchemaType } from "~/engine"
 import { Skeleton } from "../Skeleton"
+import SearchSG from "./SearchSG"
 
 const SearchLayout = ({
   site,
@@ -25,14 +26,7 @@ const SearchLayout = ({
 
       {/* SearchSG-powered search */}
       {site.search && site.search.type === "searchSG" && clientId && (
-        <>
-          <ScriptComponent
-            id="searchsg-config"
-            src={`https://api.search.gov.sg/v1/searchconfig.js?clientId=${clientId}&page=result`}
-            defer
-          />
-          <div id="searchsg-result-container" className="h-[29.25rem]" />
-        </>
+        <SearchSG clientId={clientId} />
       )}
     </Skeleton>
   )
