@@ -131,6 +131,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                 textStyle="body-2"
                 textColor="base.content.strong"
                 size="sm"
+                mt="1.75rem"
               >
                 Isomer Next is currently in Beta. To manage site settings that
                 are not displayed here, contact Isomer Support.
