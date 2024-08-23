@@ -1,5 +1,4 @@
-import type { PaginationState } from "@tanstack/react-table"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -11,6 +10,7 @@ import type { CollectionTableData } from "./types"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
+import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 import { TitleCell } from "../ResourceTable/TitleCell"
 import { CollectionTableMenu } from "./CollectionTableMenu"
@@ -58,39 +58,51 @@ export const CollectionTable = ({
     () => getColumns({ siteId, resourceId }),
     [siteId, resourceId],
   )
-  const { data: resources } = trpc.collection.list.useQuery(
+
+  const { data: totalRowCount = 0, isLoading: isCountLoading } =
+    trpc.resource.countWithoutRoot.useQuery({
+      siteId,
+      resourceId,
+    })
+
+  const { limit, onPaginationChange, skip, pagination, pageCount } =
+    useTablePagination({
+      pageIndex: 0,
+      pageSize: 25,
+      totalCount: totalRowCount,
+    })
+
+  const { data: resources, isFetching } = trpc.collection.list.useQuery(
     {
       siteId,
       resourceId,
+      limit,
+      offset: skip,
     },
     {
       keepPreviousData: true, // Required for table to show previous data while fetching next page
     },
   )
 
-  const totalRowCount = resources?.length ?? 0
-
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 25,
-  })
-
   const tableInstance = useReactTable<CollectionTableData>({
     columns,
     data: resources ?? [],
     getCoreRowModel: getCoreRowModel(),
     manualFiltering: true,
+    manualPagination: true,
     autoResetPageIndex: false,
     getPaginationRowModel: getPaginationRowModel(),
-    onPaginationChange: setPagination,
+    onPaginationChange,
     state: {
       pagination,
     },
+    pageCount,
   })
 
   return (
     <Datatable
       pagination
+      isFetching={isFetching || isCountLoading}
       emptyPlaceholder={
         <EmptyTablePlaceholder
           groupLabel="collection"
@@ -105,7 +117,6 @@ export const CollectionTable = ({
         overflowX: "auto",
       }}
       totalRowCount={totalRowCount}
-      totalRowCountString={`${totalRowCount} item${totalRowCount === 1 ? "" : "s"} in collection`}
     />
   )
 }

@@ -20,7 +20,7 @@ export const DatatablePagination = <T extends object>({
       onPageChange={(newPage) => {
         instance.setPageIndex(newPage - 1)
       }}
-      pageSize={10}
+      pageSize={paginationState.pageSize}
       totalCount={totalRowCount}
     />
   )

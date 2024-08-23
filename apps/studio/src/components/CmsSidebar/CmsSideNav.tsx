@@ -1,4 +1,3 @@
-import { Suspense } from "react"
 import { useRouter } from "next/router"
 import {
   Accordion,
@@ -9,10 +8,10 @@ import {
   Box,
   Flex,
   Icon,
-  Skeleton,
   Spacer,
   Text,
 } from "@chakra-ui/react"
+import { Button, Spinner } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFile, BiFolder, BiHomeAlt } from "react-icons/bi"
 
@@ -27,14 +26,12 @@ export const CmsSideNav = ({ siteId }: CmsSideNavProps) => {
     <Flex flexDir="column" px="1.25rem" py="1.75rem">
       <Box mt="4px">
         {/* TODO: update the resource id here */}
-        <Suspense fallback={<Skeleton />}>
-          <SideNavItem
-            resourceId={null}
-            permalink={"/"}
-            siteId={siteId}
-            resourceType="RootPage"
-          />
-        </Suspense>
+        <SideNavItem
+          resourceId={null}
+          permalink={"/"}
+          siteId={siteId}
+          resourceType="RootPage"
+        />
       </Box>
     </Flex>
   )
@@ -80,13 +77,30 @@ const SideNavItem = ({
   isDisabled,
   siteId,
 }: SideNavItemProps) => {
-  const [children] = trpc.resource.getChildrenOf.useSuspenseQuery({
-    resourceId,
-    siteId,
-  })
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    trpc.resource.getChildrenOf.useInfiniteQuery(
+      {
+        resourceId,
+        siteId,
+        limit: 25,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextOffset,
+      },
+    )
 
   const icon = ICON_MAPPINGS[resourceType]
   const router = useRouter()
+
+  if (isLoading || !data) {
+    return (
+      <Flex align="center" height="2rem" pl="2.75rem" pr="1rem">
+        <Spinner />
+      </Flex>
+    )
+  }
+
+  const { pages } = data
 
   return (
     <Accordion
@@ -184,24 +198,32 @@ const SideNavItem = ({
                   </Flex>
                 </AccordionButton>
               </Box>
-              <Suspense fallback={<Skeleton />}>
-                {isExpanded && (
-                  <AccordionPanel p="0" pl="1.25rem">
-                    {/* NOTE: The root page would already be on top level  */}
-                    {/* so we don't need to display it again here  */}
-                    {children.map((props) => {
-                      return (
-                        <SideNavItem
-                          resourceType={props.type}
-                          siteId={siteId}
-                          resourceId={props.id}
-                          permalink={props.permalink}
-                        />
-                      )
-                    })}
-                  </AccordionPanel>
-                )}
-              </Suspense>
+              {isExpanded && (
+                <AccordionPanel p="0" pl="1.25rem">
+                  {pages.map(({ items }) => {
+                    return items.map((props) => (
+                      <SideNavItem
+                        key={props.id}
+                        resourceType={props.type}
+                        siteId={siteId}
+                        resourceId={props.id}
+                        permalink={props.permalink}
+                      />
+                    ))
+                  })}
+                  {hasNextPage && (
+                    <Button
+                      variant="link"
+                      pl="2.75rem"
+                      size="xs"
+                      isLoading={isFetchingNextPage}
+                      onClick={() => fetchNextPage()}
+                    >
+                      Load more
+                    </Button>
+                  )}
+                </AccordionPanel>
+              )}
             </>
           )
         }}

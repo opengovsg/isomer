@@ -19,13 +19,13 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useAtom } from "jotai"
 import upperFirst from "lodash/upperFirst"
 
+import type { DeleteResourceModalState } from "../../types"
 import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 import {
   DEFAULT_RESOURCE_MODAL_STATE,
   deleteResourceModalAtom,
 } from "../../atoms"
-import { DeleteResourceModalState } from "../../types"
 
 const getResourceLabel = (
   resourceType: ResourceType,
@@ -42,7 +42,7 @@ const getResourceLabel = (
 }
 
 const getWarningText = (resourceType: ResourceType): string => {
-  if (!isAllowedToHaveChildren) {
+  if (!isAllowedToHaveChildren(resourceType)) {
     return "This cannot be undone"
   }
 

@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import { generateBasePermalinkSchema } from "./common"
+import { offsetPaginationSchema } from "./pagination"
 
 export const MAX_FOLDER_TITLE_LENGTH = 100
 export const MAX_FOLDER_PERMALINK_LENGTH = 200
@@ -25,10 +26,12 @@ export const createFolderSchema = z.object({
   parentFolderId: z.number().optional(),
 })
 
-export const readFolderSchema = z.object({
-  siteId: z.number().min(1),
-  resourceId: z.number().min(1),
-})
+export const readFolderSchema = z
+  .object({
+    siteId: z.number().min(1),
+    resourceId: z.number().min(1),
+  })
+  .merge(offsetPaginationSchema)
 
 export const baseEditFolderSchema = z.object({
   resourceId: z.string(),

@@ -48,7 +48,7 @@ const FolderPage: NextPageWithLayout = () => {
 
   const { folderId, siteId } = useQueryParse(folderPageSchema)
 
-  const [{ title }] = trpc.folder.readFolder.useSuspenseQuery({
+  const [{ title }] = trpc.folder.getMetadata.useSuspenseQuery({
     siteId: parseInt(siteId),
     resourceId: parseInt(folderId),
   })
