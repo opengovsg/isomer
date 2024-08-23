@@ -124,12 +124,26 @@ async function writeContentToFile(
       return
     }
 
+    // NOTE: do a join with ./ here so that
+    // we don't end up with an absolute path to a special unix folder
+    const sanitizedPermalink = path.join(
+      "./",
+      path
+        // NOTE: normalization here will remove dual backslashes
+        // and also strip .. filepaths except as a prefix
+        .normalize(fullPermalink)
+        // NOTE: this matches on a leading ../
+        // or a leading ..\
+        // or a plain .. without any paths
+        .replace(/^(\.\.(\/|\\|$))+/, ""),
+    )
+
     const directoryPath =
       parentId === null
         ? path.join(__dirname, "schema")
-        : path.join(__dirname, "schema", path.dirname(fullPermalink))
+        : path.join(__dirname, "schema", path.dirname(sanitizedPermalink))
 
-    const fileName = `${path.basename(fullPermalink)}.json`
+    const fileName = `${path.basename(sanitizedPermalink)}.json`
     const filePath = path.join(directoryPath, fileName)
 
     // Create directories if they don't exist
