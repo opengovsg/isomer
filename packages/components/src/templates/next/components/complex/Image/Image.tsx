@@ -4,6 +4,7 @@ import type { ImageProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils"
 import { Link } from "../../internal/Link"
+import ImageClient from "./ImageClient"
 
 const createImageStyles = tv({
   slots: {
@@ -73,16 +74,12 @@ const Image = ({
 
   return (
     <ImageContainer href={href} LinkComponent={LinkComponent}>
-      <img
+      <ImageClient
         src={imgSrc}
         alt={alt}
         width={getSizeWidth(size)}
-        height="auto"
         className={compoundStyles.image({ size: size ?? "default" })}
-        onError={({ currentTarget }) => {
-          currentTarget.onerror = null
-          currentTarget.src = `${assetsBaseUrl}/placeholder_no_image.png`
-        }}
+        assetsBaseUrl={assetsBaseUrl}
       />
 
       {caption && <p className={compoundStyles.caption()}>{caption}</p>}

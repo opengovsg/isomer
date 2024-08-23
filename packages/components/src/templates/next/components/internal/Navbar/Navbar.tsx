@@ -169,7 +169,10 @@ export const Navbar = ({
           )}
 
           {search.type === "searchSG" && (
-            <SearchSGInputBox clientId={search.clientId} />
+            <SearchSGInputBox
+              clientId={search.clientId}
+              isOpen={isSearchOpen}
+            />
           )}
         </div>
       )}
