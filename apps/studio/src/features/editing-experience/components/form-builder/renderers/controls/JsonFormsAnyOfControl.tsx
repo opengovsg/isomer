@@ -60,10 +60,15 @@ export function JsonFormsAnyOfControl({
       handleChange(path, {})
     } else {
       const newData = createDefaultValue(newSchema, rootSchema)
-      handleChange(path, {
-        ...data,
-        ...newData,
-      })
+
+      if (newSchema.type === "string") {
+        handleChange(path, newSchema.const || "")
+      } else {
+        handleChange(path, {
+          ...data,
+          ...newData,
+        })
+      }
     }
   }
 

@@ -29,7 +29,7 @@ export const ImageSchema = Type.Object(
         {
           title: "Image size",
           description:
-            "On mobile, images will always fill up to the page width even if you choose “Smaller”.",
+            "On mobile, images will always fill up to the page width even if you choose “Small”.",
           format: "radio",
           type: "string",
           default: "default",

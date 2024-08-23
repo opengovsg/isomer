@@ -25,6 +25,17 @@ const createImageStyles = tv({
 })
 const compoundStyles = createImageStyles()
 
+// NOTE: This should match the smallest width possible for that size
+const getSizeWidth = (size: ImageProps["size"]) => {
+  switch (size) {
+    case "smaller":
+      return "50%"
+    case "default":
+    default:
+      return "100%"
+  }
+}
+
 const ImageContainer = ({
   href,
   LinkComponent,
@@ -65,6 +76,7 @@ const Image = ({
       <img
         src={imgSrc}
         alt={alt}
+        width={getSizeWidth(size)}
         height="auto"
         className={compoundStyles.image({ size: size ?? "default" })}
         onError={({ currentTarget }) => {

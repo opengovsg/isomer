@@ -8,6 +8,7 @@ import { RenderEngine } from "@opengovsg/isomer-components"
 import { merge } from "lodash"
 
 import { withSuspense } from "~/hocs/withSuspense"
+import { useEnv } from "~/hooks/useEnv"
 import { trpc } from "~/utils/trpc"
 
 type PreviewProps = IsomerSchema & {
@@ -22,6 +23,7 @@ function SuspendablePreview({
   overrides = {},
   ...props
 }: PreviewProps) {
+  const { env } = useEnv()
   const [siteConfig] = trpc.site.getConfig.useSuspenseQuery({ id: siteId })
   const [{ content: footer }] = trpc.site.getFooter.useSuspenseQuery({
     id: siteId,
@@ -54,6 +56,7 @@ function SuspendablePreview({
         ...siteConfig,
         navBarItems: navbar,
         footerItems: footer,
+        assetsBaseUrl: `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`,
       }}
     />
   )

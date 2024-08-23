@@ -32,6 +32,7 @@ const ContentSecurityPolicy = `
     https://*.browser-intake-datadoghq.com
     https://vitals.vercel-insights.com/v1/vitals
     https://*.amazonaws.com
+    https://placehold.co
     ;
   worker-src 'self' blob:;
   ${env.NODE_ENV === "production" ? "upgrade-insecure-requests" : ""}
