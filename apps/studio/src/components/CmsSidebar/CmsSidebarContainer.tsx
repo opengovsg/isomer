@@ -49,7 +49,7 @@ export function CmsSidebarContainer({
           top={0}
           borderRight="1px solid"
           borderColor="base.divider.medium"
-          height="100vh"
+          height="100%"
           overflow="auto"
           css={{
             "&::-webkit-scrollbar": {
