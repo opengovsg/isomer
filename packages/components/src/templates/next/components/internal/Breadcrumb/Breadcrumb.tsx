@@ -1,3 +1,5 @@
+"use client"
+
 import type { ElementType } from "react"
 import type {
   BreadcrumbProps as AriaBreadcrumbProps,
