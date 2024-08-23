@@ -80,7 +80,7 @@ const CollectionClient = ({
             LinkComponent={LinkComponent}
             href="#"
             // TODO: Replace with a custom link component with all the styles
-            className="prose-body-base sticky top-8 mt-8 hidden items-center text-link underline-offset-4 hover:underline lg:flex"
+            className="prose-body-base sticky top-8 my-8 hidden items-center text-link underline-offset-4 hover:underline lg:flex"
           >
             <BiUpArrowAlt aria-hidden className="h-6 w-6" />
             Back to top
