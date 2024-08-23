@@ -1279,6 +1279,8 @@ export const NoTable: Story = {
         type: "localSearch",
         searchUrl: "/search",
       },
+      // TODO: Replace this with a more stable URL
+      assetsBaseUrl: "https://cms.isomer.gov.sg",
     },
     page: {
       permalink: "/parent/rationality",
@@ -1573,6 +1575,13 @@ export const NoTable: Story = {
             ],
           },
         ],
+      },
+      {
+        type: "image",
+        src: "/placeholder_no_image.png",
+        size: "smaller",
+        alt: "alt",
+        caption: "A caption",
       },
     ],
   },

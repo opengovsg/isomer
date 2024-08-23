@@ -24,11 +24,11 @@ export const Default: Story = {
   },
 }
 
-export const HalfWidth: Story = {
+export const Smaller: Story = {
   args: {
     src: "https://placehold.co/200x200",
     alt: "alt",
-    width: 50,
+    size: "smaller",
   },
 }
 
@@ -45,5 +45,22 @@ export const ImageWithInternalLink: Story = {
     src: "https://placehold.co/200x200",
     alt: "alt",
     href: "/faq",
+  },
+}
+
+export const InvalidImage: Story = {
+  args: {
+    src: "/invalid-image",
+    alt: "alt",
+    assetsBaseUrl: "https://cms.isomer.gov.sg",
+  },
+}
+
+export const ImageWithCaption: Story = {
+  args: {
+    src: "https://placehold.co/200x200",
+    alt: "alt",
+    caption:
+      "Good collaboration in product development can be critical. Good collaboration in product development can be critical. Good collaboration in product development can be critical. Good collaboration in product development can be critical.",
   },
 }

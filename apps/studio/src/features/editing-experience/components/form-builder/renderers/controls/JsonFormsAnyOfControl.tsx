@@ -1,6 +1,6 @@
 import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
 import { useEffect, useState } from "react"
-import { Box, FormControl } from "@chakra-ui/react"
+import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
   createDefaultValue,
@@ -8,7 +8,7 @@ import {
   rankWith,
 } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsAnyOfProps } from "@jsonforms/react"
-import { FormLabel, SingleSelect } from "@opengovsg/design-system-react"
+import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
@@ -26,6 +26,7 @@ export function JsonFormsAnyOfControl({
   uischema,
   uischemas,
   label,
+  description,
   handleChange,
   indexOfFittingSchema,
   data,
@@ -41,7 +42,7 @@ export function JsonFormsAnyOfControl({
   )
 
   const options = anyOfRenderInfos.map((anyOfRenderInfo) => {
-    const option = String(anyOfRenderInfo.schema.const || anyOfRenderInfo.label)
+    const option = String(anyOfRenderInfo.label || anyOfRenderInfo.schema.const)
 
     return {
       label: option.charAt(0).toUpperCase() + option.slice(1),
@@ -59,10 +60,15 @@ export function JsonFormsAnyOfControl({
       handleChange(path, {})
     } else {
       const newData = createDefaultValue(newSchema, rootSchema)
-      handleChange(path, {
-        ...data,
-        ...newData,
-      })
+
+      if (newSchema.type === "string") {
+        handleChange(path, newSchema.const || "")
+      } else {
+        handleChange(path, {
+          ...data,
+          ...newData,
+        })
+      }
     }
   }
 
@@ -76,15 +82,34 @@ export function JsonFormsAnyOfControl({
   return (
     <>
       <Box py="0.5rem">
-        <FormControl isRequired>
-          <FormLabel>{label || "Variant"}</FormLabel>
-          <SingleSelect
-            value={variant}
-            name={label}
-            items={options}
-            isClearable={false}
-            onChange={onChange}
-          />
+        <FormControl isRequired gap="0.5rem">
+          <FormLabel description={description}>{label || "Variant"}</FormLabel>
+
+          {schema.format === "radio" ? (
+            <RadioGroup
+              onChange={onChange}
+              value={options.find((option) => option.label === variant)?.value}
+            >
+              {options.map((option) => (
+                <Radio
+                  my="1px"
+                  key={option.label}
+                  value={option.value}
+                  allowDeselect={false}
+                >
+                  {option.label.charAt(0).toUpperCase() + option.label.slice(1)}
+                </Radio>
+              ))}
+            </RadioGroup>
+          ) : (
+            <SingleSelect
+              value={variant}
+              name={label}
+              items={options}
+              isClearable={false}
+              onChange={onChange}
+            />
+          )}
         </FormControl>
       </Box>
 

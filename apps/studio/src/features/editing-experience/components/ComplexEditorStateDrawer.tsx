@@ -174,18 +174,18 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         return true
       })
 
+      if (!isUploadingSuccessful) {
+        // NOTE: Do not save page if there are errors uploading assets
+        setPreviewPageState(newPageState)
+        return
+      }
+
       deleteAssets({ fileKeys: assetsToDelete })
 
       updatedBlocks[currActiveIdx] = newBlock
       newPageState = {
         ...previewPageState,
         content: updatedBlocks,
-      }
-
-      if (!isUploadingSuccessful) {
-        // NOTE: Do not save page if there are errors uploading assets
-        setPreviewPageState(newPageState)
-        return
       }
     }
 

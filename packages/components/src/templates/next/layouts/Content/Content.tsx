@@ -159,7 +159,11 @@ const ContentLayout = ({
             <TableOfContents {...tableOfContents} />
           )}
           <div>
-            {renderPageContent({ content: transformedContent, LinkComponent })}
+            {renderPageContent({
+              content: transformedContent,
+              assetsBaseUrl: site.assetsBaseUrl,
+              LinkComponent,
+            })}
           </div>
         </div>
       </div>
