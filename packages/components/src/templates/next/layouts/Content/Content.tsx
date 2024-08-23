@@ -1,5 +1,3 @@
-import { BiUpArrowAlt } from "react-icons/bi"
-
 import type { ContentPageSchemaType } from "~/engine"
 import { tv } from "~/lib/tv"
 import {
@@ -10,6 +8,7 @@ import {
   getTextAsHtml,
 } from "~/utils"
 import {
+  BackToTopLink,
   ContentPageHeader,
   Siderail,
   TableOfContents,
@@ -142,14 +141,7 @@ const ContentLayout = ({
         {sideRail && (
           <div className={compoundStyles.siderailContainer()}>
             <Siderail {...sideRail} LinkComponent={LinkComponent} />
-            <LinkComponent
-              href="#"
-              // TODO: Replace LinkComponent with a custom link component with all the styles
-              className="prose-body-base sticky top-8 my-8 flex items-center text-link underline-offset-4 hover:underline"
-            >
-              <BiUpArrowAlt aria-hidden className="h-6 w-6" />
-              Back to top
-            </LinkComponent>
+            <BackToTopLink />
           </div>
         )}
 
