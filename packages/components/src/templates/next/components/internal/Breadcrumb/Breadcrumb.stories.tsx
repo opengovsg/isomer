@@ -34,7 +34,7 @@ export const Grandchild: Story = {
       },
       {
         title:
-          "Steven Pinker's Rationality the quick brown fox jumps over the lazy",
+          "Steven Pinker's Rationality the quick brown fox jumps over the lazy dog",
         url: "/irrationality/individuals/pinker-rationality",
       },
     ],
