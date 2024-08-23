@@ -23,6 +23,7 @@ import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
 import { setNotificationSchema } from "~/schemas/site"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
+import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
 import { trpc } from "~/utils/trpc"
 
 const siteSettingsSchema = z.object({
@@ -194,7 +195,11 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                 <Button
                   type="submit"
                   isLoading={notificationMutation.isLoading}
-                  isDisabled={!isDirty}
+                  // NOTE: we only validate that it is non empty
+                  // because zod form prevents us from going over 100 characters.
+                  isDisabled={
+                    (notificationEnabled && !notification) || !isDirty
+                  }
                 >
                   Save settings
                 </Button>
@@ -207,5 +212,5 @@ const SiteSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-SiteSettingsPage.getLayout = AdminCmsSidebarLayout
+SiteSettingsPage.getLayout = AdminSidebarOnlyLayout
 export default SiteSettingsPage
