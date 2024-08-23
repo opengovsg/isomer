@@ -2,6 +2,28 @@ import type { ArticlePageHeaderProps } from "~/interfaces"
 import BaseParagraph from "../BaseParagraph"
 import Breadcrumb from "../Breadcrumb"
 
+const ArticleSummaryContent = ({
+  summary,
+}: Pick<ArticlePageHeaderProps, "summary">) => {
+  if (summary.length === 1 && summary[0] !== undefined) {
+    return <BaseParagraph content={summary[0]} />
+  }
+
+  if (summary.length > 1) {
+    return (
+      <ul className="list-disc ps-7">
+        {summary.map((item, index) => (
+          <li key={index} className="pl-0.5 [&_p]:inline">
+            <BaseParagraph content={item} />
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  return <></>
+}
+
 const ArticlePageHeader = ({
   breadcrumb,
   category,
@@ -25,17 +47,7 @@ const ArticlePageHeader = ({
         <p className="text-sm text-gray-800">{date}</p>
 
         <div className="text-xl tracking-tight text-gray-500 md:text-2xl">
-          {summary.length === 1 && summary[0] ? (
-            <BaseParagraph content={summary[0]} />
-          ) : (
-            <ul className="list-disc ps-7">
-              {summary.map((item, index) => (
-                <li key={index} className="pl-0.5 [&_p]:inline">
-                  <BaseParagraph content={item} />
-                </li>
-              ))}
-            </ul>
-          )}
+          <ArticleSummaryContent summary={summary} />
         </div>
       </div>
     </div>
