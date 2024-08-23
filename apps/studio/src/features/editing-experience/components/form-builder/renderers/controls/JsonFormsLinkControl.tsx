@@ -97,7 +97,7 @@ const PageLinkModalContent = ({
         resourceId: destination,
       },
       {
-        enabled: destination !== "",
+        enabled: !!destination,
       },
     )
 
@@ -255,7 +255,7 @@ const RadioContent = ({
         resourceId: potentialInternalLinkResourceId,
       },
       {
-        enabled: potentialInternalLinkResourceId !== "",
+        enabled: !!potentialInternalLinkResourceId,
       },
     )
 
@@ -279,7 +279,7 @@ const RadioContent = ({
             }}
           />
 
-          {potentialInternalLinkResourceId !== "" ? (
+          {!!potentialInternalLinkResourceId ? (
             <HStack mt="1rem">
               <VStack w="full" align="start">
                 <HStack>

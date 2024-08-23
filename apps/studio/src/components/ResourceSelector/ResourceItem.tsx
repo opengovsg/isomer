@@ -1,11 +1,12 @@
 import type { IconType } from "react-icons"
 import { Suspense, useMemo } from "react"
 import { Box, HStack, Icon, Mark, Skeleton, Text } from "@chakra-ui/react"
+import { dataAttr } from "@chakra-ui/utils"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import fuzzysort from "fuzzysort"
 import { ErrorBoundary } from "react-error-boundary"
-import { BiData, BiFile, BiFolder, BiHome, BiLockAlt } from "react-icons/bi"
+import { BiData, BiFile, BiFolder, BiLockAlt } from "react-icons/bi"
 
 import type { RouterOutput } from "~/utils/trpc"
 
@@ -57,18 +58,29 @@ const SuspendableResourceItem = ({
       variant="clear"
       w="full"
       justifyContent="flex-start"
-      color={isSelected ? "interaction.main.default" : "base.content.default"}
-      bgColor={isSelected ? "interaction.muted.main.active" : undefined}
+      color="base.content.default"
       isDisabled={isDisabled}
-      _active={{
-        bgColor: !isDisabled ? "interaction.tinted.main.active" : undefined,
+      data-selected={dataAttr(isSelected)}
+      _selected={{
+        color: "interaction.main.default",
+        bgColor: "interaction.muted.main.active",
+        _hover: {
+          bgColor: "unset",
+        },
       }}
-      _disabled={{ color: "interaction.support.disabled-content" }}
+      _active={{
+        bgColor: "interaction.tinted.main.active",
+      }}
+      _disabled={{
+        color: "interaction.support.disabled-content",
+        bgColor: "unset",
+        cursor: "not-allowed",
+        _hover: {
+          bgColor: "unset",
+        },
+      }}
       _hover={{
-        bgColor:
-          !isSelected && !isDisabled
-            ? "interaction.muted.main.hover"
-            : undefined,
+        bgColor: "interaction.muted.main.hover",
       }}
       pl="2.25rem"
       py="0.375rem"

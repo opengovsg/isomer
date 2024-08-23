@@ -30,7 +30,7 @@ export const ResourceSelector = ({
   isDisabledFn,
 }: ResourceSelectorProps) => {
   const [parentIdStack, setParentIdStack] = useState<string[]>([])
-  const [searchQuery, setSearchQuery] = useState<string>("")
+  const [searchQuery, setSearchQuery] = useState("")
   const currResourceId = parentIdStack[parentIdStack.length - 1]
   const [children] = trpc.resource.getChildrenOf.useSuspenseQuery({
     siteId,
