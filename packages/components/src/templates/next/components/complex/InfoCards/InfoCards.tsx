@@ -42,7 +42,7 @@ const createInfoCardsStyles = tv({
         grid: "md:grid-cols-2",
       },
       3: {
-        grid: "lg:grid-cols-3",
+        grid: "md:grid-cols-2 lg:grid-cols-3",
       },
     },
   },
