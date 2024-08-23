@@ -37,7 +37,7 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
   const pageNavItems: CmsSidebarItem[] = [
     {
       icon: BiFolder,
-      label: "Team spaces",
+      label: "Site content",
       href: `/sites/${siteId}`,
       isActive:
         router.asPath === `/sites/${siteId}` ||
