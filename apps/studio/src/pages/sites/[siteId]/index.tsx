@@ -3,8 +3,6 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   HStack,
-  MenuButton,
-  MenuList,
   Portal,
   Text,
   useDisclosure,
@@ -14,7 +12,6 @@ import { Button, Menu } from "@opengovsg/design-system-react"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 
-import { MenuItem } from "~/components/Menu"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
@@ -76,31 +73,40 @@ const SitePage: NextPageWithLayout = () => {
               </Text>
             </HStack>
             <Menu isLazy size="sm">
-              <MenuButton as={Button} size="md" justifySelf="flex-end">
-                Create new...
-              </MenuButton>
-              <Portal>
-                <MenuList>
-                  <MenuItem
-                    onClick={onFolderCreateModalOpen}
-                    icon={<BiFolder fontSize="1rem" />}
+              {({ isOpen }) => (
+                <>
+                  <Menu.Button
+                    isOpen={isOpen}
+                    as={Button}
+                    size="md"
+                    justifySelf="flex-end"
                   >
-                    Folder
-                  </MenuItem>
-                  <MenuItem
-                    onClick={onPageCreateModalOpen}
-                    icon={<BiFileBlank fontSize="1rem" />}
-                  >
-                    Page
-                  </MenuItem>
-                  <MenuItem
-                    onClick={onCollectionCreateModalOpen}
-                    icon={<BiData fontSize="1rem" />}
-                  >
-                    Collection
-                  </MenuItem>
-                </MenuList>
-              </Portal>
+                    Create new...
+                  </Menu.Button>
+                  <Portal>
+                    <Menu.List>
+                      <Menu.Item
+                        onClick={onFolderCreateModalOpen}
+                        icon={<BiFolder fontSize="1rem" />}
+                      >
+                        Folder
+                      </Menu.Item>
+                      <Menu.Item
+                        onClick={onPageCreateModalOpen}
+                        icon={<BiFileBlank fontSize="1rem" />}
+                      >
+                        Page
+                      </Menu.Item>
+                      <Menu.Item
+                        onClick={onCollectionCreateModalOpen}
+                        icon={<BiData fontSize="1rem" />}
+                      >
+                        Collection
+                      </Menu.Item>
+                    </Menu.List>
+                  </Portal>
+                </>
+              )}
             </Menu>
           </HStack>
         </VStack>
