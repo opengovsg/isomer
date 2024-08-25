@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react"
 import { Breadcrumb, Button, Menu } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
-import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
+import { BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
 import { MenuItem } from "~/components/Menu"
@@ -75,7 +75,7 @@ const FolderPage: NextPageWithLayout = () => {
                 p="0.5rem"
                 borderRadius="6px"
               >
-                <BiData />
+                <BiFolder />
               </Box>
               <Text as="h3" textStyle="h3">
                 {title}
