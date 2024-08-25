@@ -77,7 +77,9 @@ const FolderPage: NextPageWithLayout = () => {
               >
                 <BiData />
               </Box>
-              <Text textStyle="h3">{title}</Text>
+              <Text as="h3" textStyle="h3">
+                {title}
+              </Text>
             </HStack>
 
             <Spacer />

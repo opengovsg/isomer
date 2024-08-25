@@ -45,7 +45,9 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             >
               <BiData />
             </Box>
-            <Text textStyle="h3">{metadata.title}</Text>
+            <Text as="h3" textStyle="h3">
+              {metadata.title}
+            </Text>
           </HStack>
           <HStack align="center" gap="0.75rem">
             <Button onClick={onPageCreateModalOpen} size="sm">
