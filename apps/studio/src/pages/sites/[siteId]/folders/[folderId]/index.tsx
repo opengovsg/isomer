@@ -77,7 +77,7 @@ const FolderPage: NextPageWithLayout = () => {
               >
                 <BiFolder />
               </Box>
-              <Text as="h3" textStyle="h3">
+              <Text noOfLines={1} as="h3" textStyle="h3">
                 {title}
               </Text>
             </HStack>

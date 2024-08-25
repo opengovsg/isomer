@@ -45,7 +45,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             >
               <BiData />
             </Box>
-            <Text as="h3" textStyle="h3">
+            <Text noOfLines={1} as="h3" textStyle="h3">
               {metadata.title}
             </Text>
           </HStack>
