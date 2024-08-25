@@ -72,7 +72,9 @@ calculate_duration $start_time
 echo "Building site..."
 start_time=$(date +%s)
 rm -rf ../../../template/schema
+rm -rf ../../../template/data
 mv schema/ ../../../template/
+mv data/ ../../../template/
 cd ../../../template
 echo $(pwd)
 npm ci
