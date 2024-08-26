@@ -1,7 +1,9 @@
-import { BiChevronDown } from "react-icons/bi"
+import { BiChevronDown, BiLinkExternal } from "react-icons/bi"
 
 import type { NavbarItem, NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
+import { isExternalUrl } from "~/utils"
+import { Link } from "../../Link"
 
 interface NavItemAccordionProps
   extends NavbarItem,
@@ -44,9 +46,14 @@ export const MobileNavItemAccordion = ({
   if (!items || items.length === 0) {
     return (
       <div className={container()}>
-        <LinkComponent className={item()} href={url}>
+        <Link
+          isExternal={isExternalUrl(url)}
+          LinkComponent={LinkComponent}
+          className={item()}
+          href={url}
+        >
           {name}
-        </LinkComponent>
+        </Link>
       </div>
     )
   }
@@ -73,19 +80,26 @@ export const MobileNavItemAccordion = ({
         role="region"
       >
         <ul className={sublist()}>
-          {items.map((subItem) => (
-            <li key={subItem.name}>
-              {/* 44px */}
-              <LinkComponent
-                href={subItem.url}
-                className={item({
-                  className: nestedItem(),
-                })}
-              >
-                {subItem.name}
-              </LinkComponent>
-            </li>
-          ))}
+          {items.map((subItem) => {
+            const isExternal = isExternalUrl(subItem.url)
+            return (
+              <li key={subItem.name}>
+                <Link
+                  LinkComponent={LinkComponent}
+                  href={subItem.url}
+                  isExternal={isExternal}
+                  showExternalIcon
+                  className={item({
+                    className: nestedItem({
+                      className: isExternal && "justify-start gap-1",
+                    }),
+                  })}
+                >
+                  {subItem.name}
+                </Link>
+              </li>
+            )
+          })}
         </ul>
       </div>
     </section>
