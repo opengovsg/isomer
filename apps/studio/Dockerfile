@@ -17,14 +17,14 @@ RUN turbo prune isomer-studio --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
-ENV NEXT_PUBLIC_ENABLE_SGID=true
+ENV NEXT_PUBLIC_ENABLE_SGID=false
 RUN apk update
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # First install the dependencies (as they change less often)
 COPY --from=builder /app/out/json/ .
-RUN npm ci 
+RUN npm ci
 
 # Build the project
 COPY --from=builder /app/out/full/ .

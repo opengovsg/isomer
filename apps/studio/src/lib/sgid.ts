@@ -20,6 +20,7 @@ const sgidOptions = {
   privateKey: env.SGID_PRIVATE_KEY,
   // Client requires at least a default uri to be registered
   redirectUri: env.SGID_REDIRECT_URI,
+  hostname: env.SGID_HOSTNAME ?? "https://id.api.gov.sg",
 } as SgidClientParams
 
 export const sgid = env.NEXT_PUBLIC_ENABLE_SGID

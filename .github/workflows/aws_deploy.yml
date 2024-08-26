@@ -79,18 +79,6 @@ on:
       RDS_READER_ENDPOINT:
         description: "RDS reader endpoint for database connection"
         required: false
-      sgid-client-id:
-        description: "Client ID for SGID"
-        required: false
-      sgid-client-secret:
-        description: "Client secret for SGID"
-        required: false
-      sgid-private-key:
-        description: "Private key for SGID"
-        required: false
-      sgid-redirect-uri:
-        description: "Redirect URI for SGID"
-        required: false
 
 permissions:
   id-token: write

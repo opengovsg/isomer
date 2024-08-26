@@ -44,6 +44,7 @@ const baseSgidSchema = z.object({
   // Remember to set SGID redirect URI in SGID dev portal.
   SGID_REDIRECT_URI: z.union([z.string().url(), z.string()]).optional(),
   SGID_PRIVATE_KEY: z.string().optional(),
+  SGID_HOSTNAME: z.string().optional(),
 })
 
 const sgidServerSchema = z.discriminatedUnion("NEXT_PUBLIC_ENABLE_SGID", [
@@ -126,6 +127,7 @@ const processEnv = {
   SGID_CLIENT_SECRET: process.env.SGID_CLIENT_SECRET,
   SGID_PRIVATE_KEY: process.env.SGID_PRIVATE_KEY,
   SGID_REDIRECT_URI: process.env.SGID_REDIRECT_URI,
+  SGID_HOSTNAME: process.env.SGID_HOSTNAME,
   // Client-side env vars
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
   NEXT_PUBLIC_APP_VERSION:
