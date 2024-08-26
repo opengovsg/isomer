@@ -1,5 +1,8 @@
 FROM node:22-alpine AS base
 
+ARG NEXT_PUBLIC_ENABLE_SGID
+ENV NEXT_PUBLIC_ENABLE_SGID=$NEXT_PUBLIC_ENABLE_SGID
+
 FROM base AS builder
 RUN apk update
 RUN apk add --no-cache libc6-compat
@@ -17,7 +20,6 @@ RUN turbo prune isomer-studio --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
-ENV NEXT_PUBLIC_ENABLE_SGID=false
 RUN apk update
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
