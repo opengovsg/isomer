@@ -29,6 +29,14 @@ const createCollectionLayoutStyles = tv({
     filterContainer: "relative col-span-12 pb-2 pt-8 lg:col-span-3 lg:pb-10",
     content: "col-span-12 flex flex-col gap-8 pt-8 lg:col-span-9 lg:ml-24",
   },
+  variants: {
+    hasNoFilters: {
+      true: {
+        filterContainer: "hidden lg:block",
+        content: "pt-0",
+      },
+    },
+  },
 })
 
 const compoundStyles = createCollectionLayoutStyles()
@@ -60,6 +68,9 @@ const CollectionClient = ({
       block: "start",
     })
   }
+
+  const hasNoFilters = filters.length === 0
+
   return (
     <>
       <CollectionPageHeader
@@ -75,7 +86,11 @@ const CollectionClient = ({
         />
       </CollectionPageHeader>
       <div className={compoundStyles.container()}>
-        <div className={compoundStyles.filterContainer()}>
+        <div
+          className={compoundStyles.filterContainer({
+            hasNoFilters,
+          })}
+        >
           <Filter
             filters={filters}
             appliedFilters={appliedFilters}
@@ -85,7 +100,12 @@ const CollectionClient = ({
           />
           <BackToTopLink className="hidden lg:flex" />
         </div>
-        <div className={compoundStyles.content()} ref={articleContainerRef}>
+        <div
+          className={compoundStyles.content({
+            hasNoFilters,
+          })}
+          ref={articleContainerRef}
+        >
           <div className="flex w-full flex-col gap-3">
             <CollectionResults
               appliedFilters={appliedFilters}
