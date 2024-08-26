@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { userEvent, within } from "@storybook/test"
 import flatten from "lodash/flatten"
+import merge from "lodash/merge"
 import times from "lodash/times"
 
 import { withChromaticModes } from "@isomer/storybook-config"
@@ -421,5 +422,40 @@ export const NoResults: Story = {
       name: /search for publications and other press releases/i,
     })
     await userEvent.type(searchElem, "some whacky search term")
+  },
+}
+
+export const FilteredEmptyResults: Story = {
+  args: merge(meta.args, {
+    site: {
+      siteMap: {
+        children: [
+          {
+            children: [
+              {
+                title: `2025 File`,
+                permalink: `/publications/item-twenty-twenty-five`,
+                lastModified: "",
+                layout: "file",
+                summary:
+                  "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
+                date: "2025-05-07",
+                category: "Category Name",
+                ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
+                fileDetails: {
+                  type: "png",
+                  size: "1.2MB",
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(screen.getByText(/2025 \(1\)/i))
+    await userEvent.click(screen.getByText(/Link \(10\)/i))
   },
 }

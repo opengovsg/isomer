@@ -60,7 +60,7 @@ export const CollectionResults = ({
               LinkComponent={LinkComponent}
             />
           ))}
-        {paginatedItems.length === 0 && searchValue !== "" && (
+        {paginatedItems.length === 0 && (
           <div className="flex flex-col gap-1 py-32 text-center text-content">
             <p className="prose-body-base">
               We couldn’t find any articles. Try different search terms or
