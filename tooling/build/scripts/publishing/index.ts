@@ -161,7 +161,18 @@ async function fetchAndWriteSiteData(client: Client) {
     // Fetch config.json
     const configResult = await client.query(GET_CONFIG, [SITE_ID])
     if (configResult.rows.length > 0) {
-      await writeJsonToFile(configResult.rows[0].config, "config.json")
+      const config = {
+        site: {
+          ...configResult.rows[0].config,
+          siteName: configResult.rows[0].name,
+        },
+        colors:
+          configResult.rows[0].theme === undefined
+            ? {}
+            : configResult.rows[0].theme,
+      }
+
+      await writeJsonToFile(config, "config.json")
     }
   } catch (err) {
     console.error("Error fetching site data:", err)

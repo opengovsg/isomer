@@ -7,9 +7,9 @@ export const GET_ALL_RESOURCES_WITH_FULL_PERMALINKS = `
         r.permalink,
         r."parentId",
         r.type,
-        CASE 
-            WHEN r.type IN ('Page', 'CollectionPage', 'RootPage') THEN b."content" 
-            ELSE NULL 
+        CASE
+            WHEN r.type IN ('Page', 'CollectionPage', 'RootPage') THEN b."content"
+            ELSE NULL
         END AS content,
         r.permalink AS "fullPermalink",
         r."publishedVersionId"
@@ -29,9 +29,9 @@ export const GET_ALL_RESOURCES_WITH_FULL_PERMALINKS = `
         r.permalink,
         r."parentId",
         r.type,
-        CASE 
-            WHEN r.type IN ('Page', 'CollectionPage', 'RootPage') THEN b."content" 
-            ELSE NULL 
+        CASE
+            WHEN r.type IN ('Page', 'CollectionPage', 'RootPage') THEN b."content"
+            ELSE NULL
         END AS content,
         CONCAT(path."fullPermalink", '/', r.permalink) AS "fullPermalink",
         r."publishedVersionId"
@@ -43,7 +43,7 @@ export const GET_ALL_RESOURCES_WITH_FULL_PERMALINKS = `
         -- This join determines if the recursion continues if there are more rows
     INNER JOIN "resourcePath" path ON r."parentId" = path.id
     WHERE
-        r."siteId" = $1 
+        r."siteId" = $1
         AND r.type IN ('Folder', 'Page', 'CollectionPage', 'RootPage')
     )
 
@@ -60,5 +60,5 @@ export const GET_FOOTER = `
 `
 
 export const GET_CONFIG = `
-  SELECT config FROM public."Site" WHERE "id" = $1;
+  SELECT name, config, theme FROM public."Site" WHERE "id" = $1;
 `
