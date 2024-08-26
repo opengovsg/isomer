@@ -76,7 +76,7 @@ const TableHeaderCellSchema = Type.Object({
 const TableContentRowSchema = Type.Object(
   {
     type: Type.Literal("tableRow", { default: "tableRow" }),
-    content: Type.Array(TableCellSchema, {
+    content: Type.Array(Type.Union([TableCellSchema, TableHeaderCellSchema]), {
       title: "Table cells",
       minItems: 1,
     }),
