@@ -22,7 +22,6 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
 import { setNotificationSchema } from "~/schemas/site"
-import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
 import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
 import { trpc } from "~/utils/trpc"
 

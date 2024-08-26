@@ -9,11 +9,13 @@ import {
   BiLinkExternal,
   BiLogOut,
 } from "react-icons/bi"
+import { z } from "zod"
 
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { CmsSidebar, CmsSidebarOnlyContainer } from "~/components/CmsSidebar"
 import { useMe } from "~/features/me/api"
+import { useQueryParse } from "~/hooks/useQueryParse"
 import { type GetLayout } from "~/lib/types"
 
 export const AdminSidebarOnlyLayout: GetLayout = (page) => {
@@ -26,10 +28,14 @@ export const AdminSidebarOnlyLayout: GetLayout = (page) => {
   )
 }
 
+const siteSchema = z.object({
+  siteId: z.coerce.string(),
+})
+
 // Extracted out since this needs to be a child of EnforceLoginStatePageWrapper
 const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
   const router = useRouter()
-  const siteId = String(router.query.siteId)
+  const { siteId } = useQueryParse(siteSchema)
 
   const { logout } = useMe()
 
