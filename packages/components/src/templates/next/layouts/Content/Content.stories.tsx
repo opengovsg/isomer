@@ -40,7 +40,8 @@ export const Default: Story = {
             summary: "",
             children: [
               {
-                title: "Irrationality",
+                title:
+                  "Irrationality this should have a long long long long long long long title that wraps to the max width of the content header, and its' breadcrumb truncates, but ideally should not be this long",
                 permalink: "/parent/rationality",
                 lastModified: "",
                 layout: "content",
@@ -306,7 +307,8 @@ export const Default: Story = {
     page: {
       permalink: "/parent/rationality",
       lastModified: "2024-05-02T14:12:57.160Z",
-      title: "Content page",
+      title:
+        "Irrationality this should have a long long long long long long long title that wraps to the max width of the content header, and its' breadcrumb truncates, but ideally should not be this long",
       description: "A Next.js starter for Isomer",
       contentPageHeader: {
         summary:
@@ -1284,7 +1286,7 @@ export const NoTable: Story = {
     },
     page: {
       permalink: "/parent/rationality",
-      title: "Content page",
+      title: "Irrationality",
       lastModified: "2024-05-02T14:12:57.160Z",
       description: "A Next.js starter for Isomer",
       contentPageHeader: {
@@ -1673,7 +1675,7 @@ export const SmallTable: Story = {
     },
     page: {
       permalink: "/parent/rationality",
-      title: "Content page",
+      title: "Irrationality",
       lastModified: "2024-05-02T14:12:57.160Z",
       description: "A Next.js starter for Isomer",
       contentPageHeader: {
@@ -2170,8 +2172,8 @@ export const FirstLevelPage: Story = {
         summary: "",
         children: [
           {
-            title: "Parent page",
-            permalink: "/parent",
+            title: "Content page",
+            permalink: "/content",
             lastModified: "",
             layout: "content",
             summary: "",
@@ -2242,7 +2244,7 @@ export const FirstLevelPage: Story = {
       },
     },
     page: {
-      permalink: "/parent",
+      permalink: "/content",
       title: "Content page",
       lastModified: "2024-05-02T14:12:57.160Z",
       description: "A Next.js starter for Isomer",

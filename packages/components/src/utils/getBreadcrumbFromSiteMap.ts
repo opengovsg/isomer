@@ -16,7 +16,7 @@ export const getBreadcrumbFromSiteMap = (
   let node = sitemap
   let currentPath = ""
 
-  for (const pathSegment of permalink.slice(0, -1)) {
+  for (const pathSegment of permalink) {
     currentPath += "/" + pathSegment
     const nextNode = node.children?.find(
       (node) => node.permalink === currentPath,

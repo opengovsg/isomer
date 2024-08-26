@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import type { BreadcrumbProps } from "~/interfaces"
 import Breadcrumb from "./Breadcrumb"
 
@@ -16,7 +18,30 @@ const meta: Meta<BreadcrumbProps> = {
 export default meta
 type Story = StoryObj<typeof Breadcrumb>
 
-export const Default: Story = {
+export const Grandchild: Story = {
+  parameters: {
+    chromatic: withChromaticModes(["desktop", "mobile"]),
+  },
+  args: {
+    links: [
+      {
+        title: "Irrationality",
+        url: "/irrationality",
+      },
+      {
+        title: "For Individuals this is a long long long long long long child",
+        url: "/irrationality/individuals",
+      },
+      {
+        title:
+          "Steven Pinker's Rationality the quick brown fox jumps over the lazy dog",
+        url: "/irrationality/individuals/pinker-rationality",
+      },
+    ],
+  },
+}
+
+export const SingleChild: Story = {
   args: {
     links: [
       {
@@ -27,9 +52,16 @@ export const Default: Story = {
         title: "For Individuals",
         url: "/irrationality/individuals",
       },
+    ],
+  },
+}
+
+export const NoChildren: Story = {
+  args: {
+    links: [
       {
-        title: "Steven Pinker's Rationality",
-        url: "/irrationality/individuals/pinker-rationality",
+        title: "Irrationality",
+        url: "/irrationality",
       },
     ],
   },
