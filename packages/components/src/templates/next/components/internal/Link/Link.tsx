@@ -16,7 +16,7 @@
  *
  * This is a modified version of the original file.
  */
-import type { ElementType } from "react"
+import type { DOMAttributes, ElementType } from "react"
 import type {
   LinkProps as BaseLinkProps,
   ContextValue,
@@ -24,13 +24,18 @@ import type {
 import { createContext, forwardRef } from "react"
 import { mergeProps, useFocusRing, useHover, useLink } from "react-aria"
 import { useContextProps } from "react-aria-components"
+import { BiLinkExternal } from "react-icons/bi"
 
+import { twMerge } from "~/lib/twMerge"
 import { useRenderProps } from "./utils"
 
 export interface LinkProps extends BaseLinkProps {
   LinkComponent?: ElementType
   "aria-current"?: string
   title?: string
+  isExternal?: boolean
+  showExternalIcon?: boolean
+  externalIconClassName?: string
 }
 
 const LinkContext =
@@ -40,12 +45,19 @@ const LinkContext =
  * Modified version of `react-aria-component`'s Link component to accept a `LinkComponent` prop.
  */
 export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
-  ({ title, ..._props }, _ref) => {
+  (
+    { title, isExternal, showExternalIcon, externalIconClassName, ..._props },
+    _ref,
+  ) => {
     const [props, ref] = useContextProps(_props, _ref, LinkContext)
+
+    const extraLinkProps = isExternal
+      ? { target: "_blank", rel: "noopener nofollow" }
+      : {}
 
     const ElementType: ElementType = props.href ? "a" : "span"
     const { linkProps, isPressed } = useLink(
-      { ...props, elementType: ElementType },
+      { ...extraLinkProps, ...props, elementType: ElementType },
       ref,
     )
 
@@ -81,6 +93,11 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
         data-disabled={props.isDisabled || undefined}
       >
         {renderProps.children}
+        {isExternal && showExternalIcon && (
+          <BiLinkExternal
+            className={twMerge("text-[1rem]", externalIconClassName)}
+          />
+        )}
       </ElementToRender>
     )
   },
