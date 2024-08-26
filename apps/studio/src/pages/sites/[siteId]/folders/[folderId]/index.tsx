@@ -137,6 +137,7 @@ const FolderPage: NextPageWithLayout = () => {
         isOpen={isFolderCreateModalOpen}
         onClose={onFolderCreateModalClose}
         siteId={parseInt(siteId)}
+        parentFolderId={parseInt(folderId)}
       />
       <FolderSettingsModal />
     </>
