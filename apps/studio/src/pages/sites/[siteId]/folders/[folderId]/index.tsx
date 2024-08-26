@@ -59,11 +59,25 @@ const FolderPage: NextPageWithLayout = () => {
         <VStack w="100%" align="start">
           <Breadcrumb size="sm">
             <BreadcrumbItem>
+              <BreadcrumbLink href={`/sites/${siteId}`}>
+                <Text textStyle="caption-2" color="interaction.links.default">
+                  Home
+                </Text>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Text textStyle="caption-2" color="base.content.default">
+                ...
+              </Text>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
               <BreadcrumbLink
                 isCurrentPage
                 href={`/sites/${siteId}/folders/${folderId}`}
               >
-                <Text color="base.content.default">{title}</Text>
+                <Text textStyle="caption-2" color="base.content.default">
+                  {title}
+                </Text>
               </BreadcrumbLink>
             </BreadcrumbItem>
           </Breadcrumb>
