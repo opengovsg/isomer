@@ -2,6 +2,7 @@ import {
   AccordionSchema,
   ButtonSchema,
   CalloutSchema,
+  ContentpicSchema,
   DividerSchema,
   HeadingSchema,
   HeroSchema,
@@ -30,6 +31,7 @@ export const IsomerComplexComponentsMap = {
   infocards: InfoCardsSchema,
   infocols: InfoColsSchema,
   infopic: InfopicSchema,
+  contentpic: ContentpicSchema,
   keystatistics: KeyStatisticsSchema,
 }
 

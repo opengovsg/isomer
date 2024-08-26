@@ -7,6 +7,7 @@ import {
   Accordion,
   Button,
   Callout,
+  Contentpic,
   Hero,
   Iframe,
   Image,
@@ -83,6 +84,8 @@ export const renderComponent = ({
       )
     case "infopic":
       return <Infopic key={elementKey} {...component} />
+    case "contentpic":
+      return <Contentpic key={elementKey} {...component} />
     case "keystatistics":
       return <KeyStatistics key={elementKey} {...component} />
     case "prose":
