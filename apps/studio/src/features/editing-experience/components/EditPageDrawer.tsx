@@ -5,8 +5,6 @@ import Ajv from "ajv"
 
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { useQueryParse } from "~/hooks/useQueryParse"
-import { editPageSchema } from "../schema"
 import AdminModeStateDrawer from "./AdminModeStateDrawer"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
@@ -23,8 +21,6 @@ export function EditPageDrawer(): JSX.Element {
     drawerState: currState,
     currActiveIdx,
   } = useEditorDrawerContext()
-
-  const { pageId, siteId } = useQueryParse(editPageSchema)
 
   const inferAsProse = (component?: IsomerComponent): ProseProps => {
     if (!component) {
@@ -50,7 +46,7 @@ export function EditPageDrawer(): JSX.Element {
     case "adminMode":
       return <AdminModeStateDrawer />
     case "addBlock":
-      return <ComponentSelector siteId={siteId} pageId={pageId} />
+      return <ComponentSelector />
     case "nativeEditor": {
       const component = previewPageState.content[currActiveIdx]
       return <TipTapComponent content={inferAsProse(component)} />
