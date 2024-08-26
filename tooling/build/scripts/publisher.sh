@@ -16,7 +16,7 @@ echo "Cloning repository..."
 start_time=$(date +%s)
 
 # TODO: add single branch checkout with --branch main
-git clone --depth 1 --branch fix/reconstruct-site-config https://github.com/opengovsg/isomer.git
+git clone --depth 1 --branch 08-03-add_publishing_scripts https://github.com/opengovsg/isomer.git
 cd isomer/
 calculate_duration $start_time
 
@@ -26,7 +26,7 @@ echo $(pwd)
 echo "Checking out branch..."
 start_time=$(date +%s)
 # TODO: update this to use main branch
-git checkout fix/reconstruct-site-config
+git checkout 08-03-add_publishing_scripts
 calculate_duration $start_time
 
 echo $(git branch)
