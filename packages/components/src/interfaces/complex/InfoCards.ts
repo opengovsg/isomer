@@ -50,7 +50,11 @@ const InfoCardsBaseSchema = Type.Object({
     }),
   ),
   maxColumns: Type.Optional(
-    Type.Union([Type.Literal(1), Type.Literal(2), Type.Literal(3)]),
+    Type.Union([Type.Literal(1), Type.Literal(2), Type.Literal(3)], {
+      title: "Maximum columns variant",
+      description:
+        "Controls the responsive behaviour regarding the number of columns that this component will expand to in different viewports",
+    }),
   ),
 })
 
