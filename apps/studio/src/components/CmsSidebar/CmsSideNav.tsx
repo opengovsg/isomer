@@ -1,3 +1,5 @@
+import { PropsWithChildren } from "react"
+import NextLink from "next/link"
 import { useRouter } from "next/router"
 import {
   Accordion,
@@ -6,11 +8,15 @@ import {
   AccordionItem,
   AccordionPanel,
   Box,
+  ButtonProps,
   Flex,
+  Grid,
+  GridItem,
   Icon,
   Spacer,
   Text,
 } from "@chakra-ui/react"
+import { GridProps } from "@chakra-ui/styled-system"
 import { Button, Spinner } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFile, BiFolder, BiHomeAlt } from "react-icons/bi"
@@ -70,6 +76,25 @@ const getResourceType = (
   return "folders"
 }
 
+const SideNavRow = ({ children, ...rest }: ButtonProps & { href: string }) => {
+  return (
+    <Button
+      as={NextLink}
+      data-group
+      gap="0.25rem"
+      w="full"
+      variant="clear"
+      pl="0.75rem"
+      pr="0.5rem"
+      py="0.38rem"
+      justifyContent="flex-start"
+      {...rest}
+    >
+      {children}
+    </Button>
+  )
+}
+
 const SideNavItem = ({
   resourceType,
   resourceId,
@@ -100,6 +125,7 @@ const SideNavItem = ({
     )
   }
 
+  const urlType = getResourceType(resourceType)
   const { pages } = data
 
   return (
@@ -118,86 +144,114 @@ const SideNavItem = ({
         {/* so that we don't issue multiple db reads on load */}
         {({ isExpanded }) => {
           return (
-            <>
+            <Box pos="relative">
               {/* NOTE: required for focus ring */}
-              <Box m="4px">
-                <AccordionButton
-                  boxSizing="border-box"
-                  disabled={isDisabled}
-                  borderRadius="0.25rem"
-                  _focusVisible={{
-                    boxShadow: "none !important",
-                    outline: `2px solid var(--chakra-colors-utility-focus-default)`,
-                    outlineOffset: "0.125rem",
-                    _dark: {
-                      outline: `2px solid var(--chakra-colors-utility-focus-inverse)`,
-                    },
-                  }}
-                  _hover={{
-                    backgroundColor: "interaction.muted.main.hover",
-                  }}
-                  _active={{
-                    backgroundColor: "interaction.muted.main.active",
-                    textColor: "interaction.main.default",
-                  }}
-                  onDoubleClick={async () => {
-                    const urlType = getResourceType(resourceType)
-                    if (resourceType === "RootPage") {
-                      return router.push({
-                        pathname: "/sites/[siteId]",
-                        query: {
-                          siteId,
-                        },
-                      })
-                    }
-                    return router.push({
-                      pathname: "/sites/[siteId]/[resourceType]/[id]",
-                      query: {
-                        siteId,
-                        resourceType: urlType,
-                        id: resourceId,
-                      },
-                    })
-                  }}
+              <SideNavRow
+                leftIcon={<Box w="1rem" />}
+                href={
+                  resourceType === ResourceType.RootPage
+                    ? `/sites/${siteId}`
+                    : `/sites/${siteId}/${urlType}/${resourceId}`
+                }
+              >
+                {/* <AccordionButton */}
+                {/*   boxSizing="border-box" */}
+                {/*   disabled={isDisabled} */}
+                {/*   borderRadius="0.25rem" */}
+                {/*   _focusVisible={{ */}
+                {/*     boxShadow: "none !important", */}
+                {/*     outline: `2px solid var(--chakra-colors-utility-focus-default)`, */}
+                {/*     outlineOffset: "0.125rem", */}
+                {/*     _dark: { */}
+                {/*       outline: `2px solid var(--chakra-colors-utility-focus-inverse)`, */}
+                {/*     }, */}
+                {/*   }} */}
+                {/*   _hover={{ */}
+                {/*     backgroundColor: "interaction.muted.main.hover", */}
+                {/*   }} */}
+                {/*   _active={{ */}
+                {/*     backgroundColor: "interaction.muted.main.active", */}
+                {/*     textColor: "interaction.main.default", */}
+                {/*   }} */}
+                {/*   onDoubleClick={async () => { */}
+                {/*     const urlType = getResourceType(resourceType) */}
+                {/*     if (resourceType === "RootPage") { */}
+                {/*       return router.push({ */}
+                {/*         pathname: "/sites/[siteId]", */}
+                {/*         query: { */}
+                {/*           siteId, */}
+                {/*         }, */}
+                {/*       }) */}
+                {/*     } */}
+                {/*     return router.push({ */}
+                {/*       pathname: "/sites/[siteId]/[resourceType]/[id]", */}
+                {/*       query: { */}
+                {/*         siteId, */}
+                {/*         resourceType: urlType, */}
+                {/*         id: resourceId, */}
+                {/*       }, */}
+                {/*     }) */}
+                {/*   }} */}
+                {/* > */}
+                {/*   <Flex */}
+                {/*     w="full" */}
+                {/*     color="base.content.default" */}
+                {/*     alignItems="center" */}
+                {/*   > */}
+                {/*     {isAllowedToHaveChildren(resourceType) ? ( */}
+                {/*       <AccordionIcon */}
+                {/*         mr="0.25rem" */}
+                {/*         color="interaction.support.unselected" */}
+                {/*       /> */}
+                {/*     ) : ( */}
+                {/*       <Box w="1.5rem"></Box> */}
+                {/*     )} */}
+                {/*     <Icon as={icon} flexShrink={0} /> */}
+                {/*     <Text */}
+                {/*       noOfLines={1} */}
+                {/*       textAlign="left" */}
+                {/*       textStyle="subhead-2" */}
+                {/*       ml="0.5rem" */}
+                {/*     > */}
+                {/*       {permalink} */}
+                {/*     </Text> */}
+                {/*     <Spacer /> */}
+                {/*     {resourceType === ResourceType.RootPage && ( */}
+                {/*       <Text */}
+                {/*         color="base.content.medium" */}
+                {/*         textTransform="uppercase" */}
+                {/*         textStyle="caption-1" */}
+                {/*         overflow="hidden" */}
+                {/*         textOverflow="ellipsis" */}
+                {/*         whiteSpace="nowrap" */}
+                {/*       > */}
+                {/*         Home */}
+                {/*       </Text> */}
+                {/*     )} */}
+                {/*   </Flex> */}
+                {/* </AccordionButton> */}
+                <Icon fill="base.content.default" as={icon} flexShrink={0} />
+                <Text
+                  ml="0.25rem"
+                  noOfLines={1}
+                  textColor="base.content.default"
+                  textAlign="left"
+                  textStyle="subhead-2"
                 >
-                  <Flex
-                    w="full"
-                    color="base.content.default"
-                    alignItems="center"
-                  >
-                    {isAllowedToHaveChildren(resourceType) ? (
-                      <AccordionIcon
-                        mr="0.25rem"
-                        color="interaction.support.unselected"
-                      />
-                    ) : (
-                      <Box w="1.5rem"></Box>
-                    )}
-                    <Icon as={icon} flexShrink={0} />
-                    <Text
-                      noOfLines={1}
-                      textAlign="left"
-                      textStyle="subhead-2"
-                      ml="0.5rem"
-                    >
-                      {permalink}
-                    </Text>
-                    <Spacer />
-                    {resourceType === ResourceType.RootPage && (
-                      <Text
-                        color="base.content.medium"
-                        textTransform="uppercase"
-                        textStyle="caption-1"
-                        overflow="hidden"
-                        textOverflow="ellipsis"
-                        whiteSpace="nowrap"
-                      >
-                        Home
-                      </Text>
-                    )}
-                  </Flex>
+                  {permalink}
+                </Text>
+              </SideNavRow>
+              {isAllowedToHaveChildren(resourceType) && (
+                <AccordionButton
+                  pos="absolute"
+                  w="fit-content"
+                  p={0}
+                  left="0.75rem"
+                  top="0.75rem"
+                >
+                  <AccordionIcon color="interaction.support.unselected" />
                 </AccordionButton>
-              </Box>
+              )}
               {isExpanded && (
                 <AccordionPanel p="0" pl="1.25rem">
                   {pages.map(({ items }) => {
@@ -224,7 +278,7 @@ const SideNavItem = ({
                   )}
                 </AccordionPanel>
               )}
-            </>
+            </Box>
           )
         }}
       </AccordionItem>
