@@ -35,6 +35,7 @@ function SuspendablePreview({
   const renderProps = merge(props, overrides, {
     page: {
       permalink,
+      lastModified: new Date().toString(),
     },
   })
 
@@ -48,11 +49,6 @@ function SuspendablePreview({
         siteMap: { title: "Home", permalink: "/", children: [] },
         environment: "production",
         // TODO: Fetch from DB in the future
-        lastUpdated: new Date().toLocaleDateString(undefined, {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        }),
         ...siteConfig,
         navBarItems: navbar,
         footerItems: footer,
