@@ -19,6 +19,9 @@ const createIndexPageLayoutStyles = tv({
       true: {
         content: "lg:col-span-9 lg:ml-24",
       },
+      false: {
+        content: "max-w-[54rem]",
+      },
     },
   },
 })
