@@ -1,17 +1,15 @@
 "use client"
 
-import { BiUpArrowAlt } from "react-icons/bi"
-
 import type { CollectionPageSchemaType } from "~/engine"
 import type { BreadcrumbProps, CollectionCardProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import {
+  BackToTopLink,
   CollectionCard,
   CollectionSearch,
   Filter,
   PaginationControls,
 } from "../../components/internal"
-import { Link } from "../../components/internal/Link"
 import CollectionPageHeader from "./CollectionPageHeader"
 import { ITEMS_PER_PAGE, useCollection } from "./useCollection"
 
@@ -76,15 +74,7 @@ const CollectionClient = ({
             setAppliedFilters={setAppliedFilters}
             handleClearFilter={handleClearFilter}
           />
-          <Link
-            LinkComponent={LinkComponent}
-            href="#"
-            // TODO: Replace with a custom link component with all the styles
-            className="prose-body-base sticky top-8 mt-8 hidden items-center text-link underline-offset-4 hover:underline lg:flex"
-          >
-            <BiUpArrowAlt aria-hidden className="h-6 w-6" />
-            Back to top
-          </Link>
+          <BackToTopLink className="hidden lg:flex" />
         </div>
         <div className={compoundStyles.content()}>
           <div className="flex w-full flex-col gap-3">

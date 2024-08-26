@@ -1,9 +1,11 @@
-import { BiUpArrowAlt } from "react-icons/bi"
-
 import type { IndexPageSchemaType } from "~/engine"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap, getSiderailFromSiteMap } from "~/utils"
-import { ContentPageHeader, Siderail } from "../../components/internal"
+import {
+  BackToTopLink,
+  ContentPageHeader,
+  Siderail,
+} from "../../components/internal"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
@@ -66,14 +68,7 @@ const IndexPageLayout = ({
         {sideRail && (
           <div className={compoundStyles.siderailContainer()}>
             <Siderail {...sideRail} LinkComponent={LinkComponent} />
-            <LinkComponent
-              href="#"
-              // TODO: Replace LinkComponent with a custom link component with all the styles
-              className="prose-body-base sticky top-8 mt-8 flex items-center text-link underline-offset-4 hover:underline"
-            >
-              <BiUpArrowAlt aria-hidden className="h-6 w-6" />
-              Back to top
-            </LinkComponent>
+            <BackToTopLink />
           </div>
         )}
 
