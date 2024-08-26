@@ -87,10 +87,6 @@ function TipTapComponent({ content }: TipTapComponentProps) {
 
   const utils = trpc.useUtils()
 
-  const [{ content: pageContent }] = trpc.page.readPageAndBlob.useSuspenseQuery(
-    { siteId, pageId },
-  )
-
   // TODO: Add a loading state or use suspsense
   return (
     <>

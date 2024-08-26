@@ -142,23 +142,6 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
         },
         {
           type: "item",
-          title: "Quote block",
-          textStyle: "body-1",
-          useSecondaryColor: true,
-          leftItem: (
-            <Divider
-              orientation="vertical"
-              border="1px solid"
-              borderColor="chakra-body-text"
-              h="1.625rem"
-              mr="0.75rem"
-            />
-          ),
-          action: () => editor.chain().focus().toggleBlockquote().run(),
-          isActive: () => editor.isActive("blockquote"),
-        },
-        {
-          type: "item",
           title: "Paragraph",
           textStyle: "body-1",
           action: () =>
