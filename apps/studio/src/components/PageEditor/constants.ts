@@ -90,19 +90,19 @@ export const DEFAULT_BLOCKS: Record<
       {
         title: "This is the first card",
         url: "https://www.google.com",
-        imageUrl: "https://placehold.co/200x200",
+        imageUrl: "/placeholder_no_image.png",
         imageAlt: "This is the alt text",
       },
       {
         title: "This is the second card",
         url: "https://www.google.com",
-        imageUrl: "https://placehold.co/400x200",
+        imageUrl: "/placeholder_no_image.png",
         imageAlt: "This is the alt text",
       },
       {
         title: "This is the third card",
         url: "https://www.google.com",
-        imageUrl: "https://placehold.co/500x200",
+        imageUrl: "/placeholder_no_image.png",
         imageAlt: "This is the alt text",
       },
     ],
@@ -133,7 +133,7 @@ export const DEFAULT_BLOCKS: Record<
     type: "infopic",
     title: "This is an infopic",
     description: "This is the description for the infopic component",
-    imageSrc: "https://placehold.co/600x400",
+    imageSrc: "/placeholder_no_image.png",
   },
   contentpic: {
     type: "contentpic",
@@ -151,7 +151,7 @@ export const DEFAULT_BLOCKS: Record<
         },
       ],
     },
-    imageSrc: "https://placehold.co/600x400",
+    imageSrc: "/placeholder_no_image.png",
     imageAlt: "This is the alt text for the image",
   },
   keystatistics: {
