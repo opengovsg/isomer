@@ -39,7 +39,11 @@ const generateSidebarItem = (
             variant="clear"
             isActive={isActive}
             aria-label={item.label}
-            icon={<Icon fontSize="1.5rem" />}
+            icon={<Icon fontSize="1.5rem" fill="base.content.default" />}
+            _active={{
+              fill: "base.content.brand",
+              bg: "interaction.muted.main.active",
+            }}
             href={item.href}
           />
         ) : (
