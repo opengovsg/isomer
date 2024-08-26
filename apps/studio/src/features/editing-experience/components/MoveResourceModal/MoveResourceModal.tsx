@@ -197,7 +197,7 @@ const MoveResourceContent = withSuspense(
               )}
             </Box>
             {!!moveDest && (
-              <Box bg="utility.feedback.warning-subtle" p="0.75rem" w="full">
+              <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">
                 <Text textStyle="caption-1">
                   You selected {moveDest.permalink}
                 </Text>

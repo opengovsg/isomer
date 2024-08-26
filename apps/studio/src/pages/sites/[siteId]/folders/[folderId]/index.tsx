@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react"
 import { Breadcrumb, Button, Menu } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
-import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
+import { BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
 import { MenuItem } from "~/components/Menu"
@@ -75,9 +75,11 @@ const FolderPage: NextPageWithLayout = () => {
                 p="0.5rem"
                 borderRadius="6px"
               >
-                <BiData />
+                <BiFolder />
               </Box>
-              <Text textStyle="h3">{title}</Text>
+              <Text noOfLines={1} as="h3" textStyle="h3">
+                {title}
+              </Text>
             </HStack>
 
             <Spacer />
@@ -95,25 +97,34 @@ const FolderPage: NextPageWithLayout = () => {
                 Folder settings
               </Button>
               <Menu isLazy size="sm">
-                <MenuButton as={Button} size="md" justifySelf="flex-end">
-                  Create new...
-                </MenuButton>
-                <Portal>
-                  <MenuList>
-                    <MenuItem
-                      onClick={onFolderCreateModalOpen}
-                      icon={<BiFolder fontSize="1rem" />}
+                {({ isOpen }) => (
+                  <>
+                    <Menu.Button
+                      isOpen={isOpen}
+                      as={Button}
+                      size="md"
+                      justifySelf="flex-end"
                     >
-                      Folder
-                    </MenuItem>
-                    <MenuItem
-                      onClick={onPageCreateModalOpen}
-                      icon={<BiFileBlank fontSize="1rem" />}
-                    >
-                      Page
-                    </MenuItem>
-                  </MenuList>
-                </Portal>
+                      Create new...
+                    </Menu.Button>
+                    <Portal>
+                      <Menu.List>
+                        <Menu.Item
+                          onClick={onFolderCreateModalOpen}
+                          icon={<BiFolder fontSize="1rem" />}
+                        >
+                          Folder
+                        </Menu.Item>
+                        <Menu.Item
+                          onClick={onPageCreateModalOpen}
+                          icon={<BiFileBlank fontSize="1rem" />}
+                        >
+                          Page
+                        </Menu.Item>
+                      </Menu.List>
+                    </Portal>
+                  </>
+                )}
               </Menu>
             </HStack>
           </Flex>

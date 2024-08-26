@@ -177,7 +177,7 @@ const SideNavItem = ({
                     <Text
                       noOfLines={1}
                       textAlign="left"
-                      textStyle="caption-1"
+                      textStyle="subhead-2"
                       ml="0.5rem"
                     >
                       {permalink}

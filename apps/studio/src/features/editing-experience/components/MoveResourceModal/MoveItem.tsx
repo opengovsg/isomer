@@ -44,7 +44,9 @@ const SuspendableMoveItem = ({
       onClick={onChangeResourceId}
       leftIcon={icon}
     >
-      <Text textStyle="caption-1">/{permalink}</Text>
+      <Text noOfLines={1} textStyle="caption-1">
+        /{permalink}
+      </Text>
     </Button>
   )
 }
