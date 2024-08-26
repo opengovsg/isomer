@@ -58,7 +58,12 @@ export const ButtonSchema = Type.Object(
     ),
     leftIcon: Type.Optional(
       Type.Union(
-        SUPPORTED_ICON_NAMES.map((icon) => Type.Literal(icon)),
+        SUPPORTED_ICON_NAMES.map((icon) =>
+          Type.Literal(icon, {
+            title:
+              icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-/g, " "),
+          }),
+        ),
         {
           title: "Button left icon",
           description: "The icon to display on the left of the button's text",
@@ -68,7 +73,12 @@ export const ButtonSchema = Type.Object(
     ),
     rightIcon: Type.Optional(
       Type.Union(
-        SUPPORTED_ICON_NAMES.map((icon) => Type.Literal(icon)),
+        SUPPORTED_ICON_NAMES.map((icon) =>
+          Type.Literal(icon, {
+            title:
+              icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-/g, " "),
+          }),
+        ),
         {
           title: "Button right icon",
           description: "The icon to display on the right of the button's text",

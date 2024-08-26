@@ -15,7 +15,12 @@ export const InfoBoxSchema = Type.Object({
   ),
   icon: Type.Optional(
     Type.Union(
-      SUPPORTED_ICON_NAMES.map((icon) => Type.Literal(icon)),
+      SUPPORTED_ICON_NAMES.map((icon) =>
+        Type.Literal(icon, {
+          title:
+            icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-/g, " "),
+        }),
+      ),
       {
         title: "Column icon",
         description: "The icon to display for the column",
