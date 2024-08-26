@@ -14,7 +14,9 @@ import {
 import { Button, Spinner } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFile, BiFolder, BiHomeAlt } from "react-icons/bi"
+import { z } from "zod"
 
+import { useQueryParse } from "~/hooks/useQueryParse"
 import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 
@@ -70,6 +72,11 @@ const getResourceType = (
   return "folders"
 }
 
+const siteSchema = z.object({
+  folderId: z.string().optional(),
+  resourceId: z.string().optional(),
+})
+
 const SideNavRow = ({ children, ...rest }: ButtonProps & { href: string }) => {
   return (
     <Button
@@ -87,6 +94,24 @@ const SideNavRow = ({ children, ...rest }: ButtonProps & { href: string }) => {
       {children}
     </Button>
   )
+}
+
+const getCurResource = ({
+  resourceId: collectionId,
+  folderId,
+}: z.infer<typeof siteSchema>) => {
+  // NOTE: the pages where this sidebar shows
+  // only have a few possiblities:
+  // 1. the root page with no resource id
+  // 2. inside a folder at /[siteId]/[folderId]
+  // 3. inside a collection at /[siteId]/[collectionId]
+  if (collectionId) {
+    return collectionId
+  }
+
+  if (folderId) return folderId
+
+  return null
 }
 
 const SideNavItem = ({
@@ -109,6 +134,8 @@ const SideNavItem = ({
     )
 
   const icon = ICON_MAPPINGS[resourceType]
+  const siteProps = useQueryParse(siteSchema)
+  const isCurResourceActive = getCurResource(siteProps) === resourceId
 
   if (isLoading || !data) {
     return (
@@ -143,6 +170,7 @@ const SideNavItem = ({
               {/* NOTE: required for focus ring */}
               <SideNavRow
                 leftIcon={<Box w="1rem" />}
+                isActive={isCurResourceActive}
                 href={
                   resourceType === ResourceType.RootPage
                     ? `/sites/${siteId}`
