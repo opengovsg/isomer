@@ -37,7 +37,7 @@ const getCollectionItems = (
     getSitemapAsArray(child),
   )
 
-  return items
+  const transformedItems = items
     .filter(
       (item) =>
         item.layout === "file" ||
@@ -55,6 +55,7 @@ const getCollectionItems = (
 
       const baseItem = {
         type: "collectionCard" as const,
+        rawDate: date,
         lastUpdated,
         category: item.category || "Others",
         title: item.title,
@@ -82,7 +83,15 @@ const getCollectionItems = (
         variant: "article",
         url: item.permalink,
       }
-    })
+    }) satisfies CollectionCardProps[]
+
+  return transformedItems.sort((a, b) => {
+    // Sort by last updated date, tiebreaker by title
+    if (a.rawDate === b.rawDate) {
+      return a.title > b.title ? 1 : -1
+    }
+    return a.rawDate < b.rawDate ? 1 : -1
+  }) as CollectionCardProps[]
 }
 
 const CollectionLayout = ({
