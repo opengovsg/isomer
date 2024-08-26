@@ -3,7 +3,6 @@ import type { ControlProps } from "@jsonforms/core"
 import type { Level } from "@tiptap/extension-heading"
 import type { JSONContent } from "@tiptap/react"
 import { Box, VStack } from "@chakra-ui/react"
-import { Blockquote } from "@tiptap/extension-blockquote"
 import { Bold } from "@tiptap/extension-bold"
 import { BulletList } from "@tiptap/extension-bullet-list"
 import { Document } from "@tiptap/extension-document"
@@ -42,7 +41,6 @@ export function TiptapEditor({ data, handleChange }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
       Link,
-      Blockquote,
       Bold,
       BulletList.extend({
         name: "unorderedList",
