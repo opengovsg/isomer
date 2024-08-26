@@ -30,7 +30,7 @@ export const Staging: Story = {
   },
 }
 
-export const expanded: Story = {
+export const Expanded: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     await userEvent.click(
