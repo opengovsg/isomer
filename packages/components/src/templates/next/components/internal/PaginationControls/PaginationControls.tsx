@@ -14,12 +14,17 @@ import { usePaginationRange } from "./usePaginationRange"
 
 const SEPARATOR = "-"
 
+interface PaginationControlsProps extends PaginationProps {
+  onPageChange?: () => void
+}
+
 export function PaginationControls({
   totalItems,
   itemsPerPage,
   currPage,
   setCurrPage,
-}: PaginationProps) {
+  onPageChange,
+}: PaginationControlsProps) {
   const paginationRange = usePaginationRange<typeof SEPARATOR>({
     totalCount: totalItems,
     pageSize: itemsPerPage,
@@ -36,7 +41,10 @@ export function PaginationControls({
         <PaginationItem>
           <PaginationPrevious
             isDisabled={currPage === 1}
-            onPress={() => setCurrPage((p) => Math.max(1, p - 1))}
+            onPress={() => {
+              onPageChange?.()
+              setCurrPage((p) => Math.max(1, p - 1))
+            }}
           />
         </PaginationItem>
         {paginationRange.map((p, i) => {
@@ -46,7 +54,10 @@ export function PaginationControls({
             <PaginationItem key={i}>
               <PaginationButton
                 isActive={currPage === p}
-                onPress={() => setCurrPage(p)}
+                onPress={() => {
+                  onPageChange?.()
+                  setCurrPage(p)
+                }}
               >
                 {p}
               </PaginationButton>
@@ -56,7 +67,10 @@ export function PaginationControls({
         <PaginationItem>
           <PaginationNext
             isDisabled={currPage >= totalPageCount}
-            onPress={() => setCurrPage((p) => Math.min(totalPageCount, p + 1))}
+            onPress={() => {
+              onPageChange?.()
+              setCurrPage((p) => Math.min(totalPageCount, p + 1))
+            }}
           />
         </PaginationItem>
       </PaginationContent>

@@ -1,5 +1,7 @@
 "use client"
 
+import { useRef } from "react"
+
 import type { CollectionPageSchemaType } from "~/engine"
 import type { BreadcrumbProps, CollectionCardProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
@@ -23,9 +25,9 @@ interface CollectionClientProps {
 const createCollectionLayoutStyles = tv({
   slots: {
     container:
-      "relative mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-16 md:px-10 lg:gap-6 xl:gap-10",
-    filterContainer: "relative col-span-12 pb-10 lg:col-span-3",
-    content: "col-span-12 flex flex-col gap-8 lg:col-span-9 lg:ml-24",
+      "relative mx-auto grid max-w-screen-xl grid-cols-12 px-6 pb-16 pt-8 md:px-10 lg:gap-6 xl:gap-10",
+    filterContainer: "relative col-span-12 pb-2 pt-8 lg:col-span-3 lg:pb-10",
+    content: "col-span-12 flex flex-col gap-8 pt-8 lg:col-span-9 lg:ml-24",
   },
 })
 
@@ -51,6 +53,12 @@ const CollectionClient = ({
     setCurrPage,
   } = useCollection({ items })
 
+  const articleContainerRef = useRef<HTMLDivElement>(null)
+  const onPageChange = () => {
+    articleContainerRef.current?.scrollIntoView({
+      block: "start",
+    })
+  }
   return (
     <>
       <CollectionPageHeader
@@ -76,7 +84,7 @@ const CollectionClient = ({
           />
           <BackToTopLink className="hidden lg:flex" />
         </div>
-        <div className={compoundStyles.content()}>
+        <div className={compoundStyles.content()} ref={articleContainerRef}>
           <div className="flex w-full flex-col gap-3">
             <div className="flex w-full flex-col justify-between gap-x-6 gap-y-2 md:flex-row">
               <div className="flex h-full w-full items-center gap-3">
@@ -130,6 +138,7 @@ const CollectionClient = ({
             <div className="flex w-full justify-center lg:justify-end">
               <PaginationControls
                 totalItems={filteredCount}
+                onPageChange={onPageChange}
                 itemsPerPage={ITEMS_PER_PAGE}
                 currPage={currPage}
                 setCurrPage={setCurrPage}
