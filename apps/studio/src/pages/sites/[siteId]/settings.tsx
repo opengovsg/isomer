@@ -22,7 +22,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
 import { setNotificationSchema } from "~/schemas/site"
-import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
+import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
 import { trpc } from "~/utils/trpc"
 
 const siteSettingsSchema = z.object({
@@ -130,6 +130,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                 textStyle="body-2"
                 textColor="base.content.strong"
                 size="sm"
+                mt="1.75rem"
               >
                 Isomer Next is currently in Beta. To manage site settings that
                 are not displayed here, contact Isomer Support.
@@ -143,7 +144,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                 <Text textStyle="h4">General</Text>
                 <HStack w="full" justifyContent="space-between" pt="0.5rem">
                   <Text textColor="base.content.strong" textStyle="subhead-1">
-                    Display Site Notifications
+                    Display site notification
                   </Text>
 
                   <Toggle
@@ -165,7 +166,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                       textStyle="subhead-1"
                       pt="0.5rem"
                     >
-                      Notification Text
+                      Notification text
                     </Text>
 
                     <Input
@@ -175,9 +176,11 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                       value={notification}
                       {...register("notification", {})}
                     />
-                    <Text textColor="base.content.medium" textStyle="body-2">
-                      {100 - notification.length} characters left
-                    </Text>
+                    {!errors.notification?.message && (
+                      <Text textColor="base.content.medium" textStyle="body-2">
+                        {100 - notification.length} characters left
+                      </Text>
+                    )}
                     <FormErrorMessage>
                       {errors.notification?.message}
                     </FormErrorMessage>
@@ -192,7 +195,11 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                 <Button
                   type="submit"
                   isLoading={notificationMutation.isLoading}
-                  isDisabled={!isDirty}
+                  // NOTE: we only validate that it is non empty
+                  // because zod form prevents us from going over 100 characters.
+                  isDisabled={
+                    (notificationEnabled && !notification) || !isDirty
+                  }
                 >
                   Save settings
                 </Button>
@@ -205,5 +212,5 @@ const SiteSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-SiteSettingsPage.getLayout = AdminCmsSidebarLayout
+SiteSettingsPage.getLayout = AdminSidebarOnlyLayout
 export default SiteSettingsPage

@@ -13,13 +13,12 @@ import { z } from "zod"
 
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
-import { CmsSidebar, CmsSidebarContainer } from "~/components/CmsSidebar"
-import { CmsSideNav } from "~/components/CmsSidebar/CmsSideNav"
+import { CmsSidebar, CmsSidebarOnlyContainer } from "~/components/CmsSidebar"
 import { useMe } from "~/features/me/api"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type GetLayout } from "~/lib/types"
 
-export const AdminCmsSidebarLayout: GetLayout = (page) => {
+export const AdminSidebarOnlyLayout: GetLayout = (page) => {
   return (
     <EnforceLoginStatePageWrapper>
       <Flex minH="$100vh" flexDir="row" bg="base.canvas.alt" pos="relative">
@@ -73,13 +72,12 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
   ]
 
   return (
-    <CmsSidebarContainer
+    <CmsSidebarOnlyContainer
       sidebar={
         <CmsSidebar topNavItems={pageNavItems} bottomNavItems={userNavItems} />
       }
-      sidenav={<CmsSideNav siteId={siteId} />}
     >
       {children}
-    </CmsSidebarContainer>
+    </CmsSidebarOnlyContainer>
   )
 }
