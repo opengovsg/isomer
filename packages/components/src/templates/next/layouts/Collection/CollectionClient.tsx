@@ -74,7 +74,7 @@ const CollectionClient = ({
             setAppliedFilters={setAppliedFilters}
             handleClearFilter={handleClearFilter}
           />
-          <BackToTopLink />
+          <BackToTopLink className="hidden lg:flex" />
         </div>
         <div className={compoundStyles.content()}>
           <div className="flex w-full flex-col gap-3">
