@@ -110,7 +110,7 @@ const RestrictedHeaderBar = ({ children }: PropsWithChildren) => {
             : "Click to expand masthead to find out how to identify an official government website"}
         </span>
         <RestrictedHeaderBarContent>
-          <span className="not-sr-only text-brand-interaction underline">
+          <span className="not-sr-only text-link underline">
             How to identify
             <BiChevronDown
               aria-hidden
@@ -124,10 +124,10 @@ const RestrictedHeaderBar = ({ children }: PropsWithChildren) => {
       {/* Desktop variant */}
       <div className="hidden items-center gap-1 lg:flex">
         <RestrictedHeaderBarContent>
-          <div className="text-brand-interaction underline">
+          <div className="text-link underline">
             <Button
               className={composeRenderProps(
-                "hidden flex-row items-center hover:text-brand-interaction-hover lg:flex",
+                "hidden flex-row items-center hover:text-link-hover lg:flex",
                 (className, renderProps) =>
                   mastheadButtonStyle({ className, ...renderProps }),
               )}
@@ -181,7 +181,7 @@ const RestrictedContent = () => {
               <Link
                 LinkComponent={LinkComponent}
                 href="https://www.gov.sg/trusted-sites#govsites"
-                className="inline-flex items-center text-brand-interaction underline hover:text-brand-interaction-hover"
+                className="inline-flex items-center text-link underline hover:text-link-hover"
                 rel="noreferrer"
                 target="_blank"
               >
