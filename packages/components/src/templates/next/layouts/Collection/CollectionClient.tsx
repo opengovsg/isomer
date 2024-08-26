@@ -7,12 +7,12 @@ import type { BreadcrumbProps, CollectionCardProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import {
   BackToTopLink,
-  CollectionCard,
   CollectionSearch,
   Filter,
   PaginationControls,
 } from "../../components/internal"
 import CollectionPageHeader from "./CollectionPageHeader"
+import { CollectionResults } from "./CollectionResults"
 import { ITEMS_PER_PAGE, useCollection } from "./useCollection"
 
 interface CollectionClientProps {
@@ -51,6 +51,7 @@ const CollectionClient = ({
     handleClearFilter,
     currPage,
     setCurrPage,
+    totalCount,
   } = useCollection({ items })
 
   const articleContainerRef = useRef<HTMLDivElement>(null)
@@ -86,53 +87,15 @@ const CollectionClient = ({
         </div>
         <div className={compoundStyles.content()} ref={articleContainerRef}>
           <div className="flex w-full flex-col gap-3">
-            <div className="flex w-full flex-col justify-between gap-x-6 gap-y-2 md:flex-row">
-              <div className="flex h-full w-full items-center gap-3">
-                <p className="prose-headline-lg-regular text-base-content-medium">
-                  {appliedFilters.length > 0 || searchValue !== ""
-                    ? `${filteredCount} search result${
-                        filteredCount === 1 ? "" : "s"
-                      }`
-                    : `${items.length} article${items.length === 1 ? "" : "s"}`}
-                  {searchValue !== "" && (
-                    <>
-                      {" "}
-                      for "<b>{searchValue}</b>"
-                    </>
-                  )}
-                </p>
-              </div>
-            </div>
-            <div className="flex h-full w-full flex-col gap-0">
-              {paginatedItems.length > 0 &&
-                paginatedItems.map((item) => (
-                  <CollectionCard
-                    key={Math.random()}
-                    {...item}
-                    LinkComponent={LinkComponent}
-                  />
-                ))}
-              {paginatedItems.length === 0 && searchValue !== "" && (
-                <div className="my-20 flex flex-col gap-3 text-center lg:m-auto">
-                  <p className="text-paragraph-01">
-                    We couldn’t find articles that match your search.
-                  </p>
-                  <button
-                    className="text-md mx-auto w-fit font-semibold text-hyperlink hover:text-hyperlink-hover lg:text-lg"
-                    onClick={handleClearFilter}
-                  >
-                    Clear all filters
-                  </button>
-                </div>
-              )}
-              {items.length === 0 && (
-                <div className="m-auto flex flex-col gap-3 text-center">
-                  <p className="text-paragraph-01">
-                    There are no items in this collection.
-                  </p>
-                </div>
-              )}
-            </div>
+            <CollectionResults
+              appliedFilters={appliedFilters}
+              filteredCount={filteredCount}
+              handleClearFilter={handleClearFilter}
+              paginatedItems={paginatedItems}
+              searchValue={searchValue}
+              totalCount={totalCount}
+              LinkComponent={LinkComponent}
+            />
           </div>
           {paginatedItems.length > 0 && (
             <div className="flex w-full justify-center lg:justify-end">

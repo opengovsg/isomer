@@ -242,3 +242,184 @@ export const WithFilters: Story = {
     await userEvent.click(screen.getByText(/2023 \(10\)/i))
   },
 }
+
+export const EmptyCollection: Story = {
+  args: {
+    site: {
+      siteName: "Isomer Next",
+      siteMap: {
+        title: "Home",
+        permalink: "/",
+        lastModified: "",
+        layout: "homepage",
+        summary: "",
+        children: [
+          {
+            title: "Publications and other press releases",
+            permalink: "/publications",
+            lastModified: "",
+            layout: "collection",
+            summary: "",
+            children: [],
+          },
+        ],
+      },
+      theme: "isomer-next",
+      isGovernment: true,
+      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      navBarItems: [
+        {
+          name: "About us",
+          url: "/item-one",
+          items: [
+            {
+              name: "PA's network one",
+              url: "/item-one/pa-network-one",
+              description:
+                "Click here and brace yourself for mild disappointment.",
+            },
+            {
+              name: "PA's network two",
+              url: "/item-one/pa-network-two",
+              description:
+                "Click here and brace yourself for mild disappointment.",
+            },
+            {
+              name: "PA's network three",
+              url: "/item-one/pa-network-three",
+            },
+            {
+              name: "PA's network four",
+              url: "/item-one/pa-network-four",
+              description:
+                "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+            },
+            {
+              name: "PA's network five",
+              url: "/item-one/pa-network-five",
+              description:
+                "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+            },
+            {
+              name: "PA's network six",
+              url: "/item-one/pa-network-six",
+              description:
+                "Click here and brace yourself for mild disappointment.",
+            },
+          ],
+        },
+        {
+          name: "Industries",
+          url: "/item-two",
+          description: "This is a description of the item.",
+          items: [
+            {
+              name: "A sub item",
+              url: "/item-two/sub-item",
+              description:
+                "Click here and brace yourself for mild disappointment.",
+            },
+            {
+              name: "Another sub item",
+              url: "/item-two/another-sub-item",
+            },
+          ],
+        },
+        {
+          name: "Media",
+          url: "/item-three",
+          items: [
+            {
+              name: "A sub item",
+              url: "/item-three/sub-item",
+            },
+            {
+              name: "Another sub item",
+              url: "/item-three/another-sub-item",
+              description:
+                "Click here and brace yourself for mild disappointment.",
+            },
+          ],
+        },
+        {
+          name: "Careers",
+          url: "/item-four",
+          items: [
+            {
+              name: "A sub item",
+              url: "/item-four/sub-item",
+            },
+            {
+              name: "Another sub item",
+              url: "/item-four/another-sub-item",
+            },
+          ],
+        },
+        {
+          name: "Publications",
+          url: "/item-five",
+          items: [
+            {
+              name: "A sub item",
+              url: "/item-five/sub-item",
+            },
+            {
+              name: "Another sub item",
+              url: "/item-five/another-sub-item",
+            },
+          ],
+        },
+        {
+          name: "Newsroom",
+          url: "/item-six",
+          items: [
+            {
+              name: "A sub item",
+              url: "/item-six/sub-item",
+            },
+            {
+              name: "Another sub item",
+              url: "/item-six/another-sub-item",
+            },
+          ],
+        },
+        {
+          name: "Contact us",
+          url: "/single-item",
+        },
+      ],
+      footerItems: {
+        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
+        termsOfUseLink: "https://www.isomer.gov.sg/terms",
+        siteNavItems: [],
+      },
+      lastUpdated: "1 Jan 2021",
+      search: {
+        type: "localSearch",
+        searchUrl: "/search",
+      },
+      notification: "This is a notification",
+    },
+  },
+}
+
+export const SearchingEmptyCollection: Story = {
+  args: EmptyCollection.args,
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    const searchElem = screen.getByRole("searchbox", {
+      name: /search for publications and other press releases/i,
+    })
+    await userEvent.type(searchElem, "anything")
+  },
+}
+
+export const NoResults: Story = {
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    const searchElem = screen.getByRole("searchbox", {
+      name: /search for publications and other press releases/i,
+    })
+    await userEvent.type(searchElem, "some whacky search term")
+  },
+}
