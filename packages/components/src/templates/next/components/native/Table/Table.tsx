@@ -93,7 +93,7 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
         content={caption}
         className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
       />
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto" tabIndex={0}>
         <table
           className="w-full border-separate border-spacing-0"
           aria-describedby={tableDescriptionId}
