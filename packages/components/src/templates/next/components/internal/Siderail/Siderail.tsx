@@ -36,7 +36,7 @@ const generateSiderailItems = (items: Item[]): JSX.Element[] => {
     }
     // No children
     return (
-      <li className={compoundStyles.container()}>
+      <li key={index} className={compoundStyles.container()}>
         <SiderailLabel
           key={index}
           {...item}

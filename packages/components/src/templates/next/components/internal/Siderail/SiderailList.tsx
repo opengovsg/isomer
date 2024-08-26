@@ -65,10 +65,12 @@ export const SiderailList = ({
           <DisclosurePanel>
             <ul>
               {item.childPages.map((child, index) => (
-                <li className={compoundStyles.childHeader({ isOpen })}>
+                <li
+                  key={index}
+                  className={compoundStyles.childHeader({ isOpen })}
+                >
                   <SiderailLabel
                     showIconOnHover
-                    key={index}
                     {...child}
                     className={compoundStyles.childLabel({ isOpen })}
                   />

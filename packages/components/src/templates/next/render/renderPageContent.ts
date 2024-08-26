@@ -11,7 +11,7 @@ export const renderPageContent = ({
   LinkComponent: any
 }) => {
   let isInfopicTextOnRight = false
-  return content.map((component) => {
+  return content.map((component, index) => {
     if (component.type === "infopic") {
       isInfopicTextOnRight = !isInfopicTextOnRight
       const formattedComponent = {
@@ -20,10 +20,16 @@ export const renderPageContent = ({
       }
       return renderComponent({
         component: formattedComponent,
+        elementKey: index,
         assetsBaseUrl,
         LinkComponent,
       })
     }
-    return renderComponent({ component, assetsBaseUrl, LinkComponent })
+    return renderComponent({
+      component,
+      elementKey: index,
+      assetsBaseUrl,
+      LinkComponent,
+    })
   })
 }
