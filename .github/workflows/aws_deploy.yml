@@ -141,11 +141,6 @@ jobs:
           build-args: |
             ENV=${{env.ENV}}
             NEXT_PUBLIC_ENABLE_SGID=${{ inputs.sgid-enabled }}
-          secrets: |
-            SGID_CLIENT_ID=${{ secrets.sgid-client-id }}
-            SGID_CLIENT_SECRET=${{ secrets.sgid-client-secret }}
-            SGID_REDIRECT_URI=${{ secrets.sgid-redirect-uri }}
-            SGID_PRIVATE_KEY=${{ secrets.sgid-private-key }}
 
   deploy:
     name: Deploy image to ECS

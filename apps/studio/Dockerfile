@@ -17,6 +17,7 @@ RUN turbo prune isomer-studio --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
+ENV NEXT_PUBLIC_ENABLE_SGID=true
 RUN apk update
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
