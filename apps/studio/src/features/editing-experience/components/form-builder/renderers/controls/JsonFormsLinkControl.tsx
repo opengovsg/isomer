@@ -25,7 +25,7 @@ const LINK_TYPES = {
   },
   external: {
     icon: BiLink,
-    label: "External link",
+    label: "External",
   },
   file: {
     icon: BiFile,
