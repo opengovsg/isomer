@@ -32,7 +32,12 @@ jobs:
       codedeploy-deployment-group: "studio-vapt-ecs-dg"
       ecs-task-role: studio-vapt-ecs-task-role
       ecs-task-exec-role: studio-vapt-ecs-task-exec-role
+      sgid-enabled: true
 
     secrets:
       DD_API_KEY: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       RDS_READER_ENDPOINT: ${{ secrets.RDS_READER_ENDPOINT }}
+      sgid-client-id: ${{ secrets.SGID_CLIENT_ID }}
+      sgid-client-secret: ${{ secrets.SGID_CLIENT_SECRET }}
+      sgid-private-key: ${{ secrets.SGID_PRIVATE_KEY }}
+      sgid-redirect-uri: ${{ secrets.SGID_REDIRECT_URI }}

@@ -68,12 +68,28 @@ on:
         description: "Task role that ecs uses to deploy our app"
         required: true
         type: string
+      sgid-enabled:
+        description: "Enable SGID for the app"
+        required: false
+        type: boolean
     secrets:
       DD_API_KEY:
         description: "Datadog API key for uploading sourcemaps"
         required: false
       RDS_READER_ENDPOINT:
         description: "RDS reader endpoint for database connection"
+        required: false
+      sgid-client-id:
+        description: "Client ID for SGID"
+        required: false
+      sgid-client-secret:
+        description: "Client secret for SGID"
+        required: false
+      sgid-private-key:
+        description: "Private key for SGID"
+        required: false
+      sgid-redirect-uri:
+        description: "Redirect URI for SGID"
         required: false
 
 permissions:
@@ -124,6 +140,12 @@ jobs:
             ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
           build-args: |
             ENV=${{env.ENV}}
+            NEXT_PUBLIC_ENABLE_SGID=${{ inputs.sgid-enabled }}
+          secrets: |
+            SGID_CLIENT_ID=${{ secrets.sgid-client-id }}
+            SGID_CLIENT_SECRET=${{ secrets.sgid-client-secret }}
+            SGID_REDIRECT_URI=${{ secrets.sgid-redirect-uri }}
+            SGID_PRIVATE_KEY=${{ secrets.sgid-private-key }}
 
   deploy:
     name: Deploy image to ECS
