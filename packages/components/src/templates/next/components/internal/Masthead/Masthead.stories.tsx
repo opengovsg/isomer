@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { userEvent, within } from "@storybook/test"
 
 import type { MastheadProps } from "~/interfaces"
 import Masthead from "./Masthead"
@@ -26,5 +27,14 @@ export const Default: Story = {
 export const Staging: Story = {
   args: {
     isStaging: true,
+  },
+}
+
+export const expanded: Story = {
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(
+      screen.getByRole("button", { name: /how to identify/i }),
+    )
   },
 }
