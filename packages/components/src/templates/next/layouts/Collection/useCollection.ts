@@ -7,7 +7,6 @@ import {
 } from "react"
 
 import type { AppliedFilter } from "../../types/Filter"
-import type { CollectionPageSchemaType } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
 import {
   getAvailableFilters,
@@ -76,6 +75,7 @@ export const useCollection = ({ items }: UseCollectionProps) => {
   return {
     paginatedItems,
     filteredCount: filteredItems.length,
+    totalCount: items.length,
     filters,
     searchValue,
     handleSearchValueChange,
@@ -87,3 +87,5 @@ export const useCollection = ({ items }: UseCollectionProps) => {
     setCurrPage,
   }
 }
+
+export type UseCollectionReturn = ReturnType<typeof useCollection>

@@ -1012,6 +1012,17 @@ video {
   border-width: 0;
 }
 
+.not-sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
 .\!visible {
   visibility: visible !important;
 }
@@ -1097,6 +1108,10 @@ video {
   top: 2rem;
 }
 
+.top-full {
+  top: 100%;
+}
+
 .z-10 {
   z-index: 10;
 }
@@ -1109,6 +1124,10 @@ video {
   z-index: 50;
 }
 
+.z-\[1\] {
+  z-index: 1;
+}
+
 .col-span-12 {
   grid-column: span 12 / span 12;
 }
@@ -1119,10 +1138,6 @@ video {
 
 .m-1 {
   margin: 0.25rem;
-}
-
-.m-auto {
-  margin: auto;
 }
 
 .mx-2 {
@@ -1155,14 +1170,14 @@ video {
   margin-bottom: 4rem;
 }
 
-.my-20 {
-  margin-top: 5rem;
-  margin-bottom: 5rem;
-}
-
 .my-6 {
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
+}
+
+.my-8 {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 }
 
 .my-\[15px\] {
@@ -1209,6 +1224,10 @@ video {
 
 .mb-4 {
   margin-bottom: 1rem;
+}
+
+.mb-7 {
+  margin-bottom: 1.75rem;
 }
 
 .mb-\[0\.1875rem\] {
@@ -1417,12 +1436,16 @@ video {
   height: 140px;
 }
 
-.h-\[2\.125rem\] {
-  height: 2.125rem;
-}
-
 .h-\[21px\] {
   height: 21px;
+}
+
+.h-\[29\.25rem\] {
+  height: 29.25rem;
+}
+
+.h-\[3\.25rem\] {
+  height: 3.25rem;
 }
 
 .h-\[4\.25rem\] {
@@ -1448,6 +1471,10 @@ video {
 
 .h-full {
   height: 100%;
+}
+
+.h-screen {
+  height: 100vh;
 }
 
 .max-h-\[400px\] {
@@ -1541,10 +1568,6 @@ video {
 
 .w-\[12px\] {
   width: 12px;
-}
-
-.w-\[2\.125rem\] {
-  width: 2.125rem;
 }
 
 .w-auto {
@@ -2358,6 +2381,10 @@ video {
   fill: #111827;
 }
 
+.fill-current {
+  fill: currentColor;
+}
+
 .object-contain {
   -o-object-fit: contain;
   object-fit: contain;
@@ -2516,6 +2543,11 @@ video {
   padding-bottom: 0.875rem;
 }
 
+.py-32 {
+  padding-top: 8rem;
+  padding-bottom: 8rem;
+}
+
 .py-4 {
   padding-top: 1rem;
   padding-bottom: 1rem;
@@ -2545,16 +2577,16 @@ video {
   padding-bottom: 0px;
 }
 
-.pb-10 {
-  padding-bottom: 2.5rem;
-}
-
 .pb-12 {
   padding-bottom: 3rem;
 }
 
 .pb-16 {
   padding-bottom: 4rem;
+}
+
+.pb-2 {
+  padding-bottom: 0.5rem;
 }
 
 .pb-20 {
@@ -2627,6 +2659,10 @@ video {
 
 .ps-8 {
   padding-inline-start: 2rem;
+}
+
+.pt-0 {
+  padding-top: 0px;
 }
 
 .pt-1 {
@@ -2715,6 +2751,10 @@ video {
 
 .text-\[0\.6875rem\] {
   font-size: 0.6875rem;
+}
+
+.text-\[0\.875rem\] {
+  font-size: 0.875rem;
 }
 
 .text-\[0\.9375rem\] {
@@ -2815,6 +2855,10 @@ video {
   font-variant-numeric: var(--tw-ordinal) var(--tw-slashed-zero)
     var(--tw-numeric-figure) var(--tw-numeric-spacing)
     var(--tw-numeric-fraction);
+}
+
+.leading-5 {
+  line-height: 1.25rem;
 }
 
 .leading-6 {
@@ -2970,11 +3014,6 @@ video {
 .text-gray-900 {
   --tw-text-opacity: 1;
   color: rgb(17 24 39 / var(--tw-text-opacity));
-}
-
-.text-hyperlink {
-  --tw-text-opacity: 1;
-  color: rgb(19 97 240 / var(--tw-text-opacity));
 }
 
 .text-indigo-600 {
@@ -3480,7 +3519,7 @@ video {
   grid-template-rows: auto 1fr;
 }
 
-.last\:prose-label-md-medium:last-child {
+.current\:prose-label-md-medium[data-current] {
   font-weight: 500;
   letter-spacing: 0;
   font-size: 0.875rem;
@@ -3628,11 +3667,6 @@ video {
   border-bottom-color: transparent;
 }
 
-.last\:text-base-content-medium:last-child {
-  --tw-text-opacity: 1;
-  color: rgb(31 41 55 / var(--tw-text-opacity));
-}
-
 .last-of-type\:border-r:last-of-type {
   border-right-width: 1px;
 }
@@ -3676,6 +3710,11 @@ video {
 .current\:bg-base-content-subtle[data-current] {
   --tw-bg-opacity: 1;
   background-color: rgb(75 85 99 / var(--tw-bg-opacity));
+}
+
+.current\:text-base-content-medium[data-current] {
+  --tw-text-opacity: 1;
+  color: rgb(31 41 55 / var(--tw-text-opacity));
 }
 
 .current\:text-white[data-current] {
@@ -3763,11 +3802,6 @@ video {
   color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 
-.hover\:text-hyperlink-hover:where([data-rac])[data-hovered] {
-  --tw-text-opacity: 1;
-  color: rgb(13 79 202 / var(--tw-text-opacity));
-}
-
 .hover\:text-inherit:where([data-rac])[data-hovered] {
   color: inherit;
 }
@@ -3798,6 +3832,12 @@ video {
   )[data-hovered] {
   --tw-bg-opacity: 1;
   background-color: rgb(75 85 99 / var(--tw-bg-opacity));
+}
+
+.current\:hover\:decoration-transparent:where(
+    [data-rac]
+  )[data-hovered][data-current] {
+  text-decoration-color: transparent;
 }
 
 .hover\:cursor-pointer:where(:not([data-rac])):hover {
@@ -3872,11 +3912,6 @@ video {
   color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 
-.hover\:text-hyperlink-hover:where(:not([data-rac])):hover {
-  --tw-text-opacity: 1;
-  color: rgb(13 79 202 / var(--tw-text-opacity));
-}
-
 .hover\:text-inherit:where(:not([data-rac])):hover {
   color: inherit;
 }
@@ -3907,6 +3942,12 @@ video {
   ):hover {
   --tw-bg-opacity: 1;
   background-color: rgb(75 85 99 / var(--tw-bg-opacity));
+}
+
+.current\:hover\:decoration-transparent:where(
+    :not([data-rac])
+  ):hover[data-current] {
+  text-decoration-color: transparent;
 }
 
 .group:where([data-rac])[data-hovered] .group-hover\:translate-x-1 {
@@ -4274,8 +4315,20 @@ video {
     height: 13rem;
   }
 
+  .md\:h-\[240px\] {
+    height: 240px;
+  }
+
+  .md\:max-h-full {
+    max-height: 100%;
+  }
+
   .md\:w-1\/2 {
     width: 50%;
+  }
+
+  .md\:w-\[200px\] {
+    width: 200px;
   }
 
   .md\:min-w-\[67\%\] {
@@ -4374,10 +4427,6 @@ video {
     grid-column: span 9 / span 9;
   }
 
-  .lg\:m-auto {
-    margin: auto;
-  }
-
   .lg\:mx-0 {
     margin-left: 0px;
     margin-right: 0px;
@@ -4432,8 +4481,8 @@ video {
     aspect-ratio: 3/2;
   }
 
-  .lg\:h-\[21px\] {
-    height: 21px;
+  .lg\:h-16 {
+    height: 4rem;
   }
 
   .lg\:h-auto {
@@ -4591,6 +4640,10 @@ video {
     padding-bottom: 6rem;
   }
 
+  .lg\:pb-10 {
+    padding-bottom: 2.5rem;
+  }
+
   .lg\:pb-12 {
     padding-bottom: 3rem;
   }
@@ -4655,11 +4708,6 @@ video {
   .lg\:text-base {
     font-size: 1rem;
     line-height: 1.5rem;
-  }
-
-  .lg\:text-lg {
-    font-size: 1.125rem;
-    line-height: 1.75rem;
   }
 
   .lg\:text-sm {
@@ -4802,6 +4850,12 @@ video {
 
 .\[\&\:not\(\:first-child\)\]\:mt-9:not(:first-child) {
   margin-top: 2.25rem;
+}
+
+.\[\&\:not\(\:first-child\)\]\:first-of-type\:mt-7:first-of-type:not(
+    :first-child
+  ) {
+  margin-top: 1.75rem;
 }
 
 .\[\&\:not\(\:last-child\)\]\:mb-0:not(:last-child) {

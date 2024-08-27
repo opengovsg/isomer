@@ -47,14 +47,16 @@ export const Filter = ({
 
   return (
     <>
-      <Button
-        className="prose-headline-lg-semibold flex w-full items-center justify-between gap-1 rounded border-[1.5px] border-base-content-strong bg-white px-4 py-3.5 text-base-content-strong lg:hidden"
-        variant="unstyled"
-        onPress={() => setMobileFiltersOpen(true)}
-      >
-        Filter results
-        <BiChevronRight className="h-6 w-6 shrink-0" />
-      </Button>
+      {filters.length > 0 && (
+        <Button
+          className="prose-headline-lg-semibold flex w-full items-center justify-between gap-1 rounded border-[1.5px] border-base-content-strong bg-white px-4 py-3.5 text-base-content-strong lg:hidden"
+          variant="unstyled"
+          onPress={() => setMobileFiltersOpen(true)}
+        >
+          Filter results
+          <BiChevronRight className="h-6 w-6 shrink-0" />
+        </Button>
+      )}
       <FilterDrawer
         appliedFilters={appliedFilters}
         filters={filters}
@@ -117,6 +119,11 @@ export const Filter = ({
             </div>
           </CheckboxGroup>
         ))}
+        {filters.length === 0 && (
+          <p className="prose-body-base py-4 italic text-base-content">
+            Nothing to filter by
+          </p>
+        )}
       </aside>
     </>
   )

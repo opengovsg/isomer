@@ -10,7 +10,7 @@ export const useSiteThemeCssVars = ({ siteId }: { siteId: number }) => {
     if (!theme) return
     // convert theme to css vars
     const flattenedVars: Record<string, string> = flatten(
-      { color: { brand: { ...theme.colors } } },
+      { color: theme.colors },
       { delimiter: "-" },
     )
     return Object.entries(flattenedVars).reduce(

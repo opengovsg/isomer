@@ -8,7 +8,7 @@ import { Prose } from "../../native"
 const createAccordionStyles = tv({
   slots: {
     details:
-      "group border-y border-divider-medium px-4 py-5 has-[+_details]:border-b-0",
+      "group border-y border-divider-medium px-4 py-5 has-[+_details]:border-b-0 [&:not(:first-child)]:first-of-type:mt-7",
     summary:
       "prose-headline-lg-medium flex list-none flex-row items-center justify-between gap-3 text-base-content-strong outline-none outline outline-0 outline-offset-2 outline-brand-interaction hover:cursor-pointer focus-visible:outline-2",
     icon: "h-6 w-6 flex-shrink-0 [&.minus]:hidden [&.minus]:group-open:block [&.plus]:block [&.plus]:group-open:hidden",

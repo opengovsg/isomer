@@ -21,10 +21,13 @@ function EditPage(): JSX.Element {
   const { pageId, siteId } = useQueryParse(editPageSchema)
 
   const [{ content: page, permalink }] =
-    trpc.page.readPageAndBlob.useSuspenseQuery({
-      pageId,
-      siteId,
-    })
+    trpc.page.readPageAndBlob.useSuspenseQuery(
+      {
+        pageId,
+        siteId,
+      },
+      { refetchOnWindowFocus: false },
+    )
 
   const themeCssVars = useSiteThemeCssVars({ siteId })
 

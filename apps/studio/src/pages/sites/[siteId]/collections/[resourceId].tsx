@@ -1,11 +1,22 @@
-import { Box, HStack, Stack, Text, useDisclosure } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import {
+  Box,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  HStack,
+  Stack,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react"
+import { Breadcrumb, Button } from "@opengovsg/design-system-react"
+import { useSetAtom } from "jotai"
 import { BiData } from "react-icons/bi"
 import { z } from "zod"
 
+import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
 import { CollectionTable } from "~/features/dashboard/components/CollectionTable"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
+import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { CreateCollectionPageModal } from "~/features/editing-experience/components/CreateCollectionPageModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
@@ -24,6 +35,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
     onClose: onPageCreateModalClose,
   } = useDisclosure()
   const { siteId, resourceId } = useQueryParse(sitePageSchema)
+  const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
 
   // TODO: Handle not found error in error boundary
   const [metadata] = trpc.collection.getMetadata.useSuspenseQuery({
@@ -34,7 +46,27 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
   return (
     <>
       <Stack w="100%" p="1.75rem" gap="1rem">
-        {/* TODO: Add breadcrumb */}
+        <Breadcrumb size="sm">
+          <BreadcrumbItem>
+            <BreadcrumbLink href={`/sites/${siteId}`}>
+              <Text textStyle="caption-2" color="interaction.links.default">
+                Home
+              </Text>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <Text textStyle="caption-2" color="base.content.default">
+              ...
+            </Text>
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <BreadcrumbLink isCurrentPage>
+              <Text textStyle="caption-2" color="base.content.default">
+                {metadata.title}
+              </Text>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+        </Breadcrumb>
         <HStack w="100%" gap="1.5rem">
           <HStack gap="0.75rem" flex={1}>
             <Box
@@ -50,6 +82,17 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             </Text>
           </HStack>
           <HStack align="center" gap="0.75rem">
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() =>
+                setFolderSettingsModalState({
+                  folderId: String(resourceId),
+                })
+              }
+            >
+              Collection settings
+            </Button>
             <Button onClick={onPageCreateModalOpen} size="sm">
               Add new item
             </Button>
@@ -67,6 +110,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
         collectionId={resourceId}
       />
       <DeleteResourceModal siteId={siteId} />
+      <FolderSettingsModal />
     </>
   )
 }
