@@ -55,11 +55,6 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbItem>
-            <Text textStyle="caption-2" color="base.content.default">
-              ...
-            </Text>
-          </BreadcrumbItem>
-          <BreadcrumbItem>
             <BreadcrumbLink isCurrentPage>
               <Text textStyle="caption-2" color="base.content.default">
                 {metadata.title}
