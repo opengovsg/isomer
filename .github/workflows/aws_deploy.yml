@@ -68,6 +68,34 @@ on:
         description: "Task role that ecs uses to deploy our app"
         required: true
         type: string
+      app-url:
+        description: "URL of the app"
+        required: false
+        type: string
+      app-name:
+        description: "Name of the app"
+        required: false
+        type: string
+      app-version:
+        description: "Version of the app"
+        required: false
+        type: string
+      app-enable-sgid:
+        description: "Enable SGID login"
+        required: false
+        type: boolean
+      app-s3-region:
+        description: "S3 region for the assets bucket"
+        required: false
+        type: string
+      app-s3-assets-domain-name:
+        description: "Public domain name for the assets bucket"
+        required: false
+        type: string
+      app-s3-assets-bucket-name:
+        description: "Name of the assets S3 bucket"
+        required: false
+        type: string
     secrets:
       DD_API_KEY:
         description: "Datadog API key for uploading sourcemaps"
@@ -124,6 +152,13 @@ jobs:
             ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
           build-args: |
             ENV=${{env.ENV}}
+            NEXT_PUBLIC_APP_URL=${{ inputs.app-url }}
+            NEXT_PUBLIC_APP_NAME=${{ inputs.app-name }}
+            NEXT_PUBLIC_APP_VERSION=${{ inputs.app-version }}
+            NEXT_PUBLIC_ENABLE_SGID=${{ inputs.app-enable-sgid }}
+            NEXT_PUBLIC_S3_REGION=${{ inputs.app-s3-region }}
+            NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME=${{ inputs.app-s3-assets-domain-name }}
+            NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME=${{ inputs.app-s3-assets-bucket-name }}
 
   deploy:
     name: Deploy image to ECS

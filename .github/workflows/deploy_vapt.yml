@@ -32,6 +32,13 @@ jobs:
       codedeploy-deployment-group: "studio-vapt-ecs-dg"
       ecs-task-role: studio-vapt-ecs-task-role
       ecs-task-exec-role: studio-vapt-ecs-task-exec-role
+      app-url: "https://vapt-studio.isomer.gov.sg"
+      app-name: "Isomer Studio (VAPT)"
+      app-version: ${{ github.sha }}
+      app-enable-sgid: true
+      app-s3-region: "ap-southeast-1"
+      app-s3-assets-domain-name: "isomer-next-infra-vapt-assets-private-ab628e1"
+      app-s3-assets-bucket-name: "isomer-user-content-vapt.by.gov.sg"
 
     secrets:
       DD_API_KEY: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}

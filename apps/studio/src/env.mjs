@@ -22,7 +22,6 @@ const s3Schema = z.object({
  */
 const client = z
   .object({
-    NEXT_PUBLIC_ENABLE_STORAGE: coerceBoolean.default("false"),
     NEXT_PUBLIC_ENABLE_SGID: coerceBoolean.default("false"),
     NEXT_PUBLIC_APP_URL: z.string().url().optional(),
     NEXT_PUBLIC_APP_NAME: z.string().default("Starter Kit"),
@@ -125,7 +124,6 @@ const processEnv = {
   NEXT_PUBLIC_APP_VERSION:
     process.env.NEXT_PUBLIC_APP_VERSION ??
     process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
-  NEXT_PUBLIC_ENABLE_STORAGE: process.env.NEXT_PUBLIC_ENABLE_STORAGE,
   NEXT_PUBLIC_ENABLE_SGID: process.env.NEXT_PUBLIC_ENABLE_SGID,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
 }

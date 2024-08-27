@@ -46,7 +46,6 @@ const StorybookEnvDecorator: Decorator = (story) => {
       NEXT_PUBLIC_APP_NAME: "Starter Kit",
       NEXT_PUBLIC_APP_VERSION: "Storybook",
       NEXT_PUBLIC_ENABLE_SGID: false,
-      NEXT_PUBLIC_ENABLE_STORAGE: false,
     },
     env,
   )
@@ -86,7 +85,7 @@ const SetupDecorator: Decorator = (Story) => {
 
 /**
  * To use this decorator, you need to pass in a `getLayout` function in the story parameters.
- * @example 
+ * @example
  * ```
   const meta: Meta<typeof ActivityAddPage> = {
     title: 'Pages/ActivityAddPage',
