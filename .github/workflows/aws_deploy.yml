@@ -75,26 +75,32 @@ on:
       app-name:
         description: "Name of the app"
         required: false
+        default: "Isomer Studio"
         type: string
       app-version:
         description: "Version of the app"
         required: false
+        default: "0.0.0"
         type: string
       app-enable-sgid:
         description: "Enable SGID login"
         required: false
+        default: false
         type: boolean
       app-s3-region:
         description: "S3 region for the assets bucket"
         required: false
+        default: "ap-southeast-1"
         type: string
       app-s3-assets-domain-name:
         description: "Public domain name for the assets bucket"
         required: false
+        default: "user-content.example.com"
         type: string
       app-s3-assets-bucket-name:
         description: "Name of the assets S3 bucket"
         required: false
+        default: "example-assets-bucket"
         type: string
     secrets:
       DD_API_KEY:
