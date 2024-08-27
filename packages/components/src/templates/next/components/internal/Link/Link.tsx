@@ -30,7 +30,7 @@ import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/focusRing"
 import { useRenderProps } from "./utils"
 
-export interface BaseLinkProps extends AriaLinkProps {
+interface BaseLinkProps extends AriaLinkProps {
   LinkComponent?: ElementType
   "aria-current"?: string
   title?: string
@@ -104,7 +104,9 @@ const linkStyles = tv({
   },
 })
 
-interface LinkProps extends BaseLinkProps, VariantProps<typeof linkStyles> {}
+export interface LinkProps
+  extends BaseLinkProps,
+    VariantProps<typeof linkStyles> {}
 
 export function Link({ showExternalIcon, ...props }: LinkProps) {
   return (
