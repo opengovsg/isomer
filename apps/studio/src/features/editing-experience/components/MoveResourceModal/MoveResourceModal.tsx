@@ -92,6 +92,7 @@ const MoveResourceContent = withSuspense(
       },
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate()
+        await utils.resource.getParentOf.invalidate()
         await utils.resource.listWithoutRoot.invalidate({
           // TODO: Update backend `list` to use the proper schema
           resourceId: movedItem?.resourceId
