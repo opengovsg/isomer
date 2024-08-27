@@ -97,12 +97,7 @@ function BlockItem({
   )
 }
 
-interface ComponentSelectorProps {
-  siteId: number
-  pageId: number
-}
-
-function ComponentSelector({ pageId, siteId }: ComponentSelectorProps) {
+function ComponentSelector() {
   const {
     setCurrActiveIdx,
     savedPageState,
@@ -111,16 +106,6 @@ function ComponentSelector({ pageId, siteId }: ComponentSelectorProps) {
     setPreviewPageState,
     setAddedBlock,
   } = useEditorDrawerContext()
-  const utils = trpc.useUtils()
-  const { mutate } = trpc.page.updatePageBlob.useMutation({
-    onSuccess: async () => {
-      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-    },
-  })
-  const [page] = trpc.page.readPageAndBlob.useSuspenseQuery({
-    pageId,
-    siteId,
-  })
 
   const onProceed = (sectionType: SectionType) => {
     if (!savedPageState) return
