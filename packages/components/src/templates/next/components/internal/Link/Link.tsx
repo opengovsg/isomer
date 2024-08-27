@@ -16,39 +16,35 @@
  *
  * This is a modified version of the original file.
  */
-import type { DOMAttributes, ElementType } from "react"
+import type { ElementType } from "react"
 import type {
-  LinkProps as BaseLinkProps,
+  LinkProps as AriaLinkProps,
   ContextValue,
 } from "react-aria-components"
+import type { VariantProps } from "tailwind-variants"
 import { createContext, forwardRef } from "react"
 import { mergeProps, useFocusRing, useHover, useLink } from "react-aria"
-import { useContextProps } from "react-aria-components"
-import { BiLinkExternal } from "react-icons/bi"
+import { composeRenderProps, useContextProps } from "react-aria-components"
 
-import { twMerge } from "~/lib/twMerge"
+import { tv } from "~/lib/tv"
+import { focusRing } from "~/utils/focusRing"
 import { useRenderProps } from "./utils"
 
-export interface LinkProps extends BaseLinkProps {
+export interface BaseLinkProps extends AriaLinkProps {
   LinkComponent?: ElementType
   "aria-current"?: string
   title?: string
   isExternal?: boolean
-  showExternalIcon?: boolean
-  externalIconClassName?: string
 }
 
 const LinkContext =
-  createContext<ContextValue<LinkProps, HTMLAnchorElement>>(null)
+  createContext<ContextValue<BaseLinkProps, HTMLAnchorElement>>(null)
 
 /**
  * Modified version of `react-aria-component`'s Link component to accept a `LinkComponent` prop.
  */
-export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
-  (
-    { title, isExternal, showExternalIcon, externalIconClassName, ..._props },
-    _ref,
-  ) => {
+const BaseLink = forwardRef<HTMLAnchorElement, BaseLinkProps>(
+  ({ title, isExternal, ..._props }, _ref) => {
     const [props, ref] = useContextProps(_props, _ref, LinkContext)
 
     const extraLinkProps = isExternal
@@ -93,12 +89,34 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
         data-disabled={props.isDisabled || undefined}
       >
         {renderProps.children}
-        {isExternal && showExternalIcon && (
-          <BiLinkExternal
-            className={twMerge("text-[1rem]", externalIconClassName)}
-          />
-        )}
       </ElementToRender>
     )
   },
 )
+
+const linkStyles = tv({
+  extend: focusRing,
+  base: "",
+  variants: {
+    showExternalIcon: {
+      true: `after:content-['_↗']`,
+    },
+  },
+})
+
+interface LinkProps extends BaseLinkProps, VariantProps<typeof linkStyles> {}
+
+export function Link({ showExternalIcon, ...props }: LinkProps) {
+  return (
+    <BaseLink
+      {...props}
+      className={composeRenderProps(props.className, (className, renderProps) =>
+        linkStyles({
+          ...renderProps,
+          showExternalIcon,
+          className,
+        }),
+      )}
+    />
+  )
+}

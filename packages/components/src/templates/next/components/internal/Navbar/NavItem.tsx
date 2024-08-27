@@ -1,11 +1,6 @@
 import { forwardRef } from "react"
 import { FocusOn } from "react-focus-on"
-import {
-  BiChevronDown,
-  BiLinkExternal,
-  BiRightArrowAlt,
-  BiX,
-} from "react-icons/bi"
+import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 
 import type {
   NavbarItem as BaseNavbarItemProps,
@@ -118,7 +113,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
                             <Link
                               LinkComponent={LinkComponent}
                               isExternal={isExternal}
-                              showExternalIcon
+                              showExternalIcon={isExternal}
                               href={subItem.url}
                               className="prose-label-md-medium inline-flex items-center gap-1 text-base-content hover:underline"
                             >

@@ -1,4 +1,4 @@
-import { BiChevronDown, BiLinkExternal } from "react-icons/bi"
+import { BiChevronDown } from "react-icons/bi"
 
 import type { NavbarItem, NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
@@ -88,7 +88,7 @@ export const MobileNavItemAccordion = ({
                   LinkComponent={LinkComponent}
                   href={subItem.url}
                   isExternal={isExternal}
-                  showExternalIcon
+                  showExternalIcon={isExternal}
                   className={item({
                     className: nestedItem({
                       className: isExternal && "justify-start gap-1",
