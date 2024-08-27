@@ -64,7 +64,8 @@ export const getAvailableFilters = (
     },
   ]
 
-  return availableFilters
+  // Remove filters with no items
+  return availableFilters.filter((filter) => filter.items.length > 0)
 }
 
 export const getFilteredItems = (
