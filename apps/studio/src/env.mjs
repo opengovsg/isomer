@@ -54,6 +54,13 @@ const sgidServerSchema = z.discriminatedUnion("NEXT_PUBLIC_ENABLE_SGID", [
   }),
 ])
 
+// NOTE: This is only needed by Vercel. Use the task role permissions instead
+// if deploying on AWS
+const awsAccessSchema = z.object({
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
+})
+
 /**
  * Specify your server-side environment variables schema here. This way you can ensure the app isn't
  * built with invalid env vars.
@@ -71,6 +78,7 @@ const server = z
     ]),
     SESSION_SECRET: z.string().min(32),
   })
+  .merge(awsAccessSchema)
   .merge(s3Schema)
   // Add on schemas as needed that requires conditional validation.
   .merge(baseSgidSchema)
@@ -120,6 +128,8 @@ const processEnv = {
   SGID_CLIENT_SECRET: process.env.SGID_CLIENT_SECRET,
   SGID_PRIVATE_KEY: process.env.SGID_PRIVATE_KEY,
   SGID_REDIRECT_URI: process.env.SGID_REDIRECT_URI,
+  AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
   // Client-side env vars
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
   NEXT_PUBLIC_APP_VERSION:
