@@ -1,4 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { userEvent, within } from "@storybook/test"
+
+import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { MastheadProps } from "~/interfaces"
 import Masthead from "./Masthead"
@@ -11,6 +14,7 @@ const meta: Meta<MastheadProps> = {
     themes: {
       themeOverride: "Isomer Next",
     },
+    chromatic: withChromaticModes(["desktop", "tablet", "mobile"]),
   },
 }
 export default meta
@@ -26,5 +30,14 @@ export const Default: Story = {
 export const Staging: Story = {
   args: {
     isStaging: true,
+  },
+}
+
+export const Expanded: Story = {
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(
+      screen.getByRole("button", { name: /how to identify/i }),
+    )
   },
 }
