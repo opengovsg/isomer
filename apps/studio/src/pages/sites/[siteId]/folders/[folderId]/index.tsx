@@ -4,8 +4,6 @@ import {
   BreadcrumbLink,
   Flex,
   HStack,
-  MenuButton,
-  MenuList,
   Portal,
   Spacer,
   Text,
@@ -13,11 +11,11 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Breadcrumb, Button, Menu } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useSetAtom } from "jotai"
 import { BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
-import { MenuItem } from "~/components/Menu"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
@@ -32,6 +30,17 @@ const folderPageSchema = z.object({
   siteId: z.string(),
   folderId: z.string(),
 })
+const getResourceLink = (
+  resourceId: string | undefined,
+  siteId: number,
+  resourceType: ResourceType,
+) => {
+  if (resourceType === ResourceType.RootPage) {
+    return `/sites/${siteId}`
+  }
+
+  return `/sites/${siteId}/folders/${resourceId}`
+}
 
 const FolderPage: NextPageWithLayout = () => {
   const {
@@ -47,11 +56,22 @@ const FolderPage: NextPageWithLayout = () => {
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
 
   const { folderId, siteId } = useQueryParse(folderPageSchema)
+  const [{ parentResourceId, resourceType }] =
+    trpc.resource.getParentOf.useSuspenseQuery({
+      siteId: Number(siteId),
+      resourceId: folderId,
+    })
 
   const [{ title }] = trpc.folder.getMetadata.useSuspenseQuery({
     siteId: parseInt(siteId),
     resourceId: parseInt(folderId),
   })
+
+  const parentLinkHref = getResourceLink(
+    parentResourceId,
+    Number(siteId),
+    resourceType,
+  )
 
   return (
     <>
@@ -65,11 +85,15 @@ const FolderPage: NextPageWithLayout = () => {
                 </Text>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Text textStyle="caption-2" color="base.content.default">
-                ...
-              </Text>
-            </BreadcrumbItem>
+            {parentResourceId && (
+              <BreadcrumbItem>
+                <BreadcrumbLink href={parentLinkHref}>
+                  <Text textStyle="caption-2" color="base.content.default">
+                    ...
+                  </Text>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            )}
             <BreadcrumbItem>
               <BreadcrumbLink
                 isCurrentPage
