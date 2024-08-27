@@ -107,7 +107,7 @@ const SideNavItem = ({
       >
         <AccordionItem
           _disabled={{
-            textColor: "interaction.support.disabled-cuntent",
+            textColor: "interaction.support.disabled-content",
           }}
           isDisabled={isDisabled}
           border="none"
