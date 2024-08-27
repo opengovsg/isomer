@@ -121,7 +121,7 @@ export function TiptapEditor({ data, handleChange }: TiptapEditorProps) {
   if (!editor) return null
 
   return (
-    <Box backgroundColor="gray.50" maxW="29vw">
+    <Box backgroundColor="gray.50" wordBreak="break-all">
       <VStack
         border="1px solid"
         borderColor="base.divider.strong"
