@@ -95,12 +95,16 @@ const SuspendableModalContent = ({
   const { mutate, isLoading } = trpc.folder.editFolder.useMutation({
     onSettled: onClose,
     onSuccess: async () => {
-      await utils.site.list.invalidate()
       await utils.resource.listWithoutRoot.invalidate()
       await utils.resource.getChildrenOf.invalidate({
         resourceId: parentId ? String(parentId) : null,
       })
-      await utils.folder.getMetadata.invalidate()
+      await utils.folder.getMetadata.invalidate({
+        resourceId: Number(folderId),
+      })
+      await utils.collection.getMetadata.invalidate({
+        resourceId: Number(folderId),
+      })
       toast({ title: "Folder updated!", status: "success" })
     },
     onError: (err) => {
