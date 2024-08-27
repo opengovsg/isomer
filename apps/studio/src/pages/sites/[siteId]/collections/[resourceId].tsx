@@ -1,5 +1,13 @@
-import { Box, HStack, Stack, Text, useDisclosure } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import {
+  Box,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  HStack,
+  Stack,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react"
+import { Breadcrumb, Button } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
 import { BiData } from "react-icons/bi"
 import { z } from "zod"
@@ -38,7 +46,27 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
   return (
     <>
       <Stack w="100%" p="1.75rem" gap="1rem">
-        {/* TODO: Add breadcrumb */}
+        <Breadcrumb size="sm">
+          <BreadcrumbItem>
+            <BreadcrumbLink href={`/sites/${siteId}`}>
+              <Text textStyle="caption-2" color="interaction.links.default">
+                Home
+              </Text>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <Text textStyle="caption-2" color="base.content.default">
+              ...
+            </Text>
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <BreadcrumbLink isCurrentPage>
+              <Text textStyle="caption-2" color="base.content.default">
+                {metadata.title}
+              </Text>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+        </Breadcrumb>
         <HStack w="100%" gap="1.5rem">
           <HStack gap="0.75rem" flex={1}>
             <Box

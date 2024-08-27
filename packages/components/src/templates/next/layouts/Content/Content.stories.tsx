@@ -1087,6 +1087,32 @@ export const Default: Story = {
         ],
       },
       {
+        type: "accordion",
+        details: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ text: "this is the first item", type: "text" }],
+            },
+          ],
+        },
+        summary: "First title for an accordion item",
+      },
+      {
+        type: "accordion",
+        details: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ text: "this is the second item", type: "text" }],
+            },
+          ],
+        },
+        summary: "Second title for the accordion item",
+      },
+      {
         type: "contentpic",
         imageAlt:
           "Two rhinos. A rhino is peacefully grazing on grass in a field in front of the other rhino.",
