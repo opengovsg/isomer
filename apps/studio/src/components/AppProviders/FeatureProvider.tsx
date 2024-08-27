@@ -4,7 +4,6 @@ import { createContext, useContext } from "react"
 import { useEnv } from "~/hooks/useEnv"
 
 interface FeatureContextProps {
-  storage: boolean
   sgid: boolean
 }
 
@@ -44,7 +43,6 @@ export const useFeatures = (): FeatureContextProps => {
 const useProvideFeatures = () => {
   const { env } = useEnv()
   return {
-    storage: !!env.NEXT_PUBLIC_ENABLE_STORAGE,
     sgid: !!env.NEXT_PUBLIC_ENABLE_SGID,
   }
 }
