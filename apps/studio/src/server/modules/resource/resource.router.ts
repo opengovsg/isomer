@@ -6,6 +6,7 @@ import {
   deleteResourceSchema,
   getChildrenSchema,
   getMetadataSchema,
+  getParentSchema,
   listResourceSchema,
   moveSchema,
 } from "~/schemas/resource"
@@ -197,12 +198,7 @@ export const resourceRouter = router({
       return result.numDeletedRows.toString()
     }),
   getParentOf: protectedProcedure
-    .input(
-      z.object({
-        siteId: z.number().min(0),
-        resourceId: z.string(),
-      }),
-    )
+    .input(getParentSchema)
     .query(async ({ input: { siteId, resourceId } }) => {
       return db.transaction().execute(async (tx) => {
         const resource = await tx
