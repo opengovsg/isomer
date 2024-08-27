@@ -129,7 +129,7 @@ export const Datatable = <T extends object>({
         </Table>
       </Box>
       <Flex py="1rem" gap="1rem">
-        {pagination && (
+        {pagination && !!totalRowCount && (
           <DatatablePagination
             instance={instance}
             totalRowCount={totalRowCount}
