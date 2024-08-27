@@ -87,7 +87,7 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
   }, [])
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
       <BaseParagraph
         id={tableDescriptionId}
         content={caption}
