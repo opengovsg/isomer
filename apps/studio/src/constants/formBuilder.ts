@@ -17,4 +17,4 @@ export const JSON_FORMS_RANKING = {
   Catchall: -99999999999,
 }
 
-export const PROSE_COMPONENT_NAME = "Prose component"
+export const PROSE_COMPONENT_NAME = "Text component"
