@@ -34,6 +34,12 @@ export const iconButtonStyles = tv({
       colorScheme: "default",
       className: "text-base-content",
     },
+    {
+      variant: "clear",
+      isFocusVisible: true,
+      className:
+        "bg-utility-highlight text-base-content-strong transition-none",
+    },
   ],
   defaultVariants: {
     size: "base",
