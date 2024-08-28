@@ -9,9 +9,11 @@ import {
   ButtonProps,
   Flex,
   Icon,
+  Skeleton,
+  Spacer,
   Text,
 } from "@chakra-ui/react"
-import { Button, Spinner } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFile, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
@@ -138,11 +140,7 @@ const SideNavItem = ({
   const isCurResourceActive = getCurResource(siteProps) === resourceId
 
   if (isLoading || !data) {
-    return (
-      <Flex align="center" height="2rem" pl="2.75rem" pr="1rem">
-        <Spinner />
-      </Flex>
-    )
+    return <Skeleton isLoaded={!isLoading} w="16rem" h="2.25rem" />
   }
 
   const urlType = getResourceType(resourceType)
