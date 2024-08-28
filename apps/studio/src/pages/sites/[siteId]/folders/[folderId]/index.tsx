@@ -56,11 +56,10 @@ const FolderPage: NextPageWithLayout = () => {
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
 
   const { folderId, siteId } = useQueryParse(folderPageSchema)
-  const [{ parentResourceId, resourceType }] =
-    trpc.resource.getParentOf.useSuspenseQuery({
-      siteId: Number(siteId),
-      resourceId: folderId,
-    })
+  const [{ resource }] = trpc.resource.getParentOf.useSuspenseQuery({
+    siteId: Number(siteId),
+    resourceId: folderId,
+  })
 
   const [{ title }] = trpc.folder.getMetadata.useSuspenseQuery({
     siteId: parseInt(siteId),
@@ -68,9 +67,9 @@ const FolderPage: NextPageWithLayout = () => {
   })
 
   const parentLinkHref = getResourceLink(
-    parentResourceId,
+    resource.parent?.id,
     Number(siteId),
-    resourceType,
+    resource.type,
   )
 
   return (
@@ -85,7 +84,16 @@ const FolderPage: NextPageWithLayout = () => {
                 </Text>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            {parentResourceId && (
+            {resource.parent?.id && (
+              <BreadcrumbItem>
+                <BreadcrumbLink href={parentLinkHref}>
+                  <Text textStyle="caption-2" color="base.content.default">
+                    ...
+                  </Text>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            )}
+            {resource.parent?.parentId && (
               <BreadcrumbItem>
                 <BreadcrumbLink href={parentLinkHref}>
                   <Text textStyle="caption-2" color="base.content.default">
