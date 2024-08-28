@@ -2,6 +2,7 @@
 
 import { composeRenderProps } from "react-aria-components"
 
+import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 
 /**
@@ -23,3 +24,11 @@ export function composeTailwindRenderProps<T>(
 export const dataAttr = (value: unknown) => (!!value ? true : undefined)
 
 // TODO: move focusRing style inside here
+export const focusVisibleHighlight = tv({
+  base: "",
+  variants: {
+    isFocusVisible: {
+      true: "shadow-focus-visible bg-amber-400 outline-0 transition-none",
+    },
+  },
+})
