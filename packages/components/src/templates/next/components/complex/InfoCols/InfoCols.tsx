@@ -3,6 +3,9 @@ import { BiRightArrowAlt } from "react-icons/bi"
 import type { SupportedIconName } from "~/common/icons"
 import type { InfoColsProps } from "~/interfaces"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
+import { tv } from "~/lib/tv"
+import { focusRing } from "~/utils/focusRing"
+import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 
@@ -26,6 +29,11 @@ const InfoBoxIcon = ({ icon }: { icon?: SupportedIconName }) => {
   )
 }
 
+export const infoColTitleStyle = tv({
+  extend: groupFocusVisibleHighlightNonRac,
+  base: "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-interaction",
+})
+
 const InfoBoxes = ({
   infoBoxes,
   LinkComponent,
@@ -38,12 +46,10 @@ const InfoBoxes = ({
             LinkComponent={LinkComponent}
             href={buttonUrl}
             key={idx}
-            className="group flex flex-col items-start gap-3 text-left"
+            className="group flex flex-col items-start gap-3 text-left outline-0"
           >
             {icon && <InfoBoxIcon icon={icon} aria-hidden="true" />}
-            <h3 className="prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-interaction">
-              {title}
-            </h3>
+            <h3 className={infoColTitleStyle()}>{title}</h3>
             {description && (
               <p className="prose-body-base text-base-content">{description}</p>
             )}
