@@ -23,7 +23,7 @@ const createSiderailListStyles = tv({
     childLabel: "py-2 hover:text-brand-interaction",
     container: "",
     expandButton:
-      "focus-visible:bg-utility-highlight -mx-4 rounded p-4 outline outline-0 outline-offset-2 outline-link transition hover:text-brand-interaction focus-visible:outline-2",
+      "focus-visible:bg-utility-highlight -mx-4 rounded p-4 outline outline-0 outline-offset-2 outline-link transition hover:text-brand-interaction focus-visible:outline-2 focus-visible:transition-none",
     expandIcon: "h-6 w-6",
   },
   variants: {
