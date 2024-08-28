@@ -240,23 +240,6 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
         type: "divider",
         isHidden: !editor.isActive("table"),
       },
-
-      {
-        type: "item",
-        icon: () => (
-          <Icon color="base.content.medium" as={RiLayoutColumnFill} />
-        ),
-        title: "Toggle header column",
-        action: () => editor.chain().focus().toggleHeaderColumn().run(),
-        isHidden: !editor.isActive("table"),
-      },
-      {
-        type: "item",
-        icon: () => <Icon color="base.content.medium" as={RiLayoutRowFill} />,
-        title: "Toggle header row",
-        action: () => editor.chain().focus().toggleHeaderRow().run(),
-        isHidden: !editor.isActive("table"),
-      },
       {
         type: "item",
         icon: () => (
