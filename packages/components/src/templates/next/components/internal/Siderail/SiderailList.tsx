@@ -22,8 +22,9 @@ const createSiderailListStyles = tv({
     childHeader: "flex w-full items-center gap-1.5",
     childLabel: "py-2 hover:text-brand-interaction",
     container: "",
-    expandButton: "-mx-4 p-4",
-    expandIcon: "h-6 w-6 transition hover:text-brand-interaction",
+    expandButton:
+      "focus-visible:bg-utility-highlight -mx-4 rounded p-4 outline outline-0 outline-offset-2 outline-link transition hover:text-brand-interaction focus-visible:outline-2",
+    expandIcon: "h-6 w-6",
   },
   variants: {
     isOpen: {
