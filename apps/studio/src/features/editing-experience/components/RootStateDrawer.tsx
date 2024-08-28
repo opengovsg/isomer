@@ -16,6 +16,7 @@ import { BiGridVertical } from "react-icons/bi"
 import { BsPlus } from "react-icons/bs"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
+import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
@@ -224,7 +225,7 @@ export default function RootStateDrawer() {
                                   {/*  NOTE: Because we use `Type.Ref` for prose, */}
                                   {/* this gets a `$Ref` only and not the concrete values */}
                                   {block.type === "prose"
-                                    ? "Prose component"
+                                    ? PROSE_COMPONENT_NAME
                                     : getComponentSchema(block.type).title}
                                 </Text>
                               </HStack>

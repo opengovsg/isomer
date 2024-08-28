@@ -175,7 +175,7 @@ function ComponentSelector() {
           <SectionTitle title="Basic Building Blocks" />
           <BlockList>
             <BlockItem
-              label="Prose"
+              label="Text"
               icon={BiText}
               onProceed={onProceed}
               sectionType="prose"
