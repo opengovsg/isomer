@@ -17,6 +17,7 @@ import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
+import { useTextEditor } from "../hooks/useTextEditor"
 import { editPageSchema } from "../schema"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
@@ -26,7 +27,7 @@ interface TipTapComponentProps {
   content: ProseProps
 }
 
-function TipTapComponent({ content }: TipTapComponentProps) {
+function TipTapProseComponent({ content }: TipTapComponentProps) {
   const {
     isOpen: isDeleteBlockModalOpen,
     onOpen: onDeleteBlockModalOpen,
@@ -87,6 +88,8 @@ function TipTapComponent({ content }: TipTapComponentProps) {
 
   const utils = trpc.useUtils()
 
+  const editor = useTextEditor({ data: content, handleChange: updatePageState })
+
   // TODO: Add a loading state or use suspsense
   return (
     <>
@@ -134,7 +137,7 @@ function TipTapComponent({ content }: TipTapComponentProps) {
           />
         </Flex>
         <Box w="100%" p="2rem" h="100%">
-          <TiptapEditor data={content} handleChange={updatePageState} />
+          <TiptapEditor editor={editor} />
         </Box>
       </VStack>
 
@@ -179,4 +182,4 @@ function TipTapComponent({ content }: TipTapComponentProps) {
   )
 }
 
-export default TipTapComponent
+export default TipTapProseComponent

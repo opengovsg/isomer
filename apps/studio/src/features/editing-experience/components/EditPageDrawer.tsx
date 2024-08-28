@@ -9,7 +9,7 @@ import AdminModeStateDrawer from "./AdminModeStateDrawer"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
-import TipTapComponent from "./TipTapComponent"
+import TipTapProseComponent from "./TipTapComponent"
 
 const proseSchema = getComponentSchema("prose")
 const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
@@ -49,7 +49,7 @@ export function EditPageDrawer(): JSX.Element {
       return <ComponentSelector />
     case "nativeEditor": {
       const component = previewPageState.content[currActiveIdx]
-      return <TipTapComponent content={inferAsProse(component)} />
+      return <TipTapProseComponent content={inferAsProse(component)} />
     }
     case "complexEditor":
       return <ComplexEditorStateDrawer />

@@ -20,27 +20,15 @@ import {
   BiBold,
   BiChevronDown,
   BiChevronUp,
-  BiCog,
   BiItalic,
   BiListOl,
   BiListUl,
   BiStrikethrough,
-  BiTable,
   BiUnderline,
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 import { RiLayoutColumnFill, RiLayoutRowFill } from "react-icons/ri"
 
-import {
-  IconAddColLeft,
-  IconAddColRight,
-  IconAddRowAbove,
-  IconAddRowBelow,
-  IconDelCol,
-  IconDelRow,
-  IconMergeCells,
-  IconSplitCell,
-} from "~/components/icons"
 import { MenuItem } from "./MenuItem"
 import { TableSettingsModal } from "./TableSettingsModal"
 
@@ -101,7 +89,7 @@ type MenuBarEntry =
   | MenuBarDetailedList
   | MenuBarItem
 
-export const MenuBar = ({ editor }: { editor: Editor }) => {
+export const TextMenuBar = ({ editor }: { editor: Editor }) => {
   const {
     isOpen: isTableSettingsModalOpen,
     onOpen: onTableSettingsModalOpen,
