@@ -1,16 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import {
-  Button as AriaButton,
-  composeRenderProps,
-  Label,
-} from "react-aria-components"
+import { Button as AriaButton, Label } from "react-aria-components"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 
 import type { FilterProps } from "../../../types/Filter"
 import { tv } from "~/lib/tv"
-import { focusRing } from "~/utils/focusRing"
 import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"

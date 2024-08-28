@@ -28,15 +28,15 @@ export const focusVisibleHighlight = tv({
   base: "",
   variants: {
     isFocusVisible: {
-      true: "shadow-focus-visible bg-utility-highlight text-base-content-strong decoration-transparent outline-0 transition-none hover:decoration-transparent",
+      true: "bg-utility-highlight text-base-content-strong decoration-transparent shadow-focus-visible outline-0 transition-none hover:decoration-transparent",
     },
   },
 })
 
 export const focusVisibleHighlightNonRac = tv({
-  base: "focus-visible:shadow-focus-visible focus-visible:bg-utility-highlight focus-visible:text-base-content-strong focus-visible:decoration-transparent focus-visible:outline-0 focus-visible:transition-none focus-visible:hover:decoration-transparent",
+  base: "focus-visible:bg-utility-highlight focus-visible:text-base-content-strong focus-visible:decoration-transparent focus-visible:shadow-focus-visible focus-visible:outline-0 focus-visible:transition-none focus-visible:hover:decoration-transparent",
 })
 
 export const groupFocusVisibleHighlightNonRac = tv({
-  base: "group-focus-visible:shadow-focus-visible group-focus-visible:bg-utility-highlight group-focus-visible:text-base-content-strong group-focus-visible:decoration-transparent group-focus-visible:outline-0 group-focus-visible:transition-none group-focus-visible:hover:decoration-transparent",
+  base: "group-focus-visible:bg-utility-highlight group-focus-visible:text-base-content-strong group-focus-visible:decoration-transparent group-focus-visible:shadow-focus-visible group-focus-visible:outline-0 group-focus-visible:transition-none group-focus-visible:hover:decoration-transparent",
 })
