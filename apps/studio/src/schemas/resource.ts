@@ -5,6 +5,12 @@ import {
   offsetPaginationSchema,
 } from "./pagination"
 
+const resourceSchema = z
+  .string()
+  .min(1)
+  .regex(/[0-9]+/)
+  .refine((s) => !s.startsWith("0"))
+
 // NOTE: We want to accept string
 // but validate that the string conforms to bigint.
 // Oddly enough, kysely doesn't allow `bigint` to query
@@ -40,11 +46,12 @@ export const countResourceSchema = z.object({
 
 export const deleteResourceSchema = z.object({
   siteId: z.number(),
-  resourceId: z
-    .string()
-    .min(1)
-    .regex(/[0-9]+/)
-    .refine((s) => !s.startsWith("0")),
+  resourceId: resourceSchema,
+})
+
+export const getParentSchema = z.object({
+  siteId: z.number().min(0),
+  resourceId: resourceSchema,
 })
 
 export const listResourceSchema = z

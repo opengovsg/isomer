@@ -1,11 +1,12 @@
 import { TRPCError } from "@trpc/server"
-import { z } from "zod"
+import { jsonObjectFrom } from "kysely/helpers/postgres"
 
 import {
   countResourceSchema,
   deleteResourceSchema,
   getChildrenSchema,
   getMetadataSchema,
+  getParentSchema,
   listResourceSchema,
   moveSchema,
 } from "~/schemas/resource"
@@ -197,32 +198,32 @@ export const resourceRouter = router({
       return result.numDeletedRows.toString()
     }),
   getParentOf: protectedProcedure
-    .input(
-      z.object({
-        siteId: z.number().min(0),
-        resourceId: z.string(),
-      }),
-    )
+    .input(getParentSchema)
     .query(async ({ input: { siteId, resourceId } }) => {
-      return db.transaction().execute(async (tx) => {
-        const resource = await tx
-          .selectFrom("Resource")
-          .where("Resource.siteId", "=", siteId)
-          .where("Resource.id", "=", resourceId)
-          .select(["Resource.id", "Resource.type", "Resource.parentId"])
-          .executeTakeFirstOrThrow()
+      const resource = await db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", resourceId)
+        .select(["Resource.type", "Resource.id", "Resource.title"])
+        .select((eb) =>
+          jsonObjectFrom(
+            eb
+              .selectFrom("Resource")
+              .innerJoin("Resource as parent", "parent.id", "Resource.parentId")
+              .where("Resource.id", "=", resourceId)
+              .where("parent.id", "is not", null)
+              .select([
+                "parent.type",
+                "parent.id",
+                "parent.parentId",
+                "parent.title",
+              ]),
+          ).as("parent"),
+        )
+        .executeTakeFirstOrThrow()
 
-        const parent = await tx
-          .selectFrom("Resource")
-          .where("Resource.siteId", "=", siteId)
-          .where("Resource.id", "=", resource.parentId)
-          .select(["Resource.id", "Resource.type", "Resource.parentId"])
-          .executeTakeFirst()
-
-        return {
-          parentResourceId: parent?.id,
-          resourceType: parent?.type || ResourceType.RootPage,
-        }
-      })
+      return {
+        resource,
+      }
     }),
 })
