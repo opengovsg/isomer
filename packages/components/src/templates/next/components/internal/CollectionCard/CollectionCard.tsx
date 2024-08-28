@@ -11,7 +11,7 @@ type CollectionCardProps = BaseCollectionCardProps
 
 const collectionCardLinkStyle = tv({
   extend: focusVisibleHighlight,
-  base: "prose-title-md-semibold line-clamp-2 inline-block underline-offset-4 hover:underline",
+  base: "prose-title-md-semibold line-clamp-2 w-fit underline-offset-4 hover:underline",
 })
 
 export const CollectionCard = ({
