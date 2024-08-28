@@ -177,9 +177,10 @@ const RestrictedContent = () => {
               Government agencies communicate via .gov.sg websites (e.g.
               go.gov.sg/open).&nbsp;
               <Link
+                withFocusVisibleHighlight
                 LinkComponent={LinkComponent}
                 href="https://www.gov.sg/trusted-sites#govsites"
-                className="inline-flex items-center"
+                className="inline-flex items-center underline underline-offset-4"
                 rel="noreferrer"
                 target="_blank"
               >

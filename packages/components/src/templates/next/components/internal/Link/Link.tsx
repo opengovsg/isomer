@@ -28,6 +28,7 @@ import { composeRenderProps, useContextProps } from "react-aria-components"
 
 import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/focusRing"
+import { focusVisibleHighlight } from "~/utils/rac"
 import { useRenderProps } from "./utils"
 
 interface BaseLinkProps extends AriaLinkProps {
@@ -107,20 +108,47 @@ const linkStyles = tv({
   },
 })
 
+const fvHighlightLinkStyles = tv({
+  extend: focusVisibleHighlight,
+  base: "text-link",
+  variants: {
+    showExternalIcon: {
+      true: `after:content-['_↗']`,
+    },
+    isHovered: {
+      true: "text-link-hover",
+    },
+  },
+})
+
 export interface LinkProps
   extends BaseLinkProps,
-    VariantProps<typeof linkStyles> {}
+    VariantProps<typeof linkStyles> {
+  withFocusVisibleHighlight?: boolean
+}
 
-export function Link({ showExternalIcon, ...props }: LinkProps) {
+export function Link({
+  showExternalIcon,
+  withFocusVisibleHighlight,
+  ...props
+}: LinkProps) {
   return (
     <BaseLink
       {...props}
-      className={composeRenderProps(props.className, (className, renderProps) =>
-        linkStyles({
-          ...renderProps,
-          showExternalIcon,
-          className,
-        }),
+      className={composeRenderProps(
+        props.className,
+        (className, renderProps) =>
+          withFocusVisibleHighlight
+            ? fvHighlightLinkStyles({
+                ...renderProps,
+                showExternalIcon,
+                className,
+              })
+            : linkStyles({
+                ...renderProps,
+                showExternalIcon,
+                className,
+              }),
       )}
     />
   )
