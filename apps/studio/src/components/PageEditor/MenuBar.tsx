@@ -152,9 +152,12 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
             isActive: () => editor.isActive("paragraph"),
           },
         ],
+
+        isHidden: () => editor.isActive("table"),
       },
       {
         type: "divider",
+        isHidden: () => editor.isActive("table"),
       },
       {
         type: "item",
@@ -360,7 +363,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
               />
             )}
 
-            {item.type === "vertical-list" && (
+            {item.type === "vertical-list" && !item.isHidden?.() && (
               <Menu key={index}>
                 {({ isOpen }) => {
                   const activeItem = item.items.find((subItem) =>
