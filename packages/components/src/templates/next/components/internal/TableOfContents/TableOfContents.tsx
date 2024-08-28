@@ -1,6 +1,15 @@
+import { composeRenderProps } from "react-aria-components"
 import { BiMinus } from "react-icons/bi"
 
 import type { TableOfContentsProps } from "~/interfaces"
+import { tv } from "~/lib/tv"
+import { focusVisibleHighlight } from "~/utils/rac"
+import { Link } from "../Link"
+
+const linkStyle = tv({
+  extend: focusVisibleHighlight,
+  base: "w-fit text-link underline-offset-4 hover:text-link-hover hover:underline",
+})
 
 const TableOfContents = ({ items }: TableOfContentsProps) => {
   return (
@@ -12,12 +21,17 @@ const TableOfContents = ({ items }: TableOfContentsProps) => {
         {items.map(({ anchorLink, content }) => (
           <div className="flex flex-row items-start gap-2">
             <BiMinus className="size-5 shrink-0 self-center fill-base-content-strong" />
-            <a
+            <Link
               href={anchorLink}
-              className="w-fit text-link underline-offset-4 hover:text-link-hover hover:underline"
+              className={composeRenderProps("", (className, renderProps) =>
+                linkStyle({
+                  className,
+                  ...renderProps,
+                }),
+              )}
             >
               {content}
-            </a>
+            </Link>
           </div>
         ))}
       </div>
