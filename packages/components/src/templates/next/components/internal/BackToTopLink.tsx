@@ -9,11 +9,6 @@ import { Link } from "./Link"
 const linkStyle = tv({
   extend: focusVisibleHighlight,
   base: "prose-body-base sticky top-8 my-8 inline-flex items-center text-link underline-offset-4 hover:underline",
-  variants: {
-    isFocusVisible: {
-      true: "text-base-content-strong",
-    },
-  },
 })
 
 interface BackToTopLinkProps extends VariantProps<typeof linkStyle> {
