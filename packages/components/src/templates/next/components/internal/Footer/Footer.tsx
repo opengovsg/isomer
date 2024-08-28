@@ -94,8 +94,9 @@ const NavSection = ({
   return (
     <div className="prose-body-sm flex flex-col gap-8 lg:flex-row lg:gap-12">
       <div className="flex flex-col gap-3 lg:w-64">
-        {siteNavItems.map((item) => (
+        {siteNavItems.map((item, index) => (
           <FooterItem
+            key={index}
             title={item.title}
             url={item.url}
             LinkComponent={LinkComponent}
@@ -103,8 +104,9 @@ const NavSection = ({
         ))}
       </div>
       <div className="flex flex-col gap-3 lg:w-64">
-        {customNavItems?.map((item) => (
+        {customNavItems?.map((item, index) => (
           <FooterItem
+            key={index}
             title={item.title}
             url={item.url}
             LinkComponent={LinkComponent}
