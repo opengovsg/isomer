@@ -101,7 +101,9 @@ const linkStyles = tv({
   extend: focusVisibleHighlight,
   base: "text-link underline underline-offset-4 transition-colors",
   variants: {
-    isHover: "text-link-hover",
+    isHovered: {
+      true: "hover:text-link-hover",
+    },
     showExternalIcon: {
       true: `after:content-['_↗']`,
     },

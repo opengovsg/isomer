@@ -7,13 +7,13 @@ import { BiChevronDown } from "react-icons/bi"
 
 import type { MastheadProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { focusRing } from "~/utils/focusRing"
+import { focusVisibleHighlight } from "~/utils/rac"
 import { Link } from "../Link"
 
 const MASTHEAD_CONTROL_ID = "govt-masthead-expandable"
 
 const mastheadButtonStyle = tv({
-  extend: focusRing,
+  extend: focusVisibleHighlight,
   base: "",
 })
 
@@ -94,7 +94,7 @@ const RestrictedHeaderBar = ({ children }: PropsWithChildren) => {
     <div className="mx-auto max-w-screen-xl px-6 lg:px-10">
       <Button
         className={composeRenderProps(
-          "flex w-full gap-1 text-start leading-5 lg:hidden",
+          "group flex w-full gap-1 text-start leading-5 lg:hidden",
           (className, renderProps) =>
             mastheadButtonStyle({ className, ...renderProps }),
         )}
@@ -110,7 +110,7 @@ const RestrictedHeaderBar = ({ children }: PropsWithChildren) => {
             : "Click to expand masthead to find out how to identify an official government website"}
         </span>
         <RestrictedHeaderBarContent>
-          <span className="not-sr-only text-link underline">
+          <span className="not-sr-only text-link underline group-hover:text-link-hover">
             How to identify
             <BiChevronDown
               aria-hidden
@@ -124,24 +124,22 @@ const RestrictedHeaderBar = ({ children }: PropsWithChildren) => {
       {/* Desktop variant */}
       <div className="hidden items-center gap-1 lg:flex">
         <RestrictedHeaderBarContent>
-          <div className="text-link underline">
-            <Button
-              className={composeRenderProps(
-                "hidden flex-row items-center hover:text-link-hover lg:flex",
-                (className, renderProps) =>
-                  mastheadButtonStyle({ className, ...renderProps }),
-              )}
-              onPress={toggleMastheadContent}
-            >
-              How to identify
-              <BiChevronDown
-                aria-hidden
-                className={`h-4 w-4 shrink-0 transition-all duration-300 ease-in-out ${
-                  isMastheadContentVisible ? "rotate-180" : "rotate-0"
-                }`}
-              />
-            </Button>
-          </div>
+          <Button
+            className={composeRenderProps(
+              "hidden flex-row items-center text-link underline underline-offset-4 outline-0 transition-colors hover:text-link-hover focus-visible:text-content-strong lg:flex",
+              (className, renderProps) =>
+                mastheadButtonStyle({ className, ...renderProps }),
+            )}
+            onPress={toggleMastheadContent}
+          >
+            How to identify
+            <BiChevronDown
+              aria-hidden
+              className={`h-4 w-4 shrink-0 transition-transform ease-in-out ${
+                isMastheadContentVisible ? "rotate-180" : "rotate-0"
+              }`}
+            />
+          </Button>
         </RestrictedHeaderBarContent>
       </div>
     </div>
@@ -181,7 +179,7 @@ const RestrictedContent = () => {
               <Link
                 LinkComponent={LinkComponent}
                 href="https://www.gov.sg/trusted-sites#govsites"
-                className="inline-flex items-center text-link underline hover:text-link-hover"
+                className="inline-flex items-center"
                 rel="noreferrer"
                 target="_blank"
               >
