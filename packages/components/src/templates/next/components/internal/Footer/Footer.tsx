@@ -20,7 +20,7 @@ import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight } from "~/utils/rac"
-import { BaseLink, Link } from "../Link"
+import { BaseLink } from "../Link"
 
 const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
   facebook: FaFacebook,
