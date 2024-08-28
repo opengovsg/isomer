@@ -11,7 +11,6 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Breadcrumb, Button, Menu } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useSetAtom } from "jotai"
 import { BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
@@ -24,22 +23,57 @@ import { CreatePageModal } from "~/features/editing-experience/components/Create
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
-import { trpc } from "~/utils/trpc"
+import { RouterOutput, trpc } from "~/utils/trpc"
 
 const folderPageSchema = z.object({
   siteId: z.string(),
   folderId: z.string(),
 })
-const getResourceLink = (
-  resourceId: string | undefined,
-  siteId: number,
-  resourceType: ResourceType,
-) => {
-  if (resourceType === ResourceType.RootPage) {
-    return `/sites/${siteId}`
+
+const getFolderHref = (siteId: string, folderId: string) => {
+  return `/sites/${siteId}/folders/${folderId}`
+}
+
+/**
+ * NOTE: This returns the path from root down to the parent of the element.
+ * The element at index 0 is always the root
+ * and the last element is always the parent of the current folder
+ */
+const getBreadcrumbsFrom = (
+  resource: RouterOutput["resource"]["getParentOf"]["resource"],
+  siteId: string,
+): { href: string; label: string }[] => {
+  // NOTE: We only consider the 3 cases below:
+  // Root -> Folder
+  // Root -> Parent -> Folder
+  // Root -> ... -> Parent -> Folder
+  const rootHref = `/sites/${siteId}`
+
+  if (resource.parent?.parentId) {
+    return [
+      { href: rootHref, label: "Home" },
+      {
+        href: getFolderHref(siteId, resource.parent.parentId),
+        label: "...",
+      },
+      {
+        href: getFolderHref(siteId, resource.parent.id),
+        label: resource.parent.title,
+      },
+    ]
   }
 
-  return `/sites/${siteId}/folders/${resourceId}`
+  if (resource.parent?.id) {
+    return [
+      { href: rootHref, label: "Home" },
+      {
+        href: getFolderHref(siteId, resource.parent.id),
+        label: resource.parent.title,
+      },
+    ]
+  }
+
+  return [{ href: rootHref, label: "Home" }]
 }
 
 const FolderPage: NextPageWithLayout = () => {
@@ -66,51 +100,31 @@ const FolderPage: NextPageWithLayout = () => {
     resourceId: parseInt(folderId),
   })
 
-  const parentLinkHref = getResourceLink(
-    resource.parent?.id,
-    Number(siteId),
-    resource.type,
-  )
+  const breadcrumbs = getBreadcrumbsFrom(resource, siteId)
 
   return (
     <>
       <VStack w="100%" p="1.75rem" gap="1rem">
         <VStack w="100%" align="start">
           <Breadcrumb size="sm">
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/sites/${siteId}`}>
-                <Text textStyle="caption-2" color="interaction.links.default">
-                  Home
-                </Text>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            {resource.parent?.id && (
-              <BreadcrumbItem>
-                <BreadcrumbLink href={parentLinkHref}>
-                  <Text textStyle="caption-2" color="base.content.default">
-                    ...
-                  </Text>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            )}
-            {resource.parent?.parentId && (
-              <BreadcrumbItem>
-                <BreadcrumbLink href={parentLinkHref}>
-                  <Text textStyle="caption-2" color="base.content.default">
-                    ...
-                  </Text>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            )}
-            <BreadcrumbItem>
-              <BreadcrumbLink
-                isCurrentPage
-                href={`/sites/${siteId}/folders/${folderId}`}
-              >
-                <Text textStyle="caption-2" color="base.content.default">
-                  {title}
-                </Text>
-              </BreadcrumbLink>
+            {breadcrumbs.map(({ href, label }, index) => {
+              return (
+                <BreadcrumbItem key={index}>
+                  <BreadcrumbLink href={href}>
+                    <Text
+                      textStyle="caption-2"
+                      color="interaction.links.default"
+                    >
+                      {label}
+                    </Text>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+              )
+            })}
+            <BreadcrumbItem key={folderId}>
+              <Text textStyle="caption-2" color="base.content.default">
+                {title}
+              </Text>
             </BreadcrumbItem>
           </Breadcrumb>
           <Flex w="full" flexDir="row">

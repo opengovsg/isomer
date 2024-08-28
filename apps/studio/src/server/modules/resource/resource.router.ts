@@ -1,6 +1,5 @@
 import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
-import { z } from "zod"
 
 import {
   countResourceSchema,
@@ -205,7 +204,7 @@ export const resourceRouter = router({
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "=", resourceId)
-        .select(["Resource.type"])
+        .select(["Resource.type", "Resource.id", "Resource.title"])
         .select((eb) =>
           jsonObjectFrom(
             eb
@@ -213,7 +212,12 @@ export const resourceRouter = router({
               .innerJoin("Resource as parent", "parent.id", "Resource.parentId")
               .where("Resource.id", "=", resourceId)
               .where("parent.id", "is not", null)
-              .select(["parent.type", "parent.id", "parent.parentId"]),
+              .select([
+                "parent.type",
+                "parent.id",
+                "parent.parentId",
+                "parent.title",
+              ]),
           ).as("parent"),
         )
         .executeTakeFirstOrThrow()
