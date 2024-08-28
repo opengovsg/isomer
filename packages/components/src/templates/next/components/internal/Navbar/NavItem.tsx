@@ -7,7 +7,9 @@ import type {
   NavbarProps,
 } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
+import { isExternalUrl } from "~/utils"
 import { IconButton } from "../IconButton"
+import { Link } from "../Link"
 
 interface NavbarItemProps
   extends BaseNavbarItemProps,
@@ -53,9 +55,14 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
     if (!items || items.length === 0) {
       return (
         <li>
-          <LinkComponent className={item({ isOpen })} href={url}>
+          <Link
+            LinkComponent={LinkComponent}
+            isExternal={isExternalUrl(url)}
+            className={item({ isOpen })}
+            href={url}
+          >
             {name}
-          </LinkComponent>
+          </Link>
         </li>
       )
     }
@@ -98,22 +105,30 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
                   </div>
 
                   <ul className="grid grid-cols-3 gap-x-16 gap-y-8">
-                    {items.map((subItem) => (
-                      <li key={subItem.name}>
-                        <div className="flex flex-col gap-1.5">
-                          <LinkComponent
-                            href={subItem.url}
-                            className="prose-label-md-medium inline-flex items-center gap-1 text-base-content hover:underline"
-                          >
-                            {subItem.name}
-                            <BiRightArrowAlt className="text-[1.25rem]" />
-                          </LinkComponent>
-                          <p className="prose-label-sm-regular text-base-content-subtle">
-                            {subItem.description}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
+                    {items.map((subItem) => {
+                      const isExternal = isExternalUrl(subItem.url)
+                      return (
+                        <li key={subItem.name}>
+                          <div className="flex flex-col gap-1.5">
+                            <Link
+                              LinkComponent={LinkComponent}
+                              isExternal={isExternal}
+                              showExternalIcon={isExternal}
+                              href={subItem.url}
+                              className="prose-label-md-medium inline-flex items-center gap-1 text-base-content hover:underline"
+                            >
+                              {subItem.name}
+                              {!isExternal && (
+                                <BiRightArrowAlt className="text-[1.25rem]" />
+                              )}
+                            </Link>
+                            <p className="prose-label-sm-regular text-base-content-subtle">
+                              {subItem.description}
+                            </p>
+                          </div>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               </div>

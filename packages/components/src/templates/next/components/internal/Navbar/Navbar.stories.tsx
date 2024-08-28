@@ -42,6 +42,11 @@ const meta: Meta<NavbarProps> = {
               "Join us on our journey to improve community engagement in Singapore",
           },
           {
+            name: "External Link",
+            url: "https://open.gov.sg",
+            description: "OGP Website",
+          },
+          {
             name: "Our team",
             url: "/item-one/pa-network-two",
             description: "This is our leadership and senior management team",
