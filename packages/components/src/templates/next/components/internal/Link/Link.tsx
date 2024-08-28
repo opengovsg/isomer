@@ -33,6 +33,8 @@ import { useRenderProps } from "./utils"
 interface BaseLinkProps extends AriaLinkProps {
   LinkComponent?: ElementType
   "aria-current"?: string
+  "aria-hidden"?: boolean
+  tabIndex?: number
   title?: string
   isExternal?: boolean
 }
@@ -44,7 +46,7 @@ const LinkContext =
  * Modified version of `react-aria-component`'s Link component to accept a `LinkComponent` prop.
  */
 const BaseLink = forwardRef<HTMLAnchorElement, BaseLinkProps>(
-  ({ title, isExternal, ..._props }, _ref) => {
+  ({ title, isExternal, tabIndex, ..._props }, _ref) => {
     const [props, ref] = useContextProps(_props, _ref, LinkContext)
 
     const extraLinkProps = isExternal
@@ -81,6 +83,7 @@ const BaseLink = forwardRef<HTMLAnchorElement, BaseLinkProps>(
         ref={ref}
         slot={props.slot ?? undefined}
         {...mergeProps(renderProps, linkProps, hoverProps, focusProps)}
+        tabIndex={tabIndex}
         data-focused={isFocused || undefined}
         data-hovered={isHovered || undefined}
         data-pressed={isPressed || undefined}
