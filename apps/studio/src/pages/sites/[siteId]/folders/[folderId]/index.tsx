@@ -17,7 +17,6 @@ import { useSetAtom } from "jotai"
 import { BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
-import { MenuItem } from "~/components/Menu"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"

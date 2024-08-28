@@ -139,8 +139,8 @@ const SideNavItem = ({
   const siteProps = useQueryParse(siteSchema)
   const isCurResourceActive = getCurResource(siteProps) === resourceId
 
-  if (!data) {
-    return <Skeleton w="16rem" h="2.25rem" />
+  if (isLoading || !data) {
+    return <Skeleton isLoaded={!isLoading} w="16rem" h="2.25rem" />
   }
 
   const urlType = getResourceType(resourceType)
@@ -149,88 +149,86 @@ const SideNavItem = ({
   const hasChildren = pages.some(({ items }) => items.length > 0)
 
   return (
-    <Skeleton isLoaded={!isLoading}>
-      <Accordion
-        defaultIndex={resourceType === ResourceType.RootPage ? 0 : undefined}
-        allowToggle
+    <Accordion
+      defaultIndex={resourceType === ResourceType.RootPage ? 0 : undefined}
+      allowToggle
+    >
+      <AccordionItem
+        _disabled={{
+          textColor: "interaction.support.disabled-content",
+        }}
+        isDisabled={isDisabled}
+        border="none"
       >
-        <AccordionItem
-          _disabled={{
-            textColor: "interaction.support.disabled-content",
-          }}
-          isDisabled={isDisabled}
-          border="none"
-        >
-          {/* NOTE: This is to lazy load on expand  */}
-          {/* so that we don't issue multiple db reads on load */}
-          {({ isExpanded }) => {
-            return (
-              <Box pos="relative">
-                {/* NOTE: required for focus ring */}
-                <SideNavRow
-                  leftIcon={<Box w="1rem" />}
-                  isActive={isCurResourceActive}
-                  href={
-                    resourceType === ResourceType.RootPage
-                      ? `/sites/${siteId}`
-                      : `/sites/${siteId}/${urlType}/${resourceId}`
-                  }
+        {/* NOTE: This is to lazy load on expand  */}
+        {/* so that we don't issue multiple db reads on load */}
+        {({ isExpanded }) => {
+          return (
+            <Box pos="relative">
+              {/* NOTE: required for focus ring */}
+              <SideNavRow
+                leftIcon={<Box w="1rem" />}
+                isActive={isCurResourceActive}
+                href={
+                  resourceType === ResourceType.RootPage
+                    ? `/sites/${siteId}`
+                    : `/sites/${siteId}/${urlType}/${resourceId}`
+                }
+              >
+                <Icon fill="base.content.default" as={icon} flexShrink={0} />
+                <Text
+                  ml="0.25rem"
+                  noOfLines={1}
+                  textColor="base.content.default"
+                  textAlign="left"
+                  textStyle="subhead-2"
                 >
-                  <Icon fill="base.content.default" as={icon} flexShrink={0} />
-                  <Text
-                    ml="0.25rem"
-                    noOfLines={1}
-                    textColor="base.content.default"
-                    textAlign="left"
-                    textStyle="subhead-2"
+                  {permalink}
+                </Text>
+              </SideNavRow>
+              {isAllowedToHaveChildren(resourceType) &&
+                (isLoading || hasChildren) && (
+                  <AccordionButton
+                    disabled={isLoading}
+                    pos="absolute"
+                    w="fit-content"
+                    p={0}
+                    left="0.75rem"
+                    top="0.75rem"
                   >
-                    {permalink}
-                  </Text>
-                </SideNavRow>
-                {isAllowedToHaveChildren(resourceType) &&
-                  (isLoading || hasChildren) && (
-                    <AccordionButton
-                      disabled={isLoading}
-                      pos="absolute"
-                      w="fit-content"
-                      p={0}
-                      left="0.75rem"
-                      top="0.75rem"
-                    >
-                      <AccordionIcon color="interaction.support.unselected" />
-                    </AccordionButton>
-                  )}
-                {isExpanded && (
-                  <AccordionPanel p="0" pl="1.25rem">
-                    {pages.map(({ items }) => {
-                      return items.map((props) => (
-                        <SideNavItem
-                          key={props.id}
-                          resourceType={props.type}
-                          siteId={siteId}
-                          resourceId={props.id}
-                          permalink={props.permalink}
-                        />
-                      ))
-                    })}
-                    {hasNextPage && (
-                      <Button
-                        variant="link"
-                        pl="2.75rem"
-                        size="xs"
-                        isLoading={isFetchingNextPage}
-                        onClick={() => fetchNextPage()}
-                      >
-                        Load more
-                      </Button>
-                    )}
-                  </AccordionPanel>
+                    <AccordionIcon color="interaction.support.unselected" />
+                  </AccordionButton>
                 )}
-              </Box>
-            )
-          }}
-        </AccordionItem>
-      </Accordion>
-    </Skeleton>
+              {isExpanded && (
+                <AccordionPanel p="0" pl="1.25rem">
+                  {pages.map(({ items }) => {
+                    return items.map((props) => (
+                      <SideNavItem
+                        key={props.id}
+                        resourceType={props.type}
+                        siteId={siteId}
+                        resourceId={props.id}
+                        permalink={props.permalink}
+                      />
+                    ))
+                  })}
+                  {hasNextPage && (
+                    <Button
+                      variant="link"
+                      pl="2.75rem"
+                      size="xs"
+                      isLoading={isFetchingNextPage}
+                      onClick={() => fetchNextPage()}
+                    >
+                      Load more
+                    </Button>
+                  )}
+                </AccordionPanel>
+              )}
+            </Box>
+          )
+        }}
+      </AccordionItem>
+    </Accordion>
   )
 }
