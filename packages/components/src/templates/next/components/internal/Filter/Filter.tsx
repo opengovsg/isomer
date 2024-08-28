@@ -11,13 +11,13 @@ import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 import type { FilterProps } from "../../../types/Filter"
 import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/focusRing"
+import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { FilterDrawer } from "./FilterDrawer"
 
-const expandFilterButtonStyle = tv({
-  extend: focusRing,
-  base: "prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-base-content",
+const filterSectionLabelStyle = tv({
+  extend: groupFocusVisibleHighlightNonRac,
 })
 
 export const Filter = ({
@@ -88,15 +88,10 @@ export const Filter = ({
             value={appliedItemsById[id] ?? []}
           >
             <AriaButton
-              className={composeRenderProps("", (className, renderProps) =>
-                expandFilterButtonStyle({
-                  ...renderProps,
-                  className,
-                }),
-              )}
+              className="group prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-base-content outline-0"
               onPress={() => updateFilterToggle(id)}
             >
-              <Label>{label}</Label>
+              <Label className={filterSectionLabelStyle()}>{label}</Label>
               <BiChevronDown
                 aria-hidden
                 className={`h-6 w-6 text-base-content-strong transition-all duration-300 ease-in-out ${
