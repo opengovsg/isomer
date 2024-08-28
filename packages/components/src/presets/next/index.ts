@@ -1,6 +1,5 @@
 import type { Config } from "tailwindcss"
 import racPlugin from "tailwindcss-react-aria-components"
-import defaultColors from "tailwindcss/colors"
 import defaultTheme from "tailwindcss/defaultTheme"
 import plugin from "tailwindcss/plugin"
 
@@ -23,7 +22,7 @@ const config: Config = {
       },
       boxShadow: {
         sm: "0 0px 10px 0px rgba(191, 191, 191, 0.5)",
-        "focus-visible": `0 2px ${defaultColors.amber[400]}, 0 4px ${defaultColors.slate[900]}`,
+        "focus-visible": `0 2px ${colors.utility.highlight}, 0 4px ${colors.base.content.strong}`,
       },
       colors: {
         ...colors,
