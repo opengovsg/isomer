@@ -53,12 +53,12 @@ interface MenuBarItem {
   leftItem?: JSX.Element
   action: () => void
   isActive?: () => boolean
-  isHidden?: boolean
+  isHidden?: () => boolean
 }
 
 interface MenuBarDivider {
   type: "divider"
-  isHidden?: boolean
+  isHidden?: () => boolean
 }
 
 interface MenuBarVerticalList {
@@ -67,7 +67,7 @@ interface MenuBarVerticalList {
   menuWidth: MenuListProps["width"]
   defaultTitle: string
   items: MenuBarItem[]
-  isHidden?: boolean
+  isHidden?: () => boolean
 }
 
 interface MenuBarHorizontalList {
@@ -75,7 +75,7 @@ interface MenuBarHorizontalList {
   label: string
   defaultIcon: IconType
   items: MenuBarItem[]
-  isHidden?: boolean
+  isHidden?: () => boolean
 }
 
 interface MenuBarDetailedItem {
@@ -83,7 +83,7 @@ interface MenuBarDetailedItem {
   description: string
   icon: IconType
   action: () => void
-  isHidden?: boolean
+  isHidden?: () => boolean
 }
 
 interface MenuBarDetailedList {
@@ -91,7 +91,7 @@ interface MenuBarDetailedList {
   label: string
   icon: IconType
   items: MenuBarDetailedItem[]
-  isHidden?: boolean
+  isHidden?: () => boolean
 }
 
 type MenuBarEntry =
@@ -238,7 +238,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
       // Table-specific commands
       {
         type: "divider",
-        isHidden: !editor.isActive("table"),
+        isHidden: () => !editor.isActive("table"),
       },
       {
         type: "item",
@@ -247,81 +247,81 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
         ),
         title: "Toggle header column",
         action: () => editor.chain().focus().toggleHeaderColumn().run(),
-        isHidden: !editor.isActive("table"),
+        isHidden: () => !editor.isActive("table"),
       },
       {
         type: "item",
         icon: () => <Icon color="base.content.medium" as={RiLayoutRowFill} />,
         title: "Toggle header row",
         action: () => editor.chain().focus().toggleHeaderRow().run(),
-        isHidden: !editor.isActive("table"),
+        isHidden: () => !editor.isActive("table"),
       },
       {
         type: "item",
         icon: () => <Icon as={IconAddColRight} />,
         title: "Add column after",
         action: () => editor.chain().focus().addColumnAfter().run(),
-        isHidden: !editor.isActive("table"),
+        isHidden: () => !editor.isActive("table"),
       },
       {
         type: "item",
         icon: () => <Icon as={IconAddColLeft} />,
         title: "Add column before",
         action: () => editor.chain().focus().addColumnBefore().run(),
-        isHidden: !editor.isActive("table"),
+        isHidden: () => !editor.isActive("table"),
       },
       {
         type: "item",
         icon: () => <Icon as={IconDelCol} />,
         title: "Delete column",
         action: () => editor.chain().focus().deleteColumn().run(),
-        isHidden: !editor.isActive("table"),
+        isHidden: () => !editor.isActive("table"),
       },
       {
         type: "item",
         icon: () => <Icon as={IconAddRowAbove} />,
         title: "Add row before",
         action: () => editor.chain().focus().addRowBefore().run(),
-        isHidden: !editor.isActive("table"),
+        isHidden: () => !editor.isActive("table"),
       },
       {
         type: "item",
         icon: () => <Icon as={IconAddRowBelow} />,
         title: "Add row after",
         action: () => editor.chain().focus().addRowAfter().run(),
-        isHidden: !editor.isActive("table"),
+        isHidden: () => !editor.isActive("table"),
       },
       {
         type: "item",
         icon: () => <Icon as={IconDelRow} />,
         title: "Delete row",
         action: () => editor.chain().focus().deleteRow().run(),
-        isHidden: !editor.isActive("table"),
+        isHidden: () => !editor.isActive("table"),
       },
       {
         type: "divider",
-        isHidden: !editor.isActive("table"),
+        isHidden: () => !editor.isActive("table"),
       },
       {
         type: "item",
         icon: () => <Icon as={IconMergeCells} />,
         title: "Merge cells",
         action: () => editor.chain().focus().mergeCells().run(),
-        isHidden: !editor.isActive("table"),
+        isHidden: () => !editor.isActive("table"),
       },
       {
         type: "item",
         icon: () => <Icon as={IconSplitCell} />,
         title: "Split cell",
         action: () => editor.chain().focus().splitCell().run(),
-        isHidden: !editor.isActive("table"),
+        isHidden: () => !editor.isActive("table"),
       },
       {
         type: "item",
         icon: BiCog,
         title: "Table settings",
         action: onTableSettingsModalOpen,
-        isHidden: !editor.isActive("table"),
+        isHidden: () => !editor.isActive("table"),
       },
     ],
     [editor, onTableSettingsModalOpen],
@@ -350,7 +350,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
       >
         {items.map((item, index) => (
           <>
-            {item.type === "divider" && !item.isHidden && (
+            {item.type === "divider" && !item.isHidden?.() && (
               <Divider
                 key={index}
                 orientation="vertical"
@@ -466,7 +466,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
               </Popover>
             )}
 
-            {item.type === "detailed-list" && !item.isHidden && (
+            {item.type === "detailed-list" && !item.isHidden?.() && (
               <Popover placement="bottom" offset={[0, 16]} key={index}>
                 <PopoverTrigger>
                   <Button
@@ -493,7 +493,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
                     <VStack spacing="0.75rem">
                       {item.items.map(
                         (subItem) =>
-                          !subItem.isHidden && (
+                          !subItem.isHidden?.() && (
                             <Button
                               onClick={subItem.action}
                               variant="clear"
@@ -539,7 +539,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
               </Popover>
             )}
 
-            {item.type === "item" && !item.isHidden && (
+            {item.type === "item" && !item.isHidden?.() && (
               <MenuItem key={index} {...item} />
             )}
           </>
