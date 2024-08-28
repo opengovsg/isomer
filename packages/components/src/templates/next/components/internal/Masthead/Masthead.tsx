@@ -94,7 +94,7 @@ const RestrictedHeaderBar = ({ children }: PropsWithChildren) => {
     <div className="mx-auto max-w-screen-xl px-6 lg:px-10">
       <Button
         className={composeRenderProps(
-          "group flex w-full gap-1 text-start leading-5 lg:hidden",
+          "group flex w-full gap-1 text-start leading-5 outline-none lg:hidden",
           (className, renderProps) =>
             mastheadButtonStyle({ className, ...renderProps }),
         )}
@@ -180,7 +180,7 @@ const RestrictedContent = () => {
                 withFocusVisibleHighlight
                 LinkComponent={LinkComponent}
                 href="https://www.gov.sg/trusted-sites#govsites"
-                className="inline-flex items-center underline underline-offset-4"
+                className="inline-flex items-center underline underline-offset-4 outline-none"
                 rel="noreferrer"
                 target="_blank"
               >
