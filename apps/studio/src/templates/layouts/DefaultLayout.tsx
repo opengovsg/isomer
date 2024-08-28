@@ -1,21 +1,15 @@
 import { type ReactNode } from "react"
-import Head from "next/head"
 
-import { useEnv } from "~/hooks/useEnv"
+import { LayoutHead } from "~/components/LayoutHead"
 
 interface DefaultLayoutProps {
   children: ReactNode
 }
 
 export const DefaultLayout = ({ children }: DefaultLayoutProps) => {
-  const { env } = useEnv()
-
   return (
     <>
-      <Head>
-        <title>{env.NEXT_PUBLIC_APP_NAME}</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+      <LayoutHead />
 
       <main>{children}</main>
     </>

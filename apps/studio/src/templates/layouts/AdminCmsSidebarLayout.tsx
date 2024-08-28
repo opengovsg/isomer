@@ -15,6 +15,7 @@ import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { CmsSidebar, CmsSidebarContainer } from "~/components/CmsSidebar"
 import { CmsSideNav } from "~/components/CmsSidebar/CmsSideNav"
+import { LayoutHead } from "~/components/LayoutHead"
 import { useMe } from "~/features/me/api"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type GetLayout } from "~/lib/types"
@@ -22,6 +23,8 @@ import { type GetLayout } from "~/lib/types"
 export const AdminCmsSidebarLayout: GetLayout = (page) => {
   return (
     <EnforceLoginStatePageWrapper>
+      <LayoutHead />
+
       <Flex minH="$100vh" flexDir="row" bg="base.canvas.alt" pos="relative">
         <CmsSidebarWrapper>{page}</CmsSidebarWrapper>
       </Flex>
