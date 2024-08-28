@@ -1,11 +1,18 @@
 "use client"
 
-import { Text } from "react-aria-components"
+import { composeRenderProps, Text } from "react-aria-components"
 
 import type { CollectionCardProps as BaseCollectionCardProps } from "~/interfaces"
+import { tv } from "~/lib/tv"
+import { focusVisibleHighlight } from "~/utils/rac"
 import { Link } from "../Link"
 
 type CollectionCardProps = BaseCollectionCardProps
+
+const collectionCardLinkStyle = tv({
+  extend: focusVisibleHighlight,
+  base: "prose-title-md-semibold line-clamp-2 inline-block underline-offset-4 hover:underline",
+})
 
 export const CollectionCard = ({
   LinkComponent,
@@ -31,7 +38,12 @@ export const CollectionCard = ({
           <Link
             LinkComponent={LinkComponent}
             href={url}
-            className="prose-title-md-semibold line-clamp-2 underline-offset-4 hover:underline focus-visible:underline"
+            className={composeRenderProps("", (className, renderProps) =>
+              collectionCardLinkStyle({
+                className,
+                ...renderProps,
+              }),
+            )}
           >
             <span title={itemTitle}>{itemTitle}</span>
           </Link>
