@@ -28,7 +28,7 @@ export const focusVisibleHighlight = tv({
   base: "",
   variants: {
     isFocusVisible: {
-      true: "shadow-focus-visible bg-amber-400 outline-0 transition-none",
+      true: "shadow-focus-visible bg-utility-highlight outline-0 transition-none",
     },
   },
 })
