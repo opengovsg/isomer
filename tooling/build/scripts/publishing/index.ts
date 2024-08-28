@@ -166,10 +166,7 @@ async function fetchAndWriteSiteData(client: Client) {
           ...configResult.rows[0].config,
           siteName: configResult.rows[0].name,
         },
-        colors:
-          configResult.rows[0].theme === undefined
-            ? {}
-            : configResult.rows[0].theme,
+        ...configResult.rows[0].theme,
       }
 
       await writeJsonToFile(config, "config.json")
