@@ -27,7 +27,7 @@ import { mergeProps, useFocusRing, useHover, useLink } from "react-aria"
 import { composeRenderProps, useContextProps } from "react-aria-components"
 
 import { tv } from "~/lib/tv"
-import { focusVisibleHighlight } from "~/utils/rac"
+import { focusRing } from "~/utils/focusRing"
 import { useRenderProps } from "./utils"
 
 interface BaseLinkProps extends AriaLinkProps {
@@ -98,12 +98,9 @@ const BaseLink = forwardRef<HTMLAnchorElement, BaseLinkProps>(
 )
 
 const linkStyles = tv({
-  extend: focusVisibleHighlight,
-  base: "text-link underline underline-offset-4 transition-colors",
+  extend: focusRing,
+  base: "",
   variants: {
-    isHovered: {
-      true: "hover:text-link-hover",
-    },
     showExternalIcon: {
       true: `after:content-['_↗']`,
     },
