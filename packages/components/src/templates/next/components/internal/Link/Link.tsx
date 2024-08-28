@@ -45,8 +45,9 @@ const LinkContext =
 
 /**
  * Modified version of `react-aria-component`'s Link component to accept a `LinkComponent` prop.
+ * Used if you want a fully unstyled link with a11y.
  */
-const BaseLink = forwardRef<HTMLAnchorElement, BaseLinkProps>(
+export const BaseLink = forwardRef<HTMLAnchorElement, BaseLinkProps>(
   ({ title, isExternal, tabIndex, ..._props }, _ref) => {
     const [props, ref] = useContextProps(_props, _ref, LinkContext)
 
