@@ -1,6 +1,7 @@
 import { Flex, Grid } from "@chakra-ui/react"
 
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
+import { LayoutHead } from "~/components/LayoutHead"
 import { APP_GRID_TEMPLATE_AREA } from "~/constants/layouts"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { SiteEditNavbar } from "~/features/editing-experience/components/SiteEditNavbar"
@@ -9,6 +10,7 @@ import { type GetLayout } from "~/lib/types"
 export const PageEditingLayout: GetLayout = (page) => {
   return (
     <EnforceLoginStatePageWrapper>
+      <LayoutHead />
       <EditorDrawerProvider>
         <Flex minH="100vh" flexDir="column" bg="base.canvas.alt" pos="relative">
           <Grid
