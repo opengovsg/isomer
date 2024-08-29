@@ -1,3 +1,5 @@
+"use client"
+
 import type { VariantProps } from "tailwind-variants"
 import { composeRenderProps } from "react-aria-components"
 import { BiUpArrowAlt } from "react-icons/bi"

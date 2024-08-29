@@ -1,3 +1,5 @@
+"use client"
+
 import type { IconType } from "react-icons"
 import { composeRenderProps } from "react-aria-components"
 import { BiLinkExternal } from "react-icons/bi"

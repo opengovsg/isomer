@@ -1,3 +1,5 @@
+"use client"
+
 import { composeRenderProps } from "react-aria-components"
 import { BiMinus } from "react-icons/bi"
 

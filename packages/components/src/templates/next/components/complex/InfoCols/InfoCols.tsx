@@ -1,3 +1,5 @@
+"use client"
+
 import { BiRightArrowAlt } from "react-icons/bi"
 
 import type { SupportedIconName } from "~/common/icons"

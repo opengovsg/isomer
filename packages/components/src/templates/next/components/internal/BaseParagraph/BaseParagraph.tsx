@@ -1,3 +1,5 @@
+"use client"
+
 import type { BaseParagraphProps } from "~/interfaces/native/Paragraph"
 import { twMerge } from "~/lib/twMerge"
 import { getSanitizedInlineContent } from "~/utils"
