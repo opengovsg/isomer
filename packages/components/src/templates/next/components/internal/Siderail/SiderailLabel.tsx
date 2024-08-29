@@ -25,6 +25,7 @@ const createSiderailLabelStyles = tv({
 
 const linkStyle = tv({
   extend: focusVisibleHighlight,
+  base: "w-fit",
 })
 
 const compoundStyles = createSiderailLabelStyles()
