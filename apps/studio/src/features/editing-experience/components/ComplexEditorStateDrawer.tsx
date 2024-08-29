@@ -36,6 +36,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     onClose: onDiscardChangesModalClose,
   } = useDisclosure()
   const {
+    addedBlockIndex,
+    setAddedBlockIndex,
     setDrawerState,
     currActiveIdx,
     savedPageState,
@@ -93,10 +95,23 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     setPreviewPageState(newPageState)
     onDeleteBlockModalClose()
     setDrawerState({ state: "root" })
+    setAddedBlockIndex(null)
   }
 
   const handleDiscardChanges = () => {
-    setPreviewPageState(savedPageState)
+    if (addedBlockIndex !== null) {
+      const updatedBlocks = Array.from(savedPageState.content)
+      updatedBlocks.splice(addedBlockIndex, 1)
+      const newPageState = {
+        ...previewPageState,
+        content: updatedBlocks,
+      }
+      setSavedPageState(newPageState)
+      setPreviewPageState(newPageState)
+    } else {
+      setPreviewPageState(savedPageState)
+    }
+    setAddedBlockIndex(null)
     onDiscardChangesModalClose()
     setDrawerState({ state: "root" })
   }
@@ -200,6 +215,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           setModifiedAssets([])
           setSavedPageState(newPageState)
           setDrawerState({ state: "root" })
+          setAddedBlockIndex(null)
         },
       },
     )

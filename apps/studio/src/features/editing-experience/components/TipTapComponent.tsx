@@ -66,7 +66,6 @@ function TipTapComponent({ content }: TipTapComponentProps) {
       content: updatedBlocks,
     }
     setPreviewPageState(newPageState)
-    setAddedBlockIndex(null)
   }
 
   const handleDeleteBlock = () => {
@@ -181,7 +180,12 @@ function TipTapComponent({ content }: TipTapComponentProps) {
                     siteId,
                     content: JSON.stringify(previewPageState),
                   },
-                  { onSuccess: () => setDrawerState({ state: "root" }) },
+                  {
+                    onSuccess: () => {
+                      setAddedBlockIndex(null)
+                      setDrawerState({ state: "root" })
+                    },
+                  },
                 )
               }}
               isLoading={isLoading}
