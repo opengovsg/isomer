@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { useState } from "react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import type { PaginationProps } from "../../../types/Pagination"
 import { PaginationControls } from "./PaginationControls"
 
@@ -45,6 +47,9 @@ export const SomePages: Story = {
 }
 
 export const ManyPages: Story = {
+  parameters: {
+    chromatic: withChromaticModes(["mobile", "tablet"]),
+  },
   args: {
     totalItems: 1240,
     itemsPerPage: 6,

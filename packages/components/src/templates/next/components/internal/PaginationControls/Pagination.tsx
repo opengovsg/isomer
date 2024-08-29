@@ -14,7 +14,7 @@ import { Button } from "../Button"
 const createPaginationStyles = tv({
   slots: {
     nav: "flex",
-    content: "flex flex-row flex-wrap items-center gap-3",
+    content: "flex flex-row flex-wrap items-center gap-1 md:gap-3",
     button:
       "prose-caption-1 min-h-0 rounded-none px-2.5 py-1 tabular-nums current:bg-base-content-subtle current:text-white hover:bg-base-canvas-backdrop hover:current:bg-base-content-subtle",
     item: "flex cursor-pointer select-none",

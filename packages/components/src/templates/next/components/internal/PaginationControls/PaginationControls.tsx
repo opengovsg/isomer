@@ -1,5 +1,7 @@
 "use client"
 
+import { useMediaQuery } from "usehooks-ts"
+
 import type { PaginationProps } from "../../../types/Pagination"
 import {
   Pagination,
@@ -25,12 +27,14 @@ export function PaginationControls({
   setCurrPage,
   onPageChange,
 }: PaginationControlsProps) {
+  const isTablet = useMediaQuery("(min-width: 768px)")
+
   const paginationRange = usePaginationRange<typeof SEPARATOR>({
     totalCount: totalItems,
     pageSize: itemsPerPage,
     currentPage: currPage,
     separator: SEPARATOR,
-    siblingCount: 1,
+    siblingCount: isTablet ? 1 : 0,
   })
 
   const totalPageCount = Math.ceil(totalItems / itemsPerPage)
