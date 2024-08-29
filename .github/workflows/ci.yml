@@ -13,6 +13,16 @@ env:
   LOG_LEVEL: silent
 
 jobs:
+  optimize_ci:
+    runs-on: ubuntu-latest # or whichever runner you use for your CI
+    outputs:
+      skip: ${{ steps.check_skip.outputs.skip }}
+    steps:
+      - name: Optimize CI
+        id: check_skip
+        uses: withgraphite/graphite-ci-action@main
+        with:
+          graphite_token: ${{ secrets.GRAPHITE_CI_OPTIMIZER_TOKEN }}
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -47,6 +57,8 @@ jobs:
         run: npm run typecheck
 
   test:
+    needs: optimize_ci
+    if: needs.optimize_ci.outputs.skip == 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

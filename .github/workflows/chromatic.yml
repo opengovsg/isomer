@@ -12,6 +12,16 @@ on:
 
 # List of jobs
 jobs:
+  optimize_ci:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check_skip.outputs.skip }}
+    steps:
+      - name: Optimize CI
+        id: check_skip
+        uses: withgraphite/graphite-ci-action@main
+        with:
+          graphite_token: ${{ secrets.GRAPHITE_CI_OPTIMIZER_TOKEN }}
   # JOB to run change detection
   changes:
     runs-on: ubuntu-latest
@@ -31,9 +41,9 @@ jobs:
             studio:
               - 'apps/studio/**'
   ui:
-    needs: changes
+    needs: [changes, optimize_ci]
     # Only run if the user is not a bot and has changes
-    if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.changes.outputs.ui == 'true' }}
+    if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.changes.outputs.ui == 'true' && needs.optimize_ci.outputs.skip == 'false'}}
     # Operating System
     runs-on: ubuntu-latest
     environment: staging
@@ -59,9 +69,9 @@ jobs:
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
   studio:
-    needs: changes
+    needs: [changes, optimize_ci]
     # Only run if the user is not a bot and has changes
-    if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.changes.outputs.studio == 'true' }}
+    if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.changes.outputs.studio == 'true' && needs.optimize_ci.outputs.skip == 'false' }}
     # Operating System
     runs-on: ubuntu-latest
     environment: staging
