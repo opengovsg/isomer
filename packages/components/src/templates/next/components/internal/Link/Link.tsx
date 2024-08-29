@@ -111,13 +111,13 @@ const linkStyles = tv({
 
 const fvHighlightLinkStyles = tv({
   extend: focusVisibleHighlight,
-  base: "text-link",
+  base: "text-link outline-none outline-0",
   variants: {
     showExternalIcon: {
       true: `after:content-['_↗']`,
     },
     isHovered: {
-      true: "text-link-hover",
+      true: "text-link-hover underline underline-offset-4",
     },
   },
 })
