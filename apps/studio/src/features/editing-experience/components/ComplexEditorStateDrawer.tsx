@@ -222,13 +222,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         onDiscard={handleDiscardChanges}
       />
 
-      <Flex
-        flexDir="column"
-        position="relative"
-        h="100%"
-        w="100%"
-        overflow="auto"
-      >
+      <Flex flexDir="column" position="relative" h="100%" w="100%">
         <Box
           bgColor="base.canvas.default"
           borderBottomColor="base.divider.medium"
