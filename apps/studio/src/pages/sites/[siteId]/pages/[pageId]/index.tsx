@@ -175,6 +175,7 @@ const PageSettings = ({
               name="permalink"
               render={({ field: { onChange, ...field } }) => (
                 <Input
+                  maxLength={MAX_PAGE_URL_LENGTH}
                   placeholder="URL will be autopopulated if left untouched"
                   noOfLines={1}
                   mt="0.5rem"
