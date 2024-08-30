@@ -12,6 +12,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Infobox, Input, Toggle } from "@opengovsg/design-system-react"
+import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { z } from "zod"
 
@@ -131,7 +132,7 @@ const PageSettings = ({
   permalink: originalPermalink,
   page,
 }: PageSettingsProps) => {
-  const { register, setValue, getFieldState, watch } = useZodForm({
+  const { register, setValue, getFieldState, watch, control } = useZodForm({
     schema: pageSettingsSchema,
     defaultValues: {
       title: page.page.title || "",
@@ -154,7 +155,7 @@ const PageSettings = ({
   }, [getFieldState, setValue, title])
 
   return (
-    <Grid w="100vw" mt="3rem" templateColumns="repeat(4, 1fr)">
+    <Grid w="100vw" my="3rem" templateColumns="repeat(4, 1fr)">
       <GridItem colSpan={1}></GridItem>
       <GridItem colSpan={2}>
         <VStack w="100%" gap="2rem" alignItems="flex-start">
@@ -169,13 +170,28 @@ const PageSettings = ({
           </Box>
           <Box w="full">
             <Text textStyle="subhead-1">Page URL</Text>
-            <Input
-              noOfLines={1}
-              mt="0.5rem"
-              {...register("permalink")}
-              w="100%"
+            <Controller
+              control={control}
+              name="permalink"
+              render={({ field: { onChange, ...field } }) => (
+                <Input
+                  placeholder="URL will be autopopulated if left untouched"
+                  noOfLines={1}
+                  mt="0.5rem"
+                  w="100%"
+                  {...field}
+                  onChange={(e) => {
+                    onChange(generateResourceUrl(e.target.value))
+                  }}
+                />
+              )}
             />
-            <Infobox icon={<BiLink />} variant="info-secondary" size="sm">
+            <Infobox
+              mt="0.5rem"
+              icon={<BiLink />}
+              variant="info-secondary"
+              size="sm"
+            >
               <Text noOfLines={1} textStyle="subhead-2">
                 {permalink}
               </Text>
