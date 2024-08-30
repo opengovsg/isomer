@@ -11,7 +11,8 @@ import {
   Textarea,
   VStack,
 } from "@chakra-ui/react"
-import { Input, Toggle } from "@opengovsg/design-system-react"
+import { Infobox, Input, Toggle } from "@opengovsg/design-system-react"
+import { BiLink } from "react-icons/bi"
 import { z } from "zod"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -153,77 +154,84 @@ const PageSettings = ({
   }, [getFieldState, setValue, title])
 
   return (
-    <Box w="max-content" m="3rem auto">
-      <VStack w="100%" gap="2rem" alignItems="flex-start">
-        <Box>
-          <Text as="h3" textStyle="h3-semibold">
-            Page settings
-          </Text>
-          <Text textStyle="body-2" mt="0.5rem">
-            These settings will only affect this page. Publish the page to make
-            these changes live.
-          </Text>
-        </Box>
-        <Box w="full">
-          <Text textStyle="subhead-1">Page URL</Text>
-          <Text noOfLines={1} maxW="100%" textStyle="body-2">
-            {permalink}
-          </Text>
-          <Input
-            noOfLines={1}
-            mt="0.5rem"
-            {...register("permalink")}
-            w="100%"
-          />
-          <Text mt="0.5rem" textColor="base.content.medium">
-            {MAX_PAGE_URL_LENGTH - permalink.length} characters left
-          </Text>
-        </Box>
-        <Box>
-          <Text textStyle="h5" as="h5">
-            Search Engine Optimisation (Advanced)
-          </Text>
-          <Text textStyle="body-2">
-            Settings here will affect how your page appears on search engines
-            like Google.
-          </Text>
-        </Box>
-      </VStack>
-      <VStack alignItems="flex-start" gap="1.5rem" mt="1.5rem" w="100%">
-        <Flex w="full">
-          <Box w="full">
-            <Toggle
-              {...register("noIndex")}
-              label="Prevent search engines from indexing this page"
-            />
-            <Text textStyle="body-2">
-              If this is on, your visitors can't find this page through a search
-              engine.
+    <Grid w="100vw" mt="3rem" templateColumns="repeat(4, 1fr)">
+      <GridItem colSpan={1}></GridItem>
+      <GridItem colSpan={2}>
+        <VStack w="100%" gap="2rem" alignItems="flex-start">
+          <Box>
+            <Text as="h3" textStyle="h3-semibold">
+              Page settings
+            </Text>
+            <Text textStyle="body-2" mt="0.5rem">
+              These settings will only affect this page. Publish the page to
+              make these changes live.
             </Text>
           </Box>
-          <Spacer />
-        </Flex>
-        <Box w="full">
-          <Text textStyle="subhead-1">Page title</Text>
-          <Text textStyle="body-2" mt="0.25rem">
-            By default, this is the title of your your page. Edit this if you
-            want to show a different title on search engines.
-          </Text>
-          <Input w="100%" noOfLines={1} {...register("title")} mt="0.5rem" />
-          <Text mt="0.5rem" textColor="base.content.medium">
-            {MAX_TITLE_LENGTH - title.length} characters left
-          </Text>
-        </Box>
-        <Box>
-          <Text textStyle="subhead-1">Meta description</Text>
-          <Text textStyle="body-2">
-            This is a summary of your page that is displayed on search results.
-            By default, this is the summary of your page.
-          </Text>
-          <Textarea mt="0.5rem" {...register("meta")} />
-        </Box>
-      </VStack>
-    </Box>
+          <Box w="full">
+            <Text textStyle="subhead-1">Page URL</Text>
+            <Input
+              noOfLines={1}
+              mt="0.5rem"
+              {...register("permalink")}
+              w="100%"
+            />
+            <Infobox icon={<BiLink />} variant="info-secondary" size="sm">
+              <Text noOfLines={1} textStyle="subhead-2">
+                {permalink}
+              </Text>
+            </Infobox>
+            <Text mt="0.5rem" textColor="base.content.medium">
+              {MAX_PAGE_URL_LENGTH - permalink.length} characters left
+            </Text>
+          </Box>
+          <Box>
+            <Text textStyle="h5" as="h5">
+              Search Engine Optimisation (Advanced)
+            </Text>
+            <Text textStyle="body-2">
+              Settings here will affect how your page appears on search engines
+              like Google.
+            </Text>
+          </Box>
+        </VStack>
+
+        <VStack alignItems="flex-start" gap="1.5rem" mt="1.5rem" w="100%">
+          <Flex w="full">
+            <Box w="full">
+              <Toggle
+                {...register("noIndex")}
+                label="Prevent search engines from indexing this page"
+              />
+              <Text textStyle="body-2">
+                If this is on, your visitors can't find this page through a
+                search engine.
+              </Text>
+            </Box>
+            <Spacer />
+          </Flex>
+          <Box w="full">
+            <Text textStyle="subhead-1">Page title</Text>
+            <Text textStyle="body-2" mt="0.25rem">
+              By default, this is the title of your your page. Edit this if you
+              want to show a different title on search engines.
+            </Text>
+            <Input w="100%" noOfLines={1} {...register("title")} mt="0.5rem" />
+            <Text mt="0.5rem" textColor="base.content.medium">
+              {MAX_TITLE_LENGTH - title.length} characters left
+            </Text>
+          </Box>
+          <Box>
+            <Text textStyle="subhead-1">Meta description</Text>
+            <Text textStyle="body-2">
+              This is a summary of your page that is displayed on search
+              results. By default, this is the summary of your page.
+            </Text>
+            <Textarea mt="0.5rem" {...register("meta")} />
+          </Box>
+        </VStack>
+      </GridItem>
+      <GridItem colSpan={1}></GridItem>
+    </Grid>
   )
 }
 
