@@ -124,7 +124,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
           </HStack>
         </Box>
 
-        <Box px="2rem" py="1rem">
+        <Box px="2rem" py="1rem" h="full">
           <FormBuilder<Static<typeof schema>>
             schema={metadataSchema}
             validateFn={validateFn}
@@ -132,36 +132,35 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             handleChange={(data) => handleChange(data)}
           />
         </Box>
-      </Flex>
-
-      <Box
-        pos="sticky"
-        bottom={0}
-        bgColor="base.canvas.default"
-        boxShadow="md"
-        py="1.5rem"
-        px="2rem"
-      >
-        <Button
-          w="100%"
-          isLoading={isLoading}
-          onClick={() => {
-            setSavedPageState(previewPageState)
-            mutate(
-              {
-                pageId,
-                siteId,
-                content: JSON.stringify(previewPageState),
-              },
-              {
-                onSuccess: () => setDrawerState({ state: "root" }),
-              },
-            )
-          }}
+        <Box
+          pos="sticky"
+          bottom={0}
+          bgColor="base.canvas.default"
+          boxShadow="md"
+          py="1.5rem"
+          px="2rem"
         >
-          Save changes
-        </Button>
-      </Box>
+          <Button
+            w="100%"
+            isLoading={isLoading}
+            onClick={() => {
+              setSavedPageState(previewPageState)
+              mutate(
+                {
+                  pageId,
+                  siteId,
+                  content: JSON.stringify(previewPageState),
+                },
+                {
+                  onSuccess: () => setDrawerState({ state: "root" }),
+                },
+              )
+            }}
+          >
+            Save changes
+          </Button>
+        </Box>
+      </Flex>
     </>
   )
 }
