@@ -2,12 +2,8 @@ import { BiChevronDown } from "react-icons/bi"
 
 import type { NavbarItem, NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
-import { twMerge } from "~/lib/twMerge"
 import { isExternalUrl } from "~/utils"
-import {
-  focusVisibleHighlightNonRac,
-  groupFocusVisibleHighlightNonRac,
-} from "~/utils/rac"
+import { focusVisibleHighlightNonRac } from "~/utils/rac"
 import { BaseLink, Link } from "../../Link"
 
 interface NavItemAccordionProps
@@ -54,10 +50,12 @@ export const MobileNavItemAccordion = ({
         <BaseLink
           isExternal={isExternalUrl(url)}
           LinkComponent={LinkComponent}
-          className={item()}
+          className={item({
+            className: focusVisibleHighlightNonRac(),
+          })}
           href={url}
         >
-          <span className={groupFocusVisibleHighlightNonRac()}>{name}</span>
+          {name}
         </BaseLink>
       </div>
     )
@@ -92,26 +90,23 @@ export const MobileNavItemAccordion = ({
             const isExternal = isExternalUrl(subItem.url)
             return (
               <li key={subItem.name}>
-                <Link
-                  LinkComponent={LinkComponent}
-                  href={subItem.url}
-                  isExternal={isExternal}
-                  showExternalIcon={isExternal}
+                <div
                   className={item({
-                    className: twMerge(
-                      isExternal && "justify-start gap-1",
-                      "py-1",
-                    ),
+                    className: "py-1",
                   })}
                 >
-                  <span
+                  <Link
+                    LinkComponent={LinkComponent}
+                    href={subItem.url}
+                    isExternal={isExternal}
+                    showExternalIcon={isExternal}
                     className={nestedItem({
-                      className: groupFocusVisibleHighlightNonRac(),
+                      className: focusVisibleHighlightNonRac(),
                     })}
                   >
                     {subItem.name}
-                  </span>
-                </Link>
+                  </Link>
+                </div>
               </li>
             )
           })}
