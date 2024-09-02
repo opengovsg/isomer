@@ -91,7 +91,7 @@ const RestrictedHeaderBarContent = ({ children }: PropsWithChildren) => {
 const RestrictedHeaderBar = ({ children }: PropsWithChildren) => {
   const { isMastheadContentVisible, toggleMastheadContent } = useMasthead()
   return (
-    <div className="mx-auto max-w-screen-xl px-6 lg:px-10">
+    <div className="mx-auto max-w-screen-xl px-6 md:px-10">
       <Button
         className={composeRenderProps(
           "flex w-full gap-1 text-start leading-5 lg:hidden",
