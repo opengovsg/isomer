@@ -22,7 +22,7 @@ export const Skeleton = ({
   return (
     <>
       {site.isGovernment && <Masthead isStaging={isStaging} />}
-      {site.notification && <Notification content={site.notification} />}
+      {site.notification && <Notification {...site.notification} />}
       <Navbar
         logoUrl={site.logoUrl}
         logoAlt={site.siteName}
