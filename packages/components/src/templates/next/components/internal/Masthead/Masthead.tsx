@@ -153,7 +153,7 @@ const RestrictedContent = () => {
   return (
     <div
       id={MASTHEAD_CONTROL_ID}
-      className={`mx-auto max-w-screen-xl px-6 py-2 pb-8 pt-4 text-[#474747] lg:px-10 lg:pb-12 lg:pt-10 ${
+      className={`mx-auto max-w-screen-xl px-6 py-2 pb-8 pt-4 text-[#474747] md:px-10 lg:pb-12 lg:pt-10 ${
         isMastheadContentVisible ? "block" : "hidden"
       }`}
     >
