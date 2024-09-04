@@ -21,16 +21,10 @@ const SingleCardNoImageSchema = Type.Object({
 })
 
 const SingleCardWithImageSchema = Type.Composite([
-  SingleCardNoImageSchema,
   Type.Object({
     imageUrl: Type.String({
       title: "Upload image",
       format: "image",
-    }),
-    imageAlt: Type.String({
-      title: "Alternate text",
-      description:
-        "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
     }),
     imageFit: Type.Optional(
       Type.Union(
@@ -49,7 +43,13 @@ const SingleCardWithImageSchema = Type.Composite([
         },
       ),
     ),
+    imageAlt: Type.String({
+      title: "Alternate text",
+      description:
+        "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
+    }),
   }),
+  SingleCardNoImageSchema,
 ])
 
 const InfoCardsBaseSchema = Type.Object({
