@@ -32,6 +32,23 @@ const SingleCardWithImageSchema = Type.Composite([
       description:
         "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
     }),
+    imageFit: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal("cover", {
+            title: "Default (recommended)",
+          }),
+          Type.Literal("contain", {
+            title: "Resize image to fit",
+          }),
+        ],
+        {
+          default: "cover",
+          title: "Image display",
+          description: `Select "Resize image to fit" only if the image has a white background.`,
+        },
+      ),
+    ),
   }),
 ])
 
