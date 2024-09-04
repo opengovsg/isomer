@@ -4,6 +4,7 @@ import type { CollectionCardProps } from "~/interfaces"
 import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
 
 interface IsomerBaseSitemap {
+  id: string
   title: string
   summary: string
   lastModified: string

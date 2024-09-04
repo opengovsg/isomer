@@ -144,15 +144,6 @@ const FOOTER_ITEMS = [
 ]
 
 async function main() {
-  const siteMap: IsomerSitemap = {
-    title: "Home",
-    permalink: "/",
-    children: [],
-    layout: "content",
-    summary: "something",
-    lastModified: "",
-  }
-
   const { id: siteId } = await db
     .insertInto("Site")
     .values({

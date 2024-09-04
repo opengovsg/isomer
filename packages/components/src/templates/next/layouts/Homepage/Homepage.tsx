@@ -24,8 +24,8 @@ const HomepageLayout = ({
         className={`[&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10`}
       >
         {renderPageContent({
+          site,
           content,
-          assetsBaseUrl: site.assetsBaseUrl,
           LinkComponent,
         })}
       </div>
