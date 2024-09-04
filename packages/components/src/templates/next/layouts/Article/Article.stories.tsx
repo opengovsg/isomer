@@ -25,6 +25,7 @@ export const Default: Story = {
     site: {
       siteName: "Isomer Next",
       siteMap: {
+        id: "1",
         title: "Home",
         permalink: "/",
         lastModified: "",
@@ -32,6 +33,7 @@ export const Default: Story = {
         summary: "",
         children: [
           {
+            id: "2",
             title: "Newsroom",
             permalink: "/newsroom",
             lastModified: "",
@@ -39,6 +41,7 @@ export const Default: Story = {
             summary: "",
             children: [
               {
+                id: "3",
                 title: "News",
                 permalink: "/newsroom/news",
                 lastModified: "",
@@ -46,6 +49,7 @@ export const Default: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "4",
                     title:
                       "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
                     permalink:

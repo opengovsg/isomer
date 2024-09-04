@@ -153,8 +153,8 @@ const ContentLayout = ({
           )}
           <div>
             {renderPageContent({
+              site,
               content: transformedContent,
-              assetsBaseUrl: site.assetsBaseUrl,
               LinkComponent,
             })}
           </div>

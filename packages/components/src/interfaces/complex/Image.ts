@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteConfigProps } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 
 export const ImageSchema = Type.Object(
   {
@@ -49,7 +49,7 @@ export const ImageSchema = Type.Object(
   },
 )
 
-export type ImageProps = Static<typeof ImageSchema> &
-  Pick<IsomerSiteConfigProps, "assetsBaseUrl"> & {
-    LinkComponent?: any // Next.js link
-  }
+export type ImageProps = Static<typeof ImageSchema> & {
+  site: IsomerSiteProps
+  LinkComponent?: any // Next.js link
+}

@@ -26,6 +26,7 @@ export const WithSiderail: Story = {
     site: {
       siteName: "Isomer Next",
       siteMap: {
+        id: "1",
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
@@ -33,6 +34,7 @@ export const WithSiderail: Story = {
         summary: "",
         children: [
           {
+            id: "2",
             title: "Parent page",
             permalink: "/parent",
             lastModified: "",
@@ -40,6 +42,7 @@ export const WithSiderail: Story = {
             summary: "",
             children: [
               {
+                id: "3",
                 title: "Irrationality",
                 permalink: "/parent/rationality",
                 lastModified: "",
@@ -47,6 +50,7 @@ export const WithSiderail: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "4",
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -54,6 +58,7 @@ export const WithSiderail: Story = {
                     summary: "",
                   },
                   {
+                    id: "5",
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -63,6 +68,7 @@ export const WithSiderail: Story = {
                 ],
               },
               {
+                id: "6",
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
@@ -70,6 +76,7 @@ export const WithSiderail: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "7",
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
@@ -81,6 +88,7 @@ export const WithSiderail: Story = {
             ],
           },
           {
+            id: "8",
             title: "Aunt/Uncle that should not appear",
             permalink: "/aunt-uncle",
             lastModified: "",
@@ -154,6 +162,7 @@ export const NoSiderail: Story = {
     site: {
       siteName: "Isomer Next",
       siteMap: {
+        id: "1",
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
@@ -161,6 +170,7 @@ export const NoSiderail: Story = {
         summary: "",
         children: [
           {
+            id: "2",
             title: "Parent page",
             permalink: "/parent",
             lastModified: "",
@@ -168,6 +178,7 @@ export const NoSiderail: Story = {
             summary: "",
             children: [
               {
+                id: "3",
                 title: "Irrationality",
                 permalink: "/parent/rationality",
                 lastModified: "",
@@ -175,6 +186,7 @@ export const NoSiderail: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "4",
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -182,6 +194,7 @@ export const NoSiderail: Story = {
                     summary: "",
                   },
                   {
+                    id: "5",
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -191,6 +204,7 @@ export const NoSiderail: Story = {
                 ],
               },
               {
+                id: "6",
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
@@ -198,6 +212,7 @@ export const NoSiderail: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "7",
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
@@ -209,6 +224,7 @@ export const NoSiderail: Story = {
             ],
           },
           {
+            id: "8",
             title: "Aunt/Uncle that should not appear",
             permalink: "/aunt-uncle",
             lastModified: "",

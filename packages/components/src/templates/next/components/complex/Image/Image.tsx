@@ -2,7 +2,7 @@ import type { PropsWithChildren } from "react"
 
 import type { ImageProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { isExternalUrl } from "~/utils"
+import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { Link } from "../../internal/Link"
 import ImageClient from "./ImageClient"
 
@@ -64,22 +64,25 @@ const Image = ({
   caption,
   size,
   href,
-  assetsBaseUrl,
+  site,
   LinkComponent,
 }: ImageProps) => {
   const imgSrc =
-    isExternalUrl(src) || assetsBaseUrl === undefined
+    isExternalUrl(src) || site.assetsBaseUrl === undefined
       ? src
-      : `${assetsBaseUrl}${src}`
+      : `${site.assetsBaseUrl}${src}`
 
   return (
-    <ImageContainer href={href} LinkComponent={LinkComponent}>
+    <ImageContainer
+      href={getReferenceLinkHref(href, site.siteMap)}
+      LinkComponent={LinkComponent}
+    >
       <ImageClient
         src={imgSrc}
         alt={alt}
         width={getSizeWidth(size)}
         className={compoundStyles.image({ size: size ?? "default" })}
-        assetsBaseUrl={assetsBaseUrl}
+        assetsBaseUrl={site.assetsBaseUrl}
       />
 
       {caption && <p className={compoundStyles.caption()}>{caption}</p>}

@@ -11,7 +11,7 @@ import { BiData, BiFile, BiFolder, BiLockAlt } from "react-icons/bi"
 import type { RouterOutput } from "~/utils/trpc"
 
 type ResourceItemProps = Pick<
-  RouterOutput["resource"]["getChildrenOf"][number],
+  RouterOutput["resource"]["getChildrenOf"]["items"][number],
   "permalink" | "type"
 > & {
   isSelected: boolean

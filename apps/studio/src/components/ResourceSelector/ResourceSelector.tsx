@@ -32,7 +32,7 @@ export const ResourceSelector = ({
   const [searchQuery, setSearchQuery] = useState("")
   const currResourceId = parentIdStack[parentIdStack.length - 1]
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    trpc.resource.getFolderChildrenOf.useInfiniteQuery(
+    trpc.resource.getChildrenOf.useInfiniteQuery(
       {
         resourceId: currResourceId ?? null,
         siteId: String(siteId),

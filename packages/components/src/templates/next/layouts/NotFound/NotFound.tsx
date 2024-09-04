@@ -23,6 +23,7 @@ const NotFoundLayout = ({
         className={`[&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10`}
       >
         {renderComponent({
+          site,
           component: {
             type: "infobar",
             title: "Oh no, we couldn't find that page",

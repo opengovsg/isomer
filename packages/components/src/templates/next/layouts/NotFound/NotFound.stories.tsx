@@ -28,6 +28,7 @@ export const Default: Story = {
     site: {
       siteName: "Isomer Next",
       siteMap: {
+        id: "1",
         title: "Home",
         permalink: "/",
         lastModified: "",
