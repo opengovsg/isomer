@@ -118,6 +118,7 @@
     "pg": "^8.12.0",
     "pino": "^9.2.0",
     "pino-pretty": "^11.2.1",
+    "prisma": "^5.18.0",
     "prisma-json-types-generator": "^3.0.4",
     "prisma-kysely": "^1.8.0",
     "react": "^18.3.1",
@@ -126,14 +127,14 @@
     "react-frame-component": "^5.2.7",
     "react-hook-form": "^7.52.1",
     "react-icons": "^5.2.0",
+    "react-shadow": "^20.5.0",
     "sass": "^1.77.6",
     "superjson": "^2.2.1",
     "type-fest": "^4.23.0",
     "usehooks-ts": "^3.1.0",
     "validator": "^13.11.0",
     "wretch": "^2.8.0",
-    "zod": "^3.22.4",
-    "prisma": "^5.18.0"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@babel/plugin-transform-class-properties": "^7.24.7",

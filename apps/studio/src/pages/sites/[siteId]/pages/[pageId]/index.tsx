@@ -4,7 +4,7 @@ import { Flex, Grid, GridItem } from "@chakra-ui/react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import EditPageDrawer from "~/features/editing-experience/components/EditPageDrawer"
 import Preview from "~/features/editing-experience/components/Preview"
-import { PreviewIframe } from "~/features/editing-experience/components/PreviewIframe"
+import { PreviewShadowDom } from "~/features/editing-experience/components/PreviewShadowDom"
 import { editPageSchema } from "~/features/editing-experience/schema"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -60,7 +60,7 @@ function EditPage(): JSX.Element {
           h="100%"
           overflowX="auto"
         >
-          <PreviewIframe style={themeCssVars}>
+          <PreviewShadowDom style={themeCssVars}>
             <Preview
               {...page}
               {...previewPageState}
@@ -68,7 +68,7 @@ function EditPage(): JSX.Element {
               permalink={permalink}
               version="0.1.0"
             />
-          </PreviewIframe>
+          </PreviewShadowDom>
         </Flex>
       </GridItem>
     </Grid>
