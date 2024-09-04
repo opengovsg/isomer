@@ -9,8 +9,7 @@ import {
   Spacer,
   Text,
 } from "@chakra-ui/react"
-import { Input, Link } from "@opengovsg/design-system-react"
-import fuzzysort from "fuzzysort"
+import { Button, Input, Link } from "@opengovsg/design-system-react"
 import { BiHomeAlt, BiLeftArrowAlt, BiSearch } from "react-icons/bi"
 
 import { trpc } from "~/utils/trpc"
@@ -32,13 +31,17 @@ export const ResourceSelector = ({
   const [parentIdStack, setParentIdStack] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const currResourceId = parentIdStack[parentIdStack.length - 1]
-  const [children] = trpc.resource.getChildrenOf.useSuspenseQuery({
-    siteId,
-    resourceId: currResourceId ?? null,
-  })
-  const filteredChildren = children.filter((child) =>
-    searchQuery !== "" ? fuzzysort.single(searchQuery, child.permalink) : true,
-  )
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    trpc.resource.getFolderChildrenOf.useInfiniteQuery(
+      {
+        resourceId: currResourceId ?? null,
+        siteId: String(siteId),
+        limit: 25,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextOffset,
+      },
+    )
 
   const onBack = () => {
     setParentIdStack((prev) => prev.slice(0, -1))
@@ -107,33 +110,50 @@ export const ResourceSelector = ({
           </Flex>
         )}
 
-        {filteredChildren.length === 0 ? (
+        {data?.pages.flatMap(({ items }) => items).length === 0 ? (
           <Box py="0.5rem" pl="2.25rem">
             <Text textStyle="caption-2" fontStyle="italic">
               No matching results
             </Text>
           </Box>
         ) : (
-          filteredChildren.map((child) => {
-            const isDisabled = isDisabledFn?.(child.id) ?? false
+          data?.pages.map(({ items }) =>
+            items.map((child) => {
+              const isDisabled = isDisabledFn?.(child.id) ?? false
 
-            return (
-              <ResourceItem
-                {...child}
-                key={child.id}
-                isSelected={selectedResourceId === child.id}
-                isDisabled={isDisabled}
-                searchQuery={searchQuery}
-                onResourceItemSelect={() => {
-                  if (child.type === "Folder" || child.type === "Collection") {
-                    setParentIdStack((prev) => [...prev, child.id])
-                  } else {
-                    onChange(child.id)
-                  }
-                }}
-              />
-            )
-          })
+              return (
+                <ResourceItem
+                  {...child}
+                  key={child.id}
+                  isSelected={selectedResourceId === child.id}
+                  isDisabled={isDisabled}
+                  searchQuery={searchQuery}
+                  onResourceItemSelect={() => {
+                    if (
+                      child.type === "Folder" ||
+                      child.type === "Collection"
+                    ) {
+                      setParentIdStack((prev) => [...prev, child.id])
+                    } else {
+                      onChange(child.id)
+                    }
+                  }}
+                />
+              )
+            }),
+          )
+        )}
+
+        {hasNextPage && (
+          <Button
+            variant="link"
+            pl="2.25rem"
+            size="xs"
+            isLoading={isFetchingNextPage}
+            onClick={() => fetchNextPage()}
+          >
+            Load more
+          </Button>
         )}
       </Box>
     </>
