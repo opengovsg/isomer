@@ -4,7 +4,7 @@ import { useIsMobile } from "@opengovsg/design-system-react"
 import { format } from "date-fns"
 
 import Preview from "../Preview"
-import { PreviewShadowDom } from "../PreviewShadowDom"
+import { PreviewIframe } from "../PreviewIframe"
 import { useCreateCollectionPageWizard } from "./CreateCollectionPageWizardContext"
 
 export const PreviewLayout = (): JSX.Element => {
@@ -61,14 +61,14 @@ export const PreviewLayout = (): JSX.Element => {
             {`You're previewing a ${currentType === "pdf" ? "PDF " : ""}collection page`}
           </Flex>
           <Box bg="white" overflow="auto" height="100%">
-            <PreviewShadowDom>
+            <PreviewIframe preventPointerEvents keyForRerender={currentType}>
               <Preview
                 overrides={previewOverrides}
                 siteId={siteId}
                 permalink={currentPermalink}
                 {...pagePreviewJson}
               />
-            </PreviewShadowDom>
+            </PreviewIframe>
           </Box>
         </Box>
       )}

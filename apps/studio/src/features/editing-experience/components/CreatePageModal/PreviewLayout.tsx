@@ -6,7 +6,7 @@ import { format } from "date-fns"
 import Suspense from "~/components/Suspense"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import Preview from "../Preview"
-import { PreviewShadowDom } from "../PreviewShadowDom"
+import { PreviewIframe } from "../PreviewIframe"
 import { LAYOUT_RENDER_DATA } from "./constants"
 import { useCreatePageWizard } from "./CreatePageWizardContext"
 
@@ -84,7 +84,7 @@ const SuspendableLayoutPreview = () => {
     }
   }, [currentLayout])
   return (
-    <PreviewShadowDom
+    <PreviewIframe
       preventPointerEvents
       keyForRerender={currentLayout}
       style={themeCssVars}
@@ -95,6 +95,6 @@ const SuspendableLayoutPreview = () => {
         permalink={currentPermalink}
         {...layoutPreviewJson}
       />
-    </PreviewShadowDom>
+    </PreviewIframe>
   )
 }
