@@ -47,7 +47,7 @@ function EditPage(): JSX.Element {
       maxH="calc(100vh - 57px)"
     >
       {/* TODO: Implement sidebar editor */}
-      <GridItem colSpan={1} bg="slate.50">
+      <GridItem colSpan={1} bg="slate.50" overflow="auto">
         <EditPageDrawer />
       </GridItem>
       {/* TODO: Implement preview */}

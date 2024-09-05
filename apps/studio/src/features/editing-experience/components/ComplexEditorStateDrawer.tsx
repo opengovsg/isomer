@@ -263,7 +263,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           </HStack>
         </Box>
 
-        <Box h="full" px="2rem" py="1rem">
+        {/* NOTE: reserve at least 4.75rem for the bottom bar */}
+        <Box h="full" px="2rem" py="1rem" mb="4.75rem">
           <FormBuilder<IsomerComponent>
             schema={subSchema}
             validateFn={validateFn}
