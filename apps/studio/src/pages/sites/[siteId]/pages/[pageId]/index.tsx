@@ -44,7 +44,7 @@ function EditPage(): JSX.Element {
     useEditorDrawerContext()
   const { pageId, siteId } = useQueryParse(editPageSchema)
 
-  const [{ content: page, permalink, type }] =
+  const [{ content: page, permalink, type, title }] =
     trpc.page.readPageAndBlob.useSuspenseQuery(
       {
         pageId,
@@ -72,7 +72,7 @@ function EditPage(): JSX.Element {
         />
       </TabPanel>
       <TabPanel>
-        <PageSettings type={type} permalink={permalink} page={page} />
+        <PageSettings type={type} permalink={permalink} title={title} />
       </TabPanel>
     </TabPanels>
   )
@@ -125,20 +125,20 @@ const PageEditingView = ({ page, permalink, siteId }: PageEditingViewProps) => {
 
 interface PageSettingsProps {
   permalink: RouterOutput["page"]["readPageAndBlob"]["permalink"]
+  title: RouterOutput["page"]["readPageAndBlob"]["title"]
   type: RouterOutput["page"]["readPageAndBlob"]["type"]
-  page: RouterOutput["page"]["readPageAndBlob"]["content"]
 }
 const PageSettings = ({
   permalink: originalPermalink,
-  page,
   type,
+  title: originalTitle,
 }: PageSettingsProps) => {
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const { register, setValue, getFieldState, watch, control, handleSubmit } =
     useZodForm({
       schema: pageSettingsSchema.omit({ pageId: true, siteId: true }),
       defaultValues: {
-        title: page.page.title || "",
+        title: originalTitle || "",
         permalink: originalPermalink || "",
       },
     })
@@ -152,24 +152,13 @@ const PageSettings = ({
     onSuccess: async () => {
       // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
       await utils.page.readPageAndBlob.invalidate()
+      await utils.page.readPage.invalidate()
       toast({ title: "Page settings saved", status: "success" })
     },
     onError: (error) => {
       toast({ title: error.message, status: "error" })
     },
   })
-
-  useEffect(() => {
-    const permalinkFieldState = getFieldState("permalink")
-    // This allows the syncing to happen only when the page title is not dirty
-    // Dirty means user has changed the value AND the value is not the same as the default value of "".
-    // Once the value has been cleared, dirty state will reset.
-    if (!permalinkFieldState.isDirty) {
-      setValue("permalink", generateResourceUrl(title), {
-        shouldValidate: !!title,
-      })
-    }
-  }, [getFieldState, setValue, title])
 
   const onSubmit = handleSubmit(async (values) => {
     await updatePageSettingsMutation.mutateAsync({ pageId, siteId, ...values })
