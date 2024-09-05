@@ -223,7 +223,9 @@ const meta: Meta<CollectionPageSchemaType> = {
         type: "localSearch",
         searchUrl: "/search",
       },
-      notification: "This is a notification",
+      notification: {
+        content: [{ type: "text", text: "This is a short notification" }],
+      },
     },
     page: {
       title: "Publications and other press releases",
@@ -406,7 +408,9 @@ export const EmptyCollection: Story = {
         type: "localSearch",
         searchUrl: "/search",
       },
-      notification: "This is a notification",
+      notification: {
+        content: [{ type: "text", text: "This is a short notification" }],
+      },
     },
   },
 }

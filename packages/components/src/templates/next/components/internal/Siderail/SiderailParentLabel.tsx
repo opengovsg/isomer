@@ -1,7 +1,10 @@
+import { composeRenderProps } from "react-aria-components"
 import { BiRightArrowAlt } from "react-icons/bi"
 
 import type { SiderailProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { focusVisibleHighlight } from "~/utils/rac"
+import { Link } from "../Link"
 import { useSiderailContext } from "./SiderailContext"
 
 const createSiderailParentLabelStyles = tv({
@@ -14,6 +17,10 @@ const createSiderailParentLabelStyles = tv({
 })
 const compoundStyles = createSiderailParentLabelStyles()
 
+const parentLinkStyle = tv({
+  extend: focusVisibleHighlight,
+})
+
 type SiderailLabelProps = Pick<SiderailProps, "parentTitle" | "parentUrl">
 
 export const SiderailParentLabel = ({
@@ -24,10 +31,29 @@ export const SiderailParentLabel = ({
 
   return (
     <li className={compoundStyles.container()}>
-      <LinkComponent href={parentUrl} className={compoundStyles.label()}>
-        {parentTitle}
-        <BiRightArrowAlt aria-hidden className={compoundStyles.icon()} />
-      </LinkComponent>
+      <p className={compoundStyles.label()}>
+        <Link
+          href={parentUrl}
+          LinkComponent={LinkComponent}
+          className={composeRenderProps("", (className, renderProps) =>
+            parentLinkStyle({
+              className,
+              ...renderProps,
+            }),
+          )}
+        >
+          {parentTitle}
+        </Link>
+        <Link
+          aria-hidden
+          tabIndex={-1}
+          href={parentUrl}
+          LinkComponent={LinkComponent}
+          aria-label={`Go to ${parentTitle} parent page`}
+        >
+          <BiRightArrowAlt aria-hidden className={compoundStyles.icon()} />
+        </Link>
+      </p>
     </li>
   )
 }

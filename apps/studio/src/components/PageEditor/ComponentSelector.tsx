@@ -29,7 +29,6 @@ import {
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { type DrawerState } from "~/types/editorDrawer"
-import { trpc } from "~/utils/trpc"
 import { DEFAULT_BLOCKS } from "./constants"
 import { type SectionType } from "./types"
 
@@ -104,7 +103,7 @@ function ComponentSelector() {
     setDrawerState,
     setSavedPageState,
     setPreviewPageState,
-    setAddedBlock,
+    setAddedBlockIndex,
   } = useEditorDrawerContext()
 
   const onProceed = (sectionType: SectionType) => {
@@ -129,15 +128,8 @@ function ComponentSelector() {
     setSavedPageState(nextPageState)
     setDrawerState({ state: nextState })
     setCurrActiveIdx(nextPageState.content.length - 1)
+    setAddedBlockIndex(nextPageState.content.length - 1)
     setPreviewPageState(nextPageState)
-
-    // TODO: Decide if setting addedBlocks
-    // to only be for complex blocks is a good idea
-    // or if we should combine prose to addedBlocks as well
-    // and handle prose -> complex components in the renderer itself
-    if (sectionType !== "prose") {
-      setAddedBlock(sectionType)
-    }
   }
 
   return (

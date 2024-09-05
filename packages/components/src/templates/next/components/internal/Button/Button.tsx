@@ -21,6 +21,9 @@ export const buttonStyles = tv({
       default: "",
       inverse: "",
     },
+    isFocusVisible: {
+      true: "",
+    },
     isDisabled: {
       true: "cursor-not-allowed",
     },
@@ -34,7 +37,7 @@ export const buttonStyles = tv({
       variant: "solid",
       colorScheme: "default",
       className:
-        "bg-brand-canvas-inverse text-base-content-inverse active:bg-brand-interaction-pressed hover:bg-brand-interaction-hover",
+        "bg-brand-canvas-inverse text-base-content-inverse active:bg-brand-interaction-pressed hover:bg-brand-interaction-hover hover:text-base-content-inverse",
     },
     {
       variant: "solid",
@@ -45,7 +48,7 @@ export const buttonStyles = tv({
       variant: "outline",
       colorScheme: "inverse",
       className:
-        "border border-base-divider-inverse text-base-content-inverse hover:bg-base-canvas-inverse-overlay/80",
+        "border border-base-divider-inverse text-base-content-inverse hover:bg-base-canvas-inverse-overlay/80 hover:text-base-content-inverse",
     },
     {
       variant: "outline",
@@ -63,6 +66,18 @@ export const buttonStyles = tv({
       size: "base",
       // -1 px for border
       className: "px-[19px] py-[11px]",
+    },
+    {
+      variant: "solid",
+      isFocusVisible: true,
+      className:
+        "bg-utility-highlight text-base-content-strong transition-none",
+    },
+    {
+      variant: "outline",
+      isFocusVisible: true,
+      className:
+        "bg-utility-highlight text-base-content-strong transition-none",
     },
   ],
   defaultVariants: {

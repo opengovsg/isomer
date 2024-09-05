@@ -45,6 +45,8 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     previewPageState,
     setPreviewPageState,
     currActiveIdx,
+    addedBlockIndex,
+    setAddedBlockIndex,
   } = useEditorDrawerContext()
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
@@ -78,10 +80,23 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     setPreviewPageState(newPageState)
     onDeleteBlockModalClose()
     setDrawerState({ state: "root" })
+    setAddedBlockIndex(null)
   }
 
   const handleDiscardChanges = () => {
-    setPreviewPageState(savedPageState)
+    if (addedBlockIndex !== null) {
+      const updatedBlocks = Array.from(savedPageState.content)
+      updatedBlocks.splice(addedBlockIndex, 1)
+      const newPageState = {
+        ...previewPageState,
+        content: updatedBlocks,
+      }
+      setSavedPageState(newPageState)
+      setPreviewPageState(newPageState)
+    } else {
+      setPreviewPageState(savedPageState)
+    }
+    setAddedBlockIndex(null)
     onDiscardChangesModalClose()
     setDrawerState({ state: "root" })
   }
@@ -168,7 +183,12 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
                     siteId,
                     content: JSON.stringify(previewPageState),
                   },
-                  { onSuccess: () => setDrawerState({ state: "root" }) },
+                  {
+                    onSuccess: () => {
+                      setAddedBlockIndex(null)
+                      setDrawerState({ state: "root" })
+                    },
+                  },
                 )
               }}
               isLoading={isLoading}

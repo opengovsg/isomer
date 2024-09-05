@@ -10,12 +10,6 @@ export const DEFAULT_BLOCKS: Record<
     content: [
       {
         type: "paragraph",
-        content: [
-          {
-            type: "text",
-            text: "",
-          },
-        ],
       },
     ],
   },
@@ -27,24 +21,9 @@ export const DEFAULT_BLOCKS: Record<
       content: [
         {
           type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: "Enter content for the accordion here.",
-            },
-          ],
         },
       ],
     },
-  },
-  button: {
-    type: "button",
-    label: "Button label",
-    href: "/button-url",
-    colorScheme: "black",
-    variant: "solid",
-    size: "base",
-    rightIcon: "right-arrow",
   },
   callout: {
     type: "callout",
