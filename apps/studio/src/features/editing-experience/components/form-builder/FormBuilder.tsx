@@ -7,6 +7,8 @@ import Ajv from "ajv"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import {
+  JsonFormsAccordionTextControl,
+  jsonFormsAccordionTextControlTester,
   JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
   JsonFormsAnyOfControl,
@@ -51,6 +53,10 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsTextControlTester, renderer: JsonFormsTextControl },
   { tester: jsonFormsAllOfControlTester, renderer: JsonFormsAllOfControl },
   { tester: jsonFormsAnyOfControlTester, renderer: JsonFormsAnyOfControl },
+  {
+    tester: jsonFormsAccordionTextControlTester,
+    renderer: JsonFormsAccordionTextControl,
+  },
   {
     tester: jsonFormsCalloutTextControlTester,
     renderer: JsonFormsCalloutTextControl,

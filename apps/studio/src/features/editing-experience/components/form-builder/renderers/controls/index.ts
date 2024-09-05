@@ -27,6 +27,10 @@ export {
   jsonFormsAllOfControlTester,
 } from "./JsonFormsAllOfControl"
 export {
+  default as JsonFormsAccordionTextControl,
+  jsonFormsAccordionTextControlTester,
+} from "./JsonFormsAccordionTextControl"
+export {
   default as JsonFormsCalloutTextControl,
   jsonFormsCalloutTextControlTester,
 } from "./JsonFormsCalloutTextControl"
