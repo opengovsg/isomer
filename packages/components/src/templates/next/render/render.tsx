@@ -1,12 +1,10 @@
 import type {
   IsomerComponent,
   IsomerPageSchemaType,
-  IsomerSiteConfigProps,
   IsomerSiteProps,
 } from "~/engine"
 import {
   Accordion,
-  Button,
   Callout,
   Contentpic,
   Hero,
@@ -45,10 +43,6 @@ export const renderComponent = ({
   switch (component.type) {
     case "accordion":
       return <Accordion key={elementKey} {...component} />
-    case "button":
-      return (
-        <Button key={elementKey} {...component} LinkComponent={LinkComponent} />
-      )
     case "callout":
       return <Callout key={elementKey} {...component} />
     case "hero":
