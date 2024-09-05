@@ -6,9 +6,8 @@ import isEqual from "lodash/isEqual"
 import { z } from "zod"
 
 import {
+  basePageSchema,
   createPageSchema,
-  getEditPageSchema,
-  getPageSchema,
   getRootPageSchema,
   publishPageSchema,
   reorderBlobSchema,
@@ -92,13 +91,13 @@ export const pageRouter = router({
     }),
 
   readPage: protectedProcedure
-    .input(getPageSchema)
+    .input(basePageSchema)
     .query(async ({ input: { pageId, siteId } }) =>
       getPageById(db, { resourceId: pageId, siteId }),
     ),
 
   readPageAndBlob: protectedProcedure
-    .input(getEditPageSchema)
+    .input(basePageSchema)
     .query(async ({ input: { pageId, siteId } }) => {
       // TODO: Return blob last modified so the renderer can show last modified
       return db.transaction().execute(async (tx) => {
