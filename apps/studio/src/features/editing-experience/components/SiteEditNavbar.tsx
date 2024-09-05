@@ -1,6 +1,12 @@
 import Link from "next/link"
-import { BreadcrumbItem, BreadcrumbLink, Flex } from "@chakra-ui/react"
-import { Breadcrumb } from "@opengovsg/design-system-react"
+import {
+  BreadcrumbItem,
+  BreadcrumbLink,
+  Flex,
+  TabList,
+  Text,
+} from "@chakra-ui/react"
+import { Breadcrumb, Tab } from "@opengovsg/design-system-react"
 
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -30,15 +36,20 @@ export const SiteEditNavbar = (): JSX.Element => {
         <Breadcrumb size="xs">
           <BreadcrumbItem>
             <BreadcrumbLink as={Link} href={`/sites/${siteId}`}>
-              All pages
+              <Text textStyle="subhead-2">All pages</Text>
             </BreadcrumbLink>
           </BreadcrumbItem>
 
           <BreadcrumbItem isCurrentPage>
-            <BreadcrumbLink href="#">Current page</BreadcrumbLink>
+            <BreadcrumbLink href="#">
+              <Text textStyle="subhead-2">Current page</Text>
+            </BreadcrumbLink>
           </BreadcrumbItem>
         </Breadcrumb>
-
+        <TabList>
+          <Tab>Edit</Tab>
+          <Tab>Page Settings</Tab>
+        </TabList>
         {pageId && siteId && (
           <Flex justifyContent={"end"} alignItems={"center"}>
             <PublishButton pageId={pageId} siteId={siteId} />

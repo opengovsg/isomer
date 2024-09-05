@@ -2,6 +2,7 @@ import type {
   IsomerPageSchemaType,
   IsomerSchema,
 } from "@opengovsg/isomer-components"
+import type { PropsWithChildren } from "react"
 import type { PartialDeep } from "type-fest"
 import { Skeleton } from "@chakra-ui/react"
 import { RenderEngine } from "@opengovsg/isomer-components"
@@ -16,6 +17,13 @@ type PreviewProps = IsomerSchema & {
   siteId: number
   overrides?: PartialDeep<IsomerPageSchemaType>
 }
+
+// Add a fake link component to prevent the preview from navigating away
+const FakeLink = ({ children, ...rest }: PropsWithChildren<unknown>) => (
+  <a {...rest} href="#" onClick={(e) => e.preventDefault()}>
+    {children}
+  </a>
+)
 
 function SuspendablePreview({
   permalink,
@@ -54,6 +62,7 @@ function SuspendablePreview({
         footerItems: footer,
         assetsBaseUrl: `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`,
       }}
+      LinkComponent={FakeLink}
     />
   )
 }

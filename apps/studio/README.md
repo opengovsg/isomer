@@ -1,6 +1,8 @@
-# Starter Kit
+# Isomer Studio
 
-A technical kit to quickly build new products from
+Isomer Studio uses Starter Kit as the base template.
+
+[Starter Kit](https://start.open.gov.sg/) is a technical kit to quickly build new products from
 [Open Government Products](https://open.gov.sg), Singapore.
 
 ## Features

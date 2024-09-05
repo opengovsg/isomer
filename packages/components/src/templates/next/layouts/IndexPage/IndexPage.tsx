@@ -68,7 +68,7 @@ const IndexPageLayout = ({
         {sideRail && (
           <div className={compoundStyles.siderailContainer()}>
             <Siderail {...sideRail} LinkComponent={LinkComponent} />
-            <BackToTopLink />
+            <BackToTopLink LinkComponent={LinkComponent} />
           </div>
         )}
 
@@ -76,8 +76,8 @@ const IndexPageLayout = ({
           className={compoundStyles.content({ isSideRailPresent: !!sideRail })}
         >
           {renderPageContent({
+            site,
             content,
-            assetsBaseUrl: site.assetsBaseUrl,
             LinkComponent,
           })}
         </div>

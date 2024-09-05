@@ -3,7 +3,8 @@ import { BiChevronDown } from "react-icons/bi"
 import type { NavbarItem, NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils"
-import { Link } from "../../Link"
+import { focusVisibleHighlightNonRac } from "~/utils/rac"
+import { BaseLink, Link } from "../../Link"
 
 interface NavItemAccordionProps
   extends NavbarItem,
@@ -16,9 +17,9 @@ interface NavItemAccordionProps
 const mobileItemStyles = tv({
   slots: {
     container: "flex flex-col gap-3 border-b border-b-base-divider-subtle",
-    item: "prose-headline-base-medium flex w-full items-center justify-between gap-6 px-6 py-3 text-left text-base-content",
+    item: "group prose-headline-base-medium flex w-full items-center justify-between gap-6 px-6 py-3 text-left text-base-content outline-0",
     sublist: "flex flex-col gap-3.5",
-    nestedItem: "prose-body-base py-1 text-base-content-medium",
+    nestedItem: "prose-body-base text-base-content-medium",
     chevron:
       "text-[1.5rem] transition-transform duration-300 ease-in-out motion-reduce:transition-none",
   },
@@ -46,14 +47,16 @@ export const MobileNavItemAccordion = ({
   if (!items || items.length === 0) {
     return (
       <div className={container()}>
-        <Link
+        <BaseLink
           isExternal={isExternalUrl(url)}
           LinkComponent={LinkComponent}
-          className={item()}
+          className={item({
+            className: focusVisibleHighlightNonRac(),
+          })}
           href={url}
         >
           {name}
-        </Link>
+        </BaseLink>
       </div>
     )
   }
@@ -66,7 +69,10 @@ export const MobileNavItemAccordion = ({
             aria-expanded={isOpen}
             aria-controls={`menu-content-${index}`}
             onClick={onClick}
-            className={item({ isOpen })}
+            className={item({
+              isOpen,
+              className: focusVisibleHighlightNonRac(),
+            })}
           >
             {name}
             <BiChevronDown className={chevron({ isOpen })} />
@@ -84,19 +90,23 @@ export const MobileNavItemAccordion = ({
             const isExternal = isExternalUrl(subItem.url)
             return (
               <li key={subItem.name}>
-                <Link
-                  LinkComponent={LinkComponent}
-                  href={subItem.url}
-                  isExternal={isExternal}
-                  showExternalIcon={isExternal}
+                <div
                   className={item({
-                    className: nestedItem({
-                      className: isExternal && "justify-start gap-1",
-                    }),
+                    className: "py-1",
                   })}
                 >
-                  {subItem.name}
-                </Link>
+                  <Link
+                    LinkComponent={LinkComponent}
+                    href={subItem.url}
+                    isExternal={isExternal}
+                    showExternalIcon={isExternal}
+                    className={nestedItem({
+                      className: focusVisibleHighlightNonRac(),
+                    })}
+                  >
+                    {subItem.name}
+                  </Link>
+                </div>
               </li>
             )
           })}

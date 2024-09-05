@@ -18,6 +18,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
+import { BRIEF_TOAST_SETTINGS } from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
 import FormBuilder from "./form-builder/FormBuilder"
@@ -36,6 +37,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     onClose: onDiscardChangesModalClose,
   } = useDisclosure()
   const {
+    addedBlockIndex,
+    setAddedBlockIndex,
     setDrawerState,
     currActiveIdx,
     savedPageState,
@@ -54,6 +57,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+        toast({ title: "Changes saved", ...BRIEF_TOAST_SETTINGS })
       },
     })
 
@@ -93,10 +97,28 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     setPreviewPageState(newPageState)
     onDeleteBlockModalClose()
     setDrawerState({ state: "root" })
+    setAddedBlockIndex(null)
+    savePage({
+      pageId,
+      siteId,
+      content: JSON.stringify(newPageState),
+    })
   }
 
   const handleDiscardChanges = () => {
-    setPreviewPageState(savedPageState)
+    if (addedBlockIndex !== null) {
+      const updatedBlocks = Array.from(savedPageState.content)
+      updatedBlocks.splice(addedBlockIndex, 1)
+      const newPageState = {
+        ...previewPageState,
+        content: updatedBlocks,
+      }
+      setSavedPageState(newPageState)
+      setPreviewPageState(newPageState)
+    } else {
+      setPreviewPageState(savedPageState)
+    }
+    setAddedBlockIndex(null)
     onDiscardChangesModalClose()
     setDrawerState({ state: "root" })
   }
@@ -200,6 +222,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           setModifiedAssets([])
           setSavedPageState(newPageState)
           setDrawerState({ state: "root" })
+          setAddedBlockIndex(null)
         },
       },
     )
@@ -222,13 +245,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         onDiscard={handleDiscardChanges}
       />
 
-      <Flex
-        flexDir="column"
-        position="relative"
-        h="100%"
-        w="100%"
-        overflow="auto"
-      >
+      <Flex flexDir="column" position="relative" h="100%" w="100%">
         <Box
           bgColor="base.canvas.default"
           borderBottomColor="base.divider.medium"
@@ -269,7 +286,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           </HStack>
         </Box>
 
-        <Box px="2rem" py="1rem">
+        <Box flex={1} overflow="auto" px="2rem" py="1rem">
           <FormBuilder<IsomerComponent>
             schema={subSchema}
             validateFn={validateFn}
@@ -277,31 +294,23 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             handleChange={handleChange}
           />
         </Box>
+        <Box bgColor="base.canvas.default" boxShadow="md" py="1.5rem" px="2rem">
+          <HStack spacing="0.75rem">
+            <IconButton
+              icon={<BiTrash fontSize="1.25rem" />}
+              variant="outline"
+              colorScheme="critical"
+              aria-label="Delete block"
+              onClick={onDeleteBlockModalOpen}
+            />
+            <Box w="100%">
+              <Button w="100%" onClick={handleSave} isLoading={isLoading}>
+                Save changes
+              </Button>
+            </Box>
+          </HStack>
+        </Box>
       </Flex>
-
-      <Box
-        pos="sticky"
-        bottom={0}
-        bgColor="base.canvas.default"
-        boxShadow="md"
-        py="1.5rem"
-        px="2rem"
-      >
-        <HStack spacing="0.75rem">
-          <IconButton
-            icon={<BiTrash fontSize="1.25rem" />}
-            variant="outline"
-            colorScheme="critical"
-            aria-label="Delete block"
-            onClick={onDeleteBlockModalOpen}
-          />
-          <Box w="100%">
-            <Button w="100%" onClick={handleSave} isLoading={isLoading}>
-              Save changes
-            </Button>
-          </Box>
-        </HStack>
-      </Box>
     </>
   )
 }

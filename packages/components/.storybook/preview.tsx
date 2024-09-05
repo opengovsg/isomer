@@ -104,6 +104,10 @@ const preview: Preview = {
   },
 }
 
+const LayoutDecorator: Decorator = (storyFn) => (
+  <div className="antialiased">{storyFn()}</div>
+)
+
 export const decorators: Decorator[] = [
   withThemeByDataAttribute({
     themes: {
@@ -112,6 +116,7 @@ export const decorators: Decorator[] = [
     },
     defaultTheme: "Isomer Next",
   }),
+  LayoutDecorator,
 ]
 
 export default preview

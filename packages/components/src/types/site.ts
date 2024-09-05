@@ -1,5 +1,5 @@
 import type { IsomerSitemap } from "./sitemap"
-import type { NavbarProps } from "~/interfaces"
+import type { NavbarProps, NotificationProps } from "~/interfaces"
 import type { SiteConfigFooterProps } from "~/interfaces/internal/Footer"
 
 export interface IsomerGeneratedSiteProps {
@@ -22,7 +22,7 @@ export interface IsomerSiteConfigProps {
   isGovernment?: boolean
   favicon?: string
   search: NavbarProps["search"]
-  notification?: string
+  notification?: Omit<NotificationProps, "LinkComponent" | "site">
   assetsBaseUrl?: string
 }
 

@@ -22,6 +22,7 @@ const config: Config = {
       },
       boxShadow: {
         sm: "0 0px 10px 0px rgba(191, 191, 191, 0.5)",
+        "focus-visible": `0px -2px ${colors.utility.highlight}, 0 2px ${colors.base.content.strong}`,
       },
       colors: {
         ...colors,

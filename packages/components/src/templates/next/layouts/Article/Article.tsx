@@ -38,8 +38,8 @@ const ArticleLayout = ({
         <div className="mx-auto w-full gap-10 pb-20">
           <div className="w-full overflow-x-auto lg:max-w-[660px]">
             {renderPageContent({
+              site,
               content,
-              assetsBaseUrl: site.assetsBaseUrl,
               LinkComponent,
             })}
           </div>

@@ -1,11 +1,11 @@
 import type {
   IsomerComponent,
   IsomerPageSchemaType,
-  IsomerSiteConfigProps,
+  IsomerSiteProps,
 } from "~/engine"
+import type { LinkComponentType } from "~/types"
 import {
   Accordion,
-  Button,
   Callout,
   Contentpic,
   Hero,
@@ -29,30 +29,55 @@ import {
 } from "../layouts"
 
 interface RenderComponentProps {
-  elementKey?: number
+  site: IsomerSiteProps
   component: IsomerComponent
-  assetsBaseUrl?: IsomerSiteConfigProps["assetsBaseUrl"]
-  LinkComponent?: any // Next.js link
-  ScriptComponent?: any // Next.js script
+  elementKey?: number
+  LinkComponent?: LinkComponentType
 }
 
 export const renderComponent = ({
+  site,
   component,
-  assetsBaseUrl,
   LinkComponent,
   elementKey,
 }: RenderComponentProps) => {
   switch (component.type) {
     case "accordion":
-      return <Accordion key={elementKey} {...component} />
-    case "button":
       return (
-        <Button key={elementKey} {...component} LinkComponent={LinkComponent} />
+        <Accordion
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
       )
     case "callout":
-      return <Callout key={elementKey} {...component} />
+      return (
+        <Callout
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
+      )
+    case "contentpic":
+      return (
+        <Contentpic
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
+      )
     case "hero":
-      return <Hero key={elementKey} {...component} />
+      return (
+        <Hero
+          key={elementKey}
+          {...component}
+          site={site}
+          LinkComponent={LinkComponent}
+        />
+      )
     case "iframe":
       return <Iframe key={elementKey} {...component} />
     case "image":
@@ -60,7 +85,7 @@ export const renderComponent = ({
         <Image
           key={elementKey}
           {...component}
-          assetsBaseUrl={assetsBaseUrl}
+          site={site}
           LinkComponent={LinkComponent}
         />
       )
@@ -69,27 +94,48 @@ export const renderComponent = ({
         <Infobar
           key={elementKey}
           {...component}
+          site={site}
           LinkComponent={LinkComponent}
         />
       )
     case "infocards":
-      return <InfoCards key={elementKey} {...component} />
+      return (
+        <InfoCards
+          key={elementKey}
+          {...component}
+          site={site}
+          LinkComponent={LinkComponent}
+        />
+      )
     case "infocols":
       return (
         <InfoCols
           key={elementKey}
           {...component}
+          site={site}
           LinkComponent={LinkComponent}
         />
       )
     case "infopic":
-      return <Infopic key={elementKey} {...component} />
-    case "contentpic":
-      return <Contentpic key={elementKey} {...component} />
+      return (
+        <Infopic
+          key={elementKey}
+          {...component}
+          site={site}
+          LinkComponent={LinkComponent}
+        />
+      )
     case "keystatistics":
       return <KeyStatistics key={elementKey} {...component} />
     case "prose":
-      return <Prose key={elementKey} {...component} />
+      return (
+        <Prose
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
+      )
     default:
       const _: never = component
       return <></>

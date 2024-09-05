@@ -1,3 +1,5 @@
+"use client"
+
 import type { PropsWithChildren } from "react"
 import { BiRightArrowAlt } from "react-icons/bi"
 
@@ -7,8 +9,20 @@ import type {
   SingleCardWithImageProps,
 } from "~/interfaces/complex/InfoCards"
 import { tv } from "~/lib/tv"
+import { getReferenceLinkHref } from "~/utils"
+import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
+
+const infoCardTitleStyle = tv({
+  extend: groupFocusVisibleHighlightNonRac,
+  base: "prose-headline-lg-semibold text-base-content-strong",
+  variants: {
+    isClickableCard: {
+      true: "group-hover:text-brand-canvas-inverse",
+    },
+  },
+})
 
 const createInfoCardsStyles = tv({
   slots: {
@@ -17,12 +31,11 @@ const createInfoCardsStyles = tv({
     headingTitle: "prose-display-md text-base-content-strong",
     headingSubtitle: "prose-headline-lg-regular text-base-content",
     grid: "grid grid-cols-1 gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
-    cardContainer: "group flex flex-col gap-5 outline-offset-4",
+    cardContainer: "group flex flex-col gap-5 outline-0",
     cardImageContainer:
       "h-[11.875rem] w-full overflow-hidden rounded-lg border border-base-divider-subtle drop-shadow-none transition ease-in md:h-52",
-    cardImage: "h-full w-full object-cover object-center",
+    cardImage: "h-full w-full object-center",
     cardTextContainer: "flex flex-col gap-2.5 sm:gap-3",
-    cardTitle: "prose-headline-lg-semibold text-base-content-strong",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
     cardDescription: "prose-body-base text-base-content",
@@ -30,8 +43,15 @@ const createInfoCardsStyles = tv({
   variants: {
     isClickableCard: {
       true: {
-        cardTitle: "group-hover:text-brand-canvas-inverse",
         cardImageContainer: "group-hover:drop-shadow-md",
+      },
+    },
+    imageFit: {
+      cover: {
+        cardImage: "object-cover",
+      },
+      contain: {
+        cardImage: "object-contain",
       },
     },
     maxColumns: {
@@ -48,6 +68,7 @@ const createInfoCardsStyles = tv({
   },
   defaultVariants: {
     maxColumns: 3,
+    imageFit: "cover",
   },
 })
 
@@ -66,14 +87,15 @@ const InfoCardsHeadingSection = ({
 
 const InfoCardContainer = ({
   url,
+  site,
   LinkComponent,
   children,
 }: PropsWithChildren<
-  Pick<SingleCardNoImageProps, "url" | "LinkComponent">
+  Pick<SingleCardNoImageProps, "url" | "site" | "LinkComponent">
 >): JSX.Element => {
   return url ? (
     <Link
-      href={url}
+      href={getReferenceLinkHref(url, site.siteMap)}
       className={compoundStyles.cardContainer()}
       LinkComponent={LinkComponent}
     >
@@ -87,15 +109,22 @@ const InfoCardContainer = ({
 const InfoCardImage = ({
   imageUrl,
   imageAlt,
+  imageFit,
   url,
 }: Pick<
   SingleCardWithImageProps,
-  "imageUrl" | "imageAlt" | "url"
+  "imageUrl" | "imageAlt" | "url" | "imageFit"
 >): JSX.Element => (
   <div
     className={compoundStyles.cardImageContainer({ isClickableCard: !!url })}
   >
-    <img src={imageUrl} alt={imageAlt} className={compoundStyles.cardImage()} />
+    <img
+      src={imageUrl}
+      alt={imageAlt}
+      className={compoundStyles.cardImage({
+        imageFit,
+      })}
+    />
   </div>
 )
 
@@ -108,7 +137,7 @@ const InfoCardText = ({
   "title" | "description" | "url"
 >): JSX.Element => (
   <div className={compoundStyles.cardTextContainer()}>
-    <h4 className={compoundStyles.cardTitle({ isClickableCard: !!url })}>
+    <h4 className={infoCardTitleStyle({ isClickableCard: !!url })}>
       {title}
 
       {url && (
@@ -126,10 +155,11 @@ const InfoCardNoImage = ({
   title,
   description,
   url,
+  site,
   LinkComponent,
 }: SingleCardNoImageProps): JSX.Element => {
   return (
-    <InfoCardContainer url={url} LinkComponent={LinkComponent}>
+    <InfoCardContainer url={url} site={site} LinkComponent={LinkComponent}>
       <InfoCardText title={title} description={description} url={url} />
     </InfoCardContainer>
   )
@@ -140,12 +170,19 @@ const InfoCardWithImage = ({
   description,
   imageUrl,
   imageAlt,
+  imageFit,
   url,
+  site,
   LinkComponent,
 }: SingleCardWithImageProps): JSX.Element => {
   return (
-    <InfoCardContainer url={url} LinkComponent={LinkComponent}>
-      <InfoCardImage imageUrl={imageUrl} imageAlt={imageAlt} url={url} />
+    <InfoCardContainer url={url} site={site} LinkComponent={LinkComponent}>
+      <InfoCardImage
+        imageFit={imageFit}
+        imageUrl={imageUrl}
+        imageAlt={imageAlt}
+        url={url}
+      />
       <InfoCardText title={title} description={description} url={url} />
     </InfoCardContainer>
   )
@@ -156,8 +193,9 @@ const InfoCards = ({
   subtitle,
   variant,
   cards,
-  LinkComponent,
   maxColumns,
+  site,
+  LinkComponent,
 }: InfoCardsProps): JSX.Element => {
   const InfoCardtoRender = () => {
     switch (variant) {
@@ -168,6 +206,7 @@ const InfoCards = ({
               <InfoCardWithImage
                 key={idx}
                 {...card}
+                site={site}
                 LinkComponent={LinkComponent}
               />
             ))}
@@ -180,6 +219,7 @@ const InfoCards = ({
               <InfoCardNoImage
                 key={idx}
                 {...card}
+                site={site}
                 LinkComponent={LinkComponent}
               />
             ))}

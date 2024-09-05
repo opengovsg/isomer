@@ -43,7 +43,7 @@ const trpc = createTRPCReact<AppRouter>()
 const StorybookEnvDecorator: Decorator = (story) => {
   const mockEnv: EnvContextReturn["env"] = merge(
     {
-      NEXT_PUBLIC_APP_NAME: "Starter Kit",
+      NEXT_PUBLIC_APP_NAME: "Isomer Studio",
       NEXT_PUBLIC_APP_VERSION: "Storybook",
       NEXT_PUBLIC_ENABLE_SGID: false,
     },

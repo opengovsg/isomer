@@ -2,6 +2,7 @@ import type { VariantProps } from "tailwind-variants"
 
 import type { InfopicProps as BaseInfopicProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { getReferenceLinkHref } from "~/utils"
 import { LinkButton } from "../../internal/LinkButton"
 
 const infopicStyles = tv({
@@ -47,6 +48,7 @@ export const Infopic = ({
   description,
   imageAlt,
   isTextOnRight,
+  site,
   LinkComponent,
 }: InfopicProps): JSX.Element => {
   const compoundStyles = infopicStyles({ isTextOnRight })
@@ -59,7 +61,10 @@ export const Infopic = ({
         <p className={compoundStyles.description()}>{description}</p>
         {hasLinkButton && (
           <div className={compoundStyles.button()}>
-            <LinkButton LinkComponent={LinkComponent} href={buttonUrl}>
+            <LinkButton
+              LinkComponent={LinkComponent}
+              href={getReferenceLinkHref(buttonUrl, site.siteMap)}
+            >
               {buttonLabel}
             </LinkButton>
           </div>

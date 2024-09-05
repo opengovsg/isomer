@@ -58,7 +58,7 @@ export const siteRouter = router({
     }),
   setNotification: protectedProcedure
     .input(setNotificationSchema)
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { siteId, notification, notificationEnabled } = input
       if (notificationEnabled) {
         await setSiteNotification(siteId, notification)

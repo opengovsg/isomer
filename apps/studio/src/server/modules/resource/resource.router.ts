@@ -1,17 +1,19 @@
 import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 
+import type { ResourceType } from "../database"
 import {
   countResourceSchema,
   deleteResourceSchema,
   getChildrenSchema,
+  getFullPermalinkSchema,
   getMetadataSchema,
   getParentSchema,
   listResourceSchema,
   moveSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
-import { db, ResourceType } from "../database"
+import { db, sql } from "../database"
 
 export const resourceRouter = router({
   getMetadataById: protectedProcedure
@@ -31,13 +33,13 @@ export const resourceRouter = router({
     }),
   getFolderChildrenOf: protectedProcedure
     .input(getChildrenSchema)
-    .query(async ({ input: { resourceId, cursor: offset, limit } }) => {
+    .query(async ({ input: { siteId, resourceId, cursor: offset, limit } }) => {
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
-        .where("Resource.type", "in", ["RootPage", "Folder"])
+        .where("Resource.type", "in", ["Folder"])
         .$narrowType<{
-          type: "Folder" | "RootPage"
+          type: "Folder"
         }>()
         .orderBy("type", "asc")
         .orderBy("title", "asc")
@@ -102,6 +104,7 @@ export const resourceRouter = router({
         nextOffset: null,
       }
     }),
+
   move: protectedProcedure
     .input(moveSchema)
     .mutation(async ({ input: { movedResourceId, destinationResourceId } }) => {
@@ -123,6 +126,7 @@ export const resourceRouter = router({
         await tx
           .updateTable("Resource")
           .where("id", "=", String(movedResourceId))
+          .where("Resource.type", "in", ["Page", "Folder"])
           .set({ parentId: String(destinationResourceId) })
           .execute()
         return tx
@@ -138,6 +142,7 @@ export const resourceRouter = router({
           .executeTakeFirst()
       })
     }),
+
   countWithoutRoot: protectedProcedure
     .input(countResourceSchema)
     .query(async ({ input: { siteId, resourceId } }) => {
@@ -158,6 +163,7 @@ export const resourceRouter = router({
         .executeTakeFirst()
       return Number(result?.totalCount ?? 0)
     }),
+
   listWithoutRoot: protectedProcedure
     .input(listResourceSchema)
     .query(async ({ input: { siteId, resourceId, offset, limit } }) => {
@@ -182,9 +188,11 @@ export const resourceRouter = router({
           "Resource.publishedVersionId",
           "Resource.draftBlobId",
           "Resource.type",
+          "Resource.parentId",
         ])
         .execute()
     }),
+
   delete: protectedProcedure
     .input(deleteResourceSchema)
     .mutation(async ({ input: { siteId, resourceId } }) => {
@@ -197,6 +205,7 @@ export const resourceRouter = router({
       // and trpc cannot serialise it, which leads to errors
       return result.numDeletedRows.toString()
     }),
+
   getParentOf: protectedProcedure
     .input(getParentSchema)
     .query(async ({ input: { siteId, resourceId } }) => {
@@ -225,5 +234,41 @@ export const resourceRouter = router({
       return {
         resource,
       }
+    }),
+
+  getWithFullPermalink: protectedProcedure
+    .input(getFullPermalinkSchema)
+    .query(async ({ input: { resourceId } }) => {
+      return db
+        .withRecursive("resourcePath", (eb) =>
+          eb
+            .selectFrom("Resource as r")
+            .select([
+              "r.id",
+              "r.title",
+              "r.permalink",
+              "r.parentId",
+              "r.permalink as fullPermalink",
+            ])
+            .where("r.parentId", "is", null)
+            .unionAll(
+              eb
+                .selectFrom("Resource as s")
+                .innerJoin("resourcePath as rp", "s.parentId", "rp.id")
+                .select([
+                  "s.id",
+                  "s.title",
+                  "s.permalink",
+                  "s.parentId",
+                  sql<string>`CONCAT(rp."fullPermalink", '/', s.permalink)`.as(
+                    "fullPermalink",
+                  ),
+                ]),
+            ),
+        )
+        .selectFrom("resourcePath as rp")
+        .select(["rp.id", "rp.title", "rp.fullPermalink"])
+        .where("rp.id", "=", resourceId)
+        .executeTakeFirst()
     }),
 })

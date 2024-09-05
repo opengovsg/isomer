@@ -1,8 +1,13 @@
+"use client"
+
 import { BiRightArrowAlt } from "react-icons/bi"
 
 import type { SupportedIconName } from "~/common/icons"
 import type { InfoColsProps } from "~/interfaces"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
+import { tv } from "~/lib/tv"
+import { getReferenceLinkHref } from "~/utils"
+import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 
@@ -26,24 +31,28 @@ const InfoBoxIcon = ({ icon }: { icon?: SupportedIconName }) => {
   )
 }
 
+export const infoColTitleStyle = tv({
+  extend: groupFocusVisibleHighlightNonRac,
+  base: "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-interaction",
+})
+
 const InfoBoxes = ({
   infoBoxes,
+  site,
   LinkComponent,
-}: Pick<InfoColsProps, "infoBoxes" | "LinkComponent">) => {
+}: Pick<InfoColsProps, "infoBoxes" | "site" | "LinkComponent">) => {
   return (
     <div className="grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 md:gap-y-12 lg:grid-cols-3">
       {infoBoxes.map(
         ({ title, icon, description, buttonUrl, buttonLabel }, idx) => (
           <Link
             LinkComponent={LinkComponent}
-            href={buttonUrl}
+            href={getReferenceLinkHref(buttonUrl, site.siteMap)}
             key={idx}
-            className="group flex flex-col items-start gap-3 text-left"
+            className="group flex flex-col items-start gap-3 text-left outline-0"
           >
             {icon && <InfoBoxIcon icon={icon} aria-hidden="true" />}
-            <h3 className="prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-interaction">
-              {title}
-            </h3>
+            <h3 className={infoColTitleStyle()}>{title}</h3>
             {description && (
               <p className="prose-body-base text-base-content">{description}</p>
             )}
@@ -64,6 +73,7 @@ const InfoCols = ({
   title,
   subtitle,
   infoBoxes,
+  site,
   LinkComponent = "a",
 }: InfoColsProps) => {
   return (
@@ -71,7 +81,11 @@ const InfoCols = ({
       <div className={`${ComponentContent} py-12 md:py-16`}>
         <div className="flex flex-col gap-12">
           <InfoColsHeader title={title} subtitle={subtitle} />
-          <InfoBoxes infoBoxes={infoBoxes} LinkComponent={LinkComponent} />
+          <InfoBoxes
+            infoBoxes={infoBoxes}
+            site={site}
+            LinkComponent={LinkComponent}
+          />
         </div>
       </div>
     </section>

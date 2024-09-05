@@ -1,13 +1,13 @@
-import type { IsomerComponent, IsomerSiteConfigProps } from "~/types"
+import type { IsomerComponent, IsomerSiteProps } from "~/types"
 import { renderComponent } from "~/templates/next/render"
 
 export const renderPageContent = ({
+  site,
   content,
-  assetsBaseUrl,
   LinkComponent,
 }: {
+  site: IsomerSiteProps
   content: IsomerComponent[]
-  assetsBaseUrl: IsomerSiteConfigProps["assetsBaseUrl"]
   LinkComponent: any
 }) => {
   let isInfopicTextOnRight = false
@@ -19,16 +19,16 @@ export const renderPageContent = ({
         isTextOnRight: isInfopicTextOnRight,
       }
       return renderComponent({
+        site,
         component: formattedComponent,
         elementKey: index,
-        assetsBaseUrl,
         LinkComponent,
       })
     }
     return renderComponent({
+      site,
       component,
       elementKey: index,
-      assetsBaseUrl,
       LinkComponent,
     })
   })

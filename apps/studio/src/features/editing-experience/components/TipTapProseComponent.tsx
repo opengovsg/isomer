@@ -1,4 +1,4 @@
-import type { ProseProps } from "@opengovsg/isomer-components/dist/cjs/interfaces"
+import type { ProseProps } from "@opengovsg/isomer-components"
 import type { JSONContent } from "@tiptap/react"
 import {
   Box,
@@ -9,7 +9,7 @@ import {
   useDisclosure,
   VStack,
 } from "@chakra-ui/react"
-import { Button, IconButton } from "@opengovsg/design-system-react"
+import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import _ from "lodash"
 import { BiText, BiTrash, BiX } from "react-icons/bi"
 
@@ -17,16 +17,18 @@ import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
+import { useTextEditor } from "../hooks/useTextEditor"
 import { editPageSchema } from "../schema"
+import { BRIEF_TOAST_SETTINGS } from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
-import { TiptapEditor } from "./form-builder/renderers/TipTapEditor"
+import { TiptapTextEditor } from "./form-builder/renderers/TipTapEditor"
 
 interface TipTapComponentProps {
   content: ProseProps
 }
 
-function TipTapComponent({ content }: TipTapComponentProps) {
+function TipTapProseComponent({ content }: TipTapComponentProps) {
   const {
     isOpen: isDeleteBlockModalOpen,
     onOpen: onDeleteBlockModalOpen,
@@ -44,18 +46,22 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     previewPageState,
     setPreviewPageState,
     currActiveIdx,
+    addedBlockIndex,
+    setAddedBlockIndex,
   } = useEditorDrawerContext()
 
+  const toast = useToast()
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+      toast({ title: "Changes saved", ...BRIEF_TOAST_SETTINGS })
     },
   })
 
-  if (!previewPageState || !savedPageState) return
-
   const updatePageState = (editorContent: JSONContent) => {
+    if (!previewPageState) return
+
     const updatedBlocks = Array.from(previewPageState.content)
     // TODO: actual validation
     updatedBlocks[currActiveIdx] = editorContent as ProseProps
@@ -65,6 +71,10 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     }
     setPreviewPageState(newPageState)
   }
+
+  const editor = useTextEditor({ data: content, handleChange: updatePageState })
+
+  if (!previewPageState || !savedPageState) return
 
   const handleDeleteBlock = () => {
     const updatedBlocks = Array.from(savedPageState.content)
@@ -77,17 +87,35 @@ function TipTapComponent({ content }: TipTapComponentProps) {
     setPreviewPageState(newPageState)
     onDeleteBlockModalClose()
     setDrawerState({ state: "root" })
+    setAddedBlockIndex(null)
+    mutate({
+      pageId,
+      siteId,
+      content: JSON.stringify(newPageState),
+    })
   }
 
   const handleDiscardChanges = () => {
-    setPreviewPageState(savedPageState)
+    if (addedBlockIndex !== null) {
+      const updatedBlocks = Array.from(savedPageState.content)
+      updatedBlocks.splice(addedBlockIndex, 1)
+      const newPageState = {
+        ...previewPageState,
+        content: updatedBlocks,
+      }
+      setSavedPageState(newPageState)
+      setPreviewPageState(newPageState)
+    } else {
+      setPreviewPageState(savedPageState)
+    }
+    setAddedBlockIndex(null)
     onDiscardChangesModalClose()
     setDrawerState({ state: "root" })
   }
 
   const utils = trpc.useUtils()
 
-  // TODO: Add a loading state or use suspsense
+  // TODO: Add a loading state or use suspense
   return (
     <>
       <DeleteBlockModal
@@ -133,50 +161,53 @@ function TipTapComponent({ content }: TipTapComponentProps) {
             }}
           />
         </Flex>
-        <Box w="100%" p="2rem" h="100%">
-          <TiptapEditor data={content} handleChange={updatePageState} />
+        <Box w="100%" p="2rem" overflow="auto" flex={1}>
+          <TiptapTextEditor editor={editor} />
+        </Box>
+        <Box
+          bgColor="base.canvas.default"
+          boxShadow="md"
+          py="1.5rem"
+          px="2rem"
+          w="full"
+        >
+          <HStack spacing="0.75rem">
+            <IconButton
+              icon={<BiTrash fontSize="1.25rem" />}
+              variant="outline"
+              colorScheme="critical"
+              aria-label="Delete block"
+              onClick={onDeleteBlockModalOpen}
+            />
+            <Box w="100%">
+              <Button
+                w="100%"
+                onClick={() => {
+                  setSavedPageState(previewPageState)
+                  mutate(
+                    {
+                      pageId,
+                      siteId,
+                      content: JSON.stringify(previewPageState),
+                    },
+                    {
+                      onSuccess: () => {
+                        setAddedBlockIndex(null)
+                        setDrawerState({ state: "root" })
+                      },
+                    },
+                  )
+                }}
+                isLoading={isLoading}
+              >
+                Save changes
+              </Button>
+            </Box>
+          </HStack>
         </Box>
       </VStack>
-
-      <Box
-        pos="sticky"
-        bottom={0}
-        bgColor="base.canvas.default"
-        boxShadow="md"
-        py="1.5rem"
-        px="2rem"
-      >
-        <HStack spacing="0.75rem">
-          <IconButton
-            icon={<BiTrash fontSize="1.25rem" />}
-            variant="outline"
-            colorScheme="critical"
-            aria-label="Delete block"
-            onClick={onDeleteBlockModalOpen}
-          />
-          <Box w="100%">
-            <Button
-              w="100%"
-              onClick={() => {
-                setSavedPageState(previewPageState)
-                mutate(
-                  {
-                    pageId,
-                    siteId,
-                    content: JSON.stringify(previewPageState),
-                  },
-                  { onSuccess: () => setDrawerState({ state: "root" }) },
-                )
-              }}
-              isLoading={isLoading}
-            >
-              Save changes
-            </Button>
-          </Box>
-        </HStack>
-      </Box>
     </>
   )
 }
 
-export default TipTapComponent
+export default TipTapProseComponent

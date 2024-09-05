@@ -1,6 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
+
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
     title: "Title",
@@ -16,23 +18,41 @@ const SingleCardNoImageSchema = Type.Object({
     Type.String({
       title: "Link destination",
       description: "When this is clicked, open:",
+      format: "link",
     }),
   ),
 })
 
 const SingleCardWithImageSchema = Type.Composite([
-  SingleCardNoImageSchema,
   Type.Object({
     imageUrl: Type.String({
       title: "Upload image",
       format: "image",
     }),
+    imageFit: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal("cover", {
+            title: "Default (recommended)",
+          }),
+          Type.Literal("contain", {
+            title: "Resize image to fit",
+          }),
+        ],
+        {
+          default: "cover",
+          title: "Image display",
+          description: `Select "Resize image to fit" only if the image has a white background.`,
+        },
+      ),
+    ),
     imageAlt: Type.String({
       title: "Alternate text",
       description:
         "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
     }),
   }),
+  SingleCardNoImageSchema,
 ])
 
 const InfoCardsBaseSchema = Type.Object({
@@ -97,14 +117,17 @@ export const InfoCardsSchema = Type.Intersect(
 )
 
 export type SingleCardNoImageProps = Static<typeof SingleCardNoImageSchema> & {
-  LinkComponent?: any // Next.js link
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
 }
 export type SingleCardWithImageProps = Static<
   typeof SingleCardWithImageSchema
 > & {
-  LinkComponent?: any // Next.js link
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
 }
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
-  LinkComponent?: any // Next.js link
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
   sectionIdx?: number // TODO: Remove this property, only used in classic theme
 }

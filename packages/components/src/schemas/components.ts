@@ -1,6 +1,5 @@
 import {
   AccordionSchema,
-  ButtonSchema,
   CalloutSchema,
   ContentpicSchema,
   DividerSchema,
@@ -22,7 +21,6 @@ import {
 
 export const IsomerComplexComponentsMap = {
   accordion: AccordionSchema,
-  button: ButtonSchema,
   callout: CalloutSchema,
   hero: HeroSchema,
   iframe: IframeSchema,

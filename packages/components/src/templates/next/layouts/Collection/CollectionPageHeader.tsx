@@ -1,13 +1,14 @@
 import type { PropsWithChildren } from "react"
 
 import type { BreadcrumbProps } from "~/interfaces"
+import type { LinkComponentType } from "~/types"
 import { Breadcrumb } from "../../components/internal"
 
 interface CollectionPageHeaderProps extends PropsWithChildren {
   breadcrumb: BreadcrumbProps
   title: string
   subtitle: string
-  LinkComponent?: any
+  LinkComponent?: LinkComponentType
 }
 
 const CollectionPageHeader = ({

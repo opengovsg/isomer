@@ -21,6 +21,7 @@ interface ResourceTableMenuProps {
   type: ResourceTableData["type"]
   permalink: ResourceTableData["permalink"]
   resourceType: ResourceTableData["type"]
+  parentId: ResourceTableData["parentId"]
 }
 
 export const ResourceTableMenu = ({
@@ -29,10 +30,11 @@ export const ResourceTableMenu = ({
   type,
   permalink,
   resourceType,
+  parentId,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
   const handleMoveResourceClick = () =>
-    setMoveResource({ resourceId, title, permalink })
+    setMoveResource({ resourceId, title, permalink, parentId })
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
 
@@ -69,13 +71,15 @@ export const ResourceTableMenu = ({
               Edit folder settings
             </MenuItem>
           )}
-          <MenuItem
-            as="button"
-            onClick={handleMoveResourceClick}
-            icon={<BiFolderOpen fontSize="1rem" />}
-          >
-            Move to...
-          </MenuItem>
+          {(type === "Page" || type === "Folder") && (
+            <MenuItem
+              as="button"
+              onClick={handleMoveResourceClick}
+              icon={<BiFolderOpen fontSize="1rem" />}
+            >
+              Move to...
+            </MenuItem>
+          )}
           {resourceType !== ResourceType.RootPage && (
             <MenuItem
               onClick={() => {

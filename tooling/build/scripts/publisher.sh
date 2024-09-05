@@ -11,11 +11,16 @@ calculate_duration() {
   echo "Time taken: $duration seconds"
 }
 
+# Use the main branch unless one was provided in the env var
+if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
+  ISOMER_BUILD_REPO_BRANCH="main"
+fi
+
 # Cloning the repository
 echo "Cloning repository..."
 start_time=$(date +%s)
 
-git clone --depth 1 --branch main https://github.com/opengovsg/isomer.git
+git clone --depth 1 --branch "$ISOMER_BUILD_REPO_BRANCH" https://github.com/opengovsg/isomer.git
 cd isomer/
 calculate_duration $start_time
 
@@ -24,7 +29,7 @@ echo $(pwd)
 # Checkout specific branch
 echo "Checking out branch..."
 start_time=$(date +%s)
-git checkout main
+git checkout $ISOMER_BUILD_REPO_BRANCH
 calculate_duration $start_time
 
 echo $(git branch)
@@ -43,17 +48,9 @@ echo "Building components..."
 start_time=$(date +%s)
 cd packages/components
 npm run build
+mv opengovsg-isomer-components-0.0.13.tgz ../../tooling/template/
 cd ../.. # back to root
 echo $(pwd)
-calculate_duration $start_time
-
-# Move build scripts from scripts into the template folder
-echo "Moving build scripts..."
-start_time=$(date +%s)
-cp tooling/build/scripts/preBuild.sh tooling/template/
-chmod +x tooling/template/preBuild.sh
-cp tooling/build/scripts/build.sh tooling/template/
-chmod +x tooling/template/build.sh
 calculate_duration $start_time
 
 # Fetch from database
@@ -73,19 +70,25 @@ rm -rf ../../../template/schema
 rm -rf ../../../template/data
 mv schema/ ../../../template/
 mv data/ ../../../template/
+cp sitemap.json ../../../template/public/
+mv sitemap.json ../../../template/
 cd ../../../template
 echo $(pwd)
 npm ci
+calculate_duration $start_time
 
 # Prebuild
 echo "Prebuilding..."
+start_time=$(date +%s)
 rm -rf node_modules && rm -rf .next
-./preBuild.sh
+npm i opengovsg-isomer-components-0.0.13.tgz
+calculate_duration $start_time
 
 # Build
 echo "Building..."
-rm -rf scripts/
-./build.sh
+start_time=$(date +%s)
+npm run build
+calculate_duration $start_time
 
 # Check if the 'out' folder exists
 if [ ! -d "./out" ]; then
@@ -95,7 +98,6 @@ fi
 
 ls -al
 find ./out -type f | wc -l
-calculate_duration $start_time
 
 cd out/
 echo $(pwd)

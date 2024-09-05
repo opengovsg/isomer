@@ -1,13 +1,16 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { HardBreakSchema } from "../internal/HardBreak"
 import { TextSchema } from "./Text"
 
 export interface BaseParagraphProps {
+  type: "paragraph"
   content: string
   className?: string
   id?: string
+  LinkComponent?: LinkComponentType
 }
 
 export const ParagraphSchema = Type.Object(
@@ -27,4 +30,7 @@ export const ParagraphSchema = Type.Object(
   },
 )
 
-export type ParagraphProps = Static<typeof ParagraphSchema>
+export type ParagraphProps = Static<typeof ParagraphSchema> &
+  Pick<BaseParagraphProps, "LinkComponent"> & {
+    site: IsomerSiteProps
+  }
