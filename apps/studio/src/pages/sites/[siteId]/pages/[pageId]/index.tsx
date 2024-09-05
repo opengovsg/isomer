@@ -60,7 +60,7 @@ function EditPage(): JSX.Element {
           h="100%"
           overflowX="auto"
         >
-          <PreviewIframe style={themeCssVars} preventPointerEvents>
+          <PreviewIframe style={themeCssVars}>
             <Preview
               {...page}
               {...previewPageState}
