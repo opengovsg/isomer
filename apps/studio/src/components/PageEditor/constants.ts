@@ -25,15 +25,6 @@ export const DEFAULT_BLOCKS: Record<
       ],
     },
   },
-  button: {
-    type: "button",
-    label: "Button label",
-    href: "/button-url",
-    colorScheme: "black",
-    variant: "solid",
-    size: "base",
-    rightIcon: "right-arrow",
-  },
   callout: {
     type: "callout",
     content: {
