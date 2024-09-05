@@ -175,14 +175,18 @@ const PageSettings = ({
               name="permalink"
               render={({ field: { onChange, ...field } }) => (
                 <Input
-                  maxLength={MAX_PAGE_URL_LENGTH}
                   placeholder="URL will be autopopulated if left untouched"
                   noOfLines={1}
                   mt="0.5rem"
                   w="100%"
                   {...field}
                   onChange={(e) => {
-                    onChange(generateResourceUrl(e.target.value))
+                    onChange(
+                      generateResourceUrl(e.target.value).slice(
+                        0,
+                        MAX_PAGE_URL_LENGTH,
+                      ),
+                    )
                   }}
                 />
               )}
@@ -232,7 +236,13 @@ const PageSettings = ({
               By default, this is the title of your your page. Edit this if you
               want to show a different title on search engines.
             </Text>
-            <Input w="100%" noOfLines={1} {...register("title")} mt="0.5rem" />
+            <Input
+              w="100%"
+              noOfLines={1}
+              maxLength={MAX_TITLE_LENGTH}
+              {...register("title")}
+              mt="0.5rem"
+            />
             <Text mt="0.5rem" textColor="base.content.medium">
               {MAX_TITLE_LENGTH - title.length} characters left
             </Text>
