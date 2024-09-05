@@ -9,6 +9,7 @@ import type {
   SingleCardWithImageProps,
 } from "~/interfaces/complex/InfoCards"
 import { tv } from "~/lib/tv"
+import { getReferenceLinkHref } from "~/utils"
 import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
@@ -86,14 +87,15 @@ const InfoCardsHeadingSection = ({
 
 const InfoCardContainer = ({
   url,
+  site,
   LinkComponent,
   children,
 }: PropsWithChildren<
-  Pick<SingleCardNoImageProps, "url" | "LinkComponent">
+  Pick<SingleCardNoImageProps, "url" | "site" | "LinkComponent">
 >): JSX.Element => {
   return url ? (
     <Link
-      href={url}
+      href={getReferenceLinkHref(url, site.siteMap)}
       className={compoundStyles.cardContainer()}
       LinkComponent={LinkComponent}
     >
@@ -153,10 +155,11 @@ const InfoCardNoImage = ({
   title,
   description,
   url,
+  site,
   LinkComponent,
 }: SingleCardNoImageProps): JSX.Element => {
   return (
-    <InfoCardContainer url={url} LinkComponent={LinkComponent}>
+    <InfoCardContainer url={url} site={site} LinkComponent={LinkComponent}>
       <InfoCardText title={title} description={description} url={url} />
     </InfoCardContainer>
   )
@@ -169,10 +172,11 @@ const InfoCardWithImage = ({
   imageAlt,
   imageFit,
   url,
+  site,
   LinkComponent,
 }: SingleCardWithImageProps): JSX.Element => {
   return (
-    <InfoCardContainer url={url} LinkComponent={LinkComponent}>
+    <InfoCardContainer url={url} site={site} LinkComponent={LinkComponent}>
       <InfoCardImage
         imageFit={imageFit}
         imageUrl={imageUrl}
@@ -189,8 +193,9 @@ const InfoCards = ({
   subtitle,
   variant,
   cards,
-  LinkComponent,
   maxColumns,
+  site,
+  LinkComponent,
 }: InfoCardsProps): JSX.Element => {
   const InfoCardtoRender = () => {
     switch (variant) {
@@ -201,6 +206,7 @@ const InfoCards = ({
               <InfoCardWithImage
                 key={idx}
                 {...card}
+                site={site}
                 LinkComponent={LinkComponent}
               />
             ))}
@@ -213,6 +219,7 @@ const InfoCards = ({
               <InfoCardNoImage
                 key={idx}
                 {...card}
+                site={site}
                 LinkComponent={LinkComponent}
               />
             ))}

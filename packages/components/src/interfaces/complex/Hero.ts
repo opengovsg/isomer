@@ -1,6 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps } from "~/types"
+
 const HeroHeadingSchema = Type.Object({
   title: Type.String({
     title: "Hero text",
@@ -84,4 +86,7 @@ export const HeroSchema = Type.Composite(
 )
 
 export type HeroBackgroundImageProps = Static<typeof HeroBackgroundImageSchema>
-export type HeroProps = Static<typeof HeroSchema>
+export type HeroProps = Static<typeof HeroSchema> & {
+  site: IsomerSiteProps
+  LinkComponent?: any // Next.js link
+}

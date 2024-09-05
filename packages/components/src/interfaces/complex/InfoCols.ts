@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps } from "~/types"
 import { SUPPORTED_ICON_NAMES } from "~/common/icons"
 
 export const InfoBoxSchema = Type.Object({
@@ -68,5 +69,6 @@ export const InfoColsSchema = Type.Object(
 
 export type InfoColsProps = Static<typeof InfoColsSchema> & {
   sectionIdx?: number // TODO: Remove this property, only used in classic theme
+  site: IsomerSiteProps
   LinkComponent?: any // Next.js link
 }

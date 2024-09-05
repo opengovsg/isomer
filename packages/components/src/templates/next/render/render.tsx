@@ -45,15 +45,24 @@ export const renderComponent = ({
       return <Accordion key={elementKey} {...component} />
     case "callout":
       return <Callout key={elementKey} {...component} />
+    case "contentpic":
+      return <Contentpic key={elementKey} {...component} />
     case "hero":
-      return <Hero key={elementKey} {...component} />
+      return (
+        <Hero
+          key={elementKey}
+          {...component}
+          site={site}
+          LinkComponent={LinkComponent}
+        />
+      )
     case "iframe":
       return <Iframe key={elementKey} {...component} />
     case "image":
       return (
         <Image
-          {...component}
           key={elementKey}
+          {...component}
           site={site}
           LinkComponent={LinkComponent}
         />
@@ -63,23 +72,37 @@ export const renderComponent = ({
         <Infobar
           key={elementKey}
           {...component}
+          site={site}
           LinkComponent={LinkComponent}
         />
       )
     case "infocards":
-      return <InfoCards key={elementKey} {...component} />
+      return (
+        <InfoCards
+          key={elementKey}
+          {...component}
+          site={site}
+          LinkComponent={LinkComponent}
+        />
+      )
     case "infocols":
       return (
         <InfoCols
           key={elementKey}
           {...component}
+          site={site}
           LinkComponent={LinkComponent}
         />
       )
     case "infopic":
-      return <Infopic key={elementKey} {...component} />
-    case "contentpic":
-      return <Contentpic key={elementKey} {...component} />
+      return (
+        <Infopic
+          key={elementKey}
+          {...component}
+          site={site}
+          LinkComponent={LinkComponent}
+        />
+      )
     case "keystatistics":
       return <KeyStatistics key={elementKey} {...component} />
     case "prose":
