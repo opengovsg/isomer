@@ -3,6 +3,15 @@ import { isomerSiteTheme, NextPreset } from "@opengovsg/isomer-components"
 
 import siteConfig from "./data/config.json"
 
+// TODO: Write a script that generates this file depending on the theme selected
+// Replace the import + plugins with just the preset from the theme
+// Pass the site config colours to the preset, let the preset handle the colours
+
+// Do dynamic import + try-catch in the build script to validate the structure
+// before continuing to build the template
+
+// Maybe theme key put as package name instead
+
 /** @type {import('tailwindcss').Config} */
 const config = {
   content: [

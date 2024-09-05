@@ -1,0 +1,22 @@
+{
+  "extends": "@isomer/tsconfig/base.json",
+  "compilerOptions": {
+    // "lib": ["es2022", "dom", "dom.iterable"],
+    // "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./src/*"]
+      // "~public/*": ["./public/*"]
+    }
+    // "plugins": [{ "name": "next" }],
+    // "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
+    // "module": "esnext"
+  }
+  // "include": [
+  //   ".",
+  //   ".next/types/**/*.ts",
+  //   ".storybook/**/*.ts",
+  //   ".storybook/**/*.tsx"
+  // ],
+  // "exclude": ["node_modules", "public/mockServiceWorker.js", "sst.config.ts"]
+}
