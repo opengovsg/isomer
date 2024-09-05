@@ -27,9 +27,9 @@ export {
   jsonFormsAllOfControlTester,
 } from "./JsonFormsAllOfControl"
 export {
-  default as JsonFormsProseControl,
-  jsonFormsProseControlTester,
-} from "./JsonFormsProseControl"
+  default as JsonFormsCalloutTextControl,
+  jsonFormsCalloutTextControlTester,
+} from "./JsonFormsCalloutTextControl"
 export {
   default as JsonFormsRadioControl,
   jsonFormsRadioControlTester,

@@ -17,13 +17,17 @@ import { Paragraph } from "@tiptap/extension-paragraph"
 import { Strike } from "@tiptap/extension-strike"
 import { Subscript } from "@tiptap/extension-subscript"
 import { Superscript } from "@tiptap/extension-superscript"
+import { Table } from "@tiptap/extension-table"
+import { TableCell } from "@tiptap/extension-table-cell"
+import { TableHeader } from "@tiptap/extension-table-header"
+import { TableRow } from "@tiptap/extension-table-row"
 import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { textblockTypeInputRule, useEditor } from "@tiptap/react"
 
 const HEADING_LEVELS: Level[] = [2, 3, 4, 5, 6]
 
-interface BaseEditorProps {
+export interface BaseEditorProps {
   data: ControlProps["data"]
   handleChange: (content: JSONContent) => void
 }
@@ -86,6 +90,20 @@ export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
       Subscript,
       Text,
       Underline,
+      Table.extend({
+        addAttributes() {
+          return {
+            caption: {
+              default: "Table caption",
+            },
+          }
+        },
+      }),
+      TableCell,
+      TableHeader.extend({
+        content: "paragraph+",
+      }),
+      TableRow,
     ],
     content: data,
     onUpdate: (e) => {
@@ -93,3 +111,92 @@ export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
       handleChange(jsonContent)
     },
   })
+
+export const useCalloutEditor = ({ data, handleChange }: BaseEditorProps) => {
+  return useEditor({
+    extensions: [
+      Link,
+      Bold,
+      BulletList.extend({
+        name: "unorderedList",
+      }).configure({
+        HTMLAttributes: {
+          class: "list-disc",
+        },
+      }),
+      Document.extend({
+        name: "prose",
+      }),
+      Dropcursor,
+      Gapcursor,
+      HardBreak,
+      History,
+      HorizontalRule.extend({
+        name: "divider",
+      }),
+      Italic,
+      ListItem,
+      OrderedList.extend({
+        name: "orderedList",
+      }).configure({
+        HTMLAttributes: {
+          class: "list-decimal",
+        },
+      }),
+      Paragraph,
+      Strike,
+      Superscript,
+      Subscript,
+      Text,
+      Underline,
+    ],
+    content: data,
+    onUpdate: (e) => {
+      const jsonContent = e.editor.getJSON()
+      handleChange(jsonContent)
+    },
+  })
+}
+
+export const useAccordionEditor = ({ data, handleChange }: BaseEditorProps) => {
+  return useEditor({
+    extensions: [
+      Link,
+      Bold,
+      BulletList.extend({
+        name: "unorderedList",
+      }).configure({
+        HTMLAttributes: {
+          class: "list-disc",
+        },
+      }),
+      Document.extend({
+        name: "prose",
+      }),
+      Dropcursor,
+      Gapcursor,
+      HardBreak,
+      History,
+      HorizontalRule.extend({
+        name: "divider",
+      }),
+      Italic,
+      ListItem,
+      OrderedList.extend({
+        name: "orderedList",
+      }).configure({
+        HTMLAttributes: {
+          class: "list-decimal",
+        },
+      }),
+      Paragraph,
+      Text,
+      Underline,
+    ],
+    content: data,
+    onUpdate: (e) => {
+      const jsonContent = e.editor.getJSON()
+      handleChange(jsonContent)
+    },
+  })
+}

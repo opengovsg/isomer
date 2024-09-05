@@ -9,7 +9,7 @@ import AdminModeStateDrawer from "./AdminModeStateDrawer"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
-import TipTapProseComponent from "./TipTapComponent"
+import TipTapProseComponent from "./TipTapProseComponent"
 
 const proseSchema = getComponentSchema("prose")
 const ajv = new Ajv({ allErrors: true, strict: false, logger: false })

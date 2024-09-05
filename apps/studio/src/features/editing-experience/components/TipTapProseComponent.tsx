@@ -1,4 +1,3 @@
-import type { ProseProps } from "@opengovsg/isomer-components/dist/cjs/interfaces"
 import type { JSONContent } from "@tiptap/react"
 import {
   Box,
@@ -10,6 +9,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
+import { ProseProps } from "@opengovsg/isomer-components"
 import _ from "lodash"
 import { BiText, BiTrash, BiX } from "react-icons/bi"
 
@@ -21,7 +21,7 @@ import { useTextEditor } from "../hooks/useTextEditor"
 import { editPageSchema } from "../schema"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
-import { TiptapEditor } from "./form-builder/renderers/TipTapEditor"
+import { TiptapTextEditor } from "./form-builder/renderers/TipTapEditor"
 
 interface TipTapComponentProps {
   content: ProseProps
@@ -137,7 +137,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
           />
         </Flex>
         <Box w="100%" p="2rem" h="100%">
-          <TiptapEditor editor={editor} />
+          <TiptapTextEditor editor={editor} />
         </Box>
       </VStack>
 
