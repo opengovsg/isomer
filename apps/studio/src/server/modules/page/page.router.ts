@@ -9,6 +9,7 @@ import {
   basePageSchema,
   createPageSchema,
   getRootPageSchema,
+  pageSettingsSchema,
   publishPageSchema,
   reorderBlobSchema,
   updatePageBlobSchema,
@@ -109,12 +110,11 @@ export const pageRouter = router({
           })
         }
 
-        const permalink = page.permalink
         const siteMeta = await getSiteConfig(page.siteId)
         const navbar = await getNavBar(page.siteId)
         const footer = await getFooter(page.siteId)
 
-        const { content } = page
+        const { title, permalink, content } = page
 
         return {
           permalink,
@@ -123,6 +123,7 @@ export const pageRouter = router({
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore type instantiation is excessively deep and possibly infinite
           content,
+          title,
           ...siteMeta,
         }
       })
@@ -286,4 +287,23 @@ export const pageRouter = router({
       await startProjectById(ctx.logger, codeBuildId)
       return addedVersionResult
     }),
+
+  updatePageSettings: protectedProcedure.input(pageSettingsSchema).mutation(
+    // TODO: save noIndex and meta to db
+    async ({ input: { pageId, siteId, title, meta, permalink, noIndex } }) => {
+      return db
+        .updateTable("Resource")
+        .where("Resource.id", "=", String(pageId))
+        .where("Resource.siteId", "=", siteId)
+        .set({ title, permalink })
+        .returning([
+          "Resource.id",
+          "Resource.type",
+          "Resource.title",
+          "Resource.permalink",
+          "Resource.draftBlobId",
+        ])
+        .executeTakeFirstOrThrow()
+    },
+  ),
 })
