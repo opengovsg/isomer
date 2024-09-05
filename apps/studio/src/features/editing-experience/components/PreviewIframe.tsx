@@ -63,7 +63,8 @@ const IframeInnerComponent = ({ children }: PropsWithChildren) => {
 
   // !! This effect might break usages of scroll lock if scroll lock is not triggered by inside the iframe.
   useEffect(() => {
-    // Frustratingly, rendering react in an iframe still applies the styles to the parent document instead of the iframe
+    // Since iframes are sandboxed, we need to manually apply the styles to the iframe's documentElement
+    // when the styles are changed in the parent document.
     // This effect synchronise any changes to the document's styles with the iframe.
     const observer = new MutationObserver((mutationList) => {
       mutationList.forEach((mutation) => {
@@ -82,7 +83,7 @@ const IframeInnerComponent = ({ children }: PropsWithChildren) => {
         }
       })
     })
-    observer.observe(document.documentElement, {
+    observer.observe(document.body, {
       attributes: true,
       attributeFilter: ["style"],
     })
