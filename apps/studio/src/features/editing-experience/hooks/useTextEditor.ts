@@ -32,7 +32,7 @@ export interface BaseEditorProps {
   handleChange: (content: JSONContent) => void
 }
 
-export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
+export const useTableEditor = ({ data, handleChange }: BaseEditorProps) =>
   useEditor({
     extensions: [
       Link,
@@ -104,6 +104,72 @@ export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
         content: "paragraph+",
       }),
       TableRow,
+    ],
+    content: data,
+    onUpdate: (e) => {
+      const jsonContent = e.editor.getJSON()
+      handleChange(jsonContent)
+    },
+  })
+
+export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
+  useEditor({
+    extensions: [
+      Link,
+      Bold,
+      BulletList.extend({
+        name: "unorderedList",
+      }).configure({
+        HTMLAttributes: {
+          class: "list-disc",
+        },
+      }),
+      Document.extend({
+        name: "prose",
+      }),
+      Dropcursor,
+      Gapcursor,
+      HardBreak,
+      Heading.extend({
+        marks: "",
+        // NOTE: Have to override the default input rules
+        // because we should map the number of `#` into
+        // a h<num # + 1>.
+        // eg: # -> h2
+        //     ## -> h3
+        addInputRules() {
+          return HEADING_LEVELS.map((level) => {
+            return textblockTypeInputRule({
+              find: new RegExp(`^(#{1,${level - 1}})\\s$`),
+              type: this.type,
+              getAttributes: {
+                level,
+              },
+            })
+          })
+        },
+      }).configure({
+        levels: HEADING_LEVELS,
+      }),
+      History,
+      HorizontalRule.extend({
+        name: "divider",
+      }),
+      Italic,
+      ListItem,
+      OrderedList.extend({
+        name: "orderedList",
+      }).configure({
+        HTMLAttributes: {
+          class: "list-decimal",
+        },
+      }),
+      Paragraph,
+      Strike,
+      Superscript,
+      Subscript,
+      Text,
+      Underline,
     ],
     content: data,
     onUpdate: (e) => {
