@@ -1,6 +1,6 @@
 import { PropsWithChildren } from "react"
 import { Box, VStack } from "@chakra-ui/react"
-import { EditorContent } from "@tiptap/react"
+import { EditorContent, EditorContentProps } from "@tiptap/react"
 
 import {
   AccordionMenuBar,
@@ -25,6 +25,27 @@ const EditorContainer = ({ children }: PropsWithChildren) => {
   )
 }
 
+const EditorContentWrapper = ({
+  onClick,
+  editor,
+}: Pick<EditorContentProps, "onClick" | "editor">) => {
+  return (
+    <Box
+      as={EditorContent}
+      editor={editor}
+      w="100%"
+      p="1rem"
+      flex="1 1 auto"
+      overflowX="hidden"
+      overflowY="auto"
+      minH="300px"
+      backgroundColor="white"
+      onClick={onClick}
+      cursor="text"
+    />
+  )
+}
+
 export function TiptapTextEditor({
   editor,
 }: {
@@ -36,18 +57,9 @@ export function TiptapTextEditor({
   return (
     <EditorContainer>
       <TextMenuBar editor={editor} />
-      <Box
-        as={EditorContent}
+      <EditorContentWrapper
         editor={editor}
-        w="100%"
-        p="1rem"
-        flex="1 1 auto"
-        overflowX="hidden"
-        overflowY="auto"
-        minH="300px"
-        backgroundColor="white"
         onClick={() => editor.chain().focus().run()}
-        cursor="text"
       />
     </EditorContainer>
   )
@@ -64,18 +76,9 @@ export function TiptapAccordionEditor({
   return (
     <EditorContainer>
       <AccordionMenuBar editor={editor} />
-      <Box
-        as={EditorContent}
+      <EditorContentWrapper
         editor={editor}
-        w="100%"
-        p="1rem"
-        flex="1 1 auto"
-        overflowX="hidden"
-        overflowY="auto"
-        minH="300px"
-        backgroundColor="white"
         onClick={() => editor.chain().focus().run()}
-        cursor="text"
       />
     </EditorContainer>
   )
@@ -92,18 +95,9 @@ export function TiptapCalloutEditor({
   return (
     <EditorContainer>
       <CalloutMenuBar editor={editor} />
-      <Box
-        as={EditorContent}
+      <EditorContentWrapper
         editor={editor}
-        w="100%"
-        p="1rem"
-        flex="1 1 auto"
-        overflowX="hidden"
-        overflowY="auto"
-        minH="300px"
-        backgroundColor="white"
         onClick={() => editor.chain().focus().run()}
-        cursor="text"
       />
     </EditorContainer>
   )
