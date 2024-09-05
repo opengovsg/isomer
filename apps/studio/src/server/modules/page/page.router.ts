@@ -114,7 +114,7 @@ export const pageRouter = router({
         const navbar = await getNavBar(page.siteId)
         const footer = await getFooter(page.siteId)
 
-        const { title, permalink, content } = page
+        const { title, type, permalink, content } = page
 
         return {
           permalink,
@@ -124,6 +124,7 @@ export const pageRouter = router({
           // @ts-ignore type instantiation is excessively deep and possibly infinite
           content,
           title,
+          type,
           ...siteMeta,
         }
       })

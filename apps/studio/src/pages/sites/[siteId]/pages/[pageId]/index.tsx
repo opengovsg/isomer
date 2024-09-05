@@ -17,6 +17,7 @@ import {
   Toggle,
   useToast,
 } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { z } from "zod"
@@ -43,7 +44,7 @@ function EditPage(): JSX.Element {
     useEditorDrawerContext()
   const { pageId, siteId } = useQueryParse(editPageSchema)
 
-  const [{ content: page, permalink }] =
+  const [{ content: page, permalink, type }] =
     trpc.page.readPageAndBlob.useSuspenseQuery(
       {
         pageId,
@@ -71,7 +72,7 @@ function EditPage(): JSX.Element {
         />
       </TabPanel>
       <TabPanel>
-        <PageSettings permalink={permalink} page={page} />
+        <PageSettings type={type} permalink={permalink} page={page} />
       </TabPanel>
     </TabPanels>
   )
@@ -123,11 +124,13 @@ const PageEditingView = ({ page, permalink, siteId }: PageEditingViewProps) => {
 
 interface PageSettingsProps {
   permalink: RouterOutput["page"]["readPageAndBlob"]["permalink"]
+  type: RouterOutput["page"]["readPageAndBlob"]["type"]
   page: RouterOutput["page"]["readPageAndBlob"]["content"]
 }
 const PageSettings = ({
   permalink: originalPermalink,
   page,
+  type,
 }: PageSettingsProps) => {
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const { register, setValue, getFieldState, watch, control, handleSubmit } =
@@ -193,6 +196,7 @@ const PageSettings = ({
                 name="permalink"
                 render={({ field: { onChange, ...field } }) => (
                   <Input
+                    isDisabled={type === ResourceType.RootPage}
                     placeholder="URL will be autopopulated if left untouched"
                     noOfLines={1}
                     mt="0.5rem"
@@ -258,6 +262,7 @@ const PageSettings = ({
                 w="100%"
                 noOfLines={1}
                 maxLength={MAX_TITLE_LENGTH}
+                isDisabled={type === ResourceType.RootPage}
                 {...register("title")}
                 mt="0.5rem"
               />
