@@ -60,3 +60,7 @@ export const listResourceSchema = z
     resourceId: z.number().optional(),
   })
   .merge(offsetPaginationSchema)
+
+export const getFullPermalinkSchema = z.object({
+  resourceId: bigIntSchema,
+})

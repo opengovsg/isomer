@@ -2,6 +2,7 @@ import type {
   IsomerComponent,
   IsomerPageSchemaType,
   IsomerSiteConfigProps,
+  IsomerSiteProps,
 } from "~/engine"
 import {
   Accordion,
@@ -29,16 +30,15 @@ import {
 } from "../layouts"
 
 interface RenderComponentProps {
-  elementKey?: number
+  site: IsomerSiteProps
   component: IsomerComponent
-  assetsBaseUrl?: IsomerSiteConfigProps["assetsBaseUrl"]
+  elementKey?: number
   LinkComponent?: any // Next.js link
-  ScriptComponent?: any // Next.js script
 }
 
 export const renderComponent = ({
+  site,
   component,
-  assetsBaseUrl,
   LinkComponent,
   elementKey,
 }: RenderComponentProps) => {
@@ -58,9 +58,9 @@ export const renderComponent = ({
     case "image":
       return (
         <Image
-          key={elementKey}
           {...component}
-          assetsBaseUrl={assetsBaseUrl}
+          key={elementKey}
+          site={site}
           LinkComponent={LinkComponent}
         />
       )
