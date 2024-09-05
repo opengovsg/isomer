@@ -139,6 +139,7 @@ export function TiptapEditor({ data, handleChange }: TiptapEditorProps) {
           overflowX="hidden"
           overflowY="auto"
           minH="300px"
+          maxH="50vh"
           backgroundColor="white"
           onClick={() => editor.chain().focus().run()}
           cursor="text"
