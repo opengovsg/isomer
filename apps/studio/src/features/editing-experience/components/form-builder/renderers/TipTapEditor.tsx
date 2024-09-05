@@ -1,3 +1,4 @@
+import { PropsWithChildren } from "react"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
 
@@ -8,14 +9,7 @@ import {
 } from "~/components/PageEditor/MenuBar"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 
-export function TiptapTextEditor({
-  editor,
-}: {
-  editor: ReturnType<typeof useTextEditor>
-}) {
-  // TODO: Add a loading state or use suspsense
-  if (!editor) return null
-
+const EditorContainer = ({ children }: PropsWithChildren) => {
   return (
     <Box backgroundColor="gray.50" wordBreak="break-all">
       <VStack
@@ -25,22 +19,37 @@ export function TiptapTextEditor({
         w="100%"
         gap="0"
       >
-        <TextMenuBar editor={editor} />
-        <Box
-          as={EditorContent}
-          editor={editor}
-          w="100%"
-          p="1rem"
-          flex="1 1 auto"
-          overflowX="hidden"
-          overflowY="auto"
-          minH="300px"
-          backgroundColor="white"
-          onClick={() => editor.chain().focus().run()}
-          cursor="text"
-        />
+        {children}
       </VStack>
     </Box>
+  )
+}
+
+export function TiptapTextEditor({
+  editor,
+}: {
+  editor: ReturnType<typeof useTextEditor>
+}) {
+  // TODO: Add a loading state or use suspsense
+  if (!editor) return null
+
+  return (
+    <EditorContainer>
+      <TextMenuBar editor={editor} />
+      <Box
+        as={EditorContent}
+        editor={editor}
+        w="100%"
+        p="1rem"
+        flex="1 1 auto"
+        overflowX="hidden"
+        overflowY="auto"
+        minH="300px"
+        backgroundColor="white"
+        onClick={() => editor.chain().focus().run()}
+        cursor="text"
+      />
+    </EditorContainer>
   )
 }
 
@@ -53,30 +62,22 @@ export function TiptapAccordionEditor({
   if (!editor) return null
 
   return (
-    <Box backgroundColor="gray.50" wordBreak="break-all">
-      <VStack
-        border="1px solid"
-        borderColor="base.divider.strong"
-        h="100%"
+    <EditorContainer>
+      <AccordionMenuBar editor={editor} />
+      <Box
+        as={EditorContent}
+        editor={editor}
         w="100%"
-        gap="0"
-      >
-        <AccordionMenuBar editor={editor} />
-        <Box
-          as={EditorContent}
-          editor={editor}
-          w="100%"
-          p="1rem"
-          flex="1 1 auto"
-          overflowX="hidden"
-          overflowY="auto"
-          minH="300px"
-          backgroundColor="white"
-          onClick={() => editor.chain().focus().run()}
-          cursor="text"
-        />
-      </VStack>
-    </Box>
+        p="1rem"
+        flex="1 1 auto"
+        overflowX="hidden"
+        overflowY="auto"
+        minH="300px"
+        backgroundColor="white"
+        onClick={() => editor.chain().focus().run()}
+        cursor="text"
+      />
+    </EditorContainer>
   )
 }
 
@@ -89,29 +90,21 @@ export function TiptapCalloutEditor({
   if (!editor) return null
 
   return (
-    <Box backgroundColor="gray.50" wordBreak="break-all">
-      <VStack
-        border="1px solid"
-        borderColor="base.divider.strong"
-        h="100%"
+    <EditorContainer>
+      <CalloutMenuBar editor={editor} />
+      <Box
+        as={EditorContent}
+        editor={editor}
         w="100%"
-        gap="0"
-      >
-        <CalloutMenuBar editor={editor} />
-        <Box
-          as={EditorContent}
-          editor={editor}
-          w="100%"
-          p="1rem"
-          flex="1 1 auto"
-          overflowX="hidden"
-          overflowY="auto"
-          minH="300px"
-          backgroundColor="white"
-          onClick={() => editor.chain().focus().run()}
-          cursor="text"
-        />
-      </VStack>
-    </Box>
+        p="1rem"
+        flex="1 1 auto"
+        overflowX="hidden"
+        overflowY="auto"
+        minH="300px"
+        backgroundColor="white"
+        onClick={() => editor.chain().focus().run()}
+        cursor="text"
+      />
+    </EditorContainer>
   )
 }
