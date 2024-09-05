@@ -56,9 +56,9 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     },
   })
 
-  if (!previewPageState || !savedPageState) return
-
   const updatePageState = (editorContent: JSONContent) => {
+    if (!previewPageState) return
+
     const updatedBlocks = Array.from(previewPageState.content)
     // TODO: actual validation
     updatedBlocks[currActiveIdx] = editorContent as ProseProps
@@ -68,6 +68,10 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     }
     setPreviewPageState(newPageState)
   }
+
+  const editor = useTextEditor({ data: content, handleChange: updatePageState })
+
+  if (!previewPageState || !savedPageState) return
 
   const handleDeleteBlock = () => {
     const updatedBlocks = Array.from(savedPageState.content)
@@ -102,8 +106,6 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
   }
 
   const utils = trpc.useUtils()
-
-  const editor = useTextEditor({ data: content, handleChange: updatePageState })
 
   // TODO: Add a loading state or use suspsense
   return (
