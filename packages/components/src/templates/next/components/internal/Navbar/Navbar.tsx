@@ -8,6 +8,7 @@ import type { NavbarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
 import { IconButton } from "../IconButton"
+import { Link } from "../Link"
 import { MobileNavMenu } from "./MobileNavMenu"
 import { NavItem } from "./NavItem"
 
@@ -80,9 +81,13 @@ export const Navbar = ({
       <div className={navbarContainer()} ref={siteHeaderRef}>
         <div className={navbar()}>
           {/* Logo */}
-          <LinkComponent className="flex" href="/">
+          <Link
+            LinkComponent={LinkComponent}
+            className="flex rounded focus-visible:bg-utility-highlight"
+            href="/"
+          >
             <img src={logoUrl} alt={logoAlt} className={logo()} />
-          </LinkComponent>
+          </Link>
 
           {/* Navigation items (for desktop) */}
           <ul className={navItemContainer()} ref={navDesktopRef}>

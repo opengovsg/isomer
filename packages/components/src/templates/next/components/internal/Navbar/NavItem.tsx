@@ -8,8 +8,9 @@ import type {
 } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils"
+import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
 import { IconButton } from "../IconButton"
-import { Link } from "../Link"
+import { BaseLink, Link } from "../Link"
 
 interface NavbarItemProps
   extends BaseNavbarItemProps,
@@ -22,7 +23,7 @@ interface NavbarItemProps
 const navbarItemStyles = tv({
   slots: {
     megamenu: "max-h-full overflow-auto bg-white shadow-md",
-    item: "prose-label-md-medium flex h-[4.25rem] flex-row items-center border-b-2 border-transparent text-base-content-strong transition-colors hover:text-brand-interaction-hover motion-reduce:transition-none",
+    item: "group prose-label-md-medium flex h-[4.25rem] flex-row items-center border-b-2 border-transparent text-base-content-strong outline-0 transition-colors hover:text-brand-interaction-hover motion-reduce:transition-none",
     chevron:
       "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
   },
@@ -55,14 +56,14 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
     if (!items || items.length === 0) {
       return (
         <li>
-          <Link
+          <BaseLink
             LinkComponent={LinkComponent}
             isExternal={isExternalUrl(url)}
-            className={item({ isOpen })}
             href={url}
+            className={item({ isOpen })}
           >
-            {name}
-          </Link>
+            <span className={groupFocusVisibleHighlightNonRac()}>{name}</span>
+          </BaseLink>
         </li>
       )
     }
@@ -70,7 +71,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
     return (
       <li>
         <button ref={ref} className={item({ isOpen })} onClick={onClick}>
-          {name}
+          <span className={groupFocusVisibleHighlightNonRac()}>{name}</span>
           <BiChevronDown className={chevron({ isOpen })} />
         </button>
         {isOpen && (
@@ -111,11 +112,12 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
                         <li key={subItem.name}>
                           <div className="flex flex-col gap-1.5">
                             <Link
+                              withFocusVisibleHighlight
                               LinkComponent={LinkComponent}
                               isExternal={isExternal}
                               showExternalIcon={isExternal}
                               href={subItem.url}
-                              className="prose-label-md-medium inline-flex items-center gap-1 text-base-content hover:underline"
+                              className="prose-label-md-medium inline-flex w-fit items-center gap-1 text-base-content hover:underline"
                             >
                               {subItem.name}
                               {!isExternal && (
