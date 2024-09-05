@@ -10,12 +10,6 @@ export const DEFAULT_BLOCKS: Record<
     content: [
       {
         type: "paragraph",
-        content: [
-          {
-            type: "text",
-            text: "",
-          },
-        ],
       },
     ],
   },
@@ -27,12 +21,6 @@ export const DEFAULT_BLOCKS: Record<
       content: [
         {
           type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: "Enter content for the accordion here.",
-            },
-          ],
         },
       ],
     },

@@ -2,7 +2,6 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { createContext, useContext, useState } from "react"
 
-import type { SectionType } from "~/components/PageEditor/types"
 import type { ModifiedAsset } from "~/types/assets"
 import { type DrawerState } from "~/types/editorDrawer"
 
@@ -11,14 +10,14 @@ export interface DrawerContextType {
   setCurrActiveIdx: (currActiveIdx: number) => void
   drawerState: DrawerState
   setDrawerState: (state: DrawerState) => void
-  addedBlock: Exclude<SectionType, "prose">
-  setAddedBlock: (addedBlock: Exclude<SectionType, "prose">) => void
   savedPageState?: IsomerSchema
   setSavedPageState: Dispatch<SetStateAction<IsomerSchema | undefined>>
   previewPageState?: IsomerSchema
   setPreviewPageState: Dispatch<SetStateAction<IsomerSchema | undefined>>
   modifiedAssets: ModifiedAsset[]
   setModifiedAssets: Dispatch<SetStateAction<ModifiedAsset[]>>
+  addedBlockIndex: number | null
+  setAddedBlockIndex: Dispatch<SetStateAction<number | null>>
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
@@ -36,10 +35,9 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
   const [previewPageState, setPreviewPageState] = useState<
     IsomerSchema | undefined
   >()
-  const [addedBlock, setAddedBlock] =
-    useState<Exclude<SectionType, "prose">>("button")
   // Holding state for images/files that have been modified in the page
   const [modifiedAssets, setModifiedAssets] = useState<ModifiedAsset[]>([])
+  const [addedBlockIndex, setAddedBlockIndex] = useState<number | null>(null)
 
   return (
     <EditorDrawerContext.Provider
@@ -52,10 +50,10 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
         setSavedPageState,
         previewPageState,
         setPreviewPageState,
-        addedBlock,
-        setAddedBlock,
         modifiedAssets,
         setModifiedAssets,
+        addedBlockIndex,
+        setAddedBlockIndex,
       }}
     >
       {children}
