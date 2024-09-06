@@ -59,6 +59,7 @@ const MoveResourceContent = withSuspense(
     const [resourceStack, setResourceStack] = useState<PendingMoveResource[]>(
       [],
     )
+    const moveDest = resourceStack[resourceStack.length - 1]
     const { siteId } = useQueryParse(sitePageSchema)
     const setMovedItem = useSetAtom(moveResourceAtom)
     const [{ title }] = trpc.resource.getMetadataById.useSuspenseQuery({
@@ -93,10 +94,17 @@ const MoveResourceContent = withSuspense(
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate()
         await utils.resource.getParentOf.invalidate()
+        await utils.resource.getChildrenOf.invalidate()
         await utils.resource.listWithoutRoot.invalidate({
           // TODO: Update backend `list` to use the proper schema
-          resourceId: movedItem?.resourceId
-            ? Number(movedItem.resourceId)
+          resourceId: moveDest?.resourceId
+            ? Number(moveDest.resourceId)
+            : undefined,
+        })
+        await utils.resource.listWithoutRoot.invalidate({
+          // TODO: Update backend `list` to use the proper schema
+          resourceId: movedItem?.parentId
+            ? Number(movedItem.parentId)
             : undefined,
         })
         // NOTE: We might want to have smarter logic here
@@ -107,8 +115,6 @@ const MoveResourceContent = withSuspense(
     })
 
     const movedItem = useAtomValue(moveResourceAtom)
-    // TODO: need to update move dest
-    const moveDest = resourceStack[resourceStack.length - 1]
     const onBack = () => {
       setResourceStack((prev) => prev.slice(0, -1))
     }
@@ -178,7 +184,11 @@ const MoveResourceContent = withSuspense(
                       onChangeResourceId={() => {
                         setResourceStack((prev) => [
                           ...prev,
-                          { ...child, resourceId: child.id },
+                          {
+                            ...child,
+                            parentId: curResourceId ?? null,
+                            resourceId: child.id,
+                          },
                         ])
                       }}
                     />
