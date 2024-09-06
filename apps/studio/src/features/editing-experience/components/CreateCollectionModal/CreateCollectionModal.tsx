@@ -60,7 +60,6 @@ export const CreateCollectionModal = ({
 }
 
 const CreateCollectionModalContent = ({
-  isOpen,
   onClose,
   siteId,
 }: CreateCollectionModalProps) => {

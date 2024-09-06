@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from "react"
+import { Suspense } from "react"
 import {
   Box,
   FormControl,
@@ -74,15 +74,7 @@ const SuspendableModalContent = ({
       siteId,
       resourceId: Number(folderId),
     })
-  const {
-    setValue,
-    register,
-    handleSubmit,
-    watch,
-    control,
-    formState,
-    getFieldState,
-  } = useZodForm({
+  const { register, handleSubmit, watch, control, formState } = useZodForm({
     defaultValues: {
       title: originalTitle,
       permalink: originalPermalink,
@@ -122,18 +114,6 @@ const SuspendableModalContent = ({
   })
 
   const [title, permalink] = watch(["title", "permalink"])
-
-  useEffect(() => {
-    const permalinkFieldState = getFieldState("permalink")
-    // This allows the syncing to happen only when the page title is not dirty
-    // Dirty means user has changed the value AND the value is not the same as the default value of "".
-    // Once the value has been cleared, dirty state will reset.
-    if (!permalinkFieldState.isDirty) {
-      setValue("permalink", generateResourceUrl(title || ""), {
-        shouldValidate: !!title,
-      })
-    }
-  }, [getFieldState, setValue, title])
 
   return (
     <ModalContent key={String(!!folderId)}>
