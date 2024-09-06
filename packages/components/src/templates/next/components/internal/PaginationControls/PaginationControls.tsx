@@ -1,8 +1,7 @@
 "use client"
 
-import { useMediaQuery } from "usehooks-ts"
-
 import type { PaginationProps } from "../../../types/Pagination"
+import { useBreakpoint } from "~/hooks/useBreakpoint"
 import {
   Pagination,
   PaginationButton,
@@ -27,7 +26,7 @@ export function PaginationControls({
   setCurrPage,
   onPageChange,
 }: PaginationControlsProps) {
-  const isTablet = useMediaQuery("(min-width: 768px)")
+  const isTablet = useBreakpoint("md")
 
   const paginationRange = usePaginationRange<typeof SEPARATOR>({
     totalCount: totalItems,
