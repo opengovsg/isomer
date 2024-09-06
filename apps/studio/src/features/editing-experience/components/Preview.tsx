@@ -17,6 +17,7 @@ type PreviewProps = IsomerSchema & {
   permalink: string
   lastModified?: Date
   siteId: number
+  resourceId?: number
   overrides?: PartialDeep<IsomerPageSchemaType>
 }
 
@@ -33,6 +34,7 @@ function SuspendablePreview({
   permalink,
   lastModified = new Date(),
   siteId,
+  resourceId,
   overrides = {},
   ...props
 }: PreviewProps) {
@@ -43,6 +45,10 @@ function SuspendablePreview({
   })
   const [{ content: navbar }] = trpc.site.getNavbar.useSuspenseQuery({
     id: siteId,
+  })
+  const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
+    siteId,
+    resourceId,
   })
 
   const renderProps = merge(props, overrides, {
@@ -58,8 +64,7 @@ function SuspendablePreview({
       site={{
         // TODO: fixup all the typing errors
         // @ts-expect-error to fix when types are proper
-        // TODO: dynamically generate sitemap
-        siteMap: { title: "Home", permalink: "/", children: [] },
+        siteMap,
         environment: "production",
         ...siteConfig,
         navBarItems: navbar,

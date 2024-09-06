@@ -1,11 +1,16 @@
 import {
   getConfigSchema,
+  getLocalisedSitemapSchema,
   getNotificationSchema,
   setNotificationSchema,
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { db } from "../database"
-import { getFooter, getNavBar } from "../resource/resource.service"
+import {
+  getFooter,
+  getLocalisedSitemap,
+  getNavBar,
+} from "../resource/resource.service"
 import {
   clearSiteNotification,
   getNotification,
@@ -48,6 +53,12 @@ export const siteRouter = router({
     .query(async ({ input }) => {
       const { id } = input
       return getNavBar(id)
+    }),
+  getLocalisedSitemap: protectedProcedure
+    .input(getLocalisedSitemapSchema)
+    .query(async ({ input }) => {
+      const { siteId, resourceId } = input
+      return getLocalisedSitemap(siteId, resourceId)
     }),
   getNotification: protectedProcedure
     .input(getNotificationSchema)

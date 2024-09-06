@@ -1,7 +1,9 @@
+import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { SelectExpression } from "kysely"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Resource, SafeKysely } from "../database"
+import { getSitemapTree } from "~/utils/sitemap"
 import { db } from "../database"
 import { type Page } from "./resource.types"
 
@@ -230,4 +232,117 @@ export const moveResource = async (
     .where("siteId", "=", siteId)
     .where("id", "=", String(resourceId))
     .executeTakeFirstOrThrow()
+}
+
+// Returns a sparse IsomerSitemap object that revolves around the given
+// resourceId, which includes:
+// - The full path from root to the actual resource
+// - The immediate children of the resource (if any)
+// - The immediate siblings of the resource (if any)
+// - The immediate children of those siblings (if any)
+export const getLocalisedSitemap = async (
+  siteId: number,
+  resourceId?: number,
+) => {
+  if (resourceId === undefined) {
+    // Provide a default sitemap with a single resource
+    return {
+      id: "0",
+      layout: "content",
+      title: "Root",
+      summary: "",
+      lastModified: new Date().toISOString(),
+      permalink: "",
+    }
+  }
+
+  // Step 1: Get the actual resource
+  const resource = await getById(db, { resourceId, siteId })
+    .select(defaultResourceSelect)
+    .executeTakeFirstOrThrow()
+
+  // Step 2: Get all the ancestors of the resource
+  const ancestors = [resource]
+  let currentResource = resource
+
+  while (currentResource.parentId !== null) {
+    const parent = await getById(db, {
+      resourceId: Number(currentResource.parentId),
+      siteId,
+    })
+      .select(defaultResourceSelect)
+      .executeTakeFirstOrThrow()
+
+    ancestors.push(parent)
+    currentResource = parent
+  }
+
+  // Step 3: Get the immediate children of the resource
+  const children = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.parentId", "=", String(resourceId))
+    .select(defaultResourceSelect)
+    .execute()
+
+  // Step 4: Get the immediate siblings of the resource
+  const siblingsQuery = db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.id", "!=", String(resourceId))
+    .select(defaultResourceSelect)
+
+  if (resource.parentId === null) {
+    siblingsQuery.where("Resource.parentId", "is", null)
+  } else {
+    siblingsQuery.where("Resource.parentId", "=", resource.parentId)
+  }
+
+  const siblings = await siblingsQuery.execute()
+
+  // Step 5: Get the immediate children of the siblings
+  const siblingIds = siblings.map((s) => s.id)
+  let siblingChildrenMap = {}
+
+  if (siblingIds.length > 0) {
+    const siblingChildren = await db
+      .selectFrom("Resource")
+      .where("Resource.siteId", "=", siteId)
+      .where("Resource.parentId", "in", siblingIds)
+      .select(defaultResourceSelect)
+      .execute()
+
+    siblingChildrenMap = siblingChildren.reduce<
+      Record<string, typeof siblingChildren>
+    >((acc, child) => {
+      // NOTE: This case will never happen, because we have already filtered
+      // specifically for children of the above siblings
+      if (child.parentId === null) {
+        return acc
+      }
+
+      acc[child.parentId] = [...(acc[child.parentId] ?? []), child]
+
+      return acc
+    }, {})
+  }
+
+  // Step 6: Construct the localised sitemap object
+  const rootResource = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.parentId", "is", null)
+    .where("Resource.permalink", "=", "")
+    .select(defaultResourceSelect)
+    .executeTakeFirst()
+
+  if (rootResource === undefined) {
+    // This case will never happen, because we have guaranteed that there is
+    // always the root resource
+    throw new Error("Root item not found")
+  }
+
+  const allResources = [...ancestors, ...siblings, ...children]
+
+  return getSitemapTree(rootResource, allResources)
 }
