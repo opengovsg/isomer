@@ -125,6 +125,7 @@ const CreateFolderModalContent = ({
 
               <Input
                 placeholder="This is a title for your new folder"
+                maxLength={MAX_FOLDER_TITLE_LENGTH}
                 {...register("folderTitle")}
               />
               {errors.folderTitle?.message ? (
@@ -146,6 +147,7 @@ const CreateFolderModalContent = ({
               </FormLabel>
               <Input
                 placeholder="This is a url for your new page"
+                maxLength={MAX_FOLDER_PERMALINK_LENGTH}
                 {...register("permalink")}
               />
               {errors.permalink?.message && (
