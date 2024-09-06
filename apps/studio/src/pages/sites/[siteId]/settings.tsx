@@ -120,7 +120,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
         nextUrl={nextUrl}
       />
       <form onSubmit={onClickUpdate}>
-        <Center pt="5.5rem">
+        <Center pt="5.5rem" px="2rem">
           <VStack w="48rem" alignItems="flex-start" spacing="1.5rem">
             <FormControl isInvalid={!!errors.notification}>
               <Text w="full" textStyle="h3-semibold">
