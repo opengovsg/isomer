@@ -123,6 +123,8 @@ const PageEditingView = ({ page, permalink, siteId }: PageEditingViewProps) => {
   )
 }
 
+const THREE_SECONDS = 3000
+
 interface PageSettingsProps {
   permalink: RouterOutput["page"]["readPageAndBlob"]["permalink"]
   title: RouterOutput["page"]["readPageAndBlob"]["title"]
@@ -134,18 +136,17 @@ const PageSettings = ({
   title: originalTitle,
 }: PageSettingsProps) => {
   const { pageId, siteId } = useQueryParse(editPageSchema)
-  const { register, setValue, getFieldState, watch, control, handleSubmit } =
-    useZodForm({
-      schema: pageSettingsSchema.omit({ pageId: true, siteId: true }),
-      defaultValues: {
-        title: originalTitle || "",
-        permalink: originalPermalink || "",
-      },
-    })
+  const { register, watch, control, handleSubmit } = useZodForm({
+    schema: pageSettingsSchema.omit({ pageId: true, siteId: true }),
+    defaultValues: {
+      title: originalTitle || "",
+      permalink: originalPermalink || "",
+    },
+  })
 
   const [title, permalink] = watch(["title", "permalink"])
 
-  const toast = useToast()
+  const toast = useToast({ duration: THREE_SECONDS, isClosable: true })
   const utils = trpc.useUtils()
 
   const updatePageSettingsMutation = trpc.page.updatePageSettings.useMutation({
@@ -153,10 +154,18 @@ const PageSettings = ({
       // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
       await utils.page.readPageAndBlob.invalidate()
       await utils.page.readPage.invalidate()
-      toast({ title: "Page settings saved", status: "success" })
+      toast({
+        title: "Saved page settings",
+        description: "Publish this page for your changes to go live.",
+        status: "success",
+      })
     },
     onError: (error) => {
-      toast({ title: error.message, status: "error" })
+      toast({
+        title: "Failed to save page settings",
+        description: error.message,
+        status: "error",
+      })
     },
   })
 
