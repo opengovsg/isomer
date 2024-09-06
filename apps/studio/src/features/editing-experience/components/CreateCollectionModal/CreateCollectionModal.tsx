@@ -80,6 +80,8 @@ const CreateCollectionModalContent = ({
     onSettled: onClose,
     onSuccess: async () => {
       await utils.resource.listWithoutRoot.invalidate()
+      await utils.resource.countWithoutRoot.invalidate()
+      await utils.resource.getChildrenOf.invalidate()
       toast({ title: "Collection created!", status: "success" })
     },
     onError: (err) => {
