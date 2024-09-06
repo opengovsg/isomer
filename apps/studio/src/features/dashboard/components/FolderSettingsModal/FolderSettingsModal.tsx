@@ -132,6 +132,7 @@ const SuspendableModalContent = ({
 
               <Input
                 placeholder="This is a title for your new folder"
+                maxLength={MAX_FOLDER_TITLE_LENGTH}
                 {...register("title")}
               />
               {errors.title?.message ? (
@@ -158,7 +159,12 @@ const SuspendableModalContent = ({
                     placeholder="This is a url for your folder"
                     {...field}
                     onChange={(e) => {
-                      onChange(generateResourceUrl(e.target.value))
+                      onChange(
+                        generateResourceUrl(e.target.value).slice(
+                          0,
+                          MAX_FOLDER_PERMALINK_LENGTH,
+                        ),
+                      )
                     }}
                   />
                 )}
