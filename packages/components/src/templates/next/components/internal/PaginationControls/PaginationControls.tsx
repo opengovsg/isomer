@@ -1,6 +1,7 @@
 "use client"
 
 import type { PaginationProps } from "../../../types/Pagination"
+import { useBreakpoint } from "~/hooks/useBreakpoint"
 import {
   Pagination,
   PaginationButton,
@@ -25,12 +26,14 @@ export function PaginationControls({
   setCurrPage,
   onPageChange,
 }: PaginationControlsProps) {
+  const isTablet = useBreakpoint("md")
+
   const paginationRange = usePaginationRange<typeof SEPARATOR>({
     totalCount: totalItems,
     pageSize: itemsPerPage,
     currentPage: currPage,
     separator: SEPARATOR,
-    siblingCount: 1,
+    siblingCount: isTablet ? 1 : 0,
   })
 
   const totalPageCount = Math.ceil(totalItems / itemsPerPage)

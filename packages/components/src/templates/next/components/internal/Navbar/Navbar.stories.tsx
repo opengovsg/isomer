@@ -4,6 +4,7 @@ import { userEvent, within } from "@storybook/test"
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
 import type { NavbarProps } from "~/interfaces"
+import { Button } from "../Button"
 import Masthead from "../Masthead"
 import Navbar from "./Navbar"
 
@@ -14,6 +15,9 @@ const Renderer = (props: NavbarProps) => {
       <Navbar {...props} />
       <div className="h-[calc(100vh+300px)] bg-red-500">
         This mimics content that may overflow in a real preview
+        <div>
+          <Button>Focusable button</Button>
+        </div>
       </div>
     </div>
   )
