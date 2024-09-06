@@ -38,7 +38,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
           top,
         }}
       >
-        <FocusScope contain restoreFocus autoFocus>
+        <FocusScope contain restoreFocus>
           <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
             {items.map((item, index) => (
               <MobileNavItemAccordion
