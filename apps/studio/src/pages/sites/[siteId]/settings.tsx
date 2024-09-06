@@ -127,8 +127,8 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                 Manage site settings
               </Text>
               <Infobox
+                variant="warning"
                 textStyle="body-2"
-                textColor="base.content.strong"
                 size="sm"
                 mt="1.75rem"
               >
