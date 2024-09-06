@@ -23,25 +23,32 @@ export const getTextAsHtml = (content?: (HardBreakProps | TextProps)[]) => {
   }
 
   const output: string[] = []
-  let existingLinkMark: Marks | undefined = undefined
+  let previousNodeLinkMark: Marks | undefined = undefined
 
   // At every step, we will close off all marks except for links
   // First encounter with a link, always open it first before other marks
   // Close all other marks first before closing the link mark
   content.forEach((node) => {
     if (node.type === "hardBreak") {
+      // Close off the existing link mark if it exists
+      if (previousNodeLinkMark) {
+        output.push(`</${MARK_DOM_MAPPING.link}>`)
+        previousNodeLinkMark = undefined
+      }
+
       output.push("<br />")
       return
     }
 
-    const newLinkMark = node.marks?.find((mark) => mark.type === "link")
+    const currentNodeLinkMark = node.marks?.find((mark) => mark.type === "link")
     const isLinkMarkNew =
-      !!newLinkMark && !isEqual(existingLinkMark, newLinkMark)
+      !!currentNodeLinkMark &&
+      !isEqual(previousNodeLinkMark, currentNodeLinkMark)
 
     // Close off the existing link mark if it is different
-    if (isLinkMarkNew && !!existingLinkMark) {
+    if (isLinkMarkNew && !!previousNodeLinkMark) {
       output.push(`</${MARK_DOM_MAPPING.link}>`)
-      existingLinkMark = undefined
+      previousNodeLinkMark = undefined
     }
 
     // If there are no marks, just push the text
@@ -51,7 +58,7 @@ export const getTextAsHtml = (content?: (HardBreakProps | TextProps)[]) => {
     }
 
     if (isLinkMarkNew) {
-      existingLinkMark = newLinkMark
+      previousNodeLinkMark = currentNodeLinkMark
 
       // Sort such that the link mark is the first item
       node.marks.sort((a, b) => {
@@ -65,7 +72,7 @@ export const getTextAsHtml = (content?: (HardBreakProps | TextProps)[]) => {
       node.marks.forEach((mark) => {
         if (mark.type === "link") {
           output.push(
-            `<${MARK_DOM_MAPPING[mark.type]} target="${mark.attrs.target ?? "_self"}" href="${mark.attrs.href}">`,
+            `<${MARK_DOM_MAPPING.link} target="${mark.attrs.target || "_self"}" href="${mark.attrs.href}">`,
           )
         } else {
           output.push(`<${MARK_DOM_MAPPING[mark.type]}>`)
@@ -83,16 +90,22 @@ export const getTextAsHtml = (content?: (HardBreakProps | TextProps)[]) => {
     // Push the text
     output.push(node.text)
 
-    // Close off all marks except for links
-    node.marks
-      .filter((mark) => mark.type !== "link")
-      .forEach((mark) => {
-        output.push(`</${MARK_DOM_MAPPING[mark.type]}>`)
-      })
+    // Close off all marks except for links in reverse order
+    const marksToClose = node.marks.filter((mark) => mark.type !== "link")
+    while (marksToClose.length) {
+      const mark = marksToClose.pop()
+
+      if (!mark) {
+        break
+      }
+
+      output.push(`</${MARK_DOM_MAPPING[mark.type]}>`)
+    }
   })
 
   // Close off the last link mark if it exists
-  if (existingLinkMark) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (previousNodeLinkMark) {
     output.push(`</${MARK_DOM_MAPPING.link}>`)
   }
 
