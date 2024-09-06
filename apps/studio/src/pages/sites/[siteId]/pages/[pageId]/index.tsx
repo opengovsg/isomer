@@ -123,6 +123,7 @@ const PageEditingView = ({ page, permalink, siteId }: PageEditingViewProps) => {
 }
 
 const THREE_SECONDS = 3000
+const SUCCESS_TOAST_ID = "save-page-settings-success"
 
 interface PageSettingsProps {
   permalink: RouterOutput["page"]["readPageAndBlob"]["permalink"]
@@ -153,11 +154,14 @@ const PageSettings = ({
       // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
       await utils.page.readPageAndBlob.invalidate()
       await utils.page.readPage.invalidate()
-      toast({
-        title: "Saved page settings",
-        description: "Publish this page for your changes to go live.",
-        status: "success",
-      })
+      if (!toast.isActive(SUCCESS_TOAST_ID)) {
+        toast({
+          id: "save-page-settings-success",
+          title: "Saved page settings",
+          description: "Publish this page for your changes to go live.",
+          status: "success",
+        })
+      }
     },
     onError: (error) => {
       toast({
