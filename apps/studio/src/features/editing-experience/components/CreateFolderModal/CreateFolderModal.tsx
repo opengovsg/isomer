@@ -104,6 +104,9 @@ const CreateFolderModalContent = ({
     // Dirty means user has changed the value AND the value is not the same as the default value of "".
     // Once the value has been cleared, dirty state will reset.
     if (!permalinkFieldState.isDirty) {
+      // NOTE: We don't slice here because the permalink field already has a max length set.
+      // Because the `permalink`'s max length is longer than what it's derived from
+      // the output of this will always be less than the allowed length for the permalink.
       setValue("permalink", generateResourceUrl(folderTitle), {
         shouldValidate: !!folderTitle,
       })
@@ -127,6 +130,7 @@ const CreateFolderModalContent = ({
 
               <Input
                 placeholder="This is a title for your new folder"
+                maxLength={MAX_FOLDER_TITLE_LENGTH}
                 {...register("folderTitle")}
               />
               {errors.folderTitle?.message ? (
@@ -148,6 +152,7 @@ const CreateFolderModalContent = ({
               </FormLabel>
               <Input
                 placeholder="This is a url for your new page"
+                maxLength={MAX_FOLDER_PERMALINK_LENGTH}
                 {...register("permalink")}
               />
               {errors.permalink?.message && (
