@@ -296,6 +296,7 @@ export const pageRouter = router({
         .updateTable("Resource")
         .where("Resource.id", "=", String(pageId))
         .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "in", ["Page", "CollectionPage"])
         .set({ title, permalink })
         .returning([
           "Resource.id",
