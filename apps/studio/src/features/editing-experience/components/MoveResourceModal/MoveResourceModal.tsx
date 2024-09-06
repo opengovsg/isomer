@@ -95,6 +95,18 @@ const MoveResourceContent = withSuspense(
         await utils.page.readPageAndBlob.invalidate()
         await utils.resource.getParentOf.invalidate()
         await utils.resource.getChildrenOf.invalidate()
+        await utils.resource.countWithoutRoot.invalidate({
+          // TODO: Update backend `list` to use the proper schema
+          resourceId: moveDest?.resourceId
+            ? Number(moveDest.resourceId)
+            : undefined,
+        })
+        await utils.resource.countWithoutRoot.invalidate({
+          // TODO: Update backend `list` to use the proper schema
+          resourceId: movedItem?.parentId
+            ? Number(movedItem.parentId)
+            : undefined,
+        })
         await utils.resource.listWithoutRoot.invalidate({
           // TODO: Update backend `list` to use the proper schema
           resourceId: moveDest?.resourceId
