@@ -686,53 +686,6 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
   const items: MenuBarEntry[] = useMemo(
     () => [
       {
-        type: "vertical-list",
-        buttonWidth: "9rem",
-        menuWidth: "19rem",
-        defaultTitle: "Heading options",
-        items: [
-          {
-            type: "item",
-            title: "Heading 1",
-            textStyle: "h2",
-            useSecondaryColor: true,
-            action: () =>
-              editor.chain().focus().toggleHeading({ level: 2 }).run(),
-            isActive: () => editor.isActive("heading", { level: 2 }),
-          },
-          {
-            type: "item",
-            title: "Heading 2",
-            textStyle: "h3",
-            useSecondaryColor: true,
-            action: () =>
-              editor.chain().focus().toggleHeading({ level: 3 }).run(),
-            isActive: () => editor.isActive("heading", { level: 3 }),
-          },
-          {
-            type: "item",
-            title: "Heading 3",
-            textStyle: "h4",
-            useSecondaryColor: true,
-            action: () =>
-              editor.chain().focus().toggleHeading({ level: 4 }).run(),
-            isActive: () => editor.isActive("heading", { level: 4 }),
-          },
-          {
-            type: "item",
-            title: "Paragraph",
-            textStyle: "body-1",
-            action: () =>
-              editor.chain().focus().clearNodes().unsetAllMarks().run(),
-            isActive: () => editor.isActive("paragraph"),
-          },
-        ],
-      },
-      {
-        type: "divider",
-        isHidden: () => editor.isActive("table"),
-      },
-      {
         type: "item",
         icon: BiBold,
         title: "Bold",
@@ -809,53 +762,6 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
 export const CalloutMenuBar = ({ editor }: { editor: Editor }) => {
   const items: MenuBarEntry[] = useMemo(
     () => [
-      {
-        type: "vertical-list",
-        buttonWidth: "9rem",
-        menuWidth: "19rem",
-        defaultTitle: "Heading options",
-        items: [
-          {
-            type: "item",
-            title: "Heading 1",
-            textStyle: "h2",
-            useSecondaryColor: true,
-            action: () =>
-              editor.chain().focus().toggleHeading({ level: 2 }).run(),
-            isActive: () => editor.isActive("heading", { level: 2 }),
-          },
-          {
-            type: "item",
-            title: "Heading 2",
-            textStyle: "h3",
-            useSecondaryColor: true,
-            action: () =>
-              editor.chain().focus().toggleHeading({ level: 3 }).run(),
-            isActive: () => editor.isActive("heading", { level: 3 }),
-          },
-          {
-            type: "item",
-            title: "Heading 3",
-            textStyle: "h4",
-            useSecondaryColor: true,
-            action: () =>
-              editor.chain().focus().toggleHeading({ level: 4 }).run(),
-            isActive: () => editor.isActive("heading", { level: 4 }),
-          },
-          {
-            type: "item",
-            title: "Paragraph",
-            textStyle: "body-1",
-            action: () =>
-              editor.chain().focus().clearNodes().unsetAllMarks().run(),
-            isActive: () => editor.isActive("paragraph"),
-          },
-        ],
-      },
-      {
-        type: "divider",
-        isHidden: () => editor.isActive("table"),
-      },
       {
         type: "item",
         icon: BiBold,
