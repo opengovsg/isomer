@@ -158,13 +158,9 @@ const SuspendableModalContent = ({
                   <Input
                     placeholder="This is a url for your folder"
                     {...field}
+                    maxLength={MAX_FOLDER_PERMALINK_LENGTH}
                     onChange={(e) => {
-                      onChange(
-                        generateResourceUrl(e.target.value).slice(
-                          0,
-                          MAX_FOLDER_PERMALINK_LENGTH,
-                        ),
-                      )
+                      onChange(generateResourceUrl(e.target.value))
                     }}
                   />
                 )}
