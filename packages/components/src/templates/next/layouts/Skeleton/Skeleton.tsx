@@ -1,5 +1,10 @@
 import type { IsomerPageSchemaType } from "~/engine"
-import { Footer, Masthead, Navbar } from "../../components/internal"
+import {
+  Footer,
+  Masthead,
+  Navbar,
+  Notification,
+} from "../../components/internal"
 
 export const Skeleton = ({
   site,
@@ -17,7 +22,7 @@ export const Skeleton = ({
   return (
     <>
       {site.isGovernment && <Masthead isStaging={isStaging} />}
-
+      {site.notification && <Notification {...site.notification} />}
       <Navbar
         logoUrl={site.logoUrl}
         logoAlt={site.siteName}

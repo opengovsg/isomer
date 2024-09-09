@@ -48,6 +48,7 @@ export const colors = {
     hover: "#1547BE",
   },
   utility: {
+    highlight: twColors.amber["400"],
     feedback: {
       info: {
         DEFAULT: twColors.blue["500"],

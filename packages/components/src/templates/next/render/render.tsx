@@ -1,11 +1,10 @@
 import type {
   IsomerComponent,
   IsomerPageSchemaType,
-  IsomerSiteConfigProps,
+  IsomerSiteProps,
 } from "~/engine"
 import {
   Accordion,
-  Button,
   Callout,
   Contentpic,
   Hero,
@@ -29,26 +28,21 @@ import {
 } from "../layouts"
 
 interface RenderComponentProps {
-  elementKey?: number
+  site: IsomerSiteProps
   component: IsomerComponent
-  assetsBaseUrl?: IsomerSiteConfigProps["assetsBaseUrl"]
+  elementKey?: number
   LinkComponent?: any // Next.js link
-  ScriptComponent?: any // Next.js script
 }
 
 export const renderComponent = ({
+  site,
   component,
-  assetsBaseUrl,
   LinkComponent,
   elementKey,
 }: RenderComponentProps) => {
   switch (component.type) {
     case "accordion":
       return <Accordion key={elementKey} {...component} />
-    case "button":
-      return (
-        <Button key={elementKey} {...component} LinkComponent={LinkComponent} />
-      )
     case "callout":
       return <Callout key={elementKey} {...component} />
     case "hero":
@@ -58,9 +52,9 @@ export const renderComponent = ({
     case "image":
       return (
         <Image
-          key={elementKey}
           {...component}
-          assetsBaseUrl={assetsBaseUrl}
+          key={elementKey}
+          site={site}
           LinkComponent={LinkComponent}
         />
       )

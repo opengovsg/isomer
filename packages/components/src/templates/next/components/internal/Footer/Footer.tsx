@@ -1,4 +1,7 @@
+"use client"
+
 import type { IconType } from "react-icons"
+import { composeRenderProps } from "react-aria-components"
 import { BiLinkExternal } from "react-icons/bi"
 import {
   FaFacebook,
@@ -17,6 +20,9 @@ import type {
 } from "~/interfaces/internal/Footer"
 import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
+import { tv } from "~/lib/tv"
+import { focusVisibleHighlight } from "~/utils/rac"
+import { BaseLink } from "../Link"
 
 const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
   facebook: FaFacebook,
@@ -33,6 +39,22 @@ const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
   return <h2 className="prose-display-sm">{siteName}</h2>
 }
 
+const footerItemLinkStyle = tv({
+  extend: focusVisibleHighlight,
+  base: "prose-body-sm line-clamp-1 flex w-fit items-center gap-1 text-base-content-inverse outline-none",
+  variants: {
+    showExternalIcon: {
+      true: `after:content-['_↗']`,
+    },
+    isHovered: {
+      true: "text-base-content-inverse underline underline-offset-4",
+    },
+    isFocusVisible: {
+      true: "-m-0.5 p-0.5 shadow-none",
+    },
+  },
+})
+
 const FooterItem = ({
   LinkComponent = "a",
   title,
@@ -40,24 +62,29 @@ const FooterItem = ({
 }: FooterItemType & Pick<FooterProps, "LinkComponent">) => {
   if (url.startsWith("http")) {
     return (
-      <LinkComponent
+      <BaseLink
+        LinkComponent={LinkComponent}
         href={url}
         target="_blank"
         rel="noopener noreferrer nofollow"
-        className="prose-body-sm line-clamp-1 flex w-fit items-center gap-1 hover:underline hover:underline-offset-4"
+        className={composeRenderProps("", (className, renderProps) =>
+          footerItemLinkStyle({ className, ...renderProps }),
+        )}
       >
         {title}
         <BiLinkExternal className="h-auto w-3.5 flex-shrink-0 lg:w-4" />
-      </LinkComponent>
+      </BaseLink>
     )
   }
   return (
-    <a
-      className="line-clamp-1 w-fit hover:underline hover:underline-offset-4"
+    <BaseLink
+      className={composeRenderProps("", (className, renderProps) =>
+        footerItemLinkStyle({ className, ...renderProps }),
+      )}
       href={url}
     >
       {title}
-    </a>
+    </BaseLink>
   )
 }
 
@@ -69,8 +96,9 @@ const NavSection = ({
   return (
     <div className="prose-body-sm flex flex-col gap-8 lg:flex-row lg:gap-12">
       <div className="flex flex-col gap-3 lg:w-64">
-        {siteNavItems.map((item) => (
+        {siteNavItems.map((item, index) => (
           <FooterItem
+            key={index}
             title={item.title}
             url={item.url}
             LinkComponent={LinkComponent}
@@ -78,8 +106,9 @@ const NavSection = ({
         ))}
       </div>
       <div className="flex flex-col gap-3 lg:w-64">
-        {customNavItems?.map((item) => (
+        {customNavItems?.map((item, index) => (
           <FooterItem
+            key={index}
             title={item.title}
             url={item.url}
             LinkComponent={LinkComponent}
@@ -100,15 +129,18 @@ const SocialMediaSection = ({
         {socialMediaLinks?.map((link) => {
           const Icon = SocialMediaTypeToIconMap[link.type]
           return (
-            <a
+            <BaseLink
               key={link.url}
               href={link.url}
               target="_blank"
               rel="noopener noreferrer nofollow"
               aria-label={`${link.type} page`}
+              className={composeRenderProps("", (className, renderProps) =>
+                footerItemLinkStyle({ className, ...renderProps }),
+              )}
             >
               <Icon className="h-auto w-6" />
-            </a>
+            </BaseLink>
           )
         })}
       </div>
@@ -229,24 +261,42 @@ const LegalSection = ({
 const CreditsSection = () => {
   return (
     <div className="prose-label-md-regular flex flex-col gap-6 lg:flex-row lg:gap-8 xl:gap-20">
-      <a
+      <BaseLink
         href="https://www.isomer.gov.sg"
         target="_blank"
         rel="noopener noreferrer nofollow"
-        className="flex flex-col gap-4"
+        className={composeRenderProps(
+          "group flex flex-col items-start gap-4",
+          (className, renderProps) =>
+            footerItemLinkStyle({ className, ...renderProps }),
+        )}
       >
-        <p>Made with</p>
-        <IsomerLogo aria-label="isomer-logo" />
-      </a>
-      <a
+        <p>
+          Made with <span className="sr-only">Isomer</span>
+        </p>
+        <IsomerLogo
+          aria-hidden
+          className="group-focus-visible:fill-base-content-strong"
+        />
+      </BaseLink>
+      <BaseLink
         href="https://www.open.gov.sg"
         target="_blank"
         rel="noopener noreferrer nofollow"
-        className="flex flex-col gap-4"
+        className={composeRenderProps(
+          "flex flex-col items-start gap-4",
+          (className, renderProps) =>
+            footerItemLinkStyle({ className, ...renderProps }),
+        )}
       >
-        <p>Built by</p>
-        <OgpLogo aria-label="ogp-logo" />
-      </a>
+        <p>
+          Built by <span className="sr-only">Open Government Products</span>
+        </p>
+        <OgpLogo
+          aria-hidden
+          className="group-focus-visible:fill-base-content-strong"
+        />
+      </BaseLink>
     </div>
   )
 }

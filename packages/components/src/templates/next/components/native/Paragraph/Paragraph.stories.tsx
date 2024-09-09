@@ -109,3 +109,84 @@ export const Simple: Story = {
     ],
   },
 }
+
+export const Combined: Story = {
+  args: {
+    content: [
+      {
+        type: "text",
+        marks: [
+          {
+            type: "link",
+            attrs: {
+              href: "https://www.google.com",
+              target: "_blank",
+            },
+          },
+        ],
+        text: "Create customised ",
+      },
+      {
+        type: "text",
+        marks: [
+          {
+            type: "link",
+            attrs: {
+              href: "https://www.google.com",
+              target: "_blank",
+            },
+          },
+          {
+            type: "superscript",
+          },
+          {
+            type: "italic",
+          },
+        ],
+        text: "business",
+      },
+      {
+        type: "text",
+        marks: [
+          {
+            type: "link",
+            attrs: {
+              href: "https://www.google.com",
+              target: "_blank",
+            },
+          },
+          {
+            type: "italic",
+          },
+        ],
+        text: "custom",
+      },
+      {
+        type: "text",
+        marks: [
+          {
+            type: "link",
+            attrs: {
+              href: "https://www.google.com",
+              target: "_blank",
+            },
+          },
+        ],
+        text: " solutions for growth",
+      },
+      {
+        type: "text",
+        marks: [
+          {
+            type: "link",
+            attrs: {
+              href: "https://www.google2.com",
+              target: "_blank",
+            },
+          },
+        ],
+        text: " Another link",
+      },
+    ],
+  },
+}

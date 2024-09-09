@@ -26,6 +26,7 @@ export const Default: Story = {
     site: {
       siteName: "Isomer Next",
       siteMap: {
+        id: "1",
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
@@ -33,6 +34,7 @@ export const Default: Story = {
         summary: "",
         children: [
           {
+            id: "2",
             title: "Parent page",
             permalink: "/parent",
             lastModified: "",
@@ -40,6 +42,7 @@ export const Default: Story = {
             summary: "",
             children: [
               {
+                id: "3",
                 title:
                   "Irrationality this should have a long long long long long long long title that wraps to the max width of the content header, and its' breadcrumb truncates, but ideally should not be this long",
                 permalink: "/parent/rationality",
@@ -48,6 +51,7 @@ export const Default: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "4",
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -55,6 +59,7 @@ export const Default: Story = {
                     summary: "",
                   },
                   {
+                    id: "5",
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -64,6 +69,7 @@ export const Default: Story = {
                 ],
               },
               {
+                id: "6",
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
@@ -71,6 +77,7 @@ export const Default: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "7",
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
@@ -79,8 +86,8 @@ export const Default: Story = {
                   },
                 ],
               },
-
               {
+                id: "8",
                 title: "Irrationality2",
                 permalink: "/parent/rationality2",
                 lastModified: "",
@@ -88,6 +95,7 @@ export const Default: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "9",
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -95,6 +103,7 @@ export const Default: Story = {
                     summary: "",
                   },
                   {
+                    id: "10",
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -104,6 +113,7 @@ export const Default: Story = {
                 ],
               },
               {
+                id: "11",
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
@@ -111,6 +121,7 @@ export const Default: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "12",
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
@@ -120,6 +131,7 @@ export const Default: Story = {
                 ],
               },
               {
+                id: "13",
                 title: "Irrationality3",
                 permalink: "/parent/rationality3",
                 lastModified: "",
@@ -127,6 +139,7 @@ export const Default: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "14",
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -134,6 +147,7 @@ export const Default: Story = {
                     summary: "",
                   },
                   {
+                    id: "15",
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -143,6 +157,7 @@ export const Default: Story = {
                 ],
               },
               {
+                id: "16",
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
@@ -150,6 +165,7 @@ export const Default: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "17",
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
@@ -158,8 +174,8 @@ export const Default: Story = {
                   },
                 ],
               },
-
               {
+                id: "18",
                 title: "Irrationality4",
                 permalink: "/parent/rationality4",
                 lastModified: "",
@@ -167,6 +183,7 @@ export const Default: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "19",
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -174,6 +191,7 @@ export const Default: Story = {
                     summary: "",
                   },
                   {
+                    id: "20",
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -183,6 +201,7 @@ export const Default: Story = {
                 ],
               },
               {
+                id: "21",
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
@@ -190,6 +209,7 @@ export const Default: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "22",
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
@@ -199,6 +219,7 @@ export const Default: Story = {
                 ],
               },
               {
+                id: "23",
                 title: "Irrationality5",
                 permalink: "/parent/rationality5",
                 lastModified: "",
@@ -206,6 +227,7 @@ export const Default: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "24",
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -213,6 +235,7 @@ export const Default: Story = {
                     summary: "",
                   },
                   {
+                    id: "25",
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -222,6 +245,7 @@ export const Default: Story = {
                 ],
               },
               {
+                id: "26",
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
@@ -229,6 +253,7 @@ export const Default: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "27",
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
@@ -237,8 +262,8 @@ export const Default: Story = {
                   },
                 ],
               },
-
               {
+                id: "28",
                 title: "Irrationality6",
                 permalink: "/parent/rationality6",
                 lastModified: "",
@@ -246,6 +271,7 @@ export const Default: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "29",
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -253,6 +279,7 @@ export const Default: Story = {
                     summary: "",
                   },
                   {
+                    id: "30",
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -262,6 +289,7 @@ export const Default: Story = {
                 ],
               },
               {
+                id: "31",
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
@@ -269,6 +297,7 @@ export const Default: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "32",
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
@@ -280,6 +309,7 @@ export const Default: Story = {
             ],
           },
           {
+            id: "33",
             title: "Aunt/Uncle that should not appear",
             permalink: "/aunt-uncle",
             lastModified: "",
@@ -302,7 +332,9 @@ export const Default: Story = {
         type: "localSearch",
         searchUrl: "/search",
       },
-      notification: "This is a notification",
+      notification: {
+        content: [{ type: "text", text: "This is a short notification" }],
+      },
     },
     page: {
       permalink: "/parent/rationality",
@@ -1384,6 +1416,7 @@ export const NoTable: Story = {
     site: {
       siteName: "Isomer Next",
       siteMap: {
+        id: "1",
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
@@ -1391,6 +1424,7 @@ export const NoTable: Story = {
         summary: "",
         children: [
           {
+            id: "2",
             title: "Parent page",
             permalink: "/parent",
             lastModified: "",
@@ -1398,6 +1432,7 @@ export const NoTable: Story = {
             summary: "",
             children: [
               {
+                id: "3",
                 title: "Irrationality",
                 permalink: "/parent/rationality",
                 lastModified: "",
@@ -1405,6 +1440,7 @@ export const NoTable: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "4",
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -1412,6 +1448,7 @@ export const NoTable: Story = {
                     summary: "",
                   },
                   {
+                    id: "5",
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -1421,6 +1458,7 @@ export const NoTable: Story = {
                 ],
               },
               {
+                id: "6",
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
@@ -1428,6 +1466,7 @@ export const NoTable: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "7",
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
@@ -1439,6 +1478,7 @@ export const NoTable: Story = {
             ],
           },
           {
+            id: "8",
             title: "Aunt/Uncle that should not appear",
             permalink: "/aunt-uncle",
             lastModified: "",
@@ -1775,6 +1815,7 @@ export const SmallTable: Story = {
     site: {
       siteName: "Isomer Next",
       siteMap: {
+        id: "1",
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
@@ -1782,6 +1823,7 @@ export const SmallTable: Story = {
         summary: "",
         children: [
           {
+            id: "2",
             title: "Parent page",
             permalink: "/parent",
             lastModified: "",
@@ -1789,6 +1831,7 @@ export const SmallTable: Story = {
             summary: "",
             children: [
               {
+                id: "3",
                 title: "Irrationality",
                 permalink: "/parent/rationality",
                 lastModified: "",
@@ -1796,6 +1839,7 @@ export const SmallTable: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "4",
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -1803,6 +1847,7 @@ export const SmallTable: Story = {
                     summary: "",
                   },
                   {
+                    id: "5",
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -1812,6 +1857,7 @@ export const SmallTable: Story = {
                 ],
               },
               {
+                id: "6",
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
@@ -1819,6 +1865,7 @@ export const SmallTable: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "7",
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
@@ -1830,6 +1877,7 @@ export const SmallTable: Story = {
             ],
           },
           {
+            id: "8",
             title: "Aunt/Uncle that should not appear",
             permalink: "/aunt-uncle",
             lastModified: "",
@@ -2345,6 +2393,7 @@ export const FirstLevelPage: Story = {
     site: {
       siteName: "Isomer Next",
       siteMap: {
+        id: "1",
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
@@ -2352,6 +2401,7 @@ export const FirstLevelPage: Story = {
         summary: "",
         children: [
           {
+            id: "2",
             title: "Content page",
             permalink: "/content",
             lastModified: "",
@@ -2359,6 +2409,7 @@ export const FirstLevelPage: Story = {
             summary: "",
             children: [
               {
+                id: "3",
                 title: "Irrationality",
                 permalink: "/parent/rationality",
                 lastModified: "",
@@ -2366,6 +2417,7 @@ export const FirstLevelPage: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "4",
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -2373,6 +2425,7 @@ export const FirstLevelPage: Story = {
                     summary: "",
                   },
                   {
+                    id: "5",
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
@@ -2382,6 +2435,7 @@ export const FirstLevelPage: Story = {
                 ],
               },
               {
+                id: "6",
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
@@ -2389,6 +2443,7 @@ export const FirstLevelPage: Story = {
                 summary: "",
                 children: [
                   {
+                    id: "7",
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
@@ -2400,6 +2455,7 @@ export const FirstLevelPage: Story = {
             ],
           },
           {
+            id: "8",
             title: "Aunt/Uncle that should not appear",
             permalink: "/aunt-uncle",
             lastModified: "",

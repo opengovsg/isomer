@@ -13,6 +13,7 @@ import CollectionLayout from "./Collection"
 const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
   times(10, (index) => [
     {
+      id: `${index}`,
       title: `This is a publication title that is really long because ${index}`,
       permalink: `/publications/item-one-${index}`,
       lastModified: "",
@@ -23,6 +24,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       category: "Category Name",
     },
     {
+      id: `${index}`,
       title: `Isomer hero banner-${index}`,
       permalink: `/publications/item-two-${index}`,
       lastModified: "",
@@ -38,6 +40,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       },
     },
     {
+      id: `${index}`,
       title: `Isomer guide-${index}`,
       permalink: `/publications/item-three-${index}`,
       lastModified: "",
@@ -68,6 +71,7 @@ const meta: Meta<CollectionPageSchemaType> = {
     site: {
       siteName: "Isomer Next",
       siteMap: {
+        id: "1",
         title: "Home",
         permalink: "/",
         lastModified: "",
@@ -75,6 +79,7 @@ const meta: Meta<CollectionPageSchemaType> = {
         summary: "",
         children: [
           {
+            id: "2",
             title: "Publications and other press releases",
             permalink: "/publications",
             lastModified: "",
@@ -218,7 +223,9 @@ const meta: Meta<CollectionPageSchemaType> = {
         type: "localSearch",
         searchUrl: "/search",
       },
-      notification: "This is a notification",
+      notification: {
+        content: [{ type: "text", text: "This is a short notification" }],
+      },
     },
     page: {
       title: "Publications and other press releases",
@@ -249,6 +256,7 @@ export const EmptyCollection: Story = {
     site: {
       siteName: "Isomer Next",
       siteMap: {
+        id: "1",
         title: "Home",
         permalink: "/",
         lastModified: "",
@@ -256,6 +264,7 @@ export const EmptyCollection: Story = {
         summary: "",
         children: [
           {
+            id: "2",
             title: "Publications and other press releases",
             permalink: "/publications",
             lastModified: "",
@@ -399,7 +408,9 @@ export const EmptyCollection: Story = {
         type: "localSearch",
         searchUrl: "/search",
       },
-      notification: "This is a notification",
+      notification: {
+        content: [{ type: "text", text: "This is a short notification" }],
+      },
     },
   },
 }

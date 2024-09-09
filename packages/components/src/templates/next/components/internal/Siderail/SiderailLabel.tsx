@@ -1,7 +1,10 @@
+import { composeRenderProps } from "react-aria-components"
 import { BiRightArrowAlt } from "react-icons/bi"
 
 import type { Item } from "./types"
 import { tv } from "~/lib/tv"
+import { focusVisibleHighlight } from "~/utils/rac"
+import { Link } from "../Link"
 import { useSiderailContext } from "./SiderailContext"
 
 const createSiderailLabelStyles = tv({
@@ -18,6 +21,11 @@ const createSiderailLabelStyles = tv({
       },
     },
   },
+})
+
+const linkStyle = tv({
+  extend: focusVisibleHighlight,
+  base: "w-fit",
 })
 
 const compoundStyles = createSiderailLabelStyles()
@@ -44,15 +52,30 @@ export const SiderailLabel = ({
   }
 
   return (
-    <LinkComponent
-      href={url}
-      className={compoundStyles.container({ className })}
-    >
-      {title}
-
+    <p className={compoundStyles.container({ className })}>
+      <Link
+        LinkComponent={LinkComponent}
+        href={url}
+        className={composeRenderProps("", (className, renderProps) =>
+          linkStyle({
+            className,
+            ...renderProps,
+          }),
+        )}
+      >
+        {title}
+      </Link>
       {showIconOnHover && (
-        <BiRightArrowAlt aria-hidden className={compoundStyles.icon()} />
+        <Link
+          aria-hidden
+          tabIndex={-1}
+          href={url}
+          LinkComponent={LinkComponent}
+          aria-label={`Go to ${title} page`}
+        >
+          <BiRightArrowAlt aria-hidden className={compoundStyles.icon()} />
+        </Link>
       )}
-    </LinkComponent>
+    </p>
   )
 }

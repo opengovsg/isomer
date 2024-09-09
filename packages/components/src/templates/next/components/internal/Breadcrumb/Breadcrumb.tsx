@@ -16,11 +16,11 @@ import { BiChevronRight } from "react-icons/bi"
 import type { BreadcrumbProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { focusRing } from "~/utils/focusRing"
+import { focusVisibleHighlight } from "~/utils/rac"
 import { Link } from "../Link"
 
 const breadcrumbLinkStyles = tv({
-  extend: focusRing,
+  extend: focusVisibleHighlight,
   base: "prose-label-md-regular line-clamp-1 text-base-content underline decoration-transparent underline-offset-4 transition current:prose-label-md-medium active:text-interaction-link-active current:text-base-content-medium hover:decoration-inherit current:hover:decoration-transparent",
 })
 

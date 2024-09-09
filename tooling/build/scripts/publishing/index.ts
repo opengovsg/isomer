@@ -4,12 +4,14 @@ import { performance } from "perf_hooks"
 import * as dotenv from "dotenv"
 import { Client } from "pg"
 
+import type { Resource, SitemapEntry } from "./types"
 import {
   GET_ALL_RESOURCES_WITH_FULL_PERMALINKS,
   GET_CONFIG,
   GET_FOOTER,
   GET_NAVBAR,
 } from "./queries"
+import { getIndexPageContents } from "./utils/getIndexPageContent"
 
 dotenv.config()
 
@@ -21,15 +23,9 @@ const DB_PORT = process.env.DB_PORT
 const DB_NAME = process.env.DB_NAME
 const SITE_ID = Number(process.env.SITE_ID)
 
-interface Resource {
-  id: number
-  title: string
-  permalink: string
-  parentId: number | null
-  type: string
-  content?: any
-  fullPermalink?: string
-}
+// Unique identifier for pages of dangling directories
+// Guaranteed to not be present in the database because we start from 1
+const DANGLING_DIRECTORY_PAGE_ID = "-1"
 
 // Wrapper function for debug logging
 function logDebug(message: string, ...optionalParams: any[]) {
@@ -58,6 +54,9 @@ async function main() {
     // Fetch all resources and their full permalinks
     const resources = await getAllResourcesWithFullPermalinks(client)
 
+    // Construct an array of sitemap entries
+    const sitemapEntries: SitemapEntry[] = []
+
     // Process each resource
     for (const resource of resources) {
       logDebug(
@@ -77,6 +76,25 @@ async function main() {
           title: resource.title,
         }
 
+        const sitemapEntry: SitemapEntry = {
+          id: resource.id,
+          title: resource.title,
+          permalink: `/${resource.fullPermalink || resource.permalink}`,
+          lastModified: new Date().toISOString(), // TODO: Update to updated_at column
+          layout: resource.content.layout || "content",
+          summary:
+            resource.content.page.contentPageHeader?.summary ||
+            resource.content.page.articlePageHeader?.summary.join(" ") ||
+            resource.content.page.description ||
+            "",
+          category: resource.content.page.category,
+          date: resource.content.page.date,
+          image: resource.content.page.image,
+          ref: resource.content.page.ref, // For file and link layouts
+        }
+
+        sitemapEntries.push(sitemapEntry)
+
         await writeContentToFile(
           resource.fullPermalink,
           resource.content,
@@ -88,11 +106,159 @@ async function main() {
         )
       }
     }
+
+    const rootPage = sitemapEntries.find(
+      (entry) => entry.permalink === "/",
+    ) || {
+      id: "0",
+      title: "Home",
+      permalink: "/",
+      lastModified: new Date().toISOString(),
+      layout: "homepage",
+      summary: "Home page",
+    }
+
+    const sitemap = {
+      ...rootPage,
+      children: generateSitemapTree(sitemapEntries, rootPage.permalink),
+    }
+
+    await processDanglingDirectories(sitemap)
+
+    try {
+      // Create directories if they don't exist
+      fs.mkdirSync(__dirname, { recursive: true })
+
+      const filePath = path.join(__dirname, "sitemap.json")
+      fs.writeFileSync(filePath, JSON.stringify(sitemap), "utf-8")
+
+      logDebug(`Successfully wrote file: ${filePath}`)
+    } catch (error) {
+      console.error(`Error writing sitemap to file:`, error)
+    }
   } finally {
     await client.end()
     const end = performance.now() // End profiling
     console.log(`Program completed in ${(end - start) / 1000} seconds`)
   }
+}
+
+function generateSitemapTree(
+  sitemapEntries: SitemapEntry[],
+  pathPrefix: string,
+): SitemapEntry[] | undefined {
+  const pathPrefixWithoutLeadingSlash = pathPrefix.slice(1)
+
+  const entriesWithPathPrefix = sitemapEntries.filter((entry) =>
+    entry.permalink.startsWith(`${pathPrefix.length === 1 ? "" : pathPrefix}/`),
+  )
+
+  // Base case: No entries with the path prefix - this is a leaf node
+  if (entriesWithPathPrefix.length === 0) {
+    return undefined
+  }
+
+  // Get the immediate children of the current path
+  const childrenPaths = Array.from(
+    new Set(
+      entriesWithPathPrefix.map(
+        (entry) =>
+          entry.permalink
+            .slice(
+              pathPrefixWithoutLeadingSlash.length +
+                (pathPrefix.length === 1 ? 1 : 2),
+            )
+            .split("/")[0],
+      ),
+    ),
+  )
+
+  // Identify children paths that might be dangling directories
+  const danglingDirectories: SitemapEntry[] = childrenPaths
+    .filter(
+      (childPath) =>
+        sitemapEntries.some((entry) =>
+          entry.permalink.startsWith(
+            `${pathPrefix.length === 1 ? "" : pathPrefix}/${childPath}/`,
+          ),
+        ) &&
+        !sitemapEntries.some(
+          (entry) =>
+            entry.permalink ===
+            `${pathPrefix.length === 1 ? "" : pathPrefix}/${childPath}`,
+        ),
+    )
+    .map((danglingDirectory) => {
+      const pageName = danglingDirectory.replace(/-/g, " ")
+      const title = pageName.charAt(0).toUpperCase() + pageName.slice(1)
+
+      return {
+        id: DANGLING_DIRECTORY_PAGE_ID,
+        title,
+        permalink: `${pathPrefix.length === 1 ? "" : pathPrefix}/${danglingDirectory}`,
+        lastModified: new Date().toISOString(),
+        layout: "index",
+        summary: `Pages in ${title}`,
+      }
+    })
+
+  const existingChildren = entriesWithPathPrefix.filter(
+    (entry) =>
+      entry.permalink
+        .slice(
+          pathPrefixWithoutLeadingSlash.length +
+            (pathPrefix.length === 1 ? 1 : 2),
+        )
+        .split("/").length === 1,
+  )
+  const children = [...existingChildren, ...danglingDirectories]
+
+  return children.map((child) => ({
+    ...child,
+    children: generateSitemapTree(sitemapEntries, child.permalink),
+  }))
+}
+
+function getDanglingDirectories(sitemapEntry: SitemapEntry): SitemapEntry[] {
+  // Base case: No children - this is a leaf node
+  if (!sitemapEntry.children) {
+    return []
+  }
+
+  // Get all immediate children that are dangling directories
+  const danglingDirectories = sitemapEntry.children.filter(
+    (child) => child.id === DANGLING_DIRECTORY_PAGE_ID,
+  )
+
+  // Recurse on all children
+  return [
+    ...danglingDirectories,
+    ...sitemapEntry.children.flatMap((child) => getDanglingDirectories(child)),
+  ]
+}
+
+// Create the index page for all dangling directories
+async function processDanglingDirectories(sitemapEntry: SitemapEntry) {
+  // Base case: No children - this is a leaf node
+  if (!sitemapEntry.children) {
+    return
+  }
+
+  // Create index page for all immediate children that are dangling directories
+  await Promise.all(
+    getDanglingDirectories(sitemapEntry).map((child) => {
+      const indexPageContent = getIndexPageContents(
+        child.title,
+        child.children ?? [],
+      )
+
+      return writeContentToFile(
+        child.permalink,
+        indexPageContent,
+        Number(DANGLING_DIRECTORY_PAGE_ID),
+      )
+    }),
+  )
 }
 
 async function getAllResourcesWithFullPermalinks(
