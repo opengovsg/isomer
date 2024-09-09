@@ -33,11 +33,12 @@ export const resourceRouter = router({
     }),
   getFolderChildrenOf: protectedProcedure
     .input(getChildrenSchema)
-    .query(async ({ input: { resourceId, cursor: offset, limit } }) => {
+    .query(async ({ input: { siteId, resourceId, cursor: offset, limit } }) => {
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
         .where("Resource.type", "in", ["RootPage", "Folder"])
+        .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
           type: "Folder" | "RootPage"
         }>()
