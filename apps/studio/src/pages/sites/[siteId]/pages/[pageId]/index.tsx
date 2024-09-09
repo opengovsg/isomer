@@ -122,7 +122,7 @@ const PageEditingView = ({ page, permalink, siteId }: PageEditingViewProps) => {
   )
 }
 
-const THREE_SECONDS = 3000
+const THREE_SECONDS_IN_MS = 3000
 const SUCCESS_TOAST_ID = "save-page-settings-success"
 
 interface PageSettingsProps {
@@ -146,7 +146,7 @@ const PageSettings = ({
 
   const [title, permalink] = watch(["title", "permalink"])
 
-  const toast = useToast({ duration: THREE_SECONDS, isClosable: true })
+  const toast = useToast({ duration: THREE_SECONDS_IN_MS, isClosable: true })
   const utils = trpc.useUtils()
 
   const updatePageSettingsMutation = trpc.page.updatePageSettings.useMutation({
@@ -156,7 +156,7 @@ const PageSettings = ({
       await utils.page.readPage.invalidate()
       if (!toast.isActive(SUCCESS_TOAST_ID)) {
         toast({
-          id: "save-page-settings-success",
+          id: SUCCESS_TOAST_ID,
           title: "Saved page settings",
           description: "Publish this page for your changes to go live.",
           status: "success",
