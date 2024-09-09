@@ -8,6 +8,7 @@ export interface BaseParagraphProps {
   content: string
   className?: string
   id?: string
+  LinkComponent?: any // Next.js link
 }
 
 export const ParagraphSchema = Type.Object(
@@ -27,4 +28,5 @@ export const ParagraphSchema = Type.Object(
   },
 )
 
-export type ParagraphProps = Static<typeof ParagraphSchema>
+export type ParagraphProps = Static<typeof ParagraphSchema> &
+  Pick<BaseParagraphProps, "LinkComponent">

@@ -1,24 +1,46 @@
 "use client"
 
+import type { Node } from "interweave"
+import { Interweave } from "interweave"
+
 import type { BaseParagraphProps } from "~/interfaces/native/Paragraph"
 import { twMerge } from "~/lib/twMerge"
-import { getSanitizedInlineContent } from "~/utils"
+import { isExternalUrl } from "~/utils"
+import { Link } from "../Link"
 
 export const BaseParagraph = ({
   content,
   className,
   id,
+  LinkComponent,
 }: BaseParagraphProps) => {
-  const sanitizedContent = getSanitizedInlineContent(content)
+  const transform = (node: HTMLElement, children: Node[]): React.ReactNode => {
+    if (node.tagName === "A") {
+      const href = node.getAttribute("href") ?? undefined
+      const isExternalLink = href && isExternalUrl(href)
+
+      return (
+        <Link
+          LinkComponent={LinkComponent}
+          href={href}
+          rel={isExternalLink ? "noopener nofollow" : undefined}
+          target={isExternalLink ? "_blank" : undefined}
+        >
+          {children}
+        </Link>
+      )
+    }
+  }
 
   return (
-    <p
+    <Interweave
+      id={id}
       className={twMerge(
-        `hover:[&_a]text-link-hover [&:not(:first-child)]:mt-6 [&:not(:last-child)]:mb-6 after:[&_a[target*="blank"]]:content-['_↗'] [&_a]:text-link [&_a]:underline [&_a]:outline-none focus-visible:[&_a]:bg-utility-highlight focus-visible:[&_a]:text-base-content-strong focus-visible:[&_a]:decoration-transparent focus-visible:[&_a]:shadow-focus-visible focus-visible:[&_a]:transition-none`,
+        `hover:[&_a]text-link-hover focus-visible:[&_a]:bg-utility-highlight focus-visible:[&_a]:shadow-focus-visible [&:not(:first-child)]:mt-6 [&:not(:last-child)]:mb-6 after:[&_a[target*="blank"]]:content-['_↗'] [&_a]:text-link [&_a]:underline [&_a]:outline-none focus-visible:[&_a]:text-base-content-strong focus-visible:[&_a]:decoration-transparent focus-visible:[&_a]:transition-none`,
         className,
       )}
-      dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-      id={id}
+      content={content}
+      transform={transform}
     />
   )
 }

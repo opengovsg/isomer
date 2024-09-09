@@ -68,7 +68,7 @@ const IndexPageLayout = ({
         {sideRail && (
           <div className={compoundStyles.siderailContainer()}>
             <Siderail {...sideRail} LinkComponent={LinkComponent} />
-            <BackToTopLink />
+            <BackToTopLink LinkComponent={LinkComponent} />
           </div>
         )}
 

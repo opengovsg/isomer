@@ -83,7 +83,9 @@ export const renderComponent = ({
     case "keystatistics":
       return <KeyStatistics key={elementKey} {...component} />
     case "prose":
-      return <Prose key={elementKey} {...component} />
+      return (
+        <Prose key={elementKey} {...component} LinkComponent={LinkComponent} />
+      )
     default:
       const _: never = component
       return <></>

@@ -11,31 +11,33 @@ import UnorderedList from "../UnorderedList"
 
 const ProseComponent = ({
   component,
+  LinkComponent,
 }: {
   component: NonNullable<ProseProps["content"]>[number]
-}): JSX.Element => {
+} & Pick<ProseProps, "LinkComponent">): JSX.Element => {
   switch (component.type) {
     case "divider":
       return <Divider {...component} />
     case "heading":
       return <Heading {...component} />
     case "orderedList":
-      return <OrderedList {...component} />
+      return <OrderedList {...component} LinkComponent={LinkComponent} />
     case "paragraph":
       return (
         <BaseParagraph
           content={getTextAsHtml(component.content)}
           className="prose-body-base text-base-content"
+          LinkComponent={LinkComponent}
         />
       )
     case "table":
-      return <Table {...component} />
+      return <Table {...component} LinkComponent={LinkComponent} />
     case "unorderedList":
-      return <UnorderedList {...component} />
+      return <UnorderedList {...component} LinkComponent={LinkComponent} />
   }
 }
 
-const Prose = ({ content }: ProseProps) => {
+const Prose = ({ content, LinkComponent }: ProseProps) => {
   if (!content) {
     return <></>
   }
@@ -43,7 +45,11 @@ const Prose = ({ content }: ProseProps) => {
   return (
     <>
       {content.map((component, index) => (
-        <ProseComponent component={component} key={index} />
+        <ProseComponent
+          component={component}
+          key={index}
+          LinkComponent={LinkComponent}
+        />
       ))}
     </>
   )
