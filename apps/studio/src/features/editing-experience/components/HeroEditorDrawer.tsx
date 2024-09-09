@@ -11,7 +11,7 @@ import {
 import { Button } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
-import _ from "lodash"
+import isEqual from "lodash/isEqual"
 import { BiDollar, BiX } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -107,7 +107,7 @@ export default function HeroEditorDrawer(): JSX.Element {
               p="0.625rem"
               isDisabled={isLoading}
               onClick={() => {
-                if (!_.isEqual(previewPageState, savedPageState)) {
+                if (!isEqual(previewPageState, savedPageState)) {
                   onDiscardChangesModalOpen()
                 } else {
                   handleDiscardChanges()
