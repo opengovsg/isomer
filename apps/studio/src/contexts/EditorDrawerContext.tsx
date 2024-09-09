@@ -5,6 +5,8 @@ import { createContext, useContext, useState } from "react"
 import type { ModifiedAsset } from "~/types/assets"
 import { type DrawerState } from "~/types/editorDrawer"
 
+type MetadataEditorType = "hero" | "metadata"
+
 export interface DrawerContextType {
   currActiveIdx: number
   setCurrActiveIdx: (currActiveIdx: number) => void
@@ -18,6 +20,8 @@ export interface DrawerContextType {
   setModifiedAssets: Dispatch<SetStateAction<ModifiedAsset[]>>
   addedBlockIndex: number | null
   setAddedBlockIndex: Dispatch<SetStateAction<number | null>>
+  metadataEditorType: MetadataEditorType
+  setMetadataEditorType: Dispatch<SetStateAction<MetadataEditorType>>
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
@@ -38,6 +42,8 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
   // Holding state for images/files that have been modified in the page
   const [modifiedAssets, setModifiedAssets] = useState<ModifiedAsset[]>([])
   const [addedBlockIndex, setAddedBlockIndex] = useState<number | null>(null)
+  const [metadataEditorType, setMetadataEditorType] =
+    useState<MetadataEditorType>("hero")
 
   return (
     <EditorDrawerContext.Provider
@@ -54,6 +60,8 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
         setModifiedAssets,
         addedBlockIndex,
         setAddedBlockIndex,
+        metadataEditorType,
+        setMetadataEditorType,
       }}
     >
       {children}

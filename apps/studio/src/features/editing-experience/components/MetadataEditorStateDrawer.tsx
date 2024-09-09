@@ -10,7 +10,10 @@ import {
   useDisclosure,
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
+import {
+  getComponentSchema,
+  getLayoutMetadataSchema,
+} from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import _ from "lodash"
 import { BiDollar, BiX } from "react-icons/bi"
@@ -36,6 +39,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     setSavedPageState,
     previewPageState,
     setPreviewPageState,
+    metadataEditorType,
   } = useEditorDrawerContext()
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
@@ -120,7 +124,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
         <Box px="2rem" py="1rem" h="full">
           <FormBuilder<Static<typeof schema>>
-            schema={metadataSchema}
+            schema={
+              metadataEditorType === "metadata"
+                ? metadataSchema
+                : getComponentSchema("hero")
+            }
             validateFn={validateFn}
             data={previewPageState.page}
             handleChange={(data) => handleChange(data)}
