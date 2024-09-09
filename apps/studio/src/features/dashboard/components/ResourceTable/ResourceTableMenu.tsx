@@ -69,13 +69,15 @@ export const ResourceTableMenu = ({
               Edit folder settings
             </MenuItem>
           )}
-          <MenuItem
-            as="button"
-            onClick={handleMoveResourceClick}
-            icon={<BiFolderOpen fontSize="1rem" />}
-          >
-            Move to...
-          </MenuItem>
+          {(type === "Page" || type === "Folder") && (
+            <MenuItem
+              as="button"
+              onClick={handleMoveResourceClick}
+              icon={<BiFolderOpen fontSize="1rem" />}
+            >
+              Move to...
+            </MenuItem>
+          )}
           {resourceType !== ResourceType.RootPage && (
             <MenuItem
               onClick={() => {
