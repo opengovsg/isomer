@@ -107,7 +107,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
 
   const utils = trpc.useUtils()
 
-  // TODO: Add a loading state or use suspsense
+  // TODO: Add a loading state or use suspense
   return (
     <>
       <DeleteBlockModal
