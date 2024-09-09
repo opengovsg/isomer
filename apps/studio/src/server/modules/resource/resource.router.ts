@@ -126,6 +126,7 @@ export const resourceRouter = router({
         await tx
           .updateTable("Resource")
           .where("id", "=", String(movedResourceId))
+          .where("Resource.type", "in", ["Page", "Folder"])
           .set({ parentId: String(destinationResourceId) })
           .execute()
         return tx
