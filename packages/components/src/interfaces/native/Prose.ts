@@ -46,5 +46,7 @@ const generateProseSchema = (id?: string) => {
 export const ProseSchema = generateProseSchema("components-native-prose")
 export const BaseProseSchema = generateProseSchema()
 
-export type ProseProps = Static<typeof ProseSchema>
+export type ProseProps = Static<typeof ProseSchema> & {
+  LinkComponent?: any // Next.js link
+}
 export type ProseContent = ProseProps["content"]

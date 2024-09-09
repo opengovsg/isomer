@@ -4,9 +4,10 @@ import Breadcrumb from "../Breadcrumb"
 
 const ArticleSummaryContent = ({
   summary,
-}: Pick<ArticlePageHeaderProps, "summary">) => {
+  LinkComponent,
+}: Pick<ArticlePageHeaderProps, "summary" | "LinkComponent">) => {
   if (summary.length === 1 && summary[0] !== undefined) {
-    return <BaseParagraph content={summary[0]} />
+    return <BaseParagraph content={summary[0]} LinkComponent={LinkComponent} />
   }
 
   if (summary.length > 1) {
@@ -14,7 +15,7 @@ const ArticleSummaryContent = ({
       <ul className="list-disc ps-7">
         {summary.map((item, index) => (
           <li key={index} className="pl-0.5 [&_p]:inline">
-            <BaseParagraph content={item} />
+            <BaseParagraph content={item} LinkComponent={LinkComponent} />
           </li>
         ))}
       </ul>
@@ -47,7 +48,10 @@ const ArticlePageHeader = ({
         <p className="text-sm text-gray-800">{date}</p>
 
         <div className="text-xl tracking-tight text-gray-500 md:text-2xl">
-          <ArticleSummaryContent summary={summary} />
+          <ArticleSummaryContent
+            summary={summary}
+            LinkComponent={LinkComponent}
+          />
         </div>
       </div>
     </div>
