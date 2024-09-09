@@ -189,6 +189,7 @@ export const resourceRouter = router({
           "Resource.publishedVersionId",
           "Resource.draftBlobId",
           "Resource.type",
+          "Resource.parentId",
         ])
         .execute()
     }),

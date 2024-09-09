@@ -20,6 +20,7 @@ const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     publishedVersionId: null,
     draftBlobId: null,
     type: "Collection",
+    parentId: null,
   },
   {
     id: "4",
@@ -28,6 +29,7 @@ const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     publishedVersionId: null,
     draftBlobId: "3",
     type: "Page",
+    parentId: null,
   },
   {
     id: "5",
@@ -36,6 +38,7 @@ const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     publishedVersionId: null,
     draftBlobId: "4",
     type: "Page",
+    parentId: null,
   },
   {
     id: "6",
@@ -44,6 +47,7 @@ const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     publishedVersionId: null,
     draftBlobId: null,
     type: "Folder",
+    parentId: null,
   },
 ]
 
