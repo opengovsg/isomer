@@ -14,12 +14,12 @@ import { NavItem } from "./NavItem"
 
 const navbarStyles = tv({
   slots: {
-    logo: "max-h-[68px] object-contain object-center",
+    logo: "max-h-[48px] max-w-[128px] object-contain object-center",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
     navbar:
-      "mx-auto flex w-full max-w-screen-xl justify-between gap-x-2 pl-6 pr-3 md:px-10",
+      "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-2 pl-6 pr-3 md:px-10",
     navItemContainer:
-      "hidden flex-1 flex-wrap items-center gap-x-3 pl-2 lg:flex",
+      "hidden flex-1 flex-wrap items-center gap-x-4 pl-2 lg:flex",
   },
 })
 
