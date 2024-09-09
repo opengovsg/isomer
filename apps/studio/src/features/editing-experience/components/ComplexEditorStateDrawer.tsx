@@ -56,6 +56,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+        toast({ title: "Changes saved" })
       },
     })
 
@@ -96,6 +97,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     onDeleteBlockModalClose()
     setDrawerState({ state: "root" })
     setAddedBlockIndex(null)
+    savePage({
+      pageId,
+      siteId,
+      content: JSON.stringify(newPageState),
+    })
   }
 
   const handleDiscardChanges = () => {
