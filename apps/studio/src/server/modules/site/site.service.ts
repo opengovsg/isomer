@@ -1,7 +1,7 @@
 import { type IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 
-import { db, sql } from "../database"
+import { db, jsonb, sql } from "../database"
 
 export const getSiteConfig = async (siteId: number) => {
   const { config } = await db
@@ -45,8 +45,9 @@ export const setSiteConfig = async (
 export const getNotification = async (siteId: number) => {
   const result = await db
     .selectFrom("Site")
-    .select((eb) =>
-      eb.ref("Site.config", "->").key("notification").as("notification"),
+    .select(({ ref }) =>
+      // TODO: Return whole notification once frontend refactored to accept Tiptap editor
+      ref("Site.config", "->").key("notification").key("content").as("content"),
     )
     .where("id", "=", siteId)
     .executeTakeFirst()
@@ -57,7 +58,7 @@ export const getNotification = async (siteId: number) => {
     })
   }
   // NOTE: Empty string denotes absence of notification on site.
-  return result.notification || ""
+  return result.content?.[0]?.text ?? ""
 }
 
 // TODO: Should trigger immediate re-publish of site
@@ -65,11 +66,19 @@ export const setSiteNotification = async (
   siteId: number,
   notification: string,
 ) => {
+  // TODO: Remove tiptap schema coercion when tiptap editor is used on the frontend.
+  const notificationSchema = {
+    notification: {
+      content: [{ type: "text", text: notification }],
+    },
+  }
+
   return db
     .updateTable("Site")
-    .set({
-      config: sql`jsonb_set(config, '{"notification"}', to_jsonb(${notification}::text))`,
-    })
+    .set((eb) => ({
+      // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
+      config: eb("Site.config", "||", jsonb(notificationSchema)),
+    }))
     .where("id", "=", siteId)
     .executeTakeFirstOrThrow()
 }

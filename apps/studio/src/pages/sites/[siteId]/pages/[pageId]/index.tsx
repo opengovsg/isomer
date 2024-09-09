@@ -90,7 +90,8 @@ const PageEditingView = ({ page, permalink, siteId }: PageEditingViewProps) => {
       gap={0}
       maxH="calc(100vh - 57px)"
     >
-      <GridItem colSpan={1} bg="slate.50">
+      {/* TODO: Implement sidebar editor */}
+      <GridItem colSpan={1} bg="slate.50" overflow="auto">
         <EditPageDrawer />
       </GridItem>
       <GridItem colSpan={2}>

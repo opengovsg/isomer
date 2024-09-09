@@ -8,6 +8,7 @@ import type { NavbarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
 import { IconButton } from "../IconButton"
+import { Link } from "../Link"
 import { MobileNavMenu } from "./MobileNavMenu"
 import { NavItem } from "./NavItem"
 
@@ -54,14 +55,12 @@ export const Navbar = ({
     onResize: refreshMenuOffset,
   })
 
-  const handleClickOutside = useCallback(() => {
-    if (!isHamburgerOpen) {
-      setOpenNavItemIdx(-1)
-    }
-  }, [isHamburgerOpen])
+  const onCloseMenu = useCallback(() => {
+    setIsHamburgerOpen(false)
+    setOpenNavItemIdx(-1)
+  }, [])
 
   const activeNavRef = useRef(null)
-  const mobileCloseButtonRef = useRef(null)
 
   useLayoutEffect(() => {
     if (isMenuOpen) {
@@ -80,9 +79,13 @@ export const Navbar = ({
       <div className={navbarContainer()} ref={siteHeaderRef}>
         <div className={navbar()}>
           {/* Logo */}
-          <LinkComponent className="flex" href="/">
+          <Link
+            LinkComponent={LinkComponent}
+            className="flex rounded focus-visible:bg-utility-highlight"
+            href="/"
+          >
             <img src={logoUrl} alt={logoAlt} className={logo()} />
-          </LinkComponent>
+          </Link>
 
           {/* Navigation items (for desktop) */}
           <ul className={navItemContainer()} ref={navDesktopRef}>
@@ -91,7 +94,7 @@ export const Navbar = ({
                 key={`${item.name}-${index}`}
                 ref={openNavItemIdx === index ? activeNavRef : null}
                 {...item}
-                onCloseMegamenu={handleClickOutside}
+                onCloseMegamenu={onCloseMenu}
                 onClick={() => {
                   setIsSearchOpen(false)
                   setOpenNavItemIdx((currIdx) =>
@@ -134,11 +137,7 @@ export const Navbar = ({
             <div className="flex h-[68px] items-center lg:hidden">
               {isHamburgerOpen ? (
                 <IconButton
-                  ref={mobileCloseButtonRef}
-                  onPress={() => {
-                    setIsHamburgerOpen(false)
-                    setOpenNavItemIdx(-1)
-                  }}
+                  onPress={onCloseMenu}
                   aria-label="Close navigation menu"
                   icon={BiX}
                 />
@@ -182,9 +181,9 @@ export const Navbar = ({
           items={items}
           openNavItemIdx={openNavItemIdx}
           setOpenNavItemIdx={setOpenNavItemIdx}
-          shards={[mobileCloseButtonRef]}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           LinkComponent={LinkComponent}
+          onCloseMenu={onCloseMenu}
         />
       )}
     </div>

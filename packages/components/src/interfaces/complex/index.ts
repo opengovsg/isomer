@@ -1,5 +1,4 @@
 export { AccordionSchema, type AccordionProps } from "./Accordion"
-export { ButtonSchema, type ButtonProps } from "./Button"
 export { CalloutSchema, type CalloutProps } from "./Callout"
 export { type CardsProps } from "./Cards"
 export { HeroSchema, type HeroProps } from "./Hero"

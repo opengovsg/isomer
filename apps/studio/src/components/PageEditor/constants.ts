@@ -10,12 +10,6 @@ export const DEFAULT_BLOCKS: Record<
     content: [
       {
         type: "paragraph",
-        content: [
-          {
-            type: "text",
-            text: "",
-          },
-        ],
       },
     ],
   },
@@ -27,24 +21,9 @@ export const DEFAULT_BLOCKS: Record<
       content: [
         {
           type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: "Enter content for the accordion here.",
-            },
-          ],
         },
       ],
     },
-  },
-  button: {
-    type: "button",
-    label: "Button label",
-    href: "/button-url",
-    colorScheme: "black",
-    variant: "solid",
-    size: "base",
-    rightIcon: "right-arrow",
   },
   callout: {
     type: "callout",
@@ -92,18 +71,21 @@ export const DEFAULT_BLOCKS: Record<
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
         imageAlt: "This is the alt text",
+        imageFit: "cover",
       },
       {
         title: "This is the second card",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
         imageAlt: "This is the alt text",
+        imageFit: "cover",
       },
       {
         title: "This is the third card",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
         imageAlt: "This is the alt text",
+        imageFit: "cover",
       },
     ],
   },
