@@ -137,7 +137,7 @@ const PageSettings = ({
   title: originalTitle,
 }: PageSettingsProps) => {
   const { pageId, siteId } = useQueryParse(editPageSchema)
-  const { register, watch, control, handleSubmit } = useZodForm({
+  const { register, watch, control, handleSubmit, formState } = useZodForm({
     schema: pageSettingsSchema.omit({ pageId: true, siteId: true }),
     defaultValues: {
       title: originalTitle || "",
@@ -173,8 +173,10 @@ const PageSettings = ({
     },
   })
 
-  const onSubmit = handleSubmit(async (values) => {
-    await updatePageSettingsMutation.mutateAsync({ pageId, siteId, ...values })
+  const onSubmit = handleSubmit((values) => {
+    if (formState.isDirty) {
+      updatePageSettingsMutation.mutate({ pageId, siteId, ...values })
+    }
   })
 
   return (
