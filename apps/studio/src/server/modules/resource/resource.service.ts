@@ -346,3 +346,34 @@ export const getLocalisedSitemap = async (
 
   return getSitemapTree(rootResource, allResources)
 }
+
+export const getResourceFullPermalink = async (
+  siteId: number,
+  resourceId: number,
+) => {
+  // Step 1: Get the actual resource
+  const resource = await getById(db, { resourceId, siteId })
+    .select(defaultResourceSelect)
+    .executeTakeFirstOrThrow()
+
+  // Step 2: Get all the ancestors of the resource
+  const ancestors = [resource]
+  let currentResource = resource
+
+  while (currentResource.parentId !== null) {
+    const parent = await getById(db, {
+      resourceId: Number(currentResource.parentId),
+      siteId,
+    })
+      .select(defaultResourceSelect)
+      .executeTakeFirstOrThrow()
+
+    ancestors.push(parent)
+    currentResource = parent
+  }
+
+  return `/${ancestors
+    .reverse()
+    .map((r) => r.permalink)
+    .join("/")}`
+}

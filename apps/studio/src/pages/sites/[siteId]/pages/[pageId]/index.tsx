@@ -37,7 +37,7 @@ import { trpc } from "~/utils/trpc"
 function EditPage(): JSX.Element {
   const { pageId, siteId } = useQueryParse(editPageSchema)
 
-  const [{ content: page, permalink, type, title, updatedAt }] =
+  const [{ content: page, type, title, updatedAt }] =
     trpc.page.readPageAndBlob.useSuspenseQuery(
       {
         pageId,
@@ -45,6 +45,14 @@ function EditPage(): JSX.Element {
       },
       { refetchOnWindowFocus: false },
     )
+
+  const [permalink] = trpc.page.getFullPermalink.useSuspenseQuery(
+    {
+      pageId,
+      siteId,
+    },
+    { refetchOnWindowFocus: false },
+  )
 
   return (
     <TabPanels _dark={{ color: "white" }}>
