@@ -1,5 +1,4 @@
-import type { IsomerSchema, schema } from "@opengovsg/isomer-components"
-import type { Static } from "@sinclair/typebox"
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import {
   Box,
   Flex,
@@ -10,7 +9,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
+import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import _ from "lodash"
 import { BiDollar, BiX } from "react-icons/bi"
@@ -24,7 +23,7 @@ import FormBuilder from "./form-builder/FormBuilder"
 
 const ajv = new Ajv({ strict: false, logger: false })
 
-export default function MetadataEditorStateDrawer(): JSX.Element {
+export default function HeroEditorDrawer(): JSX.Element {
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -35,6 +34,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     savedPageState,
     setSavedPageState,
     previewPageState,
+    currActiveIdx,
     setPreviewPageState,
   } = useEditorDrawerContext()
 
@@ -50,23 +50,23 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     return <></>
   }
 
-  const metadataSchema = getLayoutMetadataSchema(previewPageState.layout)
-  const validateFn = ajv.compile<Static<typeof metadataSchema>>(metadataSchema)
-
-  const handleChange = (data: unknown) => {
-    // TODO: Perform actual validation on the data
-    const newPageState = {
-      ...previewPageState,
-      page: data,
-    } as IsomerSchema
-
-    setPreviewPageState(newPageState)
-  }
+  const subSchema = getComponentSchema("hero")
+  const validateFn = ajv.compile<IsomerComponent>(subSchema)
 
   const handleDiscardChanges = () => {
     setPreviewPageState(savedPageState)
     onDiscardChangesModalClose()
     setDrawerState({ state: "root" })
+  }
+
+  const handleChange = (data: IsomerComponent) => {
+    const updatedBlocks = Array.from(previewPageState.content)
+    updatedBlocks[currActiveIdx] = data
+    const newPageState = {
+      ...previewPageState,
+      content: updatedBlocks,
+    }
+    setPreviewPageState(newPageState)
   }
 
   return (
@@ -96,7 +96,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
                 borderRadius="base"
               />
               <Heading as="h3" size="sm" textStyle="h5" fontWeight="semibold">
-                Edit page title and summary
+                Edit hero banner
               </Heading>
             </HStack>
             <IconButton
@@ -119,11 +119,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
         </Box>
 
         <Box px="2rem" py="1rem" h="full">
-          <FormBuilder<Static<typeof schema>>
-            schema={metadataSchema}
+          <FormBuilder<IsomerComponent>
+            schema={getComponentSchema("hero")}
             validateFn={validateFn}
-            data={previewPageState.page}
-            handleChange={(data) => handleChange(data)}
+            data={previewPageState.content[0]}
+            handleChange={handleChange}
           />
         </Box>
         <Box

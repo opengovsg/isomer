@@ -7,6 +7,7 @@ import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import AdminModeStateDrawer from "./AdminModeStateDrawer"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
+import HeroEditorDrawer from "./HeroEditorDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
 import TipTapComponent from "./TipTapComponent"
@@ -55,6 +56,8 @@ export function EditPageDrawer(): JSX.Element {
       return <ComplexEditorStateDrawer />
     case "metadataEditor":
       return <MetadataEditorStateDrawer />
+    case "heroEditor":
+      return <HeroEditorDrawer />
     default:
       const _: never = currState
       return <h1>Edit Page Drawer</h1>

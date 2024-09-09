@@ -30,7 +30,6 @@ export default function RootStateDrawer() {
     savedPageState,
     setSavedPageState,
     setPreviewPageState,
-    setMetadataEditorType,
   } = useEditorDrawerContext()
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
@@ -112,8 +111,7 @@ export default function RootStateDrawer() {
             as="button"
             onClick={() => {
               setCurrActiveIdx(0)
-              setDrawerState({ state: "metadataEditor" })
-              setMetadataEditorType("hero")
+              setDrawerState({ state: "heroEditor" })
             }}
             w="100%"
           >
@@ -130,7 +128,6 @@ export default function RootStateDrawer() {
           <Box
             as="button"
             onClick={() => {
-              setMetadataEditorType("metadata")
               setDrawerState({ state: "metadataEditor" })
             }}
             w="100%"
