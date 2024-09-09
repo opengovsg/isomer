@@ -32,15 +32,18 @@ export const BaseParagraph = ({
     }
   }
 
+  const isAttributesPresent = !!id
+
   return (
     <Interweave
-      id={id}
       className={twMerge(
-        `hover:[&_a]text-link-hover focus-visible:[&_a]:bg-utility-highlight focus-visible:[&_a]:shadow-focus-visible [&:not(:first-child)]:mt-6 [&:not(:last-child)]:mb-6 after:[&_a[target*="blank"]]:content-['_↗'] [&_a]:text-link [&_a]:underline [&_a]:outline-none focus-visible:[&_a]:text-base-content-strong focus-visible:[&_a]:decoration-transparent focus-visible:[&_a]:transition-none`,
+        `hover:[&_a]text-link-hover [&:not(:first-child)]:mt-6 [&:not(:last-child)]:mb-6 after:[&_a[target*="blank"]]:content-['_↗'] [&_a]:text-link [&_a]:underline [&_a]:outline-none focus-visible:[&_a]:bg-utility-highlight focus-visible:[&_a]:text-base-content-strong focus-visible:[&_a]:decoration-transparent focus-visible:[&_a]:shadow-focus-visible focus-visible:[&_a]:transition-none`,
         className,
       )}
       content={content}
       transform={transform}
+      tagName="p"
+      attributes={isAttributesPresent ? { id } : undefined}
     />
   )
 }
