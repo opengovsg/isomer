@@ -35,7 +35,7 @@ const meta: Meta<NavbarProps> = {
     },
     items: [
       {
-        name: "About us",
+        name: "Max 70 chars",
         description: "This is a description of the item.",
         url: "/item-one",
         items: [
@@ -78,7 +78,7 @@ const meta: Meta<NavbarProps> = {
         ],
       },
       {
-        name: "Industries",
+        name: "On navbar",
         url: "/item-two",
         description: "This is a description of the item.",
         items: [
@@ -95,7 +95,7 @@ const meta: Meta<NavbarProps> = {
         ],
       },
       {
-        name: "Media",
+        name: "Please",
         url: "/item-three",
         items: [
           {
@@ -111,7 +111,7 @@ const meta: Meta<NavbarProps> = {
         ],
       },
       {
-        name: "Careers",
+        name: "Test item",
         url: "/item-four",
         items: [
           {
@@ -125,7 +125,7 @@ const meta: Meta<NavbarProps> = {
         ],
       },
       {
-        name: "Publications",
+        name: "Newsroom",
         url: "/item-five",
         items: [
           {
@@ -139,7 +139,7 @@ const meta: Meta<NavbarProps> = {
         ],
       },
       {
-        name: "Newsroom",
+        name: "Research",
         url: "/item-six",
         items: [
           {
@@ -153,7 +153,7 @@ const meta: Meta<NavbarProps> = {
         ],
       },
       {
-        name: "Contact us",
+        name: "eServices",
         url: "/single-item",
       },
     ],
