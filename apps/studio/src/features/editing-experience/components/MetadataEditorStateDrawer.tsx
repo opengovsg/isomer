@@ -38,8 +38,8 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     savedPageState,
     setSavedPageState,
     previewPageState,
+    currActiveIdx,
     setPreviewPageState,
-    metadataEditorType,
   } = useEditorDrawerContext()
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
@@ -124,11 +124,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
         <Box px="2rem" py="1rem" h="full">
           <FormBuilder<Static<typeof schema>>
-            schema={
-              metadataEditorType === "metadata"
-                ? metadataSchema
-                : getComponentSchema("hero")
-            }
+            schema={metadataSchema}
             validateFn={validateFn}
             data={previewPageState.page}
             handleChange={(data) => handleChange(data)}
