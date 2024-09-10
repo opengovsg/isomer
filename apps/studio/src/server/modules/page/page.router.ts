@@ -289,7 +289,7 @@ export const pageRouter = router({
       return addedVersionResult
     }),
 
-  updatePageSettings: protectedProcedure.input(pageSettingsSchema).mutation(
+  updateSettings: protectedProcedure.input(pageSettingsSchema).mutation(
     // TODO: save noIndex and meta to db
     async ({ input: { pageId, siteId, title, meta, permalink, noIndex } }) => {
       return db
