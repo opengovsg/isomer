@@ -13,10 +13,7 @@ export function TiptapCalloutEditor({
   return (
     <EditorContainer>
       <CalloutMenuBar editor={editor} />
-      <EditorContentWrapper
-        editor={editor}
-        onClick={() => editor.chain().focus().run()}
-      />
+      <EditorContentWrapper editor={editor} />
     </EditorContainer>
   )
 }

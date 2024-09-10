@@ -19,9 +19,8 @@ export const EditorContainer = ({ children }: PropsWithChildren) => {
 }
 
 export const EditorContentWrapper = ({
-  onClick,
   editor,
-}: Pick<EditorContentProps, "onClick" | "editor">) => {
+}: Pick<EditorContentProps, "editor">) => {
   return (
     <Box
       as={EditorContent}
@@ -33,7 +32,7 @@ export const EditorContentWrapper = ({
       overflowY="auto"
       minH="300px"
       backgroundColor="white"
-      onClick={onClick}
+      onClick={() => editor?.chain().focus().run()}
       cursor="text"
     />
   )

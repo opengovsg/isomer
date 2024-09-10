@@ -13,10 +13,7 @@ export function TiptapAccordionEditor({
   return (
     <EditorContainer>
       <AccordionMenuBar editor={editor} />
-      <EditorContentWrapper
-        editor={editor}
-        onClick={() => editor.chain().focus().run()}
-      />
+      <EditorContentWrapper editor={editor} />
     </EditorContainer>
   )
 }
