@@ -72,7 +72,13 @@ function EditPage(): JSX.Element {
         />
       </TabPanel>
       <TabPanel>
-        <PageSettings type={type} permalink={permalink} title={title} />
+        <PageSettings
+          type={type}
+          permalink={permalink}
+          noIndex={page.page.noIndex}
+          description={page.page.description}
+          title={title}
+        />
       </TabPanel>
     </TabPanels>
   )
@@ -129,11 +135,16 @@ interface PageSettingsProps {
   permalink: RouterOutput["page"]["readPageAndBlob"]["permalink"]
   title: RouterOutput["page"]["readPageAndBlob"]["title"]
   type: RouterOutput["page"]["readPageAndBlob"]["type"]
+  // TODO: this is currently defined as `any`
+  noIndex: RouterOutput["page"]["readPageAndBlob"]["content"]["page"]["noIndex"]
+  description: RouterOutput["page"]["readPageAndBlob"]["content"]["page"]["description"]
 }
 const PageSettings = ({
   permalink: originalPermalink,
   type,
   title: originalTitle,
+  description: originalDescription,
+  noIndex: originalNoIndex,
 }: PageSettingsProps) => {
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const { register, watch, control, reset, handleSubmit, formState } =
@@ -142,6 +153,8 @@ const PageSettings = ({
       defaultValues: {
         title: originalTitle || "",
         permalink: originalPermalink || "",
+        noIndex: !!originalNoIndex,
+        meta: originalDescription || "",
       },
     })
 

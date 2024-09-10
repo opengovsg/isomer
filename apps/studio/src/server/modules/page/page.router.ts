@@ -292,20 +292,48 @@ export const pageRouter = router({
   updateSettings: protectedProcedure.input(pageSettingsSchema).mutation(
     // TODO: save noIndex and meta to db
     async ({ input: { pageId, siteId, title, meta, permalink, noIndex } }) => {
-      return db
-        .updateTable("Resource")
-        .where("Resource.id", "=", String(pageId))
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "in", ["Page", "CollectionPage"])
-        .set({ title, permalink })
-        .returning([
-          "Resource.id",
-          "Resource.type",
-          "Resource.title",
-          "Resource.permalink",
-          "Resource.draftBlobId",
-        ])
-        .executeTakeFirstOrThrow()
+      return db.transaction().execute(async (tx) => {
+        const resource = await tx
+          .selectFrom("Resource")
+          .where("id", "=", String(pageId))
+          .where("siteId", "=", siteId)
+          .select(["draftBlobId"])
+          .executeTakeFirstOrThrow()
+
+        const blob = await tx
+          .selectFrom("Blob")
+          .where("id", "=", resource.draftBlobId)
+          .select(["content"])
+          .executeTakeFirstOrThrow()
+
+        const page = blob.content.page
+
+        await tx
+          .updateTable("Blob")
+          .where("id", "=", resource.draftBlobId)
+          .set({
+            content: {
+              ...blob.content,
+              page: { ...page, description: meta, noIndex: !!noIndex },
+            },
+          })
+          .execute()
+
+        const result = await tx
+          .updateTable("Resource")
+          .where("Resource.id", "=", String(pageId))
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "in", ["Page", "CollectionPage"])
+          .set({ title, permalink })
+          .returning([
+            "Resource.id",
+            "Resource.type",
+            "Resource.title",
+            "Resource.permalink",
+            "Resource.draftBlobId",
+          ])
+          .executeTakeFirstOrThrow()
+      })
     },
   ),
 })
