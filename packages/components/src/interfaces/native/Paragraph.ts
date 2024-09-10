@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps } from "~/types"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { HardBreakSchema } from "../internal/HardBreak"
 import { TextSchema } from "./Text"
 
@@ -10,7 +10,7 @@ export interface BaseParagraphProps {
   content: string
   className?: string
   id?: string
-  LinkComponent?: any // Next.js link
+  LinkComponent?: LinkComponentType
 }
 
 export const ParagraphSchema = Type.Object(

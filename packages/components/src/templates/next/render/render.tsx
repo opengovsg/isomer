@@ -3,6 +3,7 @@ import type {
   IsomerPageSchemaType,
   IsomerSiteProps,
 } from "~/engine"
+import type { LinkComponentType } from "~/types"
 import {
   Accordion,
   Callout,
@@ -31,7 +32,7 @@ interface RenderComponentProps {
   site: IsomerSiteProps
   component: IsomerComponent
   elementKey?: number
-  LinkComponent?: any // Next.js link
+  LinkComponent?: LinkComponentType
 }
 
 export const renderComponent = ({
@@ -60,7 +61,14 @@ export const renderComponent = ({
         />
       )
     case "contentpic":
-      return <Contentpic key={elementKey} {...component} LinkComponent={LinkComponent} site={site} />
+      return (
+        <Contentpic
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
+      )
     case "hero":
       return (
         <Hero

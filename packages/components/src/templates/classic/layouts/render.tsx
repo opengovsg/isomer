@@ -1,8 +1,9 @@
 import type { IsomerComponent, IsomerPageSchemaType } from "~/engine"
+import type { LinkComponentType } from "~/types"
 
 interface RenderComponentProps {
   component: IsomerComponent
-  LinkComponent: any // Next.js link
+  LinkComponent: LinkComponentType
 }
 
 export const renderComponent = ({

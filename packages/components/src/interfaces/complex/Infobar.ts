@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps } from "~/types"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 
 export const InfobarSchema = Type.Object(
   {
@@ -52,5 +52,5 @@ export type InfobarProps = Static<typeof InfobarSchema> & {
   sectionIdx?: number // TODO: Remove this property, only used in classic theme
   subtitle?: string // Subtitle that is only used in the classic theme
   site: IsomerSiteProps
-  LinkComponent?: any // Next.js link
+  LinkComponent?: LinkComponentType
 }

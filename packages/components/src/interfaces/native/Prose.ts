@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps } from "~/types"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { DividerSchema } from "./Divider"
 import { HeadingSchema } from "./Heading"
 import { OrderedListSchema } from "./OrderedList"
@@ -55,7 +55,7 @@ export const AccordionProseSchema = generateProseSchema(undefined, "accordion")
 export const CalloutProseSchema = generateProseSchema(undefined, "callout")
 
 export type ProseProps = Static<typeof ProseSchema> & {
-  LinkComponent?: any // Next.js link
+  LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }
 export type ProseContent = ProseProps["content"]

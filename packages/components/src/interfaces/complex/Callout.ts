@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps } from "~/types"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { CalloutProseSchema } from "../native/Prose"
 
 export const CalloutSchema = Type.Object(
@@ -16,6 +16,6 @@ export const CalloutSchema = Type.Object(
 )
 
 export type CalloutProps = Static<typeof CalloutSchema> & {
-  LinkComponent?: any // Next.js link
+  LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }

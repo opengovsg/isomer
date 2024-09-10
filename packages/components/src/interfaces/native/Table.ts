@@ -5,7 +5,7 @@ import type { DividerProps } from "./Divider"
 import type { OrderedListProps } from "./OrderedList"
 import type { ParagraphProps } from "./Paragraph"
 import type { UnorderedListProps } from "./UnorderedList"
-import type { IsomerSiteProps } from "~/types"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { DividerSchema } from "./Divider"
 import { OrderedListSchema } from "./OrderedList"
 import { ParagraphSchema } from "./Paragraph"
@@ -124,6 +124,6 @@ export const TableSchema = Type.Object(
 )
 
 export type TableProps = Static<typeof TableSchema> & {
-  LinkComponent?: any // Next.js link
+  LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }
