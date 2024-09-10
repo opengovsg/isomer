@@ -3,7 +3,8 @@ import { useCallback } from "react"
 import {
   Box,
   Button,
-  Divider,
+  chakra,
+  Flex,
   HStack,
   Icon,
   Stack,
@@ -23,7 +24,6 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
 import { ActivateAdminMode } from "./ActivateAdminMode"
-import { FixedBlock } from "./Block"
 
 export default function RootStateDrawer() {
   const {
@@ -113,15 +113,42 @@ export default function RootStateDrawer() {
           </Text>
         </VStack>
         {isHeroFixedBlock ? (
-          <FixedBlock
+          <Stack
+            as="button"
             onClick={() => {
               setCurrActiveIdx(0)
               setDrawerState({ state: "heroEditor" })
             }}
-            label="Hero banner"
-            description="Title, subtitle, and Call-to-Action"
-            icon={BiCrown}
-          />
+            layerStyle="focusRing"
+            w="100%"
+            borderRadius="6px"
+            border="1px solid"
+            borderColor="base.divider.medium"
+            transitionProperty="common"
+            transitionDuration="normal"
+            _hover={{
+              bg: "base.canvas.brand-subtle",
+            }}
+            bg="white"
+            py="0.5rem"
+            px="0.75rem"
+            flexDirection="row"
+            align="center"
+          >
+            <Flex p="0.25rem" bg="base.canvas.brand-subtle" borderRadius="4px">
+              <Icon
+                as={BiCrown}
+                fontSize="0.75rem"
+                color="base.content.default"
+              />
+            </Flex>
+            <Stack flexDirection="column" align="start" gap="0.25rem">
+              <Text textStyle="subhead-2">Hero banner</Text>
+              <Text textStyle="caption-2">
+                Title, subtitle, and Call-to-Action
+              </Text>
+            </Stack>
+          </Stack>
         ) : (
           <Box
             as="button"
@@ -197,61 +224,103 @@ export default function RootStateDrawer() {
                     </VStack>
                   )}
 
-                  {!!savedPageState &&
-                    savedPageState.content.map((block, index) => {
-                      if (isHeroFixedBlock && index === 0) {
-                        return <></>
-                      }
+                  {!!savedPageState && (
+                    <Flex flexDirection="column" mt="-0.25rem">
+                      {savedPageState.content.map((block, index) => {
+                        if (isHeroFixedBlock && index === 0) {
+                          return <></>
+                        }
 
-                      return (
-                        <Draggable
-                          // TODO: Determine key + draggable id
-                          key={index}
-                          draggableId={`${block.type}-${index}`}
-                          index={index}
-                        >
-                          {(provided) => (
-                            <VStack
-                              w="100%"
-                              gap={0}
-                              onClick={() => {
-                                setCurrActiveIdx(index)
-                                // TODO: we should automatically do this probably?
-                                const nextState =
-                                  savedPageState.content[index]?.type ===
-                                  "prose"
-                                    ? "nativeEditor"
-                                    : "complexEditor"
-                                setDrawerState({ state: nextState })
-                              }}
-                            >
-                              <HStack
+                        return (
+                          <Draggable
+                            disableInteractiveElementBlocking
+                            // TODO: Determine key + draggable id
+                            key={`${block.type}-${index}`}
+                            draggableId={`${block.type}-${index}`}
+                            index={index}
+                          >
+                            {(provided, snapshot) => (
+                              // TODO: Add image per block, extra menu for block
+                              // according to design
+                              <VStack
+                                my="0.25rem"
                                 w="100%"
-                                py="4"
-                                bgColor="white"
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
-                                {...provided.dragHandleProps}
                               >
-                                <Icon
-                                  as={BiGridVertical}
-                                  fontSize="1.5rem"
-                                  ml="0.75rem"
-                                />
-                                <Text px="3" fontWeight={500}>
+                                <HStack
+                                  onClick={() => {
+                                    setCurrActiveIdx(index)
+                                    // TODO: we should automatically do this probably?
+                                    const nextState =
+                                      savedPageState.content[index]?.type ===
+                                      "prose"
+                                        ? "nativeEditor"
+                                        : "complexEditor"
+                                    // NOTE: SNAPSHOT
+                                    setDrawerState({ state: nextState })
+                                  }}
+                                  as="button"
+                                  layerStyle="focusRing"
+                                  w="100%"
+                                  borderRadius="6px"
+                                  border="1px solid"
+                                  borderColor="base.divider.medium"
+                                  transitionProperty="common"
+                                  transitionDuration="normal"
+                                  _hover={{
+                                    bg: "base.canvas.brand-subtle",
+                                  }}
+                                  bg="white"
+                                  py="0.5rem"
+                                  px="0.75rem"
+                                  flexDirection="row"
+                                  align="center"
+                                >
+                                  <chakra.button
+                                    display="flex"
+                                    tabIndex={0}
+                                    {...provided.dragHandleProps}
+                                    layerStyle="focusRing"
+                                    borderRadius="4px"
+                                    _focus={{
+                                      boxShadow: snapshot.isDragging
+                                        ? undefined
+                                        : "0 0 0 2px var(--chakra-colors-neutral-500)",
+                                    }}
+                                    transition="color 0.2s ease"
+                                    _hover={{
+                                      color: "brand.secondary.300",
+                                      _disabled: {
+                                        color: "brand.secondary.200",
+                                      },
+                                    }}
+                                    color={
+                                      snapshot.isDragging
+                                        ? "brand.secondary.300"
+                                        : "brand.secondary.200"
+                                    }
+                                  >
+                                    <Icon
+                                      as={BiGridVertical}
+                                      fontSize="1.5rem"
+                                    />
+                                  </chakra.button>
                                   {/*  NOTE: Because we use `Type.Ref` for prose, */}
                                   {/* this gets a `$Ref` only and not the concrete values */}
-                                  {block.type === "prose"
-                                    ? PROSE_COMPONENT_NAME
-                                    : getComponentSchema(block.type).title}
-                                </Text>
-                              </HStack>
-                              <Divider />
-                            </VStack>
-                          )}
-                        </Draggable>
-                      )
-                    })}
+                                  <Text textStyle="subhead-2">
+                                    {block.type === "prose"
+                                      ? PROSE_COMPONENT_NAME
+                                      : getComponentSchema(block.type).title}
+                                  </Text>
+                                </HStack>
+                              </VStack>
+                            )}
+                          </Draggable>
+                        )
+                      })}
+                    </Flex>
+                  )}
                 </Box>
                 {provided.placeholder}
               </VStack>
