@@ -137,13 +137,14 @@ const PageSettings = ({
   title: originalTitle,
 }: PageSettingsProps) => {
   const { pageId, siteId } = useQueryParse(editPageSchema)
-  const { register, watch, control, handleSubmit, formState } = useZodForm({
-    schema: pageSettingsSchema.omit({ pageId: true, siteId: true }),
-    defaultValues: {
-      title: originalTitle || "",
-      permalink: originalPermalink || "",
-    },
-  })
+  const { register, watch, control, reset, handleSubmit, formState } =
+    useZodForm({
+      schema: pageSettingsSchema.omit({ pageId: true, siteId: true }),
+      defaultValues: {
+        title: originalTitle || "",
+        permalink: originalPermalink || "",
+      },
+    })
 
   const [title, permalink] = watch(["title", "permalink"])
 
@@ -175,7 +176,12 @@ const PageSettings = ({
 
   const onSubmit = handleSubmit((values) => {
     if (formState.isDirty) {
-      updatePageSettingsMutation.mutate({ pageId, siteId, ...values })
+      updatePageSettingsMutation.mutate(
+        { pageId, siteId, ...values },
+        {
+          onSuccess: () => reset(values),
+        },
+      )
     }
   })
 
