@@ -150,7 +150,7 @@ const PageSettings = ({
   const toast = useToast({ duration: THREE_SECONDS_IN_MS, isClosable: true })
   const utils = trpc.useUtils()
 
-  const updatePageSettingsMutation = trpc.page.updatePageSettings.useMutation({
+  const updatePageSettingsMutation = trpc.page.updateSettings.useMutation({
     onSuccess: async () => {
       // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
       await utils.page.readPageAndBlob.invalidate()
