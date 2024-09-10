@@ -22,6 +22,10 @@ export interface MetadataEditorState {
   state: "metadataEditor"
 }
 
+export interface HeroEditorState {
+  state: "heroEditor"
+}
+
 export type DrawerState =
   | RootDrawerState
   | AdminModeDrawerState
@@ -29,3 +33,4 @@ export type DrawerState =
   | NativeEditorState
   | ComplexEditorState
   | MetadataEditorState
+  | HeroEditorState
