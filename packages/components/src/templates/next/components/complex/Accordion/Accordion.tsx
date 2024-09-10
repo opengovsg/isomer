@@ -28,7 +28,12 @@ interface AccordionProps
   extends BaseAccordionProps,
     VariantProps<typeof createAccordionStyles> {}
 
-const Accordion = ({ summary, details }: AccordionProps) => {
+const Accordion = ({
+  summary,
+  details,
+  LinkComponent,
+  site,
+}: AccordionProps) => {
   return (
     <details className={accordionStyles.details()}>
       <summary className={summaryStyle()}>
@@ -44,7 +49,7 @@ const Accordion = ({ summary, details }: AccordionProps) => {
       </summary>
 
       <div className={accordionStyles.content()}>
-        <Prose {...details} />
+        <Prose {...details} LinkComponent={LinkComponent} site={site} />
       </div>
     </details>
   )

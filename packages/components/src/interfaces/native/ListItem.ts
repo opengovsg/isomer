@@ -4,12 +4,17 @@ import { Type } from "@sinclair/typebox"
 import type { OrderedListProps } from "./OrderedList"
 import type { ParagraphProps } from "./Paragraph"
 import type { UnorderedListProps } from "./UnorderedList"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { orderedListSchemaBuilder, unorderedListSchemaBuilder } from "~/utils"
 import { ParagraphSchema } from "./Paragraph"
 
 interface ListItem {
   type: "listItem"
-  content: (ParagraphProps | OrderedListProps | UnorderedListProps)[]
+  content: (
+    | Omit<ParagraphProps, "site">
+    | Omit<OrderedListProps, "site">
+    | Omit<UnorderedListProps, "site">
+  )[]
 }
 
 export const listItemSchemaBuilder = <T extends TSchema, U extends TSchema>(
@@ -52,5 +57,6 @@ export const ListItemSchema = Type.Unsafe<ListItem>(
 )
 
 export type ListItemProps = Static<typeof ListItemSchema> & {
-  LinkComponent?: any // Next.js link
+  LinkComponent?: LinkComponentType
+  site: IsomerSiteProps
 }

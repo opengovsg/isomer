@@ -1,4 +1,5 @@
 import type { InfobarProps } from "~/interfaces"
+import { getReferenceLinkHref } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
 
@@ -9,6 +10,7 @@ const Infobar = ({
   buttonUrl,
   secondaryButtonLabel,
   secondaryButtonUrl,
+  site,
   LinkComponent,
 }: InfobarProps) => {
   return (
@@ -27,13 +29,16 @@ const Infobar = ({
           </div>
           <div className="flex flex-col items-center gap-x-5 gap-y-4 sm:flex-row">
             {buttonLabel && buttonUrl && (
-              <LinkButton href={buttonUrl} LinkComponent={LinkComponent}>
+              <LinkButton
+                href={getReferenceLinkHref(buttonUrl, site.siteMap)}
+                LinkComponent={LinkComponent}
+              >
                 {buttonLabel}
               </LinkButton>
             )}
             {secondaryButtonLabel && secondaryButtonUrl && (
               <LinkButton
-                href={secondaryButtonUrl}
+                href={getReferenceLinkHref(secondaryButtonUrl, site.siteMap)}
                 variant="outline"
                 LinkComponent={LinkComponent}
               >

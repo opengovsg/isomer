@@ -3,6 +3,7 @@ import type {
   IsomerPageSchemaType,
   IsomerSiteProps,
 } from "~/engine"
+import type { LinkComponentType } from "~/types"
 import {
   Accordion,
   Callout,
@@ -31,7 +32,7 @@ interface RenderComponentProps {
   site: IsomerSiteProps
   component: IsomerComponent
   elementKey?: number
-  LinkComponent?: any // Next.js link
+  LinkComponent?: LinkComponentType
 }
 
 export const renderComponent = ({
@@ -42,18 +43,48 @@ export const renderComponent = ({
 }: RenderComponentProps) => {
   switch (component.type) {
     case "accordion":
-      return <Accordion key={elementKey} {...component} />
+      return (
+        <Accordion
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
+      )
     case "callout":
-      return <Callout key={elementKey} {...component} />
+      return (
+        <Callout
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
+      )
+    case "contentpic":
+      return (
+        <Contentpic
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
+      )
     case "hero":
-      return <Hero key={elementKey} {...component} />
+      return (
+        <Hero
+          key={elementKey}
+          {...component}
+          site={site}
+          LinkComponent={LinkComponent}
+        />
+      )
     case "iframe":
       return <Iframe key={elementKey} {...component} />
     case "image":
       return (
         <Image
-          {...component}
           key={elementKey}
+          {...component}
           site={site}
           LinkComponent={LinkComponent}
         />
@@ -63,28 +94,47 @@ export const renderComponent = ({
         <Infobar
           key={elementKey}
           {...component}
+          site={site}
           LinkComponent={LinkComponent}
         />
       )
     case "infocards":
-      return <InfoCards key={elementKey} {...component} />
+      return (
+        <InfoCards
+          key={elementKey}
+          {...component}
+          site={site}
+          LinkComponent={LinkComponent}
+        />
+      )
     case "infocols":
       return (
         <InfoCols
           key={elementKey}
           {...component}
+          site={site}
           LinkComponent={LinkComponent}
         />
       )
     case "infopic":
-      return <Infopic key={elementKey} {...component} />
-    case "contentpic":
-      return <Contentpic key={elementKey} {...component} />
+      return (
+        <Infopic
+          key={elementKey}
+          {...component}
+          site={site}
+          LinkComponent={LinkComponent}
+        />
+      )
     case "keystatistics":
       return <KeyStatistics key={elementKey} {...component} />
     case "prose":
       return (
-        <Prose key={elementKey} {...component} LinkComponent={LinkComponent} />
+        <Prose
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
       )
     default:
       const _: never = component

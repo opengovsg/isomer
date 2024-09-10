@@ -1,4 +1,5 @@
 import type { HeroProps } from "~/interfaces/complex/Hero"
+import { getReferenceLinkHref } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
@@ -10,6 +11,8 @@ const Hero = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
+  site,
+  LinkComponent,
 }: HeroProps) => {
   return (
     <section
@@ -29,7 +32,11 @@ const Hero = ({
             </div>
             {buttonLabel && buttonUrl && (
               <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
-                <LinkButton href={buttonUrl} size="lg">
+                <LinkButton
+                  href={getReferenceLinkHref(buttonUrl, site.siteMap)}
+                  size="lg"
+                  LinkComponent={LinkComponent}
+                >
                   {buttonLabel}
                 </LinkButton>
                 {secondaryButtonLabel && secondaryButtonUrl && (
@@ -37,7 +44,11 @@ const Hero = ({
                     colorScheme="inverse"
                     variant="outline"
                     size="lg"
-                    href={secondaryButtonUrl}
+                    href={getReferenceLinkHref(
+                      secondaryButtonUrl,
+                      site.siteMap,
+                    )}
+                    LinkComponent={LinkComponent}
                   >
                     {secondaryButtonLabel}
                   </LinkButton>

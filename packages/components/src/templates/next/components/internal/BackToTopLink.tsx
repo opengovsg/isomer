@@ -4,6 +4,7 @@ import type { VariantProps } from "tailwind-variants"
 import { composeRenderProps } from "react-aria-components"
 import { BiUpArrowAlt } from "react-icons/bi"
 
+import type { LinkComponentType } from "~/types"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight } from "~/utils/rac"
 import { Link } from "./Link"
@@ -15,7 +16,7 @@ const linkStyle = tv({
 
 interface BackToTopLinkProps extends VariantProps<typeof linkStyle> {
   className?: string
-  LinkComponent?: any // Next.js link
+  LinkComponent?: LinkComponentType
 }
 
 export const BackToTopLink = ({

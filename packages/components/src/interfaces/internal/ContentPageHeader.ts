@@ -2,6 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { BreadcrumbProps } from "./Breadcrumb"
+import type { LinkComponentType } from "~/types"
 
 export const ContentPageHeaderSchema = Type.Object(
   {
@@ -34,5 +35,5 @@ export type ContentPageHeaderProps = Static<typeof ContentPageHeaderSchema> & {
   title: string
   lastUpdated: string
   breadcrumb: BreadcrumbProps
-  LinkComponent?: any
+  LinkComponent?: LinkComponentType
 }

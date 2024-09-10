@@ -1,6 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
+
 export const InfopicSchema = Type.Object(
   {
     type: Type.Literal("infopic", { default: "infopic" }),
@@ -50,5 +52,6 @@ export type InfopicProps = Static<typeof InfopicSchema> & {
   sectionIndex?: number // TODO: Remove this property, only used in classic theme
   subtitle?: string // Subtitle that is only used in the classic theme
   isTextOnRight?: boolean // Automatically determined based on position in page
-  LinkComponent?: any // Next.js link
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
 }

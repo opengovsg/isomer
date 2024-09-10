@@ -1,4 +1,5 @@
 import type { ImageProps } from "~/interfaces"
+import type { LinkComponentType } from "~/types"
 
 export interface Tag {
   title: string
@@ -15,7 +16,7 @@ interface BaseCardProps {
   url: string
   description: string
   image?: Pick<ImageProps, "src" | "alt">
-  LinkComponent?: any
+  LinkComponent?: LinkComponentType
 }
 
 export interface ArticleCardProps extends BaseCardProps {

@@ -82,6 +82,7 @@ const FooterItem = ({
         footerItemLinkStyle({ className, ...renderProps }),
       )}
       href={url}
+      LinkComponent={LinkComponent}
     >
       {title}
     </BaseLink>
@@ -121,7 +122,8 @@ const NavSection = ({
 
 const SocialMediaSection = ({
   socialMediaLinks,
-}: Pick<FooterProps, "socialMediaLinks">) => {
+  LinkComponent,
+}: Pick<FooterProps, "socialMediaLinks" | "LinkComponent">) => {
   return (
     <div className="flex flex-col gap-5">
       <h3 className="prose-headline-base-medium">Reach us</h3>
@@ -138,6 +140,7 @@ const SocialMediaSection = ({
               className={composeRenderProps("", (className, renderProps) =>
                 footerItemLinkStyle({ className, ...renderProps }),
               )}
+              LinkComponent={LinkComponent}
             >
               <Icon className="h-auto w-6" />
             </BaseLink>
@@ -187,7 +190,10 @@ const ReachUsSection = ({
 >) => {
   return (
     <div className="flex flex-col gap-6 lg:w-fit">
-      <SocialMediaSection socialMediaLinks={socialMediaLinks} />
+      <SocialMediaSection
+        socialMediaLinks={socialMediaLinks}
+        LinkComponent={LinkComponent}
+      />
       <ContactUsSection
         LinkComponent={LinkComponent}
         contactUsLink={contactUsLink}
@@ -258,7 +264,9 @@ const LegalSection = ({
   )
 }
 
-const CreditsSection = () => {
+const CreditsSection = ({
+  LinkComponent,
+}: Pick<FooterProps, "LinkComponent">) => {
   return (
     <div className="prose-label-md-regular flex flex-col gap-6 lg:flex-row lg:gap-8 xl:gap-20">
       <BaseLink
@@ -270,6 +278,7 @@ const CreditsSection = () => {
           (className, renderProps) =>
             footerItemLinkStyle({ className, ...renderProps }),
         )}
+        LinkComponent={LinkComponent}
       >
         <p>
           Made with <span className="sr-only">Isomer</span>
@@ -288,6 +297,7 @@ const CreditsSection = () => {
           (className, renderProps) =>
             footerItemLinkStyle({ className, ...renderProps }),
         )}
+        LinkComponent={LinkComponent}
       >
         <p>
           Built by <span className="sr-only">Open Government Products</span>
