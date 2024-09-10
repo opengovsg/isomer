@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang="en" data-theme={config.site.theme || "isomer-next"}>
-      <body>{children}</body>
+      <body className="antialiased">{children}</body>
     </html>
   )
 }
