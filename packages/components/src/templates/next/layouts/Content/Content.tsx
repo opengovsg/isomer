@@ -1,4 +1,5 @@
 import type { ContentPageSchemaType } from "~/engine"
+import type { IsomerSitemap } from "~/types"
 import { tv } from "~/lib/tv"
 import {
   getBreadcrumbFromSiteMap,
@@ -17,6 +18,7 @@ import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
 const getTableOfContentsFromContent = (
+  sitemap: IsomerSitemap,
   content: ContentPageSchemaType["content"],
 ) => {
   return {
@@ -30,7 +32,7 @@ const getTableOfContentsFromContent = (
       for (const component of block.content) {
         if (component.type === "heading" && component.attrs.level === 2) {
           result.push({
-            content: getTextAsHtml(component.content),
+            content: getTextAsHtml(sitemap, component.content),
             anchorLink: "#" + component.attrs.id,
           })
         }
@@ -117,7 +119,10 @@ const ContentLayout = ({
 
   // auto-inject ids for heading level 2 blocks if does not exist
   const transformedContent = transformContent(content)
-  const tableOfContents = getTableOfContentsFromContent(transformedContent)
+  const tableOfContents = getTableOfContentsFromContent(
+    site.siteMap,
+    transformedContent,
+  )
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),

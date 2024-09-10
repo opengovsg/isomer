@@ -12,6 +12,7 @@ const NotificationBanner = ({
   content,
   title,
   LinkComponent,
+  site,
 }: NotificationProps) => {
   const [isShown, setIsShown] = useState(true)
   const onDismiss = () => {
@@ -26,7 +27,7 @@ const NotificationBanner = ({
           <div className="flex flex-1 flex-col gap-1">
             {!!title && <h2 className="prose-headline-lg-medium">{title}</h2>}
             <BaseParagraph
-              content={getTextAsHtml(content)}
+              content={getTextAsHtml(site.siteMap, content)}
               className="prose-body-base [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0"
               LinkComponent={LinkComponent}
             />

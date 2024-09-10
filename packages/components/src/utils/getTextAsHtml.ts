@@ -2,6 +2,8 @@ import isEqual from "lodash/isEqual"
 
 import type { HardBreakProps } from "~/interfaces"
 import type { Marks, TextProps } from "~/interfaces/native/Text"
+import type { IsomerSitemap } from "~/types"
+import { getReferenceLinkHref } from "./getReferenceLinkHref"
 
 type MarkTypes = Marks["type"]
 
@@ -17,7 +19,10 @@ const MARK_DOM_MAPPING: Record<MarkTypes, string> = {
 }
 
 // Converts the text node with marks into the appropriate HTML
-export const getTextAsHtml = (content?: (HardBreakProps | TextProps)[]) => {
+export const getTextAsHtml = (
+  sitemap: IsomerSitemap,
+  content?: (HardBreakProps | TextProps)[],
+) => {
   if (!content) {
     return ""
   }
@@ -73,7 +78,7 @@ export const getTextAsHtml = (content?: (HardBreakProps | TextProps)[]) => {
       node.marks.forEach((mark) => {
         if (mark.type === "link") {
           output.push(
-            `<${MARK_DOM_MAPPING.link} target="${mark.attrs.target || "_self"}" href="${mark.attrs.href}">`,
+            `<${MARK_DOM_MAPPING.link} target="${getReferenceLinkHref(mark.attrs.target, sitemap) || "_self"}" href="${mark.attrs.href}">`,
           )
         } else {
           output.push(`<${MARK_DOM_MAPPING[mark.type]}>`)

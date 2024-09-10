@@ -22,7 +22,7 @@ export interface IsomerSiteConfigProps {
   isGovernment?: boolean
   favicon?: string
   search: NavbarProps["search"]
-  notification?: NotificationProps
+  notification?: Omit<NotificationProps, "LinkComponent" | "site">
   assetsBaseUrl?: string
 }
 

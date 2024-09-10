@@ -42,11 +42,25 @@ export const renderComponent = ({
 }: RenderComponentProps) => {
   switch (component.type) {
     case "accordion":
-      return <Accordion key={elementKey} {...component} />
+      return (
+        <Accordion
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
+      )
     case "callout":
-      return <Callout key={elementKey} {...component} />
+      return (
+        <Callout
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
+      )
     case "contentpic":
-      return <Contentpic key={elementKey} {...component} />
+      return <Contentpic key={elementKey} {...component} LinkComponent={LinkComponent} site={site} />
     case "hero":
       return (
         <Hero
@@ -107,7 +121,12 @@ export const renderComponent = ({
       return <KeyStatistics key={elementKey} {...component} />
     case "prose":
       return (
-        <Prose key={elementKey} {...component} LinkComponent={LinkComponent} />
+        <Prose
+          key={elementKey}
+          {...component}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
       )
     default:
       const _: never = component

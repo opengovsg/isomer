@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps } from "~/types"
 import { TextSchema } from "./Text"
 
 // excludes 1 as it should only be used for the page title i.e ContentPageHeader
@@ -36,4 +37,6 @@ export const HeadingSchema = Type.Object(
   },
 )
 
-export type HeadingProps = Static<typeof HeadingSchema>
+export type HeadingProps = Static<typeof HeadingSchema> & {
+  site: IsomerSiteProps
+}

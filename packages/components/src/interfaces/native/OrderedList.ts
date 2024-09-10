@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps } from "~/types"
 import { orderedListSchemaBuilder, unorderedListSchemaBuilder } from "~/utils"
 import { listItemSchemaBuilder } from "./ListItem"
 
@@ -15,4 +16,5 @@ export const OrderedListSchema = orderedListSchemaBuilder(
 
 export type OrderedListProps = Static<typeof OrderedListSchema> & {
   LinkComponent?: any // Next.js link
+  site: IsomerSiteProps
 }

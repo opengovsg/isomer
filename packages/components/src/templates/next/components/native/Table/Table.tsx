@@ -68,7 +68,7 @@ const tableCellStyles = tv({
   },
 })
 
-const Table = ({ attrs: { caption }, content, LinkComponent }: TableProps) => {
+const Table = ({ attrs: { caption }, content, LinkComponent, site }: TableProps) => {
   const [isTableOverflowing, setIsTableOverflowing] = useState(false)
   const tableRef = useRef<HTMLTableElement>(null)
   const stickyRowIndexes = getStickyRowIndexes(content)
@@ -130,13 +130,13 @@ const Table = ({ attrs: { caption }, content, LinkComponent }: TableProps) => {
                               return <Divider key={index} {...cellContent} />
                             case "orderedList":
                               return (
-                                <OrderedList key={index} {...cellContent} />
+                                <OrderedList key={index} {...cellContent} LinkComponent={LinkComponent} site={site} />
                               )
                             case "paragraph":
-                              return <Paragraph key={index} {...cellContent} />
+                              return <Paragraph key={index} {...cellContent} LinkComponent={LinkComponent} site={site} />
                             case "unorderedList":
                               return (
-                                <UnorderedList key={index} {...cellContent} />
+                                <UnorderedList key={index} {...cellContent} LinkComponent={LinkComponent} site={site} />
                               )
                             default:
                               const _: never = cellContent

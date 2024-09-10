@@ -24,12 +24,14 @@ export const Contentpic = ({
   imageSrc,
   content,
   imageAlt,
+  LinkComponent,
+  site,
 }: ContentpicProps): JSX.Element => {
   return (
     <div className={compoundStyles.container()}>
       <img className={compoundStyles.image()} alt={imageAlt} src={imageSrc} />
       <div className={compoundStyles.content()}>
-        <Prose {...content} />
+        <Prose {...content} LinkComponent={LinkComponent} site={site} />
       </div>
     </div>
   )

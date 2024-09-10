@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps } from "~/types"
 import { AccordionProseSchema } from "../native/Prose"
 
 export const AccordionSchema = Type.Object(
@@ -14,4 +15,7 @@ export const AccordionSchema = Type.Object(
   { title: "Accordion component" },
 )
 
-export type AccordionProps = Static<typeof AccordionSchema>
+export type AccordionProps = Static<typeof AccordionSchema> & {
+  LinkComponent?: any // Next.js link
+  site: IsomerSiteProps
+}

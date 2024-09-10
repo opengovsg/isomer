@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps } from "~/types"
 import { TextSchema } from "../native/Text"
 
 export const NotificationSchema = Type.Object(
@@ -23,4 +24,5 @@ export const NotificationSchema = Type.Object(
 
 export type NotificationProps = Static<typeof NotificationSchema> & {
   LinkComponent?: any // Next.js link
+  site: IsomerSiteProps
 }
