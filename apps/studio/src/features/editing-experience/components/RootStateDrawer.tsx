@@ -15,7 +15,6 @@ import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { BiCrown, BiGridVertical, BiPlusCircle } from "react-icons/bi"
-import { BsPlus } from "react-icons/bs"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
@@ -100,14 +99,12 @@ export default function RootStateDrawer() {
     savedPageState.content[0]?.type === "hero"
 
   return (
-    <VStack w="100%" h="100%" gap="1.5rem" px="1.25rem">
+    <VStack gap="1.5rem" px="1.25rem" py="1.5rem">
       <ActivateAdminMode />
       {/* Fixed Blocks Section */}
-      <VStack w="100%" align="baseline" gap="1rem">
+      <VStack align="baseline" gap="1rem" w="100%">
         <VStack gap="0.25rem" align="start">
-          <Text pt="1.5rem" textStyle="subhead-1">
-            Fixed blocks
-          </Text>
+          <Text textStyle="subhead-1">Fixed blocks</Text>
           <Text textStyle="caption-2" color="base.content.medium">
             These components are fixed for the layout and cannot be deleted
           </Text>
@@ -328,24 +325,6 @@ export default function RootStateDrawer() {
           </Droppable>
         </DragDropContext>
       </VStack>
-      <Box
-        w="100%"
-        bgColor="base.canvas.default"
-        boxShadow="md"
-        pos="sticky"
-        py="1.5rem"
-        px="2rem"
-        bottom={0}
-      >
-        <Button
-          w="100%"
-          variant="outline"
-          onClick={() => setDrawerState({ state: "addBlock" })}
-        >
-          <BsPlus style={{ height: "1.25rem", width: "1.25rem" }} />
-          Add a new block
-        </Button>
-      </Box>
     </VStack>
   )
 }
