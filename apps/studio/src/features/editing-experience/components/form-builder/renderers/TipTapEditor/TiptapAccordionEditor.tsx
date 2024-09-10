@@ -1,6 +1,6 @@
 import { AccordionMenuBar } from "~/components/PageEditor/MenuBar"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
-import { EditorContainer, EditorContentWrapper } from "./components"
+import { Editor } from "./components"
 
 export function TiptapAccordionEditor({
   editor,
@@ -10,10 +10,5 @@ export function TiptapAccordionEditor({
   // TODO: Add a loading state or use suspense
   if (!editor) return null
 
-  return (
-    <EditorContainer>
-      <AccordionMenuBar editor={editor} />
-      <EditorContentWrapper editor={editor} />
-    </EditorContainer>
-  )
+  return <Editor menubar={AccordionMenuBar} editor={editor} />
 }

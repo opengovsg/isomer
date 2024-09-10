@@ -1,6 +1,12 @@
 import { PropsWithChildren } from "react"
 import { Box, VStack } from "@chakra-ui/react"
-import { EditorContent, EditorContentProps } from "@tiptap/react"
+import {
+  EditorContent,
+  EditorContentProps,
+  Editor as TiptapEditor,
+} from "@tiptap/react"
+
+import { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 
 export const EditorContainer = ({ children }: PropsWithChildren) => {
   return (
@@ -35,5 +41,18 @@ export const EditorContentWrapper = ({
       onClick={() => editor?.chain().focus().run()}
       cursor="text"
     />
+  )
+}
+
+interface EditorProps {
+  menubar: EditorMenuBar
+  editor: TiptapEditor
+}
+export const Editor = ({ editor, menubar }: EditorProps) => {
+  return (
+    <EditorContainer>
+      {menubar({ editor })}
+      <EditorContentWrapper editor={editor} />
+    </EditorContainer>
   )
 }

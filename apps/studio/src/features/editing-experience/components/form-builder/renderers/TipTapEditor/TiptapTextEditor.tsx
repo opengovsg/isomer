@@ -1,6 +1,6 @@
 import { TextMenuBar } from "~/components/PageEditor/MenuBar"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
-import { EditorContainer, EditorContentWrapper } from "./components"
+import { Editor } from "./components"
 
 export function TiptapTextEditor({
   editor,
@@ -10,10 +10,5 @@ export function TiptapTextEditor({
   // TODO: Add a loading state or use suspense
   if (!editor) return null
 
-  return (
-    <EditorContainer>
-      <TextMenuBar editor={editor} />
-      <EditorContentWrapper editor={editor} />
-    </EditorContainer>
-  )
+  return <Editor menubar={TextMenuBar} editor={editor} />
 }

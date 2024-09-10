@@ -13,6 +13,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
+import { Editor } from "@tiptap/react"
 import { BiChevronDown, BiChevronUp } from "react-icons/bi"
 
 import { MenuItem } from "../MenuItem"
@@ -73,6 +74,8 @@ export type MenuBarEntry =
   | MenuBarHorizontalList
   | MenuBarDetailedList
   | MenuBarItem
+
+export type EditorMenuBar = ({ editor }: { editor: Editor }) => JSX.Element
 
 export const MenuBar = ({ items }: { items: MenuBarEntry[] }) => {
   return (
