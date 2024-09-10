@@ -12,7 +12,7 @@ import {
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
-import { BiGridVertical } from "react-icons/bi"
+import { BiCrown, BiGridVertical } from "react-icons/bi"
 import { BsPlus } from "react-icons/bs"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
@@ -22,6 +22,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
 import { ActivateAdminMode } from "./ActivateAdminMode"
+import { FixedBlock } from "./Block"
 
 export default function RootStateDrawer() {
   const {
@@ -98,32 +99,28 @@ export default function RootStateDrawer() {
     savedPageState.content[0]?.type === "hero"
 
   return (
-    <VStack w="100%" h="100%" gap={10} pt={10}>
+    <VStack w="100%" h="100%">
       <ActivateAdminMode />
-      {/* TODO: Fixed Blocks Section */}
-      <VStack w="100%" align="baseline">
-        <Text fontSize="xl" pl={4} fontWeight={500}>
-          Fixed blocks
-        </Text>
-
+      {/* Fixed Blocks Section */}
+      <VStack w="100%" align="baseline" px="1.25rem" gap="1rem">
+        <VStack gap="0.25rem" align="start">
+          <Text pt="1.5rem" textStyle="subhead-1">
+            Fixed blocks
+          </Text>
+          <Text textStyle="caption-2" color="base.content.medium">
+            These components are fixed for the layout and cannot be deleted
+          </Text>
+        </VStack>
         {isHeroFixedBlock ? (
-          <Box
-            as="button"
+          <FixedBlock
             onClick={() => {
               setCurrActiveIdx(0)
               setDrawerState({ state: "heroEditor" })
             }}
-            w="100%"
-          >
-            <HStack w="100%" py="4" bgColor="white">
-              <VStack w="100%" align="baseline" pl={1}>
-                <Text px="3" fontWeight={500}>
-                  Hero banner
-                </Text>
-                <Text px="3">Title, subtitle, and Call-to-Action</Text>
-              </VStack>
-            </HStack>
-          </Box>
+            label="Hero banner"
+            description="Title, subtitle, and Call-to-Action"
+            icon={BiCrown}
+          />
         ) : (
           <Box
             as="button"
