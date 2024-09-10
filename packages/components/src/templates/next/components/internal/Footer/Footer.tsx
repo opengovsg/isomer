@@ -21,6 +21,7 @@ import type {
 import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
 import { tv } from "~/lib/tv"
+import { isExternalUrl } from "~/utils"
 import { focusVisibleHighlight } from "~/utils/rac"
 import { BaseLink } from "../Link"
 
@@ -60,13 +61,13 @@ const FooterItem = ({
   title,
   url,
 }: FooterItemType & Pick<FooterProps, "LinkComponent">) => {
-  if (url.startsWith("http")) {
+  if (isExternalUrl(url)) {
     return (
       <BaseLink
         LinkComponent={LinkComponent}
         href={url}
         target="_blank"
-        rel="noopener noreferrer nofollow"
+        rel="noopener nofollow"
         className={composeRenderProps("", (className, renderProps) =>
           footerItemLinkStyle({ className, ...renderProps }),
         )}
@@ -135,7 +136,7 @@ const SocialMediaSection = ({
               key={link.url}
               href={link.url}
               target="_blank"
-              rel="noopener noreferrer nofollow"
+              rel="noopener nofollow"
               aria-label={`${link.type} page`}
               className={composeRenderProps("", (className, renderProps) =>
                 footerItemLinkStyle({ className, ...renderProps }),
@@ -272,7 +273,7 @@ const CreditsSection = ({
       <BaseLink
         href="https://www.isomer.gov.sg"
         target="_blank"
-        rel="noopener noreferrer nofollow"
+        rel="noopener nofollow"
         className={composeRenderProps(
           "group flex flex-col items-start gap-4",
           (className, renderProps) =>
@@ -291,7 +292,7 @@ const CreditsSection = ({
       <BaseLink
         href="https://www.open.gov.sg"
         target="_blank"
-        rel="noopener noreferrer nofollow"
+        rel="noopener nofollow"
         className={composeRenderProps(
           "flex flex-col items-start gap-4",
           (className, renderProps) =>
