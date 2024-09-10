@@ -96,7 +96,7 @@ export default function HeroEditorDrawer(): JSX.Element {
                 borderRadius="base"
               />
               <Heading as="h3" size="sm" textStyle="h5" fontWeight="semibold">
-                Edit hero banner
+                Edit Hero banner
               </Heading>
             </HStack>
             <IconButton
