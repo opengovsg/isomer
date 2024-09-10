@@ -1,10 +1,15 @@
 import type { Node } from "interweave"
 import { Interweave } from "interweave"
+import { polyfill } from "interweave-ssr"
 
 import type { BaseParagraphProps } from "~/interfaces/native/Paragraph"
 import { twMerge } from "~/lib/twMerge"
 import { isExternalUrl } from "~/utils"
 import { Link } from "../Link"
+
+// NOTE: We need this polyfill as interweave uses a DOM to perform the
+// conversion of HTML to React components
+polyfill()
 
 export const BaseParagraph = ({
   content,
@@ -13,7 +18,7 @@ export const BaseParagraph = ({
   LinkComponent,
 }: Omit<BaseParagraphProps, "type">) => {
   const transform = (node: HTMLElement, children: Node[]): React.ReactNode => {
-    if (node.tagName === "A") {
+    if (node.tagName === "a") {
       const href = node.getAttribute("href") ?? undefined
       const isExternalLink = href && isExternalUrl(href)
 
