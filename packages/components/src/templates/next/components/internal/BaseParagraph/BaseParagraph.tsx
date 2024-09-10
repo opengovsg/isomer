@@ -1,5 +1,3 @@
-"use client"
-
 import type { Node } from "interweave"
 import { Interweave } from "interweave"
 
