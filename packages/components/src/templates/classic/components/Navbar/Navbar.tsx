@@ -2,6 +2,8 @@ import { Fragment } from "react"
 import { Disclosure, Menu, Transition } from "@headlessui/react"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 
+import type { LinkComponentType } from "~/types"
+
 export interface NavbarLink {
   type: "single" | "dropdown"
   name: string
@@ -23,7 +25,7 @@ export interface IsomerNavProps {
     isEnabled: boolean
     searchUrl?: string
   }
-  LinkComponent: any
+  LinkComponent: LinkComponentType
 }
 
 export const IsomerNav = ({

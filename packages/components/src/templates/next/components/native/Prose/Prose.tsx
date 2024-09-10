@@ -11,31 +11,42 @@ import UnorderedList from "../UnorderedList"
 
 const ProseComponent = ({
   component,
+  LinkComponent,
+  site,
 }: {
   component: NonNullable<ProseProps["content"]>[number]
-}): JSX.Element => {
+} & Pick<ProseProps, "LinkComponent" | "site">): JSX.Element => {
   switch (component.type) {
     case "divider":
       return <Divider {...component} />
     case "heading":
-      return <Heading {...component} />
+      return <Heading {...component} site={site} />
     case "orderedList":
-      return <OrderedList {...component} />
+      return (
+        <OrderedList {...component} LinkComponent={LinkComponent} site={site} />
+      )
     case "paragraph":
       return (
         <BaseParagraph
-          content={getTextAsHtml(component.content)}
+          content={getTextAsHtml(site.siteMap, component.content)}
           className="prose-body-base text-base-content"
+          LinkComponent={LinkComponent}
         />
       )
     case "table":
-      return <Table {...component} />
+      return <Table {...component} LinkComponent={LinkComponent} site={site} />
     case "unorderedList":
-      return <UnorderedList {...component} />
+      return (
+        <UnorderedList
+          {...component}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
+      )
   }
 }
 
-const Prose = ({ content }: ProseProps) => {
+const Prose = ({ content, LinkComponent, site }: ProseProps) => {
   if (!content) {
     return <></>
   }
@@ -43,7 +54,12 @@ const Prose = ({ content }: ProseProps) => {
   return (
     <>
       {content.map((component, index) => (
-        <ProseComponent component={component} key={index} />
+        <ProseComponent
+          component={component}
+          key={index}
+          LinkComponent={LinkComponent}
+          site={site}
+        />
       ))}
     </>
   )

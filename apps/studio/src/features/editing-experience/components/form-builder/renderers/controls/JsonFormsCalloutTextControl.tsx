@@ -5,16 +5,17 @@ import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { TiptapEditor } from "../TipTapEditor"
+import { useCalloutEditor } from "~/features/editing-experience/hooks/useTextEditor"
+import { TiptapCalloutEditor } from "../TipTapEditor"
 
-export const jsonFormsProseControlTester: RankedTester = rankWith(
+export const jsonFormsCalloutTextControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ProseControl,
   (_, schema) => {
-    return schema.format === "prose"
+    return schema.format === "callout"
   },
 )
 
-export function JsonFormsProseControl({
+export function JsonFormsCalloutTextControl({
   data,
   label,
   handleChange,
@@ -22,17 +23,19 @@ export function JsonFormsProseControl({
   description,
   required,
 }: ControlProps) {
+  const editor = useCalloutEditor({
+    data,
+    handleChange: (content) => handleChange(path, content),
+  })
+
   return (
     <Flex py={2}>
       <FormControl isRequired={required}>
         <FormLabel description={description}>{label}</FormLabel>
-        <TiptapEditor
-          data={data}
-          handleChange={(content) => handleChange(path, content)}
-        />
+        <TiptapCalloutEditor editor={editor} />
       </FormControl>
     </Flex>
   )
 }
 
-export default withJsonFormsControlProps(JsonFormsProseControl)
+export default withJsonFormsControlProps(JsonFormsCalloutTextControl)
