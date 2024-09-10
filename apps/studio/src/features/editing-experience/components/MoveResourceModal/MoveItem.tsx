@@ -1,33 +1,23 @@
-import { Suspense, useMemo } from "react"
+import { Suspense } from "react"
 import { Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { ErrorBoundary } from "react-error-boundary"
-import { BiFile, BiFolder } from "react-icons/bi"
+import { BiFolder } from "react-icons/bi"
 
 import type { RouterOutput } from "~/utils/trpc"
 
 type MoveItemProps = Pick<
   RouterOutput["resource"]["getFolderChildrenOf"]["items"][number],
-  "permalink" | "type"
+  "permalink"
 > & {
   onChangeResourceId: () => void
 }
 
 const SuspendableMoveItem = ({
   permalink,
-  type,
   onChangeResourceId,
 }: MoveItemProps) => {
-  const icon: JSX.Element = useMemo(() => {
-    switch (type) {
-      case "Folder":
-        return <BiFolder />
-      case "RootPage":
-        return <BiFile />
-    }
-  }, [type])
-
   return (
     <Button
       variant="clear"
@@ -42,7 +32,7 @@ const SuspendableMoveItem = ({
       disabled
       pl="2.25rem"
       onClick={onChangeResourceId}
-      leftIcon={icon}
+      leftIcon={<BiFolder />}
     >
       <Text noOfLines={1} textStyle="caption-1">
         /{permalink}

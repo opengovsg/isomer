@@ -37,10 +37,9 @@ export const resourceRouter = router({
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
-        .where("Resource.type", "in", ["RootPage", "Folder"])
-        .where("Resource.siteId", "=", Number(siteId))
+        .where("Resource.type", "in", ["Folder"])
         .$narrowType<{
-          type: "Folder" | "RootPage"
+          type: "Folder"
         }>()
         .orderBy("type", "asc")
         .orderBy("title", "asc")
