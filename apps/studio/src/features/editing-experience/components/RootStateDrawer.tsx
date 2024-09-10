@@ -7,6 +7,7 @@ import {
   Flex,
   HStack,
   Icon,
+  Spacer,
   Stack,
   Text,
   VStack,
@@ -168,27 +169,25 @@ export default function RootStateDrawer() {
 
       <VStack w="100%" h="100%" gap="1rem">
         {/* Custom Blocks Section */}
-        <Stack
-          gap="1.25rem"
-          flexDirection="row"
-          justify="space-between"
-          w="100%"
-        >
-          <VStack gap="0.25rem" align="start" w="100%">
+        <Flex flexDirection="row" w="100%" flexWrap="wrap">
+          <VStack gap="0.25rem" align="start" w="100%" maxW="18rem">
             <Text textStyle="subhead-1">Custom blocks</Text>
             <Text textStyle="caption-2" color="base.content.medium">
               Use blocks to display your content in various ways
             </Text>
           </VStack>
-          <Button
-            size="xs"
-            leftIcon={<BiPlusCircle fontSize="1.25rem" />}
-            variant="clear"
-            onClick={() => setDrawerState({ state: "addBlock" })}
-          >
-            Add block
-          </Button>
-        </Stack>
+          <Flex flex={1} pl="1.25rem" justify="end">
+            <Spacer width="1.25rem" />
+            <Button
+              size="xs"
+              leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+              variant="clear"
+              onClick={() => setDrawerState({ state: "addBlock" })}
+            >
+              Add block
+            </Button>
+          </Flex>
+        </Flex>
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="blocks">
             {(provided) => (
@@ -216,7 +215,8 @@ export default function RootStateDrawer() {
                         textStyle="caption-2"
                         color="base.content.medium"
                       >
-                        Click ‘Add a new block’ below to add blocks to this page
+                        Click the ‘Add block’ button above to add blocks to this
+                        page
                       </Text>
                     </VStack>
                   )}
