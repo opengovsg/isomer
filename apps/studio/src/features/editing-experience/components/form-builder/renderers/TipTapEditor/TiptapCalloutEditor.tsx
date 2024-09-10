@@ -1,11 +1,11 @@
 import { CalloutMenuBar } from "~/components/PageEditor/MenuBar"
-import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
+import { useCalloutEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { Editor } from "./components"
 
 export function TiptapCalloutEditor({
   editor,
 }: {
-  editor: ReturnType<typeof useTextEditor>
+  editor: ReturnType<typeof useCalloutEditor>
 }) {
   // TODO: Add a loading state or use suspense
   if (!editor) return null
