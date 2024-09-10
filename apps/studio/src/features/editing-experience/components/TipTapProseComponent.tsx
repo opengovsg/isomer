@@ -8,7 +8,7 @@ import {
   useDisclosure,
   VStack,
 } from "@chakra-ui/react"
-import { Button, IconButton } from "@opengovsg/design-system-react"
+import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { ProseProps } from "@opengovsg/isomer-components"
 import _ from "lodash"
 import { BiText, BiTrash, BiX } from "react-icons/bi"
@@ -49,10 +49,12 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     setAddedBlockIndex,
   } = useEditorDrawerContext()
 
+  const toast = useToast()
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+      toast({ title: "Changes saved" })
     },
   })
 
@@ -85,6 +87,11 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     onDeleteBlockModalClose()
     setDrawerState({ state: "root" })
     setAddedBlockIndex(null)
+    mutate({
+      pageId,
+      siteId,
+      content: JSON.stringify(newPageState),
+    })
   }
 
   const handleDiscardChanges = () => {

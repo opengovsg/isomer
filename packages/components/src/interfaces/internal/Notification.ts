@@ -21,4 +21,6 @@ export const NotificationSchema = Type.Object(
   },
 )
 
-export type NotificationProps = Static<typeof NotificationSchema>
+export type NotificationProps = Static<typeof NotificationSchema> & {
+  LinkComponent?: any // Next.js link
+}

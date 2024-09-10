@@ -13,4 +13,6 @@ export const OrderedListSchema = orderedListSchemaBuilder(
   ),
 )
 
-export type OrderedListProps = Static<typeof OrderedListSchema>
+export type OrderedListProps = Static<typeof OrderedListSchema> & {
+  LinkComponent?: any // Next.js link
+}

@@ -51,4 +51,6 @@ export const ListItemSchema = Type.Unsafe<ListItem>(
   ),
 )
 
-export type ListItemProps = Static<typeof ListItemSchema>
+export type ListItemProps = Static<typeof ListItemSchema> & {
+  LinkComponent?: any // Next.js link
+}

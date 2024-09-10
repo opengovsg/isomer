@@ -1,11 +1,11 @@
 import type { OrderedListProps } from "~/interfaces"
 import ListItem from "../ListItem"
 
-const OrderedList = ({ attrs, content }: OrderedListProps) => {
+const OrderedList = ({ attrs, content, LinkComponent }: OrderedListProps) => {
   return (
     <ol className="mt-6 list-decimal ps-8" start={attrs?.start}>
       {content.map((item, index) => (
-        <ListItem key={index} {...item} />
+        <ListItem key={index} {...item} LinkComponent={LinkComponent} />
       ))}
     </ol>
   )

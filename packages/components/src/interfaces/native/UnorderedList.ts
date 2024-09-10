@@ -13,4 +13,6 @@ export const UnorderedListSchema = unorderedListSchemaBuilder(
   ),
 )
 
-export type UnorderedListProps = Static<typeof UnorderedListSchema>
+export type UnorderedListProps = Static<typeof UnorderedListSchema> & {
+  LinkComponent?: any // Next.js link
+}

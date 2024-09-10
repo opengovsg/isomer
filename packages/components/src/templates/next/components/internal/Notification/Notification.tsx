@@ -8,7 +8,11 @@ import { getTextAsHtml } from "~/utils"
 import BaseParagraph from "../BaseParagraph"
 import { IconButton } from "../IconButton"
 
-const NotificationBanner = ({ content, title }: NotificationProps) => {
+const NotificationBanner = ({
+  content,
+  title,
+  LinkComponent,
+}: NotificationProps) => {
   const [isShown, setIsShown] = useState(true)
   const onDismiss = () => {
     setIsShown(false)
@@ -24,6 +28,7 @@ const NotificationBanner = ({ content, title }: NotificationProps) => {
             <BaseParagraph
               content={getTextAsHtml(content)}
               className="prose-body-base [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0"
+              LinkComponent={LinkComponent}
             />
           </div>
           <div aria-hidden className="flex h-6 w-6 shrink-0" />

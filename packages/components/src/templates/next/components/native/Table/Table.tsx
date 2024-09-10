@@ -68,7 +68,7 @@ const tableCellStyles = tv({
   },
 })
 
-const Table = ({ attrs: { caption }, content }: TableProps) => {
+const Table = ({ attrs: { caption }, content, LinkComponent }: TableProps) => {
   const [isTableOverflowing, setIsTableOverflowing] = useState(false)
   const tableRef = useRef<HTMLTableElement>(null)
   const stickyRowIndexes = getStickyRowIndexes(content)
@@ -92,6 +92,7 @@ const Table = ({ attrs: { caption }, content }: TableProps) => {
         id={tableDescriptionId}
         content={caption}
         className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
+        LinkComponent={LinkComponent}
       />
       <div className="overflow-x-auto" tabIndex={0}>
         <table

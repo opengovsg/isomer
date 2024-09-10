@@ -53,5 +53,7 @@ export const BaseProseSchema = generateProseSchema()
 export const AccordionProseSchema = generateProseSchema(undefined, "accordion")
 export const CalloutProseSchema = generateProseSchema(undefined, "callout")
 
-export type ProseProps = Static<typeof ProseSchema>
+export type ProseProps = Static<typeof ProseSchema> & {
+  LinkComponent?: any // Next.js link
+}
 export type ProseContent = ProseProps["content"]

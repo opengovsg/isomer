@@ -15,10 +15,12 @@ const linkStyle = tv({
 
 interface BackToTopLinkProps extends VariantProps<typeof linkStyle> {
   className?: string
+  LinkComponent?: any // Next.js link
 }
 
 export const BackToTopLink = ({
   className,
+  LinkComponent,
 }: BackToTopLinkProps): JSX.Element => {
   return (
     <Link
@@ -26,6 +28,7 @@ export const BackToTopLink = ({
       className={composeRenderProps(className, (className, renderProps) =>
         linkStyle({ className, ...renderProps }),
       )}
+      LinkComponent={LinkComponent}
     >
       <BiUpArrowAlt aria-hidden className="h-6 w-6" />
       Back to top

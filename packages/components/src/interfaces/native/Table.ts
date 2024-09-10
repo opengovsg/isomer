@@ -122,4 +122,6 @@ export const TableSchema = Type.Object(
   },
 )
 
-export type TableProps = Static<typeof TableSchema>
+export type TableProps = Static<typeof TableSchema> & {
+  LinkComponent?: any // Next.js link
+}
