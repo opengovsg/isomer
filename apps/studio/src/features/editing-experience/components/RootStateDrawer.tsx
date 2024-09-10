@@ -6,13 +6,14 @@ import {
   Divider,
   HStack,
   Icon,
+  Stack,
   Text,
   VStack,
 } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
-import { BiCrown, BiGridVertical } from "react-icons/bi"
+import { BiCrown, BiGridVertical, BiPlusCircle } from "react-icons/bi"
 import { BsPlus } from "react-icons/bs"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
@@ -99,10 +100,10 @@ export default function RootStateDrawer() {
     savedPageState.content[0]?.type === "hero"
 
   return (
-    <VStack w="100%" h="100%">
+    <VStack w="100%" h="100%" gap="1.5rem" px="1.25rem">
       <ActivateAdminMode />
       {/* Fixed Blocks Section */}
-      <VStack w="100%" align="baseline" px="1.25rem" gap="1rem">
+      <VStack w="100%" align="baseline" gap="1rem">
         <VStack gap="0.25rem" align="start">
           <Text pt="1.5rem" textStyle="subhead-1">
             Fixed blocks
@@ -141,8 +142,29 @@ export default function RootStateDrawer() {
         )}
       </VStack>
 
-      <VStack justifyContent="space-between" w="100%" h="100%">
+      <VStack w="100%" h="100%" gap="1rem">
         {/* Custom Blocks Section */}
+        <Stack
+          gap="1.25rem"
+          flexDirection="row"
+          justify="space-between"
+          w="100%"
+        >
+          <VStack gap="0.25rem" align="start" w="100%">
+            <Text textStyle="subhead-1">Custom blocks</Text>
+            <Text textStyle="caption-2" color="base.content.medium">
+              Use blocks to display your content in various ways
+            </Text>
+          </VStack>
+          <Button
+            size="xs"
+            leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+            variant="clear"
+            onClick={() => setDrawerState({ state: "addBlock" })}
+          >
+            Add block
+          </Button>
+        </Stack>
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="blocks">
             {(provided) => (
@@ -152,9 +174,6 @@ export default function RootStateDrawer() {
                 w="100%"
                 ref={provided.innerRef}
               >
-                <Text fontSize="xl" pl={4} fontWeight={500}>
-                  Custom blocks
-                </Text>
                 <Box w="100%">
                   {(!savedPageState ||
                     (isHeroFixedBlock && savedPageState.content.length === 1) ||
