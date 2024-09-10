@@ -56,6 +56,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+        toast({ title: "Changes saved" })
       },
     })
 
@@ -96,6 +97,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     onDeleteBlockModalClose()
     setDrawerState({ state: "root" })
     setAddedBlockIndex(null)
+    savePage({
+      pageId,
+      siteId,
+      content: JSON.stringify(newPageState),
+    })
   }
 
   const handleDiscardChanges = () => {
@@ -238,13 +244,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         onDiscard={handleDiscardChanges}
       />
 
-      <Flex
-        flexDir="column"
-        position="relative"
-        h="100%"
-        w="100%"
-        overflow="auto"
-      >
+      <Flex flexDir="column" position="relative" h="100%" w="100%">
         <Box
           bgColor="base.canvas.default"
           borderBottomColor="base.divider.medium"
@@ -285,7 +285,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           </HStack>
         </Box>
 
-        <Box px="2rem" py="1rem">
+        {/* NOTE: reserve at least 4.75rem for the bottom bar */}
+        <Box h="full" px="2rem" py="1rem" mb="4.75rem">
           <FormBuilder<IsomerComponent>
             schema={subSchema}
             validateFn={validateFn}
@@ -293,31 +294,30 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             handleChange={handleChange}
           />
         </Box>
+        <Box
+          pos="sticky"
+          bottom={0}
+          bgColor="base.canvas.default"
+          boxShadow="md"
+          py="1.5rem"
+          px="2rem"
+        >
+          <HStack spacing="0.75rem">
+            <IconButton
+              icon={<BiTrash fontSize="1.25rem" />}
+              variant="outline"
+              colorScheme="critical"
+              aria-label="Delete block"
+              onClick={onDeleteBlockModalOpen}
+            />
+            <Box w="100%">
+              <Button w="100%" onClick={handleSave} isLoading={isLoading}>
+                Save changes
+              </Button>
+            </Box>
+          </HStack>
+        </Box>
       </Flex>
-
-      <Box
-        pos="sticky"
-        bottom={0}
-        bgColor="base.canvas.default"
-        boxShadow="md"
-        py="1.5rem"
-        px="2rem"
-      >
-        <HStack spacing="0.75rem">
-          <IconButton
-            icon={<BiTrash fontSize="1.25rem" />}
-            variant="outline"
-            colorScheme="critical"
-            aria-label="Delete block"
-            onClick={onDeleteBlockModalOpen}
-          />
-          <Box w="100%">
-            <Button w="100%" onClick={handleSave} isLoading={isLoading}>
-              Save changes
-            </Button>
-          </Box>
-        </HStack>
-      </Box>
     </>
   )
 }

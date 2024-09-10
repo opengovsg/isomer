@@ -5,6 +5,7 @@ import type { DividerProps } from "./Divider"
 import type { OrderedListProps } from "./OrderedList"
 import type { ParagraphProps } from "./Paragraph"
 import type { UnorderedListProps } from "./UnorderedList"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { DividerSchema } from "./Divider"
 import { OrderedListSchema } from "./OrderedList"
 import { ParagraphSchema } from "./Paragraph"
@@ -34,9 +35,9 @@ type TableCellProps = {
   attrs?: Static<typeof TableBaseCellSchema>
   content: (
     | DividerProps
-    | ParagraphProps
-    | OrderedListProps
-    | UnorderedListProps
+    | Omit<ParagraphProps, "LinkComponent" | "site">
+    | Omit<OrderedListProps, "LinkComponent" | "site">
+    | Omit<UnorderedListProps, "LinkComponent" | "site">
   )[]
 }
 
@@ -122,4 +123,7 @@ export const TableSchema = Type.Object(
   },
 )
 
-export type TableProps = Static<typeof TableSchema>
+export type TableProps = Static<typeof TableSchema> & {
+  LinkComponent?: LinkComponentType
+  site: IsomerSiteProps
+}

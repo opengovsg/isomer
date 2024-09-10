@@ -1,3 +1,5 @@
+import type { LinkComponentType } from "~/types"
+
 export interface FooterItem {
   title: string
   url: string
@@ -33,7 +35,7 @@ export interface SiteConfigFooterProps {
 }
 
 export interface FooterProps extends SiteConfigFooterProps {
-  LinkComponent?: any
+  LinkComponent?: LinkComponentType
   isGovernment?: boolean
   siteName: string
   agencyName: string

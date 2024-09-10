@@ -1777,7 +1777,20 @@ export const NoTable: Story = {
           },
           {
             type: "paragraph",
-            content: [{ type: "text", text: "This is yet another paragraph" }],
+            content: [
+              {
+                type: "text",
+                marks: [
+                  {
+                    type: "link",
+                    attrs: {
+                      href: "[resource:1:8]",
+                    },
+                  },
+                ],
+                text: "This is yet another paragraph",
+              },
+            ],
           },
           {
             type: "heading",

@@ -1,6 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
+
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
     title: "Title",
@@ -16,6 +18,7 @@ const SingleCardNoImageSchema = Type.Object({
     Type.String({
       title: "Link destination",
       description: "When this is clicked, open:",
+      format: "link",
     }),
   ),
 })
@@ -114,14 +117,17 @@ export const InfoCardsSchema = Type.Intersect(
 )
 
 export type SingleCardNoImageProps = Static<typeof SingleCardNoImageSchema> & {
-  LinkComponent?: any // Next.js link
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
 }
 export type SingleCardWithImageProps = Static<
   typeof SingleCardWithImageSchema
 > & {
-  LinkComponent?: any // Next.js link
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
 }
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
-  LinkComponent?: any // Next.js link
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
   sectionIdx?: number // TODO: Remove this property, only used in classic theme
 }

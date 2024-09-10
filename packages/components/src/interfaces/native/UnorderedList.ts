@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { orderedListSchemaBuilder, unorderedListSchemaBuilder } from "~/utils"
 import { listItemSchemaBuilder } from "./ListItem"
 
@@ -13,4 +14,7 @@ export const UnorderedListSchema = unorderedListSchemaBuilder(
   ),
 )
 
-export type UnorderedListProps = Static<typeof UnorderedListSchema>
+export type UnorderedListProps = Static<typeof UnorderedListSchema> & {
+  LinkComponent?: LinkComponentType
+  site: IsomerSiteProps
+}

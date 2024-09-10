@@ -98,7 +98,10 @@ const CollectionClient = ({
             setAppliedFilters={setAppliedFilters}
             handleClearFilter={handleClearFilter}
           />
-          <BackToTopLink className="hidden lg:inline-flex" />
+          <BackToTopLink
+            className="hidden lg:inline-flex"
+            LinkComponent={LinkComponent}
+          />
         </div>
         <div
           className={compoundStyles.content({

@@ -3,6 +3,7 @@ import { Type } from "@sinclair/typebox"
 
 import type { BreadcrumbProps } from "./Breadcrumb"
 import type { CollectionCardProps } from "./CollectionCard"
+import type { LinkComponentType } from "~/types"
 
 export const ArticlePageHeaderSchema = Type.Object({
   summary: Type.Array(Type.String(), {
@@ -18,5 +19,5 @@ export type ArticlePageHeaderProps = Static<typeof ArticlePageHeaderSchema> & {
   title: string
   category: CollectionCardProps["category"]
   date: CollectionCardProps["lastUpdated"]
-  LinkComponent?: any
+  LinkComponent?: LinkComponentType
 }

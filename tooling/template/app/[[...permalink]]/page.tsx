@@ -74,7 +74,7 @@ export const generateStaticParams = () => {
 
 export const generateMetadata = async (
   { params }: DynamicPageProps,
-  parent: ResolvingMetadata,
+  _parent: ResolvingMetadata,
 ): Promise<Metadata> => {
   const { permalink } = params
   const schema = await getSchema(permalink)
@@ -98,24 +98,22 @@ const Page = async ({ params }: DynamicPageProps) => {
   const renderSchema = await getSchema(permalink)
 
   return (
-    <>
-      <RenderEngine
-        {...renderSchema}
-        site={{
-          ...config.site,
-          environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-          // TODO: fixup all the typing errors
-          // @ts-expect-error to fix when types are proper
-          siteMap: sitemap,
-          navBarItems: navbar,
-          // TODO: fixup all the typing errors
-          // @ts-expect-error to fix when types are proper
-          footerItems: footer,
-          lastUpdated,
-        }}
-        LinkComponent={Link}
-      />
-    </>
+    <RenderEngine
+      {...renderSchema}
+      site={{
+        ...config.site,
+        environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+        // TODO: fixup all the typing errors
+        // @ts-expect-error to fix when types are proper
+        siteMap: sitemap,
+        navBarItems: navbar,
+        // TODO: fixup all the typing errors
+        // @ts-expect-error to fix when types are proper
+        footerItems: footer,
+        lastUpdated,
+      }}
+      LinkComponent={Link}
+    />
   )
 }
 

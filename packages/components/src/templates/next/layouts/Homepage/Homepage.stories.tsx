@@ -272,7 +272,7 @@ export const Default: Story = {
         imageAlt: "alt",
         imageSrc: "https://placehold.co/200x200",
         buttonLabel: "Primary CTA",
-        buttonUrl: "https://www.google.com",
+        buttonUrl: "[resource:1:1]",
       },
       {
         type: "infocols",

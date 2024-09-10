@@ -25,6 +25,32 @@ const Headings = () => {
             <Heading
               attrs={{ level }}
               content={[{ type: "text", text: `This is a heading-${level}` }]}
+              site={{
+                siteName: "Isomer Next",
+                siteMap: {
+                  id: "1",
+                  title: "Home",
+                  permalink: "/",
+                  lastModified: "",
+                  layout: "homepage",
+                  summary: "",
+                  children: [],
+                },
+                theme: "isomer-next",
+                isGovernment: true,
+                logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+                navBarItems: [],
+                footerItems: {
+                  privacyStatementLink: "https://www.isomer.gov.sg/privacy",
+                  termsOfUseLink: "https://www.isomer.gov.sg/terms",
+                  siteNavItems: [],
+                },
+                lastUpdated: "1 Jan 2021",
+                search: {
+                  type: "searchSG",
+                  clientId: "",
+                },
+              }}
             />
           </div>
         )

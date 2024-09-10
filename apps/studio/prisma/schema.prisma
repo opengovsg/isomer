@@ -52,7 +52,7 @@ model Resource {
   siteId    Int
   site      Site      @relation(fields: [siteId], references: [id])
   parentId  BigInt?
-  parent    Resource? @relation("ParentRelation", fields: [parentId], references: [id])
+  parent    Resource? @relation("ParentRelation", fields: [parentId], references: [id], onDelete: Cascade)
 
   children Resource[] @relation("ParentRelation")
 

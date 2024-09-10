@@ -16,10 +16,12 @@ import { BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
+import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
+import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
@@ -212,6 +214,8 @@ const FolderPage: NextPageWithLayout = () => {
         parentFolderId={parseInt(folderId)}
       />
       <FolderSettingsModal />
+      <MoveResourceModal />
+      <DeleteResourceModal siteId={parseInt(siteId)} />
     </>
   )
 }

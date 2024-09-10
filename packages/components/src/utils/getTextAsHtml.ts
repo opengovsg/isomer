@@ -1,5 +1,9 @@
+import isEqual from "lodash/isEqual"
+
 import type { HardBreakProps } from "~/interfaces"
 import type { Marks, TextProps } from "~/interfaces/native/Text"
+import type { IsomerSitemap } from "~/types"
+import { getReferenceLinkHref } from "./getReferenceLinkHref"
 
 type MarkTypes = Marks["type"]
 
@@ -15,36 +19,101 @@ const MARK_DOM_MAPPING: Record<MarkTypes, string> = {
 }
 
 // Converts the text node with marks into the appropriate HTML
-export const getTextAsHtml = (content?: (HardBreakProps | TextProps)[]) => {
+export const getTextAsHtml = (
+  sitemap: IsomerSitemap,
+  content?: (HardBreakProps | TextProps)[],
+) => {
   if (!content) {
     return ""
   }
 
-  return content
-    .map((node) => {
-      if (node.type === "hardBreak") {
-        return "<br />"
+  const output: string[] = []
+  let previousNodeLinkMark: Marks | undefined = undefined
+
+  // At every step, we will close off all marks except for links
+  // First encounter with a link, always open it first before other marks
+  // Close all other marks first before closing the link mark
+  content.forEach((node) => {
+    if (node.type === "hardBreak") {
+      // Close off the existing link mark if it exists
+      if (previousNodeLinkMark) {
+        output.push(`</${MARK_DOM_MAPPING.link}>`)
+        previousNodeLinkMark = undefined
       }
 
-      if (!node.marks) {
-        return node.text
-      }
+      output.push("<br />")
+      return
+    }
 
-      let output = node.text
-      node.marks.forEach((mark) => {
-        if (mark.type === "link") {
-          output = `<${MARK_DOM_MAPPING[mark.type]} href="${
-            mark.attrs.href
-          }">${output}</${MARK_DOM_MAPPING[mark.type]}>`
-          return
+    const currentNodeLinkMark = node.marks?.find((mark) => mark.type === "link")
+    const isLinkMarkNew =
+      (!previousNodeLinkMark && !!currentNodeLinkMark) ||
+      (!!previousNodeLinkMark && !currentNodeLinkMark) ||
+      !isEqual(previousNodeLinkMark, currentNodeLinkMark)
+
+    // Close off the existing link mark if it is different
+    if (isLinkMarkNew && !!previousNodeLinkMark) {
+      output.push(`</${MARK_DOM_MAPPING.link}>`)
+      previousNodeLinkMark = undefined
+    }
+
+    // If there are no marks, just push the text
+    if (!node.marks) {
+      output.push(node.text)
+      return
+    }
+
+    if (isLinkMarkNew) {
+      previousNodeLinkMark = currentNodeLinkMark
+
+      // Sort such that the link mark is the first item
+      node.marks.sort((a, b) => {
+        if (a.type === "link") {
+          return -1
         }
 
-        output = `<${MARK_DOM_MAPPING[mark.type]}>${output}</${
-          MARK_DOM_MAPPING[mark.type]
-        }>`
+        return 1
       })
 
-      return output
-    })
-    .join("")
+      node.marks.forEach((mark) => {
+        if (mark.type === "link") {
+          output.push(
+            `<${MARK_DOM_MAPPING.link} target="${mark.attrs.target || "_self"}" href="${getReferenceLinkHref(mark.attrs.href ?? "", sitemap)}">`,
+          )
+        } else {
+          output.push(`<${MARK_DOM_MAPPING[mark.type]}>`)
+        }
+      })
+    } else {
+      // Continue with the rest of the marks
+      node.marks
+        .filter((mark) => mark.type !== "link")
+        .forEach((mark) => {
+          output.push(`<${MARK_DOM_MAPPING[mark.type]}>`)
+        })
+    }
+
+    // Push the text
+    output.push(node.text)
+
+    // Close off all marks except for links in reverse order
+    const marksToClose = node.marks.filter((mark) => mark.type !== "link")
+    while (marksToClose.length) {
+      const mark = marksToClose.pop()
+
+      if (!mark) {
+        break
+      }
+
+      output.push(`</${MARK_DOM_MAPPING[mark.type]}>`)
+    }
+  })
+
+  // Close off the last link mark if it exists
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (previousNodeLinkMark) {
+    output.push(`</${MARK_DOM_MAPPING.link}>`)
+  }
+
+  return output.join("")
 }

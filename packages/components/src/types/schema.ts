@@ -12,6 +12,7 @@ import type {
   SearchPageProps,
 } from "./page"
 import type { IsomerSiteProps } from "./site"
+import type { LinkComponentType, ScriptComponentType } from "~/types"
 import { IsomerComponentsSchemas } from "./components"
 import {
   ArticlePageMetaSchema,
@@ -194,8 +195,8 @@ export type IsomerSchema = Static<typeof IsomerPageSchema>
 
 interface BasePageAdditionalProps {
   site: IsomerSiteProps
-  LinkComponent?: any // Next.js link
-  ScriptComponent?: any // Next.js script
+  LinkComponent?: LinkComponentType
+  ScriptComponent?: ScriptComponentType
 }
 
 export interface NotFoundPageSchemaType extends BasePageAdditionalProps {

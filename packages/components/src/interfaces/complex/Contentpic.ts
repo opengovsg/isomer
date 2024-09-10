@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { BaseProseSchema } from "../native/Prose"
 
 export const ContentpicSchema = Type.Object(
@@ -27,4 +28,7 @@ export const ContentpicSchema = Type.Object(
   },
 )
 
-export type ContentpicProps = Static<typeof ContentpicSchema>
+export type ContentpicProps = Static<typeof ContentpicSchema> & {
+  LinkComponent?: LinkComponentType
+  site: IsomerSiteProps
+}
