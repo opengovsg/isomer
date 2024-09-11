@@ -1,6 +1,4 @@
 import type { DropResult } from "@hello-pangea/dnd"
-import type { IsomerSchema } from "@opengovsg/isomer-components"
-import type { IconType } from "react-icons"
 import { useCallback } from "react"
 import {
   Box,
@@ -13,7 +11,7 @@ import {
 } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
-import { BiCrown, BiHash, BiImage, BiPlusCircle } from "react-icons/bi"
+import { BiCrown, BiPlusCircle } from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -23,16 +21,6 @@ import { editPageSchema } from "../schema"
 import { ActivateAdminMode } from "./ActivateAdminMode"
 import { BaseBlock } from "./Block/BaseBlock"
 import { DraggableBlock } from "./Block/DraggableBlock"
-import { ContentpicIcon } from "./icons/Contentpic"
-
-const TYPE_TO_ICON: Partial<
-  Record<IsomerSchema["content"][number]["type"], IconType>
-> = {
-  image: BiImage,
-  infopic: BiImage,
-  keystatistics: BiHash,
-  contentpic: ContentpicIcon,
-}
 
 export default function RootStateDrawer() {
   const {
