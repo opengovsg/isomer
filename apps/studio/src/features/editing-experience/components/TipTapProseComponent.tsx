@@ -1,3 +1,4 @@
+import type { ProseProps } from "@opengovsg/isomer-components"
 import type { JSONContent } from "@tiptap/react"
 import {
   Box,
@@ -9,7 +10,6 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
-import { ProseProps } from "@opengovsg/isomer-components"
 import _ from "lodash"
 import { BiText, BiTrash, BiX } from "react-icons/bi"
 
@@ -161,53 +161,51 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
             }}
           />
         </Flex>
-        <Box w="100%" p="2rem" h="100%">
+        <Box w="100%" p="2rem" overflow="auto" flex={1}>
           <TiptapTextEditor editor={editor} />
         </Box>
-      </VStack>
-
-      <Box
-        pos="sticky"
-        bottom={0}
-        bgColor="base.canvas.default"
-        boxShadow="md"
-        py="1.5rem"
-        px="2rem"
-      >
-        <HStack spacing="0.75rem">
-          <IconButton
-            icon={<BiTrash fontSize="1.25rem" />}
-            variant="outline"
-            colorScheme="critical"
-            aria-label="Delete block"
-            onClick={onDeleteBlockModalOpen}
-          />
-          <Box w="100%">
-            <Button
-              w="100%"
-              onClick={() => {
-                setSavedPageState(previewPageState)
-                mutate(
-                  {
-                    pageId,
-                    siteId,
-                    content: JSON.stringify(previewPageState),
-                  },
-                  {
-                    onSuccess: () => {
-                      setAddedBlockIndex(null)
-                      setDrawerState({ state: "root" })
+        <Box
+          bgColor="base.canvas.default"
+          boxShadow="md"
+          py="1.5rem"
+          px="2rem"
+          w="full"
+        >
+          <HStack spacing="0.75rem">
+            <IconButton
+              icon={<BiTrash fontSize="1.25rem" />}
+              variant="outline"
+              colorScheme="critical"
+              aria-label="Delete block"
+              onClick={onDeleteBlockModalOpen}
+            />
+            <Box w="100%">
+              <Button
+                w="100%"
+                onClick={() => {
+                  setSavedPageState(previewPageState)
+                  mutate(
+                    {
+                      pageId,
+                      siteId,
+                      content: JSON.stringify(previewPageState),
                     },
-                  },
-                )
-              }}
-              isLoading={isLoading}
-            >
-              Save changes
-            </Button>
-          </Box>
-        </HStack>
-      </Box>
+                    {
+                      onSuccess: () => {
+                        setAddedBlockIndex(null)
+                        setDrawerState({ state: "root" })
+                      },
+                    },
+                  )
+                }}
+                isLoading={isLoading}
+              >
+                Save changes
+              </Button>
+            </Box>
+          </HStack>
+        </Box>
+      </VStack>
     </>
   )
 }

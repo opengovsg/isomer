@@ -118,7 +118,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
           </HStack>
         </Box>
 
-        <Box px="2rem" py="1rem" h="full">
+        <Box px="2rem" py="1rem" flex={1} overflow="auto">
           <FormBuilder<Static<typeof schema>>
             schema={metadataSchema}
             validateFn={validateFn}
@@ -126,14 +126,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             handleChange={(data) => handleChange(data)}
           />
         </Box>
-        <Box
-          pos="sticky"
-          bottom={0}
-          bgColor="base.canvas.default"
-          boxShadow="md"
-          py="1.5rem"
-          px="2rem"
-        >
+        <Box bgColor="base.canvas.default" boxShadow="md" py="1.5rem" px="2rem">
           <Button
             w="100%"
             isLoading={isLoading}
