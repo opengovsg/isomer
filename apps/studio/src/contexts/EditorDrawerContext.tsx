@@ -3,17 +3,19 @@ import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { createContext, useContext, useState } from "react"
 
 import type { ModifiedAsset } from "~/types/assets"
+import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { type DrawerState } from "~/types/editorDrawer"
 
-export interface DrawerContextType {
+export interface DrawerContextType
+  extends Pick<EditorDrawerProviderProps, "type" | "permalink" | "siteId"> {
   currActiveIdx: number
   setCurrActiveIdx: (currActiveIdx: number) => void
   drawerState: DrawerState
   setDrawerState: (state: DrawerState) => void
   savedPageState?: IsomerSchema
-  setSavedPageState: Dispatch<SetStateAction<IsomerSchema | undefined>>
+  setSavedPageState: Dispatch<SetStateAction<IsomerSchema>>
   previewPageState?: IsomerSchema
-  setPreviewPageState: Dispatch<SetStateAction<IsomerSchema | undefined>>
+  setPreviewPageState: Dispatch<SetStateAction<IsomerSchema>>
   modifiedAssets: ModifiedAsset[]
   setModifiedAssets: Dispatch<SetStateAction<ModifiedAsset[]>>
   addedBlockIndex: number | null
@@ -21,20 +23,31 @@ export interface DrawerContextType {
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
-export function EditorDrawerProvider({ children }: PropsWithChildren) {
+interface EditorDrawerProviderProps extends PropsWithChildren {
+  initialPageState: IsomerSchema
+  type: ResourceType
+  permalink: string
+  siteId: number
+}
+
+export function EditorDrawerProvider({
+  children,
+  initialPageState,
+  type,
+  permalink,
+  siteId,
+}: EditorDrawerProviderProps) {
   const [drawerState, setDrawerState] = useState<DrawerState>({
     state: "root",
   })
   // Index of the current block being edited
   const [currActiveIdx, setCurrActiveIdx] = useState<number>(-1)
   // Current saved state of page
-  const [savedPageState, setSavedPageState] = useState<
-    IsomerSchema | undefined
-  >()
+  const [savedPageState, setSavedPageState] =
+    useState<IsomerSchema>(initialPageState)
   // State of the page to render in the preview
-  const [previewPageState, setPreviewPageState] = useState<
-    IsomerSchema | undefined
-  >()
+  const [previewPageState, setPreviewPageState] =
+    useState<IsomerSchema>(initialPageState)
   // Holding state for images/files that have been modified in the page
   const [modifiedAssets, setModifiedAssets] = useState<ModifiedAsset[]>([])
   const [addedBlockIndex, setAddedBlockIndex] = useState<number | null>(null)
@@ -54,6 +67,9 @@ export function EditorDrawerProvider({ children }: PropsWithChildren) {
         setModifiedAssets,
         addedBlockIndex,
         setAddedBlockIndex,
+        type,
+        permalink,
+        siteId,
       }}
     >
       {children}

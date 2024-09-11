@@ -81,7 +81,10 @@ export const pageHandlers = {
       // @ts-expect-error incomplete types
       return trpcMsw.page.readPageAndBlob.query(() => {
         return {
+          type: "RootPage",
           permalink: "home",
+          title: "Home",
+          updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           navbar: {
             id: 1,
             siteId: 1,
@@ -225,6 +228,8 @@ export const pageHandlers = {
           draftBlobId: "1",
           type: "RootPage",
           state: "Draft",
+          createdAt: new Date("2024-09-12T07:00:00.000Z"),
+          updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
         }
       })
