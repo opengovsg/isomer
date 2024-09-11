@@ -26,8 +26,8 @@ const getSitemapTreeFromArray = (
   })
 
   // Filter out duplicate resources with the same permalink, keeping only the
-  // Folder or Collection resource, then re-assigning the parentId of the
-  // children to the Folder or Collection resource
+  // Folder or Collection resource, then re-assigning the resource ID to the ID
+  // of the resource with the Page type
   return children
     .filter(
       (child) =>
