@@ -14,6 +14,7 @@ import {
   Heading,
   HStack,
   Icon,
+  Stack,
   Text,
   VStack,
 } from "@chakra-ui/react"
@@ -31,7 +32,7 @@ import {
   withJsonFormsArrayLayoutProps,
 } from "@jsonforms/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
-import { BiX } from "react-icons/bi"
+import { BiPlusCircle, BiX } from "react-icons/bi"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import DraggableDrawerButton from "./DraggableDrawerButton"
@@ -160,7 +161,7 @@ export function JsonFormsArrayControl({
         setSelectedIndex(selectedIndex - 1)
       }
     },
-    [removeItems, selectedIndex],
+    [isRemoveItemDisabled, removeItems, selectedIndex],
   )
   const handleMoveItem = useCallback(
     (path: string, originalIndex: number, newIndex: number) => {
@@ -204,16 +205,21 @@ export function JsonFormsArrayControl({
   }
 
   return (
-    <VStack py={2} spacing="0.375rem">
-      <Heading
-        as="h3"
-        size="sm"
-        variant="subhead-1"
-        fontWeight="medium"
-        w="100%"
-      >
-        {label}
-      </Heading>
+    <VStack py={2} spacing="0.375rem" align="start">
+      <Stack flexDir="row" justify="space-between" align="center" w="full">
+        <Text textStyle="subhead-1">{label}</Text>
+        {selectedIndex === undefined && (
+          <Button
+            onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+            variant="clear"
+            size="xs"
+            leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+            isDisabled={maxItems !== undefined && data >= maxItems}
+          >
+            Add item
+          </Button>
+        )}
+      </Stack>
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="blocks">
           {({ droppableProps, innerRef, placeholder }) => (
@@ -251,6 +257,7 @@ export function JsonFormsArrayControl({
                   <Draggable
                     key={childPath}
                     draggableId={childPath}
+                    disableInteractiveElementBlocking
                     index={index}
                   >
                     {({ draggableProps, dragHandleProps, innerRef }) => (
@@ -295,17 +302,6 @@ export function JsonFormsArrayControl({
           isRemoveItemDisabled={isRemoveItemDisabled}
           handleRemoveItem={handleRemoveItem(path, selectedIndex)}
         />
-      )}
-
-      {selectedIndex === undefined && (
-        <Button
-          onClick={addItem(path, createDefaultValue(schema, rootSchema))}
-          w="100%"
-          variant="outline"
-          isDisabled={maxItems !== undefined && data >= maxItems}
-        >
-          Add item
-        </Button>
       )}
     </VStack>
   )
