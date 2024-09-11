@@ -1,4 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
+import { useMemo } from "react"
 import {
   chakra,
   Flex,
@@ -12,25 +13,16 @@ import {
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { type IconType } from "react-icons"
-import {
-  BiCard,
-  BiColumns,
-  BiDollar,
-  BiExpandVertical,
-  BiHash,
-  BiImage,
-  BiImages,
-  BiMap,
-  BiMovie,
-  BiQuestionMark,
-  BiSolidHandUp,
-  BiSolidQuoteAltLeft,
-  BiText,
-} from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { type DrawerState } from "~/types/editorDrawer"
-import { DEFAULT_BLOCKS } from "./constants"
+import {
+  ARTICLE_ALLOWED_BLOCKS,
+  BLOCK_TO_META,
+  CONTENT_ALLOWED_BLOCKS,
+  DEFAULT_BLOCKS,
+  HOMEPAGE_ALLOWED_BLOCKS,
+} from "./constants"
 import { type SectionType } from "./types"
 
 function Section({ children }: React.PropsWithChildren) {
@@ -127,6 +119,7 @@ function ComponentSelector() {
     setSavedPageState,
     setPreviewPageState,
     setAddedBlockIndex,
+    type,
   } = useEditorDrawerContext()
 
   const onProceed = (sectionType: SectionType) => {
@@ -154,6 +147,28 @@ function ComponentSelector() {
     setAddedBlockIndex(nextPageState.content.length - 1)
     setPreviewPageState(nextPageState)
   }
+
+  const availableBlocks = useMemo(() => {
+    switch (type) {
+      case "RootPage":
+        return HOMEPAGE_ALLOWED_BLOCKS
+      case "Page":
+        if (savedPageState?.layout === "content") {
+          return CONTENT_ALLOWED_BLOCKS
+        } else if (savedPageState?.layout === "article") {
+          return ARTICLE_ALLOWED_BLOCKS
+        }
+        throw new Error(`Unsupported page layout: ${savedPageState?.layout}`)
+      case "CollectionPage":
+        return ARTICLE_ALLOWED_BLOCKS
+      case "Collection":
+      case "Folder":
+        throw new Error(`Unsupported resource type: ${type}`)
+      default:
+        const exhaustiveCheck: never = type
+        return exhaustiveCheck
+    }
+  }, [savedPageState?.layout, type])
 
   return (
     <VStack w="full" h="full" gap="0">
@@ -192,140 +207,27 @@ function ComponentSelector() {
         flex={1}
         overflow="auto"
       >
-        <Section>
-          <SectionTitle title="Organise complex content" />
-          <BlockList>
-            <BlockItem
-              label="Statistics"
-              icon={BiHash}
-              onProceed={onProceed}
-              sectionType="keystatistics"
-              description="Display KPIs or key statistics for your agency"
-              usageText="Do you have metrics to show the public? Designed to be bold, this block supports up to four numbers with labels."
-            />
-            <BlockItem
-              label="Cards"
-              icon={BiCard}
-              onProceed={onProceed}
-              sectionType="infocards"
-              description={`Link information in "cards" with or without images`}
-              usageText="This block supports up to six cards."
-            />
-            <BlockItem
-              label="Contentpic"
-              icon={BiImages}
-              onProceed={onProceed}
-              sectionType="contentpic"
-              description="Put an image and text side-by-side"
-              usageText="Use this block to juxtapose text next to a smaller image than usual, such as introducing a committee member along with their headshot."
-            />
-          </BlockList>
-        </Section>
-        <Section>
-          <SectionTitle title="Basic Building Blocks" />
-          <BlockList>
-            <BlockItem
-              label="Text"
-              icon={BiText}
-              onProceed={onProceed}
-              sectionType="prose"
-              description="Add text to your page - lists, headings, paragraph, and links."
-            />
-            <BlockItem
-              label="Image"
-              icon={BiImage}
-              onProceed={onProceed}
-              sectionType="image"
-              description="TODO"
-            />
-          </BlockList>
-        </Section>
-        <Section>
-          <SectionTitle title="Highlight Important Information" />
-          <BlockList>
-            <BlockItem
-              label="Statistics"
-              icon={BiDollar}
-              onProceed={onProceed}
-              sectionType="keystatistics"
-              description="TODO"
-            />
-            <BlockItem
-              label="Callout"
-              icon={BiSolidQuoteAltLeft}
-              onProceed={onProceed}
-              sectionType="callout"
-              description="TODO"
-            />
-            <BlockItem
-              label="Text with button"
-              icon={BiSolidHandUp}
-              onProceed={onProceed}
-              sectionType="infobar"
-              description="TODO"
-            />
-            <BlockItem
-              label="Text with image"
-              icon={BiImages}
-              onProceed={onProceed}
-              sectionType="infopic"
-              description="TODO"
-            />
-          </BlockList>
-        </Section>
-        <Section>
-          <SectionTitle title="Organise Content" />
-          {/* TODO: this should map over the schema and take values + components from there */}
-          <BlockList>
-            <BlockItem
-              label="Cards"
-              icon={BiCard}
-              onProceed={onProceed}
-              sectionType="infocards"
-              description="TODO"
-            />
-            <BlockItem
-              label="Columns"
-              icon={BiColumns}
-              onProceed={onProceed}
-              sectionType="infocols"
-              description="TODO"
-            />
-            <BlockItem
-              label="Accordion"
-              icon={BiExpandVertical}
-              onProceed={onProceed}
-              sectionType="accordion"
-              description="TODO"
-            />
-          </BlockList>
-        </Section>
-        <Section>
-          <SectionTitle title="External Content" />
-          <BlockList>
-            <BlockItem
-              label="YouTube"
-              icon={BiMovie}
-              onProceed={onProceed}
-              sectionType="iframe"
-              description="TODO"
-            />
-            <BlockItem
-              label="Google Maps"
-              icon={BiMap}
-              onProceed={onProceed}
-              sectionType="iframe"
-              description="TODO"
-            />
-            <BlockItem
-              label="FormSG"
-              icon={BiQuestionMark}
-              onProceed={onProceed}
-              sectionType="iframe"
-              description="TODO"
-            />
-          </BlockList>
-        </Section>
+        {availableBlocks.map((section) => (
+          <Section>
+            <SectionTitle title={section.label} />
+            <BlockList>
+              {section.types.map((type) => {
+                const blockMeta = BLOCK_TO_META[type]
+                return (
+                  <BlockItem
+                    key={type}
+                    icon={blockMeta.icon}
+                    label={blockMeta.label}
+                    onProceed={onProceed}
+                    sectionType={type}
+                    description={blockMeta.description}
+                    usageText={blockMeta.usageText}
+                  />
+                )
+              })}
+            </BlockList>
+          </Section>
+        ))}
       </VStack>
     </VStack>
   )
