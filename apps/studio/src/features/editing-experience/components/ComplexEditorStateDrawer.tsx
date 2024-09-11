@@ -286,8 +286,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           </HStack>
         </Box>
 
-        {/* NOTE: reserve at least 4.75rem for the bottom bar */}
-        <Box h="full" px="2rem" py="1rem" mb="4.75rem">
+        <Box flex={1} overflow="auto" px="2rem" py="1rem">
           <FormBuilder<IsomerComponent>
             schema={subSchema}
             validateFn={validateFn}
@@ -295,14 +294,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             handleChange={handleChange}
           />
         </Box>
-        <Box
-          pos="sticky"
-          bottom={0}
-          bgColor="base.canvas.default"
-          boxShadow="md"
-          py="1.5rem"
-          px="2rem"
-        >
+        <Box bgColor="base.canvas.default" boxShadow="md" py="1.5rem" px="2rem">
           <HStack spacing="0.75rem">
             <IconButton
               icon={<BiTrash fontSize="1.25rem" />}
