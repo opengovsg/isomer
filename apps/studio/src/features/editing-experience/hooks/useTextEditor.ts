@@ -50,27 +50,6 @@ export const useTableEditor = ({ data, handleChange }: BaseEditorProps) =>
       Dropcursor,
       Gapcursor,
       HardBreak,
-      Heading.extend({
-        marks: "",
-        // NOTE: Have to override the default input rules
-        // because we should map the number of `#` into
-        // a h<num # + 1>.
-        // eg: # -> h2
-        //     ## -> h3
-        addInputRules() {
-          return HEADING_LEVELS.map((level) => {
-            return textblockTypeInputRule({
-              find: new RegExp(`^(#{1,${level - 1}})\\s$`),
-              type: this.type,
-              getAttributes: {
-                level,
-              },
-            })
-          })
-        },
-      }).configure({
-        levels: HEADING_LEVELS,
-      }),
       History,
       HorizontalRule.extend({
         name: "divider",
@@ -131,6 +110,7 @@ export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
       Gapcursor,
       HardBreak,
       Heading.extend({
+        content: "text*",
         marks: "",
         // NOTE: Have to override the default input rules
         // because we should map the number of `#` into
