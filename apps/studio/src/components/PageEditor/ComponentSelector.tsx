@@ -1,21 +1,23 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import {
+  chakra,
   Flex,
+  Icon,
   Popover,
-  PopoverArrow,
   PopoverContent,
   PopoverTrigger,
+  Stack,
   Text,
   VStack,
-  Wrap,
 } from "@chakra-ui/react"
-import { Button, IconButton } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/design-system-react"
 import { type IconType } from "react-icons"
 import {
   BiCard,
   BiColumns,
   BiDollar,
   BiExpandVertical,
+  BiHash,
   BiImage,
   BiImages,
   BiMap,
@@ -24,7 +26,6 @@ import {
   BiSolidHandUp,
   BiSolidQuoteAltLeft,
   BiText,
-  BiX,
 } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -34,7 +35,7 @@ import { type SectionType } from "./types"
 
 function Section({ children }: React.PropsWithChildren) {
   return (
-    <VStack gap="0.5rem" alignItems="start">
+    <VStack gap="1rem" alignItems="start" w="full">
       {children}
     </VStack>
   )
@@ -42,54 +43,76 @@ function Section({ children }: React.PropsWithChildren) {
 
 function SectionTitle({ title }: { title: string }) {
   return (
-    <Text textStyle="subhead-3" textColor="base.content.medium">
+    <Text textStyle="subhead-2" textColor="base.content.medium">
       {title}
     </Text>
   )
 }
 
 function BlockList({ children }: React.PropsWithChildren) {
-  return <Wrap spacing="0">{children}</Wrap>
+  return <Stack w="full">{children}</Stack>
 }
 
-function BlockItem({
-  icon: Icon,
-  label,
-  onProceed,
-  sectionType,
-  description,
-}: {
+interface BlockItemProps {
   icon: IconType
   label: string
   onProceed: (sectionType: SectionType) => void
   sectionType: SectionType
   description: string
-}) {
+  usageText?: string
+}
+
+function BlockItem({
+  icon,
+  label,
+  onProceed,
+  sectionType,
+  description,
+  usageText,
+}: BlockItemProps) {
   return (
-    <Popover trigger="hover" placement="right">
+    <Popover trigger="hover" placement="right" isLazy offset={[0, 20]}>
       <PopoverTrigger>
-        <Button
-          m="0.75rem"
-          w="6rem"
-          h="6rem"
-          variant="clear"
-          colorScheme="neutral"
+        <chakra.button
+          layerStyle="focusRing"
+          w="100%"
+          borderRadius="6px"
+          border="1px solid"
+          borderColor="base.divider.medium"
+          transitionProperty="common"
+          transitionDuration="normal"
+          _hover={{
+            bg: "interaction.muted.main.hover",
+            borderColor: "interaction.main-subtle.hover",
+          }}
+          bg="white"
+          p="0.75rem"
+          flexDirection="row"
+          display="flex"
+          alignItems="start"
+          gap="0.75rem"
           onClick={() => onProceed(sectionType)}
         >
-          <VStack gap="0.5rem" color="base.content.default">
-            <Icon size="1.25rem" />
+          <Flex
+            p="0.5rem"
+            bg="interaction.main-subtle.default"
+            borderRadius="full"
+          >
+            <Icon as={icon} fontSize="1rem" color="base.content.default" />
+          </Flex>
+          <Stack align="start" gap="0.25rem">
             <Text textStyle="caption-1">{label}</Text>
-          </VStack>
-        </Button>
+            <Text textStyle="caption-2">{description}</Text>
+          </Stack>
+        </chakra.button>
       </PopoverTrigger>
       <PopoverContent>
-        <PopoverArrow />
         <VStack p="1.5rem" alignItems="start" gap="0.75rem">
-          <Flex alignItems="center" gap="0.5rem">
-            <Icon size="1.25rem" />
+          <Flex alignItems="center" gap="0.25rem">
+            <Icon as={icon} size="1.25rem" />
             <Text textStyle="subhead-2">{label}</Text>
           </Flex>
-          <Text textStyle="body-2">{description}</Text>
+          <Text textStyle="body-2">{usageText ?? description}</Text>
         </VStack>
       </PopoverContent>
     </Popover>
@@ -169,6 +192,35 @@ function ComponentSelector() {
         flex={1}
         overflow="auto"
       >
+        <Section>
+          <SectionTitle title="Organise complex content" />
+          <BlockList>
+            <BlockItem
+              label="Statistics"
+              icon={BiHash}
+              onProceed={onProceed}
+              sectionType="keystatistics"
+              description="Display KPIs or key statistics for your agency"
+              usageText="Do you have metrics to show the public? Designed to be bold, this block supports up to four numbers with labels."
+            />
+            <BlockItem
+              label="Cards"
+              icon={BiCard}
+              onProceed={onProceed}
+              sectionType="infocards"
+              description={`Link information in "cards" with or without images`}
+              usageText="This block supports up to six cards."
+            />
+            <BlockItem
+              label="Contentpic"
+              icon={BiImages}
+              onProceed={onProceed}
+              sectionType="contentpic"
+              description="Put an image and text side-by-side"
+              usageText="Use this block to juxtapose text next to a smaller image than usual, such as introducing a committee member along with their headshot."
+            />
+          </BlockList>
+        </Section>
         <Section>
           <SectionTitle title="Basic Building Blocks" />
           <BlockList>
