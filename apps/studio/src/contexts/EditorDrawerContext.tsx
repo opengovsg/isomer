@@ -12,9 +12,9 @@ export interface DrawerContextType
   setCurrActiveIdx: (currActiveIdx: number) => void
   drawerState: DrawerState
   setDrawerState: (state: DrawerState) => void
-  savedPageState?: IsomerSchema
+  savedPageState: IsomerSchema
   setSavedPageState: Dispatch<SetStateAction<IsomerSchema>>
-  previewPageState?: IsomerSchema
+  previewPageState: IsomerSchema
   setPreviewPageState: Dispatch<SetStateAction<IsomerSchema>>
   modifiedAssets: ModifiedAsset[]
   setModifiedAssets: Dispatch<SetStateAction<ModifiedAsset[]>>

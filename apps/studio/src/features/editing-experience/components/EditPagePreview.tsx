@@ -9,7 +9,6 @@ export const EditPagePreview = (): JSX.Element => {
 
   return (
     <PreviewIframe style={themeCssVars}>
-      {/* @ts-expect-error JsonForm types are messing up */}
       <Preview
         {...previewPageState}
         siteId={siteId}
