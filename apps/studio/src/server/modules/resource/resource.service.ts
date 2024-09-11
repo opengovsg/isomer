@@ -256,83 +256,95 @@ export const getLocalisedSitemap = async (
     }
   }
 
-  // Step 1: Get the actual resource
-  const resource = await getById(db, { resourceId, siteId })
+  // Get the actual resource first
+  const resource = await getById(db, {
+    resourceId,
+    siteId,
+  })
     .select(defaultResourceSelect)
     .executeTakeFirstOrThrow()
 
-  // Step 2: Get all the ancestors of the resource
-  const ancestors = [resource]
-  let currentResource = resource
-
-  while (currentResource.parentId !== null) {
-    const parent = await getById(db, {
-      resourceId: Number(currentResource.parentId),
-      siteId,
-    })
-      .select(defaultResourceSelect)
-      .executeTakeFirstOrThrow()
-
-    ancestors.push(parent)
-    currentResource = parent
-  }
-
-  // Step 3: Get the immediate children of the resource
-  const children = await db
-    .selectFrom("Resource")
-    .where("Resource.siteId", "=", siteId)
-    .where("Resource.parentId", "=", String(resourceId))
+  const allResources = await db
+    // Step 1: Get all the ancestors of the resource
+    .withRecursive("ancestors", (eb) =>
+      eb
+        // Base case: Get the actual resource
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", String(resourceId))
+        .select(defaultResourceSelect)
+        .unionAll((fb) =>
+          fb
+            // Recursive case: Get all the ancestors of the resource
+            .selectFrom("Resource")
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.type", "in", [
+              "Folder",
+              "Page",
+              "CollectionPage",
+              "RootPage",
+            ])
+            .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
+            .select(defaultResourceSelect),
+        ),
+    )
+    // Step 2: Get the immediate children of the resource
+    .with("immediateChildren", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .select(defaultResourceSelect)
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.parentId", "=", String(resourceId)),
+    )
+    // Step 3: Get the immediate siblings of the resource
+    .with("immediateSiblings", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "!=", String(resourceId))
+        .where((fb) => {
+          if (resource.parentId === null) {
+            return fb("Resource.parentId", "is", null)
+          }
+          return fb("Resource.parentId", "=", String(resourceId))
+        })
+        .select(defaultResourceSelect),
+    )
+    // Step 4: Get the immediate children of those siblings
+    .with("siblingChildren", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.parentId", "in", (fb) =>
+          fb.selectFrom("immediateSiblings").select("immediateSiblings.id"),
+        )
+        .select(defaultResourceSelect),
+    )
+    // Step 5: Combine all the resources in a single array
+    .selectFrom("ancestors as Resource")
+    .union((eb) =>
+      eb
+        .selectFrom("immediateChildren as Resource")
+        .select(defaultResourceSelect),
+    )
+    .union((eb) =>
+      eb
+        .selectFrom("immediateSiblings as Resource")
+        .select(defaultResourceSelect),
+    )
+    .union((eb) =>
+      eb
+        .selectFrom("siblingChildren as Resource")
+        .select(defaultResourceSelect),
+    )
     .select(defaultResourceSelect)
     .execute()
-
-  // Step 4: Get the immediate siblings of the resource
-  const siblingsQuery = db
-    .selectFrom("Resource")
-    .where("Resource.siteId", "=", siteId)
-    .where("Resource.id", "!=", String(resourceId))
-    .select(defaultResourceSelect)
-
-  if (resource.parentId === null) {
-    siblingsQuery.where("Resource.parentId", "is", null)
-  } else {
-    siblingsQuery.where("Resource.parentId", "=", resource.parentId)
-  }
-
-  const siblings = await siblingsQuery.execute()
-
-  // Step 5: Get the immediate children of the siblings
-  const siblingIds = siblings.map((s) => s.id)
-  let siblingChildrenMap = {}
-
-  if (siblingIds.length > 0) {
-    const siblingChildren = await db
-      .selectFrom("Resource")
-      .where("Resource.siteId", "=", siteId)
-      .where("Resource.parentId", "in", siblingIds)
-      .select(defaultResourceSelect)
-      .execute()
-
-    siblingChildrenMap = siblingChildren.reduce<
-      Record<string, typeof siblingChildren>
-    >((acc, child) => {
-      // NOTE: This case will never happen, because we have already filtered
-      // specifically for children of the above siblings
-      if (child.parentId === null) {
-        return acc
-      }
-
-      acc[child.parentId] = [...(acc[child.parentId] ?? []), child]
-
-      return acc
-    }, {})
-  }
 
   // Step 6: Construct the localised sitemap object
   const rootResource = await db
     .selectFrom("Resource")
     .where("Resource.siteId", "=", siteId)
-    .where("Resource.parentId", "is", null)
-    .where("Resource.permalink", "=", "")
+    .where("Resource.type", "=", "RootPage")
     .select(defaultResourceSelect)
     .executeTakeFirst()
 
@@ -342,8 +354,6 @@ export const getLocalisedSitemap = async (
     throw new Error("Root item not found")
   }
 
-  const allResources = [...ancestors, ...siblings, ...children]
-
   return getSitemapTree(rootResource, allResources)
 }
 
@@ -351,29 +361,35 @@ export const getResourceFullPermalink = async (
   siteId: number,
   resourceId: number,
 ) => {
-  // Step 1: Get the actual resource
-  const resource = await getById(db, { resourceId, siteId })
-    .select(defaultResourceSelect)
-    .executeTakeFirstOrThrow()
+  const resourcePermalinks = await db
+    .withRecursive("ancestors", (eb) =>
+      eb
+        // Base case: Get the actual resource
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", String(resourceId))
+        .select(defaultResourceSelect)
+        .unionAll((fb) =>
+          fb
+            // Recursive case: Get all the ancestors of the resource
+            .selectFrom("Resource")
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.type", "in", [
+              "Folder",
+              "Page",
+              "CollectionPage",
+              "RootPage",
+            ])
+            .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
+            .select(defaultResourceSelect),
+        ),
+    )
+    .selectFrom("ancestors")
+    .select("ancestors.permalink")
+    .execute()
 
-  // Step 2: Get all the ancestors of the resource
-  const ancestors = [resource]
-  let currentResource = resource
-
-  while (currentResource.parentId !== null) {
-    const parent = await getById(db, {
-      resourceId: Number(currentResource.parentId),
-      siteId,
-    })
-      .select(defaultResourceSelect)
-      .executeTakeFirstOrThrow()
-
-    ancestors.push(parent)
-    currentResource = parent
-  }
-
-  return `/${ancestors
-    .reverse()
+  return `/${resourcePermalinks
     .map((r) => r.permalink)
+    .reverse()
     .join("/")}`
 }
