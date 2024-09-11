@@ -1,4 +1,6 @@
 import type { DropResult } from "@hello-pangea/dnd"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type { IconType } from "react-icons"
 import { useCallback } from "react"
 import {
   Box,
@@ -15,7 +17,13 @@ import {
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
-import { BiCrown, BiGridVertical, BiPlusCircle } from "react-icons/bi"
+import {
+  BiCrown,
+  BiGridVertical,
+  BiHash,
+  BiImage,
+  BiPlusCircle,
+} from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
@@ -24,6 +32,17 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
 import { ActivateAdminMode } from "./ActivateAdminMode"
+import { DraggableBlock } from "./Block/DraggableBlock"
+import { ContentpicIcon } from "./icons/Contentpic"
+
+const TYPE_TO_ICON: Partial<
+  Record<IsomerSchema["content"][number]["type"], IconType>
+> = {
+  image: BiImage,
+  infopic: BiImage,
+  keystatistics: BiHash,
+  contentpic: ContentpicIcon,
+}
 
 export default function RootStateDrawer() {
   const {
@@ -125,7 +144,7 @@ export default function RootStateDrawer() {
             transitionProperty="common"
             transitionDuration="normal"
             _hover={{
-              bg: "base.canvas.brand-subtle",
+              bg: "interaction.muted.main.hover",
             }}
             bg="white"
             py="0.5rem"
@@ -133,7 +152,11 @@ export default function RootStateDrawer() {
             flexDirection="row"
             align="center"
           >
-            <Flex p="0.25rem" bg="base.canvas.brand-subtle" borderRadius="4px">
+            <Flex
+              p="0.25rem"
+              bg="interaction.main-subtle.default"
+              borderRadius="4px"
+            >
               <Icon
                 as={BiCrown}
                 fontSize="0.75rem"
@@ -229,91 +252,24 @@ export default function RootStateDrawer() {
                         }
 
                         return (
-                          <Draggable
-                            disableInteractiveElementBlocking
-                            // TODO: Determine key + draggable id
+                          <DraggableBlock
+                            block={block}
+                            // TODO: Generate a block ID instead of index
                             key={`${block.type}-${index}`}
+                            // TODO: Use block ID when instead of index for uniquely identifying blocks
                             draggableId={`${block.type}-${index}`}
                             index={index}
-                          >
-                            {(provided, snapshot) => (
-                              // TODO: Add image per block, extra menu for block
-                              // according to design
-                              <VStack
-                                my="0.25rem"
-                                w="100%"
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                              >
-                                <HStack
-                                  onClick={() => {
-                                    setCurrActiveIdx(index)
-                                    // TODO: we should automatically do this probably?
-                                    const nextState =
-                                      savedPageState.content[index]?.type ===
-                                      "prose"
-                                        ? "nativeEditor"
-                                        : "complexEditor"
-                                    // NOTE: SNAPSHOT
-                                    setDrawerState({ state: nextState })
-                                  }}
-                                  as="button"
-                                  layerStyle="focusRing"
-                                  w="100%"
-                                  borderRadius="6px"
-                                  border="1px solid"
-                                  borderColor="base.divider.medium"
-                                  transitionProperty="common"
-                                  transitionDuration="normal"
-                                  _hover={{
-                                    bg: "base.canvas.brand-subtle",
-                                  }}
-                                  bg="white"
-                                  py="0.5rem"
-                                  px="0.75rem"
-                                  flexDirection="row"
-                                  align="center"
-                                >
-                                  <chakra.button
-                                    display="flex"
-                                    tabIndex={0}
-                                    {...provided.dragHandleProps}
-                                    layerStyle="focusRing"
-                                    borderRadius="4px"
-                                    _focus={{
-                                      boxShadow: snapshot.isDragging
-                                        ? undefined
-                                        : "0 0 0 2px var(--chakra-colors-neutral-500)",
-                                    }}
-                                    transition="color 0.2s ease"
-                                    _hover={{
-                                      color: "brand.secondary.300",
-                                      _disabled: {
-                                        color: "brand.secondary.200",
-                                      },
-                                    }}
-                                    color={
-                                      snapshot.isDragging
-                                        ? "brand.secondary.300"
-                                        : "brand.secondary.200"
-                                    }
-                                  >
-                                    <Icon
-                                      as={BiGridVertical}
-                                      fontSize="1.5rem"
-                                    />
-                                  </chakra.button>
-                                  {/*  NOTE: Because we use `Type.Ref` for prose, */}
-                                  {/* this gets a `$Ref` only and not the concrete values */}
-                                  <Text textStyle="subhead-2">
-                                    {block.type === "prose"
-                                      ? PROSE_COMPONENT_NAME
-                                      : getComponentSchema(block.type).title}
-                                  </Text>
-                                </HStack>
-                              </VStack>
-                            )}
-                          </Draggable>
+                            onClick={() => {
+                              setCurrActiveIdx(index)
+                              // TODO: we should automatically do this probably?
+                              const nextState =
+                                savedPageState.content[index]?.type === "prose"
+                                  ? "nativeEditor"
+                                  : "complexEditor"
+                              // NOTE: SNAPSHOT
+                              setDrawerState({ state: nextState })
+                            }}
+                          />
                         )
                       })}
                     </Flex>
