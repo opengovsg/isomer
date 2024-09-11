@@ -19,55 +19,42 @@ interface DraggableDrawerButtonProps extends OwnPropsOfMasterListItem {
 
 const DraggableDrawerButtonText = withJsonFormsMasterListItemProps(
   ({ childLabel, index }: StatePropsOfMasterItem) => (
-    <Text
-      textStyle="subhead-2"
-      textColor="base.content.strong"
-      textAlign="start"
-    >
+    <Text textStyle="subhead-2" textAlign="start">
       {childLabel || `Item ${index + 1}`}
     </Text>
   ),
 )
 
-const DraggableDrawerButton = forwardRef(
+const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
   (
-    {
-      draggableProps,
-      dragHandleProps,
-      setSelectedIndex,
-      index,
-      ...rest
-    }: DraggableDrawerButtonProps,
+    { draggableProps, dragHandleProps, setSelectedIndex, index, ...rest },
     ref,
   ) => {
     return (
-      <Box
-        my="0.375rem"
-        borderWidth="1px"
-        borderColor="base.divider.medium"
-        borderRadius="lg"
-        w="100%"
-        bgColor="utility.ui"
-        transitionProperty="background-color"
-        transitionDuration="0.2s"
-        _hover={{
-          bgColor: "interaction.main-subtle.default",
-        }}
-        _active={{
-          bgColor: "interaction.main-subtle.default",
-          borderColor: "base.content.brand",
-          outline: "1px solid",
-          outlineColor: "base.content.brand",
-        }}
-        ref={ref}
-        {...draggableProps}
-      >
-        <HStack spacing={0}>
+      <Box my="0.375rem" ref={ref} {...draggableProps} w="full">
+        <HStack
+          spacing={0}
+          border="1px solid"
+          borderColor="base.divider.medium"
+          borderRadius="6px"
+          bg="white"
+          transitionProperty="common"
+          transitionDuration="normal"
+          _hover={{
+            bg: "interaction.muted.main.hover",
+            borderColor: "interaction.main-subtle.hover",
+          }}
+          _active={{
+            bg: "interaction.main-subtle.default",
+            borderColor: "interaction.main-subtle.hover",
+            shadow: "0px 1px 6px 0px #1361F026",
+          }}
+        >
           <Box
             cursor="grab"
             pl="0.5rem"
             pr="0.25rem"
-            py="0.75rem"
+            py="1rem"
             {...dragHandleProps}
           >
             <Icon as={BiGridVertical} fontSize="1.5rem" color="slate.300" />
@@ -77,7 +64,7 @@ const DraggableDrawerButton = forwardRef(
             onClick={() => setSelectedIndex(index)}
             pl="0.25rem"
             pr="1rem"
-            py="0.75rem"
+            py="1rem"
             w="100%"
           >
             <DraggableDrawerButtonText {...rest} index={index} />
