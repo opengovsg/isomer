@@ -78,7 +78,7 @@ const IsomerTable = Table.extend({
     }
   },
 })
-const IsomerTableCell = TableCell.extend({ content: "paragraph+" })
+const IsomerTableCell = TableCell.extend({ content: "(paragraph|list)+" })
 const IsomerTableHeader = TableHeader.extend({
   content: "paragraph+",
 })
