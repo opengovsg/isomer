@@ -52,6 +52,7 @@ const BaseRefSchema = Type.Composite([
         alt: Type.String({
           title: "Image alt text",
           description: "The alt text of the image",
+          maxLength: 120,
         }),
       }),
     ),

@@ -6,6 +6,7 @@ export const KeyStatisticsSchema = Type.Object(
     type: Type.Literal("keystatistics", { default: "keystatistics" }),
     title: Type.String({
       title: "Title",
+      maxLength: 100,
     }),
     statistics: Type.Array(
       Type.Object({
@@ -16,6 +17,7 @@ export const KeyStatisticsSchema = Type.Object(
         value: Type.String({
           title: "Number",
           description: "Keep it succinct. E.g., 3.3%, $12M",
+          maxLength: 7,
         }),
       }),
       {

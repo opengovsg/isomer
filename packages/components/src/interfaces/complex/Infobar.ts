@@ -8,10 +8,12 @@ export const InfobarSchema = Type.Object(
     type: Type.Literal("infobar", { default: "infobar" }),
     title: Type.String({
       title: "Title",
+      maxLength: 100,
     }),
     description: Type.Optional(
       Type.String({
         title: "Description",
+        maxLength: 200,
       }),
     ),
     buttonLabel: Type.Optional(
@@ -19,12 +21,14 @@ export const InfobarSchema = Type.Object(
         title: "Button text",
         description:
           "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
+        maxLength: 50,
       }),
     ),
     buttonUrl: Type.Optional(
       Type.String({
         title: "Button destination",
         description: "When this is clicked, open:",
+        maxLength: 50,
         format: "link",
       }),
     ),

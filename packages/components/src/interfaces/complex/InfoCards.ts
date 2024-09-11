@@ -7,11 +7,13 @@ const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
     title: "Title",
     default: "This is the title of the card",
+    maxLength: 100,
   }),
   description: Type.Optional(
     Type.String({
       title: "Description",
       default: "This is an optional description for the card",
+      maxLength: 200,
     }),
   ),
   url: Type.Optional(
@@ -57,16 +59,16 @@ const SingleCardWithImageSchema = Type.Composite([
 
 const InfoCardsBaseSchema = Type.Object({
   type: Type.Literal("infocards", { default: "infocards" }),
-  title: Type.Optional(
-    Type.String({
-      title: "Title",
-      default: "This is an optional title of the Cards component",
-    }),
-  ),
+  title: Type.String({
+    title: "Title",
+    default: "This is an optional title of the Cards component",
+    maxLength: 100,
+  }),
   subtitle: Type.Optional(
     Type.String({
       title: "Description",
       default: "This is an optional description for the Cards component",
+      maxLength: 100,
     }),
   ),
   maxColumns: Type.Optional(
