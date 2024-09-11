@@ -46,6 +46,7 @@ export default function HeroEditorDrawer(): JSX.Element {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
     },
   })
+  const [hasError, setHasError] = useState(false)
 
   if (!previewPageState) {
     return <></>
@@ -69,7 +70,6 @@ export default function HeroEditorDrawer(): JSX.Element {
     }
     setPreviewPageState(newPageState)
   }
-  const [hasError, setHasError] = useState(false)
 
   return (
     <>
