@@ -7,6 +7,7 @@ const HeroHeadingSchema = Type.Object({
   title: Type.String({
     title: "Hero text",
     description: "The title of the hero banner",
+    maxLength: 150,
   }),
   subtitle: Type.Optional(
     Type.String({

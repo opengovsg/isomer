@@ -156,7 +156,6 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               )
             }}
             isDisabled={hasError}
-            disabled={hasError}
           >
             Save changes
           </Button>

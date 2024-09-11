@@ -1,4 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
+import { useState } from "react"
 import {
   Box,
   Flex,
@@ -68,6 +69,7 @@ export default function HeroEditorDrawer(): JSX.Element {
     }
     setPreviewPageState(newPageState)
   }
+  const [hasError, setHasError] = useState(false)
 
   return (
     <>
@@ -120,6 +122,9 @@ export default function HeroEditorDrawer(): JSX.Element {
 
         <Box px="2rem" py="1rem" h="full">
           <FormBuilder<IsomerComponent>
+            handleErrors={(errors) => {
+              setHasError(errors.length > 0)
+            }}
             schema={getComponentSchema("hero")}
             validateFn={validateFn}
             data={previewPageState.content[0]}
@@ -150,6 +155,7 @@ export default function HeroEditorDrawer(): JSX.Element {
                 },
               )
             }}
+            isDisabled={hasError}
           >
             Save changes
           </Button>

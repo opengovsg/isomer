@@ -1,4 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
+import { useState } from "react"
 import {
   Box,
   Flex,
@@ -26,6 +27,7 @@ import FormBuilder from "./form-builder/FormBuilder"
 const ajv = new Ajv({ strict: false, logger: false })
 
 export default function ComplexEditorStateDrawer(): JSX.Element {
+  const [hasError, setHasError] = useState(false)
   const {
     isOpen: isDeleteBlockModalOpen,
     onOpen: onDeleteBlockModalOpen,
@@ -289,6 +291,9 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         {/* NOTE: reserve at least 4.75rem for the bottom bar */}
         <Box h="full" px="2rem" py="1rem" mb="4.75rem">
           <FormBuilder<IsomerComponent>
+            handleErrors={(errors) => {
+              setHasError(errors.length > 0)
+            }}
             schema={subSchema}
             validateFn={validateFn}
             data={component}
@@ -312,7 +317,12 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
               onClick={onDeleteBlockModalOpen}
             />
             <Box w="100%">
-              <Button w="100%" onClick={handleSave} isLoading={isLoading}>
+              <Button
+                isDisabled={hasError}
+                w="100%"
+                onClick={handleSave}
+                isLoading={isLoading}
+              >
                 Save changes
               </Button>
             </Box>
