@@ -1,17 +1,12 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import {
-  Box,
-  Flex,
-  Heading,
-  HStack,
-  Icon,
-  useDisclosure,
-} from "@chakra-ui/react"
+import { Box, Flex, HStack, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
-import _ from "lodash"
-import { BiDollar, BiTrash, BiX } from "react-icons/bi"
+import cloneDeep from "lodash/cloneDeep"
+import isEqual from "lodash/isEqual"
+import set from "lodash/set"
+import { BiTrash } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -21,6 +16,7 @@ import { editPageSchema } from "../schema"
 import { BRIEF_TOAST_SETTINGS } from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
+import { DrawerHeader } from "./Drawer/DrawerHeader"
 import FormBuilder from "./form-builder/FormBuilder"
 
 const ajv = new Ajv({ strict: false, logger: false })
@@ -66,12 +62,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   const { mutate: deleteAssets, isLoading: isDeletingAssets } =
     trpc.asset.deleteAssets.useMutation()
 
-  if (
-    currActiveIdx === -1 ||
-    !previewPageState ||
-    !savedPageState ||
-    currActiveIdx > previewPageState.content.length
-  ) {
+  if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
     return <></>
   }
 
@@ -138,7 +129,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
 
     if (modifiedAssets.length > 0) {
       const updatedBlocks = Array.from(previewPageState.content)
-      const newBlock = _.cloneDeep(updatedBlocks[currActiveIdx])
+      const newBlock = cloneDeep(updatedBlocks[currActiveIdx])
 
       if (!newBlock) {
         return
@@ -166,7 +157,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           }
 
           return uploadAsset({ file }).then((res) => {
-            _.set(newBlock, path, res.path)
+            set(newBlock, path, res.path)
             return path
           })
         }),
@@ -246,46 +237,17 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       />
 
       <Flex flexDir="column" position="relative" h="100%" w="100%">
-        <Box
-          bgColor="base.canvas.default"
-          borderBottomColor="base.divider.medium"
-          borderBottomWidth="1px"
-          px="2rem"
-          py="1.25rem"
-        >
-          <HStack justifyContent="space-between" w="100%">
-            <HStack spacing="0.75rem">
-              <Icon
-                as={BiDollar}
-                fontSize="1.5rem"
-                p="0.25rem"
-                bgColor="slate.100"
-                textColor="blue.600"
-                borderRadius="base"
-              />
-              <Heading as="h3" size="sm" textStyle="h5" fontWeight="semibold">
-                Edit {componentName}
-              </Heading>
-            </HStack>
-            <IconButton
-              icon={<Icon as={BiX} />}
-              variant="clear"
-              colorScheme="sub"
-              size="sm"
-              p="0.625rem"
-              isDisabled={isLoading}
-              onClick={() => {
-                if (!_.isEqual(previewPageState, savedPageState)) {
-                  onDiscardChangesModalOpen()
-                } else {
-                  handleDiscardChanges()
-                }
-              }}
-              aria-label="Close drawer"
-            />
-          </HStack>
-        </Box>
-
+        <DrawerHeader
+          isDisabled={isLoading}
+          onBackClick={() => {
+            if (!isEqual(previewPageState, savedPageState)) {
+              onDiscardChangesModalOpen()
+            } else {
+              handleDiscardChanges()
+            }
+          }}
+          label={`Edit ${componentName}`}
+        />
         <Box flex={1} overflow="auto" px="2rem" py="1rem">
           <FormBuilder<IsomerComponent>
             schema={subSchema}
