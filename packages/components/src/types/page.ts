@@ -6,6 +6,7 @@ import { ArticlePageHeaderSchema, ContentPageHeaderSchema } from "~/interfaces"
 const BaseItemSchema = Type.Object({
   title: Type.String({
     title: "Page title",
+    maxLength: 150,
   }),
   description: Type.Optional(
     Type.String({
