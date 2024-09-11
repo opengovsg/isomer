@@ -1,5 +1,5 @@
 import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
-import type { ValidateFunction } from "ajv"
+import type { ErrorObject, ValidateFunction } from "ajv"
 import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { type TSchema } from "@sinclair/typebox"
@@ -88,6 +88,7 @@ interface FormBuilderProps<T> {
   validateFn: ValidateFunction<T>
   data: unknown
   handleChange: (data: T) => void
+  handleErrors: (errors: ErrorObject[]) => void
 }
 
 export default function FormBuilder<T>({
@@ -95,16 +96,18 @@ export default function FormBuilder<T>({
   validateFn,
   data,
   handleChange,
+  handleErrors,
 }: FormBuilderProps<T>): JSX.Element {
   return (
     <JsonForms
       schema={schema}
       data={data}
       renderers={renderers}
-      onChange={({ data }) => {
+      onChange={({ data, errors }) => {
         if (validateFn(data)) {
           handleChange(data)
         }
+        if (errors) handleErrors(errors)
       }}
       ajv={ajv}
     />

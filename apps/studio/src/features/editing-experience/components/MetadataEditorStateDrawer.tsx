@@ -1,5 +1,6 @@
 import type { IsomerSchema, schema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
+import { useState } from "react"
 import {
   Box,
   Flex,
@@ -25,6 +26,7 @@ import FormBuilder from "./form-builder/FormBuilder"
 const ajv = new Ajv({ strict: false, logger: false })
 
 export default function MetadataEditorStateDrawer(): JSX.Element {
+  const [hasError, setHasError] = useState(false)
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -120,6 +122,9 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
         <Box px="2rem" py="1rem" h="full">
           <FormBuilder<Static<typeof schema>>
+            handleErrors={(errors) => {
+              setHasError(errors.length > 0)
+            }}
             schema={metadataSchema}
             validateFn={validateFn}
             data={previewPageState.page}
@@ -150,6 +155,8 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
                 },
               )
             }}
+            isDisabled={hasError}
+            disabled={hasError}
           >
             Save changes
           </Button>
