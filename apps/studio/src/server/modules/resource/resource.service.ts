@@ -306,7 +306,7 @@ export const getLocalisedSitemap = async (
           if (resource.parentId === null) {
             return fb("Resource.parentId", "is", null)
           }
-          return fb("Resource.parentId", "=", String(resourceId))
+          return fb("Resource.parentId", "=", String(resource.parentId))
         })
         .select(defaultResourceSelect),
     )
