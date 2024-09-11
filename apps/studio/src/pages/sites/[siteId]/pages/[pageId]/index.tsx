@@ -281,7 +281,7 @@ const PageSettings = ({
                 {MAX_TITLE_LENGTH - title.length} characters left
               </Text>
             </Box>
-            <Box>
+            <Box w="full">
               <Text textStyle="subhead-1">Meta description</Text>
               <Text textStyle="body-2">
                 This is a summary of your page that is displayed on search
