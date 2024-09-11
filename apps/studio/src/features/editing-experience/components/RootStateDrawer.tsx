@@ -5,33 +5,23 @@ import { useCallback } from "react"
 import {
   Box,
   Button,
-  chakra,
   Flex,
   HStack,
-  Icon,
   Spacer,
-  Stack,
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
-import { getComponentSchema } from "@opengovsg/isomer-components"
-import {
-  BiCrown,
-  BiGridVertical,
-  BiHash,
-  BiImage,
-  BiPlusCircle,
-} from "react-icons/bi"
+import { BiCrown, BiHash, BiImage, BiPlusCircle } from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
-import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
 import { ActivateAdminMode } from "./ActivateAdminMode"
+import { BaseBlock } from "./Block/BaseBlock"
 import { DraggableBlock } from "./Block/DraggableBlock"
 import { ContentpicIcon } from "./icons/Contentpic"
 
@@ -130,46 +120,15 @@ export default function RootStateDrawer() {
           </Text>
         </VStack>
         {isHeroFixedBlock ? (
-          <Stack
-            as="button"
+          <BaseBlock
             onClick={() => {
               setCurrActiveIdx(0)
               setDrawerState({ state: "heroEditor" })
             }}
-            layerStyle="focusRing"
-            w="100%"
-            borderRadius="6px"
-            border="1px solid"
-            borderColor="base.divider.medium"
-            transitionProperty="common"
-            transitionDuration="normal"
-            _hover={{
-              bg: "interaction.muted.main.hover",
-            }}
-            bg="white"
-            py="0.5rem"
-            px="0.75rem"
-            flexDirection="row"
-            align="center"
-          >
-            <Flex
-              p="0.25rem"
-              bg="interaction.main-subtle.default"
-              borderRadius="4px"
-            >
-              <Icon
-                as={BiCrown}
-                fontSize="0.75rem"
-                color="base.content.default"
-              />
-            </Flex>
-            <Stack flexDirection="column" align="start" gap="0.25rem">
-              <Text textStyle="subhead-2">Hero banner</Text>
-              <Text textStyle="caption-2">
-                Title, subtitle, and Call-to-Action
-              </Text>
-            </Stack>
-          </Stack>
+            label="Hero banner"
+            description="Title, subtitle, and Call-to-Action"
+            icon={BiCrown}
+          />
         ) : (
           <Box
             as="button"
