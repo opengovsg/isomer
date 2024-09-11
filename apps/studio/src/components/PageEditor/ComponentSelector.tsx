@@ -92,7 +92,7 @@ function BlockItem({
           >
             <Icon as={icon} fontSize="1rem" color="base.content.default" />
           </Flex>
-          <Stack align="start" gap="0.25rem">
+          <Stack align="start" gap="0.25rem" textAlign="start">
             <Text textStyle="caption-1">{label}</Text>
             <Text textStyle="caption-2">{description}</Text>
           </Stack>
