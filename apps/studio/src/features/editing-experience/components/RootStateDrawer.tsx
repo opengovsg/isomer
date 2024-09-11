@@ -110,22 +110,13 @@ export default function RootStateDrawer() {
             icon={BiCrown}
           />
         ) : (
-          <Box
-            as="button"
+          <BaseBlock
             onClick={() => {
               setDrawerState({ state: "metadataEditor" })
             }}
-            w="100%"
-          >
-            <HStack w="100%" py="4" bgColor="white">
-              <VStack w="100%" pl={1} align="start">
-                <Text px="3" fontWeight={500}>
-                  Page title and summary
-                </Text>
-                <Text px="3">Click to edit</Text>
-              </VStack>
-            </HStack>
-          </Box>
+            label="Page title and summary"
+            description="Click to edit"
+          />
         )}
       </VStack>
 
