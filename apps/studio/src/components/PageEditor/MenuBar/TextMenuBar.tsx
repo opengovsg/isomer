@@ -19,7 +19,7 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         type: "vertical-list",
         buttonWidth: "9rem",
         menuWidth: "19rem",
-        defaultTitle: "Heading options",
+        defaultTitle: "Text styles",
         items: [
           {
             type: "item",
