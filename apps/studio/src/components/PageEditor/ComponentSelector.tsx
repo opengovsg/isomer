@@ -207,8 +207,8 @@ function ComponentSelector() {
         flex={1}
         overflow="auto"
       >
-        {availableBlocks.map((section) => (
-          <Section>
+        {availableBlocks.map((section, index) => (
+          <Section key={index}>
             <SectionTitle title={section.label} />
             <BlockList>
               {section.types.map((type) => {
