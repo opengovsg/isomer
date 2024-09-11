@@ -126,7 +126,6 @@ export default function HeroEditorDrawer(): JSX.Element {
               setHasError(errors.length > 0)
             }}
             schema={getComponentSchema("hero")}
-            validateFn={validateFn}
             data={previewPageState.content[0]}
             handleChange={handleChange}
           />

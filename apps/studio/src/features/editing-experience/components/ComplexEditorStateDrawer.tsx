@@ -295,7 +295,6 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
               setHasError(errors.length > 0)
             }}
             schema={subSchema}
-            validateFn={validateFn}
             data={component}
             handleChange={handleChange}
           />

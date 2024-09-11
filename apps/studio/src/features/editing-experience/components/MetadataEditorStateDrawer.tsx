@@ -126,9 +126,8 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               setHasError(errors.length > 0)
             }}
             schema={metadataSchema}
-            validateFn={validateFn}
             data={previewPageState.page}
-            handleChange={(data) => handleChange(data)}
+            handleChange={handleChange}
           />
         </Box>
         <Box

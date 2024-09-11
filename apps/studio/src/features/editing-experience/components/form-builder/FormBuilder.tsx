@@ -85,7 +85,6 @@ const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
 
 interface FormBuilderProps<T> {
   schema: TSchema
-  validateFn: ValidateFunction<T>
   data: unknown
   handleChange: (data: T) => void
   handleErrors: (errors: ErrorObject[]) => void
@@ -93,7 +92,6 @@ interface FormBuilderProps<T> {
 
 export default function FormBuilder<T>({
   schema,
-  validateFn,
   data,
   handleChange,
   handleErrors,
@@ -104,10 +102,8 @@ export default function FormBuilder<T>({
       data={data}
       renderers={renderers}
       onChange={({ data, errors }) => {
-        if (validateFn(data)) {
-          handleChange(data)
-        }
         if (errors) handleErrors(errors)
+        handleChange(data)
       }}
       ajv={ajv}
     />
