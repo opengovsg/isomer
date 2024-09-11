@@ -133,36 +133,42 @@ function ComponentSelector() {
   }
 
   return (
-    <VStack w="full" gap="0">
+    <VStack w="full" h="full" gap="0">
       <Flex
         w="full"
-        py="1.25rem"
-        px="2rem"
+        py="0.75rem"
+        px="1.5rem"
+        gap="0.75rem"
         alignItems="center"
         justifyContent="space-between"
-        borderBottom="solid"
-        borderWidth="1px"
+        borderBottom="1px solid"
         borderColor="base.divider.medium"
+        bg="white"
       >
-        <VStack alignItems="start">
-          <Text as="h5" textStyle="h5">
-            Add a new block
+        <VStack alignItems="start" gap="0.25rem">
+          <Text textStyle="subhead-1">Add a new block</Text>
+          <Text textStyle="caption-2" color="base.content.medium">
+            Click a block to add to the page
           </Text>
-          <Text textStyle="body-2">Click a block to add to the page</Text>
         </VStack>
-        <IconButton
-          size="lg"
+        <Button
+          size="xs"
           variant="clear"
-          colorScheme="neutral"
-          color="interaction.sub.default"
-          aria-label="Close add component"
-          icon={<BiX />}
           onClick={() => {
             setDrawerState({ state: "root" })
           }}
-        />
+        >
+          Cancel
+        </Button>
       </Flex>
-      <VStack p="2rem" w="full" gap="1.25rem" alignItems="start">
+      <VStack
+        p="2rem"
+        w="full"
+        gap="1.25rem"
+        alignItems="start"
+        flex={1}
+        overflow="auto"
+      >
         <Section>
           <SectionTitle title="Basic Building Blocks" />
           <BlockList>
