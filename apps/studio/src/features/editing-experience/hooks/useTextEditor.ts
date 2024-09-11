@@ -1,5 +1,5 @@
 import type { ControlProps } from "@jsonforms/core"
-import type { JSONContent } from "@tiptap/react"
+import type { Extensions, JSONContent } from "@tiptap/react"
 import { Bold } from "@tiptap/extension-bold"
 import { BulletList } from "@tiptap/extension-bullet-list"
 import { Document } from "@tiptap/extension-document"
@@ -32,58 +32,87 @@ export interface BaseEditorProps {
   handleChange: (content: JSONContent) => void
 }
 
-export const useTableEditor = ({ data, handleChange }: BaseEditorProps) =>
+const BASE_EXTENSIONS: Extensions = [
+  Link,
+  Bold,
+  BulletList.extend({
+    name: "unorderedList",
+  }).configure({
+    HTMLAttributes: {
+      class: "list-disc",
+    },
+  }),
+  Document.extend({
+    name: "prose",
+  }),
+  Dropcursor,
+  Gapcursor,
+  HardBreak,
+  History,
+  HorizontalRule.extend({
+    name: "divider",
+  }),
+  Italic,
+  ListItem,
+  OrderedList.extend({
+    name: "orderedList",
+  }).configure({
+    HTMLAttributes: {
+      class: "list-decimal",
+    },
+  }),
+  Paragraph,
+  Strike,
+  Superscript,
+  Subscript,
+  Text,
+  Underline,
+]
+
+const IsomerTable = Table.extend({
+  addAttributes() {
+    return {
+      caption: {
+        default: "Table caption",
+      },
+    }
+  },
+})
+const IsomerTableCell = TableCell.extend({ content: "paragraph+" })
+const IsomerTableHeader = TableHeader.extend({
+  content: "paragraph+",
+})
+
+const IsomerHeading = Heading.extend({
+  content: "text*",
+  marks: "",
+  // NOTE: Have to override the default input rules
+  // because we should map the number of `#` into
+  // a h<num # + 1>.
+  // eg: # -> h2
+  //     ## -> h3
+  addInputRules() {
+    return HEADING_LEVELS.map((level) => {
+      return textblockTypeInputRule({
+        find: new RegExp(`^(#{1,${level - 1}})\\s$`),
+        type: this.type,
+        getAttributes: {
+          level,
+        },
+      })
+    })
+  },
+}).configure({
+  levels: HEADING_LEVELS,
+})
+
+const useBaseEditor = ({
+  data,
+  handleChange,
+  extensions,
+}: BaseEditorProps & { extensions: Extensions }) =>
   useEditor({
-    extensions: [
-      Link,
-      Bold,
-      BulletList.extend({
-        name: "unorderedList",
-      }).configure({
-        HTMLAttributes: {
-          class: "list-disc",
-        },
-      }),
-      Document.extend({
-        name: "prose",
-      }),
-      Dropcursor,
-      Gapcursor,
-      HardBreak,
-      History,
-      HorizontalRule.extend({
-        name: "divider",
-      }),
-      Italic,
-      ListItem,
-      OrderedList.extend({
-        name: "orderedList",
-      }).configure({
-        HTMLAttributes: {
-          class: "list-decimal",
-        },
-      }),
-      Paragraph,
-      Strike,
-      Superscript,
-      Subscript,
-      Text,
-      Underline,
-      Table.extend({
-        addAttributes() {
-          return {
-            caption: {
-              default: "Table caption",
-            },
-          }
-        },
-      }),
-      TableCell,
-      TableHeader.extend({
-        content: "paragraph+",
-      }),
-      TableRow,
-    ],
+    extensions: [...BASE_EXTENSIONS, ...extensions],
     content: data,
     onUpdate: (e) => {
       const jsonContent = e.editor.getJSON()
@@ -92,157 +121,30 @@ export const useTableEditor = ({ data, handleChange }: BaseEditorProps) =>
   })
 
 export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
-  useEditor({
+  useBaseEditor({
+    data,
+    handleChange,
     extensions: [
-      Link,
-      Bold,
-      BulletList.extend({
-        name: "unorderedList",
-      }).configure({
-        HTMLAttributes: {
-          class: "list-disc",
-        },
-      }),
-      Document.extend({
-        name: "prose",
-      }),
-      Dropcursor,
-      Gapcursor,
-      HardBreak,
-      Heading.extend({
-        content: "text*",
-        marks: "",
-        // NOTE: Have to override the default input rules
-        // because we should map the number of `#` into
-        // a h<num # + 1>.
-        // eg: # -> h2
-        //     ## -> h3
-        addInputRules() {
-          return HEADING_LEVELS.map((level) => {
-            return textblockTypeInputRule({
-              find: new RegExp(`^(#{1,${level - 1}})\\s$`),
-              type: this.type,
-              getAttributes: {
-                level,
-              },
-            })
-          })
-        },
-      }).configure({
-        levels: HEADING_LEVELS,
-      }),
-      History,
-      HorizontalRule.extend({
-        name: "divider",
-      }),
-      Italic,
-      ListItem,
-      OrderedList.extend({
-        name: "orderedList",
-      }).configure({
-        HTMLAttributes: {
-          class: "list-decimal",
-        },
-      }),
-      Paragraph,
-      Strike,
-      Superscript,
-      Subscript,
-      Text,
-      Underline,
+      TableRow,
+      IsomerTable,
+      IsomerTableCell,
+      IsomerTableHeader,
+      IsomerHeading,
     ],
-    content: data,
-    onUpdate: (e) => {
-      const jsonContent = e.editor.getJSON()
-      handleChange(jsonContent)
-    },
   })
 
 export const useCalloutEditor = ({ data, handleChange }: BaseEditorProps) => {
-  return useEditor({
-    extensions: [
-      Link,
-      Bold,
-      BulletList.extend({
-        name: "unorderedList",
-      }).configure({
-        HTMLAttributes: {
-          class: "list-disc",
-        },
-      }),
-      Document.extend({
-        name: "prose",
-      }),
-      Dropcursor,
-      Gapcursor,
-      HardBreak,
-      History,
-      HorizontalRule.extend({
-        name: "divider",
-      }),
-      Italic,
-      ListItem,
-      OrderedList.extend({
-        name: "orderedList",
-      }).configure({
-        HTMLAttributes: {
-          class: "list-decimal",
-        },
-      }),
-      Paragraph,
-      Strike,
-      Superscript,
-      Subscript,
-      Text,
-      Underline,
-    ],
-    content: data,
-    onUpdate: (e) => {
-      const jsonContent = e.editor.getJSON()
-      handleChange(jsonContent)
-    },
+  return useBaseEditor({
+    extensions: [],
+    data,
+    handleChange,
   })
 }
 
 export const useAccordionEditor = ({ data, handleChange }: BaseEditorProps) => {
-  return useEditor({
-    extensions: [
-      Link,
-      Bold,
-      BulletList.extend({
-        name: "unorderedList",
-      }).configure({
-        HTMLAttributes: {
-          class: "list-disc",
-        },
-      }),
-      Document.extend({
-        name: "prose",
-      }),
-      Dropcursor,
-      Gapcursor,
-      HardBreak,
-      History,
-      HorizontalRule.extend({
-        name: "divider",
-      }),
-      Italic,
-      ListItem,
-      OrderedList.extend({
-        name: "orderedList",
-      }).configure({
-        HTMLAttributes: {
-          class: "list-decimal",
-        },
-      }),
-      Paragraph,
-      Text,
-      Underline,
-    ],
-    content: data,
-    onUpdate: (e) => {
-      const jsonContent = e.editor.getJSON()
-      handleChange(jsonContent)
-    },
+  return useBaseEditor({
+    extensions: [TableRow, IsomerTable, IsomerTableCell, IsomerTableHeader],
+    data,
+    handleChange,
   })
 }
