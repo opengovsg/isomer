@@ -38,6 +38,7 @@ export const resourceRouter = router({
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
         .where("Resource.type", "in", ["Folder"])
+        .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
           type: "Folder"
         }>()
