@@ -25,12 +25,7 @@ export const permalinkSchema = generateBasePermalinkSchema("page")
     message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
   })
 
-export const getEditPageSchema = z.object({
-  pageId: z.number().min(1),
-  siteId: z.number().min(1),
-})
-
-export const getPageSchema = z.object({
+export const basePageSchema = z.object({
   pageId: z.number().min(1),
   siteId: z.number().min(1),
 })
@@ -49,7 +44,7 @@ export const reorderBlobSchema = z.object({
   ),
 })
 
-export const updatePageSchema = getEditPageSchema.extend({
+export const updatePageSchema = basePageSchema.extend({
   // NOTE: We allow both to be empty now,
   // in which case this is a no-op.
   // We are ok w/ this because it doesn't
@@ -58,7 +53,7 @@ export const updatePageSchema = getEditPageSchema.extend({
   pageName: z.string().min(1).optional(),
 })
 
-export const updatePageBlobSchema = getEditPageSchema.extend({
+export const updatePageBlobSchema = basePageSchema.extend({
   content: z.string(),
   siteId: z.number().min(1),
 })
@@ -109,4 +104,9 @@ export const createCollectionPageSchema = createCollectionPageFormSchema.and(
 
 export const getRootPageSchema = z.object({
   siteId: z.number().min(1),
+})
+
+export const pageSettingsSchema = basePageSchema.extend({
+  title: pageTitleSchema,
+  permalink: permalinkSchema,
 })
