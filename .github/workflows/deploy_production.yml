@@ -9,7 +9,7 @@ on:
     types:
       - labeled
 
-# NOTE: This is actually using our federated isomer-staging account
+# NOTE: This is actually using our federated isomer-production account
 jobs:
   comment-on-pr:
     name: Comment on PR
