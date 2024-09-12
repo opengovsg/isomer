@@ -78,7 +78,7 @@ export const DEFAULT_BLOCKS: Record<
     title: "This is an optional title of the Infocards component",
     subtitle: "This is an optional subtitle for the Infocards component",
     variant: "cardsWithImages",
-    maxColumns: 3,
+    maxColumns: "3",
     cards: [
       {
         title: "This is the first card",
