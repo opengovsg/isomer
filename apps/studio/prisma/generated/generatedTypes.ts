@@ -13,6 +13,8 @@ export type Blob = {
      * [BlobJsonContent]
      */
     content: PrismaJson.BlobJsonContent;
+    createdAt: Generated<Timestamp>;
+    updatedAt: Generated<Timestamp>;
 };
 export type Footer = {
     id: GeneratedAlways<number>;
@@ -22,6 +24,8 @@ export type Footer = {
      * [FooterJsonContent]
      */
     content: PrismaJson.FooterJsonContent;
+    createdAt: Generated<Timestamp>;
+    updatedAt: Generated<Timestamp>;
 };
 export type Navbar = {
     id: GeneratedAlways<number>;
@@ -31,12 +35,16 @@ export type Navbar = {
      * [NavbarJsonContent]
      */
     content: PrismaJson.NavbarJsonContent;
+    createdAt: Generated<Timestamp>;
+    updatedAt: Generated<Timestamp>;
 };
 export type Permission = {
     id: GeneratedAlways<number>;
     resourceId: string;
     userId: string;
     role: RoleType;
+    createdAt: Generated<Timestamp>;
+    updatedAt: Generated<Timestamp>;
 };
 export type Resource = {
     id: GeneratedAlways<string>;
@@ -48,6 +56,8 @@ export type Resource = {
     draftBlobId: string | null;
     state: Generated<ResourceState | null>;
     type: ResourceType;
+    createdAt: Generated<Timestamp>;
+    updatedAt: Generated<Timestamp>;
 };
 export type Site = {
     id: GeneratedAlways<number>;
@@ -63,10 +73,14 @@ export type Site = {
      */
     theme: PrismaJson.SiteThemeJson | null;
     codeBuildId: string | null;
+    createdAt: Generated<Timestamp>;
+    updatedAt: Generated<Timestamp>;
 };
 export type SiteMember = {
     userId: string;
     siteId: number;
+    createdAt: Generated<Timestamp>;
+    updatedAt: Generated<Timestamp>;
 };
 export type User = {
     id: string;
@@ -74,6 +88,8 @@ export type User = {
     email: string;
     phone: string;
     preferredName: string | null;
+    createdAt: Generated<Timestamp>;
+    updatedAt: Generated<Timestamp>;
 };
 export type VerificationToken = {
     identifier: string;
@@ -88,6 +104,7 @@ export type Version = {
     blobId: string;
     publishedAt: Generated<Timestamp>;
     publishedBy: string;
+    updatedAt: Generated<Timestamp>;
 };
 export type DB = {
     Blob: Blob;

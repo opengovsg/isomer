@@ -98,6 +98,8 @@ export const sitesHandlers = {
             feedbackFormLink: "https://www.form.gov.sg",
             privacyStatementLink: "/privacy",
           },
+          createdAt: new Date(),
+          updatedAt: new Date(),
         }
       })
     },
@@ -150,6 +152,8 @@ export const sitesHandlers = {
               ],
             },
           ],
+          createdAt: new Date(),
+          updatedAt: new Date(),
         }
       })
     },

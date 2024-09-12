@@ -9,6 +9,8 @@ export const defaultUser: User = {
   name: "Test User",
   phone: "12345678",
   preferredName: "test",
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
 const defaultMeGetQuery = () => {

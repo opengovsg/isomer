@@ -14,6 +14,7 @@ import { trpc } from "~/utils/trpc"
 
 type PreviewProps = IsomerSchema & {
   permalink: string
+  lastModified?: Date
   siteId: number
   overrides?: PartialDeep<IsomerPageSchemaType>
 }
@@ -27,6 +28,7 @@ const FakeLink = ({ children, ...rest }: PropsWithChildren<unknown>) => (
 
 function SuspendablePreview({
   permalink,
+  lastModified = new Date(),
   siteId,
   overrides = {},
   ...props
@@ -43,8 +45,7 @@ function SuspendablePreview({
   const renderProps = merge(props, overrides, {
     page: {
       permalink,
-      // TODO: Fetch from DB in the future
-      lastModified: new Date().toString(),
+      lastModified,
     },
   })
 
