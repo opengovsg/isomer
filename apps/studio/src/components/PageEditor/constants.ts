@@ -281,6 +281,6 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   },
   {
     label: "Organise complex content",
-    types: ["contentpic", "infocards", "infocols", "iframe"],
+    types: ["infopic", "infocards", "infocols", "iframe"],
   },
 ]
