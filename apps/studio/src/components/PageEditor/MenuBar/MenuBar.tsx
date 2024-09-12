@@ -1,4 +1,5 @@
 import type { MenuButtonProps, MenuListProps } from "@chakra-ui/react"
+import type { Editor } from "@tiptap/react"
 import type { IconType } from "react-icons/lib"
 import {
   Box,
@@ -13,7 +14,6 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
-import { Editor } from "@tiptap/react"
 import { BiChevronDown, BiChevronUp } from "react-icons/bi"
 
 import { MenuItem } from "../MenuItem"

@@ -1,5 +1,5 @@
+import type { Editor } from "@tiptap/react"
 import { useMemo } from "react"
-import { Editor } from "@tiptap/react"
 import {
   BiBold,
   BiItalic,
@@ -10,7 +10,8 @@ import {
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
-import { MenuBar, MenuBarEntry } from "./MenuBar"
+import type { MenuBarEntry } from "./MenuBar"
+import { MenuBar } from "./MenuBar"
 
 export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
   const items: MenuBarEntry[] = useMemo(

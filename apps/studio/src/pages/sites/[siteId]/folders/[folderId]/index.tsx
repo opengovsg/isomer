@@ -15,6 +15,7 @@ import { useSetAtom } from "jotai"
 import { BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
+import type { RouterOutput } from "~/utils/trpc"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
@@ -25,7 +26,7 @@ import { MoveResourceModal } from "~/features/editing-experience/components/Move
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
-import { RouterOutput, trpc } from "~/utils/trpc"
+import { trpc } from "~/utils/trpc"
 
 const folderPageSchema = z.object({
   siteId: z.string(),

@@ -10,7 +10,8 @@ import {
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
-import { MenuBar, MenuBarEntry } from "./MenuBar"
+import type { MenuBarEntry } from "./MenuBar"
+import { MenuBar } from "./MenuBar"
 
 export const TextMenuBar = ({ editor }: { editor: Editor }) => {
   const items: MenuBarEntry[] = useMemo(

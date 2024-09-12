@@ -1,4 +1,4 @@
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import type { ResourceType } from "~prisma/generated/generatedEnums"
 
 export interface DeleteResourceModalState {
   title: string
