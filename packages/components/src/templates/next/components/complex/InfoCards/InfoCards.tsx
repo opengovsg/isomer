@@ -55,19 +55,19 @@ const createInfoCardsStyles = tv({
       },
     },
     maxColumns: {
-      1: {
+      "1": {
         grid: "",
       },
-      2: {
+      "2": {
         grid: "md:grid-cols-2",
       },
-      3: {
+      "3": {
         grid: "md:grid-cols-2 lg:grid-cols-3",
       },
     },
   },
   defaultVariants: {
-    maxColumns: 3,
+    maxColumns: "3",
     imageFit: "cover",
   },
 })

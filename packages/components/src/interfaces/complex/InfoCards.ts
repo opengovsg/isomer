@@ -24,6 +24,7 @@ const SingleCardNoImageSchema = Type.Object({
 })
 
 const SingleCardWithImageSchema = Type.Composite([
+  SingleCardNoImageSchema,
   Type.Object({
     imageUrl: Type.String({
       title: "Upload image",
@@ -52,7 +53,6 @@ const SingleCardWithImageSchema = Type.Composite([
         "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
     }),
   }),
-  SingleCardNoImageSchema,
 ])
 
 const InfoCardsBaseSchema = Type.Object({
@@ -70,11 +70,19 @@ const InfoCardsBaseSchema = Type.Object({
     }),
   ),
   maxColumns: Type.Optional(
-    Type.Union([Type.Literal(1), Type.Literal(2), Type.Literal(3)], {
-      title: "Maximum columns variant",
-      description:
-        "Controls the responsive behaviour regarding the number of columns that this component will expand to in different viewports",
-    }),
+    Type.Union(
+      [
+        Type.Literal("1", { title: "1 column" }),
+        Type.Literal("2", { title: "2 columns" }),
+        Type.Literal("3", { title: "3 columns" }),
+      ],
+      {
+        title: "Maximum columns variant",
+        description:
+          "Controls the responsive behaviour regarding the number of columns that this component will expand to in different viewports",
+        default: "3",
+      },
+    ),
   ),
 })
 
