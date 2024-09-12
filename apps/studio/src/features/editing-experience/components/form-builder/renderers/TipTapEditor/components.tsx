@@ -1,12 +1,9 @@
-import { PropsWithChildren } from "react"
+import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
+import type { PropsWithChildren } from "react"
 import { Box, VStack } from "@chakra-ui/react"
-import {
-  EditorContent,
-  EditorContentProps,
-  Editor as TiptapEditor,
-} from "@tiptap/react"
+import { EditorContent } from "@tiptap/react"
 
-import { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
+import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 
 export const EditorContainer = ({ children }: PropsWithChildren) => {
   return (

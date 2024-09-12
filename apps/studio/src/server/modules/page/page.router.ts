@@ -114,7 +114,7 @@ export const pageRouter = router({
         const navbar = await getNavBar(page.siteId)
         const footer = await getFooter(page.siteId)
 
-        const { title, type, permalink, content } = page
+        const { title, type, permalink, content, updatedAt } = page
 
         return {
           permalink,
@@ -125,6 +125,7 @@ export const pageRouter = router({
           content,
           title,
           type,
+          updatedAt,
           ...siteMeta,
         }
       })

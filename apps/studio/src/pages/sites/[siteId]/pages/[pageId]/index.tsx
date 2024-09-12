@@ -1,3 +1,4 @@
+import type { z } from "zod"
 import { useEffect } from "react"
 import {
   Box,
@@ -13,8 +14,8 @@ import { Infobox, Input, useToast } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
-import { z } from "zod"
 
+import type { RouterOutput } from "~/utils/trpc"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import EditPageDrawer from "~/features/editing-experience/components/EditPageDrawer"
 import Preview from "~/features/editing-experience/components/Preview"
@@ -30,14 +31,14 @@ import {
   pageSettingsSchema,
 } from "~/schemas/page"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
-import { RouterOutput, trpc } from "~/utils/trpc"
+import { trpc } from "~/utils/trpc"
 
 function EditPage(): JSX.Element {
   const { setDrawerState, setSavedPageState, setPreviewPageState } =
     useEditorDrawerContext()
   const { pageId, siteId } = useQueryParse(editPageSchema)
 
-  const [{ content: page, permalink, type, title }] =
+  const [{ content: page, permalink, type, title, updatedAt }] =
     trpc.page.readPageAndBlob.useSuspenseQuery(
       {
         pageId,
@@ -62,6 +63,7 @@ function EditPage(): JSX.Element {
           permalink={permalink}
           page={page}
           siteId={siteId}
+          updatedAt={updatedAt}
         />
       </TabPanel>
       <TabPanel>
@@ -74,9 +76,15 @@ function EditPage(): JSX.Element {
 interface PageEditingViewProps extends z.infer<typeof editPageSchema> {
   page: RouterOutput["page"]["readPageAndBlob"]["content"]
   permalink: RouterOutput["page"]["readPageAndBlob"]["permalink"]
+  updatedAt: RouterOutput["page"]["readPageAndBlob"]["updatedAt"]
 }
 
-const PageEditingView = ({ page, permalink, siteId }: PageEditingViewProps) => {
+const PageEditingView = ({
+  page,
+  permalink,
+  updatedAt,
+  siteId,
+}: PageEditingViewProps) => {
   const { previewPageState } = useEditorDrawerContext()
   const themeCssVars = useSiteThemeCssVars({ siteId })
 
@@ -107,6 +115,7 @@ const PageEditingView = ({ page, permalink, siteId }: PageEditingViewProps) => {
               {...previewPageState}
               siteId={siteId}
               permalink={permalink}
+              lastModified={updatedAt}
               version="0.1.0"
             />
           </PreviewIframe>

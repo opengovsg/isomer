@@ -1,5 +1,5 @@
+import type { useCalloutEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { CalloutMenuBar } from "~/components/PageEditor/MenuBar"
-import { useCalloutEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { Editor } from "./components"
 
 export function TiptapCalloutEditor({
