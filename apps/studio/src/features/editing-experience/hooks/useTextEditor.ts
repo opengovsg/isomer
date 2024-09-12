@@ -49,9 +49,6 @@ const BASE_EXTENSIONS: Extensions = [
   Gapcursor,
   HardBreak,
   History,
-  HorizontalRule.extend({
-    name: "divider",
-  }),
   Italic,
   ListItem,
   OrderedList.extend({
@@ -68,6 +65,10 @@ const BASE_EXTENSIONS: Extensions = [
   Text,
   Underline,
 ]
+
+const IsomerHorizontalRule = HorizontalRule.extend({
+  name: "divider",
+})
 
 const IsomerTable = Table.extend({
   addAttributes() {
@@ -135,7 +136,7 @@ export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
 
 export const useCalloutEditor = ({ data, handleChange }: BaseEditorProps) => {
   return useBaseEditor({
-    extensions: [],
+    extensions: [IsomerHorizontalRule],
     data,
     handleChange,
   })
