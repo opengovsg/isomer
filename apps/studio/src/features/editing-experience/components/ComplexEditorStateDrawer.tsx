@@ -3,8 +3,8 @@ import { Box, Flex, HStack, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
-import { isEmpty } from "lodash"
 import cloneDeep from "lodash/cloneDeep"
+import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
 import set from "lodash/set"
 import { BiTrash } from "react-icons/bi"
@@ -18,7 +18,7 @@ import { BRIEF_TOAST_SETTINGS } from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
 import { DrawerHeader } from "./Drawer/DrawerHeader"
-import { ErrorProvider } from "./form-builder/ErrorProvider"
+import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
 
 const ajv = new Ajv({ strict: false, logger: false })
@@ -251,46 +251,56 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           label={`Edit ${componentName}`}
         />
         <ErrorProvider>
-          {({ errors }) => (
-            <>
-              <Box flex={1} overflow="auto" px="2rem" py="1rem">
-                <FormBuilder<IsomerComponent>
-                  schema={subSchema}
-                  validateFn={validateFn}
-                  data={component}
-                  handleChange={handleChange}
-                />
+          <Box flex={1} overflow="auto" px="2rem" py="1rem">
+            <FormBuilder<IsomerComponent>
+              schema={subSchema}
+              validateFn={validateFn}
+              data={component}
+              handleChange={handleChange}
+            />
+          </Box>
+          <Box
+            bgColor="base.canvas.default"
+            boxShadow="md"
+            py="1.5rem"
+            px="2rem"
+          >
+            <HStack spacing="0.75rem">
+              <IconButton
+                icon={<BiTrash fontSize="1.25rem" />}
+                variant="outline"
+                colorScheme="critical"
+                aria-label="Delete block"
+                onClick={onDeleteBlockModalOpen}
+              />
+              <Box w="100%">
+                <SaveButton onClick={handleSave} isLoading={isLoading} />
               </Box>
-              <Box
-                bgColor="base.canvas.default"
-                boxShadow="md"
-                py="1.5rem"
-                px="2rem"
-              >
-                <HStack spacing="0.75rem">
-                  <IconButton
-                    icon={<BiTrash fontSize="1.25rem" />}
-                    variant="outline"
-                    colorScheme="critical"
-                    aria-label="Delete block"
-                    onClick={onDeleteBlockModalOpen}
-                  />
-                  <Box w="100%">
-                    <Button
-                      w="100%"
-                      onClick={handleSave}
-                      isLoading={isLoading}
-                      isDisabled={!isEmpty(errors)}
-                    >
-                      Save changes
-                    </Button>
-                  </Box>
-                </HStack>
-              </Box>
-            </>
-          )}
+            </HStack>
+          </Box>
         </ErrorProvider>
       </Flex>
     </>
+  )
+}
+
+const SaveButton = ({
+  onClick,
+  isLoading,
+}: {
+  onClick: () => void
+  isLoading: boolean
+}) => {
+  const { errors } = useBuilderErrors()
+
+  return (
+    <Button
+      w="100%"
+      isLoading={isLoading}
+      isDisabled={!isEmpty(errors)}
+      onClick={onClick}
+    >
+      Save changes
+    </Button>
   )
 }

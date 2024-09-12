@@ -1,9 +1,6 @@
 import type { ErrorObject } from "ajv"
-import type { Dispatch, SetStateAction } from "react"
+import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { createContext, useCallback, useContext, useState } from "react"
-import { runIfFn } from "@chakra-ui/utils"
-
-import type { MaybeRenderProp } from "~/types/propTypes"
 
 type MappedErrorObject = Record<string, ErrorObject[]>
 const ErrorContext = createContext<{
@@ -12,13 +9,7 @@ const ErrorContext = createContext<{
   hasErrorAt: (path: string) => boolean
 } | null>(null)
 
-export const ErrorProvider = ({
-  children,
-}: {
-  children?: MaybeRenderProp<{
-    errors: MappedErrorObject
-  }>
-}) => {
+export const ErrorProvider = ({ children }: PropsWithChildren) => {
   const [errors, setErrors] = useState<MappedErrorObject>({})
 
   const hasErrorAt = useCallback(
@@ -38,7 +29,7 @@ export const ErrorProvider = ({
         hasErrorAt,
       }}
     >
-      {runIfFn(children, { errors })}
+      {children}
     </ErrorContext.Provider>
   )
 }
