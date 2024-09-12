@@ -39,6 +39,7 @@ export const BaseBlock = ({
       px="0.75rem"
       flexDirection="row"
       align="center"
+      textAlign="start"
       onClick={onClick}
       {...containerProps}
     >
