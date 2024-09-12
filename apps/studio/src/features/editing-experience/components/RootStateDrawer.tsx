@@ -1,14 +1,6 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import { useCallback } from "react"
-import {
-  Box,
-  Button,
-  Flex,
-  HStack,
-  Spacer,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import { Box, Button, Flex, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
 import { BiCrown, BiPlusCircle } from "react-icons/bi"
@@ -92,7 +84,7 @@ export default function RootStateDrawer() {
   )
 
   const isHeroFixedBlock =
-    savedPageState?.layout === "homepage" &&
+    savedPageState.layout === "homepage" &&
     savedPageState.content.length > 0 &&
     savedPageState.content[0]?.type === "hero"
 
@@ -139,24 +131,22 @@ export default function RootStateDrawer() {
 
       <VStack w="100%" h="100%" gap="1rem">
         {/* Custom Blocks Section */}
-        <Flex flexDirection="row" w="100%" flexWrap="wrap">
-          <VStack gap="0.25rem" align="start" w="100%" maxW="18rem">
+        <Flex flexDirection="row" w="100%">
+          <VStack gap="0.25rem" align="start" flex={1}>
             <Text textStyle="subhead-1">Custom blocks</Text>
             <Text textStyle="caption-2" color="base.content.medium">
               Use blocks to display your content in various ways
             </Text>
           </VStack>
-          <Flex flex={1} pl="1.25rem" justify="end">
-            <Spacer width="1.25rem" />
-            <Button
-              size="xs"
-              leftIcon={<BiPlusCircle fontSize="1.25rem" />}
-              variant="clear"
-              onClick={() => setDrawerState({ state: "addBlock" })}
-            >
-              Add block
-            </Button>
-          </Flex>
+          <Button
+            size="xs"
+            flexShrink={0}
+            leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+            variant="clear"
+            onClick={() => setDrawerState({ state: "addBlock" })}
+          >
+            Add block
+          </Button>
         </Flex>
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="blocks">
