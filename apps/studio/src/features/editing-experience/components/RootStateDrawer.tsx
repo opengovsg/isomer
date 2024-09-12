@@ -92,7 +92,7 @@ export default function RootStateDrawer() {
     <VStack gap="1.5rem" px="1.25rem" py="1.5rem">
       <ActivateAdminMode />
       {/* Fixed Blocks Section */}
-      <VStack gap="1rem" w="100%">
+      <VStack gap="1rem" w="100%" align="start">
         <VStack gap="0.25rem" align="start">
           <Text textStyle="subhead-1">Fixed blocks</Text>
           <Text textStyle="caption-2" color="base.content.medium">
@@ -118,7 +118,7 @@ export default function RootStateDrawer() {
             w="100%"
           >
             <HStack w="100%" py="4" bgColor="white">
-              <VStack w="100%" pl={1}>
+              <VStack w="100%" pl={1} align="start">
                 <Text px="3" fontWeight={500}>
                   Page title and summary
                 </Text>
