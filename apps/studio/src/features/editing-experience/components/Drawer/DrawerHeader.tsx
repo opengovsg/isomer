@@ -6,12 +6,14 @@ interface DrawerHeaderProps extends TextProps {
   label: string
   onBackClick: () => void
   isDisabled?: boolean
+  backAriaLabel?: string
 }
 
 export const DrawerHeader = ({
   onBackClick,
   label,
   isDisabled,
+  backAriaLabel,
   ...textProps
 }: DrawerHeaderProps): JSX.Element => {
   return (
@@ -30,7 +32,7 @@ export const DrawerHeader = ({
         icon={<BiChevronLeft fontSize="1.25rem" />}
         variant="clear"
         size="sm"
-        aria-label="Return to previous step"
+        aria-label={backAriaLabel ?? "Return to previous step"}
         isDisabled={isDisabled}
         onClick={onBackClick}
       />

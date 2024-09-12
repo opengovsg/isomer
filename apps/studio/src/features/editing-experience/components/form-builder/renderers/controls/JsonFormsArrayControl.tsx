@@ -84,6 +84,7 @@ function ComplexEditorNestedDrawer({
         label={`Edit ${label}`}
         onBackClick={() => setSelectedIndex()}
         textStyle="subhead-1"
+        backAriaLabel={`Return to ${label}`}
       />
       <Box w="100%" h="100%" px="1.5rem" py="1rem" flex={1} overflow="auto">
         <JsonFormsDispatch
@@ -222,21 +223,38 @@ export function JsonFormsArrayControl({
     handleMoveItem(path, originalIndex, newIndex)
   }
 
+  if (selectedIndex !== undefined) {
+    return (
+      <ComplexEditorNestedDrawer
+        renderers={renderers}
+        cells={cells}
+        visible={visible}
+        schema={schema}
+        uischema={childUiSchema}
+        path={composePaths(path, `${selectedIndex}`)}
+        label={label}
+        setSelectedIndex={setSelectedIndex}
+        isRemoveItemDisabled={isRemoveItemDisabled}
+        handleRemoveItem={handleRemoveItem(path, selectedIndex)}
+        selectedIndex={selectedIndex}
+        maxIndex={data - 1}
+      />
+    )
+  }
+
   return (
     <VStack spacing="0.375rem" align="start">
       <Stack flexDir="row" justify="space-between" align="center" w="full">
         <Text textStyle="subhead-1">{label}</Text>
-        {selectedIndex === undefined && (
-          <Button
-            onClick={addItem(path, createDefaultValue(schema, rootSchema))}
-            variant="clear"
-            size="xs"
-            leftIcon={<BiPlusCircle fontSize="1.25rem" />}
-            isDisabled={maxItems !== undefined && data >= maxItems}
-          >
-            Add item
-          </Button>
-        )}
+        <Button
+          onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+          variant="clear"
+          size="xs"
+          leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+          isDisabled={maxItems !== undefined && data >= maxItems}
+        >
+          Add item
+        </Button>
       </Stack>
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="blocks">
@@ -308,23 +326,6 @@ export function JsonFormsArrayControl({
           )}
         </Droppable>
       </DragDropContext>
-
-      {selectedIndex !== undefined && (
-        <ComplexEditorNestedDrawer
-          renderers={renderers}
-          cells={cells}
-          visible={visible}
-          schema={schema}
-          uischema={childUiSchema}
-          path={composePaths(path, `${selectedIndex}`)}
-          label={label}
-          setSelectedIndex={setSelectedIndex}
-          isRemoveItemDisabled={isRemoveItemDisabled}
-          handleRemoveItem={handleRemoveItem(path, selectedIndex)}
-          selectedIndex={selectedIndex}
-          maxIndex={data - 1}
-        />
-      )}
     </VStack>
   )
 }
