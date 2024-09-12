@@ -8,16 +8,7 @@ import type {
   UISchemaElement,
 } from "@jsonforms/core"
 import { useCallback, useMemo, useState } from "react"
-import {
-  Box,
-  Flex,
-  Heading,
-  HStack,
-  Icon,
-  Stack,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import { Box, Flex, HStack, Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
   composePaths,
@@ -31,10 +22,11 @@ import {
   JsonFormsDispatch,
   withJsonFormsArrayLayoutProps,
 } from "@jsonforms/react"
-import { Button, IconButton } from "@opengovsg/design-system-react"
-import { BiPlusCircle, BiX } from "react-icons/bi"
+import { Button } from "@opengovsg/design-system-react"
+import { BiPlusCircle } from "react-icons/bi"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
 import DraggableDrawerButton from "./DraggableDrawerButton"
 
@@ -70,33 +62,21 @@ function ComplexEditorNestedDrawer({
 }: ComplexEditorNestedDrawerProps) {
   return (
     <VStack
-      spacing={5}
       position="absolute"
       top={0}
       left={0}
-      px="2rem"
-      py="1.5rem"
-      bgColor="grey.50"
+      bg="grey.50"
       w="100%"
       h="100%"
       zIndex={1}
+      gap={0}
     >
-      <HStack justifyContent="space-between" w="100%">
-        <Heading as="h3" size="sm" variant="subhead-1" fontWeight="medium">
-          Edit {label}
-        </Heading>
-        <IconButton
-          icon={<Icon as={BiX} />}
-          variant="clear"
-          colorScheme="sub"
-          size="sm"
-          p="0.625rem"
-          onClick={() => setSelectedIndex()}
-          aria-label="Close drawer"
-        />
-      </HStack>
-
-      <Box w="100%" h="100%">
+      <DrawerHeader
+        label={`Edit ${label}`}
+        onBackClick={() => setSelectedIndex()}
+        textStyle="subhead-1"
+      />
+      <Box w="100%" h="100%" px="1.5rem" py="1rem" flex={1} overflow="auto">
         <JsonFormsDispatch
           renderers={renderers}
           cells={cells}
@@ -105,7 +85,8 @@ function ComplexEditorNestedDrawer({
           uischema={uischema}
           path={path}
         />
-
+      </Box>
+      <Box bg="base.canvas.default" boxShadow="md" py="1.5rem" px="2rem">
         <HStack w="100%" justifyContent="center">
           <Button
             onClick={handleRemoveItem}
@@ -207,7 +188,7 @@ export function JsonFormsArrayControl({
   }
 
   return (
-    <VStack py={2} spacing="0.375rem" align="start">
+    <VStack spacing="0.375rem" align="start">
       <Stack flexDir="row" justify="space-between" align="center" w="full">
         <Text textStyle="subhead-1">{label}</Text>
         {selectedIndex === undefined && (

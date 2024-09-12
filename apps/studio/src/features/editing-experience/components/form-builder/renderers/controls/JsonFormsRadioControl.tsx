@@ -28,7 +28,7 @@ export function JsonFormsRadioControl({
   }
 
   return (
-    <Box py={2}>
+    <Box>
       <FormControl isRequired={required}>
         <FormLabel description={description}>{label}</FormLabel>
         <RadioGroup onChange={(value) => handleChange(path, value)}>

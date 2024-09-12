@@ -73,10 +73,6 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: jsonFormsVerticalLayoutRenderer,
   },
   {
-    tester: jsonFormsVerticalLayoutTester,
-    renderer: jsonFormsVerticalLayoutRenderer,
-  },
-  {
     // NOTE: If we fall through all our previous testers,
     // we render null so that the users don't get visual noise
     tester: rankWith(JSON_FORMS_RANKING.Catchall, () => true),

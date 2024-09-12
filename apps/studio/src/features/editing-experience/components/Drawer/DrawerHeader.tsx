@@ -1,16 +1,18 @@
+import type { TextProps } from "@chakra-ui/react"
 import { Flex, IconButton, Text } from "@chakra-ui/react"
 import { BiChevronLeft } from "react-icons/bi"
 
-interface DrawerHeaderProps {
+interface DrawerHeaderProps extends TextProps {
   label: string
   onBackClick: () => void
-  isDisabled: boolean
+  isDisabled?: boolean
 }
 
 export const DrawerHeader = ({
   onBackClick,
   label,
   isDisabled,
+  ...textProps
 }: DrawerHeaderProps): JSX.Element => {
   return (
     <Flex
@@ -32,7 +34,9 @@ export const DrawerHeader = ({
         isDisabled={isDisabled}
         onClick={onBackClick}
       />
-      <Text textStyle="h6">{label}</Text>
+      <Text textStyle="h6" {...textProps}>
+        {label}
+      </Text>
     </Flex>
   )
 }
