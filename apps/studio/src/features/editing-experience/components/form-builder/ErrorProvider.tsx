@@ -16,7 +16,7 @@ export const ErrorProvider = ({
   children,
 }: {
   children?: MaybeRenderProp<{
-    setErrors: Dispatch<SetStateAction<MappedErrorObject>>
+    errors: MappedErrorObject
   }>
 }) => {
   const [errors, setErrors] = useState<MappedErrorObject>({})
@@ -38,7 +38,7 @@ export const ErrorProvider = ({
         hasErrorAt,
       }}
     >
-      {runIfFn(children, { setErrors })}
+      {runIfFn(children, { errors })}
     </ErrorContext.Provider>
   )
 }
