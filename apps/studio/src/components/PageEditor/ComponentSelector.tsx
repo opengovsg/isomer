@@ -123,8 +123,6 @@ function ComponentSelector() {
   } = useEditorDrawerContext()
 
   const onProceed = (sectionType: SectionType) => {
-    if (!savedPageState) return
-
     // TODO: add new section to page/editor state
     // NOTE: Only paragraph should go to tiptap editor
     // the rest should use json forms
@@ -200,7 +198,8 @@ function ComponentSelector() {
         </Button>
       </Flex>
       <VStack
-        p="2rem"
+        px="1.5rem"
+        py="1.25rem"
         w="full"
         gap="1.25rem"
         alignItems="start"
