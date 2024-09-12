@@ -34,6 +34,11 @@ export const BaseBlock = ({
         bg: "interaction.muted.main.hover",
         borderColor: "interaction.main-subtle.hover",
       }}
+      _active={{
+        bg: "interaction.main-subtle.default",
+        borderColor: "interaction.main-subtle.hover",
+        shadow: "0px 1px 6px 0px #1361F026",
+      }}
       bg="white"
       py="0.5rem"
       px="0.75rem"
