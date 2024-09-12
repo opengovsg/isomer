@@ -5,8 +5,6 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
-import { withChromaticModes } from "@isomer/storybook-config"
-
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 
 const COMMON_HANDLERS = [
@@ -45,11 +43,7 @@ const meta: Meta<typeof EditPage> = {
 export default meta
 type Story = StoryObj<typeof EditPage>
 
-export const Default: Story = {
-  parameters: {
-    chromatic: withChromaticModes(["gsib", "mobile"]),
-  },
-}
+export const Default: Story = {}
 
 export const AddBlock: Story = {
   play: async ({ canvasElement }) => {
