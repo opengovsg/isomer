@@ -1,6 +1,6 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import { useCallback } from "react"
-import { Box, Button, Flex, HStack, Text, VStack } from "@chakra-ui/react"
+import { Box, Button, Flex, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
 import { BiCrown, BiPlusCircle } from "react-icons/bi"
