@@ -1,0 +1,60 @@
+name: Deploy to production
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+      - labeled
+
+# NOTE: This is actually using our federated isomer-production account
+jobs:
+  comment-on-pr:
+    name: Comment on PR
+    if: startsWith(github.event.label.name, 'deploy-production')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: mshick/add-pr-comment@v2
+        with:
+          allow-repeats: true
+          message: |
+            🚀 Deployment through Github Actions has been scheduled!
+
+            Please check back in ~10 minutes ☕️.
+
+  deploy_production:
+    name: Deploy app to production
+    uses: ./.github/workflows/aws_deploy.yml
+    # NOTE: deploy in `production` env to set env specific secrets
+    with:
+      aws-region: "ap-southeast-1"
+      aws-account-id: "730335583385"
+      cicd-role: "arn:aws:iam::730335583385:role/isomer-next-infra-github-oidc-role-d1f99bd"
+      ecr-repository: "isomer-next-infra-prod-ecr"
+      ecs-cluster-name: "studio-production-ecs"
+      ecs-service-name: "studio-production-ecs-service"
+      ecs-container-name: "studio"
+      ecs-container-port: 3000
+      environment: "production"
+      shortEnv: "prod"
+      codedeploy-appspec-path: .aws/deploy/appspec.json
+      ecs-task-definition-path: .aws/deploy/task-definition.json
+      codedeploy-application: "studio-production-ecs-app"
+      codedeploy-deployment-group: "studio-production-ecs-dg"
+      ecs-task-role: studio-production-ecs-task-role
+      ecs-task-exec-role: studio-production-ecs-task-exec-role
+      app-url: "https://studio.isomer.gov.sg"
+      app-name: "Isomer Studio"
+      app-version: ${{ github.sha }}
+      app-enable-sgid: false
+      app-s3-region: "ap-southeast-1"
+      app-s3-assets-bucket-name: "isomer-next-infra-prod-assets-private-a319984"
+      app-s3-assets-domain-name: "isomer-user-content.by.gov.sg"
+
+    secrets:
+      DD_API_KEY: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+      RDS_READER_ENDPOINT: ${{ secrets.RDS_READER_ENDPOINT }}
