@@ -266,6 +266,7 @@ export function JsonFormsArrayControl({
               h="100%"
               spacing={0}
               ref={innerRef}
+              mt="-0.25rem"
             >
               {data === 0 && (
                 <Flex
@@ -273,6 +274,7 @@ export function JsonFormsArrayControl({
                   flexDir="column"
                   px="1.5rem"
                   p="3.75rem"
+                  mt="0.25rem"
                   justifyContent="center"
                   w="100%"
                 >

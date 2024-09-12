@@ -47,7 +47,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
     ref,
   ) => {
     return (
-      <Box my="0.375rem" ref={ref} {...draggableProps} w="full">
+      <Box my="0.25rem" ref={ref} {...draggableProps} w="full">
         <HStack
           spacing={0}
           border="1px solid"
