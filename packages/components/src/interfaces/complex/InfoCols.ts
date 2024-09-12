@@ -12,7 +12,7 @@ export const InfoBoxSchema = Type.Object({
   description: Type.Optional(
     Type.String({
       title: "Description",
-      maxLength: 300,
+      maxLength: 200,
     }),
   ),
   icon: Type.Optional(
@@ -57,7 +57,7 @@ export const InfoColsSchema = Type.Object(
     subtitle: Type.Optional(
       Type.String({
         title: "Description",
-        maxLength: 200,
+        maxLength: 150,
       }),
     ),
     infoBoxes: Type.Array(InfoBoxSchema, {

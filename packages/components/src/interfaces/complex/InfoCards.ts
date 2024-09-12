@@ -13,7 +13,7 @@ const SingleCardNoImageSchema = Type.Object({
     Type.String({
       title: "Description",
       default: "This is an optional description for the card",
-      maxLength: 200,
+      maxLength: 150,
     }),
   ),
   url: Type.Optional(
@@ -68,7 +68,7 @@ const InfoCardsBaseSchema = Type.Object({
     Type.String({
       title: "Description",
       default: "This is an optional description for the Cards component",
-      maxLength: 100,
+      maxLength: 200,
     }),
   ),
   maxColumns: Type.Optional(

@@ -13,7 +13,7 @@ export const InfobarSchema = Type.Object(
     description: Type.Optional(
       Type.String({
         title: "Description",
-        maxLength: 200,
+        maxLength: 100,
       }),
     ),
     buttonLabel: Type.Optional(
