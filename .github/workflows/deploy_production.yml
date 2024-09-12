@@ -28,6 +28,8 @@ jobs:
 
   deploy_production:
     name: Deploy app to production
+    needs:
+      - comment-on-pr
     uses: ./.github/workflows/aws_deploy.yml
     # NOTE: deploy in `production` env to set env specific secrets
     with:
