@@ -1,27 +1,18 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import { useCallback } from "react"
-import {
-  Box,
-  Button,
-  Divider,
-  HStack,
-  Icon,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import { Box, Button, Flex, HStack, Text, VStack } from "@chakra-ui/react"
+import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
-import { getComponentSchema } from "@opengovsg/isomer-components"
-import { BiGridVertical } from "react-icons/bi"
-import { BsPlus } from "react-icons/bs"
+import { BiCrown, BiPlusCircle } from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
-import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
 import { ActivateAdminMode } from "./ActivateAdminMode"
+import { BaseBlock } from "./Block/BaseBlock"
+import { DraggableBlock } from "./Block/DraggableBlock"
 
 export default function RootStateDrawer() {
   const {
@@ -98,32 +89,26 @@ export default function RootStateDrawer() {
     savedPageState.content[0]?.type === "hero"
 
   return (
-    <VStack w="100%" h="100%" gap={10} pt={10}>
+    <VStack gap="1.5rem" px="1.25rem" py="1.5rem">
       <ActivateAdminMode />
-      {/* TODO: Fixed Blocks Section */}
-      <VStack w="100%" align="baseline">
-        <Text fontSize="xl" pl={4} fontWeight={500}>
-          Fixed blocks
-        </Text>
-
+      {/* Fixed Blocks Section */}
+      <VStack gap="1rem" w="100%" align="start">
+        <VStack gap="0.25rem" align="start">
+          <Text textStyle="subhead-1">Fixed blocks</Text>
+          <Text textStyle="caption-2" color="base.content.medium">
+            These components are fixed for the layout and cannot be deleted
+          </Text>
+        </VStack>
         {isHeroFixedBlock ? (
-          <Box
-            as="button"
+          <BaseBlock
             onClick={() => {
               setCurrActiveIdx(0)
               setDrawerState({ state: "heroEditor" })
             }}
-            w="100%"
-          >
-            <HStack w="100%" py="4" bgColor="white">
-              <VStack w="100%" align="baseline" pl={1}>
-                <Text px="3" fontWeight={500}>
-                  Hero banner
-                </Text>
-                <Text px="3">Title, subtitle, and Call-to-Action</Text>
-              </VStack>
-            </HStack>
-          </Box>
+            label="Hero banner"
+            description="Title, subtitle, and Call-to-Action"
+            icon={BiCrown}
+          />
         ) : (
           <Box
             as="button"
@@ -133,7 +118,7 @@ export default function RootStateDrawer() {
             w="100%"
           >
             <HStack w="100%" py="4" bgColor="white">
-              <VStack w="100%" align="baseline" pl={1}>
+              <VStack w="100%" pl={1} align="start">
                 <Text px="3" fontWeight={500}>
                   Page title and summary
                 </Text>
@@ -144,20 +129,33 @@ export default function RootStateDrawer() {
         )}
       </VStack>
 
-      <VStack justifyContent="space-between" w="100%" h="100%">
+      <VStack w="100%" h="100%" gap="1rem">
         {/* Custom Blocks Section */}
+        <Flex flexDirection="row" w="100%">
+          <VStack gap="0.25rem" align="start" flex={1}>
+            <Text textStyle="subhead-1">Custom blocks</Text>
+            <Text textStyle="caption-2" color="base.content.medium">
+              Use blocks to display your content in various ways
+            </Text>
+          </VStack>
+          <Button
+            size="xs"
+            flexShrink={0}
+            leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+            variant="clear"
+            onClick={() => setDrawerState({ state: "addBlock" })}
+          >
+            Add block
+          </Button>
+        </Flex>
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="blocks">
             {(provided) => (
               <VStack
                 {...provided.droppableProps}
-                align="baseline"
                 w="100%"
                 ref={provided.innerRef}
               >
-                <Text fontSize="xl" pl={4} fontWeight={500}>
-                  Custom blocks
-                </Text>
                 <Box w="100%">
                   {(!savedPageState ||
                     (isHeroFixedBlock && savedPageState.content.length === 1) ||
@@ -176,66 +174,42 @@ export default function RootStateDrawer() {
                         textStyle="caption-2"
                         color="base.content.medium"
                       >
-                        Click ‘Add a new block’ below to add blocks to this page
+                        Click the ‘Add block’ button above to add blocks to this
+                        page
                       </Text>
                     </VStack>
                   )}
 
-                  {!!savedPageState &&
-                    savedPageState.content.map((block, index) => {
-                      if (isHeroFixedBlock && index === 0) {
-                        return <></>
-                      }
+                  {!!savedPageState && (
+                    <Flex flexDirection="column" mt="-0.25rem">
+                      {savedPageState.content.map((block, index) => {
+                        if (isHeroFixedBlock && index === 0) {
+                          return <></>
+                        }
 
-                      return (
-                        <Draggable
-                          // TODO: Determine key + draggable id
-                          key={index}
-                          draggableId={`${block.type}-${index}`}
-                          index={index}
-                        >
-                          {(provided) => (
-                            <VStack
-                              w="100%"
-                              gap={0}
-                              onClick={() => {
-                                setCurrActiveIdx(index)
-                                // TODO: we should automatically do this probably?
-                                const nextState =
-                                  savedPageState.content[index]?.type ===
-                                  "prose"
-                                    ? "nativeEditor"
-                                    : "complexEditor"
-                                setDrawerState({ state: nextState })
-                              }}
-                            >
-                              <HStack
-                                w="100%"
-                                py="4"
-                                bgColor="white"
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                              >
-                                <Icon
-                                  as={BiGridVertical}
-                                  fontSize="1.5rem"
-                                  ml="0.75rem"
-                                />
-                                <Text px="3" fontWeight={500}>
-                                  {/*  NOTE: Because we use `Type.Ref` for prose, */}
-                                  {/* this gets a `$Ref` only and not the concrete values */}
-                                  {block.type === "prose"
-                                    ? PROSE_COMPONENT_NAME
-                                    : getComponentSchema(block.type).title}
-                                </Text>
-                              </HStack>
-                              <Divider />
-                            </VStack>
-                          )}
-                        </Draggable>
-                      )
-                    })}
+                        return (
+                          <DraggableBlock
+                            block={block}
+                            // TODO: Generate a block ID instead of index
+                            key={`${block.type}-${index}`}
+                            // TODO: Use block ID when instead of index for uniquely identifying blocks
+                            draggableId={`${block.type}-${index}`}
+                            index={index}
+                            onClick={() => {
+                              setCurrActiveIdx(index)
+                              // TODO: we should automatically do this probably?
+                              const nextState =
+                                savedPageState.content[index]?.type === "prose"
+                                  ? "nativeEditor"
+                                  : "complexEditor"
+                              // NOTE: SNAPSHOT
+                              setDrawerState({ state: nextState })
+                            }}
+                          />
+                        )
+                      })}
+                    </Flex>
+                  )}
                 </Box>
                 {provided.placeholder}
               </VStack>
@@ -243,24 +217,6 @@ export default function RootStateDrawer() {
           </Droppable>
         </DragDropContext>
       </VStack>
-      <Box
-        w="100%"
-        bgColor="base.canvas.default"
-        boxShadow="md"
-        pos="sticky"
-        py="1.5rem"
-        px="2rem"
-        bottom={0}
-      >
-        <Button
-          w="100%"
-          variant="outline"
-          onClick={() => setDrawerState({ state: "addBlock" })}
-        >
-          <BsPlus style={{ height: "1.25rem", width: "1.25rem" }} />
-          Add a new block
-        </Button>
-      </Box>
     </VStack>
   )
 }
