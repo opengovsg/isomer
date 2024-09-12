@@ -6,7 +6,15 @@ import type {
   OwnPropsOfMasterListItem,
   StatePropsOfMasterItem,
 } from "@jsonforms/core"
-import { Box, forwardRef, HStack, Icon, Stack, Text } from "@chakra-ui/react"
+import {
+  Box,
+  Flex,
+  forwardRef,
+  HStack,
+  Icon,
+  Stack,
+  Text,
+} from "@chakra-ui/react"
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
 import { BiGridVertical, BiInfoCircle } from "react-icons/bi"
 
@@ -78,7 +86,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
               mr="-6px"
             />
           )}
-          <Box
+          <Flex
             cursor="grab"
             pl="0.5rem"
             pr="0.25rem"
@@ -87,7 +95,7 @@ const DraggableDrawerButton = forwardRef<DraggableDrawerButtonProps, "div">(
             {...dragHandleProps}
           >
             <Icon as={BiGridVertical} fontSize="1.5rem" color="slate.300" />
-          </Box>
+          </Flex>
           <Box
             layerStyle="focusRing"
             as="button"
