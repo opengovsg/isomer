@@ -3,7 +3,7 @@ import { useCallback } from "react"
 import { Box, Button, Flex, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
-import { BiPlusCircle } from "react-icons/bi"
+import { BiPin, BiPlusCircle } from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -117,6 +117,7 @@ export default function RootStateDrawer() {
             }}
             label="Page title and summary"
             description="Click to edit"
+            icon={BiPin}
           />
         )}
       </VStack>
