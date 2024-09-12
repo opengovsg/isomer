@@ -23,7 +23,9 @@ export const ErrorProvider = ({
 
   const hasErrorAt = useCallback(
     (path: string) => {
-      return !!errors[path]?.[0]?.message
+      // Convert path in the form of x.y to /x/y.
+      const convertedPath = `/${path.replace(/\./g, "/")}`
+      return !!errors[convertedPath]?.[0]?.message
     },
     [errors],
   )

@@ -35,6 +35,7 @@ import { Button, IconButton } from "@opengovsg/design-system-react"
 import { BiPlusCircle, BiX } from "react-icons/bi"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { useBuilderErrors } from "../../ErrorProvider"
 import DraggableDrawerButton from "./DraggableDrawerButton"
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
@@ -140,6 +141,7 @@ export function JsonFormsArrayControl({
   uischema,
   translations,
 }: ArrayLayoutProps) {
+  const { hasErrorAt } = useBuilderErrors()
   const [selectedIndex, setSelectedIndex] = useState<number>()
   const resolvedSchema = Resolve.schema(rootSchema, uischema.scope, rootSchema)
   const maxItems =
@@ -252,6 +254,7 @@ export function JsonFormsArrayControl({
 
               {[...Array(data).keys()].map((index) => {
                 const childPath = composePaths(path, `${index}`)
+                const hasError = hasErrorAt(childPath)
 
                 return (
                   <Draggable
@@ -264,6 +267,7 @@ export function JsonFormsArrayControl({
                       <DraggableDrawerButton
                         draggableProps={draggableProps}
                         dragHandleProps={dragHandleProps}
+                        isError={hasError}
                         ref={innerRef}
                         index={index}
                         path={path}
