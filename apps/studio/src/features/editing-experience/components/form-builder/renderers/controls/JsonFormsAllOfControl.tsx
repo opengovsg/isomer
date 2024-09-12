@@ -33,7 +33,7 @@ export function JsonFormsAllOfControl({
   )
 
   return (
-    <Box py={2}>
+    <Box>
       {allOfRenderInfos.map((allOfRenderInfo) => (
         <JsonFormsDispatch
           key={allOfRenderInfo.label}

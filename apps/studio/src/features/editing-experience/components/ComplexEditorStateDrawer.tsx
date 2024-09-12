@@ -291,7 +291,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           label={`Edit ${componentName}`}
         />
         <ErrorProvider>
-          <Box flex={1} overflow="auto" px="2rem" py="1rem">
+          <Box flex={1} overflow="auto" px="1.5rem" py="1rem">
             <FormBuilder<IsomerComponent>
               schema={subSchema}
               validateFn={validateFn}
@@ -340,7 +340,7 @@ const SaveButton = ({
       isDisabled={!isEmpty(errors)}
       onClick={onClick}
     >
-      Save changes
+      Save block
     </Button>
   )
 }
