@@ -108,7 +108,5 @@ export const getRootPageSchema = z.object({
 
 export const pageSettingsSchema = basePageSchema.extend({
   title: pageTitleSchema,
-  meta: z.string().optional(),
   permalink: permalinkSchema,
-  noIndex: z.boolean().optional(),
 })

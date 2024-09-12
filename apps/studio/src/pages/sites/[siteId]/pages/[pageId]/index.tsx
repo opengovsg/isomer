@@ -4,19 +4,12 @@ import {
   Flex,
   Grid,
   GridItem,
-  Spacer,
   TabPanel,
   TabPanels,
   Text,
-  Textarea,
   VStack,
 } from "@chakra-ui/react"
-import {
-  Infobox,
-  Input,
-  Toggle,
-  useToast,
-} from "@opengovsg/design-system-react"
+import { Infobox, Input, useToast } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
@@ -238,31 +231,6 @@ const PageSettings = ({
                 {MAX_PAGE_URL_LENGTH - permalink.length} characters left
               </Text>
             </Box>
-            <Box>
-              <Text textStyle="h5" as="h5">
-                Search Engine Optimisation (Advanced)
-              </Text>
-              <Text textStyle="body-2">
-                Settings here will affect how your page appears on search
-                engines like Google.
-              </Text>
-            </Box>
-          </VStack>
-
-          <VStack alignItems="flex-start" gap="1.5rem" mt="1.5rem" w="100%">
-            <Flex w="full">
-              <Box w="full">
-                <Toggle
-                  {...register("noIndex")}
-                  label="Prevent search engines from indexing this page"
-                />
-                <Text textStyle="body-2">
-                  If this is on, your visitors can't find this page through a
-                  search engine.
-                </Text>
-              </Box>
-              <Spacer />
-            </Flex>
             <Box w="full">
               <Text textStyle="subhead-1">Page title</Text>
               <Text textStyle="body-2" mt="0.25rem">
@@ -280,14 +248,6 @@ const PageSettings = ({
               <Text mt="0.5rem" textColor="base.content.medium">
                 {MAX_TITLE_LENGTH - title.length} characters left
               </Text>
-            </Box>
-            <Box w="full">
-              <Text textStyle="subhead-1">Meta description</Text>
-              <Text textStyle="body-2">
-                This is a summary of your page that is displayed on search
-                results. By default, this is the summary of your page.
-              </Text>
-              <Textarea mt="0.5rem" {...register("meta")} />
             </Box>
           </VStack>
         </GridItem>
