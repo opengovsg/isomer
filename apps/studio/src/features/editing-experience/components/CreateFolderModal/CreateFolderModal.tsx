@@ -22,6 +22,7 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
+import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 
 import { useZodForm } from "~/lib/form"
@@ -63,14 +64,21 @@ const CreateFolderModalContent = ({
   siteId,
   parentFolderId,
 }: CreateFolderModalProps) => {
-  const { register, handleSubmit, watch, formState, setValue, getFieldState } =
-    useZodForm({
-      defaultValues: {
-        folderTitle: "",
-        permalink: "",
-      },
-      schema: createFolderSchema.omit({ siteId: true, parentFolderId: true }),
-    })
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    formState,
+    setValue,
+    getFieldState,
+  } = useZodForm({
+    defaultValues: {
+      folderTitle: "",
+      permalink: "",
+    },
+    schema: createFolderSchema.omit({ siteId: true, parentFolderId: true }),
+  })
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
   const toast = useToast()
@@ -150,10 +158,25 @@ const CreateFolderModalContent = ({
                   This will be applied to every child under this folder.
                 </FormHelperText>
               </FormLabel>
-              <Input
-                placeholder="This is a url for your new page"
-                maxLength={MAX_FOLDER_PERMALINK_LENGTH}
-                {...register("permalink")}
+              <Controller
+                control={control}
+                name="permalink"
+                render={({ field: { onChange, ...field } }) => (
+                  <Input
+                    placeholder="This is a url for your new page"
+                    noOfLines={1}
+                    maxLength={MAX_FOLDER_PERMALINK_LENGTH}
+                    {...field}
+                    onChange={(e) => {
+                      onChange(
+                        generateResourceUrl(e.target.value).slice(
+                          0,
+                          MAX_FOLDER_PERMALINK_LENGTH,
+                        ),
+                      )
+                    }}
+                  />
+                )}
               />
               {errors.permalink?.message && (
                 <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
