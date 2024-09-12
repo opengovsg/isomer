@@ -5,6 +5,7 @@ import {
   BiBold,
   BiCog,
   BiItalic,
+  BiLink,
   BiListOl,
   BiListUl,
   BiStrikethrough,
@@ -24,6 +25,7 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
+import { useLinkEditorModal } from "~/features/editing-experience/hooks/useLinkEditorModal"
 import { TableSettingsModal } from "../TableSettingsModal"
 import { MenuBar } from "./MenuBar"
 
@@ -33,6 +35,8 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
     onOpen: onTableSettingsModalOpen,
     onClose: onTableSettingsModalClose,
   } = useDisclosure()
+  const { onLinkModalOpen, LinkEditorModal } = useLinkEditorModal({ editor })
+
   const items: MenuBarEntry[] = useMemo(
     () => [
       {
@@ -103,6 +107,19 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
             isActive: () => editor.isActive("unorderedList"),
           },
         ],
+      },
+      {
+        type: "divider",
+      },
+      {
+        type: "item",
+        icon: BiLink,
+        title: "Link",
+        action: onLinkModalOpen,
+        isActive: () => editor.isActive("link"),
+      },
+      {
+        type: "divider",
       },
       {
         type: "item",
@@ -199,6 +216,8 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
         isOpen={isTableSettingsModalOpen}
         onClose={onTableSettingsModalClose}
       />
+
+      {LinkEditorModal}
 
       <MenuBar items={items} />
     </>

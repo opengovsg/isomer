@@ -3,6 +3,7 @@ import { useMemo } from "react"
 import {
   BiBold,
   BiItalic,
+  BiLink,
   BiListOl,
   BiListUl,
   BiStrikethrough,
@@ -11,9 +12,12 @@ import {
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
 import type { MenuBarEntry } from "./MenuBar"
+import { useLinkEditorModal } from "~/features/editing-experience/hooks/useLinkEditorModal"
 import { MenuBar } from "./MenuBar"
 
 export const CalloutMenuBar = ({ editor }: { editor: Editor }) => {
+  const { onLinkModalOpen, LinkEditorModal } = useLinkEditorModal({ editor })
+
   const items: MenuBarEntry[] = useMemo(
     () => [
       {
@@ -85,9 +89,25 @@ export const CalloutMenuBar = ({ editor }: { editor: Editor }) => {
           },
         ],
       },
+      {
+        type: "divider",
+      },
+      {
+        type: "item",
+        icon: BiLink,
+        title: "Link",
+        action: onLinkModalOpen,
+        isActive: () => editor.isActive("link"),
+      },
     ],
     [editor],
   )
 
-  return <MenuBar items={items} />
+  return (
+    <>
+      {LinkEditorModal}
+
+      <MenuBar items={items} />
+    </>
+  )
 }
