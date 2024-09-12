@@ -23,8 +23,12 @@ interface TypeTileProps extends UseRadioProps {
 const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
   (props, ref) => {
     const styles = useMultiStyleConfig("Tile", {})
+    const isDisabled = props.value === "pdf"
 
-    const { getInputProps, getRadioProps } = useRadio(props)
+    const { getInputProps, getRadioProps } = useRadio({
+      ...props,
+      isDisabled,
+    })
     const input = getInputProps(undefined, ref)
     const checkbox = getRadioProps()
     const { value } = props
@@ -55,7 +59,7 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
     }, [value])
 
     return (
-      <Box as="label">
+      <Box as="label" {...(isDisabled && { cursor: "not-allowed" })}>
         <input {...input} />
         <Box
           {...checkbox}
@@ -65,8 +69,11 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
             borderColor: "utility.focus-default",
             boxShadow: "0 0 0 1px var(--chakra-colors-utility-focus-default)",
           }}
-          cursor="pointer"
           data-group
+          cursor="pointer"
+          _disabled={{
+            pointerEvents: "none",
+          }}
         >
           <Flex
             p="0.5rem"

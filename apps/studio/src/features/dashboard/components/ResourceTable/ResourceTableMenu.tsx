@@ -52,10 +52,10 @@ export const ResourceTableMenu = ({
           {/* TODO: Open edit modal depending on resource  */}
           {type === "Page" ? (
             <>
-              <MenuItem icon={<BiCog fontSize="1rem" />}>
+              <MenuItem isDisabled icon={<BiCog fontSize="1rem" />}>
                 Edit page settings
               </MenuItem>
-              <MenuItem icon={<BiDuplicate fontSize="1rem" />}>
+              <MenuItem isDisabled icon={<BiDuplicate fontSize="1rem" />}>
                 Duplicate page
               </MenuItem>
             </>

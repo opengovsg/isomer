@@ -52,17 +52,21 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
         router.asPath === `/sites/${siteId}` ||
         router.asPath.startsWith(`/sites/${siteId}/pages`),
     },
-    { icon: BiGroup, label: "Manage users", href: `/sites/${siteId}/manage` },
+    // {
+    //   icon: BiGroup,
+    //   label: "Manage users",
+    //   href: `/sites/${siteId}/manage`,
+    // },
     { icon: BiCog, label: "Settings", href: `/sites/${siteId}/settings` },
   ]
 
   const userNavItems: CmsSidebarItem[] = [
-    {
-      icon: BiLinkExternal,
-      label: "Open live site",
-      // TOOD: Replace with actual live site URL
-      href: `/home`,
-    },
+    // {
+    //   icon: BiLinkExternal,
+    //   label: "Open live site",
+    //   // TOOD: Replace with actual live site URL
+    //   href: `/home`,
+    // },
     {
       icon: BiHelpCircle,
       label: "Isomer Guide ",

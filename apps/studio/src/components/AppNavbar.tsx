@@ -68,7 +68,7 @@ export function AppNavbar(): JSX.Element {
             bg="base.canvas.brand-subtle"
             menuListProps={{ maxWidth: "19rem" }}
           >
-            <Menu.Item as={NextLink} href={SETTINGS_PROFILE}>
+            <Menu.Item isDisabled as={NextLink} href={SETTINGS_PROFILE}>
               Edit profile
             </Menu.Item>
             <AvatarMenuDivider />

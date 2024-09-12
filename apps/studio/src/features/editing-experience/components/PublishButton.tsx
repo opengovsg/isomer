@@ -60,7 +60,8 @@ const SuspendablePublishButton = ({
         size="sm"
         onClick={handlePublish}
         isLoading={isLoading}
-        isDisabled={!currPage.draftBlobId}
+        isDisabled
+        // isDisabled={!currPage.draftBlobId}
       >
         Publish
       </Button>

@@ -78,7 +78,7 @@ export const DEFAULT_BLOCKS: Record<
     title: "This is an optional title of the Infocards component",
     subtitle: "This is an optional subtitle for the Infocards component",
     variant: "cardsWithImages",
-    maxColumns: "3",
+    maxColumns: 3,
     cards: [
       {
         title: "This is the first card",
@@ -271,7 +271,7 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   { label: "Basic building blocks", types: ["prose", "image", "callout"] },
   {
     label: "Organise complex content",
-    types: ["contentpic", "infocards", "accordion", "infocols", "iframe"],
+    types: ["contentpic", "infocards", "accordion", "infocols"],
   },
 ]
 export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
@@ -281,6 +281,6 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   },
   {
     label: "Organise complex content",
-    types: ["infopic", "infocards", "infocols", "iframe"],
+    types: ["infopic", "infocards", "infocols"],
   },
 ]
