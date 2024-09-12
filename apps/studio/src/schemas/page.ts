@@ -10,7 +10,16 @@ const NEW_PAGE_LAYOUT_VALUES = [
 export const MAX_TITLE_LENGTH = 150
 export const MAX_PAGE_URL_LENGTH = 250
 
-const permalinkSchema = generateBasePermalinkSchema("page")
+export const pageTitleSchema = z
+  .string({
+    required_error: "Enter a title for this page",
+  })
+  .min(1, { message: "Enter a title for this page" })
+  .max(MAX_TITLE_LENGTH, {
+    message: `Page title should be shorter than ${MAX_TITLE_LENGTH} characters.`,
+  })
+
+export const permalinkSchema = generateBasePermalinkSchema("page")
   .min(1, { message: "Enter a URL for this page" })
   .max(MAX_PAGE_URL_LENGTH, {
     message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
@@ -55,14 +64,7 @@ export const updatePageBlobSchema = getEditPageSchema.extend({
 })
 
 export const createPageSchema = z.object({
-  title: z
-    .string({
-      required_error: "Enter a title for this page",
-    })
-    .min(1, { message: "Enter a title for this page" })
-    .max(MAX_TITLE_LENGTH, {
-      message: `Page title should be shorter than ${MAX_TITLE_LENGTH} characters.`,
-    }),
+  title: pageTitleSchema,
   permalink: permalinkSchema,
   layout: z.enum(NEW_PAGE_LAYOUT_VALUES).default("content"),
   siteId: z.number().min(1),
