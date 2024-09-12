@@ -4,6 +4,7 @@ import type {
 } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import type { PartialDeep } from "type-fest"
+import { forwardRef } from "react"
 import { Skeleton } from "@chakra-ui/react"
 import { RenderEngine } from "@opengovsg/isomer-components"
 import { merge } from "lodash"
@@ -20,10 +21,12 @@ type PreviewProps = IsomerSchema & {
 }
 
 // Add a fake link component to prevent the preview from navigating away
-const FakeLink = ({ children, ...rest }: PropsWithChildren<unknown>) => (
-  <a {...rest} href="#" onClick={(e) => e.preventDefault()}>
-    {children}
-  </a>
+const FakeLink = forwardRef<HTMLAnchorElement, PropsWithChildren<unknown>>(
+  ({ children, ...rest }, ref) => (
+    <a {...rest} ref={ref} href="#" onClick={(e) => e.preventDefault()}>
+      {children}
+    </a>
+  ),
 )
 
 function SuspendablePreview({

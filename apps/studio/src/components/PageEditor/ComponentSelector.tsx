@@ -15,6 +15,7 @@ import { Button } from "@opengovsg/design-system-react"
 import { type IconType } from "react-icons"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { type DrawerState } from "~/types/editorDrawer"
 import {
   ARTICLE_ALLOWED_BLOCKS,
@@ -215,12 +216,10 @@ function ComponentSelector() {
                 return (
                   <BlockItem
                     key={type}
-                    icon={blockMeta.icon}
-                    label={blockMeta.label}
+                    icon={TYPE_TO_ICON[type]}
                     onProceed={onProceed}
                     sectionType={type}
-                    description={blockMeta.description}
-                    usageText={blockMeta.usageText}
+                    {...blockMeta}
                   />
                 )
               })}

@@ -111,7 +111,7 @@ export default function HeroEditorDrawer(): JSX.Element {
         />
 
         <ErrorProvider>
-          <Box px="2rem" py="1rem" flex={1} overflow="auto">
+          <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
             <FormBuilder<IsomerComponent>
               schema={getComponentSchema("hero")}
               validateFn={validateFn}

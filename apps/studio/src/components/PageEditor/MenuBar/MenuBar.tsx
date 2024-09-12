@@ -127,8 +127,8 @@ export const MenuBar = ({ items }: { items: MenuBarEntry[] }) => {
                     </Menu.Button>
 
                     <Menu.List w={item.menuWidth}>
-                      {item.items.map((subItem) => (
-                        <Menu.Item onClick={subItem.action}>
+                      {item.items.map((subItem, index) => (
+                        <Menu.Item key={index} onClick={subItem.action}>
                           {subItem.leftItem}
                           {subItem.title && !subItem.icon && (
                             <Text

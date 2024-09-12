@@ -104,7 +104,7 @@ const PageEditingView = ({
           shrink={0}
           justify="flex-start"
           p="2rem"
-          bg="gray.100"
+          bg="base.canvas.backdrop"
           h="100%"
           overflowX="auto"
         >
