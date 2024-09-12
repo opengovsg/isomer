@@ -12,6 +12,7 @@ import {
 } from "react-icons/bi"
 
 import { ContentpicIcon } from "~/features/editing-experience/components/icons/Contentpic"
+import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
@@ -176,83 +177,71 @@ export const DEFAULT_BLOCKS: Record<
 
 export const BLOCK_TO_META: Record<
   IsomerComponent["type"],
-  { label: string; icon: IconType; description: string; usageText?: string }
+  { label: string; description: string; usageText?: string }
 > = {
   hero: {
     label: "Hero banner",
-    icon: BiCrown,
     description: "Title, summary, hero image, and Call-to-Action",
   },
   image: {
     label: "Image",
-    icon: BiImageAlt,
     description: "Add an image with caption",
     usageText:
       "Get your readers' attention and create emotions by using an image. You can adjust the size of the image.",
   },
   prose: {
     label: "Text",
-    icon: BiText,
     description: "Add a block of text to your page",
     usageText:
       "You can add structure to your content by using features such as headings, lists, links, and body text.",
   },
   callout: {
     label: "Callout",
-    icon: BiSolidQuoteAltLeft,
     description: "Bring attention to important information",
     usageText:
       "Callouts are great for highlighting information such as updates. We recommend not overusing the callouts.",
   },
   keystatistics: {
     label: "Statistics",
-    icon: BiHash,
     description: "Display KPIs or key statistics for your agency",
     usageText:
       "Do you have metrics to show the public? Designed to be bold, this block supports up to four numbers with labels.",
   },
   infobar: {
     label: "Text with CTA",
-    icon: ContentpicIcon,
     description: "Add a strong call-to-action",
     usageText:
       "Use this block to highlight key initatives on your homepage. It supports up to two buttons.",
   },
   contentpic: {
     label: "Contentpic",
-    icon: ContentpicIcon,
     description: "Put an image and text side-by-side",
     usageText:
       "Use this block to juxtapose text next to a smaller image than usual, such as introducing a committee member along with their headshot.",
   },
   infopic: {
     label: "Text with image",
-    icon: ContentpicIcon,
     description: "Place an image with a text and call-to-action",
     usageText: "This block comes with a button.",
   },
   accordion: {
     label: "Accordion",
-    icon: BiChevronDown,
     description: "Display content in expandable accordions",
     usageText:
       "Accordions hide details by default, so they are great for content that isn't relevant to every reader.",
   },
   infocards: {
     label: "Cards",
-    icon: BiCard,
     description: `Link information in "cards" with or without images`,
     usageText: "This block supports up to six cards.",
   },
   infocols: {
     label: "Columns of text",
-    icon: BiColumns,
     description: "Show important links in multiple columns",
     usageText: "This block supports up to six links.",
   },
   iframe: {
     label: "Embed",
-    icon: BiColumns,
     description: "Embed a video or other content",
     usageText: "This block supports embedding content from other websites.",
   },

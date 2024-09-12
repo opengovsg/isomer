@@ -3,12 +3,13 @@ import { useCallback } from "react"
 import { Box, Button, Flex, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
-import { BiCrown, BiPlusCircle } from "react-icons/bi"
+import { BiPlusCircle } from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
+import { TYPE_TO_ICON } from "../constants"
 import { editPageSchema } from "../schema"
 import { ActivateAdminMode } from "./ActivateAdminMode"
 import { BaseBlock } from "./Block/BaseBlock"
@@ -107,7 +108,7 @@ export default function RootStateDrawer() {
             }}
             label="Hero banner"
             description="Title, subtitle, and Call-to-Action"
-            icon={BiCrown}
+            icon={TYPE_TO_ICON.hero}
           />
         ) : (
           <BaseBlock
