@@ -90,7 +90,7 @@ export default function RootStateDrawer() {
     savedPageState.content[0]?.type === "hero"
 
   return (
-    <VStack gap="1.5rem" px="1.25rem" py="1.5rem">
+    <VStack gap="1.5rem" p="1.5rem">
       <ActivateAdminMode />
       {/* Fixed Blocks Section */}
       <VStack gap="1rem" w="100%" align="start">
