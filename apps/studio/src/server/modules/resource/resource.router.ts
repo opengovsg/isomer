@@ -5,6 +5,7 @@ import type { ResourceType } from "../database"
 import {
   countResourceSchema,
   deleteResourceSchema,
+  getAncentrySchema,
   getChildrenSchema,
   getFullPermalinkSchema,
   getMetadataSchema,
@@ -277,5 +278,46 @@ export const resourceRouter = router({
         .select(["rp.id", "rp.title", "rp.fullPermalink"])
         .where("rp.id", "=", resourceId)
         .executeTakeFirst()
+    }),
+
+  getAncestryOf: protectedProcedure
+    .input(getAncentrySchema)
+    .query(async ({ input: { siteId, resourceId } }) => {
+      if (!resourceId) {
+        return []
+      }
+
+      return db
+        .withRecursive("Resources", (eb) =>
+          eb
+            .selectFrom("Resource")
+            .select([
+              "Resource.id",
+              "Resource.title",
+              "Resource.permalink",
+              "Resource.parentId",
+            ])
+            .where("Resource.siteId", "=", Number(siteId))
+            .where("Resource.id", "=", resourceId)
+            .unionAll(
+              eb
+                .selectFrom("Resource")
+                .innerJoin("Resources", "Resources.parentId", "Resource.id")
+                .select([
+                  "Resource.id",
+                  "Resource.title",
+                  "Resource.permalink",
+                  "Resource.parentId",
+                ]),
+            ),
+        )
+        .selectFrom("Resources")
+        .select([
+          "Resources.id",
+          "Resources.title",
+          "Resources.permalink",
+          "Resources.parentId",
+        ])
+        .execute()
     }),
 })

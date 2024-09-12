@@ -16,7 +16,6 @@ type ResourceItemProps = Pick<
 > & {
   isSelected: boolean
   isDisabled: boolean
-  searchQuery: string
   onResourceItemSelect: () => void
 }
 
@@ -25,7 +24,6 @@ const SuspendableResourceItem = ({
   type,
   isSelected,
   isDisabled,
-  searchQuery,
   onResourceItemSelect,
 }: ResourceItemProps) => {
   const icon: IconType = useMemo(() => {
@@ -39,19 +37,6 @@ const SuspendableResourceItem = ({
         return BiData
     }
   }, [type])
-
-  const SearchTextHighlight = useMemo(() => {
-    const result = fuzzysort.single(searchQuery, permalink)
-    if (!result) {
-      return permalink
-    }
-
-    return fuzzysort.highlight(result, (m, i) => (
-      <Mark key={i} bgColor="interaction.tinted.main.active">
-        {m}
-      </Mark>
-    ))
-  }, [searchQuery, permalink])
 
   return (
     <Button
@@ -90,7 +75,7 @@ const SuspendableResourceItem = ({
     >
       <HStack align="start" w="full" justify="space-between">
         <Text textStyle="caption-1" noOfLines={1}>
-          /{SearchTextHighlight}
+          /{permalink}
         </Text>
         {isDisabled && <Icon as={BiLockAlt} fontSize="0.75rem" />}
       </HStack>

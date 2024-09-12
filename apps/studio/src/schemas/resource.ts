@@ -64,3 +64,8 @@ export const listResourceSchema = z
 export const getFullPermalinkSchema = z.object({
   resourceId: bigIntSchema,
 })
+
+export const getAncentrySchema = z.object({
+  siteId: z.string(),
+  resourceId: z.string().optional(),
+})
