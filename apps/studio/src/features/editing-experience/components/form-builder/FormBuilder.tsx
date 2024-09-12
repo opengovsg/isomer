@@ -4,8 +4,10 @@ import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { type TSchema } from "@sinclair/typebox"
 import Ajv from "ajv"
+import { groupBy } from "lodash"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { useBuilderErrors } from "./ErrorProvider"
 import {
   JsonFormsAccordionTextControl,
   jsonFormsAccordionTextControlTester,
@@ -96,15 +98,18 @@ export default function FormBuilder<T>({
   data,
   handleChange,
 }: FormBuilderProps<T>): JSX.Element {
+  const { setErrors } = useBuilderErrors()
+
   return (
     <JsonForms
       schema={schema}
       data={data}
       renderers={renderers}
-      onChange={({ data }) => {
+      onChange={({ data, errors }) => {
         if (validateFn(data)) {
           handleChange(data)
         }
+        setErrors(groupBy(errors, "instancePath"))
       }}
       ajv={ajv}
     />

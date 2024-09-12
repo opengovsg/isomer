@@ -80,3 +80,23 @@ export const PublishedState: Story = {
     },
   },
 }
+
+export const ErrorNestedState: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    await waitFor(async () => {
+      await userEvent.click(
+        canvas.getByRole("button", { name: /keystatistics/i }),
+      )
+      await userEvent.click(
+        canvas.getByRole("button", { name: /average all nighters/i }),
+      )
+      await userEvent.clear(
+        canvas.getByRole("textbox", { name: /description/i }),
+      )
+
+      await userEvent.click(canvas.getByRole("button", { name: /close/i }))
+    })
+  },
+}
