@@ -340,7 +340,7 @@ const SaveButton = ({
       isDisabled={!isEmpty(errors)}
       onClick={onClick}
     >
-      Save changes
+      Save block
     </Button>
   )
 }
