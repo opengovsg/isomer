@@ -1,4 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
+import { useCallback } from "react"
 import { Box, Flex, HStack, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
@@ -64,22 +65,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   const { mutate: deleteAssets, isLoading: isDeletingAssets } =
     trpc.asset.deleteAssets.useMutation()
 
-  if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
-    return <></>
-  }
-
-  const component = previewPageState.content[currActiveIdx]
-
-  if (!component) {
-    return <></>
-  }
-
-  const subSchema = getComponentSchema(component.type)
-  const { title } = subSchema
-  const validateFn = ajv.compile<IsomerComponent>(subSchema)
-  const componentName = title || "component"
-
-  const handleDeleteBlock = () => {
+  const handleDeleteBlock = useCallback(() => {
     const updatedBlocks = Array.from(savedPageState.content)
     updatedBlocks.splice(currActiveIdx, 1)
     const newPageState = {
@@ -96,9 +82,21 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       siteId,
       content: JSON.stringify(newPageState),
     })
-  }
+  }, [
+    currActiveIdx,
+    onDeleteBlockModalClose,
+    pageId,
+    previewPageState,
+    savePage,
+    savedPageState.content,
+    setAddedBlockIndex,
+    setDrawerState,
+    setPreviewPageState,
+    setSavedPageState,
+    siteId,
+  ])
 
-  const handleDiscardChanges = () => {
+  const handleDiscardChanges = useCallback(() => {
     if (addedBlockIndex !== null) {
       const updatedBlocks = Array.from(savedPageState.content)
       updatedBlocks.splice(addedBlockIndex, 1)
@@ -114,19 +112,31 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     setAddedBlockIndex(null)
     onDiscardChangesModalClose()
     setDrawerState({ state: "root" })
-  }
+  }, [
+    addedBlockIndex,
+    onDiscardChangesModalClose,
+    previewPageState,
+    savedPageState,
+    setAddedBlockIndex,
+    setDrawerState,
+    setPreviewPageState,
+    setSavedPageState,
+  ])
 
-  const handleChange = (data: IsomerComponent) => {
-    const updatedBlocks = Array.from(previewPageState.content)
-    updatedBlocks[currActiveIdx] = data
-    const newPageState = {
-      ...previewPageState,
-      content: updatedBlocks,
-    }
-    setPreviewPageState(newPageState)
-  }
+  const handleChange = useCallback(
+    (data: IsomerComponent) => {
+      const updatedBlocks = Array.from(previewPageState.content)
+      updatedBlocks[currActiveIdx] = data
+      const newPageState = {
+        ...previewPageState,
+        content: updatedBlocks,
+      }
+      setPreviewPageState(newPageState)
+    },
+    [currActiveIdx, previewPageState, setPreviewPageState],
+  )
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     let newPageState = previewPageState
 
     if (modifiedAssets.length > 0) {
@@ -219,9 +229,39 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         },
       },
     )
-  }
+  }, [
+    currActiveIdx,
+    deleteAssets,
+    modifiedAssets,
+    pageId,
+    previewPageState,
+    savePage,
+    setAddedBlockIndex,
+    setDrawerState,
+    setModifiedAssets,
+    setPreviewPageState,
+    setSavedPageState,
+    siteId,
+    toast,
+    uploadAsset,
+  ])
 
   const isLoading = isSavingPage || isUploadingAsset || isDeletingAssets
+
+  if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
+    return <></>
+  }
+
+  const component = previewPageState.content[currActiveIdx]
+
+  if (!component) {
+    return <></>
+  }
+
+  const subSchema = getComponentSchema(component.type)
+  const { title } = subSchema
+  const validateFn = ajv.compile<IsomerComponent>(subSchema)
+  const componentName = title || "component"
 
   return (
     <>
