@@ -1,40 +1,33 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
+import { useMemo } from "react"
 import {
+  chakra,
   Flex,
+  Icon,
   Popover,
-  PopoverArrow,
   PopoverContent,
   PopoverTrigger,
+  Stack,
   Text,
   VStack,
-  Wrap,
 } from "@chakra-ui/react"
-import { Button, IconButton } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/design-system-react"
 import { type IconType } from "react-icons"
-import {
-  BiCard,
-  BiColumns,
-  BiDollar,
-  BiExpandVertical,
-  BiImage,
-  BiImages,
-  BiMap,
-  BiMovie,
-  BiQuestionMark,
-  BiSolidHandUp,
-  BiSolidQuoteAltLeft,
-  BiText,
-  BiX,
-} from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { type DrawerState } from "~/types/editorDrawer"
-import { DEFAULT_BLOCKS } from "./constants"
+import {
+  ARTICLE_ALLOWED_BLOCKS,
+  BLOCK_TO_META,
+  CONTENT_ALLOWED_BLOCKS,
+  DEFAULT_BLOCKS,
+  HOMEPAGE_ALLOWED_BLOCKS,
+} from "./constants"
 import { type SectionType } from "./types"
 
 function Section({ children }: React.PropsWithChildren) {
   return (
-    <VStack gap="0.5rem" alignItems="start">
+    <VStack gap="1rem" alignItems="start" w="full">
       {children}
     </VStack>
   )
@@ -42,54 +35,76 @@ function Section({ children }: React.PropsWithChildren) {
 
 function SectionTitle({ title }: { title: string }) {
   return (
-    <Text textStyle="subhead-3" textColor="base.content.medium">
+    <Text textStyle="subhead-2" textColor="base.content.medium">
       {title}
     </Text>
   )
 }
 
 function BlockList({ children }: React.PropsWithChildren) {
-  return <Wrap spacing="0">{children}</Wrap>
+  return <Stack w="full">{children}</Stack>
 }
 
-function BlockItem({
-  icon: Icon,
-  label,
-  onProceed,
-  sectionType,
-  description,
-}: {
+interface BlockItemProps {
   icon: IconType
   label: string
   onProceed: (sectionType: SectionType) => void
   sectionType: SectionType
   description: string
-}) {
+  usageText?: string
+}
+
+function BlockItem({
+  icon,
+  label,
+  onProceed,
+  sectionType,
+  description,
+  usageText,
+}: BlockItemProps) {
   return (
-    <Popover trigger="hover" placement="right">
+    <Popover trigger="hover" placement="right" isLazy offset={[0, 20]}>
       <PopoverTrigger>
-        <Button
-          m="0.75rem"
-          w="6rem"
-          h="6rem"
-          variant="clear"
-          colorScheme="neutral"
+        <chakra.button
+          layerStyle="focusRing"
+          w="100%"
+          borderRadius="6px"
+          border="1px solid"
+          borderColor="base.divider.medium"
+          transitionProperty="common"
+          transitionDuration="normal"
+          _hover={{
+            bg: "interaction.muted.main.hover",
+            borderColor: "interaction.main-subtle.hover",
+          }}
+          bg="white"
+          p="0.75rem"
+          flexDirection="row"
+          display="flex"
+          alignItems="start"
+          gap="0.75rem"
           onClick={() => onProceed(sectionType)}
         >
-          <VStack gap="0.5rem" color="base.content.default">
-            <Icon size="1.25rem" />
+          <Flex
+            p="0.5rem"
+            bg="interaction.main-subtle.default"
+            borderRadius="full"
+          >
+            <Icon as={icon} fontSize="1rem" color="base.content.default" />
+          </Flex>
+          <Stack align="start" gap="0.25rem" textAlign="start">
             <Text textStyle="caption-1">{label}</Text>
-          </VStack>
-        </Button>
+            <Text textStyle="caption-2">{description}</Text>
+          </Stack>
+        </chakra.button>
       </PopoverTrigger>
       <PopoverContent>
-        <PopoverArrow />
         <VStack p="1.5rem" alignItems="start" gap="0.75rem">
-          <Flex alignItems="center" gap="0.5rem">
-            <Icon size="1.25rem" />
+          <Flex alignItems="center" gap="0.25rem">
+            <Icon as={icon} size="1.25rem" />
             <Text textStyle="subhead-2">{label}</Text>
           </Flex>
-          <Text textStyle="body-2">{description}</Text>
+          <Text textStyle="body-2">{usageText ?? description}</Text>
         </VStack>
       </PopoverContent>
     </Popover>
@@ -104,6 +119,7 @@ function ComponentSelector() {
     setSavedPageState,
     setPreviewPageState,
     setAddedBlockIndex,
+    type,
   } = useEditorDrawerContext()
 
   const onProceed = (sectionType: SectionType) => {
@@ -132,142 +148,86 @@ function ComponentSelector() {
     setPreviewPageState(nextPageState)
   }
 
+  const availableBlocks = useMemo(() => {
+    switch (type) {
+      case "RootPage":
+        return HOMEPAGE_ALLOWED_BLOCKS
+      case "Page":
+        if (savedPageState.layout === "content") {
+          return CONTENT_ALLOWED_BLOCKS
+        } else if (savedPageState.layout === "article") {
+          return ARTICLE_ALLOWED_BLOCKS
+        }
+        throw new Error(`Unsupported page layout: ${savedPageState.layout}`)
+      case "CollectionPage":
+        return ARTICLE_ALLOWED_BLOCKS
+      case "Collection":
+      case "Folder":
+        throw new Error(`Unsupported resource type: ${type}`)
+      default:
+        const exhaustiveCheck: never = type
+        return exhaustiveCheck
+    }
+  }, [savedPageState.layout, type])
+
   return (
-    <VStack w="full" gap="0">
+    <VStack w="full" h="full" gap="0">
       <Flex
         w="full"
-        py="1.25rem"
-        px="2rem"
+        py="0.75rem"
+        px="1.5rem"
+        gap="0.75rem"
         alignItems="center"
         justifyContent="space-between"
-        borderBottom="solid"
-        borderWidth="1px"
+        borderBottom="1px solid"
         borderColor="base.divider.medium"
+        bg="white"
       >
-        <VStack alignItems="start">
-          <Text as="h5" textStyle="h5">
-            Add a new block
+        <VStack alignItems="start" gap="0.25rem">
+          <Text textStyle="subhead-1">Add a new block</Text>
+          <Text textStyle="caption-2" color="base.content.medium">
+            Click a block to add to the page
           </Text>
-          <Text textStyle="body-2">Click a block to add to the page</Text>
         </VStack>
-        <IconButton
-          size="lg"
+        <Button
+          size="xs"
           variant="clear"
-          colorScheme="neutral"
-          color="interaction.sub.default"
-          aria-label="Close add component"
-          icon={<BiX />}
           onClick={() => {
             setDrawerState({ state: "root" })
           }}
-        />
+        >
+          Cancel
+        </Button>
       </Flex>
-      <VStack p="2rem" w="full" gap="1.25rem" alignItems="start">
-        <Section>
-          <SectionTitle title="Basic Building Blocks" />
-          <BlockList>
-            <BlockItem
-              label="Text"
-              icon={BiText}
-              onProceed={onProceed}
-              sectionType="prose"
-              description="Add text to your page - lists, headings, paragraph, and links."
-            />
-            <BlockItem
-              label="Image"
-              icon={BiImage}
-              onProceed={onProceed}
-              sectionType="image"
-              description="TODO"
-            />
-          </BlockList>
-        </Section>
-        <Section>
-          <SectionTitle title="Highlight Important Information" />
-          <BlockList>
-            <BlockItem
-              label="Statistics"
-              icon={BiDollar}
-              onProceed={onProceed}
-              sectionType="keystatistics"
-              description="TODO"
-            />
-            <BlockItem
-              label="Callout"
-              icon={BiSolidQuoteAltLeft}
-              onProceed={onProceed}
-              sectionType="callout"
-              description="TODO"
-            />
-            <BlockItem
-              label="Text with button"
-              icon={BiSolidHandUp}
-              onProceed={onProceed}
-              sectionType="infobar"
-              description="TODO"
-            />
-            <BlockItem
-              label="Text with image"
-              icon={BiImages}
-              onProceed={onProceed}
-              sectionType="infopic"
-              description="TODO"
-            />
-          </BlockList>
-        </Section>
-        <Section>
-          <SectionTitle title="Organise Content" />
-          {/* TODO: this should map over the schema and take values + components from there */}
-          <BlockList>
-            <BlockItem
-              label="Cards"
-              icon={BiCard}
-              onProceed={onProceed}
-              sectionType="infocards"
-              description="TODO"
-            />
-            <BlockItem
-              label="Columns"
-              icon={BiColumns}
-              onProceed={onProceed}
-              sectionType="infocols"
-              description="TODO"
-            />
-            <BlockItem
-              label="Accordion"
-              icon={BiExpandVertical}
-              onProceed={onProceed}
-              sectionType="accordion"
-              description="TODO"
-            />
-          </BlockList>
-        </Section>
-        <Section>
-          <SectionTitle title="External Content" />
-          <BlockList>
-            <BlockItem
-              label="YouTube"
-              icon={BiMovie}
-              onProceed={onProceed}
-              sectionType="iframe"
-              description="TODO"
-            />
-            <BlockItem
-              label="Google Maps"
-              icon={BiMap}
-              onProceed={onProceed}
-              sectionType="iframe"
-              description="TODO"
-            />
-            <BlockItem
-              label="FormSG"
-              icon={BiQuestionMark}
-              onProceed={onProceed}
-              sectionType="iframe"
-              description="TODO"
-            />
-          </BlockList>
-        </Section>
+      <VStack
+        p="2rem"
+        w="full"
+        gap="1.25rem"
+        alignItems="start"
+        flex={1}
+        overflow="auto"
+      >
+        {availableBlocks.map((section, index) => (
+          <Section key={index}>
+            <SectionTitle title={section.label} />
+            <BlockList>
+              {section.types.map((type) => {
+                const blockMeta = BLOCK_TO_META[type]
+                return (
+                  <BlockItem
+                    key={type}
+                    icon={blockMeta.icon}
+                    label={blockMeta.label}
+                    onProceed={onProceed}
+                    sectionType={type}
+                    description={blockMeta.description}
+                    usageText={blockMeta.usageText}
+                  />
+                )
+              })}
+            </BlockList>
+          </Section>
+        ))}
       </VStack>
     </VStack>
   )

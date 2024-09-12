@@ -1,5 +1,4 @@
 import type { z } from "zod"
-import { useEffect } from "react"
 import {
   Box,
   Flex,
@@ -16,7 +15,10 @@ import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 
 import type { RouterOutput } from "~/utils/trpc"
-import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import {
+  EditorDrawerProvider,
+  useEditorDrawerContext,
+} from "~/contexts/EditorDrawerContext"
 import EditPageDrawer from "~/features/editing-experience/components/EditPageDrawer"
 import Preview from "~/features/editing-experience/components/Preview"
 import { PreviewIframe } from "~/features/editing-experience/components/PreviewIframe"
@@ -34,8 +36,6 @@ import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
 
 function EditPage(): JSX.Element {
-  const { setDrawerState, setSavedPageState, setPreviewPageState } =
-    useEditorDrawerContext()
   const { pageId, siteId } = useQueryParse(editPageSchema)
 
   const [{ content: page, permalink, type, title, updatedAt }] =
@@ -47,24 +47,23 @@ function EditPage(): JSX.Element {
       { refetchOnWindowFocus: false },
     )
 
-  useEffect(() => {
-    setDrawerState({
-      state: "root",
-    })
-    setSavedPageState(page)
-    setPreviewPageState(page)
-  }, [page, setDrawerState, setPreviewPageState, setSavedPageState])
-
   return (
     <TabPanels _dark={{ color: "white" }}>
       <TabPanel height="full">
-        <PageEditingView
-          pageId={pageId}
+        <EditorDrawerProvider
+          initialPageState={page}
+          type={type}
           permalink={permalink}
-          page={page}
           siteId={siteId}
-          updatedAt={updatedAt}
-        />
+        >
+          <PageEditingView
+            pageId={pageId}
+            permalink={permalink}
+            page={page}
+            siteId={siteId}
+            updatedAt={updatedAt}
+          />
+        </EditorDrawerProvider>
       </TabPanel>
       <TabPanel>
         <PageSettings type={type} permalink={permalink} title={title} />

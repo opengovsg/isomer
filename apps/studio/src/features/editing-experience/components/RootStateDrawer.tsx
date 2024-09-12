@@ -1,6 +1,6 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import { useCallback } from "react"
-import { Box, Button, Flex, HStack, Text, VStack } from "@chakra-ui/react"
+import { Box, Button, Flex, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
 import { BiCrown, BiPlusCircle } from "react-icons/bi"
@@ -84,7 +84,7 @@ export default function RootStateDrawer() {
   )
 
   const isHeroFixedBlock =
-    savedPageState?.layout === "homepage" &&
+    savedPageState.layout === "homepage" &&
     savedPageState.content.length > 0 &&
     savedPageState.content[0]?.type === "hero"
 
@@ -110,22 +110,13 @@ export default function RootStateDrawer() {
             icon={BiCrown}
           />
         ) : (
-          <Box
-            as="button"
+          <BaseBlock
             onClick={() => {
               setDrawerState({ state: "metadataEditor" })
             }}
-            w="100%"
-          >
-            <HStack w="100%" py="4" bgColor="white">
-              <VStack w="100%" pl={1} align="start">
-                <Text px="3" fontWeight={500}>
-                  Page title and summary
-                </Text>
-                <Text px="3">Click to edit</Text>
-              </VStack>
-            </HStack>
-          </Box>
+            label="Page title and summary"
+            description="Click to edit"
+          />
         )}
       </VStack>
 
