@@ -217,6 +217,8 @@ export const pageHandlers = {
       return trpcMsw.page.readPageAndBlob.query(() => {
         return {
           permalink: "page-title-here",
+          title: "Content page",
+          updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           navbar: {
             id: 1,
             siteId: 1,
@@ -318,6 +320,8 @@ export const pageHandlers = {
       // @ts-expect-error incomplete types
       return trpcMsw.page.readPageAndBlob.query(() => {
         return {
+          title: "Article page",
+          updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           permalink: "article-layout",
           navbar: {
             id: 1,
@@ -441,6 +445,9 @@ export const pageHandlers = {
           draftBlobId: "2",
           type: "Page",
           state: "Draft",
+
+          createdAt: new Date("2024-09-12T07:00:00.000Z"),
+          updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
         }
       })
@@ -459,6 +466,9 @@ export const pageHandlers = {
           draftBlobId: "3",
           type: "Page",
           state: "Draft",
+
+          createdAt: new Date("2024-09-12T07:00:00.000Z"),
+          updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
         }
       })

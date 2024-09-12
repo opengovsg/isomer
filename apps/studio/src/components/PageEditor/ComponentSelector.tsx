@@ -153,12 +153,12 @@ function ComponentSelector() {
       case "RootPage":
         return HOMEPAGE_ALLOWED_BLOCKS
       case "Page":
-        if (savedPageState?.layout === "content") {
+        if (savedPageState.layout === "content") {
           return CONTENT_ALLOWED_BLOCKS
-        } else if (savedPageState?.layout === "article") {
+        } else if (savedPageState.layout === "article") {
           return ARTICLE_ALLOWED_BLOCKS
         }
-        throw new Error(`Unsupported page layout: ${savedPageState?.layout}`)
+        throw new Error(`Unsupported page layout: ${savedPageState.layout}`)
       case "CollectionPage":
         return ARTICLE_ALLOWED_BLOCKS
       case "Collection":
@@ -168,7 +168,7 @@ function ComponentSelector() {
         const exhaustiveCheck: never = type
         return exhaustiveCheck
     }
-  }, [savedPageState?.layout, type])
+  }, [savedPageState.layout, type])
 
   return (
     <VStack w="full" h="full" gap="0">
