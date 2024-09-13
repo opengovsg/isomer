@@ -170,22 +170,6 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
       },
       {
         type: "item",
-        icon: () => (
-          <Icon color="base.content.medium" as={RiLayoutColumnFill} />
-        ),
-        title: "Toggle header column",
-        action: () => editor.chain().focus().toggleHeaderColumn().run(),
-        isHidden: () => !editor.isActive("table"),
-      },
-      {
-        type: "item",
-        icon: () => <Icon color="base.content.medium" as={RiLayoutRowFill} />,
-        title: "Toggle header row",
-        action: () => editor.chain().focus().toggleHeaderRow().run(),
-        isHidden: () => !editor.isActive("table"),
-      },
-      {
-        type: "item",
         icon: () => <Icon as={IconAddColRight} />,
         title: "Add column after",
         action: () => editor.chain().focus().addColumnAfter().run(),
