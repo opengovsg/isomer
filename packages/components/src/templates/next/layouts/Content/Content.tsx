@@ -154,7 +154,10 @@ const ContentLayout = ({
           className={compoundStyles.content({ isSideRailPresent: !!sideRail })}
         >
           {tableOfContents.items.length > 1 && (
-            <TableOfContents {...tableOfContents} />
+            <TableOfContents
+              {...tableOfContents}
+              LinkComponent={LinkComponent}
+            />
           )}
           <div>
             {renderPageContent({
