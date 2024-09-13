@@ -5,7 +5,7 @@ import type { ResourceType } from "../database"
 import {
   countResourceSchema,
   deleteResourceSchema,
-  getAncentrySchema,
+  getAncestrySchema,
   getChildrenSchema,
   getFullPermalinkSchema,
   getMetadataSchema,
@@ -281,13 +281,13 @@ export const resourceRouter = router({
     }),
 
   getAncestryOf: protectedProcedure
-    .input(getAncentrySchema)
+    .input(getAncestrySchema)
     .query(async ({ input: { siteId, resourceId } }) => {
       if (!resourceId) {
         return []
       }
 
-      return db
+      const ancestors = await db
         .withRecursive("Resources", (eb) =>
           eb
             .selectFrom("Resource")
@@ -319,5 +319,7 @@ export const resourceRouter = router({
           "Resources.parentId",
         ])
         .execute()
+
+      return ancestors.reverse().slice(0, -1)
     }),
 })

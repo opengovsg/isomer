@@ -25,10 +25,7 @@ const SuspensableResourceSelector = ({
     resourceId: selectedResourceId,
   })
   const [parentIdStack, setParentIdStack] = useState<string[]>(
-    ancestryStack
-      .map((item) => item.id)
-      .reverse()
-      .slice(0, -1),
+    ancestryStack.map((item) => item.id),
   )
   const currResourceId = parentIdStack[parentIdStack.length - 1] ?? null
 
