@@ -14,6 +14,7 @@ import {
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 import { RiLayoutColumnFill, RiLayoutRowFill } from "react-icons/ri"
 
+import type { MenuBarEntry } from "./MenuBar"
 import {
   IconAddColLeft,
   IconAddColRight,
@@ -25,7 +26,7 @@ import {
   IconSplitCell,
 } from "~/components/icons"
 import { TableSettingsModal } from "../TableSettingsModal"
-import { MenuBar, MenuBarEntry } from "./MenuBar"
+import { MenuBar } from "./MenuBar"
 
 export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
   const {
@@ -67,14 +68,16 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
         type: "item",
         icon: MdSuperscript,
         title: "Superscript",
-        action: () => editor.chain().focus().toggleSuperscript().run(),
+        action: () =>
+          editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
         isActive: () => editor.isActive("superscript"),
       },
       {
         type: "item",
         icon: MdSubscript,
         title: "Subscript",
-        action: () => editor.chain().focus().toggleSubscript().run(),
+        action: () =>
+          editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
         isActive: () => editor.isActive("subscript"),
       },
       {

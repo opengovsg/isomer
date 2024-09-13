@@ -118,14 +118,16 @@ export const TableMenuBar = ({ editor }: { editor: Editor }) => {
         type: "item",
         icon: MdSuperscript,
         title: "Superscript",
-        action: () => editor.chain().focus().toggleSuperscript().run(),
+        action: () =>
+          editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
         isActive: () => editor.isActive("superscript"),
       },
       {
         type: "item",
         icon: MdSubscript,
         title: "Subscript",
-        action: () => editor.chain().focus().toggleSubscript().run(),
+        action: () =>
+          editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
         isActive: () => editor.isActive("subscript"),
       },
       {
