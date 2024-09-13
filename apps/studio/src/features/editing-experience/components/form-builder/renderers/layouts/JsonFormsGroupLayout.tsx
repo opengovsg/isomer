@@ -32,26 +32,27 @@ const GroupComponent = React.memo(function GroupComponent({
   }
 
   return (
-    <VStack spacing="1.25rem">
+    <Box mt="1.25rem" _first={{ mt: 0 }}>
       <Divider borderColor="base.divider.strong" />
-      <Box w="100%">
+
+      <Box w="100%" mt="1.25rem">
         <Heading textStyle="h3" as="h3" size="sm">
           {label}
         </Heading>
       </Box>
+
       {elements.map((element, index) => (
-        <Box key={`${path}-${index}`} w="100%">
-          <JsonFormsDispatch
-            uischema={element}
-            schema={schema}
-            path={path}
-            enabled={enabled}
-            renderers={renderers}
-            cells={cells}
-          />
-        </Box>
+        <JsonFormsDispatch
+          key={`${path}-${index}`}
+          uischema={element}
+          schema={schema}
+          path={path}
+          enabled={enabled}
+          renderers={renderers}
+          cells={cells}
+        />
       ))}
-    </VStack>
+    </Box>
   )
 })
 

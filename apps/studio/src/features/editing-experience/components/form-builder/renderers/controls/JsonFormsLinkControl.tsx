@@ -368,7 +368,7 @@ export function JsonFormsLinkControl({
   const dataString = data && typeof data === "string" ? data : ""
 
   return (
-    <Box py="0.5rem">
+    <Box mt="1.25rem" _first={{ mt: 0 }}>
       <FormControl isRequired={required}>
         <FormLabel description={description}>{label}</FormLabel>
 

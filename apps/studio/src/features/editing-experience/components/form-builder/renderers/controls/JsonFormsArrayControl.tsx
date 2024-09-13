@@ -243,7 +243,7 @@ export function JsonFormsArrayControl({
   }
 
   return (
-    <VStack spacing="0.375rem" align="start">
+    <VStack spacing="0.375rem" align="start" mt="1.25rem" _first={{ mt: 0 }}>
       <Stack flexDir="row" justify="space-between" align="center" w="full">
         <Text textStyle="subhead-1">{label}</Text>
         <Button

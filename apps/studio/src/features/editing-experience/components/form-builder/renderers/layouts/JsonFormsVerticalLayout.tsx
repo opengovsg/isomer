@@ -3,7 +3,6 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
-import { VStack } from "@chakra-ui/react"
 import { rankWith, uiTypeIs } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from "@jsonforms/react"
 
@@ -40,18 +39,27 @@ function getUiSchemaWithGroup(
     (property) => !groups.some(({ fields }) => fields.includes(property)),
   )
 
-  const tempUiSchema = [...uiSchema]
+  let tempUiSchema = [...uiSchema]
   const newUiSchema: UISchemaElementWithScope[] = []
 
-  // Iterate through the UI schema and combine properties that belong to the
-  // same group, while preserving the original order of the schema
-  tempUiSchema.forEach((element) => {
+  let count = 0
+
+  while (count < uiSchema.length) {
+    const element = tempUiSchema[0]
+
+    if (!element) {
+      // This shouldn't happen as we will always need to process all elements
+      break
+    }
+
     if (
       element.scope === undefined ||
       propertiesNotInGroup.includes(element.scope.split("/").pop() || "")
     ) {
       newUiSchema.push(element)
-      return
+      tempUiSchema = tempUiSchema.slice(1)
+      count++
+      continue
     }
 
     const group = groups.find(({ fields }) =>
@@ -71,12 +79,12 @@ function getUiSchemaWithGroup(
         elements: groupElements,
       })
 
-      groupElements.forEach((el) => {
-        const index = tempUiSchema.indexOf(el)
-        tempUiSchema.splice(index, 1)
-      })
+      tempUiSchema = tempUiSchema.filter(
+        (el) => !groupElements.some((el2) => el.scope === el2.scope),
+      )
+      count += groupElements.length
     }
-  })
+  }
 
   return newUiSchema
 }
@@ -96,7 +104,7 @@ export function JsonFormsVerticalLayoutRenderer({
   const newElements = getUiSchemaWithGroup(schema, elements)
 
   return (
-    <VStack spacing="1.25rem" alignItems="stretch">
+    <>
       {newElements.map((element, index) => (
         <JsonFormsDispatch
           key={`${path}-${index}`}
@@ -108,7 +116,7 @@ export function JsonFormsVerticalLayoutRenderer({
           cells={cells}
         />
       ))}
-    </VStack>
+    </>
   )
 }
 
