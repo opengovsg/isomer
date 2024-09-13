@@ -117,6 +117,8 @@ const FolderPage: NextPageWithLayout = () => {
                     <Text
                       textStyle="caption-2"
                       color="interaction.links.default"
+                      noOfLines={1}
+                      w="max-content"
                     >
                       {label}
                     </Text>
