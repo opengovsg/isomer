@@ -68,10 +68,6 @@ export function AppNavbar(): JSX.Element {
             bg="base.canvas.brand-subtle"
             menuListProps={{ maxWidth: "19rem" }}
           >
-            <Menu.Item as={NextLink} href={SETTINGS_PROFILE}>
-              Edit profile
-            </Menu.Item>
-            <AvatarMenuDivider />
             <Menu.Item onClick={() => logout()}>Sign out</Menu.Item>
           </AvatarMenu>
         </HStack>
