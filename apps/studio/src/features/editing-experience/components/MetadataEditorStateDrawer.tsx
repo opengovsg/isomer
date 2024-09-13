@@ -99,7 +99,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               handleDiscardChanges()
             }
           }}
-          label="Edit page title and summary"
+          label="Edit page description and summary"
         />
 
         <ErrorProvider>

@@ -115,7 +115,7 @@ export default function RootStateDrawer() {
             onClick={() => {
               setDrawerState({ state: "metadataEditor" })
             }}
-            label="Page title and summary"
+            label="Page description and summary"
             description="Click to edit"
             icon={BiPin}
           />
