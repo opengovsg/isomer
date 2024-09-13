@@ -155,3 +155,10 @@ export const useAccordionEditor = ({ data, handleChange }: BaseEditorProps) => {
     handleChange,
   })
 }
+
+export const useProseEditor = ({ data, handleChange }: BaseEditorProps) =>
+  useBaseEditor({
+    data,
+    handleChange,
+    extensions: [IsomerHeading],
+  })
