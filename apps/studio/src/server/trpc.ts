@@ -115,6 +115,11 @@ const baseMiddleware = t.middleware(async ({ ctx, next }) => {
 })
 
 const authMiddleware = t.middleware(async ({ next, ctx }) => {
+  const defaultWhitelist: string[] = []
+  const whitelistedUsers = ctx.gb.getFeatureValue("whitelisted_users", {
+    whitelist: defaultWhitelist,
+  })
+
   if (!ctx.session?.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
@@ -126,6 +131,10 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
   })
 
   if (user === null) {
+    throw new TRPCError({ code: "UNAUTHORIZED" })
+  }
+
+  if (!whitelistedUsers.whitelist.includes(user.email)) {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 

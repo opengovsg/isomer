@@ -1,5 +1,6 @@
 import type * as trpc from "@trpc/server"
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next"
+import { GrowthBook } from "@growthbook/growthbook"
 import { type User } from "@prisma/client"
 import { getIronSession } from "iron-session"
 
@@ -41,10 +42,18 @@ export const createContext = async (opts: CreateNextContextOptions) => {
     session,
   })
 
+  const growthbookContext = new GrowthBook({
+    apiHost: "https://cdn.growthbook.io",
+    clientKey: process.env.GROWTHBOOK_CLIENT_KEY,
+    debug: false, // NOTE: do not put true unless local dev
+  })
+  await growthbookContext.init({ timeout: 2000 })
+
   return {
     ...innerContext,
     req: opts.req,
     res: opts.res,
+    gb: growthbookContext,
   }
 }
 

@@ -69,6 +69,7 @@ const server = z
       z.string().length(0),
     ]),
     SESSION_SECRET: z.string().min(32),
+    GROWTHBOOK_CLIENT_KEY: z.string().min(1),
   })
   .merge(s3Schema)
   // Add on schemas as needed that requires conditional validation.
@@ -110,6 +111,7 @@ const processEnv = {
   SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
   SENDGRID_FROM_ADDRESS: process.env.SENDGRID_FROM_ADDRESS,
   SESSION_SECRET: process.env.SESSION_SECRET,
+  GROWTHBOOK_CLIENT_KEY: process.env.GROWTHBOOK_CLIENT_KEY,
   NEXT_PUBLIC_S3_REGION: process.env.NEXT_PUBLIC_S3_REGION,
   NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME:
     process.env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
