@@ -191,24 +191,26 @@ const MoveResourceContent = withSuspense(
                 </Flex>
               )}
               {data?.pages.map(({ items }) =>
-                items.map((child) => {
-                  return (
-                    <MoveItem
-                      {...child}
-                      key={child.id}
-                      onChangeResourceId={() => {
-                        setResourceStack((prev) => [
-                          ...prev,
-                          {
-                            ...child,
-                            parentId: curResourceId ?? null,
-                            resourceId: child.id,
-                          },
-                        ])
-                      }}
-                    />
-                  )
-                }),
+                items
+                  .filter((child) => child.id !== movedItem?.resourceId)
+                  .map((child) => {
+                    return (
+                      <MoveItem
+                        {...child}
+                        key={child.id}
+                        onChangeResourceId={() => {
+                          setResourceStack((prev) => [
+                            ...prev,
+                            {
+                              ...child,
+                              parentId: curResourceId ?? null,
+                              resourceId: child.id,
+                            },
+                          ])
+                        }}
+                      />
+                    )
+                  }),
               )}
               {hasNextPage && (
                 <Button
