@@ -20,6 +20,19 @@ export const emailSessionRouter = router({
   login: publicProcedure
     .input(emailSignInSchema)
     .mutation(async ({ ctx, input: { email } }) => {
+      // check if whitelisted email on Growthbook
+      const defaultWhitelist: string[] = []
+      const whitelistedUsers = ctx.gb.getFeatureValue("whitelisted_users", {
+        whitelist: defaultWhitelist,
+      })
+
+      if (!whitelistedUsers.whitelist.includes(email)) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Unauthorized. Contact Isomer support.",
+        })
+      }
+
       // TODO: instead of storing expires, store issuedAt to calculate when the next otp can be re-issued
       // TODO: rate limit this endpoint also
       const expires = new Date(Date.now() + env.OTP_EXPIRY * 1000)
