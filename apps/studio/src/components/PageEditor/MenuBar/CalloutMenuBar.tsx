@@ -81,7 +81,7 @@ export const CalloutMenuBar = ({ editor }: { editor: Editor }) => {
             icon: BiListUl,
             title: "Bullet list",
             action: () => editor.chain().focus().toggleBulletList().run(),
-            isActive: () => editor.isActive("bulletList"),
+            isActive: () => editor.isActive("unorderedList"),
           },
         ],
       },
