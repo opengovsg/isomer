@@ -51,7 +51,12 @@ const BASE_EXTENSIONS: Extensions = [
   HardBreak,
   History,
   Italic,
-  ListItem,
+  ListItem.extend({
+    content: "paragraph list*",
+  }).configure({
+    bulletListTypeName: "unorderedList",
+    orderedListTypeName: "orderedList",
+  }),
   OrderedList.extend({
     name: "orderedList",
   }).configure({
