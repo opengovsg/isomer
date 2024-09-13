@@ -18,3 +18,10 @@ export const isGovEmail = (value: unknown) => {
     typeof value === "string" && isEmail(value) && value.endsWith(".gov.sg")
   )
 }
+
+/**
+ * Returns whether the passed value is a valid email.
+ */
+export const isValidEmail = (value: unknown) => {
+  return typeof value === "string" && isEmail(value)
+}

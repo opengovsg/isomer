@@ -47,6 +47,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
     apiHost: "https://cdn.growthbook.io",
     clientKey: env.GROWTHBOOK_CLIENT_KEY,
     debug: false, // NOTE: do not put true unless local dev
+    disableCache: true,
   })
   await growthbookContext.init({ timeout: 2000 })
 
