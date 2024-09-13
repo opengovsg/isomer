@@ -109,7 +109,7 @@ const FolderPage: NextPageWithLayout = () => {
     <>
       <VStack w="100%" p="1.75rem" gap="1rem">
         <VStack w="100%" align="start">
-          <Breadcrumb size="sm">
+          <Breadcrumb size="sm" overflow="auto">
             {breadcrumbs.map(({ href, label }, index) => {
               return (
                 <BreadcrumbItem key={index}>
@@ -131,7 +131,7 @@ const FolderPage: NextPageWithLayout = () => {
             </BreadcrumbItem>
           </Breadcrumb>
           <Flex w="full" flexDir="row">
-            <HStack gap="0.75rem" flex={1}>
+            <HStack overflow="auto" gap="0.75rem" flex={1}>
               <Box
                 aria-hidden
                 bg="brand.secondary.100"
@@ -140,12 +140,15 @@ const FolderPage: NextPageWithLayout = () => {
               >
                 <BiFolder />
               </Box>
-              <Text noOfLines={1} as="h3" textStyle="h3">
+              <Text
+                noOfLines={1}
+                as="h3"
+                textStyle="h3"
+                textOverflow="ellipsis"
+              >
                 {title}
               </Text>
             </HStack>
-
-            <Spacer />
 
             <HStack>
               <Button

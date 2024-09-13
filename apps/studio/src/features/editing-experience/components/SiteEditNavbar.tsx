@@ -33,7 +33,7 @@ export const SiteEditNavbar = (): JSX.Element => {
         borderColor="base.divider.medium"
         transition="padding 0.1s"
       >
-        <Breadcrumb size="xs">
+        <Breadcrumb size="sm">
           <BreadcrumbItem>
             <BreadcrumbLink as={Link} href={`/sites/${siteId}`}>
               <Text textStyle="subhead-2">All pages</Text>
