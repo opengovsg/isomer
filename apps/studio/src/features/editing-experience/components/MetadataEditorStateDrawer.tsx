@@ -20,7 +20,6 @@ import FormBuilder from "./form-builder/FormBuilder"
 const ajv = new Ajv({ strict: false, logger: false })
 
 export default function MetadataEditorStateDrawer(): JSX.Element {
-  const [hasError, setHasError] = useState(false)
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,

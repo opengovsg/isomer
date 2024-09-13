@@ -83,16 +83,16 @@ const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
 
 interface FormBuilderProps<T> {
   schema: TSchema
+  validateFn: ValidateFunction<T>
   data: unknown
   handleChange: (data: T) => void
-  handleErrors: (errors: ErrorObject[]) => void
 }
 
 export default function FormBuilder<T>({
   schema,
+  validateFn,
   data,
   handleChange,
-  handleErrors,
 }: FormBuilderProps<T>): JSX.Element {
   const { setErrors } = useBuilderErrors()
 

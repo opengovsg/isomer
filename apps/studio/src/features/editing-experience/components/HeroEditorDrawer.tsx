@@ -43,7 +43,6 @@ export default function HeroEditorDrawer(): JSX.Element {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
     },
   })
-  const [hasError, setHasError] = useState(false)
 
   const handleSaveChanges = useCallback(() => {
     setSavedPageState(previewPageState)

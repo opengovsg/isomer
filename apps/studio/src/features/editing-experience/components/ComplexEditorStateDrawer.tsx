@@ -1,13 +1,6 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { useCallback, useState } from "react"
-import {
-  Box,
-  Flex,
-  Heading,
-  HStack,
-  Icon,
-  useDisclosure,
-} from "@chakra-ui/react"
+import { useCallback } from "react"
+import { Box, Flex, HStack, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
@@ -32,7 +25,6 @@ import FormBuilder from "./form-builder/FormBuilder"
 const ajv = new Ajv({ strict: false, logger: false })
 
 export default function ComplexEditorStateDrawer(): JSX.Element {
-  const [hasError, setHasError] = useState(false)
   const {
     isOpen: isDeleteBlockModalOpen,
     onOpen: onDeleteBlockModalOpen,
