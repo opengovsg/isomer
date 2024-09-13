@@ -7,7 +7,10 @@ import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { type DrawerState } from "~/types/editorDrawer"
 
 export interface DrawerContextType
-  extends Pick<EditorDrawerProviderProps, "type" | "permalink" | "siteId"> {
+  extends Pick<
+    EditorDrawerProviderProps,
+    "type" | "permalink" | "siteId" | "updatedAt"
+  > {
   currActiveIdx: number
   setCurrActiveIdx: (currActiveIdx: number) => void
   drawerState: DrawerState
@@ -28,6 +31,7 @@ interface EditorDrawerProviderProps extends PropsWithChildren {
   type: ResourceType
   permalink: string
   siteId: number
+  updatedAt: Date
 }
 
 export function EditorDrawerProvider({
@@ -36,6 +40,7 @@ export function EditorDrawerProvider({
   type,
   permalink,
   siteId,
+  updatedAt,
 }: EditorDrawerProviderProps) {
   const [drawerState, setDrawerState] = useState<DrawerState>({
     state: "root",
@@ -70,6 +75,7 @@ export function EditorDrawerProvider({
         type,
         permalink,
         siteId,
+        updatedAt,
       }}
     >
       {children}
