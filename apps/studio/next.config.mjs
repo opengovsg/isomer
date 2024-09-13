@@ -33,6 +33,7 @@ const ContentSecurityPolicy = `
     https://vitals.vercel-insights.com/v1/vitals
     https://*.amazonaws.com
     https://placehold.co
+    ${env.NODE_ENV === "production" ? "https://isomer-user-content-vapt.by.gov.sg" : "https://*.by.gov.sg"}
     ;
   worker-src 'self' blob:;
   ${env.NODE_ENV === "production" ? "upgrade-insecure-requests" : ""}

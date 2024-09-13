@@ -62,16 +62,22 @@ export function JsonFormsImageControl({
       filename: string,
       mimeType: string,
     ) => {
-      const response = await fetch(url)
-      const blob = await response.blob()
-      return new File([blob], filename, { type: mimeType })
+      try {
+        const response = await fetch(url)
+        const blob = await response.blob()
+        return new File([blob], filename, { type: mimeType })
+      } catch (error) {
+        // File might not be ready yet, provide a fallback
+        // TODO: Fetch the metadata directly from S3 instead
+        return new File([], filename, { type: mimeType })
+      }
     }
 
     async function convertImage(url: string) {
       const fileName = url.split("/").pop()
       const fileType = `image/${url.split(".").pop()}`
       const imageUrl = url.startsWith("/")
-        ? `${NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${url}`
+        ? `https://${NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${url}`
         : url
       const file = await urlToFile(imageUrl, fileName || "", fileType)
       setPendingAsset({ path, src: imageUrl, file })
@@ -94,7 +100,6 @@ export function JsonFormsImageControl({
         <Attachment
           isRequired={required}
           name="image-upload"
-          imagePreview="large"
           multiple={false}
           value={pendingAsset?.file}
           onChange={(file) => {
