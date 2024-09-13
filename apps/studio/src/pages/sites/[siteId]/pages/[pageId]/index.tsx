@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react"
 import { Infobox, Input, useToast } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
+import { isEmpty } from "lodash"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 
@@ -69,7 +70,12 @@ function EditPage(): JSX.Element {
         </EditorDrawerProvider>
       </TabPanel>
       <TabPanel>
-        <PageSettings type={type} permalink={permalink} title={title} />
+        <PageSettings
+          type={type}
+          permalink={permalink.split("/").at(-1) || "/"}
+          prefix={permalink.split("/").slice(0, -1).join("/")}
+          title={title}
+        />
       </TabPanel>
     </TabPanels>
   )
@@ -124,11 +130,13 @@ interface PageSettingsProps {
   permalink: RouterOutput["page"]["readPageAndBlob"]["permalink"]
   title: RouterOutput["page"]["readPageAndBlob"]["title"]
   type: RouterOutput["page"]["readPageAndBlob"]["type"]
+  prefix?: string
 }
 const PageSettings = ({
   permalink: originalPermalink,
   type,
   title: originalTitle,
+  prefix,
 }: PageSettingsProps) => {
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const { register, watch, control, reset, handleSubmit, formState } =
@@ -169,7 +177,7 @@ const PageSettings = ({
   })
 
   const onSubmit = handleSubmit((values) => {
-    if (formState.isDirty) {
+    if (!isEmpty(formState.dirtyFields)) {
       updatePageSettingsMutation.mutate(
         { pageId, siteId, ...values },
         {
@@ -178,6 +186,9 @@ const PageSettings = ({
       )
     }
   })
+
+  const fullPermalink =
+    type === ResourceType.RootPage ? "/" : `${prefix}/${permalink}`
 
   return (
     <form onBlur={onSubmit}>
@@ -201,10 +212,10 @@ const PageSettings = ({
                 name="permalink"
                 render={({ field: { onChange, ...field } }) => (
                   <Input
+                    mt="0.5rem"
                     isDisabled={type === ResourceType.RootPage}
                     placeholder="URL will be autopopulated if left untouched"
                     noOfLines={1}
-                    mt="0.5rem"
                     w="100%"
                     {...field}
                     onChange={(e) => {
@@ -225,7 +236,7 @@ const PageSettings = ({
                 size="sm"
               >
                 <Text noOfLines={1} textStyle="subhead-2">
-                  {permalink}
+                  {fullPermalink}
                 </Text>
               </Infobox>
               <Text mt="0.5rem" textColor="base.content.medium">
