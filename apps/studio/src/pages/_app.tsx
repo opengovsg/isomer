@@ -5,7 +5,7 @@ import "../styles/editor/editorStyles.scss"
 
 import type { AppProps, AppType } from "next/app"
 import { Skeleton, Stack } from "@chakra-ui/react"
-import { ThemeProvider } from "@opengovsg/design-system-react"
+import { Banner, ThemeProvider } from "@opengovsg/design-system-react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { ErrorBoundary } from "react-error-boundary"
 
@@ -33,6 +33,10 @@ const MyApp = ((props: AppPropsWithAuthAndLayout) => {
             <ErrorBoundary FallbackComponent={DefaultFallback}>
               <Suspense fallback={<Skeleton width="100vw" height="100vh" />}>
                 <Stack spacing={0} minH="$100vh">
+                  <Banner variant="warn">
+                    Isomer Next is currently in Beta. To manage site settings
+                    that are not displayed here, contact Isomer Support.
+                  </Banner>
                   <VersionWrapper />
                   <ChildWithLayout {...props} />
                   {/* eslint-disable-next-line no-restricted-properties */}
