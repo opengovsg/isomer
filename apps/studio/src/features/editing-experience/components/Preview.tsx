@@ -19,7 +19,6 @@ type PreviewProps = IsomerSchema & {
   siteId: number
   resourceId?: number
   overrides?: PartialDeep<IsomerPageSchemaType>
-  title?: string
 }
 
 // Add a fake link component to prevent the preview from navigating away

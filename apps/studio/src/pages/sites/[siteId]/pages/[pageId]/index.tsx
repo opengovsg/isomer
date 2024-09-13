@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react"
 import { Infobox, Input, useToast } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
+import { merge } from "lodash"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 
@@ -106,13 +107,12 @@ const PageEditingView = ({ title }: PageEditingViewProps) => {
         >
           <PreviewIframe style={themeCssVars}>
             <Preview
-              {...previewPageState}
+              {...merge(previewPageState, { page: { title } })}
               siteId={siteId}
               resourceId={pageId}
               permalink={permalink}
               lastModified={updatedAt}
               version="0.1.0"
-              title={title}
             />
           </PreviewIframe>
         </Flex>
