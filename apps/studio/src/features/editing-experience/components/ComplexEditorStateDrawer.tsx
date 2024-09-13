@@ -1,5 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import {
   Box,
   Flex,
@@ -11,8 +11,11 @@ import {
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
-import _ from "lodash"
-import { BiDollar, BiTrash, BiX } from "react-icons/bi"
+import cloneDeep from "lodash/cloneDeep"
+import isEmpty from "lodash/isEmpty"
+import isEqual from "lodash/isEqual"
+import set from "lodash/set"
+import { BiTrash } from "react-icons/bi"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -22,6 +25,8 @@ import { editPageSchema } from "../schema"
 import { BRIEF_TOAST_SETTINGS } from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
+import { DrawerHeader } from "./Drawer/DrawerHeader"
+import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
 
 const ajv = new Ajv({ strict: false, logger: false })
@@ -68,27 +73,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   const { mutate: deleteAssets, isLoading: isDeletingAssets } =
     trpc.asset.deleteAssets.useMutation()
 
-  if (
-    currActiveIdx === -1 ||
-    !previewPageState ||
-    !savedPageState ||
-    currActiveIdx > previewPageState.content.length
-  ) {
-    return <></>
-  }
-
-  const component = previewPageState.content[currActiveIdx]
-
-  if (!component) {
-    return <></>
-  }
-
-  const subSchema = getComponentSchema(component.type)
-  const { title } = subSchema
-  const validateFn = ajv.compile<IsomerComponent>(subSchema)
-  const componentName = title || "component"
-
-  const handleDeleteBlock = () => {
+  const handleDeleteBlock = useCallback(() => {
     const updatedBlocks = Array.from(savedPageState.content)
     updatedBlocks.splice(currActiveIdx, 1)
     const newPageState = {
@@ -105,9 +90,21 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       siteId,
       content: JSON.stringify(newPageState),
     })
-  }
+  }, [
+    currActiveIdx,
+    onDeleteBlockModalClose,
+    pageId,
+    previewPageState,
+    savePage,
+    savedPageState.content,
+    setAddedBlockIndex,
+    setDrawerState,
+    setPreviewPageState,
+    setSavedPageState,
+    siteId,
+  ])
 
-  const handleDiscardChanges = () => {
+  const handleDiscardChanges = useCallback(() => {
     if (addedBlockIndex !== null) {
       const updatedBlocks = Array.from(savedPageState.content)
       updatedBlocks.splice(addedBlockIndex, 1)
@@ -123,24 +120,36 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     setAddedBlockIndex(null)
     onDiscardChangesModalClose()
     setDrawerState({ state: "root" })
-  }
+  }, [
+    addedBlockIndex,
+    onDiscardChangesModalClose,
+    previewPageState,
+    savedPageState,
+    setAddedBlockIndex,
+    setDrawerState,
+    setPreviewPageState,
+    setSavedPageState,
+  ])
 
-  const handleChange = (data: IsomerComponent) => {
-    const updatedBlocks = Array.from(previewPageState.content)
-    updatedBlocks[currActiveIdx] = data
-    const newPageState = {
-      ...previewPageState,
-      content: updatedBlocks,
-    }
-    setPreviewPageState(newPageState)
-  }
+  const handleChange = useCallback(
+    (data: IsomerComponent) => {
+      const updatedBlocks = Array.from(previewPageState.content)
+      updatedBlocks[currActiveIdx] = data
+      const newPageState = {
+        ...previewPageState,
+        content: updatedBlocks,
+      }
+      setPreviewPageState(newPageState)
+    },
+    [currActiveIdx, previewPageState, setPreviewPageState],
+  )
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     let newPageState = previewPageState
 
     if (modifiedAssets.length > 0) {
       const updatedBlocks = Array.from(previewPageState.content)
-      const newBlock = _.cloneDeep(updatedBlocks[currActiveIdx])
+      const newBlock = cloneDeep(updatedBlocks[currActiveIdx])
 
       if (!newBlock) {
         return
@@ -168,7 +177,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           }
 
           return uploadAsset({ file }).then((res) => {
-            _.set(newBlock, path, res.path)
+            set(newBlock, path, res.path)
             return path
           })
         }),
@@ -228,9 +237,39 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         },
       },
     )
-  }
+  }, [
+    currActiveIdx,
+    deleteAssets,
+    modifiedAssets,
+    pageId,
+    previewPageState,
+    savePage,
+    setAddedBlockIndex,
+    setDrawerState,
+    setModifiedAssets,
+    setPreviewPageState,
+    setSavedPageState,
+    siteId,
+    toast,
+    uploadAsset,
+  ])
 
   const isLoading = isSavingPage || isUploadingAsset || isDeletingAssets
+
+  if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
+    return <></>
+  }
+
+  const component = previewPageState.content[currActiveIdx]
+
+  if (!component) {
+    return <></>
+  }
+
+  const subSchema = getComponentSchema(component.type)
+  const { title } = subSchema
+  const validateFn = ajv.compile<IsomerComponent>(subSchema)
+  const componentName = title || "component"
 
   return (
     <>
@@ -248,86 +287,68 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       />
 
       <Flex flexDir="column" position="relative" h="100%" w="100%">
-        <Box
-          bgColor="base.canvas.default"
-          borderBottomColor="base.divider.medium"
-          borderBottomWidth="1px"
-          px="2rem"
-          py="1.25rem"
-        >
-          <HStack justifyContent="space-between" w="100%">
+        <DrawerHeader
+          isDisabled={isLoading}
+          onBackClick={() => {
+            if (!isEqual(previewPageState, savedPageState)) {
+              onDiscardChangesModalOpen()
+            } else {
+              handleDiscardChanges()
+            }
+          }}
+          label={`Edit ${componentName}`}
+        />
+        <ErrorProvider>
+          <Box flex={1} overflow="auto" px="1.5rem" py="1rem">
+            <FormBuilder<IsomerComponent>
+              schema={subSchema}
+              validateFn={validateFn}
+              data={component}
+              handleChange={handleChange}
+            />
+          </Box>
+          <Box
+            bgColor="base.canvas.default"
+            boxShadow="md"
+            py="1.5rem"
+            px="2rem"
+          >
             <HStack spacing="0.75rem">
-              <Icon
-                as={BiDollar}
-                fontSize="1.5rem"
-                p="0.25rem"
-                bgColor="slate.100"
-                textColor="blue.600"
-                borderRadius="base"
+              <IconButton
+                icon={<BiTrash fontSize="1.25rem" />}
+                variant="outline"
+                colorScheme="critical"
+                aria-label="Delete block"
+                onClick={onDeleteBlockModalOpen}
               />
-              <Heading as="h3" size="sm" textStyle="h5" fontWeight="semibold">
-                Edit {componentName}
-              </Heading>
+              <Box w="100%">
+                <SaveButton onClick={handleSave} isLoading={isLoading} />
+              </Box>
             </HStack>
-            <IconButton
-              icon={<Icon as={BiX} />}
-              variant="clear"
-              colorScheme="sub"
-              size="sm"
-              p="0.625rem"
-              isDisabled={isLoading}
-              onClick={() => {
-                if (!_.isEqual(previewPageState, savedPageState)) {
-                  onDiscardChangesModalOpen()
-                } else {
-                  handleDiscardChanges()
-                }
-              }}
-              aria-label="Close drawer"
-            />
-          </HStack>
-        </Box>
-
-        {/* NOTE: reserve at least 4.75rem for the bottom bar */}
-        <Box h="full" px="2rem" py="1rem" mb="4.75rem">
-          <FormBuilder<IsomerComponent>
-            handleErrors={(errors) => {
-              setHasError(errors.length > 0)
-            }}
-            schema={subSchema}
-            data={component}
-            handleChange={handleChange}
-          />
-        </Box>
-        <Box
-          pos="sticky"
-          bottom={0}
-          bgColor="base.canvas.default"
-          boxShadow="md"
-          py="1.5rem"
-          px="2rem"
-        >
-          <HStack spacing="0.75rem">
-            <IconButton
-              icon={<BiTrash fontSize="1.25rem" />}
-              variant="outline"
-              colorScheme="critical"
-              aria-label="Delete block"
-              onClick={onDeleteBlockModalOpen}
-            />
-            <Box w="100%">
-              <Button
-                isDisabled={hasError}
-                w="100%"
-                onClick={handleSave}
-                isLoading={isLoading}
-              >
-                Save changes
-              </Button>
-            </Box>
-          </HStack>
-        </Box>
+          </Box>
+        </ErrorProvider>
       </Flex>
     </>
+  )
+}
+
+const SaveButton = ({
+  onClick,
+  isLoading,
+}: {
+  onClick: () => void
+  isLoading: boolean
+}) => {
+  const { errors } = useBuilderErrors()
+
+  return (
+    <Button
+      w="100%"
+      isLoading={isLoading}
+      isDisabled={!isEmpty(errors)}
+      onClick={onClick}
+    >
+      Save block
+    </Button>
   )
 }

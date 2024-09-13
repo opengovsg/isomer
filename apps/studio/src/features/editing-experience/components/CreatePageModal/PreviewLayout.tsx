@@ -75,11 +75,7 @@ const SuspendableLayoutPreview = () => {
         }
       }
       case "content": {
-        return {
-          page: {
-            lastModified: new Date().toString(),
-          },
-        }
+        return {}
       }
     }
   }, [currentLayout])

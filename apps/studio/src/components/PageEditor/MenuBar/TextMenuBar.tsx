@@ -10,7 +10,8 @@ import {
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
-import { MenuBar, MenuBarEntry } from "./MenuBar"
+import type { MenuBarEntry } from "./MenuBar"
+import { MenuBar } from "./MenuBar"
 
 export const TextMenuBar = ({ editor }: { editor: Editor }) => {
   const items: MenuBarEntry[] = useMemo(
@@ -19,7 +20,7 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         type: "vertical-list",
         buttonWidth: "9rem",
         menuWidth: "19rem",
-        defaultTitle: "Heading options",
+        defaultTitle: "Text styles",
         items: [
           {
             type: "item",

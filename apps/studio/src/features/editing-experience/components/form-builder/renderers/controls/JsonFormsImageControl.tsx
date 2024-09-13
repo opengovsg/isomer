@@ -88,7 +88,7 @@ export function JsonFormsImageControl({
   }, [])
 
   return (
-    <Box py={2}>
+    <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <Attachment

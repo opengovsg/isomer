@@ -1,3 +1,4 @@
+import type { ButtonProps } from "@chakra-ui/react"
 import NextLink from "next/link"
 import {
   Accordion,
@@ -6,7 +7,6 @@ import {
   AccordionItem,
   AccordionPanel,
   Box,
-  ButtonProps,
   Flex,
   Icon,
   Skeleton,

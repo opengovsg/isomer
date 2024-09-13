@@ -20,7 +20,7 @@ export const defaultResourceSelect: SelectExpression<DB, "Resource">[] = [
 const defaultResourceWithBlobSelect: SelectExpression<
   DB,
   "Resource" | "Blob"
->[] = [...defaultResourceSelect, "Blob.content"]
+>[] = [...defaultResourceSelect, "Blob.content", "Blob.updatedAt"]
 
 const defaultNavbarSelect: SelectExpression<DB, "Navbar">[] = [
   "Navbar.id",

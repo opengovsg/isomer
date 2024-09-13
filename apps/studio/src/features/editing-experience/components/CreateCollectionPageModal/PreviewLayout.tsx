@@ -28,11 +28,7 @@ export const PreviewLayout = (): JSX.Element => {
         }
       }
       case "page": {
-        return {
-          page: {
-            lastModified: new Date().toString(),
-          },
-        }
+        return {}
       }
     }
   }, [currentType])

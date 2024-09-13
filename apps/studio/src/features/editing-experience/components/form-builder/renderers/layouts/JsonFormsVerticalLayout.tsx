@@ -3,7 +3,7 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
-import { Box, VStack } from "@chakra-ui/react"
+import { VStack } from "@chakra-ui/react"
 import { rankWith, uiTypeIs } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from "@jsonforms/react"
 
@@ -96,18 +96,17 @@ export function JsonFormsVerticalLayoutRenderer({
   const newElements = getUiSchemaWithGroup(schema, elements)
 
   return (
-    <VStack spacing={2}>
+    <VStack spacing="1.25rem" alignItems="stretch">
       {newElements.map((element, index) => (
-        <Box key={`${path}-${index}`} w="100%">
-          <JsonFormsDispatch
-            uischema={element}
-            schema={schema}
-            path={path}
-            enabled={enabled}
-            renderers={renderers}
-            cells={cells}
-          />
-        </Box>
+        <JsonFormsDispatch
+          key={`${path}-${index}`}
+          uischema={element}
+          schema={schema}
+          path={path}
+          enabled={enabled}
+          renderers={renderers}
+          cells={cells}
+        />
       ))}
     </VStack>
   )

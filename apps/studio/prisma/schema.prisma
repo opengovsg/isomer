@@ -43,6 +43,8 @@ model Version {
   publishedAt DateTime   @default(now())
   publishedBy String
   publisher   User       @relation(fields: [publishedBy], references: [id])
+
+  updatedAt   DateTime   @default(now()) @updatedAt
 }
 
 model Resource {
@@ -66,6 +68,9 @@ model Resource {
 
   state ResourceState? @default(Draft)
   type  ResourceType
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Blob {
@@ -73,6 +78,10 @@ model Blob {
   /// @kyselyType(PrismaJson.BlobJsonContent)
   /// [BlobJsonContent]
   content       Json
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+
   draftResource Resource?
   version       Version?
 }
@@ -97,6 +106,9 @@ model User {
   phone         String
   preferredName String?
 
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
   permissions Permission[]
   siteMembers SiteMember[]
   versions    Version[]
@@ -110,6 +122,9 @@ model Permission {
   user       User     @relation(fields: [userId], references: [id])
   role       RoleType
 
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
   // Delete the row if either resource or user is deleted, default behavior cascade
 }
 
@@ -120,7 +135,7 @@ model Site {
   siteMembers SiteMember[]
   // NOTE: This is `theme/isGovernment/sitemap`
   // This is currently put as `Json` for ease of extensibility
-  // when we lock in what we actually want for site-wide config, 
+  // when we lock in what we actually want for site-wide config,
   // we should put this in our db table.
   /// @kyselyType(PrismaJson.SiteJsonConfig)
   /// [SiteJsonConfig]
@@ -131,6 +146,9 @@ model Site {
   navbar      Navbar?
   footer      Footer?
   codeBuildId String?
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
 }
 
 model Navbar {
@@ -141,6 +159,9 @@ model Navbar {
   /// @kyselyType(PrismaJson.NavbarJsonContent)
   /// [NavbarJsonContent]
   content Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Footer {
@@ -151,6 +172,9 @@ model Footer {
   /// @kyselyType(PrismaJson.FooterJsonContent)
   /// [FooterJsonContent]
   content Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model SiteMember {
@@ -158,6 +182,9 @@ model SiteMember {
   user   User   @relation(fields: [userId], references: [id])
   siteId Int
   site   Site   @relation(fields: [siteId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@id([siteId, userId])
 }

@@ -46,7 +46,6 @@ const SiteSettingsPage: NextPageWithLayout = () => {
       })
     },
     onError: () => {
-      // TODO: Remove the console when done
       toast({
         title: "Error saving site settings!",
         description:

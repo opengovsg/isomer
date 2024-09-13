@@ -1,6 +1,6 @@
-import { SelectExpression } from "kysely"
+import type { SelectExpression } from "kysely"
 
-import { DB } from "../database"
+import type { DB } from "../database"
 
 export const defaultCollectionSelect: SelectExpression<DB, "Resource">[] = [
   "Resource.id",

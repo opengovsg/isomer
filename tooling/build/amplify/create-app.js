@@ -40,7 +40,13 @@ const createApp = async (appName) => {
     environmentVariables: {
       NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT: "staging",
     },
-    customRules: [{ source: "/<*>", target: "/404.html", status: "404" }],
+    customRules: [
+      {
+        source: "</^[^.]+$|.(?!(txt)$)([^.]+$)/>",
+        target: "/404.html",
+        status: "404",
+      },
+    ],
   })
 
   await amplifyClient

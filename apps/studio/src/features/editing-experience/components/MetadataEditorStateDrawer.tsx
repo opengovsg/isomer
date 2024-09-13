@@ -1,26 +1,20 @@
 import type { IsomerSchema, schema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
-import { useState } from "react"
-import {
-  Box,
-  Flex,
-  Heading,
-  HStack,
-  Icon,
-  IconButton,
-  useDisclosure,
-} from "@chakra-ui/react"
+import { useCallback } from "react"
+import { Box, Flex, useDisclosure } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
-import _ from "lodash"
-import { BiDollar, BiX } from "react-icons/bi"
+import isEmpty from "lodash/isEmpty"
+import isEqual from "lodash/isEqual"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
 import { DiscardChangesModal } from "./DiscardChangesModal"
+import { DrawerHeader } from "./Drawer/DrawerHeader"
+import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
 
 const ajv = new Ajv({ strict: false, logger: false })
@@ -48,12 +42,29 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     },
   })
 
-  if (!previewPageState) {
-    return <></>
-  }
-
   const metadataSchema = getLayoutMetadataSchema(previewPageState.layout)
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(metadataSchema)
+
+  const handleSaveChanges = useCallback(() => {
+    setSavedPageState(previewPageState)
+    mutate(
+      {
+        pageId,
+        siteId,
+        content: JSON.stringify(previewPageState),
+      },
+      {
+        onSuccess: () => setDrawerState({ state: "root" }),
+      },
+    )
+  }, [
+    mutate,
+    pageId,
+    previewPageState,
+    setDrawerState,
+    setSavedPageState,
+    siteId,
+  ])
 
   const handleChange = (data: unknown) => {
     // TODO: Perform actual validation on the data
@@ -80,86 +91,58 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
       />
 
       <Flex flexDir="column" position="relative" h="100%" w="100%">
-        <Box
-          bgColor="base.canvas.default"
-          borderBottomColor="base.divider.medium"
-          borderBottomWidth="1px"
-          px="2rem"
-          py="1.25rem"
-        >
-          <HStack justifyContent="space-between" w="100%">
-            <HStack spacing={3}>
-              <Icon
-                as={BiDollar}
-                fontSize="1.5rem"
-                p="0.25rem"
-                bgColor="slate.100"
-                textColor="blue.600"
-                borderRadius="base"
-              />
-              <Heading as="h3" size="sm" textStyle="h5" fontWeight="semibold">
-                Edit page title and summary
-              </Heading>
-            </HStack>
-            <IconButton
-              icon={<Icon as={BiX} />}
-              variant="clear"
-              colorScheme="sub"
-              size="sm"
-              p="0.625rem"
-              isDisabled={isLoading}
-              onClick={() => {
-                if (!_.isEqual(previewPageState, savedPageState)) {
-                  onDiscardChangesModalOpen()
-                } else {
-                  handleDiscardChanges()
-                }
-              }}
-              aria-label="Close drawer"
-            />
-          </HStack>
-        </Box>
+        <DrawerHeader
+          isDisabled={isLoading}
+          onBackClick={() => {
+            if (!isEqual(previewPageState, savedPageState)) {
+              onDiscardChangesModalOpen()
+            } else {
+              handleDiscardChanges()
+            }
+          }}
+          label="Edit page title and summary"
+        />
 
-        <Box px="2rem" py="1rem" h="full">
-          <FormBuilder<Static<typeof schema>>
-            handleErrors={(errors) => {
-              setHasError(errors.length > 0)
-            }}
-            schema={metadataSchema}
-            data={previewPageState.page}
-            handleChange={handleChange}
-          />
-        </Box>
-        <Box
-          pos="sticky"
-          bottom={0}
-          bgColor="base.canvas.default"
-          boxShadow="md"
-          py="1.5rem"
-          px="2rem"
-        >
-          <Button
-            w="100%"
-            isLoading={isLoading}
-            onClick={() => {
-              setSavedPageState(previewPageState)
-              mutate(
-                {
-                  pageId,
-                  siteId,
-                  content: JSON.stringify(previewPageState),
-                },
-                {
-                  onSuccess: () => setDrawerState({ state: "root" }),
-                },
-              )
-            }}
-            isDisabled={hasError}
+        <ErrorProvider>
+          <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
+            <FormBuilder<Static<typeof schema>>
+              schema={metadataSchema}
+              validateFn={validateFn}
+              data={previewPageState.page}
+              handleChange={(data) => handleChange(data)}
+            />
+          </Box>
+          <Box
+            bgColor="base.canvas.default"
+            boxShadow="md"
+            py="1.5rem"
+            px="2rem"
           >
-            Save changes
-          </Button>
-        </Box>
+            <SaveButton isLoading={isLoading} onClick={handleSaveChanges} />
+          </Box>
+        </ErrorProvider>
       </Flex>
     </>
+  )
+}
+
+const SaveButton = ({
+  onClick,
+  isLoading,
+}: {
+  onClick: () => void
+  isLoading: boolean
+}) => {
+  const { errors } = useBuilderErrors()
+
+  return (
+    <Button
+      w="100%"
+      isLoading={isLoading}
+      isDisabled={!isEmpty(errors)}
+      onClick={onClick}
+    >
+      Save changes
+    </Button>
   )
 }

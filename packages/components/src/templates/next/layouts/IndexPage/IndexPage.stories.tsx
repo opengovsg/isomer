@@ -126,7 +126,7 @@ export const WithSiderail: Story = {
         type: "infocards",
         title: "Infocards title",
         variant: "cardsWithoutImages",
-        maxColumns: 1,
+        maxColumns: "1",
         cards: [
           {
             title:
@@ -263,7 +263,7 @@ export const NoSiderail: Story = {
         type: "infocards",
         title: "Infocards title",
         variant: "cardsWithoutImages",
-        maxColumns: 1,
+        maxColumns: "1",
         cards: [
           {
             title:

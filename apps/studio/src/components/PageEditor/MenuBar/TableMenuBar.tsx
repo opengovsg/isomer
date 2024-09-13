@@ -1,6 +1,6 @@
+import type { Editor } from "@tiptap/react"
 import { useMemo } from "react"
 import { Icon, useDisclosure } from "@chakra-ui/react"
-import { Editor } from "@tiptap/react"
 import {
   BiBold,
   BiCog,
@@ -14,6 +14,7 @@ import {
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 import { RiLayoutColumnFill, RiLayoutRowFill } from "react-icons/ri"
 
+import type { MenuBarEntry } from "./MenuBar"
 import {
   IconAddColLeft,
   IconAddColRight,
@@ -25,7 +26,7 @@ import {
   IconSplitCell,
 } from "~/components/icons"
 import { TableSettingsModal } from "../TableSettingsModal"
-import { MenuBar, MenuBarEntry } from "./MenuBar"
+import { MenuBar } from "./MenuBar"
 
 export const TableMenuBar = ({ editor }: { editor: Editor }) => {
   const {
@@ -40,7 +41,7 @@ export const TableMenuBar = ({ editor }: { editor: Editor }) => {
         type: "vertical-list",
         buttonWidth: "9rem",
         menuWidth: "19rem",
-        defaultTitle: "Heading options",
+        defaultTitle: "Text styles",
         items: [
           {
             type: "item",

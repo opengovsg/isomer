@@ -4,8 +4,10 @@ import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { type TSchema } from "@sinclair/typebox"
 import Ajv from "ajv"
+import { groupBy } from "lodash"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { useBuilderErrors } from "./ErrorProvider"
 import {
   JsonFormsAccordionTextControl,
   jsonFormsAccordionTextControlTester,
@@ -71,10 +73,6 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: jsonFormsVerticalLayoutRenderer,
   },
   {
-    tester: jsonFormsVerticalLayoutTester,
-    renderer: jsonFormsVerticalLayoutRenderer,
-  },
-  {
     // NOTE: If we fall through all our previous testers,
     // we render null so that the users don't get visual noise
     tester: rankWith(JSON_FORMS_RANKING.Catchall, () => true),
@@ -96,14 +94,18 @@ export default function FormBuilder<T>({
   handleChange,
   handleErrors,
 }: FormBuilderProps<T>): JSX.Element {
+  const { setErrors } = useBuilderErrors()
+
   return (
     <JsonForms
       schema={schema}
       data={data}
       renderers={renderers}
       onChange={({ data, errors }) => {
-        if (errors) handleErrors(errors)
-        handleChange(data)
+        if (validateFn(data)) {
+          handleChange(data)
+        }
+        setErrors(groupBy(errors, "instancePath"))
       }}
       ajv={ajv}
     />

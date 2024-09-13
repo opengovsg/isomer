@@ -1,4 +1,18 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
+import type { IconType } from "react-icons"
+import {
+  BiCard,
+  BiChevronDown,
+  BiColumns,
+  BiCrown,
+  BiHash,
+  BiImageAlt,
+  BiSolidQuoteAltLeft,
+  BiText,
+} from "react-icons/bi"
+
+import { ContentpicIcon } from "~/features/editing-experience/components/icons/Contentpic"
+import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
@@ -65,6 +79,7 @@ export const DEFAULT_BLOCKS: Record<
     title: "This is an optional title of the Infocards component",
     subtitle: "This is an optional subtitle for the Infocards component",
     variant: "cardsWithImages",
+    maxColumns: "3",
     cards: [
       {
         title: "This is the first card",
@@ -159,3 +174,102 @@ export const DEFAULT_BLOCKS: Record<
     ],
   },
 }
+
+export const BLOCK_TO_META: Record<
+  IsomerComponent["type"],
+  { label: string; description: string; usageText?: string }
+> = {
+  hero: {
+    label: "Hero banner",
+    description: "Title, summary, hero image, and Call-to-Action",
+  },
+  image: {
+    label: "Image",
+    description: "Add an image with caption",
+    usageText:
+      "Get your readers' attention and create emotions by using an image. You can adjust the size of the image.",
+  },
+  prose: {
+    label: "Text",
+    description: "Add a block of text to your page",
+    usageText:
+      "You can add structure to your content by using features such as headings, lists, links, and body text.",
+  },
+  callout: {
+    label: "Callout",
+    description: "Bring attention to important information",
+    usageText:
+      "Callouts are great for highlighting information such as updates. We recommend not overusing the callouts.",
+  },
+  keystatistics: {
+    label: "Statistics",
+    description: "Display KPIs or key statistics for your agency",
+    usageText:
+      "Do you have metrics to show the public? Designed to be bold, this block supports up to four numbers with labels.",
+  },
+  infobar: {
+    label: "Text with CTA",
+    description: "Add a strong call-to-action",
+    usageText:
+      "Use this block to highlight key initatives on your homepage. It supports up to two buttons.",
+  },
+  contentpic: {
+    label: "Contentpic",
+    description: "Put an image and text side-by-side",
+    usageText:
+      "Use this block to juxtapose text next to a smaller image than usual, such as introducing a committee member along with their headshot.",
+  },
+  infopic: {
+    label: "Text with image",
+    description: "Place an image with a text and call-to-action",
+    usageText: "This block comes with a button.",
+  },
+  accordion: {
+    label: "Accordion",
+    description: "Display content in expandable accordions",
+    usageText:
+      "Accordions hide details by default, so they are great for content that isn't relevant to every reader.",
+  },
+  infocards: {
+    label: "Cards",
+    description: `Link information in "cards" with or without images`,
+    usageText: "This block supports up to six cards.",
+  },
+  infocols: {
+    label: "Columns of text",
+    description: "Show important links in multiple columns",
+    usageText: "This block supports up to six links.",
+  },
+  iframe: {
+    label: "Embed",
+    description: "Embed a video or other content",
+    usageText: "This block supports embedding content from other websites.",
+  },
+}
+
+type AllowedBlockSections = {
+  label: string
+  types: IsomerComponent["type"][]
+}[]
+
+export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
+  { label: "Basic building blocks", types: ["prose", "image", "callout"] },
+]
+
+export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
+  { label: "Basic building blocks", types: ["prose", "image", "callout"] },
+  {
+    label: "Organise complex content",
+    types: ["contentpic", "infocards", "accordion", "infocols", "iframe"],
+  },
+]
+export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
+  {
+    label: "Highlight important information",
+    types: ["keystatistics", "infobar"],
+  },
+  {
+    label: "Organise complex content",
+    types: ["infopic", "infocards", "infocols", "iframe"],
+  },
+]
