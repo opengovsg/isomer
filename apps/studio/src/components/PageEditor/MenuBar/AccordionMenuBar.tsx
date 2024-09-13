@@ -1,7 +1,6 @@
 import type { Editor } from "@tiptap/react"
 import { useMemo } from "react"
 import { Icon, useDisclosure } from "@chakra-ui/react"
-import { Editor } from "@tiptap/react"
 import {
   BiBold,
   BiCog,
@@ -9,6 +8,7 @@ import {
   BiListOl,
   BiListUl,
   BiStrikethrough,
+  BiTable,
   BiUnderline,
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
@@ -102,6 +102,19 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
           },
         ],
       },
+      {
+        type: "item",
+        icon: BiTable,
+        title: "Table",
+        action: () => {
+          if (editor.isActive("table")) {
+            return editor.chain().focus().deleteTable().run()
+          }
+          return editor.chain().focus().insertTable().run()
+        },
+        isActive: () => editor.isActive("table"),
+      },
+
       // Table-specific commands
       {
         type: "divider",
