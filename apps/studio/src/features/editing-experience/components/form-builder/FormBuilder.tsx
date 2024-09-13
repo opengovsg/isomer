@@ -1,5 +1,5 @@
 import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
-import type { ValidateFunction } from "ajv"
+import type { ErrorObject, ValidateFunction } from "ajv"
 import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { type TSchema } from "@sinclair/typebox"

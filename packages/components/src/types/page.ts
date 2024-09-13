@@ -6,6 +6,7 @@ import { ArticlePageHeaderSchema, ContentPageHeaderSchema } from "~/interfaces"
 const BaseItemSchema = Type.Object({
   title: Type.String({
     title: "Page title",
+    maxLength: 150,
   }),
   description: Type.Optional(
     Type.String({
@@ -51,6 +52,7 @@ const BaseRefSchema = Type.Composite([
         alt: Type.String({
           title: "Image alt text",
           description: "The alt text of the image",
+          maxLength: 120,
         }),
       }),
     ),
