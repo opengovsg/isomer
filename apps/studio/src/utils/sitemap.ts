@@ -18,6 +18,7 @@ const getSitemapTreeFromArray = (
     return undefined
   }
 
+  // Get the immediate children of the resource with the given parent ID
   const children = resources.filter((resource) => {
     if (parentId === null) {
       return resource.parentId === null && resource.type !== "RootPage"
@@ -80,10 +81,6 @@ const getSitemapTreeFromArray = (
             (resource.type === "Folder" ? "Page" : "CollectionPage"),
       )?.id
 
-      const folderChildren = resources.filter(
-        (item) => item.parentId === resource.id,
-      )
-
       return {
         id: String(idOfPage ?? resource.id),
         layout: "content", // Note: We are not using the layout field in our previews
@@ -93,7 +90,7 @@ const getSitemapTreeFromArray = (
           .toISOString(),
         permalink,
         children: getSitemapTreeFromArray(
-          folderChildren,
+          resources,
           resource.id,
           `${permalink}/`,
         ),
