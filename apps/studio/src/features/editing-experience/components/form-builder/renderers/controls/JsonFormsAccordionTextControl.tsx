@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box, Flex, FormControl } from "@chakra-ui/react"
+import { Box, FormControl } from "@chakra-ui/react"
 import { rankWith } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
@@ -15,7 +15,7 @@ export const jsonFormsAccordionTextControlTester: RankedTester = rankWith(
   },
 )
 
-export function JsonFormsCalloutTextControl({
+export function JsonFormsAccordionTextControl({
   data,
   label,
   handleChange,
@@ -38,4 +38,4 @@ export function JsonFormsCalloutTextControl({
   )
 }
 
-export default withJsonFormsControlProps(JsonFormsCalloutTextControl)
+export default withJsonFormsControlProps(JsonFormsAccordionTextControl)
