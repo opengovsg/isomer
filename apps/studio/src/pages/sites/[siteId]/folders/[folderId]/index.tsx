@@ -109,7 +109,7 @@ const FolderPage: NextPageWithLayout = () => {
     <>
       <VStack w="100%" p="1.75rem" gap="1rem">
         <VStack w="100%" align="start">
-          <Breadcrumb size="sm" overflow="auto">
+          <Breadcrumb size="sm" w="100%">
             {breadcrumbs.map(({ href, label }, index) => {
               return (
                 <BreadcrumbItem key={index}>
@@ -124,8 +124,17 @@ const FolderPage: NextPageWithLayout = () => {
                 </BreadcrumbItem>
               )
             })}
-            <BreadcrumbItem key={folderId}>
-              <Text textStyle="caption-2" color="base.content.default">
+            <BreadcrumbItem
+              key={folderId}
+              overflow="hidden"
+              whiteSpace="nowrap"
+            >
+              <Text
+                textStyle="caption-2"
+                color="base.content.default"
+                overflow="hidden"
+                textOverflow="ellipsis"
+              >
                 {title}
               </Text>
             </BreadcrumbItem>
