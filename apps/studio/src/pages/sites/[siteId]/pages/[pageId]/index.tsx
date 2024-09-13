@@ -1,4 +1,3 @@
-import type { z } from "zod"
 import {
   Box,
   Flex,
@@ -55,14 +54,9 @@ function EditPage(): JSX.Element {
           type={type}
           permalink={permalink}
           siteId={siteId}
+          updatedAt={updatedAt}
         >
-          <PageEditingView
-            pageId={pageId}
-            permalink={permalink}
-            page={page}
-            siteId={siteId}
-            updatedAt={updatedAt}
-          />
+          <PageEditingView />
         </EditorDrawerProvider>
       </TabPanel>
       <TabPanel>
@@ -72,19 +66,9 @@ function EditPage(): JSX.Element {
   )
 }
 
-interface PageEditingViewProps extends z.infer<typeof editPageSchema> {
-  page: RouterOutput["page"]["readPageAndBlob"]["content"]
-  permalink: RouterOutput["page"]["readPageAndBlob"]["permalink"]
-  updatedAt: RouterOutput["page"]["readPageAndBlob"]["updatedAt"]
-}
-
-const PageEditingView = ({
-  page,
-  permalink,
-  updatedAt,
-  siteId,
-}: PageEditingViewProps) => {
-  const { previewPageState } = useEditorDrawerContext()
+const PageEditingView = () => {
+  const { previewPageState, permalink, siteId, updatedAt } =
+    useEditorDrawerContext()
   const themeCssVars = useSiteThemeCssVars({ siteId })
 
   return (
@@ -110,7 +94,6 @@ const PageEditingView = ({
         >
           <PreviewIframe style={themeCssVars}>
             <Preview
-              {...page}
               {...previewPageState}
               siteId={siteId}
               permalink={permalink}
