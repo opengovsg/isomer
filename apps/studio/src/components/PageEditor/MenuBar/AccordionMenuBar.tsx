@@ -1,3 +1,4 @@
+import type { Editor } from "@tiptap/react"
 import { useMemo } from "react"
 import { Icon, useDisclosure } from "@chakra-ui/react"
 import { Editor } from "@tiptap/react"

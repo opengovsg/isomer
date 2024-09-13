@@ -1,5 +1,5 @@
+import type { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { TextMenuBar } from "~/components/PageEditor/MenuBar"
-import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { Editor } from "./components"
 
 export function TiptapTextEditor({

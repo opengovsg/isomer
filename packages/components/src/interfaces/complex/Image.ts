@@ -12,6 +12,7 @@ export const ImageSchema = Type.Object(
     }),
     alt: Type.String({
       title: "Alternate text",
+      maxLength: 120,
       description:
         "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
     }),

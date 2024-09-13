@@ -31,7 +31,7 @@ export function JsonFormsBooleanControl({
   }
 
   return (
-    <Box py={2}>
+    <Box>
       <FormControl>
         <FormLabel description={description} htmlFor={id}>
           {label}

@@ -7,11 +7,12 @@ import { SUPPORTED_ICON_NAMES } from "~/common/icons"
 export const InfoBoxSchema = Type.Object({
   title: Type.String({
     title: "Title",
+    maxLength: 100,
   }),
   description: Type.Optional(
     Type.String({
       title: "Description",
-      maxLength: 300,
+      maxLength: 200,
     }),
   ),
   icon: Type.Optional(
@@ -32,6 +33,7 @@ export const InfoBoxSchema = Type.Object({
   buttonLabel: Type.Optional(
     Type.String({
       title: "Link text",
+      maxLength: 50,
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
     }),
@@ -50,10 +52,12 @@ export const InfoColsSchema = Type.Object(
     type: Type.Literal("infocols", { default: "infocols" }),
     title: Type.String({
       title: "Title",
+      maxLength: 100,
     }),
     subtitle: Type.Optional(
       Type.String({
         title: "Description",
+        maxLength: 150,
       }),
     ),
     infoBoxes: Type.Array(InfoBoxSchema, {

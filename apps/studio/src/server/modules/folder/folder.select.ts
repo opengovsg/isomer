@@ -1,4 +1,4 @@
-import { DB } from "~prisma/generated/generatedTypes"
+import type { DB } from "~prisma/generated/generatedTypes"
 
 type ResourceProperties = keyof DB["Resource"]
 export const defaultFolderSelect: readonly ResourceProperties[] = [

@@ -1,17 +1,9 @@
 import type { ProseProps } from "@opengovsg/isomer-components"
 import type { JSONContent } from "@tiptap/react"
-import {
-  Box,
-  Text as ChakraText,
-  Flex,
-  HStack,
-  Icon,
-  useDisclosure,
-  VStack,
-} from "@chakra-ui/react"
+import { Box, HStack, useDisclosure, VStack } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
-import _ from "lodash"
-import { BiText, BiTrash, BiX } from "react-icons/bi"
+import isEqual from "lodash/isEqual"
+import { BiTrash } from "react-icons/bi"
 
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -22,6 +14,7 @@ import { editPageSchema } from "../schema"
 import { BRIEF_TOAST_SETTINGS } from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
+import { DrawerHeader } from "./Drawer/DrawerHeader"
 import { TiptapTextEditor } from "./form-builder/renderers/TipTapEditor"
 
 interface TipTapComponentProps {
@@ -60,8 +53,6 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
   })
 
   const updatePageState = (editorContent: JSONContent) => {
-    if (!previewPageState) return
-
     const updatedBlocks = Array.from(previewPageState.content)
     // TODO: actual validation
     updatedBlocks[currActiveIdx] = editorContent as ProseProps
@@ -73,8 +64,6 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
   }
 
   const editor = useTextEditor({ data: content, handleChange: updatePageState })
-
-  if (!previewPageState || !savedPageState) return
 
   const handleDeleteBlock = () => {
     const updatedBlocks = Array.from(savedPageState.content)
@@ -132,36 +121,18 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
       />
 
       <VStack bg="white" h="100%" gap="0">
-        <Flex
-          px="2rem"
-          py="1.25rem"
-          borderBottom="1px solid"
-          borderColor="base.divider.strong"
-          w="100%"
-          alignItems="center"
-        >
-          <Icon as={BiText} color="blue.600" />
-          <ChakraText pl="0.75rem" textStyle="h5" w="100%">
-            Edit {PROSE_COMPONENT_NAME}
-          </ChakraText>
-          <IconButton
-            size="lg"
-            variant="clear"
-            colorScheme="neutral"
-            color="interaction.sub.default"
-            aria-label="Close drawer"
-            isDisabled={isLoading}
-            icon={<BiX />}
-            onClick={() => {
-              if (!_.isEqual(previewPageState, savedPageState)) {
-                onDiscardChangesModalOpen()
-              } else {
-                handleDiscardChanges()
-              }
-            }}
-          />
-        </Flex>
-        <Box w="100%" p="2rem" overflow="auto" flex={1}>
+        <DrawerHeader
+          isDisabled={isLoading}
+          onBackClick={() => {
+            if (!isEqual(previewPageState, savedPageState)) {
+              onDiscardChangesModalOpen()
+            } else {
+              handleDiscardChanges()
+            }
+          }}
+          label={`Edit ${PROSE_COMPONENT_NAME}`}
+        />
+        <Box w="100%" p="1.5rem" overflow="auto" flex={1}>
           <TiptapTextEditor editor={editor} />
         </Box>
         <Box

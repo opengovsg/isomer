@@ -152,6 +152,7 @@ export const CreatePageDetailsScreen = () => {
                     name="permalink"
                     render={({ field: { onChange, ...field } }) => (
                       <Input
+                        maxLength={MAX_PAGE_URL_LENGTH}
                         borderLeftRadius={0}
                         placeholder="URL will be autopopulated if left untouched"
                         {...field}

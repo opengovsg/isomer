@@ -22,7 +22,7 @@ import { z } from "zod"
 
 import { useZodForm } from "~/lib/form"
 
-const MAX_CAPTION_LENGTH = 300
+const MAX_CAPTION_LENGTH = 200
 const tableSettingsSchema = z.object({
   caption: z
     .string({

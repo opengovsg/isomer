@@ -8,10 +8,12 @@ export const InfopicSchema = Type.Object(
     type: Type.Literal("infopic", { default: "infopic" }),
     title: Type.String({
       title: "Title",
+      maxLength: 100,
     }),
     description: Type.Optional(
       Type.String({
         title: "Description",
+        maxLength: 200,
       }),
     ),
     imageSrc: Type.String({
@@ -29,6 +31,7 @@ export const InfopicSchema = Type.Object(
     buttonLabel: Type.Optional(
       Type.String({
         title: "Button text",
+        maxLength: 50,
         description:
           "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
       }),

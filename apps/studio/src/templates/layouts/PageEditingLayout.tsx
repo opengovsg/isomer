@@ -1,9 +1,9 @@
 import { Flex, Grid } from "@chakra-ui/react"
+import { Tabs } from "@opengovsg/design-system-react"
 
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { LayoutHead } from "~/components/LayoutHead"
 import { APP_GRID_TEMPLATE_AREA } from "~/constants/layouts"
-import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { SiteEditNavbar } from "~/features/editing-experience/components/SiteEditNavbar"
 import { type GetLayout } from "~/lib/types"
 
@@ -11,7 +11,7 @@ export const PageEditingLayout: GetLayout = (page) => {
   return (
     <EnforceLoginStatePageWrapper>
       <LayoutHead />
-      <EditorDrawerProvider>
+      <Tabs>
         <Flex minH="100vh" flexDir="column" bg="base.canvas.alt" pos="relative">
           <Grid
             flex={1}
@@ -25,7 +25,7 @@ export const PageEditingLayout: GetLayout = (page) => {
             </Flex>
           </Grid>
         </Flex>
-      </EditorDrawerProvider>
+      </Tabs>
     </EnforceLoginStatePageWrapper>
   )
 }

@@ -7,11 +7,13 @@ const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
     title: "Title",
     default: "This is the title of the card",
+    maxLength: 100,
   }),
   description: Type.Optional(
     Type.String({
       title: "Description",
       default: "This is an optional description for the card",
+      maxLength: 150,
     }),
   ),
   url: Type.Optional(
@@ -24,6 +26,7 @@ const SingleCardNoImageSchema = Type.Object({
 })
 
 const SingleCardWithImageSchema = Type.Composite([
+  SingleCardNoImageSchema,
   Type.Object({
     imageUrl: Type.String({
       title: "Upload image",
@@ -52,29 +55,36 @@ const SingleCardWithImageSchema = Type.Composite([
         "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
     }),
   }),
-  SingleCardNoImageSchema,
 ])
 
 const InfoCardsBaseSchema = Type.Object({
   type: Type.Literal("infocards", { default: "infocards" }),
-  title: Type.Optional(
-    Type.String({
-      title: "Title",
-      default: "This is an optional title of the Cards component",
-    }),
-  ),
+  title: Type.String({
+    title: "Title",
+    default: "This is an optional title of the Cards component",
+    maxLength: 100,
+  }),
   subtitle: Type.Optional(
     Type.String({
       title: "Description",
       default: "This is an optional description for the Cards component",
+      maxLength: 200,
     }),
   ),
   maxColumns: Type.Optional(
-    Type.Union([Type.Literal(1), Type.Literal(2), Type.Literal(3)], {
-      title: "Maximum columns variant",
-      description:
-        "Controls the responsive behaviour regarding the number of columns that this component will expand to in different viewports",
-    }),
+    Type.Union(
+      [
+        Type.Literal("1", { title: "1 column" }),
+        Type.Literal("2", { title: "2 columns" }),
+        Type.Literal("3", { title: "3 columns" }),
+      ],
+      {
+        title: "Maximum columns variant",
+        description:
+          "Controls the responsive behaviour regarding the number of columns that this component will expand to in different viewports",
+        default: "3",
+      },
+    ),
   ),
 })
 

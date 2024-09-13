@@ -37,10 +37,6 @@ export function EditPageDrawer(): JSX.Element {
     )
   }
 
-  if (!previewPageState) {
-    return <></>
-  }
-
   switch (currState.state) {
     case "root":
       return <RootStateDrawer />

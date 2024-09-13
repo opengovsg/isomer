@@ -6,10 +6,10 @@ import isEqual from "lodash/isEqual"
 import { z } from "zod"
 
 import {
+  basePageSchema,
   createPageSchema,
-  getEditPageSchema,
-  getPageSchema,
   getRootPageSchema,
+  pageSettingsSchema,
   publishPageSchema,
   reorderBlobSchema,
   updatePageBlobSchema,
@@ -92,13 +92,13 @@ export const pageRouter = router({
     }),
 
   readPage: protectedProcedure
-    .input(getPageSchema)
+    .input(basePageSchema)
     .query(async ({ input: { pageId, siteId } }) =>
       getPageById(db, { resourceId: pageId, siteId }),
     ),
 
   readPageAndBlob: protectedProcedure
-    .input(getEditPageSchema)
+    .input(basePageSchema)
     .query(async ({ input: { pageId, siteId } }) => {
       // TODO: Return blob last modified so the renderer can show last modified
       return db.transaction().execute(async (tx) => {
@@ -110,12 +110,11 @@ export const pageRouter = router({
           })
         }
 
-        const permalink = page.permalink
         const siteMeta = await getSiteConfig(page.siteId)
         const navbar = await getNavBar(page.siteId)
         const footer = await getFooter(page.siteId)
 
-        const { content } = page
+        const { title, type, permalink, content, updatedAt } = page
 
         return {
           permalink,
@@ -124,6 +123,9 @@ export const pageRouter = router({
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore type instantiation is excessively deep and possibly infinite
           content,
+          title,
+          type,
+          updatedAt,
           ...siteMeta,
         }
       })
@@ -287,4 +289,24 @@ export const pageRouter = router({
       await startProjectById(ctx.logger, codeBuildId)
       return addedVersionResult
     }),
+
+  updateSettings: protectedProcedure.input(pageSettingsSchema).mutation(
+    // TODO: save noIndex and meta to db
+    async ({ input: { pageId, siteId, title, permalink } }) => {
+      return db
+        .updateTable("Resource")
+        .where("Resource.id", "=", String(pageId))
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "in", ["Page", "CollectionPage"])
+        .set({ title, permalink })
+        .returning([
+          "Resource.id",
+          "Resource.type",
+          "Resource.title",
+          "Resource.permalink",
+          "Resource.draftBlobId",
+        ])
+        .executeTakeFirstOrThrow()
+    },
+  ),
 })

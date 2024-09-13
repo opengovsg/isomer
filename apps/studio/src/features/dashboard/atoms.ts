@@ -1,7 +1,10 @@
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { atom } from "jotai"
 
-import { DeleteResourceModalState, FolderSettingsModalState } from "./types"
+import type {
+  DeleteResourceModalState,
+  FolderSettingsModalState,
+} from "./types"
 
 export const DEFAULT_RESOURCE_MODAL_STATE = {
   isOpen: false,
