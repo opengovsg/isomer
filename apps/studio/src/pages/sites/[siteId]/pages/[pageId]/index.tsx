@@ -65,7 +65,7 @@ function EditPage(): JSX.Element {
           pageId={pageId}
           updatedAt={updatedAt}
         >
-          <PageEditingView />
+          <PageEditingView title={title} />
         </EditorDrawerProvider>
       </TabPanel>
       <TabPanel>
@@ -75,7 +75,10 @@ function EditPage(): JSX.Element {
   )
 }
 
-const PageEditingView = () => {
+interface PageEditingViewProps {
+  title: string
+}
+const PageEditingView = ({ title }: PageEditingViewProps) => {
   const { previewPageState, permalink, siteId, pageId, updatedAt } =
     useEditorDrawerContext()
   const themeCssVars = useSiteThemeCssVars({ siteId })
@@ -109,6 +112,7 @@ const PageEditingView = () => {
               permalink={permalink}
               lastModified={updatedAt}
               version="0.1.0"
+              title={title}
             />
           </PreviewIframe>
         </Flex>

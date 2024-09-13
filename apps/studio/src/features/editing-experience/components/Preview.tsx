@@ -19,6 +19,7 @@ type PreviewProps = IsomerSchema & {
   siteId: number
   resourceId?: number
   overrides?: PartialDeep<IsomerPageSchemaType>
+  title?: string
 }
 
 // Add a fake link component to prevent the preview from navigating away
@@ -36,6 +37,7 @@ function SuspendablePreview({
   siteId,
   resourceId,
   overrides = {},
+  title,
   ...props
 }: PreviewProps) {
   const { env } = useEnv()
@@ -55,6 +57,7 @@ function SuspendablePreview({
     page: {
       permalink,
       lastModified,
+      title,
     },
   })
 
