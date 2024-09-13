@@ -69,7 +69,7 @@ const server = z
       z.string().length(0),
     ]),
     SESSION_SECRET: z.string().min(32),
-    GROWTHBOOK_CLIENT_KEY: z.string().min(1),
+    GROWTHBOOK_CLIENT_KEY: z.string().optional(),
   })
   .merge(s3Schema)
   // Add on schemas as needed that requires conditional validation.
