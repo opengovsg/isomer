@@ -51,7 +51,7 @@ const NavigationBreadcrumbs = ({
 
       {!isBreadcrumbLoaded && (
         <BreadcrumbItem>
-          <Skeleton height="1.25rem" width="10rem" />
+          <Skeleton height="1.25rem" width="16rem" />
         </BreadcrumbItem>
       )}
 
@@ -61,7 +61,9 @@ const NavigationBreadcrumbs = ({
             as={Link}
             href={`/sites/${siteId}/${getResourceSubpath(parentResource.type)}/${parentResource.id}`}
           >
-            <Text textStyle="subhead-2">{parentResource.title}</Text>
+            <Text textStyle="subhead-2" noOfLines={1} maxW="12rem">
+              {parentResource.title}
+            </Text>
           </BreadcrumbLink>
         </BreadcrumbItem>
       )}
@@ -69,7 +71,9 @@ const NavigationBreadcrumbs = ({
       {!!resource && (
         <BreadcrumbItem isCurrentPage>
           <BreadcrumbLink href="#">
-            <Text textStyle="subhead-2">{resource.title}</Text>
+            <Text textStyle="subhead-2" noOfLines={1} maxW="12rem">
+              {resource.title}
+            </Text>
           </BreadcrumbLink>
         </BreadcrumbItem>
       )}
