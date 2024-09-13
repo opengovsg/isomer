@@ -15,6 +15,7 @@ import { Button } from "@opengovsg/design-system-react"
 import { type IconType } from "react-icons"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { type DrawerState } from "~/types/editorDrawer"
 import {
   ARTICLE_ALLOWED_BLOCKS,
@@ -123,8 +124,6 @@ function ComponentSelector() {
   } = useEditorDrawerContext()
 
   const onProceed = (sectionType: SectionType) => {
-    if (!savedPageState) return
-
     // TODO: add new section to page/editor state
     // NOTE: Only paragraph should go to tiptap editor
     // the rest should use json forms
@@ -200,7 +199,8 @@ function ComponentSelector() {
         </Button>
       </Flex>
       <VStack
-        p="2rem"
+        px="1.5rem"
+        py="1.25rem"
         w="full"
         gap="1.25rem"
         alignItems="start"
@@ -216,12 +216,10 @@ function ComponentSelector() {
                 return (
                   <BlockItem
                     key={type}
-                    icon={blockMeta.icon}
-                    label={blockMeta.label}
+                    icon={TYPE_TO_ICON[type]}
                     onProceed={onProceed}
                     sectionType={type}
-                    description={blockMeta.description}
-                    usageText={blockMeta.usageText}
+                    {...blockMeta}
                   />
                 )
               })}

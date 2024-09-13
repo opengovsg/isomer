@@ -32,7 +32,7 @@ const GroupComponent = React.memo(function GroupComponent({
   }
 
   return (
-    <VStack spacing={4}>
+    <VStack spacing="1.25rem">
       <Divider borderColor="base.divider.strong" />
       <Box w="100%">
         <Heading textStyle="h3" as="h3" size="sm">

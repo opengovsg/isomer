@@ -8,15 +8,7 @@ import type {
   UISchemaElement,
 } from "@jsonforms/core"
 import { useCallback, useMemo, useState } from "react"
-import {
-  Box,
-  Flex,
-  Heading,
-  HStack,
-  Icon,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import { Box, Flex, Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
   composePaths,
@@ -31,9 +23,16 @@ import {
   withJsonFormsArrayLayoutProps,
 } from "@jsonforms/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
-import { BiX } from "react-icons/bi"
+import {
+  BiLeftArrowAlt,
+  BiPlusCircle,
+  BiRightArrowAlt,
+  BiTrash,
+} from "react-icons/bi"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { DrawerHeader } from "../../../Drawer/DrawerHeader"
+import { useBuilderErrors } from "../../ErrorProvider"
 import DraggableDrawerButton from "./DraggableDrawerButton"
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
@@ -50,6 +49,8 @@ interface ComplexEditorNestedDrawerProps {
   path: string
   label: string
   setSelectedIndex: (selectedIndex?: number) => void
+  selectedIndex: number
+  maxIndex: number
   isRemoveItemDisabled: boolean
   handleRemoveItem: () => void
 }
@@ -65,36 +66,27 @@ function ComplexEditorNestedDrawer({
   setSelectedIndex,
   isRemoveItemDisabled,
   handleRemoveItem,
+  selectedIndex,
+  maxIndex,
 }: ComplexEditorNestedDrawerProps) {
   return (
     <VStack
-      spacing={5}
       position="absolute"
       top={0}
       left={0}
-      px="2rem"
-      py="1.5rem"
-      bgColor="grey.50"
+      bg="grey.50"
       w="100%"
       h="100%"
       zIndex={1}
+      gap={0}
     >
-      <HStack justifyContent="space-between" w="100%">
-        <Heading as="h3" size="sm" variant="subhead-1" fontWeight="medium">
-          Edit {label}
-        </Heading>
-        <IconButton
-          icon={<Icon as={BiX} />}
-          variant="clear"
-          colorScheme="sub"
-          size="sm"
-          p="0.625rem"
-          onClick={() => setSelectedIndex()}
-          aria-label="Close drawer"
-        />
-      </HStack>
-
-      <Box w="100%" h="100%">
+      <DrawerHeader
+        label={`Edit ${label}`}
+        onBackClick={() => setSelectedIndex()}
+        textStyle="subhead-1"
+        backAriaLabel={`Return to ${label}`}
+      />
+      <Box w="100%" h="100%" px="1.5rem" py="1rem" flex={1} overflow="auto">
         <JsonFormsDispatch
           renderers={renderers}
           cells={cells}
@@ -103,19 +95,46 @@ function ComplexEditorNestedDrawer({
           uischema={uischema}
           path={path}
         />
-
-        <HStack w="100%" justifyContent="center">
-          <Button
-            onClick={handleRemoveItem}
-            variant="clear"
-            colorScheme="critical"
-            isDisabled={isRemoveItemDisabled}
-            mb="3rem"
-          >
-            Remove item
-          </Button>
-        </HStack>
       </Box>
+      <Stack
+        flexDirection="row"
+        bg="base.canvas.default"
+        boxShadow="md"
+        py="1.5rem"
+        px="2rem"
+        w="full"
+      >
+        <IconButton
+          icon={<BiTrash fontSize="1.25rem" />}
+          variant="outline"
+          colorScheme="critical"
+          onClick={handleRemoveItem}
+          isDisabled={isRemoveItemDisabled}
+          aria-label="Remove item"
+        />
+        <Stack flexDirection="row" flex={1}>
+          <Button
+            leftIcon={<BiLeftArrowAlt fontSize="1.25rem" />}
+            flex={1}
+            variant="outline"
+            isDisabled={selectedIndex === 0}
+            onClick={() => setSelectedIndex(Math.max(selectedIndex - 1, 0))}
+          >
+            Previous
+          </Button>
+          <Button
+            rightIcon={<BiRightArrowAlt fontSize="1.25rem" />}
+            flex={1}
+            variant="outline"
+            isDisabled={selectedIndex === maxIndex}
+            onClick={() =>
+              setSelectedIndex(Math.min(selectedIndex + 1, maxIndex))
+            }
+          >
+            Next
+          </Button>
+        </Stack>
+      </Stack>
     </VStack>
   )
 }
@@ -139,6 +158,7 @@ export function JsonFormsArrayControl({
   uischema,
   translations,
 }: ArrayLayoutProps) {
+  const { hasErrorAt } = useBuilderErrors()
   const [selectedIndex, setSelectedIndex] = useState<number>()
   const resolvedSchema = Resolve.schema(rootSchema, uischema.scope, rootSchema)
   const maxItems =
@@ -160,7 +180,7 @@ export function JsonFormsArrayControl({
         setSelectedIndex(selectedIndex - 1)
       }
     },
-    [removeItems, selectedIndex],
+    [isRemoveItemDisabled, removeItems, selectedIndex],
   )
   const handleMoveItem = useCallback(
     (path: string, originalIndex: number, newIndex: number) => {
@@ -203,17 +223,39 @@ export function JsonFormsArrayControl({
     handleMoveItem(path, originalIndex, newIndex)
   }
 
+  if (selectedIndex !== undefined) {
+    return (
+      <ComplexEditorNestedDrawer
+        renderers={renderers}
+        cells={cells}
+        visible={visible}
+        schema={schema}
+        uischema={childUiSchema}
+        path={composePaths(path, `${selectedIndex}`)}
+        label={label}
+        setSelectedIndex={setSelectedIndex}
+        isRemoveItemDisabled={isRemoveItemDisabled}
+        handleRemoveItem={handleRemoveItem(path, selectedIndex)}
+        selectedIndex={selectedIndex}
+        maxIndex={data - 1}
+      />
+    )
+  }
+
   return (
-    <VStack py={2} spacing="0.375rem">
-      <Heading
-        as="h3"
-        size="sm"
-        variant="subhead-1"
-        fontWeight="medium"
-        w="100%"
-      >
-        {label}
-      </Heading>
+    <VStack spacing="0.375rem" align="start">
+      <Stack flexDir="row" justify="space-between" align="center" w="full">
+        <Text textStyle="subhead-1">{label}</Text>
+        <Button
+          onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+          variant="clear"
+          size="xs"
+          leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+          isDisabled={maxItems !== undefined && data >= maxItems}
+        >
+          Add item
+        </Button>
+      </Stack>
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="blocks">
           {({ droppableProps, innerRef, placeholder }) => (
@@ -224,6 +266,7 @@ export function JsonFormsArrayControl({
               h="100%"
               spacing={0}
               ref={innerRef}
+              mt="-0.25rem"
             >
               {data === 0 && (
                 <Flex
@@ -231,6 +274,7 @@ export function JsonFormsArrayControl({
                   flexDir="column"
                   px="1.5rem"
                   p="3.75rem"
+                  mt="0.25rem"
                   justifyContent="center"
                   w="100%"
                 >
@@ -246,17 +290,20 @@ export function JsonFormsArrayControl({
 
               {[...Array(data).keys()].map((index) => {
                 const childPath = composePaths(path, `${index}`)
+                const hasError = hasErrorAt(childPath)
 
                 return (
                   <Draggable
                     key={childPath}
                     draggableId={childPath}
+                    disableInteractiveElementBlocking
                     index={index}
                   >
                     {({ draggableProps, dragHandleProps, innerRef }) => (
                       <DraggableDrawerButton
                         draggableProps={draggableProps}
                         dragHandleProps={dragHandleProps}
+                        isError={hasError}
                         ref={innerRef}
                         index={index}
                         path={path}
@@ -281,32 +328,6 @@ export function JsonFormsArrayControl({
           )}
         </Droppable>
       </DragDropContext>
-
-      {selectedIndex !== undefined && (
-        <ComplexEditorNestedDrawer
-          renderers={renderers}
-          cells={cells}
-          visible={visible}
-          schema={schema}
-          uischema={childUiSchema}
-          path={composePaths(path, `${selectedIndex}`)}
-          label={label}
-          setSelectedIndex={setSelectedIndex}
-          isRemoveItemDisabled={isRemoveItemDisabled}
-          handleRemoveItem={handleRemoveItem(path, selectedIndex)}
-        />
-      )}
-
-      {selectedIndex === undefined && (
-        <Button
-          onClick={addItem(path, createDefaultValue(schema, rootSchema))}
-          w="100%"
-          variant="outline"
-          isDisabled={maxItems !== undefined && data >= maxItems}
-        >
-          Add item
-        </Button>
-      )}
     </VStack>
   )
 }

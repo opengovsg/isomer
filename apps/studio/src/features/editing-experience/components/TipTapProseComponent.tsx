@@ -132,7 +132,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
           }}
           label={`Edit ${PROSE_COMPONENT_NAME}`}
         />
-        <Box w="100%" p="2rem" overflow="auto" flex={1}>
+        <Box w="100%" p="1.5rem" overflow="auto" flex={1}>
           <TiptapTextEditor editor={editor} />
         </Box>
         <Box

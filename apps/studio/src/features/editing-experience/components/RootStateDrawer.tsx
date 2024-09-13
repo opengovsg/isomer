@@ -3,12 +3,13 @@ import { useCallback } from "react"
 import { Box, Button, Flex, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
-import { BiCrown, BiPlusCircle } from "react-icons/bi"
+import { BiPin, BiPlusCircle } from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
+import { TYPE_TO_ICON } from "../constants"
 import { editPageSchema } from "../schema"
 import { ActivateAdminMode } from "./ActivateAdminMode"
 import { BaseBlock } from "./Block/BaseBlock"
@@ -45,11 +46,11 @@ export default function RootStateDrawer() {
 
   const onDragEnd = useCallback(
     (result: DropResult) => {
-      if (!result.destination || !savedPageState) return
+      if (!result.destination) return
 
       const from = result.source.index
       const to = result.destination.index
-      const contentLength = savedPageState.content.length ?? 0
+      const contentLength = savedPageState.content.length
 
       if (from >= contentLength || to >= contentLength || from < 0 || to < 0)
         return
@@ -89,7 +90,7 @@ export default function RootStateDrawer() {
     savedPageState.content[0]?.type === "hero"
 
   return (
-    <VStack gap="1.5rem" px="1.25rem" py="1.5rem">
+    <VStack gap="1.5rem" p="1.5rem">
       <ActivateAdminMode />
       {/* Fixed Blocks Section */}
       <VStack gap="1rem" w="100%" align="start">
@@ -107,7 +108,7 @@ export default function RootStateDrawer() {
             }}
             label="Hero banner"
             description="Title, subtitle, and Call-to-Action"
-            icon={BiCrown}
+            icon={TYPE_TO_ICON.hero}
           />
         ) : (
           <BaseBlock
@@ -116,6 +117,7 @@ export default function RootStateDrawer() {
             }}
             label="Page title and summary"
             description="Click to edit"
+            icon={BiPin}
           />
         )}
       </VStack>
@@ -148,8 +150,7 @@ export default function RootStateDrawer() {
                 ref={provided.innerRef}
               >
                 <Box w="100%">
-                  {(!savedPageState ||
-                    (isHeroFixedBlock && savedPageState.content.length === 1) ||
+                  {((isHeroFixedBlock && savedPageState.content.length === 1) ||
                     savedPageState.content.length === 0) && (
                     <VStack justifyContent="center" spacing={0} mt="2.75rem">
                       <BlockEditingPlaceholder />
@@ -171,36 +172,34 @@ export default function RootStateDrawer() {
                     </VStack>
                   )}
 
-                  {!!savedPageState && (
-                    <Flex flexDirection="column" mt="-0.25rem">
-                      {savedPageState.content.map((block, index) => {
-                        if (isHeroFixedBlock && index === 0) {
-                          return <></>
-                        }
+                  <Flex flexDirection="column" mt="-0.25rem">
+                    {savedPageState.content.map((block, index) => {
+                      if (isHeroFixedBlock && index === 0) {
+                        return <></>
+                      }
 
-                        return (
-                          <DraggableBlock
-                            block={block}
-                            // TODO: Generate a block ID instead of index
-                            key={`${block.type}-${index}`}
-                            // TODO: Use block ID when instead of index for uniquely identifying blocks
-                            draggableId={`${block.type}-${index}`}
-                            index={index}
-                            onClick={() => {
-                              setCurrActiveIdx(index)
-                              // TODO: we should automatically do this probably?
-                              const nextState =
-                                savedPageState.content[index]?.type === "prose"
-                                  ? "nativeEditor"
-                                  : "complexEditor"
-                              // NOTE: SNAPSHOT
-                              setDrawerState({ state: nextState })
-                            }}
-                          />
-                        )
-                      })}
-                    </Flex>
-                  )}
+                      return (
+                        <DraggableBlock
+                          block={block}
+                          // TODO: Generate a block ID instead of index
+                          key={`${block.type}-${index}`}
+                          // TODO: Use block ID when instead of index for uniquely identifying blocks
+                          draggableId={`${block.type}-${index}`}
+                          index={index}
+                          onClick={() => {
+                            setCurrActiveIdx(index)
+                            // TODO: we should automatically do this probably?
+                            const nextState =
+                              savedPageState.content[index]?.type === "prose"
+                                ? "nativeEditor"
+                                : "complexEditor"
+                            // NOTE: SNAPSHOT
+                            setDrawerState({ state: nextState })
+                          }}
+                        />
+                      )
+                    })}
+                  </Flex>
                 </Box>
                 {provided.placeholder}
               </VStack>

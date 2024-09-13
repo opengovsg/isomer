@@ -80,3 +80,35 @@ export const PublishedState: Story = {
     },
   },
 }
+
+export const NestedState: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    await waitFor(async () => {
+      await userEvent.click(
+        canvas.getByRole("button", { name: /keystatistics/i }),
+      )
+      await userEvent.click(
+        canvas.getByRole("button", { name: /average all nighters/i }),
+      )
+    })
+  },
+}
+
+export const ErrorNestedState: Story = {
+  play: async (context) => {
+    await NestedState.play?.(context)
+
+    const { canvasElement } = context
+    const canvas = within(canvasElement)
+
+    await waitFor(async () => {
+      await userEvent.clear(
+        canvas.getByRole("textbox", { name: /description/i }),
+      )
+
+      await userEvent.click(canvas.getByLabelText(/return to statistics/i))
+    })
+  },
+}

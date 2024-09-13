@@ -56,12 +56,6 @@ export const DraggableBlock = ({
                   {...provided.dragHandleProps}
                 />
               }
-              containerProps={{
-                bg: isDragging ? "interaction.muted.main.hover" : "white",
-                borderColor: isDragging
-                  ? "interaction.main-subtle.hover"
-                  : "base.divider.medium",
-              }}
               label={label}
               icon={icon}
             />

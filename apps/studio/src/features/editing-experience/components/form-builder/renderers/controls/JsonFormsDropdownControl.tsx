@@ -45,7 +45,7 @@ export function JsonFormsDropdownControl({
   }))
 
   return (
-    <Box py={2}>
+    <Box>
       <FormControl isRequired={required}>
         <FormLabel description={description}>{label}</FormLabel>
         <SingleSelect

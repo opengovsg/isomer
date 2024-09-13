@@ -29,7 +29,7 @@ export function JsonFormsCalloutTextControl({
   })
 
   return (
-    <Flex py={2}>
+    <Flex>
       <FormControl isRequired={required}>
         <FormLabel description={description}>{label}</FormLabel>
         <TiptapAccordionEditor editor={editor} />
