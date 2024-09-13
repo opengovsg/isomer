@@ -36,7 +36,6 @@ function SuspendablePreview({
   siteId,
   resourceId,
   overrides = {},
-  title,
   ...props
 }: PreviewProps) {
   const { env } = useEnv()
@@ -56,7 +55,6 @@ function SuspendablePreview({
     page: {
       permalink,
       lastModified,
-      title,
     },
   })
 
