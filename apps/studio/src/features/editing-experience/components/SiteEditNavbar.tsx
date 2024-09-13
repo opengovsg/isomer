@@ -3,6 +3,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   Flex,
+  Skeleton,
   TabList,
   Text,
 } from "@chakra-ui/react"
@@ -10,8 +11,75 @@ import { Breadcrumb, Tab } from "@opengovsg/design-system-react"
 
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { getResourceSubpath } from "~/utils/resource"
+import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
 import PublishButton from "./PublishButton"
+
+interface NavigationBreadcrumbsProps {
+  siteId: string
+  pageId: string
+}
+
+const NavigationBreadcrumbs = ({
+  siteId,
+  pageId,
+}: NavigationBreadcrumbsProps): JSX.Element => {
+  const { data: resource, isLoading: isResourceLoading } =
+    trpc.resource.getMetadataById.useQuery({
+      resourceId: pageId,
+    })
+
+  const { data: parentResource, isLoading: isParentResourceLoading } =
+    trpc.resource.getMetadataById.useQuery(
+      {
+        resourceId: resource?.parentId ?? "",
+      },
+      { enabled: !!resource?.parentId },
+    )
+
+  const isBreadcrumbLoaded =
+    (!resource?.parentId || !isParentResourceLoading) && !isResourceLoading
+
+  return (
+    <Breadcrumb size="xs">
+      <BreadcrumbItem>
+        <BreadcrumbLink as={Link} href={`/sites/${siteId}`}>
+          <Text textStyle="subhead-2">All pages</Text>
+        </BreadcrumbLink>
+      </BreadcrumbItem>
+
+      {!isBreadcrumbLoaded && (
+        <BreadcrumbItem>
+          <Skeleton height="1.25rem" width="16rem" />
+        </BreadcrumbItem>
+      )}
+
+      {!!parentResource && (
+        <BreadcrumbItem>
+          <BreadcrumbLink
+            as={Link}
+            href={`/sites/${siteId}/${getResourceSubpath(parentResource.type)}/${parentResource.id}`}
+          >
+            <Text textStyle="subhead-2" noOfLines={1} maxW="12rem">
+              {parentResource.title}
+            </Text>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+      )}
+
+      {!!resource && (
+        <BreadcrumbItem isCurrentPage>
+          <BreadcrumbLink href="#">
+            <Text textStyle="subhead-2" noOfLines={1} maxW="12rem">
+              {resource.title}
+            </Text>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+      )}
+    </Breadcrumb>
+  )
+}
 
 export const SiteEditNavbar = (): JSX.Element => {
   const { siteId, pageId } = useQueryParse(editPageSchema)
@@ -33,19 +101,11 @@ export const SiteEditNavbar = (): JSX.Element => {
         borderColor="base.divider.medium"
         transition="padding 0.1s"
       >
-        <Breadcrumb size="xs">
-          <BreadcrumbItem>
-            <BreadcrumbLink as={Link} href={`/sites/${siteId}`}>
-              <Text textStyle="subhead-2">All pages</Text>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
+        <NavigationBreadcrumbs
+          siteId={String(siteId)}
+          pageId={String(pageId)}
+        />
 
-          <BreadcrumbItem isCurrentPage>
-            <BreadcrumbLink href="#">
-              <Text textStyle="subhead-2">Current page</Text>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
         <TabList>
           <Tab>Edit</Tab>
           <Tab>Page Settings</Tab>

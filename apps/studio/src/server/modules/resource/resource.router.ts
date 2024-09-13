@@ -22,7 +22,13 @@ export const resourceRouter = router({
       const resource = await db
         .selectFrom("Resource")
         .where("Resource.id", "=", String(resourceId))
-        .select(["permalink", "Resource.id", "Resource.title"])
+        .select([
+          "Resource.id",
+          "Resource.type",
+          "Resource.title",
+          "Resource.permalink",
+          "Resource.parentId",
+        ])
         .executeTakeFirst()
 
       if (!resource) {
