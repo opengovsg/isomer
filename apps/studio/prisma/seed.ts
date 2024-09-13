@@ -215,7 +215,7 @@ async function main() {
     .insertInto("Resource")
     .values({
       draftBlobId: String(blobId),
-      permalink: "home",
+      permalink: "",
       siteId,
       type: "RootPage",
       title: "Home",
