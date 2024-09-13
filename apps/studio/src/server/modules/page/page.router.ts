@@ -24,6 +24,7 @@ import {
   getFullPageById,
   getNavBar,
   getPageById,
+  getResourceFullPermalink,
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
@@ -248,6 +249,7 @@ export const pageRouter = router({
         return { pageId: resource.id }
       },
     ),
+
   getRootPage: protectedProcedure
     .input(getRootPageSchema)
     .query(async ({ input: { siteId } }) => {
@@ -261,6 +263,7 @@ export const pageRouter = router({
           .executeTakeFirstOrThrow()
       )
     }),
+
   publishPage: protectedProcedure
     .input(publishPageSchema)
     .mutation(async ({ ctx, input: { siteId, pageId } }) => {
@@ -309,4 +312,18 @@ export const pageRouter = router({
         .executeTakeFirstOrThrow()
     },
   ),
+  getFullPermalink: protectedProcedure
+    .input(basePageSchema)
+    .query(async ({ input }) => {
+      const { pageId, siteId } = input
+      const permalink = await getResourceFullPermalink(siteId, pageId)
+      if (!permalink) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No permalink could be found for the given page",
+        })
+      }
+
+      return permalink
+    }),
 })

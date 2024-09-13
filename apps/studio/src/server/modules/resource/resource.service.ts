@@ -1,7 +1,9 @@
+import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { SelectExpression } from "kysely"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Resource, SafeKysely } from "../database"
+import { getSitemapTree } from "~/utils/sitemap"
 import { db } from "../database"
 import { type Page } from "./resource.types"
 
@@ -230,4 +232,164 @@ export const moveResource = async (
     .where("siteId", "=", siteId)
     .where("id", "=", String(resourceId))
     .executeTakeFirstOrThrow()
+}
+
+// Returns a sparse IsomerSitemap object that revolves around the given
+// resourceId, which includes:
+// - The full path from root to the actual resource
+// - The immediate children of the resource (if any)
+// - The immediate siblings of the resource (if any)
+// - The immediate children of those siblings (if any)
+export const getLocalisedSitemap = async (
+  siteId: number,
+  resourceId?: number,
+) => {
+  if (resourceId === undefined) {
+    // Provide a default sitemap with a single resource
+    return {
+      id: "0",
+      layout: "content",
+      title: "Root",
+      summary: "",
+      lastModified: new Date().toISOString(),
+      permalink: "",
+    }
+  }
+
+  // Get the actual resource first
+  const resource = await getById(db, {
+    resourceId,
+    siteId,
+  })
+    .select(defaultResourceSelect)
+    .executeTakeFirstOrThrow()
+
+  const allResources = await db
+    // Step 1: Get all the ancestors of the resource
+    .withRecursive("ancestors", (eb) =>
+      eb
+        // Base case: Get the actual resource
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", String(resourceId))
+        .select(defaultResourceSelect)
+        .unionAll((fb) =>
+          fb
+            // Recursive case: Get all the ancestors of the resource
+            .selectFrom("Resource")
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.type", "in", [
+              "Folder",
+              "Page",
+              "CollectionPage",
+              "RootPage",
+            ])
+            .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
+            .select(defaultResourceSelect),
+        ),
+    )
+    // Step 2: Get the immediate children of the resource
+    .with("immediateChildren", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .select(defaultResourceSelect)
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.parentId", "=", String(resourceId)),
+    )
+    // Step 3: Get the immediate siblings of the resource
+    .with("immediateSiblings", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "!=", String(resourceId))
+        .where((fb) => {
+          if (resource.parentId === null) {
+            return fb("Resource.parentId", "is", null)
+          }
+          return fb("Resource.parentId", "=", String(resource.parentId))
+        })
+        .select(defaultResourceSelect),
+    )
+    // Step 4: Get the immediate children of those siblings
+    .with("siblingChildren", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.parentId", "in", (fb) =>
+          fb.selectFrom("immediateSiblings").select("immediateSiblings.id"),
+        )
+        .select(defaultResourceSelect),
+    )
+    // Step 5: Combine all the resources in a single array
+    .selectFrom("ancestors as Resource")
+    .union((eb) =>
+      eb
+        .selectFrom("immediateChildren as Resource")
+        .select(defaultResourceSelect),
+    )
+    .union((eb) =>
+      eb
+        .selectFrom("immediateSiblings as Resource")
+        .select(defaultResourceSelect),
+    )
+    .union((eb) =>
+      eb
+        .selectFrom("siblingChildren as Resource")
+        .select(defaultResourceSelect),
+    )
+    .select(defaultResourceSelect)
+    .execute()
+
+  // Step 6: Construct the localised sitemap object
+  const rootResource = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.type", "=", "RootPage")
+    .select(defaultResourceSelect)
+    .executeTakeFirst()
+
+  if (rootResource === undefined) {
+    // This case will never happen, because we have guaranteed that there is
+    // always the root resource
+    throw new Error("Root item not found")
+  }
+
+  return getSitemapTree(rootResource, allResources)
+}
+
+export const getResourceFullPermalink = async (
+  siteId: number,
+  resourceId: number,
+) => {
+  const resourcePermalinks = await db
+    .withRecursive("ancestors", (eb) =>
+      eb
+        // Base case: Get the actual resource
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", String(resourceId))
+        .select(defaultResourceSelect)
+        .unionAll((fb) =>
+          fb
+            // Recursive case: Get all the ancestors of the resource
+            .selectFrom("Resource")
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.type", "in", [
+              "Folder",
+              "Page",
+              "CollectionPage",
+              "RootPage",
+            ])
+            .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
+            .select(defaultResourceSelect),
+        ),
+    )
+    .selectFrom("ancestors")
+    .select("ancestors.permalink")
+    .execute()
+
+  return `/${resourcePermalinks
+    .map((r) => r.permalink)
+    .reverse()
+    .join("/")}`
 }

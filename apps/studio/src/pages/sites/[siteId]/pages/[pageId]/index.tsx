@@ -37,7 +37,7 @@ import { trpc } from "~/utils/trpc"
 function EditPage(): JSX.Element {
   const { pageId, siteId } = useQueryParse(editPageSchema)
 
-  const [{ content: page, permalink, type, title, updatedAt }] =
+  const [{ content: page, type, title, updatedAt }] =
     trpc.page.readPageAndBlob.useSuspenseQuery(
       {
         pageId,
@@ -45,6 +45,14 @@ function EditPage(): JSX.Element {
       },
       { refetchOnWindowFocus: false },
     )
+
+  const [permalink] = trpc.page.getFullPermalink.useSuspenseQuery(
+    {
+      pageId,
+      siteId,
+    },
+    { refetchOnWindowFocus: false },
+  )
 
   return (
     <TabPanels _dark={{ color: "white" }}>
@@ -54,6 +62,7 @@ function EditPage(): JSX.Element {
           type={type}
           permalink={permalink}
           siteId={siteId}
+          pageId={pageId}
           updatedAt={updatedAt}
         >
           <PageEditingView />
@@ -67,7 +76,7 @@ function EditPage(): JSX.Element {
 }
 
 const PageEditingView = () => {
-  const { previewPageState, permalink, siteId, updatedAt } =
+  const { previewPageState, permalink, siteId, pageId, updatedAt } =
     useEditorDrawerContext()
   const themeCssVars = useSiteThemeCssVars({ siteId })
 
@@ -96,6 +105,7 @@ const PageEditingView = () => {
             <Preview
               {...previewPageState}
               siteId={siteId}
+              resourceId={pageId}
               permalink={permalink}
               lastModified={updatedAt}
               version="0.1.0"
