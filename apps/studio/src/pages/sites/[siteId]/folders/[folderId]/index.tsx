@@ -156,6 +156,7 @@ const FolderPage: NextPageWithLayout = () => {
                 as="h3"
                 textStyle="h3"
                 textOverflow="ellipsis"
+                wordBreak="break-all"
               >
                 {title}
               </Text>
