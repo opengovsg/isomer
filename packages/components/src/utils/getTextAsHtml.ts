@@ -24,7 +24,8 @@ export const getTextAsHtml = (
   content?: (HardBreakProps | TextProps)[],
 ) => {
   if (!content) {
-    return ""
+    // Note: We need to return a <br /> tag to ensure that the paragraph is not collapsed
+    return "<br />"
   }
 
   const output: string[] = []

@@ -13,7 +13,7 @@ const linkStyle = tv({
   base: "w-fit text-link underline-offset-4 hover:text-link-hover hover:underline",
 })
 
-const TableOfContents = ({ items }: TableOfContentsProps) => {
+const TableOfContents = ({ items, LinkComponent }: TableOfContentsProps) => {
   return (
     <div className="flex flex-col gap-3">
       <p className="prose-headline-lg-medium text-base-content-strong">
@@ -25,6 +25,7 @@ const TableOfContents = ({ items }: TableOfContentsProps) => {
             <BiMinus className="size-5 shrink-0 self-center fill-base-content-strong" />
             <Link
               href={anchorLink}
+              LinkComponent={LinkComponent}
               className={composeRenderProps("", (className, renderProps) =>
                 linkStyle({
                   className,
