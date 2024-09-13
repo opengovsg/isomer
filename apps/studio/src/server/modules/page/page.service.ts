@@ -12,7 +12,6 @@ export const createDefaultPage = ({
       const contentDefaultPage = {
         layout: "content",
         page: {
-          title,
           contentPageHeader: {
             summary: "",
           },
@@ -27,7 +26,6 @@ export const createDefaultPage = ({
       const articleDefaultPage = {
         layout: "article",
         page: {
-          title,
           date: format(new Date(), "dd-MM-yyyy"),
           category: "Feature Articles",
           articlePageHeader: {
