@@ -7,9 +7,9 @@ export {
   jsonFormsBooleanControlTester,
 } from "./JsonFormsBooleanControl"
 export {
-  default as JsonFormsDropdownControl,
-  jsonFormsDropdownControlTester,
-} from "./JsonFormsDropdownControl"
+  default as JsonFormsConstControl,
+  jsonFormsConstControlTester,
+} from "./JsonFormsConstControl"
 export {
   default as JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
@@ -34,10 +34,6 @@ export {
   default as JsonFormsCalloutTextControl,
   jsonFormsCalloutTextControlTester,
 } from "./JsonFormsCalloutTextControl"
-export {
-  default as JsonFormsRadioControl,
-  jsonFormsRadioControlTester,
-} from "./JsonFormsRadioControl"
 export {
   default as JsonFormsLinkControl,
   jsonFormsLinkControlTester,

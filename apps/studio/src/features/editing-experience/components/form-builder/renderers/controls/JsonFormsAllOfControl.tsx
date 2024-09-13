@@ -33,7 +33,7 @@ export function JsonFormsAllOfControl({
   )
 
   return (
-    <Box>
+    <>
       {allOfRenderInfos.map((allOfRenderInfo) => (
         <JsonFormsDispatch
           key={allOfRenderInfo.label}
@@ -44,7 +44,7 @@ export function JsonFormsAllOfControl({
           cells={cells}
         />
       ))}
-    </Box>
+    </>
   )
 }
 

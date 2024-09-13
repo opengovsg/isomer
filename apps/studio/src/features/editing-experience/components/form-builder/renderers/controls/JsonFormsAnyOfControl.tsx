@@ -81,7 +81,7 @@ export function JsonFormsAnyOfControl({
 
   return (
     <>
-      <Box py="0.5rem">
+      <Box mt="1.25rem" _first={{ mt: 0 }}>
         <FormControl isRequired gap="0.5rem">
           <FormLabel description={description}>{label || "Variant"}</FormLabel>
 

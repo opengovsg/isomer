@@ -2,7 +2,7 @@
 export const JSON_FORMS_RANKING = {
   ArrayControl: 4,
   BooleanControl: 2,
-  DropdownControl: 2,
+  ConstControl: 2,
   ImageControl: 2,
   IntegerControl: 4,
   TextControl: 1,
@@ -10,7 +10,6 @@ export const JSON_FORMS_RANKING = {
   AllOfControl: 3,
   AnyOfControl: 3,
   ProseControl: 2,
-  RadioControl: 3,
   LinkControl: 3,
   GroupLayoutRenderer: 1,
   VerticalLayoutRenderer: 1,
