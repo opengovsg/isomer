@@ -17,6 +17,7 @@ const COMMON_HANDLERS = [
   sitesHandlers.getConfig.default(),
   sitesHandlers.getFooter.default(),
   sitesHandlers.getNavbar.default(),
+  sitesHandlers.getLocalisedSitemap.content(),
   resourceHandlers.getChildrenOf.default(),
   resourceHandlers.getMetadataById.content(),
   pageHandlers.readPageAndBlob.content(),

@@ -419,7 +419,7 @@ export const pageHandlers = {
         return {
           id: "1",
           title: "Home",
-          permalink: "home",
+          permalink: "",
           siteId: 1,
           parentId: null,
           publishedVersionId: null,
