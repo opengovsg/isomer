@@ -31,7 +31,7 @@ export const CollectionTableMenu = ({
       />
       <Portal>
         <MenuList>
-          <MenuItem isDisabled icon={<BiCog fontSize="1rem" />}>
+          <MenuItem icon={<BiCog fontSize="1rem" />}>
             Edit page settings
           </MenuItem>
           <MenuItem

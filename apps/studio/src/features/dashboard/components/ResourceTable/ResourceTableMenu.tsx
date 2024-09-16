@@ -52,7 +52,7 @@ export const ResourceTableMenu = ({
           {/* TODO: Open edit modal depending on resource  */}
           {type === "Page" ? (
             <>
-              <MenuItem isDisabled icon={<BiCog fontSize="1rem" />}>
+              <MenuItem icon={<BiCog fontSize="1rem" />}>
                 Edit page settings
               </MenuItem>
               <MenuItem isDisabled icon={<BiDuplicate fontSize="1rem" />}>
