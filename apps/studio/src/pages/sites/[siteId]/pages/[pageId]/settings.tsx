@@ -93,6 +93,7 @@ const PageSettings = () => {
       // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
       await utils.page.readPageAndBlob.invalidate()
       await utils.page.readPage.invalidate()
+      await utils.resource.getMetadataById.invalidate()
       if (toast.isActive(SUCCESS_TOAST_ID)) {
         toast.close(SUCCESS_TOAST_ID)
       }
