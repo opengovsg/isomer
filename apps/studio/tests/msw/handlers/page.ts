@@ -3,6 +3,7 @@ import { delay } from "msw"
 
 import type { getPageById } from "~/server/modules/resource/resource.service"
 import type { RouterOutput } from "~/utils/trpc"
+import { trpc } from "~/utils/trpc"
 import { trpcMsw } from "../mockTrpc"
 
 const getRootPageQuery = (wait?: DelayMode | number) => {
@@ -473,5 +474,19 @@ export const pageHandlers = {
         }
       })
     },
+  },
+  getFullPermalink: {
+    homepage: () =>
+      trpcMsw.page.getFullPermalink.query(() => {
+        return "/"
+      }),
+    content: () =>
+      trpcMsw.page.getFullPermalink.query(() => {
+        return "/page-title-here"
+      }),
+    article: () =>
+      trpcMsw.page.getFullPermalink.query(() => {
+        return "/article-layout"
+      }),
   },
 }
