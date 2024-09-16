@@ -40,6 +40,7 @@ export const Root: Story = {
         pageHandlers.getPermalinkTree.root(),
         pageHandlers.readPageAndBlob.homepage(),
         pageHandlers.readPage.homepage(),
+        resourceHandlers.getMetadataById.homepage(),
       ],
     },
   },
