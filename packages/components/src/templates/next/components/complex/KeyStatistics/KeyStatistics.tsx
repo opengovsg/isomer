@@ -22,7 +22,7 @@ const KeyStatistics = ({ title, statistics }: KeyStatisticsProps) => {
     <div
       className={`${ComponentContent} flex flex-col gap-10 py-12 xs:py-24 lg:gap-24`}
     >
-      <h2 className="prose-display-md w-full max-w-[47.5rem] text-base-content-strong">
+      <h2 className="prose-display-md w-full max-w-[47.5rem] break-words text-base-content-strong">
         {title}
       </h2>
       <div className="flex flex-col flex-wrap gap-x-8 gap-y-12 md:flex-row">
