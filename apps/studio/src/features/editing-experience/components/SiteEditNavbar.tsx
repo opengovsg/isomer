@@ -1,14 +1,15 @@
 import Link from "next/link"
+import { useRouter } from "next/router"
 import {
   BreadcrumbItem,
   BreadcrumbLink,
   Flex,
   Skeleton,
-  TabList,
   Text,
 } from "@chakra-ui/react"
-import { Breadcrumb, Tab } from "@opengovsg/design-system-react"
+import { Breadcrumb } from "@opengovsg/design-system-react"
 
+import { TabLink } from "~/components/TabLink"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { getResourceSubpath } from "~/utils/resource"
@@ -94,6 +95,8 @@ const NavigationBreadcrumbs = ({
 export const SiteEditNavbar = (): JSX.Element => {
   const { siteId, pageId } = useQueryParse(editPageSchema)
 
+  const { pathname } = useRouter()
+
   return (
     <Flex flex="0 0 auto" gridColumn="1/-1">
       <Flex
@@ -117,10 +120,20 @@ export const SiteEditNavbar = (): JSX.Element => {
           pageId={String(pageId)}
         />
 
-        <TabList>
-          <Tab>Edit</Tab>
-          <Tab>Page Settings</Tab>
-        </TabList>
+        <Flex gap="2rem">
+          <TabLink
+            isActive={pathname === "/sites/[siteId]/pages/[pageId]"}
+            href={`/sites/${siteId}/pages/${pageId}`}
+          >
+            Edit
+          </TabLink>
+          <TabLink
+            isActive={pathname === "/sites/[siteId]/pages/[pageId]/settings"}
+            href={`/sites/${siteId}/pages/${pageId}/settings`}
+          >
+            Page Settings
+          </TabLink>
+        </Flex>
         {pageId && siteId && (
           <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
             <PublishButton pageId={pageId} siteId={siteId} />
