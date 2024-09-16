@@ -74,6 +74,7 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
           cursor="pointer"
           _disabled={{
             pointerEvents: "none",
+            bgColor: "base.canvas.alt",
           }}
         >
           <Flex
@@ -97,12 +98,21 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
               _groupChecked={{
                 color: "base.content.brand",
               }}
+              _groupDisabled={{
+                textColor: "interaction.support.disabled-content",
+              }}
             >
               {title}
             </Text>
             {badge}
           </Stack>
-          <Text textStyle="body-1" mt="0.5rem">
+          <Text
+            _groupDisabled={{
+              textColor: "interaction.support.disabled-content",
+            }}
+            textStyle="body-1"
+            mt="0.5rem"
+          >
             {description}
           </Text>
         </Box>
