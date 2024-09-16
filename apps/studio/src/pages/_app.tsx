@@ -32,7 +32,7 @@ const gb = new GrowthBook({
   apiHost: "https://cdn.growthbook.io",
   clientKey: env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
   enabled: true,
-  enableDevMode: true,
+  enableDevMode: env.NODE_ENV !== "production",
 })
 
 gb.init({
