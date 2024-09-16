@@ -16,11 +16,13 @@ const BaseItemSchema = Type.Object({
 const BasePageSchema = Type.Composite([
   BaseItemSchema,
   Type.Object({
-    noIndex: Type.Boolean({
-      description:
-        "If this is turned on, the page won't appear on Google search results.",
-      title: "Prevent search engines from indexing this page?",
-    }),
+    noIndex: Type.Optional(
+      Type.Boolean({
+        description:
+          "If this is turned on, the page won't appear on Google search results.",
+        title: "Prevent search engines from indexing this page?",
+      }),
+    ),
   }),
 ])
 
