@@ -53,7 +53,8 @@ const SuspendablePublishButton = ({
   return (
     <TouchableTooltip
       hidden={!!currPage.draftBlobId}
-      label="All changes have been published"
+      // label="All changes have been published"
+      label="This feature is currently not available in beta"
     >
       <Button
         variant="solid"
