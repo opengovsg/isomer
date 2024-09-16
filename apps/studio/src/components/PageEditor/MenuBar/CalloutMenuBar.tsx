@@ -1,5 +1,6 @@
 import type { Editor } from "@tiptap/react"
 import { useMemo } from "react"
+import { useDisclosure } from "@chakra-ui/react"
 import {
   BiBold,
   BiItalic,
@@ -12,11 +13,15 @@ import {
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
 import type { MenuBarEntry } from "./MenuBar"
-import { useLinkEditorModal } from "~/features/editing-experience/hooks/useLinkEditorModal"
+import { LinkEditorModal } from "../LinkEditorModal"
 import { MenuBar } from "./MenuBar"
 
 export const CalloutMenuBar = ({ editor }: { editor: Editor }) => {
-  const { onLinkModalOpen, LinkEditorModal } = useLinkEditorModal({ editor })
+  const {
+    isOpen: isLinkModalOpen,
+    onOpen: onLinkModalOpen,
+    onClose: onLinkModalClose,
+  } = useDisclosure()
 
   const items: MenuBarEntry[] = useMemo(
     () => [
@@ -105,7 +110,11 @@ export const CalloutMenuBar = ({ editor }: { editor: Editor }) => {
 
   return (
     <>
-      {LinkEditorModal}
+      <LinkEditorModal
+        editor={editor}
+        isOpen={isLinkModalOpen}
+        onClose={onLinkModalClose}
+      />
 
       <MenuBar items={items} />
     </>

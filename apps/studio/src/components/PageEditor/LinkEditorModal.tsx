@@ -1,3 +1,4 @@
+import type { Editor } from "@tiptap/react"
 import {
   Box,
   FormControl,
@@ -151,21 +152,45 @@ const LinkEditorModalContent = ({
   )
 }
 
-interface LinkEditorModalProps extends LinkEditorModalContentProps {
+interface LinkEditorModalProps {
+  editor: Editor
   isOpen: boolean
   onClose: () => void
 }
 
 export const LinkEditorModal = ({
+  editor,
   isOpen,
   onClose,
-  ...rest
-}: LinkEditorModalProps) => {
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
+}: LinkEditorModalProps) => (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <ModalOverlay />
 
-      {isOpen && <LinkEditorModalContent {...rest} />}
-    </Modal>
-  )
-}
+    {isOpen && (
+      <LinkEditorModalContent
+        linkText={
+          editor.isActive("link")
+            ? editor.state.doc.nodeAt(
+                Math.max(1, editor.view.state.selection.from - 1),
+              )?.textContent
+            : ""
+        }
+        linkHref={
+          editor.isActive("link") ? editor.getAttributes("link").href : ""
+        }
+        onSave={(linkText, linkHref) => {
+          editor
+            .chain()
+            .focus()
+            .extendMarkRange("link")
+            .unsetLink()
+            .deleteSelection()
+            .insertContent(`<a href="${linkHref}">${linkText}</a>`)
+            .run()
+
+          onClose()
+        }}
+      />
+    )}
+  </Modal>
+)

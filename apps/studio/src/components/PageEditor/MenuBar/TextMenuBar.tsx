@@ -25,7 +25,7 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
-import { useLinkEditorModal } from "~/features/editing-experience/hooks/useLinkEditorModal"
+import { LinkEditorModal } from "../LinkEditorModal"
 import { TableSettingsModal } from "../TableSettingsModal"
 import { MenuBar } from "./MenuBar"
 
@@ -35,7 +35,11 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
     onOpen: onTableSettingsModalOpen,
     onClose: onTableSettingsModalClose,
   } = useDisclosure()
-  const { onLinkModalOpen, LinkEditorModal } = useLinkEditorModal({ editor })
+  const {
+    isOpen: isLinkModalOpen,
+    onOpen: onLinkModalOpen,
+    onClose: onLinkModalClose,
+  } = useDisclosure()
 
   const items: MenuBarEntry[] = useMemo(
     () => [
@@ -265,7 +269,11 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         onClose={onTableSettingsModalClose}
       />
 
-      {LinkEditorModal}
+      <LinkEditorModal
+        editor={editor}
+        isOpen={isLinkModalOpen}
+        onClose={onLinkModalClose}
+      />
 
       <MenuBar items={items} />
     </>
