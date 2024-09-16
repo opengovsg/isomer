@@ -12,6 +12,7 @@ const COMMON_HANDLERS = [
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
   pageHandlers.countWithoutRoot.default(),
+  sitesHandlers.getLocalisedSitemap.default(),
   sitesHandlers.getTheme.default(),
   sitesHandlers.getConfig.default(),
   sitesHandlers.getFooter.default(),
@@ -19,6 +20,7 @@ const COMMON_HANDLERS = [
   resourceHandlers.getChildrenOf.default(),
   pageHandlers.readPageAndBlob.content(),
   pageHandlers.readPage.content(),
+  pageHandlers.getFullPermalink.content(),
 ]
 
 const meta: Meta<typeof EditPage> = {
