@@ -42,7 +42,7 @@ const NavigationBreadcrumbs = ({
     (!resource?.parentId || !isParentResourceLoading) && !isResourceLoading
 
   return (
-    <Breadcrumb size="xs">
+    <Breadcrumb size="xs" flex={1}>
       <BreadcrumbItem>
         <BreadcrumbLink as={Link} href={`/sites/${siteId}`}>
           <Text textStyle="subhead-2">All pages</Text>
@@ -100,6 +100,7 @@ export const SiteEditNavbar = (): JSX.Element => {
         borderBottomWidth="1px"
         borderColor="base.divider.medium"
         transition="padding 0.1s"
+        gap="0.5rem"
       >
         <NavigationBreadcrumbs
           siteId={String(siteId)}
@@ -111,7 +112,7 @@ export const SiteEditNavbar = (): JSX.Element => {
           <Tab>Page Settings</Tab>
         </TabList>
         {pageId && siteId && (
-          <Flex justifyContent={"end"} alignItems={"center"}>
+          <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
             <PublishButton pageId={pageId} siteId={siteId} />
           </Flex>
         )}
