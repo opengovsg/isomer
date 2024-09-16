@@ -12,11 +12,13 @@ type MoveItemProps = Pick<
   "permalink"
 > & {
   onChangeResourceId: () => void
+  isDisabled?: boolean
 }
 
 const SuspendableMoveItem = ({
   permalink,
   onChangeResourceId,
+  ...rest
 }: MoveItemProps) => {
   return (
     <Button
@@ -24,15 +26,10 @@ const SuspendableMoveItem = ({
       w="full"
       justifyContent="flex-start"
       color="base.content.default"
-      // NOTE: Set special styling because pages should show normally
-      // but have no onClick
-      // TODO: add permissions for folders that users have no access to
-      // These should have disabled styling
-      _disabled={{ color: "base.content.default" }}
-      disabled
       pl="2.25rem"
       onClick={onChangeResourceId}
       leftIcon={<BiFolder />}
+      {...rest}
     >
       <Text noOfLines={1} textStyle="caption-1">
         /{permalink}
