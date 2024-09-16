@@ -35,7 +35,7 @@ const gb = new GrowthBook({
   enableDevMode: env.NODE_ENV !== "production",
 })
 
-gb.init({
+void gb.init({
   // Optional, enable streaming updates
   streaming: true,
 })
