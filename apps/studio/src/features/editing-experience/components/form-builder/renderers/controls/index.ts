@@ -46,3 +46,7 @@ export {
   default as JsonFormsImageControl,
   jsonFormsImageControlTester,
 } from "./JsonFormsImageControl"
+export {
+  default as JsonFormsProseControl,
+  jsonFormsProseControlTester,
+} from "./JsonFormsProseControl"

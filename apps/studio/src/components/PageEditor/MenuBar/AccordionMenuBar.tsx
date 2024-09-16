@@ -12,7 +12,6 @@ import {
   BiUnderline,
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
-import { RiLayoutColumnFill, RiLayoutRowFill } from "react-icons/ri"
 
 import type { MenuBarEntry } from "./MenuBar"
 import {

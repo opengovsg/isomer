@@ -1,5 +1,5 @@
 import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
-import type { ErrorObject, ValidateFunction } from "ajv"
+import type { ValidateFunction } from "ajv"
 import { rankWith } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { type TSchema } from "@sinclair/typebox"
@@ -33,6 +33,8 @@ import {
   jsonFormsLinkControlTester,
   JsonFormsObjectControl,
   jsonFormsObjectControlTester,
+  JsonFormsProseControl,
+  jsonFormsProseControlTester,
   JsonFormsTextControl,
   jsonFormsTextControlTester,
   jsonFormsVerticalLayoutRenderer,
@@ -40,6 +42,10 @@ import {
 } from "./renderers"
 
 const renderers: JsonFormsRendererRegistryEntry[] = [
+  {
+    tester: jsonFormsProseControlTester,
+    renderer: JsonFormsProseControl,
+  },
   { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
   { tester: jsonFormsArrayControlTester, renderer: JsonFormsArrayControl },
   { tester: jsonFormsBooleanControlTester, renderer: JsonFormsBooleanControl },

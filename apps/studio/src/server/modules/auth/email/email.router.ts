@@ -10,7 +10,6 @@ import {
 import { publicProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
 import { defaultMeSelect } from "../../me/me.select"
-import { generateUsername } from "../../me/me.service"
 import { VerificationError } from "../auth.error"
 import { verifyToken } from "../auth.service"
 import { createTokenHash, createVfnPrefix, createVfnToken } from "../auth.util"

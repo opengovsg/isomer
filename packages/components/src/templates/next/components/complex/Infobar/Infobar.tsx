@@ -18,9 +18,9 @@ const Infobar = ({
       <div className={`${ComponentContent} mx-6 py-16 sm:mx-10 lg:py-24`}>
         <div className="mx-auto flex flex-col items-center gap-9 text-center lg:max-w-3xl">
           <div className="flex flex-col gap-6">
-            <h1 className="prose-display-lg text-base-content-strong">
+            <h2 className="prose-display-lg break-words text-base-content-strong">
               {title}
-            </h1>
+            </h2>
             {description && (
               <p className="prose-headline-lg-regular text-base-content">
                 {description}
