@@ -134,8 +134,11 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 
-  if (!whitelistedUsers.whitelist.includes(user.email)) {
-    throw new TRPCError({ code: "UNAUTHORIZED" })
+  // check against Growthbook if user is whitelisted for prod/stg
+  if (env.NODE_ENV === "production") {
+    if (!whitelistedUsers.whitelist.includes(user.email)) {
+      throw new TRPCError({ code: "UNAUTHORIZED" })
+    }
   }
 
   return next({
