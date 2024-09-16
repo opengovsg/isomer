@@ -84,7 +84,6 @@ export function JsonFormsAnyOfControl({
       <Box mt="1.25rem" _first={{ mt: 0 }}>
         <FormControl isRequired gap="0.5rem">
           <FormLabel description={description}>{label || "Variant"}</FormLabel>
-
           {schema.format === "radio" ? (
             <RadioGroup
               onChange={onChange}
