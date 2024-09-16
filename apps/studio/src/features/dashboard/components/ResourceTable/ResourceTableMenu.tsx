@@ -1,3 +1,5 @@
+import { useMemo } from "react"
+import NextLink from "next/link"
 import { MenuButton, MenuList, Portal } from "@chakra-ui/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -13,6 +15,7 @@ import {
 import type { ResourceTableData } from "./types"
 import { MenuItem } from "~/components/Menu"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
+import { getLinkToResource } from "~/utils/resource"
 import { deleteResourceModalAtom, folderSettingsModalAtom } from "../../atoms"
 
 interface ResourceTableMenuProps {
@@ -22,6 +25,7 @@ interface ResourceTableMenuProps {
   permalink: ResourceTableData["permalink"]
   resourceType: ResourceTableData["type"]
   parentId: ResourceTableData["parentId"]
+  siteId: number
 }
 
 export const ResourceTableMenu = ({
@@ -31,12 +35,18 @@ export const ResourceTableMenu = ({
   permalink,
   resourceType,
   parentId,
+  siteId,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
   const handleMoveResourceClick = () =>
     setMoveResource({ resourceId, title, permalink, parentId })
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
+
+  const linkToResourceSettings = useMemo(
+    () => `${getLinkToResource({ siteId, resourceId, type })}/settings`,
+    [siteId, resourceId, type],
+  )
 
   return (
     <Menu isLazy size="sm">
@@ -52,7 +62,12 @@ export const ResourceTableMenu = ({
           {/* TODO: Open edit modal depending on resource  */}
           {type === "Page" ? (
             <>
-              <MenuItem icon={<BiCog fontSize="1rem" />}>
+              <MenuItem
+                as={NextLink}
+                // @ts-expect-error type inconsistency with `as`
+                href={linkToResourceSettings}
+                icon={<BiCog fontSize="1rem" />}
+              >
                 Edit page settings
               </MenuItem>
               <MenuItem icon={<BiDuplicate fontSize="1rem" />}>
