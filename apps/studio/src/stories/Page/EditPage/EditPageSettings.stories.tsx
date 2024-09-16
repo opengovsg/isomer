@@ -36,7 +36,11 @@ type Story = StoryObj<typeof PageSettings>
 export const Root: Story = {
   parameters: {
     msw: {
-      handlers: [pageHandlers.getPermalinkTree.root(), ...COMMON_HANDLERS],
+      handlers: [
+        pageHandlers.getPermalinkTree.root(),
+        pageHandlers.readPageAndBlob.homepage(),
+        pageHandlers.readPage.homepage(),
+      ],
     },
   },
 }
