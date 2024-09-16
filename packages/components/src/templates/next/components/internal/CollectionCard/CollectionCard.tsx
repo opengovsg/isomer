@@ -25,7 +25,7 @@ export const CollectionCard = ({
   ...props
 }: CollectionCardProps): JSX.Element => {
   const file = props.variant === "file" ? props.fileDetails : null
-  const itemTitle = `${file ? `[${file.type.toUpperCase()}, ${file.size}] ` : ""}${title}`
+  const itemTitle = `${title}${file ? ` [${file.type.toUpperCase()}, ${file.size.toUpperCase()}]` : ""}`
   return (
     <div className="flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6">
       {lastUpdated && (
