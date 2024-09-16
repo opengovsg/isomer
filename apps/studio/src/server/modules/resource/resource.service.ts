@@ -373,12 +373,6 @@ export const getResourcePermalinkTree = async (
             // Recursive case: Get all the ancestors of the resource
             .selectFrom("Resource")
             .where("Resource.siteId", "=", siteId)
-            .where("Resource.type", "in", [
-              "Folder",
-              "Page",
-              "CollectionPage",
-              "RootPage",
-            ])
             .innerJoin("Ancestors", "Ancestors.parentId", "Resource.id")
             .select(defaultResourceSelect),
         ),
