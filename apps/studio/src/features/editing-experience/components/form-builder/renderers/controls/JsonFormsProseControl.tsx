@@ -5,17 +5,17 @@ import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { useAccordionEditor } from "~/features/editing-experience/hooks/useTextEditor"
-import { TiptapAccordionEditor } from "../TipTapEditor"
+import { useProseEditor } from "~/features/editing-experience/hooks/useTextEditor"
+import { TiptapProseEditor } from "../TipTapEditor/TiptapProseEditor"
 
-export const jsonFormsAccordionTextControlTester: RankedTester = rankWith(
+export const jsonFormsProseControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ProseControl,
   (_, schema) => {
-    return schema.format === "accordion"
+    return schema.format === "prose"
   },
 )
 
-export function JsonFormsAccordionTextControl({
+export function JsonFormsProseControl({
   data,
   label,
   handleChange,
@@ -23,7 +23,7 @@ export function JsonFormsAccordionTextControl({
   description,
   required,
 }: ControlProps) {
-  const editor = useAccordionEditor({
+  const editor = useProseEditor({
     data,
     handleChange: (content) => handleChange(path, content),
   })
@@ -32,10 +32,10 @@ export function JsonFormsAccordionTextControl({
     <Box mt="1.25rem" _first={{ mt: 0 }}>
       <FormControl isRequired={required}>
         <FormLabel description={description}>{label}</FormLabel>
-        <TiptapAccordionEditor editor={editor} />
+        <TiptapProseEditor editor={editor} />
       </FormControl>
     </Box>
   )
 }
 
-export default withJsonFormsControlProps(JsonFormsAccordionTextControl)
+export default withJsonFormsControlProps(JsonFormsProseControl)
