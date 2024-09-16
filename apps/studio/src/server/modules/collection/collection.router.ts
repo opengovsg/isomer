@@ -52,9 +52,9 @@ export const collectionRouter = router({
       let newPage: PrismaJson.BlobJsonContent
       const { title, type, permalink, siteId, collectionId } = input
       if (type === "page") {
-        newPage = createCollectionPageJson({ title, type })
+        newPage = createCollectionPageJson({ type })
       } else {
-        newPage = createCollectionPdfJson({ title, type, url: input.url })
+        newPage = createCollectionPdfJson({ type, url: input.url })
       }
 
       // TODO: Validate whether folderId actually is a folder instead of a page

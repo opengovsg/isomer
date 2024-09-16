@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react"
 import { Infobox, Input, useToast } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { isEmpty } from "lodash"
+import { isEmpty, merge } from "lodash"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 
@@ -66,7 +66,7 @@ function EditPage(): JSX.Element {
           pageId={pageId}
           updatedAt={updatedAt}
         >
-          <PageEditingView />
+          <PageEditingView title={title} />
         </EditorDrawerProvider>
       </TabPanel>
       <TabPanel>
@@ -81,7 +81,10 @@ function EditPage(): JSX.Element {
   )
 }
 
-const PageEditingView = () => {
+interface PageEditingViewProps {
+  title: string
+}
+const PageEditingView = ({ title }: PageEditingViewProps) => {
   const { previewPageState, permalink, siteId, pageId, updatedAt } =
     useEditorDrawerContext()
   const themeCssVars = useSiteThemeCssVars({ siteId })
@@ -109,7 +112,7 @@ const PageEditingView = () => {
         >
           <PreviewIframe style={themeCssVars}>
             <Preview
-              {...previewPageState}
+              {...merge(previewPageState, { page: { title } })}
               siteId={siteId}
               resourceId={pageId}
               permalink={permalink}

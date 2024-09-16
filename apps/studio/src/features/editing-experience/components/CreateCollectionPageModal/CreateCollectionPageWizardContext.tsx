@@ -67,9 +67,7 @@ const useCreateCollectionPageWizardContext = ({
     const jsonPreview =
       type === "page" ? articleLayoutPreview : collectionPdfPreview
     return merge(jsonPreview, {
-      page: {
-        title: title || "Page title here",
-      },
+      title: title || "Page title here",
     }) as IsomerSchema
   }, [type, title])
 

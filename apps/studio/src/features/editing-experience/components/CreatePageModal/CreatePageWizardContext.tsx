@@ -70,9 +70,7 @@ const useCreatePageWizardContext = ({
     const jsonPreview =
       layout === "content" ? contentLayoutPreview : articleLayoutPreview
     return merge(jsonPreview, {
-      page: {
-        title: title || "Page title here",
-      },
+      title: title || "Page title here",
     }) as IsomerSchema
   }, [layout, title])
 

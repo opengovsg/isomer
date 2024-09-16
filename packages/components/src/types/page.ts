@@ -4,10 +4,6 @@ import { Type } from "@sinclair/typebox"
 import { ArticlePageHeaderSchema, ContentPageHeaderSchema } from "~/interfaces"
 
 const BaseItemSchema = Type.Object({
-  title: Type.String({
-    title: "Page title",
-    maxLength: 150,
-  }),
   description: Type.Optional(
     Type.String({
       title: "Page description",
@@ -112,6 +108,7 @@ export const LinkRefMetaSchema = BaseRefSchema
 interface BaseItemAdditionalProps {
   permalink: string
   lastModified: string
+  title: string
 }
 type BasePageAdditionalProps = BaseItemAdditionalProps & {
   language?: "en"
