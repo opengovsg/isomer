@@ -20,6 +20,7 @@ export default function RootStateDrawer() {
     setDrawerState,
     setCurrActiveIdx,
     savedPageState,
+    previewPageState,
     setSavedPageState,
     setPreviewPageState,
   } = useEditorDrawerContext()
@@ -32,9 +33,15 @@ export default function RootStateDrawer() {
       // and the error type is automatically inferred from the zod validator.
       // However, the type that we use on `pageState` is the full type
       // because `Preview` (amongst other things) requires the other properties on the actual schema type
-      setPreviewPageState(variables.blocks)
+      setPreviewPageState((prevPreview) => ({
+        ...prevPreview,
+        content: variables.blocks,
+      }))
       // @ts-expect-error See above
-      setSavedPageState(variables.blocks)
+      setSavedPageState((prevSavedPageState) => ({
+        ...prevSavedPageState,
+        content: variables.blocks,
+      }))
       toast({
         title: "Failed to update blocks",
         description: error.message,
