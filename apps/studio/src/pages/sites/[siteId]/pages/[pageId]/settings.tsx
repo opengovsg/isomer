@@ -72,16 +72,27 @@ const PageSettings = () => {
   const [title, permalink] = watch(["title", "permalink"])
 
   const permalinksToRender = useMemo(() => {
-    if (permalinkTree.length === 0) {
+    // Case 1: Root page
+    if (permalinkTree.length === 0 || permalinkTree[0] === "") {
       return {
-        lastPermalink: "/",
+        permalink: "/",
         parentPermalinks: "",
       }
     }
 
+    const parentPermalinks = permalinkTree.slice(0, -1).join("/").trim()
+    // Case 2: Parent is root page
+    if (!parentPermalinks) {
+      return {
+        permalink,
+        parentPermalinks: "/",
+      }
+    }
+
+    // Default case: Nested page
     return {
       permalink,
-      parentPermalinks: `/${permalinkTree.slice(0, -1).join("/")}/`,
+      parentPermalinks: `/${parentPermalinks}/`,
     }
   }, [permalink, permalinkTree])
 
