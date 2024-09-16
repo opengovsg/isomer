@@ -65,6 +65,7 @@ export const ArticlePageMetaSchema = Type.Composite([
     }),
     date: Type.String({
       title: "Date of the article",
+      format: "date",
     }),
     image: Type.Optional(
       Type.Object({
