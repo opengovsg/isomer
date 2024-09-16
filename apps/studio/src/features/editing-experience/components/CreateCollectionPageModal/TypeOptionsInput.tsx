@@ -52,7 +52,8 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
           return {
             TileIcon: BiUpload,
             title: "PDF file",
-            description: "Select this option if your content is on a PDF file.",
+            description:
+              "Select this option if you want to upload a single PDF file as a resource. This option is currently under development and will be available soon.",
           }
         }
       }
