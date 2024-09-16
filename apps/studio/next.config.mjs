@@ -33,6 +33,7 @@ const ContentSecurityPolicy = `
     https://vitals.vercel-insights.com/v1/vitals
     https://*.amazonaws.com
     https://placehold.co
+    https://cdn.growthbook.io/api/features/${env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY}
     ${env.NODE_ENV === "production" ? "https://isomer-user-content.by.gov.sg" : "https://*.by.gov.sg"}
     ;
   worker-src 'self' blob:;
