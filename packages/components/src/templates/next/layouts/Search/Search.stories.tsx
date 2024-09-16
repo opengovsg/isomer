@@ -74,6 +74,7 @@ export const SearchSG: Story = {
       },
     },
     page: {
+      noIndex: false,
       title: "Search",
       description: "Search results",
       permalink: "/search",

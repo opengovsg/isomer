@@ -113,6 +113,7 @@ export const WithSiderail: Story = {
       },
     },
     page: {
+      noIndex: false,
       permalink: "/parent/rationality",
       title: "Index page",
       lastModified: "2024-05-02T14:12:57.160Z",
@@ -251,6 +252,7 @@ export const NoSiderail: Story = {
     },
     page: {
       permalink: "/parent",
+      noIndex: false,
       title: "Index page",
       lastModified: "2024-05-02T14:12:57.160Z",
       description: "A Next.js starter for Isomer",
