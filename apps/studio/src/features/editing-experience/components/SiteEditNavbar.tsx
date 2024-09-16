@@ -42,7 +42,7 @@ const NavigationBreadcrumbs = ({
     (!resource?.parentId || !isParentResourceLoading) && !isResourceLoading
 
   return (
-    <Breadcrumb size="xs" flex={1}>
+    <Breadcrumb size="sm" flex={1}>
       <BreadcrumbItem>
         <BreadcrumbLink as={Link} href={`/sites/${siteId}`}>
           <Text textStyle="subhead-2">All pages</Text>
@@ -61,7 +61,12 @@ const NavigationBreadcrumbs = ({
             as={Link}
             href={`/sites/${siteId}/${getResourceSubpath(parentResource.type)}/${parentResource.id}`}
           >
-            <Text textStyle="subhead-2" noOfLines={1} maxW="12rem">
+            <Text
+              textStyle="subhead-2"
+              noOfLines={1}
+              maxW="12rem"
+              wordBreak="break-all"
+            >
               {parentResource.title}
             </Text>
           </BreadcrumbLink>
@@ -71,7 +76,12 @@ const NavigationBreadcrumbs = ({
       {!!resource && (
         <BreadcrumbItem isCurrentPage>
           <BreadcrumbLink href="#">
-            <Text textStyle="subhead-2" noOfLines={1} maxW="12rem">
+            <Text
+              wordBreak="break-all"
+              textStyle="subhead-2"
+              noOfLines={1}
+              maxW="12rem"
+            >
               {resource.title}
             </Text>
           </BreadcrumbLink>
