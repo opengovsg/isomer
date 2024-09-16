@@ -16,7 +16,7 @@ const infopicStyles = tv({
     // since content is half of screen width in desktop.
     content:
       "px-6 pb-16 pt-10 text-base-content [grid-area:content] md:max-w-[760px] md:px-10 md:pb-20 md:pt-16 lg:max-w-[620px] lg:py-24 lg:pl-10",
-    title: "prose-display-md text-base-content-strong",
+    title: "prose-display-md break-words text-base-content-strong",
     description: "prose-body-base mt-4 md:mt-6",
     button: "mt-9",
   },
@@ -57,7 +57,7 @@ export const Infopic = ({
   return (
     <div className={compoundStyles.container()}>
       <div className={compoundStyles.content()}>
-        <h3 className={compoundStyles.title()}>{title}</h3>
+        <h2 className={compoundStyles.title()}>{title}</h2>
         <p className={compoundStyles.description()}>{description}</p>
         {hasLinkButton && (
           <div className={compoundStyles.button()}>

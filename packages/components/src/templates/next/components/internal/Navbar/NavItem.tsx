@@ -115,7 +115,7 @@ const Megamenu = ({
           <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 pb-16 pt-12">
             <div className="flex w-full flex-row items-start">
               <div className="flex flex-col gap-1">
-                <h1 className="prose-display-sm text-base-content">{name}</h1>
+                <h2 className="prose-display-sm text-base-content">{name}</h2>
                 {description && (
                   <p className="prose-label-sm-regular text-base-content-subtle">
                     {description}

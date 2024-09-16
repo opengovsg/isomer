@@ -125,11 +125,15 @@ const SocialMediaSection = ({
   socialMediaLinks,
   LinkComponent,
 }: Pick<FooterProps, "socialMediaLinks" | "LinkComponent">) => {
+  if (!socialMediaLinks || socialMediaLinks.length === 0) {
+    return <></>
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <h3 className="prose-headline-base-medium">Reach us</h3>
       <div className="flex flex-row flex-wrap gap-7">
-        {socialMediaLinks?.map((link) => {
+        {socialMediaLinks.map((link) => {
           const Icon = SocialMediaTypeToIconMap[link.type]
           return (
             <BaseLink
