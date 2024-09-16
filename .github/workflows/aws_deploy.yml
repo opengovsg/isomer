@@ -145,6 +145,7 @@ jobs:
 
       - name: Build and push image to ECR
         uses: docker/build-push-action@v4
+        environment: ${{ inputs.environment }}
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
@@ -165,6 +166,7 @@ jobs:
             NEXT_PUBLIC_S3_REGION=${{ inputs.app-s3-region }}
             NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME=${{ inputs.app-s3-assets-domain-name }}
             NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME=${{ inputs.app-s3-assets-bucket-name }}
+            NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:${{ secrets.GROWTHBOOK_CLIENT_KEY }}
 
   deploy:
     name: Deploy image to ECS
