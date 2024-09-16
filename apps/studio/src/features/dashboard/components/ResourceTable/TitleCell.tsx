@@ -6,6 +6,7 @@ import { Link } from "@opengovsg/design-system-react"
 import { BiData, BiFile, BiFileBlank, BiFolder, BiHome } from "react-icons/bi"
 
 import type { ResourceTableData } from "./types"
+import { getLinkToResource } from "~/utils/resource"
 
 export interface TitleCellProps
   extends Pick<ResourceTableData, "title" | "permalink" | "type" | "id"> {
@@ -20,16 +21,7 @@ export const TitleCell = ({
   id,
 }: TitleCellProps): JSX.Element => {
   const linkToResource: string = useMemo(() => {
-    switch (type) {
-      case "RootPage":
-      case "CollectionPage":
-      case "Page":
-        return `/sites/${siteId}/pages/${id}`
-      case "Folder":
-        return `/sites/${siteId}/folders/${id}`
-      case "Collection":
-        return `/sites/${siteId}/collections/${id}`
-    }
+    return getLinkToResource({ resourceId: id, siteId, type })
   }, [id, siteId, type])
 
   const ResourceTypeIcon: IconType = useMemo(() => {
