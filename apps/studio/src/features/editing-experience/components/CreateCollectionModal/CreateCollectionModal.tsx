@@ -161,7 +161,7 @@ const CreateCollectionModalContent = ({
                 name="permalink"
                 render={({ field: { onChange, ...field } }) => (
                   <Input
-                    placeholder="This is a url for your new collection"
+                    placeholder="This is a URL for your new collection"
                     noOfLines={1}
                     maxLength={MAX_FOLDER_PERMALINK_LENGTH}
                     {...field}

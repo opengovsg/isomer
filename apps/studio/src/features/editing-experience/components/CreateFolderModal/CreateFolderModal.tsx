@@ -163,7 +163,7 @@ const CreateFolderModalContent = ({
                 name="permalink"
                 render={({ field: { onChange, ...field } }) => (
                   <Input
-                    placeholder="This is a url for your new folder"
+                    placeholder="This is a URL for your new folder"
                     noOfLines={1}
                     maxLength={MAX_FOLDER_PERMALINK_LENGTH}
                     {...field}
