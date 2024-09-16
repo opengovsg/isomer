@@ -31,5 +31,8 @@
   "devDependencies": {
     "turbo": "^2.0.5"
   },
-  "packageManager": "npm@10.2.3"
+  "packageManager": "npm@10.2.3",
+  "dependencies": {
+    "@growthbook/growthbook-react": "^1.2.0"
+  }
 }
