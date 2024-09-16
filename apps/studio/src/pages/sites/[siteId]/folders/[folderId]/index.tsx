@@ -142,7 +142,7 @@ const FolderPage: NextPageWithLayout = () => {
             </BreadcrumbItem>
           </Breadcrumb>
           <Flex w="full" flexDir="row">
-            <HStack overflow="auto" gap="0.75rem" flex={1}>
+            <HStack mr="1.25rem" overflow="auto" gap="0.75rem" flex={1}>
               <Box
                 aria-hidden
                 bg="brand.secondary.100"
