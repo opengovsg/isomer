@@ -26,6 +26,7 @@ const client = z
     NEXT_PUBLIC_APP_URL: z.string().url().optional(),
     NEXT_PUBLIC_APP_NAME: z.string().default("Isomer Studio"),
     NEXT_PUBLIC_APP_VERSION: z.string().default("0.0.0"),
+    NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY: z.string(),
   })
   .merge(s3Schema)
 
@@ -128,6 +129,8 @@ const processEnv = {
     process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
   NEXT_PUBLIC_ENABLE_SGID: process.env.NEXT_PUBLIC_ENABLE_SGID,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:
+    process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
 }
 
 // Don't touch the part below

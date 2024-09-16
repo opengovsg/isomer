@@ -5,10 +5,13 @@ import "../styles/editor/editorStyles.scss"
 
 import type { AppProps, AppType } from "next/app"
 import { Skeleton, Stack } from "@chakra-ui/react"
+import { GrowthBook } from "@growthbook/growthbook"
+import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { Banner, ThemeProvider } from "@opengovsg/design-system-react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { ErrorBoundary } from "react-error-boundary"
 
+import { AppBanner } from "~/components/AppBanner"
 import { EnvProvider, FeatureProvider } from "~/components/AppProviders"
 import { DefaultFallback } from "~/components/ErrorBoundary/DefaultFallback"
 import Suspense from "~/components/Suspense"
@@ -24,28 +27,39 @@ type AppPropsWithAuthAndLayout = AppProps & {
   Component: NextPageWithLayout
 }
 
+// Create a GrowthBook instance
+const gb = new GrowthBook({
+  apiHost: "https://cdn.growthbook.io",
+  clientKey: env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
+  enabled: true,
+  enableDevMode: true,
+})
+
+gb.init({
+  // Optional, enable streaming updates
+  streaming: true,
+})
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {
   return (
     <EnvProvider env={env}>
       <LoginStateProvider>
         <ThemeProvider theme={theme}>
           <FeatureProvider>
-            <ErrorBoundary FallbackComponent={DefaultFallback}>
-              <Suspense fallback={<Skeleton width="100vw" height="100vh" />}>
-                <Stack spacing={0} minH="$100vh">
-                  <Banner variant="warn">
-                    Isomer Next is currently in Beta. To manage site settings
-                    that are not displayed here, contact Isomer Support.
-                  </Banner>
-                  <VersionWrapper />
-                  <ChildWithLayout {...props} />
-                  {/* eslint-disable-next-line no-restricted-properties */}
-                  {process.env.NODE_ENV !== "production" && (
-                    <ReactQueryDevtools initialIsOpen={false} />
-                  )}
-                </Stack>
-              </Suspense>
-            </ErrorBoundary>
+            <GrowthBookProvider growthbook={gb}>
+              <ErrorBoundary FallbackComponent={DefaultFallback}>
+                <Suspense fallback={<Skeleton width="100vw" height="100vh" />}>
+                  <Stack spacing={0} minH="$100vh">
+                    <AppBanner />
+                    <VersionWrapper />
+                    <ChildWithLayout {...props} />
+                    {/* eslint-disable-next-line no-restricted-properties */}
+                    {process.env.NODE_ENV !== "production" && (
+                      <ReactQueryDevtools initialIsOpen={false} />
+                    )}
+                  </Stack>
+                </Suspense>
+              </ErrorBoundary>
+            </GrowthBookProvider>
           </FeatureProvider>
         </ThemeProvider>
       </LoginStateProvider>
