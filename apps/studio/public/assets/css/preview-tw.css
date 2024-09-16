@@ -2056,10 +2056,6 @@ video {
   white-space: nowrap;
 }
 
-.text-wrap {
-  text-wrap: wrap;
-}
-
 .text-pretty {
   text-wrap: pretty;
 }
@@ -4593,6 +4589,10 @@ video {
 
   .md\:items-center {
     align-items: center;
+  }
+
+  .md\:gap-3 {
+    gap: 0.75rem;
   }
 
   .md\:gap-7 {

@@ -48,14 +48,16 @@ export const CalloutMenuBar = ({ editor }: { editor: Editor }) => {
         type: "item",
         icon: MdSuperscript,
         title: "Superscript",
-        action: () => editor.chain().focus().toggleSuperscript().run(),
+        action: () =>
+          editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
         isActive: () => editor.isActive("superscript"),
       },
       {
         type: "item",
         icon: MdSubscript,
         title: "Subscript",
-        action: () => editor.chain().focus().toggleSubscript().run(),
+        action: () =>
+          editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
         isActive: () => editor.isActive("subscript"),
       },
       {
@@ -79,7 +81,7 @@ export const CalloutMenuBar = ({ editor }: { editor: Editor }) => {
             icon: BiListUl,
             title: "Bullet list",
             action: () => editor.chain().focus().toggleBulletList().run(),
-            isActive: () => editor.isActive("bulletList"),
+            isActive: () => editor.isActive("unorderedList"),
           },
         ],
       },

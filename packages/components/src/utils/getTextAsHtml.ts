@@ -18,13 +18,21 @@ const MARK_DOM_MAPPING: Record<MarkTypes, string> = {
   underline: "u",
 }
 
+interface GetTextAsHtmlArgs {
+  sitemap: IsomerSitemap
+  content?: (HardBreakProps | TextProps)[]
+  shouldHideEmptyHardBreak?: boolean
+}
+
 // Converts the text node with marks into the appropriate HTML
-export const getTextAsHtml = (
-  sitemap: IsomerSitemap,
-  content?: (HardBreakProps | TextProps)[],
-) => {
+export const getTextAsHtml = ({
+  sitemap,
+  content,
+  shouldHideEmptyHardBreak,
+}: GetTextAsHtmlArgs) => {
   if (!content) {
-    return ""
+    // Note: We need to return a <br /> tag to ensure that the paragraph is not collapsed
+    return shouldHideEmptyHardBreak ? "" : "<br />"
   }
 
   const output: string[] = []

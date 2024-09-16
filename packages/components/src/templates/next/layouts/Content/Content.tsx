@@ -32,7 +32,7 @@ const getTableOfContentsFromContent = (
       for (const component of block.content) {
         if (component.type === "heading" && component.attrs.level === 2) {
           result.push({
-            content: getTextAsHtml(sitemap, component.content),
+            content: getTextAsHtml({ sitemap, content: component.content }),
             anchorLink: "#" + component.attrs.id,
           })
         }
@@ -154,7 +154,10 @@ const ContentLayout = ({
           className={compoundStyles.content({ isSideRailPresent: !!sideRail })}
         >
           {tableOfContents.items.length > 1 && (
-            <TableOfContents {...tableOfContents} />
+            <TableOfContents
+              {...tableOfContents}
+              LinkComponent={LinkComponent}
+            />
           )}
           <div>
             {renderPageContent({

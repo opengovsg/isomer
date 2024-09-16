@@ -12,7 +12,11 @@ const Heading = ({
         id={id}
         className="prose-display-md text-base-content-strong [&:not(:first-child)]:mt-14"
       >
-        {getTextAsHtml(site.siteMap, content)}
+        {getTextAsHtml({
+          sitemap: site.siteMap,
+          content,
+          shouldHideEmptyHardBreak: true,
+        })}
       </h2>
     )
   }
@@ -22,7 +26,11 @@ const Heading = ({
         id={id}
         className="prose-display-sm text-base-content-strong [&:not(:first-child)]:mt-9"
       >
-        {getTextAsHtml(site.siteMap, content)}
+        {getTextAsHtml({
+          sitemap: site.siteMap,
+          content,
+          shouldHideEmptyHardBreak: true,
+        })}
       </h3>
     )
   }
@@ -32,7 +40,11 @@ const Heading = ({
         id={id}
         className="prose-title-md-semibold text-base-content-strong [&:not(:first-child)]:mt-8"
       >
-        {getTextAsHtml(site.siteMap, content)}
+        {getTextAsHtml({
+          sitemap: site.siteMap,
+          content,
+          shouldHideEmptyHardBreak: true,
+        })}
       </h4>
     )
   }
@@ -42,7 +54,11 @@ const Heading = ({
         id={id}
         className="prose-headline-lg-semibold text-base-content-strong [&:not(:first-child)]:mt-7"
       >
-        {getTextAsHtml(site.siteMap, content)}
+        {getTextAsHtml({
+          sitemap: site.siteMap,
+          content,
+          shouldHideEmptyHardBreak: true,
+        })}
       </h5>
     )
   }
@@ -51,7 +67,11 @@ const Heading = ({
       id={id}
       className="prose-headline-base-semibold text-base-content-strong [&:not(:first-child)]:mt-6"
     >
-      {getTextAsHtml(site.siteMap, content)}
+      {getTextAsHtml({
+        sitemap: site.siteMap,
+        content,
+        shouldHideEmptyHardBreak: true,
+      })}
     </h6>
   )
 }

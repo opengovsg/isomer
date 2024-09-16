@@ -18,7 +18,7 @@ const ContentPageHeader = ({
         <div className="flex max-w-[54rem] flex-col">
           <Breadcrumb links={breadcrumb.links} LinkComponent={LinkComponent} />
           <div className="mt-8 flex flex-col gap-5 md:mt-6">
-            <h1 className="prose-display-lg">{title}</h1>
+            <h1 className="prose-display-lg break-words">{title}</h1>
             <p className="prose-title-lg-regular">{summary}</p>
           </div>
           {buttonLabel && buttonUrl && (
