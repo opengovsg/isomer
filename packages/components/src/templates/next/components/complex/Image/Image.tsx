@@ -4,7 +4,7 @@ import type { ImageProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { Link } from "../../internal/Link"
-import ImageClient from "./ImageClient"
+import { ImageClient } from "./ImageClient"
 
 const createImageStyles = tv({
   slots: {
@@ -58,7 +58,7 @@ const ImageContainer = ({
   </div>
 )
 
-const Image = ({
+export const Image = ({
   src,
   alt,
   caption,
@@ -89,5 +89,3 @@ const Image = ({
     </ImageContainer>
   )
 }
-
-export default Image

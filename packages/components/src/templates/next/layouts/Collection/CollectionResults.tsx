@@ -13,6 +13,7 @@ interface CollectionResultProps
     | "totalCount"
   > {
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
+  site: CollectionPageSchemaType["site"]
 }
 
 export const CollectionResults = ({
@@ -23,6 +24,7 @@ export const CollectionResults = ({
   handleClearFilter,
   totalCount,
   LinkComponent,
+  site,
 }: CollectionResultProps) => {
   if (totalCount === 0) {
     return (
@@ -58,6 +60,7 @@ export const CollectionResults = ({
               key={Math.random()}
               {...item}
               LinkComponent={LinkComponent}
+              site={site}
             />
           ))}
         {paginatedItems.length === 0 && (

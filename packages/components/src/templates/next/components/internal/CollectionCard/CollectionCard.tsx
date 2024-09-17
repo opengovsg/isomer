@@ -4,7 +4,9 @@ import { composeRenderProps, Text } from "react-aria-components"
 
 import type { CollectionCardProps as BaseCollectionCardProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { isExternalUrl } from "~/utils"
 import { focusVisibleHighlight } from "~/utils/rac"
+import { ImageClient } from "../../complex/Image"
 import { Link } from "../Link"
 
 type CollectionCardProps = BaseCollectionCardProps
@@ -22,10 +24,16 @@ export const CollectionCard = ({
   description,
   category,
   image,
+  site,
   ...props
 }: CollectionCardProps): JSX.Element => {
   const file = props.variant === "file" ? props.fileDetails : null
   const itemTitle = `${title}${file ? ` [${file.type.toUpperCase()}, ${file.size.toUpperCase()}]` : ""}`
+  const imgSrc =
+    isExternalUrl(image?.src) || site.assetsBaseUrl === undefined
+      ? image?.src
+      : `${site.assetsBaseUrl}${image?.src}`
+
   return (
     <div className="flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6">
       {lastUpdated && (
@@ -58,10 +66,12 @@ export const CollectionCard = ({
       </div>
       {image && (
         <div className="relative mt-3 h-[140px] w-full shrink-0 lg:ml-4 lg:mt-0 lg:h-auto lg:w-[320px]">
-          <img
-            className="absolute left-0 h-full w-full rounded object-cover"
-            src={image.src}
+          <ImageClient
+            src={imgSrc || ""}
             alt={image.alt}
+            width="100%"
+            className="absolute left-0 h-full w-full rounded object-cover"
+            assetsBaseUrl={site.assetsBaseUrl}
           />
         </div>
       )}

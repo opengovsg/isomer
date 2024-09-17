@@ -1,5 +1,5 @@
 import type { HeroProps } from "~/interfaces/complex/Hero"
-import { getReferenceLinkHref } from "~/utils"
+import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
@@ -14,11 +14,16 @@ const Hero = ({
   site,
   LinkComponent,
 }: HeroProps) => {
+  const backgroundSrc =
+    isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
+      ? backgroundUrl
+      : `${site.assetsBaseUrl}${backgroundUrl}`
+
   return (
     <section
       className="flex min-h-[15rem] bg-cover bg-center bg-no-repeat sm:min-h-[22.5rem] lg:min-h-[31.25rem]"
       style={{
-        backgroundImage: `url('${backgroundUrl}')`,
+        backgroundImage: `url('${backgroundSrc}')`,
       }}
     >
       <div className="w-full content-center bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]">

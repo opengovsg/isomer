@@ -9,10 +9,11 @@ import type {
   SingleCardWithImageProps,
 } from "~/interfaces/complex/InfoCards"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref } from "~/utils"
+import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
+import { ImageClient } from "../Image"
 
 const infoCardTitleStyle = tv({
   extend: groupFocusVisibleHighlightNonRac,
@@ -111,22 +112,32 @@ const InfoCardImage = ({
   imageAlt,
   imageFit,
   url,
+  site,
 }: Pick<
   SingleCardWithImageProps,
-  "imageUrl" | "imageAlt" | "url" | "imageFit"
->): JSX.Element => (
-  <div
-    className={compoundStyles.cardImageContainer({ isClickableCard: !!url })}
-  >
-    <img
-      src={imageUrl}
-      alt={imageAlt}
-      className={compoundStyles.cardImage({
-        imageFit,
-      })}
-    />
-  </div>
-)
+  "imageUrl" | "imageAlt" | "url" | "imageFit" | "site"
+>): JSX.Element => {
+  const imgSrc =
+    isExternalUrl(imageUrl) || site.assetsBaseUrl === undefined
+      ? imageUrl
+      : `${site.assetsBaseUrl}${imageUrl}`
+
+  return (
+    <div
+      className={compoundStyles.cardImageContainer({ isClickableCard: !!url })}
+    >
+      <ImageClient
+        src={imgSrc}
+        alt={imageAlt}
+        width="100%"
+        className={compoundStyles.cardImage({
+          imageFit,
+        })}
+        assetsBaseUrl={site.assetsBaseUrl}
+      />
+    </div>
+  )
+}
 
 const InfoCardText = ({
   title,
@@ -182,6 +193,7 @@ const InfoCardWithImage = ({
         imageUrl={imageUrl}
         imageAlt={imageAlt}
         url={url}
+        site={site}
       />
       <InfoCardText title={title} description={description} url={url} />
     </InfoCardContainer>
