@@ -1,6 +1,7 @@
 import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
 import type { Metadata, ResolvingMetadata } from "next"
 import Link from "next/link"
+import Script from "next/script"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
@@ -69,6 +70,7 @@ const NotFound = () => {
         }}
         content={[]}
         LinkComponent={Link}
+        ScriptComponent={Script}
       />
     </>
   )

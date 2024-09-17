@@ -5,6 +5,7 @@ import type {
 import type { PropsWithChildren } from "react"
 import type { PartialDeep } from "type-fest"
 import { forwardRef } from "react"
+import Script from "next/script"
 import { Skeleton } from "@chakra-ui/react"
 import { RenderEngine } from "@opengovsg/isomer-components"
 import { merge } from "lodash"
@@ -72,6 +73,7 @@ function SuspendablePreview({
         assetsBaseUrl: `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`,
       }}
       LinkComponent={FakeLink}
+      ScriptComponent={Script}
     />
   )
 }

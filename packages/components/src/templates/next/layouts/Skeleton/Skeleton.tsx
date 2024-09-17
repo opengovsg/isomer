@@ -4,12 +4,14 @@ import {
   Masthead,
   Navbar,
   Notification,
+  Wogaa,
 } from "../../components/internal"
 
 export const Skeleton = ({
   site,
   layout,
   LinkComponent,
+  ScriptComponent,
   children,
 }: React.PropsWithChildren<
   Pick<
@@ -22,6 +24,9 @@ export const Skeleton = ({
   return (
     <>
       {site.isGovernment && <Masthead isStaging={isStaging} />}
+
+      {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
+
       {site.notification && (
         <Notification
           {...site.notification}
@@ -29,6 +34,7 @@ export const Skeleton = ({
           site={site}
         />
       )}
+
       <Navbar
         logoUrl={site.logoUrl}
         logoAlt={site.siteName}
