@@ -61,8 +61,8 @@ const SuspendablePublishButton = ({
         size="sm"
         onClick={handlePublish}
         isLoading={isLoading}
+        // TODO(ISOM-1552): Add back functionality when implemented
         isDisabled
-        // isDisabled={!currPage.draftBlobId}
       >
         Publish
       </Button>
