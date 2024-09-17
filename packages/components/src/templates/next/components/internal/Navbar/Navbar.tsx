@@ -6,6 +6,8 @@ import { useResizeObserver } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { isExternalUrl } from "~/utils"
+import { ImageClient } from "../../complex/Image"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
@@ -31,12 +33,18 @@ export const Navbar = ({
   layout,
   search,
   items,
+  site,
   LinkComponent = "a",
 }: Omit<NavbarProps, "type">) => {
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [mobileNavbarTopPx, setMobileNavbarTopPx] = useState<number>()
+
+  const imgSrc =
+    isExternalUrl(logoUrl) || site.assetsBaseUrl === undefined
+      ? logoUrl
+      : `${site.assetsBaseUrl}${logoUrl}`
 
   const isMenuOpen = openNavItemIdx !== -1 || isHamburgerOpen
 
@@ -84,7 +92,13 @@ export const Navbar = ({
             className="flex rounded focus-visible:bg-utility-highlight"
             href="/"
           >
-            <img src={logoUrl} alt={logoAlt} className={logo()} />
+            <ImageClient
+              src={imgSrc}
+              alt={logoAlt}
+              width="100%"
+              className={logo()}
+              assetsBaseUrl={site.assetsBaseUrl}
+            />
           </Link>
 
           {/* Navigation items (for desktop) */}
