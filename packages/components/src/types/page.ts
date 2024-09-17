@@ -46,6 +46,7 @@ const BaseRefSchema = Type.Composite([
         src: Type.String({
           title: "Image source URL",
           description: "The source URL of the image",
+          format: "image",
         }),
         alt: Type.String({
           title: "Image alt text",
@@ -74,6 +75,7 @@ export const ArticlePageMetaSchema = Type.Composite([
         src: Type.String({
           title: "Image source URL",
           description: "The source URL of the image",
+          format: "image",
         }),
         alt: Type.String({
           title: "Image alt text",
