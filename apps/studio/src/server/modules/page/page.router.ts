@@ -253,7 +253,7 @@ export const pageRouter = router({
             if (get(err, "code") === "23505") {
               throw new TRPCError({
                 code: "CONFLICT",
-                message: "A page with the same permalink already exists",
+                message: "A resource with the same permalink already exists",
               })
             }
             throw err
@@ -322,6 +322,15 @@ export const pageRouter = router({
           "Resource.draftBlobId",
         ])
         .executeTakeFirstOrThrow()
+        .catch((err) => {
+          if (get(err, "code") === "23505") {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "A resource with the same permalink already exists",
+            })
+          }
+          throw err
+        })
     },
   ),
   getFullPermalink: protectedProcedure

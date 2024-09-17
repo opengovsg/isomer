@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
+import { get } from "lodash"
 
 import type { ResourceType } from "../database"
 import {
@@ -116,39 +117,50 @@ export const resourceRouter = router({
   move: protectedProcedure
     .input(moveSchema)
     .mutation(async ({ input: { movedResourceId, destinationResourceId } }) => {
-      return await db.transaction().execute(async (tx) => {
-        const parent = await tx
-          .selectFrom("Resource")
-          .where("id", "=", destinationResourceId)
-          .select(["id", "type"])
-          .executeTakeFirst()
+      return await db
+        .transaction()
+        .execute(async (tx) => {
+          const parent = await tx
+            .selectFrom("Resource")
+            .where("id", "=", destinationResourceId)
+            .select(["id", "type"])
+            .executeTakeFirst()
 
-        if (!parent || parent.type !== "Folder") {
-          throw new TRPCError({ code: "BAD_REQUEST" })
-        }
+          if (!parent || parent.type !== "Folder") {
+            throw new TRPCError({ code: "BAD_REQUEST" })
+          }
 
-        if (movedResourceId === destinationResourceId) {
-          throw new TRPCError({ code: "BAD_REQUEST" })
-        }
+          if (movedResourceId === destinationResourceId) {
+            throw new TRPCError({ code: "BAD_REQUEST" })
+          }
 
-        await tx
-          .updateTable("Resource")
-          .where("id", "=", String(movedResourceId))
-          .where("Resource.type", "in", ["Page", "Folder"])
-          .set({ parentId: String(destinationResourceId) })
-          .execute()
-        return tx
-          .selectFrom("Resource")
-          .where("id", "=", String(movedResourceId))
-          .select([
-            "parentId",
-            "Resource.id",
-            "Resource.type",
-            "Resource.permalink",
-            "Resource.title",
-          ])
-          .executeTakeFirst()
-      })
+          await tx
+            .updateTable("Resource")
+            .where("id", "=", String(movedResourceId))
+            .where("Resource.type", "in", ["Page", "Folder"])
+            .set({ parentId: String(destinationResourceId) })
+            .execute()
+          return tx
+            .selectFrom("Resource")
+            .where("id", "=", String(movedResourceId))
+            .select([
+              "parentId",
+              "Resource.id",
+              "Resource.type",
+              "Resource.permalink",
+              "Resource.title",
+            ])
+            .executeTakeFirst()
+        })
+        .catch((err) => {
+          if (get(err, "code") === "23505") {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "A resource with the same permalink already exists",
+            })
+          }
+          throw err
+        })
     }),
 
   countWithoutRoot: protectedProcedure
