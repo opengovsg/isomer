@@ -1,18 +1,4 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import type { IconType } from "react-icons"
-import {
-  BiCard,
-  BiChevronDown,
-  BiColumns,
-  BiCrown,
-  BiHash,
-  BiImageAlt,
-  BiSolidQuoteAltLeft,
-  BiText,
-} from "react-icons/bi"
-
-import { ContentpicIcon } from "~/features/editing-experience/components/icons/Contentpic"
-import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
@@ -260,16 +246,18 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   { label: "Basic building blocks", types: ["prose", "image", "callout"] },
   {
     label: "Organise complex content",
-    types: ["contentpic", "infocards", "accordion", "infocols", "iframe"],
+    types: ["contentpic", "infocards", "accordion", "infocols"],
   },
 ]
 export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Highlight important information",
+    // TODO(ISOM-1552): Add back iframe component when implemented
     types: ["keystatistics", "infobar"],
   },
   {
     label: "Organise complex content",
-    types: ["infopic", "infocards", "infocols", "iframe"],
+    // TODO(ISOM-1552): Add back iframe component when implemented
+    types: ["infopic", "infocards", "infocols"],
   },
 ]

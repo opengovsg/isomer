@@ -70,7 +70,8 @@ export const ResourceTableMenu = ({
               >
                 Edit page settings
               </MenuItem>
-              <MenuItem icon={<BiDuplicate fontSize="1rem" />}>
+              {/* TODO(ISOM-1552): Add back duplicate page functionality when implemented */}
+              <MenuItem isDisabled icon={<BiDuplicate fontSize="1rem" />}>
                 Duplicate page
               </MenuItem>
             </>

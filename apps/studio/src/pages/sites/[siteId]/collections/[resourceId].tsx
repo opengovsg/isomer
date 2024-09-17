@@ -88,7 +88,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             >
               Collection settings
             </Button>
-            <Button onClick={onPageCreateModalOpen} size="sm">
+            <Button onClick={onPageCreateModalOpen} size="md">
               Add new item
             </Button>
           </HStack>

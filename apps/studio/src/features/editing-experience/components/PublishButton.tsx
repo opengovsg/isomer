@@ -53,14 +53,16 @@ const SuspendablePublishButton = ({
   return (
     <TouchableTooltip
       hidden={!!currPage.draftBlobId}
-      label="All changes have been published"
+      // label="All changes have been published"
+      label="This feature is currently not available in beta"
     >
       <Button
         variant="solid"
         size="sm"
         onClick={handlePublish}
         isLoading={isLoading}
-        isDisabled={!currPage.draftBlobId}
+        // TODO(ISOM-1552): Add back functionality when implemented
+        isDisabled
       >
         Publish
       </Button>
