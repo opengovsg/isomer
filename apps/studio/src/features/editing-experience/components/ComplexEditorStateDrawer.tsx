@@ -15,7 +15,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
-import { BRIEF_TOAST_SETTINGS } from "./constants"
+import { BRIEF_TOAST_SETTINGS, PLACEHOLDER_IMAGE_FILENAME } from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
 import { DrawerHeader } from "./Drawer/DrawerHeader"
@@ -148,7 +148,10 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       }
 
       // Upload all new/modified images/files
-      const assetsToUpload = modifiedAssets.filter((asset) => !!asset.file)
+      const assetsToUpload = modifiedAssets.filter(
+        (asset) =>
+          !!asset.file && asset.file.name !== PLACEHOLDER_IMAGE_FILENAME,
+      )
 
       // Delete the original assets for those that have been modified
       // This is done by deleting the file key stored in the src attribute, as
@@ -176,11 +179,16 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       ).then((results) => {
         // Keep only failed uploads inside modifiedAssets so on subsequent
         // save attempts, we retry uploading just the failed assets
-        const newModifiedAssets = modifiedAssets.filter(({ path }) => {
-          return !results.some(
-            (result) => result.status === "fulfilled" && result.value === path,
+        const newModifiedAssets = modifiedAssets
+          .filter(
+            ({ file }) => !!file && file.name !== PLACEHOLDER_IMAGE_FILENAME,
           )
-        })
+          .filter(({ path }) => {
+            return !results.some(
+              (result) =>
+                result.status === "fulfilled" && result.value === path,
+            )
+          })
 
         if (newModifiedAssets.length > 0) {
           const failedUploadsCount = newModifiedAssets.length

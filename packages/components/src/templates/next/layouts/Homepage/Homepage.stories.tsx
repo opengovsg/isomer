@@ -188,6 +188,7 @@ export const Default: Story = {
       },
     },
     page: {
+      noIndex: false,
       permalink: "/",
       lastModified: "2024-05-02T14:12:57.160Z",
       title: "Home page",

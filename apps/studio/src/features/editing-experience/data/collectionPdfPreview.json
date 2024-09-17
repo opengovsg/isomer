@@ -2,6 +2,7 @@
   "version": "0.1.0",
   "layout": "article",
   "page": {
+    "noIndex": false,
     "permalink": "/resources/newsroom/relevant-news/todays-news",
     "title": "Speech by Minister for Trade and Industry at the Committee of Supply Debate 2024",
     "date": "15 Feb 2024",

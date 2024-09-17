@@ -62,6 +62,7 @@ const NotFound = () => {
         }}
         layout="notfound"
         page={{
+          noIndex: false,
           title: PAGE_TITLE,
           description: PAGE_DESCRIPTION,
           permalink: "/404.html",

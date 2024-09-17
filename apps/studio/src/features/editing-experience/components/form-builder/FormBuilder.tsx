@@ -82,7 +82,12 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: () => null,
   },
 ]
-const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
+const ajv = new Ajv({
+  useDefaults: true,
+  allErrors: true,
+  strict: false,
+  logger: false,
+})
 
 interface FormBuilderProps<T> {
   schema: TSchema

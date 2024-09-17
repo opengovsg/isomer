@@ -25,6 +25,7 @@ export function JsonFormsBooleanControl({
   path,
   description,
   schema,
+  required,
 }: ControlProps): JSX.Element {
   if (schema.const !== undefined) {
     return <></>
@@ -32,7 +33,8 @@ export function JsonFormsBooleanControl({
 
   return (
     <Box mt="1.25rem" _first={{ mt: 0 }}>
-      <FormControl>
+      {schema.required}
+      <FormControl isRequired={required}>
         <FormLabel description={description} htmlFor={id}>
           {label}
         </FormLabel>

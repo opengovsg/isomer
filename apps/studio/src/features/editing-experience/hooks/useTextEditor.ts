@@ -34,7 +34,13 @@ export interface BaseEditorProps {
 }
 
 const BASE_EXTENSIONS: Extensions = [
-  Link,
+  Link.configure({
+    HTMLAttributes: {
+      rel: "",
+      target: "_self",
+    },
+    openOnClick: false,
+  }),
   Bold,
   BulletList.extend({
     name: "unorderedList",

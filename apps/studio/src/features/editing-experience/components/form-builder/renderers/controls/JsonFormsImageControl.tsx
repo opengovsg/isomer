@@ -137,15 +137,6 @@ export function JsonFormsImageControl({
               status: "error",
             })
           }}
-          onRejection={(rejections) => {
-            if (rejections[0]?.errors[0]) {
-              toast({
-                title: "Image rejected",
-                description: rejections[0].errors[0].message,
-                status: "error",
-              })
-            }
-          }}
           maxSize={MAX_IMG_FILE_SIZE_BYTES}
           accept={IMAGE_UPLOAD_ACCEPTED_MIME_TYPES}
         />

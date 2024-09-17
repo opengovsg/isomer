@@ -80,11 +80,11 @@ const PageLinkModalContent = ({
 
   return (
     <ModalContent>
-      <ModalHeader pr="4.5rem">Edit link</ModalHeader>
-      <ModalCloseButton />
+      <form onSubmit={onSubmit}>
+        <ModalHeader pr="4.5rem">Edit link</ModalHeader>
+        <ModalCloseButton />
 
-      <ModalBody>
-        <form onSubmit={onSubmit}>
+        <ModalBody>
           <FormControl isRequired>
             <FormLabel id="destination">
               {description || "When this link is clicked, open..."}
@@ -109,27 +109,28 @@ const PageLinkModalContent = ({
               </Box>
             )}
           </FormControl>
-        </form>
-      </ModalBody>
+        </ModalBody>
 
-      <ModalFooter>
-        <HStack spacing="0.75rem">
-          <Button
-            variant="clear"
-            onClick={onClose}
-            color="base.content.default"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="solid"
-            onClick={onSubmit}
-            isDisabled={destination === ""}
-          >
-            Save changes
-          </Button>
-        </HStack>
-      </ModalFooter>
+        <ModalFooter>
+          <HStack spacing="0.75rem">
+            <Button
+              variant="clear"
+              onClick={onClose}
+              color="base.content.default"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="solid"
+              onClick={onSubmit}
+              isDisabled={destination === ""}
+              type="submit"
+            >
+              Save changes
+            </Button>
+          </HStack>
+        </ModalFooter>
+      </form>
     </ModalContent>
   )
 }

@@ -8,3 +8,5 @@ export const BRIEF_TOAST_SETTINGS: Pick<
   isClosable: true,
   duration: THREE_SECONDS_IN_MS,
 }
+
+export const PLACEHOLDER_IMAGE_FILENAME = "placeholder_no_image.png"
