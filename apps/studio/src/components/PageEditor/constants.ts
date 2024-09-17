@@ -1,18 +1,4 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import type { IconType } from "react-icons"
-import {
-  BiCard,
-  BiChevronDown,
-  BiColumns,
-  BiCrown,
-  BiHash,
-  BiImageAlt,
-  BiSolidQuoteAltLeft,
-  BiText,
-} from "react-icons/bi"
-
-import { ContentpicIcon } from "~/features/editing-experience/components/icons/Contentpic"
-import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
@@ -65,7 +51,7 @@ export const DEFAULT_BLOCKS: Record<
   },
   image: {
     type: "image",
-    src: "",
+    src: "/placeholder_no_image.png",
     alt: "Add your alt text here",
     size: "default",
   },
