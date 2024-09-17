@@ -189,7 +189,7 @@ export const ExpandFirstItem: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole("button", { name: /about us/i }))
+    await userEvent.click(canvas.getByRole("button", { name: /max 70 chars/i }))
   },
 }
 
@@ -215,6 +215,6 @@ export const ExpandMobile: Story = {
     await userEvent.click(
       canvas.getByRole("button", { name: /open navigation menu/i }),
     )
-    await userEvent.click(canvas.getByRole("button", { name: /about us/i }))
+    await userEvent.click(canvas.getByRole("button", { name: /max 70 chars/i }))
   },
 }
