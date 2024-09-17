@@ -39,6 +39,7 @@ const meta: Meta<typeof EditPage> = {
           siteId: "1",
           pageId: "1",
         },
+        pathname: "/sites/[siteId]/pages/[pageId]",
       },
     },
   },

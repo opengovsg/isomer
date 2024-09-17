@@ -16,3 +16,15 @@ export const getResourceSubpath = (resourceType: ResourceType) => {
       return ""
   }
 }
+
+export const getLinkToResource = ({
+  siteId,
+  type,
+  resourceId,
+}: {
+  siteId: string | number
+  resourceId: string
+  type: ResourceType
+}) => {
+  return `/sites/${siteId}/${getResourceSubpath(type)}/${resourceId}`
+}

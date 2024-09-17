@@ -38,6 +38,7 @@ const getColumns = ({ siteId }: ResourceTableProps) => [
     header: () => <TableHeader>Actions</TableHeader>,
     cell: ({ row }) => (
       <ResourceTableMenu
+        siteId={siteId}
         parentId={row.original.parentId}
         title={row.original.title}
         resourceId={row.original.id}

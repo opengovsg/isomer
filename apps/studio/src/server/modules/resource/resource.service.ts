@@ -1,4 +1,3 @@
-import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { SelectExpression } from "kysely"
 import { type DB } from "~prisma/generated/generatedTypes"
 
@@ -357,12 +356,12 @@ export const getLocalisedSitemap = async (
   return getSitemapTree(rootResource, allResources)
 }
 
-export const getResourceFullPermalink = async (
+export const getResourcePermalinkTree = async (
   siteId: number,
   resourceId: number,
 ) => {
   const resourcePermalinks = await db
-    .withRecursive("ancestors", (eb) =>
+    .withRecursive("Ancestors", (eb) =>
       eb
         // Base case: Get the actual resource
         .selectFrom("Resource")
@@ -374,22 +373,23 @@ export const getResourceFullPermalink = async (
             // Recursive case: Get all the ancestors of the resource
             .selectFrom("Resource")
             .where("Resource.siteId", "=", siteId)
-            .where("Resource.type", "in", [
-              "Folder",
-              "Page",
-              "CollectionPage",
-              "RootPage",
-            ])
-            .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
+            .innerJoin("Ancestors", "Ancestors.parentId", "Resource.id")
             .select(defaultResourceSelect),
         ),
     )
-    .selectFrom("ancestors")
-    .select("ancestors.permalink")
+    .selectFrom("Ancestors")
+    .select("Ancestors.permalink")
     .execute()
 
-  return `/${resourcePermalinks
-    .map((r) => r.permalink)
-    .reverse()
-    .join("/")}`
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return resourcePermalinks.map((r) => r.permalink).reverse() as string[]
+}
+
+export const getResourceFullPermalink = async (
+  siteId: number,
+  resourceId: number,
+) => {
+  const permalinkTree = await getResourcePermalinkTree(siteId, resourceId)
+
+  return `/${permalinkTree.join("/")}`
 }
