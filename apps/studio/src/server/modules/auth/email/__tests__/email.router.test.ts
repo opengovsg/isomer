@@ -38,6 +38,15 @@ describe("auth.email", () => {
       await expect(result).rejects.toThrowError()
     })
 
+    // skipping as we need to allow vendor emails as well
+    it.skip("should throw if email is not a government email address", async () => {
+      // Act
+      const result = caller.login({ email: "validbutnotgovt@example.com" })
+
+      // Assert
+      await expect(result).rejects.toThrowError()
+    })
+
     it("should return email and a prefix if OTP is sent successfully", async () => {
       // Arrange
       const spy = vi.spyOn(mailLib, "sendMail")
