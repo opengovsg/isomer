@@ -114,6 +114,8 @@ export function JsonFormsImageControl({
               setPendingAsset(modifiedAsset)
               handleChange(path, modifiedAsset.blobUrl)
             } else {
+              handleChange(path, undefined)
+
               if (pendingAsset === undefined) {
                 return
               }
@@ -127,7 +129,6 @@ export function JsonFormsImageControl({
                 file: undefined,
                 blobUrl: undefined,
               })
-              handleChange(path, "")
             }
           }}
           onError={(error) => {

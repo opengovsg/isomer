@@ -14,7 +14,7 @@ export const createDefaultPage = ({
         page: {
           noIndex: false,
           contentPageHeader: {
-            summary: "",
+            summary: "This is the page summary",
           },
         },
         content: [],
@@ -31,7 +31,7 @@ export const createDefaultPage = ({
           date: format(new Date(), "dd-MM-yyyy"),
           category: "Feature Articles",
           articlePageHeader: {
-            summary: [],
+            summary: ["This is the page summary"],
           },
         },
         content: [],

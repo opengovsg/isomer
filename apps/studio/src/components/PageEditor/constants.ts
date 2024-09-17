@@ -51,7 +51,7 @@ export const DEFAULT_BLOCKS: Record<
   },
   image: {
     type: "image",
-    src: "",
+    src: "/placeholder_no_image.png",
     alt: "Add your alt text here",
     size: "default",
   },
