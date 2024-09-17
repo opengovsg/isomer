@@ -50,3 +50,7 @@ export {
   default as JsonFormsProseControl,
   jsonFormsProseControlTester,
 } from "./JsonFormsProseControl"
+export {
+  default as JsonFormsDateControl,
+  jsonFormsDateControlTester,
+} from "./JsonFormsDateControl"
