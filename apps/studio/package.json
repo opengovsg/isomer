@@ -27,6 +27,7 @@
     "lint:fix": "eslint --fix",
     "typecheck": "tsc --noEmit",
     "migrate:dev": "prisma migrate dev",
+    "migrate:custom": "tsx prisma/custom/install.ts",
     "migrate": "prisma migrate deploy",
     "test": "run-s test:*",
     "test:unit": "dotenv -e .env.test vitest run",
