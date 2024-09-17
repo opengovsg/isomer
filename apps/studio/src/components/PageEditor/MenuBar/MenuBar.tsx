@@ -13,6 +13,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
+import { isHidden } from "@chakra-ui/utils"
 import { Button, Menu } from "@opengovsg/design-system-react"
 import { BiChevronDown, BiChevronUp } from "react-icons/bi"
 
@@ -158,7 +159,7 @@ export const MenuBar = ({ items }: { items: MenuBarEntry[] }) => {
             </Menu>
           )}
 
-          {item.type === "horizontal-list" && (
+          {item.type === "horizontal-list" && !item.isHidden?.() && (
             <Popover placement="bottom" key={index}>
               {({ isOpen }) => (
                 <>
@@ -189,7 +190,7 @@ export const MenuBar = ({ items }: { items: MenuBarEntry[] }) => {
                       </Button>
                     </HStack>
                   </PopoverTrigger>
-                  <PopoverContent w="5.75rem">
+                  <PopoverContent w="fit-content">
                     <PopoverBody>
                       <HStack>
                         {item.items.map((subItem) => (

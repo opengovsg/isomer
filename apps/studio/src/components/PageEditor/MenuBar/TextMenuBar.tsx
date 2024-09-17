@@ -11,6 +11,7 @@ import {
   BiStrikethrough,
   BiTable,
   BiUnderline,
+  BiWrench,
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
@@ -188,75 +189,70 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
       },
       // Table-specific commands
       {
-        type: "divider",
+        type: "horizontal-list",
+        label: "Table",
+        defaultIcon: BiWrench,
         isHidden: () => !editor.isActive("table"),
-      },
-      {
-        type: "item",
-        icon: () => <Icon as={IconAddColRight} />,
-        title: "Add column after",
-        action: () => editor.chain().focus().addColumnAfter().run(),
-        isHidden: () => !editor.isActive("table"),
-      },
-      {
-        type: "item",
-        icon: () => <Icon as={IconAddColLeft} />,
-        title: "Add column before",
-        action: () => editor.chain().focus().addColumnBefore().run(),
-        isHidden: () => !editor.isActive("table"),
-      },
-      {
-        type: "item",
-        icon: () => <Icon as={IconDelCol} />,
-        title: "Delete column",
-        action: () => editor.chain().focus().deleteColumn().run(),
-        isHidden: () => !editor.isActive("table"),
-      },
-      {
-        type: "item",
-        icon: () => <Icon as={IconAddRowAbove} />,
-        title: "Add row before",
-        action: () => editor.chain().focus().addRowBefore().run(),
-        isHidden: () => !editor.isActive("table"),
-      },
-      {
-        type: "item",
-        icon: () => <Icon as={IconAddRowBelow} />,
-        title: "Add row after",
-        action: () => editor.chain().focus().addRowAfter().run(),
-        isHidden: () => !editor.isActive("table"),
-      },
-      {
-        type: "item",
-        icon: () => <Icon as={IconDelRow} />,
-        title: "Delete row",
-        action: () => editor.chain().focus().deleteRow().run(),
-        isHidden: () => !editor.isActive("table"),
-      },
-      {
-        type: "divider",
-        isHidden: () => !editor.isActive("table"),
-      },
-      {
-        type: "item",
-        icon: () => <Icon as={IconMergeCells} />,
-        title: "Merge cells",
-        action: () => editor.chain().focus().mergeCells().run(),
-        isHidden: () => !editor.isActive("table"),
-      },
-      {
-        type: "item",
-        icon: () => <Icon as={IconSplitCell} />,
-        title: "Split cell",
-        action: () => editor.chain().focus().splitCell().run(),
-        isHidden: () => !editor.isActive("table"),
-      },
-      {
-        type: "item",
-        icon: BiCog,
-        title: "Table settings",
-        action: onTableSettingsModalOpen,
-        isHidden: () => !editor.isActive("table"),
+        items: [
+          {
+            type: "item",
+            icon: () => (
+              <Icon color="base.content.medium" as={IconAddColRight} />
+            ),
+            title: "Add column after",
+            action: () => editor.chain().focus().addColumnAfter().run(),
+          },
+          {
+            type: "item",
+            icon: () => (
+              <Icon as={IconAddColLeft} color="base.content.medium" />
+            ),
+            title: "Add column before",
+            action: () => editor.chain().focus().addColumnBefore().run(),
+          },
+          {
+            type: "item",
+            icon: () => <Icon as={IconDelCol} />,
+            title: "Delete column",
+            action: () => editor.chain().focus().deleteColumn().run(),
+          },
+          {
+            type: "item",
+            icon: () => <Icon as={IconAddRowAbove} />,
+            title: "Add row before",
+            action: () => editor.chain().focus().addRowBefore().run(),
+          },
+          {
+            type: "item",
+            icon: () => <Icon as={IconAddRowBelow} />,
+            title: "Add row after",
+            action: () => editor.chain().focus().addRowAfter().run(),
+          },
+          {
+            type: "item",
+            icon: () => <Icon as={IconDelRow} />,
+            title: "Delete row",
+            action: () => editor.chain().focus().deleteRow().run(),
+          },
+          {
+            type: "item",
+            icon: () => <Icon as={IconMergeCells} />,
+            title: "Merge cells",
+            action: () => editor.chain().focus().mergeCells().run(),
+          },
+          {
+            type: "item",
+            icon: () => <Icon as={IconSplitCell} />,
+            title: "Split cell",
+            action: () => editor.chain().focus().splitCell().run(),
+          },
+          {
+            type: "item",
+            icon: BiCog,
+            title: "Table settings",
+            action: onTableSettingsModalOpen,
+          },
+        ],
       },
     ],
     [editor, onTableSettingsModalOpen],
