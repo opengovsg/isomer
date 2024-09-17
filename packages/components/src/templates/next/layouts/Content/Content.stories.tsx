@@ -337,6 +337,7 @@ export const Default: Story = {
       },
     },
     page: {
+      noIndex: false,
       permalink: "/parent/rationality",
       lastModified: "2024-05-02T14:12:57.160Z",
       title:
@@ -1505,6 +1506,7 @@ export const NoTable: Story = {
       assetsBaseUrl: "https://cms.isomer.gov.sg",
     },
     page: {
+      noIndex: false,
       permalink: "/parent/rationality",
       title: "Irrationality",
       lastModified: "2024-05-02T14:12:57.160Z",
@@ -1915,6 +1917,7 @@ export const SmallTable: Story = {
       },
     },
     page: {
+      noIndex: false,
       permalink: "/parent/rationality",
       title: "Irrationality",
       lastModified: "2024-05-02T14:12:57.160Z",
@@ -2493,6 +2496,7 @@ export const FirstLevelPage: Story = {
       },
     },
     page: {
+      noIndex: false,
       permalink: "/content",
       title: "Content page",
       lastModified: "2024-05-02T14:12:57.160Z",

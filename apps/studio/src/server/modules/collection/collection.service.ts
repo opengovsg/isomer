@@ -6,6 +6,7 @@ export const createCollectionPageJson = ({}: {
   return {
     layout: "article",
     page: {
+      noIndex: false,
       date: format(new Date(), "dd-MM-yyyy"),
       // TODO: this is actually supposed to be passed from the frontend
       // which is not done at present
@@ -28,6 +29,7 @@ export const createCollectionPdfJson = ({
   return {
     layout: "content",
     page: {
+      noIndex: false,
       contentPageHeader: {
         summary: "",
       },

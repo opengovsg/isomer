@@ -6,8 +6,9 @@ import { ArticlePageHeaderSchema, ContentPageHeaderSchema } from "~/interfaces"
 const BaseItemSchema = Type.Object({
   description: Type.Optional(
     Type.String({
-      title: "Page description",
-      description: "The summary of the page for SEO purposes",
+      title: "Meta description",
+      description:
+        "This is a description that appears on search engine results.",
     }),
   ),
 })
@@ -15,11 +16,12 @@ const BaseItemSchema = Type.Object({
 const BasePageSchema = Type.Composite([
   BaseItemSchema,
   Type.Object({
-    noIndex: Type.Optional(
-      Type.Boolean({
-        description: "Whether to exclude the page from search engine indexing",
-      }),
-    ),
+    noIndex: Type.Boolean({
+      description:
+        "If this is turned on, the page won't appear on Google search results.",
+      title: "Prevent search engines from indexing this page?",
+      default: false,
+    }),
   }),
 ])
 
