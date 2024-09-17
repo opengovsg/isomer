@@ -121,6 +121,7 @@ const PageSettings = () => {
         description: error.message,
         status: "error",
       })
+      reset()
     },
   })
 
