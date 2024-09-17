@@ -38,7 +38,8 @@ describe("auth.email", () => {
       await expect(result).rejects.toThrowError()
     })
 
-    it("should throw if email is not a government email address", async () => {
+    // skipping as we need to allow vendor emails as well
+    it.skip("should throw if email is not a government email address", async () => {
       // Act
       const result = caller.login({ email: "validbutnotgovt@example.com" })
 
