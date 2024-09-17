@@ -7,7 +7,7 @@ import type { AppProps, AppType } from "next/app"
 import { Skeleton, Stack } from "@chakra-ui/react"
 import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
-import { Banner, ThemeProvider } from "@opengovsg/design-system-react"
+import { ThemeProvider } from "@opengovsg/design-system-react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { ErrorBoundary } from "react-error-boundary"
 
@@ -32,7 +32,6 @@ const gb = new GrowthBook({
   apiHost: "https://cdn.growthbook.io",
   clientKey: env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
   enabled: true,
-  enableDevMode: env.NODE_ENV !== "production",
 })
 
 void gb.init({
