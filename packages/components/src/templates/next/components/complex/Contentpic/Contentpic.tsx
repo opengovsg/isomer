@@ -2,7 +2,9 @@ import type { VariantProps } from "tailwind-variants"
 
 import type { ContentpicProps as BaseContentpicProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { isExternalUrl } from "~/utils"
 import { Prose } from "../../native"
+import { ImageClient } from "../Image"
 
 const contentpicStyles = tv({
   slots: {
@@ -27,9 +29,21 @@ export const Contentpic = ({
   LinkComponent,
   site,
 }: ContentpicProps): JSX.Element => {
+  const imgSrc =
+    isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
+      ? imageSrc
+      : `${site.assetsBaseUrl}${imageSrc}`
+
   return (
     <div className={compoundStyles.container()}>
-      <img className={compoundStyles.image()} alt={imageAlt} src={imageSrc} />
+      <ImageClient
+        src={imgSrc}
+        alt={imageAlt || ""}
+        width="100%"
+        className={compoundStyles.image()}
+        assetsBaseUrl={site.assetsBaseUrl}
+      />
+
       <div className={compoundStyles.content()}>
         <Prose {...content} LinkComponent={LinkComponent} site={site} />
       </div>

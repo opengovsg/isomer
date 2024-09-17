@@ -17,9 +17,10 @@ import { ITEMS_PER_PAGE, useCollection } from "./useCollection"
 
 interface CollectionClientProps {
   page: CollectionPageSchemaType["page"]
-  LinkComponent: CollectionPageSchemaType["LinkComponent"]
   items: CollectionCardProps[]
   breadcrumb: BreadcrumbProps
+  LinkComponent: CollectionPageSchemaType["LinkComponent"]
+  site: CollectionPageSchemaType["site"]
 }
 
 const createCollectionLayoutStyles = tv({
@@ -43,9 +44,10 @@ const compoundStyles = createCollectionLayoutStyles()
 
 const CollectionClient = ({
   page,
-  LinkComponent,
   items,
   breadcrumb,
+  LinkComponent,
+  site,
 }: CollectionClientProps) => {
   const {
     filters,
@@ -118,6 +120,7 @@ const CollectionClient = ({
               searchValue={searchValue}
               totalCount={totalCount}
               LinkComponent={LinkComponent}
+              site={site}
             />
           </div>
           {paginatedItems.length > 0 && (
