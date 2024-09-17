@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import { get } from "lodash"
 
 import { createCollectionSchema } from "~/schemas/collection"
 import { readFolderSchema } from "~/schemas/folder"
@@ -45,6 +46,15 @@ export const collectionRouter = router({
         })
         .returning(defaultCollectionSelect)
         .executeTakeFirstOrThrow()
+        .catch((err) => {
+          if (get(err, "code") === "23505") {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "A resource with the same permalink already exists",
+            })
+          }
+          throw err
+        })
     }),
   createCollectionPage: protectedProcedure
     .input(createCollectionPageSchema)
@@ -81,6 +91,15 @@ export const collectionRouter = router({
           })
           .returning("Resource.id")
           .executeTakeFirstOrThrow()
+          .catch((err) => {
+            if (get(err, "code") === "23505") {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
         return addedResource
       })
       return { pageId: resource.id }

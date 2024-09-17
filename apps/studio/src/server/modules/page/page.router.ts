@@ -2,8 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
-import { isEmpty } from "lodash"
-import isEqual from "lodash/isEqual"
+import { get, isEmpty, isEqual } from "lodash"
 import { z } from "zod"
 
 import {
@@ -225,29 +224,40 @@ export const pageRouter = router({
         // TODO: Validate whether folderId actually is a folder instead of a page
         // TODO: Validate whether siteId is a valid site
         // TODO: Validate user has write-access to the site
-        const resource = await db.transaction().execute(async (tx) => {
-          const blob = await tx
-            .insertInto("Blob")
-            .values({
-              content: newPage,
-            })
-            .returning("Blob.id")
-            .executeTakeFirstOrThrow()
+        const resource = await db
+          .transaction()
+          .execute(async (tx) => {
+            const blob = await tx
+              .insertInto("Blob")
+              .values({
+                content: newPage,
+              })
+              .returning("Blob.id")
+              .executeTakeFirstOrThrow()
 
-          const addedResource = await tx
-            .insertInto("Resource")
-            .values({
-              title,
-              permalink,
-              siteId,
-              parentId: folderId ? String(folderId) : undefined,
-              draftBlobId: blob.id,
-              type: ResourceType.Page,
-            })
-            .returning("Resource.id")
-            .executeTakeFirstOrThrow()
-          return addedResource
-        })
+            const addedResource = await tx
+              .insertInto("Resource")
+              .values({
+                title,
+                permalink,
+                siteId,
+                parentId: folderId ? String(folderId) : undefined,
+                draftBlobId: blob.id,
+                type: ResourceType.Page,
+              })
+              .returning("Resource.id")
+              .executeTakeFirstOrThrow()
+            return addedResource
+          })
+          .catch((err) => {
+            if (get(err, "code") === "23505") {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
         return { pageId: resource.id }
       },
     ),
@@ -312,6 +322,15 @@ export const pageRouter = router({
           "Resource.draftBlobId",
         ])
         .executeTakeFirstOrThrow()
+        .catch((err) => {
+          if (get(err, "code") === "23505") {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "A resource with the same permalink already exists",
+            })
+          }
+          throw err
+        })
     },
   ),
   getFullPermalink: protectedProcedure
