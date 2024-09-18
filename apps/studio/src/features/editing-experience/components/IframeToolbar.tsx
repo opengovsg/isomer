@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import {
   MenuButton,
   MenuItemOption,
@@ -15,12 +15,17 @@ import {
 } from "@opengovsg/design-system-react"
 import { RxDimensions } from "react-icons/rx"
 
-type ViewportOptions = "desktop" | "mobile" | "tablet" | "unset"
+export type ViewportOptions = "desktop" | "mobile" | "tablet" | "responsive"
 
-export const IframeToolbar = (): JSX.Element => {
-  const [selectedViewport, setSelectedViewport] =
-    useState<ViewportOptions>("unset")
+interface IframeToolbarProps {
+  selectedViewport: ViewportOptions
+  setSelectedViewport: (viewport: ViewportOptions) => void
+}
 
+export const IframeToolbar = ({
+  selectedViewport,
+  setSelectedViewport,
+}: IframeToolbarProps): JSX.Element => {
   const viewportLabel = useMemo(() => {
     switch (selectedViewport) {
       case "desktop":
@@ -47,7 +52,7 @@ export const IframeToolbar = (): JSX.Element => {
               size="xs"
               colorScheme="inverse"
               bg={
-                selectedViewport !== "unset"
+                selectedViewport !== "responsive"
                   ? "interaction.tinted.inverse.active"
                   : undefined
               }
@@ -67,8 +72,9 @@ export const IframeToolbar = (): JSX.Element => {
                   setSelectedViewport(nextValue as ViewportOptions)
                 }
               >
-                <MenuItemOption value="unset">Unset</MenuItemOption>
+                <MenuItemOption value="responsive">Responsive</MenuItemOption>
                 <MenuItemOption value="desktop">Desktop</MenuItemOption>
+                <MenuItemOption value="tablet">Tablet</MenuItemOption>
                 <MenuItemOption value="mobile">Mobile</MenuItemOption>
               </MenuOptionGroup>
             </Menu.List>

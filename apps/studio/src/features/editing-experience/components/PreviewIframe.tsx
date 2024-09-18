@@ -1,12 +1,15 @@
 import type { CSSProperties, PropsWithChildren } from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo } from "react"
 import { Flex } from "@chakra-ui/react"
 import Frame, { useFrame } from "react-frame-component"
+
+import type { ViewportOptions } from "./IframeToolbar"
 
 interface PreviewIframeProps extends PropsWithChildren {
   preventPointerEvents?: boolean
   keyForRerender?: string
   style?: CSSProperties
+  viewport?: ViewportOptions
 }
 
 export const PreviewIframe = ({
@@ -14,9 +17,8 @@ export const PreviewIframe = ({
   preventPointerEvents,
   keyForRerender,
   style,
+  viewport,
 }: PreviewIframeProps): JSX.Element => {
-  // TODO: Add toolbar for users to adjust the width of the iframe
-  const [width, _setWidth] = useState("100%")
   const extraProps = preventPointerEvents
     ? {
         initialContent: `<!DOCTYPE html><html><head></head><body><div id="frame-root" style="pointer-events: none;"></div></body></html>`,
@@ -24,19 +26,33 @@ export const PreviewIframe = ({
       }
     : {}
 
+  const viewportWidth = useMemo(() => {
+    if (!viewport) return "100%"
+    switch (viewport) {
+      case "desktop":
+        return "1440px"
+      case "tablet":
+        return "768px"
+      case "mobile":
+        return "480px"
+      default:
+        return "100%"
+    }
+  }, [viewport])
+
   return (
     <Flex
       bg="white"
       shadow="md"
       justify="center"
-      w={width}
+      w={viewportWidth}
       h="100%"
       borderRadius="8px"
       userSelect="none"
     >
       <Frame
         style={{
-          width,
+          width: viewportWidth,
           borderRadius: "8px",
         }}
         {...extraProps}

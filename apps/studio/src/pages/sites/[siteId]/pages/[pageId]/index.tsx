@@ -3,7 +3,6 @@ import { Grid, GridItem } from "@chakra-ui/react"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import EditPageDrawer from "~/features/editing-experience/components/EditPageDrawer"
 import { EditPagePreview } from "~/features/editing-experience/components/EditPagePreview"
-import { IframeToolbar } from "~/features/editing-experience/components/IframeToolbar"
 import { editPageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
@@ -58,7 +57,6 @@ const PageEditingView = () => {
         <EditPageDrawer />
       </GridItem>
       <GridItem colSpan={2}>
-        <IframeToolbar />
         <EditPagePreview />
       </GridItem>
     </Grid>
