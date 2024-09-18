@@ -30,7 +30,7 @@ export const EditPagePreview = (): JSX.Element => {
         pt="1rem"
         overflowX="auto"
         height="100%"
-        justify="center"
+        justify="flex-start"
       >
         <PreviewIframe style={themeCssVars} viewport={viewport}>
           <Preview
