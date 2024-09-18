@@ -1,20 +1,28 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { sitesHandlers } from "tests/msw/handlers/sites"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import DashboardPage from "~/pages/index"
 
-import LandingPage from "~/pages/index"
-
-const meta: Meta<typeof LandingPage> = {
-  title: "Pages/Landing Page",
-  component: LandingPage,
+const meta: Meta<typeof DashboardPage> = {
+  title: "Pages/Dashboard",
+  component: DashboardPage,
 }
 
 export default meta
-type Story = StoryObj<typeof LandingPage>
+type Story = StoryObj<typeof DashboardPage>
 
-export const Default: Story = {
-  name: "Landing Page",
+export const Dashboard: Story = {
   parameters: {
-    chromatic: withChromaticModes(["gsib", "mobile"]),
+    msw: {
+      handlers: [sitesHandlers.list.default()],
+    },
+  },
+}
+
+export const Loading: Story = {
+  parameters: {
+    msw: {
+      handlers: [sitesHandlers.list.loading()],
+    },
   },
 }
