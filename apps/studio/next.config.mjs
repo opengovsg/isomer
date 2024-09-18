@@ -23,7 +23,7 @@ const ContentSecurityPolicy = `
   img-src * data: blob:;
   frame-src 'self';
   object-src 'none';
-  script-src 'self' 'unsafe-eval';
+  script-src 'self' 'unsafe-eval' https://*.wogaa.sg;
   style-src 'self' https: 'unsafe-inline';
   connect-src
     'self'
@@ -32,8 +32,9 @@ const ContentSecurityPolicy = `
     https://*.browser-intake-datadoghq.com
     https://vitals.vercel-insights.com/v1/vitals
     https://*.amazonaws.com
+    https://*.wogaa.sg
     https://placehold.co
-    ${env.NODE_ENV === "production" ? "https://isomer-user-content.by.gov.sg" : "https://*.by.gov.sg"}
+    ${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}
     ;
   worker-src 'self' blob:;
   ${env.NODE_ENV === "production" ? "upgrade-insecure-requests" : ""}

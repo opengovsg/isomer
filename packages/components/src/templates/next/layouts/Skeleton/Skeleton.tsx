@@ -41,6 +41,7 @@ export const Skeleton = ({
         layout={layout}
         search={site.search}
         items={site.navBarItems}
+        site={site}
         LinkComponent={LinkComponent}
       />
 
