@@ -228,7 +228,6 @@ const meta: Meta<CollectionPageSchemaType> = {
       },
     },
     page: {
-      noIndex: false,
       title: "Publications and other press releases",
       description: "A Next.js starter for Isomer",
       permalink: "/publications",

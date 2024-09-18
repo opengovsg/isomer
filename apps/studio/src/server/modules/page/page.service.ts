@@ -12,7 +12,6 @@ export const createDefaultPage = ({
       const contentDefaultPage = {
         layout: "content",
         page: {
-          noIndex: false,
           contentPageHeader: {
             summary: "This is the page summary",
           },
@@ -27,7 +26,6 @@ export const createDefaultPage = ({
       const articleDefaultPage = {
         layout: "article",
         page: {
-          noIndex: false,
           date: format(new Date(), "dd-MM-yyyy"),
           category: "Feature Articles",
           articlePageHeader: {

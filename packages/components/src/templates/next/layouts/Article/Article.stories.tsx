@@ -95,7 +95,6 @@ export const Default: Story = {
       },
     },
     page: {
-      noIndex: false,
       title:
         "Singapore's Spectacular Citizens' Festival: a Celebration of Unity and Diversity",
       permalink:

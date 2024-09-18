@@ -25,7 +25,7 @@ const ISOMER_ADMINS = [
 const PAGE_BLOB: IsomerSchema = {
   version: "0.1.0",
   layout: "homepage",
-  page: { noIndex: false },
+  page: {},
   content: [
     {
       type: "hero",
