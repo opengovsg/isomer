@@ -187,11 +187,13 @@ export const Default: Story = {
         clientId: TEST_CLIENT_ID,
       },
     },
+    meta: {
+      description: "A Next.js starter for Isomer",
+    },
     page: {
       permalink: "/",
       lastModified: "2024-05-02T14:12:57.160Z",
       title: "Home page",
-      description: "A Next.js starter for Isomer",
     },
     content: [
       {

@@ -41,7 +41,10 @@ export const generateMetadata = async (
   }
   schema.page.permalink = "/404.html"
   schema.page.title = PAGE_TITLE
-  schema.page.description = PAGE_DESCRIPTION
+  schema.meta = {
+    ...schema.meta,
+    description: PAGE_DESCRIPTION,
+  }
   return getMetadata(schema)
 }
 
@@ -62,10 +65,12 @@ const NotFound = () => {
           footerItems: footer,
         }}
         layout="notfound"
-        page={{
+        meta={{
           noIndex: true,
-          title: PAGE_TITLE,
           description: PAGE_DESCRIPTION,
+        }}
+        page={{
+          title: PAGE_TITLE,
           permalink: "/404.html",
           lastModified: new Date().toISOString(),
         }}
