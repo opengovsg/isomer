@@ -18,16 +18,16 @@ import { RxDimensions } from "react-icons/rx"
 export type ViewportOptions = "desktop" | "mobile" | "tablet" | "responsive"
 
 interface IframeToolbarProps {
-  selectedViewport: ViewportOptions
-  setSelectedViewport: (viewport: ViewportOptions) => void
+  viewport: ViewportOptions
+  setViewport: (viewport: ViewportOptions) => void
 }
 
 export const IframeToolbar = ({
-  selectedViewport,
-  setSelectedViewport,
+  viewport,
+  setViewport,
 }: IframeToolbarProps): JSX.Element => {
   const viewportLabel = useMemo(() => {
-    switch (selectedViewport) {
+    switch (viewport) {
       case "desktop":
         return "(Desktop)"
       case "mobile":
@@ -37,7 +37,7 @@ export const IframeToolbar = ({
       default:
         return null
     }
-  }, [selectedViewport])
+  }, [viewport])
 
   return (
     <Toolbar size="xs" px="2rem">
@@ -52,7 +52,7 @@ export const IframeToolbar = ({
               size="xs"
               colorScheme="inverse"
               bg={
-                selectedViewport !== "responsive"
+                viewport !== "responsive"
                   ? "interaction.tinted.inverse.active"
                   : undefined
               }
@@ -65,11 +65,11 @@ export const IframeToolbar = ({
           <Portal>
             <Menu.List>
               <MenuOptionGroup
-                value={selectedViewport}
+                value={viewport}
                 title="Viewport"
                 type="radio"
                 onChange={(nextValue) =>
-                  setSelectedViewport(nextValue as ViewportOptions)
+                  setViewport(nextValue as ViewportOptions)
                 }
               >
                 <MenuItemOption value="responsive">Responsive</MenuItemOption>

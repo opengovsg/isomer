@@ -14,8 +14,7 @@ export const EditPagePreview = (): JSX.Element => {
     useEditorDrawerContext()
   const themeCssVars = useSiteThemeCssVars({ siteId })
 
-  const [selectedViewport, setSelectedViewport] =
-    useState<ViewportOptions>("responsive")
+  const [viewport, setViewport] = useState<ViewportOptions>("responsive")
 
   return (
     <Flex
@@ -24,10 +23,7 @@ export const EditPagePreview = (): JSX.Element => {
       height="100%"
       flexDirection="column"
     >
-      <IframeToolbar
-        selectedViewport={selectedViewport}
-        setSelectedViewport={setSelectedViewport}
-      />
+      <IframeToolbar viewport={viewport} setViewport={setViewport} />
       <Flex
         px="2rem"
         pb="2rem"
@@ -36,7 +32,7 @@ export const EditPagePreview = (): JSX.Element => {
         height="100%"
         justify="center"
       >
-        <PreviewIframe style={themeCssVars} viewport={selectedViewport}>
+        <PreviewIframe style={themeCssVars} viewport={viewport}>
           <Preview
             {...merge(previewPageState, { page: { title } })}
             siteId={siteId}
