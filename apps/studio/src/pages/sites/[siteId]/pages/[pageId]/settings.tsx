@@ -1,3 +1,4 @@
+import type { Static } from "@sinclair/typebox"
 import { useMemo } from "react"
 import {
   Box,
@@ -16,10 +17,15 @@ import {
   Input,
   useToast,
 } from "@opengovsg/design-system-react"
+import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
+import Ajv from "ajv"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
+import { z } from "zod"
 
+import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
+import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { generateResourceUrl } from "~/features/editing-experience/components/utils"
 import { editPageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -34,10 +40,11 @@ import { trpc } from "~/utils/trpc"
 
 const THREE_SECONDS_IN_MS = 3000
 const SUCCESS_TOAST_ID = "save-page-settings-success"
+const ajv = new Ajv({ strict: false, logger: false })
 
 const PageSettings = () => {
   const { pageId, siteId } = useQueryParse(editPageSchema)
-  const [{ type, title: originalTitle }] =
+  const [{ type, title: originalTitle, content }] =
     trpc.page.readPageAndBlob.useSuspenseQuery(
       {
         pageId,
@@ -54,6 +61,14 @@ const PageSettings = () => {
     { refetchOnWindowFocus: false },
   )
 
+  const { mutateAsync: updatePageBlob } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+    },
+  })
+  const pageMetaSchema = getLayoutMetadataSchema(content.layout)
+  const validateFn = ajv.compile<Static<typeof pageMetaSchema>>(pageMetaSchema)
+
   const {
     register,
     watch,
@@ -62,10 +77,13 @@ const PageSettings = () => {
     handleSubmit,
     formState: { isDirty, errors },
   } = useZodForm({
-    schema: pageSettingsSchema.omit({ pageId: true, siteId: true }),
+    schema: pageSettingsSchema.omit({ pageId: true, siteId: true }).extend({
+      meta: z.unknown(),
+    }),
     defaultValues: {
       title: originalTitle,
       permalink: permalinkTree[permalinkTree.length - 1] || "/",
+      meta: content.meta,
     },
   })
 
@@ -99,39 +117,48 @@ const PageSettings = () => {
   const toast = useToast({ duration: THREE_SECONDS_IN_MS, isClosable: true })
   const utils = trpc.useUtils()
 
-  const updatePageSettingsMutation = trpc.page.updateSettings.useMutation({
-    onSuccess: async () => {
-      // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
-      await utils.page.invalidate()
-      await utils.resource.invalidate()
-      await utils.folder.invalidate()
-      if (toast.isActive(SUCCESS_TOAST_ID)) {
-        toast.close(SUCCESS_TOAST_ID)
-      }
-      toast({
-        id: SUCCESS_TOAST_ID,
-        title: "Saved page settings",
-        description: "Publish this page for your changes to go live.",
-        status: "success",
-      })
-    },
-    onError: (error) => {
-      toast({
-        title: "Failed to save page settings",
-        description: error.message,
-        status: "error",
-      })
-      reset()
-    },
-  })
+  const { mutateAsync: updatePageSettings } =
+    trpc.page.updateSettings.useMutation({
+      onSuccess: async () => {
+        // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
+        await utils.page.invalidate()
+        await utils.resource.invalidate()
+        await utils.folder.invalidate()
+        if (toast.isActive(SUCCESS_TOAST_ID)) {
+          toast.close(SUCCESS_TOAST_ID)
+        }
+        toast({
+          id: SUCCESS_TOAST_ID,
+          title: "Saved page settings",
+          description: "Publish this page for your changes to go live.",
+          status: "success",
+        })
+      },
+      onError: (error) => {
+        toast({
+          title: "Failed to save page settings",
+          description: error.message,
+          status: "error",
+        })
+        reset()
+      },
+    })
 
-  const onSubmit = handleSubmit((values) => {
+  const onSubmit = handleSubmit(async ({ meta, ...rest }) => {
     if (isDirty) {
-      updatePageSettingsMutation.mutate(
-        { pageId, siteId, ...values },
-        {
-          onSuccess: () => reset(values),
-        },
+      await updatePageBlob({
+        pageId,
+        siteId,
+        content: JSON.stringify({
+          ...content,
+          meta,
+        }),
+      }).then(() =>
+        updatePageSettings({
+          pageId,
+          siteId,
+          ...rest,
+        }),
       )
     }
   })
@@ -214,6 +241,23 @@ const PageSettings = () => {
               </FormHelperText>
               <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
             </FormControl>
+
+            <Controller
+              control={control}
+              name="meta"
+              render={({ field: { onChange, value } }) => (
+                <Box w="100%">
+                  <ErrorProvider>
+                    <FormBuilder<Static<typeof pageMetaSchema>>
+                      schema={pageMetaSchema}
+                      validateFn={validateFn}
+                      data={value}
+                      handleChange={onChange}
+                    />
+                  </ErrorProvider>
+                </Box>
+              )}
+            />
           </VStack>
         </GridItem>
         <GridItem colSpan={1}></GridItem>
