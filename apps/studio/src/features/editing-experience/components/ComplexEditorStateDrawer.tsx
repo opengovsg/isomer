@@ -7,9 +7,9 @@ import Ajv from "ajv"
 import cloneDeep from "lodash/cloneDeep"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
-import set from "lodash/set"
 import { BiTrash } from "react-icons/bi"
 
+import type { ModifiedAsset } from "~/types/assets"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
@@ -21,6 +21,7 @@ import { DiscardChangesModal } from "./DiscardChangesModal"
 import { DrawerHeader } from "./Drawer/DrawerHeader"
 import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
+import { uploadModifiedAssets } from "./utils"
 
 const ajv = new Ajv({ strict: false, logger: false })
 
@@ -147,51 +148,19 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         return
       }
 
-      // Upload all new/modified images/files
-      const assetsToUpload = modifiedAssets.filter(
-        (asset) =>
-          !!asset.file && asset.file.name !== PLACEHOLDER_IMAGE_FILENAME,
-      )
-
-      // Delete the original assets for those that have been modified
-      // This is done by deleting the file key stored in the src attribute, as
-      // it would have been replaced by new file keys after uploading
-      const assetsToDelete = modifiedAssets
-        .map(({ src }) => src)
-        .reduce<string[]>((acc, curr) => {
-          if (curr !== undefined) {
-            acc.push(curr)
+      const isUploadingSuccessful = await uploadModifiedAssets({
+        block: newBlock,
+        modifiedAssets,
+        uploadAsset,
+        onSuccess: (block: IsomerComponent) => {
+          updatedBlocks[currActiveIdx] = block
+          newPageState = {
+            ...previewPageState,
+            content: updatedBlocks,
           }
-          return acc
-        }, [])
-
-      const isUploadingSuccessful = await Promise.allSettled(
-        assetsToUpload.map(({ path, file }) => {
-          if (!file) {
-            return
-          }
-
-          return uploadAsset({ file }).then((res) => {
-            set(newBlock, path, res.path)
-            return path
-          })
-        }),
-      ).then((results) => {
-        // Keep only failed uploads inside modifiedAssets so on subsequent
-        // save attempts, we retry uploading just the failed assets
-        const newModifiedAssets = modifiedAssets
-          .filter(
-            ({ file }) => !!file && file.name !== PLACEHOLDER_IMAGE_FILENAME,
-          )
-          .filter(({ path }) => {
-            return !results.some(
-              (result) =>
-                result.status === "fulfilled" && result.value === path,
-            )
-          })
-
-        if (newModifiedAssets.length > 0) {
-          const failedUploadsCount = newModifiedAssets.length
+        },
+        onError: (failedUploads: ModifiedAsset[]) => {
+          const failedUploadsCount = failedUploads.length
           const totalUploadsCount = modifiedAssets.length
 
           toast({
@@ -200,26 +169,30 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             status: "error",
           })
 
-          setModifiedAssets(newModifiedAssets)
-          return false
-        }
-
-        return true
+          // NOTE: Do not save page if there are errors uploading assets
+          setModifiedAssets(failedUploads)
+          setPreviewPageState(newPageState)
+        },
       })
 
       if (!isUploadingSuccessful) {
-        // NOTE: Do not save page if there are errors uploading assets
-        setPreviewPageState(newPageState)
         return
       }
 
-      deleteAssets({ fileKeys: assetsToDelete })
+      // Delete the original assets for those that have been modified
+      // This is done by deleting the file key stored in the src attribute, as
+      // it would have been replaced by new file keys after uploading
+      const assetsToDelete = modifiedAssets
+        .map(({ src }) => src?.slice(1))
+        .filter((src) => src !== PLACEHOLDER_IMAGE_FILENAME)
+        .reduce<string[]>((acc, curr) => {
+          if (curr !== undefined) {
+            acc.push(curr)
+          }
+          return acc
+        }, [])
 
-      updatedBlocks[currActiveIdx] = newBlock
-      newPageState = {
-        ...previewPageState,
-        content: updatedBlocks,
-      }
+      deleteAssets({ fileKeys: assetsToDelete })
     }
 
     savePage(
@@ -231,6 +204,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       {
         onSuccess: () => {
           setModifiedAssets([])
+          setPreviewPageState(newPageState)
           setSavedPageState(newPageState)
           setDrawerState({ state: "root" })
           setAddedBlockIndex(null)

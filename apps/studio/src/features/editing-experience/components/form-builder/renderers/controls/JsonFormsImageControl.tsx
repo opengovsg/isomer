@@ -80,7 +80,7 @@ export function JsonFormsImageControl({
         ? `https://${NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${url}`
         : url
       const file = await urlToFile(imageUrl, fileName || "", fileType)
-      setPendingAsset({ path, src: imageUrl, file })
+      setPendingAsset({ path, src: url, file })
     }
 
     if (!data) {
