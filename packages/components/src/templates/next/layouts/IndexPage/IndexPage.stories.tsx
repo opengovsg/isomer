@@ -112,11 +112,13 @@ export const WithSiderail: Story = {
         searchUrl: "/search",
       },
     },
+    meta: {
+      description: "A Next.js starter for Isomer",
+    },
     page: {
       permalink: "/parent/rationality",
       title: "Index page",
       lastModified: "2024-05-02T14:12:57.160Z",
-      description: "A Next.js starter for Isomer",
       contentPageHeader: {
         summary: "Pages in Index page",
       },
@@ -249,11 +251,13 @@ export const NoSiderail: Story = {
         searchUrl: "/search",
       },
     },
+    meta: {
+      description: "A Next.js starter for Isomer",
+    },
     page: {
       permalink: "/parent",
       title: "Index page",
       lastModified: "2024-05-02T14:12:57.160Z",
-      description: "A Next.js starter for Isomer",
       contentPageHeader: {
         summary: "Pages in Index page",
       },

@@ -1,18 +1,20 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type {
-  ArticlePageProps,
-  CollectionPageProps,
-  ContentPageProps,
-  FileRefProps,
-  HomePageProps,
-  LinkRefProps,
-  NotFoundPageProps,
-  SearchPageProps,
-} from "./page"
+import type { NotFoundPageMetaProps, SearchPageMetaProps } from "./meta"
 import type { IsomerSiteProps } from "./site"
-import type { LinkComponentType, ScriptComponentType } from "~/types"
+import type {
+  ArticlePagePageProps,
+  CollectionPagePageProps,
+  ContentPagePageProps,
+  FileRefPageProps,
+  HomePagePageProps,
+  LinkComponentType,
+  LinkRefPageProps,
+  NotFoundPagePageProps,
+  ScriptComponentType,
+  SearchPagePageProps,
+} from "~/types"
 import { IsomerComponentsSchemas } from "./components"
 import {
   ArticlePageMetaSchema,
@@ -21,6 +23,14 @@ import {
   FileRefMetaSchema,
   HomePageMetaSchema,
   LinkRefMetaSchema,
+} from "./meta"
+import {
+  ArticlePagePageSchema,
+  CollectionPagePageSchema,
+  ContentPagePageSchema,
+  FileRefPageSchema,
+  HomePagePageSchema,
+  LinkRefPageSchema,
 } from "./page"
 
 export const ISOMER_USABLE_PAGE_LAYOUTS = {
@@ -39,7 +49,7 @@ export const ISOMER_PAGE_LAYOUTS = {
   Search: "search",
 } as const
 
-const BasePageSchema = Type.Object({
+const BaseItemSchema = Type.Object({
   version: Type.String({
     description: "The version of the Isomer Next schema to use",
     default: "0.1.0",
@@ -51,7 +61,8 @@ export const ArticlePageSchema = Type.Object(
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Article, {
       default: ISOMER_PAGE_LAYOUTS.Article,
     }),
-    page: ArticlePageMetaSchema,
+    meta: Type.Optional(ArticlePageMetaSchema),
+    page: ArticlePagePageSchema,
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
     }),
@@ -68,7 +79,8 @@ export const CollectionPageSchema = Type.Object(
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Collection, {
       default: ISOMER_PAGE_LAYOUTS.Collection,
     }),
-    page: CollectionPageMetaSchema,
+    meta: Type.Optional(CollectionPageMetaSchema),
+    page: CollectionPagePageSchema,
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
       description:
@@ -90,7 +102,8 @@ export const ContentPageSchema = Type.Object(
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Content, {
       default: ISOMER_PAGE_LAYOUTS.Content,
     }),
-    page: ContentPageMetaSchema,
+    meta: Type.Optional(ContentPageMetaSchema),
+    page: ContentPagePageSchema,
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
     }),
@@ -106,7 +119,8 @@ export const HomePageSchema = Type.Object(
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Homepage, {
       default: ISOMER_PAGE_LAYOUTS.Homepage,
     }),
-    page: HomePageMetaSchema,
+    meta: Type.Optional(HomePageMetaSchema),
+    page: HomePagePageSchema,
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
     }),
@@ -122,7 +136,8 @@ export const IndexPageSchema = Type.Object(
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Index, {
       default: ISOMER_PAGE_LAYOUTS.Index,
     }),
-    page: ContentPageMetaSchema,
+    meta: Type.Optional(ContentPageMetaSchema),
+    page: ContentPagePageSchema,
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
     }),
@@ -139,7 +154,8 @@ export const FileRefSchema = Type.Object(
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.File, {
       default: ISOMER_PAGE_LAYOUTS.File,
     }),
-    page: FileRefMetaSchema,
+    meta: Type.Optional(FileRefMetaSchema),
+    page: FileRefPageSchema,
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
       description:
@@ -161,7 +177,8 @@ export const LinkRefSchema = Type.Object(
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Link, {
       default: ISOMER_PAGE_LAYOUTS.Link,
     }),
-    page: LinkRefMetaSchema,
+    meta: Type.Optional(LinkRefMetaSchema),
+    page: LinkRefPageSchema,
     content: Type.Array(IsomerComponentsSchemas, {
       title: "Page content",
       description:
@@ -179,7 +196,7 @@ export const LinkRefSchema = Type.Object(
 )
 
 export const IsomerPageSchema = Type.Intersect([
-  BasePageSchema,
+  BaseItemSchema,
   Type.Union([
     ArticlePageSchema,
     CollectionPageSchema,
@@ -193,6 +210,8 @@ export const IsomerPageSchema = Type.Intersect([
 
 export type IsomerSchema = Static<typeof IsomerPageSchema>
 
+// These props are required by the render engine, but are not enforced by the
+// JSON schema, as the data should be provided by the template directly
 interface BasePageAdditionalProps {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
@@ -201,42 +220,44 @@ interface BasePageAdditionalProps {
 
 export interface NotFoundPageSchemaType extends BasePageAdditionalProps {
   layout: typeof ISOMER_PAGE_LAYOUTS.NotFound
-  page: NotFoundPageProps
+  meta?: NotFoundPageMetaProps
+  page: NotFoundPagePageProps
 }
 
 export interface SearchPageSchemaType extends BasePageAdditionalProps {
   layout: typeof ISOMER_PAGE_LAYOUTS.Search
-  page: SearchPageProps
+  meta?: SearchPageMetaProps
+  page: SearchPagePageProps
 }
 
 export type ArticlePageSchemaType = Static<typeof ArticlePageSchema> &
   BasePageAdditionalProps & {
-    page: ArticlePageProps
+    page: ArticlePagePageProps
   }
 export type CollectionPageSchemaType = Static<typeof CollectionPageSchema> &
   BasePageAdditionalProps & {
-    page: CollectionPageProps
+    page: CollectionPagePageProps
   }
 export type ContentPageSchemaType = Static<typeof ContentPageSchema> &
   BasePageAdditionalProps & {
-    page: ContentPageProps
+    page: ContentPagePageProps
   }
 export type HomePageSchemaType = Static<typeof HomePageSchema> &
   BasePageAdditionalProps & {
-    page: HomePageProps
+    page: HomePagePageProps
   }
 
 export type IndexPageSchemaType = Static<typeof IndexPageSchema> &
   BasePageAdditionalProps & {
-    page: ContentPageProps
+    page: ContentPagePageProps
   }
 export type FileRefSchemaType = Static<typeof FileRefSchema> &
   BasePageAdditionalProps & {
-    page: FileRefProps
+    page: FileRefPageProps
   }
 export type LinkRefSchemaType = Static<typeof LinkRefSchema> &
   BasePageAdditionalProps & {
-    page: LinkRefProps
+    page: LinkRefPageProps
   }
 
 export type IsomerPageSchemaType =

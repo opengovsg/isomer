@@ -1,3 +1,7 @@
+import type { TSchema } from "@sinclair/typebox"
+import { Type } from "@sinclair/typebox"
+
+import type { IsomerComponentTypes } from "~/types"
 import {
   AccordionSchema,
   CalloutSchema,
@@ -41,4 +45,25 @@ export const IsomerNativeComponentsMap = {
   paragraph: ParagraphSchema,
   table: TableSchema,
   unorderedList: UnorderedListSchema,
+}
+
+export const componentSchemaDefinitions = {
+  components: {
+    complex: IsomerComplexComponentsMap,
+    native: IsomerNativeComponentsMap,
+  },
+}
+
+export const getComponentSchema = (
+  component: IsomerComponentTypes,
+): TSchema => {
+  const componentSchema =
+    component === "prose"
+      ? Type.Ref(IsomerNativeComponentsMap.prose)
+      : IsomerComplexComponentsMap[component]
+
+  return {
+    ...componentSchema,
+    ...componentSchemaDefinitions,
+  }
 }

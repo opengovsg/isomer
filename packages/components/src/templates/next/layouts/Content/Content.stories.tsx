@@ -336,12 +336,14 @@ export const Default: Story = {
         content: [{ type: "text", text: "This is a short notification" }],
       },
     },
+    meta: {
+      description: "A Next.js starter for Isomer",
+    },
     page: {
       permalink: "/parent/rationality",
       lastModified: "2024-05-02T14:12:57.160Z",
       title:
         "Irrationality this should have a long long long long long long long title that wraps to the max width of the content header, and its' breadcrumb truncates, but ideally should not be this long",
-      description: "A Next.js starter for Isomer",
       contentPageHeader: {
         summary:
           "Steven Pinker's exploration of rationality delves into the intricacies of human cognition, shedding light on the mechanisms behind our decision-making processes. Through empirical research and insightful analysis, Pinker illuminates the rationality that underpins human behavior, challenging conventional wisdom and offering new perspectives on the rational mind.",
@@ -1504,11 +1506,13 @@ export const NoTable: Story = {
       // TODO: Replace this with a more stable URL
       assetsBaseUrl: "https://cms.isomer.gov.sg",
     },
+    meta: {
+      description: "A Next.js starter for Isomer",
+    },
     page: {
       permalink: "/parent/rationality",
       title: "Irrationality",
       lastModified: "2024-05-02T14:12:57.160Z",
-      description: "A Next.js starter for Isomer",
       contentPageHeader: {
         summary:
           "Steven Pinker's exploration of rationality delves into the intricacies of human cognition, shedding light on the mechanisms behind our decision-making processes. Through empirical research and insightful analysis, Pinker illuminates the rationality that underpins human behavior, challenging conventional wisdom and offering new perspectives on the rational mind.",
@@ -1914,11 +1918,13 @@ export const SmallTable: Story = {
         searchUrl: "/search",
       },
     },
+    meta: {
+      description: "A Next.js starter for Isomer",
+    },
     page: {
       permalink: "/parent/rationality",
       title: "Irrationality",
       lastModified: "2024-05-02T14:12:57.160Z",
-      description: "A Next.js starter for Isomer",
       contentPageHeader: {
         summary:
           "Steven Pinker's exploration of rationality delves into the intricacies of human cognition, shedding light on the mechanisms behind our decision-making processes. Through empirical research and insightful analysis, Pinker illuminates the rationality that underpins human behavior, challenging conventional wisdom and offering new perspectives on the rational mind.",
@@ -2492,11 +2498,13 @@ export const FirstLevelPage: Story = {
         searchUrl: "/search",
       },
     },
+    meta: {
+      description: "A Next.js starter for Isomer",
+    },
     page: {
       permalink: "/content",
       title: "Content page",
       lastModified: "2024-05-02T14:12:57.160Z",
-      description: "A Next.js starter for Isomer",
       contentPageHeader: {
         summary:
           "Steven Pinker's exploration of rationality delves into the intricacies of human cognition, shedding light on the mechanisms behind our decision-making processes. Through empirical research and insightful analysis, Pinker illuminates the rationality that underpins human behavior, challenging conventional wisdom and offering new perspectives on the rational mind.",

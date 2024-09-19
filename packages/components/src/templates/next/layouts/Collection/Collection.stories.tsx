@@ -227,9 +227,11 @@ const meta: Meta<CollectionPageSchemaType> = {
         content: [{ type: "text", text: "This is a short notification" }],
       },
     },
+    meta: {
+      description: "A Next.js starter for Isomer",
+    },
     page: {
       title: "Publications and other press releases",
-      description: "A Next.js starter for Isomer",
       permalink: "/publications",
       lastModified: "2024-05-02T14:12:57.160Z",
       subtitle:
