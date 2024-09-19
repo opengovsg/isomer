@@ -17,6 +17,7 @@ import {
   FormLabel,
   Input,
   ModalCloseButton,
+  Textarea,
 } from "@opengovsg/design-system-react"
 import { z } from "zod"
 
@@ -85,7 +86,7 @@ export const TableSettingsModal = ({
               </FormHelperText>
             </FormLabel>
 
-            <Input
+            <Textarea
               placeholder="This is the caption for your table"
               {...register("caption")}
             />

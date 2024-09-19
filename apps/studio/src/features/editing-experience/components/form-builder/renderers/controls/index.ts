@@ -39,6 +39,10 @@ export {
   jsonFormsLinkControlTester,
 } from "./JsonFormsLinkControl"
 export {
+  default as JsonFormsTextAreaControl,
+  jsonFormsTextAreaControlTester,
+} from "./JsonFormsTextAreaControl"
+export {
   default as JsonFormsTextControl,
   jsonFormsTextControlTester,
 } from "./JsonFormsTextControl"

@@ -9,6 +9,8 @@ export const ContentPageHeaderSchema = Type.Object(
     summary: Type.String({
       title: "Content page summary",
       description: "The summary of the page's content",
+      maxLength: 300,
+      format: "textarea",
     }),
     buttonLabel: Type.Optional(
       Type.String({

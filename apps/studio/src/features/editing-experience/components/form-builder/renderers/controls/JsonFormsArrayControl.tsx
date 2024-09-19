@@ -16,6 +16,7 @@ import {
   findUISchema,
   isObjectArrayControl,
   isPrimitiveArrayControl,
+  or,
   rankWith,
   Resolve,
 } from "@jsonforms/core"
@@ -38,9 +39,7 @@ import DraggableDrawerButton from "./DraggableDrawerButton"
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
-  (uischema, schema, context) =>
-    isObjectArrayControl(uischema, schema, context) ||
-    isPrimitiveArrayControl(uischema, schema, context),
+  or(isObjectArrayControl, isPrimitiveArrayControl),
 )
 
 interface ComplexEditorNestedDrawerProps {
