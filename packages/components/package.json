@@ -98,7 +98,7 @@
     "@govtechsg/sgds": "^2.3.3",
     "@govtechsg/sgds-react": "^2.5.1",
     "@headlessui/react": "^2.1.2",
-    "@sinclair/typebox": "^0.32.34",
+    "@sinclair/typebox": "^0.33.12",
     "interweave": "^13.1.0",
     "interweave-ssr": "^2.0.0",
     "isomorphic-dompurify": "^2.12.0",
