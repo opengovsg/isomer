@@ -9,11 +9,11 @@ type UploadAssetMutationParams = Pick<
   "siteId"
 >
 
-interface UploadAssetMutationInput {
+export interface UploadAssetMutationInput {
   file: File
 }
 
-interface UploadAssetMutationOutput {
+export interface UploadAssetMutationOutput {
   path: string
 }
 
