@@ -5,31 +5,14 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  pull_request:
+  release:
     types:
-      - labeled
+      - released
 
 # NOTE: This is actually using our federated isomer-production account
 jobs:
-  comment-on-pr:
-    name: Comment on PR
-    if: startsWith(github.event.label.name, 'deploy-production')
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    steps:
-      - uses: mshick/add-pr-comment@v2
-        with:
-          allow-repeats: true
-          message: |
-            🚀 Deployment through Github Actions has been scheduled!
-
-            Please check back in ~10 minutes ☕️.
-
   deploy_production:
     name: Deploy app to production
-    needs:
-      - comment-on-pr
     uses: ./.github/workflows/aws_deploy.yml
     # NOTE: deploy in `production` env to set env specific secrets
     with:
