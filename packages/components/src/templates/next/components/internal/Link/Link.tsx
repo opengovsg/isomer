@@ -77,7 +77,7 @@ export const BaseLink = forwardRef<HTMLAnchorElement, BaseLinkProps>(
       },
     })
 
-    const ElementToRender = props.href ? props.LinkComponent ?? "a" : "span"
+    const ElementToRender = props.href ? (props.LinkComponent ?? "a") : "span"
 
     return (
       <ElementToRender
