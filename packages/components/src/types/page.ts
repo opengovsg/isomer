@@ -11,6 +11,7 @@ const BaseCollectionItemPageSchema = Type.Object({
   }),
   date: Type.String({
     title: "Date of the actual item",
+    format: "date",
   }),
   image: Type.Optional(
     Type.Object({

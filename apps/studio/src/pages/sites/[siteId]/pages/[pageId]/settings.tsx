@@ -60,12 +60,6 @@ const PageSettings = () => {
     },
     { refetchOnWindowFocus: false },
   )
-
-  const { mutateAsync: updatePageBlob } = trpc.page.updatePageBlob.useMutation({
-    onSuccess: async () => {
-      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-    },
-  })
   const pageMetaSchema = getLayoutMetadataSchema(content.layout)
   const validateFn = ajv.compile<Static<typeof pageMetaSchema>>(pageMetaSchema)
 
@@ -117,48 +111,44 @@ const PageSettings = () => {
   const toast = useToast({ duration: THREE_SECONDS_IN_MS, isClosable: true })
   const utils = trpc.useUtils()
 
-  const { mutateAsync: updatePageSettings } =
-    trpc.page.updateSettings.useMutation({
-      onSuccess: async () => {
-        // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
-        await utils.page.invalidate()
-        await utils.resource.invalidate()
-        await utils.folder.invalidate()
-        if (toast.isActive(SUCCESS_TOAST_ID)) {
-          toast.close(SUCCESS_TOAST_ID)
-        }
-        toast({
-          id: SUCCESS_TOAST_ID,
-          title: "Saved page settings",
-          description: "Publish this page for your changes to go live.",
-          status: "success",
-        })
-      },
-      onError: (error) => {
-        toast({
-          title: "Failed to save page settings",
-          description: error.message,
-          status: "error",
-        })
-        reset()
-      },
-    })
+  const { mutate: updatePageSettings } = trpc.page.updateSettings.useMutation({
+    onSuccess: async () => {
+      // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
+      await utils.page.invalidate()
+      await utils.resource.invalidate()
+      await utils.folder.invalidate()
+      if (toast.isActive(SUCCESS_TOAST_ID)) {
+        toast.close(SUCCESS_TOAST_ID)
+      }
+      toast({
+        id: SUCCESS_TOAST_ID,
+        title: "Saved page settings",
+        description: "Publish this page for your changes to go live.",
+        status: "success",
+      })
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to save page settings",
+        description: error.message,
+        status: "error",
+      })
+      reset()
+    },
+  })
 
-  const onSubmit = handleSubmit(async ({ meta, ...rest }) => {
+  const onSubmit = handleSubmit(({ meta, ...rest }) => {
     if (isDirty) {
-      await updatePageBlob({
-        pageId,
-        siteId,
-        content: JSON.stringify({
-          ...content,
-          meta,
-        }),
-      }).then(() =>
-        updatePageSettings({
+      updatePageSettings(
+        {
           pageId,
           siteId,
+          meta: JSON.stringify(meta),
           ...rest,
-        }),
+        },
+        {
+          onSuccess: () => reset({ meta, ...rest }),
+        },
       )
     }
   })
