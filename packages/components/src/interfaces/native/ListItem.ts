@@ -1,21 +1,12 @@
 import type { Static, TSchema } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { OrderedListProps } from "./OrderedList"
+import type { BaseOrderedListProps } from "./OrderedList"
 import type { ParagraphProps } from "./Paragraph"
-import type { UnorderedListProps } from "./UnorderedList"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { BaseUnorderedListProps } from "./UnorderedList"
+import type { IsomerSiteProps, IsTypeEqual, LinkComponentType } from "~/types"
 import { orderedListSchemaBuilder, unorderedListSchemaBuilder } from "~/utils"
 import { ParagraphSchema } from "./Paragraph"
-
-interface ListItem {
-  type: "listItem"
-  content: (
-    | Omit<ParagraphProps, "site">
-    | Omit<OrderedListProps, "site">
-    | Omit<UnorderedListProps, "site">
-  )[]
-}
 
 export const listItemSchemaBuilder = <T extends TSchema, U extends TSchema>(
   orderedListSchema: T,
@@ -47,16 +38,28 @@ export const listItemSchemaBuilder = <T extends TSchema, U extends TSchema>(
 // NOTE: The ListItem interface and the underlying ListItemSchema needs to be
 // in sync with each other. Unsafe is used here to bypass errors in TypeScript
 // where the type instantiation is too deep.
-export const ListItemSchema = Type.Unsafe<ListItem>(
-  Type.Recursive((listItemSchema) =>
-    listItemSchemaBuilder(
-      orderedListSchemaBuilder(listItemSchema),
-      unorderedListSchemaBuilder(listItemSchema),
-    ),
+export const ListItemSchema = Type.Recursive((listItemSchema) =>
+  listItemSchemaBuilder(
+    orderedListSchemaBuilder(listItemSchema),
+    unorderedListSchemaBuilder(listItemSchema),
   ),
 )
 
-export type ListItemProps = Static<typeof ListItemSchema> & {
+export interface BaseListItemProps {
+  type: "listItem"
+  content: (
+    | Omit<ParagraphProps, "site">
+    | BaseOrderedListProps
+    | BaseUnorderedListProps
+  )[]
+}
+
+type GeneratedListItemProps = Static<typeof ListItemSchema>
+type ListItemTypeResult = IsTypeEqual<BaseListItemProps, GeneratedListItemProps>
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const listItemTypeCheck: boolean = true satisfies ListItemTypeResult
+
+export type ListItemProps = any & {
   LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }
