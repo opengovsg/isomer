@@ -107,7 +107,7 @@ const ContentLayout = ({
   page,
   layout,
   content,
-  LinkComponent = "a",
+  LinkComponent,
   ScriptComponent,
 }: ContentPageSchemaType) => {
   const isParentPageRoot = page.permalink.split("/").length === 2
@@ -161,8 +161,9 @@ const ContentLayout = ({
           )}
           <div>
             {renderPageContent({
-              site,
               content: transformedContent,
+              layout,
+              site,
               LinkComponent,
             })}
           </div>

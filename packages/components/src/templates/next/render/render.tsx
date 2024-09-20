@@ -3,7 +3,7 @@ import type {
   IsomerPageSchemaType,
   IsomerSiteProps,
 } from "~/engine"
-import type { LinkComponentType } from "~/types"
+import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
 import {
   Accordion,
   Callout,
@@ -29,120 +29,60 @@ import {
 } from "../layouts"
 
 interface RenderComponentProps {
-  site: IsomerSiteProps
-  component: IsomerComponent
   elementKey?: number
+  component: IsomerComponent
+  layout: IsomerPageLayoutType
+  site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }
 
 export const renderComponent = ({
-  site,
-  component,
-  LinkComponent,
   elementKey,
+  component,
+  ...rest
 }: RenderComponentProps) => {
   switch (component.type) {
     case "accordion":
-      return (
-        <Accordion
-          key={elementKey}
-          {...component}
-          LinkComponent={LinkComponent}
-          site={site}
-        />
-      )
+      return <Accordion key={elementKey} {...component} {...rest} />
     case "callout":
-      return (
-        <Callout
-          key={elementKey}
-          {...component}
-          LinkComponent={LinkComponent}
-          site={site}
-        />
-      )
+      return <Callout key={elementKey} {...component} {...rest} />
     case "contentpic":
-      return (
-        <Contentpic
-          key={elementKey}
-          {...component}
-          LinkComponent={LinkComponent}
-          site={site}
-        />
-      )
+      return <Contentpic key={elementKey} {...component} {...rest} />
     case "hero":
-      return (
-        <Hero
-          key={elementKey}
-          {...component}
-          site={site}
-          LinkComponent={LinkComponent}
-        />
-      )
+      return <Hero key={elementKey} {...component} {...rest} />
     case "iframe":
-      return <Iframe key={elementKey} {...component} />
+      return <Iframe key={elementKey} {...component} {...rest} />
     case "image":
-      return (
-        <Image
-          key={elementKey}
-          {...component}
-          site={site}
-          LinkComponent={LinkComponent}
-        />
-      )
+      return <Image key={elementKey} {...component} {...rest} />
     case "infobar":
-      return (
-        <Infobar
-          key={elementKey}
-          {...component}
-          site={site}
-          LinkComponent={LinkComponent}
-        />
-      )
+      return <Infobar key={elementKey} {...component} {...rest} />
     case "infocards":
-      return (
-        <InfoCards
-          key={elementKey}
-          {...component}
-          site={site}
-          LinkComponent={LinkComponent}
-        />
-      )
+      return <InfoCards key={elementKey} {...component} {...rest} />
     case "infocols":
-      return (
-        <InfoCols
-          key={elementKey}
-          {...component}
-          site={site}
-          LinkComponent={LinkComponent}
-        />
-      )
+      return <InfoCols key={elementKey} {...component} {...rest} />
     case "infopic":
-      return (
-        <Infopic
-          key={elementKey}
-          {...component}
-          site={site}
-          LinkComponent={LinkComponent}
-        />
-      )
+      return <Infopic key={elementKey} {...component} {...rest} />
     case "keystatistics":
-      return <KeyStatistics key={elementKey} {...component} />
+      return <KeyStatistics key={elementKey} {...component} {...rest} />
     case "prose":
-      return (
-        <Prose
-          key={elementKey}
-          {...component}
-          LinkComponent={LinkComponent}
-          site={site}
-        />
-      )
+      return <Prose key={elementKey} {...component} {...rest} />
     default:
       const _: never = component
       return <></>
   }
 }
 
-export const renderLayout = (props: IsomerPageSchemaType) => {
+export const renderLayout = ({
+  LinkComponent = "a",
+  ScriptComponent = "script",
+  ...rest
+}: IsomerPageSchemaType) => {
+  const props = {
+    ...rest,
+    LinkComponent,
+    ScriptComponent,
+  }
+
   switch (props.layout) {
     case "article":
       return <ArticleLayout {...props} />

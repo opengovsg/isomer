@@ -1,7 +1,7 @@
 import type { LocalSearchProps } from "./LocalSearchInputBox"
 import type { SearchSGInputBoxProps } from "./SearchSGInputBox"
-import type { IsomerPageSchemaType } from "~/engine"
 import type {
+  IsomerPageLayoutType,
   IsomerSiteProps,
   LinkComponentType,
   ScriptComponentType,
@@ -17,7 +17,7 @@ export interface NavbarItem {
 export interface NavbarProps {
   logoUrl: string
   logoAlt: string
-  layout: IsomerPageSchemaType["layout"]
+  layout: IsomerPageLayoutType
   search?: LocalSearchProps | SearchSGInputBoxProps
   items: NavbarItem[]
   site: IsomerSiteProps
