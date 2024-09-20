@@ -7,6 +7,8 @@ const BaseItemMetaSchema = Type.Object({
       title: "Meta description",
       description:
         "This is a description that appears on search engine results.",
+      format: "textarea",
+      maxLength: 160,
     }),
   ),
 })
