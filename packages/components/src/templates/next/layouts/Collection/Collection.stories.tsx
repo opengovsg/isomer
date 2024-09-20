@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import { userEvent } from "@storybook/test"
 import flatten from "lodash/flatten"
 import merge from "lodash/merge"
 import times from "lodash/times"
@@ -247,9 +247,8 @@ export const Default: Story = {
 }
 
 export const WithFilters: Story = {
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
-    await userEvent.click(screen.getByText(/2023 \(10\)/i))
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByText(/2023 \(10\)/i))
   },
 }
 
@@ -419,9 +418,8 @@ export const EmptyCollection: Story = {
 
 export const SearchingEmptyCollection: Story = {
   args: EmptyCollection.args,
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
-    const searchElem = screen.getByRole("searchbox", {
+  play: async ({ canvas }) => {
+    const searchElem = canvas.getByRole("searchbox", {
       name: /search for publications and other press releases/i,
     })
     await userEvent.type(searchElem, "anything")
@@ -429,9 +427,8 @@ export const SearchingEmptyCollection: Story = {
 }
 
 export const NoResults: Story = {
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
-    const searchElem = screen.getByRole("searchbox", {
+  play: async ({ canvas }) => {
+    const searchElem = canvas.getByRole("searchbox", {
       name: /search for publications and other press releases/i,
     })
     await userEvent.type(searchElem, "some whacky search term")
@@ -466,9 +463,8 @@ export const FilteredEmptyResults: Story = {
       },
     },
   }),
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
-    await userEvent.click(screen.getByText(/2025 \(1\)/i))
-    await userEvent.click(screen.getByText(/Link \(10\)/i))
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByText(/2025 \(1\)/i))
+    await userEvent.click(canvas.getByText(/Link \(10\)/i))
   },
 }

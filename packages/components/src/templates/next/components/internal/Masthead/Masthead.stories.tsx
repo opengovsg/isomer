@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import { userEvent } from "@storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -34,10 +34,9 @@ export const Staging: Story = {
 }
 
 export const Expanded: Story = {
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
+  play: async ({ canvas }) => {
     await userEvent.click(
-      screen.getByRole("button", { name: /how to identify/i }),
+      canvas.getByRole("button", { name: /how to identify/i }),
     )
   },
 }

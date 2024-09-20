@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, waitFor, within } from "@storybook/test"
+import { userEvent, waitFor } from "@storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -51,9 +51,7 @@ type Story = StoryObj<typeof EditPage>
 export const Default: Story = {}
 
 export const AddBlock: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
+  play: async ({ canvas }) => {
     await waitFor(async () => {
       await userEvent.click(canvas.getByRole("button", { name: /add block/i }))
     })
@@ -61,9 +59,7 @@ export const AddBlock: Story = {
 }
 
 export const EditHero: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
+  play: async ({ canvas }) => {
     await waitFor(async () => {
       await userEvent.click(
         canvas.getByRole("button", { name: /hero banner/i }),
@@ -87,9 +83,7 @@ export const PublishedState: Story = {
 }
 
 export const NestedState: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
+  play: async ({ canvas }) => {
     await waitFor(async () => {
       await userEvent.click(
         canvas.getByRole("button", { name: /keystatistics/i }),
@@ -104,10 +98,7 @@ export const NestedState: Story = {
 export const ErrorNestedState: Story = {
   play: async (context) => {
     await NestedState.play?.(context)
-
-    const { canvasElement } = context
-    const canvas = within(canvasElement)
-
+    const { canvas } = context
     await waitFor(async () => {
       await userEvent.clear(
         canvas.getByRole("textbox", { name: /description/i }),

@@ -144,11 +144,10 @@ export const MobileFilterButton: Story = {
 export const MobileFilterDrawer: Story = {
   parameters: MobileFilterButton.parameters,
   args: MobileFilterButton.args,
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
+  play: async ({ canvas }) => {
     await waitFor(async () => {
       await userEvent.click(
-        screen.getByRole("button", { name: /filter results/i }),
+        canvas.getByRole("button", { name: /filter results/i }),
       )
     })
   },
@@ -161,11 +160,11 @@ export const MobileFilterDrawerClearAll: Story = {
     const { canvasElement } = context
     // Required since drawer is a portal
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const screen = within(canvasElement.parentElement!)
+    const canvas = within(canvasElement.parentElement!)
 
     await MobileFilterDrawer.play?.(context)
     await userEvent.click(
-      screen.getByRole("button", { name: /clear all filters/i }),
+      canvas.getByRole("button", { name: /clear all filters/i }),
     )
   },
 }
