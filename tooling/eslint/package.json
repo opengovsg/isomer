@@ -31,6 +31,6 @@
   },
   "prettier": "@isomer/prettier-config",
   "devDependencies": {
-    "@types/eslint__js": "^8.42.3"
+    "@types/eslint": "^9.6.1"
   }
 }
