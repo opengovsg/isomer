@@ -59,7 +59,7 @@ function BaseBreadcrumb({
   )
 }
 
-const Breadcrumb = ({ links, LinkComponent = "a" }: BreadcrumbProps) => {
+const Breadcrumb = ({ links, LinkComponent }: BreadcrumbProps) => {
   return (
     <BaseBreadcrumbs>
       {links.map(({ title, url }, index) => (

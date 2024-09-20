@@ -51,7 +51,7 @@ export const Siderail = ({
   parentTitle,
   parentUrl,
   pages,
-  LinkComponent = "a",
+  LinkComponent,
 }: SiderailProps): JSX.Element => {
   const siderailItems = useMemo(() => generateSiderailItems(pages), [pages])
 

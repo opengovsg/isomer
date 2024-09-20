@@ -1,6 +1,6 @@
 import type { TSchema } from "@sinclair/typebox"
 
-import type { IsomerSchema } from "~/types"
+import type { IsomerPageLayoutType } from "~/types"
 import {
   ArticlePageMetaSchema,
   CollectionPageMetaSchema,
@@ -8,6 +8,8 @@ import {
   FileRefMetaSchema,
   HomePageMetaSchema,
   LinkRefMetaSchema,
+  NotFoundPageMetaSchema,
+  SearchPageMetaSchema,
 } from "~/types"
 
 const LAYOUT_METADATA_MAP = {
@@ -15,13 +17,15 @@ const LAYOUT_METADATA_MAP = {
   content: ContentPageMetaSchema,
   homepage: HomePageMetaSchema,
   index: ContentPageMetaSchema,
+  notfound: NotFoundPageMetaSchema,
+  search: SearchPageMetaSchema,
   link: LinkRefMetaSchema,
   collection: CollectionPageMetaSchema,
   file: FileRefMetaSchema,
 }
 
 export const getLayoutMetadataSchema = (
-  layout: IsomerSchema["layout"],
+  layout: IsomerPageLayoutType,
 ): TSchema => {
   return LAYOUT_METADATA_MAP[layout]
 }

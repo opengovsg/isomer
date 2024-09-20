@@ -1,15 +1,22 @@
-import type { IsomerComponent, IsomerSiteProps } from "~/types"
+import type {
+  IsomerComponent,
+  IsomerPageLayoutType,
+  IsomerSiteProps,
+  LinkComponentType,
+} from "~/types"
 import { renderComponent } from "~/templates/next/render"
 
-export const renderPageContent = ({
-  site,
-  content,
-  LinkComponent,
-}: {
-  site: IsomerSiteProps
+interface RenderPageContentParams {
   content: IsomerComponent[]
-  LinkComponent: any
-}) => {
+  layout: IsomerPageLayoutType
+  site: IsomerSiteProps
+  LinkComponent: LinkComponentType
+}
+
+export const renderPageContent = ({
+  content,
+  ...rest
+}: RenderPageContentParams) => {
   let isInfopicTextOnRight = false
   return content.map((component, index) => {
     if (component.type === "infopic") {
@@ -19,17 +26,16 @@ export const renderPageContent = ({
         isTextOnRight: isInfopicTextOnRight,
       }
       return renderComponent({
-        site,
-        component: formattedComponent,
         elementKey: index,
-        LinkComponent,
+        component: formattedComponent,
+        ...rest,
       })
     }
+
     return renderComponent({
-      site,
-      component,
       elementKey: index,
-      LinkComponent,
+      component,
+      ...rest,
     })
   })
 }

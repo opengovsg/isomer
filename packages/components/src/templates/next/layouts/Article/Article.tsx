@@ -39,6 +39,7 @@ const ArticleLayout = ({
           <div className="w-full overflow-x-auto lg:max-w-[660px]">
             {renderPageContent({
               site,
+              layout,
               content,
               LinkComponent,
             })}

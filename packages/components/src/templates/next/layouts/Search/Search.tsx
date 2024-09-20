@@ -6,7 +6,7 @@ const SearchLayout = ({
   site,
   page,
   layout,
-  LinkComponent = "a",
+  LinkComponent,
   ScriptComponent = "script",
 }: SearchPageSchemaType) => {
   const clientId =

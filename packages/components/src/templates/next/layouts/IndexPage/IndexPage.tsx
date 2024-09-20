@@ -35,7 +35,7 @@ const IndexPageLayout = ({
   page,
   layout,
   content,
-  LinkComponent = "a",
+  LinkComponent,
   ScriptComponent,
 }: IndexPageSchemaType) => {
   const isParentPageRoot = page.permalink.split("/").length === 2
@@ -76,8 +76,9 @@ const IndexPageLayout = ({
           className={compoundStyles.content({ isSideRailPresent: !!sideRail })}
         >
           {renderPageContent({
-            site,
             content,
+            layout,
+            site,
             LinkComponent,
           })}
         </div>

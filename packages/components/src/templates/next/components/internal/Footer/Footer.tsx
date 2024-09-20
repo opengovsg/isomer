@@ -57,7 +57,7 @@ const footerItemLinkStyle = tv({
 })
 
 const FooterItem = ({
-  LinkComponent = "a",
+  LinkComponent,
   title,
   url,
 }: FooterItemType & Pick<FooterProps, "LinkComponent">) => {

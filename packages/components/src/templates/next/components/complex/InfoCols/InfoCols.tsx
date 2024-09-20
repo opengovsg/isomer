@@ -76,7 +76,7 @@ const InfoCols = ({
   subtitle,
   infoBoxes,
   site,
-  LinkComponent = "a",
+  LinkComponent,
 }: InfoColsProps) => {
   return (
     <section className="bg-white">

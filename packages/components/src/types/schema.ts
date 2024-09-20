@@ -270,3 +270,5 @@ export type IsomerPageSchemaType =
   | SearchPageSchemaType
   | FileRefSchemaType
   | LinkRefSchemaType
+
+export type IsomerPageLayoutType = IsomerPageSchemaType["layout"]

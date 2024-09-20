@@ -6,8 +6,8 @@ const NotFoundLayout = ({
   site,
   page,
   layout,
-  LinkComponent = "a",
-  ScriptComponent = "script",
+  LinkComponent,
+  ScriptComponent,
 }: NotFoundPageSchemaType) => {
   return (
     <Skeleton
@@ -23,7 +23,6 @@ const NotFoundLayout = ({
         className={`[&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10`}
       >
         {renderComponent({
-          site,
           component: {
             type: "infobar",
             title: "404: Page not found",
@@ -31,6 +30,8 @@ const NotFoundLayout = ({
             buttonLabel: "Go to homepage",
             buttonUrl: "/",
           },
+          layout,
+          site,
           LinkComponent,
         })}
       </div>

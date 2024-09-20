@@ -34,7 +34,7 @@ export const Navbar = ({
   search,
   items,
   site,
-  LinkComponent = "a",
+  LinkComponent,
 }: Omit<NavbarProps, "type">) => {
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
