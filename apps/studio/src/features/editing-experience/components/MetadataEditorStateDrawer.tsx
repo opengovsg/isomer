@@ -104,7 +104,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
         <ErrorProvider>
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
-            <FormBuilder<Static<typeof schema>>
+            <FormBuilder<Static<typeof metadataSchema>>
               schema={metadataSchema}
               validateFn={validateFn}
               data={previewPageState.page}

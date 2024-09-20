@@ -305,34 +305,66 @@ export const pageRouter = router({
       return addedVersionResult
     }),
 
-  updateSettings: protectedProcedure.input(pageSettingsSchema).mutation(
-    // TODO: save noIndex and meta to db
-    async ({ input: { pageId, siteId, title, permalink } }) => {
-      return db
-        .updateTable("Resource")
-        .where("Resource.id", "=", String(pageId))
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "in", ["Page", "CollectionPage"])
-        .set({ title, permalink })
-        .returning([
-          "Resource.id",
-          "Resource.type",
-          "Resource.title",
-          "Resource.permalink",
-          "Resource.draftBlobId",
-        ])
-        .executeTakeFirstOrThrow()
-        .catch((err) => {
-          if (get(err, "code") === "23505") {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "A resource with the same permalink already exists",
-            })
-          }
-          throw err
+  updateSettings: protectedProcedure
+    .input(pageSettingsSchema)
+    .mutation(async ({ input: { pageId, siteId, title, permalink, meta } }) => {
+      return db.transaction().execute(async (tx) => {
+        const fullPage = await getFullPageById(tx, {
+          resourceId: pageId,
+          siteId,
         })
-    },
-  ),
+
+        if (!fullPage?.content) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message:
+              "Unable to load content for the requested page, please contact Isomer Support",
+          })
+        }
+
+        const { meta: oldMeta, ...rest } = fullPage.content
+        const newMeta = JSON.parse(meta)
+
+        const newContent =
+          meta === "" ? { ...rest } : { ...rest, meta: newMeta }
+
+        await updateBlobById(tx, {
+          pageId,
+          content: newContent,
+          siteId,
+        })
+
+        const updatedResource = await tx
+          .updateTable("Resource")
+          .where("Resource.id", "=", String(pageId))
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "in", ["Page", "CollectionPage"])
+          .set({ title, permalink })
+          .returning([
+            "Resource.id",
+            "Resource.type",
+            "Resource.title",
+            "Resource.permalink",
+            "Resource.draftBlobId",
+          ])
+          .executeTakeFirstOrThrow()
+          .catch((err) => {
+            if (get(err, "code") === "23505") {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
+
+        return {
+          ...updatedResource,
+          meta: newMeta,
+        }
+      })
+    }),
+
   getFullPermalink: protectedProcedure
     .input(basePageSchema)
     .query(async ({ input }) => {
