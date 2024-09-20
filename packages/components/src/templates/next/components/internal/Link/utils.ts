@@ -74,7 +74,7 @@ export function useRenderProps<T>(props: RenderPropsHookOptions<T>) {
     return {
       className: computedClassName ?? defaultClassName,
       style:
-        computedStyle ?? defaultStyle
+        (computedStyle ?? defaultStyle)
           ? { ...defaultStyle, ...computedStyle }
           : undefined,
       children: computedChildren ?? defaultChildren,

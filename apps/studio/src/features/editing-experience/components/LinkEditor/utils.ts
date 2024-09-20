@@ -9,7 +9,7 @@ export const getLinkHrefType = (href: string | undefined) => {
   }
 
   // Internal links are in the format [resource:$siteId:$pageId]
-  const referenceLinkMatch = href.match(/\[resource:(\d+):(\d+)\]/)
+  const referenceLinkMatch = /\[resource:(\d+):(\d+)\]/.exec(href)
   if (referenceLinkMatch && referenceLinkMatch.length === 3) {
     return "page"
   }

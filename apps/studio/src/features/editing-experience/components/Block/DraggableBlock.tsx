@@ -28,7 +28,7 @@ export const DraggableBlock = ({
     // this gets a `$Ref` only and not the concrete values
     return block.type === "prose"
       ? PROSE_COMPONENT_NAME
-      : getComponentSchema(block.type).title ?? "Unknown"
+      : (getComponentSchema(block.type).title ?? "Unknown")
   }, [block.type])
 
   return (
