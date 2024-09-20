@@ -175,7 +175,7 @@
     "node-mocks-http": "^1.14.1",
     "npm-run-all": "^4.1.5",
     "postcss": "^8.4.39",
-    "prettier": "^3.3.2",
+    "prettier": "^3.3.3",
     "start-server-and-test": "^2.0.3",
     "storybook": "^8.1.10",
     "tailwindcss": "^3.4.4",
