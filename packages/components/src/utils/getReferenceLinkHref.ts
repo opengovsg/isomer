@@ -11,7 +11,7 @@ export const getReferenceLinkHref = (
   }
 
   const sitemapArray = getSitemapAsArray(sitemap)
-  const match = referenceLink.match(/\[resource:(\d+):(\d+)\]/)
+  const match = /\[resource:(\d+):(\d+)\]/.exec(referenceLink)
 
   if (!match) {
     return referenceLink

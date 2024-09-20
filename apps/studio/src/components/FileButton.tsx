@@ -14,7 +14,7 @@ interface SingleFileButtonProps {
   multiple?: false
 
   /** Called when files are picked */
-  onChange(payload: File | null): void
+  onChange: (payload: File | null) => void
 
   append?: never
 }
@@ -26,7 +26,7 @@ interface MultipleFileButtonProps {
   multiple: true
 
   /** Called when files are picked */
-  onChange(payload: File[]): void
+  onChange: (payload: File[]) => void
 
   /** Determines whether picked files should be appended to existing value instead of replacing */
   append?: boolean
@@ -93,14 +93,16 @@ export const FileButton: FileButtonComponent = forwardRef<
     const inputRef = useRef<HTMLInputElement>()
 
     const onClick = () => {
-      !disabled && inputRef.current?.click()
+      if (!disabled) {
+        inputRef.current?.click()
+      }
     }
 
     const handleChange: ChangeEventHandler<HTMLInputElement> = (event) => {
       if (multiple) {
         const nextFiles = Array.from(event.currentTarget.files ?? [])
         if (others.append) {
-          onChange([...(value ?? []), ...nextFiles])
+          onChange([...value, ...nextFiles])
         } else {
           onChange(Array.from(event.currentTarget.files ?? []))
         }

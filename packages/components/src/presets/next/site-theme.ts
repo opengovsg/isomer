@@ -18,6 +18,7 @@ interface SiteThemeOptions {
 
 export const isomerSiteTheme = plugin.withOptions(
   ({ colors }: SiteThemeOptions) =>
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     ({ addBase }) => {
       addBase({
         // TODO: Inject dynamically based on whatever is passed in.

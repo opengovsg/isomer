@@ -89,6 +89,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
         router.events.off("routeChangeStart", handleRouteChange)
         setNextUrl(url)
         router.events.emit("routeChangeError")
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw "Error to abort router route change. Ignore this!"
       }
     }

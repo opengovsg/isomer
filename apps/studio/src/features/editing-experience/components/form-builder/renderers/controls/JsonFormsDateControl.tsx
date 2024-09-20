@@ -34,7 +34,7 @@ export function JsonFormsDateControl({
         <DatePicker
           inputValue={data}
           allowManualInput={false}
-          onInputValueChange={(date) => handleChange(path, date?.toString())}
+          onInputValueChange={(date) => handleChange(path, date.toString())}
         />
         <FormErrorMessage>
           {label} {errors}
