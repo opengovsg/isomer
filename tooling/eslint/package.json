@@ -14,21 +14,23 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@eslint/compat": "^1.1.0",
+    "@eslint/js": "^9.10.0",
+    "@isomer/prettier-config": "*",
+    "@isomer/tsconfig": "*",
     "@next/eslint-plugin-next": "^14.2.4",
+    "typescript-eslint": "^8.6.0",
+    "eslint": "^9.10.0",
     "eslint-config-turbo": "^1.13.4",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.9.0",
     "eslint-plugin-react": "^7.34.3",
     "eslint-plugin-react-hooks": "beta",
-    "typescript-eslint": "^7.15.0"
-  },
-  "devDependencies": {
-    "@eslint/compat": "^1.1.0",
-    "@isomer/prettier-config": "*",
-    "@isomer/tsconfig": "*",
-    "eslint": "^9.6.0",
     "prettier": "^3.3.2",
     "typescript": "5.2.2"
   },
-  "prettier": "@isomer/prettier-config"
+  "prettier": "@isomer/prettier-config",
+  "devDependencies": {
+    "@types/eslint__js": "^8.42.3"
+  }
 }

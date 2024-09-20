@@ -1,3 +1,4 @@
+// @ts-check
 /// <reference types="./types.d.ts" />
 
 import eslint from "@eslint/js"
