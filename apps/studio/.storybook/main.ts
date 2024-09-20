@@ -10,11 +10,9 @@ const config: StorybookConfig = {
     getAbsolutePath("@storybook/addon-interactions"),
     getAbsolutePath("@storybook/addon-themes"),
     getAbsolutePath("@storybook/addon-a11y"),
-    getAbsolutePath("@storybook/addon-mdx-gfm"),
   ],
 
   framework: {
-    // @ts-expect-error type mismatch
     name: getAbsolutePath("@storybook/nextjs"),
     options: {},
   },
