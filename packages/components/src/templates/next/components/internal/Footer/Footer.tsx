@@ -379,7 +379,7 @@ const FooterDesktop = ({
   siteMapLink,
 }: FooterProps) => {
   return (
-    <div className="hidden px-[4rem] py-14 lg:block">
+    <div className="hidden px-10 py-14 lg:block">
       <div className="mx-auto flex max-w-[72.5rem] flex-col gap-6">
         <SiteNameSection siteName={siteName} />
         <div className="grid-cols-[1fr_min-content] grid-rows-[1fr_min-content] gap-x-8 gap-y-14 lg:grid">
