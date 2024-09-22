@@ -145,11 +145,11 @@ const Megamenu = ({
                         isExternal={isExternal}
                         showExternalIcon={isExternal}
                         href={subItem.url}
-                        className="prose-label-md-medium inline-flex w-fit items-center gap-1 text-base-content hover:underline"
+                        className="group prose-label-md-medium inline-flex w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
                       >
                         {subItem.name}
                         {!isExternal && (
-                          <BiRightArrowAlt className="text-[1.25rem]" />
+                          <BiRightArrowAlt className="text-[1.25rem] transition ease-in group-hover:translate-x-1" />
                         )}
                       </Link>
                       <p className="prose-label-sm-regular text-base-content-subtle">
