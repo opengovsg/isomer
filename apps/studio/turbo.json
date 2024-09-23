@@ -6,7 +6,8 @@
       "dependsOn": ["generate"]
     },
     "test-ci:e2e": {
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
+      "outputs": ["playwright/test-results/**"]
     },
     "generate": {
       "inputs": ["prisma/schema.prisma"],
