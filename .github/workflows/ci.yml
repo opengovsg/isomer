@@ -81,7 +81,8 @@ jobs:
           service: isomer-studio
           api_key: ${{ secrets.DD_API_KEY }}
       - name: Test Studio
-        run: turbo test-ci:unit --filter=isomer-studio
+        # Loose env mode required for env vars to be passed to the run
+        run: turbo test-ci:unit --filter=isomer-studio --env-mode=loose
         env:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
@@ -114,7 +115,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
       - name: Build Studio app
-        run: turbo build --filter=isomer-studio
+        # Loose env mode required for env vars to be passed to the run
+        run: turbo build --filter=isomer-studio --env-mode=loose
 
       - name: Start test containers
         run: npm run setup:test
