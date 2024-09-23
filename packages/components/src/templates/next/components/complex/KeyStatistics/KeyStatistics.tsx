@@ -1,5 +1,6 @@
 import type { KeyStatisticsProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { getTailwindVariantLayout } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 
 const MAX_ITEMS = 4
@@ -57,7 +58,7 @@ const compoundStyles = createKeyStatisticsStyles()
 
 const KeyStatistics = ({ title, statistics, layout }: KeyStatisticsProps) => {
   const noOfItems = Math.min(MAX_ITEMS, statistics.length) as NoOfItemVariants
-  const simplifiedLayout = layout === "homepage" ? "homepage" : "default"
+  const simplifiedLayout = getTailwindVariantLayout(layout)
 
   return (
     <div className={compoundStyles.container({ layout: simplifiedLayout })}>

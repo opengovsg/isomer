@@ -1,6 +1,6 @@
 import type { InfobarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref } from "~/utils"
+import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
 
@@ -23,7 +23,7 @@ const createInfobarStyles = tv({
         description: "prose-headline-lg-regular",
       },
       default: {
-        outerContainer: "bg-base-canvas-backdrop rounded-lg",
+        outerContainer: "rounded-lg bg-base-canvas-backdrop",
         innerContainer: "gap-7 p-8",
         headingContainer: "gap-4",
         title: "prose-display-sm text-base-content",
@@ -49,7 +49,7 @@ const Infobar = ({
   site,
   LinkComponent,
 }: InfobarProps) => {
-  const simplifiedLayout = layout === "homepage" ? "homepage" : "default"
+  const simplifiedLayout = getTailwindVariantLayout(layout)
 
   return (
     <section>

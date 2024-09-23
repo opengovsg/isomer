@@ -6,7 +6,7 @@ import type { SupportedIconName } from "~/common/icons"
 import type { InfoColsProps } from "~/interfaces"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref } from "~/utils"
+import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
 import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
@@ -111,7 +111,7 @@ const InfoCols = ({
   site,
   LinkComponent,
 }: InfoColsProps) => {
-  const simplifiedLayout = layout === "homepage" ? "homepage" : "default"
+  const simplifiedLayout = getTailwindVariantLayout(layout)
 
   return (
     <section className={compoundStyles.section()}>

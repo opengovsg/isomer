@@ -9,7 +9,11 @@ import type {
   SingleCardWithImageProps,
 } from "~/interfaces/complex/InfoCards"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import {
+  getReferenceLinkHref,
+  getTailwindVariantLayout,
+  isExternalUrl,
+} from "~/utils"
 import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
@@ -212,7 +216,7 @@ const InfoCards = ({
   site,
   LinkComponent,
 }: InfoCardsProps): JSX.Element => {
-  const simplifiedLayout = layout === "homepage" ? "homepage" : "default"
+  const simplifiedLayout = getTailwindVariantLayout(layout)
 
   const InfoCardtoRender = () => {
     switch (variant) {
