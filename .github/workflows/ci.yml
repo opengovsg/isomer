@@ -69,6 +69,9 @@ jobs:
         uses: xom9ikk/dotenv@v2
         with:
           mode: test
+      - name: Install dependencies
+        # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
+        run: turbo run generate --filter=isomer-studio
       - name: Configure Datadog Test Visibility
         env:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
@@ -78,7 +81,7 @@ jobs:
           service: isomer-studio
           api_key: ${{ secrets.DD_API_KEY }}
       - name: Test Studio
-        run: turbo test:unit --filter=isomer-studio
+        run: turbo test-ci:unit --filter=isomer-studio
         env:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
