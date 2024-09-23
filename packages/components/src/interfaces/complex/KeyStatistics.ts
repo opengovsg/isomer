@@ -1,6 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerPageLayoutType } from "~/types"
+
 export const KeyStatisticsSchema = Type.Object(
   {
     type: Type.Literal("keystatistics", { default: "keystatistics" }),
@@ -33,4 +35,6 @@ export const KeyStatisticsSchema = Type.Object(
   },
 )
 
-export type KeyStatisticsProps = Static<typeof KeyStatisticsSchema>
+export type KeyStatisticsProps = Static<typeof KeyStatisticsSchema> & {
+  layout: IsomerPageLayoutType
+}

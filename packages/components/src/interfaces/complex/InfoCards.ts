@@ -1,7 +1,11 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type {
+  IsomerPageLayoutType,
+  IsomerSiteProps,
+  LinkComponentType,
+} from "~/types"
 
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
@@ -139,6 +143,7 @@ export type SingleCardWithImageProps = Static<
   LinkComponent?: LinkComponentType
 }
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
+  layout: IsomerPageLayoutType
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
   sectionIdx?: number // TODO: Remove this property, only used in classic theme
