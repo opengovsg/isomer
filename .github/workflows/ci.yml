@@ -56,51 +56,63 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-  test:
+  unit-integration-tests:
+    name: Unit & integration tests
     needs: optimize_ci
-    if: needs.optimize_ci.outputs.skip == 'false'
     runs-on: ubuntu-latest
+    if: needs.optimize_ci.outputs.skip == 'false'
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup
         uses: ./tooling/github/setup
+      - name: Test Studio
+        run: turbo test:unit --filter=isomer-studio
 
-      - name: Install playwright
+  end-to-end-tests:
+    name: End-to-end tests
+    needs: optimize_ci
+    runs-on: ubuntu-latest
+    if: needs.optimize_ci.outputs.skip == 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup
+        uses: ./tooling/github/setup
+      - name: Install Playwright (Chromium)
         run: npx playwright install chromium
-
       - name: Load .env file
         uses: xom9ikk/dotenv@v2
         with:
           mode: test
-
+      - name: Test
+        run: npm run test:e2e
       - name: Next.js cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           # See here for caching with `yarn` https://github.com/actions/cache/blob/main/examples.md#node---yarn or you can leverage caching with actions/setup-node https://github.com/actions/setup-node
           path: |
             ~/.npm
             ${{ github.workspace }}/.next/cache
           # Generate a new cache whenever packages or source files change.
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
       - name: Start test containers
         run: npm run setup:test
 
-      - name: Build
-        run: npm run build
+      - name: Build Studio app
+        run: turbo build --filter=isomer-studio
 
-      - name: Test
-        run: npm run test-start
+      - name: Run Playwright tests
+        run: turbo test-ci:e2e --filter=isomer-studio
 
       - name: Stop test containers
         run: npm run teardown
 
       - name: Upload test results
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: test results
-          path: |
-            playwright/test-results
+          path: playwright/test-results
+          retention-days: 7
