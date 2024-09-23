@@ -2,8 +2,12 @@
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
   "tasks": {
-    "test:unit": {},
-    "test-ci:e2e": {},
+    "test:unit": {
+      "dependsOn": ["generate"]
+    },
+    "test-ci:e2e": {
+      "dependsOn": ["build"]
+    },
     "generate": {
       "inputs": ["prisma/schema.prisma"],
       "cache": false
