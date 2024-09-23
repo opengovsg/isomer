@@ -23,7 +23,7 @@
       "~server/db/*": ["./src/server/modules/database/*"],
       "~server/db": ["./src/server/modules/database/index"]
     },
-    "types": ["vitest/globals", "vitest-environment-vprisma"]
+    "types": ["vitest/globals"]
   },
   "include": [
     ".storybook/**/*.tsx",
