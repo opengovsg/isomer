@@ -6,7 +6,6 @@
       "dependsOn": ["generate"]
     },
     "test-ci:e2e": {
-      "dependsOn": ["build"],
       "outputs": ["playwright/test-results/**"]
     },
     "generate": {
