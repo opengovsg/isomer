@@ -5,7 +5,6 @@
     "test:unit": {
       "dependsOn": ["generate"]
     },
-    "test-ci:unit": {},
     "test-ci:e2e": {
       "outputs": ["playwright/test-results/**"]
     },
