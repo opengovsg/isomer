@@ -167,6 +167,7 @@
     "@types/validator": "^13.11.7",
     "autoprefixer": "^10.4.19",
     "clean-webpack-plugin": "^4.0.0",
+    "dd-trace": "^5.22.0",
     "dotenv-cli": "^7.3.0",
     "eslint": "^9.10.0",
     "k6-trpc": "^1.0.0",
@@ -188,6 +189,11 @@
     "vitest": "^2.1.1",
     "webpack-cli": "^5.1.4",
     "webpack-glob-entries": "^1.0.1"
+  },
+  "overrides": {
+    "dd-trace": {
+      "import-in-the-middle": "^1.11.0"
+    }
   },
   "publishConfig": {
     "access": "restricted"
