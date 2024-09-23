@@ -53,8 +53,7 @@ jobs:
         with:
           fetch-depth: 0 # Required for v4
       - name: Setup
-        uses: ./tooling/github/setup
-
+        uses: ./.github/actions/setup
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         uses: chromaui/action@latest
@@ -81,7 +80,9 @@ jobs:
         with:
           fetch-depth: 0 # Required for v4
       - name: Setup
-        uses: ./tooling/github/setup
+        uses: ./.github/actions/setup
+      - name: Build Isomer Components
+        run: npm run --workspace packages/components build
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         uses: chromaui/action@latest

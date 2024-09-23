@@ -2,6 +2,12 @@
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
   "tasks": {
+    "test:unit": {
+      "dependsOn": ["generate"]
+    },
+    "test-ci:e2e": {
+      "outputs": ["playwright/test-results/**"]
+    },
     "generate": {
       "inputs": ["prisma/schema.prisma"],
       "cache": false
