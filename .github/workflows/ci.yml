@@ -99,11 +99,11 @@ jobs:
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
-      - name: Start test containers
-        run: npm run setup:test
-
       - name: Build Studio app
         run: turbo build --filter=isomer-studio
+
+      - name: Start test containers
+        run: npm run setup:test
 
       - name: Run Playwright tests
         run: turbo test-ci:e2e --filter=isomer-studio
