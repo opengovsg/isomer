@@ -140,5 +140,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test results
-          path: playwright/test-results
+          path: apps/studio/playwright/test-results
           retention-days: 7
