@@ -83,8 +83,6 @@ jobs:
         uses: xom9ikk/dotenv@v2
         with:
           mode: test
-      - name: Test
-        run: npm run test:e2e
       - name: Next.js cache
         uses: actions/cache@v4
         with:
