@@ -228,7 +228,7 @@ export const BLOCK_TO_META: Record<
     label: "Cards",
     description: `Link information in "cards" with or without images`,
     usageText: "This block supports up to six cards.",
-    imageSrc: "/assets/block-images/Infocards.png",
+    imageSrc: "/assets/block-images/InfoCards.png",
   },
   infocols: {
     label: "Columns of text",
