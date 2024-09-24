@@ -22,13 +22,16 @@ export const definePermissionsFor = async ({
   resourceId,
 }: PermissionsProps) => {
   const builder = new AbilityBuilder<ResourceAbility>(createMongoAbility)
-  const roles = await db
+  const query = db
     .selectFrom("ResourcePermission")
     .where("userId", "=", userId)
     .where("siteId", "=", siteId)
-    .where("resourceId", "=", resourceId)
-    .selectAll()
-    .execute()
+
+  if (resourceId === null) {
+    query.where("resourceId", "is", null)
+  } else query.where("resourceId", "=", resourceId)
+
+  const roles = await query.selectAll().execute()
 
   roles.map(({ role }) => buildPermissionsFor(role, builder))
 
