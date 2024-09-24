@@ -7,6 +7,7 @@ import { HeadingSchema } from "./Heading"
 import { OrderedListSchema } from "./OrderedList"
 import { ParagraphSchema } from "./Paragraph"
 import { TableSchema } from "./Table"
+import { TiptapImageSchema } from "./TiptapImage"
 import { UnorderedListSchema } from "./UnorderedList"
 
 const BASE_PROSE_META = {
@@ -28,6 +29,7 @@ const generateProseSchema = (
           Type.Union([
             Type.Ref(DividerSchema),
             Type.Ref(HeadingSchema),
+            Type.Ref(TiptapImageSchema),
             Type.Ref(OrderedListSchema),
             Type.Ref(ParagraphSchema),
             Type.Ref(TableSchema),

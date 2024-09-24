@@ -20,6 +20,7 @@ import {
   ParagraphSchema,
   ProseSchema,
   TableSchema,
+  TiptapImageSchema,
   UnorderedListSchema,
 } from "~/interfaces"
 
@@ -43,6 +44,7 @@ export const IsomerNativeComponentsMap = {
   heading: HeadingSchema,
   orderedList: OrderedListSchema,
   paragraph: ParagraphSchema,
+  image: TiptapImageSchema,
   table: TableSchema,
   unorderedList: UnorderedListSchema,
 }

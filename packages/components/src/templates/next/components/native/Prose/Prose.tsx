@@ -7,6 +7,7 @@ import Divider from "../Divider"
 import Heading from "../Heading"
 import OrderedList from "../OrderedList"
 import Table from "../Table"
+import TiptapImage from "../TiptapImage"
 import UnorderedList from "../UnorderedList"
 
 const ProseComponent = ({
@@ -21,6 +22,10 @@ const ProseComponent = ({
       return <Divider {...component} />
     case "heading":
       return <Heading {...component} site={site} />
+    case "image":
+      return (
+        <TiptapImage {...component} LinkComponent={LinkComponent} site={site} />
+      )
     case "orderedList":
       return (
         <OrderedList {...component} LinkComponent={LinkComponent} site={site} />
