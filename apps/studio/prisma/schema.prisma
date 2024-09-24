@@ -203,15 +203,16 @@ model SiteMember {
 }
 
 model ResourcePermission {
+  id         BigInt     @id @default(autoincrement())
   userId     String
   user       User     @relation(fields: [userId], references: [id])
   siteId     Int
   site       Site     @relation(fields: [siteId], references: [id])
-  resourceId BigInt
-  resource   Resource @relation(fields: [resourceId], references: [id])
+  resourceId BigInt?
+  resource   Resource? @relation(fields: [resourceId], references: [id])
   role       RoleType
 
-  @@id([siteId, userId, resourceId])
+  @@unique([userId, siteId, resourceId, role])
 }
 
 enum RoleType {
