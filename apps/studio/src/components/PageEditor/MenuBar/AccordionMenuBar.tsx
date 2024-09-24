@@ -4,6 +4,7 @@ import { Icon, useDisclosure } from "@chakra-ui/react"
 import {
   BiBold,
   BiCog,
+  BiImage,
   BiItalic,
   BiLink,
   BiListOl,
@@ -26,6 +27,7 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
+import { ImageEditorModal } from "../ImageEditorModal"
 import { LinkEditorModal } from "../LinkEditorModal"
 import { TableSettingsModal } from "../TableSettingsModal"
 import { MenuBar } from "./MenuBar"
@@ -40,6 +42,11 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
     isOpen: isLinkModalOpen,
     onOpen: onLinkModalOpen,
     onClose: onLinkModalClose,
+  } = useDisclosure()
+  const {
+    isOpen: isImageModalOpen,
+    onOpen: onImageModalOpen,
+    onClose: onImageModalClose,
   } = useDisclosure()
 
   const items: MenuBarEntry[] = useMemo(
@@ -124,6 +131,13 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
         isActive: () => editor.isActive("link"),
       },
       {
+        type: "item",
+        icon: BiImage,
+        title: "Image",
+        action: onImageModalOpen,
+        isActive: () => editor.isActive("image"),
+      },
+      {
         type: "divider",
       },
       {
@@ -205,7 +219,7 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
         ],
       },
     ],
-    [editor, onTableSettingsModalOpen],
+    [editor, onImageModalOpen, onLinkModalOpen, onTableSettingsModalOpen],
   )
   return (
     <>
@@ -219,6 +233,12 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
         editor={editor}
         isOpen={isLinkModalOpen}
         onClose={onLinkModalClose}
+      />
+
+      <ImageEditorModal
+        editor={editor}
+        isOpen={isImageModalOpen}
+        onClose={onImageModalClose}
       />
 
       <MenuBar items={items} />

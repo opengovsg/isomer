@@ -1,5 +1,6 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { UseMutateAsyncFunction } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import set from "lodash/set"
 
 import type {
@@ -7,6 +8,7 @@ import type {
   UploadAssetMutationOutput,
 } from "~/hooks/useUploadAssetMutation"
 import type { ModifiedAsset } from "~/types/assets"
+import { useEnv } from "~/hooks/useEnv"
 import { PLACEHOLDER_IMAGE_FILENAME } from "./constants"
 
 export const generateResourceUrl = (value: string) => {

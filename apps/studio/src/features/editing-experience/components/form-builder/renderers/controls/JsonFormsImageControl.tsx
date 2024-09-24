@@ -14,10 +14,11 @@ import type { ModifiedAsset } from "~/types/assets"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useEnv } from "~/hooks/useEnv"
+import { useGetImageFileFromUrl } from "~/hooks/useGetImageFileFromUrl"
 import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPES,
   MAX_IMG_FILE_SIZE_BYTES,
-} from "./constants"
+} from "../../../constants"
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,
@@ -41,7 +42,15 @@ export function JsonFormsImageControl({
   } = useEnv()
   const toast = useToast()
   const { modifiedAssets, setModifiedAssets } = useEditorDrawerContext()
-  const [pendingAsset, setPendingAsset] = useState<ModifiedAsset | undefined>()
+  const { data: pendingImageFile } = useGetImageFileFromUrl(
+    data,
+    NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
+  )
+  const [pendingAsset, setPendingAsset] = useState<ModifiedAsset | undefined>({
+    path,
+    src: data,
+    file: pendingImageFile,
+  })
 
   // NOTE: For some reason, we cannot modified the modifiedAssets state directly
   // from the Attachment component
@@ -55,43 +64,6 @@ export function JsonFormsImageControl({
       setModifiedAssets([...modifiedAssets, { ...pendingAsset }])
     }
   }, [modifiedAssets, path, pendingAsset, setModifiedAssets])
-
-  useEffect(() => {
-    const urlToFile = async (
-      url: string,
-      filename: string,
-      mimeType: string,
-    ) => {
-      try {
-        const response = await fetch(url)
-        const blob = await response.blob()
-        return new File([blob], filename, { type: mimeType })
-      } catch (error) {
-        // File might not be ready yet, provide a fallback
-        // TODO: Fetch the metadata directly from S3 instead
-        return new File([], filename, { type: mimeType })
-      }
-    }
-
-    async function convertImage(url: string) {
-      const fileName = url.split("/").pop()
-      const fileType = `image/${url.split(".").pop()}`
-      const imageUrl = url.startsWith("/")
-        ? `https://${NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${url}`
-        : url
-      const file = await urlToFile(imageUrl, fileName || "", fileType)
-      setPendingAsset({ path, src: url, file })
-    }
-
-    if (!data) {
-      return
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    convertImage(data)
-    // NOTE: We only want to run this once if there is initial data provided
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   return (
     <Box mt="1.25rem" _first={{ mt: 0 }}>

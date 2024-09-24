@@ -10,6 +10,7 @@ import { HardBreak } from "@tiptap/extension-hard-break"
 import { Heading } from "@tiptap/extension-heading"
 import { History } from "@tiptap/extension-history"
 import { HorizontalRule } from "@tiptap/extension-horizontal-rule"
+import { Image } from "@tiptap/extension-image"
 import { Italic } from "@tiptap/extension-italic"
 import { Link } from "@tiptap/extension-link"
 import { ListItem } from "@tiptap/extension-list-item"
@@ -24,7 +25,30 @@ import { TableHeader } from "@tiptap/extension-table-header"
 import { TableRow } from "@tiptap/extension-table-row"
 import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
-import { textblockTypeInputRule, useEditor } from "@tiptap/react"
+import {
+  mergeAttributes,
+  ReactNodeViewRenderer,
+  textblockTypeInputRule,
+  useEditor,
+} from "@tiptap/react"
+
+import { env } from "~/env.mjs"
+import { ImageView } from "../components/ImageView"
+
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    isomerImage: {
+      setImage: (options: {
+        src: string
+        alt: string
+        caption?: string
+        size?: string
+      }) => ReturnType
+    }
+  }
+}
+
+const { NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME } = env
 
 const HEADING_LEVELS: Level[] = [2, 3, 4, 5, 6]
 
@@ -119,6 +143,58 @@ const IsomerHeading = Heading.extend({
   levels: HEADING_LEVELS,
 })
 
+const IsomerImage = Image.extend({
+  addAttributes() {
+    return {
+      src: {
+        default: null,
+      },
+      alt: {
+        default: null,
+      },
+      caption: {
+        default: "Image caption",
+      },
+      size: {
+        default: "default",
+      },
+    }
+  },
+  renderHTML({ HTMLAttributes }) {
+    const newHTMLAttributes = {
+      ...HTMLAttributes,
+      src:
+        NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME !== ""
+          ? `https://${NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${HTMLAttributes.src}`
+          : HTMLAttributes.src,
+    }
+
+    return [
+      "img",
+      mergeAttributes(this.options.HTMLAttributes, newHTMLAttributes),
+    ]
+  },
+  // Prevent users from being able to paste images into the editor
+  parseHTML() {
+    return []
+  },
+  addInputRules() {
+    return []
+  },
+  addNodeView() {
+    return ReactNodeViewRenderer(ImageView)
+  },
+}).configure({
+  allowBase64: false,
+})
+
+const ISOMER_TABLE_EXTENSIONS = [
+  TableRow,
+  IsomerTable,
+  IsomerTableCell,
+  IsomerTableHeader,
+]
+
 const useBaseEditor = ({
   data,
   handleChange,
@@ -137,13 +213,7 @@ export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
   useBaseEditor({
     data,
     handleChange,
-    extensions: [
-      TableRow,
-      IsomerTable,
-      IsomerTableCell,
-      IsomerTableHeader,
-      IsomerHeading,
-    ],
+    extensions: [...ISOMER_TABLE_EXTENSIONS, IsomerHeading],
   })
 
 export const useCalloutEditor = ({ data, handleChange }: BaseEditorProps) => {
@@ -156,7 +226,7 @@ export const useCalloutEditor = ({ data, handleChange }: BaseEditorProps) => {
 
 export const useAccordionEditor = ({ data, handleChange }: BaseEditorProps) => {
   return useBaseEditor({
-    extensions: [TableRow, IsomerTable, IsomerTableCell, IsomerTableHeader],
+    extensions: [...ISOMER_TABLE_EXTENSIONS, IsomerImage],
     data,
     handleChange,
   })
