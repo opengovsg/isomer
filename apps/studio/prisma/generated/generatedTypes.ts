@@ -62,9 +62,10 @@ export type Resource = {
   updatedAt: Generated<Timestamp>
 }
 export type ResourcePermission = {
+  id: GeneratedAlways<string>
   userId: string
   siteId: number
-  resourceId: string
+  resourceId: string | null
   role: RoleType
 }
 export type Site = {
