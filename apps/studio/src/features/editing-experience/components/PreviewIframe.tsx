@@ -26,15 +26,33 @@ export const PreviewIframe = ({
       }
     : {}
 
-  const viewportWidth = useMemo(() => {
-    if (!viewport) return "100%"
+  const containerStyles = useMemo(() => {
+    if (!viewport)
+      return {
+        width: "100%",
+      }
     switch (viewport) {
       case "tablet":
-        return "768px"
+        return {
+          width: "768px",
+          borderRadius: "8px",
+        }
       case "mobile":
-        return "480px"
-      default:
-        return "100%"
+        return {
+          width: "480px",
+          borderRadius: "8px",
+        }
+      case "responsive":
+        return {
+          width: "100%",
+          borderRadius: "8px",
+        }
+      case "fullscreen": {
+        return {
+          width: "100%",
+          borderRadius: 0,
+        }
+      }
     }
   }, [viewport])
 
@@ -43,17 +61,13 @@ export const PreviewIframe = ({
       bg="white"
       shadow="md"
       justify="center"
-      w={viewportWidth}
       h="100%"
       mx="auto"
-      borderRadius="8px"
       userSelect="none"
+      {...containerStyles}
     >
       <Frame
-        style={{
-          width: viewportWidth,
-          borderRadius: "8px",
-        }}
+        style={containerStyles}
         {...extraProps}
         head={
           // eslint-disable-next-line @next/next/no-css-tags

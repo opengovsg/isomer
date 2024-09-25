@@ -46,7 +46,7 @@ export const EditPagePreview = (): JSX.Element => {
   const innerContainerProps: Partial<FlexProps> = useMemo(() => {
     if (viewport === "fullscreen") {
       return {
-        p: "1rem",
+        p: 0,
       }
     }
 
