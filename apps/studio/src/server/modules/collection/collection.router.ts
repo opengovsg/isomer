@@ -8,6 +8,7 @@ import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType } from "../database"
+import { PG_ERROR_CODES } from "../database/constants"
 import {
   defaultResourceSelect,
   getSiteResourceById,
@@ -51,7 +52,7 @@ export const collectionRouter = router({
           .returning(defaultCollectionSelect)
           .executeTakeFirstOrThrow()
           .catch((err) => {
-            if (get(err, "code") === "23505") {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "A resource with the same permalink already exists",
@@ -102,7 +103,7 @@ export const collectionRouter = router({
           .returning("Resource.id")
           .executeTakeFirstOrThrow()
           .catch((err) => {
-            if (get(err, "code") === "23505") {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "A resource with the same permalink already exists",
