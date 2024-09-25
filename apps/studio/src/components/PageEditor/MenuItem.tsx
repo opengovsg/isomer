@@ -3,7 +3,7 @@ import type { IconType } from "react-icons/lib"
 import { Divider, Icon, Tooltip } from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
 
-interface MenuItemProps {
+export interface MenuItemProps {
   icon?: IconType
   title?: string
   action?: MouseEventHandler<HTMLButtonElement>

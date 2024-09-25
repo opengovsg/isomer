@@ -12,7 +12,7 @@ import {
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
-import type { MenuBarEntry } from "./MenuBar"
+import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import { LinkEditorModal } from "../LinkEditorModal"
 import { MenuBar } from "./MenuBar"
 
@@ -23,7 +23,7 @@ export const ProseMenuBar = ({ editor }: { editor: Editor }) => {
     onClose: onLinkModalClose,
   } = useDisclosure()
 
-  const items: MenuBarEntry[] = useMemo(
+  const items: PossibleMenubarItemProps[] = useMemo(
     () => [
       {
         type: "vertical-list",
