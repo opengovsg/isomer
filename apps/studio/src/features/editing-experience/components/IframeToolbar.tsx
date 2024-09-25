@@ -1,6 +1,5 @@
 import { useMemo } from "react"
 import {
-  Box,
   Flex,
   Icon,
   MenuButton,
@@ -67,15 +66,17 @@ export const IframeToolbar = ({
         gap="1rem"
         flexWrap="wrap"
       >
-        <Box color="base.content.brand">
-          <Icon mr="0.25rem" aria-hidden as={BiShow} />
-          <Text as="span" mr="0.5rem" textStyle="caption-1">
-            {toolbarTextLabels.mode}
-          </Text>
+        <Flex flexWrap="wrap" color="base.content.brand">
+          <Flex>
+            <Icon mr="0.25rem" aria-hidden as={BiShow} />
+            <Text as="span" mr="0.5rem" textStyle="caption-1">
+              {toolbarTextLabels.mode}
+            </Text>
+          </Flex>
           <Text as="span" textStyle="caption-2">
             {toolbarTextLabels.caption}
           </Text>
-        </Box>
+        </Flex>
         {viewport === "fullscreen" ? (
           <Button
             onClick={() => setViewport("responsive")}
