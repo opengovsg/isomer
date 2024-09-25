@@ -125,6 +125,7 @@ const useBaseEditor = ({
   extensions,
 }: BaseEditorProps & { extensions: Extensions }) =>
   useEditor({
+    immediatelyRender: false,
     extensions: [...BASE_EXTENSIONS, ...extensions],
     content: data,
     onUpdate: (e) => {
