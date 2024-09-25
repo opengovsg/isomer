@@ -11,6 +11,13 @@ export const resourceHandlers = {
       })
     },
   },
+  getRolesFor: {
+    default: () => {
+      return trpcMsw.resource.getRolesFor.query(() => {
+        return [{ role: "Admin" }]
+      })
+    },
+  },
   getMetadataById: {
     homepage: () =>
       trpcMsw.resource.getMetadataById.query(() => {

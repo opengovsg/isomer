@@ -1,11 +1,9 @@
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 
-import { RoleType } from "../../database"
-import {
-  buildPermissionsFor,
-  CRUD_ACTIONS,
-  ResourceAbility,
-} from "../permissions.service"
+import type { RoleType } from "../../database"
+import type { ResourceAbility } from "../permissions.type"
+import { CRUD_ACTIONS } from "../permissions.type"
+import { buildPermissionsFor } from "../permissions.util"
 
 const buildPermissions = (role: RoleType) => {
   const builder = new AbilityBuilder<ResourceAbility>(createMongoAbility)
@@ -67,6 +65,27 @@ describe("permissions.service", () => {
     const rootPage = { parentId: null }
     const perms = buildPermissions("Admin")
     const expected = true
+
+    // Act
+    const results = actions.map((action) => {
+      return perms.can(action, rootPage)
+    })
+
+    // Assert
+    expect(results.every((v) => v)).toBe(expected)
+  })
+
+  it("should allow >1 role and will use the union of all the permissions to determine the user permissison", () => {
+    // Arrange
+    const actions = ["delete", "create"] as const
+    const rootPage = { parentId: null }
+    const expected = true
+    // NOTE: order is important here because we want to make sure that
+    // the later role's permissions don't overwrite the earlier one
+    const roles = ["Admin", "Editor"] as const
+    const builder = new AbilityBuilder<ResourceAbility>(createMongoAbility)
+    roles.forEach((role) => buildPermissionsFor(role, builder))
+    const perms = builder.build({ detectSubjectType: () => "Resource" })
 
     // Act
     const results = actions.map((action) => {

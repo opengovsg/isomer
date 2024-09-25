@@ -8,6 +8,7 @@ import {
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 import { db } from "../database"
+import { PG_ERROR_CODES } from "../database/constants"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
@@ -24,7 +25,7 @@ export const folderRouter = router({
         })
         .executeTakeFirstOrThrow()
         .catch((err) => {
-          if (get(err, "code") === "23505") {
+          if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
             throw new TRPCError({
               code: "CONFLICT",
               message: "A resource with the same permalink already exists",
@@ -63,7 +64,7 @@ export const folderRouter = router({
         .returning(defaultFolderSelect)
         .execute()
         .catch((err) => {
-          if (get(err, "code") === "23505") {
+          if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
             throw new TRPCError({
               code: "CONFLICT",
               message: "A resource with the same permalink already exists",
