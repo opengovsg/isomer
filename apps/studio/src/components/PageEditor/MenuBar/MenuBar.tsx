@@ -138,6 +138,9 @@ export const MenuBar = ({ items }: { items: MenuBarEntry[] }) => {
                               <Text
                                 textStyle="body-2"
                                 color="base.content.strong"
+                                fontWeight={
+                                  subItem.isActive?.() ? 500 : undefined
+                                }
                               >
                                 {subItem.title}
                               </Text>
