@@ -2,7 +2,11 @@ import type { PropsWithChildren } from "react"
 
 import type { ImageProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import {
+  getReferenceLinkHref,
+  getSanitizedLinkHref,
+  isExternalUrl,
+} from "~/utils"
 import { Link } from "../../internal/Link"
 import { ImageClient } from "./ImageClient"
 
@@ -45,7 +49,7 @@ const ImageContainer = ({
   <div className={compoundStyles.container()}>
     {href !== undefined ? (
       <Link
-        href={href}
+        href={getSanitizedLinkHref(href)}
         target={isExternalUrl(href) ? "_blank" : undefined}
         rel={isExternalUrl(href) ? "noopener nofollow" : undefined}
         LinkComponent={LinkComponent}

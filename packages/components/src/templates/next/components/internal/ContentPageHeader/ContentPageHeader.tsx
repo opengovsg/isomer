@@ -1,5 +1,9 @@
 import type { ContentPageHeaderProps } from "~/interfaces"
-import { getFormattedDate } from "~/utils"
+import {
+  getFormattedDate,
+  getReferenceLinkHref,
+  getSanitizedLinkHref,
+} from "~/utils"
 import Breadcrumb from "../Breadcrumb"
 import { LinkButton } from "../LinkButton"
 
@@ -10,6 +14,7 @@ const ContentPageHeader = ({
   breadcrumb,
   buttonLabel,
   buttonUrl,
+  site,
   LinkComponent,
 }: ContentPageHeaderProps) => {
   return (
@@ -23,7 +28,12 @@ const ContentPageHeader = ({
           </div>
           {buttonLabel && buttonUrl && (
             <div className="mt-9">
-              <LinkButton href={buttonUrl} LinkComponent={LinkComponent}>
+              <LinkButton
+                href={getSanitizedLinkHref(
+                  getReferenceLinkHref(buttonUrl, site.siteMap),
+                )}
+                LinkComponent={LinkComponent}
+              >
                 {buttonLabel}
               </LinkButton>
             </div>

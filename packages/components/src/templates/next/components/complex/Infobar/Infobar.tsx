@@ -1,6 +1,10 @@
 import type { InfobarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
+import {
+  getReferenceLinkHref,
+  getSanitizedLinkHref,
+  getTailwindVariantLayout,
+} from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
 
@@ -84,7 +88,9 @@ const Infobar = ({
           <div className={compoundStyles.buttonContainer()}>
             {buttonLabel && buttonUrl && (
               <LinkButton
-                href={getReferenceLinkHref(buttonUrl, site.siteMap)}
+                href={getSanitizedLinkHref(
+                  getReferenceLinkHref(buttonUrl, site.siteMap),
+                )}
                 size={simplifiedLayout === "homepage" ? "lg" : "base"}
                 LinkComponent={LinkComponent}
               >
@@ -94,7 +100,9 @@ const Infobar = ({
 
             {secondaryButtonLabel && secondaryButtonUrl && (
               <LinkButton
-                href={getReferenceLinkHref(secondaryButtonUrl, site.siteMap)}
+                href={getSanitizedLinkHref(
+                  getReferenceLinkHref(secondaryButtonUrl, site.siteMap),
+                )}
                 size={simplifiedLayout === "homepage" ? "lg" : "base"}
                 variant="outline"
                 LinkComponent={LinkComponent}

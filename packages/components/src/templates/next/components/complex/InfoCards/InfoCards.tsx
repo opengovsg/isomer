@@ -11,6 +11,7 @@ import type {
 import { tv } from "~/lib/tv"
 import {
   getReferenceLinkHref,
+  getSanitizedLinkHref,
   getTailwindVariantLayout,
   isExternalUrl,
 } from "~/utils"
@@ -102,7 +103,7 @@ const InfoCardContainer = ({
 >): JSX.Element => {
   return url ? (
     <Link
-      href={getReferenceLinkHref(url, site.siteMap)}
+      href={getSanitizedLinkHref(getReferenceLinkHref(url, site.siteMap))}
       className={compoundStyles.cardContainer()}
       LinkComponent={LinkComponent}
     >
