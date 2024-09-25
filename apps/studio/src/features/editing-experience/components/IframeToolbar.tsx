@@ -8,8 +8,8 @@ import {
   Portal,
   Text,
 } from "@chakra-ui/react"
-import { Button, Menu, TouchableTooltip } from "@opengovsg/design-system-react"
-import { BiPencil, BiShow } from "react-icons/bi"
+import { Button, Menu } from "@opengovsg/design-system-react"
+import { BiPencil, BiShow, BiX } from "react-icons/bi"
 
 export type ViewportOptions = "mobile" | "tablet" | "responsive" | "fullscreen"
 
@@ -26,28 +26,28 @@ export const IframeToolbar = ({
     switch (viewport) {
       case "mobile":
         return {
-          mode: "You’re in editing mode",
+          mode: "You’re in editing mode.",
           caption:
             "Use the dropdown to see what the page might look like for various devices.",
           viewport: "Mobile",
         }
       case "tablet":
         return {
-          mode: "You’re in editing mode",
+          mode: "You’re in editing mode.",
           caption:
             "Use the dropdown to see what the page might look like for various devices.",
           viewport: "Tablet",
         }
       case "responsive":
         return {
-          mode: "You’re in editing mode",
+          mode: "You’re in editing mode.",
           caption:
             "Use the dropdown to see what the page might look like for various devices.",
           viewport: "Default mode",
         }
       case "fullscreen":
         return {
-          mode: "You’re in full screen mode",
+          mode: "You’re in full screen preview mode.",
           caption:
             "If you adjust the size of this browser, you can see what the page looks like in different sizes.",
           viewport: "Full screen",
@@ -72,8 +72,18 @@ export const IframeToolbar = ({
           </Text>
           <Text textStyle="caption-2">{toolbarTextLabels.caption}</Text>
         </Flex>
-        <Menu size="sm" placement="bottom-end">
-          <TouchableTooltip label="Change preview viewport">
+        {viewport === "fullscreen" ? (
+          <Button
+            onClick={() => setViewport("responsive")}
+            variant="outline"
+            colorScheme="neutral"
+            size="sm"
+            leftIcon={<BiX fontSize="1.5rem" />}
+          >
+            Back to editing
+          </Button>
+        ) : (
+          <Menu size="sm" placement="bottom-end">
             <MenuButton
               as={Button}
               leftIcon={<BiPencil size="1rem" />}
@@ -82,45 +92,53 @@ export const IframeToolbar = ({
             >
               {toolbarTextLabels.viewport}
             </MenuButton>
-          </TouchableTooltip>
-          <Portal>
-            <Menu.List>
-              <MenuOptionGroup
-                value={viewport}
-                title="Viewport"
-                type="radio"
-                onChange={(nextValue) =>
-                  setViewport(nextValue as ViewportOptions)
-                }
-              >
-                <MenuItemOption value="responsive">
-                  <Text color="base.content.strong" textStyle="body-1">
-                    Fit to screen (default)
-                  </Text>
-                  <Text color="base.content.medium" textStyle="body-2">
-                    Editing mode
-                  </Text>
-                </MenuItemOption>
-                <MenuItemOption value="tablet">
-                  <Text color="base.content.strong" textStyle="body-1">
-                    Tablet
-                  </Text>
-                  <Text color="base.content.medium" textStyle="body-2">
-                    View how page would look like on a tablet screen
-                  </Text>
-                </MenuItemOption>
-                <MenuItemOption value="mobile">
-                  <Text color="base.content.strong" textStyle="body-1">
-                    Mobile
-                  </Text>
-                  <Text color="base.content.medium" textStyle="body-2">
-                    View how page would look like on a mobile screen
-                  </Text>
-                </MenuItemOption>
-              </MenuOptionGroup>
-            </Menu.List>
-          </Portal>
-        </Menu>
+            <Portal>
+              <Menu.List>
+                <MenuOptionGroup
+                  value={viewport}
+                  title="Viewport"
+                  type="radio"
+                  onChange={(nextValue) =>
+                    setViewport(nextValue as ViewportOptions)
+                  }
+                >
+                  <MenuItemOption value="responsive">
+                    <Text color="base.content.strong" textStyle="body-1">
+                      Fit to screen (default)
+                    </Text>
+                    <Text color="base.content.medium" textStyle="body-2">
+                      Editing mode
+                    </Text>
+                  </MenuItemOption>
+                  <MenuItemOption value="fullscreen">
+                    <Text color="base.content.strong" textStyle="body-1">
+                      Full screen
+                    </Text>
+                    <Text color="base.content.medium" textStyle="body-2">
+                      View this page in full-screen mode
+                    </Text>
+                  </MenuItemOption>
+                  <MenuItemOption value="tablet">
+                    <Text color="base.content.strong" textStyle="body-1">
+                      Tablet
+                    </Text>
+                    <Text color="base.content.medium" textStyle="body-2">
+                      View how page would look like on a tablet screen
+                    </Text>
+                  </MenuItemOption>
+                  <MenuItemOption value="mobile">
+                    <Text color="base.content.strong" textStyle="body-1">
+                      Mobile
+                    </Text>
+                    <Text color="base.content.medium" textStyle="body-2">
+                      View how page would look like on a mobile screen
+                    </Text>
+                  </MenuItemOption>
+                </MenuOptionGroup>
+              </Menu.List>
+            </Portal>
+          </Menu>
+        )}
       </Flex>
     </>
   )
