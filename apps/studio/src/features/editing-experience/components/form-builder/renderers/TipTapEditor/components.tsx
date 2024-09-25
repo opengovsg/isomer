@@ -19,13 +19,23 @@ export const EditorContainer = ({
         overflow: "hidden",
         border: "1px solid",
         borderColor: "base.divider.strong",
+        _groupFocusWithin: {
+          borderColor: "utility.focus-default",
+          boxShadow: `0 0 0 1px #1361F0`,
+        },
       }
     }
     return {}
   }, [isNested])
 
   return (
-    <Box wordBreak="break-all" h="100%" {...containerProps}>
+    <Box
+      wordBreak="break-all"
+      h="100%"
+      transitionProperty="common"
+      transitionDuration="normal"
+      {...containerProps}
+    >
       <VStack h="100%" w="100%" gap="0">
         {children}
       </VStack>
