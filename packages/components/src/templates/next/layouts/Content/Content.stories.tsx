@@ -35,7 +35,8 @@ export const Default: Story = {
         children: [
           {
             id: "2",
-            title: "Parent page",
+            title:
+              "Parent page with a very long title that will likely cause an overflow",
             permalink: "/parent",
             lastModified: "",
             layout: "content",
@@ -70,7 +71,8 @@ export const Default: Story = {
               },
               {
                 id: "6",
-                title: "Sibling",
+                title:
+                  "Sibling with a long title that will likely cause an overflow",
                 permalink: "/parent/sibling",
                 lastModified: "",
                 layout: "content",
@@ -88,7 +90,8 @@ export const Default: Story = {
               },
               {
                 id: "8",
-                title: "Irrationality2",
+                title:
+                  "IrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationality",
                 permalink: "/parent/rationality2",
                 lastModified: "",
                 layout: "content",

@@ -1196,11 +1196,6 @@ video {
   margin: 0.25rem;
 }
 
-.-mx-4 {
-  margin-left: -1rem;
-  margin-right: -1rem;
-}
-
 .mx-2 {
   margin-left: 0.5rem;
   margin-right: 0.5rem;
@@ -1748,6 +1743,10 @@ video {
   flex-grow: 1;
 }
 
+.basis-0 {
+  flex-basis: 0px;
+}
+
 .basis-\[calc\(\(100\%-2\.5rem\)\/2\)\] {
   flex-basis: calc((100% - 2.5rem) / 2);
 }
@@ -1819,10 +1818,6 @@ video {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y))
     rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
     scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.cursor-default {
-  cursor: default;
 }
 
 .cursor-not-allowed {
@@ -2075,6 +2070,10 @@ video {
   align-self: center;
 }
 
+.self-stretch {
+  align-self: stretch;
+}
+
 .overflow-auto {
   overflow: auto;
 }
@@ -2099,6 +2098,10 @@ video {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.text-ellipsis {
+  text-overflow: ellipsis;
 }
 
 .text-pretty {
@@ -2257,11 +2260,6 @@ video {
 .border-b-divider-medium {
   --tw-border-opacity: 1;
   border-bottom-color: rgb(208 208 208 / var(--tw-border-opacity));
-}
-
-.border-b-divider-subtle {
-  --tw-border-opacity: 1;
-  border-bottom-color: rgb(242 242 242 / var(--tw-border-opacity));
 }
 
 .border-t-base-divider-subtle {
@@ -2453,10 +2451,6 @@ video {
 
 .p-3 {
   padding: 0.75rem;
-}
-
-.p-4 {
-  padding: 1rem;
 }
 
 .p-5 {
@@ -2791,6 +2785,10 @@ video {
   line-height: 1;
 }
 
+.text-\[0\.625rem\] {
+  font-size: 0.625rem;
+}
+
 .text-\[0\.6875rem\] {
   font-size: 0.6875rem;
 }
@@ -2906,6 +2904,10 @@ video {
     var(--tw-numeric-fraction);
 }
 
+.leading-4 {
+  line-height: 1rem;
+}
+
 .leading-5 {
   line-height: 1.25rem;
 }
@@ -2940,6 +2942,10 @@ video {
 
 .leading-\[1\.5\] {
   line-height: 1.5;
+}
+
+.tracking-\[0\.8px\] {
+  letter-spacing: 0.8px;
 }
 
 .tracking-tight {
@@ -3738,6 +3744,14 @@ video {
   border-bottom-color: transparent;
 }
 
+.last\:border-r-0:last-child {
+  border-right-width: 0px;
+}
+
+.last-of-type\:border-r:last-of-type {
+  border-right-width: 1px;
+}
+
 .active\:bg-base-canvas-backdrop\/80:active {
   background-color: rgb(243 244 246 / 0.8);
 }
@@ -3865,10 +3879,6 @@ video {
   color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 
-.hover\:text-inherit:where([data-rac])[data-hovered] {
-  color: inherit;
-}
-
 .hover\:text-link-hover:where([data-rac])[data-hovered] {
   --tw-text-opacity: 1;
   color: rgb(21 71 190 / var(--tw-text-opacity));
@@ -3969,10 +3979,6 @@ video {
 .hover\:text-gray-700:where(:not([data-rac])):hover {
   --tw-text-opacity: 1;
   color: rgb(55 65 81 / var(--tw-text-opacity));
-}
-
-.hover\:text-inherit:where(:not([data-rac])):hover {
-  color: inherit;
 }
 
 .hover\:text-link-hover:where(:not([data-rac])):hover {
@@ -4222,10 +4228,6 @@ video {
   outline-width: 0px;
 }
 
-.focus-visible\:outline-2:where([data-rac])[data-focus-visible] {
-  outline-width: 2px;
-}
-
 .focus-visible\:transition-none:where([data-rac])[data-focus-visible] {
   transition-property: none;
 }
@@ -4271,10 +4273,6 @@ video {
 
 .focus-visible\:outline-0:where(:not([data-rac])):focus-visible {
   outline-width: 0px;
-}
-
-.focus-visible\:outline-2:where(:not([data-rac])):focus-visible {
-  outline-width: 2px;
 }
 
 .focus-visible\:transition-none:where(:not([data-rac])):focus-visible {
@@ -4754,6 +4752,10 @@ video {
 
   .lg\:ml-4 {
     margin-left: 1rem;
+  }
+
+  .lg\:mr-24 {
+    margin-right: 6rem;
   }
 
   .lg\:mt-0 {
