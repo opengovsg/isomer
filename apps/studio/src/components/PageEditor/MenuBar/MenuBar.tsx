@@ -4,6 +4,7 @@ import type { IconType } from "react-icons/lib"
 import {
   Box,
   Divider,
+  Flex,
   HStack,
   Icon,
   Popover,
@@ -13,7 +14,6 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { isHidden } from "@chakra-ui/utils"
 import { Button, Menu } from "@opengovsg/design-system-react"
 import { BiChevronDown, BiChevronUp } from "react-icons/bi"
 
@@ -22,8 +22,8 @@ import { MenuItem } from "../MenuItem"
 export interface MenuBarItem {
   type: "item"
   title: string
+  description?: string
   icon?: IconType
-  textStyle?: string
   useSecondaryColor?: boolean
   leftItem?: JSX.Element
   action: () => void
@@ -115,13 +115,15 @@ export const MenuBar = ({ items }: { items: MenuBarEntry[] }) => {
                 return (
                   <>
                     <Menu.Button
-                      variant="clear"
-                      colorScheme="grey"
                       isOpen={isOpen}
-                      size="lg"
+                      variant="clear"
+                      colorScheme="neutral"
                       pl="0.375rem"
                       pr="0.75rem"
                       py="0.75rem"
+                      fontSize="0.75rem"
+                      fontWeight={400}
+                      lineHeight="1rem"
                       w={item.buttonWidth}
                     >
                       {activeItem?.title || item.defaultTitle}
@@ -131,17 +133,25 @@ export const MenuBar = ({ items }: { items: MenuBarEntry[] }) => {
                       {item.items.map((subItem, index) => (
                         <Menu.Item key={index} onClick={subItem.action}>
                           {subItem.leftItem}
-                          {subItem.title && !subItem.icon && (
-                            <Text
-                              textStyle={subItem.textStyle}
-                              fontWeight={
-                                subItem.textStyle !== "body-1" ? 400 : undefined
-                              }
-                              color="chakra-body-text"
-                            >
-                              {subItem.title}
-                            </Text>
-                          )}
+                          <Flex flexDirection="column">
+                            {subItem.title && !subItem.icon && (
+                              <Text
+                                textStyle="body-2"
+                                color="base.content.strong"
+                              >
+                                {subItem.title}
+                              </Text>
+                            )}
+                            {subItem.description && (
+                              <Text
+                                wordBreak="break-word"
+                                color="base.content.medium"
+                                textStyle="body-2"
+                              >
+                                {subItem.description}
+                              </Text>
+                            )}
+                          </Flex>
                           {subItem.icon && (
                             <MenuItem
                               icon={subItem.icon}

@@ -26,7 +26,7 @@ import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { textblockTypeInputRule, useEditor } from "@tiptap/react"
 
-const HEADING_LEVELS: Level[] = [2, 3, 4, 5, 6]
+const HEADING_LEVELS: Level[] = [2, 3, 4, 5]
 
 export interface BaseEditorProps {
   data: ControlProps["data"]

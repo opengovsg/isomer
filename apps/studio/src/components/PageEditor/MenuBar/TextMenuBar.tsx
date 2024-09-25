@@ -47,13 +47,13 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
       {
         type: "vertical-list",
         buttonWidth: "9rem",
-        menuWidth: "19rem",
+        menuWidth: "12.25rem",
         defaultTitle: "Text styles",
         items: [
           {
             type: "item",
-            title: "Heading 1",
-            textStyle: "h2",
+            title: "Section heading",
+            description: "Biggest heading for sections in your content",
             useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 2 }).run(),
@@ -61,8 +61,7 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
           },
           {
             type: "item",
-            title: "Heading 2",
-            textStyle: "h3",
+            title: "Large heading",
             useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 3 }).run(),
@@ -70,12 +69,19 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
           },
           {
             type: "item",
-            title: "Heading 3",
-            textStyle: "h4",
+            title: "Medium heading",
             useSecondaryColor: true,
             action: () =>
               editor.chain().focus().toggleHeading({ level: 4 }).run(),
             isActive: () => editor.isActive("heading", { level: 4 }),
+          },
+          {
+            type: "item",
+            title: "Small heading",
+            useSecondaryColor: true,
+            action: () =>
+              editor.chain().focus().toggleHeading({ level: 5 }).run(),
+            isActive: () => editor.isActive("heading", { level: 5 }),
           },
           {
             type: "item",
@@ -255,7 +261,7 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         ],
       },
     ],
-    [editor, onTableSettingsModalOpen],
+    [editor, onLinkModalOpen, onTableSettingsModalOpen],
   )
   return (
     <>
