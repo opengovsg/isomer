@@ -64,8 +64,9 @@ export const MenubarHorizontalList = ({
           <PopoverContent w="fit-content">
             <PopoverBody>
               <HStack>
-                {items.map((subItem) => (
+                {items.map((subItem, index) => (
                   <MenuItem
+                    key={index}
                     icon={subItem.icon}
                     title={subItem.title}
                     action={subItem.action}
