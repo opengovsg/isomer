@@ -29,8 +29,6 @@ export const PreviewIframe = ({
   const viewportWidth = useMemo(() => {
     if (!viewport) return "100%"
     switch (viewport) {
-      case "desktop":
-        return "1440px"
       case "tablet":
         return "768px"
       case "mobile":
