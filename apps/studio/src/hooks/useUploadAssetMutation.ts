@@ -26,6 +26,7 @@ const handleUpload = async ({ file, presignedPutUrl }: HandleUploadParams) => {
   const response = await fetch(presignedPutUrl, {
     headers: {
       "Content-Type": file.type,
+      "Content-Disposition": `inline; filename="${file.name}"`,
     },
     method: "PUT",
     body: file,
