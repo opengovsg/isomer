@@ -14,7 +14,7 @@ export const MenuBar = ({ items }: { items: PossibleMenubarItemProps[] }) => {
       flexWrap="wrap"
       pl="0.75rem"
       pr="0.25rem"
-      py="0.25rem"
+      py="0.5rem"
       w="100%"
       borderBottom="1px solid"
       borderColor="base.divider.medium"
