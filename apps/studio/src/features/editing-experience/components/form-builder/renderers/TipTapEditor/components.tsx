@@ -7,14 +7,8 @@ import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 
 export const EditorContainer = ({ children }: PropsWithChildren) => {
   return (
-    <Box backgroundColor="gray.50" wordBreak="break-all">
-      <VStack
-        border="1px solid"
-        borderColor="base.divider.strong"
-        h="100%"
-        w="100%"
-        gap="0"
-      >
+    <Box wordBreak="break-all" h="100%">
+      <VStack h="100%" w="100%" gap="0">
         {children}
       </VStack>
     </Box>
@@ -29,7 +23,7 @@ export const EditorContentWrapper = ({
       as={EditorContent}
       editor={editor}
       w="100%"
-      p="1rem"
+      p="1.375rem"
       flex="1 1 auto"
       overflowX="hidden"
       overflowY="auto"
