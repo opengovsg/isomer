@@ -63,7 +63,7 @@ const PageEditingView = () => {
       maxH="calc(100vh - 57px)"
     >
       {/* TODO: Implement sidebar editor */}
-      <GridItem colSpan={1} bg="slate.50" overflow="auto">
+      <GridItem colSpan={1} bg="slate.50" overflow="auto" minW="30rem">
         <EditPageDrawer />
       </GridItem>
       <GridItem colSpan={2}>
