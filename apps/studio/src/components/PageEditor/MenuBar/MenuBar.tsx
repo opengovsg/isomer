@@ -17,7 +17,7 @@ export const MenuBar = ({ items }: { items: PossibleMenubarItemProps[] }) => {
       py="0.25rem"
       w="100%"
       borderBottom="1px solid"
-      borderColor="base.divider.strong"
+      borderColor="base.divider.medium"
       borderTopRadius="0.25rem"
       spacing="0.25rem"
     >

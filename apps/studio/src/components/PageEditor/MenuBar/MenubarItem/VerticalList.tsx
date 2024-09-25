@@ -1,5 +1,5 @@
 import { Flex, Text } from "@chakra-ui/react"
-import { Menu } from "@opengovsg/design-system-react"
+import { Button, Menu } from "@opengovsg/design-system-react"
 
 import type { MenubarNestedItem } from "./types"
 import { MenuItem } from "../../MenuItem"
@@ -27,16 +27,25 @@ export const MenubarVerticalList = ({
         return (
           <>
             <Menu.Button
+              as={Button}
               isOpen={isOpen}
               variant="clear"
-              colorScheme="neutral"
-              pl="0.375rem"
-              pr="0.75rem"
-              py="0.75rem"
+              colorScheme="sub"
+              sx={{
+                _hover: {
+                  bg: "interaction.tinted.neutral.hover",
+                },
+              }}
+              p={0}
+              height="fit-content"
+              minH="1.75rem"
               fontSize="0.75rem"
               fontWeight={400}
               lineHeight="1rem"
-              minW="9rem"
+              minW="8rem"
+              _expanded={{
+                bg: "interaction.muted.main.active",
+              }}
             >
               {activeItem?.title || defaultTitle}
             </Menu.Button>

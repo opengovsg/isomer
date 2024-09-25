@@ -14,7 +14,7 @@ export const MenubarDivider = ({
   return (
     <Divider
       orientation="vertical"
-      borderColor="base.divider.strong"
+      borderColor="base.divider.medium"
       h="1.25rem"
       mx="0.25rem"
     />

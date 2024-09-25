@@ -37,14 +37,16 @@ export const MenubarHorizontalList = ({
           <PopoverTrigger>
             <HStack>
               <Button
-                _hover={{ bg: "gray.100" }}
-                _active={{ bg: "gray.200" }}
-                bgColor="transparent"
-                border="none"
-                h="1.75rem"
+                variant="clear"
+                colorScheme="neutral"
                 px={0}
-                py="0.25rem"
                 aria-label={label}
+                h="1.75rem"
+                minH="1.75rem"
+                isActive={isOpen}
+                _active={{
+                  bg: "interaction.muted.main.active",
+                }}
               >
                 <HStack spacing={0}>
                   <Icon
