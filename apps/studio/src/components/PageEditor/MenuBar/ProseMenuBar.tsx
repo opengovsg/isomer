@@ -124,9 +124,6 @@ export const ProseMenuBar = ({ editor }: { editor: Editor }) => {
         isActive: () => editor.isActive("subscript"),
       },
       {
-        type: "divider",
-      },
-      {
         type: "horizontal-list",
         label: "Lists",
         defaultIcon: BiListOl,

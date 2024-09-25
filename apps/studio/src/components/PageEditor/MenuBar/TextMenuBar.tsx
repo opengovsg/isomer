@@ -144,9 +144,6 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         isActive: () => editor.isActive("subscript"),
       },
       {
-        type: "divider",
-      },
-      {
         type: "horizontal-list",
         label: "Lists",
         defaultIcon: BiListOl,
@@ -177,9 +174,6 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         title: "Link",
         action: onLinkModalOpen,
         isActive: () => editor.isActive("link"),
-      },
-      {
-        type: "divider",
       },
       {
         type: "item",

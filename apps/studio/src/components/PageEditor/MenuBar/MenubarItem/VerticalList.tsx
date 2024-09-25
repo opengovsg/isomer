@@ -31,6 +31,7 @@ export const MenubarVerticalList = ({
               isOpen={isOpen}
               variant="clear"
               colorScheme="sub"
+              textAlign="start"
               sx={{
                 _hover: {
                   bg: "interaction.tinted.neutral.hover",
@@ -42,7 +43,7 @@ export const MenubarVerticalList = ({
               fontSize="0.75rem"
               fontWeight={400}
               lineHeight="1rem"
-              minW="8rem"
+              minW="7.75rem"
               _expanded={{
                 bg: "interaction.muted.main.active",
               }}
@@ -68,7 +69,7 @@ export const MenubarVerticalList = ({
                       <Text
                         wordBreak="break-word"
                         color="base.content.medium"
-                        textStyle="body-2"
+                        textStyle="caption-2"
                       >
                         {subItem.description}
                       </Text>
