@@ -32,6 +32,7 @@ export const PreviewIframe = ({
       w={width}
       h="100%"
       borderRadius="8px"
+      userSelect="none"
     >
       <Frame
         style={{
