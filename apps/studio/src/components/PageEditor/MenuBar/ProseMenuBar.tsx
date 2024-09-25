@@ -146,9 +146,6 @@ export const ProseMenuBar = ({ editor }: { editor: Editor }) => {
         ],
       },
       {
-        type: "divider",
-      },
-      {
         type: "item",
         icon: BiLink,
         title: "Link",

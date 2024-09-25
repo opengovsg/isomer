@@ -1,13 +1,31 @@
+import type { BoxProps } from "@chakra-ui/react"
 import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
 import type { PropsWithChildren } from "react"
+import { useMemo } from "react"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
 
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 
-export const EditorContainer = ({ children }: PropsWithChildren) => {
+export const EditorContainer = ({
+  children,
+  isNested,
+}: PropsWithChildren<{ isNested?: boolean }>) => {
+  const containerProps: Partial<BoxProps> = useMemo(() => {
+    if (isNested) {
+      return {
+        height: "22.5rem",
+        borderRadius: "4px",
+        overflow: "hidden",
+        border: "1px solid",
+        borderColor: "base.divider.strong",
+      }
+    }
+    return {}
+  }, [isNested])
+
   return (
-    <Box wordBreak="break-all" h="100%">
+    <Box wordBreak="break-all" h="100%" {...containerProps}>
       <VStack h="100%" w="100%" gap="0">
         {children}
       </VStack>
@@ -27,7 +45,6 @@ export const EditorContentWrapper = ({
       flex="1 1 auto"
       overflowX="hidden"
       overflowY="auto"
-      minH="300px"
       backgroundColor="white"
       onClick={() => editor?.chain().focus().run()}
       cursor="text"
@@ -38,10 +55,11 @@ export const EditorContentWrapper = ({
 interface EditorProps {
   menubar: EditorMenuBar
   editor: TiptapEditor
+  isNested?: boolean
 }
-export const Editor = ({ editor, menubar }: EditorProps) => {
+export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
   return (
-    <EditorContainer>
+    <EditorContainer isNested={isNested}>
       {menubar({ editor })}
       <EditorContentWrapper editor={editor} />
     </EditorContainer>
