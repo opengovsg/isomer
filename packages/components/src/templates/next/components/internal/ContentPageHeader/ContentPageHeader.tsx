@@ -1,9 +1,5 @@
 import type { ContentPageHeaderProps } from "~/interfaces"
-import {
-  getFormattedDate,
-  getReferenceLinkHref,
-  getSanitizedLinkHref,
-} from "~/utils"
+import { getFormattedDate, getReferenceLinkHref } from "~/utils"
 import Breadcrumb from "../Breadcrumb"
 import { LinkButton } from "../LinkButton"
 
@@ -29,9 +25,7 @@ const ContentPageHeader = ({
           {buttonLabel && buttonUrl && (
             <div className="mt-9">
               <LinkButton
-                href={getSanitizedLinkHref(
-                  getReferenceLinkHref(buttonUrl, site.siteMap),
-                )}
+                href={getReferenceLinkHref(buttonUrl, site.siteMap)}
                 LinkComponent={LinkComponent}
               >
                 {buttonLabel}

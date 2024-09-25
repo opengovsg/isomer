@@ -2,11 +2,7 @@ import type { VariantProps } from "tailwind-variants"
 
 import type { InfopicProps as BaseInfopicProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import {
-  getReferenceLinkHref,
-  getSanitizedLinkHref,
-  isExternalUrl,
-} from "~/utils"
+import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { LinkButton } from "../../internal/LinkButton"
 import { ImageClient } from "../Image"
 
@@ -73,9 +69,7 @@ export const Infopic = ({
           <div className={compoundStyles.button()}>
             <LinkButton
               LinkComponent={LinkComponent}
-              href={getSanitizedLinkHref(
-                getReferenceLinkHref(buttonUrl, site.siteMap),
-              )}
+              href={getReferenceLinkHref(buttonUrl, site.siteMap)}
             >
               {buttonLabel}
             </LinkButton>
