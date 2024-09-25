@@ -45,6 +45,7 @@ export const PreviewIframe = ({
       justify="center"
       w={viewportWidth}
       h="100%"
+      mx="auto"
       borderRadius="8px"
       userSelect="none"
     >
