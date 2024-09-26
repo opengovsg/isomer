@@ -45,7 +45,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
 
   return (
     <>
-      <Stack w="100%" p="1.75rem" gap="1rem">
+      <Stack w="100%" p="1.75rem" gap="1rem" height="$100vh" overflow="auto">
         <Breadcrumb size="sm">
           <BreadcrumbItem>
             <BreadcrumbLink href={`/sites/${siteId}`}>
