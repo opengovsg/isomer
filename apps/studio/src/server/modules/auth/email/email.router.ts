@@ -12,7 +12,12 @@ import { getBaseUrl } from "~/utils/getBaseUrl"
 import { defaultMeSelect } from "../../me/me.select"
 import { VerificationError } from "../auth.error"
 import { verifyToken } from "../auth.service"
-import { createTokenHash, createVfnPrefix, createVfnToken } from "../auth.util"
+import {
+  createTokenHash,
+  createVfnPrefix,
+  createVfnToken,
+  extractOriginIp,
+} from "../auth.util"
 
 export const emailSessionRouter = router({
   // Generate OTP.
@@ -79,9 +84,11 @@ export const emailSessionRouter = router({
     .input(emailVerifyOtpSchema)
     .mutation(async ({ ctx, input: { email, token } }) => {
       try {
+        const originIp = extractOriginIp(ctx.req)
         await verifyToken(ctx.prisma, {
           token,
           email,
+          ip: originIp,
         })
       } catch (e) {
         if (e instanceof VerificationError) {
