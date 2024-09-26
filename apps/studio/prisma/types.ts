@@ -19,8 +19,6 @@ declare global {
     // TODO: Rename all with XXXYYYJson instead of XXXJsonYYY
     type SiteJsonConfig = _IsomerSiteConfigProps
     type SiteThemeJson = _IsomerSiteThemeProps
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore flakey Type instantiation is excessively deep and possibly infinite error
     type BlobJsonContent = _IsomerSchema
     type NavbarJsonContent = _IsomerSiteWideComponentsProps["navBarItems"]
     type FooterJsonContent = _IsomerSiteWideComponentsProps["footerItems"]
