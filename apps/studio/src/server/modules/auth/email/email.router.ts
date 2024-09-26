@@ -9,6 +9,7 @@ import {
 } from "~/schemas/auth/email/sign-in"
 import { publicProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
+import { db } from "../../database"
 import { defaultMeSelect } from "../../me/me.select"
 import { VerificationError } from "../auth.error"
 import { verifyToken } from "../auth.service"
@@ -45,25 +46,62 @@ export const emailSessionRouter = router({
 
       // May have one of them fail,
       // so users may get an email but not have the token saved, but that should be fine.
-      await Promise.all([
-        ctx.prisma.verificationToken.upsert({
-          where: {
-            identifier: email,
-          },
-          update: {
-            token: hashedToken,
-            expires,
-            attempts: 0,
-          },
-          create: {
-            identifier: email,
-            token: hashedToken,
-            expires,
-          },
-        }),
-        sendMail({
+      const { savedPrefix, newlyCreated } = await db
+        .transaction()
+        .setIsolationLevel("serializable")
+        .execute(async (tx) => {
+          const existing = await tx
+            .selectFrom("VerificationToken")
+            .forUpdate()
+            .where("identifier", "=", email)
+            .select(["expires", "prefix", "token"])
+            .executeTakeFirst()
+
+          // NOTE: if we don't have a stored entry for the token, we will create a new token
+          if (!existing) {
+            await tx
+              .insertInto("VerificationToken")
+              .values({
+                identifier: email,
+                token: hashedToken,
+                prefix: otpPrefix,
+                expires,
+              })
+              .execute()
+
+            return {
+              savedPrefix: otpPrefix,
+              newlyCreated: true,
+            }
+          } else if (existing.expires < new Date(Date.now())) {
+            // NOTE: only reset the count if the existing one is already expired
+            await tx
+              .updateTable("VerificationToken")
+              .set({
+                token: hashedToken,
+                expires,
+                attempts: 0,
+                prefix: otpPrefix,
+              })
+              .where("identifier", "=", email)
+              .execute()
+
+            return {
+              savedPrefix: otpPrefix,
+              newlyCreated: true,
+            }
+          } else {
+            return {
+              savedPrefix: existing.prefix,
+              newlyCreated: false,
+            }
+          }
+        })
+
+      if (newlyCreated) {
+        await sendMail({
           subject: `Sign in to ${url.host}`,
-          body: `Your OTP is ${otpPrefix}-<b>${token}</b>. It will expire on ${formatInTimeZone(
+          body: `Your OTP is ${savedPrefix}-<b>${token}</b>. It will expire on ${formatInTimeZone(
             expires,
             "Asia/Singapore",
             "dd MMM yyyy, hh:mmaaa",
@@ -71,11 +109,20 @@ export const emailSessionRouter = router({
       Please use this to login to your account.
       <p>If your OTP does not work, please request for a new one.</p>`,
           recipient: email,
-        }),
-      ])
-      return { email, otpPrefix }
+        })
+      } else {
+        await sendMail({
+          subject: `Sign in to ${url.host}`,
+          body: `Please use your existing OTP beginning with ${savedPrefix} to login to your account.
+      <p>If your OTP does not work, please request for a new one.</p>`,
+          recipient: email,
+        })
+      }
+
+      return { email, otpPrefix: savedPrefix }
     }),
   verifyOtp: publicProcedure
+    .meta({ rateLimitOptions: {} })
     .input(emailVerifyOtpSchema)
     .mutation(async ({ ctx, input: { email, token } }) => {
       try {
