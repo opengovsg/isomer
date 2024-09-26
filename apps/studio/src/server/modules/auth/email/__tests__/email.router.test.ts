@@ -73,6 +73,7 @@ describe("auth.email", () => {
     const VALID_OTP = "123456"
     const VALID_TOKEN_HASH = createTokenHash(VALID_OTP, TEST_VALID_EMAIL)
     const INVALID_OTP = "987643"
+    const OTP_PREFIX = "PREF"
 
     it("should successfully set session on valid OTP", async () => {
       // Arrange
@@ -81,6 +82,7 @@ describe("auth.email", () => {
           expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
           identifier: TEST_VALID_EMAIL,
           token: VALID_TOKEN_HASH,
+          prefix: OTP_PREFIX,
         },
       })
 
@@ -120,6 +122,7 @@ describe("auth.email", () => {
           expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
           identifier: TEST_VALID_EMAIL,
           token: VALID_TOKEN_HASH,
+          prefix: OTP_PREFIX,
         },
       })
 
@@ -143,6 +146,7 @@ describe("auth.email", () => {
           expires: new Date(Date.now() - 1000),
           identifier: TEST_VALID_EMAIL,
           token: VALID_TOKEN_HASH,
+          prefix: OTP_PREFIX,
         },
       })
 
@@ -163,6 +167,7 @@ describe("auth.email", () => {
       await prisma.verificationToken.create({
         data: {
           expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
+          prefix: OTP_PREFIX,
           identifier: TEST_VALID_EMAIL,
           token: VALID_TOKEN_HASH,
           attempts: 6, // Currently hardcoded to 5 attempts.
