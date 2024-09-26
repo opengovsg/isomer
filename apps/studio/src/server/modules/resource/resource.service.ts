@@ -299,7 +299,7 @@ export const getLocalisedSitemap = async (
         })
         .select(defaultResourceSelect),
     )
-    // Step 5: Combine all the resources in a single array
+    // Step 3: Combine all the resources in a single array
     .selectFrom("ancestors as Resource")
     .union((eb) =>
       eb
@@ -309,7 +309,7 @@ export const getLocalisedSitemap = async (
     .select(defaultResourceSelect)
     .execute()
 
-  // Step 6: Construct the localised sitemap object
+  // Step 4: Construct the localised sitemap object
   const rootResource = await db
     .selectFrom("Resource")
     .where("Resource.siteId", "=", siteId)

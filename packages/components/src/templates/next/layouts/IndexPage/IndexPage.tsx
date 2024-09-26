@@ -19,7 +19,7 @@ const createIndexPageLayoutStyles = tv({
   variants: {
     isSideRailPresent: {
       true: {
-        content: "lg:col-span-9 lg:ml-24",
+        content: "lg:col-span-9 lg:mr-24",
       },
       false: {
         content: "max-w-[54rem]",
@@ -66,13 +66,6 @@ const IndexPageLayout = ({
         lastUpdated={page.lastModified}
       />
       <div className={compoundStyles.container()}>
-        {sideRail && (
-          <div className={compoundStyles.siderailContainer()}>
-            <Siderail {...sideRail} LinkComponent={LinkComponent} />
-            <BackToTopLink LinkComponent={LinkComponent} />
-          </div>
-        )}
-
         <div
           className={compoundStyles.content({ isSideRailPresent: !!sideRail })}
         >
@@ -83,6 +76,13 @@ const IndexPageLayout = ({
             LinkComponent,
           })}
         </div>
+
+        {sideRail && (
+          <div className={compoundStyles.siderailContainer()}>
+            <Siderail {...sideRail} LinkComponent={LinkComponent} />
+            <BackToTopLink LinkComponent={LinkComponent} />
+          </div>
+        )}
       </div>
     </Skeleton>
   )
