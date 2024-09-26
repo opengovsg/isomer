@@ -3,20 +3,16 @@ import DOMPurify from "isomorphic-dompurify"
 import type { IsomerSitemap } from "~/types"
 import { getSitemapAsArray } from "./getSitemapAsArray"
 
-const ELEMENT_ID = "link-id"
-
 // This function returns a sanitized version of the provided URL string
 const getSanitizedLinkHref = (url?: string) => {
   if (url === undefined) {
     return undefined
   }
 
-  const dirty = document.createElement("a")
-  dirty.setAttribute("href", url)
-  dirty.setAttribute("id", ELEMENT_ID)
-  const clean = DOMPurify.sanitize(dirty, { RETURN_DOM_FRAGMENT: true })
-
-  const sanitizedUrl = clean.getElementById(ELEMENT_ID)?.getAttribute("href")
+  const elem = document.createElement("a")
+  elem.setAttribute("href", url)
+  DOMPurify.sanitize(elem, { IN_PLACE: true })
+  const sanitizedUrl = elem.getAttribute("href")
 
   if (sanitizedUrl === null) {
     return undefined
