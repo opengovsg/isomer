@@ -30,6 +30,7 @@ generator kysely {
 model VerificationToken {
   identifier String   @id
   token      String
+  prefix     String
   attempts   Int      @default(0)
   expires    DateTime
 }
