@@ -163,7 +163,7 @@ export const DEFAULT_BLOCKS: Record<
 
 export const BLOCK_TO_META: Record<
   IsomerComponent["type"],
-  { label: string; description: string; usageText?: string }
+  { label: string; description: string; usageText?: string; imageSrc?: string }
 > = {
   hero: {
     label: "Hero banner",
@@ -174,57 +174,67 @@ export const BLOCK_TO_META: Record<
     description: "Add an image with caption",
     usageText:
       "Get your readers' attention and create emotions by using an image. You can adjust the size of the image.",
+    imageSrc: "/assets/block-images/Image.png",
   },
   prose: {
     label: "Text",
     description: "Add a block of text to your page",
     usageText:
       "You can add structure to your content by using features such as headings, lists, links, and body text.",
+    imageSrc: "/assets/block-images/Text.png",
   },
   callout: {
     label: "Callout",
     description: "Bring attention to important information",
     usageText:
       "Callouts are great for highlighting information such as updates. We recommend not overusing the callouts.",
+    imageSrc: "/assets/block-images/Callout.png",
   },
   keystatistics: {
     label: "Statistics",
     description: "Display KPIs or key statistics for your agency",
     usageText:
       "Do you have metrics to show the public? Designed to be bold, this block supports up to four numbers with labels.",
+    imageSrc: "/assets/block-images/KeyStatistics.png",
   },
   infobar: {
     label: "Text with CTA",
     description: "Add a strong call-to-action",
     usageText:
       "Use this block to highlight key initatives on your homepage. It supports up to two buttons.",
+    imageSrc: "/assets/block-images/Infobar.png",
   },
   contentpic: {
     label: "Contentpic",
     description: "Put an image and text side-by-side",
     usageText:
       "Use this block to juxtapose text next to a smaller image than usual, such as introducing a committee member along with their headshot.",
+    imageSrc: "/assets/block-images/Contentpic.png",
   },
   infopic: {
     label: "Text with image",
     description: "Place an image with a text and call-to-action",
     usageText: "This block comes with a button.",
+    imageSrc: "/assets/block-images/Infopic.png",
   },
   accordion: {
     label: "Accordion",
     description: "Display content in expandable accordions",
     usageText:
       "Accordions hide details by default, so they are great for content that isn't relevant to every reader.",
+    imageSrc: "/assets/block-images/Accordion.png",
   },
   infocards: {
     label: "Cards",
     description: `Link information in "cards" with or without images`,
     usageText: "This block supports up to six cards.",
+    imageSrc: "/assets/block-images/InfoCards.png",
   },
   infocols: {
     label: "Columns of text",
     description: "Show important links in multiple columns",
     usageText: "This block supports up to six links.",
+    imageSrc: "/assets/block-images/Infocol.png",
   },
   iframe: {
     label: "Embed",
