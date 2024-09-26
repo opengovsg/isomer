@@ -46,6 +46,11 @@ export type Permission = {
     createdAt: Generated<Timestamp>;
     updatedAt: Generated<Timestamp>;
 };
+export type RateLimiterFlexible = {
+    key: string;
+    points: number;
+    expire: Timestamp | null;
+};
 export type Resource = {
     id: GeneratedAlways<string>;
     title: string;
@@ -112,6 +117,7 @@ export type DB = {
     Footer: Footer;
     Navbar: Navbar;
     Permission: Permission;
+    RateLimiterFlexible: RateLimiterFlexible;
     Resource: Resource;
     Site: Site;
     SiteMember: SiteMember;
