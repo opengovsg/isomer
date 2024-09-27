@@ -117,3 +117,20 @@ export const ErrorNestedState: Story = {
     })
   },
 }
+
+export const FullscreenPreview: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // Required since menu is a portal
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const screen = within(canvasElement.parentElement!)
+
+    await waitFor(async () => {
+      await userEvent.click(
+        canvas.getByRole("button", { name: /default mode/i }),
+      )
+
+      await userEvent.click(screen.getByText(/full screen/i))
+    })
+  },
+}
