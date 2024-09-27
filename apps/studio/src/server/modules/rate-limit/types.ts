@@ -1,4 +1,4 @@
-export type RateLimitMetaOptions = {
+export interface RateLimitMetaOptions {
   max?: number
   windowMs?: number
 }

@@ -2,7 +2,7 @@ import { type NextApiRequest } from "next"
 
 type RateLimitArgs = IpRateLimit
 
-type IpRateLimit = {
+interface IpRateLimit {
   type: "IP"
   req: NextApiRequest
 }
