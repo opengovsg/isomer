@@ -178,6 +178,13 @@ const rateLimitMiddleware = t.middleware(async ({ next, ctx, meta }) => {
     return next()
   }
 
+  if (
+    env.NODE_ENV === "test" &&
+    !meta.rateLimitOptions._internalUseRateLimiterInTestEnv
+  ) {
+    return next()
+  }
+
   await checkRateLimit({
     req: ctx.req,
     rateLimitOptions: meta.rateLimitOptions,
