@@ -18,6 +18,7 @@ export const emailSessionRouter = router({
   // Generate OTP.
   login: publicProcedure
     .input(emailSignInSchema)
+    .meta({ rateLimitOptions: {} })
     .mutation(async ({ ctx, input: { email } }) => {
       if (env.NODE_ENV === "production") {
         // check if whitelisted email on Growthbook
@@ -77,6 +78,7 @@ export const emailSessionRouter = router({
     }),
   verifyOtp: publicProcedure
     .input(emailVerifyOtpSchema)
+    .meta({ rateLimitOptions: {} })
     .mutation(async ({ ctx, input: { email, token } }) => {
       try {
         await verifyToken(ctx.prisma, {
