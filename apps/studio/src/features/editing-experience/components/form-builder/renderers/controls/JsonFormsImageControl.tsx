@@ -148,7 +148,10 @@ export function JsonFormsImageControl({
 
             if (parseResult.success) return null
             // NOTE: safe assertion here because we're in error path and there's at least 1 error
-            return parseResult.error.errors[0]!.message
+            return (
+              parseResult.error.errors[0]?.message ||
+              "Please ensure that your file begins with alphanumeric characters!"
+            )
           }}
         />
         <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
