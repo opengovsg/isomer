@@ -30,7 +30,7 @@ const Iframe = ({ title, content }: IframeProps) => {
   const iframeUrl = sanitizedIframe.getAttribute("src")
 
   return (
-    <section className={ComponentContent}>
+    <section className={`mt-0 [&:not(:first-child)]:mt-7 ${ComponentContent}`}>
       <div
         className={`relative w-full overflow-hidden ${getPaddingForEmbed(
           iframeUrl,
