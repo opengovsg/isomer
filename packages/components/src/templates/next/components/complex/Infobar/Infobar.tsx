@@ -7,11 +7,11 @@ import { LinkButton } from "../../internal/LinkButton"
 const createInfobarStyles = tv({
   slots: {
     outerContainer: `${ComponentContent}`,
-    innerContainer: "mx-auto flex flex-col",
+    innerContainer: "mx-auto flex flex-col items-start",
     headingContainer: "flex flex-col gap-6",
     title: "break-words",
     description: "text-base-content",
-    buttonContainer: "flex flex-col items-center gap-x-5 gap-y-4 sm:flex-row",
+    buttonContainer: "flex flex-col items-start gap-x-5 gap-y-4 sm:flex-row",
   },
   variants: {
     layout: {
@@ -21,13 +21,15 @@ const createInfobarStyles = tv({
         headingContainer: "gap-6",
         title: "prose-display-lg text-base-content-strong",
         description: "prose-headline-lg-regular",
+        buttonContainer: "items-center",
       },
       default: {
         outerContainer: "mt-12 rounded-lg bg-base-canvas-backdrop first:mt-0",
-        innerContainer: "gap-7 p-8",
+        innerContainer: "items-start gap-7 p-8",
         headingContainer: "gap-4",
         title: "prose-display-sm text-base-content",
         description: "prose-body-base",
+        buttonContainer: "items-start",
       },
     },
   },
