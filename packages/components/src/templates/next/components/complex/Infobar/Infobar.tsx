@@ -23,7 +23,7 @@ const createInfobarStyles = tv({
         description: "prose-headline-lg-regular",
       },
       default: {
-        outerContainer: "rounded-lg bg-base-canvas-backdrop",
+        outerContainer: "mt-12 rounded-lg bg-base-canvas-backdrop first:mt-0",
         innerContainer: "gap-7 p-8",
         headingContainer: "gap-4",
         title: "prose-display-sm text-base-content",
