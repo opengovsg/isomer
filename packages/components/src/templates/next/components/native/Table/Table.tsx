@@ -39,7 +39,7 @@ const Table = ({
       />
       <div className="overflow-x-auto" tabIndex={0}>
         <table
-          className="w-full border-collapse border-spacing-0"
+          className="w-full border-collapse border-spacing-0 border border-base-divider-medium"
           aria-describedby={tableDescriptionId}
           ref={tableRef}
         >
