@@ -65,9 +65,19 @@ const validatedPageProcedure = protectedProcedure.use(
 export const pageRouter = router({
   readPage: protectedProcedure
     .input(basePageSchema)
-    .query(async ({ input: { pageId, siteId } }) =>
-      getPageById(db, { resourceId: pageId, siteId }),
-    ),
+    .query(async ({ input: { pageId, siteId } }) => {
+      const retrievedPage = await getPageById(db, {
+        resourceId: pageId,
+        siteId,
+      })
+      if (!retrievedPage) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+      return retrievedPage
+    }),
 
   readPageAndBlob: protectedProcedure
     .input(basePageSchema)
