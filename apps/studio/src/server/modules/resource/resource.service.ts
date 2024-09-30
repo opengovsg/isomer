@@ -124,8 +124,8 @@ export const getFullPageById = async (
 export const getPageById = (
   db: SafeKysely,
   args: { resourceId: number; siteId: number },
-) =>
-  getById(db, args)
+) => {
+  return getById(db, args)
     .where((eb) =>
       eb.or([
         eb("type", "=", "Page"),
@@ -134,7 +134,8 @@ export const getPageById = (
       ]),
     )
     .select(defaultResourceSelect)
-    .executeTakeFirstOrThrow()
+    .executeTakeFirst()
+}
 
 export const updatePageById = (
   page: Partial<Omit<Page, "id" | "siteId" | "parentId">> & {

@@ -62,6 +62,12 @@ export const incrementVersion = async ({
     .setIsolationLevel("serializable")
     .execute(async (tx) => {
       const page = await getPageById(tx, { siteId, resourceId: pageId })
+      if (!page) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Page not found",
+        })
+      }
 
       if (!page.draftBlobId) {
         throw new TRPCError({
