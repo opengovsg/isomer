@@ -18,7 +18,6 @@ export const jsonFormsAccordionTextControlTester: RankedTester = rankWith(
 export function JsonFormsAccordionTextControl({
   data,
   label,
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   handleChange,
   path,
   description,

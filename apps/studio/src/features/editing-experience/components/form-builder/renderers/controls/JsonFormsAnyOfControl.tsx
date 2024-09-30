@@ -27,7 +27,6 @@ export function JsonFormsAnyOfControl({
   uischemas,
   label,
   description,
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   handleChange,
   indexOfFittingSchema,
   data,

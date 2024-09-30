@@ -20,7 +20,6 @@ export function JsonFormsBooleanControl({
   label,
   id,
   enabled,
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   handleChange,
   errors,
   path,

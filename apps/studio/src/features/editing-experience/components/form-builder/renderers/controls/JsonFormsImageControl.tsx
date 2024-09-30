@@ -29,7 +29,6 @@ export const jsonFormsImageControlTester: RankedTester = rankWith(
 
 export function JsonFormsImageControl({
   label,
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   handleChange,
   path,
   description,

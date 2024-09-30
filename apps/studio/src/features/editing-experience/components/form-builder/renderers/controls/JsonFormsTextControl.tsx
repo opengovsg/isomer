@@ -26,7 +26,6 @@ const getRemainingCharacterCount = (maxLength: number, data?: string) => {
 export function JsonFormsTextControl({
   data,
   label,
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   handleChange,
   path,
   description,

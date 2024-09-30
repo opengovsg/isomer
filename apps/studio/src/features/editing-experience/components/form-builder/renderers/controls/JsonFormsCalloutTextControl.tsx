@@ -18,7 +18,6 @@ export const jsonFormsCalloutTextControlTester: RankedTester = rankWith(
 export function JsonFormsCalloutTextControl({
   data,
   label,
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   handleChange,
   path,
   description,

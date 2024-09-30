@@ -147,13 +147,9 @@ export function JsonFormsArrayControl({
   visible,
   enabled,
   label,
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   addItem,
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   removeItems,
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   moveUp,
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   moveDown,
   minItems,
   schema,

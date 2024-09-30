@@ -42,7 +42,6 @@ export const jsonFormsIntegerControlTester: RankedTester = rankWith(
 export function JsonFormsIntegerControl({
   label,
   schema,
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   handleChange,
   errors,
   path,
