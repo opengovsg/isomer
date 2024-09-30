@@ -139,6 +139,7 @@ const ContentLayout = ({
         {...page.contentPageHeader}
         title={page.title}
         breadcrumb={breadcrumb}
+        site={site}
         LinkComponent={LinkComponent}
         lastUpdated={page.lastModified}
       />
