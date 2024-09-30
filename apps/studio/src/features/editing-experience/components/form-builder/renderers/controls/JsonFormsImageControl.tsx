@@ -14,6 +14,7 @@ import type { ModifiedAsset } from "~/types/assets"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useEnv } from "~/hooks/useEnv"
+import { getPresignedPutUrlSchema } from "~/schemas/asset"
 import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPES,
   MAX_IMG_FILE_SIZE_BYTES,
@@ -140,6 +141,18 @@ export function JsonFormsImageControl({
           }}
           maxSize={MAX_IMG_FILE_SIZE_BYTES}
           accept={IMAGE_UPLOAD_ACCEPTED_MIME_TYPES}
+          onFileValidation={(file) => {
+            const parseResult = getPresignedPutUrlSchema
+              .pick({ fileName: true })
+              .safeParse({ fileName: file.name })
+
+            if (parseResult.success) return null
+            // NOTE: safe assertion here because we're in error path and there's at least 1 error
+            return (
+              parseResult.error.errors[0]?.message ||
+              "Please ensure that your file begins with alphanumeric characters!"
+            )
+          }}
         />
         <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
           {`Maximum file size: ${MAX_IMG_FILE_SIZE_BYTES / 1000000} MB`}
