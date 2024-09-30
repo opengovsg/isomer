@@ -326,7 +326,7 @@ export const pageRouter = router({
         const pageMetaSchema = getLayoutMetadataSchema(fullPage.content.layout)
         const validateFn = ajv.compile(pageMetaSchema)
         try {
-          const newMeta = JSON.parse(meta) as typeof fullPage.content.meta
+          const newMeta = JSON.parse(meta) as PrismaJson.BlobJsonContent["meta"]
           const isValid = validateFn(newMeta)
           if (!isValid) {
             throw new TRPCError({
@@ -335,7 +335,9 @@ export const pageRouter = router({
               cause: validateFn.errors,
             })
           }
-          const newContent = meta === "" ? rest : { ...rest, meta: newMeta }
+          const newContent = !meta
+            ? rest
+            : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
 
           await updateBlobById(tx, {
             pageId,
