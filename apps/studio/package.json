@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate": "prisma generate && tsx prisma/generate.cts && eslint --fix prisma/generated && npx prettier --write prisma/generated",
     "db:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
     "db:sleep": "sleep 3",
     "db:seed": "prisma db seed",
@@ -15,7 +14,6 @@
     "teardown": "docker compose down",
     "predev": "run-s migrate",
     "dev": "next dev",
-    "prebuild": "run-s generate",
     "build": "SKIP_ENV_VALIDATION=true next build",
     "build:theme": "npx chakra-cli tokens src/theme/index.ts",
     "build:preview-tw": "NODE_ENV=production npx tailwindcss build -i src/styles/tailwind.css -o public/assets/css/preview-tw.css &&  prettier --write public/assets/css/preview-tw.css",

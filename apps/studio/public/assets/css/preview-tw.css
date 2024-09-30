@@ -1955,10 +1955,6 @@ video {
   gap: 0.625rem;
 }
 
-.gap-20 {
-  gap: 5rem;
-}
-
 .gap-3 {
   gap: 0.75rem;
 }
@@ -2528,11 +2524,6 @@ video {
 .px-\[23px\] {
   padding-left: 23px;
   padding-right: 23px;
-}
-
-.px-\[4rem\] {
-  padding-left: 4rem;
-  padding-right: 4rem;
 }
 
 .px-px {
@@ -4892,10 +4883,6 @@ video {
 
   .lg\:gap-10 {
     gap: 2.5rem;
-  }
-
-  .lg\:gap-12 {
-    gap: 3rem;
   }
 
   .lg\:gap-2 {
