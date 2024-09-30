@@ -85,7 +85,7 @@ export interface SiteMember {
   updatedAt: Generated<Timestamp>
 }
 export interface User {
-  id: string
+  id: GeneratedAlways<string>
   name: string
   email: string
   phone: string

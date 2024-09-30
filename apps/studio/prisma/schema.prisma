@@ -109,7 +109,7 @@ enum ResourceType {
 }
 
 model User {
-  id            String  @id @default(cuid())
+  id            String  @id @default(dbgenerated("nanoid()"))
   name          String
   email         String  @unique
   phone         String
