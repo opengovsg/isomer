@@ -30,6 +30,8 @@ export const upsertSgidAccountAndUser = async ({
     })
 
     // Link user to account
+    // TODO: Remnant of unused code, to remove
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const pocdexProviderAccountId = createPocdexAccountProviderId(
       sub,
       pocdexEmail,

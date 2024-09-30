@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box, Flex, FormControl } from "@chakra-ui/react"
+import { Box, FormControl } from "@chakra-ui/react"
 import { rankWith } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
@@ -18,12 +18,14 @@ export const jsonFormsCalloutTextControlTester: RankedTester = rankWith(
 export function JsonFormsCalloutTextControl({
   data,
   label,
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   handleChange,
   path,
   description,
   required,
 }: ControlProps) {
   const editor = useCalloutEditor({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange: (content) => handleChange(path, content),
   })

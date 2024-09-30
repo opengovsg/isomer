@@ -21,6 +21,7 @@ export const jsonFormsDateControlTester: RankedTester = rankWith(
 export function JsonFormsDateControl({
   data,
   label,
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   handleChange,
   path,
   description,
@@ -32,7 +33,7 @@ export function JsonFormsDateControl({
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <DatePicker
-          inputValue={data}
+          inputValue={!!data ? String(data) : undefined}
           allowManualInput={false}
           onInputValueChange={(date) => handleChange(path, date.toString())}
         />

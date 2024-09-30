@@ -249,6 +249,7 @@ const PageLinkElement = ({
 export function JsonFormsLinkControl({
   data,
   label,
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   handleChange,
   path,
   description,

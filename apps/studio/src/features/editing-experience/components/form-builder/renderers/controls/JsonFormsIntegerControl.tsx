@@ -42,6 +42,7 @@ export const jsonFormsIntegerControlTester: RankedTester = rankWith(
 export function JsonFormsIntegerControl({
   label,
   schema,
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   handleChange,
   errors,
   path,
@@ -53,6 +54,7 @@ export function JsonFormsIntegerControl({
     exclusiveMinimum,
     maximum,
     minimum,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     default: defaultValue,
   } = schema
   const min = Number(exclusiveMinimum) + 1 || minimum || 0
@@ -71,6 +73,7 @@ export function JsonFormsIntegerControl({
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <NumberInput
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           defaultValue={defaultValue || min}
           min={min}
           max={max}

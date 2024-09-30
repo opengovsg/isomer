@@ -18,12 +18,14 @@ export const jsonFormsProseControlTester: RankedTester = rankWith(
 export function JsonFormsProseControl({
   data,
   label,
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   handleChange,
   path,
   description,
   required,
 }: ControlProps) {
   const editor = useProseEditor({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange: (content) => handleChange(path, content),
   })

@@ -32,6 +32,7 @@ const getRemainingCharacterCount = (maxLength: number, data?: string) => {
 export function JsonFormsTextAreaControl({
   data,
   label,
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   handleChange,
   path,
   description,
@@ -41,7 +42,7 @@ export function JsonFormsTextAreaControl({
 }: ControlProps) {
   const { maxLength } = schema
   const remainingCharacterCount = maxLength
-    ? getRemainingCharacterCount(maxLength, data)
+    ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)
     : -1
   const numOfRows = Math.min(
     5,
@@ -63,7 +64,7 @@ export function JsonFormsTextAreaControl({
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <Textarea
-          value={data || ""}
+          value={String(data || "")}
           onChange={onChange}
           placeholder={label}
           maxLength={maxLength}

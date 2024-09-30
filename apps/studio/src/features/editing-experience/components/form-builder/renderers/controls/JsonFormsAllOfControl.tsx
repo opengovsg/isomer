@@ -1,5 +1,4 @@
 import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
-import { Box } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
   isAllOfControl,
