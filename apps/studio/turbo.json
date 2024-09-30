@@ -16,7 +16,7 @@
     },
     "build:preview-tw": {
       "dependsOn": ["@opengovsg/isomer-components#build"],
-      "cache": false
+      "outputs": ["public/assets/css/preview-tw.css"]
     },
     "format": {
       "dependsOn": ["generate"]
