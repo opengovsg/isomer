@@ -3,7 +3,6 @@ import { getLayoutMetadataSchema, schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
 import { get, isEmpty, isEqual } from "lodash"
-import { z } from "zod"
 
 import {
   basePageSchema,
@@ -13,7 +12,6 @@ import {
   publishPageSchema,
   reorderBlobSchema,
   updatePageBlobSchema,
-  updatePageSchema,
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -27,7 +25,6 @@ import {
   getResourceFullPermalink,
   getResourcePermalinkTree,
   updateBlobById,
-  updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig, getSiteNameAndCodeBuildId } from "../site/site.service"
 import { incrementVersion } from "../version/version.service"
@@ -66,33 +63,6 @@ const validatedPageProcedure = protectedProcedure.use(
 )
 
 export const pageRouter = router({
-  list: protectedProcedure
-    .input(
-      z.object({
-        siteId: z.number(),
-        resourceId: z.number().optional(),
-      }),
-    )
-    .query(async ({ input: { siteId, resourceId } }) => {
-      let query = db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-
-      if (resourceId) {
-        query = query.where("Resource.parentId", "=", String(resourceId))
-      }
-      return query
-        .select([
-          "Resource.id",
-          "Resource.permalink",
-          "Resource.title",
-          "Resource.publishedVersionId",
-          "Resource.draftBlobId",
-          "Resource.type",
-        ])
-        .execute()
-    }),
-
   readPage: protectedProcedure
     .input(basePageSchema)
     .query(async ({ input: { pageId, siteId } }) =>
@@ -207,15 +177,6 @@ export const pageRouter = router({
         return actualBlocks
       })
     }),
-
-  updatePage: protectedProcedure
-    .input(updatePageSchema)
-    .mutation(async ({ input }) => {
-      await updatePageById({ ...input, id: input.pageId })
-
-      return input
-    }),
-
   updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input }) => {

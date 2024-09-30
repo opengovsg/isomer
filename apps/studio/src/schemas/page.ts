@@ -45,15 +45,6 @@ export const reorderBlobSchema = z.object({
   ),
 })
 
-export const updatePageSchema = basePageSchema.extend({
-  // NOTE: We allow both to be empty now,
-  // in which case this is a no-op.
-  // We are ok w/ this because it doesn't
-  // incur any db writes
-  parentId: z.number().min(1).optional(),
-  pageName: z.string().min(1).optional(),
-})
-
 export const updatePageBlobSchema = basePageSchema.extend({
   content: z.string(),
   siteId: z.number().min(1),
