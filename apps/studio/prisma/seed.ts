@@ -4,12 +4,9 @@
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
 import type { IsomerSchema } from "@opengovsg/isomer-components"
-import cuid2 from "@paralleldrive/cuid2"
 
 import type { Navbar } from "~/server/modules/resource/resource.types"
 import { db, jsonb } from "../src/server/modules/database"
-
-const MOCK_PHONE_NUMBER = "123456789"
 
 const ISOMER_ADMINS = [
   "alex",
@@ -231,10 +228,8 @@ async function main() {
       return db
         .insertInto("User")
         .values({
-          id: cuid2.createId(),
           name,
           email: `${name}@open.gov.sg`,
-          phone: MOCK_PHONE_NUMBER,
         })
         .onConflict((oc) =>
           oc
