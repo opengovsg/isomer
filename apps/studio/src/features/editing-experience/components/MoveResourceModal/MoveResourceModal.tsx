@@ -285,6 +285,7 @@ const MoveResourceContent = withSuspense(
               movedItem?.resourceId &&
               curResourceId &&
               mutate({
+                siteId,
                 movedResourceId: movedItem.resourceId,
                 destinationResourceId: moveDest.resourceId,
               })
