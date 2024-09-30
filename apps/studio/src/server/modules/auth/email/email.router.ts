@@ -13,6 +13,7 @@ import { defaultMeSelect } from "../../me/me.select"
 import { VerificationError } from "../auth.error"
 import { verifyToken } from "../auth.service"
 import { createTokenHash, createVfnPrefix, createVfnToken } from "../auth.util"
+import { getOtpFingerPrint } from "./utils"
 
 export const emailSessionRouter = router({
   // Generate OTP.
@@ -49,7 +50,7 @@ export const emailSessionRouter = router({
       await Promise.all([
         ctx.prisma.verificationToken.upsert({
           where: {
-            identifier: email,
+            identifier: getOtpFingerPrint(email, ctx.req),
           },
           update: {
             token: hashedToken,
@@ -57,7 +58,7 @@ export const emailSessionRouter = router({
             attempts: 0,
           },
           create: {
-            identifier: email,
+            identifier: getOtpFingerPrint(email, ctx.req),
             token: hashedToken,
             expires,
           },
@@ -81,7 +82,7 @@ export const emailSessionRouter = router({
     .meta({ rateLimitOptions: {} })
     .mutation(async ({ ctx, input: { email, token } }) => {
       try {
-        await verifyToken(ctx.prisma, {
+        await verifyToken(ctx.prisma, ctx.req, {
           token,
           email,
         })
