@@ -6,7 +6,6 @@ import { textStyles } from "../foundations/textStyles"
 
 const parts = tableAnatomy.extend("container")
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
 const { defineMultiStyleConfig, definePartsStyle } =
   createMultiStyleConfigHelpers(parts.keys)
 

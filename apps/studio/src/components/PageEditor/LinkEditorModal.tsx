@@ -192,7 +192,9 @@ export const LinkEditorModal = ({
             : ""
         }
         linkHref={
-          editor.isActive("link") ? editor.getAttributes("link").href : ""
+          editor.isActive("link")
+            ? String(editor.getAttributes("link").href ?? "")
+            : ""
         }
         onSave={(linkText, linkHref) => {
           editor

@@ -1,18 +1,16 @@
 import type { RequestOptions, ResponseOptions } from "node-mocks-http"
 import { type NextApiRequest, type NextApiResponse } from "next"
-import { GrowthBook } from "@growthbook/growthbook"
 import { type User } from "@prisma/client"
 import { createMocks } from "node-mocks-http"
 
 import type { Context } from "~/server/context"
-import { env } from "~/env.mjs"
 import { type Session } from "~/lib/types/session"
 import { createContextInner } from "~/server/context"
 import { auth } from "./auth"
 import { mockGrowthBook } from "./growthbook/mockInstance"
 
 class MockIronStore {
-  private static instance: MockIronStore
+  private static instance?: MockIronStore
 
   private saved: Record<string, string | object | number>
 

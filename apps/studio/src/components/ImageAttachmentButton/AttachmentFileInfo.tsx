@@ -52,7 +52,7 @@ export const AttachmentFileInfo = forwardRef<AttachmentFileInfoProps, "div">(
             maxH={{ base: "15rem" }}
             alt="uploaded image preview"
             __css={styles.fileInfoImage}
-            flex={imagePreview ? 1 : undefined}
+            flex={1}
             src={previewSrc}
           />
         )}
