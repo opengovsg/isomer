@@ -55,5 +55,21 @@ export const Gradient: Story = {
     buttonUrl: "/",
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
+    variant: "gradient",
+  },
+}
+
+export const ColourBlock: Story = {
+  args: {
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1726820254128-642495548079?q=80&w=3776&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Ministry of Trade and Industry",
+    subtitle:
+      "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
+    buttonLabel: "Main CTA",
+    buttonUrl: "/",
+    secondaryButtonLabel: "Sub CTA",
+    secondaryButtonUrl: "/",
+    variant: "block",
   },
 }
