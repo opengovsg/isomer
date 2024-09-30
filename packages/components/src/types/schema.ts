@@ -7,6 +7,7 @@ import type {
   ArticlePagePageProps,
   CollectionPagePageProps,
   ContentPagePageProps,
+  DatabasePagePageProps,
   FileRefPageProps,
   HomePagePageProps,
   LinkComponentType,
@@ -20,6 +21,7 @@ import {
   ArticlePageMetaSchema,
   CollectionPageMetaSchema,
   ContentPageMetaSchema,
+  DatabasePageMetaSchema,
   FileRefMetaSchema,
   HomePageMetaSchema,
   LinkRefMetaSchema,
@@ -28,6 +30,7 @@ import {
   ArticlePagePageSchema,
   CollectionPagePageSchema,
   ContentPagePageSchema,
+  DatabasePagePageSchema,
   FileRefPageSchema,
   HomePagePageSchema,
   LinkRefPageSchema,
@@ -39,6 +42,7 @@ export const ISOMER_USABLE_PAGE_LAYOUTS = {
   Content: "content",
   Homepage: "homepage",
   Index: "index",
+  Database: "database",
   File: "file",
   Link: "link",
 } as const
@@ -149,6 +153,24 @@ export const IndexPageSchema = Type.Object(
   },
 )
 
+export const DatabasePageSchema = Type.Object(
+  {
+    layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Database, {
+      default: ISOMER_PAGE_LAYOUTS.Database,
+    }),
+    meta: Type.Optional(DatabasePageMetaSchema),
+    page: DatabasePagePageSchema,
+    content: Type.Array(IsomerComponentsSchemas, {
+      title: "Page content",
+    }),
+  },
+  {
+    title: "Database",
+    description:
+      "This is a special kind of content page that also displays a searchable database of items at the bottom of the page.",
+  },
+)
+
 export const FileRefSchema = Type.Object(
   {
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.File, {
@@ -201,6 +223,7 @@ export const IsomerPageSchema = Type.Composite([
     ArticlePageSchema,
     CollectionPageSchema,
     ContentPageSchema,
+    DatabasePageSchema,
     HomePageSchema,
     IndexPageSchema,
     FileRefSchema,
@@ -242,6 +265,10 @@ export type ContentPageSchemaType = Static<typeof ContentPageSchema> &
   BasePageAdditionalProps & {
     page: ContentPagePageProps
   }
+export type DatabasePageSchemaType = Static<typeof DatabasePageSchema> &
+  BasePageAdditionalProps & {
+    page: DatabasePagePageProps
+  }
 export type HomePageSchemaType = Static<typeof HomePageSchema> &
   BasePageAdditionalProps & {
     page: HomePagePageProps
@@ -264,6 +291,7 @@ export type IsomerPageSchemaType =
   | ArticlePageSchemaType
   | CollectionPageSchemaType
   | ContentPageSchemaType
+  | DatabasePageSchemaType
   | HomePageSchemaType
   | IndexPageSchemaType
   | NotFoundPageSchemaType

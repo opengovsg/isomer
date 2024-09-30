@@ -1,7 +1,11 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import { ArticlePageHeaderSchema, ContentPageHeaderSchema } from "~/interfaces"
+import {
+  ArticlePageHeaderSchema,
+  ContentPageHeaderSchema,
+  SearchableTableSchema,
+} from "~/interfaces"
 
 const BaseCollectionItemPageSchema = Type.Object({
   category: Type.String({
@@ -57,6 +61,11 @@ export const ContentPagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,
 })
 
+export const DatabasePagePageSchema = Type.Object({
+  contentPageHeader: ContentPageHeaderSchema,
+  database: SearchableTableSchema,
+})
+
 export const HomePagePageSchema = Type.Object({})
 export const NotFoundPagePageSchema = Type.Object({})
 export const SearchPagePageSchema = Type.Object({})
@@ -80,6 +89,8 @@ export type ArticlePagePageProps = Static<typeof ArticlePagePageSchema> &
 export type CollectionPagePageProps = Static<typeof CollectionPagePageSchema> &
   BasePageAdditionalProps
 export type ContentPagePageProps = Static<typeof ContentPagePageSchema> &
+  BasePageAdditionalProps
+export type DatabasePagePageProps = Static<typeof DatabasePagePageSchema> &
   BasePageAdditionalProps
 export type HomePagePageProps = Static<typeof HomePagePageSchema> &
   BasePageAdditionalProps
