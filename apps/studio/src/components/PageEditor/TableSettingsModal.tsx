@@ -15,7 +15,6 @@ import {
   Button,
   FormErrorMessage,
   FormLabel,
-  Input,
   ModalCloseButton,
   Textarea,
 } from "@opengovsg/design-system-react"
@@ -64,7 +63,7 @@ export const TableSettingsModal = ({
   useEffect(() => {
     // set default values here instead
     const { caption } = editor.getAttributes("table")
-    setValue("caption", caption || "")
+    setValue("caption", String(caption || ""))
     // only done once per every time the modal is opened
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])

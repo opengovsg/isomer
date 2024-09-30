@@ -9,7 +9,7 @@ export const AccordionSchema = Type.Object(
     type: Type.Literal("accordion", { default: "accordion" }),
     summary: Type.String({
       title: "Title",
-      maxLength: 100,
+      maxLength: 300,
     }),
     details: AccordionProseSchema,
   },

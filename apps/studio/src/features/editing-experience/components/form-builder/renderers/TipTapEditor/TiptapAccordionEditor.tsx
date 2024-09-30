@@ -10,5 +10,5 @@ export function TiptapAccordionEditor({
   // TODO: Add a loading state or use suspense
   if (!editor) return null
 
-  return <Editor menubar={AccordionMenuBar} editor={editor} />
+  return <Editor isNested menubar={AccordionMenuBar} editor={editor} />
 }

@@ -20,7 +20,6 @@ export default function RootStateDrawer() {
     setDrawerState,
     setCurrActiveIdx,
     savedPageState,
-    previewPageState,
     setSavedPageState,
     setPreviewPageState,
   } = useEditorDrawerContext()

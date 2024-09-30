@@ -35,7 +35,7 @@ export function JsonFormsTextControl({
 }: ControlProps) {
   const { maxLength } = schema
   const remainingCharacterCount = maxLength
-    ? getRemainingCharacterCount(maxLength, data)
+    ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)
     : -1
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target
@@ -53,7 +53,7 @@ export function JsonFormsTextControl({
         <FormLabel description={description}>{label}</FormLabel>
         <Input
           type="text"
-          value={data || ""}
+          value={String(data || "")}
           onChange={onChange}
           placeholder={label}
           maxLength={maxLength}

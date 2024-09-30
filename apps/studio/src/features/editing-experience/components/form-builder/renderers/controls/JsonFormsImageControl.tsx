@@ -67,7 +67,7 @@ export function JsonFormsImageControl({
         const response = await fetch(url)
         const blob = await response.blob()
         return new File([blob], filename, { type: mimeType })
-      } catch (error) {
+      } catch {
         // File might not be ready yet, provide a fallback
         // TODO: Fetch the metadata directly from S3 instead
         return new File([], filename, { type: mimeType })
@@ -89,7 +89,7 @@ export function JsonFormsImageControl({
     }
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    convertImage(data)
+    convertImage(String(data))
     // NOTE: We only want to run this once if there is initial data provided
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

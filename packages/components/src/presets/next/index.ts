@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import type { Config } from "tailwindcss"
 import racPlugin from "tailwindcss-react-aria-components"
 import defaultTheme from "tailwindcss/defaultTheme"

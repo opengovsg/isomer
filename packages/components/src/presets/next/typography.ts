@@ -1,6 +1,5 @@
 import plugin from "tailwindcss/plugin"
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
 export const isomerTypography = plugin(({ addComponents, theme }) => {
   addComponents({
     // Display

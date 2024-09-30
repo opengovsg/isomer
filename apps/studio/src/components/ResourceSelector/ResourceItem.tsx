@@ -1,10 +1,9 @@
 import type { IconType } from "react-icons"
 import { Suspense, useMemo } from "react"
-import { Box, HStack, Icon, Mark, Skeleton, Text } from "@chakra-ui/react"
+import { Box, HStack, Icon, Skeleton, Text } from "@chakra-ui/react"
 import { dataAttr } from "@chakra-ui/utils"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
-import fuzzysort from "fuzzysort"
 import { ErrorBoundary } from "react-error-boundary"
 import { BiData, BiFile, BiFolder, BiLockAlt } from "react-icons/bi"
 

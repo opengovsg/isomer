@@ -313,7 +313,7 @@ export function JsonFormsArrayControl({
                         enabled={enabled}
                         handleSelect={() => () => undefined}
                         removeItem={handleRemoveItem}
-                        selected={selectedIndex === index}
+                        selected={false}
                         key={index}
                         uischema={childUiSchema}
                         childLabelProp={undefined}
