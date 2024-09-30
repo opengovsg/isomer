@@ -219,7 +219,7 @@ export const pageRouter = router({
     .input(createPageSchema)
     .mutation(
       async ({ input: { permalink, siteId, folderId, title, layout } }) => {
-        const newPage = createDefaultPage({ title, layout })
+        const newPage = createDefaultPage({ layout })
 
         // TODO: Validate whether folderId actually is a folder instead of a page
         // TODO: Validate whether siteId is a valid site
