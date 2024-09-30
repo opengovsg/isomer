@@ -8,7 +8,7 @@ export type Generated<T> =
     : ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
-export interface Blob {
+export type Blob = {
   id: GeneratedAlways<string>
   /**
    * @kyselyType(PrismaJson.BlobJsonContent)
@@ -18,7 +18,7 @@ export interface Blob {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface Footer {
+export type Footer = {
   id: GeneratedAlways<number>
   siteId: number
   /**
@@ -29,7 +29,7 @@ export interface Footer {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface Navbar {
+export type Navbar = {
   id: GeneratedAlways<number>
   siteId: number
   /**
@@ -40,7 +40,7 @@ export interface Navbar {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface Permission {
+export type Permission = {
   id: GeneratedAlways<number>
   resourceId: string
   userId: string
@@ -48,7 +48,12 @@ export interface Permission {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface Resource {
+export type RateLimiterFlexible = {
+  key: string
+  points: number
+  expire: Timestamp | null
+}
+export type Resource = {
   id: GeneratedAlways<string>
   title: string
   permalink: string
@@ -61,7 +66,7 @@ export interface Resource {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface Site {
+export type Site = {
   id: GeneratedAlways<number>
   name: string
   /**
@@ -78,13 +83,13 @@ export interface Site {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface SiteMember {
+export type SiteMember = {
   userId: string
   siteId: number
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface User {
+export type User = {
   id: string
   name: string
   email: string
@@ -93,13 +98,13 @@ export interface User {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface VerificationToken {
+export type VerificationToken = {
   identifier: string
   token: string
   attempts: Generated<number>
   expires: Timestamp
 }
-export interface Version {
+export type Version = {
   id: GeneratedAlways<string>
   versionNum: number
   resourceId: string
@@ -108,11 +113,12 @@ export interface Version {
   publishedBy: string
   updatedAt: Generated<Timestamp>
 }
-export interface DB {
+export type DB = {
   Blob: Blob
   Footer: Footer
   Navbar: Navbar
   Permission: Permission
+  RateLimiterFlexible: RateLimiterFlexible
   Resource: Resource
   Site: Site
   SiteMember: SiteMember
