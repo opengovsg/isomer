@@ -64,7 +64,10 @@ export const HeroSchema = Type.Composite(
     HeroBackgroundImageSchema,
     Type.Object({
       type: Type.Literal("hero", { default: "hero" }),
-      variant: Type.Literal("gradient", { default: "gradient" }),
+      variant: Type.Union([Type.Literal("gradient"), Type.Literal("block")], {
+        default: "gradient",
+        title: "Hero banner style",
+      }),
     }),
   ],
   {
