@@ -1,4 +1,5 @@
 import type { RequestOptions, ResponseOptions } from "node-mocks-http"
+import type { SetOptional } from "type-fest"
 import { type NextApiRequest, type NextApiResponse } from "next"
 import { createMocks } from "node-mocks-http"
 
@@ -94,10 +95,9 @@ export const applySession = () => {
   return session
 }
 
-export const DEFAULT_USER: User = {
+export const DEFAULT_USER: SetOptional<User, "id"> = {
   email: "test@example.com",
   name: "Test User",
-  id: "test-user-id",
   createdAt: new Date(),
   updatedAt: new Date(),
   phone: "123456789",
