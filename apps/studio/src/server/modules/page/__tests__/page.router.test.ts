@@ -11,24 +11,23 @@ import { pageRouter } from "../page.router"
 const createCaller = createCallerFactory(pageRouter)
 
 describe("page.router", () => {
-  describe("list", () => {
-    describe("unauthorized", () => {
-      it("should throw 401 if unauthed", async () => {
-        const unauthedSession = applySession()
-        const ctx = createMockRequest(unauthedSession)
-        const caller = createCaller(ctx)
+  describe("readPage", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const ctx = createMockRequest(unauthedSession)
+      const caller = createCaller(ctx)
 
-        const result = caller.list({
-          siteId: 1,
-        })
-
-        await expect(result).rejects.toThrow(
-          new TRPCError({ code: "UNAUTHORIZED" }),
-        )
+      const result = caller.readPage({
+        siteId: 1,
+        pageId: 1,
       })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
     })
 
-    describe("authorized", () => {
+    describe("authenticated", () => {
       let caller: ReturnType<typeof createCaller>
       let session: ReturnType<typeof applySession>
 
@@ -38,12 +37,17 @@ describe("page.router", () => {
         caller = createCaller(ctx)
       })
 
-      it("should return a list of pages", async () => {
-        const result = caller.list({
+      it("should return 404 if page does not exist", async () => {
+        // Act
+        const result = caller.readPage({
           siteId: 1,
+          pageId: 1,
         })
 
-        await expect(result).resolves.toEqual([])
+        // Assert
+        await expect(result).rejects.toThrow(
+          new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
+        )
       })
     })
   })
