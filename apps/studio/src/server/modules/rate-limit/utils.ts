@@ -26,6 +26,7 @@ export const getRateLimitFingerprint = (rateLimitProps: RateLimitArgs) => {
       if (!forwarded) {
         return "127.0.0.1"
       }
+
       const ip =
         (typeof forwarded === "string" ? forwarded : forwarded[0])?.split(
           /, /,

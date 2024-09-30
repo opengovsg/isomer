@@ -12,6 +12,7 @@ import { initTRPC, TRPCError } from "@trpc/server"
 import superjson from "superjson"
 import { ZodError } from "zod"
 
+import type { RateLimitMetaOptions } from "./modules/rate-limit/types"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
@@ -19,7 +20,6 @@ import getIP from "~/utils/getClientIp"
 import { type Context } from "./context"
 import { defaultMeSelect } from "./modules/me/me.select"
 import { checkRateLimit } from "./modules/rate-limit/rate-limit.service"
-import { RateLimitMetaOptions } from "./modules/rate-limit/types"
 import { prisma } from "./prisma"
 
 interface Meta {

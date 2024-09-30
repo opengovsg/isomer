@@ -1,5 +1,5 @@
+import type { PrismaClient } from "@prisma/client"
 import { type NextApiRequest } from "next"
-import { PrismaClient } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import {
   RateLimiterMemory,
