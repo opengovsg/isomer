@@ -48,6 +48,11 @@ export interface Permission {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
+export interface RateLimiterFlexible {
+  key: string
+  points: number
+  expire: Timestamp | null
+}
 export interface Resource {
   id: GeneratedAlways<string>
   title: string
@@ -113,6 +118,7 @@ export interface DB {
   Footer: Footer
   Navbar: Navbar
   Permission: Permission
+  RateLimiterFlexible: RateLimiterFlexible
   Resource: Resource
   Site: Site
   SiteMember: SiteMember

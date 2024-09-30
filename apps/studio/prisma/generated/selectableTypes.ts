@@ -7,6 +7,7 @@ export type Blob = Selectable<T.Blob>
 export type Footer = Selectable<T.Footer>
 export type Navbar = Selectable<T.Navbar>
 export type Permission = Selectable<T.Permission>
+export type RateLimiterFlexible = Selectable<T.RateLimiterFlexible>
 export type Resource = Selectable<T.Resource>
 export type Site = Selectable<T.Site>
 export type SiteMember = Selectable<T.SiteMember>
