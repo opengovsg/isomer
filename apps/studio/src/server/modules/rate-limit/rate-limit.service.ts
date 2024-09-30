@@ -35,7 +35,7 @@ export async function checkRateLimit({
     insuranceLimiter: rateLimiterMemory,
   })
 
-  const fingerprint = getRateLimitFingerprint({ type: "IP", req })
+  const fingerprint = getRateLimitFingerprint(req)
 
   try {
     await store.consume(fingerprint)
