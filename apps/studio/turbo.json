@@ -15,7 +15,8 @@
       "cache": false
     },
     "build:preview-tw": {
-      "dependsOn": ["@opengovsg/isomer-components#build"]
+      "dependsOn": ["@opengovsg/isomer-components#build"],
+      "cache": false
     },
     "format": {
       "dependsOn": ["generate"]
