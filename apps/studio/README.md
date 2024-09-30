@@ -161,3 +161,10 @@ Finally, we want to run the migration script.
 - Open another terminal window.
 - Run `source .env`
 - Run `npx prisma migrate deploy`
+
+## Deploying to a physical server or virtual private server (VPS)
+
+As Isomer Studio is based on Starter Kit, you may follow the relevant
+[instructions](https://start.open.gov.sg/docs/guides/on-prem)
+in the Starter Kit guide to deploy the application to a physical server
+or virtual private server (VPS).
