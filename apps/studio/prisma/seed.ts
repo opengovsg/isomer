@@ -9,8 +9,6 @@ import cuid2 from "@paralleldrive/cuid2"
 import type { Navbar } from "~/server/modules/resource/resource.types"
 import { db, jsonb } from "../src/server/modules/database"
 
-const MOCK_PHONE_NUMBER = "123456789"
-
 const ISOMER_ADMINS = [
   "alex",
   "jan",
@@ -234,7 +232,6 @@ async function main() {
           id: cuid2.createId(),
           name,
           email: `${name}@open.gov.sg`,
-          phone: MOCK_PHONE_NUMBER,
         })
         .onConflict((oc) =>
           oc
