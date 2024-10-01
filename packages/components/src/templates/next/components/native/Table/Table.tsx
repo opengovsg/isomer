@@ -11,7 +11,7 @@ import Paragraph from "../Paragraph"
 import UnorderedList from "../UnorderedList"
 
 const tableCellStyles = tv({
-  base: "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
+  base: "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
   variants: {
     isHeader: {
       true: "bg-base-canvas-backdrop [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
@@ -39,7 +39,7 @@ const Table = ({
       />
       <div className="overflow-x-auto" tabIndex={0}>
         <table
-          className="w-full border-collapse border-spacing-0"
+          className="w-full border-collapse border-spacing-0 border border-base-divider-medium"
           aria-describedby={tableDescriptionId}
           ref={tableRef}
         >
