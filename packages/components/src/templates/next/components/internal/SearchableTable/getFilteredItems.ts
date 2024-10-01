@@ -1,15 +1,14 @@
-import type { SearchableTableProps } from "~/interfaces"
+import type { SearchableTableClientProps } from "./SearchableTableClient"
 
 interface GetFilteredItemsParams {
-  items: SearchableTableProps["items"]
+  items: SearchableTableClientProps["items"]
   searchValue: string
 }
 
 export const getFilteredItems = ({
   items,
   searchValue,
-}: GetFilteredItemsParams) => {
-  return items.filter((item) =>
-    item.join(" ").toLowerCase().includes(searchValue.toLowerCase()),
-  )
-}
+}: GetFilteredItemsParams) =>
+  items
+    .filter((item) => item.key.includes(searchValue.toLowerCase()))
+    .map((item) => item.row)
