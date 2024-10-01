@@ -9,10 +9,10 @@ const getSanitizedLinkHref = (url?: string) => {
     return undefined
   }
 
-  const elem = document.createElement("a")
-  elem.setAttribute("href", url)
-  DOMPurify.sanitize(elem, { IN_PLACE: true })
-  const sanitizedUrl = elem.getAttribute("href")
+  const elem = DOMPurify.sanitize(`<a href="${url}"></a>`, {
+    RETURN_DOM_FRAGMENT: true,
+  })
+  const sanitizedUrl = elem.firstElementChild?.getAttribute("href")
 
   if (sanitizedUrl === null) {
     return undefined
