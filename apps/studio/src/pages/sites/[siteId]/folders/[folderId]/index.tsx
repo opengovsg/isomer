@@ -22,6 +22,7 @@ import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
+import { PermissionsProvider, usePermissions } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
@@ -105,7 +106,7 @@ const FolderPage: NextPageWithLayout = () => {
   const breadcrumbs = getBreadcrumbsFrom(resource, siteId)
 
   return (
-    <>
+    <PermissionsProvider siteId={Number(siteId)}>
       <VStack w="100%" p="1.75rem" gap="1rem" height="$100vh" overflow="auto">
         <VStack w="100%" align="start">
           <Breadcrumb size="sm" w="100%">
@@ -231,7 +232,7 @@ const FolderPage: NextPageWithLayout = () => {
       <FolderSettingsModal />
       <MoveResourceModal />
       <DeleteResourceModal siteId={parseInt(siteId)} />
-    </>
+    </PermissionsProvider>
   )
 }
 

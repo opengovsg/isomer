@@ -4,6 +4,7 @@ import { get } from "lodash"
 import { z } from "zod"
 
 import type { ResourceType } from "../database"
+import type { PermissionsProps } from "../permissions/permissions.type"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -19,7 +20,6 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { db, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { definePermissionsFor } from "../permissions/permissions.service"
-import { PermissionsProps } from "../permissions/permissions.type"
 
 const fetchResource = async (resourceId: string | null) => {
   if (resourceId === null) return { parentId: null }
@@ -174,21 +174,31 @@ export const resourceRouter = router({
           throw new TRPCError({
             code: "FORBIDDEN",
             message:
-              "Please ensure that you have the required permissions to perform a move!",
+              "Please ensure that you have sufficient permissions to move the specified resource",
           })
         }
 
         return await db
           .transaction()
           .execute(async (tx) => {
-            const parent = await tx
-              .selectFrom("Resource")
-              .where("id", "=", destinationResourceId)
-              .select(["id", "type"])
-              .executeTakeFirst()
+            let query = tx.selectFrom("Resource")
+            query = !!destinationResourceId
+              ? query.where("id", "=", destinationResourceId)
+              : query.where("type", "=", "RootPage")
 
-            if (!parent || parent.type !== "Folder") {
-              throw new TRPCError({ code: "BAD_REQUEST" })
+            const parent = await query.select(["id", "type"]).executeTakeFirst()
+
+            if (
+              !parent ||
+              // NOTE: we only allow moves to folders/root.
+              // for moves to root, we only allow this for admin
+              (parent.type !== "RootPage" && parent.type !== "Folder")
+            ) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message:
+                  "Please ensure that you are trying to move your resource into a valid destination",
+              })
             }
 
             if (movedResourceId === destinationResourceId) {
@@ -199,7 +209,7 @@ export const resourceRouter = router({
               .updateTable("Resource")
               .where("id", "=", String(movedResourceId))
               .where("Resource.type", "in", ["Page", "Folder"])
-              .set({ parentId: String(destinationResourceId) })
+              .set({ parentId: parent.id })
               .execute()
             return tx
               .selectFrom("Resource")
