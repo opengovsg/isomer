@@ -48,12 +48,12 @@ export type Permission = {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type RateLimiterFlexible = {
+export interface RateLimiterFlexible {
   key: string
   points: number
   expire: Timestamp | null
 }
-export type Resource = {
+export interface Resource {
   id: GeneratedAlways<string>
   title: string
   permalink: string

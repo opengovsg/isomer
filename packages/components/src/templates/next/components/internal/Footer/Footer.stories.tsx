@@ -199,3 +199,99 @@ export const NonGovernment: Story = {
     siteMapLink: "/",
   },
 }
+
+export const NoSocmed: Story = {
+  args: {
+    siteName: "Ministry of Trade and Industry",
+    isGovernment: true,
+    lastUpdated: "11 Mar 2024",
+    siteNavItems: [
+      {
+        title: "About us",
+        url: "/",
+      },
+      {
+        title: "Our partners",
+        url: "/",
+      },
+      {
+        title: "Grants and programmes",
+        url: "/",
+      },
+      {
+        title: "Contact us",
+        url: "/",
+      },
+      {
+        title: "Something else",
+        url: "/",
+      },
+      {
+        title: "Resources",
+        url: "/",
+      },
+    ],
+    customNavItems: [
+      {
+        title: "Careers",
+        url: "/",
+      },
+      {
+        title: "2024 budget increase",
+        url: "/",
+      },
+      {
+        title: "Events calendar",
+        url: "/",
+      },
+      {
+        title: "Our Corp Site",
+        url: "https://www.google.com",
+      },
+    ],
+    contactUsLink: "/",
+    feedbackFormLink: "https://www.google.com",
+    privacyStatementLink: "/",
+    termsOfUseLink: "/",
+    siteMapLink: "/",
+  },
+}
+
+export const NoCustomItems: Story = {
+  args: {
+    siteName: "Ministry of Trade and Industry",
+    isGovernment: true,
+    lastUpdated: "11 Mar 2024",
+    siteNavItems: [
+      {
+        title: "About us",
+        url: "/",
+      },
+      {
+        title: "Our partners",
+        url: "/",
+      },
+      {
+        title: "Grants and programmes",
+        url: "/",
+      },
+      {
+        title: "Contact us",
+        url: "/",
+      },
+      {
+        title: "Something else",
+        url: "/",
+      },
+      {
+        title: "Resources",
+        url: "/",
+      },
+    ],
+    contactUsLink: "/",
+    feedbackFormLink: "https://www.google.com",
+    privacyStatementLink: "/",
+    termsOfUseLink: "/",
+    siteMapLink: "/",
+  },
+}

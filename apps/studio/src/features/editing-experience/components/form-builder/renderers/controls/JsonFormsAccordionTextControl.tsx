@@ -24,6 +24,7 @@ export function JsonFormsAccordionTextControl({
   required,
 }: ControlProps) {
   const editor = useAccordionEditor({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange: (content) => handleChange(path, content),
   })

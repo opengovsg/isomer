@@ -1,6 +1,6 @@
 import type { LayoutProps, RankedTester } from "@jsonforms/core"
 import React from "react"
-import { Box, Divider, Heading, VStack } from "@chakra-ui/react"
+import { Box, Divider, Heading } from "@chakra-ui/react"
 import { rankWith, uiTypeIs } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from "@jsonforms/react"
 

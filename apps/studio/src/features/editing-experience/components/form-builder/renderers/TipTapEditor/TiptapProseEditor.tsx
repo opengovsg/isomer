@@ -7,5 +7,5 @@ export function TiptapProseEditor({ editor }: { editor: TiptapEditor | null }) {
   // TODO: Add a loading state or use suspense
   if (!editor) return null
 
-  return <Editor menubar={ProseMenuBar} editor={editor} />
+  return <Editor isNested menubar={ProseMenuBar} editor={editor} />
 }

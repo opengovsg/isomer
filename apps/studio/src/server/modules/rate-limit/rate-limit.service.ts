@@ -1,5 +1,5 @@
+import type { PrismaClient } from "@prisma/client"
 import { type NextApiRequest } from "next"
-import { PrismaClient } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import {
   RateLimiterMemory,
@@ -35,7 +35,7 @@ export async function checkRateLimit({
     insuranceLimiter: rateLimiterMemory,
   })
 
-  const fingerprint = getRateLimitFingerprint({ type: "IP", req })
+  const fingerprint = getRateLimitFingerprint(req)
 
   try {
     await store.consume(fingerprint)

@@ -1,15 +1,9 @@
-import { Flex, Grid, GridItem } from "@chakra-ui/react"
-import merge from "lodash/merge"
+import { Grid, GridItem } from "@chakra-ui/react"
 
-import {
-  EditorDrawerProvider,
-  useEditorDrawerContext,
-} from "~/contexts/EditorDrawerContext"
+import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import EditPageDrawer from "~/features/editing-experience/components/EditPageDrawer"
-import Preview from "~/features/editing-experience/components/Preview"
-import { PreviewIframe } from "~/features/editing-experience/components/PreviewIframe"
+import { EditPagePreview } from "~/features/editing-experience/components/EditPagePreview"
 import { editPageSchema } from "~/features/editing-experience/schema"
-import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
@@ -50,10 +44,6 @@ function EditPage(): JSX.Element {
 }
 
 const PageEditingView = () => {
-  const { previewPageState, permalink, siteId, pageId, updatedAt, title } =
-    useEditorDrawerContext()
-  const themeCssVars = useSiteThemeCssVars({ siteId })
-
   return (
     <Grid
       h="full"
@@ -62,30 +52,11 @@ const PageEditingView = () => {
       gap={0}
       maxH="calc(100vh - 57px)"
     >
-      {/* TODO: Implement sidebar editor */}
-      <GridItem colSpan={1} bg="slate.50" overflow="auto">
+      <GridItem colSpan={1} overflow="auto" minW="30rem">
         <EditPageDrawer />
       </GridItem>
       <GridItem colSpan={2}>
-        <Flex
-          shrink={0}
-          justify="flex-start"
-          p="2rem"
-          bg="base.canvas.backdrop"
-          h="100%"
-          overflowX="auto"
-        >
-          <PreviewIframe style={themeCssVars}>
-            <Preview
-              {...merge(previewPageState, { page: { title } })}
-              siteId={siteId}
-              resourceId={pageId}
-              permalink={permalink}
-              lastModified={updatedAt}
-              version="0.1.0"
-            />
-          </PreviewIframe>
-        </Flex>
+        <EditPagePreview />
       </GridItem>
     </Grid>
   )

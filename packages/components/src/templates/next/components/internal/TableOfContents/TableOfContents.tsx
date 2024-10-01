@@ -15,7 +15,7 @@ const linkStyle = tv({
 
 const TableOfContents = ({ items, LinkComponent }: TableOfContentsProps) => {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 rounded-lg bg-base-canvas-alt p-6">
       <p className="prose-headline-lg-medium text-base-content-strong">
         On this page
       </p>

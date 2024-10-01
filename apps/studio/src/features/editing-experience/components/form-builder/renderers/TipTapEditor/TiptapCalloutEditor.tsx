@@ -10,5 +10,5 @@ export function TiptapCalloutEditor({
   // TODO: Add a loading state or use suspense
   if (!editor) return null
 
-  return <Editor menubar={CalloutMenuBar} editor={editor} />
+  return <Editor isNested menubar={CalloutMenuBar} editor={editor} />
 }

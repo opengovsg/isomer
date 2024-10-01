@@ -1,11 +1,9 @@
 import { format } from "date-fns"
 
 export const createDefaultPage = ({
-  title,
   layout,
 }: {
   layout: "content" | "article"
-  title: string
 }) => {
   switch (layout) {
     case "content": {

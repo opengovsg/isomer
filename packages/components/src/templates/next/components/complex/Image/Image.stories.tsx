@@ -69,6 +69,14 @@ export const ImageWithExternalLink: Story = {
   },
 }
 
+export const ImageWithIllegalLink: Story = {
+  args: {
+    src: "https://placehold.co/200x200",
+    alt: "alt",
+    href: "javascript:alert()",
+  },
+}
+
 export const ImageWithInternalLink: Story = {
   args: {
     src: "https://placehold.co/200x200",

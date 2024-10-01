@@ -26,7 +26,7 @@ import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { textblockTypeInputRule, useEditor } from "@tiptap/react"
 
-const HEADING_LEVELS: Level[] = [2, 3, 4, 5, 6]
+const HEADING_LEVELS: Level[] = [2, 3, 4, 5]
 
 export interface BaseEditorProps {
   data: ControlProps["data"]
@@ -125,7 +125,9 @@ const useBaseEditor = ({
   extensions,
 }: BaseEditorProps & { extensions: Extensions }) =>
   useEditor({
+    immediatelyRender: false,
     extensions: [...BASE_EXTENSIONS, ...extensions],
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     content: data,
     onUpdate: (e) => {
       const jsonContent = e.editor.getJSON()
@@ -135,6 +137,7 @@ const useBaseEditor = ({
 
 export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
   useBaseEditor({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange,
     extensions: [
@@ -149,6 +152,7 @@ export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
 export const useCalloutEditor = ({ data, handleChange }: BaseEditorProps) => {
   return useBaseEditor({
     extensions: [IsomerHorizontalRule],
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange,
   })
@@ -157,6 +161,7 @@ export const useCalloutEditor = ({ data, handleChange }: BaseEditorProps) => {
 export const useAccordionEditor = ({ data, handleChange }: BaseEditorProps) => {
   return useBaseEditor({
     extensions: [TableRow, IsomerTable, IsomerTableCell, IsomerTableHeader],
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange,
   })
@@ -164,6 +169,7 @@ export const useAccordionEditor = ({ data, handleChange }: BaseEditorProps) => {
 
 export const useProseEditor = ({ data, handleChange }: BaseEditorProps) =>
   useBaseEditor({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange,
     extensions: [IsomerHeading],

@@ -10,7 +10,6 @@ import {
   Flex,
   Icon,
   Skeleton,
-  Spacer,
   Text,
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
@@ -27,7 +26,7 @@ interface CmsSideNavProps {
 }
 export const CmsSideNav = ({ siteId }: CmsSideNavProps) => {
   return (
-    <Flex flexDir="column" px="1.25rem" py="1.75rem">
+    <Flex flexDir="column" px="1.25rem" py="1.75rem" height="full">
       <Box mt="4px">
         {/* TODO: update the resource id here */}
         <SideNavItem
@@ -186,19 +185,18 @@ const SideNavItem = ({
                   {permalink}
                 </Text>
               </SideNavRow>
-              {isAllowedToHaveChildren(resourceType) &&
-                (isLoading || hasChildren) && (
-                  <AccordionButton
-                    disabled={isLoading}
-                    pos="absolute"
-                    w="fit-content"
-                    p={0}
-                    left="0.75rem"
-                    top="0.75rem"
-                  >
-                    <AccordionIcon color="interaction.support.unselected" />
-                  </AccordionButton>
-                )}
+              {isAllowedToHaveChildren(resourceType) && hasChildren && (
+                <AccordionButton
+                  disabled={isLoading}
+                  pos="absolute"
+                  w="fit-content"
+                  p={0}
+                  left="0.75rem"
+                  top="0.75rem"
+                >
+                  <AccordionIcon color="interaction.support.unselected" />
+                </AccordionButton>
+              )}
               {isExpanded && (
                 <AccordionPanel p="0" pl="1.25rem">
                   {pages.map(({ items }) => {

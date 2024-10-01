@@ -15,7 +15,7 @@ import {
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
-import type { MenuBarEntry } from "./MenuBar"
+import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import {
   IconAddColLeft,
   IconAddColRight,
@@ -42,7 +42,7 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
     onClose: onLinkModalClose,
   } = useDisclosure()
 
-  const items: MenuBarEntry[] = useMemo(
+  const items: PossibleMenubarItemProps[] = useMemo(
     () => [
       {
         type: "item",
@@ -205,7 +205,7 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
         ],
       },
     ],
-    [editor, onTableSettingsModalOpen],
+    [editor, onLinkModalOpen, onTableSettingsModalOpen],
   )
   return (
     <>
