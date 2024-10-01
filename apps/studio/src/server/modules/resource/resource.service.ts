@@ -17,6 +17,8 @@ export const defaultResourceSelect = [
   "Resource.draftBlobId",
   "Resource.type",
   "Resource.state",
+  "Resource.createdAt",
+  "Resource.updatedAt",
 ] satisfies SelectExpression<DB, "Resource">[]
 
 const defaultResourceWithBlobSelect = [
@@ -107,18 +109,18 @@ export const getFullPageById = async (
     .forUpdate()
     .executeTakeFirst()
   if (draftBlob) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore excessive deep type instantiaton
     return draftBlob
   }
 
-  return getById(db, args)
+  const publishedBlob = await getById(db, args)
     .where("Resource.publishedVersionId", "is not", null)
     .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
     .innerJoin("Blob", "Version.blobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
     .forUpdate()
     .executeTakeFirst()
+
+  return publishedBlob
 }
 
 // There are 3 types of pages this get query supports:

@@ -1,3 +1,4 @@
+import { ResourceState, ResourceType } from "~server/db"
 import { z } from "zod"
 
 import { generateBasePermalinkSchema } from "./common"
@@ -101,4 +102,18 @@ export const pageSettingsSchema = basePageSchema.extend({
   title: pageTitleSchema,
   permalink: permalinkSchema,
   meta: z.string(),
+})
+
+export const readPageOutputSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  permalink: z.string(),
+  siteId: z.number(),
+  parentId: z.string().nullable(),
+  publishedVersionId: z.string().nullable(),
+  draftBlobId: z.string().nullable(),
+  state: z.nativeEnum(ResourceState).nullable(),
+  type: z.nativeEnum(ResourceType),
+  createdAt: z.date(),
+  updatedAt: z.date(),
 })
