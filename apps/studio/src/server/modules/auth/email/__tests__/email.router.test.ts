@@ -1,3 +1,4 @@
+import { resetTables } from "tests/integration/helpers/db"
 import {
   applySession,
   createMockRequest,
@@ -15,7 +16,8 @@ describe("auth.email", () => {
   let caller: Awaited<ReturnType<typeof emailSessionRouter.createCaller>>
   let session: ReturnType<typeof applySession>
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await resetTables("User", "VerificationToken")
     session = applySession()
     const ctx = createMockRequest(session)
     caller = emailSessionRouter.createCaller(ctx)
