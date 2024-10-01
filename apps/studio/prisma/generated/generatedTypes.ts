@@ -8,7 +8,7 @@ export type Generated<T> =
     : ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
-export type Blob = {
+export interface Blob {
   id: GeneratedAlways<string>
   /**
    * @kyselyType(PrismaJson.BlobJsonContent)
@@ -18,7 +18,7 @@ export type Blob = {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type Footer = {
+export interface Footer {
   id: GeneratedAlways<number>
   siteId: number
   /**
@@ -29,7 +29,7 @@ export type Footer = {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type Navbar = {
+export interface Navbar {
   id: GeneratedAlways<number>
   siteId: number
   /**
@@ -40,7 +40,7 @@ export type Navbar = {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type Permission = {
+export interface Permission {
   id: GeneratedAlways<number>
   resourceId: string
   userId: string
@@ -66,7 +66,7 @@ export interface Resource {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type Site = {
+export interface Site {
   id: GeneratedAlways<number>
   name: string
   /**
@@ -83,13 +83,13 @@ export type Site = {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type SiteMember = {
+export interface SiteMember {
   userId: string
   siteId: number
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type User = {
+export interface User {
   id: string
   name: string
   email: string
@@ -98,13 +98,13 @@ export type User = {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type VerificationToken = {
+export interface VerificationToken {
   identifier: string
   token: string
   attempts: Generated<number>
   expires: Timestamp
 }
-export type Version = {
+export interface Version {
   id: GeneratedAlways<string>
   versionNum: number
   resourceId: string
@@ -113,7 +113,7 @@ export type Version = {
   publishedBy: string
   updatedAt: Generated<Timestamp>
 }
-export type DB = {
+export interface DB {
   Blob: Blob
   Footer: Footer
   Navbar: Navbar

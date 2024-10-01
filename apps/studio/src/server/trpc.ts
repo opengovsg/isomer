@@ -20,7 +20,6 @@ import getIP from "~/utils/getClientIp"
 import { type Context } from "./context"
 import { defaultMeSelect } from "./modules/me/me.select"
 import { checkRateLimit } from "./modules/rate-limit/rate-limit.service"
-import { RateLimitMetaOptions } from "./modules/rate-limit/types"
 import { prisma } from "./prisma"
 
 interface Meta {
