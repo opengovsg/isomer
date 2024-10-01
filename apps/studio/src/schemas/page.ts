@@ -1,4 +1,4 @@
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
 import { generateBasePermalinkSchema } from "./common"
@@ -118,3 +118,17 @@ export const pageSettingsSchema = z.discriminatedUnion("type", [
   }),
   rootPageSettingsSchema,
 ])
+
+export const readPageOutputSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  permalink: z.string(),
+  siteId: z.number(),
+  parentId: z.string().nullable(),
+  publishedVersionId: z.string().nullable(),
+  draftBlobId: z.string().nullable(),
+  state: z.nativeEnum(ResourceState).nullable(),
+  type: z.nativeEnum(ResourceType),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+})

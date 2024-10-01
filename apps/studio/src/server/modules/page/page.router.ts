@@ -10,6 +10,7 @@ import {
   getRootPageSchema,
   pageSettingsSchema,
   publishPageSchema,
+  readPageOutputSchema,
   reorderBlobSchema,
   updatePageBlobSchema,
 } from "~/schemas/page"
@@ -65,6 +66,7 @@ const validatedPageProcedure = protectedProcedure.use(
 export const pageRouter = router({
   readPage: protectedProcedure
     .input(basePageSchema)
+    .output(readPageOutputSchema)
     .query(async ({ input: { pageId, siteId } }) => {
       const retrievedPage = await getPageById(db, {
         resourceId: pageId,
@@ -167,7 +169,7 @@ export const pageRouter = router({
 
         const [movedBlock] = actualBlocks.splice(from, 1)
         if (!movedBlock) return blocks
-        if (!fullPage.draftBlobId && !fullPage.mainBlobId) {
+        if (!fullPage.draftBlobId && !fullPage.publishedVersionId) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Please ensure that you have selected a valid page",
