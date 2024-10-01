@@ -1,4 +1,4 @@
-import { ResourceState, ResourceType } from "~server/db"
+import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
 import { generateBasePermalinkSchema } from "./common"
