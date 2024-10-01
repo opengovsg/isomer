@@ -4,8 +4,10 @@ import { useId, useRef, useState } from "react"
 
 import type { SearchableTableProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import BaseParagraph from "../BaseParagraph"
 import { PaginationControls } from "../PaginationControls"
 import { SearchField } from "../Search"
+import { CellContent } from "./CellContent"
 import { MAX_NUMBER_OF_COLUMNS, PAGINATION_MAX_ITEMS } from "./constants"
 import { getFilteredItems } from "./getFilteredItems"
 import { getPaginatedItems } from "./getPaginatedItems"
@@ -54,7 +56,13 @@ const createSearchableTableStyles = tv({
 
 const compoundStyles = createSearchableTableStyles()
 
-const SearchableTable = ({ title, headers, items }: SearchableTableProps) => {
+const SearchableTable = ({
+  title,
+  headers,
+  items,
+  sitemap,
+  LinkComponent,
+}: SearchableTableProps) => {
   const [search, setSearch] = useState("")
   const [currPage, setCurrPage] = useState(1)
   const titleId = useId()
@@ -156,7 +164,7 @@ const SearchableTable = ({ title, headers, items }: SearchableTableProps) => {
                     key={index}
                     className={compoundStyles.tableCell({ isHeader: true })}
                   >
-                    {header}
+                    <BaseParagraph content={String(header)} />
                   </th>
                 ))}
               </tr>
@@ -170,7 +178,11 @@ const SearchableTable = ({ title, headers, items }: SearchableTableProps) => {
                       key={cellIndex}
                       className={compoundStyles.tableCell({ isHeader: false })}
                     >
-                      {cell}
+                      <CellContent
+                        content={cell}
+                        sitemap={sitemap}
+                        LinkComponent={LinkComponent}
+                      />
                     </td>
                   ))}
                 </tr>
