@@ -4,6 +4,10 @@ import type { PermissionsProps, ResourceAbility } from "./permissions.type"
 import { db } from "../database"
 import { buildPermissionsFor } from "./permissions.util"
 
+// NOTE: Fetches roles for the given resource
+// and returns the permissions wihch the user has for the given resource.
+// If the resourceId is `null` or `undefined`,
+// we will instead fetch the roles for the given site
 export const definePermissionsFor = async ({
   userId,
   siteId,
