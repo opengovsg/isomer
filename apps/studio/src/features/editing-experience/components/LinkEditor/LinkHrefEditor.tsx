@@ -21,6 +21,7 @@ interface LinkHrefEditorProps {
   label: string
   description?: string
   isRequired?: boolean
+  isInvalid?: boolean
   pageLinkElement: ReactNode
   fileLinkElement: ReactNode
 }
@@ -31,6 +32,7 @@ export const LinkHrefEditor = ({
   label,
   description,
   isRequired,
+  isInvalid,
   pageLinkElement,
   fileLinkElement,
 }: LinkHrefEditorProps) => {
@@ -49,7 +51,7 @@ export const LinkHrefEditor = ({
   })
 
   return (
-    <FormControl isRequired={isRequired}>
+    <FormControl isRequired={isRequired} isInvalid={isInvalid}>
       <FormLabel description={description}>{label}</FormLabel>
 
       <HStack {...getRootProps()} spacing={0}>

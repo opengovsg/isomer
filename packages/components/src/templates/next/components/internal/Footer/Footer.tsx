@@ -57,7 +57,7 @@ const footerItemLinkStyle = tv({
 })
 
 const FooterItem = ({
-  LinkComponent = "a",
+  LinkComponent,
   title,
   url,
 }: FooterItemType & Pick<FooterProps, "LinkComponent">) => {
@@ -96,7 +96,7 @@ const NavSection = ({
   customNavItems,
 }: Pick<FooterProps, "LinkComponent" | "siteNavItems" | "customNavItems">) => {
   return (
-    <div className="prose-body-sm flex flex-col gap-8 lg:flex-row lg:gap-12">
+    <div className="prose-body-sm flex flex-col gap-8 lg:flex-row lg:gap-10">
       <div className="flex flex-col gap-3 lg:w-64">
         {siteNavItems.map((item, index) => (
           <FooterItem
@@ -333,7 +333,7 @@ const FooterMobile = ({
   siteMapLink,
 }: FooterProps) => {
   return (
-    <div className="flex flex-col gap-16 px-6 py-11 md:px-10 lg:hidden lg:py-16">
+    <div className="flex flex-col gap-8 px-6 py-11 md:px-10 lg:hidden lg:py-16">
       <SiteNameSection siteName={siteName} />
       <NavSection
         siteNavItems={navItems}
@@ -379,10 +379,10 @@ const FooterDesktop = ({
   siteMapLink,
 }: FooterProps) => {
   return (
-    <div className="hidden px-[4rem] py-14 lg:block">
+    <div className="hidden px-10 py-14 lg:block">
       <div className="mx-auto flex max-w-[72.5rem] flex-col gap-6">
         <SiteNameSection siteName={siteName} />
-        <div className="grid-cols-[1fr_min-content] grid-rows-[1fr_min-content] gap-x-8 gap-y-14 lg:grid">
+        <div className="grid-cols-[1fr_min-content] grid-rows-[1fr_min-content] gap-x-10 gap-y-14 lg:grid">
           <div>
             <NavSection
               siteNavItems={navItems}

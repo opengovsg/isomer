@@ -30,10 +30,6 @@ export const verifyToken = async (
       throw new VerificationError("Token is invalid or has expired")
     }
 
-    if (verificationToken.attempts > 5) {
-      throw new VerificationError("Too many attempts")
-    }
-
     await prisma.verificationToken.delete({
       where: {
         identifier: email,

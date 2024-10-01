@@ -1,3 +1,6 @@
+import { TRPCError } from "@trpc/server"
+import { get } from "lodash"
+
 import {
   createFolderSchema,
   editFolderSchema,
@@ -20,6 +23,15 @@ export const folderRouter = router({
           parentId: parentFolderId ? String(parentFolderId) : null,
         })
         .executeTakeFirstOrThrow()
+        .catch((err) => {
+          if (get(err, "code") === "23505") {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "A resource with the same permalink already exists",
+            })
+          }
+          throw err
+        })
       return { folderId: folder.insertId }
     }),
   getMetadata: protectedProcedure
@@ -50,5 +62,14 @@ export const folderRouter = router({
         })
         .returning(defaultFolderSelect)
         .execute()
+        .catch((err) => {
+          if (get(err, "code") === "23505") {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "A resource with the same permalink already exists",
+            })
+          }
+          throw err
+        })
     }),
 })

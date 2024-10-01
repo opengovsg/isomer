@@ -4,13 +4,13 @@ import type { ImageProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { Link } from "../../internal/Link"
-import ImageClient from "./ImageClient"
+import { ImageClient } from "./ImageClient"
 
 const createImageStyles = tv({
   slots: {
     container: "mt-0 [&:not(:first-child)]:mt-7",
     caption:
-      "overflow-wrap break-word prose-label-sm-medium mt-2 max-w-[100ch] text-base-content-subtle lg:mx-auto lg:text-center",
+      "overflow-wrap break-word prose-label-sm-medium mt-2 max-w-[100ch] text-base-content-subtle md:mx-auto md:text-center",
     image: "mx-auto h-auto max-w-full rounded",
   },
   variants: {
@@ -58,7 +58,7 @@ const ImageContainer = ({
   </div>
 )
 
-const Image = ({
+export const Image = ({
   src,
   alt,
   caption,
@@ -89,5 +89,3 @@ const Image = ({
     </ImageContainer>
   )
 }
-
-export default Image

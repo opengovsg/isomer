@@ -1,4 +1,4 @@
-const mockFeatureFlags = new Map<string, any>()
+const mockFeatureFlags = new Map<string, unknown>()
 mockFeatureFlags.set("whitelisted_users", {
   whitelist: ["test@open.gov.sg"],
 })

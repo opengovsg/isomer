@@ -12,7 +12,7 @@ module.exports = {
   semi: false,
   singleQuote: false,
   useTabs: false,
-  tailwindFunctions: ["cn", "cva", "tv"],
+  tailwindFunctions: ["tv"],
   importOrder: [
     "<TYPES>",
     "^(react/(.*)$)|^(react$)|^(react-native(.*)$)",

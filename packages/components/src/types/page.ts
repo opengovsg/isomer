@@ -3,134 +3,92 @@ import { Type } from "@sinclair/typebox"
 
 import { ArticlePageHeaderSchema, ContentPageHeaderSchema } from "~/interfaces"
 
-const BaseItemSchema = Type.Object({
-  title: Type.String({
-    title: "Page title",
-    maxLength: 150,
+const BaseCollectionItemPageSchema = Type.Object({
+  category: Type.String({
+    title: "Category of the actual item",
+    description:
+      "The category is used for filtering in the parent collection page",
   }),
-  description: Type.Optional(
-    Type.String({
-      title: "Page description",
-      description: "The summary of the page for SEO purposes",
+  date: Type.String({
+    title: "Date of the actual item",
+    format: "date",
+  }),
+  image: Type.Optional(
+    Type.Object({
+      src: Type.String({
+        title: "Image source URL",
+        description: "The source URL of the image",
+        format: "image",
+      }),
+      alt: Type.String({
+        title: "Image alt text",
+        description: "The alt text of the image",
+        maxLength: 120,
+      }),
     }),
   ),
 })
 
-const BasePageSchema = Type.Composite([
-  BaseItemSchema,
-  Type.Object({
-    noIndex: Type.Optional(
-      Type.Boolean({
-        description: "Whether to exclude the page from search engine indexing",
-      }),
-    ),
-  }),
-])
-
-const BaseRefSchema = Type.Composite([
-  BaseItemSchema,
+const BaseRefPageSchema = Type.Composite([
+  BaseCollectionItemPageSchema,
   Type.Object({
     ref: Type.String({
       title: "URL to the actual item",
       description:
         "The link that users will open immediately when they click on the item in the parent collection page",
     }),
-    category: Type.String({
-      title: "Category of the actual item",
-      description:
-        "The category is used for filtering in the parent collection page",
-    }),
-    date: Type.String({
-      title: "Date of the actual item",
-    }),
-    image: Type.Optional(
-      Type.Object({
-        src: Type.String({
-          title: "Image source URL",
-          description: "The source URL of the image",
-        }),
-        alt: Type.String({
-          title: "Image alt text",
-          description: "The alt text of the image",
-          maxLength: 120,
-        }),
-      }),
-    ),
   }),
 ])
 
-export const ArticlePageMetaSchema = Type.Composite([
-  BasePageSchema,
+export const ArticlePagePageSchema = Type.Composite([
+  BaseCollectionItemPageSchema,
   Type.Object({
-    category: Type.String({
-      title: "Category of the article",
-      description:
-        "The category is used for filtering in the parent collection page.",
-    }),
-    date: Type.String({
-      title: "Date of the article",
-    }),
-    image: Type.Optional(
-      Type.Object({
-        src: Type.String({
-          title: "Image source URL",
-          description: "The source URL of the image",
-        }),
-        alt: Type.String({
-          title: "Image alt text",
-          description: "The alt text of the image",
-        }),
-      }),
-    ),
     articlePageHeader: ArticlePageHeaderSchema,
   }),
 ])
 
-export const CollectionPageMetaSchema = Type.Composite([
-  BasePageSchema,
-  Type.Object({
-    subtitle: Type.String({
-      title: "The subtitle of the collection",
-    }),
+export const CollectionPagePageSchema = Type.Object({
+  subtitle: Type.String({
+    title: "The subtitle of the collection",
   }),
-])
+})
 
-export const ContentPageMetaSchema = Type.Composite([
-  BasePageSchema,
-  Type.Object({
-    contentPageHeader: ContentPageHeaderSchema,
-  }),
-])
+export const ContentPagePageSchema = Type.Object({
+  contentPageHeader: ContentPageHeaderSchema,
+})
 
-export const HomePageMetaSchema = BasePageSchema
-export const NotFoundPageMetaSchema = BasePageSchema
-export const SearchPageMetaSchema = BasePageSchema
+export const HomePagePageSchema = Type.Object({})
+export const NotFoundPagePageSchema = Type.Object({})
+export const SearchPagePageSchema = Type.Object({})
 
-export const FileRefMetaSchema = BaseRefSchema
-export const LinkRefMetaSchema = BaseRefSchema
+export const FileRefPageSchema = BaseRefPageSchema
+export const LinkRefPageSchema = BaseRefPageSchema
 
+// These are props that are required by the render engine, but not enforced by
+// the JSON schema (as the data is being stored outside of the page JSON)
 interface BaseItemAdditionalProps {
   permalink: string
   lastModified: string
+  title: string
 }
 type BasePageAdditionalProps = BaseItemAdditionalProps & {
   language?: "en"
 }
 
-export type ArticlePageProps = Static<typeof ArticlePageMetaSchema> &
+export type ArticlePagePageProps = Static<typeof ArticlePagePageSchema> &
   BasePageAdditionalProps
-export type CollectionPageProps = Static<typeof CollectionPageMetaSchema> &
+export type CollectionPagePageProps = Static<typeof CollectionPagePageSchema> &
   BasePageAdditionalProps
-export type ContentPageProps = Static<typeof ContentPageMetaSchema> &
+export type ContentPagePageProps = Static<typeof ContentPagePageSchema> &
   BasePageAdditionalProps
-export type HomePageProps = Static<typeof HomePageMetaSchema> &
+export type HomePagePageProps = Static<typeof HomePagePageSchema> &
   BasePageAdditionalProps
-export type NotFoundPageProps = Static<typeof NotFoundPageMetaSchema> &
+export type NotFoundPagePageProps = Static<typeof NotFoundPagePageSchema> &
   BasePageAdditionalProps
-export type SearchPageProps = Static<typeof SearchPageMetaSchema> &
+export type SearchPagePageProps = Static<typeof SearchPagePageSchema> &
   BasePageAdditionalProps
 
-export type FileRefProps = Static<typeof FileRefMetaSchema> &
+export type FileRefPageProps = Static<typeof FileRefPageSchema> &
   BaseItemAdditionalProps
-export type LinkRefProps = Static<typeof LinkRefMetaSchema> &
+export type LinkRefPageProps = Static<typeof LinkRefPageSchema> &
   BaseItemAdditionalProps

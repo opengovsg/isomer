@@ -23,5 +23,6 @@ export const SgidErrorFallback: ComponentType<FallbackProps> = ({ error }) => {
     return DASHBOARD
   }, [router.query.state])
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   return <SgidErrorModal message={error.message} redirectUrl={redirectUrl} />
 }

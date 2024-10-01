@@ -19,7 +19,7 @@ export const getReferenceLink = ({
 export const getResourceIdFromReferenceLink = (
   referenceLink: string,
 ): string => {
-  const match = referenceLink.match(/\[resource:(\d+):(\d+)\]/)
+  const match = /\[resource:(\d+):(\d+)\]/.exec(referenceLink)
   if (!match) {
     return ""
   }

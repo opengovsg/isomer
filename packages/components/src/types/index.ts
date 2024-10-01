@@ -1,4 +1,5 @@
 export * from "./components"
+export * from "./meta"
 export * from "./page"
 export * from "./schema"
 export type * from "./site"

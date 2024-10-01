@@ -2,8 +2,9 @@ import type { VariantProps } from "tailwind-variants"
 
 import type { InfopicProps as BaseInfopicProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref } from "~/utils"
+import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { LinkButton } from "../../internal/LinkButton"
+import { ImageClient } from "../Image"
 
 const infopicStyles = tv({
   slots: {
@@ -54,6 +55,11 @@ export const Infopic = ({
   const compoundStyles = infopicStyles({ isTextOnRight })
   const hasLinkButton = buttonLabel && buttonUrl
 
+  const imgSrc =
+    isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
+      ? imageSrc
+      : `${site.assetsBaseUrl}${imageSrc}`
+
   return (
     <div className={compoundStyles.container()}>
       <div className={compoundStyles.content()}>
@@ -71,7 +77,13 @@ export const Infopic = ({
         )}
       </div>
       <div className={compoundStyles.imageContainer()}>
-        <img className={compoundStyles.image()} alt={imageAlt} src={imageSrc} />
+        <ImageClient
+          src={imgSrc}
+          alt={imageAlt || ""}
+          width="100%"
+          className={compoundStyles.image()}
+          assetsBaseUrl={site.assetsBaseUrl}
+        />
       </div>
     </div>
   )

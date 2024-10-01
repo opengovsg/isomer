@@ -23,8 +23,12 @@ interface TypeTileProps extends UseRadioProps {
 const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
   (props, ref) => {
     const styles = useMultiStyleConfig("Tile", {})
+    const isDisabled = props.value === "pdf"
 
-    const { getInputProps, getRadioProps } = useRadio(props)
+    const { getInputProps, getRadioProps } = useRadio({
+      ...props,
+      isDisabled,
+    })
     const input = getInputProps(undefined, ref)
     const checkbox = getRadioProps()
     const { value } = props
@@ -48,14 +52,15 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
           return {
             TileIcon: BiUpload,
             title: "PDF file",
-            description: "Select this option if your content is on a PDF file.",
+            description:
+              "Select this option if you want to upload a single PDF file as a resource. This option is currently under development and will be available soon.",
           }
         }
       }
     }, [value])
 
     return (
-      <Box as="label">
+      <Box as="label" {...(isDisabled && { cursor: "not-allowed" })}>
         <input {...input} />
         <Box
           {...checkbox}
@@ -65,8 +70,12 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
             borderColor: "utility.focus-default",
             boxShadow: "0 0 0 1px var(--chakra-colors-utility-focus-default)",
           }}
-          cursor="pointer"
           data-group
+          cursor="pointer"
+          _disabled={{
+            pointerEvents: "none",
+            bgColor: "base.canvas.alt",
+          }}
         >
           <Flex
             p="0.5rem"
@@ -89,12 +98,21 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
               _groupChecked={{
                 color: "base.content.brand",
               }}
+              _groupDisabled={{
+                textColor: "interaction.support.disabled-content",
+              }}
             >
               {title}
             </Text>
             {badge}
           </Stack>
-          <Text textStyle="body-1" mt="0.5rem">
+          <Text
+            _groupDisabled={{
+              textColor: "interaction.support.disabled-content",
+            }}
+            textStyle="body-1"
+            mt="0.5rem"
+          >
             {description}
           </Text>
         </Box>

@@ -1,9 +1,9 @@
-import type { IsomerSchema, schema } from "@opengovsg/isomer-components"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { useCallback } from "react"
 import { Box, Flex, useDisclosure } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
+import { getLayoutPageSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
@@ -41,7 +41,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     },
   })
 
-  const metadataSchema = getLayoutMetadataSchema(previewPageState.layout)
+  const metadataSchema = getLayoutPageSchema(previewPageState.layout)
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(metadataSchema)
 
   const handleSaveChanges = useCallback(() => {
@@ -99,12 +99,12 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               handleDiscardChanges()
             }
           }}
-          label="Edit page title and summary"
+          label="Edit page description and summary"
         />
 
         <ErrorProvider>
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
-            <FormBuilder<Static<typeof schema>>
+            <FormBuilder<Static<typeof metadataSchema>>
               schema={metadataSchema}
               validateFn={validateFn}
               data={previewPageState.page}

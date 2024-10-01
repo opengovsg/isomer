@@ -5,6 +5,7 @@ export const JSON_FORMS_RANKING = {
   ConstControl: 2,
   ImageControl: 2,
   IntegerControl: 4,
+  TextAreaControl: 1,
   TextControl: 1,
   ObjectControl: 2,
   AllOfControl: 3,
@@ -17,3 +18,5 @@ export const JSON_FORMS_RANKING = {
 }
 
 export const PROSE_COMPONENT_NAME = "Text component"
+
+export const TEXTAREA_CHARACTERS_PER_ROW = 70

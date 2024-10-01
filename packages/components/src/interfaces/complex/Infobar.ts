@@ -1,7 +1,11 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type {
+  IsomerPageLayoutType,
+  IsomerSiteProps,
+  LinkComponentType,
+} from "~/types"
 
 export const InfobarSchema = Type.Object(
   {
@@ -55,6 +59,7 @@ export const InfobarSchema = Type.Object(
 export type InfobarProps = Static<typeof InfobarSchema> & {
   sectionIdx?: number // TODO: Remove this property, only used in classic theme
   subtitle?: string // Subtitle that is only used in the classic theme
+  layout: IsomerPageLayoutType
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }

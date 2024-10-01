@@ -17,6 +17,7 @@ const COMMON_HANDLERS = [
   sitesHandlers.getConfig.default(),
   sitesHandlers.getFooter.default(),
   sitesHandlers.getNavbar.default(),
+  sitesHandlers.getLocalisedSitemap.default(),
   resourceHandlers.getChildrenOf.default(),
   resourceHandlers.getMetadataById.homepage(),
   pageHandlers.readPageAndBlob.homepage(),
@@ -38,6 +39,7 @@ const meta: Meta<typeof EditPage> = {
           siteId: "1",
           pageId: "1",
         },
+        pathname: "/sites/[siteId]/pages/[pageId]",
       },
     },
   },
@@ -112,6 +114,23 @@ export const ErrorNestedState: Story = {
       )
 
       await userEvent.click(canvas.getByLabelText(/return to statistics/i))
+    })
+  },
+}
+
+export const FullscreenPreview: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // Required since menu is a portal
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const screen = within(canvasElement.parentElement!)
+
+    await waitFor(async () => {
+      await userEvent.click(
+        canvas.getByRole("button", { name: /default mode/i }),
+      )
+
+      await userEvent.click(screen.getByText(/full screen/i))
     })
   },
 }

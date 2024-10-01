@@ -32,7 +32,7 @@ export function JsonFormsBooleanControl({
 
   return (
     <Box mt="1.25rem" _first={{ mt: 0 }}>
-      <FormControl>
+      <FormControl isRequired>
         <FormLabel description={description} htmlFor={id}>
           {label}
         </FormLabel>

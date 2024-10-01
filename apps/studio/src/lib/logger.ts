@@ -1,5 +1,6 @@
 import "pino-pretty"
 
+import type { DestinationStream } from "pino"
 import { nanoid } from "nanoid"
 import { pino } from "pino"
 
@@ -23,15 +24,16 @@ interface LoggerOptions {
 }
 
 export class PinoLogger {
-  private static instance: pino.Logger<string>
+  private static instance?: pino.Logger<string>
   private static getInstance() {
     if (!PinoLogger.instance)
       PinoLogger.instance = PinoLogger.createBaseLogger()
     return PinoLogger.instance
   }
   private static createBaseLogger = (): pino.Logger<string> => {
-    let transport
+    let transport: DestinationStream
     if (env.NODE_ENV === "development" || env.NODE_ENV === "test") {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       transport = pino.transport({
         target: "pino-pretty",
         options: {

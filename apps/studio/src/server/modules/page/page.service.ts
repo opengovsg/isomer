@@ -1,20 +1,17 @@
 import { format } from "date-fns"
 
 export const createDefaultPage = ({
-  title,
   layout,
 }: {
   layout: "content" | "article"
-  title: string
 }) => {
   switch (layout) {
     case "content": {
       const contentDefaultPage = {
         layout: "content",
         page: {
-          title,
           contentPageHeader: {
-            summary: "",
+            summary: "This is the page summary",
           },
         },
         content: [],
@@ -27,11 +24,10 @@ export const createDefaultPage = ({
       const articleDefaultPage = {
         layout: "article",
         page: {
-          title,
           date: format(new Date(), "dd-MM-yyyy"),
           category: "Feature Articles",
           articlePageHeader: {
-            summary: [],
+            summary: ["This is the page summary"],
           },
         },
         content: [],

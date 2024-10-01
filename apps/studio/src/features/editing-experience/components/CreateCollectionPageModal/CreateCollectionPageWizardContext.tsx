@@ -67,9 +67,7 @@ const useCreateCollectionPageWizardContext = ({
     const jsonPreview =
       type === "page" ? articleLayoutPreview : collectionPdfPreview
     return merge(jsonPreview, {
-      page: {
-        title: title || "Page title here",
-      },
+      title: title || "Page title here",
     }) as IsomerSchema
   }, [type, title])
 
@@ -96,6 +94,17 @@ const useCreateCollectionPageWizardContext = ({
       {
         onSuccess: ({ pageId }) => {
           void router.push(`/sites/${siteId}/pages/${pageId}`)
+        },
+        onError: (error) => {
+          if (error.data?.code === "CONFLICT") {
+            formMethods.setError(
+              "permalink",
+              { message: error.message },
+              { shouldFocus: true },
+            )
+          } else {
+            console.error(error)
+          }
         },
       },
     )

@@ -1,14 +1,15 @@
 import Link from "next/link"
+import { useRouter } from "next/router"
 import {
   BreadcrumbItem,
   BreadcrumbLink,
   Flex,
   Skeleton,
-  TabList,
   Text,
 } from "@chakra-ui/react"
-import { Breadcrumb, Tab } from "@opengovsg/design-system-react"
+import { Breadcrumb } from "@opengovsg/design-system-react"
 
+import { TabLink } from "~/components/TabLink"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { getResourceSubpath } from "~/utils/resource"
@@ -42,7 +43,7 @@ const NavigationBreadcrumbs = ({
     (!resource?.parentId || !isParentResourceLoading) && !isResourceLoading
 
   return (
-    <Breadcrumb size="xs">
+    <Breadcrumb size="sm" flex={1}>
       <BreadcrumbItem>
         <BreadcrumbLink as={Link} href={`/sites/${siteId}`}>
           <Text textStyle="subhead-2">All pages</Text>
@@ -61,7 +62,12 @@ const NavigationBreadcrumbs = ({
             as={Link}
             href={`/sites/${siteId}/${getResourceSubpath(parentResource.type)}/${parentResource.id}`}
           >
-            <Text textStyle="subhead-2" noOfLines={1} maxW="12rem">
+            <Text
+              textStyle="subhead-2"
+              noOfLines={1}
+              maxW="12rem"
+              wordBreak="break-all"
+            >
               {parentResource.title}
             </Text>
           </BreadcrumbLink>
@@ -71,7 +77,12 @@ const NavigationBreadcrumbs = ({
       {!!resource && (
         <BreadcrumbItem isCurrentPage>
           <BreadcrumbLink href="#">
-            <Text textStyle="subhead-2" noOfLines={1} maxW="12rem">
+            <Text
+              wordBreak="break-all"
+              textStyle="subhead-2"
+              noOfLines={1}
+              maxW="12rem"
+            >
               {resource.title}
             </Text>
           </BreadcrumbLink>
@@ -83,6 +94,8 @@ const NavigationBreadcrumbs = ({
 
 export const SiteEditNavbar = (): JSX.Element => {
   const { siteId, pageId } = useQueryParse(editPageSchema)
+
+  const { pathname } = useRouter()
 
   return (
     <Flex flex="0 0 auto" gridColumn="1/-1">
@@ -100,18 +113,29 @@ export const SiteEditNavbar = (): JSX.Element => {
         borderBottomWidth="1px"
         borderColor="base.divider.medium"
         transition="padding 0.1s"
+        gap="0.5rem"
       >
         <NavigationBreadcrumbs
           siteId={String(siteId)}
           pageId={String(pageId)}
         />
 
-        <TabList>
-          <Tab>Edit</Tab>
-          <Tab>Page Settings</Tab>
-        </TabList>
+        <Flex gap="2rem">
+          <TabLink
+            isActive={pathname === "/sites/[siteId]/pages/[pageId]"}
+            href={`/sites/${siteId}/pages/${pageId}`}
+          >
+            Edit
+          </TabLink>
+          <TabLink
+            isActive={pathname === "/sites/[siteId]/pages/[pageId]/settings"}
+            href={`/sites/${siteId}/pages/${pageId}/settings`}
+          >
+            Page Settings
+          </TabLink>
+        </Flex>
         {pageId && siteId && (
-          <Flex justifyContent={"end"} alignItems={"center"}>
+          <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
             <PublishButton pageId={pageId} siteId={siteId} />
           </Flex>
         )}

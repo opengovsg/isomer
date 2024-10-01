@@ -1,8 +1,8 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
-import { schema } from "@opengovsg/isomer-components"
+import { getLayoutMetadataSchema, schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
-import isEqual from "lodash/isEqual"
+import { get, isEmpty, isEqual } from "lodash"
 import { z } from "zod"
 
 import {
@@ -25,6 +25,7 @@ import {
   getNavBar,
   getPageById,
   getResourceFullPermalink,
+  getResourcePermalinkTree,
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
@@ -218,34 +219,45 @@ export const pageRouter = router({
     .input(createPageSchema)
     .mutation(
       async ({ input: { permalink, siteId, folderId, title, layout } }) => {
-        const newPage = createDefaultPage({ title, layout })
+        const newPage = createDefaultPage({ layout })
 
         // TODO: Validate whether folderId actually is a folder instead of a page
         // TODO: Validate whether siteId is a valid site
         // TODO: Validate user has write-access to the site
-        const resource = await db.transaction().execute(async (tx) => {
-          const blob = await tx
-            .insertInto("Blob")
-            .values({
-              content: newPage,
-            })
-            .returning("Blob.id")
-            .executeTakeFirstOrThrow()
+        const resource = await db
+          .transaction()
+          .execute(async (tx) => {
+            const blob = await tx
+              .insertInto("Blob")
+              .values({
+                content: newPage,
+              })
+              .returning("Blob.id")
+              .executeTakeFirstOrThrow()
 
-          const addedResource = await tx
-            .insertInto("Resource")
-            .values({
-              title,
-              permalink,
-              siteId,
-              parentId: folderId ? String(folderId) : undefined,
-              draftBlobId: blob.id,
-              type: ResourceType.Page,
-            })
-            .returning("Resource.id")
-            .executeTakeFirstOrThrow()
-          return addedResource
-        })
+            const addedResource = await tx
+              .insertInto("Resource")
+              .values({
+                title,
+                permalink,
+                siteId,
+                parentId: folderId ? String(folderId) : undefined,
+                draftBlobId: blob.id,
+                type: ResourceType.Page,
+              })
+              .returning("Resource.id")
+              .executeTakeFirstOrThrow()
+            return addedResource
+          })
+          .catch((err) => {
+            if (get(err, "code") === "23505") {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
         return { pageId: resource.id }
       },
     ),
@@ -293,25 +305,84 @@ export const pageRouter = router({
       return addedVersionResult
     }),
 
-  updateSettings: protectedProcedure.input(pageSettingsSchema).mutation(
-    // TODO: save noIndex and meta to db
-    async ({ input: { pageId, siteId, title, permalink } }) => {
-      return db
-        .updateTable("Resource")
-        .where("Resource.id", "=", String(pageId))
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "in", ["Page", "CollectionPage"])
-        .set({ title, permalink })
-        .returning([
-          "Resource.id",
-          "Resource.type",
-          "Resource.title",
-          "Resource.permalink",
-          "Resource.draftBlobId",
-        ])
-        .executeTakeFirstOrThrow()
-    },
-  ),
+  updateSettings: protectedProcedure
+    .input(pageSettingsSchema)
+    .mutation(async ({ input: { pageId, siteId, title, permalink, meta } }) => {
+      return db.transaction().execute(async (tx) => {
+        const fullPage = await getFullPageById(tx, {
+          resourceId: pageId,
+          siteId,
+        })
+
+        if (!fullPage?.content) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message:
+              "Unable to load content for the requested page, please contact Isomer Support",
+          })
+        }
+
+        const { meta: _oldMeta, ...rest } = fullPage.content
+        const pageMetaSchema = getLayoutMetadataSchema(fullPage.content.layout)
+        const validateFn = ajv.compile(pageMetaSchema)
+        try {
+          const newMeta = JSON.parse(meta) as PrismaJson.BlobJsonContent["meta"]
+          const isValid = validateFn(newMeta)
+          if (!isValid) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Invalid metadata",
+              cause: validateFn.errors,
+            })
+          }
+          const newContent = !meta
+            ? rest
+            : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
+
+          await updateBlobById(tx, {
+            pageId,
+            content: newContent,
+            siteId,
+          })
+
+          const updatedResource = await tx
+            .updateTable("Resource")
+            .where("Resource.id", "=", String(pageId))
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.type", "in", ["Page", "CollectionPage"])
+            .set({ title, permalink })
+            .returning([
+              "Resource.id",
+              "Resource.type",
+              "Resource.title",
+              "Resource.permalink",
+              "Resource.draftBlobId",
+            ])
+            .executeTakeFirstOrThrow()
+            .catch((err) => {
+              if (get(err, "code") === "23505") {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw err
+            })
+
+          return {
+            ...updatedResource,
+            meta: newMeta,
+          }
+        } catch (err) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid metadata",
+            cause: err,
+          })
+        }
+      })
+    }),
+
   getFullPermalink: protectedProcedure
     .input(basePageSchema)
     .query(async ({ input }) => {
@@ -325,5 +396,19 @@ export const pageRouter = router({
       }
 
       return permalink
+    }),
+  getPermalinkTree: protectedProcedure
+    .input(basePageSchema)
+    .query(async ({ input }) => {
+      const { pageId, siteId } = input
+      const permalinkTree = await getResourcePermalinkTree(siteId, pageId)
+      if (isEmpty(permalinkTree)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No permalink could be found for the given page",
+        })
+      }
+
+      return permalinkTree
     }),
 })

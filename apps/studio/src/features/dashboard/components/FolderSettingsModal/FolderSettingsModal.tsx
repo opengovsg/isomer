@@ -156,7 +156,7 @@ const SuspendableModalContent = ({
                 name="permalink"
                 render={({ field: { onChange, ...field } }) => (
                   <Input
-                    placeholder="This is a url for your folder"
+                    placeholder="This is a URL for your folder"
                     {...field}
                     maxLength={MAX_FOLDER_PERMALINK_LENGTH}
                     onChange={(e) => {

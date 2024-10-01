@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { InputGroup, InputLeftAddon } from "@chakra-ui/react"
 import { Input } from "@opengovsg/design-system-react"
 
 interface LinkTypeRadioContentProps {
@@ -32,12 +33,17 @@ export const LinkTypeRadioContent = ({
       return <>{fileLinkElement}</>
     case "email":
       return (
-        <Input
-          type="text"
-          value={data.startsWith("mailto:") ? data.slice("mailto:".length) : ""}
-          onChange={(e) => handleChange(`mailto:${e.target.value}`)}
-          placeholder="test@example.com"
-        />
+        <InputGroup>
+          <InputLeftAddon>mailto:</InputLeftAddon>
+          <Input
+            type="text"
+            value={
+              data.startsWith("mailto:") ? data.slice("mailto:".length) : ""
+            }
+            onChange={(e) => handleChange(`mailto:${e.target.value}`)}
+            placeholder="test@example.com"
+          />
+        </InputGroup>
       )
     default:
       return <></>

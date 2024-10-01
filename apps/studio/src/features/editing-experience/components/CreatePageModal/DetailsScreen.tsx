@@ -122,6 +122,7 @@ export const CreatePageDetailsScreen = () => {
                 <Input
                   placeholder="This is a title for your new page"
                   {...register("title")}
+                  maxLength={MAX_TITLE_LENGTH}
                 />
                 {errors.title?.message ? (
                   <FormErrorMessage>{errors.title.message}</FormErrorMessage>
@@ -157,7 +158,12 @@ export const CreatePageDetailsScreen = () => {
                         placeholder="URL will be autopopulated if left untouched"
                         {...field}
                         onChange={(e) => {
-                          onChange(generateResourceUrl(e.target.value))
+                          onChange(
+                            generateResourceUrl(e.target.value).slice(
+                              0,
+                              MAX_PAGE_URL_LENGTH,
+                            ),
+                          )
                         }}
                       />
                     )}

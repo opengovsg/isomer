@@ -9,7 +9,6 @@ export default defineConfig({
       "~/": fileURLToPath(new URL("./src/", import.meta.url)),
       "~prisma": fileURLToPath(new URL("./prisma/", import.meta.url)),
     },
-    environment: "vprisma",
-    setupFiles: ["vitest-environment-vprisma/setup", "vitest.setup.ts"],
+    setupFiles: ["vitest.setup.ts"],
   },
 })

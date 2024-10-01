@@ -9,7 +9,7 @@ import { type DrawerState } from "~/types/editorDrawer"
 export interface DrawerContextType
   extends Pick<
     EditorDrawerProviderProps,
-    "type" | "permalink" | "siteId" | "pageId" | "updatedAt"
+    "type" | "permalink" | "siteId" | "pageId" | "updatedAt" | "title"
   > {
   currActiveIdx: number
   setCurrActiveIdx: (currActiveIdx: number) => void
@@ -33,6 +33,7 @@ interface EditorDrawerProviderProps extends PropsWithChildren {
   siteId: number
   pageId: number
   updatedAt: Date
+  title: string
 }
 
 export function EditorDrawerProvider({
@@ -43,6 +44,7 @@ export function EditorDrawerProvider({
   siteId,
   pageId,
   updatedAt,
+  title,
 }: EditorDrawerProviderProps) {
   const [drawerState, setDrawerState] = useState<DrawerState>({
     state: "root",
@@ -79,6 +81,7 @@ export function EditorDrawerProvider({
         siteId,
         pageId,
         updatedAt,
+        title,
       }}
     >
       {children}

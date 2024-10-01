@@ -12,7 +12,7 @@ import { Skeleton } from "../Skeleton"
 const createIndexPageLayoutStyles = tv({
   slots: {
     container:
-      "mx-auto grid max-w-screen-xl grid-cols-12 px-6 pb-0 pt-12 md:px-10 lg:gap-6 lg:pt-16 xl:gap-10",
+      "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-6 xl:gap-10",
     siderailContainer: "relative col-span-3 hidden lg:block",
     content: "col-span-12 flex flex-col gap-16",
   },
@@ -35,7 +35,7 @@ const IndexPageLayout = ({
   page,
   layout,
   content,
-  LinkComponent = "a",
+  LinkComponent,
   ScriptComponent,
 }: IndexPageSchemaType) => {
   const isParentPageRoot = page.permalink.split("/").length === 2
@@ -61,6 +61,7 @@ const IndexPageLayout = ({
         {...page.contentPageHeader}
         title={page.title}
         breadcrumb={breadcrumb}
+        site={site}
         LinkComponent={LinkComponent}
         lastUpdated={page.lastModified}
       />
@@ -76,8 +77,9 @@ const IndexPageLayout = ({
           className={compoundStyles.content({ isSideRailPresent: !!sideRail })}
         >
           {renderPageContent({
-            site,
             content,
+            layout,
+            site,
             LinkComponent,
           })}
         </div>

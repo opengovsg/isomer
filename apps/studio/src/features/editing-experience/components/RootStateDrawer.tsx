@@ -1,9 +1,9 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import { useCallback } from "react"
-import { Box, Button, Flex, Text, VStack } from "@chakra-ui/react"
+import { Box, Button, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
-import { BiPin, BiPlusCircle } from "react-icons/bi"
+import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -32,9 +32,15 @@ export default function RootStateDrawer() {
       // and the error type is automatically inferred from the zod validator.
       // However, the type that we use on `pageState` is the full type
       // because `Preview` (amongst other things) requires the other properties on the actual schema type
-      setPreviewPageState(variables.blocks)
+      setPreviewPageState((prevPreview) => ({
+        ...prevPreview,
+        content: variables.blocks,
+      }))
       // @ts-expect-error See above
-      setSavedPageState(variables.blocks)
+      setSavedPageState((prevSavedPageState) => ({
+        ...prevSavedPageState,
+        content: variables.blocks,
+      }))
       toast({
         title: "Failed to update blocks",
         description: error.message,
@@ -115,7 +121,7 @@ export default function RootStateDrawer() {
             onClick={() => {
               setDrawerState({ state: "metadataEditor" })
             }}
-            label="Page title and summary"
+            label="Page description and summary"
             description="Click to edit"
             icon={BiPin}
           />
@@ -152,24 +158,40 @@ export default function RootStateDrawer() {
                 <Box w="100%">
                   {((isHeroFixedBlock && savedPageState.content.length === 1) ||
                     savedPageState.content.length === 0) && (
-                    <VStack justifyContent="center" spacing={0} mt="2.75rem">
-                      <BlockEditingPlaceholder />
-                      <Text
-                        mt="0.75rem"
-                        textStyle="subhead-1"
-                        color="base.content.default"
+                    <>
+                      <VStack
+                        justifyContent="center"
+                        spacing={0}
+                        mt="2.75rem"
+                        mb="1.5rem"
                       >
-                        Blocks you add will appear here
-                      </Text>
-                      <Text
-                        mt="0.25rem"
-                        textStyle="caption-2"
-                        color="base.content.medium"
+                        <BlockEditingPlaceholder />
+                        <Text
+                          mt="0.75rem"
+                          textStyle="subhead-1"
+                          color="base.content.default"
+                        >
+                          Blocks you add will appear here
+                        </Text>
+                        <Text
+                          mt="0.25rem"
+                          textStyle="caption-2"
+                          color="base.content.medium"
+                        >
+                          Click the ‘Add block’ button above to add blocks to
+                          this page
+                        </Text>
+                      </VStack>
+
+                      <Button
+                        variant="outline"
+                        w="100%"
+                        onClick={() => setDrawerState({ state: "addBlock" })}
+                        leftIcon={<Icon as={BiPlus} fontSize="1.25rem" />}
                       >
-                        Click the ‘Add block’ button above to add blocks to this
-                        page
-                      </Text>
-                    </VStack>
+                        Add a new block
+                      </Button>
+                    </>
                   )}
 
                   <Flex flexDirection="column" mt="-0.25rem">

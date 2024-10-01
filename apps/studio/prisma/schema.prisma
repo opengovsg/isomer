@@ -7,7 +7,8 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 /// Always after the prisma-client-js generator
@@ -44,7 +45,7 @@ model Version {
   publishedBy String
   publisher   User       @relation(fields: [publishedBy], references: [id])
 
-  updatedAt   DateTime   @default(now()) @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Resource {
@@ -71,16 +72,24 @@ model Resource {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+
+  // This unique index is subsequently replaced with a custom index that
+  // treats nulls as not distinct.
+  // This is required so prisma does not attempt to drop the custom index.
+  @@unique([siteId, parentId, permalink])
+  @@index([siteId])
+  @@index([siteId, id])
+  @@index([siteId, id, parentId])
 }
 
 model Blob {
-  id            BigInt    @id @default(autoincrement())
+  id      BigInt @id @default(autoincrement())
   /// @kyselyType(PrismaJson.BlobJsonContent)
   /// [BlobJsonContent]
-  content       Json
+  content Json
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   draftResource Resource?
   version       Version?
@@ -106,8 +115,8 @@ model User {
   phone         String
   preferredName String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   permissions Permission[]
   siteMembers SiteMember[]
@@ -122,8 +131,8 @@ model Permission {
   user       User     @relation(fields: [userId], references: [id])
   role       RoleType
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   // Delete the row if either resource or user is deleted, default behavior cascade
 }
@@ -147,8 +156,8 @@ model Site {
   footer      Footer?
   codeBuildId String?
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Navbar {
@@ -193,4 +202,10 @@ enum RoleType {
   Admin
   Editor
   Publisher
+}
+
+model RateLimiterFlexible {
+  key    String    @id
+  points Int
+  expire DateTime?
 }

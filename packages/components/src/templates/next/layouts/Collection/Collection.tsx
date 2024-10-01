@@ -1,14 +1,18 @@
-import type { CollectionPageSchemaType, IsomerSitemap } from "~/engine"
+import type {
+  CollectionPageSchemaType,
+  IsomerSitemap,
+  IsomerSiteProps,
+} from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
 import { getBreadcrumbFromSiteMap, getSitemapAsArray } from "~/utils"
 import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
 
 const getCollectionItems = (
-  siteMap: IsomerSitemap,
+  site: IsomerSiteProps,
   permalink: string,
 ): CollectionCardProps[] => {
-  let currSitemap = siteMap
+  let currSitemap = site.siteMap
   const permalinkParts = permalink.split("/")
 
   for (let i = 2; i <= permalinkParts.length; i++) {
@@ -61,6 +65,7 @@ const getCollectionItems = (
         title: item.title,
         description: item.summary,
         image: item.image,
+        site,
       }
 
       if (item.layout === "file") {
@@ -102,9 +107,8 @@ const CollectionLayout = ({
   ScriptComponent,
 }: CollectionPageSchemaType) => {
   const { permalink } = page
-  const { siteMap } = site
 
-  const items = getCollectionItems(siteMap, permalink)
+  const items = getCollectionItems(site, permalink)
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
@@ -121,8 +125,9 @@ const CollectionLayout = ({
       <CollectionClient
         page={page}
         breadcrumb={breadcrumb}
-        LinkComponent={LinkComponent}
         items={items}
+        LinkComponent={LinkComponent}
+        site={site}
       />
     </Skeleton>
   )

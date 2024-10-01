@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import { get } from "lodash"
 
 import { createCollectionSchema } from "~/schemas/collection"
 import { readFolderSchema } from "~/schemas/folder"
@@ -45,6 +46,15 @@ export const collectionRouter = router({
         })
         .returning(defaultCollectionSelect)
         .executeTakeFirstOrThrow()
+        .catch((err) => {
+          if (get(err, "code") === "23505") {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "A resource with the same permalink already exists",
+            })
+          }
+          throw err
+        })
     }),
   createCollectionPage: protectedProcedure
     .input(createCollectionPageSchema)
@@ -52,9 +62,9 @@ export const collectionRouter = router({
       let newPage: PrismaJson.BlobJsonContent
       const { title, type, permalink, siteId, collectionId } = input
       if (type === "page") {
-        newPage = createCollectionPageJson({ title, type })
+        newPage = createCollectionPageJson({ type })
       } else {
-        newPage = createCollectionPdfJson({ title, type, url: input.url })
+        newPage = createCollectionPdfJson({ type, url: input.url })
       }
 
       // TODO: Validate whether folderId actually is a folder instead of a page
@@ -81,6 +91,15 @@ export const collectionRouter = router({
           })
           .returning("Resource.id")
           .executeTakeFirstOrThrow()
+          .catch((err) => {
+            if (get(err, "code") === "23505") {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
         return addedResource
       })
       return { pageId: resource.id }

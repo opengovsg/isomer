@@ -16,8 +16,8 @@
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
-    "eslint": "^9.6.0",
-    "prettier": "^3.3.2",
-    "typescript": "5.2.2"
+    "eslint": "^9.10.0",
+    "prettier": "^3.3.3",
+    "typescript": "5.6.2"
   }
 }

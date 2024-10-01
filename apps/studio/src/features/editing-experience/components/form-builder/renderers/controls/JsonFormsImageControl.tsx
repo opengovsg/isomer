@@ -14,6 +14,7 @@ import type { ModifiedAsset } from "~/types/assets"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useEnv } from "~/hooks/useEnv"
+import { getPresignedPutUrlSchema } from "~/schemas/asset"
 import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPES,
   MAX_IMG_FILE_SIZE_BYTES,
@@ -66,7 +67,7 @@ export function JsonFormsImageControl({
         const response = await fetch(url)
         const blob = await response.blob()
         return new File([blob], filename, { type: mimeType })
-      } catch (error) {
+      } catch {
         // File might not be ready yet, provide a fallback
         // TODO: Fetch the metadata directly from S3 instead
         return new File([], filename, { type: mimeType })
@@ -80,7 +81,7 @@ export function JsonFormsImageControl({
         ? `https://${NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${url}`
         : url
       const file = await urlToFile(imageUrl, fileName || "", fileType)
-      setPendingAsset({ path, src: imageUrl, file })
+      setPendingAsset({ path, src: url, file })
     }
 
     if (!data) {
@@ -88,7 +89,7 @@ export function JsonFormsImageControl({
     }
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    convertImage(data)
+    convertImage(String(data))
     // NOTE: We only want to run this once if there is initial data provided
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -114,6 +115,8 @@ export function JsonFormsImageControl({
               setPendingAsset(modifiedAsset)
               handleChange(path, modifiedAsset.blobUrl)
             } else {
+              handleChange(path, undefined)
+
               if (pendingAsset === undefined) {
                 return
               }
@@ -127,7 +130,6 @@ export function JsonFormsImageControl({
                 file: undefined,
                 blobUrl: undefined,
               })
-              handleChange(path, "")
             }
           }}
           onError={(error) => {
@@ -137,17 +139,20 @@ export function JsonFormsImageControl({
               status: "error",
             })
           }}
-          onRejection={(rejections) => {
-            if (rejections[0]?.errors[0]) {
-              toast({
-                title: "Image rejected",
-                description: rejections[0].errors[0].message,
-                status: "error",
-              })
-            }
-          }}
           maxSize={MAX_IMG_FILE_SIZE_BYTES}
           accept={IMAGE_UPLOAD_ACCEPTED_MIME_TYPES}
+          onFileValidation={(file) => {
+            const parseResult = getPresignedPutUrlSchema
+              .pick({ fileName: true })
+              .safeParse({ fileName: file.name })
+
+            if (parseResult.success) return null
+            // NOTE: safe assertion here because we're in error path and there's at least 1 error
+            return (
+              parseResult.error.errors[0]?.message ||
+              "Please ensure that your file begins with alphanumeric characters!"
+            )
+          }}
         />
         <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
           {`Maximum file size: ${MAX_IMG_FILE_SIZE_BYTES / 1000000} MB`}

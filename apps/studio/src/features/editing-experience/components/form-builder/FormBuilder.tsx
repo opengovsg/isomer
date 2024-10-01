@@ -23,6 +23,8 @@ import {
   jsonFormsCalloutTextControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
+  JsonFormsDateControl,
+  jsonFormsDateControlTester,
   jsonFormsGroupLayoutRenderer,
   jsonFormsGroupLayoutTester,
   JsonFormsImageControl,
@@ -35,6 +37,8 @@ import {
   jsonFormsObjectControlTester,
   JsonFormsProseControl,
   jsonFormsProseControlTester,
+  JsonFormsTextAreaControl,
+  jsonFormsTextAreaControlTester,
   JsonFormsTextControl,
   jsonFormsTextControlTester,
   jsonFormsVerticalLayoutRenderer,
@@ -46,6 +50,7 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     tester: jsonFormsProseControlTester,
     renderer: JsonFormsProseControl,
   },
+  { tester: jsonFormsDateControlTester, renderer: JsonFormsDateControl },
   { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
   { tester: jsonFormsArrayControlTester, renderer: JsonFormsArrayControl },
   { tester: jsonFormsBooleanControlTester, renderer: JsonFormsBooleanControl },
@@ -53,6 +58,10 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsIntegerControlTester, renderer: JsonFormsIntegerControl },
   { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },
   { tester: jsonFormsLinkControlTester, renderer: JsonFormsLinkControl },
+  {
+    tester: jsonFormsTextAreaControlTester,
+    renderer: JsonFormsTextAreaControl,
+  },
   { tester: jsonFormsTextControlTester, renderer: JsonFormsTextControl },
   { tester: jsonFormsAllOfControlTester, renderer: JsonFormsAllOfControl },
   { tester: jsonFormsAnyOfControlTester, renderer: JsonFormsAnyOfControl },
@@ -79,7 +88,12 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: () => null,
   },
 ]
-const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
+const ajv = new Ajv({
+  useDefaults: true,
+  allErrors: true,
+  strict: false,
+  logger: false,
+})
 
 interface FormBuilderProps<T> {
   schema: TSchema

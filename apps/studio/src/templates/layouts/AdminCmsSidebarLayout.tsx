@@ -1,14 +1,7 @@
 import type { PropsWithChildren } from "react"
 import { useRouter } from "next/router"
 import { Flex } from "@chakra-ui/react"
-import {
-  BiCog,
-  BiFolder,
-  BiGroup,
-  BiHelpCircle,
-  BiLinkExternal,
-  BiLogOut,
-} from "react-icons/bi"
+import { BiCog, BiFolder, BiHelpCircle, BiLogOut } from "react-icons/bi"
 import { z } from "zod"
 
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
@@ -52,17 +45,13 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
         router.asPath === `/sites/${siteId}` ||
         router.asPath.startsWith(`/sites/${siteId}/pages`),
     },
-    { icon: BiGroup, label: "Manage users", href: `/sites/${siteId}/manage` },
+
+    // TODO(ISOM-1552): Add back manage users functionality when implemented
     { icon: BiCog, label: "Settings", href: `/sites/${siteId}/settings` },
   ]
 
   const userNavItems: CmsSidebarItem[] = [
-    {
-      icon: BiLinkExternal,
-      label: "Open live site",
-      // TOOD: Replace with actual live site URL
-      href: `/home`,
-    },
+    // TODO(ISOM-1552): Add back view live site functionality when implemented
     {
       icon: BiHelpCircle,
       label: "Isomer Guide ",

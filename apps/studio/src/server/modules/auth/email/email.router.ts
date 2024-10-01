@@ -18,18 +18,21 @@ export const emailSessionRouter = router({
   // Generate OTP.
   login: publicProcedure
     .input(emailSignInSchema)
+    .meta({ rateLimitOptions: {} })
     .mutation(async ({ ctx, input: { email } }) => {
-      // check if whitelisted email on Growthbook
-      const defaultWhitelist: string[] = []
-      const whitelistedUsers = ctx.gb.getFeatureValue("whitelisted_users", {
-        whitelist: defaultWhitelist,
-      })
-
-      if (!whitelistedUsers.whitelist.includes(email)) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Unauthorized. Contact Isomer support.",
+      if (env.NODE_ENV === "production") {
+        // check if whitelisted email on Growthbook
+        const defaultWhitelist: string[] = []
+        const whitelistedUsers = ctx.gb.getFeatureValue("whitelisted_users", {
+          whitelist: defaultWhitelist,
         })
+
+        if (!whitelistedUsers.whitelist.includes(email)) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Unauthorized. Contact Isomer support.",
+          })
+        }
       }
 
       // TODO: instead of storing expires, store issuedAt to calculate when the next otp can be re-issued
@@ -75,6 +78,7 @@ export const emailSessionRouter = router({
     }),
   verifyOtp: publicProcedure
     .input(emailVerifyOtpSchema)
+    .meta({ rateLimitOptions: {} })
     .mutation(async ({ ctx, input: { email, token } }) => {
       try {
         await verifyToken(ctx.prisma, {

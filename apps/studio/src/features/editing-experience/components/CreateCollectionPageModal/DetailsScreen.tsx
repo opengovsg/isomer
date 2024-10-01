@@ -129,6 +129,7 @@ export const CreateCollectionPageDetailsScreen = () => {
 
                 <Input
                   placeholder="This is a title for your new page"
+                  maxLength={MAX_TITLE_LENGTH}
                   {...register("title")}
                 />
                 {errors.title?.message ? (
@@ -164,7 +165,12 @@ export const CreateCollectionPageDetailsScreen = () => {
                         placeholder="URL will be autopopulated if left untouched"
                         {...field}
                         onChange={(e) => {
-                          onChange(generatePageUrl(e.target.value))
+                          onChange(
+                            generatePageUrl(e.target.value).slice(
+                              0,
+                              MAX_PAGE_URL_LENGTH,
+                            ),
+                          )
                         }}
                       />
                     )}

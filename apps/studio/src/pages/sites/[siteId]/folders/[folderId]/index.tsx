@@ -5,7 +5,6 @@ import {
   Flex,
   HStack,
   Portal,
-  Spacer,
   Text,
   useDisclosure,
   VStack,
@@ -107,9 +106,9 @@ const FolderPage: NextPageWithLayout = () => {
 
   return (
     <>
-      <VStack w="100%" p="1.75rem" gap="1rem">
+      <VStack w="100%" p="1.75rem" gap="1rem" height="$100vh" overflow="auto">
         <VStack w="100%" align="start">
-          <Breadcrumb size="sm">
+          <Breadcrumb size="sm" w="100%">
             {breadcrumbs.map(({ href, label }, index) => {
               return (
                 <BreadcrumbItem key={index}>
@@ -117,6 +116,8 @@ const FolderPage: NextPageWithLayout = () => {
                     <Text
                       textStyle="caption-2"
                       color="interaction.links.default"
+                      noOfLines={1}
+                      w="max-content"
                     >
                       {label}
                     </Text>
@@ -124,14 +125,23 @@ const FolderPage: NextPageWithLayout = () => {
                 </BreadcrumbItem>
               )
             })}
-            <BreadcrumbItem key={folderId}>
-              <Text textStyle="caption-2" color="base.content.default">
+            <BreadcrumbItem
+              key={folderId}
+              overflow="hidden"
+              whiteSpace="nowrap"
+            >
+              <Text
+                textStyle="caption-2"
+                color="base.content.default"
+                overflow="hidden"
+                textOverflow="ellipsis"
+              >
                 {title}
               </Text>
             </BreadcrumbItem>
           </Breadcrumb>
           <Flex w="full" flexDir="row">
-            <HStack gap="0.75rem" flex={1}>
+            <HStack mr="1.25rem" overflow="auto" gap="0.75rem" flex={1}>
               <Box
                 aria-hidden
                 bg="brand.secondary.100"
@@ -140,12 +150,16 @@ const FolderPage: NextPageWithLayout = () => {
               >
                 <BiFolder />
               </Box>
-              <Text noOfLines={1} as="h3" textStyle="h3">
+              <Text
+                noOfLines={1}
+                as="h3"
+                textStyle="h3"
+                textOverflow="ellipsis"
+                wordBreak="break-all"
+              >
                 {title}
               </Text>
             </HStack>
-
-            <Spacer />
 
             <HStack>
               <Button

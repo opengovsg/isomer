@@ -1,3 +1,4 @@
+// @ts-check
 /// <reference types="./types.d.ts" />
 
 import eslint from "@eslint/js"
@@ -55,6 +56,7 @@ export default tseslint.config(
       ...tseslint.configs.stylisticTypeChecked,
     ],
     rules: {
+      "@typescript-eslint/unbound-method": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },

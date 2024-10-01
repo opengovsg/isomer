@@ -1,10 +1,9 @@
 import type { IconType } from "react-icons"
 import { Suspense, useMemo } from "react"
-import { Box, HStack, Icon, Mark, Skeleton, Text } from "@chakra-ui/react"
+import { Box, HStack, Icon, Skeleton, Text } from "@chakra-ui/react"
 import { dataAttr } from "@chakra-ui/utils"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
-import fuzzysort from "fuzzysort"
 import { ErrorBoundary } from "react-error-boundary"
 import { BiData, BiFile, BiFolder, BiLockAlt } from "react-icons/bi"
 
@@ -16,7 +15,6 @@ type ResourceItemProps = Pick<
 > & {
   isSelected: boolean
   isDisabled: boolean
-  searchQuery: string
   onResourceItemSelect: () => void
 }
 
@@ -25,7 +23,6 @@ const SuspendableResourceItem = ({
   type,
   isSelected,
   isDisabled,
-  searchQuery,
   onResourceItemSelect,
 }: ResourceItemProps) => {
   const icon: IconType = useMemo(() => {
@@ -39,19 +36,6 @@ const SuspendableResourceItem = ({
         return BiData
     }
   }, [type])
-
-  const SearchTextHighlight = useMemo(() => {
-    const result = fuzzysort.single(searchQuery, permalink)
-    if (!result) {
-      return permalink
-    }
-
-    return fuzzysort.highlight(result, (m, i) => (
-      <Mark key={i} bgColor="interaction.tinted.main.active">
-        {m}
-      </Mark>
-    ))
-  }, [searchQuery, permalink])
 
   return (
     <Button
@@ -90,7 +74,7 @@ const SuspendableResourceItem = ({
     >
       <HStack align="start" w="full" justify="space-between">
         <Text textStyle="caption-1" noOfLines={1}>
-          /{SearchTextHighlight}
+          /{permalink}
         </Text>
         {isDisabled && <Icon as={BiLockAlt} fontSize="0.75rem" />}
       </HStack>

@@ -6,6 +6,8 @@ import { useResizeObserver } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { isExternalUrl } from "~/utils"
+import { ImageClient } from "../../complex/Image"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
@@ -14,12 +16,12 @@ import { NavItem } from "./NavItem"
 
 const navbarStyles = tv({
   slots: {
-    logo: "max-h-[68px] object-contain object-center",
+    logo: "max-h-[48px] max-w-[128px] object-contain object-center",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
     navbar:
-      "mx-auto flex w-full max-w-screen-xl justify-between gap-x-2 pl-6 pr-3 md:px-10",
+      "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-2 pl-6 pr-3 md:px-10",
     navItemContainer:
-      "hidden flex-1 flex-wrap items-center gap-x-3 pl-2 lg:flex",
+      "hidden flex-1 flex-wrap items-center gap-x-4 pl-2 lg:flex",
   },
 })
 
@@ -31,12 +33,18 @@ export const Navbar = ({
   layout,
   search,
   items,
-  LinkComponent = "a",
+  site,
+  LinkComponent,
 }: Omit<NavbarProps, "type">) => {
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [mobileNavbarTopPx, setMobileNavbarTopPx] = useState<number>()
+
+  const imgSrc =
+    isExternalUrl(logoUrl) || site.assetsBaseUrl === undefined
+      ? logoUrl
+      : `${site.assetsBaseUrl}${logoUrl}`
 
   const isMenuOpen = openNavItemIdx !== -1 || isHamburgerOpen
 
@@ -84,7 +92,13 @@ export const Navbar = ({
             className="flex rounded focus-visible:bg-utility-highlight"
             href="/"
           >
-            <img src={logoUrl} alt={logoAlt} className={logo()} />
+            <ImageClient
+              src={imgSrc}
+              alt={logoAlt}
+              width="100%"
+              className={logo()}
+              assetsBaseUrl={site.assetsBaseUrl}
+            />
           </Link>
 
           {/* Navigation items (for desktop) */}

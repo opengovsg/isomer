@@ -24,7 +24,7 @@ interface NavbarItemProps
 const navbarItemStyles = tv({
   slots: {
     megamenu: "max-h-full overflow-auto bg-white shadow-md",
-    item: "group prose-label-md-medium flex h-[4.25rem] flex-row items-center border-b-2 border-transparent text-base-content-strong outline-0 transition-colors hover:text-brand-interaction-hover motion-reduce:transition-none",
+    item: "group prose-label-md-medium flex flex-row items-center gap-0.5 border-b-2 border-transparent pb-5 pt-6 text-base-content-strong outline-0 transition-colors hover:text-brand-interaction-hover motion-reduce:transition-none",
     chevron:
       "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
   },
@@ -145,11 +145,11 @@ const Megamenu = ({
                         isExternal={isExternal}
                         showExternalIcon={isExternal}
                         href={subItem.url}
-                        className="prose-label-md-medium inline-flex w-fit items-center gap-1 text-base-content hover:underline"
+                        className="group prose-label-md-medium inline-flex w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
                       >
                         {subItem.name}
                         {!isExternal && (
-                          <BiRightArrowAlt className="text-[1.25rem]" />
+                          <BiRightArrowAlt className="text-[1.25rem] transition ease-in group-hover:translate-x-1" />
                         )}
                       </Link>
                       <p className="prose-label-sm-regular text-base-content-subtle">

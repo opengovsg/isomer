@@ -9,10 +9,15 @@ import type {
   SingleCardWithImageProps,
 } from "~/interfaces/complex/InfoCards"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref } from "~/utils"
+import {
+  getReferenceLinkHref,
+  getTailwindVariantLayout,
+  isExternalUrl,
+} from "~/utils"
 import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
+import { ImageClient } from "../Image"
 
 const infoCardTitleStyle = tv({
   extend: groupFocusVisibleHighlightNonRac,
@@ -26,10 +31,10 @@ const infoCardTitleStyle = tv({
 
 const createInfoCardsStyles = tv({
   slots: {
-    container: `${ComponentContent} flex flex-col py-12 first:pt-0 lg:py-24`,
-    headingContainer: "flex flex-col gap-2.5 pb-8 sm:pb-12 lg:max-w-3xl",
+    container: `${ComponentContent} flex flex-col`,
+    headingContainer: "flex flex-col pb-8 sm:pb-12",
     headingTitle: "prose-display-md break-words text-base-content-strong",
-    headingSubtitle: "prose-headline-lg-regular text-base-content",
+    headingSubtitle: "text-base-content",
     grid: "grid grid-cols-1 gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImageContainer:
@@ -41,6 +46,18 @@ const createInfoCardsStyles = tv({
     cardDescription: "prose-body-base text-base-content",
   },
   variants: {
+    layout: {
+      homepage: {
+        container: "py-12 first:pt-0 md:py-16",
+        headingContainer: "gap-2.5 lg:max-w-3xl",
+        headingSubtitle: "prose-headline-lg-regular",
+      },
+      default: {
+        container: "mt-14 first:mt-0",
+        headingContainer: "gap-6",
+        headingSubtitle: "prose-body-base",
+      },
+    },
     isClickableCard: {
       true: {
         cardImageContainer: "group-hover:drop-shadow-md",
@@ -67,23 +84,13 @@ const createInfoCardsStyles = tv({
     },
   },
   defaultVariants: {
+    layout: "default",
     maxColumns: "3",
     imageFit: "cover",
   },
 })
 
 const compoundStyles = createInfoCardsStyles()
-
-const InfoCardsHeadingSection = ({
-  title,
-  subtitle,
-}: Pick<InfoCardsProps, "title" | "subtitle">): JSX.Element => (
-  <div className={compoundStyles.headingContainer()}>
-    <h2 className={compoundStyles.headingTitle()}>{title}</h2>
-
-    {subtitle && <p className={compoundStyles.headingSubtitle()}>{subtitle}</p>}
-  </div>
-)
 
 const InfoCardContainer = ({
   url,
@@ -111,22 +118,32 @@ const InfoCardImage = ({
   imageAlt,
   imageFit,
   url,
+  site,
 }: Pick<
   SingleCardWithImageProps,
-  "imageUrl" | "imageAlt" | "url" | "imageFit"
->): JSX.Element => (
-  <div
-    className={compoundStyles.cardImageContainer({ isClickableCard: !!url })}
-  >
-    <img
-      src={imageUrl}
-      alt={imageAlt}
-      className={compoundStyles.cardImage({
-        imageFit,
-      })}
-    />
-  </div>
-)
+  "imageUrl" | "imageAlt" | "url" | "imageFit" | "site"
+>): JSX.Element => {
+  const imgSrc =
+    isExternalUrl(imageUrl) || site.assetsBaseUrl === undefined
+      ? imageUrl
+      : `${site.assetsBaseUrl}${imageUrl}`
+
+  return (
+    <div
+      className={compoundStyles.cardImageContainer({ isClickableCard: !!url })}
+    >
+      <ImageClient
+        src={imgSrc}
+        alt={imageAlt}
+        width="100%"
+        className={compoundStyles.cardImage({
+          imageFit,
+        })}
+        assetsBaseUrl={site.assetsBaseUrl}
+      />
+    </div>
+  )
+}
 
 const InfoCardText = ({
   title,
@@ -182,6 +199,7 @@ const InfoCardWithImage = ({
         imageUrl={imageUrl}
         imageAlt={imageAlt}
         url={url}
+        site={site}
       />
       <InfoCardText title={title} description={description} url={url} />
     </InfoCardContainer>
@@ -194,9 +212,12 @@ const InfoCards = ({
   variant,
   cards,
   maxColumns,
+  layout,
   site,
   LinkComponent,
 }: InfoCardsProps): JSX.Element => {
+  const simplifiedLayout = getTailwindVariantLayout(layout)
+
   const InfoCardtoRender = () => {
     switch (variant) {
       case "cardsWithImages":
@@ -232,9 +253,25 @@ const InfoCards = ({
   }
 
   return (
-    <section className={compoundStyles.container()}>
+    <section className={compoundStyles.container({ layout: simplifiedLayout })}>
       {(title || subtitle) && (
-        <InfoCardsHeadingSection title={title} subtitle={subtitle} />
+        <div
+          className={compoundStyles.headingContainer({
+            layout: simplifiedLayout,
+          })}
+        >
+          <h2 className={compoundStyles.headingTitle()}>{title}</h2>
+
+          {subtitle && (
+            <p
+              className={compoundStyles.headingSubtitle({
+                layout: simplifiedLayout,
+              })}
+            >
+              {subtitle}
+            </p>
+          )}
+        </div>
       )}
 
       <div className={compoundStyles.grid({ maxColumns })}>

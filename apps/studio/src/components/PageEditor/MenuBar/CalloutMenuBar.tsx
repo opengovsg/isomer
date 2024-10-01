@@ -1,8 +1,10 @@
 import type { Editor } from "@tiptap/react"
 import { useMemo } from "react"
+import { useDisclosure } from "@chakra-ui/react"
 import {
   BiBold,
   BiItalic,
+  BiLink,
   BiListOl,
   BiListUl,
   BiStrikethrough,
@@ -10,11 +12,18 @@ import {
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
-import type { MenuBarEntry } from "./MenuBar"
+import type { PossibleMenubarItemProps } from "./MenubarItem/types"
+import { LinkEditorModal } from "../LinkEditorModal"
 import { MenuBar } from "./MenuBar"
 
 export const CalloutMenuBar = ({ editor }: { editor: Editor }) => {
-  const items: MenuBarEntry[] = useMemo(
+  const {
+    isOpen: isLinkModalOpen,
+    onOpen: onLinkModalOpen,
+    onClose: onLinkModalClose,
+  } = useDisclosure()
+
+  const items: PossibleMenubarItemProps[] = useMemo(
     () => [
       {
         type: "item",
@@ -85,9 +94,29 @@ export const CalloutMenuBar = ({ editor }: { editor: Editor }) => {
           },
         ],
       },
+      {
+        type: "divider",
+      },
+      {
+        type: "item",
+        icon: BiLink,
+        title: "Link",
+        action: onLinkModalOpen,
+        isActive: () => editor.isActive("link"),
+      },
     ],
-    [editor],
+    [editor, onLinkModalOpen],
   )
 
-  return <MenuBar items={items} />
+  return (
+    <>
+      <LinkEditorModal
+        editor={editor}
+        isOpen={isLinkModalOpen}
+        onClose={onLinkModalClose}
+      />
+
+      <MenuBar items={items} />
+    </>
+  )
 }

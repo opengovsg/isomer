@@ -4,12 +4,12 @@ import { getSitemapAsArray } from "~/utils"
 export const getMetadata = (props: IsomerPageSchemaType) => {
   const metadata = {
     metadataBase: props.site.url ? new URL(props.site.url) : undefined,
-    description: props.page.description || undefined,
+    description: props.meta?.description || undefined,
     robots: {
       index:
         props.layout !== "file" &&
         props.layout !== "link" &&
-        !props.page.noIndex,
+        !props.meta?.noIndex,
     },
     icons: {
       shortcut:
@@ -19,6 +19,18 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
     twitter: {
       card: "summary_large_image" as const,
     },
+  }
+
+  if (metadata.description === undefined && props.layout === "article") {
+    return {
+      ...metadata,
+      description: props.page.articlePageHeader.summary.join(" "),
+    }
+  } else if (metadata.description === undefined && props.layout === "content") {
+    return {
+      ...metadata,
+      description: props.page.contentPageHeader.summary,
+    }
   }
 
   if (props.page.permalink === "/") {

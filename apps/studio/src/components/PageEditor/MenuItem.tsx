@@ -3,7 +3,7 @@ import type { IconType } from "react-icons/lib"
 import { Divider, Icon, Tooltip } from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
 
-interface MenuItemProps {
+export interface MenuItemProps {
   icon?: IconType
   title?: string
   action?: MouseEventHandler<HTMLButtonElement>
@@ -25,10 +25,8 @@ export const MenuItem = ({
   <Tooltip label={title || "divider"} hasArrow openDelay={500}>
     {type === "divider" ? (
       <IconButton
-        _hover={{ bg: "transparent" }}
-        _active={{ bg: "gray.200" }}
-        bgColor="transparent"
-        border="none"
+        variant="clear"
+        colorScheme="neutral"
         h="1.75rem"
         w="1rem"
         minH="1.75rem"
@@ -45,11 +43,13 @@ export const MenuItem = ({
       </IconButton>
     ) : (
       <IconButton
-        _hover={{ bg: "gray.100" }}
-        _active={{ bg: "gray.200" }}
+        variant="clear"
+        colorScheme="neutral"
         onClick={action}
-        bgColor={isActive?.() ? "gray.200" : "transparent"}
-        border="none"
+        isActive={isActive?.()}
+        _active={{
+          bg: "interaction.muted.main.active",
+        }}
         h="1.75rem"
         w="1.75rem"
         minH="1.75rem"

@@ -9,11 +9,11 @@ type UploadAssetMutationParams = Pick<
   "siteId"
 >
 
-interface UploadAssetMutationInput {
+export interface UploadAssetMutationInput {
   file: File
 }
 
-interface UploadAssetMutationOutput {
+export interface UploadAssetMutationOutput {
   path: string
 }
 
@@ -26,6 +26,7 @@ const handleUpload = async ({ file, presignedPutUrl }: HandleUploadParams) => {
   const response = await fetch(presignedPutUrl, {
     headers: {
       "Content-Type": file.type,
+      "Content-Disposition": `inline; filename="${file.name}"`,
     },
     method: "PUT",
     body: file,

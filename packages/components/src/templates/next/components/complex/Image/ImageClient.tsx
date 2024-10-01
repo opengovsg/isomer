@@ -8,7 +8,7 @@ interface ImageClientProps {
   assetsBaseUrl?: string
 }
 
-const ImageClient = ({
+export const ImageClient = ({
   src,
   alt,
   width,
@@ -29,5 +29,3 @@ const ImageClient = ({
     />
   )
 }
-
-export default ImageClient

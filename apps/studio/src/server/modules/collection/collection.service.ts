@@ -1,15 +1,11 @@
 import { format } from "date-fns"
 
-export const createCollectionPageJson = ({
-  title,
-}: {
+export const createCollectionPageJson = ({}: {
   type: "page" // Act as soft typeguard
-  title: string
 }) => {
   return {
     layout: "article",
     page: {
-      title,
       date: format(new Date(), "dd-MM-yyyy"),
       // TODO: this is actually supposed to be passed from the frontend
       // which is not done at present
@@ -24,17 +20,14 @@ export const createCollectionPageJson = ({
 }
 
 export const createCollectionPdfJson = ({
-  title,
   url: _url,
 }: {
   type: "pdf" // Act as soft typeguard
-  title: string
   url: string
 }) => {
   return {
     layout: "content",
     page: {
-      title,
       contentPageHeader: {
         summary: "",
       },

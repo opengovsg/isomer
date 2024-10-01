@@ -59,6 +59,7 @@ export function JsonFormsAnyOfControl({
     if (!newSchema) {
       handleChange(path, {})
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const newData = createDefaultValue(newSchema, rootSchema)
 
       if (newSchema.type === "string") {
@@ -73,9 +74,7 @@ export function JsonFormsAnyOfControl({
   }
 
   useEffect(() => {
-    if (indexOfFittingSchema !== undefined) {
-      setVariant(options[indexOfFittingSchema]?.label || "")
-    }
+    setVariant(options[indexOfFittingSchema]?.label || "")
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -84,7 +83,6 @@ export function JsonFormsAnyOfControl({
       <Box mt="1.25rem" _first={{ mt: 0 }}>
         <FormControl isRequired gap="0.5rem">
           <FormLabel description={description}>{label || "Variant"}</FormLabel>
-
           {schema.format === "radio" ? (
             <RadioGroup
               onChange={onChange}
