@@ -11,7 +11,7 @@ const createInfobarStyles = tv({
     headingContainer: "flex flex-col gap-6",
     title: "break-words",
     description: "text-base-content",
-    buttonContainer: "flex flex-col items-start gap-x-5 gap-y-4 sm:flex-row",
+    buttonContainer: "flex flex-col gap-x-5 gap-y-4 sm:flex-row",
   },
   variants: {
     layout: {
@@ -83,7 +83,11 @@ const Infobar = ({
             )}
           </div>
 
-          <div className={compoundStyles.buttonContainer()}>
+          <div
+            className={compoundStyles.buttonContainer({
+              layout: simplifiedLayout,
+            })}
+          >
             {buttonLabel && buttonUrl && (
               <LinkButton
                 href={getReferenceLinkHref(buttonUrl, site.siteMap)}
