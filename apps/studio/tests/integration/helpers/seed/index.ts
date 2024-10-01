@@ -1,5 +1,7 @@
 import { db } from "~server/db"
 
+import type { ResourceType } from "~server/db"
+
 export const setupSite = async (siteId?: number) => {
   return db
     .insertInto("Site")
@@ -41,17 +43,19 @@ export const setupBlob = async () => {
     .executeTakeFirstOrThrow()
 }
 
-export const setupPage = async ({
+export const setupPageResource = async ({
   siteId: siteIdProp,
   blobId: blobIdProp,
+  resourceType,
 }: {
   siteId?: number
   blobId?: number
-} = {}) => {
+  resourceType: ResourceType
+}) => {
   const siteId = siteIdProp ?? (await setupSite()).id
   const blobId = blobIdProp ?? (await setupBlob()).id
 
-  const expectedPage = await db
+  const page = await db
     .insertInto("Resource")
     .values({
       title: "test page",
@@ -60,7 +64,7 @@ export const setupPage = async ({
       parentId: null,
       publishedVersionId: null,
       draftBlobId: String(blobId),
-      type: "Page",
+      type: resourceType,
       state: "Draft",
     })
     .returning("id")
@@ -69,6 +73,34 @@ export const setupPage = async ({
   return {
     siteId,
     blobId,
-    pageId: expectedPage.id,
+    pageId: page.id,
+  }
+}
+
+export const setupFolder = async ({
+  siteId: siteIdProp,
+}: {
+  siteId?: number
+} = {}) => {
+  const siteId = siteIdProp ?? (await setupSite()).id
+
+  const folder = await db
+    .insertInto("Resource")
+    .values({
+      permalink: "test-folder",
+      siteId,
+      parentId: null,
+      title: "test folder",
+      draftBlobId: null,
+      state: "Draft",
+      type: "Folder",
+      publishedVersionId: null,
+    })
+    .returning("id")
+    .executeTakeFirstOrThrow()
+
+  return {
+    siteId,
+    folderId: folder.id,
   }
 }

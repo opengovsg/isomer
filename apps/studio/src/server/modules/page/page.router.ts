@@ -78,6 +78,7 @@ export const pageRouter = router({
           message: "Resource not found",
         })
       }
+
       return retrievedPage
     }),
 
