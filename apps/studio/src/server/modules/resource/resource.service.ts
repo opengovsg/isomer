@@ -7,7 +7,7 @@ import { db } from "../database"
 import { type Page } from "./resource.types"
 
 // Specify the default columns to return from the Resource table
-export const defaultResourceSelect: SelectExpression<DB, "Resource">[] = [
+export const defaultResourceSelect = [
   "Resource.id",
   "Resource.title",
   "Resource.permalink",
@@ -17,23 +17,25 @@ export const defaultResourceSelect: SelectExpression<DB, "Resource">[] = [
   "Resource.draftBlobId",
   "Resource.type",
   "Resource.state",
-]
-const defaultResourceWithBlobSelect: SelectExpression<
-  DB,
-  "Resource" | "Blob"
->[] = [...defaultResourceSelect, "Blob.content", "Blob.updatedAt"]
+] satisfies SelectExpression<DB, "Resource">[]
 
-const defaultNavbarSelect: SelectExpression<DB, "Navbar">[] = [
+const defaultResourceWithBlobSelect = [
+  ...defaultResourceSelect,
+  "Blob.content",
+  "Blob.updatedAt",
+] satisfies SelectExpression<DB, "Resource" | "Blob">[]
+
+const defaultNavbarSelect = [
   "Navbar.id",
   "Navbar.siteId",
   "Navbar.content",
-]
+] satisfies SelectExpression<DB, "Navbar">[]
 
-const defaultFooterSelect: SelectExpression<DB, "Footer">[] = [
+const defaultFooterSelect = [
   "Footer.id",
   "Footer.siteId",
   "Footer.content",
-]
+] satisfies SelectExpression<DB, "Footer">[]
 
 export const getPages = () => {
   // TODO: write a test to verify this query behaviour
@@ -352,8 +354,7 @@ export const getResourcePermalinkTree = async (
     .select("Ancestors.permalink")
     .execute()
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return resourcePermalinks.map((r) => r.permalink).reverse() as string[]
+  return resourcePermalinks.map((r) => r.permalink).reverse()
 }
 
 export const getResourceFullPermalink = async (
