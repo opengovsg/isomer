@@ -1,4 +1,3 @@
-import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { Can } from "@casl/react"
 import {
   Box,
@@ -14,8 +13,6 @@ import { Button, Menu } from "@opengovsg/design-system-react"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 
-import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
-import type { RoleType } from "~prisma/generated/generatedEnums"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
@@ -24,22 +21,67 @@ import { CreateCollectionModal } from "~/features/editing-experience/components/
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
+import { PermissionsProvider, usePermissions } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
-import { buildPermissionsFor } from "~/server/modules/permissions/permissions.util"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
-import { trpc } from "~/utils/trpc"
 
 export const sitePageSchema = z.object({
   siteId: z.coerce.number(),
 })
 
-const getPermissions = (roles: { role: RoleType }[]) => {
-  const builder = new AbilityBuilder<ResourceAbility>(createMongoAbility)
-  roles.forEach(({ role }) => {
-    buildPermissionsFor(role, builder)
-  })
-  return builder.build({ detectSubjectType: () => "Resource" })
+interface HomepageMenuButtonProps {
+  onCollectionCreateModalOpen: () => void
+  onPageCreateModalOpen: () => void
+  onFolderCreateModalOpen: () => void
+}
+const HomepageMenuButton = ({
+  onCollectionCreateModalOpen,
+  onPageCreateModalOpen,
+  onFolderCreateModalOpen,
+}: HomepageMenuButtonProps) => {
+  const { ability } = usePermissions()
+
+  return (
+    <Can do="create" on={{ parentId: null }} ability={ability}>
+      <Menu isLazy size="sm">
+        {({ isOpen }) => (
+          <>
+            <Menu.Button
+              isOpen={isOpen}
+              as={Button}
+              size="md"
+              justifySelf="flex-end"
+            >
+              Create new...
+            </Menu.Button>
+            <Portal>
+              <Menu.List>
+                <Menu.Item
+                  onClick={onFolderCreateModalOpen}
+                  icon={<BiFolder fontSize="1rem" />}
+                >
+                  Folder
+                </Menu.Item>
+                <Menu.Item
+                  onClick={onPageCreateModalOpen}
+                  icon={<BiFileBlank fontSize="1rem" />}
+                >
+                  Page
+                </Menu.Item>
+                <Menu.Item
+                  onClick={onCollectionCreateModalOpen}
+                  icon={<BiData fontSize="1rem" />}
+                >
+                  Collection
+                </Menu.Item>
+              </Menu.List>
+            </Portal>
+          </>
+        )}
+      </Menu>
+    </Can>
+  )
 }
 
 const SitePage: NextPageWithLayout = () => {
@@ -60,15 +102,9 @@ const SitePage: NextPageWithLayout = () => {
   } = useDisclosure()
 
   const { siteId } = useQueryParse(sitePageSchema)
-  const [roles] = trpc.resource.getRolesFor.useSuspenseQuery({
-    siteId,
-    resourceId: null,
-  })
-
-  const perms = getPermissions(roles)
 
   return (
-    <>
+    <PermissionsProvider siteId={siteId}>
       <VStack
         w="100%"
         p="1.75rem"
@@ -99,44 +135,11 @@ const SitePage: NextPageWithLayout = () => {
                 Home
               </Text>
             </HStack>
-            <Can do="create" on={{ parentId: null }} ability={perms}>
-              <Menu isLazy size="sm">
-                {({ isOpen }) => (
-                  <>
-                    <Menu.Button
-                      isOpen={isOpen}
-                      as={Button}
-                      size="md"
-                      justifySelf="flex-end"
-                    >
-                      Create new...
-                    </Menu.Button>
-                    <Portal>
-                      <Menu.List>
-                        <Menu.Item
-                          onClick={onFolderCreateModalOpen}
-                          icon={<BiFolder fontSize="1rem" />}
-                        >
-                          Folder
-                        </Menu.Item>
-                        <Menu.Item
-                          onClick={onPageCreateModalOpen}
-                          icon={<BiFileBlank fontSize="1rem" />}
-                        >
-                          Page
-                        </Menu.Item>
-                        <Menu.Item
-                          onClick={onCollectionCreateModalOpen}
-                          icon={<BiData fontSize="1rem" />}
-                        >
-                          Collection
-                        </Menu.Item>
-                      </Menu.List>
-                    </Portal>
-                  </>
-                )}
-              </Menu>
-            </Can>
+            <HomepageMenuButton
+              onPageCreateModalOpen={onPageCreateModalOpen}
+              onFolderCreateModalOpen={onFolderCreateModalOpen}
+              onCollectionCreateModalOpen={onCollectionCreateModalOpen}
+            />
           </HStack>
         </VStack>
         <RootpageRow siteId={siteId} />
@@ -162,7 +165,7 @@ const SitePage: NextPageWithLayout = () => {
       <DeleteResourceModal siteId={siteId} />
       <MoveResourceModal />
       <FolderSettingsModal />
-    </>
+    </PermissionsProvider>
   )
 }
 
