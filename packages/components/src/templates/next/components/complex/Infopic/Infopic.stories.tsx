@@ -90,7 +90,8 @@ export const LongImage: Story = {
     title: "Don't put all your baskets in one egg",
     description: "",
     buttonUrl: "",
-    imageSrc: "https://picsum.photos/1200/120",
+    imageSrc:
+      "https://images.unsplash.com/photo-1444858440655-e7cf0269024e?q=80&w=2048&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
 }
 
