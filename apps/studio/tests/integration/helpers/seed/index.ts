@@ -1,7 +1,7 @@
 import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
 
-import type { ResourceType } from "~server/db"
+import type { ResourceState, ResourceType } from "~server/db"
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
   if (siteId !== undefined && fetch) {
@@ -170,15 +170,19 @@ export const setupPageResource = async ({
   siteId: siteIdProp,
   blobId: blobIdProp,
   resourceType,
+  state = "Draft",
+  userId,
 }: {
   siteId?: number
   blobId?: string
   resourceType: ResourceType
+  state?: ResourceState
+  userId?: string
 }) => {
   const { site, navbar, footer } = await setupSite(siteIdProp)
   const blob = await setupBlob(blobIdProp)
 
-  const page = await db
+  let page = await db
     .insertInto("Resource")
     .values({
       title: "test page",
@@ -188,10 +192,33 @@ export const setupPageResource = async ({
       publishedVersionId: null,
       draftBlobId: blob.id,
       type: resourceType,
-      state: "Draft",
+      state,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
+
+  if (state === "Published" && userId) {
+    const version = await db
+      .insertInto("Version")
+      .values({
+        versionNum: 1,
+        resourceId: page.id,
+        blobId: blob.id,
+        publishedBy: userId,
+      })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    page = await db
+      .updateTable("Resource")
+      .where("id", "=", page.id)
+      .set({
+        publishedVersionId: version.id,
+        draftBlobId: null,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+  }
 
   return {
     site,

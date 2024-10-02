@@ -1,6 +1,5 @@
 import type { SelectExpression } from "kysely"
 import type { UnwrapTagged } from "type-fest"
-import { TRPCError } from "@trpc/server"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Resource, SafeKysely } from "../database"
@@ -164,25 +163,24 @@ export const updatePageById = (
 
 export const updateBlobById = async (
   db: SafeKysely,
-  props: {
+  {
+    pageId,
+    content,
+    siteId,
+  }: {
     pageId: number
     content: UnwrapTagged<PrismaJson.BlobJsonContent>
     siteId: number
   },
 ) => {
-  const { pageId: id, content } = props
   const page = await db
     .selectFrom("Resource")
-    .where("Resource.id", "=", String(id))
-    .where("siteId", "=", props.siteId)
+    .where("Resource.id", "=", String(pageId))
+    .where("siteId", "=", siteId)
     // NOTE: We update the draft first
     // Main should only be updated at build
     .select("draftBlobId")
-    .executeTakeFirst()
-
-  if (!page) {
-    throw new TRPCError({ code: "NOT_FOUND" })
-  }
+    .executeTakeFirstOrThrow()
 
   if (!page.draftBlobId) {
     // NOTE: no draft for this yet, need to create a new one
@@ -193,7 +191,7 @@ export const updateBlobById = async (
       .executeTakeFirstOrThrow()
     await db
       .updateTable("Resource")
-      .where("id", "=", String(id))
+      .where("id", "=", String(pageId))
       .set({ draftBlobId: newBlob.id })
       .execute()
   }
