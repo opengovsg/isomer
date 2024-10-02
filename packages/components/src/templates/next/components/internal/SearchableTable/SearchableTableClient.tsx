@@ -17,9 +17,9 @@ const createSearchableTableStyles = tv({
     container: "mx-auto w-full",
     title: "prose-display-md break-words text-base-content-strong",
     search: "mt-9",
-    tableContainer: "mt-7 overflow-x-auto",
+    tableContainer: "mt-8 overflow-x-auto",
     table:
-      "w-full border-collapse border-spacing-0 [&_>_tbody_>_tr:nth-child(odd)_>_td]:bg-brand-canvas",
+      "[&_>_tbody_>_tr:nth-child(even)_>_td]:bg-base-canvas-default w-full border-collapse border-spacing-0 [&_>_tbody_>_tr:nth-child(odd)_>_td]:bg-base-canvas-alt",
     tableRow: "text-left",
     tableCell:
       "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top last:max-w-full [&_li]:my-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
@@ -37,10 +37,10 @@ const createSearchableTableStyles = tv({
     isHeader: {
       true: {
         tableCell:
-          "bg-base-canvas-backdrop [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
+          "bg-brand-interaction text-base-content-inverse [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
       },
       false: {
-        tableCell: "[&_ol]:prose-body-sm [&_p]:prose-body-sm",
+        tableCell: "text-base-content [&_ol]:prose-body-sm [&_p]:prose-body-sm",
       },
     },
     bold: {
