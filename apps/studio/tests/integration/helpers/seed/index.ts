@@ -3,8 +3,30 @@ import { nanoid } from "nanoid"
 
 import type { ResourceType } from "~server/db"
 
-export const setupSite = async (siteId?: number) => {
-  const site = await db.transaction().execute(async (tx) => {
+export const setupSite = async (siteId?: number, fetch?: boolean) => {
+  if (siteId !== undefined && fetch) {
+    return db.transaction().execute(async (tx) => {
+      const site = await tx
+        .selectFrom("Site")
+        .where("id", "=", siteId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      const navbar = await tx
+        .selectFrom("Navbar")
+        .where("siteId", "=", site.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const footer = await tx
+        .selectFrom("Footer")
+        .where("siteId", "=", site.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      return { site, navbar, footer }
+    })
+  }
+  return await db.transaction().execute(async (tx) => {
     const site = await tx
       .insertInto("Site")
       .values({
@@ -19,14 +41,12 @@ export const setupSite = async (siteId?: number) => {
         id: siteId,
         codeBuildId: null,
         theme: null,
-        createdAt: "2024-09-30 10:42:51.77",
-        updatedAt: "2024-09-30 10:42:51.77",
       })
-      .returning("id")
+      .returningAll()
       .executeTakeFirstOrThrow()
 
     // Insert navbar
-    await tx
+    const navbar = await tx
       .insertInto("Navbar")
       .values({
         content: jsonb([
@@ -70,10 +90,11 @@ export const setupSite = async (siteId?: number) => {
         ]),
         siteId: site.id,
       })
-      .execute()
+      .returningAll()
+      .executeTakeFirstOrThrow()
 
     // // Insert footer
-    await tx
+    const footer = await tx
       .insertInto("Footer")
       .values({
         content: jsonb({
@@ -92,15 +113,21 @@ export const setupSite = async (siteId?: number) => {
         }),
         siteId: site.id,
       })
-      .execute()
+      .returningAll()
+      .executeTakeFirstOrThrow()
 
-    return site
+    return { site, navbar, footer }
   })
-
-  return site
 }
 
-export const setupBlob = async () => {
+export const setupBlob = async (blobId?: string) => {
+  if (blobId !== undefined) {
+    return db
+      .selectFrom("Blob")
+      .where("id", "=", blobId)
+      .selectAll()
+      .executeTakeFirstOrThrow()
+  }
   return db
     .insertInto("Blob")
     .values({
@@ -112,10 +139,8 @@ export const setupBlob = async () => {
         content: [],
         version: "0.1.0",
       }),
-      createdAt: "2024-09-30 10:26:37.108",
-      updatedAt: "2024-09-30 10:26:37.108",
     })
-    .returning("id")
+    .returningAll()
     .executeTakeFirstOrThrow()
 }
 
@@ -125,31 +150,33 @@ export const setupPageResource = async ({
   resourceType,
 }: {
   siteId?: number
-  blobId?: number
+  blobId?: string
   resourceType: ResourceType
 }) => {
-  const siteId = siteIdProp ?? (await setupSite()).id
-  const blobId = blobIdProp ?? (await setupBlob()).id
+  const { site, navbar, footer } = await setupSite(siteIdProp)
+  const blob = await setupBlob(blobIdProp)
 
   const page = await db
     .insertInto("Resource")
     .values({
       title: "test page",
       permalink: "test-page",
-      siteId,
+      siteId: site.id,
       parentId: null,
       publishedVersionId: null,
-      draftBlobId: String(blobId),
+      draftBlobId: blob.id,
       type: resourceType,
       state: "Draft",
     })
-    .returning("id")
+    .returningAll()
     .executeTakeFirstOrThrow()
 
   return {
-    siteId,
-    blobId,
-    pageId: page.id,
+    site,
+    navbar,
+    footer,
+    blob,
+    page,
   }
 }
 
@@ -158,13 +185,13 @@ export const setupFolder = async ({
 }: {
   siteId?: number
 } = {}) => {
-  const siteId = siteIdProp ?? (await setupSite()).id
+  const { site, navbar, footer } = await setupSite(siteIdProp)
 
   const folder = await db
     .insertInto("Resource")
     .values({
       permalink: "test-folder",
-      siteId,
+      siteId: site.id,
       parentId: null,
       title: "test folder",
       draftBlobId: null,
@@ -172,11 +199,13 @@ export const setupFolder = async ({
       type: "Folder",
       publishedVersionId: null,
     })
-    .returning("id")
+    .returningAll()
     .executeTakeFirstOrThrow()
 
   return {
-    siteId,
-    folderId: folder.id,
+    site,
+    navbar,
+    footer,
+    folder,
   }
 }
