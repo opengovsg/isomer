@@ -159,7 +159,9 @@ export const pageRouter = router({
   updatePageBlob: protectedProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input }) => {
-      await updateBlobById(db, { ...input, pageId: input.pageId })
+      await db.transaction().execute(async (tx) => {
+        return updateBlobById(tx, input)
+      })
 
       return input
     }),
