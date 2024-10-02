@@ -62,10 +62,10 @@ export const Gradient: Story = {
 export const ColourBlock: Story = {
   args: {
     backgroundUrl:
-      "https://images.unsplash.com/photo-1726820254128-642495548079?q=80&w=3776&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Ministry of Trade and Industry",
+      "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Your hero title goes here, please keep it short and sweet",
     subtitle:
-      "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
+      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
     buttonLabel: "Main CTA",
     buttonUrl: "/",
     secondaryButtonLabel: "Sub CTA",
