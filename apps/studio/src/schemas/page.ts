@@ -1,7 +1,13 @@
+import type { IsomerSchema } from "@opengovsg/isomer-components"
+import { schema } from "@opengovsg/isomer-components"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
+import { ajv } from "~/utils/ajv"
+import { safeJsonParse } from "~/utils/safeJsonParse"
 import { generateBasePermalinkSchema } from "./common"
+
+const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
 const NEW_PAGE_LAYOUT_VALUES = [
   "article",
@@ -46,7 +52,18 @@ export const reorderBlobSchema = z.object({
 })
 
 export const updatePageBlobSchema = basePageSchema.extend({
-  content: z.string(),
+  content: z.string().transform((value, ctx) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const parsed = safeJsonParse(value)
+    if (schemaValidator(parsed)) {
+      return parsed
+    }
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Invalid page content",
+    })
+    return z.NEVER
+  }),
   siteId: z.number().min(1),
 })
 
