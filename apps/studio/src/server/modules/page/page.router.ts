@@ -1,7 +1,5 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
-import { getLayoutMetadataSchema, schema } from "@opengovsg/isomer-components"
+import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import Ajv from "ajv"
 import { get, isEmpty, isEqual } from "lodash"
 
 import {
@@ -15,7 +13,7 @@ import {
   updatePageBlobSchema,
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
-import { safeJsonParse } from "~/utils/safeJsonParse"
+import { ajv } from "~/utils/ajv"
 import { startProjectById, stopRunningBuilds } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType } from "../database"
 import {
@@ -30,38 +28,6 @@ import {
 import { getSiteConfig, getSiteNameAndCodeBuildId } from "../site/site.service"
 import { incrementVersion } from "../version/version.service"
 import { createDefaultPage } from "./page.service"
-
-const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
-const schemaValidator = ajv.compile<IsomerSchema>(schema)
-
-// TODO: Need to do validation like checking for existence of the page
-// and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
-
-const validatedPageProcedure = protectedProcedure.use(
-  async ({ next, rawInput }) => {
-    if (
-      typeof rawInput === "object" &&
-      rawInput !== null &&
-      "content" in rawInput
-    ) {
-      // NOTE: content will be the entire page schema for now...
-      if (!schemaValidator(safeJsonParse(rawInput.content as string))) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Schema validation failed.",
-          cause: schemaValidator.errors,
-        })
-      }
-    } else {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Missing request parameters.",
-      })
-    }
-
-    return next()
-  },
-)
 
 export const pageRouter = router({
   readPage: protectedProcedure
@@ -190,11 +156,9 @@ export const pageRouter = router({
         return actualBlocks
       })
     }),
-  updatePageBlob: validatedPageProcedure
+  updatePageBlob: protectedProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input }) => {
-      // @ts-expect-error we need this because we sanitise as a string
-      // but this accepts a nested JSON object
       await updateBlobById(db, { ...input, pageId: input.pageId })
 
       return input

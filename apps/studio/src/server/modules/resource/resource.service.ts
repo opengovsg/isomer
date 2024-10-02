@@ -1,9 +1,10 @@
 import type { SelectExpression } from "kysely"
+import type { UnwrapTagged } from "type-fest"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Resource, SafeKysely } from "../database"
 import { getSitemapTree } from "~/utils/sitemap"
-import { db } from "../database"
+import { db, jsonb } from "../database"
 import { type Page } from "./resource.types"
 
 // Specify the default columns to return from the Resource table
@@ -164,7 +165,7 @@ export const updateBlobById = async (
   db: SafeKysely,
   props: {
     pageId: number
-    content: PrismaJson.BlobJsonContent
+    content: UnwrapTagged<PrismaJson.BlobJsonContent>
     siteId: number
   },
 ) => {
@@ -182,7 +183,7 @@ export const updateBlobById = async (
     // NOTE: no draft for this yet, need to create a new one
     const newBlob = await db
       .insertInto("Blob")
-      .values({ content })
+      .values({ content: jsonb(content) })
       .returning("id")
       .executeTakeFirstOrThrow()
     await db
@@ -196,7 +197,7 @@ export const updateBlobById = async (
     db
       .updateTable("Blob")
       // NOTE: This works because a page has a 1-1 relation with a blob
-      .set({ content })
+      .set({ content: jsonb(content) })
       .where("Blob.id", "=", page.draftBlobId)
       .executeTakeFirstOrThrow()
   )
