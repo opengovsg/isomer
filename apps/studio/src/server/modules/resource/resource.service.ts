@@ -5,7 +5,6 @@ import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Resource, SafeKysely } from "../database"
 import { getSitemapTree } from "~/utils/sitemap"
-import { trpcAssert } from "~/utils/trpcAssert"
 import { db, jsonb } from "../database"
 import { type Page } from "./resource.types"
 
