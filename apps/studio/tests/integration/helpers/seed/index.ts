@@ -136,7 +136,29 @@ export const setupBlob = async (blobId?: string) => {
           contentPageHeader: { summary: "This is the page summary" },
         },
         layout: "content",
-        content: [],
+        content: [
+          {
+            type: "prose",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ text: "Test block", type: "text" }],
+              },
+            ],
+          },
+          {
+            type: "callout",
+            content: {
+              type: "prose",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [{ text: "Test Callout content", type: "text" }],
+                },
+              ],
+            },
+          },
+        ],
         version: "0.1.0",
       }),
     })
