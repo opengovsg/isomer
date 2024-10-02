@@ -1,4 +1,5 @@
 import type { ArticlePageHeaderProps } from "~/interfaces"
+import { getFormattedDate } from "~/utils"
 import BaseParagraph from "../BaseParagraph"
 import Breadcrumb from "../Breadcrumb"
 
@@ -45,7 +46,10 @@ const ArticlePageHeader = ({
         <h1 className="break-words text-3xl font-semibold tracking-tight text-content-strong lg:text-4xl">
           {title}
         </h1>
-        <p className="text-sm text-gray-800">{date}</p>
+
+        {date && (
+          <p className="text-sm text-gray-800">{getFormattedDate(date)}</p>
+        )}
 
         <div className="text-xl tracking-tight text-gray-500 md:text-2xl">
           <ArticleSummaryContent
