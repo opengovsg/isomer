@@ -11,7 +11,10 @@ const meta: Meta<typeof Content> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    chromatic: {
+      delay: 300,
+      ...withChromaticModes(["mobile", "tablet", "desktop"]),
+    },
     themes: {
       themeOverride: "Isomer Next",
     },
