@@ -1,6 +1,7 @@
 import type { RequestOptions, ResponseOptions } from "node-mocks-http"
 import type { SetOptional } from "type-fest"
 import { type NextApiRequest, type NextApiResponse } from "next"
+import { nanoid } from "nanoid"
 import { createMocks } from "node-mocks-http"
 
 import type { Context } from "~/server/context"
@@ -95,19 +96,19 @@ export const applySession = () => {
   return session
 }
 
-export const DEFAULT_USER: SetOptional<User, "id"> = {
-  email: "test@example.com",
+export const createTestUser = () => ({
+  email: `test${nanoid()}@example.com`,
   name: "Test User",
   createdAt: new Date(),
   updatedAt: new Date(),
   phone: "123456789",
   preferredName: null,
-}
+})
 
 // NOTE: The argument to this function was changed from
 // `Partial<User>` to `User`
 export const applyAuthedSession = async (user?: User) => {
-  const authedUser = await auth(user ?? DEFAULT_USER)
+  const authedUser = await auth(user ?? createTestUser())
   const session = applySession()
   session.userId = authedUser.id
   await session.save()
