@@ -72,20 +72,20 @@ jobs:
       - name: Install dependencies
         # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
         run: turbo run generate --filter=isomer-studio
-      # - name: Configure Datadog Test Visibility
-      #   env:
-      #     DD_API_KEY: ${{ secrets.DD_API_KEY }}
-      #   uses: datadog/test-visibility-github-action@v1
-      #   with:
-      #     languages: js
-      #     service: isomer-studio
-      #     api_key: ${{ secrets.DD_API_KEY }}
+      - name: Configure Datadog Test Visibility
+        env:
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+        uses: datadog/test-visibility-github-action@v1
+        with:
+          languages: js
+          service: isomer-studio
+          api_key: ${{ secrets.DD_API_KEY }}
       - name: Test Studio
         # Loose env mode required for env vars to be passed to the run
         run: turbo test-ci:unit --filter=isomer-studio --env-mode=loose
-        # env:
-        # Required to allow Datadog to trace Vitest tests
-        # NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
+        env:
+          # Required to allow Datadog to trace Vitest tests
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
 
   end-to-end-tests:
     name: End-to-end tests
