@@ -116,14 +116,12 @@ const HeroBlock = ({
           )}
         </div>
       </div>
-      <div className="h-[500px] lg:h-auto lg:max-h-full lg:w-1/2">
-        <div
-          className="h-full bg-center bg-no-repeat object-cover"
-          style={{
-            backgroundImage: `url('${backgroundSrc}')`,
-          }}
-        />
-      </div>
+      <div
+        className="h-[500px] bg-cover bg-center bg-no-repeat lg:h-auto lg:max-h-full lg:w-1/2"
+        style={{
+          backgroundImage: `url('${backgroundSrc}')`,
+        }}
+      />
     </section>
   )
 }
