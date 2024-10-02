@@ -1,5 +1,4 @@
 import tsconfigPaths from "vite-tsconfig-paths"
-import { type EnvironmentOptions } from "vitest-environment-testcontainers"
 import { configDefaults, defineConfig } from "vitest/config"
 
 export default defineConfig({
