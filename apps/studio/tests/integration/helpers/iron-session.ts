@@ -1,5 +1,4 @@
 import type { RequestOptions, ResponseOptions } from "node-mocks-http"
-import type { SetOptional } from "type-fest"
 import { type NextApiRequest, type NextApiResponse } from "next"
 import { nanoid } from "nanoid"
 import { createMocks } from "node-mocks-http"
