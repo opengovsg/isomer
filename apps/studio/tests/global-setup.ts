@@ -1,4 +1,3 @@
-// Adapted from vitest-environment-testcontainers
 import type { StartedTestContainer } from "testcontainers"
 import { stringify } from "superjson"
 import { GenericContainer, Wait } from "testcontainers"
