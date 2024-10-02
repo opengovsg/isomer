@@ -17,7 +17,7 @@ import {
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { startProjectById, stopRunningBuilds } from "../aws/codebuild.service"
-import { db, ResourceType } from "../database"
+import { db, jsonb, ResourceType } from "../database"
 import {
   getFooter,
   getFullPageById,
@@ -215,7 +215,7 @@ export const pageRouter = router({
             const blob = await tx
               .insertInto("Blob")
               .values({
-                content: newPage,
+                content: jsonb(newPage),
               })
               .returning("Blob.id")
               .executeTakeFirstOrThrow()

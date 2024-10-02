@@ -38,7 +38,7 @@ export const setSiteConfig = async (
 ) => {
   return db
     .updateTable("Site")
-    .set({ config })
+    .set({ config: jsonb(config) })
     .where("id", "=", siteId)
     .executeTakeFirstOrThrow()
 }
