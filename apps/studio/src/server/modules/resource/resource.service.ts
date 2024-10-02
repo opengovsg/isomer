@@ -1,9 +1,11 @@
 import type { SelectExpression } from "kysely"
 import type { UnwrapTagged } from "type-fest"
+import { TRPCError } from "@trpc/server"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Resource, SafeKysely } from "../database"
 import { getSitemapTree } from "~/utils/sitemap"
+import { trpcAssert } from "~/utils/trpcAssert"
 import { db, jsonb } from "../database"
 import { type Page } from "./resource.types"
 
@@ -177,7 +179,11 @@ export const updateBlobById = async (
     // NOTE: We update the draft first
     // Main should only be updated at build
     .select("draftBlobId")
-    .executeTakeFirstOrThrow()
+    .executeTakeFirst()
+
+  if (!page) {
+    throw new TRPCError({ code: "NOT_FOUND" })
+  }
 
   if (!page.draftBlobId) {
     // NOTE: no draft for this yet, need to create a new one
