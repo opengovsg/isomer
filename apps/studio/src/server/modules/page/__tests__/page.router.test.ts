@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,
   applySession,
@@ -6,7 +7,6 @@ import {
 } from "tests/integration/helpers/iron-session"
 import { setupFolder, setupPageResource } from "tests/integration/helpers/seed"
 
-import { readPageOutputSchema } from "~/schemas/page"
 import { createCallerFactory } from "~/server/trpc"
 import { pageRouter } from "../page.router"
 
@@ -34,6 +34,10 @@ describe("page.router", () => {
       let session: ReturnType<typeof applySession>
 
       beforeEach(async () => {
+        await resetTables("Site")
+      })
+
+      beforeAll(async () => {
         session = await applyAuthedSession()
         const ctx = createMockRequest(session)
         caller = createCaller(ctx)
@@ -54,60 +58,66 @@ describe("page.router", () => {
 
       it("should return the resource if resource type is Page and exists", async () => {
         // Arrange
-        const { siteId, pageId } = await setupPageResource({
+        const { site, page: expectedPage } = await setupPageResource({
           resourceType: "Page",
         })
 
         // Act
         const result = await caller.readPage({
-          siteId,
-          pageId: Number(pageId),
+          siteId: site.id,
+          pageId: Number(expectedPage.id),
         })
 
         // Assert
-        expect(readPageOutputSchema.safeParse(result).success).toEqual(true)
+        expect(result.siteId).toEqual(site.id)
+        expect(result.type).toEqual("Page")
+        expect(result).toMatchObject(expectedPage)
       })
 
       it("should return the resource if resource type is CollectionPage and exists", async () => {
         // Arrange
-        const { siteId, pageId } = await setupPageResource({
+        const { site, page: expectedPage } = await setupPageResource({
           resourceType: "CollectionPage",
         })
 
         // Act
         const result = await caller.readPage({
-          siteId,
-          pageId: Number(pageId),
+          siteId: site.id,
+          pageId: Number(expectedPage.id),
         })
 
         // Assert
-        expect(readPageOutputSchema.safeParse(result).success).toEqual(true)
+        expect(result.siteId).toEqual(site.id)
+        expect(result.type).toEqual("CollectionPage")
+        expect(result).toMatchObject(expectedPage)
       })
 
       it("should return the resource if resource type is RootPage and exists", async () => {
         // Arrange
-        const { siteId, pageId } = await setupPageResource({
+        const { site, page: expectedPage } = await setupPageResource({
           resourceType: "RootPage",
         })
 
         // Act
         const result = await caller.readPage({
-          siteId,
-          pageId: Number(pageId),
+          siteId: site.id,
+          pageId: Number(expectedPage.id),
         })
 
         // Assert
-        expect(readPageOutputSchema.safeParse(result).success).toEqual(true)
+        expect(result.siteId).toEqual(site.id)
+        expect(result.type).toEqual("RootPage")
+        expect(result).toMatchObject(expectedPage)
       })
 
       it("should return 404 if resource type is not a page", async () => {
         // Arrange
-        const { siteId, folderId } = await setupFolder()
+        const { site, folder } = await setupFolder()
 
         // Act
         const result = caller.readPage({
-          siteId,
-          pageId: Number(folderId),
+          siteId: site.id,
+          pageId: Number(folder.id),
         })
 
         // Assert
