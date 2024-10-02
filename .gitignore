@@ -47,4 +47,4 @@ dist/
 .env
 
 # Compiled components package
-packages/components/opengovsg-isomer-components-0.0.13.tgz
+**/*.tgz
