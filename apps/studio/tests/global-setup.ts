@@ -138,6 +138,7 @@ const teardown = async (containers: { container: StartedTestContainer }[]) => {
 export default async () => {
   const containers = await setup(configurations)
 
+  // eslint-disable-next-line no-restricted-properties
   Object.defineProperty(process.env, "testcontainers", {
     value: stringify(
       containers.map((container) => {
