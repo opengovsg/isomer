@@ -1,6 +1,6 @@
 import type { NextApiRequest } from "next"
 
-const LOCALHOST = "127.0.0.1"
+export const LOCALHOST = "127.0.0.1"
 
 export const getOtpFingerPrint = (
   email: string,
@@ -20,5 +20,12 @@ export const getOtpFingerPrint = (
     // for more details: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#x-forwarded-for
     typeof originIp === "string" ? originIp : originIp.join(", ")
 
+  return getIpFingerprint(email, flattenedIp)
+}
+
+export const getIpFingerprint = (
+  email: string,
+  flattenedIp: string,
+): `${string}|${string}` => {
   return `${email}|${flattenedIp}`
 }
