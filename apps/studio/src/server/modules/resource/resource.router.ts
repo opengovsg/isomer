@@ -42,6 +42,20 @@ export const resourceRouter = router({
   getFolderChildrenOf: protectedProcedure
     .input(getChildrenSchema)
     .query(async ({ input: { siteId, resourceId, cursor: offset, limit } }) => {
+      // Validate site and resourceId exists
+      if (resourceId !== null) {
+        const resource = await db
+          .selectFrom("Resource")
+          .where("siteId", "=", Number(siteId))
+          .where("id", "=", String(resourceId))
+          .where("Resource.type", "=", "Folder")
+          .executeTakeFirst()
+
+        if (!resource) {
+          throw new TRPCError({ code: "NOT_FOUND" })
+        }
+      }
+
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
