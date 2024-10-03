@@ -2,7 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { getLayoutMetadataSchema, schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
-import { get, isEmpty, isEqual } from "lodash"
+import { get, isEqual } from "lodash"
 import { z } from "zod"
 
 import {
