@@ -1,10 +1,7 @@
-import { randomUUID } from "crypto"
 import type { StartedTestContainer } from "testcontainers"
 import { stringify } from "superjson"
 import { GenericContainer, Wait } from "testcontainers"
 import { z } from "zod"
-
-const databaseId = randomUUID()
 
 // Specify necessary container configurations here
 const configurations: ContainerConfiguration[] = [
@@ -15,7 +12,7 @@ const configurations: ContainerConfiguration[] = [
     environment: {
       POSTGRES_USER: "root",
       POSTGRES_PASSWORD: "root",
-      POSTGRES_DB: databaseId,
+      POSTGRES_DB: "test",
     },
     wait: { type: "PORT" },
   },
