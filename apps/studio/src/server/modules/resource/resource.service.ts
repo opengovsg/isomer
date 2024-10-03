@@ -163,7 +163,7 @@ export const updatePageById = (
 }
 
 export const updateBlobById = async (
-  db: Transaction<DB>,
+  tx: Transaction<DB>,
   {
     pageId,
     content,
@@ -174,7 +174,7 @@ export const updateBlobById = async (
     siteId: number
   },
 ) => {
-  const page = await db
+  const page = await tx
     .selectFrom("Resource")
     .where("Resource.id", "=", String(pageId))
     .where("siteId", "=", siteId)
@@ -192,12 +192,12 @@ export const updateBlobById = async (
 
   if (!page.draftBlobId) {
     // NOTE: no draft for this yet, need to create a new one
-    const newBlob = await db
+    const newBlob = await tx
       .insertInto("Blob")
       .values({ content: jsonb(content) })
       .returning("id")
       .executeTakeFirstOrThrow()
-    await db
+    await tx
       .updateTable("Resource")
       .where("id", "=", String(pageId))
       .set({ draftBlobId: newBlob.id })
@@ -205,7 +205,7 @@ export const updateBlobById = async (
   }
 
   return (
-    db
+    tx
       .updateTable("Blob")
       // NOTE: This works because a page has a 1-1 relation with a blob
       .set({ content: jsonb(content) })
@@ -357,7 +357,7 @@ export const getResourcePermalinkTree = async (
       return []
     }
 
-    const resourcePermalinks = await db
+    const resourcePermalinks = await tx
       .withRecursive("Ancestors", (eb) =>
         eb
           // Base case: Get the actual resource
