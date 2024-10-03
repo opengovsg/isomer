@@ -1,9 +1,7 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
-import { getLayoutMetadataSchema, schema } from "@opengovsg/isomer-components"
+import type { UnwrapTagged } from "type-fest"
+import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import Ajv from "ajv"
 import { get, isEmpty, isEqual } from "lodash"
-import { z } from "zod"
 
 import {
   basePageSchema,
@@ -11,14 +9,15 @@ import {
   getRootPageSchema,
   pageSettingsSchema,
   publishPageSchema,
+  readPageOutputSchema,
   reorderBlobSchema,
   updatePageBlobSchema,
-  updatePageSchema,
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
+import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { startProjectById, stopRunningBuilds } from "../aws/codebuild.service"
-import { db, ResourceType } from "../database"
+import { db, jsonb, ResourceType } from "../database"
 import {
   getFooter,
   getFullPageById,
@@ -27,77 +26,29 @@ import {
   getResourceFullPermalink,
   getResourcePermalinkTree,
   updateBlobById,
-  updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig, getSiteNameAndCodeBuildId } from "../site/site.service"
 import { incrementVersion } from "../version/version.service"
 import { createDefaultPage } from "./page.service"
 
-const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
-const schemaValidator = ajv.compile<IsomerSchema>(schema)
-
-// TODO: Need to do validation like checking for existence of the page
-// and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
-
-const validatedPageProcedure = protectedProcedure.use(
-  async ({ next, rawInput }) => {
-    if (
-      typeof rawInput === "object" &&
-      rawInput !== null &&
-      "content" in rawInput
-    ) {
-      // NOTE: content will be the entire page schema for now...
-      if (!schemaValidator(safeJsonParse(rawInput.content as string))) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Schema validation failed.",
-          cause: schemaValidator.errors,
-        })
-      }
-    } else {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Missing request parameters.",
-      })
-    }
-
-    return next()
-  },
-)
-
 export const pageRouter = router({
-  list: protectedProcedure
-    .input(
-      z.object({
-        siteId: z.number(),
-        resourceId: z.number().optional(),
-      }),
-    )
-    .query(async ({ input: { siteId, resourceId } }) => {
-      let query = db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-
-      if (resourceId) {
-        query = query.where("Resource.parentId", "=", String(resourceId))
-      }
-      return query
-        .select([
-          "Resource.id",
-          "Resource.permalink",
-          "Resource.title",
-          "Resource.publishedVersionId",
-          "Resource.draftBlobId",
-          "Resource.type",
-        ])
-        .execute()
-    }),
-
   readPage: protectedProcedure
     .input(basePageSchema)
-    .query(async ({ input: { pageId, siteId } }) =>
-      getPageById(db, { resourceId: pageId, siteId }),
-    ),
+    .output(readPageOutputSchema)
+    .query(async ({ input: { pageId, siteId } }) => {
+      const retrievedPage = await getPageById(db, {
+        resourceId: pageId,
+        siteId,
+      })
+      if (!retrievedPage) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+
+      return retrievedPage
+    }),
 
   readPageAndBlob: protectedProcedure
     .input(basePageSchema)
@@ -176,7 +127,7 @@ export const pageRouter = router({
 
         const [movedBlock] = actualBlocks.splice(from, 1)
         if (!movedBlock) return blocks
-        if (!fullPage.draftBlobId && !fullPage.mainBlobId) {
+        if (!fullPage.draftBlobId && !fullPage.publishedVersionId) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Please ensure that you have selected a valid page",
@@ -196,21 +147,12 @@ export const pageRouter = router({
         return actualBlocks
       })
     }),
-
-  updatePage: protectedProcedure
-    .input(updatePageSchema)
-    .mutation(async ({ input }) => {
-      await updatePageById({ ...input, id: input.pageId })
-
-      return input
-    }),
-
-  updatePageBlob: validatedPageProcedure
+  updatePageBlob: protectedProcedure
     .input(updatePageBlobSchema)
     .mutation(async ({ input }) => {
-      // @ts-expect-error we need this because we sanitise as a string
-      // but this accepts a nested JSON object
-      await updateBlobById(db, { ...input, pageId: input.pageId })
+      await db.transaction().execute(async (tx) => {
+        return updateBlobById(tx, input)
+      })
 
       return input
     }),
@@ -221,16 +163,32 @@ export const pageRouter = router({
       async ({ input: { permalink, siteId, folderId, title, layout } }) => {
         const newPage = createDefaultPage({ layout })
 
-        // TODO: Validate whether folderId actually is a folder instead of a page
         // TODO: Validate whether siteId is a valid site
         // TODO: Validate user has write-access to the site
         const resource = await db
           .transaction()
           .execute(async (tx) => {
+            // Validate whether folderId is a folder
+            if (folderId) {
+              const folder = await tx
+                .selectFrom("Resource")
+                .where("Resource.id", "=", String(folderId))
+                .where("Resource.siteId", "=", siteId)
+                .where("Resource.type", "=", "Folder")
+                .select("Resource.id")
+                .executeTakeFirst()
+              if (!folder) {
+                throw new TRPCError({
+                  code: "NOT_FOUND",
+                  message: "Folder not found or folderId is not a folder",
+                })
+              }
+            }
+
             const blob = await tx
               .insertInto("Blob")
               .values({
-                content: newPage,
+                content: jsonb(newPage),
               })
               .returning("Blob.id")
               .executeTakeFirstOrThrow()
@@ -250,10 +208,19 @@ export const pageRouter = router({
             return addedResource
           })
           .catch((err) => {
+            // TODO: Extract into reusable util function
+            // Unique constraint violation error
             if (get(err, "code") === "23505") {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "A resource with the same permalink already exists",
+              })
+            }
+            // Foreign key violation error
+            if (get(err, "code") === "23503") {
+              throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Site not found",
               })
             }
             throw err
@@ -265,15 +232,21 @@ export const pageRouter = router({
   getRootPage: protectedProcedure
     .input(getRootPageSchema)
     .query(async ({ input: { siteId } }) => {
-      return (
-        db
-          .selectFrom("Resource")
-          // TODO: Only return sites that the user has access to
-          .where("Resource.siteId", "=", siteId)
-          .where("Resource.type", "=", "RootPage")
-          .select(["id", "title", "draftBlobId"])
-          .executeTakeFirstOrThrow()
-      )
+      const rootPage = await db
+        .selectFrom("Resource")
+        // TODO: Only return sites that the user has access to
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "=", "RootPage")
+        .select(["id", "title", "draftBlobId"])
+        .executeTakeFirst()
+
+      if (!rootPage) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Root page not found",
+        })
+      }
+      return rootPage
     }),
 
   publishPage: protectedProcedure
@@ -325,60 +298,56 @@ export const pageRouter = router({
         const { meta: _oldMeta, ...rest } = fullPage.content
         const pageMetaSchema = getLayoutMetadataSchema(fullPage.content.layout)
         const validateFn = ajv.compile(pageMetaSchema)
-        try {
-          const newMeta = JSON.parse(meta) as PrismaJson.BlobJsonContent["meta"]
-          const isValid = validateFn(newMeta)
-          if (!isValid) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Invalid metadata",
-              cause: validateFn.errors,
-            })
-          }
-          const newContent = !meta
-            ? rest
-            : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
 
-          await updateBlobById(tx, {
-            pageId,
-            content: newContent,
-            siteId,
-          })
-
-          const updatedResource = await tx
-            .updateTable("Resource")
-            .where("Resource.id", "=", String(pageId))
-            .where("Resource.siteId", "=", siteId)
-            .where("Resource.type", "in", ["Page", "CollectionPage"])
-            .set({ title, permalink })
-            .returning([
-              "Resource.id",
-              "Resource.type",
-              "Resource.title",
-              "Resource.permalink",
-              "Resource.draftBlobId",
-            ])
-            .executeTakeFirstOrThrow()
-            .catch((err) => {
-              if (get(err, "code") === "23505") {
-                throw new TRPCError({
-                  code: "CONFLICT",
-                  message: "A resource with the same permalink already exists",
-                })
-              }
-              throw err
-            })
-
-          return {
-            ...updatedResource,
-            meta: newMeta,
-          }
-        } catch (err) {
+        const newMeta = safeJsonParse(meta) as unknown
+        if (!validateFn(newMeta)) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "Invalid metadata",
-            cause: err,
+            cause: validateFn.errors,
           })
+        }
+
+        const newContent = !meta
+          ? rest
+          : ({
+              ...rest,
+              meta: newMeta,
+            } as UnwrapTagged<PrismaJson.BlobJsonContent>)
+
+        await updateBlobById(tx, {
+          pageId,
+          content: newContent,
+          siteId,
+        })
+
+        const updatedResource = await tx
+          .updateTable("Resource")
+          .where("Resource.id", "=", String(pageId))
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "in", ["Page", "CollectionPage"])
+          .set({ title, permalink })
+          .returning([
+            "Resource.id",
+            "Resource.type",
+            "Resource.title",
+            "Resource.permalink",
+            "Resource.draftBlobId",
+          ])
+          .executeTakeFirstOrThrow()
+          .catch((err) => {
+            if (get(err, "code") === "23505") {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
+
+        return {
+          ...updatedResource,
+          meta: newMeta,
         }
       })
     }),
@@ -405,7 +374,7 @@ export const pageRouter = router({
       if (isEmpty(permalinkTree)) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "No permalink could be found for the given page",
+          message: "No permalink tree could be found for the given page",
         })
       }
 

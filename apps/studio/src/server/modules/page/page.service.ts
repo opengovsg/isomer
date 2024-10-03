@@ -1,3 +1,4 @@
+import type { UnwrapTagged } from "type-fest"
 import { format } from "date-fns"
 
 export const createDefaultPage = ({
@@ -16,7 +17,7 @@ export const createDefaultPage = ({
         },
         content: [],
         version: "0.1.0",
-      } satisfies PrismaJson.BlobJsonContent
+      } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
       return contentDefaultPage
     }
 
@@ -32,7 +33,7 @@ export const createDefaultPage = ({
         },
         content: [],
         version: "0.1.0",
-      } satisfies PrismaJson.BlobJsonContent
+      } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 
       return articleDefaultPage
     }

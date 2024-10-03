@@ -41,7 +41,7 @@ export const sitesHandlers = {
               },
             },
           },
-        }
+        } as PrismaJson.SiteThemeJson
       })
     },
   },
@@ -54,9 +54,8 @@ export const sitesHandlers = {
           search: undefined,
           agencyName: "Ministry of Test and Industry",
           isGovernment: true,
-          name: "Ministry of Trade and Industry",
           logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
-        }
+        } as PrismaJson.SiteJsonConfig
       })
     },
   },
@@ -97,7 +96,7 @@ export const sitesHandlers = {
             termsOfUseLink: "/terms-of-use",
             feedbackFormLink: "https://www.form.gov.sg",
             privacyStatementLink: "/privacy",
-          },
+          } as PrismaJson.FooterJsonContent,
           createdAt: new Date(),
           updatedAt: new Date(),
         }
@@ -151,7 +150,7 @@ export const sitesHandlers = {
                 },
               ],
             },
-          ],
+          ] as PrismaJson.NavbarJsonContent,
           createdAt: new Date(),
           updatedAt: new Date(),
         }
