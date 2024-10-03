@@ -536,7 +536,7 @@ describe("page.router", async () => {
       expect(actual.content).toEqual(result.content)
     })
 
-    it.only("should create draft page blob if args are valid and without current draft", async () => {
+    it("should create draft page blob if args are valid and without current draft", async () => {
       // Arrange
       const { page: publishedPageToUpdate } = await setupPageResource({
         resourceType: "Page",
