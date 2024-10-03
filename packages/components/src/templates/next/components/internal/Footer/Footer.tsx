@@ -21,7 +21,7 @@ import type {
 import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
 import { tv } from "~/lib/tv"
-import { isExternalUrl } from "~/utils"
+import { getFormattedDate, isExternalUrl } from "~/utils"
 import { focusVisibleHighlight } from "~/utils/rac"
 import { BaseLink } from "../Link"
 
@@ -232,7 +232,7 @@ const LegalSection = ({
         <p className="prose-label-md-regular text-base-content-inverse-subtle">
           &copy; {new Date().getFullYear()}{" "}
           {isGovernment ? "Government of Singapore" : agencyName}, last updated{" "}
-          {lastUpdated}
+          {getFormattedDate(lastUpdated)}
         </p>
         <div className="prose-body-sm flex flex-col gap-3 lg:flex-row lg:gap-8">
           {isGovernment && (

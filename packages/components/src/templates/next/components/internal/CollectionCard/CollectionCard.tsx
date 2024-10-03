@@ -4,7 +4,7 @@ import { composeRenderProps, Text } from "react-aria-components"
 
 import type { CollectionCardProps as BaseCollectionCardProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { isExternalUrl } from "~/utils"
+import { getFormattedDate, isExternalUrl } from "~/utils"
 import { focusVisibleHighlight } from "~/utils/rac"
 import { ImageClient } from "../../complex/Image"
 import { Link } from "../Link"
@@ -38,7 +38,7 @@ export const CollectionCard = ({
     <div className="flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6">
       {lastUpdated && (
         <Text className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
-          {lastUpdated}
+          {getFormattedDate(lastUpdated)}
         </Text>
       )}
       <div className="flex flex-col gap-3 text-base-content lg:gap-2">
