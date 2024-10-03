@@ -502,6 +502,7 @@ describe("page.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "NOT_FOUND",
+          message: "Resource not found",
         }),
       )
     })
