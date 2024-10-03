@@ -362,7 +362,7 @@ export const getLocalisedSitemap = async (
 export const getResourcePermalinkTree = async (
   siteId: number,
   resourceId: number,
-) => {
+): Promise<string[]> => {
   const resourcePermalinks = await db
     .withRecursive("Ancestors", (eb) =>
       eb
@@ -370,18 +370,18 @@ export const getResourcePermalinkTree = async (
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "=", String(resourceId))
-        .select(defaultResourceSelect)
+        .select(["Resource.id", "Resource.permalink", "Resource.parentId"])
         .unionAll((fb) =>
           fb
             // Recursive case: Get all the ancestors of the resource
             .selectFrom("Resource")
             .where("Resource.siteId", "=", siteId)
             .innerJoin("Ancestors", "Ancestors.parentId", "Resource.id")
-            .select(defaultResourceSelect),
+            .select(["Resource.id", "Resource.permalink", "Resource.parentId"]),
         ),
     )
     .selectFrom("Ancestors")
-    .select("Ancestors.permalink")
+    .select(["Ancestors.id", "Ancestors.permalink", "Ancestors.parentId"])
     .execute()
 
   if (resourcePermalinks.length === 0) {
@@ -391,11 +391,10 @@ export const getResourcePermalinkTree = async (
     })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return resourcePermalinks
     .map((r) => r.permalink)
     .reverse()
-    .filter((v) => v !== INDEX_PAGE_PERMALINK) as string[]
+    .filter((v) => v !== INDEX_PAGE_PERMALINK)
 }
 
 export const getResourceFullPermalink = async (
