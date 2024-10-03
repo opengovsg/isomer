@@ -2,7 +2,7 @@ import type { SelectExpression } from "kysely"
 import type { UnwrapTagged } from "type-fest"
 import { type DB } from "~prisma/generated/generatedTypes"
 
-import type { Resource, SafeKysely } from "../database"
+import type { Resource, SafeKysely, Transaction } from "../database"
 import { getSitemapTree } from "~/utils/sitemap"
 import { db, jsonb } from "../database"
 import { type Page } from "./resource.types"
@@ -162,7 +162,7 @@ export const updatePageById = (
 }
 
 export const updateBlobById = async (
-  db: SafeKysely,
+  db: Transaction<DB>,
   {
     pageId,
     content,
