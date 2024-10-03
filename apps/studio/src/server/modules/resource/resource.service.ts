@@ -347,28 +347,42 @@ export const getResourcePermalinkTree = async (
   siteId: number,
   resourceId: number,
 ) => {
-  const resourcePermalinks = await db
-    .withRecursive("Ancestors", (eb) =>
-      eb
-        // Base case: Get the actual resource
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.id", "=", String(resourceId))
-        .select(defaultResourceSelect)
-        .unionAll((fb) =>
-          fb
-            // Recursive case: Get all the ancestors of the resource
-            .selectFrom("Resource")
-            .where("Resource.siteId", "=", siteId)
-            .innerJoin("Ancestors", "Ancestors.parentId", "Resource.id")
-            .select(defaultResourceSelect),
-        ),
-    )
-    .selectFrom("Ancestors")
-    .select("Ancestors.permalink")
-    .execute()
+  return db.transaction().execute(async (tx) => {
+    // Guard against invalid resource
+    const resource = await getById(tx, {
+      siteId,
+      resourceId,
+    }).executeTakeFirst()
+    if (!resource) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Resource not found",
+      })
+    }
 
-  return resourcePermalinks.map((r) => r.permalink).reverse()
+    const resourcePermalinks = await db
+      .withRecursive("Ancestors", (eb) =>
+        eb
+          // Base case: Get the actual resource
+          .selectFrom("Resource")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.id", "=", String(resourceId))
+          .select(defaultResourceSelect)
+          .unionAll((fb) =>
+            fb
+              // Recursive case: Get all the ancestors of the resource
+              .selectFrom("Resource")
+              .where("Resource.siteId", "=", siteId)
+              .innerJoin("Ancestors", "Ancestors.parentId", "Resource.id")
+              .select(defaultResourceSelect),
+          ),
+      )
+      .selectFrom("Ancestors")
+      .select("Ancestors.permalink")
+      .execute()
+
+    return resourcePermalinks.map((r) => r.permalink).reverse()
+  })
 }
 
 export const getResourceFullPermalink = async (
@@ -376,6 +390,5 @@ export const getResourceFullPermalink = async (
   resourceId: number,
 ) => {
   const permalinkTree = await getResourcePermalinkTree(siteId, resourceId)
-
   return `/${permalinkTree.join("/")}`
 }
