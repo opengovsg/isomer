@@ -241,15 +241,21 @@ export const pageRouter = router({
   getRootPage: protectedProcedure
     .input(getRootPageSchema)
     .query(async ({ input: { siteId } }) => {
-      return (
-        db
-          .selectFrom("Resource")
-          // TODO: Only return sites that the user has access to
-          .where("Resource.siteId", "=", siteId)
-          .where("Resource.type", "=", "RootPage")
-          .select(["id", "title", "draftBlobId"])
-          .executeTakeFirstOrThrow()
-      )
+      const rootPage = await db
+        .selectFrom("Resource")
+        // TODO: Only return sites that the user has access to
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "=", "RootPage")
+        .select(["id", "title", "draftBlobId"])
+        .executeTakeFirst()
+
+      if (!rootPage) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Root page not found",
+        })
+      }
+      return rootPage
     }),
 
   publishPage: protectedProcedure
