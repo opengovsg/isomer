@@ -185,8 +185,8 @@ export const setupPageResource = async ({
   let page = await db
     .insertInto("Resource")
     .values({
-      title: "test page",
-      permalink: "test-page",
+      title: resourceType === "RootPage" ? "Home" : "test page",
+      permalink: resourceType === "RootPage" ? "" : "test-page",
       siteId: site.id,
       parentId: null,
       publishedVersionId: null,

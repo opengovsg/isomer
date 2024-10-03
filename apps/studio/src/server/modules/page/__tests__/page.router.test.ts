@@ -818,4 +818,71 @@ describe("page.router", async () => {
 
     it.skip("should throw 403 if user does not have write access to root", async () => {})
   })
+
+  describe("getRootPage", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.getRootPage({
+        siteId: 1,
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 404 if site does not exist", async () => {
+      // Act
+      const result = caller.getRootPage({
+        siteId: 999999, // should not exist
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Root page not found",
+        }),
+      )
+    })
+
+    it("should return the root page successfully", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+
+      // Act
+      const result = await caller.getRootPage({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toMatchObject(pick(page, ["id", "title", "draftBlobId"]))
+    })
+
+    it("should return 404 if root page does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.getRootPage({
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Root page not found",
+        }),
+      )
+    })
+
+    it.skip("should throw 403 if user does not have access to site", async () => {})
+
+    it.skip("should throw 403 if user does not have read access to root", async () => {})
+  })
 })
