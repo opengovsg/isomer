@@ -381,7 +381,6 @@ export const pageRouter = router({
         })
       },
     ),
-
   getFullPermalink: protectedProcedure
     .input(basePageSchema)
     .query(async ({ input }) => {
