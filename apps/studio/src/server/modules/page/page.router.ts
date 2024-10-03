@@ -1,3 +1,4 @@
+import type { UnwrapTagged } from "type-fest"
 import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { get, isEmpty, isEqual } from "lodash"
@@ -14,6 +15,7 @@ import {
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
+import { safeJsonParse } from "~/utils/safeJsonParse"
 import { startProjectById, stopRunningBuilds } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType } from "../database"
 import {
@@ -296,60 +298,56 @@ export const pageRouter = router({
         const { meta: _oldMeta, ...rest } = fullPage.content
         const pageMetaSchema = getLayoutMetadataSchema(fullPage.content.layout)
         const validateFn = ajv.compile(pageMetaSchema)
-        try {
-          const newMeta = JSON.parse(meta) as PrismaJson.BlobJsonContent["meta"]
-          const isValid = validateFn(newMeta)
-          if (!isValid) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Invalid metadata",
-              cause: validateFn.errors,
-            })
-          }
-          const newContent = !meta
-            ? rest
-            : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
 
-          await updateBlobById(tx, {
-            pageId,
-            content: newContent,
-            siteId,
-          })
-
-          const updatedResource = await tx
-            .updateTable("Resource")
-            .where("Resource.id", "=", String(pageId))
-            .where("Resource.siteId", "=", siteId)
-            .where("Resource.type", "in", ["Page", "CollectionPage"])
-            .set({ title, permalink })
-            .returning([
-              "Resource.id",
-              "Resource.type",
-              "Resource.title",
-              "Resource.permalink",
-              "Resource.draftBlobId",
-            ])
-            .executeTakeFirstOrThrow()
-            .catch((err) => {
-              if (get(err, "code") === "23505") {
-                throw new TRPCError({
-                  code: "CONFLICT",
-                  message: "A resource with the same permalink already exists",
-                })
-              }
-              throw err
-            })
-
-          return {
-            ...updatedResource,
-            meta: newMeta,
-          }
-        } catch (err) {
+        const newMeta = safeJsonParse(meta) as unknown
+        if (!validateFn(newMeta)) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "Invalid metadata",
-            cause: err,
+            cause: validateFn.errors,
           })
+        }
+
+        const newContent = !meta
+          ? rest
+          : ({
+              ...rest,
+              meta: newMeta,
+            } as UnwrapTagged<PrismaJson.BlobJsonContent>)
+
+        await updateBlobById(tx, {
+          pageId,
+          content: newContent,
+          siteId,
+        })
+
+        const updatedResource = await tx
+          .updateTable("Resource")
+          .where("Resource.id", "=", String(pageId))
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "in", ["Page", "CollectionPage"])
+          .set({ title, permalink })
+          .returning([
+            "Resource.id",
+            "Resource.type",
+            "Resource.title",
+            "Resource.permalink",
+            "Resource.draftBlobId",
+          ])
+          .executeTakeFirstOrThrow()
+          .catch((err) => {
+            if (get(err, "code") === "23505") {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
+
+        return {
+          ...updatedResource,
+          meta: newMeta,
         }
       })
     }),
