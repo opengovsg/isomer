@@ -14,23 +14,23 @@ const MAX_SIBLINGS_LIMIT = 10
 
 const createSiderailStyles = tv({
   slots: {
-    container: "flex flex-col items-start gap-8",
-    parentContainer: "flex flex-col items-start gap-2 self-stretch",
-    sectionLabel:
-      "text-[0.625rem] font-semibold uppercase leading-4 tracking-[0.8px] text-base-content-subtle",
+    container: "flex flex-col items-start gap-16",
+    parentContainer: "flex flex-col items-start gap-3 self-stretch",
+    sectionLabel: "prose-label-sm-medium text-base-content-light",
     parentLabel:
-      "flex-grow-1 group prose-headline-lg-medium flex flex-shrink-0 basis-0 text-base-content transition",
+      "group prose-headline-base-medium line-clamp-3 text-base-content transition",
     contentContainer: "flex flex-col items-start gap-3 self-stretch",
-    siblingsContainer: "flex flex-col items-start gap-0.5 self-stretch",
+    siblingsContainer: "flex flex-col items-start gap-4 self-stretch",
+    siblingsList: "line-clamp-2 flex flex-col gap-3 self-stretch",
     sibling:
-      "flex-grow-1 flex flex-shrink-0 basis-0 items-center justify-between py-2",
+      "flex-grow-1 flex flex-shrink-0 basis-0 items-center justify-between",
     label:
       "group prose-body-base flex w-full flex-row text-base-content transition hover:text-brand-interaction",
     rightArrowIcon:
       "-mr-2 h-6 w-6 shrink-0 opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100",
     seeAllContainer:
-      "flex-grow-1 flex flex-shrink-0 basis-0 items-center justify-between py-2",
-    seeAllLink: "prose-body-base overflow-hidden text-ellipsis",
+      "flex-grow-1 flex flex-shrink-0 basis-0 items-center justify-between",
+    seeAllLink: "prose-label-md-regular",
   },
 })
 
@@ -114,10 +114,11 @@ export const Siderail = ({
           <div className={compoundStyles.contentContainer()}>
             <div className={compoundStyles.siblingsContainer()}>
               <h2 className={compoundStyles.sectionLabel()}>
-                Other pages in {parentTitle}
+                Other pages in{" "}
+                <span className="text-base-content-medium">{parentTitle}</span>
               </h2>
 
-              <ul className="self-stretch">{siderailItems}</ul>
+              <ul className={compoundStyles.siblingsList()}>{siderailItems}</ul>
             </div>
 
             <div className={compoundStyles.seeAllContainer()}>
@@ -132,7 +133,7 @@ export const Siderail = ({
                     }),
                   )}
                 >
-                  See all pages in {parentTitle}
+                  See all pages
                 </Link>
               </p>
             </div>

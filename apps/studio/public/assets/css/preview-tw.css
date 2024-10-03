@@ -1196,6 +1196,11 @@ video {
   margin: 0.25rem;
 }
 
+.-mx-4 {
+  margin-left: -1rem;
+  margin-right: -1rem;
+}
+
 .mx-2 {
   margin-left: 0.5rem;
   margin-right: 0.5rem;
@@ -1284,6 +1289,10 @@ video {
 
 .mb-7 {
   margin-bottom: 1.75rem;
+}
+
+.mb-8 {
+  margin-bottom: 2rem;
 }
 
 .mb-\[0\.1875rem\] {
@@ -1820,6 +1829,10 @@ video {
     scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
+.cursor-default {
+  cursor: default;
+}
+
 .cursor-not-allowed {
   cursor: not-allowed;
 }
@@ -2262,6 +2275,11 @@ video {
   border-bottom-color: rgb(208 208 208 / var(--tw-border-opacity));
 }
 
+.border-b-divider-subtle {
+  --tw-border-opacity: 1;
+  border-bottom-color: rgb(242 242 242 / var(--tw-border-opacity));
+}
+
 .border-t-base-divider-subtle {
   --tw-border-opacity: 1;
   border-top-color: rgb(226 232 240 / var(--tw-border-opacity));
@@ -2451,6 +2469,10 @@ video {
 
 .p-3 {
   padding: 0.75rem;
+}
+
+.p-4 {
+  padding: 1rem;
 }
 
 .p-5 {
@@ -2785,10 +2807,6 @@ video {
   line-height: 1;
 }
 
-.text-\[0\.625rem\] {
-  font-size: 0.625rem;
-}
-
 .text-\[0\.6875rem\] {
   font-size: 0.6875rem;
 }
@@ -2904,10 +2922,6 @@ video {
     var(--tw-numeric-fraction);
 }
 
-.leading-4 {
-  line-height: 1rem;
-}
-
 .leading-5 {
   line-height: 1.25rem;
 }
@@ -2942,10 +2956,6 @@ video {
 
 .leading-\[1\.5\] {
   line-height: 1.5;
-}
-
-.tracking-\[0\.8px\] {
-  letter-spacing: 0.8px;
 }
 
 .tracking-tight {
@@ -3744,14 +3754,6 @@ video {
   border-bottom-color: transparent;
 }
 
-.last\:border-r-0:last-child {
-  border-right-width: 0px;
-}
-
-.last-of-type\:border-r:last-of-type {
-  border-right-width: 1px;
-}
-
 .active\:bg-base-canvas-backdrop\/80:active {
   background-color: rgb(243 244 246 / 0.8);
 }
@@ -3879,6 +3881,10 @@ video {
   color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 
+.hover\:text-inherit:where([data-rac])[data-hovered] {
+  color: inherit;
+}
+
 .hover\:text-link-hover:where([data-rac])[data-hovered] {
   --tw-text-opacity: 1;
   color: rgb(21 71 190 / var(--tw-text-opacity));
@@ -3979,6 +3985,10 @@ video {
 .hover\:text-gray-700:where(:not([data-rac])):hover {
   --tw-text-opacity: 1;
   color: rgb(55 65 81 / var(--tw-text-opacity));
+}
+
+.hover\:text-inherit:where(:not([data-rac])):hover {
+  color: inherit;
 }
 
 .hover\:text-link-hover:where(:not([data-rac])):hover {
@@ -4228,6 +4238,10 @@ video {
   outline-width: 0px;
 }
 
+.focus-visible\:outline-2:where([data-rac])[data-focus-visible] {
+  outline-width: 2px;
+}
+
 .focus-visible\:transition-none:where([data-rac])[data-focus-visible] {
   transition-property: none;
 }
@@ -4273,6 +4287,10 @@ video {
 
 .focus-visible\:outline-0:where(:not([data-rac])):focus-visible {
   outline-width: 0px;
+}
+
+.focus-visible\:outline-2:where(:not([data-rac])):focus-visible {
+  outline-width: 2px;
 }
 
 .focus-visible\:transition-none:where(:not([data-rac])):focus-visible {
