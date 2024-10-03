@@ -8,12 +8,17 @@ import {
   applySession,
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
-import { setupFolder, setupPageResource } from "tests/integration/helpers/seed"
+import {
+  setupFolder,
+  setupPageResource,
+  setupSite,
+} from "tests/integration/helpers/seed"
 
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
 import { createCallerFactory } from "~/server/trpc"
 import { db } from "../../database"
 import { pageRouter } from "../page.router"
+import { createDefaultPage } from "../page.service"
 
 const createCaller = createCallerFactory(pageRouter)
 
@@ -568,5 +573,249 @@ describe("page.router", async () => {
         draftBlobId: expect.any(String),
       })
     })
+  })
+
+  describe("createPage", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.createPage({
+        siteId: 1,
+        title: "Test Page",
+        permalink: "test-page",
+        layout: "content",
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 404 if site does not exist", async () => {
+      // Act
+      const result = caller.createPage({
+        siteId: 999999, // should not exist
+        title: "Test Page",
+        permalink: "test-page",
+        layout: "content",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Site not found",
+        }),
+      )
+    })
+
+    it("should throw 409 if permalink is not unique", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+
+      // Act
+      const result = caller.createPage({
+        siteId: site.id,
+        title: "Test Page",
+        permalink: page.permalink,
+        layout: "content",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A resource with the same permalink already exists",
+        }),
+      )
+    })
+
+    it("should create a new page with Content layout successfully", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const expectedPageArgs = {
+        siteId: site.id,
+        title: "Test Page",
+        permalink: "test-page",
+      }
+
+      // Act
+      const result = await caller.createPage({
+        ...expectedPageArgs,
+        layout: "content",
+      })
+
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
+        .where("Resource.id", "=", result.pageId)
+        .select(["title", "permalink", "type", "siteId", "Blob.content"])
+        .executeTakeFirstOrThrow()
+      expect(result).toMatchObject({
+        pageId: expect.any(String),
+      })
+      expect(actual).toMatchObject({
+        ...expectedPageArgs,
+        content: createDefaultPage({ layout: "content" }),
+      })
+    })
+
+    it("should create a new page with Article layout successfully", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const expectedPageArgs = {
+        siteId: site.id,
+        title: "Test Page",
+        permalink: "test-page",
+      }
+
+      // Act
+      const result = await caller.createPage({
+        ...expectedPageArgs,
+        layout: "article",
+      })
+
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
+        .where("Resource.id", "=", result.pageId)
+        .select(["title", "permalink", "type", "siteId", "Blob.content"])
+        .executeTakeFirstOrThrow()
+      expect(result).toMatchObject({
+        pageId: expect.any(String),
+      })
+      expect(actual).toMatchObject({
+        ...expectedPageArgs,
+        content: createDefaultPage({ layout: "article" }),
+      })
+    })
+
+    it("should create a new page with default Content layout if layout is not provided", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const expectedPageArgs = {
+        siteId: site.id,
+        title: "Test Page",
+        permalink: "test-page",
+      }
+
+      // Act
+      const result = await caller.createPage({
+        ...expectedPageArgs,
+      })
+
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
+        .where("Resource.id", "=", result.pageId)
+        .select(["title", "permalink", "type", "siteId", "Blob.content"])
+        .executeTakeFirstOrThrow()
+      expect(result).toMatchObject({
+        pageId: expect.any(String),
+      })
+      expect(actual).toMatchObject({
+        ...expectedPageArgs,
+        content: createDefaultPage({ layout: "content" }),
+      })
+    })
+
+    it("should create a page in folder successfully", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+      const expectedPageArgs = {
+        siteId: site.id,
+        title: "Test Page",
+        permalink: "test-page",
+      }
+
+      // Act
+      const result = await caller.createPage({
+        ...expectedPageArgs,
+        layout: "content",
+        folderId: Number(folder.id),
+      })
+
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
+        .where("Resource.id", "=", result.pageId)
+        .select([
+          "title",
+          "permalink",
+          "type",
+          "siteId",
+          "Blob.content",
+          "parentId",
+        ])
+        .executeTakeFirstOrThrow()
+      expect(result).toMatchObject({
+        pageId: expect.any(String),
+      })
+      expect(actual).toMatchObject({
+        ...expectedPageArgs,
+        parentId: folder.id,
+        content: createDefaultPage({ layout: "content" }),
+      })
+    })
+
+    it("should throw 400 if folderId does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const expectedPageArgs = {
+        siteId: site.id,
+        title: "Test Page",
+        permalink: "test-page",
+        folderId: 999999, // should not exist
+      }
+
+      // Act
+      const result = caller.createPage({
+        ...expectedPageArgs,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Folder not found or folderId is not a folder",
+        }),
+      )
+    })
+
+    it("should throw 400 if folderId is not a Folder resource", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      const expectedPageArgs = {
+        siteId: site.id,
+        title: "Test Page",
+        permalink: "test-page",
+        folderId: Number(page.id),
+      }
+
+      // Act
+      const result = caller.createPage({
+        ...expectedPageArgs,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Folder not found or folderId is not a folder",
+        }),
+      )
+    })
+
+    // TODO: Implement tests when permissions are implemented
+    it.skip("should throw 403 if user does not have access to site", async () => {})
+
+    it.skip("should throw 403 if user does not have write access to folder", async () => {})
+
+    it.skip("should throw 403 if user does not have write access to root", async () => {})
   })
 })
