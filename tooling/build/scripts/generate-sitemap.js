@@ -233,6 +233,12 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
       ),
   )
 
+  if (pageOrderData) {
+    danglingDirEntries.sort((a, b) => a.title.localeCompare(b.title))
+    children.push(...danglingDirEntries)
+    return children
+  }
+
   children.push(...danglingDirEntries)
 
   // Ensure that the result is ordered in alphabetical order

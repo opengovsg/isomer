@@ -8,7 +8,7 @@ set -x
 
 # curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/package.json -o package.json
 # curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/package-lock.json -o package-lock.json
-curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/tailwind.config.js -o tailwind.config.js
+curl https://raw.githubusercontent.com/opengovsg/isomer/fix/prevent-sort-pages/tooling/template/tailwind.config.js -o tailwind.config.js
 
 #######################
 # Install NPM modules #
@@ -23,7 +23,7 @@ npm install opengovsg-isomer-components-0.0.13.tgz
 #######################################################################
 mkdir -p scripts/
 
-curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/generate-sitemap.js -o scripts/generate-sitemap.js
+curl https://raw.githubusercontent.com/opengovsg/isomer/fix/prevent-sort-pages/tooling/build/scripts/generate-sitemap.js -o scripts/generate-sitemap.js
 # curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/generate-search-index.js -o scripts/generate-search-index.js
 
 node scripts/generate-sitemap.js
