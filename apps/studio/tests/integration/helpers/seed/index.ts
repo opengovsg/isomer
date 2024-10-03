@@ -172,21 +172,23 @@ export const setupPageResource = async ({
   resourceType,
   state = "Draft",
   userId,
+  permalink,
 }: {
   siteId?: number
   blobId?: string
   resourceType: ResourceType
   state?: ResourceState
   userId?: string
+  permalink?: string
 }) => {
-  const { site, navbar, footer } = await setupSite(siteIdProp)
+  const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
   const blob = await setupBlob(blobIdProp)
 
   let page = await db
     .insertInto("Resource")
     .values({
       title: resourceType === "RootPage" ? "Home" : "test page",
-      permalink: resourceType === "RootPage" ? "" : "test-page",
+      permalink: permalink ?? (resourceType === "RootPage" ? "" : "test-page"),
       siteId: site.id,
       parentId: null,
       publishedVersionId: null,

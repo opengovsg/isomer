@@ -885,4 +885,147 @@ describe("page.router", async () => {
 
     it.skip("should throw 403 if user does not have read access to root", async () => {})
   })
+
+  // TODO: Implement tests when publish works
+  describe.skip("publishPage", () => {})
+
+  describe("updateSettings", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.updateSettings({
+        siteId: 1,
+        pageId: 1,
+        title: "Test Page",
+        permalink: "test-page",
+        meta: "Test meta",
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 404 if page does not exist", async () => {
+      // Act
+      const result = caller.updateSettings({
+        siteId: 1,
+        pageId: 1,
+        title: "Test Page",
+        permalink: "test-page",
+        meta: "Test meta",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "Unable to load content for the requested page, please contact Isomer Support",
+        }),
+      )
+    })
+
+    it("should update page settings successfully", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+      const expectedMeta = {
+        description: "Updating the meta description",
+        noIndex: false,
+      }
+      const expectedSettings = {
+        title: "New Title",
+        permalink: "new-permalink",
+      }
+
+      // Act
+      const result = await caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        meta: JSON.stringify(expectedMeta),
+        ...expectedSettings,
+      })
+
+      // Assert
+      const actualResource = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .select([
+          "Resource.id",
+          "Resource.type",
+          "Resource.title",
+          "Resource.permalink",
+          "Resource.draftBlobId",
+        ])
+        .executeTakeFirstOrThrow()
+      const actualBlobContent = await db
+        .selectFrom("Blob")
+        .where("id", "=", page.draftBlobId)
+        .select("content")
+        .executeTakeFirstOrThrow()
+      expect(result).toMatchObject(actualResource)
+      expect(result).toMatchObject(expectedSettings)
+      expect(actualBlobContent.content.meta).toMatchObject(expectedMeta)
+    })
+
+    it("should fail validation if meta is incorrect shape", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        title: "New Title",
+        permalink: "new-permalink",
+        meta: "do not match the shape because not a json string",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError("Invalid metadata")
+    })
+
+    it("should throw 409 if permalink is not unique", async () => {
+      // Arrange
+      const reusedPermalink = "this-is-not-unique"
+      const { site } = await setupPageResource({
+        permalink: reusedPermalink,
+        resourceType: "Page",
+      })
+
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        title: "New Title",
+        permalink: reusedPermalink,
+        meta: JSON.stringify({
+          description: "Updating the meta description",
+          noIndex: false,
+        }),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A resource with the same permalink already exists",
+        }),
+      )
+    })
+
+    it.skip("should throw 403 if user does not have access to site", async () => {})
+
+    it.skip("should throw 403 if user does not have write access to page", async () => {})
+  })
 })
