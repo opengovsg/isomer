@@ -2,6 +2,7 @@ import type { SelectExpression } from "kysely"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Resource, SafeKysely } from "../database"
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { getSitemapTree } from "~/utils/sitemap"
 import { db } from "../database"
 import { type Page } from "./resource.types"
@@ -251,7 +252,7 @@ export const getLocalisedSitemap = async (
       title: "Root",
       summary: "",
       lastModified: new Date().toISOString(),
-      permalink: "",
+      permalink: "/",
     }
   }
 
@@ -382,7 +383,10 @@ export const getResourcePermalinkTree = async (
     .execute()
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return resourcePermalinks.map((r) => r.permalink).reverse() as string[]
+  return resourcePermalinks
+    .map((r) => r.permalink)
+    .reverse()
+    .filter((v) => v !== INDEX_PAGE_PERMALINK) as string[]
 }
 
 export const getResourceFullPermalink = async (
