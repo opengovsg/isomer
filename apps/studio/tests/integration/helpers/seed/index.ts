@@ -173,6 +173,7 @@ export const setupPageResource = async ({
   state = "Draft",
   userId,
   permalink,
+  parentId,
 }: {
   siteId?: number
   blobId?: string
@@ -180,6 +181,7 @@ export const setupPageResource = async ({
   state?: ResourceState
   userId?: string
   permalink?: string
+  parentId?: string | null
 }) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
   const blob = await setupBlob(blobIdProp)
@@ -190,7 +192,7 @@ export const setupPageResource = async ({
       title: resourceType === "RootPage" ? "Home" : "test page",
       permalink: permalink ?? (resourceType === "RootPage" ? "" : "test-page"),
       siteId: site.id,
-      parentId: null,
+      parentId,
       publishedVersionId: null,
       draftBlobId: blob.id,
       type: resourceType,

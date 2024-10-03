@@ -1028,4 +1028,91 @@ describe("page.router", async () => {
 
     it.skip("should throw 403 if user does not have write access to page", async () => {})
   })
+
+  describe("getFullPermalink", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.getFullPermalink({
+        siteId: 1,
+        pageId: 1,
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 404 if page does not exist", async () => {
+      // Act
+      const result = caller.getFullPermalink({
+        siteId: 1,
+        pageId: 99999,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "No permalink could be found for the given page",
+        }),
+      )
+    })
+
+    it("should return the full permalink of first-level page successfully", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await caller.getFullPermalink({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      expect(result).toEqual(`/${page.permalink}`)
+    })
+
+    it("should return the full permalink of root page successfully", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+
+      // Act
+      const result = await caller.getFullPermalink({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      expect(result).toEqual(`/`)
+    })
+
+    it("should return the full permalink of nested page successfully", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+        parentId: folder.id,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getFullPermalink({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      expect(result).toEqual(`/${folder.permalink}/${page.permalink}`)
+    })
+
+    it.skip("should throw 403 if user does not have access to site", async () => {})
+
+    it.skip("should throw 403 if user does not have read access to page", async () => {})
+  })
 })

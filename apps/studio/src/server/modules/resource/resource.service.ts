@@ -384,10 +384,7 @@ export const getResourcePermalinkTree = async (
       resourceId,
     }).executeTakeFirst()
     if (!resource) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Resource not found",
-      })
+      return []
     }
 
     const resourcePermalinks = await db
@@ -420,5 +417,8 @@ export const getResourceFullPermalink = async (
   resourceId: number,
 ) => {
   const permalinkTree = await getResourcePermalinkTree(siteId, resourceId)
+  if (permalinkTree.length === 0) {
+    return null
+  }
   return `/${permalinkTree.join("/")}`
 }
