@@ -403,7 +403,7 @@ export const pageRouter = router({
       if (isEmpty(permalinkTree)) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "No permalink could be found for the given page",
+          message: "No permalink tree could be found for the given page",
         })
       }
 
