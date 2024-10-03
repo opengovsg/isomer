@@ -122,7 +122,7 @@ jobs:
           service: isomer-studio
           api_key: ${{ secrets.DD_API_KEY }}
       - name: Run Playwright tests
-        run: turbo test-ci:e2e --filter=isomer-studio
+        run: turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
         env:
           # Required to allow Datadog to trace Playwright tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
