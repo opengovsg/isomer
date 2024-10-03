@@ -122,7 +122,7 @@ export const getFullPageById = async (
 }
 
 // There are 3 types of pages this get query supports:
-// Page, CollectionPage, RootPage
+// Page, CollectionPage, RootPage, IndexPage
 export const getPageById = (
   db: SafeKysely,
   args: { resourceId: number; siteId: number },
@@ -133,6 +133,7 @@ export const getPageById = (
         eb("type", "=", "Page"),
         eb("type", "=", "CollectionPage"),
         eb("type", "=", "RootPage"),
+        eb("type", "=", "IndexPage"),
       ]),
     )
     .select(defaultResourceSelect)
