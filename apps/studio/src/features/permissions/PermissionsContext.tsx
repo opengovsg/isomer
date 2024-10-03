@@ -37,7 +37,6 @@ export const PermissionsProvider = ({
     resourceId: resourceId ?? null,
   })
 
-  // TODO: need to get the roles from backend
   const ability = getPermissions(roles)
 
   return (
