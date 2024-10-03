@@ -116,9 +116,7 @@ jobs:
       - name: Start test containers
         run: npm run setup:test
       - name: Configure Datadog Test Visibility
-        env:
-          DD_API_KEY: ${{ secrets.DD_API_KEY }}
-        uses: datadog/test-visibility-github-action@v1
+        uses: datadog/test-visibility-github-action@v2
         with:
           languages: js
           service: isomer-studio
