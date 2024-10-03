@@ -1,4 +1,5 @@
 import type { SelectExpression } from "kysely"
+import { TRPCError } from "@trpc/server"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Resource, SafeKysely } from "../database"
@@ -381,6 +382,13 @@ export const getResourcePermalinkTree = async (
     .selectFrom("Ancestors")
     .select("Ancestors.permalink")
     .execute()
+
+  if (resourcePermalinks.length === 0) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "No permalink could be found for the given page",
+    })
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return resourcePermalinks

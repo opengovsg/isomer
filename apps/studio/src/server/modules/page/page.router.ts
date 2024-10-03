@@ -402,12 +402,6 @@ export const pageRouter = router({
     .query(async ({ input }) => {
       const { pageId, siteId } = input
       const permalinkTree = await getResourcePermalinkTree(siteId, pageId)
-      if (isEmpty(permalinkTree)) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No permalink could be found for the given page",
-        })
-      }
 
       return permalinkTree
     }),
