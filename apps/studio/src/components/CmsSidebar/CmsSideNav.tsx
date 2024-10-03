@@ -42,6 +42,7 @@ export const CmsSideNav = ({ siteId }: CmsSideNavProps) => {
 
 const ICON_MAPPINGS = {
   [ResourceType.Page]: BiFile,
+  [ResourceType.IndexPage]: BiFile,
   [ResourceType.Folder]: BiFolder,
   [ResourceType.Collection]: BiData,
   [ResourceType.CollectionPage]: BiFile,
