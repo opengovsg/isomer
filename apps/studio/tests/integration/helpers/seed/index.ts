@@ -174,6 +174,7 @@ export const setupPageResource = async ({
   userId,
   permalink,
   parentId,
+  title,
 }: {
   siteId?: number
   blobId?: string
@@ -182,6 +183,7 @@ export const setupPageResource = async ({
   userId?: string
   permalink?: string
   parentId?: string | null
+  title?: string
 }) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
   const blob = await setupBlob(blobIdProp)
@@ -189,7 +191,7 @@ export const setupPageResource = async ({
   let page = await db
     .insertInto("Resource")
     .values({
-      title: resourceType === "RootPage" ? "Home" : "test page",
+      title: title ?? (resourceType === "RootPage" ? "Home" : "test page"),
       permalink: permalink ?? (resourceType === "RootPage" ? "" : "test-page"),
       siteId: site.id,
       parentId,
@@ -235,18 +237,24 @@ export const setupPageResource = async ({
 
 export const setupFolder = async ({
   siteId: siteIdProp,
+  permalink = "test-folder",
+  parentId = null,
+  title = "test folder",
 }: {
   siteId?: number
+  permalink?: string
+  parentId?: string | null
+  title?: string
 } = {}) => {
-  const { site, navbar, footer } = await setupSite(siteIdProp)
+  const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
 
   const folder = await db
     .insertInto("Resource")
     .values({
-      permalink: "test-folder",
+      permalink,
       siteId: site.id,
-      parentId: null,
-      title: "test folder",
+      parentId,
+      title,
       draftBlobId: null,
       state: "Draft",
       type: "Folder",
