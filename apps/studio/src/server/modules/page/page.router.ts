@@ -172,12 +172,28 @@ export const pageRouter = router({
       async ({ input: { permalink, siteId, folderId, title, layout } }) => {
         const newPage = createDefaultPage({ layout })
 
-        // TODO: Validate whether folderId actually is a folder instead of a page
         // TODO: Validate whether siteId is a valid site
         // TODO: Validate user has write-access to the site
         const resource = await db
           .transaction()
           .execute(async (tx) => {
+            // Validate whether folderId is a folder
+            if (folderId) {
+              const folder = await tx
+                .selectFrom("Resource")
+                .where("Resource.id", "=", String(folderId))
+                .where("Resource.siteId", "=", siteId)
+                .where("Resource.type", "=", "Folder")
+                .select("Resource.id")
+                .executeTakeFirst()
+              if (!folder) {
+                throw new TRPCError({
+                  code: "NOT_FOUND",
+                  message: "Folder not found or folderId is not a folder",
+                })
+              }
+            }
+
             const blob = await tx
               .insertInto("Blob")
               .values({
@@ -201,10 +217,19 @@ export const pageRouter = router({
             return addedResource
           })
           .catch((err) => {
+            // TODO: Extract into reusable util function
+            // Unique constraint violation error
             if (get(err, "code") === "23505") {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "A resource with the same permalink already exists",
+              })
+            }
+            // Foreign key violation error
+            if (get(err, "code") === "23503") {
+              throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Site not found",
               })
             }
             throw err
