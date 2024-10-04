@@ -1414,4 +1414,111 @@ describe("resource.router", () => {
 
     it.skip("should throw 403 if user does not have delete access to the resource", async () => {})
   })
+
+  describe("getParentOf", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.getParentOf({
+        resourceId: "1",
+        siteId: 1,
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 404 if resource does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.getParentOf({
+        resourceId: "99999", // should not exist
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "NOT_FOUND" }),
+      )
+    })
+
+    it("should return null parent if resource is a root page", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+
+      // Act
+      const result = await caller.getParentOf({
+        resourceId: page.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      const expected = {
+        id: page.id,
+        parent: null,
+        title: page.title,
+        type: "RootPage",
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should return parent details for a nested resource", async () => {
+      // Arrange
+      const { folder: parentFolder, site } = await setupFolder({
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const { page: nestedPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: parentFolder.id,
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await caller.getParentOf({
+        resourceId: nestedPage.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      const expected = {
+        ...pick(nestedPage, ["id", "type", "title"]),
+        parent: {
+          id: Number(parentFolder.id),
+          ...pick(parentFolder, ["parentId", "type", "title"]),
+        },
+      }
+      expect(result).toMatchObject(expected)
+    })
+
+    it("should return null parent if resource is a root-level resource", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await caller.getParentOf({
+        resourceId: page.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      const expected = {
+        id: page.id,
+        parent: null,
+        title: page.title,
+        type: "Page",
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it.skip("should throw 403 if user does not have read access to the resource", async () => {})
+  })
 })
