@@ -1063,4 +1063,222 @@ describe("resource.router", () => {
 
     it.skip("should throw 403 if user does not have read access to resource", async () => {})
   })
+
+  describe("listWithoutRoot", () => {
+    const RESOURCE_FIELDS_TO_PICK = [
+      "id",
+      "permalink",
+      "title",
+      "publishedVersionId",
+      "draftBlobId",
+      "type",
+      "parentId",
+      "updatedAt",
+    ] as const
+
+    const testListComparable = (
+      a: { updatedAt: Date; title: string },
+      b: { updatedAt: Date; title: string },
+    ) => {
+      if (b.updatedAt.valueOf() === a.updatedAt.valueOf()) {
+        return a.title.localeCompare(b.title)
+      }
+      return b.updatedAt.valueOf() - a.updatedAt.valueOf()
+    }
+
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.listWithoutRoot({
+        siteId: 1,
+        limit: 25,
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return empty array if site does not exist", async () => {
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: 99999, // should not exist
+        limit: 25,
+      })
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
+    it("should return empty array if site has no resources", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+        limit: 25,
+      })
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
+    it("should return empty array if site has only root page", async () => {
+      // Arrange
+      const { site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+        limit: 25,
+      })
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
+    it("should return empty array if resource does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+        resourceId: 99999, // should not exist
+        limit: 25,
+      })
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
+    it("should return empty array if resource is not a folder", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+        resourceId: Number(page.id),
+        limit: 25,
+      })
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
+    it("should return empty array if resource is a folder with no children", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+        resourceId: Number(folder.id),
+        limit: 25,
+      })
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
+    it("should return resources (respecting the limit) excluding root page if resourceId is not provided", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      // Create root page, should not be returned in the count
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "RootPage",
+      })
+      const numberOfPages = 30
+      const numberOfFolders = 2
+      const pages = await Promise.all(
+        Array.from({ length: numberOfPages }, (_, i) => i).map(async (i) => {
+          const { page } = await setupPageResource({
+            siteId: site.id,
+            permalink: `page-${i}`,
+            title: `Test page ${i}`,
+            resourceType: "Page",
+          })
+          return pick(page, RESOURCE_FIELDS_TO_PICK)
+        }),
+      )
+      const folders = await Promise.all(
+        Array.from({ length: numberOfFolders }, (_, i) => i).map(async (i) => {
+          const { folder } = await setupFolder({
+            siteId: site.id,
+            permalink: `folder-${i}`,
+            title: `Test folder ${i}`,
+          })
+          return pick(folder, RESOURCE_FIELDS_TO_PICK)
+        }),
+      )
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      const expected = [...pages, ...folders]
+        .sort(testListComparable)
+        .slice(0, 10)
+      expect(expected).toMatchObject(result)
+    })
+
+    it("should return resources (respecting the limit) nested inside the resourceId", async () => {
+      // Arrange
+      const { folder: folderToUse, site } = await setupFolder({
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const numberOfPages = 15
+      const numberOfFolders = 2
+      // Pages inside the folder
+      const pages = await Promise.all(
+        Array.from({ length: numberOfPages }, (_, i) => i).map(async (i) => {
+          const { page } = await setupPageResource({
+            siteId: site.id,
+            parentId: folderToUse.id,
+            permalink: `page-${i}`,
+            title: `Test page ${i}`,
+            resourceType: "Page",
+          })
+          return pick(page, RESOURCE_FIELDS_TO_PICK)
+        }),
+      )
+      // Folders inside the folder
+      const folders = await Promise.all(
+        Array.from({ length: numberOfFolders }, (_, i) => i).map(async (i) => {
+          const { folder } = await setupFolder({
+            siteId: site.id,
+            parentId: folderToUse.id,
+            permalink: `folder-${i}`,
+            title: `Test folder ${i}`,
+          })
+          return pick(folder, RESOURCE_FIELDS_TO_PICK)
+        }),
+      )
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        resourceId: Number(folderToUse.id),
+        siteId: site.id,
+      })
+
+      // Assert
+      const expected = [...pages, ...folders]
+        .sort(testListComparable)
+        .slice(0, 10)
+      expect(expected).toMatchObject(result)
+    })
+
+    it.skip("should throw 403 if user does not have read access to the resource", async () => {})
+  })
 })
