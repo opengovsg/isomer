@@ -12,6 +12,7 @@ import {
 } from "tests/integration/helpers/seed"
 
 import { createCallerFactory } from "~/server/trpc"
+import { db } from "../../database"
 import { resourceRouter } from "../resource.router"
 
 const createCaller = createCallerFactory(resourceRouter)
@@ -727,5 +728,161 @@ describe("resource.router", () => {
     })
 
     it.skip("should throw 403 if user does not have read access to resource", async () => {})
+  })
+
+  describe("move", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.move({
+        movedResourceId: "1",
+        destinationResourceId: "1",
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 400 if moved resource does not exist", async () => {
+      // Arrange
+      const { folder } = await setupFolder()
+
+      // Act
+      const result = caller.move({
+        movedResourceId: "99999", // should not exist
+        destinationResourceId: folder.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "BAD_REQUEST" }),
+      )
+    })
+
+    it("should return 400 if destination resource does not exist", async () => {
+      // Arrange
+      const { folder } = await setupFolder()
+
+      // Act
+      const result = caller.move({
+        movedResourceId: folder.id,
+        destinationResourceId: "99999", // should not exist
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "BAD_REQUEST" }),
+      )
+    })
+
+    it("should return 400 if destination is not a folder", async () => {
+      // Arrange
+      const { page: pageToMove, site } = await setupPageResource({
+        resourceType: "Page",
+      })
+      const { page: anotherPage } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        permalink: "another-page",
+      })
+
+      // Act
+      const result = caller.move({
+        movedResourceId: pageToMove.id,
+        destinationResourceId: anotherPage.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "BAD_REQUEST" }),
+      )
+    })
+
+    it("should return 403 if source and destination resources belong to different sites", async () => {
+      // Arrange
+      const { page: originPage, site: originSite } = await setupPageResource({
+        resourceType: "Page",
+      })
+      const { folder: destinationFolder, site: destinationSite } =
+        await setupFolder()
+      expect(originSite.id).not.toEqual(destinationSite.id)
+
+      // Act
+      const result = caller.move({
+        movedResourceId: originPage.id,
+        destinationResourceId: destinationFolder.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "FORBIDDEN" }),
+      )
+    })
+
+    it("should move nested resource to destination folder", async () => {
+      // Arrange
+      const { folder: originFolder, site } = await setupFolder({
+        permalink: "origin-folder",
+      })
+      const { page: pageToMove } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        parentId: originFolder.id,
+      })
+      const { folder: destinationFolder } = await setupFolder({
+        siteId: site.id,
+        permalink: "destination-folder",
+      })
+
+      // Act
+      const result = await caller.move({
+        movedResourceId: pageToMove.id,
+        destinationResourceId: destinationFolder.id,
+      })
+
+      // Assert
+      const expected = {
+        ...pick(pageToMove, ["id", "type", "permalink", "title"]),
+        parentId: destinationFolder.id,
+      }
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", pageToMove.id)
+        .select(["parentId"])
+        .executeTakeFirstOrThrow()
+      expect(actual.parentId).toEqual(destinationFolder.id)
+      expect(result).toMatchObject(expected)
+    })
+
+    it("should move root-level resource to destination folder", async () => {
+      // Arrange
+      const { page: pageToMove, site } = await setupPageResource({
+        resourceType: "Page",
+        parentId: null,
+      })
+      const { folder: destinationFolder } = await setupFolder({
+        siteId: site.id,
+        permalink: "destination-folder",
+      })
+
+      // Act
+      const result = await caller.move({
+        movedResourceId: pageToMove.id,
+        destinationResourceId: destinationFolder.id,
+      })
+
+      // Assert
+      const expected = {
+        ...pick(pageToMove, ["id", "type", "permalink", "title"]),
+        parentId: destinationFolder.id,
+      }
+      expect(result).toMatchObject(expected)
+    })
+
+    it.skip("should throw 403 if user does not have write access to destination resource", async () => {})
+
+    it.skip("should throw 403 if user does not have write access to origin resource", async () => {})
   })
 })
