@@ -147,10 +147,18 @@ export const resourceRouter = router({
       return await db
         .transaction()
         .execute(async (tx) => {
+          const toMove = await tx
+            .selectFrom("Resource")
+            .where("id", "=", movedResourceId)
+            .select(["id", "siteId"])
+            .executeTakeFirst()
+          if (!toMove) {
+            throw new TRPCError({ code: "BAD_REQUEST" })
+          }
           const parent = await tx
             .selectFrom("Resource")
             .where("id", "=", destinationResourceId)
-            .select(["id", "type"])
+            .select(["id", "type", "siteId"])
             .executeTakeFirst()
 
           if (!parent || parent.type !== "Folder") {
@@ -159,6 +167,10 @@ export const resourceRouter = router({
 
           if (movedResourceId === destinationResourceId) {
             throw new TRPCError({ code: "BAD_REQUEST" })
+          }
+
+          if (toMove.siteId !== parent.siteId) {
+            throw new TRPCError({ code: "FORBIDDEN" })
           }
 
           await tx
