@@ -262,10 +262,15 @@ export const resourceRouter = router({
         .deleteFrom("Resource")
         .where("Resource.id", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "!=", "RootPage")
         .executeTakeFirst()
-      // NOTE: We need to do this `toString` as the property is a `bigint`
+
+      if (Number(result.numDeletedRows) === 0) {
+        throw new TRPCError({ code: "BAD_REQUEST" })
+      }
+      // NOTE: We need to do this cast as the property is a `bigint`
       // and trpc cannot serialise it, which leads to errors
-      return result.numDeletedRows.toString()
+      return Number(result.numDeletedRows)
     }),
 
   getParentOf: protectedProcedure
