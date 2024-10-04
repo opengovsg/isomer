@@ -885,4 +885,182 @@ describe("resource.router", () => {
 
     it.skip("should throw 403 if user does not have write access to origin resource", async () => {})
   })
+
+  describe("countWithoutRoot", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.countWithoutRoot({
+        resourceId: 1,
+        siteId: 1,
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 0 if resource does not exist", async () => {
+      const { site } = await setupSite()
+      // Act
+      const result = await caller.countWithoutRoot({
+        resourceId: 99999, // should not exist
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toEqual(0)
+    })
+
+    it("should return 0 if site does not exist", async () => {
+      // Act
+      const result = await caller.countWithoutRoot({
+        resourceId: 99999, // should not exist
+        siteId: 99999, // should not exist also
+      })
+
+      // Assert
+      expect(result).toEqual(0)
+    })
+
+    it("should return 0 if resource is a page", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await caller.countWithoutRoot({
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toEqual(0)
+    })
+
+    it("should return 0 if resource is a folder with no children", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+
+      // Act
+      const result = await caller.countWithoutRoot({
+        resourceId: Number(folder.id),
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toEqual(0)
+    })
+
+    it("should return count of resources excluding root page if resourceId is not provided", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      // Create root page, should not be returned in the count
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "RootPage",
+      })
+      const numberOfPages = 3
+      const numberOfFolders = 2
+      await Promise.all(
+        Array.from({ length: numberOfPages }, (_, i) => i).map(async (i) => {
+          await setupPageResource({
+            siteId: site.id,
+            permalink: `page-${i}`,
+            title: `Test page ${i}`,
+            resourceType: "Page",
+          })
+        }),
+      )
+      const folders = await Promise.all(
+        Array.from({ length: numberOfFolders }, (_, i) => i).map(async (i) => {
+          const { folder } = await setupFolder({
+            siteId: site.id,
+            permalink: `folder-${i}`,
+            title: `Test folder ${i}`,
+          })
+          return folder.id
+        }),
+      )
+      // Add more extra nested pages in folder, should not be returned in the count
+      await Promise.all(
+        Array.from({ length: 10 }, (_, i) => i).map(async (i) => {
+          await setupPageResource({
+            siteId: site.id,
+            parentId: folders[1],
+            resourceType: "Page",
+            permalink: `nested-page-${i}`,
+            title: `Nested page ${i}`,
+          })
+        }),
+      )
+
+      // Act
+      const result = await caller.countWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toEqual(numberOfPages + numberOfFolders)
+    })
+
+    it("should return count of resources nested inside the resourceId", async () => {
+      // Arrange
+      const { folder: folderToUse, site } = await setupFolder({
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const numberOfPages = 3
+      const numberOfFolders = 2
+      // Pages inside the folder
+      await Promise.all(
+        Array.from({ length: numberOfPages }, (_, i) => i).map(async (i) => {
+          await setupPageResource({
+            siteId: site.id,
+            parentId: folderToUse.id,
+            permalink: `page-${i}`,
+            title: `Test page ${i}`,
+            resourceType: "Page",
+          })
+        }),
+      )
+      // Folders inside the folder
+      const nestedFolders = await Promise.all(
+        Array.from({ length: numberOfFolders }, (_, i) => i).map(async (i) => {
+          const { folder } = await setupFolder({
+            siteId: site.id,
+            parentId: folderToUse.id,
+            permalink: `folder-${i}`,
+            title: `Test folder ${i}`,
+          })
+          return folder.id
+        }),
+      )
+      // Add more extra nested pages in one of the nested folders, should not be returned in the count
+      await Promise.all(
+        Array.from({ length: 10 }, (_, i) => i).map(async (i) => {
+          await setupPageResource({
+            siteId: site.id,
+            parentId: nestedFolders[1],
+            resourceType: "Page",
+            permalink: `nested-page-${i}`,
+            title: `Nested page ${i}`,
+          })
+        }),
+      )
+
+      // Act
+      const result = await caller.countWithoutRoot({
+        resourceId: Number(folderToUse.id),
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toEqual(numberOfPages + numberOfFolders)
+    })
+
+    it.skip("should throw 403 if user does not have read access to resource", async () => {})
+  })
 })

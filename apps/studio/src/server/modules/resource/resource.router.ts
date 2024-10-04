@@ -183,7 +183,7 @@ export const resourceRouter = router({
             .selectFrom("Resource")
             .where("id", "=", String(movedResourceId))
             .select([
-              "parentId",
+              "Resource.parentId",
               "Resource.id",
               "Resource.type",
               "Resource.permalink",
@@ -210,6 +210,7 @@ export const resourceRouter = router({
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "!=", "RootPage")
+        .select((eb) => [eb.fn.countAll().as("totalCount")])
 
       if (resourceId) {
         query = query.where("Resource.parentId", "=", String(resourceId))
@@ -217,9 +218,7 @@ export const resourceRouter = router({
         query = query.where("Resource.parentId", "is", null)
       }
 
-      const result = await query
-        .select((eb) => [eb.fn.countAll().as("totalCount")])
-        .executeTakeFirst()
+      const result = await query.executeTakeFirst()
       return Number(result?.totalCount ?? 0)
     }),
 
