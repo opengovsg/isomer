@@ -29,7 +29,7 @@ const createSiderailStyles = tv({
     rightArrowIcon:
       "-mr-2 h-6 w-6 shrink-0 opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100",
     seeAllContainer:
-      "flex-grow-1 flex flex-shrink-0 basis-0 items-center justify-between",
+      "flex-grow-1 mt-1 flex flex-shrink-0 basis-0 items-center justify-between",
     seeAllLink: "prose-label-md-regular",
   },
 })
