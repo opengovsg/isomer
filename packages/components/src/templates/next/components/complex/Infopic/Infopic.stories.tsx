@@ -75,3 +75,30 @@ export const NoButton: Story = {
     buttonUrl: "",
   },
 }
+
+export const TallImage: Story = {
+  args: {
+    buttonUrl: "",
+    description: "",
+    imageSrc:
+      "https://images.unsplash.com/photo-1724390495674-5f28d72c686f?q=80&w=2500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+}
+
+export const LongImage: Story = {
+  args: {
+    title: "Don't put all your baskets in one egg",
+    description: "",
+    buttonUrl: "",
+    imageSrc:
+      "https://images.unsplash.com/photo-1444858440655-e7cf0269024e?q=80&w=2048&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+}
+
+export const LongImageWithDesc: Story = {
+  args: {
+    title: "Don't put all your baskets in one egg",
+    imageSrc:
+      "https://images.unsplash.com/photo-1713098372674-cbf10e8c2bba?q=80&w=3869&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+}
