@@ -11,10 +11,7 @@ const meta: Meta<typeof Content> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: {
-      delay: 300,
-      ...withChromaticModes(["mobile", "tablet", "desktop"]),
-    },
+    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -389,12 +386,6 @@ export const Default: Story = {
             },
           ],
         },
-      },
-      {
-        type: "iframe",
-        content:
-          '<iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>',
-        title: "Rick Astley - Never Gonna Give You Up",
       },
       {
         type: "prose",
