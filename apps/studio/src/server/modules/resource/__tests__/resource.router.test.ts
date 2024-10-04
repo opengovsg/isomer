@@ -1281,4 +1281,137 @@ describe("resource.router", () => {
 
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
   })
+
+  describe("delete", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.delete({
+        resourceId: "1",
+        siteId: 1,
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 400 if resource to delete does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.delete({
+        resourceId: "99999", // should not exist
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "BAD_REQUEST" }),
+      )
+    })
+
+    it("should delete a page resource successfully", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await caller.delete({
+        resourceId: page.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .executeTakeFirst()
+      expect(actual).toBeUndefined()
+      expect(result).toEqual(1)
+    })
+
+    it("should delete a folder and all its children (recursively) successfully", async () => {
+      // Arrange
+      const { folder: folderToUse, site } = await setupFolder()
+      const nestedPages = await Promise.all(
+        Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
+          const { page } = await setupPageResource({
+            siteId: site.id,
+            parentId: folderToUse.id,
+            permalink: `page-${i}`,
+            title: `Test page ${i}`,
+            resourceType: "Page",
+          })
+          return page.id
+        }),
+      )
+      const nestedFolders = await Promise.all(
+        Array.from({ length: 2 }, (_, i) => i).map(async (i) => {
+          const { folder } = await setupFolder({
+            siteId: site.id,
+            parentId: folderToUse.id,
+            permalink: `folder-${i}`,
+            title: `Test folder ${i}`,
+          })
+          return folder.id
+        }),
+      )
+      // Nested in nested
+      const nestedInNested = await Promise.all(
+        Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
+          const { page } = await setupPageResource({
+            siteId: site.id,
+            parentId: nestedFolders[1],
+            resourceType: "Page",
+            permalink: `nested-page-${i}`,
+            title: `Nested page ${i}`,
+          })
+          return page.id
+        }),
+      )
+
+      // Act
+      const result = await caller.delete({
+        resourceId: folderToUse.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "in", [
+          ...nestedPages,
+          ...nestedFolders,
+          ...nestedInNested,
+          folderToUse.id,
+        ])
+        .execute()
+      expect(actual).toHaveLength(0)
+      expect(result).toEqual(1)
+    })
+
+    it("should return 400 if resource to delete is a root page", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: page.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "BAD_REQUEST" }),
+      )
+    })
+
+    it.skip("should throw 403 if user does not have delete access to the resource", async () => {})
+  })
 })
