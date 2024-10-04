@@ -10,6 +10,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
 import { db, ResourceState, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { validateUserPermissions } from "../permissions/permissions.service"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
@@ -18,12 +19,20 @@ export const folderRouter = router({
     .mutation(
       async ({
         ctx,
-        input: { folderTitle, parentFolderId, permalink, siteId },
+        input: { siteId, folderTitle, parentFolderId, permalink },
       }) => {
+        await validateUserPermissions({
+          siteId,
+          action: "create",
+          userId: ctx.user.id,
+          resourceId: !!parentFolderId ? String(parentFolderId) : null,
+        })
+
         const folder = await db
           .insertInto("Resource")
           .values({
             permalink,
+            siteId,
             siteId,
             type: ResourceType.Folder,
             title: folderTitle,
@@ -50,8 +59,12 @@ export const folderRouter = router({
   getMetadata: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input }) => {
+      await validateUserPermissions({
+        siteId: input.siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
       // Things that aren't working yet:
-      // 0. Perm checking
       // 1. Last Edited user and time
       // 2. Page status(draft, published)
 
@@ -65,6 +78,12 @@ export const folderRouter = router({
     .input(editFolderSchema)
     .mutation(
       async ({ ctx, input: { resourceId, permalink, title, siteId } }) => {
+        await validateUserPermissions({
+          siteId: Number(siteId),
+          action: "update",
+          userId: ctx.user.id,
+        })
+
         const result = await db
           .updateTable("Resource")
           .where("Resource.id", "=", resourceId)

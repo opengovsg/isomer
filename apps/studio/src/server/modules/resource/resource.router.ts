@@ -20,7 +20,10 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
 import { db, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { definePermissionsFor } from "../permissions/permissions.service"
+import {
+  definePermissionsFor,
+  validateUserPermissions,
+} from "../permissions/permissions.service"
 
 const fetchResource = async (resourceId: string | null) => {
   if (resourceId === null) return { parentId: null }
@@ -40,7 +43,7 @@ const fetchResource = async (resourceId: string | null) => {
   return resource
 }
 
-const validateUserPermissions = async ({
+const validateUserPermissionsForMove = async ({
   from,
   to,
   ...rest
@@ -195,7 +198,7 @@ export const resourceRouter = router({
         ctx,
         input: { siteId, movedResourceId, destinationResourceId },
       }) => {
-        const isValid = await validateUserPermissions({
+        const isValid = await validateUserPermissionsForMove({
           from: movedResourceId,
           to: destinationResourceId,
           userId: ctx.user.id,
@@ -351,6 +354,13 @@ export const resourceRouter = router({
   delete: protectedProcedure
     .input(deleteResourceSchema)
     .mutation(async ({ ctx, input: { siteId, resourceId } }) => {
+      await validateUserPermissions({
+        action: "delete",
+        userId: ctx.user.id,
+        siteId,
+        resourceId,
+      })
+
       const result = await db
         .deleteFrom("Resource")
         .where("Resource.id", "=", String(resourceId))
