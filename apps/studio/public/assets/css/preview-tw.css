@@ -1291,6 +1291,10 @@ video {
   margin-bottom: 1.75rem;
 }
 
+.mb-8 {
+  margin-bottom: 2rem;
+}
+
 .mb-\[0\.1875rem\] {
   margin-bottom: 0.1875rem;
 }
@@ -1748,6 +1752,10 @@ video {
   flex-grow: 1;
 }
 
+.basis-0 {
+  flex-basis: 0px;
+}
+
 .basis-\[calc\(\(100\%-2\.5rem\)\/2\)\] {
   flex-basis: calc((100% - 2.5rem) / 2);
 }
@@ -2075,6 +2083,10 @@ video {
   align-self: center;
 }
 
+.self-stretch {
+  align-self: stretch;
+}
+
 .overflow-auto {
   overflow: auto;
 }
@@ -2099,6 +2111,10 @@ video {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.text-ellipsis {
+  text-overflow: ellipsis;
 }
 
 .text-pretty {
@@ -4754,6 +4770,10 @@ video {
 
   .lg\:ml-4 {
     margin-left: 1rem;
+  }
+
+  .lg\:mr-24 {
+    margin-right: 6rem;
   }
 
   .lg\:mt-0 {
