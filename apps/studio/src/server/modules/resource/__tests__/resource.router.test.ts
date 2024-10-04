@@ -1521,4 +1521,86 @@ describe("resource.router", () => {
 
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
   })
+
+  describe("getWithFullPermalink", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.getWithFullPermalink({
+        resourceId: "1",
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 404 if resource does not exist", async () => {
+      // Arrange
+      await setupSite()
+
+      // Act
+      const result = caller.getWithFullPermalink({
+        resourceId: "99999",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "NOT_FOUND" }),
+      )
+    })
+
+    it("should return the details with full permalink of a first-level resource", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await caller.getWithFullPermalink({
+        resourceId: page.id,
+      })
+
+      // Assert
+      const expected = {
+        ...pick(page, ["id", "title"]),
+        fullPermalink: `${page.permalink}`,
+      }
+      expect(result).toMatchObject(expected)
+    })
+
+    it("should return the details with full permalink of a nested-level resource", async () => {
+      // Arrange
+      const { folder: parentFolder, site } = await setupFolder({
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const { folder: nestedFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: parentFolder.id,
+        permalink: "nested-folder",
+        title: "Nested folder",
+      })
+      const { page: nestedPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: nestedFolder.id,
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await caller.getWithFullPermalink({
+        resourceId: nestedPage.id,
+      })
+
+      // Assert
+      expect(result).toMatchObject({
+        id: nestedPage.id,
+        title: nestedPage.title,
+        fullPermalink: `${parentFolder.permalink}/${nestedFolder.permalink}/${nestedPage.permalink}`,
+      })
+    })
+
+    it.skip("should throw 403 if user does not have read access to the resource", async () => {})
+  })
 })

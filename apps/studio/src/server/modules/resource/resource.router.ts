@@ -308,7 +308,7 @@ export const resourceRouter = router({
   getWithFullPermalink: protectedProcedure
     .input(getFullPermalinkSchema)
     .query(async ({ input: { resourceId } }) => {
-      return db
+      const result = await db
         .withRecursive("resourcePath", (eb) =>
           eb
             .selectFrom("Resource as r")
@@ -339,6 +339,12 @@ export const resourceRouter = router({
         .select(["rp.id", "rp.title", "rp.fullPermalink"])
         .where("rp.id", "=", resourceId)
         .executeTakeFirst()
+
+      if (!result) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
+      return result
     }),
 
   getAncestryOf: protectedProcedure
