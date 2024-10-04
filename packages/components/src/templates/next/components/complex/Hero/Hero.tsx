@@ -86,7 +86,7 @@ const HeroBlock = ({
   return (
     <section className="flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row">
       <div className="flex flex-row bg-brand-canvas-inverse px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-12">
-        <div className="flex max-w-[532px] flex-col gap-9 text-base-content-inverse">
+        <div className="flex w-full max-w-[532px] flex-col justify-center gap-9 text-base-content-inverse">
           <div className="flex flex-col gap-6">
             <h1 className="prose-display-xl break-words">{title}</h1>
             {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
