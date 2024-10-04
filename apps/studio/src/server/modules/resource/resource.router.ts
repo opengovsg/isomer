@@ -296,11 +296,13 @@ export const resourceRouter = router({
               ]),
           ).as("parent"),
         )
-        .executeTakeFirstOrThrow()
+        .executeTakeFirst()
 
-      return {
-        resource,
+      if (!resource) {
+        throw new TRPCError({ code: "NOT_FOUND" })
       }
+
+      return resource
     }),
 
   getWithFullPermalink: protectedProcedure
