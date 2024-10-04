@@ -229,6 +229,8 @@ export const resourceRouter = router({
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "!=", "RootPage")
+        .orderBy("Resource.updatedAt", "desc")
+        .orderBy("Resource.title", "asc")
         .offset(offset)
         .limit(limit)
 
@@ -238,6 +240,7 @@ export const resourceRouter = router({
         query = query.where("Resource.parentId", "is", null)
       }
 
+      // TODO: Add pagination support
       return query
         .select([
           "Resource.id",
@@ -247,6 +250,7 @@ export const resourceRouter = router({
           "Resource.draftBlobId",
           "Resource.type",
           "Resource.parentId",
+          "Resource.updatedAt",
         ])
         .execute()
     }),
