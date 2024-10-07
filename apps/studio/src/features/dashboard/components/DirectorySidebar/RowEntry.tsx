@@ -4,6 +4,7 @@ import {
   AccordionButton,
   AccordionIcon,
   Box,
+  Flex,
   Icon,
   Text,
 } from "@chakra-ui/react"
@@ -12,6 +13,7 @@ import { Button, Spinner } from "@opengovsg/design-system-react"
 interface RowEntryProps {
   icon: IconType
   label: string
+  subLabel?: string
   href: string
   isFetchingChildren?: boolean
   isActive: boolean
@@ -22,14 +24,15 @@ interface RowEntryProps {
 export const RowEntry = ({
   icon,
   label,
+  subLabel,
   href,
   isFetchingChildren,
   isActive,
   isExpandable,
   level,
 }: RowEntryProps) => {
-  const accordionPosLeft = level * 1.25 + 0.75
-  const buttonSpacingLeft = accordionPosLeft + 0.625
+  const accordionPosLeft = level * 1.25 + 0.5
+  const buttonSpacingLeft = accordionPosLeft + 0.25
 
   return (
     <Box pos="relative">
@@ -39,13 +42,15 @@ export const RowEntry = ({
         gap="0.25rem"
         w="full"
         variant="clear"
+        minH="auto"
+        h="auto"
         px="0.5rem"
-        py="0.38rem"
+        py="0.375rem"
         justifyContent="flex-start"
         aria-selected={isActive}
         href={href}
         leftIcon={<Box w={`${buttonSpacingLeft}rem`} />}
-        iconSpacing="0rem"
+        iconSpacing="0.25rem"
         title={label}
         _selected={{
           bg: "interaction.muted.main.active",
@@ -57,28 +62,41 @@ export const RowEntry = ({
           as={icon}
           flexShrink={0}
         />
-        <Text
-          ml="0.25rem"
-          noOfLines={1}
+        <Flex
+          justify="space-between"
+          align="center"
+          flexDir="row"
+          flex={1}
+          gap="0.25rem"
           color={isActive ? "interaction.main.default" : "base.content.default"}
-          textAlign="left"
-          textStyle="subhead-2"
         >
-          {label}
-        </Text>
+          <Text
+            ml="0.25rem"
+            noOfLines={1}
+            textAlign="left"
+            textStyle="subhead-2"
+          >
+            {label}
+          </Text>
+          {subLabel && <Text textStyle="subhead-3">{subLabel}</Text>}
+        </Flex>
       </Button>
       {isExpandable && (
         <AccordionButton
           pos="absolute"
-          w="1.25rem"
+          display="flex"
+          alignItems="center"
+          w="1rem"
           p={0}
           left={`${accordionPosLeft}rem`}
-          top="0.75rem"
+          top="0.375rem"
+          bottom="0.375rem"
+          my="auto"
         >
           {isFetchingChildren ? (
             <Spinner />
           ) : (
-            <AccordionIcon color="interaction.support.unselected" />
+            <AccordionIcon w="1rem" color="interaction.support.unselected" />
           )}
         </AccordionButton>
       )}

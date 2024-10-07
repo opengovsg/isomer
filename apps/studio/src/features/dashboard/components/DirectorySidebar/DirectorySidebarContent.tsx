@@ -18,6 +18,7 @@ interface DirectorySidebarContentProps {
     permalink: string
     type: ResourceType
   }
+  subLabel?: string
 }
 
 export const DirectorySidebarContent = ({
@@ -26,6 +27,7 @@ export const DirectorySidebarContent = ({
   item,
   defaultIndex,
   level,
+  subLabel,
 }: DirectorySidebarContentProps) => {
   const [expandedIndex, setExpandedIndex] = useState<number | undefined>(
     defaultIndex,
@@ -91,6 +93,7 @@ export const DirectorySidebarContent = ({
             isActive={isActive}
             isExpandable={isExpandable}
             level={level}
+            subLabel={subLabel}
           />
           {hasChildren && (
             <AccordionPanel p={0}>
@@ -133,6 +136,7 @@ export const DirectorySidebarContent = ({
       isActive={isActive}
       isExpandable={isExpandable}
       level={level}
+      subLabel={subLabel}
     />
   )
 }

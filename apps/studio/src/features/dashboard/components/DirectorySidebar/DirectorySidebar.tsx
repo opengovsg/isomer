@@ -17,6 +17,7 @@ export const DirectorySidebar = ({
         item={{ permalink: "", type: "RootPage" }}
         defaultIndex={0}
         level={0}
+        subLabel="Home"
       />
     </Flex>
   )
