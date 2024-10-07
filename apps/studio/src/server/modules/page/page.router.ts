@@ -5,10 +5,6 @@ import Ajv from "ajv"
 import { get, isEmpty, isEqual } from "lodash"
 import { z } from "zod"
 
-import type {
-  CrudResourceActions,
-  PermissionsProps,
-} from "../permissions/permissions.type"
 import {
   basePageSchema,
   createPageSchema,
@@ -24,7 +20,7 @@ import { safeJsonParse } from "~/utils/safeJsonParse"
 import { startProjectById, stopRunningBuilds } from "../aws/codebuild.service"
 import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { definePermissionsFor } from "../permissions/permissions.service"
+import { validateUserPermissions } from "../permissions/permissions.service"
 import {
   getFooter,
   getFullPageById,
@@ -41,40 +37,6 @@ import { createDefaultPage } from "./page.service"
 
 const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
-
-const validateUserPermissions = async ({
-  action,
-  resourceId = null,
-  ...rest
-}: PermissionsProps & { action: CrudResourceActions }) => {
-  // TODO: this is using site wide permissions for now
-  // we should fetch the oldest `parent` of this resource eventually
-  const hasCustomParentId = resourceId === null || action === "create"
-  const resource = hasCustomParentId
-    ? // NOTE: If this is at root, we will always use `null` as the parent
-      // otherwise, this is a `create` action and the parent of the resource that
-      // we want to create is the resource passed in.
-      // However, because we don't have root level permissions for now,
-      // we will pass in `null` to signify the site level permissions
-      { parentId: resourceId ?? null }
-    : await db
-        .selectFrom("Resource")
-        .where("Resource.id", "=", resourceId)
-        .select(["Resource.parentId"])
-        .executeTakeFirstOrThrow()
-
-  const perms = await definePermissionsFor({
-    ...rest,
-  })
-
-  // TODO: create should check against the current resource id
-  if (perms.cannot(action, resource)) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "You do not have sufficient permissions to perform this action",
-    })
-  }
-}
 
 // TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
