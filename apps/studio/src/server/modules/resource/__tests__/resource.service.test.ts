@@ -1,7 +1,12 @@
-import { setupPageResource } from "tests/integration/helpers/seed"
+import { pick } from "lodash"
+import {
+  setupPageResource,
+  setupTestUser,
+} from "tests/integration/helpers/seed"
 
 import type { Resource } from "../../database"
-import { getSiteResourceById } from "../resource.service"
+import { db } from "../../database"
+import { getFullPageById, getSiteResourceById } from "../resource.service"
 
 describe("resource.service", () => {
   describe("getSiteResourceById", () => {
@@ -80,6 +85,98 @@ describe("resource.service", () => {
       const result = await getSiteResourceById({
         siteId: 99999,
         resourceId: actualPage.id,
+      })
+
+      // Assert
+      expect(result).toBeUndefined()
+    })
+  })
+
+  describe("getFullPageById", () => {
+    it("should return resource with draft blob if it exists", async () => {
+      // Arrange
+      const {
+        site,
+        page: actualPage,
+        blob: actualBlob,
+      } = await setupPageResource({
+        resourceType: "Page",
+        state: "Draft",
+      })
+
+      // Act
+      const result = await getFullPageById(db, {
+        siteId: site.id,
+        resourceId: Number(actualPage.id),
+      })
+
+      // Assert
+      const expected = {
+        ...actualPage,
+        ...pick(actualBlob, ["content", "updatedAt"]),
+      }
+      expect(result?.draftBlobId).toBeDefined()
+      expect(result?.publishedVersionId).toBeNull()
+      expect(result).toMatchObject(expected)
+    })
+
+    it("should return resource with published blob if draft blob does not exist", async () => {
+      // Arrange
+      const testUser = await setupTestUser()
+      const {
+        site,
+        page: actualPage,
+        blob: actualBlob,
+      } = await setupPageResource({
+        resourceType: "Page",
+        state: "Published",
+        userId: testUser.id,
+      })
+
+      // Act
+      const result = await getFullPageById(db, {
+        siteId: site.id,
+        resourceId: Number(actualPage.id),
+      })
+
+      // Assert
+      const expected = {
+        ...actualPage,
+        ...pick(actualBlob, ["content", "updatedAt"]),
+      }
+      expect(result?.draftBlobId).toBeNull()
+      expect(result?.publishedVersionId).toBeDefined()
+      expect(result).toMatchObject(expected)
+    })
+
+    it("should return undefined if resource with given `resourceId` does not exist", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+      expect(page.id).not.toEqual(99999)
+
+      // Act
+      const result = await getFullPageById(db, {
+        siteId: site.id,
+        resourceId: 99999,
+      })
+
+      // Assert
+      expect(result).toBeUndefined()
+    })
+
+    it("should return undefined if resource with given `resourceId` does not belong to the given `siteId`", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+      })
+      expect(page.siteId).not.toEqual(99999)
+
+      // Act
+      const result = await getFullPageById(db, {
+        siteId: 99999,
+        resourceId: Number(page.id),
       })
 
       // Assert
