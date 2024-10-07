@@ -22,6 +22,7 @@ export const folderRouter = router({
           title: folderTitle,
           parentId: parentFolderId ? String(parentFolderId) : null,
         })
+        .returning("id")
         .executeTakeFirstOrThrow()
         .catch((err) => {
           if (get(err, "code") === "23505") {
@@ -32,7 +33,7 @@ export const folderRouter = router({
           }
           throw err
         })
-      return { folderId: folder.insertId }
+      return { folderId: folder.id }
     }),
   getMetadata: protectedProcedure
     .input(readFolderSchema)
