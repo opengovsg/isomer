@@ -13,7 +13,7 @@ export const resourceHandlers = {
             | "Folder"
             | "Collection"
             | "CollectionPage",
-            // ID must be unique so infinite loop won't occur
+          // ID must be unique so infinite loop won't occur
           id: `${resourceId}-${item.title}-${item.id}`,
         }))
 
