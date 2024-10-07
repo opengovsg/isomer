@@ -1,3 +1,4 @@
+import { Can } from "@casl/react"
 import { Skeleton } from "@chakra-ui/react"
 import {
   Button,
@@ -5,6 +6,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 
+import { usePermissions } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
@@ -19,6 +21,7 @@ const SuspendablePublishButton = ({
 }: PublishButtonProps): JSX.Element => {
   const toast = useToast()
   const utils = trpc.useUtils()
+  const { ability } = usePermissions()
 
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
 
@@ -50,23 +53,23 @@ const SuspendablePublishButton = ({
     if (coercedSiteId && coercedPageId)
       mutate({ pageId: coercedPageId, siteId: coercedSiteId })
   }
+
   return (
-    <TouchableTooltip
-      hidden={!!currPage.draftBlobId}
-      // label="All changes have been published"
-      label="This feature is currently not available in beta"
-    >
-      <Button
-        variant="solid"
-        size="sm"
-        onClick={handlePublish}
-        isLoading={isLoading}
-        // TODO(ISOM-1552): Add back functionality when implemented
-        isDisabled
+    <Can do="publish" ability={ability} on="Resource">
+      <TouchableTooltip
+        hidden={!!currPage.draftBlobId}
+        label="All changes have been published"
       >
-        Publish
-      </Button>
-    </TouchableTooltip>
+        <Button
+          variant="solid"
+          size="sm"
+          onClick={handlePublish}
+          isLoading={isLoading}
+        >
+          Publish
+        </Button>
+      </TouchableTooltip>
+    </Can>
   )
 }
 
