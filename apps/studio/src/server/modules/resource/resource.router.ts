@@ -18,6 +18,46 @@ import {
 import { protectedProcedure, router } from "~/server/trpc"
 import { db, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { definePermissionsFor } from "../permissions/permissions.service"
+import { PermissionsProps } from "../permissions/permissions.type"
+
+const fetchResource = async (resourceId: string | null) => {
+  if (resourceId === null) return { parentId: null }
+
+  return (
+    db
+      .selectFrom("Resource")
+      .where("Resource.id", "=", resourceId)
+      .select("parentId")
+      // NOTE: if we don't have a resource,
+      // this means that they tried to fetch a resource that cannot be found
+      .executeTakeFirstOrThrow()
+  )
+}
+
+const validateUserPermissions = async ({
+  from,
+  to,
+  ...rest
+}: Omit<PermissionsProps, "resourceId"> & {
+  from: string
+  to: string | null
+}) => {
+  // TODO: this is using site wide permissions for now
+  // we should fetch the oldest `parent` of this resource eventually.
+  // Putting this in here first because eventually we'll have to lookup both
+  // even though for now they are the same thing
+  const permsFrom = await definePermissionsFor({ ...rest, resourceId: null })
+  const permsTo = await definePermissionsFor({ ...rest, resourceId: null })
+
+  const resourceFrom = await fetchResource(from)
+
+  return (
+    // NOTE: This is because we want to check whether we can move to within `to`
+    // and hence, the parent id is `to`
+    permsFrom.can("move", resourceFrom) && permsTo.can("move", { parentId: to })
+  )
+}
 
 export const resourceRouter = router({
   getMetadataById: protectedProcedure
@@ -118,52 +158,72 @@ export const resourceRouter = router({
 
   move: protectedProcedure
     .input(moveSchema)
-    .mutation(async ({ input: { movedResourceId, destinationResourceId } }) => {
-      return await db
-        .transaction()
-        .execute(async (tx) => {
-          const parent = await tx
-            .selectFrom("Resource")
-            .where("id", "=", destinationResourceId)
-            .select(["id", "type"])
-            .executeTakeFirst()
-
-          if (!parent || parent.type !== "Folder") {
-            throw new TRPCError({ code: "BAD_REQUEST" })
-          }
-
-          if (movedResourceId === destinationResourceId) {
-            throw new TRPCError({ code: "BAD_REQUEST" })
-          }
-
-          await tx
-            .updateTable("Resource")
-            .where("id", "=", String(movedResourceId))
-            .where("Resource.type", "in", ["Page", "Folder"])
-            .set({ parentId: String(destinationResourceId) })
-            .execute()
-          return tx
-            .selectFrom("Resource")
-            .where("id", "=", String(movedResourceId))
-            .select([
-              "parentId",
-              "Resource.id",
-              "Resource.type",
-              "Resource.permalink",
-              "Resource.title",
-            ])
-            .executeTakeFirst()
+    .mutation(
+      async ({
+        ctx,
+        input: { siteId, movedResourceId, destinationResourceId },
+      }) => {
+        const isValid = await validateUserPermissions({
+          from: movedResourceId,
+          to: destinationResourceId,
+          userId: ctx.user.id,
+          siteId,
         })
-        .catch((err) => {
-          if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "A resource with the same permalink already exists",
-            })
-          }
-          throw err
-        })
-    }),
+
+        if (!isValid) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "Please ensure that you have the required permissions to perform a move!",
+          })
+        }
+
+        return await db
+          .transaction()
+          .execute(async (tx) => {
+            const parent = await tx
+              .selectFrom("Resource")
+              .where("id", "=", destinationResourceId)
+              .select(["id", "type"])
+              .executeTakeFirst()
+
+            if (!parent || parent.type !== "Folder") {
+              throw new TRPCError({ code: "BAD_REQUEST" })
+            }
+
+            if (movedResourceId === destinationResourceId) {
+              throw new TRPCError({ code: "BAD_REQUEST" })
+            }
+
+            await tx
+              .updateTable("Resource")
+              .where("id", "=", String(movedResourceId))
+              .where("Resource.type", "in", ["Page", "Folder"])
+              .set({ parentId: String(destinationResourceId) })
+              .execute()
+            return tx
+              .selectFrom("Resource")
+              .where("id", "=", String(movedResourceId))
+              .select([
+                "parentId",
+                "Resource.id",
+                "Resource.type",
+                "Resource.permalink",
+                "Resource.title",
+              ])
+              .executeTakeFirst()
+          })
+          .catch((err) => {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
+      },
+    ),
 
   countWithoutRoot: protectedProcedure
     .input(countResourceSchema)
