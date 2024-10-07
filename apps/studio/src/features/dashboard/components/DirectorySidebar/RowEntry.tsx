@@ -42,17 +42,25 @@ export const RowEntry = ({
         px="0.5rem"
         py="0.38rem"
         justifyContent="flex-start"
-        isActive={isActive}
+        aria-selected={isActive}
         href={href}
         leftIcon={<Box w={`${buttonSpacingLeft}rem`} />}
         iconSpacing="0rem"
         title={label}
+        _selected={{
+          bg: "interaction.muted.main.active",
+          _hover: { bg: "interaction.muted.main.active" },
+        }}
       >
-        <Icon color="base.content.default" as={icon} flexShrink={0} />
+        <Icon
+          color={isActive ? "interaction.main.default" : "base.content.default"}
+          as={icon}
+          flexShrink={0}
+        />
         <Text
           ml="0.25rem"
           noOfLines={1}
-          textColor="base.content.default"
+          color={isActive ? "interaction.main.default" : "base.content.default"}
           textAlign="left"
           textStyle="subhead-2"
         >
