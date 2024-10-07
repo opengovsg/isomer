@@ -17,6 +17,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFile, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 
+import { DirectorySidebar } from "~/features/dashboard/components/DirectorySidebar"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
@@ -27,15 +28,7 @@ interface CmsSideNavProps {
 export const CmsSideNav = ({ siteId }: CmsSideNavProps) => {
   return (
     <Flex flexDir="column" px="1.25rem" py="1.75rem" height="full">
-      <Box mt="4px">
-        {/* TODO: update the resource id here */}
-        <SideNavItem
-          resourceId={null}
-          permalink={"/"}
-          siteId={siteId}
-          resourceType="RootPage"
-        />
-      </Box>
+      <DirectorySidebar siteId={siteId} />
     </Flex>
   )
 }
