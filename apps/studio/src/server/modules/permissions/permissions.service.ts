@@ -52,11 +52,17 @@ export const definePermissionsForSite = async ({
     .select("role")
     .execute()
 
+  // NOTE: Any role should be able to read site
+  if (roles.length > 0) {
+    builder.can("read", "Site")
+  }
+
   if (roles.some(({ role }) => role === "Admin")) {
     CRUD_ACTIONS.map((action) => {
       builder.can(action, "Site")
     })
   }
+
   return builder.build({ detectSubjectType: () => "Site" })
 }
 
