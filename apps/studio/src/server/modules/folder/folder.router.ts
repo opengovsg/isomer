@@ -73,7 +73,7 @@ export const folderRouter = router({
       async ({ ctx, input: { resourceId, permalink, title, siteId } }) => {
         await validateUserPermissions({
           siteId: Number(siteId),
-          action: "create",
+          action: "update",
           userId: ctx.user.id,
         })
 
