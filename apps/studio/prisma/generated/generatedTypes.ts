@@ -48,7 +48,12 @@ export type Permission = {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type Resource = {
+export interface RateLimiterFlexible {
+  key: string
+  points: number
+  expire: Timestamp | null
+}
+export interface Resource {
   id: GeneratedAlways<string>
   title: string
   permalink: string
@@ -61,7 +66,7 @@ export type Resource = {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type ResourcePermission = {
+export interface ResourcePermission {
   id: GeneratedAlways<string>
   userId: string
   siteId: number
@@ -115,11 +120,12 @@ export type Version = {
   publishedBy: string
   updatedAt: Generated<Timestamp>
 }
-export type DB = {
+export interface DB {
   Blob: Blob
   Footer: Footer
   Navbar: Navbar
   Permission: Permission
+  RateLimiterFlexible: RateLimiterFlexible
   Resource: Resource
   ResourcePermission: ResourcePermission
   Site: Site
