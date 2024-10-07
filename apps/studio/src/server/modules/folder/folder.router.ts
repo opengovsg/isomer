@@ -13,28 +13,71 @@ import { defaultFolderSelect } from "./folder.select"
 export const folderRouter = router({
   create: protectedProcedure
     .input(createFolderSchema)
-    .mutation(async ({ input: { folderTitle, parentFolderId, ...rest } }) => {
-      const folder = await db
-        .insertInto("Resource")
-        .values({
-          ...rest,
-          type: "Folder",
-          title: folderTitle,
-          parentId: parentFolderId ? String(parentFolderId) : null,
-        })
-        .returning("id")
-        .executeTakeFirstOrThrow()
-        .catch((err) => {
-          if (get(err, "code") === "23505") {
+    .mutation(
+      async ({ input: { folderTitle, parentFolderId, siteId, permalink } }) => {
+        const folder = await db.transaction().execute(async (tx) => {
+          // TODO: Validate user has permissions to site.
+          // Validate site is valid
+          const site = await tx
+            .selectFrom("Site")
+            .where("id", "=", siteId)
+            .select(["id"])
+            .executeTakeFirst()
+
+          if (!site) {
             throw new TRPCError({
-              code: "CONFLICT",
-              message: "A resource with the same permalink already exists",
+              code: "NOT_FOUND",
+              message: "Site does not exist",
             })
           }
-          throw err
+
+          // Validate parentFolderId is a folder
+          if (parentFolderId) {
+            const parentFolder = await tx
+              .selectFrom("Resource")
+              .where("Resource.id", "=", String(parentFolderId))
+              .where("Resource.siteId", "=", siteId)
+              .select(["Resource.type", "Resource.id"])
+              .executeTakeFirst()
+
+            if (!parentFolder) {
+              throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Parent folder does not exist",
+              })
+            }
+            if (parentFolder.type !== "Folder") {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Resource ID does not point to a folder",
+              })
+            }
+          }
+
+          return tx
+            .insertInto("Resource")
+            .values({
+              siteId,
+              permalink,
+              type: "Folder",
+              title: folderTitle,
+              parentId: parentFolderId ? String(parentFolderId) : null,
+            })
+            .returning("id")
+            .executeTakeFirstOrThrow()
+            .catch((err) => {
+              if (get(err, "code") === "23505") {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw err
+            })
         })
-      return { folderId: folder.id }
-    }),
+        return { folderId: folder.id }
+      },
+    ),
   getMetadata: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input }) => {
