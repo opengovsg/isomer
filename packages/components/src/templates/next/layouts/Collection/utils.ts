@@ -10,26 +10,14 @@ export const getAvailableFilters = (
 
   items.forEach(({ category, variant, lastUpdated }) => {
     // Step 1: Get all available categories
-<<<<<<< HEAD
     if (category in categories && categories[category]) {
-||||||| 293d58ec
-    if (category in categories) {
-=======
-    if (categories[category]) {
->>>>>>> main
       categories[category] += 1
     } else {
       categories[category] = 1
     }
 
     // Step 2: Get all available variants
-<<<<<<< HEAD
     if (variant in variants && variants[variant]) {
-||||||| 293d58ec
-    if (variant in variants) {
-=======
-    if (variants[variant]) {
->>>>>>> main
       variants[variant] += 1
     } else {
       variants[variant] = 1
@@ -38,13 +26,7 @@ export const getAvailableFilters = (
     // Step 3: Get all available years
     if (lastUpdated) {
       const year = new Date(lastUpdated).getFullYear().toString()
-<<<<<<< HEAD
       if (year in years && years[year]) {
-||||||| 293d58ec
-      if (year in years) {
-=======
-      if (years[year]) {
->>>>>>> main
         years[year] += 1
       } else {
         years[year] = 1
