@@ -3,11 +3,11 @@ import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import type { RoleType } from "../../database"
 import type { ResourceAbility } from "../permissions.type"
 import { CRUD_ACTIONS } from "../permissions.type"
-import { buildPermissionsFor } from "../permissions.util"
+import { buildPermissionsForResource } from "../permissions.util"
 
 const buildPermissions = (role: RoleType) => {
   const builder = new AbilityBuilder<ResourceAbility>(createMongoAbility)
-  buildPermissionsFor(role, builder)
+  buildPermissionsForResource(role, builder)
   return builder.build({ detectSubjectType: () => "Resource" })
 }
 
@@ -84,7 +84,7 @@ describe("permissions.service", () => {
     // the later role's permissions don't overwrite the earlier one
     const roles = ["Admin", "Editor"] as const
     const builder = new AbilityBuilder<ResourceAbility>(createMongoAbility)
-    roles.forEach((role) => buildPermissionsFor(role, builder))
+    roles.forEach((role) => buildPermissionsForResource(role, builder))
     const perms = builder.build({ detectSubjectType: () => "Resource" })
 
     // Act

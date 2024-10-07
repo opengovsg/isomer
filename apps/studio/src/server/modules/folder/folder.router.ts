@@ -10,7 +10,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
 import { db, ResourceState, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { validateUserPermissions } from "../permissions/permissions.service"
+import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
@@ -21,7 +21,7 @@ export const folderRouter = router({
         ctx,
         input: { siteId, folderTitle, parentFolderId, permalink },
       }) => {
-        await validateUserPermissions({
+        await validateUserPermissionsForResource({
           siteId,
           action: "create",
           userId: ctx.user.id,
@@ -58,7 +58,7 @@ export const folderRouter = router({
   getMetadata: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input }) => {
-      await validateUserPermissions({
+      await validateUserPermissionsForResource({
         siteId: input.siteId,
         action: "read",
         userId: ctx.user.id,
@@ -77,7 +77,7 @@ export const folderRouter = router({
     .input(editFolderSchema)
     .mutation(
       async ({ ctx, input: { resourceId, permalink, title, siteId } }) => {
-        await validateUserPermissions({
+        await validateUserPermissionsForResource({
           siteId: Number(siteId),
           action: "update",
           userId: ctx.user.id,
