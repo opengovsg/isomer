@@ -10,14 +10,14 @@ export const getAvailableFilters = (
 
   items.forEach(({ category, variant, lastUpdated }) => {
     // Step 1: Get all available categories
-    if (category in categories) {
+    if (category in categories && categories[category]) {
       categories[category] += 1
     } else {
       categories[category] = 1
     }
 
     // Step 2: Get all available variants
-    if (variant in variants) {
+    if (variant in variants && variants[variant]) {
       variants[variant] += 1
     } else {
       variants[variant] = 1
@@ -26,7 +26,7 @@ export const getAvailableFilters = (
     // Step 3: Get all available years
     if (lastUpdated) {
       const year = new Date(lastUpdated).getFullYear().toString()
-      if (year in years) {
+      if (year in years && years[year]) {
         years[year] += 1
       } else {
         years[year] = 1
