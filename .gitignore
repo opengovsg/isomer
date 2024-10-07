@@ -45,3 +45,6 @@ dist/
 
 # env file
 .env
+
+# Compiled components package
+**/*.tgz

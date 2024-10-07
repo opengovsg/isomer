@@ -9,6 +9,7 @@ import * as mailLib from "~/lib/mail"
 import { prisma } from "~/server/prisma"
 import { createTokenHash } from "../../auth.util"
 import { emailSessionRouter } from "../email.router"
+import { getIpFingerprint, LOCALHOST } from "../utils"
 
 describe("auth.email", () => {
   let caller: Awaited<ReturnType<typeof emailSessionRouter.createCaller>>
@@ -73,13 +74,14 @@ describe("auth.email", () => {
     const VALID_OTP = "123456"
     const VALID_TOKEN_HASH = createTokenHash(VALID_OTP, TEST_VALID_EMAIL)
     const INVALID_OTP = "987643"
+    const TEST_OTP_FINGERPRINT = getIpFingerprint(TEST_VALID_EMAIL, LOCALHOST)
 
     it("should successfully set session on valid OTP", async () => {
       // Arrange
       await prisma.verificationToken.create({
         data: {
           expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
-          identifier: TEST_VALID_EMAIL,
+          identifier: TEST_OTP_FINGERPRINT,
           token: VALID_TOKEN_HASH,
         },
       })
@@ -118,7 +120,7 @@ describe("auth.email", () => {
       await prisma.verificationToken.create({
         data: {
           expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
-          identifier: TEST_VALID_EMAIL,
+          identifier: TEST_OTP_FINGERPRINT,
           token: VALID_TOKEN_HASH,
         },
       })
@@ -141,7 +143,7 @@ describe("auth.email", () => {
       await prisma.verificationToken.create({
         data: {
           expires: new Date(Date.now() - 1000),
-          identifier: TEST_VALID_EMAIL,
+          identifier: TEST_OTP_FINGERPRINT,
           token: VALID_TOKEN_HASH,
         },
       })
@@ -163,7 +165,7 @@ describe("auth.email", () => {
       await prisma.verificationToken.create({
         data: {
           expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
-          identifier: TEST_VALID_EMAIL,
+          identifier: TEST_OTP_FINGERPRINT,
           token: VALID_TOKEN_HASH,
           attempts: 6, // Currently hardcoded to 5 attempts.
         },

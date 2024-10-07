@@ -133,11 +133,11 @@ const LoginStateDecorator: Decorator<Args> = (story, { parameters }) => {
 
   const setHasLoginStateFlag = useCallback(() => {
     setLoginStateFlag(true)
-  }, [setLoginStateFlag])
+  }, [])
 
   const removeLoginStateFlag = useCallback(() => {
     setLoginStateFlag(false)
-  }, [setLoginStateFlag])
+  }, [])
 
   return (
     <LoginStateContext.Provider

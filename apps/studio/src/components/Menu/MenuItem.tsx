@@ -16,30 +16,26 @@ export const MenuItem = ({
   // other styles such as size and placement
   const extraStyles = useMemo(() => {
     if (!colorScheme) return {}
-    switch (colorScheme) {
-      case "critical": {
-        return {
-          bg: $bg.reference,
-          color: "interaction.critical.default",
-          _hover: {
-            [$bg.variable]: `colors.interaction.muted.critical.hover`,
-          },
-          _focus: {
-            [$bg.variable]: `colors.interaction.muted.critical.hover`,
-            _active: {
-              [$bg.variable]: `colors.interaction.muted.critical.active`,
-            },
-          },
-          _focusVisible: {
-            _active: {
-              [$bg.variable]: `colors.interaction.muted.critical.active`,
-            },
-          },
-          _active: {
-            [$bg.variable]: `colors.interaction.muted.critical.active`,
-          },
-        }
-      }
+    return {
+      bg: $bg.reference,
+      color: "interaction.critical.default",
+      _hover: {
+        [$bg.variable]: `colors.interaction.muted.critical.hover`,
+      },
+      _focus: {
+        [$bg.variable]: `colors.interaction.muted.critical.hover`,
+        _active: {
+          [$bg.variable]: `colors.interaction.muted.critical.active`,
+        },
+      },
+      _focusVisible: {
+        _active: {
+          [$bg.variable]: `colors.interaction.muted.critical.active`,
+        },
+      },
+      _active: {
+        [$bg.variable]: `colors.interaction.muted.critical.active`,
+      },
     }
   }, [colorScheme])
 

@@ -236,9 +236,7 @@ export const moveResource = async (
 // Returns a sparse IsomerSitemap object that revolves around the given
 // resourceId, which includes:
 // - The full path from root to the actual resource
-// - The immediate children of the resource (if any)
 // - The immediate siblings of the resource (if any)
-// - The immediate children of those siblings (if any)
 export const getLocalisedSitemap = async (
   siteId: number,
   resourceId?: number,
@@ -287,15 +285,7 @@ export const getLocalisedSitemap = async (
             .select(defaultResourceSelect),
         ),
     )
-    // Step 2: Get the immediate children of the resource
-    .with("immediateChildren", (eb) =>
-      eb
-        .selectFrom("Resource")
-        .select(defaultResourceSelect)
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.parentId", "=", String(resourceId)),
-    )
-    // Step 3: Get the immediate siblings of the resource
+    // Step 2: Get the immediate siblings of the resource
     .with("immediateSiblings", (eb) =>
       eb
         .selectFrom("Resource")
@@ -309,37 +299,17 @@ export const getLocalisedSitemap = async (
         })
         .select(defaultResourceSelect),
     )
-    // Step 4: Get the immediate children of those siblings
-    .with("siblingChildren", (eb) =>
-      eb
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.parentId", "in", (fb) =>
-          fb.selectFrom("immediateSiblings").select("immediateSiblings.id"),
-        )
-        .select(defaultResourceSelect),
-    )
-    // Step 5: Combine all the resources in a single array
+    // Step 3: Combine all the resources in a single array
     .selectFrom("ancestors as Resource")
-    .union((eb) =>
-      eb
-        .selectFrom("immediateChildren as Resource")
-        .select(defaultResourceSelect),
-    )
     .union((eb) =>
       eb
         .selectFrom("immediateSiblings as Resource")
         .select(defaultResourceSelect),
     )
-    .union((eb) =>
-      eb
-        .selectFrom("siblingChildren as Resource")
-        .select(defaultResourceSelect),
-    )
     .select(defaultResourceSelect)
     .execute()
 
-  // Step 6: Construct the localised sitemap object
+  // Step 4: Construct the localised sitemap object
   const rootResource = await db
     .selectFrom("Resource")
     .where("Resource.siteId", "=", siteId)

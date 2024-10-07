@@ -1,18 +1,12 @@
 import Image from "next/image"
 import NextLink from "next/link"
 import { Flex, HStack } from "@chakra-ui/react"
-import {
-  AvatarMenu,
-  AvatarMenuDivider,
-  Button,
-  Link,
-  Menu,
-} from "@opengovsg/design-system-react"
+import { AvatarMenu, Button, Link, Menu } from "@opengovsg/design-system-react"
 import { BiLinkExternal } from "react-icons/bi"
 
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useMe } from "~/features/me/api"
-import { DASHBOARD, SETTINGS_PROFILE } from "~/lib/routes"
+import { DASHBOARD } from "~/lib/routes"
 
 export function AppNavbar(): JSX.Element {
   const { me, logout } = useMe()

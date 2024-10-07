@@ -35,13 +35,6 @@ export const sgidRouter = router({
           message: "SGID is not enabled",
         })
       }
-      if (!ctx.session) {
-        // Redirect back to sign in page.
-        throw new TRPCError({
-          code: "UNPROCESSABLE_CONTENT",
-          message: "Session object missing in context",
-        })
-      }
 
       ctx.logger.info(
         { landingUrl },

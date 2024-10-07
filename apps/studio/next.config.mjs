@@ -34,7 +34,8 @@ const ContentSecurityPolicy = `
     https://*.amazonaws.com
     https://*.wogaa.sg
     https://placehold.co
-    ${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}
+    https://cdn.growthbook.io/api/features/${env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY}
+    ${env.NODE_ENV === "production" ? "https://isomer-user-content.by.gov.sg" : "https://*.by.gov.sg"}
     ;
   worker-src 'self' blob:;
   ${env.NODE_ENV === "production" ? "upgrade-insecure-requests" : ""}

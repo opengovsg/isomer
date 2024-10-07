@@ -13,11 +13,13 @@ import { defaultMeSelect } from "../../me/me.select"
 import { VerificationError } from "../auth.error"
 import { verifyToken } from "../auth.service"
 import { createTokenHash, createVfnPrefix, createVfnToken } from "../auth.util"
+import { getOtpFingerPrint } from "./utils"
 
 export const emailSessionRouter = router({
   // Generate OTP.
   login: publicProcedure
     .input(emailSignInSchema)
+    .meta({ rateLimitOptions: {} })
     .mutation(async ({ ctx, input: { email } }) => {
       if (env.NODE_ENV === "production") {
         // check if whitelisted email on Growthbook
@@ -48,7 +50,7 @@ export const emailSessionRouter = router({
       await Promise.all([
         ctx.prisma.verificationToken.upsert({
           where: {
-            identifier: email,
+            identifier: getOtpFingerPrint(email, ctx.req),
           },
           update: {
             token: hashedToken,
@@ -56,7 +58,7 @@ export const emailSessionRouter = router({
             attempts: 0,
           },
           create: {
-            identifier: email,
+            identifier: getOtpFingerPrint(email, ctx.req),
             token: hashedToken,
             expires,
           },
@@ -77,9 +79,10 @@ export const emailSessionRouter = router({
     }),
   verifyOtp: publicProcedure
     .input(emailVerifyOtpSchema)
+    .meta({ rateLimitOptions: {} })
     .mutation(async ({ ctx, input: { email, token } }) => {
       try {
-        await verifyToken(ctx.prisma, {
+        await verifyToken(ctx.prisma, ctx.req, {
           token,
           email,
         })

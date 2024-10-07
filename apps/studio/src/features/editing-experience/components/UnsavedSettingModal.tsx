@@ -1,4 +1,3 @@
-import type { UseDisclosureReturn } from "@chakra-ui/react"
 import { useRouter } from "next/router"
 import {
   Modal,

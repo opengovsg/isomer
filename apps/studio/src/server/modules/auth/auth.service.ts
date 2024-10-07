@@ -1,16 +1,19 @@
+import type { NextApiRequest } from "next"
 import { type Prisma, type PrismaClient } from "@prisma/client"
 
 import { VerificationError } from "./auth.error"
 import { compareHash } from "./auth.util"
+import { getOtpFingerPrint } from "./email/utils"
 
 export const verifyToken = async (
   prisma: PrismaClient,
+  req: NextApiRequest,
   { token, email }: { token: string; email: string },
 ) => {
   try {
     const verificationToken = await prisma.verificationToken.update({
       where: {
-        identifier: email,
+        identifier: getOtpFingerPrint(email, req),
       },
       data: {
         attempts: {
@@ -30,13 +33,9 @@ export const verifyToken = async (
       throw new VerificationError("Token is invalid or has expired")
     }
 
-    if (verificationToken.attempts > 5) {
-      throw new VerificationError("Too many attempts")
-    }
-
     await prisma.verificationToken.delete({
       where: {
-        identifier: email,
+        identifier: getOtpFingerPrint(email, req),
       },
     })
 

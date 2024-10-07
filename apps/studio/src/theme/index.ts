@@ -9,6 +9,7 @@ import { layerStyles } from "./layerStyles"
 
 export const theme = extendTheme(ogpDsTheme, {
   shadows,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   components: {
     ...ogpDsTheme.components,
     ...components,

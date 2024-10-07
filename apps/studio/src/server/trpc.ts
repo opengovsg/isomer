@@ -12,35 +12,44 @@ import { initTRPC, TRPCError } from "@trpc/server"
 import superjson from "superjson"
 import { ZodError } from "zod"
 
+import type { RateLimitMetaOptions } from "./modules/rate-limit/types"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 import getIP from "~/utils/getClientIp"
 import { type Context } from "./context"
 import { defaultMeSelect } from "./modules/me/me.select"
+import { checkRateLimit } from "./modules/rate-limit/rate-limit.service"
 import { prisma } from "./prisma"
 
-const t = initTRPC.context<Context>().create({
-  /**
-   * @see https://trpc.io/docs/v10/data-transformers
-   */
-  transformer: superjson,
-  /**
-   * @see https://trpc.io/docs/v10/error-formatting
-   */
-  errorFormatter({ shape, error }) {
-    return {
-      ...shape,
-      data: {
-        ...shape.data,
-        zodError:
-          error.code === "BAD_REQUEST" && error.cause instanceof ZodError
-            ? error.cause.flatten()
-            : null,
-      },
-    }
-  },
-})
+interface Meta {
+  rateLimitOptions?: RateLimitMetaOptions
+}
+
+const t = initTRPC
+  .context<Context>()
+  .meta<Meta>()
+  .create({
+    /**
+     * @see https://trpc.io/docs/v10/data-transformers
+     */
+    transformer: superjson,
+    /**
+     * @see https://trpc.io/docs/v10/error-formatting
+     */
+    errorFormatter({ shape, error }) {
+      return {
+        ...shape,
+        data: {
+          ...shape.data,
+          zodError:
+            error.code === "BAD_REQUEST" && error.cause instanceof ZodError
+              ? error.cause.flatten()
+              : null,
+        },
+      }
+    },
+  })
 
 // Setting outer context with tRPC will not get us correct path during request batching,
 // only by setting logger context in the middleware do we get the exact path to log
@@ -164,33 +173,50 @@ const nonStrictAuthMiddleware = t.middleware(async ({ next, ctx }) => {
   })
 })
 
+const rateLimitMiddleware = t.middleware(async ({ next, ctx, meta }) => {
+  if (meta?.rateLimitOptions === undefined) {
+    return next()
+  }
+
+  if (
+    env.NODE_ENV === "test" &&
+    !meta.rateLimitOptions._internalUseRateLimiterInTestEnv
+  ) {
+    return next()
+  }
+
+  await checkRateLimit({
+    req: ctx.req,
+    rateLimitOptions: meta.rateLimitOptions,
+    prisma: ctx.prisma,
+  })
+
+  return next()
+})
+
 /**
  * Create a router
  * @see https://trpc.io/docs/v10/router
  */
 export const router = t.router
 
+const baseProcedure = t.procedure
+  .use(loggerWithVersionMiddleware)
+  .use(contentTypeHeaderMiddleware)
+  .use(rateLimitMiddleware)
+
 /**
  * Create an unprotected procedure
  * @see https://trpc.io/docs/v10/procedures
  * */
-export const publicProcedure = t.procedure
-  .use(loggerWithVersionMiddleware)
-  .use(contentTypeHeaderMiddleware)
-  .use(baseMiddleware)
+export const publicProcedure = baseProcedure.use(baseMiddleware)
 
 /**
  * Create a protected procedure
  * */
-export const protectedProcedure = t.procedure
-  .use(loggerWithVersionMiddleware)
-  .use(contentTypeHeaderMiddleware)
-  .use(authMiddleware)
+export const protectedProcedure = baseProcedure.use(authMiddleware)
 
-export const agnosticProcedure = t.procedure
-  .use(loggerWithVersionMiddleware)
-  .use(contentTypeHeaderMiddleware)
-  .use(nonStrictAuthMiddleware)
+export const agnosticProcedure = baseProcedure.use(nonStrictAuthMiddleware)
 
 /**
  * @see https://trpc.io/docs/v10/middlewares

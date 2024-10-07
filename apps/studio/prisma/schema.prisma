@@ -203,3 +203,9 @@ enum RoleType {
   Editor
   Publisher
 }
+
+model RateLimiterFlexible {
+  key    String    @id
+  points Int
+  expire DateTime?
+}

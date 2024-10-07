@@ -127,6 +127,7 @@ const useBaseEditor = ({
   useEditor({
     immediatelyRender: false,
     extensions: [...BASE_EXTENSIONS, ...extensions],
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     content: data,
     onUpdate: (e) => {
       const jsonContent = e.editor.getJSON()
@@ -136,6 +137,7 @@ const useBaseEditor = ({
 
 export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
   useBaseEditor({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange,
     extensions: [
@@ -150,6 +152,7 @@ export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
 export const useCalloutEditor = ({ data, handleChange }: BaseEditorProps) => {
   return useBaseEditor({
     extensions: [IsomerHorizontalRule],
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange,
   })
@@ -158,6 +161,7 @@ export const useCalloutEditor = ({ data, handleChange }: BaseEditorProps) => {
 export const useAccordionEditor = ({ data, handleChange }: BaseEditorProps) => {
   return useBaseEditor({
     extensions: [TableRow, IsomerTable, IsomerTableCell, IsomerTableHeader],
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange,
   })
@@ -165,6 +169,7 @@ export const useAccordionEditor = ({ data, handleChange }: BaseEditorProps) => {
 
 export const useProseEditor = ({ data, handleChange }: BaseEditorProps) =>
   useBaseEditor({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange,
     extensions: [IsomerHeading],
