@@ -1,7 +1,4 @@
-"use client"
-
 import type { IconType } from "react-icons"
-import { composeRenderProps } from "react-aria-components"
 import { BiLinkExternal } from "react-icons/bi"
 import {
   FaFacebook,
@@ -21,9 +18,9 @@ import type {
 import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
 import { tv } from "~/lib/tv"
-import { getFormattedDate, isExternalUrl } from "~/utils"
-import { focusVisibleHighlight } from "~/utils/rac"
-import { BaseLink } from "../Link"
+import { twMerge } from "~/lib/twMerge"
+import { focusVisibleHighlight, getFormattedDate, isExternalUrl } from "~/utils"
+import { Link } from "../Link"
 
 const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
   facebook: FaFacebook,
@@ -42,16 +39,10 @@ const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
 
 const footerItemLinkStyle = tv({
   extend: focusVisibleHighlight,
-  base: "prose-body-sm line-clamp-1 flex w-fit items-center gap-1 text-base-content-inverse outline-none",
+  base: "prose-body-sm line-clamp-1 flex w-fit items-center gap-1 text-base-content-inverse outline-none hover:text-base-content-inverse hover:underline hover:underline-offset-4 focus-visible:-m-0.5 focus-visible:p-0.5 focus-visible:shadow-none",
   variants: {
     showExternalIcon: {
       true: `after:content-['_↗']`,
-    },
-    isHovered: {
-      true: "text-base-content-inverse underline underline-offset-4",
-    },
-    isFocusVisible: {
-      true: "-m-0.5 p-0.5 shadow-none",
     },
   },
 })
@@ -63,30 +54,27 @@ const FooterItem = ({
 }: FooterItemType & Pick<FooterProps, "LinkComponent">) => {
   if (isExternalUrl(url)) {
     return (
-      <BaseLink
+      <Link
         LinkComponent={LinkComponent}
         href={url}
-        target="_blank"
-        rel="noopener nofollow"
-        className={composeRenderProps("", (className, renderProps) =>
-          footerItemLinkStyle({ className, ...renderProps }),
-        )}
+        isExternal
+        className={footerItemLinkStyle()}
+        isWithFocusVisibleHighlight
       >
         {title}
         <BiLinkExternal className="h-auto w-3.5 flex-shrink-0 lg:w-4" />
-      </BaseLink>
+      </Link>
     )
   }
   return (
-    <BaseLink
-      className={composeRenderProps("", (className, renderProps) =>
-        footerItemLinkStyle({ className, ...renderProps }),
-      )}
+    <Link
+      className={footerItemLinkStyle()}
       href={url}
       LinkComponent={LinkComponent}
+      isWithFocusVisibleHighlight
     >
       {title}
-    </BaseLink>
+    </Link>
   )
 }
 
@@ -136,19 +124,17 @@ const SocialMediaSection = ({
         {socialMediaLinks.map((link) => {
           const Icon = SocialMediaTypeToIconMap[link.type]
           return (
-            <BaseLink
+            <Link
               key={link.url}
               href={link.url}
-              target="_blank"
-              rel="noopener nofollow"
-              aria-label={`${link.type} page`}
-              className={composeRenderProps("", (className, renderProps) =>
-                footerItemLinkStyle({ className, ...renderProps }),
-              )}
+              isExternal
+              label={`${link.type} page`}
+              className={footerItemLinkStyle()}
               LinkComponent={LinkComponent}
+              isWithFocusVisibleHighlight
             >
               <Icon className="h-auto w-6" />
-            </BaseLink>
+            </Link>
           )
         })}
       </div>
@@ -274,16 +260,15 @@ const CreditsSection = ({
 }: Pick<FooterProps, "LinkComponent">) => {
   return (
     <div className="prose-label-md-regular flex flex-col gap-6 lg:flex-row lg:gap-8 xl:gap-20">
-      <BaseLink
+      <Link
         href="https://www.isomer.gov.sg"
-        target="_blank"
-        rel="noopener nofollow"
-        className={composeRenderProps(
+        isExternal
+        className={twMerge(
+          footerItemLinkStyle(),
           "group flex flex-col items-start gap-4",
-          (className, renderProps) =>
-            footerItemLinkStyle({ className, ...renderProps }),
         )}
         LinkComponent={LinkComponent}
+        isWithFocusVisibleHighlight
       >
         <p>
           Made with <span className="sr-only">Isomer</span>
@@ -292,17 +277,16 @@ const CreditsSection = ({
           aria-hidden
           className="group-focus-visible:fill-base-content-strong"
         />
-      </BaseLink>
-      <BaseLink
+      </Link>
+      <Link
         href="https://www.open.gov.sg"
-        target="_blank"
-        rel="noopener nofollow"
-        className={composeRenderProps(
-          "flex flex-col items-start gap-4",
-          (className, renderProps) =>
-            footerItemLinkStyle({ className, ...renderProps }),
+        isExternal
+        className={twMerge(
+          footerItemLinkStyle(),
+          "group flex flex-col items-start gap-4",
         )}
         LinkComponent={LinkComponent}
+        isWithFocusVisibleHighlight
       >
         <p>
           Built by <span className="sr-only">Open Government Products</span>
@@ -311,7 +295,7 @@ const CreditsSection = ({
           aria-hidden
           className="group-focus-visible:fill-base-content-strong"
         />
-      </BaseLink>
+      </Link>
     </div>
   )
 }

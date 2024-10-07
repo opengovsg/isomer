@@ -1,11 +1,8 @@
-"use client"
-
-import { composeRenderProps } from "react-aria-components"
 import { BiMinus } from "react-icons/bi"
 
 import type { TableOfContentsProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { focusVisibleHighlight } from "~/utils/rac"
+import { focusVisibleHighlight } from "~/utils"
 import { Link } from "../Link"
 
 const linkStyle = tv({
@@ -26,12 +23,7 @@ const TableOfContents = ({ items, LinkComponent }: TableOfContentsProps) => {
             <Link
               href={anchorLink}
               LinkComponent={LinkComponent}
-              className={composeRenderProps("", (className, renderProps) =>
-                linkStyle({
-                  className,
-                  ...renderProps,
-                }),
-              )}
+              className={linkStyle()}
             >
               {content}
             </Link>

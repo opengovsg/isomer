@@ -93,6 +93,7 @@ const Infobar = ({
                 href={getReferenceLinkHref(buttonUrl, site.siteMap)}
                 size={simplifiedLayout === "homepage" ? "lg" : "base"}
                 LinkComponent={LinkComponent}
+                isWithFocusVisibleHighlight
               >
                 {buttonLabel}
               </LinkButton>
@@ -104,6 +105,7 @@ const Infobar = ({
                 size={simplifiedLayout === "homepage" ? "lg" : "base"}
                 variant="outline"
                 LinkComponent={LinkComponent}
+                isWithFocusVisibleHighlight
               >
                 {secondaryButtonLabel}
               </LinkButton>

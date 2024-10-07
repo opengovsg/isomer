@@ -20,14 +20,14 @@ export const BaseParagraph = ({
   const transform = (node: HTMLElement, children: Node[]): React.ReactNode => {
     if (node.tagName === "a") {
       const href = node.getAttribute("href") ?? undefined
-      const isExternalLink = href && isExternalUrl(href)
+      const isExternalLink = !!href && isExternalUrl(href)
 
       return (
         <Link
           LinkComponent={LinkComponent}
           href={href}
-          rel={isExternalLink ? "noopener nofollow" : undefined}
-          target={isExternalLink ? "_blank" : undefined}
+          isExternal={isExternalLink}
+          isWithFocusVisibleHighlight
         >
           {children}
         </Link>

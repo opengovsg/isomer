@@ -51,7 +51,7 @@ const transformContent = (content: ContentPageSchemaType["content"]) => {
     if (block.type === "prose" && block.content) {
       const transformedBlock = {
         ...block,
-        content: block.content.map((component) => {
+        content: block.content.map((component, index) => {
           if (
             component.type === "heading" &&
             component.attrs.level === 2 &&
@@ -59,7 +59,7 @@ const transformContent = (content: ContentPageSchemaType["content"]) => {
           ) {
             // generate a unique hash to auto-generate anchor links
             const anchorId = getDigestFromText(
-              `${JSON.stringify(component)}_${getRandomNumberBetIntervals(1, 1000)}`,
+              `${JSON.stringify(component)}_${index}`,
             )
             const newAttrs = {
               ...component.attrs,

@@ -46,8 +46,7 @@ const ImageContainer = ({
     {href !== undefined ? (
       <Link
         href={href}
-        target={isExternalUrl(href) ? "_blank" : undefined}
-        rel={isExternalUrl(href) ? "noopener nofollow" : undefined}
+        isExternal={isExternalUrl(href)}
         LinkComponent={LinkComponent}
       >
         {children}

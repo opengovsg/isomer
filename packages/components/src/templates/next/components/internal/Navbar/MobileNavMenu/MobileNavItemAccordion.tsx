@@ -2,9 +2,8 @@ import { BiChevronDown } from "react-icons/bi"
 
 import type { NavbarItem, NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
-import { isExternalUrl } from "~/utils"
-import { focusVisibleHighlightNonRac } from "~/utils/rac"
-import { BaseLink, Link } from "../../Link"
+import { focusVisibleHighlight, isExternalUrl } from "~/utils"
+import { Link } from "../../Link"
 
 interface NavItemAccordionProps
   extends NavbarItem,
@@ -47,16 +46,16 @@ export const MobileNavItemAccordion = ({
   if (!items || items.length === 0) {
     return (
       <div className={container()}>
-        <BaseLink
+        <Link
           isExternal={isExternalUrl(url)}
           LinkComponent={LinkComponent}
           className={item({
-            className: focusVisibleHighlightNonRac(),
+            className: focusVisibleHighlight(),
           })}
           href={url}
         >
           {name}
-        </BaseLink>
+        </Link>
       </div>
     )
   }
@@ -71,7 +70,7 @@ export const MobileNavItemAccordion = ({
             onClick={onClick}
             className={item({
               isOpen,
-              className: focusVisibleHighlightNonRac(),
+              className: focusVisibleHighlight(),
             })}
           >
             {name}
@@ -99,9 +98,8 @@ export const MobileNavItemAccordion = ({
                     LinkComponent={LinkComponent}
                     href={subItem.url}
                     isExternal={isExternal}
-                    showExternalIcon={isExternal}
                     className={nestedItem({
-                      className: focusVisibleHighlightNonRac(),
+                      className: focusVisibleHighlight(),
                     })}
                   >
                     {subItem.name}

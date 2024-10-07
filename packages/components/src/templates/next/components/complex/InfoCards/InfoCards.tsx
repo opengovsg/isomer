@@ -1,5 +1,3 @@
-"use client"
-
 import type { PropsWithChildren } from "react"
 import { BiRightArrowAlt } from "react-icons/bi"
 
@@ -12,15 +10,15 @@ import { tv } from "~/lib/tv"
 import {
   getReferenceLinkHref,
   getTailwindVariantLayout,
+  groupFocusVisibleHighlight,
   isExternalUrl,
 } from "~/utils"
-import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { ImageClient } from "../Image"
 
 const infoCardTitleStyle = tv({
-  extend: groupFocusVisibleHighlightNonRac,
+  extend: groupFocusVisibleHighlight,
   base: "prose-headline-lg-semibold text-base-content-strong",
   variants: {
     isClickableCard: {

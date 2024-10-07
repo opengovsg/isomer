@@ -6,13 +6,13 @@ import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 
 import type { FilterProps } from "../../../types/Filter"
 import { tv } from "~/lib/tv"
-import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
+import { groupFocusVisibleHighlight } from "~/utils"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { FilterDrawer } from "./FilterDrawer"
 
 const filterSectionLabelStyle = tv({
-  extend: groupFocusVisibleHighlightNonRac,
+  extend: groupFocusVisibleHighlight,
 })
 
 export const Filter = ({

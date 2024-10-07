@@ -70,6 +70,7 @@ export const Infopic = ({
             <LinkButton
               LinkComponent={LinkComponent}
               href={getReferenceLinkHref(buttonUrl, site.siteMap)}
+              isWithFocusVisibleHighlight
             >
               {buttonLabel}
             </LinkButton>

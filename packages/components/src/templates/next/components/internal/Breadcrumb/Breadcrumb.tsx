@@ -4,19 +4,17 @@ import type { ElementType } from "react"
 import type {
   BreadcrumbProps as AriaBreadcrumbProps,
   BreadcrumbsProps,
-  LinkProps,
 } from "react-aria-components"
 import {
   Breadcrumb as AriaBreadcrumb,
   Breadcrumbs as AriaBreadcrumbs,
-  composeRenderProps,
 } from "react-aria-components"
 import { BiChevronRight } from "react-icons/bi"
 
-import type { BreadcrumbProps } from "~/interfaces"
+import type { BreadcrumbProps, LinkProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { focusVisibleHighlight } from "~/utils/rac"
+import { focusVisibleHighlight } from "~/utils"
 import { Link } from "../Link"
 
 const breadcrumbLinkStyles = tv({
@@ -41,15 +39,8 @@ function BaseBreadcrumb({
     <AriaBreadcrumb {...props} className="flex items-center gap-1">
       <Link
         {...props}
-        title={typeof props.children === "string" ? props.children : undefined}
-        className={composeRenderProps(
-          props.className,
-          (className, renderProps) =>
-            breadcrumbLinkStyles({
-              className,
-              ...renderProps,
-            }),
-        )}
+        label={typeof props.children === "string" ? props.children : undefined}
+        className={breadcrumbLinkStyles()}
         LinkComponent={LinkComponent}
       />
       {props.href && (
@@ -66,7 +57,7 @@ const Breadcrumb = ({ links, LinkComponent }: BreadcrumbProps) => {
         <BaseBreadcrumb
           LinkComponent={LinkComponent}
           key={index}
-          aria-current={index === links.length - 1 ? "page" : undefined}
+          current={index === links.length - 1 ? "page" : undefined}
           href={index === links.length - 1 ? undefined : url}
         >
           {title}
