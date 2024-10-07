@@ -10,6 +10,7 @@ import { RowEntry } from "./RowEntry"
 import { useIsActive } from "./useIsActive"
 
 interface DirectorySidebarContentProps {
+  level: number
   siteId: string
   resourceId: string | null
   defaultIndex?: number
@@ -24,6 +25,7 @@ export const DirectorySidebarContent = ({
   resourceId,
   item,
   defaultIndex,
+  level,
 }: DirectorySidebarContentProps) => {
   const [expandedIndex, setExpandedIndex] = useState<number | undefined>(
     defaultIndex,
@@ -88,9 +90,10 @@ export const DirectorySidebarContent = ({
             isFetchingChildren={isFetchingChildren}
             isActive={isActive}
             isExpandable={isExpandable}
+            level={level}
           />
           {hasChildren && (
-            <AccordionPanel>
+            <AccordionPanel p={0}>
               {data?.pages.map((page) =>
                 page.items.map((item) => {
                   return (
@@ -99,6 +102,7 @@ export const DirectorySidebarContent = ({
                       siteId={siteId}
                       resourceId={item.id}
                       item={item}
+                      level={level + 1}
                     />
                   )
                 }),
@@ -128,6 +132,7 @@ export const DirectorySidebarContent = ({
       label={item.permalink}
       isActive={isActive}
       isExpandable={isExpandable}
+      level={level}
     />
   )
 }

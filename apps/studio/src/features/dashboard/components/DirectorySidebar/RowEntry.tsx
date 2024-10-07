@@ -16,6 +16,7 @@ interface RowEntryProps {
   isFetchingChildren?: boolean
   isActive: boolean
   isExpandable: boolean
+  level: number
 }
 
 export const RowEntry = ({
@@ -25,7 +26,11 @@ export const RowEntry = ({
   isFetchingChildren,
   isActive,
   isExpandable,
+  level,
 }: RowEntryProps) => {
+  const accordionPosLeft = level * 1.25 + 0.75
+  const buttonSpacingLeft = accordionPosLeft + 0.625
+
   return (
     <Box pos="relative">
       <Button
@@ -34,13 +39,13 @@ export const RowEntry = ({
         gap="0.25rem"
         w="full"
         variant="clear"
-        pl="0.75rem"
-        pr="0.5rem"
+        px="0.5rem"
         py="0.38rem"
         justifyContent="flex-start"
         isActive={isActive}
         href={href}
-        rightIcon={isExpandable ? <Box w="1rem" /> : undefined}
+        leftIcon={<Box w={`${buttonSpacingLeft}rem`} />}
+        iconSpacing="0rem"
       >
         <Icon color="base.content.default" as={icon} flexShrink={0} />
         <Text
@@ -56,9 +61,9 @@ export const RowEntry = ({
       {isExpandable && (
         <AccordionButton
           pos="absolute"
-          w="fit-content"
+          w="1.25rem"
           p={0}
-          right="0.75rem"
+          left={`${accordionPosLeft}rem`}
           top="0.75rem"
         >
           {isFetchingChildren ? (
