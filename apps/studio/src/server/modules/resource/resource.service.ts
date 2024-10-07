@@ -41,23 +41,6 @@ const defaultFooterSelect = [
   "Footer.content",
 ] satisfies SelectExpression<DB, "Footer">[]
 
-export const getPages = () => {
-  // TODO: write a test to verify this query behaviour
-  return db
-    .selectFrom("Resource")
-    .where("type", "is", "Page")
-    .select(defaultResourceSelect)
-    .execute()
-}
-
-export const getFolders = () =>
-  // TODO: write a test to verify this query behaviour
-  db
-    .selectFrom("Resource")
-    .where("type", "is", "Folder")
-    .select(defaultResourceSelect)
-    .execute()
-
 export const getSiteResourceById = ({
   siteId,
   resourceId,
