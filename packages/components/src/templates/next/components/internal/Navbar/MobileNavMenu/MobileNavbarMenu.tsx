@@ -1,3 +1,5 @@
+"use client"
+
 import type { Dispatch, SetStateAction } from "react"
 import { forwardRef } from "react"
 import { FocusScope } from "react-aria"
@@ -5,7 +7,7 @@ import { Button } from "react-aria-components"
 import { useScrollLock } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces"
-import { focusVisibleHighlightNonRac } from "~/utils/rac"
+import { focusVisibleHighlight } from "~/utils"
 import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
 
 interface MobileNavMenuProps
@@ -56,7 +58,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
               />
             ))}
             <Button
-              className={focusVisibleHighlightNonRac({
+              className={focusVisibleHighlight({
                 className:
                   "prose-headline-base-medium absolute -left-[100000px] flex h-[1px] w-[1px] items-center justify-between gap-6 overflow-hidden px-6 py-3 text-left text-base-content focus:static focus:h-auto focus:w-full",
               })}

@@ -1,3 +1,5 @@
+"use client"
+
 import type { InputProps } from "react-aria-components"
 import { Input as AriaInput, composeRenderProps } from "react-aria-components"
 

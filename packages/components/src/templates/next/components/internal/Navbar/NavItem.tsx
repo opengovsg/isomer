@@ -1,3 +1,5 @@
+"use client"
+
 import { forwardRef } from "react"
 import { FocusScope } from "react-aria"
 import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
@@ -8,10 +10,9 @@ import type {
   NavbarProps,
 } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
-import { isExternalUrl } from "~/utils"
-import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
+import { groupFocusVisibleHighlight, isExternalUrl } from "~/utils"
 import { IconButton } from "../IconButton"
-import { BaseLink, Link } from "../Link"
+import { Link } from "../Link"
 
 interface NavbarItemProps
   extends BaseNavbarItemProps,
@@ -57,14 +58,15 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
     if (!items || items.length === 0) {
       return (
         <li>
-          <BaseLink
+          <Link
             LinkComponent={LinkComponent}
             isExternal={isExternalUrl(url)}
+            showExternalIcon={isExternalUrl(url)}
             href={url}
             className={item({ isOpen })}
           >
-            <span className={groupFocusVisibleHighlightNonRac()}>{name}</span>
-          </BaseLink>
+            <span className={groupFocusVisibleHighlight()}>{name}</span>
+          </Link>
         </li>
       )
     }
@@ -72,7 +74,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
     return (
       <li>
         <button ref={ref} className={item({ isOpen })} onClick={onClick}>
-          <span className={groupFocusVisibleHighlightNonRac()}>{name}</span>
+          <span className={groupFocusVisibleHighlight()}>{name}</span>
           <BiChevronDown className={chevron({ isOpen })} />
         </button>
         {isOpen && (
@@ -140,10 +142,10 @@ const Megamenu = ({
                   <li key={subItem.name}>
                     <div className="flex flex-col gap-1.5">
                       <Link
-                        withFocusVisibleHighlight
                         LinkComponent={LinkComponent}
                         isExternal={isExternal}
                         showExternalIcon={isExternal}
+                        isWithFocusVisibleHighlight
                         href={subItem.url}
                         className="group prose-label-md-medium inline-flex w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
                       >

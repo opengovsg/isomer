@@ -1,13 +1,14 @@
-"use client"
-
 import { BiRightArrowAlt } from "react-icons/bi"
 
 import type { SupportedIconName } from "~/common/icons"
 import type { InfoColsProps } from "~/interfaces"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
-import { groupFocusVisibleHighlightNonRac } from "~/utils/rac"
+import {
+  getReferenceLinkHref,
+  getTailwindVariantLayout,
+  groupFocusVisibleHighlight,
+} from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 
@@ -25,7 +26,7 @@ const createInfoColsStyles = tv({
     infoBoxIcon:
       "h-auto w-6 text-base-content-strong group-hover:text-brand-interaction",
     infoBoxTitle: [
-      groupFocusVisibleHighlightNonRac(),
+      groupFocusVisibleHighlight(),
       "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-interaction",
     ],
     infoBoxDescription: "prose-body-base text-base-content",

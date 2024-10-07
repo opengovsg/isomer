@@ -41,6 +41,7 @@ const HeroGradient = ({
                   href={getReferenceLinkHref(buttonUrl, site.siteMap)}
                   size="lg"
                   LinkComponent={LinkComponent}
+                  isWithFocusVisibleHighlight
                 >
                   {buttonLabel}
                 </LinkButton>
@@ -54,6 +55,7 @@ const HeroGradient = ({
                       site.siteMap,
                     )}
                     LinkComponent={LinkComponent}
+                    isWithFocusVisibleHighlight
                   >
                     {secondaryButtonLabel}
                   </LinkButton>

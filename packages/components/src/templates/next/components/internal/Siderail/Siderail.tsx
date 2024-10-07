@@ -1,13 +1,8 @@
-"use client"
-
-import { useMemo } from "react"
-import { composeRenderProps } from "react-aria-components"
-
 import type { Item } from "./types"
 import type { SiderailProps } from "~/interfaces"
 import type { LinkComponentType } from "~/types"
 import { tv } from "~/lib/tv"
-import { focusVisibleHighlight } from "~/utils/rac"
+import { focusVisibleHighlight } from "~/utils"
 import { Link } from "../Link"
 
 const MAX_SIBLINGS_LIMIT = 10
@@ -64,12 +59,7 @@ const generateSiderailItems = (
           <Link
             LinkComponent={LinkComponent}
             href={url}
-            className={composeRenderProps("", (className, renderProps) =>
-              siblingLinkStyle({
-                className,
-                ...renderProps,
-              }),
-            )}
+            className={siblingLinkStyle()}
           >
             {title}
           </Link>
@@ -84,10 +74,7 @@ export const Siderail = ({
   pages,
   LinkComponent,
 }: SiderailProps): JSX.Element => {
-  const siderailItems = useMemo(
-    () => generateSiderailItems(pages, LinkComponent),
-    [pages],
-  )
+  const siderailItems = generateSiderailItems(pages, LinkComponent)
 
   return (
     <nav className="text-base-content" role="navigation">
@@ -98,12 +85,7 @@ export const Siderail = ({
             <Link
               href={parentUrl}
               LinkComponent={LinkComponent}
-              className={composeRenderProps("", (className, renderProps) =>
-                parentLinkStyle({
-                  className,
-                  ...renderProps,
-                }),
-              )}
+              className={parentLinkStyle()}
             >
               {parentTitle}
             </Link>
@@ -126,12 +108,7 @@ export const Siderail = ({
                 <Link
                   href={parentUrl}
                   LinkComponent={LinkComponent}
-                  className={composeRenderProps("", (className, renderProps) =>
-                    seeAllLinkStyle({
-                      className,
-                      ...renderProps,
-                    }),
-                  )}
+                  className={seeAllLinkStyle()}
                 >
                   See all pages
                 </Link>

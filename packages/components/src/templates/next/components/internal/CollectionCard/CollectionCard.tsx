@@ -1,11 +1,10 @@
 "use client"
 
-import { composeRenderProps, Text } from "react-aria-components"
+import { Text } from "react-aria-components"
 
 import type { CollectionCardProps as BaseCollectionCardProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getFormattedDate, isExternalUrl } from "~/utils"
-import { focusVisibleHighlight } from "~/utils/rac"
+import { focusVisibleHighlight, getFormattedDate, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { Link } from "../Link"
 
@@ -46,12 +45,7 @@ export const CollectionCard = ({
           <Link
             LinkComponent={LinkComponent}
             href={url}
-            className={composeRenderProps("", (className, renderProps) =>
-              collectionCardLinkStyle({
-                className,
-                ...renderProps,
-              }),
-            )}
+            className={collectionCardLinkStyle()}
           >
             <span title={itemTitle}>{itemTitle}</span>
           </Link>

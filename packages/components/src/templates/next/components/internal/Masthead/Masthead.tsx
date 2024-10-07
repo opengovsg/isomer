@@ -148,6 +148,7 @@ const RestrictedHeaderBar = ({ children }: PropsWithChildren) => {
 
 const RestrictedContent = () => {
   const { isMastheadContentVisible, LinkComponent } = useMasthead()
+
   return (
     <div
       id={MASTHEAD_CONTROL_ID}
@@ -177,12 +178,11 @@ const RestrictedContent = () => {
               Government agencies communicate via .gov.sg websites (e.g.
               go.gov.sg/open).&nbsp;
               <Link
-                withFocusVisibleHighlight
                 LinkComponent={LinkComponent}
                 href="https://www.gov.sg/trusted-sites#govsites"
-                className="inline-flex items-center underline underline-offset-4 outline-none"
-                rel="noreferrer"
-                target="_blank"
+                className="inline-flex items-center text-link underline underline-offset-4 outline-none hover:text-link-hover"
+                isExternal
+                isWithFocusVisibleHighlight
               >
                 Trusted websites
                 <svg

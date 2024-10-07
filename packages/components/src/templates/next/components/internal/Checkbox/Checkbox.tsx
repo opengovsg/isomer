@@ -14,7 +14,7 @@ import {
 import { BiCheck, BiMinus } from "react-icons/bi"
 
 import { tv } from "~/lib/tv"
-import { focusRing } from "~/utils/focusRing"
+import { focusRing } from "~/utils"
 import { composeTailwindRenderProps } from "~/utils/rac"
 
 export interface CheckboxGroupProps

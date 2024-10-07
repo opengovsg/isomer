@@ -12,6 +12,7 @@ export {
 export type { FooterProps } from "./Footer"
 export { HardBreakSchema, type HardBreakProps } from "./HardBreak"
 export type { HeaderProps } from "./Header"
+export type { LinkProps } from "./Link"
 export type { LocalSearchInputBoxProps } from "./LocalSearchInputBox"
 export type { MastheadProps } from "./Masthead"
 export type { NavbarProps } from "./Navbar"
