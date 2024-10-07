@@ -1,14 +1,14 @@
 import type { RequestOptions, ResponseOptions } from "node-mocks-http"
+import type { SetOptional } from "type-fest"
 import { type NextApiRequest, type NextApiResponse } from "next"
-import { nanoid } from "nanoid"
 import { createMocks } from "node-mocks-http"
 
 import type { Context } from "~/server/context"
 import type { User } from "~server/db"
 import { type Session } from "~/lib/types/session"
 import { createContextInner } from "~/server/context"
-import { auth } from "./auth"
 import { mockGrowthBook } from "./growthbook/mockInstance"
+import { setupTestUser } from "./seed"
 
 class MockIronStore {
   private static instance?: MockIronStore
@@ -95,19 +95,10 @@ export const applySession = () => {
   return session
 }
 
-export const createTestUser = () => ({
-  email: `test${nanoid()}@example.com`,
-  name: "Test User",
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  phone: "123456789",
-  preferredName: null,
-})
-
 // NOTE: The argument to this function was changed from
 // `Partial<User>` to `User`
-export const applyAuthedSession = async (user?: User) => {
-  const authedUser = await auth(user ?? createTestUser())
+export const applyAuthedSession = async (user?: SetOptional<User, "id">) => {
+  const authedUser = await setupTestUser(user)
   const session = applySession()
   session.userId = authedUser.id
   await session.save()
