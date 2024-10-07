@@ -13,8 +13,8 @@ export const ALL_ACTIONS = [...CRUD_ACTIONS, "move"] as const
 export type ResourcePermissionTuple = [AllowedResourceActions, Subjects]
 export type ResourceAbility = PureAbility<ResourcePermissionTuple>
 
-export type SiteSettingsPermissionTuple = [CrudResourceActions, "SiteSettings"]
-export type SiteSettingsAbility = PureAbility<SiteSettingsPermissionTuple>
+export type SitePermissionTuple = [CrudResourceActions, "Site"]
+export type SiteAbility = PureAbility<SitePermissionTuple>
 
 export interface PermissionsProps {
   userId: string

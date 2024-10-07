@@ -5,7 +5,7 @@ import type {
   CrudResourceActions,
   PermissionsProps,
   ResourceAbility,
-  SiteSettingsAbility,
+  SiteAbility,
 } from "./permissions.type"
 import { db } from "../database"
 import { CRUD_ACTIONS } from "./permissions.type"
@@ -39,11 +39,11 @@ export const definePermissionsForResource = async ({
   return builder.build({ detectSubjectType: () => "Resource" })
 }
 
-export const definePermissionsForSiteSettings = async ({
+export const definePermissionsForSite = async ({
   userId,
   siteId,
 }: Omit<PermissionsProps, "resourceId">) => {
-  const builder = new AbilityBuilder<SiteSettingsAbility>(createMongoAbility)
+  const builder = new AbilityBuilder<SiteAbility>(createMongoAbility)
   const roles = await db
     .selectFrom("ResourcePermission")
     .where("userId", "=", userId)
@@ -54,10 +54,10 @@ export const definePermissionsForSiteSettings = async ({
 
   if (roles.some(({ role }) => role === "Admin")) {
     CRUD_ACTIONS.map((action) => {
-      builder.can(action, "SiteSettings")
+      builder.can(action, "Site")
     })
   }
-  return builder.build({ detectSubjectType: () => "SiteSettings" })
+  return builder.build({ detectSubjectType: () => "Site" })
 }
 
 export const validateUserPermissionsForResource = async ({
