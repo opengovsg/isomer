@@ -7,7 +7,7 @@ import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { validateUserPermissions } from "../permissions/permissions.service"
+import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
   defaultResourceSelect,
   getSiteResourceById,
@@ -22,7 +22,7 @@ export const collectionRouter = router({
   getMetadata: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await validateUserPermissions({
+      await validateUserPermissionsForResource({
         siteId,
         action: "read",
         userId: ctx.user.id,
@@ -45,7 +45,7 @@ export const collectionRouter = router({
     .input(createCollectionSchema)
     .mutation(
       async ({ ctx, input: { collectionTitle, permalink, siteId } }) => {
-        await validateUserPermissions({
+        await validateUserPermissionsForResource({
           siteId,
           action: "create",
           userId: ctx.user.id,
@@ -75,7 +75,7 @@ export const collectionRouter = router({
   createCollectionPage: protectedProcedure
     .input(createCollectionPageSchema)
     .mutation(async ({ ctx, input }) => {
-      await validateUserPermissions({
+      await validateUserPermissionsForResource({
         siteId: input.siteId,
         action: "create",
         userId: ctx.user.id,
@@ -129,7 +129,7 @@ export const collectionRouter = router({
   list: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input: { resourceId, siteId, limit, offset } }) => {
-      await validateUserPermissions({
+      await validateUserPermissionsForResource({
         siteId,
         action: "read",
         userId: ctx.user.id,

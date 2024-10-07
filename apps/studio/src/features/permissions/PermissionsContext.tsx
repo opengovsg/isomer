@@ -4,7 +4,7 @@ import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { RoleType } from "@prisma/client"
 
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
-import { buildPermissionsFor } from "~/server/modules/permissions/permissions.util"
+import { buildPermissionsForResource } from "~/server/modules/permissions/permissions.util"
 import { trpc } from "~/utils/trpc"
 
 interface PermissionsContextReturn {
@@ -19,7 +19,7 @@ interface PermissionsProviderProps {
 const getPermissions = (roles: { role: RoleType }[]) => {
   const builder = new AbilityBuilder<ResourceAbility>(createMongoAbility)
   roles.forEach(({ role }) => {
-    buildPermissionsFor(role, builder)
+    buildPermissionsForResource(role, builder)
   })
   return builder.build({ detectSubjectType: () => "Resource" })
 }

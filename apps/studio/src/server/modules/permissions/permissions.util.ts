@@ -4,7 +4,7 @@ import type { RoleType } from "../database"
 import type { ResourceAbility } from "./permissions.type"
 import { ALL_ACTIONS } from "./permissions.type"
 
-export const buildPermissionsFor = (
+export const buildPermissionsForResource = (
   role: RoleType,
   builder: AbilityBuilder<ResourceAbility>,
 ) => {

@@ -20,8 +20,8 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { db, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
-  definePermissionsFor,
-  validateUserPermissions,
+  definePermissionsForResource,
+  validateUserPermissionsForResource,
 } from "../permissions/permissions.service"
 
 const fetchResource = async (resourceId: string | null) => {
@@ -50,8 +50,14 @@ const validateUserPermissionsForMove = async ({
   // we should fetch the oldest `parent` of this resource eventually.
   // Putting this in here first because eventually we'll have to lookup both
   // even though for now they are the same thing
-  const permsFrom = await definePermissionsFor({ ...rest, resourceId: null })
-  const permsTo = await definePermissionsFor({ ...rest, resourceId: null })
+  const permsFrom = await definePermissionsForResource({
+    ...rest,
+    resourceId: null,
+  })
+  const permsTo = await definePermissionsForResource({
+    ...rest,
+    resourceId: null,
+  })
 
   const resourceFrom = await fetchResource(from)
 
@@ -291,7 +297,7 @@ export const resourceRouter = router({
   delete: protectedProcedure
     .input(deleteResourceSchema)
     .mutation(async ({ ctx, input: { siteId, resourceId } }) => {
-      await validateUserPermissions({
+      await validateUserPermissionsForResource({
         action: "delete",
         userId: ctx.user.id,
         siteId,

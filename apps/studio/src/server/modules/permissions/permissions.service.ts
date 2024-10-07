@@ -7,13 +7,13 @@ import type {
   ResourceAbility,
 } from "./permissions.type"
 import { db } from "../database"
-import { buildPermissionsFor } from "./permissions.util"
+import { buildPermissionsForResource } from "./permissions.util"
 
 // NOTE: Fetches roles for the given resource
 // and returns the permissions wihch the user has for the given resource.
 // If the resourceId is `null` or `undefined`,
 // we will instead fetch the roles for the given site
-export const definePermissionsFor = async ({
+export const definePermissionsForResource = async ({
   userId,
   siteId,
   resourceId,
@@ -32,12 +32,12 @@ export const definePermissionsFor = async ({
 
   const roles = await query.selectAll().execute()
 
-  roles.map(({ role }) => buildPermissionsFor(role, builder))
+  roles.map(({ role }) => buildPermissionsForResource(role, builder))
 
   return builder.build({ detectSubjectType: () => "Resource" })
 }
 
-export const validateUserPermissions = async ({
+export const validateUserPermissionsForResource = async ({
   action,
   resourceId = null,
   ...rest
@@ -58,7 +58,7 @@ export const validateUserPermissions = async ({
         .select(["Resource.parentId"])
         .executeTakeFirstOrThrow()
 
-  const perms = await definePermissionsFor({
+  const perms = await definePermissionsForResource({
     ...rest,
   })
 
