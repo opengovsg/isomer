@@ -14,7 +14,7 @@ export const DirectorySidebar = ({
       <DirectorySidebarContent
         siteId={siteId}
         resourceId={null}
-        item={{ permalink: "/", type: "RootPage" }}
+        item={{ permalink: "", type: "RootPage" }}
         defaultIndex={0}
         level={0}
       />

@@ -46,6 +46,7 @@ export const RowEntry = ({
         href={href}
         leftIcon={<Box w={`${buttonSpacingLeft}rem`} />}
         iconSpacing="0rem"
+        title={label}
       >
         <Icon color="base.content.default" as={icon} flexShrink={0} />
         <Text

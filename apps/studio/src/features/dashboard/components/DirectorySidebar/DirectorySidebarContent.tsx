@@ -86,7 +86,7 @@ export const DirectorySidebarContent = ({
           <RowEntry
             href={href}
             icon={ICON_MAPPINGS[item.type]}
-            label={item.permalink}
+            label={`/${item.permalink}`}
             isFetchingChildren={isFetchingChildren}
             isActive={isActive}
             isExpandable={isExpandable}
@@ -129,7 +129,7 @@ export const DirectorySidebarContent = ({
     <RowEntry
       href={href}
       icon={ICON_MAPPINGS[item.type]}
-      label={item.permalink}
+      label={`/${item.permalink}`}
       isActive={isActive}
       isExpandable={isExpandable}
       level={level}
