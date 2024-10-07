@@ -422,7 +422,7 @@ export const SearchingEmptyCollection: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const searchElem = screen.getByRole("searchbox", {
-      name: /search for publications and other press releases/i,
+      name: /Start typing to search/i,
     })
     await userEvent.type(searchElem, "anything")
   },
@@ -432,7 +432,7 @@ export const NoResults: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const searchElem = screen.getByRole("searchbox", {
-      name: /search for publications and other press releases/i,
+      name: /Start typing to search/i,
     })
     await userEvent.type(searchElem, "some whacky search term")
   },
