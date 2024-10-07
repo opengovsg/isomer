@@ -6,7 +6,11 @@ import {
 
 import type { Resource } from "../../database"
 import { db } from "../../database"
-import { getFullPageById, getSiteResourceById } from "../resource.service"
+import {
+  getFullPageById,
+  getPageById,
+  getSiteResourceById,
+} from "../resource.service"
 
 describe("resource.service", () => {
   describe("getSiteResourceById", () => {
@@ -175,6 +179,104 @@ describe("resource.service", () => {
 
       // Act
       const result = await getFullPageById(db, {
+        siteId: 99999,
+        resourceId: Number(page.id),
+      })
+
+      // Assert
+      expect(result).toBeUndefined()
+    })
+  })
+
+  describe("getPageById", () => {
+    it("should return the 'Page' resource with the given `id`", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await getPageById(db, {
+        siteId: site.id,
+        resourceId: Number(page.id),
+      })
+
+      // Assert
+      expect(result).toMatchObject(page)
+    })
+
+    it("should return the 'RootPage' resource with the given `id`", async () => {
+      // Arrange
+      const { site, page: rootPage } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+
+      // Act
+      const result = await getPageById(db, {
+        siteId: site.id,
+        resourceId: Number(rootPage.id),
+      })
+
+      // Assert
+      expect(result).toMatchObject(rootPage)
+    })
+
+    it("should return the 'CollectionPage' resource with the given `id`", async () => {
+      // Arrange
+      const { site, page: collectionPage } = await setupPageResource({
+        resourceType: "CollectionPage",
+      })
+
+      // Act
+      const result = await getPageById(db, {
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert
+      expect(result).toMatchObject(collectionPage)
+    })
+
+    it("should return undefined if resource type is not a supported type", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Folder",
+      })
+
+      // Act
+      const result = await getPageById(db, {
+        siteId: site.id,
+        resourceId: Number(page.id),
+      })
+
+      // Assert
+      expect(result).toBeUndefined()
+    })
+
+    it("should return undefined if no resource with the given `id` exists", async () => {
+      // Arrange
+      const { site } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await getPageById(db, {
+        siteId: site.id,
+        resourceId: 99999,
+      })
+
+      // Assert
+      expect(result).toBeUndefined()
+    })
+
+    it("should return undefined if the resource with the given `id` does not belong to the given `siteId`", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await getPageById(db, {
         siteId: 99999,
         resourceId: Number(page.id),
       })
