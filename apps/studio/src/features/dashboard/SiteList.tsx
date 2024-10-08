@@ -8,6 +8,11 @@ import { trpc } from "~/utils/trpc"
 const SuspendableSiteList = (): JSX.Element => {
   // TODO: Only return sites that the user has access to
   const [sites] = trpc.site.list.useSuspenseQuery()
+
+  if (sites.length === 0) {
+    return <></>
+  }
+
   return (
     <SimpleGrid columns={3} gap="2.5rem" width="100%">
       {sites.map((site) => (
