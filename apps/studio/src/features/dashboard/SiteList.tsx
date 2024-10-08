@@ -133,7 +133,7 @@ const SuspendableSiteList = (): JSX.Element => {
                 width="100%"
               >
                 <Image
-                  src={site.config.logoUrl || "/placeholder_no_image.png"}
+                  src={site.config.logoUrl || "/isomer-sites-placeholder.png"}
                   alt={site.name}
                   borderRadius="0.5rem"
                   border="1.5px solid #EDEDED"
