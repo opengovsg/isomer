@@ -16,10 +16,6 @@ export const resourceHandlers = {
           // ID must be unique so infinite loop won't occur
           id: `${resourceId}-${item.title}-${item.id}`,
         }))
-
-        // if (resourceId !== null) {
-        //   items =
-        // }
         return {
           items,
           nextOffset: null,
