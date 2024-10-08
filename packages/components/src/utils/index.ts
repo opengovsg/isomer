@@ -1,6 +1,7 @@
 export { getBreadcrumbFromSiteMap } from "./getBreadcrumbFromSiteMap"
 export { getDigestFromText } from "./getDigestFromText"
 export { getFormattedDate } from "./getFormattedDate"
+export { getParsedDate } from "./getParsedDate"
 export { getRandomNumberBetIntervals } from "./getRandomNumber"
 export { getReferenceLinkHref } from "./getReferenceLinkHref"
 export { getSanitizedIframeWithTitle } from "./getSanitizedIframeWithTitle"
