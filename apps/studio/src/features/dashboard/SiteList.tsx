@@ -3,6 +3,7 @@ import {
   Card,
   CardHeader,
   Flex,
+  Image,
   SimpleGrid,
   Skeleton,
   Text,
@@ -115,13 +116,45 @@ const SuspendableSiteList = (): JSX.Element => {
       <Flex flexDirection="column" gap="2rem">
         <SimpleGrid columns={3} gap="2.5rem" width="100%">
           {sites.map((site) => (
-            <Card key={site.id} width="100%">
-              <CardHeader>
-                <Link href={`/sites/${site.id}`} as={NextLink}>
-                  {site.name}
-                </Link>
-              </CardHeader>
-            </Card>
+            <Link
+              href={`/sites/${site.id}`}
+              as={NextLink}
+              textDecoration="none"
+              color="links.neutral-hover"
+              _hover={{
+                textDecoration: "none",
+                color: "links.neutral-hover",
+              }}
+            >
+              <Flex
+                key={site.id}
+                flexDirection="column"
+                gap="1rem"
+                width="100%"
+              >
+                <Image
+                  src={site.config.logoUrl || "/placeholder_no_image.png"}
+                  alt={site.name}
+                  borderRadius="0.5rem"
+                  border="1.5px solid #EDEDED"
+                  width="100%"
+                  height="100%"
+                  objectFit="cover"
+                  aspectRatio="1/1"
+                />
+                <Flex flexDirection="column" gap="0.5rem">
+                  <Text
+                    textStyle="h6"
+                    noOfLines={1}
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                  >
+                    {site.name}
+                  </Text>
+                  {/* <Text textStyle="body-2"></Text> */}
+                </Flex>
+              </Flex>
+            </Link>
           ))}
         </SimpleGrid>
       </Flex>
