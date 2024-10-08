@@ -38,6 +38,7 @@ export const RowEntry = ({
     <Box pos="relative">
       <Button
         as={NextLink}
+        data-peer
         data-group
         gap="0.25rem"
         w="full"
@@ -95,6 +96,9 @@ export const RowEntry = ({
           top="0.375rem"
           bottom="0.375rem"
           my="auto"
+          _peerFocus={{
+            zIndex: 1,
+          }}
         >
           {isFetchingChildren ? (
             <Spinner />
