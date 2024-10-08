@@ -20,6 +20,7 @@ const ISOMER_ADMINS = [
   "harish",
   "zhongjun",
   "hanpu",
+  "adriangoh",
 ]
 
 const PAGE_BLOB: IsomerSchema = {
