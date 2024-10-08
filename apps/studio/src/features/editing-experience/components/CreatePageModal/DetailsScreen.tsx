@@ -102,84 +102,86 @@ export const CreatePageDetailsScreen = () => {
       </ModalHeader>
       <ModalBody p={0} overflow="hidden" bg="white">
         <Flex height="100%">
-          <Stack height="100%" gap="2rem" mt="10vh" px="3rem" py="1rem">
-            <Stack>
-              <Text as="h2" textStyle="h4">
-                What is your page about?
-              </Text>
-              <Text textStyle="body-2">You can change these later.</Text>
-            </Stack>
-            <Stack gap="1.5rem">
-              {/* Section 1: Page Title */}
-              <FormControl isInvalid={!!errors.title}>
-                <FormLabel color="base.content.strong">
-                  Page title
-                  <FormHelperText color="base.content.default">
-                    Title should be descriptive
-                  </FormHelperText>
-                </FormLabel>
+          <Stack height={0} minH="100%" overflow="auto">
+            <Stack gap="2rem" px="3rem" pb="2rem" pt="10vh">
+              <Stack>
+                <Text as="h2" textStyle="h4">
+                  What is your page about?
+                </Text>
+                <Text textStyle="body-2">You can change these later.</Text>
+              </Stack>
+              <Stack gap="1.5rem">
+                {/* Section 1: Page Title */}
+                <FormControl isInvalid={!!errors.title}>
+                  <FormLabel color="base.content.strong">
+                    Page title
+                    <FormHelperText color="base.content.default">
+                      Title should be descriptive
+                    </FormHelperText>
+                  </FormLabel>
 
-                <Input
-                  placeholder="This is a title for your new page"
-                  {...register("title")}
-                  maxLength={MAX_TITLE_LENGTH}
-                />
-                {errors.title?.message ? (
-                  <FormErrorMessage>{errors.title.message}</FormErrorMessage>
-                ) : (
-                  <FormHelperText mt="0.5rem" color="base.content.medium">
-                    {MAX_TITLE_LENGTH - title.length} characters left
-                  </FormHelperText>
-                )}
-              </FormControl>
-
-              {/* Section 2: Page URL */}
-              <FormControl isInvalid={!!errors.permalink}>
-                <FormLabel>
-                  Page URL
-                  <FormHelperText>
-                    URL should be short and simple
-                  </FormHelperText>
-                </FormLabel>
-                <InputGroup>
-                  <InputLeftAddon
-                    bg="interaction.support.disabled"
-                    color="base.divider.strong"
-                  >
-                    your-site.gov.sg/
-                  </InputLeftAddon>
-                  <Controller
-                    control={control}
-                    name="permalink"
-                    render={({ field: { onChange, ...field } }) => (
-                      <Input
-                        maxLength={MAX_PAGE_URL_LENGTH}
-                        borderLeftRadius={0}
-                        placeholder="URL will be autopopulated if left untouched"
-                        {...field}
-                        onChange={(e) => {
-                          onChange(
-                            generateResourceUrl(e.target.value).slice(
-                              0,
-                              MAX_PAGE_URL_LENGTH,
-                            ),
-                          )
-                        }}
-                      />
-                    )}
+                  <Input
+                    placeholder="This is a title for your new page"
+                    {...register("title")}
+                    maxLength={MAX_TITLE_LENGTH}
                   />
-                </InputGroup>
+                  {errors.title?.message ? (
+                    <FormErrorMessage>{errors.title.message}</FormErrorMessage>
+                  ) : (
+                    <FormHelperText mt="0.5rem" color="base.content.medium">
+                      {MAX_TITLE_LENGTH - title.length} characters left
+                    </FormHelperText>
+                  )}
+                </FormControl>
 
-                {errors.permalink?.message ? (
-                  <FormErrorMessage>
-                    {errors.permalink.message}
-                  </FormErrorMessage>
-                ) : (
-                  <FormHelperText mt="0.5rem" color="base.content.medium">
-                    {MAX_PAGE_URL_LENGTH - url.length} characters left
-                  </FormHelperText>
-                )}
-              </FormControl>
+                {/* Section 2: Page URL */}
+                <FormControl isInvalid={!!errors.permalink}>
+                  <FormLabel>
+                    Page URL
+                    <FormHelperText>
+                      URL should be short and simple
+                    </FormHelperText>
+                  </FormLabel>
+                  <InputGroup>
+                    <InputLeftAddon
+                      bg="interaction.support.disabled"
+                      color="base.divider.strong"
+                    >
+                      your-site.gov.sg/
+                    </InputLeftAddon>
+                    <Controller
+                      control={control}
+                      name="permalink"
+                      render={({ field: { onChange, ...field } }) => (
+                        <Input
+                          maxLength={MAX_PAGE_URL_LENGTH}
+                          borderLeftRadius={0}
+                          placeholder="URL will be autopopulated if left untouched"
+                          {...field}
+                          onChange={(e) => {
+                            onChange(
+                              generateResourceUrl(e.target.value).slice(
+                                0,
+                                MAX_PAGE_URL_LENGTH,
+                              ),
+                            )
+                          }}
+                        />
+                      )}
+                    />
+                  </InputGroup>
+
+                  {errors.permalink?.message ? (
+                    <FormErrorMessage>
+                      {errors.permalink.message}
+                    </FormErrorMessage>
+                  ) : (
+                    <FormHelperText mt="0.5rem" color="base.content.medium">
+                      {MAX_PAGE_URL_LENGTH - url.length} characters left
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              </Stack>
             </Stack>
           </Stack>
           <PreviewLayout />

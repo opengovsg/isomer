@@ -12,7 +12,7 @@ export const AdminLayout: GetLayout = (page) => {
     <EnforceLoginStatePageWrapper>
       <LayoutHead />
 
-      <Flex minH="$100vh" flexDir="column" bg="base.canvas.alt" pos="relative">
+      <Flex flex={1} flexDir="column" bg="base.canvas.alt" pos="relative">
         <AppNavbar />
         <AppGrid flex={1}>
           <Flex

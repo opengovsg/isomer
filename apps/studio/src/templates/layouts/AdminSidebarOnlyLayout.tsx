@@ -16,7 +16,13 @@ export const AdminSidebarOnlyLayout: GetLayout = (page) => {
   return (
     <EnforceLoginStatePageWrapper>
       <LayoutHead />
-      <Flex minH="$100vh" flexDir="row" bg="base.canvas.alt" pos="relative">
+      <Flex
+        flex={1}
+        flexDir="row"
+        bg="base.canvas.alt"
+        pos="relative"
+        overflow="hidden"
+      >
         <CmsSidebarWrapper>{page}</CmsSidebarWrapper>
       </Flex>
     </EnforceLoginStatePageWrapper>

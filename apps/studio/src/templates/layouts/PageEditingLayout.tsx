@@ -11,16 +11,24 @@ export const PageEditingLayout: GetLayout = (page) => {
   return (
     <EnforceLoginStatePageWrapper>
       <LayoutHead />
-      <Tabs>
-        <Flex minH="100vh" flexDir="column" bg="base.canvas.alt" pos="relative">
+      <Tabs flex={1} height={0}>
+        <Flex
+          flexDir="column"
+          bg="base.canvas.alt"
+          pos="relative"
+          height={0}
+          minH="100%"
+        >
           <Grid
             flex={1}
+            height={0}
+            minH="100%"
             width="100vw"
             gridColumnGap={{ base: 0, md: "1rem" }}
             gridTemplate={APP_GRID_TEMPLATE_AREA}
           >
             <SiteEditNavbar />
-            <Flex flex={1} bg="base.canvas.alt" w="100vw">
+            <Flex bg="base.canvas.alt" w="100vw" height={0} minH="100%">
               {page}
             </Flex>
           </Grid>

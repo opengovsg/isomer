@@ -24,7 +24,8 @@ export function CmsSidebarOnlyContainer({
           borderColor="base.divider.medium"
           py={{ base: 0, md: "0.75rem" }}
           px={{ base: 0, md: "0.5rem" }}
-          height="100vh"
+          height={0}
+          minH="100%"
           overflow="auto"
           css={{
             "&::-webkit-scrollbar": {
