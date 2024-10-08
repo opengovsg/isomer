@@ -133,7 +133,7 @@ const SuspendableSiteList = (): JSX.Element => {
                 width="100%"
               >
                 <Image
-                  src={site.config.logoUrl || "/isomer-sites-placeholder.png"}
+                  src={site.config.logoUrl}
                   alt={site.name}
                   borderRadius="0.5rem"
                   border="1.5px solid #EDEDED"
@@ -142,6 +142,7 @@ const SuspendableSiteList = (): JSX.Element => {
                   objectFit="cover"
                   aspectRatio="1/1"
                   backgroundColor="white"
+                  fallbackSrc="/isomer-sites-placeholder.png"
                 />
                 <Flex flexDirection="column" gap="0.5rem">
                   <Text
