@@ -118,6 +118,17 @@ export const pageRouter = router({
 
         const { title, type, permalink, content, updatedAt } = page
 
+        if (
+          type !== ResourceType.Page &&
+          type !== ResourceType.CollectionPage &&
+          type !== ResourceType.RootPage
+        ) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The specified resource could not be found",
+          })
+        }
+
         return {
           permalink,
           navbar,
@@ -335,6 +346,7 @@ export const pageRouter = router({
               cause: validateFn.errors,
             })
           }
+
           const newContent = !meta
             ? rest
             : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
@@ -349,7 +361,11 @@ export const pageRouter = router({
             .updateTable("Resource")
             .where("Resource.id", "=", String(pageId))
             .where("Resource.siteId", "=", siteId)
-            .where("Resource.type", "in", ["Page", "CollectionPage"])
+            .where("Resource.type", "in", [
+              "Page",
+              "CollectionPage",
+              "RootPage",
+            ])
             .set({ title, permalink })
             .returning([
               "Resource.id",
