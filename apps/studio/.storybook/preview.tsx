@@ -2,7 +2,7 @@ import "@fontsource/ibm-plex-mono"
 import "inter-ui/inter.css"
 
 import { useCallback, useMemo, useState } from "react"
-import { Box, Skeleton } from "@chakra-ui/react"
+import { Box, Skeleton, Stack } from "@chakra-ui/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { withThemeFromJSXProvider } from "@storybook/addon-themes"
 import {
@@ -75,7 +75,9 @@ const SetupDecorator: Decorator = (Story) => {
       <Suspense fallback={<Skeleton width="100vw" height="100vh" />}>
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
-            <Story />
+            <Stack spacing={0} height="$100vh">
+              <Story />
+            </Stack>
           </QueryClientProvider>
         </trpc.Provider>
       </Suspense>
