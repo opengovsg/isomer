@@ -1,8 +1,4 @@
-import type {
-  CollectionPageSchemaType,
-  IsomerSitemap,
-  IsomerSiteProps,
-} from "~/engine"
+import type { CollectionPageSchemaType, IsomerSiteProps } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
 import { getBreadcrumbFromSiteMap, getSitemapAsArray } from "~/utils"
 import { Skeleton } from "../Skeleton"
@@ -49,13 +45,8 @@ const getCollectionItems = (
         item.layout === "article",
     )
     .map((item) => {
-      const date = new Date(item.date || item.lastModified)
-      const lastUpdated =
-        date.getDate().toString().padStart(2, "0") +
-        " " +
-        date.toLocaleString("default", { month: "long" }) +
-        " " +
-        date.getFullYear()
+      const lastUpdated = item.date || item.lastModified
+      const date = new Date(lastUpdated)
 
       const baseItem = {
         type: "collectionCard" as const,
