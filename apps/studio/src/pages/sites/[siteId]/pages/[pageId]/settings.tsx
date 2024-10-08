@@ -163,7 +163,7 @@ const PageSettings = () => {
   })
 
   return (
-    <form onBlur={onSubmit}>
+    <chakra.form onBlur={onSubmit} overflow="auto">
       <Grid w="100vw" my="3rem" templateColumns="repeat(4, 1fr)">
         <GridItem colSpan={1}></GridItem>
         <GridItem colSpan={2}>
@@ -265,7 +265,7 @@ const PageSettings = () => {
         </GridItem>
         <GridItem colSpan={1}></GridItem>
       </Grid>
-    </form>
+    </chakra.form>
   )
 }
 
