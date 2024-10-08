@@ -27,6 +27,7 @@ const SuspendableMoveItem = ({
       justifyContent="flex-start"
       color="base.content.default"
       pl="2.25rem"
+      size="xs"
       onClick={onChangeResourceId}
       leftIcon={<BiFolder />}
       {...rest}
