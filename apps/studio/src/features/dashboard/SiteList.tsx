@@ -141,6 +141,7 @@ const SuspendableSiteList = (): JSX.Element => {
                   height="100%"
                   objectFit="cover"
                   aspectRatio="1/1"
+                  backgroundColor="white"
                 />
                 <Flex flexDirection="column" gap="0.5rem">
                   <Text
