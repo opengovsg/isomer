@@ -1,5 +1,5 @@
+import type { BannerProps } from "@opengovsg/design-system-react"
 import { useFeatureValue } from "@growthbook/growthbook-react"
-import { BannerProps } from "@opengovsg/design-system-react"
 
 type BannerFeature = Pick<BannerProps, "variant"> & {
   message: BannerProps["children"]
