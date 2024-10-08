@@ -56,6 +56,9 @@ export const RowEntry = ({
           bg: "interaction.muted.main.active",
           _hover: { bg: "interaction.muted.main.active" },
         }}
+        _focus={{
+          zIndex: 1,
+        }}
       >
         <Icon
           color={isActive ? "interaction.main.default" : "base.content.default"}

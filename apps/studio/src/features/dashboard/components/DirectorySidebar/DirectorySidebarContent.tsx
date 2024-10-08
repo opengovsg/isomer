@@ -96,7 +96,12 @@ export const DirectorySidebarContent = ({
             subLabel={subLabel}
           />
           {hasChildren && (
-            <AccordionPanel p={0}>
+            <AccordionPanel
+              p={0}
+              display="flex"
+              flexDirection="column"
+              gap="2px"
+            >
               {data?.pages.map((page) =>
                 page.items.map((item) => {
                   return (
