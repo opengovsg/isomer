@@ -65,13 +65,11 @@ const InfoCardsBaseSchema = Type.Object({
   type: Type.Literal("infocards", { default: "infocards" }),
   title: Type.String({
     title: "Title",
-    default: "This is an optional title of the Cards component",
     maxLength: 100,
   }),
   subtitle: Type.Optional(
     Type.String({
       title: "Description",
-      default: "This is an optional description for the Cards component",
       maxLength: 200,
     }),
   ),
