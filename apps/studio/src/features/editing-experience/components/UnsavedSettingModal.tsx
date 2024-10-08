@@ -25,7 +25,7 @@ export const UnsavedSettingModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent overflow="hidden">
+      <ModalContent size="lg" overflow="hidden">
         <ModalHeader>Leave this page without saving your settings?</ModalHeader>
         <ModalCloseButton />
         <ModalBody>All edits will be lost.</ModalBody>
