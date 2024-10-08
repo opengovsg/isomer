@@ -20,7 +20,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       layout: "article",
       summary:
         "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year.",
-      date: "07/05/2024",
+      date: "2024-05-07",
       category: "Category Name",
     },
     {
@@ -31,7 +31,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       layout: "file",
       summary:
         "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
-      date: "07/05/2024",
+      date: "2024-05-07",
       category: "Category Name",
       ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
       fileDetails: {
@@ -47,7 +47,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       layout: "link",
       summary:
         "Have a look at the Isomer guide to understand how to use the Isomer CMS.",
-      date: "12/08/2023",
+      date: "2023-08-12",
       category: "Category Name",
       ref: "https://guide.isomer.gov.sg",
     },
@@ -452,7 +452,7 @@ export const FilteredEmptyResults: Story = {
                 layout: "file",
                 summary:
                   "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
-                date: "07/05/2025",
+                date: "2025-05-07",
                 category: "Category Name",
                 ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
                 fileDetails: {
