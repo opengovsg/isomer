@@ -81,7 +81,7 @@ export const RowEntry = ({
           >
             {label}
           </Text>
-          {subLabel && <Text textStyle="subhead-3">{subLabel}</Text>}
+          {subLabel && <Text textStyle="caption-3">{subLabel}</Text>}
         </Flex>
       </Button>
       {isExpandable && (

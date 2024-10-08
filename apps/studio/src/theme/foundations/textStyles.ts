@@ -10,6 +10,14 @@ const customTextStyles = {
     letterSpacing: "-0.019em",
     fontFamily: "body",
   },
+  "caption-3": {
+    fontFamily: "body",
+    fontWeight: 500,
+    fontSize: "0.625rem",
+    letterSpacing: "0.8px",
+    lineHeight: "1rem",
+    textTransform: "uppercase",
+  },
 }
 
 export const textStyles = merge(customTextStyles, generatedTextStyles)
