@@ -17,4 +17,13 @@ export const theme = extendTheme(ogpDsTheme, {
   colors: colours,
   textStyles,
   layerStyles,
+  styles: {
+    global: {
+      // Removes the unnecessary default overflow hidden setting on Collapse components
+      // (used in Accordion too)
+      '.chakra-collapse[style*="height: auto"]': {
+        overflow: "initial !important",
+      },
+    },
+  },
 })

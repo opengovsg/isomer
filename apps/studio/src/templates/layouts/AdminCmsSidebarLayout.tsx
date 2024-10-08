@@ -7,8 +7,8 @@ import { z } from "zod"
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { CmsSidebar, CmsSidebarContainer } from "~/components/CmsSidebar"
-import { CmsSideNav } from "~/components/CmsSidebar/CmsSideNav"
 import { LayoutHead } from "~/components/LayoutHead"
+import { DirectorySidebar } from "~/features/dashboard/components/DirectorySidebar"
 import { useMe } from "~/features/me/api"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type GetLayout } from "~/lib/types"
@@ -69,7 +69,7 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
       sidebar={
         <CmsSidebar topNavItems={pageNavItems} bottomNavItems={userNavItems} />
       }
-      sidenav={<CmsSideNav siteId={siteId} />}
+      sidenav={<DirectorySidebar siteId={siteId} />}
     >
       {children}
     </CmsSidebarContainer>

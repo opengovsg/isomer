@@ -1,6 +1,6 @@
 /**
  * Do not edit directly
- * Generated on Thu, 28 Dec 2023 07:03:58 GMT
+ * Generated on Tue, 08 Oct 2024 03:06:16 GMT
  */
 
 export const textStyles = {
@@ -190,6 +190,14 @@ export const textStyles = {
     fontSize: "0.75rem",
     letterSpacing: 0,
     fontFamily: "body",
+  },
+  "caption-3": {
+    fontWeight: 500,
+    fontSize: "0.625rem",
+    lineHeight: "1rem",
+    letterSpacing: "0.080em",
+    fontFamily: "body",
+    textTransform: "uppercase",
   },
   "code-1": {
     fontWeight: 400,
