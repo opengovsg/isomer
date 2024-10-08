@@ -6,6 +6,7 @@ import PageSettings from "~/pages/sites/[siteId]/pages/[pageId]/settings"
 
 const COMMON_HANDLERS = [
   resourceHandlers.getMetadataById.content(),
+  resourceHandlers.getRolesFor.default(),
   pageHandlers.readPageAndBlob.content(),
   pageHandlers.readPage.content(),
 ]
