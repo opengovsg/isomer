@@ -82,7 +82,7 @@ const CollectionClient = ({
         LinkComponent={LinkComponent}
       >
         <CollectionSearch
-          placeholder={`Search for ${page.title.toLowerCase()}`}
+          placeholder="Start typing to search"
           search={searchValue}
           setSearch={handleSearchValueChange}
         />
