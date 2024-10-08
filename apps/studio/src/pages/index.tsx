@@ -30,25 +30,23 @@ const NoResultIcon: React.FC = () => {
 const DashboardPage: NextPageWithLayout = () => {
   return (
     <Flex flexDir="column" py="2rem" maxW="57rem" mx="auto" width="100%">
-      <Flex gap="96px" flexDirection="column">
+      <Flex gap="6rem" flexDirection="column">
         <Text as="h3" size="lg" textStyle="h3">
           My sites
         </Text>
-        <Flex flexDirection="column" gap="24px">
-          <Flex flexDirection="column" gap="8px" alignItems="center">
+        <Flex flexDirection="column" gap="1.5rem">
+          <Flex flexDirection="column" gap="0.5rem" alignItems="center">
             <NoResultIcon />
-            <Flex flexDirection="column" gap="8px" alignItems="center">
-              <Text textStyle="h5" textAlign="center">
-                You don't have access to any sites yet.
-              </Text>
-              <Text textStyle="body-2" textAlign="center">
-                Speak to your System Owner to get access.<br></br>
-                If you think there is an error,{" "}
-                <Link variant="inline" href="mailto:support@isomer.gov.sg">
-                  let us know
-                </Link>.
-              </Text>
-            </Flex>
+            <Text textStyle="h5" textAlign="center">
+              You don't have access to any sites yet.
+            </Text>
+            <Text textStyle="body-2" textAlign="center">
+              Speak to your System Owner to get access.<br></br>
+              If you think there is an error,{" "}
+              <Link variant="inline" href="mailto:support@isomer.gov.sg">
+                let us know
+              </Link>.
+            </Text>
           </Flex>
         </Flex>
         <SiteList />
