@@ -109,7 +109,7 @@ export const getRootPageSchema = z.object({
 
 export const basePageSettingsSchema = basePageSchema.extend({
   title: pageTitleSchema,
-  meta: z.string(),
+  meta: z.string().optional(),
 })
 
 export const rootPageSettingsSchema = basePageSettingsSchema.extend({

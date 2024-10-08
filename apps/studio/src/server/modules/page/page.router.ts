@@ -339,20 +339,24 @@ export const pageRouter = router({
             fullPage.content.layout,
           )
           const validateFn = ajv.compile(pageMetaSchema)
-          try {
-            const newMeta = JSON.parse(
-              meta,
-            ) as PrismaJson.BlobJsonContent["meta"]
-            const isValid = validateFn(newMeta)
-            if (!isValid) {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message: "Invalid metadata",
-                cause: validateFn.errors,
-              })
-            }
 
-            const newContent = !meta
+          const newMeta =
+            !!meta && (JSON.parse(meta) as PrismaJson.BlobJsonContent["meta"])
+
+          // NOTE: if `meta` was originally passed, then we need to validate it
+          // otherwise, the meta never existed and we don't need to validate anyways
+          const isValid = !meta || validateFn(newMeta)
+
+          if (!isValid) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Invalid metadata",
+              cause: validateFn.errors,
+            })
+          }
+
+          try {
+            const newContent = !newMeta
               ? rest
               : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
 
@@ -398,7 +402,8 @@ export const pageRouter = router({
           } catch (err) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message: "Invalid metadata",
+              message:
+                "We're unable to update the settings for this page, please try again later",
               cause: err,
             })
           }
