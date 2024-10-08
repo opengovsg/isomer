@@ -318,86 +318,93 @@ export const pageRouter = router({
 
   updateSettings: protectedProcedure
     .input(pageSettingsSchema)
-    .mutation(async ({ input: { pageId, siteId, title, permalink, meta } }) => {
-      return db.transaction().execute(async (tx) => {
-        const fullPage = await getFullPageById(tx, {
-          resourceId: pageId,
-          siteId,
-        })
-
-        if (!fullPage?.content) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message:
-              "Unable to load content for the requested page, please contact Isomer Support",
-          })
-        }
-
-        const { meta: _oldMeta, ...rest } = fullPage.content
-        const pageMetaSchema = getLayoutMetadataSchema(fullPage.content.layout)
-        const validateFn = ajv.compile(pageMetaSchema)
-        try {
-          const newMeta = JSON.parse(meta) as PrismaJson.BlobJsonContent["meta"]
-          const isValid = validateFn(newMeta)
-          if (!isValid) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Invalid metadata",
-              cause: validateFn.errors,
-            })
-          }
-
-          const newContent = !meta
-            ? rest
-            : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
-
-          await updateBlobById(tx, {
-            pageId,
-            content: newContent,
+    .mutation(
+      async ({ input: { pageId, siteId, title, meta, ...settings } }) => {
+        return db.transaction().execute(async (tx) => {
+          const fullPage = await getFullPageById(tx, {
+            resourceId: pageId,
             siteId,
           })
 
-          const updatedResource = await tx
-            .updateTable("Resource")
-            .where("Resource.id", "=", String(pageId))
-            .where("Resource.siteId", "=", siteId)
-            .where("Resource.type", "in", [
-              "Page",
-              "CollectionPage",
-              "RootPage",
-            ])
-            .set({ title, permalink })
-            .returning([
-              "Resource.id",
-              "Resource.type",
-              "Resource.title",
-              "Resource.permalink",
-              "Resource.draftBlobId",
-            ])
-            .executeTakeFirstOrThrow()
-            .catch((err) => {
-              if (get(err, "code") === "23505") {
-                throw new TRPCError({
-                  code: "CONFLICT",
-                  message: "A resource with the same permalink already exists",
-                })
-              }
-              throw err
+          if (!fullPage?.content) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message:
+                "Unable to load content for the requested page, please contact Isomer Support",
+            })
+          }
+
+          const { meta: _oldMeta, ...rest } = fullPage.content
+          const pageMetaSchema = getLayoutMetadataSchema(
+            fullPage.content.layout,
+          )
+          const validateFn = ajv.compile(pageMetaSchema)
+          try {
+            const newMeta = JSON.parse(
+              meta,
+            ) as PrismaJson.BlobJsonContent["meta"]
+            const isValid = validateFn(newMeta)
+            if (!isValid) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Invalid metadata",
+                cause: validateFn.errors,
+              })
+            }
+
+            const newContent = !meta
+              ? rest
+              : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
+
+            await updateBlobById(tx, {
+              pageId,
+              content: newContent,
+              siteId,
             })
 
-          return {
-            ...updatedResource,
-            meta: newMeta,
+            const updatedResource = await tx
+              .updateTable("Resource")
+              .where("Resource.id", "=", String(pageId))
+              .where("Resource.siteId", "=", siteId)
+              .where("Resource.type", "in", [
+                "Page",
+                "CollectionPage",
+                "RootPage",
+              ])
+              .set({ title, ...settings })
+              .returning([
+                "Resource.id",
+                "Resource.type",
+                "Resource.title",
+                "Resource.permalink",
+                "Resource.draftBlobId",
+              ])
+              .executeTakeFirstOrThrow()
+              .catch((err) => {
+                if (get(err, "code") === "23505") {
+                  throw new TRPCError({
+                    code: "CONFLICT",
+                    message:
+                      "A resource with the same permalink already exists",
+                  })
+                }
+                throw err
+              })
+
+            return {
+              ...updatedResource,
+              meta: newMeta,
+            }
+          } catch (err) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Invalid metadata",
+              cause: err,
+            })
           }
-        } catch (err) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Invalid metadata",
-            cause: err,
-          })
-        }
-      })
-    }),
+        })
+      },
+    ),
 
   getFullPermalink: protectedProcedure
     .input(basePageSchema)

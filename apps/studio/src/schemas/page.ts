@@ -1,3 +1,4 @@
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
 import { generateBasePermalinkSchema } from "./common"
@@ -106,8 +107,23 @@ export const getRootPageSchema = z.object({
   siteId: z.number().min(1),
 })
 
-export const pageSettingsSchema = basePageSchema.extend({
+export const basePageSettingsSchema = basePageSchema.extend({
   title: pageTitleSchema,
-  permalink: permalinkSchema,
   meta: z.string(),
 })
+
+export const rootPageSettingsSchema = basePageSettingsSchema.extend({
+  type: z.literal(ResourceType.RootPage),
+})
+
+export const pageSettingsSchema = z.discriminatedUnion("type", [
+  basePageSettingsSchema.extend({
+    type: z.literal(ResourceType.Page),
+    permalink: permalinkSchema,
+  }),
+  basePageSettingsSchema.extend({
+    type: z.literal(ResourceType.CollectionPage),
+    permalink: permalinkSchema,
+  }),
+  rootPageSettingsSchema,
+])
