@@ -55,7 +55,7 @@ const MyApp = ((props: AppPropsWithAuthAndLayout) => {
             <GrowthBookProvider growthbook={gb}>
               <ErrorBoundary FallbackComponent={DefaultFallback}>
                 <Suspense fallback={<Skeleton width="100vw" height="$100vh" />}>
-                  <Stack spacing={0} height="$100vh">
+                  <Stack spacing={0} height="$100vh" flexDirection="column">
                     <AppBanner />
                     <VersionWrapper />
                     <ChildWithLayout {...props} />
