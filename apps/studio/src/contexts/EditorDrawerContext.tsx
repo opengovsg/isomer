@@ -64,6 +64,12 @@ export function EditorDrawerProvider({
 
   const setPreviewPageState = useCallback(
     (previewPageState: SetStateAction<IsomerSchema>) => {
+      // NOTE: We need this because our `JSONForms` instance writes to this state
+      // which is immediately `setState` here.
+      // This causes a skipped render issue, where the earlier update might get skipped
+      // and lead to the preview updated without any new content.
+      // `flushSync` causes react to flush the callbacks and trigger the updates together
+      // which will cause the updates to go through successfully rather than being dropped.
       flushSync(() => {
         _setPreviewPageState(previewPageState)
       })
