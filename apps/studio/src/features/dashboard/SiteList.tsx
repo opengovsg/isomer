@@ -119,7 +119,7 @@ const SuspendableSiteList = (): JSX.Element => {
         <SimpleGrid columns={3} gap="2.5rem" width="100%">
           {sites.map((site) => (
             <LinkBox>
-              <LinkOverlay href={`/sites/${site.id}`} />
+              <LinkOverlay href={`/sites/${site.id}`} as={NextLink} />
               <Flex
                 key={site.id}
                 flexDirection="column"
