@@ -100,7 +100,9 @@ const LinkEditorModalContent = ({
   return (
     <ModalContent>
       <form onSubmit={onSubmit}>
-        <ModalHeader>{isEditingLink ? "Edit link" : "Add link"}</ModalHeader>
+        <ModalHeader mr="3.5rem">
+          {isEditingLink ? "Edit link" : "Add link"}
+        </ModalHeader>
         <ModalCloseButton />
 
         <ModalBody>

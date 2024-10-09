@@ -122,7 +122,7 @@ const CreateCollectionModalContent = ({
   return (
     <ModalContent>
       <form onSubmit={onSubmit}>
-        <ModalHeader>Create a new collection</ModalHeader>
+        <ModalHeader mr="3.5rem">Create a new collection</ModalHeader>
         <ModalCloseButton size="sm" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.5rem">

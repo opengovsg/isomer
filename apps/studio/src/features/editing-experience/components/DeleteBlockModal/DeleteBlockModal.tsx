@@ -27,7 +27,7 @@ export const DeleteBlockModal = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader pr="4.5rem">
+        <ModalHeader mr="3.5rem">
           Are you sure you want to delete {itemName}?
         </ModalHeader>
 

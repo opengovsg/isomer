@@ -32,7 +32,7 @@ export const VersionModal = ({ isOpen, onClose }: VersionModalProps) => {
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>Update Available</ModalHeader>
+        <ModalHeader ml="3.5rem">Update Available</ModalHeader>
         <ModalBody>
           Please refresh the page to get the latest version.
         </ModalBody>

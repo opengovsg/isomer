@@ -118,7 +118,7 @@ const SuspendableModalContent = ({
   return (
     <ModalContent key={String(!!folderId)}>
       <form onSubmit={onSubmit}>
-        <ModalHeader>Edit "{originalTitle}"</ModalHeader>
+        <ModalHeader mr="3.5rem">Edit "{originalTitle}"</ModalHeader>
         <ModalCloseButton size="sm" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.5rem">

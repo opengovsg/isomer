@@ -117,7 +117,7 @@ const DeleteResourceModalContent = ({
 
   return (
     <ModalContent>
-      <ModalHeader pr="4.5rem">Delete {title}?</ModalHeader>
+      <ModalHeader mr="3.5rem">Delete {title}?</ModalHeader>
       <ModalCloseButton />
 
       <ModalBody>
