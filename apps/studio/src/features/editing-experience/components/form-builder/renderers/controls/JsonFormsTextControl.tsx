@@ -50,7 +50,9 @@ export function JsonFormsTextControl({
   return (
     <Box mt="1.25rem" _first={{ mt: 0 }}>
       <FormControl isRequired={required} isInvalid={!!errors}>
-        <FormLabel description={description}>{label}</FormLabel>
+        <FormLabel description={description} margin="0rem 0rem 0.5rem 0rem">
+          {label}
+        </FormLabel>
         <Input
           type="text"
           value={String(data || "")}
