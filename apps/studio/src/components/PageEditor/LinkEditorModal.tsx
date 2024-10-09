@@ -101,7 +101,7 @@ const LinkEditorModalContent = ({
     <ModalContent>
       <form onSubmit={onSubmit}>
         <ModalHeader>{isEditingLink ? "Edit link" : "Add link"}</ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton size="lg" />
 
         <ModalBody>
           <FormControl isRequired isInvalid={!!errors.linkText}>

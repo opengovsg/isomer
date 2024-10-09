@@ -29,7 +29,7 @@ export const DiscardChangesModal = ({
           Are you sure you want to discard your changes?
         </ModalHeader>
 
-        <ModalCloseButton />
+        <ModalCloseButton size="lg" />
 
         <ModalBody>
           <Text textStyle="body-2">All edits will be lost.</Text>
