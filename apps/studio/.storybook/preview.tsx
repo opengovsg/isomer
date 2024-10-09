@@ -80,7 +80,7 @@ const SetupDecorator: Decorator = (Story, { parameters }) => {
   return (
     <GrowthBookProvider growthbook={gb}>
       <ErrorBoundary FallbackComponent={DefaultFallback}>
-        <Suspense fallback={<Skeleton width="100vw" height="100vh" />}>
+        <Suspense fallback={<Skeleton width="100%" height="100vh" />}>
           <trpc.Provider client={trpcClient} queryClient={queryClient}>
             <QueryClientProvider client={queryClient}>
               <Stack spacing={0} height="$100vh" flexDirection="column">

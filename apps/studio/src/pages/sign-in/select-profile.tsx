@@ -21,7 +21,7 @@ const SelectProfilePage: NextPageWithLayout = () => {
             p="2rem"
             bg="white"
             gap="2rem"
-            maxW="100vw"
+            maxW="100%"
             w="24.5rem"
           >
             <Text textStyle="h4" color="base.content.strong">
