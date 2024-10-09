@@ -59,6 +59,9 @@ const MoveResourceContent = withSuspense(
     const [resourceStack, setResourceStack] = useState<PendingMoveResource[]>(
       [],
     )
+    const [selectedResourceId, setSelectedResourceId] = useState<string | null>(
+      null,
+    )
     const moveDest = resourceStack[resourceStack.length - 1]
     const { siteId } = useQueryParse(sitePageSchema)
     const setMovedItem = useSetAtom(moveResourceAtom)
@@ -225,13 +228,15 @@ const MoveResourceContent = withSuspense(
             </Box>
             {!!moveDest && (
               <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">
-                <Text textStyle="caption-1">
-                  You selected {moveDest.permalink}
-                </Text>
-                <Text textStyle="caption-2">
-                  The URL for {movedItem?.title} will change to{" "}
-                  {`${generatePermalinkPrefix(resourceStack)}/${movedItem?.permalink}`}
-                </Text>
+                <Flex flexDirection="column" gap="0.25rem">
+                  <Text textStyle="caption-1">
+                    You selected {moveDest.permalink}
+                  </Text>
+                  <Text textStyle="caption-2">
+                    The URL for {movedItem?.title} will change to{" "}
+                    {`${generatePermalinkPrefix(resourceStack)}/${movedItem?.permalink}`}
+                  </Text>
+                </Flex>
               </Box>
             )}
           </VStack>
