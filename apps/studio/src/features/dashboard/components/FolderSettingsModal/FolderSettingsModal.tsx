@@ -2,7 +2,6 @@ import { Suspense } from "react"
 import {
   Box,
   FormControl,
-  FormErrorMessage,
   FormHelperText,
   FormLabel,
   Icon,
@@ -17,7 +16,11 @@ import {
   Skeleton,
   VStack,
 } from "@chakra-ui/react"
-import { Button, useToast } from "@opengovsg/design-system-react"
+import {
+  Button,
+  FormErrorMessage,
+  useToast,
+} from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
@@ -75,6 +78,7 @@ const SuspendableModalContent = ({
       resourceId: Number(folderId),
     })
   const { register, handleSubmit, watch, control, formState } = useZodForm({
+    mode: "onChange",
     defaultValues: {
       title: originalTitle,
       permalink: originalPermalink,
@@ -165,19 +169,19 @@ const SuspendableModalContent = ({
                   />
                 )}
               />
-              {errors.permalink?.message && (
+              {errors.permalink?.message ? (
                 <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
+              ) : (
+                <Box
+                  mt="0.5rem"
+                  py="0.5rem"
+                  px="0.75rem"
+                  bg="interaction.support.disabled"
+                >
+                  <Icon mr="0.5rem" as={BiLink} />
+                  {permalink}
+                </Box>
               )}
-
-              <Box
-                mt="0.5rem"
-                py="0.5rem"
-                px="0.75rem"
-                bg="interaction.support.disabled"
-              >
-                <Icon mr="0.5rem" as={BiLink} />
-                {permalink}
-              </Box>
 
               <FormHelperText mt="0.5rem" color="base.content.medium">
                 {MAX_FOLDER_PERMALINK_LENGTH - (permalink || "").length}{" "}

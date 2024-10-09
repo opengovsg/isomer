@@ -226,7 +226,7 @@ const PageSettings = () => {
 
             <FormControl isRequired isInvalid={!!errors.title}>
               <FormLabel
-                description="By default, this is the title of your your page. Edit this if
+                description="Edit this if
                 you want to show a different title on search engines."
               >
                 Page title
