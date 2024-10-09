@@ -121,7 +121,7 @@ const DeleteResourceModalContent = ({
       <ModalCloseButton />
 
       <ModalBody mt="1.5rem">
-        <Text textStyle="body-2">{getWarningText(resourceType)}</Text>
+        <Text textStyle="body-1">{getWarningText(resourceType)}</Text>
         <HStack mt="1.5rem">
           <Checkbox onChange={() => setIsChecked((prev) => !prev)}>
             Yes, delete this {label} permanently
