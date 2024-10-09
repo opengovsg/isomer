@@ -74,7 +74,7 @@ export const TableSettingsModal = ({
 
       <ModalContent>
         <ModalHeader mr="3.5rem">Table settings</ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton size="lg" />
 
         <ModalBody>
           <FormControl isRequired isInvalid={!!errors.caption}>

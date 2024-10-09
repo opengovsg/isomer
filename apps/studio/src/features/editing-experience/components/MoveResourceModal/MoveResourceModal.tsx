@@ -137,7 +137,7 @@ const MoveResourceContent = withSuspense(
     return (
       <ModalContent>
         <ModalHeader>Move "{title}" to...</ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.25rem">
             <Infobox size="sm" w="full">

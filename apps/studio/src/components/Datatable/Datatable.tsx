@@ -2,6 +2,7 @@ import type { LayoutProps, TableProps } from "@chakra-ui/react"
 import type { Table as ReactTable } from "@tanstack/react-table"
 import {
   Box,
+  Divider,
   Flex,
   Spinner,
   Table,
@@ -107,6 +108,9 @@ export const Datatable = <T extends object>({
               </Tr>
             ))}
           </Thead>
+          {rows.length > 0 && (
+            <Divider width={`${instance.getAllColumns().length * 100}%`} />
+          )}
           <Tbody>
             {rows.length === 0 && emptyPlaceholder}
             {rows.map((row) => {

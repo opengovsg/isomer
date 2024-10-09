@@ -29,7 +29,7 @@ export const UnsavedSettingModal = ({
         <ModalHeader mr="3.5rem">
           Leave this page without saving your settings?
         </ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton size="lg" />
         <ModalBody>All edits will be lost.</ModalBody>
         <ModalFooter>
           <Button

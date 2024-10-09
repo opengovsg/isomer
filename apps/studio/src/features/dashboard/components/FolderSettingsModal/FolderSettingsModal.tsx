@@ -119,7 +119,7 @@ const SuspendableModalContent = ({
     <ModalContent key={String(!!folderId)}>
       <form onSubmit={onSubmit}>
         <ModalHeader mr="3.5rem">Edit "{originalTitle}"</ModalHeader>
-        <ModalCloseButton size="sm" />
+        <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.5rem">
             <FormControl isInvalid={!!errors.title}>
@@ -186,7 +186,6 @@ const SuspendableModalContent = ({
             </FormControl>
           </VStack>
         </ModalBody>
-
         <ModalFooter>
           <Button mr={3} onClick={onClose} variant="clear">
             Close
