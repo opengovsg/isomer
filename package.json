@@ -29,7 +29,7 @@
   "author": "Isomer Team",
   "license": "ISC",
   "devDependencies": {
-    "turbo": "^2.0.5"
+    "turbo": "^2.1.2"
   },
   "packageManager": "npm@10.2.3"
 }
