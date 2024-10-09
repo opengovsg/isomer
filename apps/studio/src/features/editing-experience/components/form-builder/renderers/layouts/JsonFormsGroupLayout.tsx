@@ -32,10 +32,10 @@ const GroupComponent = React.memo(function GroupComponent({
   }
 
   return (
-    <Box mt="1.25rem" _first={{ mt: 0 }}>
+    <Box mt="1.5rem" _first={{ mt: 0 }}>
       <Divider borderColor="base.divider.strong" />
 
-      <Box w="100%" mt="1.25rem">
+      <Box w="100%" mt="1.5rem">
         <Heading textStyle="h6" as="h6" size="m" fontWeight="500">
           {label}
         </Heading>
