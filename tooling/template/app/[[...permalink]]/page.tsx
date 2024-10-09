@@ -104,6 +104,7 @@ const Page = async ({ params }: DynamicPageProps) => {
         // @ts-expect-error to fix when types are proper
         footerItems: footer,
         lastUpdated,
+        assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
       }}
       LinkComponent={Link}
       ScriptComponent={Script}
