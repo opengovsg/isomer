@@ -36,7 +36,7 @@ const GroupComponent = React.memo(function GroupComponent({
       <Divider borderColor="base.divider.strong" />
 
       <Box w="100%" mt="1.25rem">
-        <Heading textStyle="h3" as="h3" size="sm">
+        <Heading textStyle="h6" as="h6" size="m" fontWeight="500">
           {label}
         </Heading>
       </Box>
