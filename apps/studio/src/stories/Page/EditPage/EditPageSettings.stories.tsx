@@ -3,6 +3,7 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 
 import PageSettings from "~/pages/sites/[siteId]/pages/[pageId]/settings"
+import { createBannerGbParameters } from "~/stories/utils/growthbook"
 
 const COMMON_HANDLERS = [
   resourceHandlers.getMetadataById.content(),
@@ -65,5 +66,17 @@ export const WithGrandparent: Story = {
         ...COMMON_HANDLERS,
       ],
     },
+  },
+}
+
+export const WithBanner: Story = {
+  parameters: {
+    ...Root.parameters,
+    growthbook: [
+      createBannerGbParameters({
+        variant: "warn",
+        message: "This is a warning test banner",
+      }),
+    ],
   },
 }
