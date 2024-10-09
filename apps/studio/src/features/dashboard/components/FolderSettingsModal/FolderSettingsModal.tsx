@@ -75,6 +75,7 @@ const SuspendableModalContent = ({
       resourceId: Number(folderId),
     })
   const { register, handleSubmit, watch, control, formState } = useZodForm({
+    mode: "onChange",
     defaultValues: {
       title: originalTitle,
       permalink: originalPermalink,
