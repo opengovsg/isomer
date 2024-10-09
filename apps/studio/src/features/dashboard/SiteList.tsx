@@ -145,17 +145,15 @@ const SuspendableSiteList = (): JSX.Element => {
                   backgroundColor="white"
                   fallbackSrc="/isomer-sites-placeholder.png"
                 />
-                <Flex flexDirection="column" gap="0.5rem">
-                  <Text
-                    textStyle="h6"
-                    noOfLines={1}
-                    overflow="hidden"
-                    textOverflow="ellipsis"
-                  >
-                    {site.name}
-                  </Text>
-                  {/* <Text textStyle="body-2"></Text> */}
-                </Flex>
+                <Text
+                  as="h6"
+                  textStyle="h6"
+                  noOfLines={1}
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                >
+                  {site.name}
+                </Text>
               </Flex>
             </Link>
           ))}
