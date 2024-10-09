@@ -149,8 +149,11 @@ function generateSitemapTree(
 ): SitemapEntry[] | undefined {
   const pathPrefixWithoutLeadingSlash = pathPrefix.slice(1)
 
-  const entriesWithPathPrefix = sitemapEntries.filter((entry) =>
-    entry.permalink.startsWith(`${pathPrefix.length === 1 ? "" : pathPrefix}/`),
+  const entriesWithPathPrefix = sitemapEntries.filter(
+    (entry) =>
+      entry.permalink.startsWith(
+        `${pathPrefix.length === 1 ? "" : pathPrefix}/`,
+      ) && entry.permalink !== "/",
   )
 
   // Base case: No entries with the path prefix - this is a leaf node
@@ -285,24 +288,21 @@ async function writeContentToFile(
   parentId: number | null,
 ) {
   try {
-    if (!fullPermalink) {
-      console.error("Error: fullPermalink is undefined or empty for resource")
-      return
-    }
-
     // NOTE: do a join with ./ here so that
     // we don't end up with an absolute path to a special unix folder
-    const sanitizedPermalink = path.join(
-      "./",
-      path
-        // NOTE: normalization here will remove dual backslashes
-        // and also strip .. filepaths except as a prefix
-        .normalize(fullPermalink)
-        // NOTE: this matches on a leading ../
-        // or a leading ..\
-        // or a plain .. without any paths
-        .replace(/^(\.\.(\/|\\|$))+/, ""),
-    )
+    const sanitizedPermalink = !fullPermalink
+      ? "index"
+      : path.join(
+          "./",
+          path
+            // NOTE: normalization here will remove dual backslashes
+            // and also strip .. filepaths except as a prefix
+            .normalize(fullPermalink)
+            // NOTE: this matches on a leading ../
+            // or a leading ..\
+            // or a plain .. without any paths
+            .replace(/^(\.\.(\/|\\|$))+/, ""),
+        )
 
     const directoryPath =
       parentId === null

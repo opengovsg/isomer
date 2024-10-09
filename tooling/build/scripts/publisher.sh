@@ -102,3 +102,23 @@ find ./out -type f | wc -l
 cd out/
 echo $(pwd)
 ls -al
+
+# Publish to S3
+echo "Publishing to S3..."
+start_time=$(date +%s)
+aws s3 sync . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --delete --no-progress
+
+# Update CloudFront origin path
+echo "Updating CloudFront origin path..."
+echo "CloudFront distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
+aws cloudfront get-distribution --id $CLOUDFRONT_DISTRIBUTION_ID > distribution.json
+
+ETag=`cat distribution.json | jq -r '.ETag'`
+echo "ETag: $ETag"
+
+jq '.Distribution.DistributionConfig' distribution.json > distribution-new.json
+jq ".Origins.Items[0].OriginPath = \"/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest\"" distribution-new.json > distribution-config.json
+aws cloudfront update-distribution --id $CLOUDFRONT_DISTRIBUTION_ID --distribution-config file://distribution-config.json --if-match $ETag
+
+# Invalidate CloudFront cache
+aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
