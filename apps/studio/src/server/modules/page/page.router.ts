@@ -15,7 +15,7 @@ import {
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { startProjectById, stopRunningBuilds } from "../aws/codebuild.service"
+import { shouldStartNewBuild, startProjectById } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType } from "../database"
 import {
   getFooter,
@@ -263,17 +263,16 @@ export const pageRouter = router({
   publishPage: protectedProcedure
     .input(publishPageSchema)
     .mutation(async ({ ctx, input: { siteId, pageId } }) => {
-      /* Step 1: Update DB table to latest state */
-      // Create a new version
+      // Step 1: Create a new version
       const addedVersionResult = await incrementVersion({
         siteId,
         pageId,
         userId: ctx.user.id,
       })
 
-      /* Step 2: Use AWS SDK to start a CodeBuild */
+      // Step 2: Get the CodeBuild ID associated with the site
       const site = await getSiteNameAndCodeBuildId(siteId)
-      const codeBuildId = site.codeBuildId
+      const { codeBuildId } = site
       if (!codeBuildId) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -281,10 +280,17 @@ export const pageRouter = router({
         })
       }
 
-      // stop any currently running builds for the site
-      await stopRunningBuilds(ctx.logger, codeBuildId)
+      // Step 3: Determine if a new build should be started
+      const isNewBuildNeeded = await shouldStartNewBuild(
+        ctx.logger,
+        codeBuildId,
+      )
 
-      // initiate new build
+      if (!isNewBuildNeeded) {
+        return addedVersionResult
+      }
+
+      // Step 4: Start a new build
       await startProjectById(ctx.logger, codeBuildId)
       return addedVersionResult
     }),
