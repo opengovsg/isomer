@@ -102,31 +102,3 @@ find ./out -type f | wc -l
 cd out/
 echo $(pwd)
 ls -al
-
-# Zip the build
-echo "Zipping build..."
-start_time=$(date +%s)
-# we use compression level = 3 to zip faster
-zip -rqX -3 ../build.zip .
-cd ../
-echo $(pwd)
-calculate_duration $start_time
-
-# Upload to AWS Amplify
-echo "Uploading to AWS Amplify..."
-start_time=$(date +%s)
-DEPLOY_DATA=$(aws amplify create-deployment --app-id "$AMPLIFY_APP_ID" --branch-name "production")
-JOB_ID=$(echo $DEPLOY_DATA | jq -r '.jobId')
-echo "JOB_ID: $JOB_ID"
-UPLOAD_URL=$(echo $DEPLOY_DATA | jq -r '.zipUploadUrl')
-echo "UPLOAD_URL: $UPLOAD_URL"
-echo "Uploading build artifacts..."
-curl -T build.zip "$UPLOAD_URL"
-calculate_duration $start_time
-
-# Start AWS Amplify deployment
-echo "Starting deployment..."
-start_time=$(date +%s)
-aws amplify start-deployment --app-id "$AMPLIFY_APP_ID" --branch-name "production" --job-id $JOB_ID
-echo "Deployment created in Amplify successfully"
-calculate_duration $start_time
