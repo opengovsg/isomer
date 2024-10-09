@@ -136,7 +136,8 @@ const SuspendableSiteList = (): JSX.Element => {
                   src={site.config.logoUrl}
                   alt={site.name}
                   borderRadius="0.5rem"
-                  border="1.5px solid #EDEDED"
+                  border="1.5px solid"
+                  borderColor="base.divider.medium"
                   width="100%"
                   height="100%"
                   objectFit="cover"
