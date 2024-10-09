@@ -33,7 +33,7 @@ export const DeleteBlockModal = ({
 
         <ModalCloseButton />
 
-        <ModalBody>
+        <ModalBody mt="1.5rem">
           <Text textStyle="body-2">This cannot be undone.</Text>
         </ModalBody>
 
