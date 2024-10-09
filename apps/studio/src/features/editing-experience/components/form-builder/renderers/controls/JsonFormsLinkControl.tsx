@@ -82,7 +82,7 @@ const PageLinkModalContent = ({
     <ModalContent>
       <form onSubmit={onSubmit}>
         <ModalHeader pr="4.5rem">Edit link</ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton size="lg" />
 
         <ModalBody>
           <FormControl isRequired>

@@ -27,11 +27,12 @@ const SuspendableMoveItem = ({
       justifyContent="flex-start"
       color="base.content.default"
       pl="2.25rem"
+      size="xs"
       onClick={onChangeResourceId}
       leftIcon={<BiFolder />}
       {...rest}
     >
-      <Text noOfLines={1} textStyle="caption-1">
+      <Text noOfLines={1} textStyle="caption-1" textAlign="left">
         /{permalink}
       </Text>
     </Button>
