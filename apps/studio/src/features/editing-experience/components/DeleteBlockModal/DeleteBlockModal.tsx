@@ -31,7 +31,7 @@ export const DeleteBlockModal = ({
           Are you sure you want to delete {itemName}?
         </ModalHeader>
 
-        <ModalCloseButton />
+        <ModalCloseButton size="lg" />
 
         <ModalBody mt="1.5rem">
           <Text textStyle="body-1">This cannot be undone.</Text>
