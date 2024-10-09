@@ -13,6 +13,27 @@ import { NoResultIcon } from "~/components/Svg/NoResultIcon"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
+const SiteListSection = ({
+  children,
+}: {
+  children: React.ReactNode
+}): JSX.Element => {
+  return (
+    <Flex flexDirection="column" gap="1.5rem" marginTop="0.75rem">
+      <Text textStyle="body-2">
+        Don't see a site that you're supposed to have access to?{" "}
+        <Link variant="inline" href="mailto:support@isomer.gov.sg">
+          Let us know
+        </Link>
+        .
+      </Text>
+      <SimpleGrid columns={3} gap="2.5rem" width="100%">
+        {children}
+      </SimpleGrid>
+    </Flex>
+  )
+}
+
 const SuspendableSiteList = (): JSX.Element => {
   // TODO: Only return sites that the user has access to
   const [sites] = trpc.site.list.useSuspenseQuery()
@@ -44,34 +65,23 @@ const SuspendableSiteList = (): JSX.Element => {
   }
 
   return (
-    <Flex flexDirection="column" gap="1.5rem" marginTop="0.75rem">
-      <Text textStyle="body-2">
-        Don't see a site that you're supposed to have access to?{" "}
-        <Link variant="inline" href="mailto:support@isomer.gov.sg">
-          Let us know
-        </Link>
-        .
-      </Text>
-      <Flex flexDirection="column" gap="2rem">
-        <SimpleGrid columns={3} gap="2.5rem" width="100%">
-          {sites.map((site) => (
-            <Card key={site.id} width="100%">
-              <CardHeader>
-                <Link href={`/sites/${site.id}`} as={NextLink}>
-                  {site.name}
-                </Link>
-              </CardHeader>
-            </Card>
-          ))}
-        </SimpleGrid>
-      </Flex>
-    </Flex>
+    <SiteListSection>
+      {sites.map((site) => (
+        <Card key={site.id} width="100%">
+          <CardHeader>
+            <Link href={`/sites/${site.id}`} as={NextLink}>
+              {site.name}
+            </Link>
+          </CardHeader>
+        </Card>
+      ))}
+    </SiteListSection>
   )
 }
 
 const SiteListSkeleton = (): JSX.Element => {
   return (
-    <SimpleGrid columns={3} gap="2.5rem">
+    <SiteListSection>
       {[1, 2, 3].map((index) => (
         <Card key={index} width="100%">
           <Skeleton>
@@ -79,7 +89,7 @@ const SiteListSkeleton = (): JSX.Element => {
           </Skeleton>
         </Card>
       ))}
-    </SimpleGrid>
+    </SiteListSection>
   )
 }
 
