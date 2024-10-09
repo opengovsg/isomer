@@ -67,7 +67,7 @@ const MoveResourceContent = withSuspense(
     const [{ title }] = trpc.resource.getMetadataById.useSuspenseQuery({
       resourceId,
     })
-    const curResourceId = resourceStack[resourceStack.length - 1]?.resourceId
+    const curResourceId = moveDest?.resourceId
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
       trpc.resource.getFolderChildrenOf.useInfiniteQuery(
         {
