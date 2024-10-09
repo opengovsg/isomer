@@ -23,12 +23,12 @@ export const PageEditingLayout: GetLayout = (page) => {
             flex={1}
             height={0}
             minH="100%"
-            width="100vw"
+            width="100%"
             gridColumnGap={{ base: 0, md: "1rem" }}
             gridTemplate={APP_GRID_TEMPLATE_AREA}
           >
             <SiteEditNavbar />
-            <Flex bg="base.canvas.alt" w="100vw" height={0} minH="100%">
+            <Flex bg="base.canvas.alt" w="100%" height={0} minH="100%">
               {page}
             </Flex>
           </Grid>
