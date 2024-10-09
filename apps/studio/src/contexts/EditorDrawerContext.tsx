@@ -1,6 +1,7 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
-import { createContext, useContext, useState } from "react"
+import { createContext, useCallback, useContext, useState } from "react"
+import { flushSync } from "react-dom"
 
 import type { ModifiedAsset } from "~/types/assets"
 import type { ResourceType } from "~prisma/generated/generatedEnums"
@@ -18,7 +19,7 @@ export interface DrawerContextType
   savedPageState: IsomerSchema
   setSavedPageState: Dispatch<SetStateAction<IsomerSchema>>
   previewPageState: IsomerSchema
-  setPreviewPageState: Dispatch<SetStateAction<IsomerSchema>>
+  setPreviewPageState: (nextState: SetStateAction<IsomerSchema>) => void
   modifiedAssets: ModifiedAsset[]
   setModifiedAssets: Dispatch<SetStateAction<ModifiedAsset[]>>
   addedBlockIndex: number | null
@@ -55,11 +56,20 @@ export function EditorDrawerProvider({
   const [savedPageState, setSavedPageState] =
     useState<IsomerSchema>(initialPageState)
   // State of the page to render in the preview
-  const [previewPageState, setPreviewPageState] =
+  const [previewPageState, _setPreviewPageState] =
     useState<IsomerSchema>(initialPageState)
   // Holding state for images/files that have been modified in the page
   const [modifiedAssets, setModifiedAssets] = useState<ModifiedAsset[]>([])
   const [addedBlockIndex, setAddedBlockIndex] = useState<number | null>(null)
+
+  const setPreviewPageState = useCallback(
+    (previewPageState: SetStateAction<IsomerSchema>) => {
+      flushSync(() => {
+        _setPreviewPageState(previewPageState)
+      })
+    },
+    [],
+  )
 
   return (
     <EditorDrawerContext.Provider
