@@ -117,14 +117,14 @@ const DeleteResourceModalContent = ({
 
   return (
     <ModalContent>
-      <ModalHeader pr="4.5rem">Delete {title}?</ModalHeader>
+      <ModalHeader mr="3.5rem">Delete {title}?</ModalHeader>
       <ModalCloseButton size="lg" />
 
       <ModalBody>
-        <Text textStyle="body-2">{getWarningText(resourceType)}</Text>
+        <Text textStyle="body-1">{getWarningText(resourceType)}</Text>
         <HStack mt="1.5rem">
           <Checkbox onChange={() => setIsChecked((prev) => !prev)}>
-            Yes, delete this {label} permanently
+            <Text textStyle="body-2">Yes, delete this {label} permanently</Text>
           </Checkbox>
         </HStack>
       </ModalBody>

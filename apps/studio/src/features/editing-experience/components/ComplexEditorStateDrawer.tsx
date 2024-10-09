@@ -126,15 +126,18 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
 
   const handleChange = useCallback(
     (data: IsomerComponent) => {
-      const updatedBlocks = Array.from(previewPageState.content)
-      updatedBlocks[currActiveIdx] = data
-      const newPageState = {
-        ...previewPageState,
-        content: updatedBlocks,
-      }
-      setPreviewPageState(newPageState)
+      setPreviewPageState((oldPageState) => {
+        const updatedBlocks = Array.from(oldPageState.content)
+        updatedBlocks[currActiveIdx] = data
+
+        const newPageState = {
+          ...oldPageState,
+          content: updatedBlocks,
+        }
+        return newPageState
+      })
     },
-    [currActiveIdx, previewPageState, setPreviewPageState],
+    [currActiveIdx, setPreviewPageState],
   )
 
   const handleSave = useCallback(async () => {

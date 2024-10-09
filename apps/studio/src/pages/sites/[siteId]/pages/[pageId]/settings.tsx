@@ -30,10 +30,11 @@ import { generateResourceUrl } from "~/features/editing-experience/components/ut
 import { editPageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
+import { generateBasePermalinkSchema } from "~/schemas/common"
 import {
+  basePageSettingsSchema,
   MAX_PAGE_URL_LENGTH,
   MAX_TITLE_LENGTH,
-  pageSettingsSchema,
 } from "~/schemas/page"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
@@ -71,12 +72,19 @@ const PageSettings = () => {
     handleSubmit,
     formState: { isDirty, errors },
   } = useZodForm({
-    schema: pageSettingsSchema.omit({ pageId: true, siteId: true }).extend({
+    schema: basePageSettingsSchema.omit({ pageId: true, siteId: true }).extend({
       meta: z.unknown(),
+      permalink: generateBasePermalinkSchema("page")
+        .min(type === ResourceType.RootPage ? 0 : 1, {
+          message: "Enter a URL for this page",
+        })
+        .max(MAX_PAGE_URL_LENGTH, {
+          message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
+        }),
     }),
     defaultValues: {
       title: originalTitle,
-      permalink: permalinkTree[permalinkTree.length - 1] || "/",
+      permalink: permalinkTree[permalinkTree.length - 1] || "",
       meta: content.meta,
     },
   })
@@ -144,6 +152,7 @@ const PageSettings = () => {
           pageId,
           siteId,
           meta: JSON.stringify(meta),
+          type,
           ...rest,
         },
         {
@@ -176,7 +185,11 @@ const PageSettings = () => {
                 render={({ field: { onChange, ...field } }) => (
                   <Input
                     isDisabled={type === ResourceType.RootPage}
-                    placeholder="URL will be autopopulated if left untouched"
+                    placeholder={
+                      type === ResourceType.RootPage
+                        ? "/"
+                        : "URL will be autopopulated if left untouched"
+                    }
                     noOfLines={1}
                     mt="0.5rem"
                     w="100%"
