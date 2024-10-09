@@ -13,22 +13,63 @@ type MoveItemProps = Pick<
 > & {
   onChangeResourceId: () => void
   isDisabled?: boolean
+  isHighlighted?: boolean
+  setHighlightedSelectedResourceId: () => void
+}
+
+const getButtonProps = ({
+  isHighlighted,
+  onChangeResourceId,
+  setHighlightedSelectedResourceId,
+}: MoveItemProps) => {
+  if (isHighlighted) {
+    return {
+      color: "interaction.main.default",
+      bg: "interaction.muted.main.active",
+      _hover: {
+        color: "interaction.main.default",
+        bg: "interaction.muted.main.active",
+      },
+      onClick: onChangeResourceId,
+    }
+  }
+
+  return {
+    color: "base.content.default",
+    onClick: setHighlightedSelectedResourceId,
+  }
 }
 
 const SuspendableMoveItem = ({
   permalink,
   onChangeResourceId,
+  isHighlighted,
+  setHighlightedSelectedResourceId,
   ...rest
 }: MoveItemProps) => {
+  const buttonProps = getButtonProps({
+    isHighlighted,
+    onChangeResourceId,
+    setHighlightedSelectedResourceId,
+    permalink,
+  })
+
   return (
     <Button
       variant="clear"
       w="full"
       justifyContent="flex-start"
-      color="base.content.default"
+      color={buttonProps.color}
+      bg={buttonProps.bg}
+      {...(buttonProps._hover && {
+        _hover: {
+          color: buttonProps._hover.color,
+          bg: buttonProps._hover.bg,
+        },
+      })}
       pl="2.25rem"
       size="xs"
-      onClick={onChangeResourceId}
+      onClick={buttonProps.onClick}
       leftIcon={<BiFolder />}
       {...rest}
     >

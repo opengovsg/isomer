@@ -59,9 +59,8 @@ const MoveResourceContent = withSuspense(
     const [resourceStack, setResourceStack] = useState<PendingMoveResource[]>(
       [],
     )
-    const [selectedResourceId, setSelectedResourceId] = useState<string | null>(
-      null,
-    )
+    const [highlightedSelectedResourceId, setHighlightedSelectedResourceId] =
+      useState<string | null>(null)
     const moveDest = resourceStack[resourceStack.length - 1]
     const { siteId } = useQueryParse(sitePageSchema)
     const setMovedItem = useSetAtom(moveResourceAtom)
@@ -133,7 +132,9 @@ const MoveResourceContent = withSuspense(
     })
 
     const movedItem = useAtomValue(moveResourceAtom)
+
     const onBack = () => {
+      setHighlightedSelectedResourceId(null)
       setResourceStack((prev) => prev.slice(0, -1))
     }
 
@@ -199,7 +200,11 @@ const MoveResourceContent = withSuspense(
                     <MoveItem
                       {...child}
                       isDisabled={child.id === movedItem?.resourceId}
+                      isHighlighted={child.id === highlightedSelectedResourceId}
                       key={child.id}
+                      setHighlightedSelectedResourceId={() =>
+                        setHighlightedSelectedResourceId(child.id)
+                      }
                       onChangeResourceId={() => {
                         setResourceStack((prev) => [
                           ...prev,
