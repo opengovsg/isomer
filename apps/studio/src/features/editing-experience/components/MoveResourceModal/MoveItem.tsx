@@ -31,7 +31,7 @@ const SuspendableMoveItem = ({
       leftIcon={<BiFolder />}
       {...rest}
     >
-      <Text noOfLines={1} textStyle="caption-1">
+      <Text noOfLines={1} textStyle="caption-1" textAlign="left">
         /{permalink}
       </Text>
     </Button>
