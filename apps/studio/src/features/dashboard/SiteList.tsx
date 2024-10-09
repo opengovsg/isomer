@@ -4,6 +4,8 @@ import {
   CardHeader,
   Flex,
   Image,
+  LinkBox,
+  LinkOverlay,
   SimpleGrid,
   Skeleton,
   Text,
@@ -116,16 +118,8 @@ const SuspendableSiteList = (): JSX.Element => {
       <Flex flexDirection="column" gap="2rem">
         <SimpleGrid columns={3} gap="2.5rem" width="100%">
           {sites.map((site) => (
-            <Link
-              href={`/sites/${site.id}`}
-              as={NextLink}
-              textDecoration="none"
-              color="links.neutral-hover"
-              _hover={{
-                textDecoration: "none",
-                color: "links.neutral-hover",
-              }}
-            >
+            <LinkBox>
+              <LinkOverlay href={`/sites/${site.id}`} />
               <Flex
                 key={site.id}
                 flexDirection="column"
@@ -155,7 +149,7 @@ const SuspendableSiteList = (): JSX.Element => {
                   {site.name}
                 </Text>
               </Flex>
-            </Link>
+            </LinkBox>
           ))}
         </SimpleGrid>
       </Flex>
