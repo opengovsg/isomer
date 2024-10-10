@@ -1,8 +1,10 @@
 import NextLink from "next/link"
 import {
   Card,
-  CardHeader,
   Flex,
+  Image,
+  LinkBox,
+  LinkOverlay,
   SimpleGrid,
   Skeleton,
   Text,
@@ -12,6 +14,46 @@ import { Link } from "@opengovsg/design-system-react"
 import { NoResultIcon } from "~/components/Svg/NoResultIcon"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
+
+const Site = ({
+  siteId,
+  siteName,
+  siteLogoUrl,
+}: {
+  siteId?: number
+  siteName?: string
+  siteLogoUrl?: string
+}): JSX.Element => {
+  return (
+    <LinkBox>
+      <LinkOverlay href={`/sites/${siteId}`} as={NextLink} />
+      <Flex key={siteId} flexDirection="column" gap="1rem" width="100%">
+        <Image
+          src={siteLogoUrl}
+          alt={siteName}
+          borderRadius="0.5rem"
+          border="1.5px solid"
+          borderColor="base.divider.medium"
+          width="100%"
+          height="100%"
+          objectFit="cover"
+          aspectRatio="1/1"
+          backgroundColor="white"
+          fallbackSrc="/isomer-sites-placeholder.png"
+        />
+        <Text
+          as="h6"
+          textStyle="h6"
+          noOfLines={1}
+          overflow="hidden"
+          textOverflow="ellipsis"
+        >
+          {siteName}
+        </Text>
+      </Flex>
+    </LinkBox>
+  )
+}
 
 const SiteListSection = ({
   children,
@@ -67,13 +109,11 @@ const SuspendableSiteList = (): JSX.Element => {
   return (
     <SiteListSection>
       {sites.map((site) => (
-        <Card key={site.id} width="100%">
-          <CardHeader>
-            <Link href={`/sites/${site.id}`} as={NextLink}>
-              {site.name}
-            </Link>
-          </CardHeader>
-        </Card>
+        <Site
+          siteId={site.id}
+          siteName={site.name}
+          siteLogoUrl={site.config.logoUrl}
+        />
       ))}
     </SiteListSection>
   )
@@ -85,7 +125,7 @@ const SiteListSkeleton = (): JSX.Element => {
       {[1, 2, 3].map((index) => (
         <Card key={index} width="100%">
           <Skeleton>
-            <CardHeader>Loading...</CardHeader>
+            <Site />
           </Skeleton>
         </Card>
       ))}
