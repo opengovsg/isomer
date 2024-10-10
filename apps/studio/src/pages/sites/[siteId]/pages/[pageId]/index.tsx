@@ -1,14 +1,15 @@
 import { Grid, GridItem } from "@chakra-ui/react"
 
+import type { NextPageWithLayout } from "~/lib/types"
+import { PagePermissionsBoundary } from "~/components/AuthWrappers"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import EditPageDrawer from "~/features/editing-experience/components/EditPageDrawer"
 import { EditPagePreview } from "~/features/editing-experience/components/EditPagePreview"
 import { editPageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
 
-function EditPage(): JSX.Element {
+const EditPage: NextPageWithLayout = () => {
   const { pageId, siteId } = useQueryParse(editPageSchema)
 
   const [{ content: page, type, updatedAt, title }] =
@@ -62,6 +63,6 @@ const PageEditingView = () => {
   )
 }
 
-EditPage.getLayout = PageEditingLayout
+EditPage.getLayout = PagePermissionsBoundary
 
 export default EditPage
