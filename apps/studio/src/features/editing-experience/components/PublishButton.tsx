@@ -1,4 +1,3 @@
-import { Can } from "@casl/react"
 import { Skeleton } from "@chakra-ui/react"
 import {
   Button,
@@ -6,7 +5,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 
-import { usePermissions } from "~/features/permissions"
+import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
@@ -21,7 +20,6 @@ const SuspendablePublishButton = ({
 }: PublishButtonProps): JSX.Element => {
   const toast = useToast()
   const utils = trpc.useUtils()
-  const { ability } = usePermissions()
 
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
 
@@ -55,7 +53,7 @@ const SuspendablePublishButton = ({
   }
 
   return (
-    <Can do="publish" ability={ability} on="Resource">
+    <Can do="publish" on="Resource">
       <TouchableTooltip
         hidden={!!currPage.draftBlobId}
         label="All changes have been published"

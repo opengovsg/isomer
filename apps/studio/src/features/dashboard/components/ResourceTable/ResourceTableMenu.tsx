@@ -1,6 +1,5 @@
 import { useMemo } from "react"
 import NextLink from "next/link"
-import { Can } from "@casl/react"
 import { MenuButton, MenuList, Portal } from "@chakra-ui/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -16,7 +15,7 @@ import {
 import type { ResourceTableData } from "./types"
 import { MenuItem } from "~/components/Menu"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
-import { usePermissions } from "~/features/permissions"
+import { Can } from "~/features/permissions"
 import { getLinkToResource } from "~/utils/resource"
 import { deleteResourceModalAtom, folderSettingsModalAtom } from "../../atoms"
 
@@ -50,8 +49,6 @@ export const ResourceTableMenu = ({
     [siteId, resourceId, type],
   )
 
-  const { ability } = usePermissions()
-
   return (
     <Menu isLazy size="sm">
       <MenuButton
@@ -76,7 +73,7 @@ export const ResourceTableMenu = ({
               </MenuItem>
 
               {/* TODO(ISOM-1552): Add back duplicate page functionality when implemented */}
-              <Can do="update" on={{ parentId }} ability={ability}>
+              <Can do="update" on={{ parentId }}>
                 <MenuItem isDisabled icon={<BiDuplicate fontSize="1rem" />}>
                   Duplicate page
                 </MenuItem>
@@ -96,7 +93,7 @@ export const ResourceTableMenu = ({
           )}
           {(type === "Page" || type === "Folder") && (
             // TODO: we need to change the resourceid next time when we implement root level permissions
-            <Can do="move" on={{ parentId }} ability={ability}>
+            <Can do="move" on={{ parentId }}>
               <MenuItem
                 as="button"
                 onClick={handleMoveResourceClick}
@@ -107,7 +104,7 @@ export const ResourceTableMenu = ({
             </Can>
           )}
           {resourceType !== ResourceType.RootPage && (
-            <Can do="delete" on={{ parentId }} ability={ability}>
+            <Can do="delete" on={{ parentId }}>
               <MenuItem
                 onClick={() => {
                   setResourceModalState({

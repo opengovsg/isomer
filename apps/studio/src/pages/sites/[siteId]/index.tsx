@@ -1,4 +1,3 @@
-import { Can } from "@casl/react"
 import {
   Box,
   Breadcrumb,
@@ -21,7 +20,7 @@ import { CreateCollectionModal } from "~/features/editing-experience/components/
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
-import { PermissionsProvider, usePermissions } from "~/features/permissions"
+import { Can, PermissionsProvider } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
@@ -40,10 +39,8 @@ const HomepageMenuButton = ({
   onPageCreateModalOpen,
   onFolderCreateModalOpen,
 }: HomepageMenuButtonProps) => {
-  const { ability } = usePermissions()
-
   return (
-    <Can do="create" on={{ parentId: null }} ability={ability}>
+    <Can do="create" on={{ parentId: null }}>
       <Menu isLazy size="sm">
         {({ isOpen }) => (
           <>
