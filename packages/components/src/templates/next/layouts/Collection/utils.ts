@@ -1,5 +1,6 @@
 import type { AppliedFilter, Filter as FilterType } from "../../types/Filter"
 import type { CollectionCardProps } from "~/interfaces"
+import { getParsedDate } from "~/utils"
 
 export const getAvailableFilters = (
   items: CollectionCardProps[],
@@ -25,7 +26,7 @@ export const getAvailableFilters = (
 
     // Step 3: Get all available years
     if (lastUpdated) {
-      const year = new Date(lastUpdated).getFullYear().toString()
+      const year = getParsedDate(lastUpdated).getFullYear().toString()
       if (year in years && years[year]) {
         years[year] += 1
       } else {

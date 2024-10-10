@@ -162,6 +162,7 @@ export const MockDateDecorator: Decorator<Args> = (story, { parameters }) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   mockdate.set(parameters.mockdate)
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   const mockedDate = format(parameters.mockdate, "dd-mm-yyyy HH:mma")
 
   return (
