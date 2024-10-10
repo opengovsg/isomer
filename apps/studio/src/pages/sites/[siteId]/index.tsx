@@ -12,7 +12,7 @@ import { Button, Menu } from "@opengovsg/design-system-react"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 
-import { SitePermissionsBoundary } from "~/components/AuthWrappers"
+import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
@@ -24,6 +24,7 @@ import { MoveResourceModal } from "~/features/editing-experience/components/Move
 import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
+import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
 
 export const sitePageSchema = z.object({
   siteId: z.coerce.number(),
@@ -159,6 +160,13 @@ const SitePage: NextPageWithLayout = () => {
   )
 }
 
-SitePage.getLayout = SitePermissionsBoundary
+SitePage.getLayout = (page) => {
+  return (
+    <PermissionsBoundary
+      resourceType="RootPage"
+      page={AdminSidebarOnlyLayout(page)}
+    />
+  )
+}
 
 export default SitePage
