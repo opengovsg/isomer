@@ -1,4 +1,3 @@
-import type { PropsWithChildren } from "react"
 import {
   Box,
   Breadcrumb,
@@ -13,6 +12,7 @@ import { Button, Menu } from "@opengovsg/design-system-react"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 
+import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
@@ -22,11 +22,10 @@ import { CreateCollectionModal } from "~/features/editing-experience/components/
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
-import { Can, PermissionsProvider } from "~/features/permissions"
+import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
-import { DefaultLayout } from "~/templates/layouts/DefaultLayout"
 
 export const sitePageSchema = z.object({
   siteId: z.coerce.number(),
@@ -162,33 +161,20 @@ const SitePage: NextPageWithLayout = () => {
   )
 }
 
-const PermissionsBoundary = ({ children }: PropsWithChildren) => {
-  const { siteId } = useQueryParse(sitePageSchema)
-  return (
-    <PermissionsProvider siteId={siteId}>
-      <Can do="read" on={{ parentId: null }} passThrough>
-        {(allowed) => {
-          return allowed ? (
-            children
-          ) : (
-            <DefaultLayout>
-              <PermissionsErrorBoundary
-                title="You don't have access to edit this site."
-                description="To have access, ask your site admins to add you as an editor. If they’ve already added you, you might need to refresh this page."
-                backTo="/"
-                buttonText="Back to My Sites"
-              />
-            </DefaultLayout>
-          )
-        }}
-      </Can>
-    </PermissionsProvider>
-  )
-}
-
 SitePage.getLayout = (page) => {
   return (
-    <PermissionsBoundary>{AdminCmsSidebarLayout(page)}</PermissionsBoundary>
+    <PermissionsBoundary
+      fallback={
+        <PermissionsErrorBoundary
+          title="You don't have access to edit this site."
+          description="To have access, ask your site admins to add you as an editor. If they’ve already added you, you might need to refresh this page."
+          backTo="/"
+          buttonText="Back to My Sites"
+        />
+      }
+    >
+      {AdminCmsSidebarLayout(page)}
+    </PermissionsBoundary>
   )
 }
 
