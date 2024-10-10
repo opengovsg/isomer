@@ -27,6 +27,7 @@ const client = z
     NEXT_PUBLIC_APP_NAME: z.string().default("Isomer Studio"),
     NEXT_PUBLIC_APP_VERSION: z.string().default("0.0.0"),
     NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY: z.string().optional(),
+    NEXT_PUBLIC_INTERCOM_APP_ID: z.string().optional(),
   })
   .merge(s3Schema)
 
@@ -131,6 +132,7 @@ const processEnv = {
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:
     process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
+  NEXT_PUBLIC_INTERCOM_APP_ID: process.env.NEXT_PUBLIC_INTERCOM_APP_ID,
 }
 
 // Don't touch the part below
