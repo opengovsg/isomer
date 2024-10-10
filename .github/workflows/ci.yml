@@ -65,17 +65,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup
         uses: ./.github/actions/setup
-      - name: Load .env file
-        uses: xom9ikk/dotenv@v2
-        with:
-          mode: test
       - name: Install dependencies
         # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
         run: turbo run generate --filter=isomer-studio
       - name: Configure Datadog Test Visibility
-        env:
-          DD_API_KEY: ${{ secrets.DD_API_KEY }}
-        uses: datadog/test-visibility-github-action@v1
+        uses: datadog/test-visibility-github-action@v2
         with:
           languages: js
           service: isomer-studio
@@ -101,6 +95,7 @@ jobs:
       - name: Load .env file
         uses: xom9ikk/dotenv@v2
         with:
+          path: apps/studio
           mode: test
       - name: Next.js cache
         uses: actions/cache@v4
@@ -121,15 +116,13 @@ jobs:
       - name: Start test containers
         run: npm run setup:test
       - name: Configure Datadog Test Visibility
-        env:
-          DD_API_KEY: ${{ secrets.DD_API_KEY }}
-        uses: datadog/test-visibility-github-action@v1
+        uses: datadog/test-visibility-github-action@v2
         with:
           languages: js
           service: isomer-studio
           api_key: ${{ secrets.DD_API_KEY }}
       - name: Run Playwright tests
-        run: turbo test-ci:e2e --filter=isomer-studio
+        run: turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
         env:
           # Required to allow Datadog to trace Playwright tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
