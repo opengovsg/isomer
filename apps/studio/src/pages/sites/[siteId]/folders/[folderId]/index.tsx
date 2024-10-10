@@ -15,6 +15,7 @@ import { BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
 import type { RouterOutput } from "~/utils/trpc"
+import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
@@ -22,7 +23,6 @@ import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
-import { PermissionsProvider } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
@@ -106,7 +106,7 @@ const FolderPage: NextPageWithLayout = () => {
   const breadcrumbs = getBreadcrumbsFrom(resource, siteId)
 
   return (
-    <PermissionsProvider siteId={Number(siteId)}>
+    <>
       <VStack
         w="100%"
         p="1.75rem"
@@ -239,9 +239,16 @@ const FolderPage: NextPageWithLayout = () => {
       <FolderSettingsModal />
       <MoveResourceModal />
       <DeleteResourceModal siteId={parseInt(siteId)} />
-    </PermissionsProvider>
+    </>
   )
 }
 
-FolderPage.getLayout = AdminCmsSidebarLayout
+FolderPage.getLayout = (page) => {
+  return (
+    <PermissionsBoundary
+      resourceType="Folder"
+      page={AdminCmsSidebarLayout(page)}
+    />
+  )
+}
 export default FolderPage
