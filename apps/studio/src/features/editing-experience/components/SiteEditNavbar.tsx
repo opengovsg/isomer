@@ -98,48 +98,41 @@ export const SiteEditNavbar = (): JSX.Element => {
   const { pathname } = useRouter()
 
   return (
-    <Flex flex="0 0 auto" gridColumn="1/-1">
-      <Flex
-        h={ADMIN_NAVBAR_HEIGHT}
-        pos="fixed"
-        zIndex="docked"
-        w="100%"
-        justify="space-between"
-        align="center"
-        px={{ base: "1.5rem", md: "1.8rem", xl: "2rem" }}
-        pl={{ base: `calc(1rem + ${ADMIN_NAVBAR_HEIGHT})`, sm: "1.5rem" }}
-        py="0.375rem"
-        bg="white"
-        borderBottomWidth="1px"
-        borderColor="base.divider.medium"
-        transition="padding 0.1s"
-        gap="0.5rem"
-      >
-        <NavigationBreadcrumbs
-          siteId={String(siteId)}
-          pageId={String(pageId)}
-        />
+    <Flex
+      h={ADMIN_NAVBAR_HEIGHT}
+      w="100%"
+      justify="space-between"
+      align="center"
+      px={{ base: "1.5rem", md: "1.8rem", xl: "2rem" }}
+      pl={{ base: `calc(1rem + ${ADMIN_NAVBAR_HEIGHT})`, sm: "1.5rem" }}
+      py="0.375rem"
+      bg="white"
+      borderBottomWidth="1px"
+      borderColor="base.divider.medium"
+      transition="padding 0.1s"
+      gap="0.5rem"
+    >
+      <NavigationBreadcrumbs siteId={String(siteId)} pageId={String(pageId)} />
 
-        <Flex gap="2rem">
-          <TabLink
-            isActive={pathname === "/sites/[siteId]/pages/[pageId]"}
-            href={`/sites/${siteId}/pages/${pageId}`}
-          >
-            Edit
-          </TabLink>
-          <TabLink
-            isActive={pathname === "/sites/[siteId]/pages/[pageId]/settings"}
-            href={`/sites/${siteId}/pages/${pageId}/settings`}
-          >
-            Page Settings
-          </TabLink>
-        </Flex>
-        {pageId && siteId && (
-          <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
-            <PublishButton pageId={pageId} siteId={siteId} />
-          </Flex>
-        )}
+      <Flex gap="2rem">
+        <TabLink
+          isActive={pathname === "/sites/[siteId]/pages/[pageId]"}
+          href={`/sites/${siteId}/pages/${pageId}`}
+        >
+          Edit
+        </TabLink>
+        <TabLink
+          isActive={pathname === "/sites/[siteId]/pages/[pageId]/settings"}
+          href={`/sites/${siteId}/pages/${pageId}/settings`}
+        >
+          Page Settings
+        </TabLink>
       </Flex>
+      {pageId && siteId && (
+        <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
+          <PublishButton pageId={pageId} siteId={siteId} />
+        </Flex>
+      )}
     </Flex>
   )
 }

@@ -10,7 +10,7 @@ export const DirectorySidebar = ({
   siteId,
 }: DirectorySidebarProps): JSX.Element => {
   return (
-    <Flex flexDir="column" px="1.25rem" py="1.75rem" height="full">
+    <Flex flexDir="column" px="1.25rem" py="1.75rem">
       <DirectorySidebarContent
         siteId={siteId}
         resourceId={null}

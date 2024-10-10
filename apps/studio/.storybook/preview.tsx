@@ -2,7 +2,9 @@ import "@fontsource/ibm-plex-mono"
 import "inter-ui/inter.css"
 
 import { useCallback, useMemo, useState } from "react"
-import { Box, Skeleton } from "@chakra-ui/react"
+import { Box, Skeleton, Stack } from "@chakra-ui/react"
+import { GrowthBook } from "@growthbook/growthbook"
+import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { withThemeFromJSXProvider } from "@storybook/addon-themes"
 import {
@@ -25,6 +27,7 @@ import { z } from "zod"
 import { viewport, withChromaticModes } from "@isomer/storybook-config"
 
 import type { EnvContextReturn } from "~/components/AppProviders"
+import { AppBanner } from "~/components/AppBanner"
 import { EnvProvider, FeatureContext } from "~/components/AppProviders"
 import { DefaultFallback } from "~/components/ErrorBoundary"
 import Suspense from "~/components/Suspense"
@@ -52,7 +55,11 @@ const StorybookEnvDecorator: Decorator = (story) => {
   return <EnvProvider env={mockEnv}>{story()}</EnvProvider>
 }
 
-const SetupDecorator: Decorator = (Story) => {
+const SetupDecorator: Decorator = (Story, { parameters }) => {
+  const gb = new GrowthBook()
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  gb.setForcedFeatures(new Map(parameters.growthbook ?? []))
+
   const [queryClient] = useState(
     new QueryClient({
       defaultOptions: {
@@ -71,15 +78,20 @@ const SetupDecorator: Decorator = (Story) => {
     }),
   )
   return (
-    <ErrorBoundary FallbackComponent={DefaultFallback}>
-      <Suspense fallback={<Skeleton width="100vw" height="100vh" />}>
-        <trpc.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <Story />
-          </QueryClientProvider>
-        </trpc.Provider>
-      </Suspense>
-    </ErrorBoundary>
+    <GrowthBookProvider growthbook={gb}>
+      <ErrorBoundary FallbackComponent={DefaultFallback}>
+        <Suspense fallback={<Skeleton width="100%" height="100vh" />}>
+          <trpc.Provider client={trpcClient} queryClient={queryClient}>
+            <QueryClientProvider client={queryClient}>
+              <Stack spacing={0} height="$100vh" flexDirection="column">
+                <AppBanner />
+                <Story />
+              </Stack>
+            </QueryClientProvider>
+          </trpc.Provider>
+        </Suspense>
+      </ErrorBoundary>
+    </GrowthBookProvider>
   )
 }
 

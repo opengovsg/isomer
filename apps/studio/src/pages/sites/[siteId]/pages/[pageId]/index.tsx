@@ -45,13 +45,7 @@ function EditPage(): JSX.Element {
 
 const PageEditingView = () => {
   return (
-    <Grid
-      h="full"
-      w="100vw"
-      templateColumns="repeat(3, 1fr)"
-      gap={0}
-      maxH="calc(100vh - 57px)"
-    >
+    <Grid h="full" w="100%" templateColumns="repeat(3, 1fr)" gap={0}>
       <GridItem colSpan={1} overflow="auto" minW="30rem">
         <EditPageDrawer />
       </GridItem>

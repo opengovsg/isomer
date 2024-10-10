@@ -26,7 +26,8 @@ export function CmsSidebarContainer({
           borderColor="base.divider.medium"
           py={{ base: 0, md: "0.75rem" }}
           px={{ base: 0, md: "0.5rem" }}
-          height="$100vh"
+          height={0}
+          minH="100%"
           overflow="auto"
           css={{
             "&::-webkit-scrollbar": {
@@ -44,7 +45,8 @@ export function CmsSidebarContainer({
       </GridItem>
       <GridItem as="aside" area="sidenav" overflow="hidden">
         <Box
-          height="$100vh"
+          height={0}
+          minH="100%"
           bg="utility.ui"
           pos="sticky"
           top={0}

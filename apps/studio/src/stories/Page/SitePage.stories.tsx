@@ -5,6 +5,7 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 
 import SitePage from "~/pages/sites/[siteId]"
+import { createBannerGbParameters } from "../utils/growthbook"
 
 const meta: Meta<typeof SitePage> = {
   title: "Pages/Site Management/Site Page",
@@ -59,5 +60,17 @@ export const FolderResourceMenu: Story = {
       })
       await userEvent.click(folderMenuButton)
     })
+  },
+}
+
+export const WithBanner: Story = {
+  parameters: {
+    growthbook: [
+      createBannerGbParameters({
+        variant: "info",
+        message:
+          "This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long.",
+      }),
+    ],
   },
 }

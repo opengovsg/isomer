@@ -3,6 +3,7 @@ import { useRouter } from "next/router"
 import {
   Button,
   Center,
+  chakra,
   FormControl,
   HStack,
   Text,
@@ -119,8 +120,13 @@ const SiteSettingsPage: NextPageWithLayout = () => {
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <form onSubmit={onClickUpdate}>
-        <Center pt="5.5rem" px="2rem">
+      <chakra.form
+        onSubmit={onClickUpdate}
+        overflow="auto"
+        height={0}
+        minH="100%"
+      >
+        <Center py="5.5rem" px="2rem">
           <VStack w="48rem" alignItems="flex-start" spacing="1.5rem">
             <FormControl isInvalid={!!errors.notification}>
               <Text w="full" textStyle="h3-semibold">
@@ -207,7 +213,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
             </FormControl>
           </VStack>
         </Center>
-      </form>
+      </chakra.form>
     </>
   )
 }
