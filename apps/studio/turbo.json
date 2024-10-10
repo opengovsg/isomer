@@ -10,12 +10,31 @@
       "outputs": ["playwright/test-results/**"]
     },
     "generate": {
+      "dependsOn": ["@opengovsg/isomer-components#build"],
       "inputs": ["prisma/schema.prisma"],
       "cache": false
     },
+    "build:preview-tw": {
+      "dependsOn": ["@opengovsg/isomer-components#build"],
+      "outputs": ["public/assets/css/preview-tw.css"]
+    },
+    "format": {
+      "dependsOn": ["generate"]
+    },
+    "lint": {
+      "dependsOn": ["generate"]
+    },
+    "typecheck": {
+      "dependsOn": ["generate"]
+    },
     "build:theme": {},
     "build": {
-      "dependsOn": ["generate", "build:theme", "^build"],
+      "dependsOn": [
+        "@opengovsg/isomer-components#build",
+        "generate",
+        "build:theme",
+        "build:preview-tw"
+      ],
       "outputs": [".next/**", "!.next/cache/**"]
     }
   }

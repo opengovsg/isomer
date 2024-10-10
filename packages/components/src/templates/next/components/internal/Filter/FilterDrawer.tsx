@@ -11,7 +11,7 @@ import { BiChevronDown, BiX } from "react-icons/bi"
 
 import type { AppliedFilter, FilterProps } from "../../../types/Filter"
 import { tv } from "~/lib/tv"
-import { focusRing } from "~/utils/focusRing"
+import { focusRing } from "~/utils"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { IconButton } from "../IconButton"

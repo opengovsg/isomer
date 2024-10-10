@@ -8,7 +8,7 @@ import { forwardRef } from "react"
 import { Button as AriaButton, composeRenderProps } from "react-aria-components"
 
 import { tv } from "~/lib/tv"
-import { focusRing } from "~/utils/focusRing"
+import { focusRing } from "~/utils"
 
 export const iconButtonStyles = tv({
   base: "box-border flex w-fit cursor-pointer items-center justify-center rounded text-center transition",

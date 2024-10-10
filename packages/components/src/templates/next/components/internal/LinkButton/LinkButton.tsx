@@ -2,9 +2,9 @@
 
 import type { ElementType } from "react"
 import type { VariantProps } from "tailwind-variants"
-import { composeRenderProps } from "react-aria-components"
 
-import type { LinkProps } from "../Link"
+import type { LinkProps } from "~/interfaces"
+import { twMerge } from "~/lib/twMerge"
 import { buttonStyles } from "../Button"
 import { Link } from "../Link"
 
@@ -27,8 +27,9 @@ export const LinkButton = ({
   return (
     <Link
       {...props}
-      className={composeRenderProps(className, (className, renderProps) =>
-        buttonStyles({ ...renderProps, variant, size, className, colorScheme }),
+      className={twMerge(
+        buttonStyles({ variant, size, className, colorScheme }),
+        className,
       )}
     />
   )

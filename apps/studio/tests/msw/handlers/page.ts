@@ -13,7 +13,7 @@ const getRootPageQuery = (wait?: DelayMode | number) => {
     return { title: "A mock page", id: "1", draftBlobId: "1" }
   })
 }
-const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
+export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
   {
     id: "1",
     permalink: "newsroom",

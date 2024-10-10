@@ -1,15 +1,13 @@
-"use client"
-
 import type { VariantProps } from "tailwind-variants"
 import { BiMinus, BiPlus } from "react-icons/bi"
 
 import type { AccordionProps as BaseAccordionProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { focusVisibleHighlightNonRac } from "~/utils/rac"
+import { focusVisibleHighlight } from "~/utils"
 import { Prose } from "../../native"
 
 const summaryStyle = tv({
-  extend: focusVisibleHighlightNonRac,
+  extend: focusVisibleHighlight,
   base: "prose-headline-lg-medium flex list-none flex-row items-center justify-between gap-3 text-base-content-strong hover:cursor-pointer",
 })
 

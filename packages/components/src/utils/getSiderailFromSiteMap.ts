@@ -34,10 +34,6 @@ export const getSiderailFromSiteMap = (
     title: sibling.title,
     url: sibling.permalink,
     isCurrent: sibling.permalink === pagePath,
-    childPages: sibling.children?.map((child) => ({
-      url: child.permalink,
-      title: child.title,
-    })),
   }))
 
   return {

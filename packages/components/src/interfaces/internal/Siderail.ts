@@ -3,7 +3,6 @@ import type { LinkComponentType } from "~/types"
 export interface Page {
   title: string
   url: string
-  childPages?: Page[]
   isCurrent?: boolean
 }
 

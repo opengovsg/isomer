@@ -26,6 +26,7 @@ export const colors = {
     },
     content: {
       DEFAULT: twColors.gray["700"],
+      light: twColors.gray["500"],
       strong: twColors.gray["900"],
       medium: twColors.gray["800"],
       subtle: twColors.gray["600"],

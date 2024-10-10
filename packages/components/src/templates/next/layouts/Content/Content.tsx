@@ -51,7 +51,7 @@ const transformContent = (content: ContentPageSchemaType["content"]) => {
     if (block.type === "prose" && block.content) {
       const transformedBlock = {
         ...block,
-        content: block.content.map((component) => {
+        content: block.content.map((component, index) => {
           if (
             component.type === "heading" &&
             component.attrs.level === 2 &&
@@ -59,7 +59,7 @@ const transformContent = (content: ContentPageSchemaType["content"]) => {
           ) {
             // generate a unique hash to auto-generate anchor links
             const anchorId = getDigestFromText(
-              `${JSON.stringify(component)}_${getRandomNumberBetIntervals(1, 1000)}`,
+              `${JSON.stringify(component)}_${index}`,
             )
             const newAttrs = {
               ...component.attrs,
@@ -91,7 +91,7 @@ const createContentLayoutStyles = tv({
   variants: {
     isSideRailPresent: {
       true: {
-        content: "lg:col-span-9 lg:ml-24",
+        content: "lg:col-span-9 lg:mr-24",
       },
       false: {
         content: "max-w-[54rem]",
@@ -144,13 +144,6 @@ const ContentLayout = ({
         lastUpdated={page.lastModified}
       />
       <div className={compoundStyles.container()}>
-        {sideRail && (
-          <div className={compoundStyles.siderailContainer()}>
-            <Siderail {...sideRail} LinkComponent={LinkComponent} />
-            <BackToTopLink LinkComponent={LinkComponent} />
-          </div>
-        )}
-
         <div
           className={compoundStyles.content({ isSideRailPresent: !!sideRail })}
         >
@@ -169,6 +162,13 @@ const ContentLayout = ({
             })}
           </div>
         </div>
+
+        {sideRail && (
+          <div className={compoundStyles.siderailContainer()}>
+            <Siderail {...sideRail} LinkComponent={LinkComponent} />
+            <BackToTopLink LinkComponent={LinkComponent} />
+          </div>
+        )}
       </div>
     </Skeleton>
   )

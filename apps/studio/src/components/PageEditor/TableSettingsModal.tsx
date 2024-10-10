@@ -73,8 +73,8 @@ export const TableSettingsModal = ({
       <ModalOverlay />
 
       <ModalContent>
-        <ModalHeader>Table settings</ModalHeader>
-        <ModalCloseButton />
+        <ModalHeader mr="3.5rem">Table settings</ModalHeader>
+        <ModalCloseButton size="lg" />
 
         <ModalBody>
           <FormControl isRequired isInvalid={!!errors.caption}>

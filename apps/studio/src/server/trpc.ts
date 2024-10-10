@@ -125,9 +125,11 @@ const baseMiddleware = t.middleware(async ({ ctx, next }) => {
 
 const authMiddleware = t.middleware(async ({ next, ctx }) => {
   const defaultWhitelist: string[] = []
-  const whitelistedUsers = ctx.gb.getFeatureValue("whitelisted_users", {
-    whitelist: defaultWhitelist,
-  })
+  const whitelistedUsers = ctx.gb
+    .getFeatureValue("whitelisted_users", {
+      whitelist: defaultWhitelist,
+    })
+    .whitelist.map((email) => email.toLowerCase())
 
   if (!ctx.session?.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED" })
@@ -145,7 +147,7 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
 
   // check against Growthbook if user is whitelisted for prod/stg
   if (env.NODE_ENV === "production") {
-    if (!whitelistedUsers.whitelist.includes(user.email)) {
+    if (!whitelistedUsers.includes(user.email.toLowerCase())) {
       throw new TRPCError({ code: "UNAUTHORIZED" })
     }
   }
