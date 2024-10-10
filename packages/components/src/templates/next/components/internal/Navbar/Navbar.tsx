@@ -16,7 +16,7 @@ import { NavItem } from "./NavItem"
 
 const navbarStyles = tv({
   slots: {
-    logo: "max-h-[48px] max-w-[128px] object-contain object-center",
+    logo: "max-h-[48px] max-w-[128px] object-contain object-center lg:mr-3",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
     navbar:
       "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-2 pl-6 pr-3 md:px-10",
