@@ -45,15 +45,6 @@ export const getAvailableFilters = (
       })),
     },
     {
-      id: "variant",
-      label: "Type",
-      items: Object.entries(variants).map(([label, count]) => ({
-        id: label.toLowerCase(),
-        label: label.charAt(0).toUpperCase() + label.slice(1),
-        count,
-      })),
-    },
-    {
       id: "year",
       label: "Year",
       items: Object.entries(years).map(([label, count]) => ({
