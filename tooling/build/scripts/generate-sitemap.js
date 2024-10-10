@@ -236,7 +236,9 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
   children.push(...danglingDirEntries)
 
   // Ensure that the result is ordered in alphabetical order
-  children.sort((a, b) => a.title.localeCompare(b.title))
+  children.sort((a, b) =>
+    a.title.localeCompare(b.title, undefined, { numeric: true }),
+  )
 
   return children
 }
