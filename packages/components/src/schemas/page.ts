@@ -5,6 +5,7 @@ import {
   ArticlePagePageSchema,
   CollectionPagePageSchema,
   ContentPagePageSchema,
+  DatabasePagePageSchema,
   FileRefPageSchema,
   HomePagePageSchema,
   LinkRefPageSchema,
@@ -15,6 +16,7 @@ import {
 const LAYOUT_PAGE_MAP = {
   article: ArticlePagePageSchema,
   content: ContentPagePageSchema,
+  database: DatabasePagePageSchema,
   homepage: HomePagePageSchema,
   index: ContentPagePageSchema,
   notfound: NotFoundPagePageSchema,

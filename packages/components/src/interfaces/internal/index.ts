@@ -19,6 +19,10 @@ export type { NavbarProps } from "./Navbar"
 export type { NotificationProps } from "./Notification"
 export type { PillProps } from "./Pill"
 export type { SearchProps } from "./Search"
+export {
+  SearchableTableSchema,
+  type SearchableTableProps,
+} from "./SearchableTable"
 export type { SearchSGInputBoxProps } from "./SearchSGInputBox"
 export type { SidePaneProps } from "./SidePane"
 export type { SiderailProps } from "./Siderail"

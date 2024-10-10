@@ -1,12 +1,10 @@
 import type { ContentPageSchemaType } from "~/engine"
-import type { IsomerSitemap } from "~/types"
 import { tv } from "~/lib/tv"
 import {
   getBreadcrumbFromSiteMap,
-  getDigestFromText,
-  getRandomNumberBetIntervals,
   getSiderailFromSiteMap,
-  getTextAsHtml,
+  getTableOfContents,
+  getTransformedPageContent,
 } from "~/utils"
 import {
   BackToTopLink,
@@ -16,70 +14,6 @@ import {
 } from "../../components/internal"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
-
-const getTableOfContentsFromContent = (
-  sitemap: IsomerSitemap,
-  content: ContentPageSchemaType["content"],
-) => {
-  return {
-    items: content.flatMap((block) => {
-      if (block.type !== "prose" || !block.content) {
-        return []
-      }
-
-      const result = []
-
-      for (const component of block.content) {
-        if (component.type === "heading" && component.attrs.level === 2) {
-          result.push({
-            content: getTextAsHtml({ sitemap, content: component.content }),
-            anchorLink: "#" + component.attrs.id,
-          })
-        }
-      }
-
-      return result
-    }),
-  }
-}
-
-// if block.id is not present for heading level 2, we auto-generate one
-// for use in table of contents anchor links
-const transformContent = (content: ContentPageSchemaType["content"]) => {
-  const transformedContent: ContentPageSchemaType["content"] = []
-  for (const block of content) {
-    if (block.type === "prose" && block.content) {
-      const transformedBlock = {
-        ...block,
-        content: block.content.map((component, index) => {
-          if (
-            component.type === "heading" &&
-            component.attrs.level === 2 &&
-            component.attrs.id === undefined
-          ) {
-            // generate a unique hash to auto-generate anchor links
-            const anchorId = getDigestFromText(
-              `${JSON.stringify(component)}_${index}`,
-            )
-            const newAttrs = {
-              ...component.attrs,
-              id: anchorId,
-            }
-
-            return { ...component, attrs: newAttrs }
-          } else {
-            return component
-          }
-        }),
-      }
-
-      transformedContent.push(transformedBlock)
-    } else {
-      transformedContent.push(block)
-    }
-  }
-  return transformedContent
-}
 
 const createContentLayoutStyles = tv({
   slots: {
@@ -118,11 +52,8 @@ const ContentLayout = ({
     : null
 
   // auto-inject ids for heading level 2 blocks if does not exist
-  const transformedContent = transformContent(content)
-  const tableOfContents = getTableOfContentsFromContent(
-    site.siteMap,
-    transformedContent,
-  )
+  const transformedContent = getTransformedPageContent(content)
+  const tableOfContents = getTableOfContents(site.siteMap, transformedContent)
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
@@ -147,9 +78,9 @@ const ContentLayout = ({
         <div
           className={compoundStyles.content({ isSideRailPresent: !!sideRail })}
         >
-          {tableOfContents.items.length > 1 && (
+          {tableOfContents.length > 1 && (
             <TableOfContents
-              {...tableOfContents}
+              items={tableOfContents}
               LinkComponent={LinkComponent}
             />
           )}
