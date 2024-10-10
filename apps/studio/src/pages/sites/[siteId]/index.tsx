@@ -12,12 +12,11 @@ import { Button, Menu } from "@opengovsg/design-system-react"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 
-import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { SitePermissionsBoundary } from "~/components/AuthWrappers"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { RootpageRow } from "~/features/dashboard/components/RootpageRow"
-import { PermissionsErrorBoundary } from "~/features/dashboard/PermissionsErrorPage"
 import { CreateCollectionModal } from "~/features/editing-experience/components/CreateCollectionModal"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
@@ -25,7 +24,6 @@ import { MoveResourceModal } from "~/features/editing-experience/components/Move
 import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
-import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
 
 export const sitePageSchema = z.object({
   siteId: z.coerce.number(),
@@ -161,21 +159,6 @@ const SitePage: NextPageWithLayout = () => {
   )
 }
 
-SitePage.getLayout = (page) => {
-  return (
-    <PermissionsBoundary
-      fallback={
-        <PermissionsErrorBoundary
-          title="You don't have access to edit this site."
-          description="To have access, ask your site admins to add you as an editor. If they’ve already added you, you might need to refresh this page."
-          backTo="/"
-          buttonText="Back to My Sites"
-        />
-      }
-    >
-      {AdminCmsSidebarLayout(page)}
-    </PermissionsBoundary>
-  )
-}
+SitePage.getLayout = SitePermissionsBoundary
 
 export default SitePage

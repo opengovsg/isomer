@@ -17,12 +17,12 @@ import {
 } from "@opengovsg/design-system-react"
 import { z } from "zod"
 
+import { SitePermissionsBoundary } from "~/components/AuthWrappers"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
 import { setNotificationSchema } from "~/schemas/site"
-import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
 import { trpc } from "~/utils/trpc"
 
 const siteSettingsSchema = z.object({
@@ -212,5 +212,6 @@ const SiteSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-SiteSettingsPage.getLayout = AdminSidebarOnlyLayout
+SiteSettingsPage.getLayout = SitePermissionsBoundary
+
 export default SiteSettingsPage
