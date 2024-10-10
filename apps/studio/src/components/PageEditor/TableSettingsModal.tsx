@@ -73,7 +73,7 @@ export const TableSettingsModal = ({
       <ModalOverlay />
 
       <ModalContent>
-        <ModalHeader>Table settings</ModalHeader>
+        <ModalHeader mr="3.5rem">Table settings</ModalHeader>
         <ModalCloseButton size="lg" />
 
         <ModalBody>

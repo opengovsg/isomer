@@ -52,8 +52,9 @@ export const LinkHrefEditor = ({
 
   return (
     <FormControl isRequired={isRequired} isInvalid={isInvalid}>
-      <FormLabel description={description}>{label}</FormLabel>
-
+      <FormLabel description={description} mb="0.5rem">
+        {label}
+      </FormLabel>
       <HStack {...getRootProps()} spacing={0}>
         {Object.entries(LINK_TYPES).map(([key, { icon, label }]) => {
           const radio = getRadioProps({ value: key })
@@ -68,7 +69,6 @@ export const LinkHrefEditor = ({
           )
         })}
       </HStack>
-
       <Box my="0.5rem">
         <LinkTypeRadioContent
           selectedLinkType={selectedLinkType}

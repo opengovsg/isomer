@@ -26,3 +26,11 @@ export const Loading: Story = {
     },
   },
 }
+
+export const EmptyState: Story = {
+  parameters: {
+    msw: {
+      handlers: [sitesHandlers.list.empty()],
+    },
+  },
+}
