@@ -25,7 +25,6 @@ import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
-import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
 
 export const sitePageSchema = z.object({
   siteId: z.coerce.number(),
