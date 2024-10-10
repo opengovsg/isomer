@@ -469,6 +469,9 @@ export const FilteredEmptyResults: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     await userEvent.click(screen.getByText(/2025 \(1\)/i))
-    await userEvent.click(screen.getByText(/Link \(10\)/i))
+    const searchElem = screen.getByRole("searchbox", {
+      name: /Start typing to search/i,
+    })
+    await userEvent.type(searchElem, "anything")
   },
 }
