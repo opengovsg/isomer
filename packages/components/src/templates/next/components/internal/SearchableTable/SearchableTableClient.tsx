@@ -167,7 +167,10 @@ export const SearchableTableClient = ({
 
       {paginatedItems.length > 0 && (
         <div className={compoundStyles.tableContainer()} tabIndex={0}>
-          <table className={compoundStyles.table()} aria-describedby={titleId}>
+          <table
+            className={compoundStyles.table()}
+            aria-describedby={!!title ? titleId : undefined}
+          >
             <tbody>
               <tr className={compoundStyles.tableRow()}>
                 {headers.slice(0, maxNoOfColumns).map((header, index) => (
