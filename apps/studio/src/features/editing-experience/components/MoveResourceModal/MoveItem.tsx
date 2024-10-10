@@ -11,17 +11,12 @@ type MoveItemProps = Pick<
   RouterOutput["resource"]["getFolderChildrenOf"]["items"][number],
   "permalink"
 > & {
-  onChangeResourceId: () => void
+  handleOnClick: () => void
   isDisabled?: boolean
   isHighlighted?: boolean
-  setHighlightedSelectedResourceId: () => void
 }
 
-const getButtonProps = ({
-  isHighlighted,
-  onChangeResourceId,
-  setHighlightedSelectedResourceId,
-}: MoveItemProps) => {
+const getButtonProps = ({ isHighlighted }: { isHighlighted: boolean }) => {
   if (isHighlighted) {
     return {
       color: "interaction.main.default",
@@ -30,28 +25,22 @@ const getButtonProps = ({
         color: "interaction.main.default",
         bg: "interaction.muted.main.active",
       },
-      onClick: onChangeResourceId,
     }
   }
 
   return {
     color: "base.content.default",
-    onClick: setHighlightedSelectedResourceId,
   }
 }
 
 const SuspendableMoveItem = ({
   permalink,
-  onChangeResourceId,
   isHighlighted,
-  setHighlightedSelectedResourceId,
+  handleOnClick,
   ...rest
 }: MoveItemProps) => {
   const buttonProps = getButtonProps({
-    isHighlighted,
-    onChangeResourceId,
-    setHighlightedSelectedResourceId,
-    permalink,
+    isHighlighted: !!isHighlighted,
   })
 
   return (
@@ -69,7 +58,7 @@ const SuspendableMoveItem = ({
       })}
       pl="2.25rem"
       size="xs"
-      onClick={buttonProps.onClick}
+      onClick={handleOnClick}
       leftIcon={<BiFolder />}
       {...rest}
     >
