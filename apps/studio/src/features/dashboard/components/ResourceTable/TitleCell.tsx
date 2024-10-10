@@ -3,7 +3,7 @@ import { useMemo } from "react"
 import NextLink from "next/link"
 import { HStack, Icon, Text, VStack } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
-import { BiData, BiFile, BiFileBlank, BiFolder, BiHome } from "react-icons/bi"
+import { BiData, BiFile, BiFolder, BiHome } from "react-icons/bi"
 
 import type { ResourceTableData } from "./types"
 import { getLinkToResource } from "~/utils/resource"
@@ -28,8 +28,9 @@ export const TitleCell = ({
     switch (type) {
       case "RootPage":
         return BiHome
+      case "IndexPage":
       case "Page":
-        return BiFileBlank
+        return BiFile
       case "Folder":
         return BiFolder
       case "Collection":

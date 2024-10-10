@@ -2,7 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { getLayoutMetadataSchema, schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import Ajv from "ajv"
-import { get, isEmpty, isEqual } from "lodash"
+import { get, isEqual } from "lodash"
 import { z } from "zod"
 
 import {
@@ -430,12 +430,6 @@ export const pageRouter = router({
     .query(async ({ input }) => {
       const { pageId, siteId } = input
       const permalinkTree = await getResourcePermalinkTree(siteId, pageId)
-      if (isEmpty(permalinkTree)) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No permalink could be found for the given page",
-        })
-      }
 
       return permalinkTree
     }),

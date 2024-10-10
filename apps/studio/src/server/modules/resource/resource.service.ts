@@ -1,7 +1,9 @@
 import type { SelectExpression } from "kysely"
+import { TRPCError } from "@trpc/server"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Resource, SafeKysely } from "../database"
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { getSitemapTree } from "~/utils/sitemap"
 import { db } from "../database"
 import { type Page } from "./resource.types"
@@ -119,8 +121,8 @@ export const getFullPageById = async (
     .executeTakeFirst()
 }
 
-// There are 3 types of pages this get query supports:
-// Page, CollectionPage, RootPage
+// There are 4 types of pages this get query supports:
+// Page, CollectionPage, RootPage, IndexPage
 export const getPageById = (
   db: SafeKysely,
   args: { resourceId: number; siteId: number },
@@ -131,6 +133,7 @@ export const getPageById = (
         eb("type", "=", "Page"),
         eb("type", "=", "CollectionPage"),
         eb("type", "=", "RootPage"),
+        eb("type", "=", "IndexPage"),
       ]),
     )
     .select(defaultResourceSelect)
@@ -249,7 +252,7 @@ export const getLocalisedSitemap = async (
       title: "Root",
       summary: "",
       lastModified: new Date().toISOString(),
-      permalink: "",
+      permalink: "/",
     }
   }
 
@@ -329,7 +332,7 @@ export const getLocalisedSitemap = async (
 export const getResourcePermalinkTree = async (
   siteId: number,
   resourceId: number,
-) => {
+): Promise<string[]> => {
   const resourcePermalinks = await db
     .withRecursive("Ancestors", (eb) =>
       eb
@@ -337,22 +340,31 @@ export const getResourcePermalinkTree = async (
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "=", String(resourceId))
-        .select(defaultResourceSelect)
+        .select(["Resource.id", "Resource.permalink", "Resource.parentId"])
         .unionAll((fb) =>
           fb
             // Recursive case: Get all the ancestors of the resource
             .selectFrom("Resource")
             .where("Resource.siteId", "=", siteId)
             .innerJoin("Ancestors", "Ancestors.parentId", "Resource.id")
-            .select(defaultResourceSelect),
+            .select(["Resource.id", "Resource.permalink", "Resource.parentId"]),
         ),
     )
     .selectFrom("Ancestors")
     .select("Ancestors.permalink")
     .execute()
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return resourcePermalinks.map((r) => r.permalink).reverse() as string[]
+  if (resourcePermalinks.length === 0) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "No permalink could be found for the given page",
+    })
+  }
+
+  return resourcePermalinks
+    .map((r) => r.permalink)
+    .reverse()
+    .filter((v) => v !== INDEX_PAGE_PERMALINK)
 }
 
 export const getResourceFullPermalink = async (

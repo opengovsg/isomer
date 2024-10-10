@@ -5,6 +5,7 @@ export const getResourceSubpath = (resourceType: ResourceType) => {
   switch (resourceType) {
     case "RootPage":
     case "Page":
+    case "IndexPage":
     case "CollectionPage":
       return "pages"
     case "Folder":

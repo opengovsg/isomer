@@ -9,6 +9,7 @@ export const ResourceType = {
   Folder: "Folder",
   Collection: "Collection",
   CollectionPage: "CollectionPage",
+  IndexPage: "IndexPage",
 } as const
 export type ResourceType = (typeof ResourceType)[keyof typeof ResourceType]
 export const RoleType = {
