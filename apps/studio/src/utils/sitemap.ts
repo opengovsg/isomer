@@ -34,7 +34,6 @@ const getSitemapTreeFromArray = (
   return children.map((resource) => {
     const permalink = `${path}${resource.permalink}`
 
-    console.log("permalink", permalink)
     if (resource.type === "Page" || resource.type === "CollectionPage") {
       return {
         id: String(resource.id),

@@ -121,7 +121,7 @@ export const getFullPageById = async (
     .executeTakeFirst()
 }
 
-// There are 3 types of pages this get query supports:
+// There are 4 types of pages this get query supports:
 // Page, CollectionPage, RootPage, IndexPage
 export const getPageById = (
   db: SafeKysely,
@@ -381,7 +381,7 @@ export const getResourcePermalinkTree = async (
         ),
     )
     .selectFrom("Ancestors")
-    .select(["Ancestors.id", "Ancestors.permalink", "Ancestors.parentId"])
+    .select("Ancestors.permalink")
     .execute()
 
   if (resourcePermalinks.length === 0) {
