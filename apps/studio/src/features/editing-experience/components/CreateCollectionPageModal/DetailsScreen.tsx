@@ -30,13 +30,8 @@ const generatePageUrl = (value: string) => {
 }
 
 export const CreateCollectionPageDetailsScreen = () => {
-  const {
-    formMethods,
-    onClose,
-    handleBackToTypeScreen,
-    handleCreatePage,
-    isLoading,
-  } = useCreateCollectionPageWizard()
+  const { formMethods, onClose, handleCreatePage, isLoading } =
+    useCreateCollectionPageWizard()
 
   const {
     register,
@@ -94,13 +89,6 @@ export const CreateCollectionPageDetailsScreen = () => {
           >
             <Button variant="clear" onClick={onClose} isDisabled={isLoading}>
               Cancel
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleBackToTypeScreen}
-              isDisabled={isLoading}
-            >
-              Change page type
             </Button>
             <Button onClick={handleCreatePage} isLoading={isLoading}>
               Start editing
