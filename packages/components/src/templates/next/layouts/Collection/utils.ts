@@ -5,10 +5,9 @@ export const getAvailableFilters = (
   items: CollectionCardProps[],
 ): FilterType[] => {
   const categories: Record<string, number> = {}
-  const variants: Record<string, number> = {}
   const years: Record<string, number> = {}
 
-  items.forEach(({ category, variant, lastUpdated }) => {
+  items.forEach(({ category, lastUpdated }) => {
     // Step 1: Get all available categories
     if (category in categories && categories[category]) {
       categories[category] += 1
@@ -16,14 +15,7 @@ export const getAvailableFilters = (
       categories[category] = 1
     }
 
-    // Step 2: Get all available variants
-    if (variant in variants && variants[variant]) {
-      variants[variant] += 1
-    } else {
-      variants[variant] = 1
-    }
-
-    // Step 3: Get all available years
+    // Step 2: Get all available years
     if (lastUpdated) {
       const year = new Date(lastUpdated).getFullYear().toString()
       if (year in years && years[year]) {
@@ -87,20 +79,7 @@ export const getFilteredItems = (
       return false
     }
 
-    // Step 3: Remove items that do not match the applied variant filters
-    const variantFilter = appliedFilters.find(
-      (filter) => filter.id === "variant",
-    )
-    if (
-      variantFilter &&
-      !variantFilter.items.some(
-        (filterItem) => filterItem.id === item.variant.toLowerCase(),
-      )
-    ) {
-      return false
-    }
-
-    // Step 4: Remove items that do not match the applied year filters
+    // Step 3: Remove items that do not match the applied year filters
     const yearFilter = appliedFilters.find((filter) => filter.id === "year")
     if (
       yearFilter &&
