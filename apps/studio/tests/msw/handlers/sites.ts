@@ -3,11 +3,22 @@ import { delay } from "msw"
 
 import { trpcMsw } from "../mockTrpc"
 
-const siteListQuery = (wait?: DelayMode | number) => {
+const siteListQuery = ({
+  wait,
+  isEmpty,
+}: {
+  wait?: DelayMode | number
+  isEmpty?: boolean
+} = {}) => {
   return trpcMsw.site.list.query(async () => {
     if (wait !== undefined) {
       await delay(wait)
     }
+
+    if (isEmpty) {
+      return []
+    }
+
     return [
       {
         id: 1,
@@ -19,8 +30,9 @@ const siteListQuery = (wait?: DelayMode | number) => {
 
 export const sitesHandlers = {
   list: {
-    default: siteListQuery,
-    loading: () => siteListQuery("infinite"),
+    default: () => siteListQuery({}),
+    loading: () => siteListQuery({ wait: "infinite" }),
+    empty: () => siteListQuery({ isEmpty: true }),
   },
   getTheme: {
     default: () => {
