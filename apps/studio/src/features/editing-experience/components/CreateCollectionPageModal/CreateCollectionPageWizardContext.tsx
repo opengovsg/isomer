@@ -1,7 +1,7 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
-import { createContext, useContext, useMemo, useState } from "react"
+import { createContext, useContext, useMemo } from "react"
 import { useRouter } from "next/router"
 import { merge } from "lodash"
 
@@ -10,11 +10,6 @@ import collectionPdfPreview from "~/features/editing-experience/data/collectionP
 import { useZodForm } from "~/lib/form"
 import { createCollectionPageFormSchema } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
-
-export enum CreateCollectionPageFlowStates {
-  Type = "type",
-  Details = "details",
-}
 
 interface CreateCollectionPageWizardProps
   extends Pick<UseDisclosureReturn, "onClose"> {
@@ -41,17 +36,11 @@ export const useCreateCollectionPageWizard =
     return context
   }
 
-export const INITIAL_STEP_STATE: CreateCollectionPageFlowStates =
-  CreateCollectionPageFlowStates.Type
-
 const useCreateCollectionPageWizardContext = ({
   siteId,
   collectionId,
   onClose,
 }: CreateCollectionPageWizardProps) => {
-  const [currentStep, setCurrentStep] =
-    useState<CreateCollectionPageFlowStates>(INITIAL_STEP_STATE)
-
   const formMethods = useZodForm({
     schema: createCollectionPageFormSchema,
     defaultValues: {
@@ -81,7 +70,7 @@ const useCreateCollectionPageWizardContext = ({
         await utils.collection.list.invalidate()
         onClose()
       },
-      // TOOD: Error handling
+      // TODO: Error handling
     })
 
   const handleCreatePage = formMethods.handleSubmit((values) => {
@@ -110,22 +99,11 @@ const useCreateCollectionPageWizardContext = ({
     )
   })
 
-  const handleNextToDetailScreen = () => {
-    setCurrentStep(CreateCollectionPageFlowStates.Details)
-  }
-
-  const handleBackToTypeScreen = () => {
-    setCurrentStep(CreateCollectionPageFlowStates.Type)
-  }
-
   return {
     siteId,
-    currentStep,
     formMethods,
     handleCreatePage,
     isLoading,
-    handleNextToDetailScreen,
-    handleBackToTypeScreen,
     pagePreviewJson,
     onClose,
     currentType: type,
