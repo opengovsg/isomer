@@ -53,7 +53,6 @@ export const MoveResourceModal = () => {
 const MoveResourceContent = withSuspense(
   ({ resourceId, onClose }: { resourceId: string; onClose: () => void }) => {
     // NOTE: This is the stack of user's navigation through the resource tree
-    // the last item here represents his current view
     // NOTE: We should always start the stack from `/` (root)
     // so that the user will see a full overview of their site structure
     const [resourceStack, setResourceStack] = useState<PendingMoveResource[]>(
