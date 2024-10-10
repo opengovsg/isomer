@@ -43,7 +43,6 @@ void gb.init({
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {
   if (env.NEXT_PUBLIC_INTERCOM_APP_ID) {
     Intercom({
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       app_id: env.NEXT_PUBLIC_INTERCOM_APP_ID,
     })
   }
