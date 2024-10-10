@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { useRouter } from "next/router"
 import { Center, Flex, Stack, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 
@@ -7,15 +7,15 @@ import { HeadScratch } from "~/components/Svg"
 interface PermissionsErrorBoundaryProps {
   title: string
   description: string
-  backTo: string
   buttonText: string
 }
 export const PermissionsErrorBoundary = ({
   title,
   description,
-  backTo,
   buttonText,
 }: PermissionsErrorBoundaryProps) => {
+  const router = useRouter()
+
   return (
     <Center minH="$100vh">
       <Stack alignItems="center" dir="vertical" gap="3rem">
@@ -27,7 +27,7 @@ export const PermissionsErrorBoundary = ({
             </Text>
             <Text textStyle="body-1">{description}</Text>
           </Flex>
-          <Button as={Link} href={backTo} size="md">
+          <Button onClick={router.back} size="md">
             {buttonText}
           </Button>
         </Stack>
