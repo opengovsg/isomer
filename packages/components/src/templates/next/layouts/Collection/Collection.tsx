@@ -1,8 +1,4 @@
-import type {
-  CollectionPageSchemaType,
-  IsomerSitemap,
-  IsomerSiteProps,
-} from "~/engine"
+import type { CollectionPageSchemaType, IsomerSiteProps } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
 import { getBreadcrumbFromSiteMap, getSitemapAsArray } from "~/utils"
 import { Skeleton } from "../Skeleton"
