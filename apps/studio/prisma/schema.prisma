@@ -59,8 +59,6 @@ model Resource {
 
   children Resource[] @relation("ParentRelation")
 
-  permission Permission[]
-
   publishedVersionId BigInt?  @unique
   publishedVersion   Version? @relation(fields: [publishedVersionId], references: [id])
 
@@ -119,24 +117,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  permissions        Permission[]
-  siteMembers        SiteMember[]
-  versions           Version[]
   ResourcePermission ResourcePermission[]
-}
-
-model Permission {
-  id         Int      @id @default(autoincrement())
-  resourceId BigInt
-  resource   Resource @relation(fields: [resourceId], references: [id])
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  role       RoleType
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-
-  // Delete the row if either resource or user is deleted, default behavior cascade
+  siteMembers SiteMember[]
+  versions    Version[]
 }
 
 model Site {
