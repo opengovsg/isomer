@@ -12,6 +12,7 @@ import { useSetAtom } from "jotai"
 import { BiData } from "react-icons/bi"
 import { z } from "zod"
 
+import { CollectionPermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
 import { CollectionTable } from "~/features/dashboard/components/CollectionTable"
@@ -20,7 +21,6 @@ import { FolderSettingsModal } from "~/features/dashboard/components/FolderSetti
 import { CreateCollectionPageModal } from "~/features/editing-experience/components/CreateCollectionPageModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
-import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
 import { trpc } from "~/utils/trpc"
 
 const sitePageSchema = z.object({
@@ -110,5 +110,5 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
   )
 }
 
-CollectionResourceListPage.getLayout = AdminCmsSidebarLayout
+CollectionResourceListPage.getLayout = CollectionPermissionsBoundary
 export default CollectionResourceListPage
