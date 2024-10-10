@@ -1,3 +1,4 @@
+import type { PropsWithChildren } from "react"
 import {
   Box,
   Breadcrumb,
@@ -16,6 +17,7 @@ import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResou
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { RootpageRow } from "~/features/dashboard/components/RootpageRow"
+import { PermissionsErrorBoundary } from "~/features/dashboard/PermissionsErrorPage"
 import { CreateCollectionModal } from "~/features/editing-experience/components/CreateCollectionModal"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
@@ -24,6 +26,7 @@ import { Can, PermissionsProvider } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
+import { DefaultLayout } from "~/templates/layouts/DefaultLayout"
 
 export const sitePageSchema = z.object({
   siteId: z.coerce.number(),
@@ -101,7 +104,7 @@ const SitePage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(sitePageSchema)
 
   return (
-    <PermissionsProvider siteId={siteId}>
+    <>
       <VStack w="100%" p="1.75rem" gap="1rem" height="$100vh" overflow="auto">
         <VStack w="100%" align="start">
           <Breadcrumb size="sm">
@@ -155,9 +158,38 @@ const SitePage: NextPageWithLayout = () => {
       <DeleteResourceModal siteId={siteId} />
       <MoveResourceModal />
       <FolderSettingsModal />
+    </>
+  )
+}
+
+const PermissionsBoundary = ({ children }: PropsWithChildren) => {
+  const { siteId } = useQueryParse(sitePageSchema)
+  return (
+    <PermissionsProvider siteId={siteId}>
+      <Can do="read" on={{ parentId: null }} passThrough>
+        {(allowed) => {
+          return allowed ? (
+            children
+          ) : (
+            <DefaultLayout>
+              <PermissionsErrorBoundary
+                title="You don't have access to edit this site."
+                description="To have access, ask your site admins to add you as an editor. If they’ve already added you, you might need to refresh this page."
+                backTo="/"
+                buttonText="Back to My Sites"
+              />
+            </DefaultLayout>
+          )
+        }}
+      </Can>
     </PermissionsProvider>
   )
 }
 
-SitePage.getLayout = AdminCmsSidebarLayout
+SitePage.getLayout = (page) => {
+  return (
+    <PermissionsBoundary>{AdminCmsSidebarLayout(page)}</PermissionsBoundary>
+  )
+}
+
 export default SitePage
