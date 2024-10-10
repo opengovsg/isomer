@@ -93,8 +93,7 @@ export interface User {
   id: string
   name: string
   email: string
-  phone: string
-  preferredName: string | null
+  phone: string | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
