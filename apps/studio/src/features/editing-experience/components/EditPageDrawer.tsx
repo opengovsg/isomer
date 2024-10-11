@@ -25,9 +25,8 @@ export function EditPageDrawer(): JSX.Element {
 
   const inferAsProse = (component?: IsomerComponent): ProseProps => {
     if (!component) {
-      throw new Error(`Expected component of type prose but got undefined`)
+      return { type: "prose", content: [] }
     }
-
     if (validate(component)) {
       return component
     }
