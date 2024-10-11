@@ -1,13 +1,15 @@
 import type { SelectExpression } from "kysely"
+import type { UnwrapTagged } from "type-fest"
+import { TRPCError } from "@trpc/server"
 import { type DB } from "~prisma/generated/generatedTypes"
 
-import type { Resource, SafeKysely } from "../database"
+import type { Resource, SafeKysely, Transaction } from "../database"
 import { getSitemapTree } from "~/utils/sitemap"
-import { db } from "../database"
+import { db, jsonb } from "../database"
 import { type Page } from "./resource.types"
 
 // Specify the default columns to return from the Resource table
-export const defaultResourceSelect: SelectExpression<DB, "Resource">[] = [
+export const defaultResourceSelect = [
   "Resource.id",
   "Resource.title",
   "Resource.permalink",
@@ -17,23 +19,27 @@ export const defaultResourceSelect: SelectExpression<DB, "Resource">[] = [
   "Resource.draftBlobId",
   "Resource.type",
   "Resource.state",
-]
-const defaultResourceWithBlobSelect: SelectExpression<
-  DB,
-  "Resource" | "Blob"
->[] = [...defaultResourceSelect, "Blob.content", "Blob.updatedAt"]
+  "Resource.createdAt",
+  "Resource.updatedAt",
+] satisfies SelectExpression<DB, "Resource">[]
 
-const defaultNavbarSelect: SelectExpression<DB, "Navbar">[] = [
+const defaultResourceWithBlobSelect = [
+  ...defaultResourceSelect,
+  "Blob.content",
+  "Blob.updatedAt",
+] satisfies SelectExpression<DB, "Resource" | "Blob">[]
+
+const defaultNavbarSelect = [
   "Navbar.id",
   "Navbar.siteId",
   "Navbar.content",
-]
+] satisfies SelectExpression<DB, "Navbar">[]
 
-const defaultFooterSelect: SelectExpression<DB, "Footer">[] = [
+const defaultFooterSelect = [
   "Footer.id",
   "Footer.siteId",
   "Footer.content",
-]
+] satisfies SelectExpression<DB, "Footer">[]
 
 export const getPages = () => {
   // TODO: write a test to verify this query behaviour
@@ -105,18 +111,18 @@ export const getFullPageById = async (
     .forUpdate()
     .executeTakeFirst()
   if (draftBlob) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore excessive deep type instantiaton
     return draftBlob
   }
 
-  return getById(db, args)
+  const publishedBlob = await getById(db, args)
     .where("Resource.publishedVersionId", "is not", null)
     .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
     .innerJoin("Blob", "Version.blobId", "Blob.id")
     .select(defaultResourceWithBlobSelect)
     .forUpdate()
     .executeTakeFirst()
+
+  return publishedBlob
 }
 
 // There are 3 types of pages this get query supports:
@@ -124,8 +130,8 @@ export const getFullPageById = async (
 export const getPageById = (
   db: SafeKysely,
   args: { resourceId: number; siteId: number },
-) =>
-  getById(db, args)
+) => {
+  return getById(db, args)
     .where((eb) =>
       eb.or([
         eb("type", "=", "Page"),
@@ -134,7 +140,8 @@ export const getPageById = (
       ]),
     )
     .select(defaultResourceSelect)
-    .executeTakeFirstOrThrow()
+    .executeTakeFirst()
+}
 
 export const updatePageById = (
   page: Partial<Omit<Page, "id" | "siteId" | "parentId">> & {
@@ -156,42 +163,52 @@ export const updatePageById = (
 }
 
 export const updateBlobById = async (
-  db: SafeKysely,
-  props: {
+  tx: Transaction<DB>,
+  {
+    pageId,
+    content,
+    siteId,
+  }: {
     pageId: number
-    content: PrismaJson.BlobJsonContent
+    content: UnwrapTagged<PrismaJson.BlobJsonContent>
     siteId: number
   },
 ) => {
-  const { pageId: id, content } = props
-  const page = await db
+  const page = await tx
     .selectFrom("Resource")
-    .where("Resource.id", "=", String(id))
-    .where("siteId", "=", props.siteId)
+    .where("Resource.id", "=", String(pageId))
+    .where("siteId", "=", siteId)
     // NOTE: We update the draft first
     // Main should only be updated at build
     .select("draftBlobId")
-    .executeTakeFirstOrThrow()
+    .executeTakeFirst()
+
+  if (!page) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Resource not found",
+    })
+  }
 
   if (!page.draftBlobId) {
     // NOTE: no draft for this yet, need to create a new one
-    const newBlob = await db
+    const newBlob = await tx
       .insertInto("Blob")
-      .values({ content })
+      .values({ content: jsonb(content) })
       .returning("id")
       .executeTakeFirstOrThrow()
-    await db
+    await tx
       .updateTable("Resource")
-      .where("id", "=", String(id))
+      .where("id", "=", String(pageId))
       .set({ draftBlobId: newBlob.id })
       .execute()
   }
 
   return (
-    db
+    tx
       .updateTable("Blob")
       // NOTE: This works because a page has a 1-1 relation with a blob
-      .set({ content })
+      .set({ content: jsonb(content) })
       .where("Blob.id", "=", page.draftBlobId)
       .executeTakeFirstOrThrow()
   )
@@ -330,29 +347,39 @@ export const getResourcePermalinkTree = async (
   siteId: number,
   resourceId: number,
 ) => {
-  const resourcePermalinks = await db
-    .withRecursive("Ancestors", (eb) =>
-      eb
-        // Base case: Get the actual resource
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.id", "=", String(resourceId))
-        .select(defaultResourceSelect)
-        .unionAll((fb) =>
-          fb
-            // Recursive case: Get all the ancestors of the resource
-            .selectFrom("Resource")
-            .where("Resource.siteId", "=", siteId)
-            .innerJoin("Ancestors", "Ancestors.parentId", "Resource.id")
-            .select(defaultResourceSelect),
-        ),
-    )
-    .selectFrom("Ancestors")
-    .select("Ancestors.permalink")
-    .execute()
+  return db.transaction().execute(async (tx) => {
+    // Guard against invalid resource
+    const resource = await getById(tx, {
+      siteId,
+      resourceId,
+    }).executeTakeFirst()
+    if (!resource) {
+      return []
+    }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return resourcePermalinks.map((r) => r.permalink).reverse() as string[]
+    const resourcePermalinks = await tx
+      .withRecursive("Ancestors", (eb) =>
+        eb
+          // Base case: Get the actual resource
+          .selectFrom("Resource")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.id", "=", String(resourceId))
+          .select(defaultResourceSelect)
+          .unionAll((fb) =>
+            fb
+              // Recursive case: Get all the ancestors of the resource
+              .selectFrom("Resource")
+              .where("Resource.siteId", "=", siteId)
+              .innerJoin("Ancestors", "Ancestors.parentId", "Resource.id")
+              .select(defaultResourceSelect),
+          ),
+      )
+      .selectFrom("Ancestors")
+      .select("Ancestors.permalink")
+      .execute()
+
+    return resourcePermalinks.map((r) => r.permalink).reverse()
+  })
 }
 
 export const getResourceFullPermalink = async (
@@ -360,6 +387,8 @@ export const getResourceFullPermalink = async (
   resourceId: number,
 ) => {
   const permalinkTree = await getResourcePermalinkTree(siteId, resourceId)
-
+  if (permalinkTree.length === 0) {
+    return null
+  }
   return `/${permalinkTree.join("/")}`
 }

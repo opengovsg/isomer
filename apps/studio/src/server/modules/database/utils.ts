@@ -52,7 +52,7 @@ export function typesafeJsonObjectFromStrict<O>(
 }
 
 // Create a jsonb object from a plain object.
-export function jsonb<T>(value: T): RawBuilder<T> {
+export function jsonb<T>(value: T): RawBuilder<Tagged<T, "JSONB">> {
   return sql`CAST(${JSON.stringify(value)} AS JSONB)`
 }
 

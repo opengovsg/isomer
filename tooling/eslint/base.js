@@ -87,6 +87,7 @@ export default tseslint.config(
     files: ["**/*.spec.ts", "**/*.spec.tsx", "**/*.test.ts", "**/*.test.tsx"],
     rules: {
       "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-empty-function": "off",
       "no-restricted-syntax": "off",
     },
   },

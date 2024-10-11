@@ -1,13 +1,14 @@
+import type { SelectExpression } from "kysely"
+
 import type { DB } from "~prisma/generated/generatedTypes"
 
-type ResourceProperties = keyof DB["Resource"]
-export const defaultFolderSelect: readonly ResourceProperties[] = [
-  "id",
-  "parentId",
-  "permalink",
-  "title",
-  "siteId",
-  "state",
-  "type",
-  "draftBlobId",
-] as const
+export const defaultFolderSelect = [
+  "Resource.id",
+  "Resource.parentId",
+  "Resource.permalink",
+  "Resource.title",
+  "Resource.siteId",
+  "Resource.state",
+  "Resource.type",
+  "Resource.draftBlobId",
+] satisfies SelectExpression<DB, "Resource">[]

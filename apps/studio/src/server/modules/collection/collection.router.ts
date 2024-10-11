@@ -1,3 +1,4 @@
+import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get } from "lodash"
 
@@ -5,7 +6,7 @@ import { createCollectionSchema } from "~/schemas/collection"
 import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
-import { db, ResourceType } from "../database"
+import { db, jsonb, ResourceType } from "../database"
 import {
   defaultResourceSelect,
   getSiteResourceById,
@@ -59,7 +60,7 @@ export const collectionRouter = router({
   createCollectionPage: protectedProcedure
     .input(createCollectionPageSchema)
     .mutation(async ({ input }) => {
-      let newPage: PrismaJson.BlobJsonContent
+      let newPage: UnwrapTagged<PrismaJson.BlobJsonContent>
       const { title, type, permalink, siteId, collectionId } = input
       if (type === "page") {
         newPage = createCollectionPageJson({ type })
@@ -74,7 +75,7 @@ export const collectionRouter = router({
         const blob = await tx
           .insertInto("Blob")
           .values({
-            content: newPage,
+            content: jsonb(newPage),
           })
           .returning("Blob.id")
           .executeTakeFirstOrThrow()

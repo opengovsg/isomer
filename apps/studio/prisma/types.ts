@@ -12,15 +12,22 @@ import type {
   IsomerSiteThemeProps as _IsomerSiteThemeProps,
   IsomerSiteWideComponentsProps as _IsomerSiteWideComponentsProps,
 } from "@opengovsg/isomer-components"
+import type { Tagged } from "type-fest"
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace PrismaJson {
     // TODO: Rename all with XXXYYYJson instead of XXXJsonYYY
-    type SiteJsonConfig = _IsomerSiteConfigProps
-    type SiteThemeJson = _IsomerSiteThemeProps
-    type BlobJsonContent = _IsomerSchema
-    type NavbarJsonContent = _IsomerSiteWideComponentsProps["navBarItems"]
-    type FooterJsonContent = _IsomerSiteWideComponentsProps["footerItems"]
+    type SiteJsonConfig = Tagged<_IsomerSiteConfigProps, "JSONB">
+    type SiteThemeJson = Tagged<_IsomerSiteThemeProps, "JSONB">
+    type BlobJsonContent = Tagged<_IsomerSchema, "JSONB">
+    type NavbarJsonContent = Tagged<
+      _IsomerSiteWideComponentsProps["navBarItems"],
+      "JSONB"
+    >
+    type FooterJsonContent = Tagged<
+      _IsomerSiteWideComponentsProps["footerItems"],
+      "JSONB"
+    >
   }
 }

@@ -1,3 +1,4 @@
+import type { UnwrapTagged } from "type-fest"
 import { format } from "date-fns"
 
 export const createCollectionPageJson = ({}: {
@@ -16,7 +17,7 @@ export const createCollectionPageJson = ({}: {
     },
     content: [],
     version: "0.1.0",
-  } satisfies PrismaJson.BlobJsonContent
+  } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
 
 export const createCollectionPdfJson = ({
@@ -35,5 +36,5 @@ export const createCollectionPdfJson = ({
     // TODO: Add pdf blob to content
     content: [],
     version: "0.1.0",
-  } satisfies PrismaJson.BlobJsonContent
+  } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
