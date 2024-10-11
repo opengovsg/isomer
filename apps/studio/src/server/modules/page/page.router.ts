@@ -329,7 +329,9 @@ export const pageRouter = router({
           }
 
           try {
-            const newContent = !newMeta ? rest : { ...rest, meta: newMeta }
+            const newContent = !newMeta
+              ? rest
+              : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
 
             await updateBlobById(tx, {
               pageId,
