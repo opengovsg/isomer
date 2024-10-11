@@ -25,8 +25,8 @@ const createVersion = async (
   db: SafeKysely,
   props: {
     versionNum: number
-    resourceId: number
-    blobId: number
+    resourceId: string
+    blobId: string
     publisherId: string
   },
 ) => {
@@ -35,8 +35,8 @@ const createVersion = async (
     .insertInto("Version")
     .values({
       versionNum,
-      resourceId: String(resourceId),
-      blobId: String(blobId),
+      resourceId: resourceId,
+      blobId,
       publishedAt: new Date(),
       publishedBy: publisherId,
     })
@@ -48,11 +48,11 @@ const createVersion = async (
 
 export const incrementVersion = async ({
   siteId,
-  pageId,
+  resourceId,
   userId,
 }: {
   siteId: number
-  pageId: number
+  resourceId: string
   userId: string
 }) => {
   return await db
@@ -61,7 +61,10 @@ export const incrementVersion = async ({
     // concurrent publishes from other users
     .setIsolationLevel("serializable")
     .execute(async (tx) => {
-      const page = await getPageById(tx, { siteId, resourceId: pageId })
+      const page = await getPageById(tx, {
+        siteId,
+        resourceId: Number(resourceId),
+      })
       if (!page) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -87,8 +90,8 @@ export const incrementVersion = async ({
       // Create the new version
       const newVersion = await createVersion(tx, {
         versionNum: newVersionNum,
-        resourceId: pageId,
-        blobId: Number(page.draftBlobId),
+        resourceId,
+        blobId: page.draftBlobId,
         publisherId: userId,
       })
 
