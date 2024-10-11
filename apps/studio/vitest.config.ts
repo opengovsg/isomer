@@ -9,5 +9,8 @@ export default defineConfig({
     exclude: [...configDefaults.exclude, "**/playwright/**", "tests/load/**"],
     setupFiles: ["tests/mocks/db.ts"],
     globalSetup: ["tests/global-setup.ts"],
+    coverage: {
+      provider: "istanbul",
+    },
   },
 })
