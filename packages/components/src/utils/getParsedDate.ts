@@ -11,29 +11,29 @@ const SUPPORTED_DATE_FORMATS = [
 ]
 
 export const getParsedDate = (dateString: string) => {
-  try {
-    const parsedDate = SUPPORTED_DATE_FORMATS.reduce<Date | undefined>(
-      (acc, format) => {
-        if (acc) {
-          // Date has already been parsed by an earlier format
-          return acc
-        }
+  const parsedDate = SUPPORTED_DATE_FORMATS.reduce<Date | undefined>(
+    (acc, format) => {
+      if (acc) {
+        // Date has already been parsed by an earlier format
+        return acc
+      }
 
+      try {
         if (isMatch(dateString, format)) {
           return parse(dateString, format, new Date())
         }
+      } catch (e) {
+        return new Date()
+      }
 
-        return acc
-      },
-      undefined,
-    )
+      return acc
+    },
+    undefined,
+  )
 
-    if (parsedDate) {
-      return parsedDate
-    }
-
-    return new Date()
-  } catch (e) {
-    return new Date()
+  if (parsedDate) {
+    return parsedDate
   }
+
+  return new Date()
 }
