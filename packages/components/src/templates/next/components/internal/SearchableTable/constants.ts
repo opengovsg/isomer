@@ -4,3 +4,5 @@
 export const MAX_NUMBER_OF_COLUMNS = 10
 
 export const PAGINATION_MAX_ITEMS = 10
+
+export const HYPERLINK_EXCEL_FUNCTION = "=HYPERLINK("
