@@ -42,6 +42,20 @@ export const resourceRouter = router({
   getFolderChildrenOf: protectedProcedure
     .input(getChildrenSchema)
     .query(async ({ input: { siteId, resourceId, cursor: offset, limit } }) => {
+      // Validate site and resourceId exists and is a Folder
+      if (resourceId !== null) {
+        const resource = await db
+          .selectFrom("Resource")
+          .where("siteId", "=", Number(siteId))
+          .where("id", "=", String(resourceId))
+          .where("Resource.type", "=", "Folder")
+          .executeTakeFirst()
+
+        if (!resource) {
+          throw new TRPCError({ code: "NOT_FOUND" })
+        }
+      }
+
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
@@ -77,6 +91,19 @@ export const resourceRouter = router({
   getChildrenOf: protectedProcedure
     .input(getChildrenSchema)
     .query(async ({ input: { resourceId, siteId, cursor: offset, limit } }) => {
+      // Validate site and resourceId exists and is a folder
+      if (resourceId !== null) {
+        const resource = await db
+          .selectFrom("Resource")
+          .where("siteId", "=", Number(siteId))
+          .where("id", "=", String(resourceId))
+          .where("Resource.type", "=", "Folder")
+          .executeTakeFirst()
+
+        if (!resource) {
+          throw new TRPCError({ code: "NOT_FOUND" })
+        }
+      }
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
@@ -120,10 +147,18 @@ export const resourceRouter = router({
       return await db
         .transaction()
         .execute(async (tx) => {
+          const toMove = await tx
+            .selectFrom("Resource")
+            .where("id", "=", movedResourceId)
+            .select(["id", "siteId"])
+            .executeTakeFirst()
+          if (!toMove) {
+            throw new TRPCError({ code: "BAD_REQUEST" })
+          }
           const parent = await tx
             .selectFrom("Resource")
             .where("id", "=", destinationResourceId)
-            .select(["id", "type"])
+            .select(["id", "type", "siteId"])
             .executeTakeFirst()
 
           if (!parent || parent.type !== "Folder") {
@@ -132,6 +167,10 @@ export const resourceRouter = router({
 
           if (movedResourceId === destinationResourceId) {
             throw new TRPCError({ code: "BAD_REQUEST" })
+          }
+
+          if (toMove.siteId !== parent.siteId) {
+            throw new TRPCError({ code: "FORBIDDEN" })
           }
 
           await tx
@@ -144,7 +183,7 @@ export const resourceRouter = router({
             .selectFrom("Resource")
             .where("id", "=", String(movedResourceId))
             .select([
-              "parentId",
+              "Resource.parentId",
               "Resource.id",
               "Resource.type",
               "Resource.permalink",
@@ -171,6 +210,7 @@ export const resourceRouter = router({
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "!=", "RootPage")
+        .select((eb) => [eb.fn.countAll().as("totalCount")])
 
       if (resourceId) {
         query = query.where("Resource.parentId", "=", String(resourceId))
@@ -178,9 +218,7 @@ export const resourceRouter = router({
         query = query.where("Resource.parentId", "is", null)
       }
 
-      const result = await query
-        .select((eb) => [eb.fn.countAll().as("totalCount")])
-        .executeTakeFirst()
+      const result = await query.executeTakeFirst()
       return Number(result?.totalCount ?? 0)
     }),
 
@@ -191,6 +229,8 @@ export const resourceRouter = router({
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "!=", "RootPage")
+        .orderBy("Resource.updatedAt", "desc")
+        .orderBy("Resource.title", "asc")
         .offset(offset)
         .limit(limit)
 
@@ -200,6 +240,7 @@ export const resourceRouter = router({
         query = query.where("Resource.parentId", "is", null)
       }
 
+      // TODO: Add pagination support
       return query
         .select([
           "Resource.id",
@@ -209,6 +250,7 @@ export const resourceRouter = router({
           "Resource.draftBlobId",
           "Resource.type",
           "Resource.parentId",
+          "Resource.updatedAt",
         ])
         .execute()
     }),
@@ -220,10 +262,15 @@ export const resourceRouter = router({
         .deleteFrom("Resource")
         .where("Resource.id", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "!=", "RootPage")
         .executeTakeFirst()
-      // NOTE: We need to do this `toString` as the property is a `bigint`
+
+      if (Number(result.numDeletedRows) === 0) {
+        throw new TRPCError({ code: "BAD_REQUEST" })
+      }
+      // NOTE: We need to do this cast as the property is a `bigint`
       // and trpc cannot serialise it, which leads to errors
-      return result.numDeletedRows.toString()
+      return Number(result.numDeletedRows)
     }),
 
   getParentOf: protectedProcedure
@@ -249,17 +296,19 @@ export const resourceRouter = router({
               ]),
           ).as("parent"),
         )
-        .executeTakeFirstOrThrow()
+        .executeTakeFirst()
 
-      return {
-        resource,
+      if (!resource) {
+        throw new TRPCError({ code: "NOT_FOUND" })
       }
+
+      return resource
     }),
 
   getWithFullPermalink: protectedProcedure
     .input(getFullPermalinkSchema)
     .query(async ({ input: { resourceId } }) => {
-      return db
+      const result = await db
         .withRecursive("resourcePath", (eb) =>
           eb
             .selectFrom("Resource as r")
@@ -290,6 +339,12 @@ export const resourceRouter = router({
         .select(["rp.id", "rp.title", "rp.fullPermalink"])
         .where("rp.id", "=", resourceId)
         .executeTakeFirst()
+
+      if (!result) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
+      return result
     }),
 
   getAncestryOf: protectedProcedure

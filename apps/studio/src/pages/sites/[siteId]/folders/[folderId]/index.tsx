@@ -42,7 +42,7 @@ const getFolderHref = (siteId: string, folderId: string) => {
  * and the last element is always the parent of the current folder
  */
 const getBreadcrumbsFrom = (
-  resource: RouterOutput["resource"]["getParentOf"]["resource"],
+  resource: RouterOutput["resource"]["getParentOf"],
   siteId: string,
 ): { href: string; label: string }[] => {
   // NOTE: We only consider the 3 cases below:
@@ -92,7 +92,7 @@ const FolderPage: NextPageWithLayout = () => {
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
 
   const { folderId, siteId } = useQueryParse(folderPageSchema)
-  const [{ resource }] = trpc.resource.getParentOf.useSuspenseQuery({
+  const [resource] = trpc.resource.getParentOf.useSuspenseQuery({
     siteId: Number(siteId),
     resourceId: folderId,
   })
