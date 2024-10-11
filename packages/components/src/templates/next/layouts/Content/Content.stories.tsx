@@ -1506,8 +1506,7 @@ export const NoTable: Story = {
         type: "localSearch",
         searchUrl: "/search",
       },
-      // TODO: Replace this with a more stable URL
-      assetsBaseUrl: "https://cms.isomer.gov.sg",
+      assetsBaseUrl: "https://isomer-user-content.by.gov.sg",
     },
     meta: {
       description: "A Next.js starter for Isomer",
