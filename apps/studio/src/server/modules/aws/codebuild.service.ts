@@ -6,13 +6,41 @@ import {
   ListBuildsForProjectCommand,
   StartBuildCommand,
 } from "@aws-sdk/client-codebuild"
+import { TRPCError } from "@trpc/server"
+
+import { getSiteNameAndCodeBuildId } from "../site/site.service"
 
 const client = new CodeBuildClient({ region: "ap-southeast-1" })
 // This is the threshold for a build to be considered recent
 // It is roughly the amount of time it takes for a build to progress before
 // the publishing script queries the database for the pages data, as that older
 // build would have already captured the latest changes
-const RECENT_BUILD_THRESHOLD_SECONDS = 2 * 60
+const RECENT_BUILD_THRESHOLD_SECONDS = 60
+
+export const publishSite = async (
+  logger: Logger<string>,
+  siteId: number,
+): Promise<void> => {
+  // Step 1: Get the CodeBuild ID associated with the site
+  const site = await getSiteNameAndCodeBuildId(siteId)
+  const { codeBuildId } = site
+  if (!codeBuildId) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "No CodeBuild project ID found for site",
+    })
+  }
+
+  // Step 2: Determine if a new build should be started
+  const isNewBuildNeeded = await shouldStartNewBuild(logger, codeBuildId)
+
+  if (!isNewBuildNeeded) {
+    return
+  }
+
+  // Step 3: Start a new build
+  await startProjectById(logger, codeBuildId)
+}
 
 export const shouldStartNewBuild = async (
   logger: Logger<string>,
@@ -55,7 +83,7 @@ export const shouldStartNewBuild = async (
     if (recentRunningBuilds.length > 0) {
       logger.info(
         { projectId, buildIds: recentRunningBuilds.map((build) => build.id) },
-        "There are recent builds that are still running",
+        "Not starting a new build as there are recent builds that are still running",
       )
       return false
     }

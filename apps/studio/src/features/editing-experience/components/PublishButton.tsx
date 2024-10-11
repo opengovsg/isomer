@@ -50,19 +50,20 @@ const SuspendablePublishButton = ({
     if (coercedSiteId && coercedPageId)
       mutate({ pageId: coercedPageId, siteId: coercedSiteId })
   }
+
+  const isChangesPendingPublish = !!currPage.draftBlobId
+
   return (
     <TouchableTooltip
-      hidden={!!currPage.draftBlobId}
-      // label="All changes have been published"
-      label="This feature is currently not available in beta"
+      hidden={isChangesPendingPublish}
+      label="All changes have been published"
     >
       <Button
         variant="solid"
         size="sm"
         onClick={handlePublish}
         isLoading={isLoading}
-        // TODO(ISOM-1552): Add back functionality when implemented
-        isDisabled
+        isDisabled={!isChangesPendingPublish}
       >
         Publish
       </Button>
@@ -72,6 +73,6 @@ const SuspendablePublishButton = ({
 
 const PublishButton = withSuspense(
   SuspendablePublishButton,
-  <Skeleton width={"100%"} height={"100%"} />,
+  <Skeleton width="100%" height="100%" />,
 )
 export default PublishButton
