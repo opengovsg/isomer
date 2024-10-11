@@ -11,6 +11,7 @@ export const DefaultServerError = () => {
       gap="1.5rem"
       alignItems="center"
       marginTop="6rem"
+      bg="base.canvas.backdrop"
     >
       <LiftUnderRepair />
       <Flex flexDirection="column" gap="0.5rem" alignItems="center">
