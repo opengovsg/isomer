@@ -26,6 +26,7 @@ import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { ResourceSelector } from "../ResourceSelector"
+import { FileAttachment } from "./FileAttachment"
 
 interface PageLinkElementProps {
   value: string
@@ -78,6 +79,7 @@ const LinkEditorModalContent = ({
     setValue,
     watch,
     register,
+    setError,
     formState: { errors, isValid },
   } = useZodForm({
     schema: z.object({
@@ -96,6 +98,8 @@ const LinkEditorModalContent = ({
   const onSubmit = handleSubmit(({ linkText, linkHref }) =>
     onSave(linkText, linkHref),
   )
+
+  const { siteId } = useQueryParse(editPageSchema)
 
   return (
     <ModalContent>
@@ -140,11 +144,18 @@ const LinkEditorModalContent = ({
                 />
               }
               fileLinkElement={
-                <Input
-                  type="text"
-                  value={watch("linkHref")}
-                  onChange={(e) => setValue("linkHref", e.target.value)}
-                  placeholder="File link"
+                <FileAttachment
+                  siteId={siteId}
+                  error={errors.linkHref?.message}
+                  setError={(errorMessage) =>
+                    setError("linkHref", {
+                      type: "custom",
+                      message: errorMessage,
+                    })
+                  }
+                  setHref={(linkHref) => {
+                    setValue("linkHref", linkHref)
+                  }}
                 />
               }
             />
