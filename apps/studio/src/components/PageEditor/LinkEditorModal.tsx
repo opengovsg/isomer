@@ -17,6 +17,7 @@ import {
   Input,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
+import { isEmpty } from "lodash"
 import { z } from "zod"
 
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
@@ -80,8 +81,10 @@ const LinkEditorModalContent = ({
     watch,
     register,
     setError,
-    formState: { errors, isValid },
+    clearErrors,
+    formState: { errors },
   } = useZodForm({
+    mode: "onChange",
     schema: z.object({
       linkText: z.string().min(1),
       linkHref: z.string().min(1),
@@ -153,6 +156,7 @@ const LinkEditorModalContent = ({
                       message: errorMessage,
                     })
                   }
+                  clearError={() => clearErrors("linkHref")}
                   setHref={(linkHref) => {
                     setValue("linkHref", linkHref)
                   }}
@@ -170,7 +174,9 @@ const LinkEditorModalContent = ({
           <Button
             variant="solid"
             onClick={onSubmit}
-            isDisabled={!isValid}
+            // NOTE: Using `isEmpty` here because we trigger `setError`
+            // using `isValid` doesn't trigger the error
+            isDisabled={!isEmpty(errors)}
             type="submit"
           >
             {isEditingLink ? "Save link" : "Add link"}

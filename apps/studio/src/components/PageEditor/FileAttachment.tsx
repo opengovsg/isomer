@@ -11,6 +11,7 @@ interface FileAttachmentProps {
   siteId: number
   error?: string
   setError: (error: string) => void
+  clearError
 }
 
 export const FileAttachment = ({
@@ -18,6 +19,7 @@ export const FileAttachment = ({
   siteId,
   error,
   setError,
+  clearError,
 }: FileAttachmentProps) => {
   const [file, setFile] = useState<File | undefined>(undefined)
   // TODO: Add a mutation for deletion next time of s3 resources
@@ -40,17 +42,21 @@ export const FileAttachment = ({
           value={file}
           onChange={(file) => {
             setFile(file)
-
-            if (file) {
-              uploadFile(
-                { file },
-                {
-                  onSuccess: ({ path }) => {
-                    setHref(path)
-                  },
-                },
-              )
+            if (!file) {
+              setHref("")
+              setError("Please make sure you upload a file!")
+              return
             }
+
+            uploadFile(
+              { file },
+              {
+                onSuccess: ({ path }) => {
+                  setHref(path)
+                  clearError()
+                },
+              },
+            )
           }}
           onError={setError}
           maxSize={MAX_PDF_FILE_SIZE_BYTES}
