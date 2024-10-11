@@ -14,6 +14,7 @@ import {
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
+import { safeJsonParse } from "~/utils/safeJsonParse"
 import { startProjectById, stopRunningBuilds } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType } from "../database"
 import {
@@ -311,8 +312,9 @@ export const pageRouter = router({
           )
           const validateFn = ajv.compile(pageMetaSchema)
 
-          const newMeta =
-            !!meta && (JSON.parse(meta) as PrismaJson.BlobJsonContent["meta"])
+          const newMeta = safeJsonParse(
+            meta,
+          ) as PrismaJson.BlobJsonContent | null
 
           // NOTE: if `meta` was originally passed, then we need to validate it
           // otherwise, the meta never existed and we don't need to validate anyways
@@ -327,9 +329,7 @@ export const pageRouter = router({
           }
 
           try {
-            const newContent = !newMeta
-              ? rest
-              : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
+            const newContent = !newMeta ? rest : { ...rest, meta: newMeta }
 
             await updateBlobById(tx, {
               pageId,
@@ -371,6 +371,9 @@ export const pageRouter = router({
               meta: newMeta,
             }
           } catch (err) {
+            if (err instanceof TRPCError) {
+              throw err
+            }
             throw new TRPCError({
               code: "BAD_REQUEST",
               message:

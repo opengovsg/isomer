@@ -900,6 +900,7 @@ describe("page.router", async () => {
         title: "Test Page",
         permalink: "test-page",
         meta: "Test meta",
+        type: "Page",
       })
 
       await expect(result).rejects.toThrowError(
@@ -915,6 +916,7 @@ describe("page.router", async () => {
         title: "Test Page",
         permalink: "test-page",
         meta: "Test meta",
+        type: "Page",
       })
 
       // Assert
@@ -946,6 +948,52 @@ describe("page.router", async () => {
         siteId: site.id,
         pageId: Number(page.id),
         meta: JSON.stringify(expectedMeta),
+        type: "Page",
+        ...expectedSettings,
+      })
+
+      // Assert
+      const actualResource = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .select([
+          "Resource.id",
+          "Resource.type",
+          "Resource.title",
+          "Resource.permalink",
+          "Resource.draftBlobId",
+        ])
+        .executeTakeFirstOrThrow()
+      const actualBlobContent = await db
+        .selectFrom("Blob")
+        .where("id", "=", page.draftBlobId)
+        .select("content")
+        .executeTakeFirstOrThrow()
+      expect(result).toMatchObject(actualResource)
+      expect(result).toMatchObject(expectedSettings)
+      expect(actualBlobContent.content.meta).toMatchObject(expectedMeta)
+    })
+
+    it("should update root page settings successfully", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+      const expectedMeta = {
+        description: "Updating the meta description",
+        noIndex: false,
+      }
+      const expectedSettings = {
+        title: "New Title",
+        permalink: "",
+      }
+
+      // Act
+      const result = await caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        meta: JSON.stringify(expectedMeta),
+        type: "RootPage",
         ...expectedSettings,
       })
 
@@ -983,6 +1031,7 @@ describe("page.router", async () => {
         pageId: Number(page.id),
         title: "New Title",
         permalink: "new-permalink",
+        type: "Page",
         meta: "do not match the shape because not a json string",
       })
 
@@ -1009,6 +1058,7 @@ describe("page.router", async () => {
         pageId: Number(page.id),
         title: "New Title",
         permalink: reusedPermalink,
+        type: "Page",
         meta: JSON.stringify({
           description: "Updating the meta description",
           noIndex: false,
