@@ -18,11 +18,11 @@ export const DefaultServerError = () => {
           Something went wrong
         </Text>
         <Text textStyle="body-2" textAlign="center">
-          It's not you, it's us. Please try refreshingthis page.
+          It's not you, it's us. Please try refreshing this page.
           <br />
           If this issue persists,{" "}
           <Link variant="inline" href="mailto:support@isomer.gov.sg">
-            contact Isomer admin
+            contact Isomer Support
           </Link>
           .
         </Text>
