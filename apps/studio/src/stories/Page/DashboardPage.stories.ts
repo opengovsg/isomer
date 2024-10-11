@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import DashboardPage from "~/pages/index"
+import { createBannerGbParameters } from "../utils/growthbook"
 
 const meta: Meta<typeof DashboardPage> = {
   title: "Pages/Dashboard",
@@ -32,5 +33,17 @@ export const EmptyState: Story = {
     msw: {
       handlers: [sitesHandlers.list.empty()],
     },
+  },
+}
+
+export const WithBanner: Story = {
+  parameters: {
+    ...Dashboard.parameters,
+    growthbook: [
+      createBannerGbParameters({
+        variant: "error",
+        message: "This is a test banner",
+      }),
+    ],
   },
 }

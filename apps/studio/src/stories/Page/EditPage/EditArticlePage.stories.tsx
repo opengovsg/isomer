@@ -6,6 +6,7 @@ import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
+import { createBannerGbParameters } from "~/stories/utils/growthbook"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
@@ -71,5 +72,16 @@ export const PublishedState: Story = {
         ...COMMON_HANDLERS,
       ],
     },
+  },
+}
+
+export const WithBanner: Story = {
+  parameters: {
+    growthbook: [
+      createBannerGbParameters({
+        variant: "info",
+        message: "This is a test banner",
+      }),
+    ],
   },
 }
