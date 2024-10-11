@@ -8,8 +8,9 @@ export const DefaultNotFound = () => {
       flexDirection="column"
       gap="1.5rem"
       alignItems="center"
-      marginTop="6rem"
       bg="base.canvas.backdrop"
+      h="$100vh"
+      justifyContent="center"
     >
       <NoResultIcon />
       <Flex flexDirection="column" gap="0.5rem" alignItems="center">

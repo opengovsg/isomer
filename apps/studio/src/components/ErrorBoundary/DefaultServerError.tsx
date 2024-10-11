@@ -9,9 +9,10 @@ export const DefaultServerError = () => {
     <Flex
       flexDirection="column"
       gap="1.5rem"
+      h="$100vh"
       alignItems="center"
-      marginTop="6rem"
       bg="base.canvas.backdrop"
+      justifyContent="center"
     >
       <LiftUnderRepair />
       <Flex flexDirection="column" gap="0.5rem" alignItems="center">
