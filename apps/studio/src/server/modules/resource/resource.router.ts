@@ -15,6 +15,7 @@ import {
   moveSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
+import { publishSite } from "../aws/codebuild.service"
 import { db, sql } from "../database"
 
 export const resourceRouter = router({
@@ -116,52 +117,62 @@ export const resourceRouter = router({
 
   move: protectedProcedure
     .input(moveSchema)
-    .mutation(async ({ input: { movedResourceId, destinationResourceId } }) => {
-      return await db
-        .transaction()
-        .execute(async (tx) => {
-          const parent = await tx
-            .selectFrom("Resource")
-            .where("id", "=", destinationResourceId)
-            .select(["id", "type"])
-            .executeTakeFirst()
+    .mutation(
+      async ({ ctx, input: { movedResourceId, destinationResourceId } }) => {
+        const result = await db
+          .transaction()
+          .execute(async (tx) => {
+            const parent = await tx
+              .selectFrom("Resource")
+              .where("id", "=", destinationResourceId)
+              .select(["id", "type"])
+              .executeTakeFirst()
 
-          if (!parent || parent.type !== "Folder") {
-            throw new TRPCError({ code: "BAD_REQUEST" })
-          }
+            if (!parent || parent.type !== "Folder") {
+              throw new TRPCError({ code: "BAD_REQUEST" })
+            }
 
-          if (movedResourceId === destinationResourceId) {
-            throw new TRPCError({ code: "BAD_REQUEST" })
-          }
+            if (movedResourceId === destinationResourceId) {
+              throw new TRPCError({ code: "BAD_REQUEST" })
+            }
 
-          await tx
-            .updateTable("Resource")
-            .where("id", "=", String(movedResourceId))
-            .where("Resource.type", "in", ["Page", "Folder"])
-            .set({ parentId: String(destinationResourceId) })
-            .execute()
-          return tx
-            .selectFrom("Resource")
-            .where("id", "=", String(movedResourceId))
-            .select([
-              "parentId",
-              "Resource.id",
-              "Resource.type",
-              "Resource.permalink",
-              "Resource.title",
-            ])
-            .executeTakeFirst()
-        })
-        .catch((err) => {
-          if (get(err, "code") === "23505") {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "A resource with the same permalink already exists",
-            })
-          }
-          throw err
-        })
-    }),
+            await tx
+              .updateTable("Resource")
+              .where("id", "=", String(movedResourceId))
+              .where("Resource.type", "in", ["Page", "Folder"])
+              .set({ parentId: String(destinationResourceId) })
+              .execute()
+
+            return tx
+              .selectFrom("Resource")
+              .where("id", "=", String(movedResourceId))
+              .select([
+                "Resource.siteId",
+                "parentId",
+                "Resource.id",
+                "Resource.type",
+                "Resource.permalink",
+                "Resource.title",
+              ])
+              .executeTakeFirst()
+          })
+          .catch((err) => {
+            if (get(err, "code") === "23505") {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
+
+        if (!result) {
+          throw new TRPCError({ code: "NOT_FOUND" })
+        }
+
+        await publishSite(ctx.logger, result.siteId)
+      },
+    ),
 
   countWithoutRoot: protectedProcedure
     .input(countResourceSchema)
@@ -215,12 +226,15 @@ export const resourceRouter = router({
 
   delete: protectedProcedure
     .input(deleteResourceSchema)
-    .mutation(async ({ input: { siteId, resourceId } }) => {
+    .mutation(async ({ ctx, input: { siteId, resourceId } }) => {
       const result = await db
         .deleteFrom("Resource")
         .where("Resource.id", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
         .executeTakeFirst()
+
+      await publishSite(ctx.logger, siteId)
+
       // NOTE: We need to do this `toString` as the property is a `bigint`
       // and trpc cannot serialise it, which leads to errors
       return result.numDeletedRows.toString()

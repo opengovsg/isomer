@@ -17,7 +17,6 @@ import {
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { shouldStartNewBuild, startProjectById } from "../aws/codebuild.service"
 import { db, ResourceType } from "../database"
 import {
   getFooter,
@@ -26,11 +25,11 @@ import {
   getPageById,
   getResourceFullPermalink,
   getResourcePermalinkTree,
+  publishResource,
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
-import { getSiteConfig, getSiteNameAndCodeBuildId } from "../site/site.service"
-import { incrementVersion } from "../version/version.service"
+import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage } from "./page.service"
 
 const ajv = new Ajv({ allErrors: true, strict: false, logger: false })
@@ -289,38 +288,9 @@ export const pageRouter = router({
 
   publishPage: protectedProcedure
     .input(publishPageSchema)
-    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
-      // Step 1: Create a new version
-      const addedVersionResult = await incrementVersion({
-        siteId,
-        pageId,
-        userId: ctx.user.id,
-      })
-
-      // Step 2: Get the CodeBuild ID associated with the site
-      const site = await getSiteNameAndCodeBuildId(siteId)
-      const { codeBuildId } = site
-      if (!codeBuildId) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "No CodeBuild project ID found for site",
-        })
-      }
-
-      // Step 3: Determine if a new build should be started
-      const isNewBuildNeeded = await shouldStartNewBuild(
-        ctx.logger,
-        codeBuildId,
-      )
-
-      if (!isNewBuildNeeded) {
-        return addedVersionResult
-      }
-
-      // Step 4: Start a new build
-      await startProjectById(ctx.logger, codeBuildId)
-      return addedVersionResult
-    }),
+    .mutation(async ({ ctx, input: { siteId, pageId } }) =>
+      publishResource(ctx.logger, siteId, String(pageId), ctx.user.id),
+    ),
 
   updateSettings: protectedProcedure
     .input(pageSettingsSchema)

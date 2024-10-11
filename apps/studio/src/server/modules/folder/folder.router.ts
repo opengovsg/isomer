@@ -7,33 +7,45 @@ import {
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
-import { db } from "../database"
+import { publishSite } from "../aws/codebuild.service"
+import { db, ResourceState, ResourceType } from "../database"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
   create: protectedProcedure
     .input(createFolderSchema)
-    .mutation(async ({ input: { folderTitle, parentFolderId, ...rest } }) => {
-      const folder = await db
-        .insertInto("Resource")
-        .values({
-          ...rest,
-          type: "Folder",
-          title: folderTitle,
-          parentId: parentFolderId ? String(parentFolderId) : null,
-        })
-        .executeTakeFirstOrThrow()
-        .catch((err) => {
-          if (get(err, "code") === "23505") {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "A resource with the same permalink already exists",
-            })
-          }
-          throw err
-        })
-      return { folderId: folder.insertId }
-    }),
+    .mutation(
+      async ({
+        ctx,
+        input: { folderTitle, parentFolderId, permalink, siteId },
+      }) => {
+        const folder = await db
+          .insertInto("Resource")
+          .values({
+            permalink,
+            siteId,
+            type: ResourceType.Folder,
+            title: folderTitle,
+            parentId: parentFolderId ? String(parentFolderId) : null,
+            state: ResourceState.Published,
+          })
+          .executeTakeFirstOrThrow()
+          .catch((err) => {
+            if (get(err, "code") === "23505") {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
+
+        // TODO: Create the index page for the folder and publish it
+        await publishSite(ctx.logger, siteId)
+
+        return { folderId: folder.insertId }
+      },
+    ),
   getMetadata: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input }) => {
@@ -50,26 +62,32 @@ export const folderRouter = router({
     }),
   editFolder: protectedProcedure
     .input(editFolderSchema)
-    .mutation(async ({ input: { resourceId, permalink, title, siteId } }) => {
-      return db
-        .updateTable("Resource")
-        .where("Resource.id", "=", resourceId)
-        .where("Resource.siteId", "=", Number(siteId))
-        .where("Resource.type", "in", ["Folder", "Collection"])
-        .set({
-          permalink,
-          title,
-        })
-        .returning(defaultFolderSelect)
-        .execute()
-        .catch((err) => {
-          if (get(err, "code") === "23505") {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "A resource with the same permalink already exists",
-            })
-          }
-          throw err
-        })
-    }),
+    .mutation(
+      async ({ ctx, input: { resourceId, permalink, title, siteId } }) => {
+        const result = await db
+          .updateTable("Resource")
+          .where("Resource.id", "=", resourceId)
+          .where("Resource.siteId", "=", Number(siteId))
+          .where("Resource.type", "in", ["Folder", "Collection"])
+          .set({
+            permalink,
+            title,
+          })
+          .returning(defaultFolderSelect)
+          .execute()
+          .catch((err) => {
+            if (get(err, "code") === "23505") {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
+
+        await publishSite(ctx.logger, Number(siteId))
+
+        return result
+      },
+    ),
 })
