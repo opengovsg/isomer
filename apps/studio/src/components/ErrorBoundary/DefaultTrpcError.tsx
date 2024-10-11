@@ -4,6 +4,7 @@ import { type TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc"
 
 import { trpc } from "~/utils/trpc"
 import { FullscreenSpinner } from "../FullscreenSpinner"
+import { DefaultNotFound } from "./DefaultNotFound"
 import { UnexpectedErrorCard } from "./UnexpectedErrorCard"
 
 function UnauthorizedError() {
@@ -19,16 +20,13 @@ function UnauthorizedError() {
 export function DefaultTrpcError({ code }: { code: TRPC_ERROR_CODE_KEY }) {
   switch (code) {
     case "NOT_FOUND":
-      return (
-        <Box bgColor="red" width="100px" height="100px">
-          Not found!
-        </Box>
-      )
+      return <DefaultNotFound />
 
     case "UNAUTHORIZED":
       return <UnauthorizedError />
 
     default:
+      const uncoveredErrors = code
       return <UnexpectedErrorCard />
   }
 }
