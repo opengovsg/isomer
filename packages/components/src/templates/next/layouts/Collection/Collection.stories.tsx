@@ -453,7 +453,7 @@ export const FilteredEmptyResults: Story = {
                 summary:
                   "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
                 date: "2025-05-07",
-                category: "Category Name",
+                category: "Category Name 2",
                 ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
                 fileDetails: {
                   type: "png",
@@ -468,10 +468,7 @@ export const FilteredEmptyResults: Story = {
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText(/2025 \(1\)/i))
-    const searchElem = screen.getByRole("searchbox", {
-      name: /Start typing to search/i,
-    })
-    await userEvent.type(searchElem, "anything")
+    await userEvent.click(screen.getByText(/2024 \(19\)/i))
+    await userEvent.click(screen.getByText(/Category Name 2 \(1\)/i))
   },
 }
