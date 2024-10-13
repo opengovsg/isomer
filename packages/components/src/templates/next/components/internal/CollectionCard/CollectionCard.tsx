@@ -12,7 +12,7 @@ type CollectionCardProps = BaseCollectionCardProps
 
 const collectionCardLinkStyle = tv({
   extend: focusVisibleHighlight,
-  base: "prose-title-md-semibold line-clamp-2 w-fit underline-offset-4 hover:underline",
+  base: "prose-title-md-semibold line-clamp-3 w-fit underline-offset-4 hover:underline",
 })
 
 export const CollectionCard = ({
@@ -50,9 +50,11 @@ export const CollectionCard = ({
             <span title={itemTitle}>{itemTitle}</span>
           </Link>
         </h3>
-        <Text className="prose-body-base line-clamp-2" title={description}>
-          {description}
-        </Text>
+        {description && (
+          <Text className="prose-body-base line-clamp-2" title={description}>
+            {description}
+          </Text>
+        )}
         {/* TODO: Feature enhancement? Filter by category when clicked */}
         <Text className="prose-label-md mt-3 text-base-content-subtle lg:mt-2">
           {category}
