@@ -1,8 +1,6 @@
 import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import Ajv from "ajv"
-import { get, isEmpty, isEqual } from "lodash"
-import { z } from "zod"
+import { get, isEqual } from "lodash"
 
 import {
   basePageSchema,

@@ -1,4 +1,4 @@
-import type { ResourceType } from "@prisma/client"
+import type { ResourceType } from "~prisma/generated/generatedEnums"
 
 // Gets the Studio URL subpath for a given resource type
 export const getResourceSubpath = (resourceType: ResourceType) => {
