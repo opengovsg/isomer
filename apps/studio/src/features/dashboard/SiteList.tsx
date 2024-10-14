@@ -1,5 +1,7 @@
 import NextLink from "next/link"
 import {
+  Box,
+  Button,
   Card,
   Flex,
   Image,
@@ -25,32 +27,54 @@ const Site = ({
   siteLogoUrl?: string
 }): JSX.Element => {
   return (
-    <LinkBox>
-      <LinkOverlay href={`/sites/${siteId}`} as={NextLink} />
-      <Flex key={siteId} flexDirection="column" gap="1rem" width="100%">
-        <Image
-          src={siteLogoUrl}
-          alt={siteName}
-          borderRadius="0.5rem"
-          border="1.5px solid"
-          borderColor="base.divider.medium"
-          width="100%"
-          height="100%"
-          objectFit="cover"
-          aspectRatio="1/1"
-          backgroundColor="white"
-          fallbackSrc="/isomer-sites-placeholder.png"
-        />
-        <Text
-          as="h6"
-          textStyle="h6"
-          noOfLines={1}
-          overflow="hidden"
-          textOverflow="ellipsis"
-        >
-          {siteName}
-        </Text>
-      </Flex>
+    <LinkBox cursor="pointer" role="group">
+      <LinkOverlay href={`/sites/${siteId}`} as={NextLink}>
+        <Flex key={siteId} flexDirection="column" gap="1rem" width="100%">
+          <Box position="relative">
+            <Image
+              src={siteLogoUrl}
+              alt={siteName}
+              borderRadius="0.5rem"
+              border="1.5px solid"
+              borderColor="base.divider.medium"
+              width="100%"
+              height="100%"
+              objectFit="cover"
+              aspectRatio="1/1"
+              backgroundColor="white"
+              fallbackSrc="/isomer-sites-placeholder.png"
+            />
+            <Box
+              position="absolute"
+              top="0"
+              left="0"
+              right="0"
+              bottom="0"
+              backgroundColor="base.canvas.overlay"
+              borderRadius="0.5rem"
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              opacity="0"
+              transition="opacity 0.2s"
+              _groupHover={{ opacity: 1 }}
+            >
+              <Button backgroundColor="interaction.main.default">
+                <Text textStyle="subhead-1">Start editing site</Text>
+              </Button>
+            </Box>
+          </Box>
+          <Text
+            as="h6"
+            textStyle="h6"
+            noOfLines={1}
+            overflow="hidden"
+            textOverflow="ellipsis"
+          >
+            {siteName}
+          </Text>
+        </Flex>
+      </LinkOverlay>
     </LinkBox>
   )
 }
