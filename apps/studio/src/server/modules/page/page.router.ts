@@ -1,6 +1,6 @@
 import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { get, isEqual } from "lodash"
+import { get, isEmpty, isEqual } from "lodash"
 
 import {
   basePageSchema,
@@ -406,7 +406,12 @@ export const pageRouter = router({
     .query(async ({ input }) => {
       const { pageId, siteId } = input
       const permalinkTree = await getResourcePermalinkTree(siteId, pageId)
-
+      if (isEmpty(permalinkTree)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No permalink tree could be found for the given page",
+        })
+      }
       return permalinkTree
     }),
 })
