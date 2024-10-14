@@ -11,7 +11,10 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { useTextEditor } from "../hooks/useTextEditor"
 import { editPageSchema } from "../schema"
-import { BRIEF_TOAST_SETTINGS } from "./constants"
+import {
+  BRIEF_TOAST_SETTINGS,
+  CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+} from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
 import { DrawerHeader } from "./Drawer/DrawerHeader"
@@ -48,7 +51,10 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
   const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-      toast({ title: "Changes saved", ...BRIEF_TOAST_SETTINGS })
+      toast({
+        title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+        ...BRIEF_TOAST_SETTINGS,
+      })
     },
   })
 
