@@ -1,7 +1,38 @@
+import type { SetOptional } from "type-fest"
+import cuid2 from "@paralleldrive/cuid2"
 import { db, jsonb } from "~server/db"
+import { type Insertable } from "kysely"
 import { nanoid } from "nanoid"
 
-import type { ResourceState, ResourceType } from "~server/db"
+import type { ResourceState, ResourceType, User } from "~server/db"
+
+export const createTestUser = (overrides: Partial<Insertable<User>> = {}) => ({
+  email: `test${nanoid()}@example.com`,
+  name: "Test User",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  phone: "123456789",
+  preferredName: null,
+  ...overrides,
+})
+
+export const setupTestUser = async (user?: SetOptional<User, "id">) => {
+  if (user?.id !== undefined) {
+    return db
+      .updateTable("User")
+      .where("id", "=", user.id)
+      .set(user)
+      .returningAll()
+      .executeTakeFirstOrThrow()
+  }
+
+  const newUser = createTestUser(user)
+  return db
+    .insertInto("User")
+    .values({ ...newUser, id: cuid2.createId() })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
   if (siteId !== undefined && fetch) {
