@@ -65,10 +65,12 @@ const useCreateCollectionPageWizardContext = ({
 
   const pagePreviewJson: IsomerSchema = useMemo(() => {
     const jsonPreview =
-      type === "page" ? articleLayoutPreview : collectionPdfPreview
-    return merge(jsonPreview, {
-      page: { title: title || "Page title here" },
-    }) as IsomerSchema
+      type === "page"
+        ? merge(articleLayoutPreview, {
+            page: { title: title || "Page title here" },
+          })
+        : collectionPdfPreview
+    return jsonPreview as IsomerSchema
   }, [type, title])
 
   const utils = trpc.useUtils()
