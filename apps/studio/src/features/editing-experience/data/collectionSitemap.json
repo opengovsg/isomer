@@ -1,0 +1,34 @@
+{
+  "id": "root",
+  "permalink": "/",
+  "lastModified": "2024-10-14T07:05:08.803Z",
+  "layout": "homepage",
+  "title": "An Isomer Site",
+  "summary": "",
+  "children": [
+    {
+      "id": "collection",
+      "permalink": "/resources",
+      "lastModified": "2024-10-14T07:05:08.799Z",
+      "layout": "collection",
+      "title": "Newsroom",
+      "summary": "Learn more about PREPARE here.",
+      "children": [
+        {
+          "id": "pdf",
+          "permalink": "/resources/pdf",
+          "ref": "1",
+          "fileDetails": {
+            "type": "pdf",
+            "size": "5KB"
+          },
+          "lastModified": "02 Sep 2023",
+          "date": "02 Sep 2023",
+          "layout": "file",
+          "summary": "This is a summary of a pdf",
+          "category": "Events and highlights"
+        }
+      ]
+    }
+  ]
+}
