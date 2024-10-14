@@ -11,7 +11,7 @@ interface FileAttachmentProps {
   siteId: number
   error?: string
   setError: (error: string) => void
-  clearError
+  clearError: () => void
 }
 
 export const FileAttachment = ({
