@@ -10,6 +10,8 @@ export const getResourceSubpath = (resourceType: ResourceType) => {
       return "pages"
     case "Folder":
       return "folders"
+    case "CollectionFile":
+      return "file"
     case "Collection":
       return "collections"
     default:

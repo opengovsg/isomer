@@ -36,6 +36,7 @@ export const TitleCell = ({
       case "Collection":
         return BiData
       case "CollectionPage":
+      case "CollectionFile":
         return BiFile
     }
   }, [type])
