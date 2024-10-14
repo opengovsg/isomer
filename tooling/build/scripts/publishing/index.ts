@@ -26,6 +26,19 @@ const SITE_ID = Number(process.env.SITE_ID)
 // Unique identifier for pages of dangling directories
 // Guaranteed to not be present in the database because we start from 1
 const DANGLING_DIRECTORY_PAGE_ID = "-1"
+const INDEX_PAGE_PERMALINK = "_index"
+
+const getConvertedPermalink = (fullPermalink: string) => {
+  // NOTE: If the full permalink ends with `_index`,
+  // we should remove it because this function
+  // is called for generation of the permalink in the sitemap
+  // and reflects what the users see.
+  // Note that we can do an `endsWith` because
+  // we prohibit users from using `_` as a character
+  return fullPermalink.endsWith(INDEX_PAGE_PERMALINK)
+    ? fullPermalink.slice(0, -INDEX_PAGE_PERMALINK.length)
+    : fullPermalink
+}
 
 // Wrapper function for debug logging
 function logDebug(message: string, ...optionalParams: any[]) {
@@ -79,7 +92,7 @@ async function main() {
         const sitemapEntry: SitemapEntry = {
           id: resource.id,
           title: resource.title,
-          permalink: `/${resource.fullPermalink || resource.permalink}`,
+          permalink: `/${getConvertedPermalink(resource.fullPermalink)}`,
           lastModified: new Date().toISOString(), // TODO: Update to updated_at column
           layout: resource.content.layout || "content",
           summary:
@@ -212,6 +225,10 @@ function generateSitemapTree(
         .split("/").length === 1,
   )
   const children = [...existingChildren, ...danglingDirectories]
+
+  children.sort((a, b) =>
+    a.title.localeCompare(b.title, undefined, { numeric: true }),
+  )
 
   return children.map((child) => ({
     ...child,

@@ -54,7 +54,9 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
     schemaData.page.title ||
     pageName.charAt(0).toUpperCase() + pageName.slice(1)
   const summary =
-    schemaData.page.contentPageHeader?.summary ||
+    (Array.isArray(schemaData.page.contentPageHeader?.summary)
+      ? schemaData.page.contentPageHeader.summary.join(" ")
+      : schemaData.page.contentPageHeader?.summary) ||
     schemaData.page.articlePageHeader?.summary.join(" ") ||
     schemaData.page.description ||
     ""
@@ -236,7 +238,9 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
   children.push(...danglingDirEntries)
 
   // Ensure that the result is ordered in alphabetical order
-  children.sort((a, b) => a.title.localeCompare(b.title))
+  children.sort((a, b) =>
+    a.title.localeCompare(b.title, undefined, { numeric: true }),
+  )
 
   return children
 }

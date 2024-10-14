@@ -1,14 +1,16 @@
-import { fileURLToPath } from "url"
+import tsconfigPaths from "vite-tsconfig-paths"
 import { configDefaults, defineConfig } from "vitest/config"
 
 export default defineConfig({
+  plugins: [tsconfigPaths()],
   test: {
+    retry: 0,
     globals: true,
     exclude: [...configDefaults.exclude, "**/playwright/**", "tests/load/**"],
-    alias: {
-      "~/": fileURLToPath(new URL("./src/", import.meta.url)),
-      "~prisma": fileURLToPath(new URL("./prisma/", import.meta.url)),
+    setupFiles: ["tests/mocks/db.ts"],
+    globalSetup: ["tests/global-setup.ts"],
+    coverage: {
+      provider: "istanbul",
     },
-    setupFiles: ["vitest.setup.ts"],
   },
 })

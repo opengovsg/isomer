@@ -1,16 +1,21 @@
+import type { SetOptional } from "type-fest"
+import cuid2 from "@paralleldrive/cuid2"
+import { db } from "~server/db"
+
 import type { User } from "~server/db"
-import { prisma } from "~/server/prisma"
 
-export const auth = (user: User) => {
-  if (user.id) {
-    return prisma.user.upsert({
-      where: { id: user.id },
-      create: user,
-      update: {},
-    })
+export const auth = async ({ id, ...user }: SetOptional<User, "id">) => {
+  if (id !== undefined) {
+    return db
+      .updateTable("User")
+      .where("id", "=", id)
+      .set({ ...user, id })
+      .returningAll()
+      .executeTakeFirstOrThrow()
   }
-
-  return prisma.user.create({
-    data: user,
-  })
+  return db
+    .insertInto("User")
+    .values({ ...user, id: cuid2.createId() })
+    .returningAll()
+    .executeTakeFirstOrThrow()
 }

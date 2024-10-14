@@ -163,10 +163,9 @@ const PageSettings = () => {
   })
 
   return (
-    <form onBlur={onSubmit}>
-      <Grid w="100vw" my="3rem" templateColumns="repeat(4, 1fr)">
-        <GridItem colSpan={1}></GridItem>
-        <GridItem colSpan={2}>
+    <chakra.form onBlur={onSubmit} overflowY="auto" width="100%">
+      <Grid w="100%" my="3rem" templateColumns="repeat(4, 1fr)">
+        <GridItem gridColumn="2/4">
           <VStack w="100%" gap="2rem" alignItems="flex-start">
             <Box>
               <Text as="h3" textStyle="h3-semibold">
@@ -184,7 +183,10 @@ const PageSettings = () => {
                 name="permalink"
                 render={({ field: { onChange, ...field } }) => (
                   <Input
-                    isDisabled={type === ResourceType.RootPage}
+                    isDisabled={
+                      type === ResourceType.RootPage ||
+                      type === ResourceType.IndexPage
+                    }
                     placeholder={
                       type === ResourceType.RootPage
                         ? "/"
@@ -235,7 +237,10 @@ const PageSettings = () => {
                 w="100%"
                 noOfLines={1}
                 maxLength={MAX_TITLE_LENGTH}
-                isDisabled={type === ResourceType.RootPage}
+                isDisabled={
+                  type === ResourceType.RootPage ||
+                  type === ResourceType.IndexPage
+                }
                 {...register("title")}
                 mt="0.5rem"
               />
@@ -263,9 +268,8 @@ const PageSettings = () => {
             />
           </VStack>
         </GridItem>
-        <GridItem colSpan={1}></GridItem>
       </Grid>
-    </form>
+    </chakra.form>
   )
 }
 

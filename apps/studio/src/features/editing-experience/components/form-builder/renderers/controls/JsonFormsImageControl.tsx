@@ -44,7 +44,7 @@ export function JsonFormsImageControl({
   const { modifiedAssets, setModifiedAssets } = useEditorDrawerContext()
   const [pendingAsset, setPendingAsset] = useState<ModifiedAsset | undefined>()
 
-  // NOTE: For some reason, we cannot modified the modifiedAssets state directly
+  // NOTE: For some reason, we cannot modify the modifiedAssets state directly
   // from the Attachment component
   useEffect(() => {
     const modifiedAsset = modifiedAssets.find((image) => image.path === path)

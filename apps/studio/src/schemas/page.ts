@@ -1,7 +1,13 @@
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
+import { schema } from "@opengovsg/isomer-components"
+import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
+import { ajv } from "~/utils/ajv"
+import { safeJsonParse } from "~/utils/safeJsonParse"
 import { generateBasePermalinkSchema } from "./common"
+
+const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
 const NEW_PAGE_LAYOUT_VALUES = [
   "article",
@@ -45,17 +51,19 @@ export const reorderBlobSchema = z.object({
   ),
 })
 
-export const updatePageSchema = basePageSchema.extend({
-  // NOTE: We allow both to be empty now,
-  // in which case this is a no-op.
-  // We are ok w/ this because it doesn't
-  // incur any db writes
-  parentId: z.number().min(1).optional(),
-  pageName: z.string().min(1).optional(),
-})
-
 export const updatePageBlobSchema = basePageSchema.extend({
-  content: z.string(),
+  content: z.string().transform((value, ctx) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const parsed = safeJsonParse(value)
+    if (schemaValidator(parsed)) {
+      return parsed
+    }
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Invalid page content",
+    })
+    return z.NEVER
+  }),
   siteId: z.number().min(1),
 })
 
@@ -125,5 +133,22 @@ export const pageSettingsSchema = z.discriminatedUnion("type", [
     type: z.literal(ResourceType.CollectionPage),
     permalink: permalinkSchema,
   }),
+  basePageSettingsSchema.extend({
+    type: z.literal(ResourceType.IndexPage),
+  }),
   rootPageSettingsSchema,
 ])
+
+export const readPageOutputSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  permalink: z.string(),
+  siteId: z.number(),
+  parentId: z.string().nullable(),
+  publishedVersionId: z.string().nullable(),
+  draftBlobId: z.string().nullable(),
+  state: z.nativeEnum(ResourceState).nullable(),
+  type: z.nativeEnum(ResourceType),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+})
