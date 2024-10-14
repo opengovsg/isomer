@@ -29,7 +29,7 @@ const siteListQuery = ({
           logoUrl: "",
           search: undefined,
           isGovernment: true,
-        },
+        } as PrismaJson.SiteJsonConfig,
       },
     ]
   })
