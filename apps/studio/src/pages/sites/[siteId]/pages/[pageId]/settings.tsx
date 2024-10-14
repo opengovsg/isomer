@@ -183,7 +183,10 @@ const PageSettings = () => {
                 name="permalink"
                 render={({ field: { onChange, ...field } }) => (
                   <Input
-                    isDisabled={type === ResourceType.RootPage}
+                    isDisabled={
+                      type === ResourceType.RootPage ||
+                      type === ResourceType.IndexPage
+                    }
                     placeholder={
                       type === ResourceType.RootPage
                         ? "/"
@@ -234,7 +237,10 @@ const PageSettings = () => {
                 w="100%"
                 noOfLines={1}
                 maxLength={MAX_TITLE_LENGTH}
-                isDisabled={type === ResourceType.RootPage}
+                isDisabled={
+                  type === ResourceType.RootPage ||
+                  type === ResourceType.IndexPage
+                }
                 {...register("title")}
                 mt="0.5rem"
               />

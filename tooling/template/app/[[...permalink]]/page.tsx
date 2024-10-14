@@ -12,9 +12,10 @@ import {
   RenderEngine,
 } from "@opengovsg/isomer-components"
 
+const INDEX_PAGE_PERMALINK = "_index"
 interface DynamicPageProps {
   params: {
-    permalink: string[]
+    permalink?: string[]
   }
 }
 
@@ -29,37 +30,28 @@ const lastUpdated =
 const getSchema = async (
   permalink: DynamicPageProps["params"]["permalink"],
 ) => {
-  if (permalink && permalink.length > 0 && typeof permalink !== "string") {
-    const joinedPermalink = permalink.join("/")
+  const joinedPermalink = !!permalink ? permalink.join("/") : ""
 
-    const schema = (await import(`@/schema/${joinedPermalink}.json`).then(
-      (module) => module.default,
-    )) as IsomerPageSchemaType
-
-    const lastModified =
-      // TODO: fixup all the typing errors
-      // @ts-expect-error to fix when types are proper
-      getSitemapXml(sitemap).find(
-        ({ url }) => permalink.join("/") === url.replace(/^\//, ""),
-      )?.lastModified || new Date().toISOString()
-
-    schema.page.permalink = "/" + joinedPermalink
-    schema.page.lastModified = lastModified
-
-    return schema
-  }
-
-  const schema = (await import(`@/schema/index.json`).then(
-    (module) => module.default,
-  )) as IsomerPageSchemaType
+  const schema = (await import(`@/schema/${joinedPermalink}.json`)
+    .then((module) => module.default)
+    // NOTE: If the initial import is missing,
+    // this might be the case where the file is an index page
+    // and has `_index` appended to the original permalink
+    // so we have to do another import w the appended index path
+    .catch(async () => {
+      return import(
+        `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
+      ).then((module) => module.default)
+    })) as IsomerPageSchemaType
 
   const lastModified =
     // TODO: fixup all the typing errors
     // @ts-expect-error to fix when types are proper
-    getSitemapXml(sitemap).find(({ url }) => url === "/")?.lastModified ||
-    new Date().toISOString()
+    getSitemapXml(sitemap).find(
+      ({ url }) => joinedPermalink === url.replace(/^\//, ""),
+    )?.lastModified || new Date().toISOString()
 
-  schema.page.permalink = "/"
+  schema.page.permalink = "/" + joinedPermalink
   schema.page.lastModified = lastModified
 
   return schema

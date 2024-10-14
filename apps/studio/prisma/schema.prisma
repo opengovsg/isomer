@@ -106,6 +106,7 @@ enum ResourceType {
   Folder
   Collection
   CollectionPage // Can only live inside `Collection` resources
+  IndexPage // This denotes the index page of a folder or a collection
 }
 
 model User {

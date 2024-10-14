@@ -176,6 +176,8 @@ function ComponentSelector() {
       case "CollectionPage":
         return ARTICLE_ALLOWED_BLOCKS
       case "Collection":
+      case "IndexPage":
+        return []
       case "Folder":
         throw new Error(`Unsupported resource type: ${type}`)
       default:

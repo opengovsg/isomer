@@ -24,9 +24,13 @@ export const useIsActive = (
       )
     case "Page":
     case "CollectionPage":
+    case "IndexPage":
       return siteProps.resourceId === currentResourceId
     case "Folder":
     case "Collection":
       return siteProps.folderId === currentResourceId
+    default:
+      const _uncaught: never = type
+      throw new Error(`Unhandled case for useIsActive`)
   }
 }

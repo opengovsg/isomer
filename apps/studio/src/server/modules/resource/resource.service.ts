@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Resource, SafeKysely, Transaction } from "../database"
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { getSitemapTree } from "~/utils/sitemap"
 import { db, jsonb } from "../database"
 import { type Page } from "./resource.types"
@@ -125,8 +126,8 @@ export const getFullPageById = async (
   return publishedBlob
 }
 
-// There are 3 types of pages this get query supports:
-// Page, CollectionPage, RootPage
+// There are 4 types of pages this get query supports:
+// Page, CollectionPage, RootPage, IndexPage
 export const getPageById = (
   db: SafeKysely,
   args: { resourceId: number; siteId: number },
@@ -137,6 +138,7 @@ export const getPageById = (
         eb("type", "=", "Page"),
         eb("type", "=", "CollectionPage"),
         eb("type", "=", "RootPage"),
+        eb("type", "=", "IndexPage"),
       ]),
     )
     .select(defaultResourceSelect)
@@ -266,7 +268,7 @@ export const getLocalisedSitemap = async (
       title: "Root",
       summary: "",
       lastModified: new Date().toISOString(),
-      permalink: "",
+      permalink: "/",
     }
   }
 
@@ -346,13 +348,14 @@ export const getLocalisedSitemap = async (
 export const getResourcePermalinkTree = async (
   siteId: number,
   resourceId: number,
-) => {
+): Promise<string[]> => {
   return db.transaction().execute(async (tx) => {
     // Guard against invalid resource
     const resource = await getById(tx, {
       siteId,
       resourceId,
     }).executeTakeFirst()
+
     if (!resource) {
       return []
     }
@@ -378,7 +381,10 @@ export const getResourcePermalinkTree = async (
       .select("Ancestors.permalink")
       .execute()
 
-    return resourcePermalinks.map((r) => r.permalink).reverse()
+    return resourcePermalinks
+      .map((r) => r.permalink)
+      .reverse()
+      .filter((v) => v !== INDEX_PAGE_PERMALINK)
   })
 }
 
