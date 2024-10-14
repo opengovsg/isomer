@@ -47,7 +47,7 @@ export const CreateCollectionPageDetailsScreen = () => {
     formState: { errors },
   } = formMethods
 
-  const [title, url] = watch(["title", "permalink"])
+  const [title, url, type] = watch(["title", "permalink", "type"])
 
   /**
    * As user edits the Page title, Page URL is updated as an hyphenated form of the page title.
@@ -142,7 +142,10 @@ export const CreateCollectionPageDetailsScreen = () => {
               </FormControl>
 
               {/* Section 2: Page URL */}
-              <FormControl isInvalid={!!errors.permalink}>
+              <FormControl
+                isInvalid={!!errors.permalink}
+                display={type === "pdf" ? "None" : "auto"}
+              >
                 <FormLabel>
                   Page URL
                   <FormHelperText>
@@ -161,6 +164,7 @@ export const CreateCollectionPageDetailsScreen = () => {
                     name="permalink"
                     render={({ field: { onChange, ...field } }) => (
                       <Input
+                        isDisabled={type === "pdf"}
                         borderLeftRadius={0}
                         placeholder="URL will be autopopulated if left untouched"
                         {...field}
