@@ -150,7 +150,7 @@ async function main() {
       config: jsonb({
         theme: "isomer-next",
         siteName: "MTI",
-        logoUrl: "",
+        logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
         search: undefined,
         isGovernment: true,
       }),
