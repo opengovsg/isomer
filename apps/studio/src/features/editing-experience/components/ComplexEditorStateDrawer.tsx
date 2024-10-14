@@ -15,7 +15,11 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
-import { BRIEF_TOAST_SETTINGS, PLACEHOLDER_IMAGE_FILENAME } from "./constants"
+import {
+  BRIEF_TOAST_SETTINGS,
+  CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+  PLACEHOLDER_IMAGE_FILENAME,
+} from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
 import { DrawerHeader } from "./Drawer/DrawerHeader"
@@ -57,7 +61,10 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-        toast({ title: "Changes saved", ...BRIEF_TOAST_SETTINGS })
+        toast({
+          title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+          ...BRIEF_TOAST_SETTINGS,
+        })
       },
     })
 
