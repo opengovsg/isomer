@@ -49,7 +49,14 @@ const SitePage: NextPageWithLayout = () => {
 
   return (
     <>
-      <VStack w="100%" p="1.75rem" gap="1rem" height="$100vh" overflow="auto">
+      <VStack
+        w="100%"
+        p="1.75rem"
+        gap="1rem"
+        height={0}
+        minH="100%"
+        overflow="auto"
+      >
         <VStack w="100%" align="start">
           <Breadcrumb size="sm">
             <BreadcrumbItem>

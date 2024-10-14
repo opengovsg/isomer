@@ -41,6 +41,7 @@ const BaseRefMetaSchema = Type.Composite([
 export const ArticlePageMetaSchema = BasePageMetaSchema
 export const ContentPageMetaSchema = BasePageMetaSchema
 export const CollectionPageMetaSchema = BasePageMetaSchema
+export const DatabasePageMetaSchema = BasePageMetaSchema
 export const HomePageMetaSchema = BasePageMetaSchema
 export const NotFoundPageMetaSchema = BasePageMetaSchema
 export const SearchPageMetaSchema = BasePageMetaSchema

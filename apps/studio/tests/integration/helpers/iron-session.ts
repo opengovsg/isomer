@@ -1,9 +1,10 @@
 import type { RequestOptions, ResponseOptions } from "node-mocks-http"
 import { type NextApiRequest, type NextApiResponse } from "next"
-import { type User } from "@prisma/client"
+import { nanoid } from "nanoid"
 import { createMocks } from "node-mocks-http"
 
 import type { Context } from "~/server/context"
+import type { User } from "~server/db"
 import { type Session } from "~/lib/types/session"
 import { createContextInner } from "~/server/context"
 import { auth } from "./auth"
@@ -94,10 +95,19 @@ export const applySession = () => {
   return session
 }
 
+export const createTestUser = () => ({
+  email: `test${nanoid()}@example.com`,
+  name: "Test User",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  phone: "123456789",
+  preferredName: null,
+})
+
 // NOTE: The argument to this function was changed from
 // `Partial<User>` to `User`
-export const applyAuthedSession = async (user: User) => {
-  const authedUser = await auth(user)
+export const applyAuthedSession = async (user?: User) => {
+  const authedUser = await auth(user ?? createTestUser())
   const session = applySession()
   session.userId = authedUser.id
   await session.save()

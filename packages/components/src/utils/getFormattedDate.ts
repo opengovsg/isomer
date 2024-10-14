@@ -1,13 +1,15 @@
-import dayjs from "dayjs"
-import customParseFormat from "dayjs/plugin/customParseFormat"
+import { format } from "date-fns"
 
-dayjs.extend(customParseFormat)
+import type { FormattedDate } from "~/types"
+import { getParsedDate } from "./getParsedDate"
 
 // Standardise the format of dates displayed on the site
-export const getFormattedDate = (date: string) =>
-  dayjs(date, [
-    "DD/MM/YYYY",
-    "D MMM YYYY",
-    "DD MMM YYYY",
-    "YYYY-MM-DDTHH:mm:ss.SSSZ",
-  ]).format("D MMMM YYYY")
+export const getFormattedDate = (dateString?: string): FormattedDate => {
+  if (dateString === undefined) {
+    return format(new Date(), "d MMMM yyyy") as FormattedDate
+  }
+
+  const date = getParsedDate(dateString)
+
+  return format(date, "d MMMM yyyy") as FormattedDate
+}

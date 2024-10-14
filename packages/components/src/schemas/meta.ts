@@ -5,6 +5,7 @@ import {
   ArticlePageMetaSchema,
   CollectionPageMetaSchema,
   ContentPageMetaSchema,
+  DatabasePageMetaSchema,
   FileRefMetaSchema,
   HomePageMetaSchema,
   LinkRefMetaSchema,
@@ -15,6 +16,7 @@ import {
 const LAYOUT_METADATA_MAP = {
   article: ArticlePageMetaSchema,
   content: ContentPageMetaSchema,
+  database: DatabasePageMetaSchema,
   homepage: HomePageMetaSchema,
   index: ContentPageMetaSchema,
   notfound: NotFoundPageMetaSchema,

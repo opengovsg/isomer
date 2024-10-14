@@ -167,6 +167,7 @@ jobs:
             NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME=${{ inputs.app-s3-assets-domain-name }}
             NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME=${{ inputs.app-s3-assets-bucket-name }}
             NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:${{ secrets.GROWTHBOOK_CLIENT_KEY }}
+            NEXT_PUBLIC_INTERCOM_APP_ID:${{ secrets.INTERCOM_APP_ID }}
 
   deploy:
     name: Deploy image to ECS

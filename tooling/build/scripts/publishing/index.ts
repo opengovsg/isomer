@@ -226,6 +226,10 @@ function generateSitemapTree(
   )
   const children = [...existingChildren, ...danglingDirectories]
 
+  children.sort((a, b) =>
+    a.title.localeCompare(b.title, undefined, { numeric: true }),
+  )
+
   return children.map((child) => ({
     ...child,
     children: generateSitemapTree(sitemapEntries, child.permalink),
