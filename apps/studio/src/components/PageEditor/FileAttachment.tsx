@@ -3,25 +3,28 @@ import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment, FormErrorMessage } from "@opengovsg/design-system-react"
 
 import { MAX_PDF_FILE_SIZE_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { editPageSchema } from "~/features/editing-experience/schema"
+import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
 
 interface FileAttachmentProps {
   setHref: (href: string) => void
-  siteId: number
   error?: string
   setError: (error: string) => void
   clearError: () => void
 }
 
-export const FileAttachment = ({
+export const FileAttachment: React.FC<FileAttachmentProps> = ({
   setHref,
-  siteId,
   error,
   setError,
   clearError,
 }: FileAttachmentProps) => {
+  const { siteId } = useQueryParse(editPageSchema)
+
   const [file, setFile] = useState<File | undefined>(undefined)
+
   // TODO: Add a mutation for deletion next time of s3 resources
   const { mutate: uploadFile, isLoading } = useUploadAssetMutation({
     siteId,

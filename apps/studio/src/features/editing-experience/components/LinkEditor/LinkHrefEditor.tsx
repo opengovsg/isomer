@@ -23,7 +23,9 @@ interface LinkHrefEditorProps {
   description?: string
   isRequired?: boolean
   isInvalid?: boolean
-  fileLinkElement: ReactNode
+  errorMessage?: string
+  setErrorMessage: (errorMessage: string) => void
+  clearErrorMessage: () => void
 }
 
 export const LinkHrefEditor = ({
@@ -33,7 +35,9 @@ export const LinkHrefEditor = ({
   description,
   isRequired,
   isInvalid,
-  fileLinkElement,
+  errorMessage,
+  setErrorMessage,
+  clearErrorMessage,
 }: LinkHrefEditorProps) => {
   const linkType = getLinkHrefType(value)
   const [selectedLinkType, setSelectedLinkType] = useState(linkType)
@@ -90,7 +94,9 @@ export const LinkHrefEditor = ({
             })
             onChange(newLinkTypeContentValue)
           }}
-          fileLinkElement={fileLinkElement}
+          errorMessage={errorMessage}
+          setErrorMessage={setErrorMessage}
+          clearErrorMessage={clearErrorMessage}
         />
       </Box>
     </FormControl>

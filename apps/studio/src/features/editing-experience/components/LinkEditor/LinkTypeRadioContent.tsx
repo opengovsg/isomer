@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
 import { InputGroup, InputLeftAddon } from "@chakra-ui/react"
 import { Input } from "@opengovsg/design-system-react"
 
+import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { PageLinkElement } from "~/components/PageEditor/PageLinkElement"
 import {
   LINK_TYPE_EMAIL,
@@ -14,14 +14,18 @@ interface LinkTypeRadioContentProps {
   selectedLinkType: string
   data: string
   handleChange: (value: string) => void
-  fileLinkElement: ReactNode
+  errorMessage?: string
+  setErrorMessage: (errorMessage: string) => void
+  clearErrorMessage: () => void
 }
 
 export const LinkTypeRadioContent = ({
   selectedLinkType,
   data,
   handleChange,
-  fileLinkElement,
+  errorMessage,
+  setErrorMessage,
+  clearErrorMessage,
 }: LinkTypeRadioContentProps): JSX.Element => {
   switch (selectedLinkType) {
     case LINK_TYPE_PAGE:
@@ -41,7 +45,15 @@ export const LinkTypeRadioContent = ({
         />
       )
     case LINK_TYPE_FILE:
-      return <>{fileLinkElement}</>
+      return (
+        <FileAttachment
+          error={errorMessage}
+          setError={(value) => setErrorMessage(value)}
+          clearError={() => clearErrorMessage()}
+          setHref={(linkHref) => handleChange(linkHref)}
+        />
+      )
+
     case LINK_TYPE_EMAIL:
       return (
         <InputGroup>

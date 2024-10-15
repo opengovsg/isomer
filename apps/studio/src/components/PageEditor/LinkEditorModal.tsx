@@ -20,10 +20,7 @@ import { isEmpty } from "lodash"
 import { z } from "zod"
 
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
-import { editPageSchema } from "~/features/editing-experience/schema"
-import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
-import { FileAttachment } from "./FileAttachment"
 
 interface LinkEditorModalContentProps {
   linkText?: string
@@ -63,8 +60,6 @@ const LinkEditorModalContent = ({
     onSave(linkText, linkHref),
   )
 
-  const { siteId } = useQueryParse(editPageSchema)
-
   return (
     <ModalContent>
       <form onSubmit={onSubmit}>
@@ -101,22 +96,14 @@ const LinkEditorModalContent = ({
               description="When this is clicked, open:"
               isRequired
               isInvalid={!!errors.linkHref}
-              fileLinkElement={
-                <FileAttachment
-                  siteId={siteId}
-                  error={errors.linkHref?.message}
-                  setError={(errorMessage) =>
-                    setError("linkHref", {
-                      type: "custom",
-                      message: errorMessage,
-                    })
-                  }
-                  clearError={() => clearErrors("linkHref")}
-                  setHref={(linkHref) => {
-                    setValue("linkHref", linkHref)
-                  }}
-                />
+              errorMessage={errors.linkHref?.message}
+              setErrorMessage={(errorMessage) =>
+                setError("linkHref", {
+                  type: "custom",
+                  message: errorMessage,
+                })
               }
+              clearErrorMessage={() => clearErrors("linkHref")}
             />
 
             {errors.linkHref?.message && (
