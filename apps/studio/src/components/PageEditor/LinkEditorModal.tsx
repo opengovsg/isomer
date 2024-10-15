@@ -107,10 +107,6 @@ const LinkEditorModalContent = ({
               }
               clearErrorMessage={() => clearErrors("linkHref")}
             />
-
-            {errors.linkHref?.message && (
-              <FormErrorMessage>{errors.linkHref.message}</FormErrorMessage>
-            )}
           </Box>
         </ModalBody>
 

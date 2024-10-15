@@ -1,5 +1,5 @@
 import { InputGroup, InputLeftAddon } from "@chakra-ui/react"
-import { Input } from "@opengovsg/design-system-react"
+import { FormErrorMessage, Input } from "@opengovsg/design-system-react"
 
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { PageLinkElement } from "~/components/PageEditor/PageLinkElement"
@@ -40,22 +40,27 @@ export const LinkTypeRadioContent = ({
           value={data}
           onChange={(value) => handleChange({ value, shouldValidate: true })}
         />
+        // no need for error message as it's a selection rather than input
       )
     case LINK_TYPE_EXTERNAL:
       return (
-        <Input
-          type="text"
-          value={data}
-          onChange={(e) =>
-            handleChange({ value: e.target.value, shouldValidate: true })
-          }
-          placeholder="https://www.isomer.gov.sg"
-        />
+        <>
+          <Input
+            type="text"
+            value={data}
+            onChange={(e) =>
+              handleChange({ value: e.target.value, shouldValidate: true })
+            }
+            placeholder="https://www.isomer.gov.sg"
+          />
+          {errorMessage !== "" && (
+            <FormErrorMessage>{errorMessage}</FormErrorMessage>
+          )}
+        </>
       )
     case LINK_TYPE_FILE:
       return (
         <FileAttachment
-          error={errorMessage}
           setError={(value) => setErrorMessage(value)}
           clearError={() => clearErrorMessage()}
           setHref={(linkHref) =>
@@ -67,22 +72,27 @@ export const LinkTypeRadioContent = ({
       )
     case LINK_TYPE_EMAIL:
       return (
-        <InputGroup>
-          <InputLeftAddon>mailto:</InputLeftAddon>
-          <Input
-            type="text"
-            value={
-              data.startsWith("mailto:") ? data.slice("mailto:".length) : ""
-            }
-            onChange={(e) =>
-              handleChange({
-                value: `mailto:${e.target.value}`,
-                shouldValidate: true,
-              })
-            }
-            placeholder="test@example.com"
-          />
-        </InputGroup>
+        <>
+          <InputGroup>
+            <InputLeftAddon>mailto:</InputLeftAddon>
+            <Input
+              type="text"
+              value={
+                data.startsWith("mailto:") ? data.slice("mailto:".length) : ""
+              }
+              onChange={(e) =>
+                handleChange({
+                  value: `mailto:${e.target.value}`,
+                  shouldValidate: true,
+                })
+              }
+              placeholder="test@example.com"
+            />
+          </InputGroup>
+          {errorMessage !== "" && (
+            <FormErrorMessage>{errorMessage}</FormErrorMessage>
+          )}
+        </>
       )
     default:
       return <></>

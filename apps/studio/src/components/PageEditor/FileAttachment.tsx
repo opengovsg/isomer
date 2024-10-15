@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
-import { Attachment, FormErrorMessage } from "@opengovsg/design-system-react"
+import { Attachment } from "@opengovsg/design-system-react"
 
 import { MAX_PDF_FILE_SIZE_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { editPageSchema } from "~/features/editing-experience/schema"
@@ -10,14 +10,12 @@ import { getPresignedPutUrlSchema } from "~/schemas/asset"
 
 interface FileAttachmentProps {
   setHref: (href: string) => void
-  error?: string
   setError: (error: string) => void
   clearError: () => void
 }
 
 export const FileAttachment: React.FC<FileAttachmentProps> = ({
   setHref,
-  error,
   setError,
   clearError,
 }: FileAttachmentProps) => {
@@ -81,7 +79,6 @@ export const FileAttachment: React.FC<FileAttachmentProps> = ({
       <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
         {`Maximum file size: ${MAX_PDF_FILE_SIZE_BYTES / 1000000} MB`}
       </Text>
-      {error && <FormErrorMessage>{error}</FormErrorMessage>}
     </FormControl>
   )
 }
