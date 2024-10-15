@@ -8,9 +8,11 @@ const browsers: { name: string; regex: RegExp; minVersion: number | null }[] = [
   { name: "IE", regex: /MSIE|Trident/, minVersion: null },
 ]
 
-export const isBrowserOutdated = (): boolean => {
-  const userAgent: string = navigator.userAgent
-
+export const isBrowserOutdated = ({
+  userAgent,
+}: {
+  userAgent: string
+}): boolean => {
   for (const browser of browsers) {
     const match = userAgent.match(browser.regex)
     if (match?.[1]) {
