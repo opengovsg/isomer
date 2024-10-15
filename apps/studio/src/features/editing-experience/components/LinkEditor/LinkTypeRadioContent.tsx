@@ -13,7 +13,13 @@ import {
 interface LinkTypeRadioContentProps {
   selectedLinkType: string
   data: string
-  handleChange: (value: string) => void
+  handleChange: ({
+    value,
+    shouldValidate,
+  }: {
+    value: string
+    shouldValidate: boolean
+  }) => void
   errorMessage?: string
   setErrorMessage: (errorMessage: string) => void
   clearErrorMessage: () => void
@@ -27,12 +33,13 @@ export const LinkTypeRadioContent = ({
   setErrorMessage,
   clearErrorMessage,
 }: LinkTypeRadioContentProps): JSX.Element => {
+  console.log(777, data)
   switch (selectedLinkType) {
     case LINK_TYPE_PAGE:
       return (
         <PageLinkElement
           value={data}
-          onChange={(value) => handleChange(value)}
+          onChange={(value) => handleChange({ value, shouldValidate: true })}
         />
       )
     case LINK_TYPE_EXTERNAL:
@@ -40,7 +47,9 @@ export const LinkTypeRadioContent = ({
         <Input
           type="text"
           value={data}
-          onChange={(e) => handleChange(e.target.value)}
+          onChange={(e) =>
+            handleChange({ value: e.target.value, shouldValidate: true })
+          }
           placeholder="https://www.isomer.gov.sg"
         />
       )
@@ -50,7 +59,9 @@ export const LinkTypeRadioContent = ({
           error={errorMessage}
           setError={(value) => setErrorMessage(value)}
           clearError={() => clearErrorMessage()}
-          setHref={(linkHref) => handleChange(linkHref)}
+          setHref={(linkHref) =>
+            handleChange({ value: linkHref, shouldValidate: false })
+          }
         />
       )
 
@@ -63,7 +74,12 @@ export const LinkTypeRadioContent = ({
             value={
               data.startsWith("mailto:") ? data.slice("mailto:".length) : ""
             }
-            onChange={(e) => handleChange(`mailto:${e.target.value}`)}
+            onChange={(e) =>
+              handleChange({
+                value: `mailto:${e.target.value}`,
+                shouldValidate: true,
+              })
+            }
             placeholder="test@example.com"
           />
         </InputGroup>

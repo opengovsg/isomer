@@ -17,7 +17,13 @@ import { getLinkHrefType } from "./utils"
 
 interface LinkHrefEditorProps {
   value: string
-  onChange: (href: string) => void
+  onChange: ({
+    value,
+    shouldValidate,
+  }: {
+    value: string
+    shouldValidate: boolean
+  }) => void
   label: string
   description?: string
   isRequired?: boolean
@@ -52,7 +58,10 @@ export const LinkHrefEditor = ({
     defaultValue: linkType,
     onChange: (newLinkType) => {
       setSelectedLinkType(newLinkType)
-      onChange(linkValueHistory[newLinkType as keyof LinkValueHistory])
+      onChange({
+        value: linkValueHistory[newLinkType as keyof LinkValueHistory],
+        shouldValidate: true,
+      })
     },
   })
 
@@ -84,14 +93,20 @@ export const LinkHrefEditor = ({
                 ""
               : value
           }
-          handleChange={(newLinkTypeContentValue) => {
+          handleChange={({
+            value: newLinkTypeContentValue,
+            shouldValidate,
+          }) => {
             setLinkValueHistory({
               ...linkValueHistory,
               ...{
                 [selectedLinkType]: newLinkTypeContentValue,
               },
             })
-            onChange(newLinkTypeContentValue)
+            onChange({
+              value: newLinkTypeContentValue,
+              shouldValidate,
+            })
           }}
           errorMessage={errorMessage}
           setErrorMessage={setErrorMessage}

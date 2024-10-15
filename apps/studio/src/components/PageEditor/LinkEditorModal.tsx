@@ -91,7 +91,9 @@ const LinkEditorModalContent = ({
           <Box mt="1.5rem">
             <LinkHrefEditor
               value={watch("linkHref")}
-              onChange={(value) => setValue("linkHref", value)}
+              onChange={({ value, shouldValidate }) =>
+                setValue("linkHref", value, { shouldValidate })
+              }
               label="Link destination"
               description="When this is clicked, open:"
               isRequired
