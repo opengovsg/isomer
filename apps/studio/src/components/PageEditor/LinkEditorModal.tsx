@@ -20,7 +20,6 @@ import { isEmpty } from "lodash"
 import { z } from "zod"
 
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
-import { editPageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
@@ -28,13 +27,17 @@ import { trpc } from "~/utils/trpc"
 import { ResourceSelector } from "../ResourceSelector"
 import { FileAttachment } from "./FileAttachment"
 
+const editSiteSchema = z.object({
+  siteId: z.coerce.number(),
+})
+
 interface PageLinkElementProps {
   value: string
   onChange: (value: string) => void
 }
 
 const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
-  const { siteId } = useQueryParse(editPageSchema)
+  const { siteId } = useQueryParse(editSiteSchema)
 
   const selectedResourceId = getResourceIdFromReferenceLink(value)
 
@@ -99,7 +102,7 @@ const LinkEditorModalContent = ({
     onSave(linkText, linkHref),
   )
 
-  const { siteId } = useQueryParse(editPageSchema)
+  const { siteId } = useQueryParse(editSiteSchema)
 
   return (
     <ModalContent>
