@@ -6,7 +6,7 @@ import { useRouter } from "next/router"
 import { merge } from "lodash"
 
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
-import collectionPdfPreview from "~/features/editing-experience/data/collectionPdfPreview.json"
+import collectionLinkPreview from "~/features/editing-experience/data/collectionLinkPreview.json"
 import { useZodForm } from "~/lib/form"
 import { createCollectionPageFormSchema } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
@@ -69,7 +69,7 @@ const useCreateCollectionPageWizardContext = ({
         ? merge(articleLayoutPreview, {
             page: { title: title || "Page title here" },
           })
-        : collectionPdfPreview
+        : collectionLinkPreview
     return jsonPreview as IsomerSchema
   }, [type, title])
 

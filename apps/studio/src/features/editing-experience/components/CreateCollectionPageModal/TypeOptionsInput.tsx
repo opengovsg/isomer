@@ -44,12 +44,12 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
             ),
           }
         }
-        case "pdf": {
+        case "link": {
           return {
             TileIcon: BiUpload,
-            title: "PDF file",
+            title: "Link",
             description:
-              "Select this option if you want to upload a single PDF file as a resource.",
+              "Select this option if you want to link a url, a page or a file.",
           }
         }
       }

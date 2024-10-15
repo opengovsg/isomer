@@ -144,7 +144,7 @@ export const CreateCollectionPageDetailsScreen = () => {
               {/* Section 2: Page URL */}
               <FormControl
                 isInvalid={!!errors.permalink}
-                display={type === "pdf" ? "None" : "auto"}
+                display={type === "link" ? "None" : "auto"}
               >
                 <FormLabel>
                   Page URL
@@ -164,7 +164,7 @@ export const CreateCollectionPageDetailsScreen = () => {
                     name="permalink"
                     render={({ field: { onChange, ...field } }) => (
                       <Input
-                        isDisabled={type === "pdf"}
+                        isDisabled={type === "link"}
                         borderLeftRadius={0}
                         placeholder="URL will be autopopulated if left untouched"
                         {...field}

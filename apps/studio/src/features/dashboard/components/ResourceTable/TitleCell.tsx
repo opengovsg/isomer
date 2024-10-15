@@ -43,7 +43,7 @@ export const TitleCell = ({
         return BiData
       case "CollectionPage":
         return BiFile
-      case "CollectionFile":
+      case "CollectionLink":
         return BiSolidFilePdf
     }
   }, [type])

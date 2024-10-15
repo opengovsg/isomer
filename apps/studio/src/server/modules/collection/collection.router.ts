@@ -13,8 +13,8 @@ import {
 } from "../resource/resource.service"
 import { defaultCollectionSelect } from "./collection.select"
 import {
+  createCollectionLinkJson,
   createCollectionPageJson,
-  createCollectionPdfJson,
 } from "./collection.service"
 
 export const collectionRouter = router({
@@ -65,7 +65,7 @@ export const collectionRouter = router({
       if (type === "page") {
         newPage = createCollectionPageJson({ type })
       } else {
-        newPage = createCollectionPdfJson({ type })
+        newPage = createCollectionLinkJson({ type })
       }
 
       // TODO: Validate whether folderId actually is a folder instead of a page
@@ -91,7 +91,7 @@ export const collectionRouter = router({
             type:
               type === "page"
                 ? ResourceType.CollectionPage
-                : ResourceType.CollectionFile,
+                : ResourceType.CollectionLink,
           })
           .returning("Resource.id")
           .executeTakeFirstOrThrow()
@@ -123,7 +123,7 @@ export const collectionRouter = router({
         .where((eb) => {
           return eb.or([
             eb("Resource.type", "=", ResourceType.CollectionPage),
-            eb("Resource.type", "=", ResourceType.CollectionFile),
+            eb("Resource.type", "=", ResourceType.CollectionLink),
           ])
         })
         .orderBy("Resource.type", "asc")

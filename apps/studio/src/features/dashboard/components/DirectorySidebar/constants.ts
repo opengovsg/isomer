@@ -13,7 +13,7 @@ export const ICON_MAPPINGS: Record<ResourceType, IconType> = {
   [ResourceType.Folder]: BiFolder,
   [ResourceType.Collection]: BiData,
   [ResourceType.CollectionPage]: BiFile,
-  [ResourceType.CollectionFile]: BiSolidFilePdf,
+  [ResourceType.CollectionLink]: BiSolidFilePdf,
   [ResourceType.RootPage]: BiHomeAlt,
   [ResourceType.IndexPage]: BiFile,
 }
