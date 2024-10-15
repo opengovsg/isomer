@@ -58,3 +58,7 @@ export {
   default as JsonFormsDateControl,
   jsonFormsDateControlTester,
 } from "./JsonFormsDateControl"
+export {
+  default as JsonFormsRefControl,
+  jsonFormsRefControlTester,
+} from "./JsonFormsRefControl"
