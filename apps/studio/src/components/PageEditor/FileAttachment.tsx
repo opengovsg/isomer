@@ -1,6 +1,7 @@
+import type { AttachmentProps } from "@opengovsg/design-system-react"
 import { useEffect, useState } from "react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
-import { Attachment, AttachmentProps } from "@opengovsg/design-system-react"
+import { Attachment } from "@opengovsg/design-system-react"
 
 import { MAX_PDF_FILE_SIZE_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"

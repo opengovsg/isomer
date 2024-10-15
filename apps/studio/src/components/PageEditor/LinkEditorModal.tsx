@@ -20,8 +20,8 @@ import {
 import { isEmpty } from "lodash"
 import { z } from "zod"
 
+import type { LinkTypeMapping } from "~/features/editing-experience/components/LinkEditor/constants"
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
-import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
@@ -72,7 +72,7 @@ interface LinkEditorModalContentProps {
   linkText?: string
   linkHref?: string
   onSave: (linkText: string, linkHref: string) => void
-  linkTypes: typeof LINK_TYPES
+  linkTypes: LinkTypeMapping
 }
 
 const LinkEditorModalContent = ({
@@ -202,7 +202,7 @@ interface LinkEditorModalProps {
   onSave: (linkText: string, linkHref: string) => void
   isOpen: boolean
   onClose: () => void
-  linkTypes: typeof LINK_TYPES
+  linkTypes: LinkTypeMapping
 }
 export const LinkEditorModal = ({
   isOpen,
