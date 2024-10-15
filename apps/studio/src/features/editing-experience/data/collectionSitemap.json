@@ -18,13 +18,9 @@
           "id": "pdf",
           "permalink": "/resources/pdf",
           "ref": "1",
-          "fileDetails": {
-            "type": "pdf",
-            "size": "5KB"
-          },
           "lastModified": "02 May 2023",
           "date": "02 May 2023",
-          "layout": "file",
+          "layout": "link",
           "summary": "This is a summary of a pdf",
           "category": "Events and highlights"
         }
