@@ -5,7 +5,10 @@ const browsers: { name: string; regex: RegExp; minVersion: number | null }[] = [
   { name: "Firefox", regex: /Firefox\/(\d+)/, minVersion: 67 },
   { name: "Opera", regex: /OPR\/(\d+)/, minVersion: 51 },
   { name: "Safari", regex: /Version\/(\d+).*Safari/, minVersion: 12 },
-  { name: "IE", regex: /MSIE|Trident/, minVersion: null },
+]
+
+const unsupportedBrowsers: { name: string; regex: RegExp }[] = [
+  { name: "IE", regex: /MSIE|Trident/ },
 ]
 
 export const isBrowserOutdated = ({
@@ -13,6 +16,12 @@ export const isBrowserOutdated = ({
 }: {
   userAgent: string
 }): boolean => {
+  for (const unsupportedBrowser of unsupportedBrowsers) {
+    if (unsupportedBrowser.regex.test(userAgent)) {
+      return true
+    }
+  }
+
   for (const browser of browsers) {
     const match = userAgent.match(browser.regex)
     if (match?.[1]) {
