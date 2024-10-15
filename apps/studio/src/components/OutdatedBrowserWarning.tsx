@@ -1,5 +1,6 @@
 import { Infobox } from "@opengovsg/design-system-react"
 
+// Refer to https://nextjs.org/docs/architecture/supported-browsers#browserslist
 const browsers: { name: string; regex: RegExp; minVersion: number | null }[] = [
   { name: "Chrome", regex: /Chrome\/(\d+)/, minVersion: 64 },
   { name: "Edge", regex: /Edg\/(\d+)/, minVersion: 79 },
