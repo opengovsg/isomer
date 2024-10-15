@@ -193,6 +193,27 @@ interface LinkEditorModalProps {
   onClose: () => void
 }
 
+const getLinkText = (editor: Editor): string => {
+  if (editor.isActive("link")) {
+    return (
+      editor.state.doc.nodeAt(Math.max(1, editor.view.state.selection.from - 1))
+        ?.textContent ?? ""
+    )
+  }
+
+  const { from, to } = editor.state.selection
+  const selectedText: string = editor.state.doc.textBetween(from, to, " ")
+  return selectedText
+}
+
+const getLinkHref = (editor: Editor): string => {
+  if (editor.isActive("link")) {
+    return String(editor.getAttributes("link").href ?? "")
+  }
+
+  return ""
+}
+
 export const LinkEditorModal = ({
   editor,
   isOpen,
@@ -203,18 +224,8 @@ export const LinkEditorModal = ({
 
     {isOpen && (
       <LinkEditorModalContent
-        linkText={
-          editor.isActive("link")
-            ? editor.state.doc.nodeAt(
-                Math.max(1, editor.view.state.selection.from - 1),
-              )?.textContent
-            : ""
-        }
-        linkHref={
-          editor.isActive("link")
-            ? String(editor.getAttributes("link").href ?? "")
-            : ""
-        }
+        linkText={getLinkText(editor)}
+        linkHref={getLinkHref(editor)}
         onSave={(linkText, linkHref) => {
           editor
             .chain()
