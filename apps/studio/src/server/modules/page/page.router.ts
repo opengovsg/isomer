@@ -72,7 +72,8 @@ export const pageRouter = router({
           type !== ResourceType.Page &&
           type !== ResourceType.CollectionPage &&
           type !== ResourceType.RootPage &&
-          type !== ResourceType.IndexPage
+          type !== ResourceType.IndexPage &&
+          type !== ResourceType.CollectionLink
         ) {
           throw new TRPCError({
             code: "NOT_FOUND",
