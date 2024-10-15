@@ -39,8 +39,8 @@ export const LinkHrefEditor = ({
   const linkType = getLinkHrefType(value)
   const [selectedLinkType, setSelectedLinkType] = useState(linkType)
 
-  const handleLinkTypeChange = (value: string) => {
-    setSelectedLinkType(value)
+  const handleLinkTypeChange = (newLinkType: string) => {
+    setSelectedLinkType(newLinkType)
     onChange("")
   }
 
