@@ -1,3 +1,4 @@
+import type { IconType } from "react-icons"
 import { BiEnvelopeOpen, BiFile, BiFileBlank, BiLink } from "react-icons/bi"
 
 export const LINK_TYPES = {
@@ -20,3 +21,10 @@ export const LINK_TYPES = {
 } as const
 
 export type LinkTypes = keyof typeof LINK_TYPES
+export type LinkTypeMapping<T extends string = string> = Record<
+  T,
+  {
+    icon: IconType
+    label: Capitalize<T>
+  }
+>

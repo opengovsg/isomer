@@ -37,6 +37,8 @@ import {
   jsonFormsObjectControlTester,
   JsonFormsProseControl,
   jsonFormsProseControlTester,
+  JsonFormsRefControl,
+  jsonFormsRefControlTester,
   JsonFormsTextAreaControl,
   jsonFormsTextAreaControlTester,
   JsonFormsTextControl,
@@ -63,6 +65,7 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsTextAreaControl,
   },
   { tester: jsonFormsTextControlTester, renderer: JsonFormsTextControl },
+  { tester: jsonFormsRefControlTester, renderer: JsonFormsRefControl },
   { tester: jsonFormsAllOfControlTester, renderer: JsonFormsAllOfControl },
   { tester: jsonFormsAnyOfControlTester, renderer: JsonFormsAnyOfControl },
   {
@@ -116,6 +119,7 @@ export default function FormBuilder<T>({
       data={data}
       renderers={renderers}
       onChange={({ data, errors }) => {
+        console.log(errors, "errors")
         if (validateFn(data)) {
           handleChange(data)
         }

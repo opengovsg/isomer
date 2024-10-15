@@ -12,6 +12,7 @@ export const JSON_FORMS_RANKING = {
   AnyOfControl: 3,
   ProseControl: 2,
   LinkControl: 3,
+  RefControl: 3,
   GroupLayoutRenderer: 1,
   VerticalLayoutRenderer: 1,
   Catchall: -99999999999,
