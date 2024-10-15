@@ -139,6 +139,7 @@ export const getPageById = (
         eb("type", "=", "CollectionPage"),
         eb("type", "=", "RootPage"),
         eb("type", "=", "IndexPage"),
+        eb("type", "=", "CollectionLink"),
       ]),
     )
     .select(defaultResourceSelect)
@@ -287,6 +288,7 @@ export const getLocalisedSitemap = async (
               "Page",
               "CollectionPage",
               "RootPage",
+              "Collection",
             ])
             .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
             .select(defaultResourceSelect),
@@ -315,6 +317,8 @@ export const getLocalisedSitemap = async (
     )
     .select(defaultResourceSelect)
     .execute()
+
+  console.log(allResources)
 
   // Step 4: Construct the localised sitemap object
   const rootResource = await db
