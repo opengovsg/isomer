@@ -80,12 +80,13 @@ export const LinkTypeRadioContent = ({
               value={
                 data.startsWith("mailto:") ? data.slice("mailto:".length) : ""
               }
-              onChange={(e) =>
+              onChange={(e) => {
+                const value: string = e.target.value
                 handleChange({
-                  value: `mailto:${e.target.value}`,
+                  value: value === "" ? "" : `mailto:${value}`,
                   shouldValidate: true,
                 })
-              }
+              }}
               placeholder="test@example.com"
             />
           </InputGroup>
