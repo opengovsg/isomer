@@ -10,7 +10,8 @@ import {
 } from "@chakra-ui/react"
 import { FormLabel } from "@opengovsg/design-system-react"
 
-import { LINK_TYPES } from "./constants"
+import type { LinkValueHistory } from "./constants"
+import { INITIAL_LINK_VALUE_HISTORY, LINK_TYPES } from "./constants"
 import { LinkTypeRadioCard } from "./LinkTypeRadioCard"
 import { LinkTypeRadioContent } from "./LinkTypeRadioContent"
 import { getLinkHrefType } from "./utils"
@@ -38,16 +39,20 @@ export const LinkHrefEditor = ({
 }: LinkHrefEditorProps) => {
   const linkType = getLinkHrefType(value)
   const [selectedLinkType, setSelectedLinkType] = useState(linkType)
-
-  const handleLinkTypeChange = (newLinkType: string) => {
-    setSelectedLinkType(newLinkType)
-    onChange("")
-  }
+  const [linkValueHistory, setLinkValueHistory] = useState({
+    ...INITIAL_LINK_VALUE_HISTORY,
+    ...{
+      [linkType]: value,
+    },
+  } as LinkValueHistory)
 
   const { getRootProps, getRadioProps } = useRadioGroup({
     name: "link-type",
     defaultValue: linkType,
-    onChange: handleLinkTypeChange,
+    onChange: (newLinkType) => {
+      setSelectedLinkType(newLinkType)
+      onChange(linkValueHistory[newLinkType as keyof LinkValueHistory])
+    },
   })
 
   return (
@@ -72,8 +77,21 @@ export const LinkHrefEditor = ({
       <Box my="0.5rem">
         <LinkTypeRadioContent
           selectedLinkType={selectedLinkType}
-          data={value}
-          handleChange={onChange}
+          data={
+            value === ""
+              ? linkValueHistory[selectedLinkType as keyof LinkValueHistory] ||
+                ""
+              : value
+          }
+          handleChange={(newLinkTypeContentValue) => {
+            setLinkValueHistory({
+              ...linkValueHistory,
+              ...{
+                [selectedLinkType]: newLinkTypeContentValue,
+              },
+            })
+            onChange(newLinkTypeContentValue)
+          }}
           pageLinkElement={pageLinkElement}
           fileLinkElement={fileLinkElement}
         />

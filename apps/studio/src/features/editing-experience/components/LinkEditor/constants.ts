@@ -24,3 +24,17 @@ export const LINK_TYPES: Record<string, { icon: IconType; label: string }> = {
     label: "Email",
   },
 } as const
+
+export interface LinkValueHistory {
+  [LINK_TYPE_PAGE]: string
+  [LINK_TYPE_EXTERNAL]: string
+  [LINK_TYPE_FILE]: string
+  [LINK_TYPE_EMAIL]: string
+}
+
+export const INITIAL_LINK_VALUE_HISTORY: LinkValueHistory = {
+  [LINK_TYPE_PAGE]: "",
+  [LINK_TYPE_EXTERNAL]: "",
+  [LINK_TYPE_FILE]: "",
+  [LINK_TYPE_EMAIL]: "",
+}
