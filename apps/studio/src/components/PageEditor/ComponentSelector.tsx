@@ -176,6 +176,7 @@ function ComponentSelector() {
       case "CollectionPage":
         return ARTICLE_ALLOWED_BLOCKS
       case "Collection":
+      case "CollectionLink":
       case "IndexPage":
         return []
       case "Folder":
