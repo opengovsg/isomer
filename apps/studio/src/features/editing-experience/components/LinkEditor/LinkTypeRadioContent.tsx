@@ -59,11 +59,12 @@ export const LinkTypeRadioContent = ({
           setError={(value) => setErrorMessage(value)}
           clearError={() => clearErrorMessage()}
           setHref={(linkHref) =>
+            // NOTE: We don't want to validate the link href here
+            // as it will cause an infinite re-render loop
             handleChange({ value: linkHref, shouldValidate: false })
           }
         />
       )
-
     case LINK_TYPE_EMAIL:
       return (
         <InputGroup>
