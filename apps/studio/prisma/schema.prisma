@@ -104,7 +104,7 @@ enum ResourceType {
   Page
   Folder
   Collection
-  CollectionFile // Can only ever be inside collectio
+  CollectionLink // Can only ever be inside collection
   CollectionPage // Can only live inside `Collection` resources
   IndexPage // This denotes the index page of a folder or a collection
 }
