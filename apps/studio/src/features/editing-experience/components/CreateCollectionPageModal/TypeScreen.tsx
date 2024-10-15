@@ -62,7 +62,7 @@ export const CreateCollectionPageTypeScreen = () => {
             <Text as="h3" textStyle="h3-semibold">
               What kind of collection item are you creating?
             </Text>
-            <Text>Choose between a page or a PDF file.</Text>
+            <Text>Choose between a page or a link.</Text>
           </Flex>
           <Stack gridColumn="6 / 13" bg="white" p="2rem" justify="center">
             <Controller
