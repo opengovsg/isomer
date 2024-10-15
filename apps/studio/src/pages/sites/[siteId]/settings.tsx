@@ -18,7 +18,6 @@ import {
 } from "@opengovsg/design-system-react"
 import { z } from "zod"
 
-import { OutdatedBrowserWarning } from "~/components/OutdatedBrowserWarning"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
@@ -142,7 +141,6 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                 Isomer Next is currently in Beta. To manage site settings that
                 are not displayed here, contact Isomer Support.
               </Infobox>
-              <OutdatedBrowserWarning mt="1rem" />
               <VStack
                 w="full"
                 alignItems="flex-start"
