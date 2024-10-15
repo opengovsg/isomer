@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react"
 import { FormLabel } from "@opengovsg/design-system-react"
 
-import { LINK_TYPES } from "./constants"
+import type { LINK_TYPES } from "./constants"
 import { LinkTypeRadioCard } from "./LinkTypeRadioCard"
 import { LinkTypeRadioContent } from "./LinkTypeRadioContent"
 import { getLinkHrefType } from "./utils"
@@ -24,6 +24,7 @@ interface LinkHrefEditorProps {
   isInvalid?: boolean
   pageLinkElement: ReactNode
   fileLinkElement: ReactNode
+  linkTypes: typeof LINK_TYPES
 }
 
 export const LinkHrefEditor = ({
@@ -35,6 +36,7 @@ export const LinkHrefEditor = ({
   isInvalid,
   pageLinkElement,
   fileLinkElement,
+  linkTypes,
 }: LinkHrefEditorProps) => {
   const linkType = getLinkHrefType(value)
   const [selectedLinkType, setSelectedLinkType] = useState(linkType)
@@ -56,7 +58,7 @@ export const LinkHrefEditor = ({
         {label}
       </FormLabel>
       <HStack {...getRootProps()} spacing={0}>
-        {Object.entries(LINK_TYPES).map(([key, { icon, label }]) => {
+        {Object.entries(linkTypes).map(([key, { icon, label }]) => {
           const radio = getRadioProps({ value: key })
 
           return (
