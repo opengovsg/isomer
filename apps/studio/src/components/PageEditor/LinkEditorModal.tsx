@@ -1,3 +1,4 @@
+import { useParams } from "next/navigation"
 import {
   Box,
   FormControl,
@@ -20,6 +21,7 @@ import { isEmpty } from "lodash"
 import { z } from "zod"
 
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
+import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
@@ -70,12 +72,14 @@ interface LinkEditorModalContentProps {
   linkText?: string
   linkHref?: string
   onSave: (linkText: string, linkHref: string) => void
+  linkTypes: typeof LINK_TYPES
 }
 
 const LinkEditorModalContent = ({
   linkText,
   linkHref,
   onSave,
+  linkTypes,
 }: LinkEditorModalContentProps) => {
   const {
     handleSubmit,
@@ -103,6 +107,12 @@ const LinkEditorModalContent = ({
   )
 
   const { siteId } = useQueryParse(editSiteSchema)
+  // TODO: This needs to be refactored urgently
+  // This is a hacky way of seeing what to render
+  // and ties the link editor to the url path.
+  // we should instead just pass the component directly rather than using slots
+
+  const { linkId } = useParams()
 
   return (
     <ModalContent>
@@ -113,27 +123,34 @@ const LinkEditorModalContent = ({
         <ModalCloseButton size="lg" />
 
         <ModalBody>
-          <FormControl isRequired isInvalid={!!errors.linkText}>
-            <FormLabel
-              id="linkText"
-              description="A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”"
+          {!linkId && (
+            <FormControl
+              mb="1.5rem"
+              isRequired={!linkId}
+              isInvalid={!!errors.linkText}
             >
-              Link text
-            </FormLabel>
+              <FormLabel
+                id="linkText"
+                description="A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”"
+              >
+                Link text
+              </FormLabel>
 
-            <Input
-              type="text"
-              placeholder="Browse grants"
-              {...register("linkText")}
-            />
+              <Input
+                type="text"
+                placeholder="Browse grants"
+                {...register("linkText")}
+              />
 
-            {errors.linkText?.message && (
-              <FormErrorMessage>{errors.linkText.message}</FormErrorMessage>
-            )}
-          </FormControl>
+              {errors.linkText?.message && (
+                <FormErrorMessage>{errors.linkText.message}</FormErrorMessage>
+              )}
+            </FormControl>
+          )}
 
-          <Box mt="1.5rem">
+          <Box>
             <LinkHrefEditor
+              linkTypes={linkTypes}
               value={watch("linkHref")}
               onChange={(value) => setValue("linkHref", value)}
               label="Link destination"
@@ -185,6 +202,7 @@ interface LinkEditorModalProps {
   onSave: (linkText: string, linkHref: string) => void
   isOpen: boolean
   onClose: () => void
+  linkTypes: typeof LINK_TYPES
 }
 export const LinkEditorModal = ({
   isOpen,
@@ -192,12 +210,14 @@ export const LinkEditorModal = ({
   linkText,
   linkHref,
   onSave,
+  linkTypes,
 }: LinkEditorModalProps) => (
   <Modal isOpen={isOpen} onClose={onClose}>
     <ModalOverlay />
 
     {isOpen && (
       <LinkEditorModalContent
+        linkTypes={linkTypes}
         linkText={linkText}
         linkHref={linkHref}
         onSave={(linkText, linkHref) => {
