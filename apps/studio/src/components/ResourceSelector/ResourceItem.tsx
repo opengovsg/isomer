@@ -5,7 +5,7 @@ import { dataAttr } from "@chakra-ui/utils"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { ErrorBoundary } from "react-error-boundary"
-import { BiData, BiFile, BiFolder, BiLockAlt } from "react-icons/bi"
+import { BiData, BiFile, BiFolder, BiLink, BiLockAlt } from "react-icons/bi"
 
 import type { RouterOutput } from "~/utils/trpc"
 
@@ -27,6 +27,8 @@ const SuspendableResourceItem = ({
 }: ResourceItemProps) => {
   const icon: IconType = useMemo(() => {
     switch (type) {
+      case "CollectionLink":
+        return BiLink
       case "Folder":
         return BiFolder
       case "CollectionPage":
