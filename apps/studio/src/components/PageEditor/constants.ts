@@ -10,6 +10,12 @@ export const DEFAULT_BLOCKS: Record<
     content: [
       {
         type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: "",
+          },
+        ],
       },
     ],
   },

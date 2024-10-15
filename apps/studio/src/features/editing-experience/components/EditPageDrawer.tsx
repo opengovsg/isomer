@@ -25,7 +25,7 @@ export function EditPageDrawer(): JSX.Element {
 
   const inferAsProse = (component?: IsomerComponent): ProseProps => {
     if (!component) {
-      throw new Error(`Expected component of type prose but got undefined`)
+      throw new Error("Expected component of type prose but got undefined")
     }
 
     if (validate(component)) {
@@ -46,6 +46,7 @@ export function EditPageDrawer(): JSX.Element {
       return <ComponentSelector />
     case "nativeEditor": {
       const component = previewPageState.content[currActiveIdx]
+      if (!component) return <div />
       return <TipTapProseComponent content={inferAsProse(component)} />
     }
     case "complexEditor":
