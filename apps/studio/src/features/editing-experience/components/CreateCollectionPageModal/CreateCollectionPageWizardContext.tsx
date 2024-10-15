@@ -95,7 +95,8 @@ const useCreateCollectionPageWizardContext = ({
       },
       {
         onSuccess: ({ pageId }) => {
-          void router.push(`/sites/${siteId}/pages/${pageId}`)
+          const nextType = type === "page" ? "pages" : "links"
+          void router.push(`/sites/${siteId}/${nextType}/${pageId}`)
         },
         onError: (error) => {
           if (error.data?.code === "CONFLICT") {
