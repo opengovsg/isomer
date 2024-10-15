@@ -97,7 +97,12 @@ export const resourceRouter = router({
           .selectFrom("Resource")
           .where("siteId", "=", Number(siteId))
           .where("id", "=", String(resourceId))
-          .where("Resource.type", "=", "Folder")
+          .where((eb) =>
+            eb.or([
+              eb("Resource.type", "=", "Folder"),
+              eb("Resource.type", "=", "Collection"),
+            ]),
+          )
           .executeTakeFirst()
 
         if (!resource) {
