@@ -8,7 +8,7 @@ import {
   BiFile,
   BiFolder,
   BiHome,
-  BiSolidFilePdf,
+  BiLink,
 } from "react-icons/bi"
 
 import type { ResourceTableData } from "./types"
@@ -44,7 +44,7 @@ export const TitleCell = ({
       case "CollectionPage":
         return BiFile
       case "CollectionLink":
-        return BiSolidFilePdf
+        return BiLink
     }
   }, [type])
 

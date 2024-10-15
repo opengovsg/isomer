@@ -11,7 +11,7 @@ export const getResourceSubpath = (resourceType: ResourceType) => {
     case "Folder":
       return "folders"
     case "CollectionLink":
-      return "file"
+      return "links"
     case "Collection":
       return "collections"
     default:
