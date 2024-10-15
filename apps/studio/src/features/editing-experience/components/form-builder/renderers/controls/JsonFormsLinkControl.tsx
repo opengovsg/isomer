@@ -20,12 +20,12 @@ import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
   Button,
   FormLabel,
-  Input,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
 import { BiFile } from "react-icons/bi"
 import { z } from "zod"
 
+import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { ResourceSelector } from "~/components/ResourceSelector"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useZodForm } from "~/lib/form"
@@ -255,6 +255,11 @@ export function JsonFormsLinkControl({
   required,
 }: ControlProps) {
   const dataString = data && typeof data === "string" ? data : ""
+  const dummyFile = new File(
+    [],
+    // NOTE: Technically guaranteed since our s3 filepath has a format of `/<site>/.../<filename>`
+    dataString.split("/").at(-1) ?? "Uploaded file",
+  )
 
   return (
     <Box mt="1.25rem" _first={{ mt: 0 }}>
@@ -271,11 +276,12 @@ export function JsonFormsLinkControl({
           />
         }
         fileLinkElement={
-          <Input
-            type="text"
-            value={dataString}
-            onChange={(e) => handleChange(path, e.target.value)}
-            placeholder="File link"
+          <FileAttachment
+            setHref={(value) => handleChange(path, value)}
+            siteId={1}
+            setError={console.log}
+            clearError={console.log}
+            value={dummyFile}
           />
         }
       />
