@@ -12,6 +12,7 @@
   ],
   "tasks": {
     "build": {},
+    "build:template": {},
     "clean": {},
     "dev": {
       "dependsOn": ["db:setup"],

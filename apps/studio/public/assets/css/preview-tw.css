@@ -2330,6 +2330,10 @@ video {
   background-color: var(--color-brand-canvas-inverse);
 }
 
+.bg-brand-interaction {
+  background-color: var(--color-brand-interaction-default);
+}
+
 .bg-canvas-overlay\/40 {
   background-color: rgb(0 0 0 / 0.4);
 }
@@ -2567,6 +2571,11 @@ video {
   padding-bottom: 0.5rem;
 }
 
+.py-20 {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
 .py-24 {
   padding-top: 6rem;
   padding-bottom: 6rem;
@@ -2728,6 +2737,10 @@ video {
   padding-top: 0.5rem;
 }
 
+.pt-24 {
+  padding-top: 6rem;
+}
+
 .pt-4 {
   padding-top: 1rem;
 }
@@ -2798,10 +2811,6 @@ video {
 
 .text-\[0\.6875rem\] {
   font-size: 0.6875rem;
-}
-
-.text-\[0\.875rem\] {
-  font-size: 0.875rem;
 }
 
 .text-\[0\.9375rem\] {
@@ -3718,6 +3727,10 @@ video {
 
 .first\:pt-0:first-child {
   padding-top: 0px;
+}
+
+.last\:max-w-full:last-child {
+  max-width: 100%;
 }
 
 .last\:border-0:last-child {
@@ -4784,6 +4797,10 @@ video {
     margin-right: 6rem;
   }
 
+  .lg\:mr-3 {
+    margin-right: 0.75rem;
+  }
+
   .lg\:mt-0 {
     margin-top: 0px;
   }
@@ -5240,6 +5257,14 @@ video {
 
 .\[\&_\>_p\]\:inline > p {
   display: inline;
+}
+
+.\[\&_\>_tbody_\>_tr\:nth-child\(odd\)_\>_td\]\:bg-base-canvas-alt
+  > tbody
+  > tr:nth-child(odd)
+  > td {
+  --tw-bg-opacity: 1;
+  background-color: rgb(249 250 251 / var(--tw-bg-opacity));
 }
 
 .after\:\[\&_a\[target\*\=\"blank\"\]\]\:content-\[\'_\2197\'\]
