@@ -33,7 +33,6 @@ export const LinkTypeRadioContent = ({
   setErrorMessage,
   clearErrorMessage,
 }: LinkTypeRadioContentProps): JSX.Element => {
-  console.log(777, data)
   switch (selectedLinkType) {
     case LINK_TYPE_PAGE:
       return (
