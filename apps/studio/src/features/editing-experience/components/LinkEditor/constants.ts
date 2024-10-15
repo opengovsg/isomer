@@ -1,7 +1,6 @@
-import type { IconType } from "react-icons"
 import { BiEnvelopeOpen, BiFile, BiFileBlank, BiLink } from "react-icons/bi"
 
-export const LINK_TYPES: Record<string, { icon: IconType; label: string }> = {
+export const LINK_TYPES = {
   page: {
     icon: BiFileBlank,
     label: "Page",
@@ -19,3 +18,5 @@ export const LINK_TYPES: Record<string, { icon: IconType; label: string }> = {
     label: "Email",
   },
 } as const
+
+export type LinkTypes = keyof typeof LINK_TYPES
