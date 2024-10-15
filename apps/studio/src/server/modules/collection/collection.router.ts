@@ -65,7 +65,7 @@ export const collectionRouter = router({
       if (type === "page") {
         newPage = createCollectionPageJson({ type })
       } else {
-        newPage = createCollectionPdfJson({ type, url: input.url })
+        newPage = createCollectionPdfJson({ type })
       }
 
       // TODO: Validate whether folderId actually is a folder instead of a page
@@ -88,7 +88,10 @@ export const collectionRouter = router({
             siteId,
             parentId: String(collectionId),
             draftBlobId: blob.id,
-            type: ResourceType.CollectionPage,
+            type:
+              type === "page"
+                ? ResourceType.CollectionPage
+                : ResourceType.CollectionFile,
           })
           .returning("Resource.id")
           .executeTakeFirstOrThrow()
@@ -117,7 +120,12 @@ export const collectionRouter = router({
         .selectFrom("Resource")
         .where("parentId", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "=", ResourceType.CollectionPage)
+        .where((eb) => {
+          return eb.or([
+            eb("Resource.type", "=", ResourceType.CollectionPage),
+            eb("Resource.type", "=", ResourceType.CollectionFile),
+          ])
+        })
         .orderBy("Resource.type", "asc")
         .orderBy("Resource.title", "asc")
         .limit(limit)
