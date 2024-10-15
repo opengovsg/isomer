@@ -20,14 +20,11 @@ export const createCollectionPageJson = ({}: {
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
 
-export const createCollectionPdfJson = ({
-  url: _url,
-}: {
+export const createCollectionPdfJson = ({}: {
   type: "pdf" // Act as soft typeguard
-  url: string
 }) => {
   return {
-    layout: "content",
+    layout: "file",
     page: {
       contentPageHeader: {
         summary: "",
