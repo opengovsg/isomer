@@ -35,7 +35,7 @@ const BaseCollectionItemPageSchema = Type.Object({
 
 const BaseRefPageSchema = Type.Object({
   ref: Type.String({
-    title: "Link to the item",
+    title: "Link",
     description: "Choose a page or file to link to this Collection item",
     format: "ref",
   }),
@@ -44,6 +44,7 @@ const BaseRefPageSchema = Type.Object({
       title: "Summary",
       description: "This will appear on the collection",
       format: "textarea",
+      maxLength: 120,
     }),
   ),
 })
