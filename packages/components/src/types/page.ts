@@ -37,7 +37,7 @@ const BaseRefPageSchema = Type.Object({
   ref: Type.String({
     title: "Link to the item",
     description: "Choose a page or file to link to this Collection item",
-    format: "linkpicker",
+    format: "ref",
   }),
   summary: Type.Optional(
     Type.String({
