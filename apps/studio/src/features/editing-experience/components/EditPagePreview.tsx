@@ -15,7 +15,7 @@ export const EditPagePreview = (): JSX.Element => {
         siteId={siteId}
         resourceId={pageId}
         permalink={permalink}
-        lastModified={updatedAt}
+        lastModified={updatedAt.toISOString()}
         version="0.1.0"
       />
     </ViewportContainer>

@@ -123,9 +123,9 @@ export const LinkEditNavbar = (): JSX.Element => {
         </TabLink>
         <TabLink
           isActive={pathname === "/sites/[siteId]/links/[linkId]/settings"}
-          href={`/sites/${siteId}/pages/${linkId}/settings`}
+          href={`/sites/${siteId}/links/${linkId}/settings`}
         >
-          Page Settings
+          Link Settings
         </TabLink>
       </Flex>
       {linkId && siteId && (
