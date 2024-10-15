@@ -17,7 +17,7 @@ import { trpc } from "~/utils/trpc"
 
 export type PreviewProps = IsomerSchema & {
   permalink: string
-  lastModified?: Date
+  lastModified?: string
   siteId: number
   overrides?: PartialDeep<IsomerPageSchemaType>
   siteMap: IsomerGeneratedSiteProps["siteMap"]
@@ -34,7 +34,7 @@ const FakeLink = forwardRef<HTMLAnchorElement, PropsWithChildren<unknown>>(
 
 function SuspendablePreview({
   permalink,
-  lastModified = new Date(),
+  lastModified = new Date().toISOString(),
   siteId,
   overrides = {},
   siteMap,
