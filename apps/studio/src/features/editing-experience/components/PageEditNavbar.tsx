@@ -92,7 +92,7 @@ const NavigationBreadcrumbs = ({
   )
 }
 
-export const SiteEditNavbar = (): JSX.Element => {
+export const PageEditNavbar = (): JSX.Element => {
   const { siteId, pageId } = useQueryParse(editPageSchema)
 
   const { pathname } = useRouter()
