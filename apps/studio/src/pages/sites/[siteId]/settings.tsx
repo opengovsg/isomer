@@ -142,7 +142,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
                 Isomer Next is currently in Beta. To manage site settings that
                 are not displayed here, contact Isomer Support.
               </Infobox>
-              <OutdatedBrowserWarning />
+              <OutdatedBrowserWarning mt="1rem" />
               <VStack
                 w="full"
                 alignItems="flex-start"

@@ -25,10 +25,12 @@ export const isBrowserOutdated = (): boolean => {
   return false
 }
 
-export const OutdatedBrowserWarning: React.FC = () => {
+export const OutdatedBrowserWarning: React.FC<
+  Partial<React.ComponentProps<typeof Infobox>>
+> = (props) => {
   if (isBrowserOutdated())
     return (
-      <Infobox variant="warning" textStyle="body-2" size="sm" mt="1.75rem">
+      <Infobox variant="warning" textStyle="body-2" size="sm" {...props}>
         Your browser is outdated. Please update it for the best experience.
       </Infobox>
     )
