@@ -86,7 +86,6 @@ export const createCollectionPageFormSchema = z
   .discriminatedUnion("type", [
     z.object({
       type: z.literal("pdf"),
-      url: z.string().url(),
     }),
     z.object({
       type: z.literal("page"),
