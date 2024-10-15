@@ -3,10 +3,10 @@ import { Tabs } from "@opengovsg/design-system-react"
 
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { LayoutHead } from "~/components/LayoutHead"
-import { PageEditNavbar } from "~/features/editing-experience/components/PageEditNavbar"
+import { LinkEditNavbar } from "~/features/editing-experience/components/LinkEditNavbar"
 import { type GetLayout } from "~/lib/types"
 
-export const PageEditingLayout: GetLayout = (page) => {
+export const LinkEditingLayout: GetLayout = (page) => {
   return (
     <EnforceLoginStatePageWrapper>
       <LayoutHead />
@@ -26,7 +26,7 @@ export const PageEditingLayout: GetLayout = (page) => {
             gridColumnGap={{ base: 0, md: "1rem" }}
             gridTemplateRows="auto 1fr"
           >
-            <PageEditNavbar />
+            <LinkEditNavbar />
             <Flex bg="base.canvas.alt" w="100%" height={0} minH="100%">
               {page}
             </Flex>
