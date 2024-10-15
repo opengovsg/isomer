@@ -2,6 +2,13 @@ import type { ReactNode } from "react"
 import { InputGroup, InputLeftAddon } from "@chakra-ui/react"
 import { Input } from "@opengovsg/design-system-react"
 
+import {
+  LINK_TYPE_EMAIL,
+  LINK_TYPE_EXTERNAL,
+  LINK_TYPE_FILE,
+  LINK_TYPE_PAGE,
+} from "./constants"
+
 interface LinkTypeRadioContentProps {
   selectedLinkType: string
   data: string
@@ -18,9 +25,9 @@ export const LinkTypeRadioContent = ({
   fileLinkElement,
 }: LinkTypeRadioContentProps): JSX.Element => {
   switch (selectedLinkType) {
-    case "page":
+    case LINK_TYPE_PAGE:
       return <>{pageLinkElement}</>
-    case "external":
+    case LINK_TYPE_EXTERNAL:
       return (
         <Input
           type="text"
@@ -29,9 +36,9 @@ export const LinkTypeRadioContent = ({
           placeholder="https://www.isomer.gov.sg"
         />
       )
-    case "file":
+    case LINK_TYPE_FILE:
       return <>{fileLinkElement}</>
-    case "email":
+    case LINK_TYPE_EMAIL:
       return (
         <InputGroup>
           <InputLeftAddon>mailto:</InputLeftAddon>
