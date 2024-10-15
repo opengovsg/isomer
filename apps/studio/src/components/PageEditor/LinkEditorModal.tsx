@@ -24,7 +24,6 @@ import { editPageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { FileAttachment } from "./FileAttachment"
-import { PageLinkElement } from "./PageLinkElement"
 
 interface LinkEditorModalContentProps {
   linkText?: string
@@ -102,12 +101,6 @@ const LinkEditorModalContent = ({
               description="When this is clicked, open:"
               isRequired
               isInvalid={!!errors.linkHref}
-              pageLinkElement={
-                <PageLinkElement
-                  value={watch("linkHref")}
-                  onChange={(value) => setValue("linkHref", value)}
-                />
-              }
               fileLinkElement={
                 <FileAttachment
                   siteId={siteId}

@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 import { InputGroup, InputLeftAddon } from "@chakra-ui/react"
 import { Input } from "@opengovsg/design-system-react"
 
+import { PageLinkElement } from "~/components/PageEditor/PageLinkElement"
 import {
   LINK_TYPE_EMAIL,
   LINK_TYPE_EXTERNAL,
@@ -13,7 +14,6 @@ interface LinkTypeRadioContentProps {
   selectedLinkType: string
   data: string
   handleChange: (value: string) => void
-  pageLinkElement: ReactNode
   fileLinkElement: ReactNode
 }
 
@@ -21,12 +21,16 @@ export const LinkTypeRadioContent = ({
   selectedLinkType,
   data,
   handleChange,
-  pageLinkElement,
   fileLinkElement,
 }: LinkTypeRadioContentProps): JSX.Element => {
   switch (selectedLinkType) {
     case LINK_TYPE_PAGE:
-      return <>{pageLinkElement}</>
+      return (
+        <PageLinkElement
+          value={data}
+          onChange={(value) => handleChange(value)}
+        />
+      )
     case LINK_TYPE_EXTERNAL:
       return (
         <Input

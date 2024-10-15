@@ -23,7 +23,6 @@ interface LinkHrefEditorProps {
   description?: string
   isRequired?: boolean
   isInvalid?: boolean
-  pageLinkElement: ReactNode
   fileLinkElement: ReactNode
 }
 
@@ -34,7 +33,6 @@ export const LinkHrefEditor = ({
   description,
   isRequired,
   isInvalid,
-  pageLinkElement,
   fileLinkElement,
 }: LinkHrefEditorProps) => {
   const linkType = getLinkHrefType(value)
@@ -92,7 +90,6 @@ export const LinkHrefEditor = ({
             })
             onChange(newLinkTypeContentValue)
           }}
-          pageLinkElement={pageLinkElement}
           fileLinkElement={fileLinkElement}
         />
       </Box>
