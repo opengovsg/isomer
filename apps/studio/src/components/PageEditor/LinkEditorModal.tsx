@@ -80,8 +80,6 @@ const LinkEditorModalContent = ({
     setValue,
     watch,
     register,
-    setError,
-    clearErrors,
     formState: { errors },
   } = useZodForm({
     mode: "onChange",
@@ -149,14 +147,6 @@ const LinkEditorModalContent = ({
               fileLinkElement={
                 <FileAttachment
                   siteId={siteId}
-                  error={errors.linkHref?.message}
-                  setError={(errorMessage) =>
-                    setError("linkHref", {
-                      type: "custom",
-                      message: errorMessage,
-                    })
-                  }
-                  clearError={() => clearErrors("linkHref")}
                   setHref={(linkHref) => {
                     setValue("linkHref", linkHref)
                   }}
