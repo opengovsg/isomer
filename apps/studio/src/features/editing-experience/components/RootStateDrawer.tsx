@@ -90,8 +90,10 @@ export default function RootStateDrawer() {
     ],
   )
 
+  const pageLayout: string = savedPageState.layout
+
   const isHeroFixedBlock =
-    savedPageState.layout === "homepage" &&
+    pageLayout === "homepage" &&
     savedPageState.content.length > 0 &&
     savedPageState.content[0]?.type === "hero"
 
