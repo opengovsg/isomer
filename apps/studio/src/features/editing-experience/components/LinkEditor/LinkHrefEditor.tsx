@@ -73,7 +73,7 @@ export const LinkHrefEditor = ({
       setSelectedLinkType(newLinkType)
       onChange({
         value: linkValueHistory[newLinkType as keyof LinkValueHistory],
-        shouldValidate: true,
+        shouldValidate: true, // need to trigger validation to set disable state of "Add link" CTA button
       })
     },
   })
