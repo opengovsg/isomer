@@ -3,8 +3,10 @@ import { Box, Flex, Stack } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
 import { format } from "date-fns"
 
-import Preview from "../Preview"
+import collectionSitemap from "~/features/editing-experience/data/collectionSitemap.json"
 import { PreviewIframe } from "../PreviewIframe"
+import PreviewWithoutSitemap from "../PreviewWithoutSitemap"
+import { generatePreviewSitemap } from "../utils"
 import { useCreateCollectionPageWizard } from "./CreateCollectionPageWizardContext"
 
 export const PreviewLayout = (): JSX.Element => {
@@ -17,10 +19,11 @@ export const PreviewLayout = (): JSX.Element => {
   } = useCreateCollectionPageWizard()
 
   const currentPermalink = watch("permalink", "/")
+  const title = watch("title")
 
   const previewOverrides = useMemo(() => {
     switch (currentType) {
-      case "pdf": {
+      case "link": {
         return {
           page: {
             date: format(new Date(), "dd MMM yyyy"),
@@ -47,20 +50,21 @@ export const PreviewLayout = (): JSX.Element => {
             borderTopRadius="8px"
             width="100%"
             bg="slate.200"
-            color="white"
             textStyle="caption-2"
+            color="white"
             py="0.5rem"
             px="1rem"
             justify="center"
             whiteSpace="pre"
           >
-            {`You're previewing a ${currentType === "pdf" ? "PDF " : ""}collection page`}
+            {`You're previewing a ${currentType === "link" ? "PDF " : ""}collection page`}
           </Flex>
           <Box bg="white" overflow="auto" height="100%">
             <PreviewIframe preventPointerEvents keyForRerender={currentType}>
-              <Preview
+              <PreviewWithoutSitemap
                 overrides={previewOverrides}
                 siteId={siteId}
+                siteMap={generatePreviewSitemap(collectionSitemap, title)}
                 permalink={currentPermalink}
                 {...pagePreviewJson}
               />

@@ -78,7 +78,7 @@ export const getSitemapTree = (
 ): IsomerSitemap => {
   return {
     id: String(rootResource.id),
-    layout: "content", // Note: We are not using the layout field in our previews
+    layout: "homepage", // Note: We are not using the layout field in our previews
     title: rootResource.title,
     summary: "", // Note: We are not using the summary field in our previews
     lastModified: new Date() // TODO: Update this to the updated_at field in DB

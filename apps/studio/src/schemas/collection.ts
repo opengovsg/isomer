@@ -3,6 +3,18 @@ import { z } from "zod"
 import { generateBasePermalinkSchema } from "./common"
 import { MAX_FOLDER_PERMALINK_LENGTH, MAX_FOLDER_TITLE_LENGTH } from "./folder"
 
+export const editLinkSchema = z.object({
+  linkId: z.number().min(1),
+  siteId: z.number().min(1),
+  summary: z.string().optional(),
+  ref: z.string().min(1),
+})
+
+export const readLinkSchema = z.object({
+  linkId: z.number().min(1),
+  siteId: z.number().min(1),
+})
+
 const permalinkSchema = generateBasePermalinkSchema("folder")
   .min(1, { message: "Enter a URL for this folder" })
   .max(MAX_FOLDER_PERMALINK_LENGTH, {
