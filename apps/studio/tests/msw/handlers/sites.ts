@@ -23,6 +23,13 @@ const siteListQuery = ({
       {
         id: 1,
         name: "Ministry of Trade and Industry",
+        config: {
+          theme: "isomer-next",
+          siteName: "MTI",
+          logoUrl: "",
+          search: undefined,
+          isGovernment: true,
+        } as PrismaJson.SiteJsonConfig,
       },
     ]
   })
