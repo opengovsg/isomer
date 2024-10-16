@@ -25,10 +25,14 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
     },
     {
       id: `${index}`,
-      title: `Isomer hero banner-${index}`,
+      title: `This is the title for a collection item that shows the Isomer hero banner-${index}`,
       permalink: `/publications/item-two-${index}`,
       lastModified: "",
       layout: "file",
+      image: {
+        src: "https://images.unsplash.com/photo-1728931710331-7f74dca643eb?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        alt: "placeholder",
+      },
       summary:
         "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
       date: "2024-05-07",
