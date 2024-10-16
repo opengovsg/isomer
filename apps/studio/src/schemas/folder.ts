@@ -51,10 +51,3 @@ export const editFolderSchema = baseEditFolderSchema.superRefine(
     }
   },
 )
-
-export const editLinkSchema = z.object({
-  linkId: z.number().min(1),
-  siteId: z.number().min(1),
-  summary: z.string().optional(),
-  ref: z.string().min(1),
-})

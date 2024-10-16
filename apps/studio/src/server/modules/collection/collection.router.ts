@@ -1,16 +1,18 @@
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get } from "lodash"
-import { z } from "zod"
 
-import { createCollectionSchema } from "~/schemas/collection"
-import { editLinkSchema, readFolderSchema } from "~/schemas/folder"
+import {
+  createCollectionSchema,
+  editLinkSchema,
+  readLinkSchema,
+} from "~/schemas/collection"
+import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { db, jsonb, ResourceType } from "../database"
 import {
   defaultResourceSelect,
-  getFullPageById,
   getSiteResourceById,
 } from "../resource/resource.service"
 import { defaultCollectionSelect } from "./collection.select"
@@ -182,7 +184,7 @@ export const collectionRouter = router({
         .execute()
     }),
   readCollectionLink: protectedProcedure
-    .input(z.object({ linkId: z.number().min(1), siteId: z.number().min(1) }))
+    .input(readLinkSchema)
     .query(async ({ input: { linkId, siteId } }) => {
       return await db
         .selectFrom("Resource")
@@ -192,6 +194,7 @@ export const collectionRouter = router({
         .select(["Blob.content", "Resource.title"])
         .executeTakeFirstOrThrow()
     }),
+
   updateCollectionLink: protectedProcedure
     .input(editLinkSchema)
     .mutation(async ({ input: { linkId, siteId, summary, ref } }) => {
