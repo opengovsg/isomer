@@ -78,9 +78,7 @@ const InnerDrawer = () => {
       </Flex>
       <Button
         alignSelf="flex-start"
-        onClick={() =>
-          mutate({ ref: data.ref ?? "", siteId, linkId, summary: data.summary })
-        }
+        onClick={() => mutate({ siteId, linkId, ...data })}
         isDisabled={!isEmpty(errors) || !data.ref}
         isLoading={isLoading}
       >
