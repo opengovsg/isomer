@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { FormControl, Skeleton, Text } from "@chakra-ui/react"
+import { FormControl, Skeleton } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
 
 import { MAX_PDF_FILE_SIZE_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
@@ -61,6 +61,7 @@ export const FileAttachment: React.FC<FileAttachmentProps> = ({
           }}
           onError={setError}
           maxSize={MAX_PDF_FILE_SIZE_BYTES}
+          showFileSize
           accept={["application/pdf"]}
           onFileValidation={(file) => {
             const parseResult = getPresignedPutUrlSchema
@@ -76,9 +77,6 @@ export const FileAttachment: React.FC<FileAttachmentProps> = ({
           }}
         />
       </Skeleton>
-      <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
-        {`Maximum file size: ${MAX_PDF_FILE_SIZE_BYTES / 1000000} MB`}
-      </Text>
     </FormControl>
   )
 }
