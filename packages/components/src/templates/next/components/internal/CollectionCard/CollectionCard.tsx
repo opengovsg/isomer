@@ -51,7 +51,7 @@ export const CollectionCard = ({
           </Link>
         </h3>
         {description && (
-          <Text className="prose-body-base line-clamp-2" title={description}>
+          <Text className="prose-body-base line-clamp-3" title={description}>
             {description}
           </Text>
         )}
@@ -61,7 +61,7 @@ export const CollectionCard = ({
         </Text>
       </div>
       {image && (
-        <div className="relative mt-3 h-[140px] w-full shrink-0 lg:ml-4 lg:mt-0 lg:h-auto lg:w-[320px]">
+        <div className="relative mt-3 min-h-40 w-full shrink-0 lg:ml-4 lg:mt-0 lg:h-auto lg:w-1/4">
           <ImageClient
             src={imgSrc || ""}
             alt={image.alt}
