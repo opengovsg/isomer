@@ -119,7 +119,6 @@ export default function FormBuilder<T>({
       data={data}
       renderers={renderers}
       onChange={({ data, errors }) => {
-        console.log(errors, "errors")
         if (validateFn(data)) {
           handleChange(data)
         }

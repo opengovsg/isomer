@@ -318,8 +318,6 @@ export const getLocalisedSitemap = async (
     .select(defaultResourceSelect)
     .execute()
 
-  console.log(allResources)
-
   // Step 4: Construct the localised sitemap object
   const rootResource = await db
     .selectFrom("Resource")
