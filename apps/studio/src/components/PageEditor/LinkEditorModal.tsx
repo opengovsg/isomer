@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/react"
+import { useEffect, useState } from "react"
 import {
   Box,
   FormControl,
@@ -40,6 +41,7 @@ const LinkEditorModalContent = ({
     register,
     setError,
     clearErrors,
+    trigger,
     formState: { errors },
   } = useZodForm({
     mode: "onChange",
@@ -60,6 +62,16 @@ const LinkEditorModalContent = ({
     onSave(linkText, linkHref),
   )
 
+  // hacky solution to allow setting the correct state of "Add link" CTA button
+  // while not showing error message on initial render for better UX
+  const [isFirstRender, setIsFirstRender] = useState(true)
+  const showLinkTextErrorState: boolean =
+    !isFirstRender && !!errors.linkText?.message
+
+  useEffect(() => {
+    void trigger()
+  }, [trigger])
+
   return (
     <ModalContent>
       <form onSubmit={onSubmit}>
@@ -69,7 +81,7 @@ const LinkEditorModalContent = ({
         <ModalCloseButton size="lg" />
 
         <ModalBody>
-          <FormControl isRequired isInvalid={!!errors.linkText}>
+          <FormControl isRequired isInvalid={showLinkTextErrorState}>
             <FormLabel
               id="linkText"
               description="A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”"
@@ -81,10 +93,15 @@ const LinkEditorModalContent = ({
               type="text"
               placeholder="Browse grants"
               {...register("linkText")}
+              isInvalid={showLinkTextErrorState}
+              onChange={(e) => {
+                setIsFirstRender(false)
+                setValue("linkText", e.target.value, { shouldValidate: true })
+              }}
             />
 
-            {errors.linkText?.message && (
-              <FormErrorMessage>{errors.linkText.message}</FormErrorMessage>
+            {showLinkTextErrorState && (
+              <FormErrorMessage>{errors.linkText?.message}</FormErrorMessage>
             )}
           </FormControl>
 
