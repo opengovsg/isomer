@@ -1,14 +1,16 @@
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get } from "lodash"
+import { z } from "zod"
 
 import { createCollectionSchema } from "~/schemas/collection"
-import { readFolderSchema } from "~/schemas/folder"
+import { editLinkSchema, readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { db, jsonb, ResourceType } from "../database"
 import {
   defaultResourceSelect,
+  getFullPageById,
   getSiteResourceById,
 } from "../resource/resource.service"
 import { defaultCollectionSelect } from "./collection.select"
@@ -178,5 +180,48 @@ export const collectionRouter = router({
         .offset(offset)
         .select(defaultResourceSelect)
         .execute()
+    }),
+  readCollectionLink: protectedProcedure
+    .input(z.object({ linkId: z.number().min(1), siteId: z.number().min(1) }))
+    .query(async ({ input: { linkId, siteId } }) => {
+      return await db
+        .selectFrom("Resource")
+        .where("Resource.id", "=", String(linkId))
+        .where("Resource.siteId", "=", siteId)
+        .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
+        .select(["Blob.content", "Resource.title"])
+        .executeTakeFirstOrThrow()
+    }),
+  updateCollectionLink: protectedProcedure
+    .input(editLinkSchema)
+    .mutation(async ({ input: { linkId, siteId, summary, ref } }) => {
+      // Things that aren't working yet:
+      // 0. Perm checking
+      // 1. Last Edited user and time
+      // 2. Page status(draft, published)
+      return await db.transaction().execute(async (tx) => {
+        const { draftBlobId } = await tx
+          .selectFrom("Resource")
+          .where("Resource.id", "=", String(linkId))
+          .where("Resource.siteId", "=", siteId)
+          .select("Resource.draftBlobId")
+          .executeTakeFirstOrThrow()
+
+        const { content } = await tx
+          .selectFrom("Blob")
+          .where("Blob.id", "=", draftBlobId)
+          .select("Blob.content")
+          .executeTakeFirstOrThrow()
+
+        await tx
+          .updateTable("Blob")
+          .set({
+            content: {
+              ...content,
+              page: { summary, ref },
+            },
+          })
+          .execute()
+      })
     }),
 })

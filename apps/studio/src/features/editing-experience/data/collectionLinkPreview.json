@@ -2,9 +2,7 @@
   "version": "0.1.0",
   "layout": "collection",
   "page": {
-    "permalink": "/resources/",
-    "lastModified": "10 May 2023",
-    "title": "Newsroom",
-    "subtitle": "Learn more about our news here."
+    "ref": "",
+    "summary": "Learn more about our news here."
   }
 }
