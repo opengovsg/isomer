@@ -19,7 +19,7 @@ export const EditLinkPreview = (): JSX.Element => {
     { refetchOnWindowFocus: false },
   )
 
-  const [parentResource] = trpc.resource.getParentOf.useSuspenseQuery({
+  const [{ parent }] = trpc.resource.getParentOf.useSuspenseQuery({
     resourceId: String(linkId),
     siteId,
   })
@@ -31,6 +31,7 @@ export const EditLinkPreview = (): JSX.Element => {
 
   const parentPermalink = permalink.split("/").slice(0, -1).join("/")
   const linkSuffix = permalink.split("/").slice(-1).join("/")
+  const parentTitle = parent?.title || "Collection"
 
   const siteMap = {
     id: "root",
@@ -45,7 +46,7 @@ export const EditLinkPreview = (): JSX.Element => {
         permalink: parentPermalink,
         lastModified: "02 May 2023",
         layout: "collection",
-        title: parentResource.title,
+        title: parentTitle,
         summary: "Learn more about PREPARE here.",
         children: children.map((props) => ({
           ...props,
@@ -67,7 +68,7 @@ export const EditLinkPreview = (): JSX.Element => {
     <ViewportContainer siteId={siteId}>
       <PreviewWithoutSitemap
         content={[]}
-        page={{ title: parentResource.title }}
+        page={{ title: parentTitle }}
         layout={"collection"}
         siteId={siteId}
         siteMap={siteMap}
