@@ -10,14 +10,7 @@ export const editLinkSchema = z.object({
   siteId: z.coerce.number().min(1),
 })
 
-function EditLink(): JSX.Element {
-  // put the forms and state here?
-  // then inside i just call
-  // i can set the default state to be correct here actually
-  return <LinkEditingView />
-}
-
-const LinkEditingView = () => {
+export const EditLink = () => {
   return (
     <Grid
       h="full"
