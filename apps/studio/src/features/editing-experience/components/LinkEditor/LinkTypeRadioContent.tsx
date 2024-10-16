@@ -20,6 +20,7 @@ interface LinkTypeRadioContentProps {
     value: string
     shouldValidate: boolean
   }) => void
+  shouldShowErrorState: boolean
   errorMessage?: string
   setErrorMessage?: (errorMessage: string) => void
   clearErrorMessage?: () => void
@@ -31,6 +32,7 @@ export const LinkTypeRadioContent = ({
   selectedLinkType,
   data,
   handleChange,
+  shouldShowErrorState,
   errorMessage,
   setErrorMessage,
   clearErrorMessage,
@@ -60,8 +62,9 @@ export const LinkTypeRadioContent = ({
               handleChange({ value: e.target.value, shouldValidate: true })
             }
             placeholder="https://www.isomer.gov.sg"
+            isInvalid={shouldShowErrorState}
           />
-          {errorMessage !== "" && (
+          {shouldShowErrorState && (
             <FormErrorMessage>{errorMessage}</FormErrorMessage>
           )}
         </>
@@ -100,9 +103,10 @@ export const LinkTypeRadioContent = ({
                 })
               }}
               placeholder="test@example.com"
+              isInvalid={shouldShowErrorState}
             />
           </InputGroup>
-          {errorMessage !== "" && (
+          {shouldShowErrorState && (
             <FormErrorMessage>{errorMessage}</FormErrorMessage>
           )}
         </>

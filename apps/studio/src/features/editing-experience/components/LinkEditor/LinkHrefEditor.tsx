@@ -57,10 +57,19 @@ export const LinkHrefEditor = ({
     },
   } as LinkValueHistory)
 
+  // hacky solution to allow setting the correct state of "Add link" CTA button
+  // while not showing error message on initial render for better UX
+  const [isLinkTypeInitialRender, setIsLinkTypeInitialRender] = useState(true)
+  const shouldShowErrorState =
+    !isLinkTypeInitialRender &&
+    errorMessage !== "" &&
+    errorMessage !== undefined
+
   const { getRootProps, getRadioProps } = useRadioGroup({
     name: "link-type",
     defaultValue: linkType,
     onChange: (newLinkType) => {
+      setIsLinkTypeInitialRender(true)
       setSelectedLinkType(newLinkType)
       onChange({
         value: linkValueHistory[newLinkType as keyof LinkValueHistory],
@@ -111,7 +120,9 @@ export const LinkHrefEditor = ({
               value: newLinkTypeContentValue,
               shouldValidate,
             })
+            setIsLinkTypeInitialRender(false)
           }}
+          shouldShowErrorState={shouldShowErrorState}
           errorMessage={errorMessage}
           setErrorMessage={setErrorMessage}
           clearErrorMessage={clearErrorMessage}
