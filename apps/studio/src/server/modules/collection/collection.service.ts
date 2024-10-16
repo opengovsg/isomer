@@ -26,12 +26,11 @@ export const createCollectionLinkJson = ({}: {
   return {
     layout: "link",
     page: {
-      contentPageHeader: {
-        summary: "",
-      },
+      ref: "",
+      summary: "",
     },
-    // TODO: Add pdf blob to content
     content: [],
+    // TODO: Add pdf blob to content
     version: "0.1.0",
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
