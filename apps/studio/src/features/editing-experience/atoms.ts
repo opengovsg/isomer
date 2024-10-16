@@ -4,11 +4,11 @@ import type { PendingMoveResource } from "./types"
 
 export const moveResourceAtom = atom<null | PendingMoveResource>(null)
 
-interface CollectionLinkProps {
-  ref?: string
+export interface CollectionLinkProps {
+  ref: string
   summary?: string
 }
-export const linkAtom = atom<Partial<CollectionLinkProps>>({
+export const linkAtom = atom<CollectionLinkProps>({
   ref: "",
   summary: "",
 })
