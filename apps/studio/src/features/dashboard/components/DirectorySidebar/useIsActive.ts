@@ -25,9 +25,9 @@ export const useIsActive = (
     case "Page":
     case "CollectionPage":
     case "IndexPage":
+    case "Collection":
       return siteProps.resourceId === currentResourceId
     case "Folder":
-    case "Collection":
       return siteProps.folderId === currentResourceId
     default:
       const _uncaught: never = type
