@@ -21,8 +21,10 @@ interface LinkTypeRadioContentProps {
     shouldValidate: boolean
   }) => void
   errorMessage?: string
-  setErrorMessage: (errorMessage: string) => void
-  clearErrorMessage: () => void
+  setErrorMessage?: (errorMessage: string) => void
+  clearErrorMessage?: () => void
+  pageLinkElement?: React.ReactNode
+  fileLinkElement?: React.ReactNode
 }
 
 export const LinkTypeRadioContent = ({
@@ -32,16 +34,22 @@ export const LinkTypeRadioContent = ({
   errorMessage,
   setErrorMessage,
   clearErrorMessage,
+  pageLinkElement,
+  fileLinkElement,
 }: LinkTypeRadioContentProps): JSX.Element => {
   switch (selectedLinkType) {
     case LINK_TYPE_PAGE:
-      return (
+      // TODO: allow user to pass in component for now until we decide to fix it
+      // RE: https://opengovproducts.slack.com/archives/C06R4DX966P/p1729026621225809
+      return pageLinkElement ? (
+        <>{pageLinkElement}</>
+      ) : (
         <PageLinkElement
           value={data}
           onChange={(value) => handleChange({ value, shouldValidate: true })}
         />
-        // no need for error message as it's a selection rather than input
       )
+    // no need for error message as it's a selection rather than input
     case LINK_TYPE_EXTERNAL:
       return (
         <>
@@ -59,10 +67,14 @@ export const LinkTypeRadioContent = ({
         </>
       )
     case LINK_TYPE_FILE:
-      return (
+      // TODO: allow user to pass in component for now until we decide to fix it
+      // RE: https://opengovproducts.slack.com/archives/C06R4DX966P/p1729026621225809
+      return fileLinkElement ? (
+        <>{fileLinkElement}</>
+      ) : (
         <FileAttachment
-          setError={(value) => setErrorMessage(value)}
-          clearError={() => clearErrorMessage()}
+          setError={(value) => setErrorMessage?.(value)}
+          clearError={() => clearErrorMessage?.()}
           setHref={(linkHref) =>
             // NOTE: We don't want to validate the link href here
             // as it will cause an infinite re-render loop
