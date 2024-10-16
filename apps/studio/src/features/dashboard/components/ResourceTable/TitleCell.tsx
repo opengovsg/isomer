@@ -3,13 +3,7 @@ import { useMemo } from "react"
 import NextLink from "next/link"
 import { HStack, Icon, Text, VStack } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
-import {
-  BiData,
-  BiFile,
-  BiFolder,
-  BiHome,
-  BiLink,
-} from "react-icons/bi"
+import { BiData, BiFile, BiFolder, BiHome, BiLink } from "react-icons/bi"
 
 import type { ResourceTableData } from "./types"
 import { getLinkToResource } from "~/utils/resource"
