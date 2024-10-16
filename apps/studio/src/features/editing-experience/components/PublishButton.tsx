@@ -5,6 +5,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 
+import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
@@ -50,23 +51,23 @@ const SuspendablePublishButton = ({
     if (coercedSiteId && coercedPageId)
       mutate({ pageId: coercedPageId, siteId: coercedSiteId })
   }
+
   return (
-    <TouchableTooltip
-      hidden={!!currPage.draftBlobId}
-      // label="All changes have been published"
-      label="This feature is currently not available in beta"
-    >
-      <Button
-        variant="solid"
-        size="sm"
-        onClick={handlePublish}
-        isLoading={isLoading}
-        // TODO(ISOM-1552): Add back functionality when implemented
-        isDisabled
+    <Can do="publish" on="Resource">
+      <TouchableTooltip
+        hidden={!!currPage.draftBlobId}
+        label="All changes have been published"
       >
-        Publish
-      </Button>
-    </TouchableTooltip>
+        <Button
+          variant="solid"
+          size="sm"
+          onClick={handlePublish}
+          isLoading={isLoading}
+        >
+          Publish
+        </Button>
+      </TouchableTooltip>
+    </Can>
   )
 }
 

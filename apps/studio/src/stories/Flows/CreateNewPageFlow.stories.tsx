@@ -23,6 +23,7 @@ const meta: Meta<typeof SitePage> = {
         sitesHandlers.getNavbar.default(),
         sitesHandlers.getLocalisedSitemap.default(),
         resourceHandlers.getChildrenOf.default(),
+        resourceHandlers.getRolesFor.default(),
       ],
     },
     nextjs: {

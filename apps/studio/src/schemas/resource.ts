@@ -35,8 +35,9 @@ export const getChildrenSchema = z
   .merge(infiniteOffsetPaginationSchema)
 
 export const moveSchema = z.object({
+  siteId: z.number(),
   movedResourceId: bigIntSchema,
-  destinationResourceId: bigIntSchema,
+  destinationResourceId: bigIntSchema.nullable(),
 })
 
 export const countResourceSchema = z.object({
