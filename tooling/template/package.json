@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "PORT=3001 next",
     "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && npm run build",
-    "build": "next build",
+    "build:template": "next build",
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
