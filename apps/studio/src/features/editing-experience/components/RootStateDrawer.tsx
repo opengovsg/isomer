@@ -15,6 +15,22 @@ import { ActivateAdminMode } from "./ActivateAdminMode"
 import { BaseBlock } from "./Block/BaseBlock"
 import { DraggableBlock } from "./Block/DraggableBlock"
 
+interface FixedBlockContent {
+  label: string
+  description: string
+}
+
+const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
+  article: {
+    label: "Article page header",
+    description: "Category, Date, and Summary",
+  } as FixedBlockContent,
+  content: {
+    label: "Content page header",
+    description: "Summary, Button label, and Button URL",
+  } as FixedBlockContent,
+}
+
 export default function RootStateDrawer() {
   const {
     setDrawerState,
@@ -123,8 +139,13 @@ export default function RootStateDrawer() {
             onClick={() => {
               setDrawerState({ state: "metadataEditor" })
             }}
-            label="Page description and summary"
-            description="Click to edit"
+            label={
+              FIXED_BLOCK_CONTENT[pageLayout]?.label ||
+              "Page description and summary"
+            }
+            description={
+              FIXED_BLOCK_CONTENT[pageLayout]?.description || "Click to edit"
+            }
             icon={BiPin}
           />
         )}
