@@ -311,7 +311,7 @@ async function writeContentToFile(
     // NOTE: do a join with ./ here so that
     // we don't end up with an absolute path to a special unix folder
     const sanitizedPermalink = !fullPermalink
-      ? "index"
+      ? "_index"
       : path.join(
           "./",
           path
