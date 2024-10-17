@@ -28,8 +28,7 @@ export const UnsupportedBrowserBanner = ({
   }
 
   return (
-    // TODO: move this into a new utility token
-    <div className="bg-[#FFCC15]">
+    <div className="bg-utility-feedback-warning">
       <div className="relative mx-auto flex max-w-screen-xl flex-row gap-4 px-6 py-8 text-base-content md:px-10 md:py-6">
         <BiInfoCircle className="mt-0.5 h-6 w-6 shrink-0" />
         <div className="flex flex-1 flex-col gap-1">
