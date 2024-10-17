@@ -2,7 +2,7 @@
 
 import { BiInfoCircle } from "react-icons/bi"
 
-import supportedBrowsers from "../../../../../../supportedBrowsers.js"
+import supportedBrowsers from "../../../../../../supportedBrowsers"
 
 interface UnsupportedBrowserBannerProps {
   userAgent?: string | undefined
