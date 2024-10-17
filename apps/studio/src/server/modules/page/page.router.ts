@@ -15,6 +15,7 @@ import {
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
+import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType } from "../database"
 import {
   getFooter,
@@ -268,7 +269,7 @@ export const pageRouter = router({
   updateSettings: protectedProcedure
     .input(pageSettingsSchema)
     .mutation(
-      async ({ input: { pageId, siteId, title, meta, ...settings } }) => {
+      async ({ ctx, input: { pageId, siteId, title, meta, ...settings } }) => {
         return db.transaction().execute(async (tx) => {
           const fullPage = await getFullPageById(tx, {
             resourceId: pageId,
@@ -344,6 +345,10 @@ export const pageRouter = router({
                 }
                 throw err
               })
+
+            // We do an implicit publish so that we can make the changes to the
+            // page settings immediately visible on the end site
+            await publishSite(ctx.logger, siteId)
 
             return {
               ...updatedResource,
