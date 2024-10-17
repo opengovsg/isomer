@@ -5,6 +5,7 @@ import {
   setNotificationSchema,
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
+import { publishSite } from "../aws/codebuild.service"
 import { db } from "../database"
 import {
   getFooter,
@@ -69,13 +70,16 @@ export const siteRouter = router({
     }),
   setNotification: protectedProcedure
     .input(setNotificationSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { siteId, notification, notificationEnabled } = input
       if (notificationEnabled) {
         await setSiteNotification(siteId, notification)
       } else {
         await clearSiteNotification(siteId)
       }
+
+      await publishSite(ctx.logger, siteId)
+
       return input
     }),
 })
