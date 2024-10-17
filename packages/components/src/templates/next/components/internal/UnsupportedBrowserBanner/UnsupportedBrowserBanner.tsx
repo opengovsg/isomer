@@ -8,8 +8,9 @@ interface UnsupportedBrowserBannerProps {
   userAgent?: string | undefined
 }
 
+// TODO: move this to a official isomer.gov.sg once we migrate that to Isomer Next
 const supportedBrowserDocumentLink =
-  "https://support.google.com/chrome/answer/95416?hl=en&co=GENIE.Platform%3DAndroid"
+  "https://github.com/opengovsg/isomer/blob/main/packages/components/browser-support.md"
 
 const getUserAgent = (): string | undefined => {
   return typeof window !== "undefined" ? window.navigator.userAgent : undefined
