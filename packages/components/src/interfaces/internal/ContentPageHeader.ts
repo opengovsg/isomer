@@ -3,6 +3,7 @@ import { Type } from "@sinclair/typebox"
 
 import type { BreadcrumbProps } from "./Breadcrumb"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 export const ContentPageHeaderSchema = Type.Object(
   {
@@ -23,6 +24,7 @@ export const ContentPageHeaderSchema = Type.Object(
         title: "Button URL",
         description: "The URL the button should link to",
         format: "link",
+        pattern: LINK_HREF_PATTERN,
       }),
     ),
   },
