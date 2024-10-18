@@ -17,7 +17,7 @@ import { getLinkHrefType } from "./utils"
 
 interface LinkHrefEditorProps {
   value: string
-  onChange: (href: string) => void
+  onChange: (href?: string) => void
   label: string
   description?: string
   isRequired?: boolean
@@ -43,7 +43,7 @@ export const LinkHrefEditor = ({
 
   const handleLinkTypeChange = (value: string) => {
     setSelectedLinkType(value)
-    onChange("")
+    onChange()
   }
 
   const { getRootProps, getRadioProps } = useRadioGroup({

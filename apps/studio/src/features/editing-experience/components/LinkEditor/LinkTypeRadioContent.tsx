@@ -42,7 +42,12 @@ export const LinkTypeRadioContent = ({
                 ? data.slice(HTTPS_PREFIX.length)
                 : data
             }
-            onChange={(e) => handleChange(generateHttpsLink(e.target.value))}
+            onChange={(e) => {
+              if (!e.target.value) {
+                handleChange(e.target.value)
+              }
+              handleChange(generateHttpsLink(e.target.value))
+            }}
             placeholder="www.isomer.gov.sg"
           />
         </InputGroup>
@@ -58,7 +63,12 @@ export const LinkTypeRadioContent = ({
             value={
               data.startsWith("mailto:") ? data.slice("mailto:".length) : ""
             }
-            onChange={(e) => handleChange(`mailto:${e.target.value}`)}
+            onChange={(e) => {
+              if (!e.target.value) {
+                handleChange(e.target.value)
+              }
+              handleChange(`mailto:${e.target.value}`)
+            }}
             placeholder="test@example.com"
           />
         </InputGroup>
