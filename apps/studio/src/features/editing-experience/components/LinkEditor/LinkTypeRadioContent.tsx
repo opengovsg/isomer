@@ -28,11 +28,11 @@ export const LinkTypeRadioContent = ({
   pageLinkElement,
   fileLinkElement,
 }: LinkTypeRadioContentProps): JSX.Element => {
-  switch (selectedLinkType) {
-    case "page":
-      return <>{pageLinkElement}</>
-    case "external":
-      return (
+  return (
+    <>
+      {selectedLinkType === "page" && pageLinkElement}
+      {selectedLinkType === "file" && fileLinkElement}
+      {selectedLinkType === "external" && (
         <InputGroup>
           <InputLeftAddon>https://</InputLeftAddon>
           <Input
@@ -51,11 +51,8 @@ export const LinkTypeRadioContent = ({
             placeholder="www.isomer.gov.sg"
           />
         </InputGroup>
-      )
-    case "file":
-      return <>{fileLinkElement}</>
-    case "email":
-      return (
+      )}
+      {selectedLinkType === "email" && (
         <InputGroup>
           <InputLeftAddon>mailto:</InputLeftAddon>
           <Input
@@ -72,8 +69,7 @@ export const LinkTypeRadioContent = ({
             placeholder="test@example.com"
           />
         </InputGroup>
-      )
-    default:
-      return <></>
-  }
+      )}
+    </>
+  )
 }
