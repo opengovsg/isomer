@@ -9,19 +9,20 @@ import {
 
 const BaseCollectionItemPageSchema = Type.Object({
   category: Type.String({
-    title: "Category of the actual item",
+    title: "Article category",
     description:
       "The category is used for filtering in the parent collection page",
   }),
   date: Type.String({
-    title: "Date of the actual item",
+    title: "Article date",
     format: "date",
   }),
   image: Type.Optional(
     Type.Object({
       src: Type.String({
-        title: "Image source URL",
-        description: "The source URL of the image",
+        title: "Image",
+        description:
+          "Displayed at the top of the page and as a thumbnail in the collection view",
         format: "image",
       }),
       alt: Type.String({
