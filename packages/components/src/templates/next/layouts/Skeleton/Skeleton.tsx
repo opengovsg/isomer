@@ -1,5 +1,6 @@
 import type { IsomerPageSchemaType } from "~/engine"
 import {
+  DatadogRum,
   Footer,
   Masthead,
   Navbar,
@@ -26,6 +27,8 @@ export const Skeleton = ({
       {site.isGovernment && <Masthead isStaging={isStaging} />}
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
+
+      <DatadogRum />
 
       {site.notification && (
         <Notification
