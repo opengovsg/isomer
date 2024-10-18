@@ -210,6 +210,8 @@ model ResourcePermission {
   resourceId BigInt?
   resource   Resource? @relation(fields: [resourceId], references: [id])
   role       RoleType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@unique([userId, siteId, resourceId, role])
 }
