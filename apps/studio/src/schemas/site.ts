@@ -6,7 +6,7 @@ export const getConfigSchema = z.object({
 
 export const getLocalisedSitemapSchema = z.object({
   siteId: z.number().min(1),
-  resourceId: z.number().min(1).optional(),
+  resourceId: z.number().min(1),
 })
 
 export const getNotificationSchema = z.object({

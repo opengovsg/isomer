@@ -12,9 +12,9 @@ import { Breadcrumb } from "@opengovsg/design-system-react"
 import { TabLink } from "~/components/TabLink"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
-import { editPageSchema } from "../schema"
 import PublishButton from "./PublishButton"
 
 interface NavigationBreadcrumbsProps {
@@ -92,8 +92,8 @@ const NavigationBreadcrumbs = ({
   )
 }
 
-export const SiteEditNavbar = (): JSX.Element => {
-  const { siteId, pageId } = useQueryParse(editPageSchema)
+export const LinkEditNavbar = (): JSX.Element => {
+  const { linkId, siteId } = useQueryParse(editLinkSchema)
 
   const { pathname } = useRouter()
 
@@ -112,25 +112,25 @@ export const SiteEditNavbar = (): JSX.Element => {
       transition="padding 0.1s"
       gap="0.5rem"
     >
-      <NavigationBreadcrumbs siteId={String(siteId)} pageId={String(pageId)} />
+      <NavigationBreadcrumbs siteId={String(siteId)} pageId={String(linkId)} />
 
       <Flex gap="2rem">
         <TabLink
-          isActive={pathname === "/sites/[siteId]/pages/[pageId]"}
-          href={`/sites/${siteId}/pages/${pageId}`}
+          isActive={pathname === "/sites/[siteId]/links/[linkId]"}
+          href={`/sites/${siteId}/links/${linkId}`}
         >
           Edit
         </TabLink>
         <TabLink
-          isActive={pathname === "/sites/[siteId]/pages/[pageId]/settings"}
-          href={`/sites/${siteId}/pages/${pageId}/settings`}
+          isActive={pathname === "/sites/[siteId]/links/[linkId]/settings"}
+          href={`/sites/${siteId}/links/${linkId}/settings`}
         >
-          Page Settings
+          Link Settings
         </TabLink>
       </Flex>
-      {pageId && siteId && (
+      {linkId && siteId && (
         <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
-          <PublishButton pageId={pageId} siteId={siteId} />
+          <PublishButton pageId={linkId} siteId={siteId} />
         </Flex>
       )}
     </Flex>

@@ -20,21 +20,17 @@ export const createCollectionPageJson = ({}: {
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
 
-export const createCollectionPdfJson = ({
-  url: _url,
-}: {
-  type: "pdf" // Act as soft typeguard
-  url: string
+export const createCollectionLinkJson = ({}: {
+  type: "link" // Act as soft typeguard
 }) => {
   return {
-    layout: "content",
+    layout: "link",
     page: {
-      contentPageHeader: {
-        summary: "",
-      },
+      ref: "",
+      summary: "",
     },
-    // TODO: Add pdf blob to content
     content: [],
+    // TODO: Add pdf blob to content
     version: "0.1.0",
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
