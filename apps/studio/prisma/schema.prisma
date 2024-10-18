@@ -77,7 +77,7 @@ model Resource {
   // treats nulls as not distinct.
   // This is required so prisma does not attempt to drop the custom index.
   @@unique([siteId, parentId, permalink])
-  @@index([siteId, id, parentId])
+  @@index([siteId, id, parentId]) // note: ordering is important here!
 }
 
 model Blob {
