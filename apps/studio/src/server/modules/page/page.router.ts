@@ -15,7 +15,7 @@ import {
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { startProjectById, stopRunningBuilds } from "../aws/codebuild.service"
+import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType } from "../database"
 import {
   getFooter,
@@ -24,10 +24,10 @@ import {
   getPageById,
   getResourceFullPermalink,
   getResourcePermalinkTree,
+  publishResource,
   updateBlobById,
 } from "../resource/resource.service"
-import { getSiteConfig, getSiteNameAndCodeBuildId } from "../site/site.service"
-import { incrementVersion } from "../version/version.service"
+import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage } from "./page.service"
 
 export const pageRouter = router({
@@ -262,37 +262,14 @@ export const pageRouter = router({
 
   publishPage: protectedProcedure
     .input(publishPageSchema)
-    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
-      /* Step 1: Update DB table to latest state */
-      // Create a new version
-      const addedVersionResult = await incrementVersion({
-        siteId,
-        pageId,
-        userId: ctx.user.id,
-      })
-
-      /* Step 2: Use AWS SDK to start a CodeBuild */
-      const site = await getSiteNameAndCodeBuildId(siteId)
-      const codeBuildId = site.codeBuildId
-      if (!codeBuildId) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "No CodeBuild project ID found for site",
-        })
-      }
-
-      // stop any currently running builds for the site
-      await stopRunningBuilds(ctx.logger, codeBuildId)
-
-      // initiate new build
-      await startProjectById(ctx.logger, codeBuildId)
-      return addedVersionResult
-    }),
+    .mutation(async ({ ctx, input: { siteId, pageId } }) =>
+      publishResource(ctx.logger, siteId, String(pageId), ctx.user.id),
+    ),
 
   updateSettings: protectedProcedure
     .input(pageSettingsSchema)
     .mutation(
-      async ({ input: { pageId, siteId, title, meta, ...settings } }) => {
+      async ({ ctx, input: { pageId, siteId, title, meta, ...settings } }) => {
         return db.transaction().execute(async (tx) => {
           const fullPage = await getFullPageById(tx, {
             resourceId: pageId,
@@ -368,6 +345,10 @@ export const pageRouter = router({
                 }
                 throw err
               })
+
+            // We do an implicit publish so that we can make the changes to the
+            // page settings immediately visible on the end site
+            await publishSite(ctx.logger, siteId)
 
             return {
               ...updatedResource,

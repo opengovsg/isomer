@@ -6,6 +6,7 @@ export interface IsomerGeneratedSiteProps {
   siteMap: IsomerSitemap
   environment?: string
   lastUpdated: string
+  assetsBaseUrl?: string
 }
 
 export interface IsomerSiteWideComponentsProps {
@@ -23,7 +24,6 @@ export interface IsomerSiteConfigProps {
   favicon?: string
   search: NavbarProps["search"]
   notification?: Omit<NotificationProps, "LinkComponent" | "site">
-  assetsBaseUrl?: string
 }
 
 export type IsomerSiteProps = IsomerGeneratedSiteProps &
