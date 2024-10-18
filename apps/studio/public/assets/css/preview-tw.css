@@ -2657,14 +2657,6 @@ video {
   padding-bottom: 2rem;
 }
 
-.pl-0 {
-  padding-left: 0px;
-}
-
-.pl-0\.5 {
-  padding-left: 0.125rem;
-}
-
 .pl-2 {
   padding-left: 0.5rem;
 }
@@ -2699,10 +2691,6 @@ video {
 
 .pr-4 {
   padding-right: 1rem;
-}
-
-.ps-7 {
-  padding-inline-start: 1.75rem;
 }
 
 .ps-8 {
@@ -5364,10 +5352,6 @@ video {
 
 .\[\&_ol\]\:ps-5 ol {
   padding-inline-start: 1.25rem;
-}
-
-.\[\&_p\]\:inline p {
-  display: inline;
 }
 
 .\[\&_ul\]\:mt-0 ul {
