@@ -6,6 +6,7 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 export const InfobarSchema = Type.Object(
   {
@@ -34,6 +35,7 @@ export const InfobarSchema = Type.Object(
         description: "When this is clicked, open:",
         maxLength: 50,
         format: "link",
+        pattern: LINK_HREF_PATTERN,
       }),
     ),
     secondaryButtonLabel: Type.Optional(
@@ -48,6 +50,7 @@ export const InfobarSchema = Type.Object(
         title: "Secondary button destination",
         description: "When this is clicked, open:",
         format: "link",
+        pattern: LINK_HREF_PATTERN,
       }),
     ),
   },
