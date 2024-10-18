@@ -6,6 +6,7 @@ import {
   ContentPageHeaderSchema,
   SearchableTableSchema,
 } from "~/interfaces"
+import { REF_HREF_PATTERN } from "~/utils/validation"
 
 const BaseCollectionItemPageSchema = Type.Object({
   category: Type.String({
@@ -38,6 +39,7 @@ const BaseRefPageSchema = Type.Object({
     title: "Link",
     description: "Choose a page or file to link to this Collection item",
     format: "ref",
+    pattern: REF_HREF_PATTERN,
   }),
   summary: Type.Optional(
     Type.String({
