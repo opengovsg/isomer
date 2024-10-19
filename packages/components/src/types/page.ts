@@ -7,16 +7,22 @@ import {
   SearchableTableSchema,
 } from "~/interfaces"
 
-const BaseCollectionItemPageSchema = Type.Object({
+const categorySchemaObject = Type.Object({
   category: Type.String({
     title: "Article category",
     description:
       "The category is used for filtering in the parent collection page",
   }),
+})
+
+const dateSchemaObject = Type.Object({
   date: Type.String({
     title: "Article date",
     format: "date",
   }),
+})
+
+const imageSchemaObject = Type.Object({
   image: Type.Optional(
     Type.Object({
       src: Type.String({
@@ -35,7 +41,9 @@ const BaseCollectionItemPageSchema = Type.Object({
 })
 
 const BaseRefPageSchema = Type.Composite([
-  BaseCollectionItemPageSchema,
+  categorySchemaObject,
+  dateSchemaObject,
+  imageSchemaObject,
   Type.Object({
     ref: Type.String({
       title: "URL to the actual item",
@@ -46,10 +54,12 @@ const BaseRefPageSchema = Type.Composite([
 ])
 
 export const ArticlePagePageSchema = Type.Composite([
-  BaseCollectionItemPageSchema,
+  dateSchemaObject,
   Type.Object({
     articlePageHeader: ArticlePageHeaderSchema,
   }),
+  categorySchemaObject,
+  imageSchemaObject,
 ])
 
 export const CollectionPagePageSchema = Type.Object({
