@@ -22,7 +22,9 @@
     "format:fix": "prettier --write . --ignore-path ../../.gitignore",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "test": "dotenv -e .env.test vitest run",
+    "test": "run-s test:*",
+    "test:unit": "dotenv -e .env.test vitest run",
+    "test-ci:unit": "dotenv -e .env.test vitest run -- --coverage",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "author": {
