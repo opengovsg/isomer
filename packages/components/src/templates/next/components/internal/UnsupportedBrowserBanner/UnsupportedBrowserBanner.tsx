@@ -16,7 +16,9 @@ const getUserAgent = (): string | undefined => {
   return typeof window !== "undefined" ? window.navigator.userAgent : undefined
 }
 
-const isSupportedBrowser = ({ userAgent }: { userAgent?: string }): boolean => {
+const isSupportedBrowser = ({
+  userAgent,
+}: UnsupportedBrowserBannerProps): boolean => {
   return supportedBrowsers.test(userAgent || getUserAgent() || "")
 }
 
