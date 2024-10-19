@@ -96,8 +96,11 @@ async function main() {
           lastModified: new Date().toISOString(), // TODO: Update to updated_at column
           layout: resource.content.layout || "content",
           summary:
-            resource.content.page.contentPageHeader?.summary ||
+            (Array.isArray(resource.content.page.contentPageHeader?.summary)
+              ? resource.content.page.contentPageHeader.summary.join(" ")
+              : resource.content.page.contentPageHeader?.summary) ||
             resource.content.page.articlePageHeader?.summary.join(" ") ||
+            resource.content.page.subtitle ||
             resource.content.page.description ||
             "",
           category: resource.content.page.category,
