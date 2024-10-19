@@ -51,7 +51,8 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.test.tsx",
-    "src/**/*.stories.tsx"
+    "src/**/*.stories.tsx",
+    "tests/**/*"
   ],
   "exclude": ["node_modules", "dist"],
   "compileOnSave": false
