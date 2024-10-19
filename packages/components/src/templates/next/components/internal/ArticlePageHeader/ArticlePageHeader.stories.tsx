@@ -39,9 +39,7 @@ export const SingleSummaryItem: Story = {
     title:
       "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
     date: "1 May 2024",
-    summary: [
-      "20 pieces of rhinoceros horns were found in two pieces of transit baggage bound for Laos. The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
-    ],
+    summary: "20 pieces of rhinoceros horns were found in two pieces of transit baggage bound for Laos. The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
   },
 }
 
@@ -68,9 +66,6 @@ export const MultipleSummaryItems: Story = {
     title:
       "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
     date: "1 May 2024",
-    summary: [
-      "20 pieces of rhinoceros horns were found in two pieces of transit baggage bound for Laos.",
-      "The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
-    ],
+    summary: "20 pieces of rhinoceros horns were found in two pieces of transit baggage bound for Laos. The 34.7 kg seizure is the largest seizure of rhinoceros horns in Singapore to date.",
   },
 }

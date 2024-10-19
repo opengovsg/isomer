@@ -103,10 +103,7 @@ export const Default: Story = {
       category: "Citizen Engagement",
       date: "1 May 2024",
       articlePageHeader: {
-        summary: [
-          "Singapore is preparing to host its inaugural Citizens' Festival in Marina Boulevard.",
-          "The festival aims to unite Singaporeans of all backgrounds through cultural showcases, food markets, live music, and wellness activities.",
-        ],
+        summary:  "Singapore is preparing to host its inaugural Citizens' Festival in Marina Boulevard. The festival aims to unite Singaporeans of all backgrounds through cultural showcases, food markets, live music, and wellness activities."
       },
     },
     content: [
@@ -236,10 +233,7 @@ export const NoImage: Story = {
       category: "Citizen Engagement",
       date: "1 May 2024",
       articlePageHeader: {
-        summary: [
-          "Singapore is preparing to host its inaugural Citizens' Festival in Marina Boulevard.",
-          "The festival aims to unite Singaporeans of all backgrounds through cultural showcases, food markets, live music, and wellness activities.",
-        ],
+        summary:  "Singapore is preparing to host its inaugural Citizens' Festival in Marina Boulevard. The festival aims to unite Singaporeans of all backgrounds through cultural showcases, food markets, live music, and wellness activities."
       },
     },
     content: [
@@ -369,7 +363,7 @@ export const NoSummary: Story = {
       category: "Citizen Engagement",
       date: "1 May 2024",
       articlePageHeader: {
-        summary: [""],
+        summary: ""
       },
     },
     content: [
