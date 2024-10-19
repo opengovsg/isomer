@@ -90,6 +90,11 @@ jobs:
         env:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
+      - name: Test Components
+        run: turbo test-ci:unit --filter=@opengovsg/isomer-components --env-mode=loose
+        env:
+          # Required to allow Datadog to trace Vitest tests
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
 
   end-to-end-tests:
     name: End-to-end tests
