@@ -20,6 +20,8 @@ const getUserAgent = (): string | undefined => {
 const isSupportedBrowser = ({
   userAgent,
 }: UnsupportedBrowserBannerProps): boolean => {
+  if (userAgent === undefined) return true
+  if (userAgent === "") return true
   return supportedBrowsers.test(userAgent || getUserAgent() || "")
 }
 
