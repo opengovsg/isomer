@@ -55,6 +55,7 @@ export const colors = {
         DEFAULT: twColors.blue["500"],
         subtle: twColors.blue["100"],
       },
+      warning: "#FFCC15",
     },
   },
 }

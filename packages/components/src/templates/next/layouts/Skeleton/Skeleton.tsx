@@ -4,6 +4,7 @@ import {
   Masthead,
   Navbar,
   Notification,
+  UnsupportedBrowserBanner,
   Wogaa,
 } from "../../components/internal"
 
@@ -34,6 +35,8 @@ export const Skeleton = ({
           site={site}
         />
       )}
+
+      <UnsupportedBrowserBanner />
 
       <Navbar
         logoUrl={site.logoUrl}

@@ -52,7 +52,7 @@ async function main() {
     user: DB_USERNAME,
     host: DB_HOST,
     database: DB_NAME,
-    password: DB_PASSWORD,
+    password: decodeURIComponent(DB_PASSWORD ?? ""),
     port: Number(DB_PORT),
   })
 

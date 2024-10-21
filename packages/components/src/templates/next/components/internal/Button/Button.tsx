@@ -42,18 +42,20 @@ export const buttonStyles = tv({
     {
       variant: "solid",
       colorScheme: "inverse",
-      className: "bg-base-canvas text-base-content",
+      className:
+        "bg-base-canvas text-base-content hover:bg-base-canvas-backdrop",
     },
     {
       variant: "outline",
       colorScheme: "inverse",
       className:
-        "border border-base-divider-inverse text-base-content-inverse hover:bg-base-canvas-inverse-overlay/80 hover:text-base-content-inverse",
+        "border border-base-divider-inverse text-base-content-inverse hover:bg-base-canvas-inverse-overlay/40 hover:text-base-content-inverse",
     },
     {
       variant: "outline",
       colorScheme: "default",
-      className: "border border-brand-canvas-inverse text-brand-canvas-inverse",
+      className:
+        "border border-brand-canvas-inverse text-brand-canvas-inverse hover:bg-base-canvas-backdrop",
     },
     {
       variant: "outline",
