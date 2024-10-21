@@ -87,7 +87,7 @@ calculate_duration $start_time
 # Build
 echo "Building..."
 start_time=$(date +%s)
-npm run build
+npm run build:template
 calculate_duration $start_time
 
 # Check if the 'out' folder exists
