@@ -1,7 +1,7 @@
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 
 import type { PermissionsProps, ResourceAbility } from "./permissions.type"
-import { db, Resource as RawResource, RoleType } from "../database"
+import { db } from "../database"
 import { buildPermissionsFor } from "./permissions.util"
 
 export const definePermissionsFor = async ({
