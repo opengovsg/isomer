@@ -2381,6 +2381,11 @@ video {
   background-color: rgb(219 234 254 / var(--tw-bg-opacity));
 }
 
+.bg-utility-feedback-warning {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 204 21 / var(--tw-bg-opacity));
+}
+
 .bg-utility-highlight {
   --tw-bg-opacity: 1;
   background-color: rgb(251 191 36 / var(--tw-bg-opacity));
@@ -4701,10 +4706,6 @@ video {
 
   .md\:items-center {
     align-items: center;
-  }
-
-  .md\:gap-16 {
-    gap: 4rem;
   }
 
   .md\:gap-3 {

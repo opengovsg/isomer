@@ -48,7 +48,7 @@ const createKeyStatisticsStyles = tv({
         container: "gap-10 py-12 xs:py-24 lg:gap-24",
       },
       default: {
-        container: "mt-14 gap-12 md:gap-16",
+        container: "mt-14 gap-12",
       },
     },
   },
