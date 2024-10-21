@@ -2,7 +2,6 @@ import type { KeyStatisticsProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
-import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
 
 const MAX_ITEMS = 4
@@ -18,11 +17,10 @@ const MAX_CHAR_LIMIT = 7
 const createKeyStatisticsStyles = tv({
   slots: {
     container: `${ComponentContent} flex flex-col`,
-    titleAndUrlContainer: "flex flex-row items-center justify-between gap-8",
     title:
       "prose-display-md w-full max-w-[47.5rem] break-words text-base-content-strong",
     urlText: "hidden whitespace-nowrap md:block",
-    urlButton: "block md:hidden",
+    urlButtonContainer: "mx-auto block",
     statistics: "flex flex-col flex-wrap gap-x-8 gap-y-12 md:flex-row",
     itemContainer: "flex grow flex-col gap-3",
     itemValue: "prose-display-lg text-pretty text-brand-canvas-inverse",
@@ -50,7 +48,7 @@ const createKeyStatisticsStyles = tv({
         container: "gap-10 py-12 xs:py-24 lg:gap-24",
       },
       default: {
-        container: "mt-14 gap-12",
+        container: "mt-14 gap-12 md:gap-16",
       },
     },
   },
@@ -73,21 +71,10 @@ const KeyStatistics = ({
 }: KeyStatisticsProps) => {
   const noOfItems = Math.min(MAX_ITEMS, statistics.length) as NoOfItemVariants
   const simplifiedLayout = getTailwindVariantLayout(layout)
-  const shouldRenderUrl = url !== undefined && url !== ""
 
   return (
     <div className={compoundStyles.container({ layout: simplifiedLayout })}>
-      <div className={compoundStyles.titleAndUrlContainer()}>
-        <h2 className={compoundStyles.title()}>{title}</h2>
-        {shouldRenderUrl && (
-          <Link
-            href={getReferenceLinkHref(url, site.siteMap)}
-            className={compoundStyles.urlText()}
-          >
-            {urlText}
-          </Link>
-        )}
-      </div>
+      <h2 className={compoundStyles.title()}>{title}</h2>
 
       <div className={compoundStyles.statistics()}>
         {statistics.slice(0, MAX_ITEMS).map(({ label, value }, index) => (
@@ -104,15 +91,17 @@ const KeyStatistics = ({
         ))}
       </div>
 
-      {shouldRenderUrl && (
-        <LinkButton
-          href={getReferenceLinkHref(url, site.siteMap)}
-          size="lg"
-          isWithFocusVisibleHighlight
-          className={compoundStyles.urlButton()}
-        >
-          {urlText}
-        </LinkButton>
+      {url !== undefined && url !== "" && (
+        <div className={compoundStyles.urlButtonContainer()}>
+          <LinkButton
+            href={getReferenceLinkHref(url, site.siteMap)}
+            size="base"
+            variant="outline"
+            isWithFocusVisibleHighlight
+          >
+            {urlText}
+          </LinkButton>
+        </div>
       )}
     </div>
   )

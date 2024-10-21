@@ -4703,6 +4703,10 @@ video {
     align-items: center;
   }
 
+  .md\:gap-16 {
+    gap: 4rem;
+  }
+
   .md\:gap-3 {
     gap: 0.75rem;
   }
