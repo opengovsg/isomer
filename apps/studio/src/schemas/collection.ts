@@ -1,12 +1,28 @@
+import { format, parse } from "date-fns"
 import { z } from "zod"
 
 import { generateBasePermalinkSchema } from "./common"
 import { MAX_FOLDER_PERMALINK_LENGTH, MAX_FOLDER_TITLE_LENGTH } from "./folder"
 
+// NOTE: zod's internal date schema uses `YYYY-MM-DD` but our format is
+// dd/mm/yyyy. Hence, we will run a 2 way conversion from
+// our format -> zod then zod -> our format
+const slashDateSchema = z
+  .string()
+  .transform((d) => {
+    return parse(d, "dd/mm/yyyy", new Date())
+  })
+  .pipe(z.date())
+  .transform((d) => {
+    return format(d, "dd/mm/yyyy")
+  })
+
 export const editLinkSchema = z.object({
+  date: slashDateSchema,
+  category: z.string(),
   linkId: z.number().min(1),
   siteId: z.number().min(1),
-  summary: z.string().optional(),
+  description: z.string().optional(),
   ref: z.string().min(1),
 })
 

@@ -197,34 +197,38 @@ export const collectionRouter = router({
 
   updateCollectionLink: protectedProcedure
     .input(editLinkSchema)
-    .mutation(async ({ input: { linkId, siteId, summary, ref } }) => {
-      // Things that aren't working yet:
-      // 0. Perm checking
-      // 1. Last Edited user and time
-      // 2. Page status(draft, published)
-      return await db.transaction().execute(async (tx) => {
-        const { draftBlobId } = await tx
-          .selectFrom("Resource")
-          .where("Resource.id", "=", String(linkId))
-          .where("Resource.siteId", "=", siteId)
-          .select("Resource.draftBlobId")
-          .executeTakeFirstOrThrow()
+    .mutation(
+      async ({
+        input: { date, category, linkId, siteId, description, ref },
+      }) => {
+        // Things that aren't working yet:
+        // 0. Perm checking
+        // 1. Last Edited user and time
+        // 2. Page status(draft, published)
+        return await db.transaction().execute(async (tx) => {
+          const { draftBlobId } = await tx
+            .selectFrom("Resource")
+            .where("Resource.id", "=", String(linkId))
+            .where("Resource.siteId", "=", siteId)
+            .select("Resource.draftBlobId")
+            .executeTakeFirstOrThrow()
 
-        const { content } = await tx
-          .selectFrom("Blob")
-          .where("Blob.id", "=", draftBlobId)
-          .select("Blob.content")
-          .executeTakeFirstOrThrow()
+          const { content } = await tx
+            .selectFrom("Blob")
+            .where("Blob.id", "=", draftBlobId)
+            .select("Blob.content")
+            .executeTakeFirstOrThrow()
 
-        await tx
-          .updateTable("Blob")
-          .set({
-            content: {
-              ...content,
-              page: { summary, ref },
-            },
-          })
-          .execute()
-      })
-    }),
+          await tx
+            .updateTable("Blob")
+            .set({
+              content: {
+                ...content,
+                page: { description, ref, date, category },
+              },
+            })
+            .execute()
+        })
+      },
+    ),
 })
