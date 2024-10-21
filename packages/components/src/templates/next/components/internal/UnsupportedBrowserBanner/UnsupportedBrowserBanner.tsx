@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { BiInfoCircle } from "react-icons/bi"
 
 import supportedBrowsers from "~/utils/supportedBrowsers"
@@ -23,9 +24,26 @@ const isSupportedBrowser = ({
 }
 
 export const UnsupportedBrowserBanner = ({
-  userAgent,
+  userAgent: initialUserAgent,
 }: UnsupportedBrowserBannerProps) => {
-  if (isSupportedBrowser({ userAgent })) {
+  const [navigatorUserAgent, setNavigatorUserAgent] = useState(
+    initialUserAgent || "",
+  )
+
+  useEffect(() => {
+    // If no userAgent prop is provided, and we're on the client-side, set navigatorUserAgent from navigator
+    // The check for typeof window and navigator ensures this only runs in browser environments, not during server-side rendering
+    // We use setNavigatorUserAgent to update the state, which will trigger a re-render with the correct user agent
+    if (
+      !initialUserAgent &&
+      typeof window !== "undefined" &&
+      typeof navigator !== "undefined"
+    ) {
+      setNavigatorUserAgent(navigator.userAgent)
+    }
+  }, [initialUserAgent])
+
+  if (isSupportedBrowser({ userAgent: navigatorUserAgent })) {
     return <></>
   }
 
