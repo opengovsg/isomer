@@ -193,7 +193,7 @@ export const resourceRouter = router({
         ctx,
         input: { siteId, movedResourceId, destinationResourceId },
       }) => {
-        const isValid = await validateUserPermissions({
+        const isValid = await validateUserPermissionsForMove({
           from: movedResourceId,
           to: destinationResourceId,
           userId: ctx.user.id,
