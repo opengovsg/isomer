@@ -187,7 +187,10 @@ export const resourceRouter = router({
   move: protectedProcedure
     .input(moveSchema)
     .mutation(
-      async ({ ctx, input: { movedResourceId, destinationResourceId } }) => {
+      async ({
+        ctx,
+        input: { siteId, movedResourceId, destinationResourceId },
+      }) => {
         const isValid = await validateUserPermissions({
           from: movedResourceId,
           to: destinationResourceId,
