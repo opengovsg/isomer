@@ -35,9 +35,15 @@ const getConvertedPermalink = (fullPermalink: string) => {
   // and reflects what the users see.
   // Note that we can do an `endsWith` because
   // we prohibit users from using `_` as a character
-  return fullPermalink.endsWith(INDEX_PAGE_PERMALINK)
+  const fullPermalinkWithoutIndex = fullPermalink.endsWith(INDEX_PAGE_PERMALINK)
     ? fullPermalink.slice(0, -INDEX_PAGE_PERMALINK.length)
     : fullPermalink
+
+  if (fullPermalinkWithoutIndex.endsWith("/")) {
+    return fullPermalinkWithoutIndex.slice(0, -1)
+  }
+
+  return fullPermalinkWithoutIndex
 }
 
 // Wrapper function for debug logging
@@ -80,6 +86,7 @@ async function main() {
       if (
         (resource.type === "Page" ||
           resource.type === "CollectionPage" ||
+          resource.type === "IndexPage" ||
           resource.type === "RootPage") &&
         resource.content
       ) {
@@ -99,7 +106,7 @@ async function main() {
             (Array.isArray(resource.content.page.contentPageHeader?.summary)
               ? resource.content.page.contentPageHeader.summary.join(" ")
               : resource.content.page.contentPageHeader?.summary) ||
-            resource.content.page.articlePageHeader?.summary.join(" ") ||
+            resource.content.page.articlePageHeader?.summary ||
             resource.content.page.subtitle ||
             resource.content.page.description ||
             "",
@@ -165,8 +172,11 @@ function generateSitemapTree(
 ): SitemapEntry[] | undefined {
   const pathPrefixWithoutLeadingSlash = pathPrefix.slice(1)
 
-  const entriesWithPathPrefix = sitemapEntries.filter((entry) =>
-    entry.permalink.startsWith(`${pathPrefix.length === 1 ? "" : pathPrefix}/`),
+  const entriesWithPathPrefix = sitemapEntries.filter(
+    (entry) =>
+      entry.permalink.startsWith(
+        `${pathPrefix.length === 1 ? "" : pathPrefix}/`,
+      ) && entry.permalink !== "/",
   )
 
   // Base case: No entries with the path prefix - this is a leaf node
@@ -305,24 +315,21 @@ async function writeContentToFile(
   parentId: number | null,
 ) {
   try {
-    if (!fullPermalink) {
-      console.error("Error: fullPermalink is undefined or empty for resource")
-      return
-    }
-
     // NOTE: do a join with ./ here so that
     // we don't end up with an absolute path to a special unix folder
-    const sanitizedPermalink = path.join(
-      "./",
-      path
-        // NOTE: normalization here will remove dual backslashes
-        // and also strip .. filepaths except as a prefix
-        .normalize(fullPermalink)
-        // NOTE: this matches on a leading ../
-        // or a leading ..\
-        // or a plain .. without any paths
-        .replace(/^(\.\.(\/|\\|$))+/, ""),
-    )
+    const sanitizedPermalink = !fullPermalink
+      ? "_index"
+      : path.join(
+          "./",
+          path
+            // NOTE: normalization here will remove dual backslashes
+            // and also strip .. filepaths except as a prefix
+            .normalize(fullPermalink)
+            // NOTE: this matches on a leading ../
+            // or a leading ..\
+            // or a plain .. without any paths
+            .replace(/^(\.\.(\/|\\|$))+/, ""),
+        )
 
     const directoryPath =
       parentId === null
