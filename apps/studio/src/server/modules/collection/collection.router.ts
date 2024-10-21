@@ -82,7 +82,7 @@ export const collectionRouter = router({
         userId: ctx.user.id,
       })
 
-      let newPage: PrismaJson.BlobJsonContent
+      let newPage: UnwrapTagged<PrismaJson.BlobJsonContent>
       const { title, type, permalink, siteId, collectionId } = input
       if (type === "page") {
         newPage = createCollectionPageJson({ type })
