@@ -24,11 +24,11 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
   article: {
     label: "Article page header",
     description: "Category, Date, and Summary",
-  } as FixedBlockContent,
+  },
   content: {
     label: "Content page header",
     description: "Summary, Button label, and Button URL",
-  } as FixedBlockContent,
+  },
 }
 
 export default function RootStateDrawer() {
