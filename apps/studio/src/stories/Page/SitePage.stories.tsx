@@ -19,6 +19,7 @@ const meta: Meta<typeof SitePage> = {
         pageHandlers.getRootPage.default(),
         pageHandlers.countWithoutRoot.default(),
         resourceHandlers.getChildrenOf.default(),
+        resourceHandlers.getRolesFor.default(),
       ],
     },
     nextjs: {
