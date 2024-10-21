@@ -733,9 +733,11 @@ describe("resource.router", () => {
   describe("move", () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
+      const { site } = await setupSite()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
       const result = unauthedCaller.move({
+        siteId: site.id,
         movedResourceId: "1",
         destinationResourceId: "1",
       })
@@ -747,10 +749,12 @@ describe("resource.router", () => {
 
     it("should return 400 if moved resource does not exist", async () => {
       // Arrange
+      const { site } = await setupSite()
       const { folder } = await setupFolder()
 
       // Act
       const result = caller.move({
+        siteId: site.id,
         movedResourceId: "99999", // should not exist
         destinationResourceId: folder.id,
       })
@@ -764,9 +768,11 @@ describe("resource.router", () => {
     it("should return 400 if destination resource does not exist", async () => {
       // Arrange
       const { folder } = await setupFolder()
+      const { site } = await setupSite()
 
       // Act
       const result = caller.move({
+        siteId: site.id,
         movedResourceId: folder.id,
         destinationResourceId: "99999", // should not exist
       })
@@ -790,6 +796,7 @@ describe("resource.router", () => {
 
       // Act
       const result = caller.move({
+        siteId: site.id,
         movedResourceId: pageToMove.id,
         destinationResourceId: anotherPage.id,
       })
@@ -811,6 +818,7 @@ describe("resource.router", () => {
 
       // Act
       const result = caller.move({
+        siteId: originSite.id,
         movedResourceId: originPage.id,
         destinationResourceId: destinationFolder.id,
       })
@@ -838,6 +846,7 @@ describe("resource.router", () => {
 
       // Act
       const result = await caller.move({
+        siteId: site.id,
         movedResourceId: pageToMove.id,
         destinationResourceId: destinationFolder.id,
       })
@@ -869,6 +878,7 @@ describe("resource.router", () => {
 
       // Act
       const result = await caller.move({
+        siteId: site.id,
         movedResourceId: pageToMove.id,
         destinationResourceId: destinationFolder.id,
       })

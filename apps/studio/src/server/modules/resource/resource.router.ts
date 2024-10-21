@@ -185,121 +185,84 @@ export const resourceRouter = router({
 
   move: protectedProcedure
     .input(moveSchema)
-    .mutation(async ({ input: { movedResourceId, destinationResourceId } }) => {
-      const isValid = await validateUserPermissions({
-        from: movedResourceId,
-        to: destinationResourceId,
-        userId: ctx.user.id,
-        siteId,
-      })
-
-      if (!isValid) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "Please ensure that you have the required permissions to perform a move!",
+    .mutation(
+      async ({
+        ctx,
+        input: { siteId, movedResourceId, destinationResourceId },
+      }) => {
+        const isValid = await validateUserPermissions({
+          from: movedResourceId,
+          to: destinationResourceId,
+          userId: ctx.user.id,
+          siteId,
         })
-      }
 
-      return await db.transaction().execute(async (tx) => {
-        const toMove = await tx
-          .selectFrom("Resource")
-          .where("id", "=", movedResourceId)
-          .select(["id", "siteId"])
-          .executeTakeFirst()
-        if (!toMove) {
-          throw new TRPCError({ code: "BAD_REQUEST" })
-        }
-        const parent = await tx
-          .selectFrom("Resource")
-          .where("id", "=", destinationResourceId)
-          .select(["id", "type", "siteId"])
-          .executeTakeFirst()
-
-        if (!parent || parent.type !== "Folder") {
-          throw new TRPCError({ code: "BAD_REQUEST" })
+        if (!isValid) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "Please ensure that you have the required permissions to perform a move!",
+          })
         }
 
-        if (movedResourceId === destinationResourceId) {
-          throw new TRPCError({ code: "BAD_REQUEST" })
-        }
+        return await db
+          .transaction()
+          .execute(async (tx) => {
+            const toMove = await tx
+              .selectFrom("Resource")
+              .where("id", "=", movedResourceId)
+              .select(["id", "siteId"])
+              .executeTakeFirst()
+            if (!toMove) {
+              throw new TRPCError({ code: "BAD_REQUEST" })
+            }
+            const parent = await tx
+              .selectFrom("Resource")
+              .where("id", "=", destinationResourceId)
+              .select(["id", "type", "siteId"])
+              .executeTakeFirst()
 
-        if (toMove.siteId !== parent.siteId) {
-          throw new TRPCError({ code: "FORBIDDEN" })
-        }
+            if (!parent || parent.type !== "Folder") {
+              throw new TRPCError({ code: "BAD_REQUEST" })
+            }
 
-        await tx
-          .updateTable("Resource")
-          .where("id", "=", String(movedResourceId))
-          .where("Resource.type", "in", ["Page", "Folder"])
-          .set({ parentId: String(destinationResourceId) })
-          .execute()
-        return tx
-          .selectFrom("Resource")
-          .where("id", "=", String(movedResourceId))
-          .select([
-            "Resource.parentId",
-            "Resource.id",
-            "Resource.type",
-            "Resource.permalink",
-            "Resource.title",
-          ])
-          .executeTakeFirst()
-      })
+            if (movedResourceId === destinationResourceId) {
+              throw new TRPCError({ code: "BAD_REQUEST" })
+            }
 
-      if (!isValid) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "Please ensure that you have the required permissions to perform a move!",
-        })
-      }
+            if (toMove.siteId !== parent.siteId) {
+              throw new TRPCError({ code: "FORBIDDEN" })
+            }
 
-      return await db
-        .transaction()
-        .execute(async (tx) => {
-          const parent = await tx
-            .selectFrom("Resource")
-            .where("id", "=", destinationResourceId)
-            .select(["id", "type"])
-            .executeTakeFirst()
-
-          if (!parent || parent.type !== "Folder") {
-            throw new TRPCError({ code: "BAD_REQUEST" })
-          }
-
-          if (movedResourceId === destinationResourceId) {
-            throw new TRPCError({ code: "BAD_REQUEST" })
-          }
-
-          await tx
-            .updateTable("Resource")
-            .where("id", "=", String(movedResourceId))
-            .where("Resource.type", "in", ["Page", "Folder"])
-            .set({ parentId: String(destinationResourceId) })
-            .execute()
-          return tx
-            .selectFrom("Resource")
-            .where("id", "=", String(movedResourceId))
-            .select([
-              "parentId",
-              "Resource.id",
-              "Resource.type",
-              "Resource.permalink",
-              "Resource.title",
-            ])
-            .executeTakeFirst()
-        })
-        .catch((err) => {
-          if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "A resource with the same permalink already exists",
-            })
-          }
-          throw err
-        })
-    }),
+            await tx
+              .updateTable("Resource")
+              .where("id", "=", String(movedResourceId))
+              .where("Resource.type", "in", ["Page", "Folder"])
+              .set({ parentId: String(destinationResourceId) })
+              .execute()
+            return tx
+              .selectFrom("Resource")
+              .where("id", "=", String(movedResourceId))
+              .select([
+                "Resource.parentId",
+                "Resource.id",
+                "Resource.type",
+                "Resource.permalink",
+                "Resource.title",
+              ])
+              .executeTakeFirst()
+          })
+          .catch((err) => {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
+      },
+    ),
 
   countWithoutRoot: protectedProcedure
     .input(countResourceSchema)
