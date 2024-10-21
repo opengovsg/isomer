@@ -59,9 +59,6 @@ const createKeyStatisticsStyles = tv({
 
 const compoundStyles = createKeyStatisticsStyles()
 
-// TODO: To replace this placeholder text
-const urlText = "Learn more"
-
 const KeyStatistics = ({
   title,
   statistics,
@@ -99,7 +96,7 @@ const KeyStatistics = ({
             variant="outline"
             isWithFocusVisibleHighlight
           >
-            {urlText}
+            Our achievements
           </LinkButton>
         </div>
       )}
