@@ -113,7 +113,7 @@ export const getTextAsHtml = ({
     }
 
     // Push the text
-    output.push(node.text)
+    output.push(stripHtmlTagsUsingDOM(node.text))
 
     // Close off all marks except for links in reverse order
     const marksToClose = node.marks.filter((mark) => mark.type !== "link")
