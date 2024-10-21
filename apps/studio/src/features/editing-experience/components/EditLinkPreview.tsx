@@ -8,8 +8,8 @@ import { linkAtom } from "../atoms"
 import PreviewWithoutSitemap from "./PreviewWithoutSitemap"
 import { ViewportContainer } from "./ViewportContainer"
 
-export const EditLinkPreview = (): JSX.Element => {
-  const { summary } = useAtomValue(linkAtom)
+export const EditCollectionLinkPreview = (): JSX.Element => {
+  const { description: summary } = useAtomValue(linkAtom)
   const { linkId, siteId } = useQueryParse(editLinkSchema)
   const [permalink] = trpc.page.getFullPermalink.useSuspenseQuery(
     {
@@ -47,7 +47,7 @@ export const EditLinkPreview = (): JSX.Element => {
         lastModified: "02 May 2023",
         layout: "collection",
         title: parentTitle,
-        summary: "Learn more about PREPARE here.",
+        summary: "",
         children: children.map((props) => ({
           ...props,
           date: "12 May 2023",

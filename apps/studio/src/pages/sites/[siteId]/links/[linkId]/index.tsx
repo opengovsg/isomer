@@ -1,7 +1,7 @@
 import { Grid, GridItem } from "@chakra-ui/react"
 import { z } from "zod"
 
-import { EditLinkPreview } from "~/features/editing-experience/components/EditLinkPreview"
+import { EditCollectionLinkPreview } from "~/features/editing-experience/components/EditLinkPreview"
 import { LinkEditorDrawer } from "~/features/editing-experience/components/LinkEditorDrawer"
 import { LinkEditingLayout } from "~/templates/layouts/LinkEditingLayout"
 
@@ -23,7 +23,7 @@ export const EditLink = () => {
         <LinkEditorDrawer />
       </GridItem>
       <GridItem colSpan={2}>
-        <EditLinkPreview />
+        <EditCollectionLinkPreview />
       </GridItem>
     </Grid>
   )

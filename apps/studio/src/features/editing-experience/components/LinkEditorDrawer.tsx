@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import { Flex, Text, VStack } from "@chakra-ui/react"
+import { Flex, Spacer, Text, VStack } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { LAYOUT_PAGE_MAP } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
@@ -55,7 +55,7 @@ const InnerDrawer = () => {
     })
 
   return (
-    <VStack gap="1.5rem" p="1.5rem">
+    <VStack gap="1.5rem" p="1.5rem" h="full">
       <Flex flexDir="column" alignItems="flex-start" w="full">
         <Text as="h6" textStyle="h6">
           Edit collection item
@@ -76,7 +76,9 @@ const InnerDrawer = () => {
           handleChange={(data) => setLinkAtom(data)}
         />
       </Flex>
+      <Spacer />
       <Button
+        w="full"
         alignSelf="flex-start"
         onClick={() => mutate({ siteId, linkId, ...data })}
         isDisabled={!isEmpty(errors) || !data.ref}
