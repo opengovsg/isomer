@@ -29,6 +29,13 @@ export const Supported: Story = {
   },
 }
 
+// should not show banner
+export const SupportedEmptyUserAgent: Story = {
+  args: {
+    userAgent: "",
+  },
+}
+
 // should show banner
 export const Unsupported: Story = {
   args: {
