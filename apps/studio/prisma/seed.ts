@@ -162,10 +162,6 @@ async function main() {
               pressed: "#00283b",
             },
           },
-          "site-primary-100": "#fef4e8",
-          "site-primary-200": "#ffeec2",
-          "site-primary-default": "#f78f1e",
-          "site-secondary-default": "#877664",
         },
       }),
       config: jsonb({
