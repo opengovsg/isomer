@@ -21,6 +21,7 @@ const COMMON_HANDLERS = [
   sitesHandlers.getLocalisedSitemap.default(),
   resourceHandlers.getChildrenOf.default(),
   resourceHandlers.getMetadataById.content(),
+  resourceHandlers.getRolesFor.default(),
   pageHandlers.readPageAndBlob.content(),
   pageHandlers.readPage.content(),
   pageHandlers.getFullPermalink.content(),
