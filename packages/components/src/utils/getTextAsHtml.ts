@@ -24,6 +24,17 @@ interface GetTextAsHtmlArgs {
   shouldHideEmptyHardBreak?: boolean
 }
 
+// Strips HTML tags using the DOM
+// Using regexp works, but just in case we are dealing with complex HTML
+// or need to handle specific edge cases (like script or style tags),
+// we want to use a more robust solution like using the DOM
+// We want to prevent user-injected HTML tags from breaking the formatting
+function stripHtmlTagsUsingDOM(input: string): string {
+  const div = document.createElement("div")
+  div.innerHTML = input
+  return div.textContent || div.innerText || ""
+}
+
 // Converts the text node with marks into the appropriate HTML
 export const getTextAsHtml = ({
   sitemap,
