@@ -31,7 +31,9 @@ export const definePermissionsFor = async ({
 
   if (resourceId === null) {
     query.where("resourceId", "is", null)
-  } else query.where("resourceId", "=", resourceId)
+  } else {
+    query.where("resourceId", "=", resourceId)
+  }
 
   const roles = await query.selectAll().execute()
 
@@ -61,5 +63,8 @@ export const buildPermissionsFor = (
       return
     case "Publisher":
       throw new Error("Not implemented")
+    default:
+      const _unhandled: never = role
+      throw new Error(`Unhandled case for permissions`)
   }
 }
