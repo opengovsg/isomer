@@ -54,14 +54,16 @@ const validateUserPermissions = async ({
       // we want to create is the resource passed in.
       // However, because we don't have root level permissions for now,
       // we will pass in `null` to signify the site level permissions
-      { parentId: null }
+      { parentId: resourceId ?? null }
     : await db
         .selectFrom("Resource")
         .where("Resource.id", "=", resourceId)
         .select(["Resource.parentId"])
         .executeTakeFirstOrThrow()
 
-  const perms = await definePermissionsFor({ ...rest, resourceId: null })
+  const perms = await definePermissionsFor({
+    ...rest,
+  })
 
   // TODO: create should check against the current resource id
   if (perms.cannot(action, resource)) {

@@ -4,6 +4,7 @@ import { get } from "lodash"
 import { z } from "zod"
 
 import type { ResourceType } from "../database"
+import type { PermissionsProps } from "../permissions/permissions.type"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -19,7 +20,6 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { db, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { definePermissionsFor } from "../permissions/permissions.service"
-import { PermissionsProps } from "../permissions/permissions.type"
 
 const fetchResource = async (resourceId: string | null) => {
   if (resourceId === null) return { parentId: null }
@@ -234,23 +234,51 @@ export const resourceRouter = router({
               throw new TRPCError({ code: "FORBIDDEN" })
             }
 
-            await tx
-              .updateTable("Resource")
-              .where("id", "=", String(movedResourceId))
-              .where("Resource.type", "in", ["Page", "Folder"])
-              .set({ parentId: String(destinationResourceId) })
-              .execute()
-            return tx
-              .selectFrom("Resource")
-              .where("id", "=", String(movedResourceId))
-              .select([
-                "Resource.parentId",
-                "Resource.id",
-                "Resource.type",
-                "Resource.permalink",
-                "Resource.title",
-              ])
-              .executeTakeFirst()
+            return await db.transaction().execute(async (tx) => {
+              let query = tx.selectFrom("Resource")
+              query = !!destinationResourceId
+                ? query.where("id", "=", destinationResourceId)
+                : query.where("type", "=", "RootPage")
+
+              const parent = await query
+                .select(["id", "type"])
+                .executeTakeFirst()
+
+              if (
+                !parent ||
+                // NOTE: we only allow moves to folders/root.
+                // for moves to root, we only allow this for admin
+                (parent.type !== "RootPage" && parent.type !== "Folder")
+              ) {
+                throw new TRPCError({
+                  code: "BAD_REQUEST",
+                  message:
+                    "Please ensure that you are trying to move your resource into a valid destination",
+                })
+              }
+
+              await tx
+                .updateTable("Resource")
+                .where("id", "=", String(movedResourceId))
+                .where("Resource.type", "in", ["Page", "Folder"])
+                .set({
+                  parentId: !!destinationResourceId
+                    ? String(destinationResourceId)
+                    : null,
+                })
+                .execute()
+              return tx
+                .selectFrom("Resource")
+                .where("id", "=", String(movedResourceId))
+                .select([
+                  "Resource.parentId",
+                  "Resource.id",
+                  "Resource.type",
+                  "Resource.permalink",
+                  "Resource.title",
+                ])
+                .executeTakeFirst()
+            })
           })
           .catch((err) => {
             if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
