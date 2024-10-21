@@ -7,7 +7,7 @@ const ArticleSummaryContent = ({
   summary,
   LinkComponent,
 }: Pick<ArticlePageHeaderProps, "summary" | "LinkComponent">) => {
-  if (summary === undefined || summary.length === 0) {
+  if (summary.length === 0) {
     return <></>
   }
   return <BaseParagraph content={summary} LinkComponent={LinkComponent} />
