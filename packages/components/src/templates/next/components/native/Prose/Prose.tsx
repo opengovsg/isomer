@@ -31,6 +31,7 @@ const ProseComponent = ({
           content={getTextAsHtml({
             sitemap: site.siteMap,
             content: component.content,
+            shouldStripContentHtmlTags: true,
           })}
           className="prose-body-base text-base-content"
           LinkComponent={LinkComponent}

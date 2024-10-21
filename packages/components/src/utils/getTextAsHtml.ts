@@ -22,6 +22,7 @@ interface GetTextAsHtmlArgs {
   sitemap: IsomerSitemap
   content?: (HardBreakProps | TextProps)[]
   shouldHideEmptyHardBreak?: boolean
+  shouldStripContentHtmlTags?: boolean
 }
 
 // Strips HTML tags using the DOM
@@ -40,6 +41,7 @@ export const getTextAsHtml = ({
   sitemap,
   content,
   shouldHideEmptyHardBreak,
+  shouldStripContentHtmlTags = false, // needed for content from tiptap editor
 }: GetTextAsHtmlArgs) => {
   if (!content) {
     // Note: We need to return a <br /> tag to ensure that the paragraph is not collapsed
@@ -78,7 +80,11 @@ export const getTextAsHtml = ({
 
     // If there are no marks, just push the text
     if (!node.marks) {
-      output.push(stripHtmlTagsUsingDOM(node.text))
+      output.push(
+        shouldStripContentHtmlTags
+          ? stripHtmlTagsUsingDOM(node.text)
+          : node.text,
+      )
       return
     }
 
@@ -113,7 +119,9 @@ export const getTextAsHtml = ({
     }
 
     // Push the text
-    output.push(stripHtmlTagsUsingDOM(node.text))
+    output.push(
+      shouldStripContentHtmlTags ? stripHtmlTagsUsingDOM(node.text) : node.text,
+    )
 
     // Close off all marks except for links in reverse order
     const marksToClose = node.marks.filter((mark) => mark.type !== "link")
