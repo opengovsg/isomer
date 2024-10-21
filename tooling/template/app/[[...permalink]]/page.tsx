@@ -39,6 +39,12 @@ const getSchema = async (
     // and has `_index` appended to the original permalink
     // so we have to do another import w the appended index path
     .catch(async () => {
+      if (joinedPermalink === "") {
+        return import(`@/schema/${INDEX_PAGE_PERMALINK}.json`).then(
+          (module) => module.default,
+        )
+      }
+
       return import(
         `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
       ).then((module) => module.default)
@@ -75,11 +81,11 @@ export const generateMetadata = async (
     ...config.site,
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
     // TODO: fixup all the typing errors
-    // @ts-expect-error to fix when types are proper
+    // @ts-ignore to fix when types are proper
     siteMap: sitemap,
     navBarItems: navbar,
     // TODO: fixup all the typing errors
-    // @ts-expect-error to fix when types are proper
+    // @ts-ignore to fix when types are proper
     footerItems: footer,
     lastUpdated,
   }
@@ -97,11 +103,11 @@ const Page = async ({ params }: DynamicPageProps) => {
         ...config.site,
         environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
         // TODO: fixup all the typing errors
-        // @ts-expect-error to fix when types are proper
+        // @ts-ignore to fix when types are proper
         siteMap: sitemap,
         navBarItems: navbar,
         // TODO: fixup all the typing errors
-        // @ts-expect-error to fix when types are proper
+        // @ts-ignore to fix when types are proper
         footerItems: footer,
         lastUpdated,
         assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,

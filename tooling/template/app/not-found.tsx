@@ -24,18 +24,18 @@ export const generateMetadata = async (
   _props: never,
   _parent: ResolvingMetadata,
 ): Promise<Metadata> => {
-  const schema = (await import(`@/schema/index.json`).then(
+  const schema = (await import(`@/schema/_index.json`).then(
     (module) => module.default,
   )) as IsomerPageSchemaType
   schema.site = {
     ...config.site,
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
     // TODO: fixup all the typing errors
-    // @ts-expect-error to fix when types are proper
+    // @ts-ignore to fix when types are proper
     siteMap: sitemap,
     navBarItems: navbar,
     // TODO: fixup all the typing errors
-    // @ts-expect-error to fix when types are proper
+    // @ts-ignore to fix when types are proper
     footerItems: footer,
     lastUpdated,
   }
@@ -57,12 +57,13 @@ const NotFound = () => {
           ...config.site,
           environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
           // TODO: fixup all the typing errors
-          // @ts-expect-error to fix when types are proper
+          // @ts-ignore to fix when types are proper
           siteMap: sitemap,
           navBarItems: navbar,
           // TODO: fixup all the typing errors
-          // @ts-expect-error to fix when types are proper
+          // @ts-ignore to fix when types are proper
           footerItems: footer,
+          assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
         }}
         layout="notfound"
         meta={{

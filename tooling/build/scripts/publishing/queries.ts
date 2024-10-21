@@ -8,7 +8,7 @@ export const GET_ALL_RESOURCES_WITH_FULL_PERMALINKS = `
         r."parentId",
         r.type,
         CASE
-            WHEN r.type IN ('Page', 'CollectionPage', 'RootPage') THEN b."content"
+            WHEN r.type IN ('Page', 'CollectionPage', 'IndexPage', 'RootPage') THEN b."content"
             ELSE NULL
         END AS content,
         r.permalink AS "fullPermalink",
@@ -30,7 +30,7 @@ export const GET_ALL_RESOURCES_WITH_FULL_PERMALINKS = `
         r."parentId",
         r.type,
         CASE
-            WHEN r.type IN ('Page', 'CollectionPage', 'RootPage') THEN b."content"
+            WHEN r.type IN ('Page', 'CollectionPage', 'IndexPage', 'RootPage') THEN b."content"
             ELSE NULL
         END AS content,
         CONCAT(path."fullPermalink", '/', r.permalink) AS "fullPermalink",
@@ -44,7 +44,6 @@ export const GET_ALL_RESOURCES_WITH_FULL_PERMALINKS = `
     INNER JOIN "resourcePath" path ON r."parentId" = path.id
     WHERE
         r."siteId" = $1
-        AND r.type IN ('Folder', 'Page', 'CollectionPage', 'RootPage')
     )
 
     -- We are only concerned with resources where the publishedVersionId exists

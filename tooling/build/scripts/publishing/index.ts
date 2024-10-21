@@ -35,9 +35,15 @@ const getConvertedPermalink = (fullPermalink: string) => {
   // and reflects what the users see.
   // Note that we can do an `endsWith` because
   // we prohibit users from using `_` as a character
-  return fullPermalink.endsWith(INDEX_PAGE_PERMALINK)
+  const fullPermalinkWithoutIndex = fullPermalink.endsWith(INDEX_PAGE_PERMALINK)
     ? fullPermalink.slice(0, -INDEX_PAGE_PERMALINK.length)
     : fullPermalink
+
+  if (fullPermalinkWithoutIndex.endsWith("/")) {
+    return fullPermalinkWithoutIndex.slice(0, -1)
+  }
+
+  return fullPermalinkWithoutIndex
 }
 
 // Wrapper function for debug logging
@@ -80,6 +86,7 @@ async function main() {
       if (
         (resource.type === "Page" ||
           resource.type === "CollectionPage" ||
+          resource.type === "IndexPage" ||
           resource.type === "RootPage") &&
         resource.content
       ) {
