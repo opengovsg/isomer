@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/react"
+import { useEffect, useState } from "react"
 import {
   Box,
   FormControl,
@@ -8,7 +9,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Text,
 } from "@chakra-ui/react"
 import {
   Button,
@@ -21,48 +21,7 @@ import { isEmpty } from "lodash"
 import { z } from "zod"
 
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
-import { editPageSchema } from "~/features/editing-experience/schema"
-import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
-import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
-import { trpc } from "~/utils/trpc"
-import { ResourceSelector } from "../ResourceSelector"
-import { FileAttachment } from "./FileAttachment"
-
-interface PageLinkElementProps {
-  value: string
-  onChange: (value: string) => void
-}
-
-const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
-  const { siteId } = useQueryParse(editPageSchema)
-
-  const selectedResourceId = getResourceIdFromReferenceLink(value)
-
-  const { data: resource } = trpc.resource.getWithFullPermalink.useQuery({
-    resourceId: selectedResourceId,
-  })
-
-  return (
-    <>
-      <ResourceSelector
-        siteId={String(siteId)}
-        onChange={(resourceId) =>
-          onChange(getReferenceLink({ siteId: String(siteId), resourceId }))
-        }
-        selectedResourceId={selectedResourceId}
-      />
-
-      {!!resource && (
-        <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full" mt="0.5rem">
-          <Text textStyle="caption-1">
-            You selected /{resource.fullPermalink}
-          </Text>
-        </Box>
-      )}
-    </>
-  )
-}
 
 interface LinkEditorModalContentProps {
   linkText?: string
@@ -82,6 +41,7 @@ const LinkEditorModalContent = ({
     register,
     setError,
     clearErrors,
+    trigger,
     formState: { errors },
   } = useZodForm({
     mode: "onChange",
@@ -102,7 +62,15 @@ const LinkEditorModalContent = ({
     onSave(linkText, linkHref),
   )
 
-  const { siteId } = useQueryParse(editPageSchema)
+  // hacky solution to allow setting the correct state of "Add link" CTA button
+  // while not showing error message on initial render for better UX
+  const [isFirstRender, setIsFirstRender] = useState(true)
+  const showLinkTextErrorState: boolean =
+    !isFirstRender && !!errors.linkText?.message
+
+  useEffect(() => {
+    void trigger()
+  }, [trigger])
 
   return (
     <ModalContent>
@@ -113,7 +81,7 @@ const LinkEditorModalContent = ({
         <ModalCloseButton size="lg" />
 
         <ModalBody>
-          <FormControl isRequired isInvalid={!!errors.linkText}>
+          <FormControl isRequired isInvalid={showLinkTextErrorState}>
             <FormLabel
               id="linkText"
               description="A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”"
@@ -125,48 +93,37 @@ const LinkEditorModalContent = ({
               type="text"
               placeholder="Browse grants"
               {...register("linkText")}
+              isInvalid={showLinkTextErrorState}
+              onChange={(e) => {
+                setIsFirstRender(false)
+                setValue("linkText", e.target.value, { shouldValidate: true })
+              }}
             />
 
-            {errors.linkText?.message && (
-              <FormErrorMessage>{errors.linkText.message}</FormErrorMessage>
+            {showLinkTextErrorState && (
+              <FormErrorMessage>{errors.linkText?.message}</FormErrorMessage>
             )}
           </FormControl>
 
           <Box mt="1.5rem">
             <LinkHrefEditor
               value={watch("linkHref")}
-              onChange={(value) => setValue("linkHref", value)}
+              onChange={({ value, shouldValidate }) =>
+                setValue("linkHref", value, { shouldValidate })
+              }
               label="Link destination"
               description="When this is clicked, open:"
               isRequired
               isInvalid={!!errors.linkHref}
-              pageLinkElement={
-                <PageLinkElement
-                  value={watch("linkHref")}
-                  onChange={(value) => setValue("linkHref", value)}
-                />
+              errorMessage={errors.linkHref?.message}
+              setErrorMessage={(errorMessage) =>
+                setError("linkHref", {
+                  type: "custom",
+                  message: errorMessage,
+                })
               }
-              fileLinkElement={
-                <FileAttachment
-                  siteId={siteId}
-                  error={errors.linkHref?.message}
-                  setError={(errorMessage) =>
-                    setError("linkHref", {
-                      type: "custom",
-                      message: errorMessage,
-                    })
-                  }
-                  clearError={() => clearErrors("linkHref")}
-                  setHref={(linkHref) => {
-                    setValue("linkHref", linkHref)
-                  }}
-                />
-              }
+              clearErrorMessage={() => clearErrors("linkHref")}
             />
-
-            {errors.linkHref?.message && (
-              <FormErrorMessage>{errors.linkHref.message}</FormErrorMessage>
-            )}
           </Box>
         </ModalBody>
 
@@ -193,6 +150,27 @@ interface LinkEditorModalProps {
   onClose: () => void
 }
 
+const getLinkText = (editor: Editor): string => {
+  if (editor.isActive("link")) {
+    return (
+      editor.state.doc.nodeAt(Math.max(1, editor.view.state.selection.from - 1))
+        ?.textContent ?? ""
+    )
+  }
+
+  const { from, to } = editor.state.selection
+  const selectedText: string = editor.state.doc.textBetween(from, to, " ")
+  return selectedText
+}
+
+const getLinkHref = (editor: Editor): string => {
+  if (editor.isActive("link")) {
+    return String(editor.getAttributes("link").href ?? "")
+  }
+
+  return ""
+}
+
 export const LinkEditorModal = ({
   editor,
   isOpen,
@@ -203,18 +181,8 @@ export const LinkEditorModal = ({
 
     {isOpen && (
       <LinkEditorModalContent
-        linkText={
-          editor.isActive("link")
-            ? editor.state.doc.nodeAt(
-                Math.max(1, editor.view.state.selection.from - 1),
-              )?.textContent
-            : ""
-        }
-        linkHref={
-          editor.isActive("link")
-            ? String(editor.getAttributes("link").href ?? "")
-            : ""
-        }
+        linkText={getLinkText(editor)}
+        linkHref={getLinkHref(editor)}
         onSave={(linkText, linkHref) => {
           editor
             .chain()

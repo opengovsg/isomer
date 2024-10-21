@@ -1,6 +1,6 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { useEffect, useState } from "react"
-import { Box, FormControl, Text } from "@chakra-ui/react"
+import { Box, FormControl } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
@@ -140,6 +140,7 @@ export function JsonFormsImageControl({
             })
           }}
           maxSize={MAX_IMG_FILE_SIZE_BYTES}
+          showFileSize
           accept={IMAGE_UPLOAD_ACCEPTED_MIME_TYPES}
           onFileValidation={(file) => {
             const parseResult = getPresignedPutUrlSchema
@@ -154,9 +155,6 @@ export function JsonFormsImageControl({
             )
           }}
         />
-        <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
-          {`Maximum file size: ${MAX_IMG_FILE_SIZE_BYTES / 1000000} MB`}
-        </Text>
         {!!errors && (
           <FormErrorMessage>
             {label} {errors}
