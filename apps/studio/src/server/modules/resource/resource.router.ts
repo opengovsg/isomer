@@ -206,9 +206,7 @@ export const resourceRouter = router({
         }
 
         return await db
-
           .transaction()
-
           .execute(async (tx) => {
             const toMove = await tx
               .selectFrom("Resource")
@@ -263,7 +261,11 @@ export const resourceRouter = router({
                 .updateTable("Resource")
                 .where("id", "=", String(movedResourceId))
                 .where("Resource.type", "in", ["Page", "Folder"])
-                .set({ parentId: String(destinationResourceId) })
+                .set({
+                  parentId: !!destinationResourceId
+                    ? String(destinationResourceId)
+                    : null,
+                })
                 .execute()
               return tx
                 .selectFrom("Resource")
@@ -277,24 +279,6 @@ export const resourceRouter = router({
                 ])
                 .executeTakeFirst()
             })
-
-            await tx
-              .updateTable("Resource")
-              .where("id", "=", String(movedResourceId))
-              .where("Resource.type", "in", ["Page", "Folder"])
-              .set({ parentId: parent.id })
-              .execute()
-            return tx
-              .selectFrom("Resource")
-              .where("id", "=", String(movedResourceId))
-              .select([
-                "parentId",
-                "Resource.id",
-                "Resource.type",
-                "Resource.permalink",
-                "Resource.title",
-              ])
-              .executeTakeFirst()
           })
           .catch((err) => {
             if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
