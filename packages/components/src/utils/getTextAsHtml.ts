@@ -78,7 +78,7 @@ export const getTextAsHtml = ({
 
     // If there are no marks, just push the text
     if (!node.marks) {
-      output.push(node.text)
+      output.push(stripHtmlTagsUsingDOM(node.text))
       return
     }
 
