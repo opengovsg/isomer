@@ -33,21 +33,24 @@ const BaseCollectionItemPageSchema = Type.Object({
   ),
 })
 
-const BaseRefPageSchema = Type.Object({
-  ref: Type.String({
-    title: "Link",
-    description: "Choose a page or file to link to this Collection item",
-    format: "ref",
-  }),
-  summary: Type.Optional(
-    Type.String({
-      title: "Summary",
-      description: "This will appear on the collection",
-      format: "textarea",
-      maxLength: 120,
+const BaseRefPageSchema = Type.Composite([
+  BaseCollectionItemPageSchema,
+  Type.Object({
+    ref: Type.String({
+      title: "Link",
+      description: "Choose a page or file to link to this Collection item",
+      format: "ref",
     }),
-  ),
-})
+    description: Type.Optional(
+      Type.String({
+        title: "Summary",
+        description: "This will appear on the collection",
+        format: "textarea",
+        maxLength: 120,
+      }),
+    ),
+  }),
+])
 
 export const ArticlePagePageSchema = Type.Composite([
   BaseCollectionItemPageSchema,

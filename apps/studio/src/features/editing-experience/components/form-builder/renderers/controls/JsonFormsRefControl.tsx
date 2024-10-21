@@ -101,7 +101,7 @@ export function JsonFormsRefControl({
             </>
           ) : (
             <>
-              <Text>Choose a page or file to link to this Collection item</Text>
+              <Text>Choose a page or file to link this Collection item to</Text>
               <Button onClick={onOpen} variant="link">
                 <Text textStyle="subhead-2">Link something...</Text>
               </Button>{" "}

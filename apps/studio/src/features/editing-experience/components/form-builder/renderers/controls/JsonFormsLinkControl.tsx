@@ -261,7 +261,7 @@ export function JsonFormsLinkControl({
   required,
 }: ControlProps) {
   const dataString = data && typeof data === "string" ? data : ""
-  // NOTE: We need to pass in `siteId` but this component is automaticall used by JsonForms
+  // NOTE: We need to pass in `siteId` but this component is automatically used by JsonForms
   // so we are unable to pass props down
   const { siteId } = useQueryParse(siteSchema)
   const dummyFile = new File(

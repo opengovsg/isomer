@@ -6,9 +6,9 @@ export const moveResourceAtom = atom<null | PendingMoveResource>(null)
 
 export interface CollectionLinkProps {
   ref: string
-  summary?: string
+  description?: string
 }
 export const linkAtom = atom<CollectionLinkProps>({
   ref: "",
-  summary: "",
+  description: "",
 })

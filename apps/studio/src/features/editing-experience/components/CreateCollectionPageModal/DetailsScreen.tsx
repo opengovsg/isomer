@@ -144,7 +144,7 @@ export const CreateCollectionPageDetailsScreen = () => {
               {/* Section 2: Page URL */}
               <FormControl
                 isInvalid={!!errors.permalink}
-                display={type === "link" ? "None" : "auto"}
+                display={type === "link" ? "none" : "auto"}
               >
                 <FormLabel>
                   Page URL
