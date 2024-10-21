@@ -100,6 +100,7 @@ const HeroBlock = ({
                 size="lg"
                 colorScheme="inverse"
                 LinkComponent={LinkComponent}
+                isWithFocusVisibleHighlight
               >
                 {buttonLabel}
               </LinkButton>
@@ -110,6 +111,7 @@ const HeroBlock = ({
                   size="lg"
                   href={getReferenceLinkHref(secondaryButtonUrl, site.siteMap)}
                   LinkComponent={LinkComponent}
+                  isWithFocusVisibleHighlight
                 >
                   {secondaryButtonLabel}
                 </LinkButton>
