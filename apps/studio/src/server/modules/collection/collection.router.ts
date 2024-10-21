@@ -221,6 +221,7 @@ export const collectionRouter = router({
 
           await tx
             .updateTable("Blob")
+            .where("Blob.id", "=", draftBlobId)
             .set({
               content: {
                 ...content,
