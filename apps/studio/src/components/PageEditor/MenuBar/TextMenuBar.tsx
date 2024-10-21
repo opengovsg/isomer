@@ -26,9 +26,9 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
-import { LinkEditorModal } from "../LinkEditorModal"
 import { TableSettingsModal } from "../TableSettingsModal"
 import { MenuBar } from "./MenuBar"
+import { TiptapLinkEditorModal } from "./TiptapLinkEditorModal"
 
 export const TextMenuBar = ({ editor }: { editor: Editor }) => {
   const {
@@ -265,7 +265,7 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         onClose={onTableSettingsModalClose}
       />
 
-      <LinkEditorModal
+      <TiptapLinkEditorModal
         editor={editor}
         isOpen={isLinkModalOpen}
         onClose={onLinkModalClose}

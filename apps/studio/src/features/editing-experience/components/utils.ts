@@ -1,7 +1,11 @@
-import type { IsomerComponent } from "@opengovsg/isomer-components"
+import type {
+  IsomerComponent,
+  IsomerGeneratedSiteProps,
+} from "@opengovsg/isomer-components"
 import type { UseMutateAsyncFunction } from "@tanstack/react-query"
 import set from "lodash/set"
 
+import type collectionSitemap from "~/features/editing-experience/data/collectionSitemap.json"
 import type {
   UploadAssetMutationInput,
   UploadAssetMutationOutput,
@@ -73,4 +77,17 @@ export const uploadModifiedAssets = async ({
     onSuccess(block)
     return true
   })
+}
+
+export const generatePreviewSitemap = (
+  sitemap: typeof collectionSitemap,
+  title = "Your filename",
+) => {
+  return {
+    ...sitemap,
+    children: sitemap.children.map(({ children, ...rest }) => ({
+      ...rest,
+      children: children.map((props) => ({ ...props, title })),
+    })),
+  } as IsomerGeneratedSiteProps["siteMap"]
 }

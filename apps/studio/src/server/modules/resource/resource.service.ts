@@ -139,6 +139,7 @@ export const getPageById = (
         eb("type", "=", "CollectionPage"),
         eb("type", "=", "RootPage"),
         eb("type", "=", "IndexPage"),
+        eb("type", "=", "CollectionLink"),
       ]),
     )
     .select(defaultResourceSelect)
@@ -258,20 +259,8 @@ export const moveResource = async (
 // - The immediate siblings of the resource (if any)
 export const getLocalisedSitemap = async (
   siteId: number,
-  resourceId?: number,
+  resourceId: number,
 ) => {
-  if (resourceId === undefined) {
-    // Provide a default sitemap with a single resource
-    return {
-      id: "0",
-      layout: "content",
-      title: "Root",
-      summary: "",
-      lastModified: new Date().toISOString(),
-      permalink: "/",
-    }
-  }
-
   // Get the actual resource first
   const resource = await getById(db, {
     resourceId,
@@ -299,6 +288,7 @@ export const getLocalisedSitemap = async (
               "Page",
               "CollectionPage",
               "RootPage",
+              "Collection",
             ])
             .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
             .select(defaultResourceSelect),

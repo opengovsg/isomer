@@ -37,10 +37,18 @@ const BaseRefPageSchema = Type.Composite([
   BaseCollectionItemPageSchema,
   Type.Object({
     ref: Type.String({
-      title: "URL to the actual item",
-      description:
-        "The link that users will open immediately when they click on the item in the parent collection page",
+      title: "Link",
+      description: "Choose a page or file to link to this Collection item",
+      format: "ref",
     }),
+    description: Type.Optional(
+      Type.String({
+        title: "Summary",
+        description: "This will appear on the collection",
+        format: "textarea",
+        maxLength: 120,
+      }),
+    ),
   }),
 ])
 
@@ -71,7 +79,7 @@ export const NotFoundPagePageSchema = Type.Object({})
 export const SearchPagePageSchema = Type.Object({})
 
 export const FileRefPageSchema = BaseRefPageSchema
-export const LinkRefPageSchema = BaseRefPageSchema
+export const LinkRefPageSchema = Type.Omit(BaseRefPageSchema, ["image"])
 
 // These are props that are required by the render engine, but not enforced by
 // the JSON schema (as the data is being stored outside of the page JSON)

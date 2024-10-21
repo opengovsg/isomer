@@ -13,8 +13,8 @@ import {
 import { MdSubscript, MdSuperscript } from "react-icons/md"
 
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"
-import { LinkEditorModal } from "../LinkEditorModal"
 import { MenuBar } from "./MenuBar"
+import { TiptapLinkEditorModal } from "./TiptapLinkEditorModal"
 
 export const ProseMenuBar = ({ editor }: { editor: Editor }) => {
   const {
@@ -157,7 +157,7 @@ export const ProseMenuBar = ({ editor }: { editor: Editor }) => {
   )
   return (
     <>
-      <LinkEditorModal
+      <TiptapLinkEditorModal
         editor={editor}
         isOpen={isLinkModalOpen}
         onClose={onLinkModalClose}
