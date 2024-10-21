@@ -99,7 +99,7 @@ async function main() {
             (Array.isArray(resource.content.page.contentPageHeader?.summary)
               ? resource.content.page.contentPageHeader.summary.join(" ")
               : resource.content.page.contentPageHeader?.summary) ||
-            resource.content.page.articlePageHeader?.summary.join(" ") ||
+            resource.content.page.articlePageHeader?.summary ||
             resource.content.page.subtitle ||
             resource.content.page.description ||
             "",

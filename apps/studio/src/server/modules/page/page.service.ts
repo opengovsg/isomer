@@ -28,7 +28,7 @@ export const createDefaultPage = ({
           date: format(new Date(), "dd-MM-yyyy"),
           category: "Feature Articles",
           articlePageHeader: {
-            summary: ["This is the page summary"],
+            summary: "This is the page summary",
           },
         },
         content: [],

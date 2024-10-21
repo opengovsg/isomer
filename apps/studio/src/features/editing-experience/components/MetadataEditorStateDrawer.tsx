@@ -17,6 +17,11 @@ import { DrawerHeader } from "./Drawer/DrawerHeader"
 import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
 
+const HEADER_LABELS: Record<string, string> = {
+  article: "Edit article page header",
+  content: "Edit content page header",
+}
+
 const ajv = new Ajv({ strict: false, logger: false })
 
 export default function MetadataEditorStateDrawer(): JSX.Element {
@@ -99,7 +104,9 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               handleDiscardChanges()
             }
           }}
-          label="Edit page description and summary"
+          label={
+            HEADER_LABELS[savedPageState.layout] || "Edit header information"
+          }
         />
 
         <ErrorProvider>

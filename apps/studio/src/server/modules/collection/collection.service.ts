@@ -12,7 +12,7 @@ export const createCollectionPageJson = ({}: {
       // which is not done at present
       category: "Feature Articles",
       articlePageHeader: {
-        summary: [],
+        summary: "",
       },
     },
     content: [],

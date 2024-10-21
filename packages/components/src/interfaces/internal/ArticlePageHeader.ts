@@ -6,11 +6,11 @@ import type { CollectionCardProps } from "./CollectionCard"
 import type { LinkComponentType } from "~/types"
 
 export const ArticlePageHeaderSchema = Type.Object({
-  summary: Type.Array(Type.String(), {
+  summary: Type.String({
     title: "Article summary",
-    description:
-      "The summary of the article page's content. Having multiple items will display them as a list.",
-    minItems: 0,
+    description: "The summary of the article’s content",
+    format: "textarea",
+    maxLength: 250,
   }),
 })
 

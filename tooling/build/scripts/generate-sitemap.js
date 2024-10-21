@@ -57,7 +57,7 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
     (Array.isArray(schemaData.page.contentPageHeader?.summary)
       ? schemaData.page.contentPageHeader.summary.join(" ")
       : schemaData.page.contentPageHeader?.summary) ||
-    schemaData.page.articlePageHeader?.summary.join(" ") ||
+    schemaData.page.articlePageHeader?.summary ||
     schemaData.page.subtitle ||
     schemaData.page.description ||
     ""
