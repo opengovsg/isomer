@@ -66,6 +66,15 @@ export interface Resource {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
+export interface ResourcePermission {
+  id: GeneratedAlways<string>
+  userId: string
+  siteId: number
+  resourceId: string | null
+  role: RoleType
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
 export interface Site {
   id: GeneratedAlways<number>
   name: string
@@ -120,6 +129,7 @@ export interface DB {
   Permission: Permission
   RateLimiterFlexible: RateLimiterFlexible
   Resource: Resource
+  ResourcePermission: ResourcePermission
   Site: Site
   SiteMember: SiteMember
   User: User

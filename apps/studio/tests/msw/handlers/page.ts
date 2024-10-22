@@ -399,7 +399,7 @@ export const pageHandlers = {
               date: "11-09-2024",
               title: "article layout",
               category: "Feature Articles",
-              articlePageHeader: { summary: [] },
+              articlePageHeader: { summary: "" },
             },
             layout: "article",
             content: [],

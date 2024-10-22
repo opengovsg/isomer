@@ -7,23 +7,10 @@ const ArticleSummaryContent = ({
   summary,
   LinkComponent,
 }: Pick<ArticlePageHeaderProps, "summary" | "LinkComponent">) => {
-  if (summary.length === 1 && summary[0] !== undefined) {
-    return <BaseParagraph content={summary[0]} LinkComponent={LinkComponent} />
+  if (summary.length === 0) {
+    return <></>
   }
-
-  if (summary.length > 1) {
-    return (
-      <ul className="list-disc ps-7">
-        {summary.map((item, index) => (
-          <li key={index} className="pl-0.5 [&_p]:inline">
-            <BaseParagraph content={item} LinkComponent={LinkComponent} />
-          </li>
-        ))}
-      </ul>
-    )
-  }
-
-  return <></>
+  return <BaseParagraph content={summary} LinkComponent={LinkComponent} />
 }
 
 const ArticlePageHeader = ({
