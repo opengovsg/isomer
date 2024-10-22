@@ -88,6 +88,7 @@ export const generateMetadata = async (
     // @ts-ignore to fix when types are proper
     footerItems: footer,
     lastUpdated,
+    assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
   }
   return getMetadata(schema)
 }

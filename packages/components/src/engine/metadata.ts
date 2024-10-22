@@ -12,9 +12,7 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
         !props.meta?.noIndex,
     },
     icons: {
-      shortcut:
-        props.site.favicon ||
-        "https://www.isomer.gov.sg/images/favicon-isomer.ico",
+      shortcut: `${props.site.assetsBaseUrl ?? ""}${props.site.favicon || "/favicon.ico"}`,
     },
     twitter: {
       card: "summary_large_image" as const,
