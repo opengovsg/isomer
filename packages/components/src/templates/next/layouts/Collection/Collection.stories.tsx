@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import { expect, userEvent, within } from "@storybook/test"
 import flatten from "lodash/flatten"
 import times from "lodash/times"
 
@@ -18,7 +18,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       lastModified: "",
       layout: "article",
       summary:
-        "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year.",
+        "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
       date: "2024-05-07",
       category: "Category Name",
     },
@@ -317,5 +317,19 @@ export const FilteredEmptyResults: Story = {
     const screen = within(canvasElement)
     await userEvent.click(screen.getByText(/2024 \(20\)/i))
     await userEvent.click(screen.getByText(/Category Name 2 \(1\)/i))
+  },
+}
+
+export const DoNotShowYearFilter: Story = {
+  args: generateArgs({
+    collectionItems: COLLECTION_ITEMS.map((item) => ({
+      ...item,
+      date: undefined,
+    })),
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    const yearFilter = screen.queryByText(/Year/i)
+    await expect(yearFilter).not.toBeInTheDocument()
   },
 }
