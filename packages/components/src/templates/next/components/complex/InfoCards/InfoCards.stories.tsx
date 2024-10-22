@@ -46,12 +46,14 @@ export default meta
 type Story = StoryObj<typeof InfoCards>
 
 const generateArgs = ({
+  maxColumns,
   withoutImage = false,
   isImageFitContain = false,
 }: {
+  maxColumns: "1" | "2" | "3"
   withoutImage?: boolean
   isImageFitContain?: boolean
-} = {}): InfoCardsProps => {
+}): InfoCardsProps => {
   const cards = [
     {
       title:
@@ -115,19 +117,31 @@ const generateArgs = ({
     title: "Section title ministry highlights",
     subtitle:
       "Section subtitle, maximum 150 chars. These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
+    maxColumns: maxColumns,
     variant: withoutImage ? "cardsWithoutImages" : "cardsWithImages",
     cards: cards,
   } as InfoCardsProps
 }
 
-export const WithImage: Story = {
-  args: generateArgs(),
+export const WithImage3Columns: Story = {
+  name: "With Image (3 Cols)",
+  args: generateArgs({ maxColumns: "3" }),
+}
+
+export const WithImage2Columns: Story = {
+  name: "With Image (2 Cols)",
+  args: generateArgs({ maxColumns: "2" }),
+}
+
+export const WithImage1Columns: Story = {
+  name: "With Image (1 Col)",
+  args: generateArgs({ maxColumns: "1" }),
 }
 
 export const NoImage: Story = {
-  args: generateArgs({ withoutImage: true }),
+  args: generateArgs({ maxColumns: "3", withoutImage: true }),
 }
 
 export const WithContainImageFit: Story = {
-  args: generateArgs({ isImageFitContain: true }),
+  args: generateArgs({ maxColumns: "3", isImageFitContain: true }),
 }
