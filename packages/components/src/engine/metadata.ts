@@ -22,15 +22,9 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
   }
 
   if (metadata.description === undefined && props.layout === "article") {
-    return {
-      ...metadata,
-      description: props.page.articlePageHeader.summary,
-    }
+    metadata.description = props.page.articlePageHeader.summary
   } else if (metadata.description === undefined && props.layout === "content") {
-    return {
-      ...metadata,
-      description: props.page.contentPageHeader.summary,
-    }
+    metadata.description = props.page.contentPageHeader.summary
   }
 
   if (props.page.permalink === "/") {
