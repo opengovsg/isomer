@@ -25,10 +25,14 @@ export const publishSite = async (
   const site = await getSiteNameAndCodeBuildId(siteId)
   const { codeBuildId } = site
   if (!codeBuildId) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "No CodeBuild project ID found for site",
-    })
+    // NOTE: Not all sites will have a CodeBuild project, as the site may not be
+    // ready for a site launch yet. Only sites that are launched will have a
+    // CodeBuild project associated with the site.
+    logger.info(
+      { siteId },
+      "No CodeBuild project ID has been configured for the site",
+    )
+    return
   }
 
   // Step 2: Determine if a new build should be started
