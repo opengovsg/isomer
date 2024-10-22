@@ -335,11 +335,11 @@ export const YearFilter: Story = {
   args: generateArgs({ collectionItems: threeItemsHaveUndefinedDate }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const dateNotSpecified = screen.queryByText(/Not specified/i)
+    const dateNotSpecified = screen.queryByText(/Not specified \(3\)/i)
     await expect(dateNotSpecified).toBeInTheDocument()
 
-    const lastWordOccurences = await screen.findAllByText(/7 May 2024/)
-    await expect(lastWordOccurences.length).toBe(10)
+    const dateText = await screen.findAllByText(/7 May 2024/)
+    await expect(dateText.length).toBe(10)
   },
 }
 
