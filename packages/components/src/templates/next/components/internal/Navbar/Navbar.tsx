@@ -196,6 +196,7 @@ export const Navbar = ({
           items={items}
           openNavItemIdx={openNavItemIdx}
           setOpenNavItemIdx={setOpenNavItemIdx}
+          site={site}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           LinkComponent={LinkComponent}
           onCloseMenu={onCloseMenu}
