@@ -58,6 +58,7 @@ export const Skeleton = ({
         siteName={site.siteName}
         agencyName={site.agencyName || site.siteName}
         lastUpdated={site.lastUpdated}
+        site={site}
         LinkComponent={LinkComponent}
         {...site.footerItems}
       />
