@@ -8,6 +8,8 @@ export const getAvailableFilters = (
   const categories: Record<string, number> = {}
   const years: Record<string, number> = {}
 
+  let numberOfUndefinedDates = 0
+
   items.forEach(({ category, lastUpdated }) => {
     // Step 1: Get all available categories
     if (category in categories && categories[category]) {
@@ -24,8 +26,16 @@ export const getAvailableFilters = (
       } else {
         years[year] = 1
       }
+    } else {
+      numberOfUndefinedDates += 1
     }
   })
+
+  const yearFilterItems = Object.entries(years).map(([label, count]) => ({
+    id: label.toLowerCase(),
+    label,
+    count,
+  }))
 
   const availableFilters: FilterType[] = [
     {
@@ -40,11 +50,20 @@ export const getAvailableFilters = (
     {
       id: "year",
       label: "Year",
-      items: Object.entries(years).map(([label, count]) => ({
-        id: label.toLowerCase(),
-        label,
-        count,
-      })),
+      items:
+        // do not show "not specified" option if all items have undefined dates
+        yearFilterItems.length === 0
+          ? []
+          : numberOfUndefinedDates === 0
+            ? yearFilterItems
+            : [
+                ...yearFilterItems,
+                {
+                  id: "",
+                  label: "Not specified",
+                  count: numberOfUndefinedDates,
+                },
+              ],
     },
   ]
 
