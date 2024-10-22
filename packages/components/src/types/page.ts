@@ -8,21 +8,28 @@ import {
 } from "~/interfaces"
 import { REF_HREF_PATTERN } from "~/utils/validation"
 
-const BaseCollectionItemPageSchema = Type.Object({
+const categorySchemaObject = Type.Object({
   category: Type.String({
-    title: "Category of the actual item",
+    title: "Article category",
     description:
       "The category is used for filtering in the parent collection page",
   }),
+})
+
+const dateSchemaObject = Type.Object({
   date: Type.String({
-    title: "Date of the actual item",
+    title: "Article date",
     format: "date",
   }),
+})
+
+const imageSchemaObject = Type.Object({
   image: Type.Optional(
     Type.Object({
       src: Type.String({
-        title: "Image source URL",
-        description: "The source URL of the image",
+        title: "Image",
+        description:
+          "Displayed at the top of the page and as a thumbnail in the collection view",
         format: "image",
       }),
       alt: Type.String({
@@ -35,7 +42,9 @@ const BaseCollectionItemPageSchema = Type.Object({
 })
 
 const BaseRefPageSchema = Type.Composite([
-  BaseCollectionItemPageSchema,
+  categorySchemaObject,
+  dateSchemaObject,
+  imageSchemaObject,
   Type.Object({
     ref: Type.String({
       title: "Link",
@@ -55,10 +64,12 @@ const BaseRefPageSchema = Type.Composite([
 ])
 
 export const ArticlePagePageSchema = Type.Composite([
-  BaseCollectionItemPageSchema,
+  dateSchemaObject,
   Type.Object({
     articlePageHeader: ArticlePageHeaderSchema,
   }),
+  categorySchemaObject,
+  imageSchemaObject,
 ])
 
 export const CollectionPagePageSchema = Type.Object({

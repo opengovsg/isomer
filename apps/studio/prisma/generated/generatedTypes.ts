@@ -40,14 +40,6 @@ export interface Navbar {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface Permission {
-  id: GeneratedAlways<number>
-  resourceId: string
-  userId: string
-  role: RoleType
-  createdAt: Generated<Timestamp>
-  updatedAt: Generated<Timestamp>
-}
 export interface RateLimiterFlexible {
   key: string
   points: number
@@ -63,6 +55,15 @@ export interface Resource {
   draftBlobId: string | null
   state: Generated<ResourceState | null>
   type: ResourceType
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
+export interface ResourcePermission {
+  id: GeneratedAlways<string>
+  userId: string
+  siteId: number
+  resourceId: string | null
+  role: RoleType
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
@@ -117,9 +118,9 @@ export interface DB {
   Blob: Blob
   Footer: Footer
   Navbar: Navbar
-  Permission: Permission
   RateLimiterFlexible: RateLimiterFlexible
   Resource: Resource
+  ResourcePermission: ResourcePermission
   Site: Site
   SiteMember: SiteMember
   User: User
