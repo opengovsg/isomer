@@ -3,15 +3,33 @@ import { delay } from "msw"
 
 import { trpcMsw } from "../mockTrpc"
 
-const siteListQuery = (wait?: DelayMode | number) => {
+const siteListQuery = ({
+  wait,
+  isEmpty,
+}: {
+  wait?: DelayMode | number
+  isEmpty?: boolean
+} = {}) => {
   return trpcMsw.site.list.query(async () => {
     if (wait !== undefined) {
       await delay(wait)
     }
+
+    if (isEmpty) {
+      return []
+    }
+
     return [
       {
         id: 1,
         name: "Ministry of Trade and Industry",
+        config: {
+          theme: "isomer-next",
+          siteName: "MTI",
+          logoUrl: "",
+          search: undefined,
+          isGovernment: true,
+        } as PrismaJson.SiteJsonConfig,
       },
     ]
   })
@@ -19,8 +37,9 @@ const siteListQuery = (wait?: DelayMode | number) => {
 
 export const sitesHandlers = {
   list: {
-    default: siteListQuery,
-    loading: () => siteListQuery("infinite"),
+    default: () => siteListQuery({}),
+    loading: () => siteListQuery({ wait: "infinite" }),
+    empty: () => siteListQuery({ isEmpty: true }),
   },
   getTheme: {
     default: () => {
@@ -41,7 +60,7 @@ export const sitesHandlers = {
               },
             },
           },
-        }
+        } as PrismaJson.SiteThemeJson
       })
     },
   },
@@ -54,9 +73,8 @@ export const sitesHandlers = {
           search: undefined,
           agencyName: "Ministry of Test and Industry",
           isGovernment: true,
-          name: "Ministry of Trade and Industry",
           logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
-        }
+        } as PrismaJson.SiteJsonConfig
       })
     },
   },
@@ -97,7 +115,7 @@ export const sitesHandlers = {
             termsOfUseLink: "/terms-of-use",
             feedbackFormLink: "https://www.form.gov.sg",
             privacyStatementLink: "/privacy",
-          },
+          } as PrismaJson.FooterJsonContent,
           createdAt: new Date(),
           updatedAt: new Date(),
         }
@@ -151,7 +169,7 @@ export const sitesHandlers = {
                 },
               ],
             },
-          ],
+          ] as PrismaJson.NavbarJsonContent,
           createdAt: new Date(),
           updatedAt: new Date(),
         }

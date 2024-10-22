@@ -13,7 +13,7 @@ const getRootPageQuery = (wait?: DelayMode | number) => {
     return { title: "A mock page", id: "1", draftBlobId: "1" }
   })
 }
-const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
+export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
   {
     id: "1",
     permalink: "newsroom",
@@ -22,6 +22,7 @@ const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     draftBlobId: null,
     type: "Collection",
     parentId: null,
+    updatedAt: new Date("2024-09-12T07:00:00.000Z"),
   },
   {
     id: "4",
@@ -31,6 +32,7 @@ const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     draftBlobId: "3",
     type: "Page",
     parentId: null,
+    updatedAt: new Date("2024-09-12T07:00:10.000Z"),
   },
   {
     id: "5",
@@ -40,6 +42,7 @@ const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     draftBlobId: "4",
     type: "Page",
     parentId: null,
+    updatedAt: new Date("2024-09-12T07:00:20.000Z"),
   },
   {
     id: "6",
@@ -49,6 +52,7 @@ const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     draftBlobId: null,
     type: "Folder",
     parentId: null,
+    updatedAt: new Date("2024-09-12T07:00:30.000Z"),
   },
 ]
 

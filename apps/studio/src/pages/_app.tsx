@@ -7,6 +7,7 @@ import type { AppProps, AppType } from "next/app"
 import { Skeleton, Stack } from "@chakra-ui/react"
 import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
+import Intercom from "@intercom/messenger-js-sdk"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { ErrorBoundary } from "react-error-boundary"
@@ -38,7 +39,14 @@ void gb.init({
   // Optional, enable streaming updates
   streaming: true,
 })
+
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {
+  if (env.NEXT_PUBLIC_INTERCOM_APP_ID) {
+    Intercom({
+      app_id: env.NEXT_PUBLIC_INTERCOM_APP_ID,
+    })
+  }
+
   return (
     <EnvProvider env={env}>
       <LoginStateProvider>
@@ -46,8 +54,8 @@ const MyApp = ((props: AppPropsWithAuthAndLayout) => {
           <FeatureProvider>
             <GrowthBookProvider growthbook={gb}>
               <ErrorBoundary FallbackComponent={DefaultFallback}>
-                <Suspense fallback={<Skeleton width="100vw" height="100vh" />}>
-                  <Stack spacing={0} minH="$100vh">
+                <Suspense fallback={<Skeleton width="100%" height="$100vh" />}>
+                  <Stack spacing={0} height="$100vh" flexDirection="column">
                     <AppBanner />
                     <VersionWrapper />
                     <ChildWithLayout {...props} />

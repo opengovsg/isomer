@@ -68,17 +68,16 @@ model Resource {
   state ResourceState? @default(Draft)
   type  ResourceType
 
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @default(now()) @updatedAt
+  createdAt                   DateTime                         @default(now())
+  updatedAt                   DateTime                         @default(now()) @updatedAt
   ResourcePermission ResourcePermission[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
   // This is required so prisma does not attempt to drop the custom index.
   @@unique([siteId, parentId, permalink])
-  @@index([siteId])
-  @@index([siteId, id])
-  @@index([siteId, id, parentId])
+  @@index([siteId, id, parentId]) // note: ordering is important here!
+  @@index([type])
 }
 
 model Blob {
@@ -105,6 +104,7 @@ enum ResourceType {
   Folder
   Collection
   CollectionPage // Can only live inside `Collection` resources
+  IndexPage // This denotes the index page of a folder or a collection
 }
 
 model User {
@@ -182,6 +182,21 @@ model SiteMember {
   updatedAt DateTime @default(now()) @updatedAt
 
   @@id([siteId, userId])
+}
+
+model ResourcePermission {
+  id         BigInt     @id @default(autoincrement())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  siteId     Int
+  site       Site     @relation(fields: [siteId], references: [id])
+  resourceId BigInt?
+  resource   Resource? @relation(fields: [resourceId], references: [id])
+  role       RoleType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([userId, siteId, resourceId, role])
 }
 
 model ResourcePermission {

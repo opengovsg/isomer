@@ -30,10 +30,11 @@ import { generateResourceUrl } from "~/features/editing-experience/components/ut
 import { editPageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
+import { generateBasePermalinkSchema } from "~/schemas/common"
 import {
+  basePageSettingsSchema,
   MAX_PAGE_URL_LENGTH,
   MAX_TITLE_LENGTH,
-  pageSettingsSchema,
 } from "~/schemas/page"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
@@ -71,12 +72,19 @@ const PageSettings = () => {
     handleSubmit,
     formState: { isDirty, errors },
   } = useZodForm({
-    schema: pageSettingsSchema.omit({ pageId: true, siteId: true }).extend({
+    schema: basePageSettingsSchema.omit({ pageId: true, siteId: true }).extend({
       meta: z.unknown(),
+      permalink: generateBasePermalinkSchema("page")
+        .min(type === ResourceType.RootPage ? 0 : 1, {
+          message: "Enter a URL for this page",
+        })
+        .max(MAX_PAGE_URL_LENGTH, {
+          message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
+        }),
     }),
     defaultValues: {
       title: originalTitle,
-      permalink: permalinkTree[permalinkTree.length - 1] || "/",
+      permalink: permalinkTree[permalinkTree.length - 1] || "",
       meta: content.meta,
     },
   })
@@ -144,6 +152,7 @@ const PageSettings = () => {
           pageId,
           siteId,
           meta: JSON.stringify(meta),
+          type,
           ...rest,
         },
         {
@@ -154,10 +163,9 @@ const PageSettings = () => {
   })
 
   return (
-    <form onBlur={onSubmit}>
-      <Grid w="100vw" my="3rem" templateColumns="repeat(4, 1fr)">
-        <GridItem colSpan={1}></GridItem>
-        <GridItem colSpan={2}>
+    <chakra.form onBlur={onSubmit} overflowY="auto" width="100%">
+      <Grid w="100%" my="3rem" templateColumns="repeat(4, 1fr)">
+        <GridItem gridColumn="2/4">
           <VStack w="100%" gap="2rem" alignItems="flex-start">
             <Box>
               <Text as="h3" textStyle="h3-semibold">
@@ -175,8 +183,15 @@ const PageSettings = () => {
                 name="permalink"
                 render={({ field: { onChange, ...field } }) => (
                   <Input
-                    isDisabled={type === ResourceType.RootPage}
-                    placeholder="URL will be autopopulated if left untouched"
+                    isDisabled={
+                      type === ResourceType.RootPage ||
+                      type === ResourceType.IndexPage
+                    }
+                    placeholder={
+                      type === ResourceType.RootPage
+                        ? "/"
+                        : "URL will be autopopulated if left untouched"
+                    }
                     noOfLines={1}
                     mt="0.5rem"
                     w="100%"
@@ -213,7 +228,7 @@ const PageSettings = () => {
 
             <FormControl isRequired isInvalid={!!errors.title}>
               <FormLabel
-                description="By default, this is the title of your your page. Edit this if
+                description="Edit this if
                 you want to show a different title on search engines."
               >
                 Page title
@@ -222,7 +237,10 @@ const PageSettings = () => {
                 w="100%"
                 noOfLines={1}
                 maxLength={MAX_TITLE_LENGTH}
-                isDisabled={type === ResourceType.RootPage}
+                isDisabled={
+                  type === ResourceType.RootPage ||
+                  type === ResourceType.IndexPage
+                }
                 {...register("title")}
                 mt="0.5rem"
               />
@@ -250,9 +268,8 @@ const PageSettings = () => {
             />
           </VStack>
         </GridItem>
-        <GridItem colSpan={1}></GridItem>
       </Grid>
-    </form>
+    </chakra.form>
   )
 }
 

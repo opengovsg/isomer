@@ -53,23 +53,28 @@ export const MoveResourceModal = () => {
 const MoveResourceContent = withSuspense(
   ({ resourceId, onClose }: { resourceId: string; onClose: () => void }) => {
     // NOTE: This is the stack of user's navigation through the resource tree
-    // the last item here represents his current view
     // NOTE: We should always start the stack from `/` (root)
     // so that the user will see a full overview of their site structure
     const [resourceStack, setResourceStack] = useState<PendingMoveResource[]>(
       [],
     )
-    const moveDest = resourceStack[resourceStack.length - 1]
+    const [isResourceHighlighted, setIsResourceHighlighted] =
+      useState<boolean>(true)
     const { siteId } = useQueryParse(sitePageSchema)
     const setMovedItem = useSetAtom(moveResourceAtom)
     const [{ title }] = trpc.resource.getMetadataById.useSuspenseQuery({
       resourceId,
     })
-    const curResourceId = resourceStack[resourceStack.length - 1]?.resourceId
+    const moveDest = resourceStack[resourceStack.length - 1]
+    const parentDest = resourceStack[resourceStack.length - 2]
+    const curResourceId = moveDest?.resourceId
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
       trpc.resource.getFolderChildrenOf.useInfiniteQuery(
         {
-          resourceId: curResourceId ?? null,
+          resourceId:
+            (isResourceHighlighted
+              ? parentDest?.resourceId
+              : moveDest?.resourceId) ?? null,
           siteId: String(siteId),
           limit: 25,
         },
@@ -97,9 +102,7 @@ const MoveResourceContent = withSuspense(
         await utils.resource.getChildrenOf.invalidate()
         await utils.resource.countWithoutRoot.invalidate({
           // TODO: Update backend `list` to use the proper schema
-          resourceId: moveDest?.resourceId
-            ? Number(moveDest.resourceId)
-            : undefined,
+          resourceId: curResourceId ? Number(curResourceId) : undefined,
         })
         await utils.resource.countWithoutRoot.invalidate({
           // TODO: Update backend `list` to use the proper schema
@@ -109,9 +112,7 @@ const MoveResourceContent = withSuspense(
         })
         await utils.resource.listWithoutRoot.invalidate({
           // TODO: Update backend `list` to use the proper schema
-          resourceId: moveDest?.resourceId
-            ? Number(moveDest.resourceId)
-            : undefined,
+          resourceId: curResourceId ? Number(curResourceId) : undefined,
         })
         await utils.resource.listWithoutRoot.invalidate({
           // TODO: Update backend `list` to use the proper schema
@@ -130,14 +131,15 @@ const MoveResourceContent = withSuspense(
     })
 
     const movedItem = useAtomValue(moveResourceAtom)
-    const onBack = () => {
-      setResourceStack((prev) => prev.slice(0, -1))
-    }
+
+    const shouldShowBackButton: boolean =
+      (resourceStack.length === 1 && !isResourceHighlighted) ||
+      resourceStack.length > 1
 
     return (
       <ModalContent>
         <ModalHeader>Move "{title}" to...</ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.25rem">
             <Infobox size="sm" w="full">
@@ -151,13 +153,20 @@ const MoveResourceContent = withSuspense(
               py="0.75rem"
               px="0.5rem"
             >
-              {resourceStack.length > 0 ? (
+              {shouldShowBackButton ? (
                 <Link
                   variant="clear"
                   w="full"
                   justifyContent="flex-start"
                   color="base.content.default"
-                  onClick={onBack}
+                  onClick={() => {
+                    if (isResourceHighlighted) {
+                      setIsResourceHighlighted(false)
+                      setResourceStack((prev) => prev.slice(0, -2))
+                    } else {
+                      setResourceStack((prev) => prev.slice(0, -1))
+                    }
+                  }}
                   as="button"
                 >
                   <HStack spacing="0.25rem" color="interaction.links.default">
@@ -191,21 +200,42 @@ const MoveResourceContent = withSuspense(
                 </Flex>
               )}
               {data?.pages.map(({ items }) =>
-                items.map((child) => {
+                items.map((item) => {
+                  const isItemDisabled: boolean =
+                    item.id === movedItem?.resourceId
+                  const isItemHighlighted: boolean =
+                    isResourceHighlighted && item.id === curResourceId
+
                   return (
                     <MoveItem
-                      {...child}
-                      isDisabled={child.id === movedItem?.resourceId}
-                      key={child.id}
-                      onChangeResourceId={() => {
-                        setResourceStack((prev) => [
-                          ...prev,
-                          {
-                            ...child,
-                            parentId: curResourceId ?? null,
-                            resourceId: child.id,
-                          },
-                        ])
+                      {...item}
+                      key={item.id}
+                      isDisabled={isItemDisabled}
+                      isHighlighted={isItemHighlighted}
+                      handleOnClick={() => {
+                        if (isItemDisabled) {
+                          return
+                        }
+
+                        if (isItemHighlighted) {
+                          setIsResourceHighlighted(false)
+                          return
+                        }
+
+                        const newResource = {
+                          ...item,
+                          parentId: parentDest?.resourceId ?? null,
+                          resourceId: item.id,
+                        }
+                        if (isResourceHighlighted) {
+                          setResourceStack((prev) => [
+                            ...prev.slice(0, -1),
+                            newResource,
+                          ])
+                        } else {
+                          setIsResourceHighlighted(true)
+                          setResourceStack((prev) => [...prev, newResource])
+                        }
                       }}
                     />
                   )
@@ -225,13 +255,15 @@ const MoveResourceContent = withSuspense(
             </Box>
             {!!moveDest && (
               <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">
-                <Text textStyle="caption-1">
-                  You selected {moveDest.permalink}
-                </Text>
-                <Text textStyle="caption-2">
-                  The URL for {movedItem?.title} will change to{" "}
-                  {`${generatePermalinkPrefix(resourceStack)}/${movedItem?.permalink}`}
-                </Text>
+                <Flex flexDirection="column" gap="0.25rem">
+                  <Text textStyle="caption-1">
+                    You selected {moveDest.permalink}
+                  </Text>
+                  <Text textStyle="caption-2">
+                    The URL for {movedItem?.title} will change to{" "}
+                    {`${generatePermalinkPrefix(resourceStack)}/${movedItem?.permalink}`}
+                  </Text>
+                </Flex>
               </Box>
             )}
           </VStack>
@@ -247,11 +279,11 @@ const MoveResourceContent = withSuspense(
           </Button>
           <Button
             // NOTE: disable this button if either resourceId is missing
-            isDisabled={!moveDest?.resourceId || !movedItem?.resourceId}
+            isDisabled={!curResourceId || !movedItem?.resourceId}
             isLoading={isLoading}
             onClick={() =>
               movedItem?.resourceId &&
-              moveDest?.resourceId &&
+              curResourceId &&
               mutate({
                 movedResourceId: movedItem.resourceId,
                 destinationResourceId: moveDest.resourceId,

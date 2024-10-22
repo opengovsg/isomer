@@ -25,10 +25,14 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
     },
     {
       id: `${index}`,
-      title: `Isomer hero banner-${index}`,
+      title: `This is the title for a collection item that shows the Isomer hero banner-${index}`,
       permalink: `/publications/item-two-${index}`,
       lastModified: "",
       layout: "file",
+      image: {
+        src: "https://images.unsplash.com/photo-1728931710331-7f74dca643eb?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        alt: "placeholder",
+      },
       summary:
         "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
       date: "2024-05-07",
@@ -422,7 +426,7 @@ export const SearchingEmptyCollection: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const searchElem = screen.getByRole("searchbox", {
-      name: /search for publications and other press releases/i,
+      name: /Start typing to search/i,
     })
     await userEvent.type(searchElem, "anything")
   },
@@ -432,7 +436,7 @@ export const NoResults: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const searchElem = screen.getByRole("searchbox", {
-      name: /search for publications and other press releases/i,
+      name: /Start typing to search/i,
     })
     await userEvent.type(searchElem, "some whacky search term")
   },
@@ -453,7 +457,7 @@ export const FilteredEmptyResults: Story = {
                 summary:
                   "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
                 date: "2025-05-07",
-                category: "Category Name",
+                category: "Category Name 2",
                 ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
                 fileDetails: {
                   type: "png",
@@ -468,7 +472,7 @@ export const FilteredEmptyResults: Story = {
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText(/2025 \(1\)/i))
-    await userEvent.click(screen.getByText(/Link \(10\)/i))
+    await userEvent.click(screen.getByText(/2024 \(19\)/i))
+    await userEvent.click(screen.getByText(/Category Name 2 \(1\)/i))
   },
 }

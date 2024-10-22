@@ -79,7 +79,7 @@ export const Datatable = <T extends object>({
       )}
       <Box overflow={overflow} sx={styles.container}>
         <Table sx={{ tableLayout: "fixed" }} {...tableProps} pos="relative">
-          <Thead>
+          <Thead borderBottomWidth="1px">
             {instance.getHeaderGroups().map((headerGroup) => (
               <Tr
                 key={headerGroup.id}

@@ -7,8 +7,8 @@ import { z } from "zod"
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { CmsSidebar, CmsSidebarContainer } from "~/components/CmsSidebar"
-import { CmsSideNav } from "~/components/CmsSidebar/CmsSideNav"
 import { LayoutHead } from "~/components/LayoutHead"
+import { DirectorySidebar } from "~/features/dashboard/components/DirectorySidebar"
 import { useMe } from "~/features/me/api"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type GetLayout } from "~/lib/types"
@@ -17,8 +17,13 @@ export const AdminCmsSidebarLayout: GetLayout = (page) => {
   return (
     <EnforceLoginStatePageWrapper>
       <LayoutHead />
-
-      <Flex minH="$100vh" flexDir="row" bg="base.canvas.alt" pos="relative">
+      <Flex
+        flex={1}
+        overflow="hidden"
+        flexDir="row"
+        bg="base.canvas.alt"
+        pos="relative"
+      >
         <CmsSidebarWrapper>{page}</CmsSidebarWrapper>
       </Flex>
     </EnforceLoginStatePageWrapper>
@@ -69,7 +74,7 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
       sidebar={
         <CmsSidebar topNavItems={pageNavItems} bottomNavItems={userNavItems} />
       }
-      sidenav={<CmsSideNav siteId={siteId} />}
+      sidenav={<DirectorySidebar siteId={siteId} />}
     >
       {children}
     </CmsSidebarContainer>

@@ -124,8 +124,8 @@ const CreateFolderModalContent = ({
   return (
     <ModalContent>
       <form onSubmit={onSubmit}>
-        <ModalHeader>Create a new folder </ModalHeader>
-        <ModalCloseButton size="sm" />
+        <ModalHeader mr="3.5rem">Create a new folder</ModalHeader>
+        <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.5rem">
             <FormControl isInvalid={!!errors.folderTitle}>
@@ -198,7 +198,6 @@ const CreateFolderModalContent = ({
             </FormControl>
           </VStack>
         </ModalBody>
-
         <ModalFooter>
           <Button mr={3} onClick={onClose} variant="clear">
             Close

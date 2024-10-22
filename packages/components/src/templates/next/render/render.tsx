@@ -22,6 +22,7 @@ import {
   ArticleLayout,
   CollectionLayout,
   ContentLayout,
+  DatabaseLayout,
   HomepageLayout,
   IndexPageLayout,
   NotFoundLayout,
@@ -90,6 +91,8 @@ export const renderLayout = ({
       return <CollectionLayout {...props} />
     case "content":
       return <ContentLayout {...props} />
+    case "database":
+      return <DatabaseLayout {...props} />
     case "homepage":
       return <HomepageLayout {...props} />
     case "index":

@@ -10,7 +10,7 @@ const Custom404 = () => {
   const router = useRouter()
 
   return (
-    <Flex flexDirection="column" w="100%" h="$100vh">
+    <Flex flexDirection="column" w="100%" flex={1}>
       <Flex
         flex={1}
         bg="base.canvas.backdrop"

@@ -64,6 +64,8 @@ export interface ResourcePermission {
   siteId: number
   resourceId: string | null
   role: RoleType
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
 }
 export interface Site {
   id: GeneratedAlways<number>

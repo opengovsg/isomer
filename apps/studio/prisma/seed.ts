@@ -20,6 +20,7 @@ const ISOMER_ADMINS = [
   "harish",
   "zhongjun",
   "hanpu",
+  "adriangoh",
 ]
 
 const PAGE_BLOB: IsomerSchema = {
@@ -30,7 +31,7 @@ const PAGE_BLOB: IsomerSchema = {
     {
       type: "hero",
       variant: "gradient",
-      title: "Ministry of Trade and Industry",
+      title: "Isomer",
       subtitle:
         "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
       buttonLabel: "Main CTA",
@@ -145,11 +146,28 @@ async function main() {
   const { id: siteId } = await db
     .insertInto("Site")
     .values({
-      name: "Ministry of Trade and Industry",
+      name: "Isomer",
+      theme: jsonb({
+        colors: {
+          brand: {
+            canvas: {
+              alt: "#bfcfd7",
+              default: "#e6ecef",
+              inverse: "#00405f",
+              backdrop: "#80a0af",
+            },
+            interaction: {
+              hover: "#002e44",
+              default: "#00405f",
+              pressed: "#00283b",
+            },
+          },
+        },
+      }),
       config: jsonb({
         theme: "isomer-next",
         siteName: "MTI",
-        logoUrl: "",
+        logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
         search: undefined,
         isGovernment: true,
       }),
