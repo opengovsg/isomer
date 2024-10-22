@@ -178,7 +178,11 @@ export const SearchableTableClient = ({
                     key={index}
                     className={compoundStyles.tableCell({ isHeader: true })}
                   >
-                    <BaseParagraph content={String(header)} />
+                    <BaseParagraph
+                      content={String(header)}
+                      site={site}
+                      LinkComponent={LinkComponent}
+                    />
                   </th>
                 ))}
               </tr>

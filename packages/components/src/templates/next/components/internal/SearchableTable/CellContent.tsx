@@ -25,12 +25,17 @@ export const CellContent = ({
     return (
       <BaseParagraph
         content={`<a href=${getReferenceLinkHref(linkHref?.replace(/"/g, ""), site.siteMap, site.assetsBaseUrl)}>${linkText || linkHref || "Link"}</a>`}
+        site={site}
         LinkComponent={LinkComponent}
       />
     )
   }
 
   return (
-    <BaseParagraph content={String(content)} LinkComponent={LinkComponent} />
+    <BaseParagraph
+      content={String(content)}
+      site={site}
+      LinkComponent={LinkComponent}
+    />
   )
 }

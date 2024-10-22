@@ -27,7 +27,7 @@ const convertReferenceLinks = (
   sitemap: IsomerSitemap,
 ) => {
   const sitemapArray = getSitemapAsArray(sitemap)
-  const match = /\[resource:(\d+):(\d+)\]/.exec(originalLink)
+  const match = /^\[resource:(\d+):(\d+)\]/.exec(originalLink)
 
   if (!match) {
     return originalLink
@@ -58,13 +58,13 @@ const convertAssetLinks = (
     return originalLink
   }
 
-  const match = /\/(\d+)\//.exec(originalLink)
+  const match = /^\/(\d+)\//.exec(originalLink)
 
   if (!match) {
     return originalLink
   }
 
-  return `${assetsBaseUrl}/${originalLink}`
+  return `${assetsBaseUrl}${originalLink}`
 }
 
 export const getReferenceLinkHref = (

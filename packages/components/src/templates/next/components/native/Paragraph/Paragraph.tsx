@@ -7,6 +7,7 @@ const Paragraph = ({ content, LinkComponent, site }: ParagraphProps) => {
     <BaseParagraph
       content={getTextAsHtml({ site, content })}
       className="prose-body-base text-base-content"
+      site={site}
       LinkComponent={LinkComponent}
     />
   )

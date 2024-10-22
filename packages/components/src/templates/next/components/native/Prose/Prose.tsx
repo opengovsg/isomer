@@ -33,6 +33,7 @@ const ProseComponent = ({
             content: component.content,
           })}
           className="prose-body-base text-base-content"
+          site={site}
           LinkComponent={LinkComponent}
         />
       )
