@@ -344,7 +344,7 @@ export const YearFilterSelectNotSpecified: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     await userEvent.click(screen.getByText(/Not specified/i))
-    await userEvent.click(screen.getByText(/3 search results/))
+    await userEvent.click(screen.getByText(/3 articles/))
   },
 }
 
