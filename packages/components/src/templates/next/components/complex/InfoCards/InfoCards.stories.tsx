@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { InfoCardsProps } from "~/interfaces"
+import type { IsomerPageLayoutType } from "~/types"
 import InfoCards from "./InfoCards"
 
 const meta: Meta<InfoCardsProps> = {
@@ -46,10 +47,12 @@ export default meta
 type Story = StoryObj<typeof InfoCards>
 
 const generateArgs = ({
+  layout = "content",
   maxColumns,
   withoutImage = false,
   isImageFitContain = false,
 }: {
+  layout?: IsomerPageLayoutType
   maxColumns: "1" | "2" | "3"
   withoutImage?: boolean
   isImageFitContain?: boolean
@@ -114,6 +117,7 @@ const generateArgs = ({
   }
 
   return {
+    layout: layout,
     title: "Section title ministry highlights",
     subtitle:
       "Section subtitle, maximum 150 chars. These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
@@ -128,14 +132,29 @@ export const WithImage3Columns: Story = {
   args: generateArgs({ maxColumns: "3" }),
 }
 
+export const WithImage3ColumnsHomepage: Story = {
+  name: "With Image (3 Cols) Homepage",
+  args: generateArgs({ maxColumns: "3", layout: "homepage" }),
+}
+
 export const WithImage2Columns: Story = {
   name: "With Image (2 Cols)",
   args: generateArgs({ maxColumns: "2" }),
 }
 
+export const WithImage2ColumnsHomepage: Story = {
+  name: "With Image (2 Cols) Homepage",
+  args: generateArgs({ maxColumns: "2", layout: "homepage" }),
+}
+
 export const WithImage1Columns: Story = {
   name: "With Image (1 Col)",
   args: generateArgs({ maxColumns: "1" }),
+}
+
+export const WithImage1ColumnsHomepage: Story = {
+  name: "With Image (1 Col) Homepage",
+  args: generateArgs({ maxColumns: "1", layout: "homepage" }),
 }
 
 export const NoImage: Story = {
