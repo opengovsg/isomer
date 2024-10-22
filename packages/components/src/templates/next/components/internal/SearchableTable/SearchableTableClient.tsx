@@ -67,7 +67,7 @@ export const SearchableTableClient = ({
   title,
   headers,
   items,
-  sitemap,
+  site,
   LinkComponent,
 }: SearchableTableClientProps) => {
   const [_search, setSearch] = useState("")
@@ -195,7 +195,7 @@ export const SearchableTableClient = ({
                       >
                         <CellContent
                           content={cell}
-                          sitemap={sitemap}
+                          site={site}
                           LinkComponent={LinkComponent}
                         />
                       </td>

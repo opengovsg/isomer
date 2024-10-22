@@ -75,7 +75,11 @@ const InfoBoxes = ({
         ({ title, icon, description, buttonUrl, buttonLabel }, idx) => (
           <Link
             LinkComponent={LinkComponent}
-            href={getReferenceLinkHref(buttonUrl, site.siteMap)}
+            href={getReferenceLinkHref(
+              buttonUrl,
+              site.siteMap,
+              site.assetsBaseUrl,
+            )}
             key={idx}
             className={compoundStyles.infoBox()}
           >

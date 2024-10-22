@@ -99,7 +99,11 @@ const NavSection = ({
           <FooterItem
             key={index}
             title={item.title}
-            url={getReferenceLinkHref(item.url, site.siteMap)}
+            url={getReferenceLinkHref(
+              item.url,
+              site.siteMap,
+              site.assetsBaseUrl,
+            )}
             LinkComponent={LinkComponent}
           />
         ))}
@@ -109,7 +113,11 @@ const NavSection = ({
           <FooterItem
             key={index}
             title={item.title}
-            url={getReferenceLinkHref(item.url, site.siteMap)}
+            url={getReferenceLinkHref(
+              item.url,
+              site.siteMap,
+              site.assetsBaseUrl,
+            )}
             LinkComponent={LinkComponent}
           />
         ))}
@@ -136,7 +144,11 @@ const SocialMediaSection = ({
           return (
             <Link
               key={link.url}
-              href={getReferenceLinkHref(link.url, site.siteMap)}
+              href={getReferenceLinkHref(
+                link.url,
+                site.siteMap,
+                site.assetsBaseUrl,
+              )}
               isExternal
               label={`${link.type} page`}
               className={footerItemLinkStyle()}
@@ -166,14 +178,22 @@ const ContactUsSection = ({
       {contactUsLink && (
         <FooterItem
           title="Contact Us"
-          url={getReferenceLinkHref(contactUsLink, site.siteMap)}
+          url={getReferenceLinkHref(
+            contactUsLink,
+            site.siteMap,
+            site.assetsBaseUrl,
+          )}
           LinkComponent={LinkComponent}
         />
       )}
       {feedbackFormLink && (
         <FooterItem
           title="Feedback Form"
-          url={getReferenceLinkHref(feedbackFormLink, site.siteMap)}
+          url={getReferenceLinkHref(
+            feedbackFormLink,
+            site.siteMap,
+            site.assetsBaseUrl,
+          )}
           LinkComponent={LinkComponent}
         />
       )}
@@ -250,14 +270,22 @@ const LegalSection = ({
           {privacyStatementLink && (
             <FooterItem
               title="Privacy Statement"
-              url={getReferenceLinkHref(privacyStatementLink, site.siteMap)}
+              url={getReferenceLinkHref(
+                privacyStatementLink,
+                site.siteMap,
+                site.assetsBaseUrl,
+              )}
               LinkComponent={LinkComponent}
             />
           )}
           {termsOfUseLink && (
             <FooterItem
               title="Terms of Use"
-              url={getReferenceLinkHref(termsOfUseLink, site.siteMap)}
+              url={getReferenceLinkHref(
+                termsOfUseLink,
+                site.siteMap,
+                site.assetsBaseUrl,
+              )}
               LinkComponent={LinkComponent}
             />
           )}

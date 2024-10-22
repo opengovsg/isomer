@@ -69,7 +69,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
             LinkComponent={LinkComponent}
             isExternal={isExternalUrl(url)}
             showExternalIcon={isExternalUrl(url)}
-            href={getReferenceLinkHref(url, site.siteMap)}
+            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
             className={item({ isOpen })}
           >
             <span className={groupFocusVisibleHighlight()}>{name}</span>
@@ -156,7 +156,11 @@ const Megamenu = ({
                         isExternal={isExternal}
                         showExternalIcon={isExternal}
                         isWithFocusVisibleHighlight
-                        href={getReferenceLinkHref(subItem.url, site.siteMap)}
+                        href={getReferenceLinkHref(
+                          subItem.url,
+                          site.siteMap,
+                          site.assetsBaseUrl,
+                        )}
                         className="group prose-label-md-medium inline-flex w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
                       >
                         {subItem.name}

@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSitemap, LinkComponentType } from "~/types"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 
 export const SearchableTableSchema = Type.Object({
   title: Type.Optional(Type.String()),
@@ -10,6 +10,6 @@ export const SearchableTableSchema = Type.Object({
 })
 
 export type SearchableTableProps = Static<typeof SearchableTableSchema> & {
-  sitemap: IsomerSitemap
+  site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }

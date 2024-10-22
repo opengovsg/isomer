@@ -73,7 +73,7 @@ export const Image = ({
 
   return (
     <ImageContainer
-      href={getReferenceLinkHref(href, site.siteMap)}
+      href={getReferenceLinkHref(href, site.siteMap, site.assetsBaseUrl)}
       LinkComponent={LinkComponent}
     >
       <ImageClient
