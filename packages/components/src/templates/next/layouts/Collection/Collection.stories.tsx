@@ -320,6 +320,32 @@ export const FilteredEmptyResults: Story = {
   },
 }
 
+const threeItemsHaveUndefinedDate = [
+  ...COLLECTION_ITEMS.slice(0, 3).map((item) => ({
+    ...item,
+    date: undefined,
+  })),
+  ...COLLECTION_ITEMS.slice(3),
+]
+
+export const YearFilter: Story = {
+  args: generateArgs({ collectionItems: threeItemsHaveUndefinedDate }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    const dateNotSpecified = screen.queryByText(/Not specified/i)
+    await expect(dateNotSpecified).toBeInTheDocument()
+  },
+}
+
+export const YearFilterSelectNotSpecified: Story = {
+  args: generateArgs({ collectionItems: threeItemsHaveUndefinedDate }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(screen.getByText(/Not specified/i))
+    await userEvent.click(screen.getByText(/3 articles/i))
+  },
+}
+
 export const DoNotShowYearFilter: Story = {
   args: generateArgs({
     collectionItems: COLLECTION_ITEMS.map((item) => ({
