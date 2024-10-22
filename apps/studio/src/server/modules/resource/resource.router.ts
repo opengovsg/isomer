@@ -209,6 +209,7 @@ export const resourceRouter = router({
         }
 
         await publishSite(ctx.logger, result.siteId)
+        return result
       },
     ),
 

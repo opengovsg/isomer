@@ -6,7 +6,6 @@ import {
   ListBuildsForProjectCommand,
   StartBuildCommand,
 } from "@aws-sdk/client-codebuild"
-import { TRPCError } from "@trpc/server"
 
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 
