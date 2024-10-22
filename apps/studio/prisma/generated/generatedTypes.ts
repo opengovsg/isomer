@@ -40,14 +40,6 @@ export interface Navbar {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface Permission {
-  id: GeneratedAlways<number>
-  resourceId: string
-  userId: string
-  role: RoleType
-  createdAt: Generated<Timestamp>
-  updatedAt: Generated<Timestamp>
-}
 export interface RateLimiterFlexible {
   key: string
   points: number
@@ -126,7 +118,6 @@ export interface DB {
   Blob: Blob
   Footer: Footer
   Navbar: Navbar
-  Permission: Permission
   RateLimiterFlexible: RateLimiterFlexible
   Resource: Resource
   ResourcePermission: ResourcePermission
