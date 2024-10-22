@@ -3,31 +3,16 @@
 import { useEffect, useState } from "react"
 import { BiInfoCircle } from "react-icons/bi"
 
-import supportedBrowsers from "~/utils/supportedBrowsers"
-
-interface UnsupportedBrowserBannerProps {
-  userAgent?: string | undefined
-}
+import type { SupportedBrowserBannerProps } from "~/utils/isSupportedBrowser"
+import { isSupportedBrowser } from "~/utils/isSupportedBrowser"
 
 // TODO: move this to a official isomer.gov.sg once we migrate that to Isomer Next
 const supportedBrowserDocumentLink =
   "https://github.com/opengovsg/isomer/blob/main/packages/components/browser-support.md"
 
-const getUserAgent = (): string | undefined => {
-  return typeof window !== "undefined" ? window.navigator.userAgent : undefined
-}
-
-const isSupportedBrowser = ({
-  userAgent,
-}: UnsupportedBrowserBannerProps): boolean => {
-  if (userAgent === undefined) return true
-  if (userAgent === "") return true
-  return supportedBrowsers.test(userAgent || getUserAgent() || "")
-}
-
 export const UnsupportedBrowserBanner = ({
   userAgent: initialUserAgent,
-}: UnsupportedBrowserBannerProps) => {
+}: SupportedBrowserBannerProps) => {
   const [navigatorUserAgent, setNavigatorUserAgent] = useState(
     initialUserAgent || "",
   )
