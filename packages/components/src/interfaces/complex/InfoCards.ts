@@ -6,6 +6,7 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
@@ -25,6 +26,7 @@ const SingleCardNoImageSchema = Type.Object({
       title: "Link destination",
       description: "When this is clicked, open:",
       format: "link",
+      pattern: LINK_HREF_PATTERN,
     }),
   ),
 })

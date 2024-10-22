@@ -91,7 +91,9 @@ const LinkEditorModalContent = ({
     mode: "onChange",
     schema: z.object({
       linkText: z.string().min(1),
-      linkHref: z.string().min(1),
+      // TODO: Refactor to be required
+      // Context: quick hack to ensure error message don't shown for empty linkHref for FileAttachment
+      linkHref: z.string().min(1).optional(),
     }),
     defaultValues: {
       linkText,
@@ -102,8 +104,10 @@ const LinkEditorModalContent = ({
 
   const isEditingLink = !!linkText && !!linkHref
 
-  const onSubmit = handleSubmit(({ linkText, linkHref }) =>
-    onSave(linkText, linkHref),
+  const onSubmit = handleSubmit(
+    // TODO: Refactor to not have to check for !!linkHref
+    // Context: quick hack to ensure error message don't shown for empty linkHref for FileAttachment
+    ({ linkText, linkHref }) => !!linkHref && onSave(linkText, linkHref),
   )
 
   const { siteId } = useQueryParse(editSiteSchema)
@@ -151,7 +155,7 @@ const LinkEditorModalContent = ({
           <Box>
             <LinkHrefEditor
               linkTypes={linkTypes}
-              value={watch("linkHref")}
+              value={watch("linkHref") ?? ""}
               onChange={(value) => setValue("linkHref", value)}
               label="Link destination"
               description="When this is clicked, open:"
@@ -159,7 +163,7 @@ const LinkEditorModalContent = ({
               isInvalid={!!errors.linkHref}
               pageLinkElement={
                 <PageLinkElement
-                  value={watch("linkHref")}
+                  value={watch("linkHref") ?? ""}
                   onChange={(value) => setValue("linkHref", value)}
                 />
               }

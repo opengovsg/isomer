@@ -264,11 +264,17 @@ export function JsonFormsLinkControl({
   // NOTE: We need to pass in `siteId` but this component is automatically used by JsonForms
   // so we are unable to pass props down
   const { siteId } = useQueryParse(siteSchema)
-  const dummyFile = new File(
-    [],
-    // NOTE: Technically guaranteed since our s3 filepath has a format of `/<site>/.../<filename>`
-    dataString.split("/").at(-1) ?? "Uploaded file",
-  )
+  // NOTE: for reasons unknown, on initial load of the homepage,
+  // the data passed to this component is '/'
+  // which prevents this component from saving
+  const dummyFile =
+    !!dataString && dataString !== "/"
+      ? new File(
+          [],
+          // NOTE: Technically guaranteed since our s3 filepath has a format of `/<site>/.../<filename>`
+          dataString.split("/").at(-1) ?? "Uploaded file",
+        )
+      : undefined
 
   return (
     <Box mt="1.25rem" _first={{ mt: 0 }}>
