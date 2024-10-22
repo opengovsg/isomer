@@ -11,12 +11,14 @@ datadogRum.init({
   site: "datadoghq.com",
   service: "isomer-next-sites",
   env: "production",
-  sessionSampleRate: Number(
-    process.env.NEXT_PUBLIC_ISOMER_NEXT_RUM_SAMPLING_RATE ?? 0,
-  ),
-  sessionReplaySampleRate: Number(
-    process.env.NEXT_PUBLIC_ISOMER_NEXT_RUM_SAMPLING_RATE ?? 0,
-  ),
+  sessionSampleRate:
+    typeof process !== "undefined"
+      ? Number(process.env.NEXT_PUBLIC_ISOMER_NEXT_RUM_SAMPLING_RATE ?? 0)
+      : 0,
+  sessionReplaySampleRate:
+    typeof process !== "undefined"
+      ? Number(process.env.NEXT_PUBLIC_ISOMER_NEXT_RUM_SAMPLING_RATE ?? 0)
+      : 0,
   trackUserInteractions: true,
   trackResources: true,
   trackLongTasks: true,
