@@ -265,12 +265,14 @@ export const WithFilters: Story = {
   },
 }
 
+const emptyCollectionItems: IsomerSitemap[] = []
+
 export const EmptyCollection: Story = {
-  args: generateArgs({ collectionItems: [] }),
+  args: generateArgs({ collectionItems: emptyCollectionItems }),
 }
 
 export const SearchingEmptyCollection: Story = {
-  args: generateArgs({ collectionItems: [] }),
+  args: generateArgs({ collectionItems: emptyCollectionItems }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const searchElem = screen.getByRole("searchbox", {
@@ -346,13 +348,13 @@ export const YearFilterSelectNotSpecified: Story = {
   },
 }
 
+const allItemsHaveUndefinedDate = COLLECTION_ITEMS.map((item) => ({
+  ...item,
+  date: undefined,
+}))
+
 export const DoNotShowYearFilter: Story = {
-  args: generateArgs({
-    collectionItems: COLLECTION_ITEMS.map((item) => ({
-      ...item,
-      date: undefined,
-    })),
-  }),
+  args: generateArgs({ collectionItems: allItemsHaveUndefinedDate }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const yearFilter = screen.queryByText(/Year/i)
