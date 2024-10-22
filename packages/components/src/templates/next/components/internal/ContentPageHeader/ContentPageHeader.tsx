@@ -25,7 +25,11 @@ const ContentPageHeader = ({
           {buttonLabel && buttonUrl && (
             <div className="mt-9">
               <LinkButton
-                href={getReferenceLinkHref(buttonUrl, site.siteMap)}
+                href={getReferenceLinkHref(
+                  buttonUrl,
+                  site.siteMap,
+                  site.assetsBaseUrl,
+                )}
                 LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight
               >

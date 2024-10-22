@@ -38,7 +38,7 @@ const DatabaseLayout = ({
   )
   // auto-inject ids for heading level 2 blocks if does not exist
   const transformedContent = getTransformedPageContent(content)
-  const tableOfContents = getTableOfContents(site.siteMap, content)
+  const tableOfContents = getTableOfContents(site, content)
 
   return (
     <Skeleton
@@ -77,7 +77,7 @@ const DatabaseLayout = ({
         )}
 
         <div className={compoundStyles.table()}>
-          <SearchableTable {...page.database} sitemap={site.siteMap} />
+          <SearchableTable {...page.database} site={site} />
         </div>
       </div>
     </Skeleton>

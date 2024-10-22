@@ -38,7 +38,11 @@ const HeroGradient = ({
             {buttonLabel && buttonUrl && (
               <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
                 <LinkButton
-                  href={getReferenceLinkHref(buttonUrl, site.siteMap)}
+                  href={getReferenceLinkHref(
+                    buttonUrl,
+                    site.siteMap,
+                    site.assetsBaseUrl,
+                  )}
                   size="lg"
                   LinkComponent={LinkComponent}
                   isWithFocusVisibleHighlight
@@ -53,6 +57,7 @@ const HeroGradient = ({
                     href={getReferenceLinkHref(
                       secondaryButtonUrl,
                       site.siteMap,
+                      site.assetsBaseUrl,
                     )}
                     LinkComponent={LinkComponent}
                     isWithFocusVisibleHighlight
@@ -96,7 +101,11 @@ const HeroBlock = ({
           {buttonLabel && buttonUrl && (
             <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
               <LinkButton
-                href={getReferenceLinkHref(buttonUrl, site.siteMap)}
+                href={getReferenceLinkHref(
+                  buttonUrl,
+                  site.siteMap,
+                  site.assetsBaseUrl,
+                )}
                 size="lg"
                 colorScheme="inverse"
                 LinkComponent={LinkComponent}
@@ -109,7 +118,11 @@ const HeroBlock = ({
                   colorScheme="inverse"
                   variant="outline"
                   size="lg"
-                  href={getReferenceLinkHref(secondaryButtonUrl, site.siteMap)}
+                  href={getReferenceLinkHref(
+                    secondaryButtonUrl,
+                    site.siteMap,
+                    site.assetsBaseUrl,
+                  )}
                   LinkComponent={LinkComponent}
                   isWithFocusVisibleHighlight
                 >

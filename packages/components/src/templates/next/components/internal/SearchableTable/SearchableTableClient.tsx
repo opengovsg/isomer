@@ -67,7 +67,7 @@ export const SearchableTableClient = ({
   title,
   headers,
   items,
-  sitemap,
+  site,
   LinkComponent,
 }: SearchableTableClientProps) => {
   const [_search, setSearch] = useState("")
@@ -178,7 +178,11 @@ export const SearchableTableClient = ({
                     key={index}
                     className={compoundStyles.tableCell({ isHeader: true })}
                   >
-                    <BaseParagraph content={String(header)} />
+                    <BaseParagraph
+                      content={String(header)}
+                      site={site}
+                      LinkComponent={LinkComponent}
+                    />
                   </th>
                 ))}
               </tr>
@@ -195,7 +199,7 @@ export const SearchableTableClient = ({
                       >
                         <CellContent
                           content={cell}
-                          sitemap={sitemap}
+                          site={site}
                           LinkComponent={LinkComponent}
                         />
                       </td>

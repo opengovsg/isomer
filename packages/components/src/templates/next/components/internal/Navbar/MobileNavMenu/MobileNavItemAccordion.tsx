@@ -2,12 +2,16 @@ import { BiChevronDown } from "react-icons/bi"
 
 import type { NavbarItem, NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
-import { focusVisibleHighlight, isExternalUrl } from "~/utils"
+import {
+  focusVisibleHighlight,
+  getReferenceLinkHref,
+  isExternalUrl,
+} from "~/utils"
 import { Link } from "../../Link"
 
 interface NavItemAccordionProps
   extends NavbarItem,
-    Pick<NavbarProps, "LinkComponent"> {
+    Pick<NavbarProps, "site" | "LinkComponent"> {
   isOpen: boolean
   onClick: () => void
   index: number
@@ -41,6 +45,7 @@ export const MobileNavItemAccordion = ({
   isOpen,
   onClick,
   index,
+  site,
   LinkComponent,
 }: NavItemAccordionProps) => {
   if (!items || items.length === 0) {
@@ -52,7 +57,7 @@ export const MobileNavItemAccordion = ({
           className={item({
             className: focusVisibleHighlight(),
           })}
-          href={url}
+          href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
         >
           {name}
         </Link>
@@ -96,7 +101,11 @@ export const MobileNavItemAccordion = ({
                 >
                   <Link
                     LinkComponent={LinkComponent}
-                    href={subItem.url}
+                    href={getReferenceLinkHref(
+                      subItem.url,
+                      site.siteMap,
+                      site.assetsBaseUrl,
+                    )}
                     isExternal={isExternal}
                     className={nestedItem({
                       className: focusVisibleHighlight(),

@@ -25,11 +25,11 @@ export const Skeleton = ({
 
   return (
     <>
-      {site.isGovernment && <Masthead isStaging={isStaging} />}
-
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
 
       {!isStaging && <DatadogRum />}
+
+      {site.isGovernment && <Masthead isStaging={isStaging} />}
 
       {site.notification && (
         <Notification
@@ -58,6 +58,7 @@ export const Skeleton = ({
         siteName={site.siteName}
         agencyName={site.agencyName || site.siteName}
         lastUpdated={site.lastUpdated}
+        site={site}
         LinkComponent={LinkComponent}
         {...site.footerItems}
       />

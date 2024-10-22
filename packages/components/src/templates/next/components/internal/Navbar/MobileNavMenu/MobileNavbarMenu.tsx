@@ -11,7 +11,7 @@ import { focusVisibleHighlight } from "~/utils"
 import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
 
 interface MobileNavMenuProps
-  extends Pick<NavbarProps, "items" | "LinkComponent"> {
+  extends Pick<NavbarProps, "items" | "site" | "LinkComponent"> {
   top: number | undefined
   openNavItemIdx: number
   setOpenNavItemIdx: Dispatch<SetStateAction<number>>
@@ -23,6 +23,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
     {
       top,
       items,
+      site,
       LinkComponent,
       openNavItemIdx,
       setOpenNavItemIdx,
@@ -45,6 +46,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
             {items.map((item, index) => (
               <MobileNavItemAccordion
                 key={`${item.name}-${index}`}
+                site={site}
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 LinkComponent={LinkComponent}
                 index={index}
