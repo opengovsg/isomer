@@ -173,3 +173,7 @@ export const updateAppliedFilters = (
     ])
   }
 }
+
+export const shouldShowDate = (items: CollectionCardProps[]): boolean => {
+  return items.some((item) => item.lastUpdated)
+}
