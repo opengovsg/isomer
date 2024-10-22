@@ -233,6 +233,7 @@ const generateArgs = ({
       subtitle:
         "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
     },
+    content: [],
   }
 }
 
