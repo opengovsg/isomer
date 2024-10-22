@@ -28,7 +28,7 @@ export const Skeleton = ({
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
 
-      <DatadogRum />
+      {!isStaging && <DatadogRum />}
 
       {site.notification && (
         <Notification
