@@ -18,7 +18,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       lastModified: "",
       layout: "article",
       summary:
-        "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
+        "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. LASTWORD",
       date: "2024-05-07",
       category: "Category Name",
     },
@@ -336,6 +336,9 @@ export const YearFilter: Story = {
     const screen = within(canvasElement)
     const dateNotSpecified = screen.queryByText(/Not specified/i)
     await expect(dateNotSpecified).toBeInTheDocument()
+
+    const lastWordOccurences = await screen.findAllByText(/7 May 2024/)
+    await expect(lastWordOccurences.length).toBe(10)
   },
 }
 
@@ -353,11 +356,15 @@ const allItemsHaveUndefinedDate = COLLECTION_ITEMS.map((item) => ({
   date: undefined,
 }))
 
-export const DoNotShowYearFilter: Story = {
+export const AllResultsNoDate: Story = {
   args: generateArgs({ collectionItems: allItemsHaveUndefinedDate }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
+
     const yearFilter = screen.queryByText(/Year/i)
     await expect(yearFilter).not.toBeInTheDocument()
+
+    const lastWordOccurences = await screen.findAllByText(/LASTWORD/)
+    await expect(lastWordOccurences.length).toBe(3)
   },
 }

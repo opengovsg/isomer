@@ -8,7 +8,9 @@ import { focusVisibleHighlight, getFormattedDate, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { Link } from "../Link"
 
-type CollectionCardProps = BaseCollectionCardProps
+type CollectionCardProps = BaseCollectionCardProps & {
+  shouldShowDate?: boolean
+}
 
 const collectionCardLinkStyle = tv({
   extend: focusVisibleHighlight,
@@ -16,6 +18,7 @@ const collectionCardLinkStyle = tv({
 })
 
 export const CollectionCard = ({
+  shouldShowDate = true,
   LinkComponent,
   url,
   lastUpdated,
@@ -35,9 +38,11 @@ export const CollectionCard = ({
 
   return (
     <div className="flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6">
-      <Text className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
-        {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
-      </Text>
+      {shouldShowDate && (
+        <Text className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
+          {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
+        </Text>
+      )}
       <div className="flex flex-col gap-3 text-base-content lg:gap-2">
         <h3 className="inline-block">
           <Link

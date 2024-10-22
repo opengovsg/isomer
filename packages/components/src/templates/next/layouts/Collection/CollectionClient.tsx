@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { useMemo, useRef } from "react"
 
 import type { CollectionPageSchemaType } from "~/engine"
 import type { BreadcrumbProps, CollectionCardProps } from "~/interfaces"
@@ -14,6 +14,7 @@ import {
 import CollectionPageHeader from "./CollectionPageHeader"
 import { CollectionResults } from "./CollectionResults"
 import { ITEMS_PER_PAGE, useCollection } from "./useCollection"
+import { shouldShowDate } from "./utils"
 
 interface CollectionClientProps {
   page: CollectionPageSchemaType["page"]
@@ -119,6 +120,7 @@ const CollectionClient = ({
               paginatedItems={paginatedItems}
               searchValue={searchValue}
               totalCount={totalCount}
+              shouldShowDate={useMemo(() => shouldShowDate(items), [items])}
               LinkComponent={LinkComponent}
               site={site}
             />

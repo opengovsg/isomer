@@ -12,6 +12,7 @@ interface CollectionResultProps
     | "handleClearFilter"
     | "totalCount"
   > {
+  shouldShowDate?: boolean
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
   site: CollectionPageSchemaType["site"]
 }
@@ -23,6 +24,7 @@ export const CollectionResults = ({
   filteredCount,
   handleClearFilter,
   totalCount,
+  shouldShowDate = true,
   LinkComponent,
   site,
 }: CollectionResultProps) => {
@@ -57,6 +59,7 @@ export const CollectionResults = ({
             <CollectionCard
               key={Math.random()}
               {...item}
+              shouldShowDate={shouldShowDate}
               LinkComponent={LinkComponent}
               site={site}
             />
