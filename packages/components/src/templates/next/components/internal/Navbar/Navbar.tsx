@@ -6,7 +6,7 @@ import { useResizeObserver } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
+import { isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
 import { IconButton } from "../IconButton"
