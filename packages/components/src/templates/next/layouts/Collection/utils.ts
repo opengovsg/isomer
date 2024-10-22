@@ -138,7 +138,8 @@ export const updateAppliedFilters = (
   const filterIndex = appliedFilters.findIndex(
     (filter) => filter.id === filterId,
   )
-  if (filterIndex > -1) {
+  const filterAlreadyApplied = filterIndex > -1
+  if (filterAlreadyApplied) {
     const itemIndex = appliedFilters[filterIndex]?.items.findIndex(
       (item) => item.id === itemId,
     )
