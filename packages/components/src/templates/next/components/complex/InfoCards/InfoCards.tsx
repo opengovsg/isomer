@@ -36,7 +36,7 @@ const createInfoCardsStyles = tv({
     grid: "grid grid-cols-1 gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImageContainer:
-      "h-[11.875rem] w-full overflow-hidden rounded-lg border border-base-divider-subtle drop-shadow-none transition ease-in",
+      "w-full overflow-hidden rounded-lg border border-base-divider-subtle drop-shadow-none transition ease-in",
     cardImage: "h-full w-full object-center",
     cardTextContainer: "flex flex-col gap-2.5 sm:gap-3",
     cardTitleArrow:
@@ -49,13 +49,13 @@ const createInfoCardsStyles = tv({
         container: "py-12 first:pt-0 md:py-16",
         headingContainer: "gap-2.5 lg:max-w-3xl",
         headingSubtitle: "prose-headline-lg-regular",
-        cardImageContainer: "h-52 md:h-60",
+        cardImageContainer: "h-[11.875rem] md:h-60",
       },
       default: {
         container: "mt-14 first:mt-0",
         headingContainer: "gap-6",
         headingSubtitle: "prose-body-base",
-        default: "md:h-52",
+        cardImageContainer: "h-[11.875rem] md:h-52",
       },
     },
     isClickableCard: {
