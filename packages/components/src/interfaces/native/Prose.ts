@@ -57,5 +57,6 @@ export const CalloutProseSchema = generateProseSchema(undefined, "callout")
 export type ProseProps = Static<typeof ProseSchema> & {
   LinkComponent?: LinkComponentType
   site: IsomerSiteProps
+  shouldStripContentHtmlTags?: boolean
 }
 export type ProseContent = ProseProps["content"]
