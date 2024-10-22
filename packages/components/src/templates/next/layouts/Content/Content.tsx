@@ -53,7 +53,7 @@ const ContentLayout = ({
 
   // auto-inject ids for heading level 2 blocks if does not exist
   const transformedContent = getTransformedPageContent(content)
-  const tableOfContents = getTableOfContents(site.siteMap, transformedContent)
+  const tableOfContents = getTableOfContents(site, transformedContent)
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),

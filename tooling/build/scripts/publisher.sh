@@ -87,7 +87,7 @@ calculate_duration $start_time
 # Build
 echo "Building..."
 start_time=$(date +%s)
-npm run build
+npm run build:template
 calculate_duration $start_time
 
 # Check if the 'out' folder exists
@@ -103,30 +103,22 @@ cd out/
 echo $(pwd)
 ls -al
 
-# Zip the build
-echo "Zipping build..."
+# Publish to S3
+echo "Publishing to S3..."
 start_time=$(date +%s)
-# we use compression level = 3 to zip faster
-zip -rqX -3 ../build.zip .
-cd ../
-echo $(pwd)
-calculate_duration $start_time
+aws s3 sync . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --delete --no-progress
 
-# Upload to AWS Amplify
-echo "Uploading to AWS Amplify..."
-start_time=$(date +%s)
-DEPLOY_DATA=$(aws amplify create-deployment --app-id "$AMPLIFY_APP_ID" --branch-name "production")
-JOB_ID=$(echo $DEPLOY_DATA | jq -r '.jobId')
-echo "JOB_ID: $JOB_ID"
-UPLOAD_URL=$(echo $DEPLOY_DATA | jq -r '.zipUploadUrl')
-echo "UPLOAD_URL: $UPLOAD_URL"
-echo "Uploading build artifacts..."
-curl -T build.zip "$UPLOAD_URL"
-calculate_duration $start_time
+# Update CloudFront origin path
+echo "Updating CloudFront origin path..."
+echo "CloudFront distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
+aws cloudfront get-distribution --id $CLOUDFRONT_DISTRIBUTION_ID > distribution.json
 
-# Start AWS Amplify deployment
-echo "Starting deployment..."
-start_time=$(date +%s)
-aws amplify start-deployment --app-id "$AMPLIFY_APP_ID" --branch-name "production" --job-id $JOB_ID
-echo "Deployment created in Amplify successfully"
-calculate_duration $start_time
+ETag=`cat distribution.json | jq -r '.ETag'`
+echo "ETag: $ETag"
+
+jq '.Distribution.DistributionConfig' distribution.json > distribution-new.json
+jq ".Origins.Items[0].OriginPath = \"/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest\"" distribution-new.json > distribution-config.json
+aws cloudfront update-distribution --id $CLOUDFRONT_DISTRIBUTION_ID --distribution-config file://distribution-config.json --if-match $ETag
+
+# Invalidate CloudFront cache
+aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"

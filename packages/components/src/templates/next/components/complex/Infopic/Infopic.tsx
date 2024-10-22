@@ -69,7 +69,11 @@ export const Infopic = ({
           <div className={compoundStyles.button()}>
             <LinkButton
               LinkComponent={LinkComponent}
-              href={getReferenceLinkHref(buttonUrl, site.siteMap)}
+              href={getReferenceLinkHref(
+                buttonUrl,
+                site.siteMap,
+                site.assetsBaseUrl,
+              )}
               isWithFocusVisibleHighlight
             >
               {buttonLabel}

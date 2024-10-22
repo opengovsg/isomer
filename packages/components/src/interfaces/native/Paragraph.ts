@@ -10,6 +10,7 @@ export interface BaseParagraphProps {
   content: string
   className?: string
   id?: string
+  site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }
 
@@ -31,6 +32,4 @@ export const ParagraphSchema = Type.Object(
 )
 
 export type ParagraphProps = Static<typeof ParagraphSchema> &
-  Pick<BaseParagraphProps, "LinkComponent"> & {
-    site: IsomerSiteProps
-  }
+  Pick<BaseParagraphProps, "site" | "LinkComponent">

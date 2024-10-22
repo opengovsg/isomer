@@ -5,8 +5,9 @@ import { BaseParagraph } from "../../internal"
 const Paragraph = ({ content, LinkComponent, site }: ParagraphProps) => {
   return (
     <BaseParagraph
-      content={getTextAsHtml({ sitemap: site.siteMap, content })}
+      content={getTextAsHtml({ site, content })}
       className="prose-body-base text-base-content"
+      site={site}
       LinkComponent={LinkComponent}
     />
   )

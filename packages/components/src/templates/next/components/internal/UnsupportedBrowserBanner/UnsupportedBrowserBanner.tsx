@@ -1,31 +1,36 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { BiInfoCircle } from "react-icons/bi"
 
-import supportedBrowsers from "~/utils/supportedBrowsers"
-
-interface UnsupportedBrowserBannerProps {
-  userAgent?: string | undefined
-}
+import type { SupportedBrowserBannerProps } from "~/utils/isSupportedBrowser"
+import { isSupportedBrowser } from "~/utils/isSupportedBrowser"
 
 // TODO: move this to a official isomer.gov.sg once we migrate that to Isomer Next
 const supportedBrowserDocumentLink =
   "https://github.com/opengovsg/isomer/blob/main/packages/components/browser-support.md"
 
-const getUserAgent = (): string | undefined => {
-  return typeof window !== "undefined" ? window.navigator.userAgent : undefined
-}
-
-const isSupportedBrowser = ({
-  userAgent,
-}: UnsupportedBrowserBannerProps): boolean => {
-  return supportedBrowsers.test(userAgent || getUserAgent() || "")
-}
-
 export const UnsupportedBrowserBanner = ({
-  userAgent,
-}: UnsupportedBrowserBannerProps) => {
-  if (isSupportedBrowser({ userAgent })) {
+  userAgent: initialUserAgent,
+}: SupportedBrowserBannerProps) => {
+  const [navigatorUserAgent, setNavigatorUserAgent] = useState(
+    initialUserAgent || "",
+  )
+
+  useEffect(() => {
+    // If no userAgent prop is provided, and we're on the client-side, set navigatorUserAgent from navigator
+    // The check for typeof window and navigator ensures this only runs in browser environments, not during server-side rendering
+    // We use setNavigatorUserAgent to update the state, which will trigger a re-render with the correct user agent
+    if (
+      !initialUserAgent &&
+      typeof window !== "undefined" &&
+      typeof navigator !== "undefined"
+    ) {
+      setNavigatorUserAgent(navigator.userAgent)
+    }
+  }, [initialUserAgent])
+
+  if (isSupportedBrowser({ userAgent: navigatorUserAgent })) {
     return <></>
   }
 

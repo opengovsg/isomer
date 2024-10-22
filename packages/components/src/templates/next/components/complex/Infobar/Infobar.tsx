@@ -90,7 +90,11 @@ const Infobar = ({
           >
             {buttonLabel && buttonUrl && (
               <LinkButton
-                href={getReferenceLinkHref(buttonUrl, site.siteMap)}
+                href={getReferenceLinkHref(
+                  buttonUrl,
+                  site.siteMap,
+                  site.assetsBaseUrl,
+                )}
                 size={simplifiedLayout === "homepage" ? "lg" : "base"}
                 LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight
@@ -101,7 +105,11 @@ const Infobar = ({
 
             {secondaryButtonLabel && secondaryButtonUrl && (
               <LinkButton
-                href={getReferenceLinkHref(secondaryButtonUrl, site.siteMap)}
+                href={getReferenceLinkHref(
+                  secondaryButtonUrl,
+                  site.siteMap,
+                  site.assetsBaseUrl,
+                )}
                 size={simplifiedLayout === "homepage" ? "lg" : "base"}
                 variant="outline"
                 LinkComponent={LinkComponent}

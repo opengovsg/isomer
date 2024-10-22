@@ -29,10 +29,11 @@ const ProseComponent = ({
       return (
         <BaseParagraph
           content={getTextAsHtml({
-            sitemap: site.siteMap,
+            site,
             content: component.content,
           })}
           className="prose-body-base text-base-content"
+          site={site}
           LinkComponent={LinkComponent}
         />
       )
