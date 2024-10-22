@@ -91,6 +91,8 @@ const LinkEditorModalContent = ({
     mode: "onChange",
     schema: z.object({
       linkText: z.string().min(1),
+      // TODO: Refactor to be required
+      // Context: quick hack to ensure error message don't shown for empty linkHref for FileAttachment
       linkHref: z.string().min(1).optional(),
     }),
     defaultValues: {
@@ -103,6 +105,8 @@ const LinkEditorModalContent = ({
   const isEditingLink = !!linkText && !!linkHref
 
   const onSubmit = handleSubmit(
+    // TODO: Refactor to not have to check for !!linkHref
+    // Context: quick hack to ensure error message don't shown for empty linkHref for FileAttachment
     ({ linkText, linkHref }) => !!linkHref && onSave(linkText, linkHref),
   )
 
