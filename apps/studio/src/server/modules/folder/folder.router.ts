@@ -33,7 +33,6 @@ export const folderRouter = router({
           .values({
             permalink,
             siteId,
-            siteId,
             type: ResourceType.Folder,
             title: folderTitle,
             parentId: parentFolderId ? String(parentFolderId) : null,
