@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerPageLayoutType } from "~/types"
+import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 
 export const KeyStatisticsSchema = Type.Object(
   {
@@ -28,6 +28,13 @@ export const KeyStatisticsSchema = Type.Object(
         maxItems: 4,
       },
     ),
+    url: Type.Optional(
+      Type.String({
+        title: "Link destination",
+        description: "When this is clicked, open:",
+        format: "link",
+      }),
+    ),
   },
   {
     title: "KeyStatistics component",
@@ -37,4 +44,5 @@ export const KeyStatisticsSchema = Type.Object(
 
 export type KeyStatisticsProps = Static<typeof KeyStatisticsSchema> & {
   layout: IsomerPageLayoutType
+  site: IsomerSiteProps
 }

@@ -46,17 +46,17 @@ const getSitemapTreeFromArray = (
       }
     }
 
-    const idOfPage = resources.find(
+    const titleOfPage = resources.find(
       (child) =>
         // NOTE: This child is the index page of this resource
         child.permalink === INDEX_PAGE_PERMALINK &&
         child.parentId === resource.id,
-    )?.id
+    )?.title
 
     return {
-      id: String(idOfPage ?? resource.id),
+      id: String(resource.id),
       layout: "content", // Note: We are not using the layout field in our previews
-      title: resource.title,
+      title: titleOfPage || resource.title,
       summary: "", // Note: We are not using the summary field in our previews
       lastModified: new Date() // TODO: Update this to the updated_at field in DB
         .toISOString(),

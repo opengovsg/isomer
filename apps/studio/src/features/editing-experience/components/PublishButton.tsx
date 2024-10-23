@@ -5,6 +5,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 
+import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
@@ -54,20 +55,21 @@ const SuspendablePublishButton = ({
   const isChangesPendingPublish = !!currPage.draftBlobId
 
   return (
-    <TouchableTooltip
-      hidden={isChangesPendingPublish}
-      label="All changes have been published"
-    >
-      <Button
-        variant="solid"
-        size="sm"
-        onClick={handlePublish}
-        isLoading={isLoading}
-        isDisabled={!isChangesPendingPublish}
+    <Can do="publish" on="Resource">
+      <TouchableTooltip
+        hidden={isChangesPendingPublish}
+        label="All changes have been published"
       >
-        Publish
-      </Button>
-    </TouchableTooltip>
+        <Button
+          variant="solid"
+          size="sm"
+          onClick={handlePublish}
+          isLoading={isLoading}
+        >
+          Publish
+        </Button>
+      </TouchableTooltip>
+    </Can>
   )
 }
 

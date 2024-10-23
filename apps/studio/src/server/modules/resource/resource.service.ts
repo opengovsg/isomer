@@ -286,13 +286,7 @@ export const getLocalisedSitemap = async (
             // Recursive case: Get all the ancestors of the resource
             .selectFrom("Resource")
             .where("Resource.siteId", "=", siteId)
-            .where("Resource.type", "in", [
-              "Folder",
-              "Page",
-              "CollectionPage",
-              "RootPage",
-              "Collection",
-            ])
+            .where("Resource.type", "in", ["Folder", "Collection"])
             .innerJoin("ancestors", "ancestors.parentId", "Resource.id")
             .select(defaultResourceSelect),
         ),

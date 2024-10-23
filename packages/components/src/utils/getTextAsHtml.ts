@@ -1,3 +1,4 @@
+import DOMPurify from "isomorphic-dompurify"
 import isEqual from "lodash/isEqual"
 
 import type { HardBreakProps } from "~/interfaces"
@@ -25,15 +26,9 @@ interface GetTextAsHtmlArgs {
   shouldStripContentHtmlTags?: boolean
 }
 
-// Strips HTML tags using the DOM
-// Using regexp works, but just in case we are dealing with complex HTML
-// or need to handle specific edge cases (like script or style tags),
-// we want to use a more robust solution like using the DOM
 // We want to prevent user-injected HTML tags from breaking the formatting
-function stripHtmlTagsUsingDOM(input: string): string {
-  const div = document.createElement("div")
-  div.innerHTML = input
-  return div.textContent || div.innerText || ""
+function stripHtmlTags(input: string): string {
+  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] })
 }
 
 // Converts the text node with marks into the appropriate HTML
@@ -81,9 +76,7 @@ export const getTextAsHtml = ({
     // If there are no marks, just push the text
     if (!node.marks) {
       output.push(
-        shouldStripContentHtmlTags
-          ? stripHtmlTagsUsingDOM(node.text)
-          : node.text,
+        shouldStripContentHtmlTags ? stripHtmlTags(node.text) : node.text,
       )
       return
     }
@@ -120,7 +113,7 @@ export const getTextAsHtml = ({
 
     // Push the text
     output.push(
-      shouldStripContentHtmlTags ? stripHtmlTagsUsingDOM(node.text) : node.text,
+      shouldStripContentHtmlTags ? stripHtmlTags(node.text) : node.text,
     )
 
     // Close off all marks except for links in reverse order

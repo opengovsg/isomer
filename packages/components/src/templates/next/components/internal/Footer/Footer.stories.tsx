@@ -128,6 +128,10 @@ export const Default: Story = {
         type: "tiktok",
         url: "https://www.facebook.com",
       },
+      {
+        type: "whatsapp",
+        url: "https://www.facebook.com",
+      },
     ],
     contactUsLink: "/",
     feedbackFormLink: "https://www.google.com",
@@ -218,6 +222,10 @@ export const NonGovernment: Story = {
       },
       {
         type: "tiktok",
+        url: "https://www.facebook.com",
+      },
+      {
+        type: "whatsapp",
         url: "https://www.facebook.com",
       },
     ],

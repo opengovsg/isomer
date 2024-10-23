@@ -12,6 +12,8 @@ import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType } from "../database"
+import { PG_ERROR_CODES } from "../database/constants"
+import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
   defaultResourceSelect,
   getSiteResourceById,
@@ -25,7 +27,13 @@ import {
 export const collectionRouter = router({
   getMetadata: protectedProcedure
     .input(readFolderSchema)
-    .query(async ({ input: { siteId, resourceId } }) => {
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await validateUserPermissionsForResource({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
       const resource = await getSiteResourceById({
         siteId,
         resourceId: String(resourceId),
@@ -43,6 +51,12 @@ export const collectionRouter = router({
     .input(createCollectionSchema)
     .mutation(
       async ({ ctx, input: { collectionTitle, permalink, siteId } }) => {
+        await validateUserPermissionsForResource({
+          siteId,
+          action: "create",
+          userId: ctx.user.id,
+        })
+
         const result = await db
           .insertInto("Resource")
           .values({
@@ -55,7 +69,7 @@ export const collectionRouter = router({
           .returning(defaultCollectionSelect)
           .executeTakeFirstOrThrow()
           .catch((err) => {
-            if (get(err, "code") === "23505") {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "A resource with the same permalink already exists",
@@ -72,7 +86,13 @@ export const collectionRouter = router({
     ),
   createCollectionPage: protectedProcedure
     .input(createCollectionPageSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      await validateUserPermissionsForResource({
+        siteId: input.siteId,
+        action: "create",
+        userId: ctx.user.id,
+      })
+
       let newPage: UnwrapTagged<PrismaJson.BlobJsonContent>
       const { title, type, permalink, siteId, collectionId } = input
       if (type === ResourceType.CollectionPage) {
@@ -106,7 +126,7 @@ export const collectionRouter = router({
           .returning("Resource.id")
           .executeTakeFirstOrThrow()
           .catch((err) => {
-            if (get(err, "code") === "23505") {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "A resource with the same permalink already exists",
@@ -167,8 +187,12 @@ export const collectionRouter = router({
   list: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input: { resourceId, siteId, limit, offset } }) => {
+      await validateUserPermissionsForResource({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
       // Things that aren't working yet:
-      // 0. Perm checking
       // 1. Last Edited user and time
       // 2. Page status(draft, published)
 
