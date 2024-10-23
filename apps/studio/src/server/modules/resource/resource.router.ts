@@ -218,6 +218,7 @@ export const resourceRouter = router({
               .where("id", "=", movedResourceId)
               .select(["id", "siteId"])
               .executeTakeFirst()
+
             if (!toMove) {
               throw new TRPCError({ code: "BAD_REQUEST" })
             }
