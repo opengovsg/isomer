@@ -4,9 +4,9 @@ import { AbilityBuilder, createMongoAbility, PureAbility } from "@casl/ability"
 import { createContextualCan } from "@casl/react"
 
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
+import type { RoleType } from "~prisma/generated/generatedEnums"
 import { buildPermissionsForResource } from "~/server/modules/permissions/permissions.util"
 import { trpc } from "~/utils/trpc"
-import type { RoleType } from "~prisma/generated/generatedEnums"
 
 interface PermissionsProviderProps {
   siteId: number
