@@ -1,4 +1,5 @@
 import type { SelectExpression } from "kysely"
+import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { type DB } from "~prisma/generated/generatedTypes"
@@ -6,7 +7,9 @@ import { type DB } from "~prisma/generated/generatedTypes"
 import type { Resource, SafeKysely, Transaction } from "../database"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { getSitemapTree } from "~/utils/sitemap"
+import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb } from "../database"
+import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
 
 // Specify the default columns to return from the Resource table
@@ -387,4 +390,23 @@ export const getResourceFullPermalink = async (
     return null
   }
   return `/${permalinkTree.join("/")}`
+}
+
+export const publishResource = async (
+  logger: Logger<string>,
+  siteId: number,
+  resourceId: string,
+  userId: string,
+) => {
+  // Step 1: Create a new version
+  const addedVersionResult = await incrementVersion({
+    siteId,
+    resourceId,
+    userId,
+  })
+
+  // Step 2: Trigger a publish of the site
+  await publishSite(logger, siteId)
+
+  return addedVersionResult
 }

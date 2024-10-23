@@ -27,6 +27,8 @@ const SITE_ID = Number(process.env.SITE_ID)
 // Guaranteed to not be present in the database because we start from 1
 const DANGLING_DIRECTORY_PAGE_ID = "-1"
 const INDEX_PAGE_PERMALINK = "_index"
+const PAGE_RESOURCE_TYPES = ["Page", "CollectionPage", "IndexPage", "RootPage"]
+const FOLDER_RESOURCE_TYPES = ["Folder", "Collection"]
 
 const getConvertedPermalink = (fullPermalink: string) => {
   // NOTE: If the full permalink ends with `_index`,
@@ -35,9 +37,15 @@ const getConvertedPermalink = (fullPermalink: string) => {
   // and reflects what the users see.
   // Note that we can do an `endsWith` because
   // we prohibit users from using `_` as a character
-  return fullPermalink.endsWith(INDEX_PAGE_PERMALINK)
+  const fullPermalinkWithoutIndex = fullPermalink.endsWith(INDEX_PAGE_PERMALINK)
     ? fullPermalink.slice(0, -INDEX_PAGE_PERMALINK.length)
     : fullPermalink
+
+  if (fullPermalinkWithoutIndex.endsWith("/")) {
+    return fullPermalinkWithoutIndex.slice(0, -1)
+  }
+
+  return fullPermalinkWithoutIndex
 }
 
 // Wrapper function for debug logging
@@ -77,20 +85,22 @@ async function main() {
       )
 
       // Ensure the resource is a page (we don't need to write folders)
-      if (
-        (resource.type === "Page" ||
-          resource.type === "CollectionPage" ||
-          resource.type === "RootPage") &&
-        resource.content
-      ) {
+      if (PAGE_RESOURCE_TYPES.includes(resource.type) && resource.content) {
         // Inject page type and title into content before writing to file
         resource.content.page = {
           ...resource.content.page,
           title: resource.title,
         }
+        const idOfFolder = resources.find(
+          (item) =>
+            resource.fullPermalink.endsWith(INDEX_PAGE_PERMALINK) &&
+            resource.type !== "RootPage" &&
+            item.fullPermalink ===
+              getConvertedPermalink(resource.fullPermalink),
+        )?.id
 
         const sitemapEntry: SitemapEntry = {
-          id: resource.id,
+          id: idOfFolder ?? resource.id,
           title: resource.title,
           permalink: `/${getConvertedPermalink(resource.fullPermalink)}`,
           lastModified: new Date().toISOString(), // TODO: Update to updated_at column
@@ -136,10 +146,16 @@ async function main() {
 
     const sitemap = {
       ...rootPage,
-      children: generateSitemapTree(sitemapEntries, rootPage.permalink),
+      children: generateSitemapTree(
+        resources,
+        sitemapEntries,
+        rootPage.permalink,
+      ),
     }
 
-    await processDanglingDirectories(sitemap)
+    logDebug("Intermediate sitemap:", sitemap)
+
+    await processDanglingDirectories(resources, sitemap)
 
     try {
       // Create directories if they don't exist
@@ -160,13 +176,17 @@ async function main() {
 }
 
 function generateSitemapTree(
+  resources: Resource[],
   sitemapEntries: SitemapEntry[],
   pathPrefix: string,
 ): SitemapEntry[] | undefined {
   const pathPrefixWithoutLeadingSlash = pathPrefix.slice(1)
 
-  const entriesWithPathPrefix = sitemapEntries.filter((entry) =>
-    entry.permalink.startsWith(`${pathPrefix.length === 1 ? "" : pathPrefix}/`),
+  const entriesWithPathPrefix = sitemapEntries.filter(
+    (entry) =>
+      entry.permalink.startsWith(
+        `${pathPrefix.length === 1 ? "" : pathPrefix}/`,
+      ) && entry.permalink !== "/",
   )
 
   // Base case: No entries with the path prefix - this is a leaf node
@@ -207,9 +227,26 @@ function generateSitemapTree(
     .map((danglingDirectory) => {
       const pageName = danglingDirectory.replace(/-/g, " ")
       const title = pageName.charAt(0).toUpperCase() + pageName.slice(1)
+      logDebug(
+        `Creating index page for dangling directory: ${danglingDirectory}`,
+      )
+      logDebug(
+        "Checking using permalink:",
+        pathPrefixWithoutLeadingSlash.length === 0
+          ? danglingDirectory
+          : `${pathPrefixWithoutLeadingSlash}/${danglingDirectory}`,
+      )
+      const idOfFolder = resources.find(
+        (resource) =>
+          getConvertedPermalink(resource.fullPermalink) ===
+            (pathPrefixWithoutLeadingSlash.length === 0
+              ? danglingDirectory
+              : `${pathPrefixWithoutLeadingSlash}/${danglingDirectory}`) &&
+          FOLDER_RESOURCE_TYPES.includes(resource.type),
+      )?.id
 
       return {
-        id: DANGLING_DIRECTORY_PAGE_ID,
+        id: idOfFolder ?? DANGLING_DIRECTORY_PAGE_ID,
         title,
         permalink: `${pathPrefix.length === 1 ? "" : pathPrefix}/${danglingDirectory}`,
         lastModified: new Date().toISOString(),
@@ -235,30 +272,40 @@ function generateSitemapTree(
 
   return children.map((child) => ({
     ...child,
-    children: generateSitemapTree(sitemapEntries, child.permalink),
+    children: generateSitemapTree(resources, sitemapEntries, child.permalink),
   }))
 }
 
-function getDanglingDirectories(sitemapEntry: SitemapEntry): SitemapEntry[] {
+function getFolders(
+  resources: Resource[],
+  sitemapEntry: SitemapEntry,
+): SitemapEntry[] {
   // Base case: No children - this is a leaf node
   if (!sitemapEntry.children) {
     return []
   }
 
-  // Get all immediate children that are dangling directories
-  const danglingDirectories = sitemapEntry.children.filter(
-    (child) => child.id === DANGLING_DIRECTORY_PAGE_ID,
+  // Get all immediate children that are folders
+  const folders = sitemapEntry.children.filter((child) =>
+    resources.some(
+      (resource) =>
+        resource.id === child.id &&
+        FOLDER_RESOURCE_TYPES.includes(resource.type),
+    ),
   )
 
   // Recurse on all children
   return [
-    ...danglingDirectories,
-    ...sitemapEntry.children.flatMap((child) => getDanglingDirectories(child)),
+    ...folders,
+    ...sitemapEntry.children.flatMap((child) => getFolders(resources, child)),
   ]
 }
 
 // Create the index page for all dangling directories
-async function processDanglingDirectories(sitemapEntry: SitemapEntry) {
+async function processDanglingDirectories(
+  resources: Resource[],
+  sitemapEntry: SitemapEntry,
+) {
   // Base case: No children - this is a leaf node
   if (!sitemapEntry.children) {
     return
@@ -266,14 +313,14 @@ async function processDanglingDirectories(sitemapEntry: SitemapEntry) {
 
   // Create index page for all immediate children that are dangling directories
   await Promise.all(
-    getDanglingDirectories(sitemapEntry).map((child) => {
+    getFolders(resources, sitemapEntry).map((child) => {
       const indexPageContent = getIndexPageContents(
         child.title,
         child.children ?? [],
       )
 
       return writeContentToFile(
-        child.permalink,
+        `${child.permalink}/${INDEX_PAGE_PERMALINK}`,
         indexPageContent,
         Number(DANGLING_DIRECTORY_PAGE_ID),
       )
@@ -305,24 +352,21 @@ async function writeContentToFile(
   parentId: number | null,
 ) {
   try {
-    if (!fullPermalink) {
-      console.error("Error: fullPermalink is undefined or empty for resource")
-      return
-    }
-
     // NOTE: do a join with ./ here so that
     // we don't end up with an absolute path to a special unix folder
-    const sanitizedPermalink = path.join(
-      "./",
-      path
-        // NOTE: normalization here will remove dual backslashes
-        // and also strip .. filepaths except as a prefix
-        .normalize(fullPermalink)
-        // NOTE: this matches on a leading ../
-        // or a leading ..\
-        // or a plain .. without any paths
-        .replace(/^(\.\.(\/|\\|$))+/, ""),
-    )
+    const sanitizedPermalink = !fullPermalink
+      ? INDEX_PAGE_PERMALINK
+      : path.join(
+          "./",
+          path
+            // NOTE: normalization here will remove dual backslashes
+            // and also strip .. filepaths except as a prefix
+            .normalize(fullPermalink)
+            // NOTE: this matches on a leading ../
+            // or a leading ..\
+            // or a plain .. without any paths
+            .replace(/^(\.\.(\/|\\|$))+/, ""),
+        )
 
     const directoryPath =
       parentId === null
@@ -334,6 +378,12 @@ async function writeContentToFile(
 
     // Create directories if they don't exist
     fs.mkdirSync(directoryPath, { recursive: true })
+
+    // File may have already been written previously
+    if (fs.existsSync(filePath)) {
+      logDebug(`File already exists: ${filePath}`)
+      return
+    }
 
     // Write JSON content to file
     fs.writeFileSync(filePath, JSON.stringify(content), "utf-8")

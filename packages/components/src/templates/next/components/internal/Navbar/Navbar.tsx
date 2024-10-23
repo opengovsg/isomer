@@ -118,6 +118,7 @@ export const Navbar = ({
                 isOpen={openNavItemIdx === index && !isHamburgerOpen}
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 LinkComponent={LinkComponent}
+                site={site}
               />
             ))}
           </ul>
@@ -195,6 +196,7 @@ export const Navbar = ({
           items={items}
           openNavItemIdx={openNavItemIdx}
           setOpenNavItemIdx={setOpenNavItemIdx}
+          site={site}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           LinkComponent={LinkComponent}
           onCloseMenu={onCloseMenu}

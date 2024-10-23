@@ -4,7 +4,7 @@ import { polyfill } from "interweave-ssr"
 
 import type { BaseParagraphProps } from "~/interfaces/native/Paragraph"
 import { twMerge } from "~/lib/twMerge"
-import { isExternalUrl } from "~/utils"
+import { getReferenceLinkHref, isExternalUrl } from "~/utils"
 import { Link } from "../Link"
 
 // NOTE: We need this polyfill as interweave uses a DOM to perform the
@@ -15,6 +15,7 @@ export const BaseParagraph = ({
   content,
   className,
   id,
+  site,
   LinkComponent,
 }: Omit<BaseParagraphProps, "type">) => {
   const transform = (node: HTMLElement, children: Node[]): React.ReactNode => {
@@ -25,7 +26,7 @@ export const BaseParagraph = ({
       return (
         <Link
           LinkComponent={LinkComponent}
-          href={href}
+          href={getReferenceLinkHref(href, site.siteMap, site.assetsBaseUrl)}
           isExternal={isExternalLink}
           isWithFocusVisibleHighlight
         >

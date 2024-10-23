@@ -10,7 +10,8 @@ import {
 import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
-import { db, jsonb, ResourceType } from "../database"
+import { publishSite } from "../aws/codebuild.service"
+import { db, jsonb, ResourceState, ResourceType } from "../database"
 import {
   defaultResourceSelect,
   getSiteResourceById,
@@ -40,27 +41,35 @@ export const collectionRouter = router({
     }),
   create: protectedProcedure
     .input(createCollectionSchema)
-    .mutation(async ({ input: { collectionTitle, permalink, siteId } }) => {
-      return db
-        .insertInto("Resource")
-        .values({
-          permalink,
-          siteId,
-          type: "Collection",
-          title: collectionTitle,
-        })
-        .returning(defaultCollectionSelect)
-        .executeTakeFirstOrThrow()
-        .catch((err) => {
-          if (get(err, "code") === "23505") {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "A resource with the same permalink already exists",
-            })
-          }
-          throw err
-        })
-    }),
+    .mutation(
+      async ({ ctx, input: { collectionTitle, permalink, siteId } }) => {
+        const result = await db
+          .insertInto("Resource")
+          .values({
+            permalink,
+            siteId,
+            type: ResourceType.Collection,
+            title: collectionTitle,
+            state: ResourceState.Published,
+          })
+          .returning(defaultCollectionSelect)
+          .executeTakeFirstOrThrow()
+          .catch((err) => {
+            if (get(err, "code") === "23505") {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
+
+        // TODO: Create the index page for the collection and publish it
+        await publishSite(ctx.logger, siteId)
+
+        return result
+      },
+    ),
   createCollectionPage: protectedProcedure
     .input(createCollectionPageSchema)
     .mutation(async ({ input }) => {

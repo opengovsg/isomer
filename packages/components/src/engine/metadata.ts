@@ -12,9 +12,7 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
         !props.meta?.noIndex,
     },
     icons: {
-      shortcut:
-        props.site.favicon ||
-        "https://www.isomer.gov.sg/images/favicon-isomer.ico",
+      shortcut: `${props.site.assetsBaseUrl ?? ""}${props.site.favicon || "/favicon.ico"}`,
     },
     twitter: {
       card: "summary_large_image" as const,
@@ -22,15 +20,9 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
   }
 
   if (metadata.description === undefined && props.layout === "article") {
-    return {
-      ...metadata,
-      description: props.page.articlePageHeader.summary,
-    }
+    metadata.description = props.page.articlePageHeader.summary
   } else if (metadata.description === undefined && props.layout === "content") {
-    return {
-      ...metadata,
-      description: props.page.contentPageHeader.summary,
-    }
+    metadata.description = props.page.contentPageHeader.summary
   }
 
   if (props.page.permalink === "/") {
