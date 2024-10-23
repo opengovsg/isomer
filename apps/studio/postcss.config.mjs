@@ -2,6 +2,7 @@
 const config = {
   plugins: {
     tailwindcss: {},
+    "flex-gap-polyfill": {},
     autoprefixer: {},
   },
 }
