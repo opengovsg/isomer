@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 import { Box, Flex, Stack } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { format } from "date-fns"
 
 import collectionSitemap from "~/features/editing-experience/data/collectionSitemap.json"
@@ -23,14 +24,14 @@ export const PreviewLayout = (): JSX.Element => {
 
   const previewOverrides = useMemo(() => {
     switch (currentType) {
-      case "link": {
+      case ResourceType.CollectionLink: {
         return {
           page: {
             date: format(new Date(), "dd MMM yyyy"),
           },
         }
       }
-      case "page": {
+      case ResourceType.CollectionPage: {
         return {}
       }
     }
@@ -57,7 +58,7 @@ export const PreviewLayout = (): JSX.Element => {
             justify="center"
             whiteSpace="pre"
           >
-            {`You're previewing a ${currentType === "link" ? "PDF " : ""}collection page`}
+            {`You're previewing a ${currentType === ResourceType.CollectionLink ? "collection link" : "collection page"}`}
           </Flex>
           <Box bg="white" overflow="auto" height="100%">
             <PreviewIframe preventPointerEvents keyForRerender={currentType}>

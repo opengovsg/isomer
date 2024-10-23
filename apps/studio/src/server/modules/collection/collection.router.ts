@@ -66,7 +66,7 @@ export const collectionRouter = router({
     .mutation(async ({ input }) => {
       let newPage: UnwrapTagged<PrismaJson.BlobJsonContent>
       const { title, type, permalink, siteId, collectionId } = input
-      if (type === "page") {
+      if (type === ResourceType.CollectionPage) {
         newPage = createCollectionPageJson({ type })
       } else {
         newPage = createCollectionLinkJson({ type })
@@ -92,10 +92,7 @@ export const collectionRouter = router({
             siteId,
             parentId: String(collectionId),
             draftBlobId: blob.id,
-            type:
-              type === "page"
-                ? ResourceType.CollectionPage
-                : ResourceType.CollectionLink,
+            type,
           })
           .returning("Resource.id")
           .executeTakeFirstOrThrow()

@@ -76,7 +76,9 @@ const InnerDrawer = () => {
           schema={schema}
           validateFn={validateFn}
           data={data}
-          handleChange={(data) => setLinkAtom(data)}
+          handleChange={(data) =>
+            setLinkAtom((oldData) => ({ ...oldData, ...data }))
+          }
         />
       </Flex>
       <Spacer />

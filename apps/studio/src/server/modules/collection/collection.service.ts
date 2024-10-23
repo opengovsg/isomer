@@ -1,8 +1,10 @@
 import type { UnwrapTagged } from "type-fest"
 import { format } from "date-fns"
 
+import type { ResourceType } from "../database"
+
 export const createCollectionPageJson = ({}: {
-  type: "page" // Act as soft typeguard
+  type: typeof ResourceType.CollectionPage // Act as soft typeguard
 }) => {
   return {
     layout: "article",
@@ -21,7 +23,7 @@ export const createCollectionPageJson = ({}: {
 }
 
 export const createCollectionLinkJson = ({}: {
-  type: "link" // Act as soft typeguard
+  type: typeof ResourceType.CollectionLink // Act as soft typeguard
 }) => {
   return {
     layout: "link",

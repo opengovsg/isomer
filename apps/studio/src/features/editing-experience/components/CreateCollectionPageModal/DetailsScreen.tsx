@@ -14,6 +14,7 @@ import {
   Wrap,
 } from "@chakra-ui/react"
 import { Button, FormErrorMessage } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { Controller } from "react-hook-form"
 
 import { MAX_PAGE_URL_LENGTH, MAX_TITLE_LENGTH } from "~/schemas/page"
@@ -144,7 +145,7 @@ export const CreateCollectionPageDetailsScreen = () => {
               {/* Section 2: Page URL */}
               <FormControl
                 isInvalid={!!errors.permalink}
-                display={type === "link" ? "none" : "auto"}
+                display={type === ResourceType.CollectionLink ? "none" : "auto"}
               >
                 <FormLabel>
                   Page URL
@@ -164,7 +165,7 @@ export const CreateCollectionPageDetailsScreen = () => {
                     name="permalink"
                     render={({ field: { onChange, ...field } }) => (
                       <Input
-                        isDisabled={type === "link"}
+                        isDisabled={type === ResourceType.CollectionLink}
                         borderLeftRadius={0}
                         placeholder="URL will be autopopulated if left untouched"
                         {...field}

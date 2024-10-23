@@ -11,6 +11,7 @@ import {
   useRadioGroup,
 } from "@chakra-ui/react"
 import { Badge } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiFile, BiUpload } from "react-icons/bi"
 
 import type { CollectionItemType } from "./constants"
@@ -31,7 +32,7 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
 
     const { TileIcon, title, description, badge } = useMemo(() => {
       switch (value) {
-        case "page": {
+        case ResourceType.CollectionPage: {
           return {
             TileIcon: BiFile,
             title: "Page",
@@ -44,7 +45,7 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
             ),
           }
         }
-        case "link": {
+        case ResourceType.CollectionLink: {
           return {
             TileIcon: BiUpload,
             title: "Link",

@@ -3,12 +3,14 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { createContext, useContext, useMemo, useState } from "react"
 import { useRouter } from "next/router"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { merge } from "lodash"
 
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import collectionLinkPreview from "~/features/editing-experience/data/collectionLinkPreview.json"
 import { useZodForm } from "~/lib/form"
 import { createCollectionPageFormSchema } from "~/schemas/page"
+import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 
 export enum CreateCollectionPageFlowStates {
@@ -57,7 +59,7 @@ const useCreateCollectionPageWizardContext = ({
     defaultValues: {
       title: "",
       permalink: "",
-      type: "page",
+      type: ResourceType.CollectionPage,
     },
   })
 
@@ -65,7 +67,7 @@ const useCreateCollectionPageWizardContext = ({
 
   const pagePreviewJson: IsomerSchema = useMemo(() => {
     const jsonPreview =
-      type === "page"
+      type === ResourceType.CollectionPage
         ? merge(articleLayoutPreview, {
             page: { title: title || "Page title here" },
           })
@@ -95,7 +97,7 @@ const useCreateCollectionPageWizardContext = ({
       },
       {
         onSuccess: ({ pageId }) => {
-          const nextType = type === "page" ? "pages" : "links"
+          const nextType = getResourceSubpath(type)
           void router.push(`/sites/${siteId}/${nextType}/${pageId}`)
         },
         onError: (error) => {
