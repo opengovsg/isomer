@@ -5,15 +5,17 @@ import type {
   CrudResourceActions,
   PermissionsProps,
   ResourceAbility,
+  SiteAbility,
 } from "./permissions.type"
 import { db } from "../database"
-import { buildPermissionsFor } from "./permissions.util"
+import { CRUD_ACTIONS } from "./permissions.type"
+import { buildPermissionsForResource } from "./permissions.util"
 
 // NOTE: Fetches roles for the given resource
 // and returns the permissions wihch the user has for the given resource.
 // If the resourceId is `null` or `undefined`,
 // we will instead fetch the roles for the given site
-export const definePermissionsFor = async ({
+export const definePermissionsForResource = async ({
   userId,
   siteId,
   resourceId,
@@ -30,14 +32,41 @@ export const definePermissionsFor = async ({
     query = query.where("resourceId", "=", resourceId)
   }
 
-  const roles = await query.selectAll().execute()
+  const roles = await query.select("role").execute()
 
-  roles.map(({ role }) => buildPermissionsFor(role, builder))
+  roles.map(({ role }) => buildPermissionsForResource(role, builder))
 
   return builder.build({ detectSubjectType: () => "Resource" })
 }
 
-export const validateUserPermissions = async ({
+export const definePermissionsForSite = async ({
+  userId,
+  siteId,
+}: Omit<PermissionsProps, "resourceId">) => {
+  const builder = new AbilityBuilder<SiteAbility>(createMongoAbility)
+  const roles = await db
+    .selectFrom("ResourcePermission")
+    .where("userId", "=", userId)
+    .where("siteId", "=", siteId)
+    .where("resourceId", "is", null)
+    .select("role")
+    .execute()
+
+  // NOTE: Any role should be able to read site
+  if (roles.length > 0) {
+    builder.can("read", "Site")
+  }
+
+  if (roles.some(({ role }) => role === "Admin")) {
+    CRUD_ACTIONS.map((action) => {
+      builder.can(action, "Site")
+    })
+  }
+
+  return builder.build({ detectSubjectType: () => "Site" })
+}
+
+export const validateUserPermissionsForResource = async ({
   action,
   resourceId = null,
   ...rest
@@ -65,7 +94,7 @@ export const validateUserPermissions = async ({
     })
   }
 
-  const perms = await definePermissionsFor({
+  const perms = await definePermissionsForResource({
     ...rest,
   })
 
