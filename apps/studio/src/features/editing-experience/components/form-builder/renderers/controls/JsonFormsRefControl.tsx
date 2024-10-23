@@ -108,10 +108,6 @@ export function JsonFormsRefControl({
             </>
           )}
         </Flex>
-
-        <FormErrorMessage>
-          {label} {errors}
-        </FormErrorMessage>
       </Box>
       <LinkEditorModal
         linkTypes={omit(LINK_TYPES, "email")}
