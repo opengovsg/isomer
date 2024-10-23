@@ -138,6 +138,7 @@ export type SingleCardWithImageProps = Static<
   typeof SingleCardWithImageSchema
 > & {
   site: IsomerSiteProps
+  layout: IsomerPageLayoutType
   LinkComponent?: LinkComponentType
 }
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
