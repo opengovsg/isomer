@@ -218,17 +218,30 @@ export const resourceRouter = router({
               .where("id", "=", movedResourceId)
               .select(["id", "siteId"])
               .executeTakeFirst()
+
             if (!toMove) {
               throw new TRPCError({ code: "BAD_REQUEST" })
             }
-            const parent = await tx
-              .selectFrom("Resource")
-              .where("id", "=", destinationResourceId)
+
+            let query = tx.selectFrom("Resource")
+            query = !!destinationResourceId
+              ? query.where("id", "=", destinationResourceId)
+              : query.where("type", "=", "RootPage")
+            const parent = await query
               .select(["id", "type", "siteId"])
               .executeTakeFirst()
 
-            if (!parent || parent.type !== "Folder") {
-              throw new TRPCError({ code: "BAD_REQUEST" })
+            if (
+              !parent ||
+              // NOTE: we only allow moves to folders/root.
+              // for moves to root, we only allow this for admin
+              (parent.type !== "RootPage" && parent.type !== "Folder")
+            ) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message:
+                  "Please ensure that you are trying to move your resource into a valid destination",
+              })
             }
 
             if (movedResourceId === destinationResourceId) {
@@ -243,8 +256,13 @@ export const resourceRouter = router({
               .updateTable("Resource")
               .where("id", "=", String(movedResourceId))
               .where("Resource.type", "in", ["Page", "Folder"])
-              .set({ parentId: String(destinationResourceId) })
+              .set({
+                parentId: !!destinationResourceId
+                  ? String(destinationResourceId)
+                  : null,
+              })
               .execute()
+
             return tx
               .selectFrom("Resource")
               .where("id", "=", String(movedResourceId))

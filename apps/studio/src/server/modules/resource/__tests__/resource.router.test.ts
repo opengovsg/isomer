@@ -788,7 +788,11 @@ describe("resource.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Please ensure that you are trying to move your resource into a valid destination",
+        }),
       )
     })
 
@@ -816,7 +820,11 @@ describe("resource.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Please ensure that you are trying to move your resource into a valid destination",
+        }),
       )
     })
 

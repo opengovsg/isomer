@@ -1,5 +1,6 @@
 import { useMemo } from "react"
 import NextLink from "next/link"
+import { Can } from "@casl/react"
 import { MenuButton, MenuList, Portal } from "@chakra-ui/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -15,6 +16,7 @@ import {
 import type { ResourceTableData } from "./types"
 import { MenuItem } from "~/components/Menu"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
+import { usePermissions } from "~/features/permissions"
 import { getLinkToResource } from "~/utils/resource"
 import { deleteResourceModalAtom, folderSettingsModalAtom } from "../../atoms"
 
@@ -48,6 +50,8 @@ export const ResourceTableMenu = ({
     [siteId, resourceId, type],
   )
 
+  const { ability } = usePermissions()
+
   return (
     <Menu isLazy size="sm">
       <MenuButton
@@ -70,10 +74,13 @@ export const ResourceTableMenu = ({
               >
                 Edit page settings
               </MenuItem>
+
               {/* TODO(ISOM-1552): Add back duplicate page functionality when implemented */}
-              <MenuItem isDisabled icon={<BiDuplicate fontSize="1rem" />}>
-                Duplicate page
-              </MenuItem>
+              <Can do="create" on={{ parentId }} ability={ability}>
+                <MenuItem isDisabled icon={<BiDuplicate fontSize="1rem" />}>
+                  Duplicate page
+                </MenuItem>
+              </Can>
             </>
           ) : (
             <MenuItem
@@ -88,28 +95,33 @@ export const ResourceTableMenu = ({
             </MenuItem>
           )}
           {(type === "Page" || type === "Folder") && (
-            <MenuItem
-              as="button"
-              onClick={handleMoveResourceClick}
-              icon={<BiFolderOpen fontSize="1rem" />}
-            >
-              Move to...
-            </MenuItem>
+            // TODO: we need to change the resourceid next time when we implement root level permissions
+            <Can do="move" on={{ parentId }} ability={ability}>
+              <MenuItem
+                as="button"
+                onClick={handleMoveResourceClick}
+                icon={<BiFolderOpen fontSize="1rem" />}
+              >
+                Move to...
+              </MenuItem>
+            </Can>
           )}
           {resourceType !== ResourceType.RootPage && (
-            <MenuItem
-              onClick={() => {
-                setResourceModalState({
-                  title,
-                  resourceId,
-                  resourceType,
-                })
-              }}
-              colorScheme="critical"
-              icon={<BiTrash fontSize="1rem" />}
-            >
-              Delete
-            </MenuItem>
+            <Can do="delete" on={{ parentId }} ability={ability}>
+              <MenuItem
+                onClick={() => {
+                  setResourceModalState({
+                    title,
+                    resourceId,
+                    resourceType,
+                  })
+                }}
+                colorScheme="critical"
+                icon={<BiTrash fontSize="1rem" />}
+              >
+                Delete
+              </MenuItem>
+            </Can>
           )}
         </MenuList>
       </Portal>
