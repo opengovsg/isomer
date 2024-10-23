@@ -32,13 +32,13 @@ export const InfobarSchema = Type.Object(
       Type.String({
         title: "Button destination",
         description: "When this is clicked, open:",
-        maxLength: 50,
         format: "link",
       }),
     ),
     secondaryButtonLabel: Type.Optional(
       Type.String({
         title: "Secondary button text",
+        maxLength: 50,
         description:
           "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
       }),

@@ -14,6 +14,7 @@ export const SocialMediaTypes = [
   "youtube",
   "github",
   "tiktok",
+  "whatsapp",
 ] as const
 
 export type SocialMediaType = (typeof SocialMediaTypes)[number]
