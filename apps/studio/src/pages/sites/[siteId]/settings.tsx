@@ -18,6 +18,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { z } from "zod"
 
+import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
@@ -218,5 +219,13 @@ const SiteSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-SiteSettingsPage.getLayout = AdminSidebarOnlyLayout
+SiteSettingsPage.getLayout = (page) => {
+  return (
+    <PermissionsBoundary
+      resourceType="RootPage"
+      page={AdminSidebarOnlyLayout(page)}
+    />
+  )
+}
+
 export default SiteSettingsPage

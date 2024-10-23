@@ -24,6 +24,8 @@ import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { z } from "zod"
 
+import type { NextPageWithLayout } from "~/lib/types"
+import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { generateResourceUrl } from "~/features/editing-experience/components/utils"
@@ -43,7 +45,7 @@ const THREE_SECONDS_IN_MS = 3000
 const SUCCESS_TOAST_ID = "save-page-settings-success"
 const ajv = new Ajv({ strict: false, logger: false })
 
-const PageSettings = () => {
+const PageSettings: NextPageWithLayout = () => {
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const [{ type, title: originalTitle, content }] =
     trpc.page.readPageAndBlob.useSuspenseQuery(
@@ -273,6 +275,10 @@ const PageSettings = () => {
   )
 }
 
-PageSettings.getLayout = PageEditingLayout
+PageSettings.getLayout = (page) => {
+  return (
+    <PermissionsBoundary resourceType="Page" page={PageEditingLayout(page)} />
+  )
+}
 
 export default PageSettings

@@ -15,6 +15,7 @@ import { BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
 import type { RouterOutput } from "~/utils/trpc"
+import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
@@ -110,9 +111,9 @@ const FolderPage: NextPageWithLayout = () => {
         w="100%"
         p="1.75rem"
         gap="1rem"
-        height={0}
-        minH="100%"
+        height="0"
         overflow="auto"
+        minH="100%"
       >
         <VStack w="100%" align="start">
           <Breadcrumb size="sm" w="100%">
@@ -242,5 +243,12 @@ const FolderPage: NextPageWithLayout = () => {
   )
 }
 
-FolderPage.getLayout = AdminCmsSidebarLayout
+FolderPage.getLayout = (page) => {
+  return (
+    <PermissionsBoundary
+      resourceType="Folder"
+      page={AdminCmsSidebarLayout(page)}
+    />
+  )
+}
 export default FolderPage
