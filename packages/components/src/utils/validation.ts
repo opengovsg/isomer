@@ -1,7 +1,7 @@
 export const ALLOWED_URL_REGEXES = {
   external: "^https:\\/\\/",
   mail: "^mailto:",
-  internal: "^\\[.*\\]$",
+  internal: "^\\[resource:(\\d+):(\\d+)\\]$",
   files: ".*\\.pdf",
 } as const
 
