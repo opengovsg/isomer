@@ -58,7 +58,7 @@ export const PreviewLayout = (): JSX.Element => {
             justify="center"
             whiteSpace="pre"
           >
-            {`You're previewing a ${currentType === ResourceType.CollectionLink ? "collection link" : "collection page"}`}
+            {`You're previewing a collection ${currentType === ResourceType.CollectionLink ? "link" : "page"}`}
           </Flex>
           <Box bg="white" overflow="auto" height="100%">
             <PreviewIframe preventPointerEvents keyForRerender={currentType}>
