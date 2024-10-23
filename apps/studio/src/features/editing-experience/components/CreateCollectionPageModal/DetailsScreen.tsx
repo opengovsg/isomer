@@ -7,10 +7,12 @@ import {
   Input,
   InputGroup,
   InputLeftAddon,
+  ListItem,
   ModalBody,
   ModalHeader,
   Stack,
   Text,
+  UnorderedList,
   Wrap,
 } from "@chakra-ui/react"
 import { Button, FormErrorMessage } from "@opengovsg/design-system-react"
@@ -114,9 +116,25 @@ export const CreateCollectionPageDetailsScreen = () => {
           <Stack height="100%" gap="2rem" mt="10vh" px="3rem" py="1rem">
             <Stack>
               <Text as="h2" textStyle="h4">
-                What is your page about?
+                {type === ResourceType.CollectionPage
+                  ? "What is your page about?"
+                  : "Give your item a title."}
               </Text>
-              <Text textStyle="body-2">You can change these later.</Text>
+              {type === ResourceType.CollectionPage ? (
+                <Text textStyle="body-2">You can change these later.</Text>
+              ) : (
+                <Text textStyle="body-2">
+                  You can change this later. An item can be a:
+                  <UnorderedList>
+                    <ListItem>A page from your website</ListItem>
+                    <ListItem>
+                      An external link (e.g, you might want to link an e-service
+                      on another domain)
+                    </ListItem>
+                    <ListItem>File (PDF)</ListItem>
+                  </UnorderedList>
+                </Text>
+              )}
             </Stack>
             <Stack gap="1.5rem">
               {/* Section 1: Page Title */}

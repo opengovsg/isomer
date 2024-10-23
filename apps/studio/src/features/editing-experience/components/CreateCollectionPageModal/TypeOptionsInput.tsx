@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react"
 import { Badge } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { BiFile, BiUpload } from "react-icons/bi"
+import { BiFile, BiLink } from "react-icons/bi"
 
 import type { CollectionItemType } from "./constants"
 import { COLLECTION_ITEM_TYPES } from "./constants"
@@ -47,10 +47,10 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
         }
         case ResourceType.CollectionLink: {
           return {
-            TileIcon: BiUpload,
-            title: "Link",
+            TileIcon: BiLink,
+            title: "Link or file",
             description:
-              "Select this option if you want to link a url, a page or a file.",
+              "Select this option if you want to link to an existing page on your site, link an external page, or upload a PDF file.",
           }
         }
       }
