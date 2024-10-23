@@ -1,6 +1,11 @@
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
+import { TRPCError } from "@trpc/server"
 
-import type { PermissionsProps, ResourceAbility } from "./permissions.type"
+import type {
+  CrudResourceActions,
+  PermissionsProps,
+  ResourceAbility,
+} from "./permissions.type"
 import { db } from "../database"
 import { buildPermissionsFor } from "./permissions.util"
 
@@ -30,4 +35,45 @@ export const definePermissionsFor = async ({
   roles.map(({ role }) => buildPermissionsFor(role, builder))
 
   return builder.build({ detectSubjectType: () => "Resource" })
+}
+
+export const validateUserPermissions = async ({
+  action,
+  resourceId = null,
+  ...rest
+}: PermissionsProps & { action: CrudResourceActions }) => {
+  // TODO: this is using site wide permissions for now
+  // we should fetch the oldest `parent` of this resource eventually
+  const hasCustomParentId = resourceId === null || action === "create"
+  const resource = hasCustomParentId
+    ? // NOTE: If this is at root, we will always use `null` as the parent
+      // otherwise, this is a `create` action and the parent of the resource that
+      // we want to create is the resource passed in.
+      // However, because we don't have root level permissions for now,
+      // we will pass in `null` to signify the site level permissions
+      { parentId: resourceId ?? null }
+    : await db
+        .selectFrom("Resource")
+        .where("Resource.id", "=", resourceId)
+        .select(["Resource.parentId"])
+        .executeTakeFirst()
+
+  if (!resource) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Resource not found",
+    })
+  }
+
+  const perms = await definePermissionsFor({
+    ...rest,
+  })
+
+  // TODO: create should check against the current resource id
+  if (perms.cannot(action, resource)) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You do not have sufficient permissions to perform this action",
+    })
+  }
 }
