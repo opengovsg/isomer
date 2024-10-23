@@ -53,7 +53,8 @@ export const CollectionResults = ({
           </p>
         </div>
       </div>
-      <div className="flex h-full w-full flex-col gap-0">
+      {/* NOTE: DO NOT add h-full to this div as it will break old browsers */}
+      <div className="flex w-full flex-col gap-0">
         {paginatedItems.length > 0 &&
           paginatedItems.map((item) => (
             <CollectionCard
