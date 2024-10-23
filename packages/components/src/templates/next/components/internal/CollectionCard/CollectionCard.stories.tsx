@@ -76,7 +76,7 @@ const generateArgs = ({
     image: withoutImage
       ? undefined
       : {
-          src: "https://plxacehold.co/500x500",
+          src: "https://placehold.co/500x500",
           alt: "placeholder",
         },
     variant: variant as "link" | "article" | "file" | undefined,
