@@ -11,11 +11,7 @@ import {
 } from "@chakra-ui/react"
 import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-import {
-  Button,
-  FormErrorMessage,
-  IconButton,
-} from "@opengovsg/design-system-react"
+import { Button, IconButton } from "@opengovsg/design-system-react"
 import { omit } from "lodash"
 import { BiTrash } from "react-icons/bi"
 
