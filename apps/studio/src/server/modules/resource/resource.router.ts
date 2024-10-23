@@ -25,15 +25,19 @@ import { definePermissionsFor } from "../permissions/permissions.service"
 const fetchResource = async (resourceId: string | null) => {
   if (resourceId === null) return { parentId: null }
 
-  return (
-    db
-      .selectFrom("Resource")
-      .where("Resource.id", "=", resourceId)
-      .select("parentId")
-      // NOTE: if we don't have a resource,
-      // this means that they tried to fetch a resource that cannot be found
-      .executeTakeFirstOrThrow()
-  )
+  const resource = await db
+    .selectFrom("Resource")
+    .where("Resource.id", "=", resourceId)
+    .select("parentId")
+    // NOTE: if we don't have a resource,
+    // this means that they tried to fetch a resource that cannot be found
+    .executeTakeFirst()
+
+  if (!resource) {
+    throw new TRPCError({ code: "BAD_REQUEST" })
+  }
+
+  return resource
 }
 
 const validateUserPermissions = async ({
