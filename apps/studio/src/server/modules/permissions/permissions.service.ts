@@ -56,7 +56,14 @@ export const validateUserPermissions = async ({
         .selectFrom("Resource")
         .where("Resource.id", "=", resourceId)
         .select(["Resource.parentId"])
-        .executeTakeFirstOrThrow()
+        .executeTakeFirst()
+
+  if (!resource) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Resource not found",
+    })
+  }
 
   const perms = await definePermissionsFor({
     ...rest,

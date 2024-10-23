@@ -1343,6 +1343,10 @@ describe("resource.router", async () => {
     it("should return 400 if resource to delete does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.delete({
@@ -1352,7 +1356,7 @@ describe("resource.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
       )
     })
 
@@ -1360,6 +1364,10 @@ describe("resource.router", async () => {
       // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "Page",
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
       })
 
       // Act
@@ -1380,6 +1388,10 @@ describe("resource.router", async () => {
     it("should delete a folder and all its children (recursively) successfully", async () => {
       // Arrange
       const { folder: folderToUse, site } = await setupFolder()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const nestedPages = await Promise.all(
         Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
           const { page } = await setupPageResource({
@@ -1441,6 +1453,10 @@ describe("resource.router", async () => {
       // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "RootPage",
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
       })
 
       // Act
