@@ -2115,6 +2115,10 @@ video {
   text-overflow: ellipsis;
 }
 
+.whitespace-nowrap {
+  white-space: nowrap;
+}
+
 .text-pretty {
   text-wrap: pretty;
 }
@@ -4626,6 +4630,10 @@ video {
 
   .md\:mt-6 {
     margin-top: 1.5rem;
+  }
+
+  .md\:block {
+    display: block;
   }
 
   .md\:flex {
