@@ -61,6 +61,16 @@ const config = {
           },
         }
 
+        // Add support for grid layout
+        // NOTE: This is not a complete implementation.
+        // It does not account for grid-template-columns or grid-template-rows
+        acc[`.${e(`gap-${key}`)}.grid > *:not(:last-child)`] = {
+          "@supports not (gap: 1rem)": {
+            marginRight: value,
+            marginBottom: value,
+          },
+        }
+
         return acc
       }, {})
 
