@@ -100,7 +100,7 @@ export const resourceRouter = router({
           .selectFrom("Resource")
           .where("siteId", "=", Number(siteId))
           .where("id", "=", String(resourceId))
-          .where("Resource.type", "=", "Folder")
+          .where("Resource.type", "in", ["RootPage", "Collection", "Folder"])
           .executeTakeFirst()
 
         if (!resource) {
