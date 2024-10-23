@@ -100,7 +100,7 @@ const InfoCardContainer = ({
 >): JSX.Element => {
   return url ? (
     <Link
-      href={getReferenceLinkHref(url, site.siteMap)}
+      href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
       className={compoundStyles.cardContainer()}
       LinkComponent={LinkComponent}
     >

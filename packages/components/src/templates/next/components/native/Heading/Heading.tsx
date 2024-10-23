@@ -13,7 +13,7 @@ const Heading = ({
         className="prose-display-md text-base-content-strong [&:not(:first-child)]:mt-14"
       >
         {getTextAsHtml({
-          sitemap: site.siteMap,
+          site,
           content,
           shouldHideEmptyHardBreak: true,
         })}
@@ -27,7 +27,7 @@ const Heading = ({
         className="prose-display-sm text-base-content-strong [&:not(:first-child)]:mt-9"
       >
         {getTextAsHtml({
-          sitemap: site.siteMap,
+          site,
           content,
           shouldHideEmptyHardBreak: true,
         })}
@@ -41,7 +41,7 @@ const Heading = ({
         className="prose-title-md-semibold text-base-content-strong [&:not(:first-child)]:mt-8"
       >
         {getTextAsHtml({
-          sitemap: site.siteMap,
+          site,
           content,
           shouldHideEmptyHardBreak: true,
         })}
@@ -55,7 +55,7 @@ const Heading = ({
         className="prose-headline-lg-semibold text-base-content-strong [&:not(:first-child)]:mt-7"
       >
         {getTextAsHtml({
-          sitemap: site.siteMap,
+          site,
           content,
           shouldHideEmptyHardBreak: true,
         })}
@@ -68,7 +68,7 @@ const Heading = ({
       className="prose-headline-base-semibold text-base-content-strong [&:not(:first-child)]:mt-6"
     >
       {getTextAsHtml({
-        sitemap: site.siteMap,
+        site,
         content,
         shouldHideEmptyHardBreak: true,
       })}

@@ -1,10 +1,10 @@
-import type { IsomerComponent, IsomerSitemap } from "~/engine"
+import type { IsomerComponent, IsomerSiteProps } from "~/engine"
 import type { HeadingLink } from "~/interfaces/internal/TableOfContents"
 import { getTextAsHtml } from "./getTextAsHtml"
 
 // Generates the table of contents given the blocks of the page
 export const getTableOfContents = (
-  sitemap: IsomerSitemap,
+  site: IsomerSiteProps,
   content: IsomerComponent[],
 ): HeadingLink[] => {
   return content.flatMap((block) => {
@@ -17,7 +17,7 @@ export const getTableOfContents = (
     for (const component of block.content) {
       if (component.type === "heading" && component.attrs.level === 2) {
         result.push({
-          content: getTextAsHtml({ sitemap, content: component.content }),
+          content: getTextAsHtml({ site, content: component.content }),
           anchorLink: "#" + component.attrs.id,
         })
       }

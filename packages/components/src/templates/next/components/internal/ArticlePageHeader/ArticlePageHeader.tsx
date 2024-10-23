@@ -5,12 +5,19 @@ import Breadcrumb from "../Breadcrumb"
 
 const ArticleSummaryContent = ({
   summary,
+  site,
   LinkComponent,
-}: Pick<ArticlePageHeaderProps, "summary" | "LinkComponent">) => {
+}: Pick<ArticlePageHeaderProps, "summary" | "site" | "LinkComponent">) => {
   if (summary.length === 0) {
     return <></>
   }
-  return <BaseParagraph content={summary} LinkComponent={LinkComponent} />
+  return (
+    <BaseParagraph
+      content={summary}
+      site={site}
+      LinkComponent={LinkComponent}
+    />
+  )
 }
 
 const ArticlePageHeader = ({
@@ -19,6 +26,7 @@ const ArticlePageHeader = ({
   title,
   date,
   summary,
+  site,
   LinkComponent,
 }: ArticlePageHeaderProps) => {
   return (
@@ -41,6 +49,7 @@ const ArticlePageHeader = ({
         <div className="text-xl tracking-tight text-gray-500 md:text-2xl">
           <ArticleSummaryContent
             summary={summary}
+            site={site}
             LinkComponent={LinkComponent}
           />
         </div>

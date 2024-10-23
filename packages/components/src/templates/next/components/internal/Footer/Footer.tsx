@@ -19,7 +19,12 @@ import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { focusVisibleHighlight, getFormattedDate, isExternalUrl } from "~/utils"
+import {
+  focusVisibleHighlight,
+  getFormattedDate,
+  getReferenceLinkHref,
+  isExternalUrl,
+} from "~/utils"
 import { Link } from "../Link"
 
 const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
@@ -79,10 +84,14 @@ const FooterItem = ({
 }
 
 const NavSection = ({
+  site,
   LinkComponent,
   siteNavItems,
   customNavItems,
-}: Pick<FooterProps, "LinkComponent" | "siteNavItems" | "customNavItems">) => {
+}: Pick<
+  FooterProps,
+  "site" | "LinkComponent" | "siteNavItems" | "customNavItems"
+>) => {
   return (
     <div className="prose-body-sm flex flex-col gap-8 lg:flex-row lg:gap-10">
       <div className="flex flex-col gap-3 lg:w-64">
@@ -90,7 +99,11 @@ const NavSection = ({
           <FooterItem
             key={index}
             title={item.title}
-            url={item.url}
+            url={getReferenceLinkHref(
+              item.url,
+              site.siteMap,
+              site.assetsBaseUrl,
+            )}
             LinkComponent={LinkComponent}
           />
         ))}
@@ -100,7 +113,11 @@ const NavSection = ({
           <FooterItem
             key={index}
             title={item.title}
-            url={item.url}
+            url={getReferenceLinkHref(
+              item.url,
+              site.siteMap,
+              site.assetsBaseUrl,
+            )}
             LinkComponent={LinkComponent}
           />
         ))}
@@ -111,8 +128,9 @@ const NavSection = ({
 
 const SocialMediaSection = ({
   socialMediaLinks,
+  site,
   LinkComponent,
-}: Pick<FooterProps, "socialMediaLinks" | "LinkComponent">) => {
+}: Pick<FooterProps, "socialMediaLinks" | "site" | "LinkComponent">) => {
   if (!socialMediaLinks || socialMediaLinks.length === 0) {
     return <></>
   }
@@ -126,7 +144,11 @@ const SocialMediaSection = ({
           return (
             <Link
               key={link.url}
-              href={link.url}
+              href={getReferenceLinkHref(
+                link.url,
+                site.siteMap,
+                site.assetsBaseUrl,
+              )}
               isExternal
               label={`${link.type} page`}
               className={footerItemLinkStyle()}
@@ -143,26 +165,35 @@ const SocialMediaSection = ({
 }
 
 const ContactUsSection = ({
+  site,
   LinkComponent,
   contactUsLink,
   feedbackFormLink,
 }: Pick<
   FooterProps,
-  "LinkComponent" | "contactUsLink" | "feedbackFormLink"
+  "site" | "LinkComponent" | "contactUsLink" | "feedbackFormLink"
 >) => {
   return (
     <div className="prose-body-sm flex flex-col gap-3">
       {contactUsLink && (
         <FooterItem
           title="Contact Us"
-          url={contactUsLink}
+          url={getReferenceLinkHref(
+            contactUsLink,
+            site.siteMap,
+            site.assetsBaseUrl,
+          )}
           LinkComponent={LinkComponent}
         />
       )}
       {feedbackFormLink && (
         <FooterItem
           title="Feedback Form"
-          url={feedbackFormLink}
+          url={getReferenceLinkHref(
+            feedbackFormLink,
+            site.siteMap,
+            site.assetsBaseUrl,
+          )}
           LinkComponent={LinkComponent}
         />
       )}
@@ -171,21 +202,28 @@ const ContactUsSection = ({
 }
 
 const ReachUsSection = ({
+  site,
   LinkComponent,
   socialMediaLinks,
   contactUsLink,
   feedbackFormLink,
 }: Pick<
   FooterProps,
-  "LinkComponent" | "socialMediaLinks" | "contactUsLink" | "feedbackFormLink"
+  | "site"
+  | "LinkComponent"
+  | "socialMediaLinks"
+  | "contactUsLink"
+  | "feedbackFormLink"
 >) => {
   return (
     <div className="flex flex-col gap-6 lg:w-fit">
       <SocialMediaSection
         socialMediaLinks={socialMediaLinks}
+        site={site}
         LinkComponent={LinkComponent}
       />
       <ContactUsSection
+        site={site}
         LinkComponent={LinkComponent}
         contactUsLink={contactUsLink}
         feedbackFormLink={feedbackFormLink}
@@ -195,15 +233,16 @@ const ReachUsSection = ({
 }
 
 const LegalSection = ({
+  site,
   LinkComponent,
   agencyName,
   isGovernment,
   lastUpdated,
   privacyStatementLink,
   termsOfUseLink,
-  siteMapLink,
 }: Pick<
   FooterProps,
+  | "site"
   | "LinkComponent"
   | "agencyName"
   | "isGovernment"
@@ -231,14 +270,22 @@ const LegalSection = ({
           {privacyStatementLink && (
             <FooterItem
               title="Privacy Statement"
-              url={privacyStatementLink}
+              url={getReferenceLinkHref(
+                privacyStatementLink,
+                site.siteMap,
+                site.assetsBaseUrl,
+              )}
               LinkComponent={LinkComponent}
             />
           )}
           {termsOfUseLink && (
             <FooterItem
               title="Terms of Use"
-              url={termsOfUseLink}
+              url={getReferenceLinkHref(
+                termsOfUseLink,
+                site.siteMap,
+                site.assetsBaseUrl,
+              )}
               LinkComponent={LinkComponent}
             />
           )}
@@ -302,6 +349,7 @@ const CreditsSection = ({
 
 // below lg
 const FooterMobile = ({
+  site,
   LinkComponent,
   siteName,
   agencyName,
@@ -322,12 +370,14 @@ const FooterMobile = ({
       <NavSection
         siteNavItems={navItems}
         customNavItems={customItems}
+        site={site}
         LinkComponent={LinkComponent}
       />
       <ReachUsSection
         socialMediaLinks={socialMediaLinks}
         contactUsLink={contactUsLink}
         feedbackFormLink={feedbackFormLink}
+        site={site}
         LinkComponent={LinkComponent}
       />
       <div className="flex flex-col gap-9">
@@ -338,6 +388,7 @@ const FooterMobile = ({
           privacyStatementLink={privacyStatementLink}
           termsOfUseLink={termsOfUseLink}
           siteMapLink={siteMapLink}
+          site={site}
           LinkComponent={LinkComponent}
         />
         <CreditsSection />
@@ -348,6 +399,7 @@ const FooterMobile = ({
 
 // lg and above
 const FooterDesktop = ({
+  site,
   LinkComponent,
   siteName,
   agencyName,
@@ -371,6 +423,7 @@ const FooterDesktop = ({
             <NavSection
               siteNavItems={navItems}
               customNavItems={customItems}
+              site={site}
               LinkComponent={LinkComponent}
             />
           </div>
@@ -379,6 +432,7 @@ const FooterDesktop = ({
               socialMediaLinks={socialMediaLinks}
               contactUsLink={contactUsLink}
               feedbackFormLink={feedbackFormLink}
+              site={site}
               LinkComponent={LinkComponent}
             />
           </div>
@@ -390,6 +444,7 @@ const FooterDesktop = ({
               privacyStatementLink={privacyStatementLink}
               termsOfUseLink={termsOfUseLink}
               siteMapLink={siteMapLink}
+              site={site}
               LinkComponent={LinkComponent}
             />
           </div>
