@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash"
+import { z } from "zod"
 
 import type { ResourceType } from "../database"
 import {
@@ -17,6 +18,7 @@ import {
 import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
 import { db, sql } from "../database"
+import { PG_ERROR_CODES } from "../database/constants"
 
 export const resourceRouter = router({
   getMetadataById: protectedProcedure
@@ -195,7 +197,7 @@ export const resourceRouter = router({
               .executeTakeFirst()
           })
           .catch((err) => {
-            if (get(err, "code") === "23505") {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "A resource with the same permalink already exists",
@@ -359,6 +361,26 @@ export const resourceRouter = router({
       }
 
       return result
+    }),
+
+  getRolesFor: protectedProcedure
+    .input(
+      z.object({
+        resourceId: z.string().nullable(),
+        siteId: z.number(),
+      }),
+    )
+    .query(({ ctx, input: { resourceId, siteId } }) => {
+      const query = db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", ctx.user.id)
+        .where("siteId", "=", siteId)
+
+      if (!resourceId) {
+        query.where("resourceId", "is", null)
+      } else query.where("resourceId", "=", resourceId)
+
+      return query.select(["role"]).execute()
     }),
 
   getAncestryOf: protectedProcedure

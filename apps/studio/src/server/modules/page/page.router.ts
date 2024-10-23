@@ -1,7 +1,13 @@
-import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
+import { getLayoutMetadataSchema, schema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { get, isEmpty, isEqual } from "lodash"
+import { z } from "zod"
 
+import type {
+  CrudResourceActions,
+  PermissionsProps,
+} from "../permissions/permissions.type"
 import {
   basePageSchema,
   createPageSchema,
@@ -17,6 +23,8 @@ import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType } from "../database"
+import { PG_ERROR_CODES } from "../database/constants"
+import { definePermissionsFor } from "../permissions/permissions.service"
 import {
   getFooter,
   getFullPageById,
@@ -30,15 +38,117 @@ import {
 import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage } from "./page.service"
 
+const schemaValidator = ajv.compile<IsomerSchema>(schema)
+
+const validateUserPermissions = async ({
+  action,
+  resourceId = null,
+  ...rest
+}: PermissionsProps & { action: CrudResourceActions }) => {
+  // TODO: this is using site wide permissions for now
+  // we should fetch the oldest `parent` of this resource eventually
+  const hasCustomParentId = resourceId === null || action === "create"
+  const resource = hasCustomParentId
+    ? // NOTE: If this is at root, we will always use `null` as the parent
+      // otherwise, this is a `create` action and the parent of the resource that
+      // we want to create is the resource passed in.
+      // However, because we don't have root level permissions for now,
+      // we will pass in `null` to signify the site level permissions
+      { parentId: null }
+    : await db
+        .selectFrom("Resource")
+        .where("Resource.id", "=", resourceId)
+        .select(["Resource.parentId"])
+        .executeTakeFirstOrThrow()
+
+  const perms = await definePermissionsFor({ ...rest, resourceId: null })
+
+  // TODO: create should check against the current resource id
+  if (perms.cannot(action, resource)) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You do not have sufficient permissions to perform this action",
+    })
+  }
+}
+
+// TODO: Need to do validation like checking for existence of the page
+// and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
+const validatedPageProcedure = protectedProcedure.use(
+  async ({ next, rawInput }) => {
+    if (
+      typeof rawInput === "object" &&
+      rawInput !== null &&
+      "content" in rawInput
+    ) {
+      // NOTE: content will be the entire page schema for now...
+      if (!schemaValidator(safeJsonParse(rawInput.content as string))) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Schema validation failed.",
+          cause: schemaValidator.errors,
+        })
+      }
+    } else {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Missing request parameters.",
+      })
+    }
+
+    return next()
+  },
+)
+
 export const pageRouter = router({
+  list: protectedProcedure
+    .input(
+      z.object({
+        siteId: z.number(),
+        resourceId: z.number().optional(),
+      }),
+    )
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await validateUserPermissions({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
+      let query = db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+
+      if (resourceId) {
+        query = query.where("Resource.parentId", "=", String(resourceId))
+      }
+      return query
+        .select([
+          "Resource.id",
+          "Resource.permalink",
+          "Resource.title",
+          "Resource.publishedVersionId",
+          "Resource.draftBlobId",
+          "Resource.type",
+        ])
+        .execute()
+    }),
+
   readPage: protectedProcedure
     .input(basePageSchema)
     .output(readPageOutputSchema)
-    .query(async ({ input: { pageId, siteId } }) => {
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await validateUserPermissions({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
       const retrievedPage = await getPageById(db, {
         resourceId: pageId,
         siteId,
       })
+
       if (!retrievedPage) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -51,7 +161,12 @@ export const pageRouter = router({
 
   readPageAndBlob: protectedProcedure
     .input(basePageSchema)
-    .query(async ({ input: { pageId, siteId } }) => {
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await validateUserPermissions({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
       // TODO: Return blob last modified so the renderer can show last modified
       return db.transaction().execute(async (tx) => {
         const page = await getFullPageById(tx, { resourceId: pageId, siteId })
@@ -97,10 +212,15 @@ export const pageRouter = router({
 
   reorderBlock: protectedProcedure
     .input(reorderBlobSchema)
-    .mutation(async ({ input: { pageId, from, to, blocks, siteId } }) => {
+    .mutation(async ({ ctx, input: { pageId, from, to, blocks, siteId } }) => {
+      await validateUserPermissions({
+        userId: ctx.user.id,
+        siteId,
+        action: "update",
+      })
+
       // NOTE: we have to check against the page's content that we retrieve from db
       // we adopt a strict check such that we allow the update iff the checksum is the same
-
       return db.transaction().execute(async (tx) => {
         const fullPage = await getFullPageById(tx, {
           resourceId: pageId,
@@ -158,9 +278,15 @@ export const pageRouter = router({
         return actualBlocks
       })
     }),
-  updatePageBlob: protectedProcedure
+
+  updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      await validateUserPermissions({
+        userId: ctx.user.id,
+        siteId: input.siteId,
+        action: "update",
+      })
       await db.transaction().execute(async (tx) => {
         return updateBlobById(tx, input)
       })
@@ -171,7 +297,16 @@ export const pageRouter = router({
   createPage: protectedProcedure
     .input(createPageSchema)
     .mutation(
-      async ({ input: { permalink, siteId, folderId, title, layout } }) => {
+      async ({
+        ctx,
+        input: { permalink, siteId, folderId, title, layout },
+      }) => {
+        await validateUserPermissions({
+          userId: ctx.user.id,
+          siteId,
+          action: "create",
+          resourceId: !!folderId ? String(folderId) : null,
+        })
         const newPage = createDefaultPage({ layout })
 
         // TODO: Validate whether siteId is a valid site
@@ -219,9 +354,7 @@ export const pageRouter = router({
             return addedResource
           })
           .catch((err) => {
-            // TODO: Extract into reusable util function
-            // Unique constraint violation error
-            if (get(err, "code") === "23505") {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "A resource with the same permalink already exists",
@@ -242,7 +375,12 @@ export const pageRouter = router({
 
   getRootPage: protectedProcedure
     .input(getRootPageSchema)
-    .query(async ({ input: { siteId } }) => {
+    .query(async ({ ctx, input: { siteId } }) => {
+      await validateUserPermissions({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
       const rootPage = await db
         .selectFrom("Resource")
         // TODO: Only return sites that the user has access to
@@ -270,6 +408,11 @@ export const pageRouter = router({
     .input(pageSettingsSchema)
     .mutation(
       async ({ ctx, input: { pageId, siteId, title, meta, ...settings } }) => {
+        await validateUserPermissions({
+          userId: ctx.user.id,
+          siteId,
+          action: "update",
+        })
         return db.transaction().execute(async (tx) => {
           const fullPage = await getFullPageById(tx, {
             resourceId: pageId,
@@ -336,7 +479,7 @@ export const pageRouter = router({
               ])
               .executeTakeFirstOrThrow()
               .catch((err) => {
-                if (get(err, "code") === "23505") {
+                if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
                   throw new TRPCError({
                     code: "CONFLICT",
                     message:
@@ -370,8 +513,14 @@ export const pageRouter = router({
     ),
   getFullPermalink: protectedProcedure
     .input(basePageSchema)
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const { pageId, siteId } = input
+      await validateUserPermissions({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
       const permalink = await getResourceFullPermalink(siteId, pageId)
       if (!permalink) {
         throw new TRPCError({
@@ -384,8 +533,14 @@ export const pageRouter = router({
     }),
   getPermalinkTree: protectedProcedure
     .input(basePageSchema)
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const { pageId, siteId } = input
+      await validateUserPermissions({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
       const permalinkTree = await getResourcePermalinkTree(siteId, pageId)
       if (isEmpty(permalinkTree)) {
         throw new TRPCError({
