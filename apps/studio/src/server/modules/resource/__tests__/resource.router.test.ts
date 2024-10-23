@@ -22,7 +22,7 @@ describe("resource.router", async () => {
   let caller: ReturnType<typeof createCaller>
   const session = await applyAuthedSession()
 
-  beforeAll(async () => {
+  beforeAll(() => {
     caller = createCaller(createMockRequest(session))
   })
 
