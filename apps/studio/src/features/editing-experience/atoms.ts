@@ -10,10 +10,12 @@ export interface CollectionLinkProps {
   description?: string
   date: string
   category: string
+  title: string
 }
 export const linkAtom = atom<CollectionLinkProps>({
   ref: "",
   description: "",
   date: format(new Date(), "dd/mm/yyyy"),
   category: "",
+  title: "",
 })

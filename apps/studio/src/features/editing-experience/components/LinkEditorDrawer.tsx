@@ -37,7 +37,10 @@ const InnerDrawer = () => {
     },
     {
       onSuccess: (data) => {
-        setLinkAtom(data.content.page as CollectionLinkProps)
+        setLinkAtom({
+          ...(data.content.page as CollectionLinkProps),
+          title: data.title,
+        })
       },
       refetchOnWindowFocus: false,
     },

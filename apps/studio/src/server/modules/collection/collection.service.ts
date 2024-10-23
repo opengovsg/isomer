@@ -28,6 +28,8 @@ export const createCollectionLinkJson = ({}: {
     page: {
       ref: "",
       summary: "",
+      category: "",
+      date: format(new Date(), "dd-MM-yyyy"),
     },
     content: [],
     // TODO: Add pdf blob to content
