@@ -2377,6 +2377,11 @@ video {
   background-color: rgb(219 234 254 / var(--tw-bg-opacity));
 }
 
+.bg-utility-feedback-warning {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 204 21 / var(--tw-bg-opacity));
+}
+
 .bg-utility-highlight {
   --tw-bg-opacity: 1;
   background-color: rgb(251 191 36 / var(--tw-bg-opacity));
@@ -3576,6 +3581,10 @@ video {
   grid-template-rows: auto 1fr;
 }
 
+.\[resource\:some-resource\] {
+  resource: some-resource;
+}
+
 .current\:prose-label-md-medium[data-current] {
   font-weight: 500;
   letter-spacing: 0;
@@ -3802,8 +3811,8 @@ video {
   background-color: rgb(243 244 246 / 0.5);
 }
 
-.hover\:bg-base-canvas-inverse-overlay\/80:where([data-rac])[data-hovered] {
-  background-color: rgb(63 63 70 / 0.8);
+.hover\:bg-base-canvas-inverse-overlay\/40:where([data-rac])[data-hovered] {
+  background-color: rgb(63 63 70 / 0.4);
 }
 
 .hover\:bg-brand-interaction-hover:where([data-rac])[data-hovered] {
@@ -3908,8 +3917,8 @@ video {
   background-color: rgb(243 244 246 / 0.5);
 }
 
-.hover\:bg-base-canvas-inverse-overlay\/80:where(:not([data-rac])):hover {
-  background-color: rgb(63 63 70 / 0.8);
+.hover\:bg-base-canvas-inverse-overlay\/40:where(:not([data-rac])):hover {
+  background-color: rgb(63 63 70 / 0.4);
 }
 
 .hover\:bg-brand-interaction-hover:where(:not([data-rac])):hover {

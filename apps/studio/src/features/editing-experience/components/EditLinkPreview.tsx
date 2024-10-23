@@ -24,13 +24,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
     siteId,
   })
 
-  const [children] = trpc.collection.getSiblingsOf.useSuspenseQuery({
-    siteId,
-    resourceId: linkId,
-  })
-
   const parentPermalink = permalink.split("/").slice(0, -1).join("/")
-  const linkSuffix = permalink.split("/").slice(-1).join("/")
   const parentTitle = parent?.title || "Collection"
 
   const siteMap = {
@@ -48,18 +42,18 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
         layout: "collection",
         title: parentTitle,
         summary: "",
-        children: children.map((props) => ({
-          ...props,
-          date: linkSuffix === props.permalink ? date : new Date().toString(),
-          ref: "Test",
-          summary:
-            linkSuffix === props.permalink
-              ? summary || ""
-              : "This is the summary of your page",
-          layout: "link",
-          permalink: `${parentPermalink}/${props.permalink}`,
-          lastModified: new Date().toString(),
-        })),
+        children: [
+          {
+            id: "9999999",
+            title: "",
+            date,
+            ref: "Test",
+            summary: summary ?? "",
+            layout: "link",
+            permalink,
+            lastModified: new Date().toString(),
+          },
+        ],
       },
     ],
   } satisfies IsomerSitemap
