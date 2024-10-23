@@ -4,6 +4,7 @@ import { get } from "lodash"
 import { z } from "zod"
 
 import type { ResourceType } from "../database"
+import type { PermissionsProps } from "../permissions/permissions.type"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -19,6 +20,49 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
 import { db, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
+import { definePermissionsFor } from "../permissions/permissions.service"
+
+const fetchResource = async (resourceId: string | null) => {
+  if (resourceId === null) return { parentId: null }
+
+  const resource = await db
+    .selectFrom("Resource")
+    .where("Resource.id", "=", resourceId)
+    .select("parentId")
+    // NOTE: if we don't have a resource,
+    // this means that they tried to fetch a resource that cannot be found
+    .executeTakeFirst()
+
+  if (!resource) {
+    throw new TRPCError({ code: "BAD_REQUEST" })
+  }
+
+  return resource
+}
+
+const validateUserPermissions = async ({
+  from,
+  to,
+  ...rest
+}: Omit<PermissionsProps, "resourceId"> & {
+  from: string
+  to: string | null
+}) => {
+  // TODO: this is using site wide permissions for now
+  // we should fetch the oldest `parent` of this resource eventually.
+  // Putting this in here first because eventually we'll have to lookup both
+  // even though for now they are the same thing
+  const permsFrom = await definePermissionsFor({ ...rest, resourceId: null })
+  const permsTo = await definePermissionsFor({ ...rest, resourceId: null })
+
+  const resourceFrom = await fetchResource(from)
+
+  return (
+    // NOTE: This is because we want to check whether we can move to within `to`
+    // and hence, the parent id is `to`
+    permsFrom.can("move", resourceFrom) && permsTo.can("move", { parentId: to })
+  )
+}
 
 export const resourceRouter = router({
   getMetadataById: protectedProcedure
@@ -147,7 +191,25 @@ export const resourceRouter = router({
   move: protectedProcedure
     .input(moveSchema)
     .mutation(
-      async ({ ctx, input: { movedResourceId, destinationResourceId } }) => {
+      async ({
+        ctx,
+        input: { siteId, movedResourceId, destinationResourceId },
+      }) => {
+        const isValid = await validateUserPermissions({
+          from: movedResourceId,
+          to: destinationResourceId,
+          userId: ctx.user.id,
+          siteId,
+        })
+
+        if (!isValid) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "Please ensure that you have the required permissions to perform a move!",
+          })
+        }
+
         const result = await db
           .transaction()
           .execute(async (tx) => {

@@ -6,6 +6,7 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import {
+  setupAdminPermissions,
   setupFolder,
   setupPageResource,
   setupSite,
@@ -17,11 +18,11 @@ import { resourceRouter } from "../resource.router"
 
 const createCaller = createCallerFactory(resourceRouter)
 
-describe("resource.router", () => {
+describe("resource.router", async () => {
   let caller: ReturnType<typeof createCaller>
+  const session = await applyAuthedSession()
 
-  beforeAll(async () => {
-    const session = await applyAuthedSession()
+  beforeAll(() => {
     caller = createCaller(createMockRequest(session))
   })
 
@@ -733,9 +734,11 @@ describe("resource.router", () => {
   describe("move", () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
+      const { site } = await setupSite()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
       const result = unauthedCaller.move({
+        siteId: site.id,
         movedResourceId: "1",
         destinationResourceId: "1",
       })
@@ -747,10 +750,16 @@ describe("resource.router", () => {
 
     it("should return 400 if moved resource does not exist", async () => {
       // Arrange
+      const { site } = await setupSite()
       const { folder } = await setupFolder()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.move({
+        siteId: site.id,
         movedResourceId: "99999", // should not exist
         destinationResourceId: folder.id,
       })
@@ -764,9 +773,15 @@ describe("resource.router", () => {
     it("should return 400 if destination resource does not exist", async () => {
       // Arrange
       const { folder } = await setupFolder()
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.move({
+        siteId: site.id,
         movedResourceId: folder.id,
         destinationResourceId: "99999", // should not exist
       })
@@ -787,9 +802,14 @@ describe("resource.router", () => {
         siteId: site.id,
         permalink: "another-page",
       })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.move({
+        siteId: site.id,
         movedResourceId: pageToMove.id,
         destinationResourceId: anotherPage.id,
       })
@@ -808,9 +828,14 @@ describe("resource.router", () => {
       const { folder: destinationFolder, site: destinationSite } =
         await setupFolder()
       expect(originSite.id).not.toEqual(destinationSite.id)
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: originSite.id,
+      })
 
       // Act
       const result = caller.move({
+        siteId: originSite.id,
         movedResourceId: originPage.id,
         destinationResourceId: destinationFolder.id,
       })
@@ -835,9 +860,14 @@ describe("resource.router", () => {
         siteId: site.id,
         permalink: "destination-folder",
       })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.move({
+        siteId: site.id,
         movedResourceId: pageToMove.id,
         destinationResourceId: destinationFolder.id,
       })
@@ -866,9 +896,14 @@ describe("resource.router", () => {
         siteId: site.id,
         permalink: "destination-folder",
       })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.move({
+        siteId: site.id,
         movedResourceId: pageToMove.id,
         destinationResourceId: destinationFolder.id,
       })

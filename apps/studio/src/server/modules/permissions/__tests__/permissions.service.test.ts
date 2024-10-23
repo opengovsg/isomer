@@ -95,4 +95,52 @@ describe("permissions.service", () => {
     // Assert
     expect(results.every((v) => v)).toBe(expected)
   })
+
+  it("should allow editors to move between folders", () => {
+    // Arrange
+    const from = { parentId: "2" }
+    const to = { parentId: "3" }
+    const expected = true
+    const perms = buildPermissions("Editor")
+
+    // Act
+    const canMoveFrom = perms.can("move", from)
+    const canMoveTo = perms.can("move", to)
+
+    // Assert
+    expect(canMoveFrom).toBe(expected)
+    expect(canMoveTo).toBe(expected)
+  })
+
+  it("should disallow editors from moving items at the root folder", () => {
+    // Arrange
+    const from = { parentId: null }
+    const to = { parentId: "3" }
+    const expected = true
+    const perms = buildPermissions("Editor")
+
+    // Act
+    const canMoveFrom = perms.can("move", from)
+    const canMoveTo = perms.can("move", to)
+
+    // Assert
+    expect(canMoveFrom).toBe(false)
+    expect(canMoveTo).toBe(expected)
+  })
+
+  it("should disallow editors from moving items to the root folder", () => {
+    // Arrange
+    const from = { parentId: "2" }
+    const to = { parentId: null }
+    const expected = true
+    const perms = buildPermissions("Editor")
+
+    // Act
+    const canMoveFrom = perms.can("move", from)
+    const canMoveTo = perms.can("move", to)
+
+    // Assert
+    expect(canMoveFrom).toBe(expected)
+    expect(canMoveTo).toBe(false)
+  })
 })
