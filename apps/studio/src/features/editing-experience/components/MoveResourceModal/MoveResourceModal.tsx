@@ -21,6 +21,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "../../types"
+import { usePermissions } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
@@ -82,6 +83,7 @@ const MoveResourceContent = withSuspense(
           getNextPageParam: (lastPage) => lastPage.nextOffset,
         },
       )
+    const ability = usePermissions()
     const utils = trpc.useUtils()
     const toast = useToast({ status: "success" })
     const { mutate, isLoading } = trpc.resource.move.useMutation({
@@ -278,15 +280,21 @@ const MoveResourceContent = withSuspense(
             Cancel
           </Button>
           <Button
-            // NOTE: disable this button if either resourceId is missing
-            isDisabled={!curResourceId || !movedItem?.resourceId}
+            // NOTE: disable this button if the resourceId to be moved is missing
+            // or if the user does not have sufficient permissions to move to the destination
+            isDisabled={
+              ability.cannot("move", {
+                parentId: moveDest?.resourceId ?? null,
+              }) ||
+              ability.cannot("move", { parentId: movedItem?.parentId ?? null })
+            }
             isLoading={isLoading}
             onClick={() =>
               movedItem?.resourceId &&
-              curResourceId &&
               mutate({
+                siteId,
                 movedResourceId: movedItem.resourceId,
-                destinationResourceId: moveDest.resourceId,
+                destinationResourceId: moveDest?.resourceId ?? null,
               })
             }
           >

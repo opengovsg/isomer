@@ -6,7 +6,6 @@ import type * as T from "./generatedTypes"
 export type Blob = Selectable<T.Blob>
 export type Footer = Selectable<T.Footer>
 export type Navbar = Selectable<T.Navbar>
-export type Permission = Selectable<T.Permission>
 export type RateLimiterFlexible = Selectable<T.RateLimiterFlexible>
 export type Resource = Selectable<T.Resource>
 export type ResourcePermission = Selectable<T.ResourcePermission>

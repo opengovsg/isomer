@@ -54,6 +54,7 @@ export const colors = {
       info: {
         DEFAULT: twColors.blue["500"],
         subtle: twColors.blue["100"],
+        faint: "#EAF2FF",
       },
       warning: "#FFCC15",
     },

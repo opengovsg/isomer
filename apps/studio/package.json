@@ -39,8 +39,8 @@
     "storybook": "storybook dev -p 6007",
     "build-storybook": "storybook build",
     "clean": "git clean -xdf .next .turbo node_modules build",
-    "jump:vapt": "source .ssh/.env.staging && ssh -L 5433:$DB_HOST:5432 $SSH_USER@$SSH_HOST -i .ssh/studio-vapt-bastion.pem",
-    "migrate:vapt": "source .ssh/.env.staging && npx prisma migrate deploy"
+    "jump:vapt": "source .ssh/.env.vapt && ssh -L 5433:$DB_HOST:5432 $SSH_USER@$SSH_HOST -i .ssh/studio-vapt-bastion.pem",
+    "migrate:vapt": "source .ssh/.env.vapt && npx prisma migrate deploy"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -50,6 +50,7 @@
     "@aws-sdk/client-s3": "3.629.0",
     "@aws-sdk/s3-request-presigner": "3.629.0",
     "@casl/ability": "^6.7.1",
+    "@casl/react": "^4.0.0",
     "@chakra-ui/anatomy": "^2.2.2",
     "@chakra-ui/react": "^2.8.2",
     "@chakra-ui/styled-system": "^2.9.2",

@@ -23,6 +23,26 @@ export const resourceHandlers = {
       })
     },
   },
+  getRolesFor: {
+    default: () => {
+      return trpcMsw.resource.getRolesFor.query(() => {
+        return [{ role: "Admin" }]
+      })
+    },
+  },
+  getParentOf: {
+    collection: () => {
+      return trpcMsw.resource.getParentOf.query(() => {
+        return {
+          type: "Collection",
+          id: "1",
+          parentId: null,
+          parent: null,
+          title: "a collection",
+        }
+      })
+    },
+  },
   getMetadataById: {
     homepage: () =>
       trpcMsw.resource.getMetadataById.query(() => {

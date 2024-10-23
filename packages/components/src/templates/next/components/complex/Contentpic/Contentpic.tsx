@@ -13,7 +13,7 @@ const contentpicStyles = tv({
       "mb-7 flex flex-col gap-7 md:flex-row [&:not(:first-child)]:mt-7",
     image:
       "max-h-[400px] w-full rounded object-cover md:h-[240px] md:max-h-full md:w-[200px]",
-    content: "flex-1 text-base-content lg:justify-self-start",
+    content: "flex-1 break-words text-base-content lg:justify-self-start",
   },
 })
 const compoundStyles = contentpicStyles()

@@ -1,8 +1,10 @@
 import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash"
+import { z } from "zod"
 
 import type { ResourceType } from "../database"
+import type { PermissionsProps } from "../permissions/permissions.type"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -17,6 +19,59 @@ import {
 import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
 import { db, sql } from "../database"
+import { PG_ERROR_CODES } from "../database/constants"
+import {
+  definePermissionsForResource,
+  validateUserPermissionsForResource,
+} from "../permissions/permissions.service"
+
+const fetchResource = async (resourceId: string | null) => {
+  if (resourceId === null) return { parentId: null }
+
+  const resource = await db
+    .selectFrom("Resource")
+    .where("Resource.id", "=", resourceId)
+    .select("parentId")
+    // NOTE: if we don't have a resource,
+    // this means that they tried to fetch a resource that cannot be found
+    .executeTakeFirst()
+
+  if (!resource) {
+    throw new TRPCError({ code: "BAD_REQUEST" })
+  }
+
+  return resource
+}
+
+const validateUserPermissionsForMove = async ({
+  from,
+  to,
+  ...rest
+}: Omit<PermissionsProps, "resourceId"> & {
+  from: string
+  to: string | null
+}) => {
+  // TODO: this is using site wide permissions for now
+  // we should fetch the oldest `parent` of this resource eventually.
+  // Putting this in here first because eventually we'll have to lookup both
+  // even though for now they are the same thing
+  const permsFrom = await definePermissionsForResource({
+    ...rest,
+    resourceId: null,
+  })
+  const permsTo = await definePermissionsForResource({
+    ...rest,
+    resourceId: null,
+  })
+
+  const resourceFrom = await fetchResource(from)
+
+  return (
+    // NOTE: This is because we want to check whether we can move to within `to`
+    // and hence, the parent id is `to`
+    permsFrom.can("move", resourceFrom) && permsTo.can("move", { parentId: to })
+  )
+}
 
 export const resourceRouter = router({
   getMetadataById: protectedProcedure
@@ -98,7 +153,7 @@ export const resourceRouter = router({
           .selectFrom("Resource")
           .where("siteId", "=", Number(siteId))
           .where("id", "=", String(resourceId))
-          .where("Resource.type", "=", "Folder")
+          .where("Resource.type", "in", ["RootPage", "Collection", "Folder"])
           .executeTakeFirst()
 
         if (!resource) {
@@ -112,7 +167,11 @@ export const resourceRouter = router({
         .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
           type: Extract<
-            "Folder" | "Page" | "Collection" | "CollectionPage",
+            | "Folder"
+            | "Page"
+            | "Collection"
+            | "CollectionPage"
+            | "CollectionLink",
             ResourceType
           >
         }>()
@@ -145,7 +204,25 @@ export const resourceRouter = router({
   move: protectedProcedure
     .input(moveSchema)
     .mutation(
-      async ({ ctx, input: { movedResourceId, destinationResourceId } }) => {
+      async ({
+        ctx,
+        input: { siteId, movedResourceId, destinationResourceId },
+      }) => {
+        const isValid = await validateUserPermissionsForMove({
+          from: movedResourceId,
+          to: destinationResourceId,
+          userId: ctx.user.id,
+          siteId,
+        })
+
+        if (!isValid) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "Please ensure that you have the required permissions to perform a move!",
+          })
+        }
+
         const result = await db
           .transaction()
           .execute(async (tx) => {
@@ -154,17 +231,30 @@ export const resourceRouter = router({
               .where("id", "=", movedResourceId)
               .select(["id", "siteId"])
               .executeTakeFirst()
+
             if (!toMove) {
               throw new TRPCError({ code: "BAD_REQUEST" })
             }
-            const parent = await tx
-              .selectFrom("Resource")
-              .where("id", "=", destinationResourceId)
+
+            let query = tx.selectFrom("Resource")
+            query = !!destinationResourceId
+              ? query.where("id", "=", destinationResourceId)
+              : query.where("type", "=", "RootPage")
+            const parent = await query
               .select(["id", "type", "siteId"])
               .executeTakeFirst()
 
-            if (!parent || parent.type !== "Folder") {
-              throw new TRPCError({ code: "BAD_REQUEST" })
+            if (
+              !parent ||
+              // NOTE: we only allow moves to folders/root.
+              // for moves to root, we only allow this for admin
+              (parent.type !== "RootPage" && parent.type !== "Folder")
+            ) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message:
+                  "Please ensure that you are trying to move your resource into a valid destination",
+              })
             }
 
             if (movedResourceId === destinationResourceId) {
@@ -179,8 +269,13 @@ export const resourceRouter = router({
               .updateTable("Resource")
               .where("id", "=", String(movedResourceId))
               .where("Resource.type", "in", ["Page", "Folder"])
-              .set({ parentId: String(destinationResourceId) })
+              .set({
+                parentId: !!destinationResourceId
+                  ? String(destinationResourceId)
+                  : null,
+              })
               .execute()
+
             return tx
               .selectFrom("Resource")
               .where("id", "=", String(movedResourceId))
@@ -195,7 +290,7 @@ export const resourceRouter = router({
               .executeTakeFirst()
           })
           .catch((err) => {
-            if (get(err, "code") === "23505") {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "A resource with the same permalink already exists",
@@ -269,6 +364,13 @@ export const resourceRouter = router({
   delete: protectedProcedure
     .input(deleteResourceSchema)
     .mutation(async ({ ctx, input: { siteId, resourceId } }) => {
+      await validateUserPermissionsForResource({
+        action: "delete",
+        userId: ctx.user.id,
+        siteId,
+        resourceId,
+      })
+
       const result = await db
         .deleteFrom("Resource")
         .where("Resource.id", "=", String(resourceId))
@@ -359,6 +461,26 @@ export const resourceRouter = router({
       }
 
       return result
+    }),
+
+  getRolesFor: protectedProcedure
+    .input(
+      z.object({
+        resourceId: z.string().nullable(),
+        siteId: z.number(),
+      }),
+    )
+    .query(({ ctx, input: { resourceId, siteId } }) => {
+      const query = db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", ctx.user.id)
+        .where("siteId", "=", siteId)
+
+      if (!resourceId) {
+        query.where("resourceId", "is", null)
+      } else query.where("resourceId", "=", resourceId)
+
+      return query.select(["role"]).execute()
     }),
 
   getAncestryOf: protectedProcedure

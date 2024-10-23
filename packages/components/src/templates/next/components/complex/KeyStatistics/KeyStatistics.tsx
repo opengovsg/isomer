@@ -1,7 +1,8 @@
 import type { KeyStatisticsProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getTailwindVariantLayout } from "~/utils"
+import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
+import { LinkButton } from "../../internal/LinkButton"
 
 const MAX_ITEMS = 4
 type NoOfItemVariants = 1 | 2 | 3 | 4
@@ -18,6 +19,8 @@ const createKeyStatisticsStyles = tv({
     container: `${ComponentContent} flex flex-col`,
     title:
       "prose-display-md w-full max-w-[47.5rem] break-words text-base-content-strong",
+    urlText: "hidden whitespace-nowrap md:block",
+    urlButtonContainer: "mx-auto block",
     statistics: "flex flex-col flex-wrap gap-x-8 gap-y-12 md:flex-row",
     itemContainer: "flex grow flex-col gap-3",
     itemValue: "prose-display-lg text-pretty text-brand-canvas-inverse",
@@ -56,7 +59,13 @@ const createKeyStatisticsStyles = tv({
 
 const compoundStyles = createKeyStatisticsStyles()
 
-const KeyStatistics = ({ title, statistics, layout }: KeyStatisticsProps) => {
+const KeyStatistics = ({
+  title,
+  statistics,
+  url,
+  layout,
+  site,
+}: KeyStatisticsProps) => {
   const noOfItems = Math.min(MAX_ITEMS, statistics.length) as NoOfItemVariants
   const simplifiedLayout = getTailwindVariantLayout(layout)
 
@@ -78,6 +87,19 @@ const KeyStatistics = ({ title, statistics, layout }: KeyStatisticsProps) => {
           </div>
         ))}
       </div>
+
+      {url !== undefined && url !== "" && (
+        <div className={compoundStyles.urlButtonContainer()}>
+          <LinkButton
+            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            size="base"
+            variant="outline"
+            isWithFocusVisibleHighlight
+          >
+            Our achievements
+          </LinkButton>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { useRouter } from "next/router"
 import {
   BreadcrumbItem,
   BreadcrumbLink,
@@ -9,12 +8,11 @@ import {
 } from "@chakra-ui/react"
 import { Breadcrumb } from "@opengovsg/design-system-react"
 
-import { TabLink } from "~/components/TabLink"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
-import { editPageSchema } from "../schema"
 import PublishButton from "./PublishButton"
 
 interface NavigationBreadcrumbsProps {
@@ -92,10 +90,8 @@ const NavigationBreadcrumbs = ({
   )
 }
 
-export const SiteEditNavbar = (): JSX.Element => {
-  const { siteId, pageId } = useQueryParse(editPageSchema)
-
-  const { pathname } = useRouter()
+export const LinkEditNavbar = (): JSX.Element => {
+  const { linkId, siteId } = useQueryParse(editLinkSchema)
 
   return (
     <Flex
@@ -112,25 +108,11 @@ export const SiteEditNavbar = (): JSX.Element => {
       transition="padding 0.1s"
       gap="0.5rem"
     >
-      <NavigationBreadcrumbs siteId={String(siteId)} pageId={String(pageId)} />
+      <NavigationBreadcrumbs siteId={String(siteId)} pageId={String(linkId)} />
 
-      <Flex gap="2rem">
-        <TabLink
-          isActive={pathname === "/sites/[siteId]/pages/[pageId]"}
-          href={`/sites/${siteId}/pages/${pageId}`}
-        >
-          Edit
-        </TabLink>
-        <TabLink
-          isActive={pathname === "/sites/[siteId]/pages/[pageId]/settings"}
-          href={`/sites/${siteId}/pages/${pageId}/settings`}
-        >
-          Page Settings
-        </TabLink>
-      </Flex>
-      {pageId && siteId && (
+      {linkId && siteId && (
         <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
-          <PublishButton pageId={pageId} siteId={siteId} />
+          <PublishButton pageId={linkId} siteId={siteId} />
         </Flex>
       )}
     </Flex>
