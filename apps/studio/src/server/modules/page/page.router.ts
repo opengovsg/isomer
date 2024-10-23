@@ -407,7 +407,7 @@ export const pageRouter = router({
   updateSettings: protectedProcedure
     .input(pageSettingsSchema)
     .mutation(
-      async ({ ctx, ctx, input: { pageId, siteId, title, meta, ...settings } }) => {
+      async ({ ctx, input: { pageId, siteId, title, meta, ...settings } }) => {
         await validateUserPermissions({
           userId: ctx.user.id,
           siteId,
