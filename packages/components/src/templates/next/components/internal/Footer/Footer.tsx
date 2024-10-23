@@ -7,7 +7,7 @@ import {
   FaTiktok,
   FaYoutube,
 } from "react-icons/fa"
-import { FaTelegram, FaXTwitter } from "react-icons/fa6"
+import { FaTelegram, FaWhatsapp, FaXTwitter } from "react-icons/fa6"
 import { IoLogoGithub } from "react-icons/io"
 
 import type { FooterProps } from "~/interfaces"
@@ -36,6 +36,7 @@ const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
   youtube: FaYoutube,
   github: IoLogoGithub,
   tiktok: FaTiktok,
+  whatsapp: FaWhatsapp,
 }
 
 const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
