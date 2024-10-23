@@ -1,4 +1,3 @@
-import { Can } from "@casl/react"
 import {
   Box,
   Breadcrumb,
@@ -13,6 +12,7 @@ import { Button, Menu } from "@opengovsg/design-system-react"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 
+import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
@@ -21,7 +21,7 @@ import { CreateCollectionModal } from "~/features/editing-experience/components/
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
-import { PermissionsProvider, usePermissions } from "~/features/permissions"
+import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
@@ -40,10 +40,8 @@ const HomepageMenuButton = ({
   onPageCreateModalOpen,
   onFolderCreateModalOpen,
 }: HomepageMenuButtonProps) => {
-  const { ability } = usePermissions()
-
   return (
-    <Can do="create" on={{ parentId: null }} ability={ability}>
+    <Can do="create" on={{ parentId: null }}>
       <Menu isLazy size="sm">
         {({ isOpen }) => (
           <>
@@ -104,7 +102,7 @@ const SitePage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(sitePageSchema)
 
   return (
-    <PermissionsProvider siteId={siteId}>
+    <>
       <VStack
         w="100%"
         p="1.75rem"
@@ -165,9 +163,17 @@ const SitePage: NextPageWithLayout = () => {
       <DeleteResourceModal siteId={siteId} />
       <MoveResourceModal />
       <FolderSettingsModal />
-    </PermissionsProvider>
+    </>
   )
 }
 
-SitePage.getLayout = AdminCmsSidebarLayout
+SitePage.getLayout = (page) => {
+  return (
+    <PermissionsBoundary
+      resourceType="RootPage"
+      page={AdminCmsSidebarLayout(page)}
+    />
+  )
+}
+
 export default SitePage

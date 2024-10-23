@@ -83,7 +83,7 @@ const MoveResourceContent = withSuspense(
           getNextPageParam: (lastPage) => lastPage.nextOffset,
         },
       )
-    const { ability } = usePermissions()
+    const ability = usePermissions()
     const utils = trpc.useUtils()
     const toast = useToast({ status: "success" })
     const { mutate, isLoading } = trpc.resource.move.useMutation({

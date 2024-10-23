@@ -1,15 +1,12 @@
-import type { RoleType } from "@prisma/client"
 import type { PropsWithChildren } from "react"
 import { createContext, useContext } from "react"
-import { AbilityBuilder, createMongoAbility } from "@casl/ability"
+import { AbilityBuilder, createMongoAbility, PureAbility } from "@casl/ability"
+import { createContextualCan } from "@casl/react"
 
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
+import type { RoleType } from "~prisma/generated/generatedEnums"
 import { buildPermissionsForResource } from "~/server/modules/permissions/permissions.util"
 import { trpc } from "~/utils/trpc"
-
-interface PermissionsContextReturn {
-  ability: ResourceAbility
-}
 
 interface PermissionsProviderProps {
   siteId: number
@@ -24,8 +21,11 @@ const getPermissions = (roles: { role: RoleType }[]) => {
   return builder.build({ detectSubjectType: () => "Resource" })
 }
 
-export const PermissionsContext =
-  createContext<PermissionsContextReturn | null>(null)
+export const PermissionsContext = createContext<ResourceAbility | PureAbility>(
+  // NOTE: Pass a dummy ability that does not allow the user to do anything
+  // so that the createContextualCan function does not throw a type error
+  new PureAbility(),
+)
 
 export const PermissionsProvider = ({
   children,
@@ -40,18 +40,15 @@ export const PermissionsProvider = ({
   const ability = getPermissions(roles)
 
   return (
-    <PermissionsContext.Provider value={{ ability }}>
+    <PermissionsContext.Provider value={ability}>
       {children}
     </PermissionsContext.Provider>
   )
 }
 
-export const usePermissions = (): PermissionsContextReturn => {
-  const context = useContext(PermissionsContext)
-  if (!context) {
-    throw new Error(
-      `usePermissionsState must be used within a PermissionsStateProvider component`,
-    )
-  }
-  return context
+export const usePermissions = (): ResourceAbility | PureAbility => {
+  const ability = useContext(PermissionsContext)
+  return ability
 }
+
+export const Can = createContextualCan(PermissionsContext.Consumer)
