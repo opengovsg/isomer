@@ -171,7 +171,7 @@ const PageSettings: NextPageWithLayout = () => {
           <VStack w="100%" gap="2rem" alignItems="flex-start">
             <Box>
               <Text as="h3" textStyle="h3-semibold">
-                Page settings
+                Meta settings
               </Text>
               <Text textStyle="body-2" mt="0.5rem">
                 These settings will only affect this page. Publish the page to
