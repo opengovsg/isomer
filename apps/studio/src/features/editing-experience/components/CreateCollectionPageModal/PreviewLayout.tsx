@@ -5,6 +5,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import { format } from "date-fns"
 
 import collectionSitemap from "~/features/editing-experience/data/collectionSitemap.json"
+import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { PreviewIframe } from "../PreviewIframe"
 import PreviewWithoutSitemap from "../PreviewWithoutSitemap"
 import { generatePreviewSitemap } from "../utils"
@@ -19,6 +20,7 @@ export const PreviewLayout = (): JSX.Element => {
     formMethods: { watch },
   } = useCreateCollectionPageWizard()
 
+  const themeCssVars = useSiteThemeCssVars({ siteId })
   const currentPermalink = watch("permalink", "/")
   const title = watch("title")
 
@@ -27,6 +29,7 @@ export const PreviewLayout = (): JSX.Element => {
       case ResourceType.CollectionLink: {
         return {
           page: {
+            title: "Newsroom",
             date: format(new Date(), "dd MMM yyyy"),
           },
         }
@@ -61,7 +64,11 @@ export const PreviewLayout = (): JSX.Element => {
             {`You're previewing a collection ${currentType === ResourceType.CollectionLink ? "link" : "page"}`}
           </Flex>
           <Box bg="white" overflow="auto" height="100%">
-            <PreviewIframe preventPointerEvents keyForRerender={currentType}>
+            <PreviewIframe
+              preventPointerEvents
+              keyForRerender={currentType}
+              style={themeCssVars}
+            >
               <PreviewWithoutSitemap
                 overrides={previewOverrides}
                 siteId={siteId}
