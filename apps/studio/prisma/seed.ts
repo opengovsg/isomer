@@ -246,11 +246,10 @@ async function main() {
 
   await Promise.all(
     ISOMER_ADMINS.map(async (name) => {
-      const userId = cuid2.createId()
-      await db
+      const { id } = await db
         .insertInto("User")
         .values({
-          id: userId,
+          id: cuid2.createId(),
           name,
           email: `${name}@open.gov.sg`,
           phone: MOCK_PHONE_NUMBER,
@@ -260,11 +259,12 @@ async function main() {
             .column("email")
             .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
         )
+        .returning("id")
         .executeTakeFirstOrThrow()
 
       await db
         .insertInto("ResourcePermission")
-        .values({ userId, siteId, role: "Admin" })
+        .values({ userId: id, siteId, role: "Admin" })
         .execute()
     }),
   )
