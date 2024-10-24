@@ -1,4 +1,3 @@
-import type { ReactNode } from "react"
 import { useState } from "react"
 import {
   Box,
@@ -10,20 +9,30 @@ import {
 } from "@chakra-ui/react"
 import { FormLabel } from "@opengovsg/design-system-react"
 
-import { LINK_TYPES } from "./constants"
+import type { LinkValueHistory } from "./constants"
+import { INITIAL_LINK_VALUE_HISTORY, LINK_TYPES } from "./constants"
 import { LinkTypeRadioCard } from "./LinkTypeRadioCard"
 import { LinkTypeRadioContent } from "./LinkTypeRadioContent"
 import { getLinkHrefType } from "./utils"
 
 interface LinkHrefEditorProps {
   value: string
-  onChange: (href: string) => void
+  onChange: ({
+    value,
+    shouldValidate,
+  }: {
+    value: string
+    shouldValidate: boolean
+  }) => void
   label: string
   description?: string
   isRequired?: boolean
   isInvalid?: boolean
-  pageLinkElement: ReactNode
-  fileLinkElement: ReactNode
+  errorMessage?: string
+  setErrorMessage?: (errorMessage: string) => void
+  clearErrorMessage?: () => void
+  pageLinkElement?: React.ReactNode
+  fileLinkElement?: React.ReactNode
 }
 
 export const LinkHrefEditor = ({
@@ -33,21 +42,40 @@ export const LinkHrefEditor = ({
   description,
   isRequired,
   isInvalid,
+  errorMessage,
+  setErrorMessage,
+  clearErrorMessage,
   pageLinkElement,
   fileLinkElement,
 }: LinkHrefEditorProps) => {
   const linkType = getLinkHrefType(value)
   const [selectedLinkType, setSelectedLinkType] = useState(linkType)
+  const [linkValueHistory, setLinkValueHistory] = useState({
+    ...INITIAL_LINK_VALUE_HISTORY,
+    ...{
+      [linkType]: value,
+    },
+  } as LinkValueHistory)
 
-  const handleLinkTypeChange = (value: string) => {
-    setSelectedLinkType(value)
-    onChange("")
-  }
+  // hacky solution to allow setting the correct state of "Add link" CTA button
+  // while not showing error message on initial render for better UX
+  const [isLinkTypeInitialRender, setIsLinkTypeInitialRender] = useState(true)
+  const shouldShowErrorState =
+    !isLinkTypeInitialRender &&
+    errorMessage !== "" &&
+    errorMessage !== undefined
 
   const { getRootProps, getRadioProps } = useRadioGroup({
     name: "link-type",
     defaultValue: linkType,
-    onChange: handleLinkTypeChange,
+    onChange: (newLinkType) => {
+      setIsLinkTypeInitialRender(true)
+      setSelectedLinkType(newLinkType)
+      onChange({
+        value: linkValueHistory[newLinkType as keyof LinkValueHistory],
+        shouldValidate: true, // need to trigger validation to set disable state of "Add link" CTA button
+      })
+    },
   })
 
   return (
@@ -72,8 +100,32 @@ export const LinkHrefEditor = ({
       <Box my="0.5rem">
         <LinkTypeRadioContent
           selectedLinkType={selectedLinkType}
-          data={value}
-          handleChange={onChange}
+          data={
+            value === ""
+              ? linkValueHistory[selectedLinkType as keyof LinkValueHistory] ||
+                ""
+              : value
+          }
+          handleChange={({
+            value: newLinkTypeContentValue,
+            shouldValidate,
+          }) => {
+            setLinkValueHistory({
+              ...linkValueHistory,
+              ...{
+                [selectedLinkType]: newLinkTypeContentValue,
+              },
+            })
+            onChange({
+              value: newLinkTypeContentValue,
+              shouldValidate,
+            })
+            setIsLinkTypeInitialRender(false)
+          }}
+          shouldShowErrorState={shouldShowErrorState}
+          errorMessage={errorMessage}
+          setErrorMessage={setErrorMessage}
+          clearErrorMessage={clearErrorMessage}
           pageLinkElement={pageLinkElement}
           fileLinkElement={fileLinkElement}
         />
