@@ -121,6 +121,7 @@ export const CreateCollectionPageDetailsScreen = () => {
             mt="10vh"
             px="3rem"
             py="1rem"
+            {...(type === ResourceType.CollectionLink && { mt: "50%" })}
           >
             <Stack>
               <Text as="h2" textStyle="h4">
