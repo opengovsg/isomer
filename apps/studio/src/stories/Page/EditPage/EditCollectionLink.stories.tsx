@@ -56,16 +56,6 @@ type Story = StoryObj<typeof CollectionLinkPage>
 
 export const Default: Story = {}
 
-export const AddBlock: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    await waitFor(async () => {
-      await userEvent.click(canvas.getByRole("button", { name: /add block/i }))
-    })
-  },
-}
-
 export const PublishedState: Story = {
   parameters: {
     msw: {
