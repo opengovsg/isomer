@@ -2,6 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 const HeroHeadingSchema = Type.Object({
   title: Type.String({
@@ -32,6 +33,7 @@ const HeroButtonsSchema = Type.Object({
       title: "Button destination",
       description: "When this is clicked, open:",
       format: "link",
+      pattern: LINK_HREF_PATTERN,
     }),
   ),
   secondaryButtonLabel: Type.Optional(
@@ -46,6 +48,7 @@ const HeroButtonsSchema = Type.Object({
       title: "Button destination",
       description: "When this is clicked, open:",
       format: "link",
+      pattern: LINK_HREF_PATTERN,
     }),
   ),
 })
