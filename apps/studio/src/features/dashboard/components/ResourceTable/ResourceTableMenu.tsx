@@ -27,7 +27,6 @@ interface ResourceTableMenuProps {
   permalink: ResourceTableData["permalink"]
   resourceType: ResourceTableData["type"]
   parentId: ResourceTableData["parentId"]
-  siteId: number
 }
 
 export const ResourceTableMenu = ({

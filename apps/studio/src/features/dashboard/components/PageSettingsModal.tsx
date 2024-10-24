@@ -117,6 +117,7 @@ const PageSettingsModalContent = ({
       await utils.page.invalidate()
       await utils.resource.invalidate()
       await utils.folder.invalidate()
+      await utils.collection.invalidate()
 
       toast({
         title: "Saved page settings",
