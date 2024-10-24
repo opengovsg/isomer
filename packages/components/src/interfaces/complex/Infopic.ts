@@ -2,6 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 export const InfopicSchema = Type.Object(
   {
@@ -41,6 +42,7 @@ export const InfopicSchema = Type.Object(
         title: "Button destination",
         description: "When this is clicked, open:",
         format: "link",
+        pattern: LINK_HREF_PATTERN,
       }),
     ),
   },

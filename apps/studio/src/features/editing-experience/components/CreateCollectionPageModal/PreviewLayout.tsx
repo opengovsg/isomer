@@ -1,10 +1,14 @@
 import { useMemo } from "react"
 import { Box, Flex, Stack } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { format } from "date-fns"
 
-import Preview from "../Preview"
+import collectionSitemap from "~/features/editing-experience/data/collectionSitemap.json"
+import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { PreviewIframe } from "../PreviewIframe"
+import PreviewWithoutSitemap from "../PreviewWithoutSitemap"
+import { generatePreviewSitemap } from "../utils"
 import { useCreateCollectionPageWizard } from "./CreateCollectionPageWizardContext"
 
 export const PreviewLayout = (): JSX.Element => {
@@ -16,18 +20,21 @@ export const PreviewLayout = (): JSX.Element => {
     formMethods: { watch },
   } = useCreateCollectionPageWizard()
 
+  const themeCssVars = useSiteThemeCssVars({ siteId })
   const currentPermalink = watch("permalink", "/")
+  const title = watch("title")
 
   const previewOverrides = useMemo(() => {
     switch (currentType) {
-      case "pdf": {
+      case ResourceType.CollectionLink: {
         return {
           page: {
+            title: "Newsroom",
             date: format(new Date(), "dd MMM yyyy"),
           },
         }
       }
-      case "page": {
+      case ResourceType.CollectionPage: {
         return {}
       }
     }
@@ -47,20 +54,25 @@ export const PreviewLayout = (): JSX.Element => {
             borderTopRadius="8px"
             width="100%"
             bg="slate.200"
-            color="white"
             textStyle="caption-2"
+            color="white"
             py="0.5rem"
             px="1rem"
             justify="center"
             whiteSpace="pre"
           >
-            {`You're previewing a ${currentType === "pdf" ? "PDF " : ""}collection page`}
+            {`You're previewing a collection ${currentType === ResourceType.CollectionLink ? "link" : "page"}`}
           </Flex>
           <Box bg="white" overflow="auto" height="100%">
-            <PreviewIframe preventPointerEvents keyForRerender={currentType}>
-              <Preview
+            <PreviewIframe
+              preventPointerEvents
+              keyForRerender={currentType}
+              style={themeCssVars}
+            >
+              <PreviewWithoutSitemap
                 overrides={previewOverrides}
                 siteId={siteId}
+                siteMap={generatePreviewSitemap(collectionSitemap, title)}
                 permalink={currentPermalink}
                 {...pagePreviewJson}
               />

@@ -17,7 +17,7 @@ export const PermissionsErrorBoundary = ({
   const router = useRouter()
 
   return (
-    <Center minH="$100vh">
+    <Center minH="$100vh" minW="full">
       <Stack alignItems="center" dir="vertical" gap="3rem">
         <HeadScratch></HeadScratch>
         <Stack gap="1.75rem" alignItems="center">

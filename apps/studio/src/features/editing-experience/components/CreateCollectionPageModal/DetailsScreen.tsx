@@ -7,16 +7,20 @@ import {
   Input,
   InputGroup,
   InputLeftAddon,
+  ListItem,
   ModalBody,
   ModalHeader,
   Stack,
   Text,
+  UnorderedList,
   Wrap,
 } from "@chakra-ui/react"
 import { Button, FormErrorMessage } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { Controller } from "react-hook-form"
 
 import { MAX_PAGE_URL_LENGTH, MAX_TITLE_LENGTH } from "~/schemas/page"
+import { AppGrid } from "~/templates/AppGrid"
 import { useCreateCollectionPageWizard } from "./CreateCollectionPageWizardContext"
 import { PreviewLayout } from "./PreviewLayout"
 
@@ -47,7 +51,7 @@ export const CreateCollectionPageDetailsScreen = () => {
     formState: { errors },
   } = formMethods
 
-  const [title, url] = watch(["title", "permalink"])
+  const [title, url, type] = watch(["title", "permalink", "type"])
 
   /**
    * As user edits the Page title, Page URL is updated as an hyphenated form of the page title.
@@ -109,19 +113,43 @@ export const CreateCollectionPageDetailsScreen = () => {
         </Stack>
       </ModalHeader>
       <ModalBody p={0} overflow="hidden" bg="white">
-        <Flex height="100%">
-          <Stack height="100%" gap="2rem" mt="10vh" px="3rem" py="1rem">
+        <AppGrid height="100%">
+          <Stack
+            gridColumn="1 / 5"
+            height="100%"
+            gap="2rem"
+            mt="10vh"
+            px="3rem"
+            py="1rem"
+            {...(type === ResourceType.CollectionLink && { mt: "50%" })}
+          >
             <Stack>
               <Text as="h2" textStyle="h4">
-                What is your page about?
+                {type === ResourceType.CollectionPage
+                  ? "What is your page about?"
+                  : "Give your item a title."}
               </Text>
-              <Text textStyle="body-2">You can change these later.</Text>
+              {type === ResourceType.CollectionPage ? (
+                <Text textStyle="body-2">You can change these later.</Text>
+              ) : (
+                <Text textStyle="body-2">
+                  You can change this later. An item can be a:
+                  <UnorderedList>
+                    <ListItem>A page from your website</ListItem>
+                    <ListItem>
+                      An external link (e.g, you might want to link an e-service
+                      on another domain)
+                    </ListItem>
+                    <ListItem>File (PDF)</ListItem>
+                  </UnorderedList>
+                </Text>
+              )}
             </Stack>
             <Stack gap="1.5rem">
               {/* Section 1: Page Title */}
               <FormControl isInvalid={!!errors.title}>
                 <FormLabel color="base.content.strong">
-                  Page title
+                  {type === ResourceType.CollectionPage ? "Page" : "Item"} title
                   <FormHelperText color="base.content.default">
                     Title should be descriptive
                   </FormHelperText>
@@ -142,7 +170,10 @@ export const CreateCollectionPageDetailsScreen = () => {
               </FormControl>
 
               {/* Section 2: Page URL */}
-              <FormControl isInvalid={!!errors.permalink}>
+              <FormControl
+                isInvalid={!!errors.permalink}
+                display={type === ResourceType.CollectionLink ? "none" : "auto"}
+              >
                 <FormLabel>
                   Page URL
                   <FormHelperText>
@@ -161,6 +192,7 @@ export const CreateCollectionPageDetailsScreen = () => {
                     name="permalink"
                     render={({ field: { onChange, ...field } }) => (
                       <Input
+                        isDisabled={type === ResourceType.CollectionLink}
                         borderLeftRadius={0}
                         placeholder="URL will be autopopulated if left untouched"
                         {...field}
@@ -190,8 +222,10 @@ export const CreateCollectionPageDetailsScreen = () => {
             </Stack>
             {/* TODO: Add category */}
           </Stack>
-          <PreviewLayout />
-        </Flex>
+          <Flex gridColumn="5 / 13">
+            <PreviewLayout />
+          </Flex>
+        </AppGrid>
       </ModalBody>
     </>
   )

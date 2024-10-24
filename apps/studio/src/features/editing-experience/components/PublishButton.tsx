@@ -55,20 +55,25 @@ const SuspendablePublishButton = ({
   const isChangesPendingPublish = !!currPage.draftBlobId
 
   return (
-    <Can do="publish" on="Resource">
-      <TouchableTooltip
-        hidden={isChangesPendingPublish}
-        label="All changes have been published"
-      >
-        <Button
-          variant="solid"
-          size="sm"
-          onClick={handlePublish}
-          isLoading={isLoading}
+    <Can do="publish" on="Resource" passThrough>
+      {(allowed) => (
+        <TouchableTooltip
+          hidden={isChangesPendingPublish}
+          label="All changes have been published"
         >
-          Publish
-        </Button>
-      </TouchableTooltip>
+          {allowed && (
+            <Button
+              isDisabled={!isChangesPendingPublish}
+              variant="solid"
+              size="sm"
+              onClick={handlePublish}
+              isLoading={isLoading}
+            >
+              Publish
+            </Button>
+          )}
+        </TouchableTooltip>
+      )}
     </Can>
   )
 }

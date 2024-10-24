@@ -167,7 +167,11 @@ export const resourceRouter = router({
         .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
           type: Extract<
-            "Folder" | "Page" | "Collection" | "CollectionPage",
+            | "Folder"
+            | "Page"
+            | "Collection"
+            | "CollectionPage"
+            | "CollectionLink",
             ResourceType
           >
         }>()

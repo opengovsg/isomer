@@ -85,11 +85,10 @@ export const publishPageSchema = z.object({
 export const createCollectionPageFormSchema = z
   .discriminatedUnion("type", [
     z.object({
-      type: z.literal("pdf"),
-      url: z.string().url(),
+      type: z.literal(ResourceType.CollectionLink),
     }),
     z.object({
-      type: z.literal("page"),
+      type: z.literal(ResourceType.CollectionPage),
     }),
   ])
   .and(

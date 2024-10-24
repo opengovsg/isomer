@@ -3,12 +3,14 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { createContext, useContext, useMemo, useState } from "react"
 import { useRouter } from "next/router"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { merge } from "lodash"
 
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
-import collectionPdfPreview from "~/features/editing-experience/data/collectionPdfPreview.json"
+import collectionLinkPreview from "~/features/editing-experience/data/collectionLinkPreview.json"
 import { useZodForm } from "~/lib/form"
 import { createCollectionPageFormSchema } from "~/schemas/page"
+import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 
 export enum CreateCollectionPageFlowStates {
@@ -57,7 +59,7 @@ const useCreateCollectionPageWizardContext = ({
     defaultValues: {
       title: "",
       permalink: "",
-      type: "page",
+      type: ResourceType.CollectionPage,
     },
   })
 
@@ -65,10 +67,12 @@ const useCreateCollectionPageWizardContext = ({
 
   const pagePreviewJson: IsomerSchema = useMemo(() => {
     const jsonPreview =
-      type === "page" ? articleLayoutPreview : collectionPdfPreview
-    return merge(jsonPreview, {
-      page: { title: title || "Page title here" },
-    }) as IsomerSchema
+      type === ResourceType.CollectionPage
+        ? merge(articleLayoutPreview, {
+            page: { title: title || "Page title here" },
+          })
+        : collectionLinkPreview
+    return jsonPreview as IsomerSchema
   }, [type, title])
 
   const utils = trpc.useUtils()
@@ -93,7 +97,8 @@ const useCreateCollectionPageWizardContext = ({
       },
       {
         onSuccess: ({ pageId }) => {
-          void router.push(`/sites/${siteId}/pages/${pageId}`)
+          const nextType = getResourceSubpath(type)
+          void router.push(`/sites/${siteId}/${nextType}/${pageId}`)
         },
         onError: (error) => {
           if (error.data?.code === "CONFLICT") {

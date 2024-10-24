@@ -30,6 +30,19 @@ export const resourceHandlers = {
       })
     },
   },
+  getParentOf: {
+    collection: () => {
+      return trpcMsw.resource.getParentOf.query(() => {
+        return {
+          type: "Collection",
+          id: "1",
+          parentId: null,
+          parent: null,
+          title: "a collection",
+        }
+      })
+    },
+  },
   getMetadataById: {
     homepage: () =>
       trpcMsw.resource.getMetadataById.query(() => {
