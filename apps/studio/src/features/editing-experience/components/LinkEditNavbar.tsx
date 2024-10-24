@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { useRouter } from "next/router"
 import {
   BreadcrumbItem,
   BreadcrumbLink,
@@ -9,7 +8,6 @@ import {
 } from "@chakra-ui/react"
 import { Breadcrumb } from "@opengovsg/design-system-react"
 
-import { TabLink } from "~/components/TabLink"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
