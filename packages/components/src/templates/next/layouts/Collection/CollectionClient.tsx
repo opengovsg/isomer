@@ -18,6 +18,7 @@ import { ITEMS_PER_PAGE, useCollection } from "./useCollection"
 interface CollectionClientProps {
   page: CollectionPageSchemaType["page"]
   items: CollectionCardProps[]
+  shouldShowDate: boolean
   breadcrumb: BreadcrumbProps
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
   site: CollectionPageSchemaType["site"]
@@ -45,6 +46,7 @@ const compoundStyles = createCollectionLayoutStyles()
 const CollectionClient = ({
   page,
   items,
+  shouldShowDate,
   breadcrumb,
   LinkComponent,
   site,
@@ -119,6 +121,7 @@ const CollectionClient = ({
               paginatedItems={paginatedItems}
               searchValue={searchValue}
               totalCount={totalCount}
+              shouldShowDate={shouldShowDate}
               LinkComponent={LinkComponent}
               site={site}
             />
