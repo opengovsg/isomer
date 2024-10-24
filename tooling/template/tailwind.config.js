@@ -79,6 +79,14 @@ const config = {
         variants: ["responsive"],
       })
     }),
+    plugin(function ({ addUtilities }) {
+      const newUtilities = {
+        ".w-fit": {
+          width: "-webkit-fit-content",
+        },
+      }
+      addUtilities(newUtilities, ["responsive"])
+    }),
   ],
 }
 
