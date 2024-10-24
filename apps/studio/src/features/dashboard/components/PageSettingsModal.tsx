@@ -27,6 +27,7 @@ import { BiLink } from "react-icons/bi"
 import { z } from "zod"
 
 import type { PageSettingsState } from "~/features/dashboard/atoms"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { pageSettingsModalAtom } from "~/features/dashboard/atoms"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
@@ -108,7 +109,7 @@ const PageSettingsModalContent = ({
   }, [permalink, permalinkTree])
 
   const utils = trpc.useUtils()
-  const toast = useToast()
+  const toast = useToast(BRIEF_TOAST_SETTINGS)
 
   const { mutate: updatePageSettings } = trpc.page.updateSettings.useMutation({
     onSuccess: async () => {
