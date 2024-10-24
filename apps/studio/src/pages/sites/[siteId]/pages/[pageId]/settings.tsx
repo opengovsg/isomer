@@ -1,9 +1,7 @@
 import type { Static } from "@sinclair/typebox"
-import { useMemo } from "react"
 import { Box, chakra, Grid, GridItem, Text, VStack } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import Ajv from "ajv"
 import { Controller } from "react-hook-form"
 import { z } from "zod"
@@ -15,8 +13,7 @@ import FormBuilder from "~/features/editing-experience/components/form-builder/F
 import { editPageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
-import { generateBasePermalinkSchema } from "~/schemas/common"
-import { basePageSettingsSchema, MAX_PAGE_URL_LENGTH } from "~/schemas/page"
+import { updatePageMetaSchema } from "~/schemas/page"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
 
@@ -26,81 +23,37 @@ const ajv = new Ajv({ strict: false, logger: false })
 
 const PageSettings: NextPageWithLayout = () => {
   const { pageId, siteId } = useQueryParse(editPageSchema)
-  const [{ type, title: originalTitle, content }] =
-    trpc.page.readPageAndBlob.useSuspenseQuery(
-      {
-        pageId,
-        siteId,
-      },
-      { refetchOnWindowFocus: false },
-    )
-
-  const [permalinkTree] = trpc.page.getPermalinkTree.useSuspenseQuery(
+  const [{ content }] = trpc.page.readPageAndBlob.useSuspenseQuery(
     {
       pageId,
       siteId,
     },
     { refetchOnWindowFocus: false },
   )
+
   const pageMetaSchema = getLayoutMetadataSchema(content.layout)
   const validateFn = ajv.compile<Static<typeof pageMetaSchema>>(pageMetaSchema)
 
   const {
-    register,
-    watch,
     control,
     reset,
     handleSubmit,
-    formState: { isDirty, errors },
+    formState: { isDirty },
   } = useZodForm({
-    schema: basePageSettingsSchema.omit({ pageId: true, siteId: true }).extend({
-      meta: z.unknown(),
-      permalink: generateBasePermalinkSchema("page")
-        .min(type === ResourceType.RootPage ? 0 : 1, {
-          message: "Enter a URL for this page",
-        })
-        .max(MAX_PAGE_URL_LENGTH, {
-          message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
-        }),
-    }),
+    schema: updatePageMetaSchema
+      .omit({ resourceId: true, siteId: true })
+      .extend({
+        meta: z.unknown(),
+      }),
     defaultValues: {
-      title: originalTitle,
-      permalink: permalinkTree[permalinkTree.length - 1] || "",
       meta: content.meta,
     },
   })
 
-  const [title, permalink] = watch(["title", "permalink"])
-
-  const permalinksToRender = useMemo(() => {
-    // Case 1: Root page
-    if (permalinkTree.length === 0 || permalinkTree[0] === "") {
-      return {
-        permalink: "/",
-        parentPermalinks: "",
-      }
-    }
-
-    const parentPermalinks = permalinkTree.slice(0, -1).join("/").trim()
-    // Case 2: Parent is root page
-    if (!parentPermalinks) {
-      return {
-        permalink,
-        parentPermalinks: "/",
-      }
-    }
-
-    // Default case: Nested page
-    return {
-      permalink,
-      parentPermalinks: `/${parentPermalinks}/`,
-    }
-  }, [permalink, permalinkTree])
-
   const toast = useToast({ duration: THREE_SECONDS_IN_MS, isClosable: true })
   const utils = trpc.useUtils()
 
-  const { mutate: updatePageSettings } = trpc.page.updateSettings.useMutation({
+  const { mutate: updateMeta } = trpc.page.updateMeta.useMutation({
     onSuccess: async () => {
       // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
       await utils.page.invalidate()
@@ -111,14 +64,14 @@ const PageSettings: NextPageWithLayout = () => {
       }
       toast({
         id: SUCCESS_TOAST_ID,
-        title: "Saved page settings",
+        title: "Saved page metadata",
         description: "Publish this page for your changes to go live.",
         status: "success",
       })
     },
     onError: (error) => {
       toast({
-        title: "Failed to save page settings",
+        title: "Failed to save page metadata",
         description: error.message,
         status: "error",
       })
@@ -128,13 +81,11 @@ const PageSettings: NextPageWithLayout = () => {
 
   const onSubmit = handleSubmit(({ meta, ...rest }) => {
     if (isDirty) {
-      updatePageSettings(
+      updateMeta(
         {
-          pageId,
+          resourceId: String(pageId),
           siteId,
           meta: JSON.stringify(meta),
-          type,
-          ...rest,
         },
         {
           onSuccess: () => reset({ meta, ...rest }),

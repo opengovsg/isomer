@@ -13,6 +13,7 @@ import {
   readPageOutputSchema,
   reorderBlobSchema,
   updatePageBlobSchema,
+  updatePageMetaSchema,
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
