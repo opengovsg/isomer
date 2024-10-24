@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import { expect, userEvent, within } from "@storybook/test"
 import flatten from "lodash/flatten"
-import merge from "lodash/merge"
 import times from "lodash/times"
 
 import { withChromaticModes } from "@isomer/storybook-config"
@@ -19,7 +18,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       lastModified: "",
       layout: "article",
       summary:
-        "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the year.",
+        "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. LASTWORD",
       date: "2024-05-07",
       category: "Category Name",
     },
@@ -58,19 +57,12 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
   ]),
 )
 
-const meta: Meta<CollectionPageSchemaType> = {
-  title: "Next/Layouts/Collection",
-  component: CollectionLayout,
-  argTypes: {},
-  tags: ["!autodocs"],
-  parameters: {
-    layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
-    themes: {
-      themeOverride: "Isomer Next",
-    },
-  },
-  args: {
+const generateArgs = ({
+  collectionItems = COLLECTION_ITEMS,
+}: {
+  collectionItems?: IsomerSitemap[]
+} = {}): CollectionPageSchemaType => {
+  return {
     layout: "collection",
     site: {
       siteName: "Isomer Next",
@@ -89,7 +81,7 @@ const meta: Meta<CollectionPageSchemaType> = {
             lastModified: "",
             layout: "collection",
             summary: "",
-            children: COLLECTION_ITEMS,
+            children: collectionItems,
           },
         ],
       },
@@ -241,188 +233,47 @@ const meta: Meta<CollectionPageSchemaType> = {
       subtitle:
         "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
     },
+    content: [],
+  }
+}
+
+const meta: Meta<CollectionPageSchemaType> = {
+  title: "Next/Layouts/Collection",
+  component: CollectionLayout,
+  argTypes: {},
+  tags: ["!autodocs"],
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    themes: {
+      themeOverride: "Isomer Next",
+    },
   },
 }
 export default meta
 type Story = StoryObj<typeof CollectionLayout>
 
 export const Default: Story = {
+  args: generateArgs(),
   name: "Collection",
 }
 
 export const WithFilters: Story = {
+  args: generateArgs(),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     await userEvent.click(screen.getByText(/2023 \(10\)/i))
   },
 }
 
+const emptyCollectionItems: IsomerSitemap[] = []
+
 export const EmptyCollection: Story = {
-  args: {
-    site: {
-      siteName: "Isomer Next",
-      siteMap: {
-        id: "1",
-        title: "Home",
-        permalink: "/",
-        lastModified: "",
-        layout: "homepage",
-        summary: "",
-        children: [
-          {
-            id: "2",
-            title: "Publications and other press releases",
-            permalink: "/publications",
-            lastModified: "",
-            layout: "collection",
-            summary: "",
-            children: [],
-          },
-        ],
-      },
-      theme: "isomer-next",
-      isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
-      navBarItems: [
-        {
-          name: "About us",
-          url: "/item-one",
-          items: [
-            {
-              name: "PA's network one",
-              url: "/item-one/pa-network-one",
-              description:
-                "Click here and brace yourself for mild disappointment.",
-            },
-            {
-              name: "PA's network two",
-              url: "/item-one/pa-network-two",
-              description:
-                "Click here and brace yourself for mild disappointment.",
-            },
-            {
-              name: "PA's network three",
-              url: "/item-one/pa-network-three",
-            },
-            {
-              name: "PA's network four",
-              url: "/item-one/pa-network-four",
-              description:
-                "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-            },
-            {
-              name: "PA's network five",
-              url: "/item-one/pa-network-five",
-              description:
-                "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-            },
-            {
-              name: "PA's network six",
-              url: "/item-one/pa-network-six",
-              description:
-                "Click here and brace yourself for mild disappointment.",
-            },
-          ],
-        },
-        {
-          name: "Industries",
-          url: "/item-two",
-          description: "This is a description of the item.",
-          items: [
-            {
-              name: "A sub item",
-              url: "/item-two/sub-item",
-              description:
-                "Click here and brace yourself for mild disappointment.",
-            },
-            {
-              name: "Another sub item",
-              url: "/item-two/another-sub-item",
-            },
-          ],
-        },
-        {
-          name: "Media",
-          url: "/item-three",
-          items: [
-            {
-              name: "A sub item",
-              url: "/item-three/sub-item",
-            },
-            {
-              name: "Another sub item",
-              url: "/item-three/another-sub-item",
-              description:
-                "Click here and brace yourself for mild disappointment.",
-            },
-          ],
-        },
-        {
-          name: "Careers",
-          url: "/item-four",
-          items: [
-            {
-              name: "A sub item",
-              url: "/item-four/sub-item",
-            },
-            {
-              name: "Another sub item",
-              url: "/item-four/another-sub-item",
-            },
-          ],
-        },
-        {
-          name: "Publications",
-          url: "/item-five",
-          items: [
-            {
-              name: "A sub item",
-              url: "/item-five/sub-item",
-            },
-            {
-              name: "Another sub item",
-              url: "/item-five/another-sub-item",
-            },
-          ],
-        },
-        {
-          name: "Newsroom",
-          url: "/item-six",
-          items: [
-            {
-              name: "A sub item",
-              url: "/item-six/sub-item",
-            },
-            {
-              name: "Another sub item",
-              url: "/item-six/another-sub-item",
-            },
-          ],
-        },
-        {
-          name: "Contact us",
-          url: "/single-item",
-        },
-      ],
-      footerItems: {
-        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
-        termsOfUseLink: "https://www.isomer.gov.sg/terms",
-        siteNavItems: [],
-      },
-      lastUpdated: "1 Jan 2021",
-      search: {
-        type: "localSearch",
-        searchUrl: "/search",
-      },
-      notification: {
-        content: [{ type: "text", text: "This is a short notification" }],
-      },
-    },
-  },
+  args: generateArgs({ collectionItems: emptyCollectionItems }),
 }
 
 export const SearchingEmptyCollection: Story = {
-  args: EmptyCollection.args,
+  args: generateArgs({ collectionItems: emptyCollectionItems }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const searchElem = screen.getByRole("searchbox", {
@@ -433,6 +284,7 @@ export const SearchingEmptyCollection: Story = {
 }
 
 export const NoResults: Story = {
+  args: generateArgs(),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const searchElem = screen.getByRole("searchbox", {
@@ -443,36 +295,79 @@ export const NoResults: Story = {
 }
 
 export const FilteredEmptyResults: Story = {
-  args: merge(meta.args, {
-    site: {
-      siteMap: {
-        children: [
-          {
-            children: [
-              {
-                title: `2025 File`,
-                permalink: `/publications/item-twenty-twenty-five`,
-                lastModified: "",
-                layout: "file",
-                summary:
-                  "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
-                date: "2025-05-07",
-                category: "Category Name 2",
-                ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
-                fileDetails: {
-                  type: "png",
-                  size: "1.2MB",
-                },
-              },
-            ],
-          },
-        ],
+  args: generateArgs({
+    collectionItems: [
+      ...COLLECTION_ITEMS,
+      {
+        id: "2025",
+        title: `2025 File`,
+        permalink: `/publications/item-twenty-twenty-five`,
+        lastModified: "",
+        layout: "file",
+        summary:
+          "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
+        date: "2025-05-07",
+        category: "Category Name 2",
+        ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
+        fileDetails: {
+          type: "png",
+          size: "1.2MB",
+        },
       },
-    },
+    ],
   }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await userEvent.click(screen.getByText(/2024 \(19\)/i))
+    await userEvent.click(screen.getByText(/2024 \(20\)/i))
     await userEvent.click(screen.getByText(/Category Name 2 \(1\)/i))
+  },
+}
+
+const threeItemsHaveUndefinedDate = [
+  ...COLLECTION_ITEMS.slice(0, 3).map((item) => ({
+    ...item,
+    date: undefined,
+  })),
+  ...COLLECTION_ITEMS.slice(3),
+]
+
+export const YearFilter: Story = {
+  args: generateArgs({ collectionItems: threeItemsHaveUndefinedDate }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    const dateNotSpecified = screen.queryByText(/Not specified \(3\)/i)
+    await expect(dateNotSpecified).toBeInTheDocument()
+
+    const dateText = await screen.findAllByText(/7 May 2024/)
+    await expect(dateText.length).toBe(10)
+  },
+}
+
+export const YearFilterSelectNotSpecified: Story = {
+  args: generateArgs({ collectionItems: threeItemsHaveUndefinedDate }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(screen.getByText(/Not specified/i))
+
+    const resultsHeader = await screen.findAllByText(/3 articles/)
+    await expect(resultsHeader.length).toBe(1)
+  },
+}
+
+const allItemsHaveUndefinedDate = COLLECTION_ITEMS.map((item) => ({
+  ...item,
+  date: undefined,
+}))
+
+export const AllResultsNoDate: Story = {
+  args: generateArgs({ collectionItems: allItemsHaveUndefinedDate }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+
+    const yearFilter = screen.queryByText(/Year/i)
+    await expect(yearFilter).not.toBeInTheDocument()
+
+    const lastWordOccurences = await screen.findAllByText(/LASTWORD/)
+    await expect(lastWordOccurences.length).toBe(3)
   },
 }
