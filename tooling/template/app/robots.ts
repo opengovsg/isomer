@@ -19,6 +19,7 @@ export default function robots(): MetadataRoute.Robots {
     // @ts-ignore to fix when types are proper
     site: {
       ...config.site,
+      environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
       // TODO: fixup all the typing errors
       // @ts-ignore to fix when types are proper
       siteMap: sitemap,

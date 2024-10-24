@@ -3,6 +3,26 @@ import { nanoid } from "nanoid"
 
 import type { ResourceState, ResourceType } from "~server/db"
 
+export const setupAdminPermissions = async ({
+  userId,
+  siteId,
+}: {
+  userId?: string
+  siteId: number
+}) => {
+  if (!userId) throw new Error("userId is a required field")
+
+  await db
+    .insertInto("ResourcePermission")
+    .values({
+      userId: String(userId),
+      siteId,
+      role: "Admin",
+      resourceId: null,
+    })
+    .execute()
+}
+
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
   if (siteId !== undefined && fetch) {
     return db.transaction().execute(async (tx) => {

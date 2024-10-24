@@ -9,6 +9,7 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import {
+  setupAdminPermissions,
   setupFolder,
   setupPageResource,
   setupSite,
@@ -51,10 +52,16 @@ describe("page.router", async () => {
 
     it("should return 404 if page does not exist", async () => {
       // Act
-      const result = caller.readPage({
+      const mockSite = {
         siteId: 1,
         pageId: 1,
+      }
+      const site = await setupSite(mockSite.siteId)
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.site.id,
       })
+      const result = caller.readPage(mockSite)
 
       // Assert
       await expect(result).rejects.toThrowError(
@@ -66,6 +73,10 @@ describe("page.router", async () => {
       // Arrange
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
       })
 
       // Act
@@ -85,6 +96,10 @@ describe("page.router", async () => {
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "CollectionPage",
       })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.readPage({
@@ -103,6 +118,10 @@ describe("page.router", async () => {
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "RootPage",
       })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.readPage({
@@ -119,6 +138,10 @@ describe("page.router", async () => {
     it("should return 404 if resource type is not a page", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.readPage({
@@ -149,11 +172,18 @@ describe("page.router", async () => {
     })
 
     it("should return 404 if page does not exist", async () => {
-      // Act
-      const result = caller.readPageAndBlob({
+      const mockSite = {
         siteId: 1,
         pageId: 1,
+      }
+      const site = await setupSite(mockSite.siteId)
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.site.id,
       })
+
+      // Act
+      const result = caller.readPageAndBlob(mockSite)
 
       // Assert
       await expect(result).rejects.toThrowError(
@@ -165,6 +195,10 @@ describe("page.router", async () => {
       // Arrange
       const { site, page, blob, navbar, footer } = await setupPageResource({
         resourceType: "Page",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
       })
       const expected = {
         ...pick(page, ["permalink", "title", "type"]),
@@ -189,6 +223,10 @@ describe("page.router", async () => {
       const { site, page, blob, navbar, footer } = await setupPageResource({
         resourceType: "RootPage",
       })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
       const expected = {
         ...pick(page, ["permalink", "title", "type"]),
         navbar: omit(navbar, ["createdAt", "updatedAt"]),
@@ -212,6 +250,10 @@ describe("page.router", async () => {
       const { site, page, blob, navbar, footer } = await setupPageResource({
         resourceType: "CollectionPage",
       })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
       const expected = {
         ...pick(page, ["permalink", "title", "type"]),
         navbar: omit(navbar, ["createdAt", "updatedAt"]),
@@ -233,6 +275,10 @@ describe("page.router", async () => {
     it("should return 404 if resource type is not a page", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.readPageAndBlob({
@@ -310,6 +356,10 @@ describe("page.router", async () => {
         },
       ]
       expect(unexpectedBlock).not.toEqual(pageToReorder.blob.content.content)
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageToReorder.site.id,
+      })
 
       // Act
       const result = caller.reorderBlock({
@@ -333,6 +383,10 @@ describe("page.router", async () => {
     it("should return 422 if `from` arg is out of bounds", async () => {
       // Arrange
       const fromArg = pageToReorder.blob.content.content.length + 10
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageToReorder.site.id,
+      })
 
       // Act
       const result = caller.reorderBlock({
@@ -352,6 +406,12 @@ describe("page.router", async () => {
     })
 
     it("should fail validation if `from` arg is negative index", async () => {
+      //Arrange
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageToReorder.site.id,
+      })
+
       // Act
       const result = caller.reorderBlock({
         siteId: pageToReorder.site.id,
@@ -370,6 +430,10 @@ describe("page.router", async () => {
     it("should return 422 if `to` arg is out of bounds", async () => {
       // Arrange
       const toArg = pageToReorder.blob.content.content.length + 10
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageToReorder.site.id,
+      })
 
       // Act
       const result = caller.reorderBlock({
@@ -389,6 +453,12 @@ describe("page.router", async () => {
     })
 
     it("should fail validation if `to` arg is negative index", async () => {
+      // Arrange
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageToReorder.site.id,
+      })
+
       // Act
       const result = caller.reorderBlock({
         siteId: pageToReorder.site.id,
@@ -405,6 +475,12 @@ describe("page.router", async () => {
     })
 
     it("should reorder block if args are valid", async () => {
+      // Arrange
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageToReorder.site.id,
+      })
+
       // Act
       const result = await caller.reorderBlock({
         siteId: pageToReorder.site.id,
@@ -496,6 +572,10 @@ describe("page.router", async () => {
     it("should return 404 if page does not exist", async () => {
       // Arrange
       const pageUpdateArgs = createPageUpdateArgs(pageToUpdate)
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageToUpdate.siteId,
+      })
 
       // Act
       const result = caller.updatePageBlob({
@@ -515,6 +595,10 @@ describe("page.router", async () => {
     it("should return 422 if content is not valid", async () => {
       // Arrange
       const pageUpdateArgs = createPageUpdateArgs(pageToUpdate)
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageToUpdate.siteId,
+      })
 
       // Act
       const result = caller.updatePageBlob({
@@ -523,12 +607,16 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError("Invalid page content")
+      await expect(result).rejects.toThrowError("Schema validation failed")
     })
 
     it("should update draft page blob if args are valid and has current draft", async () => {
       // Arrange
       const pageUpdateArgs = createPageUpdateArgs(pageToUpdate)
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageToUpdate.siteId,
+      })
 
       // Act
       const result = await caller.updatePageBlob(pageUpdateArgs)
@@ -548,6 +636,10 @@ describe("page.router", async () => {
         resourceType: "Page",
         state: "Published",
         userId: session.userId,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: publishedPageToUpdate.siteId,
       })
       expect(publishedPageToUpdate.publishedVersionId).not.toBeNull()
       expect(publishedPageToUpdate.draftBlobId).toBeNull()
@@ -604,8 +696,9 @@ describe("page.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "NOT_FOUND",
-          message: "Site not found",
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
         }),
       )
     })
@@ -613,6 +706,10 @@ describe("page.router", async () => {
     it("should throw 409 if permalink is not unique", async () => {
       // Arrange
       const { site, page } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.createPage({
@@ -639,6 +736,10 @@ describe("page.router", async () => {
         title: "Test Page",
         permalink: "test-page",
       }
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.createPage({
@@ -670,6 +771,10 @@ describe("page.router", async () => {
         title: "Test Page",
         permalink: "test-page",
       }
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.createPage({
@@ -701,6 +806,10 @@ describe("page.router", async () => {
         title: "Test Page",
         permalink: "test-page",
       }
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.createPage({
@@ -731,6 +840,10 @@ describe("page.router", async () => {
         title: "Test Page",
         permalink: "test-page",
       }
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.createPage({
@@ -772,6 +885,10 @@ describe("page.router", async () => {
         permalink: "test-page",
         folderId: 999999, // should not exist
       }
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.createPage({
@@ -796,6 +913,10 @@ describe("page.router", async () => {
         permalink: "test-page",
         folderId: Number(page.id),
       }
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.createPage({
@@ -842,8 +963,9 @@ describe("page.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "NOT_FOUND",
-          message: "Root page not found",
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
         }),
       )
     })
@@ -852,6 +974,10 @@ describe("page.router", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
         resourceType: "RootPage",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
       })
 
       // Act
@@ -875,8 +1001,9 @@ describe("page.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "NOT_FOUND",
-          message: "Root page not found",
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
         }),
       )
     })
@@ -954,6 +1081,10 @@ describe("page.router", async () => {
         title: "New Title",
         permalink: "new-permalink",
       }
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.updateSettings({
@@ -990,6 +1121,10 @@ describe("page.router", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
         resourceType: "RootPage",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
       })
       const expectedMeta = {
         description: "Updating the meta description",
@@ -1036,6 +1171,10 @@ describe("page.router", async () => {
       const { site, page } = await setupPageResource({
         resourceType: "Page",
       })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.updateSettings({
@@ -1057,6 +1196,10 @@ describe("page.router", async () => {
       const { site } = await setupPageResource({
         permalink: reusedPermalink,
         resourceType: "Page",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
       })
 
       const { page } = await setupPageResource({
@@ -1127,6 +1270,10 @@ describe("page.router", async () => {
       const { site, page } = await setupPageResource({
         resourceType: "Page",
       })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.getFullPermalink({
@@ -1142,6 +1289,10 @@ describe("page.router", async () => {
       // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "RootPage",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
       })
 
       // Act
@@ -1160,6 +1311,10 @@ describe("page.router", async () => {
       const { page } = await setupPageResource({
         resourceType: "Page",
         parentId: folder.id,
+        siteId: site.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
         siteId: site.id,
       })
 
@@ -1203,8 +1358,9 @@ describe("page.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "NOT_FOUND",
-          message: "No permalink tree could be found for the given page",
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
         }),
       )
     })
@@ -1222,8 +1378,9 @@ describe("page.router", async () => {
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
-          code: "NOT_FOUND",
-          message: "No permalink tree could be found for the given page",
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
         }),
       )
     })
@@ -1231,6 +1388,10 @@ describe("page.router", async () => {
     it("should return the permalink tree of root-level page successfully", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.getPermalinkTree({
@@ -1248,6 +1409,10 @@ describe("page.router", async () => {
       const { page } = await setupPageResource({
         resourceType: "Page",
         parentId: folder.id,
+        siteId: site.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
         siteId: site.id,
       })
 

@@ -12,6 +12,7 @@ import { useSetAtom } from "jotai"
 import { BiData } from "react-icons/bi"
 import { z } from "zod"
 
+import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
 import { CollectionTable } from "~/features/dashboard/components/CollectionTable"
@@ -110,5 +111,13 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
   )
 }
 
-CollectionResourceListPage.getLayout = AdminCmsSidebarLayout
+CollectionResourceListPage.getLayout = (page) => {
+  return (
+    <PermissionsBoundary
+      resourceType="Collection"
+      page={AdminCmsSidebarLayout(page)}
+    />
+  )
+}
+
 export default CollectionResourceListPage

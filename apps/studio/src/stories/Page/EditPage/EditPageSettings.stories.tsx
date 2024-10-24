@@ -7,6 +7,7 @@ import { createBannerGbParameters } from "~/stories/utils/growthbook"
 
 const COMMON_HANDLERS = [
   resourceHandlers.getMetadataById.content(),
+  resourceHandlers.getRolesFor.default(),
   pageHandlers.readPageAndBlob.content(),
   pageHandlers.readPage.content(),
 ]
