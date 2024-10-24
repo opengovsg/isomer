@@ -1038,7 +1038,6 @@ describe("page.router", async () => {
         pageId: 1,
         title: "Test Page",
         permalink: "test-page",
-        meta: "Test meta",
         type: "Page",
       })
 
@@ -1054,7 +1053,6 @@ describe("page.router", async () => {
         pageId: 1,
         title: "Test Page",
         permalink: "test-page",
-        meta: "Test meta",
         type: "Page",
       })
 
@@ -1090,7 +1088,6 @@ describe("page.router", async () => {
       const result = await caller.updateSettings({
         siteId: site.id,
         pageId: Number(page.id),
-        meta: JSON.stringify(expectedMeta),
         type: "Page",
         ...expectedSettings,
       })
@@ -1139,7 +1136,6 @@ describe("page.router", async () => {
       const result = await caller.updateSettings({
         siteId: site.id,
         pageId: Number(page.id),
-        meta: JSON.stringify(expectedMeta),
         type: "RootPage",
         ...expectedSettings,
       })
@@ -1183,7 +1179,6 @@ describe("page.router", async () => {
         title: "New Title",
         permalink: "new-permalink",
         type: "Page",
-        meta: "do not match the shape because not a json string",
       })
 
       // Assert
@@ -1214,10 +1209,6 @@ describe("page.router", async () => {
         title: "New Title",
         permalink: reusedPermalink,
         type: "Page",
-        meta: JSON.stringify({
-          description: "Updating the meta description",
-          noIndex: false,
-        }),
       })
 
       // Assert
