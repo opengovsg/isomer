@@ -101,12 +101,26 @@ const useCreateCollectionPageWizardContext = ({
           void router.push(`/sites/${siteId}/${nextType}/${pageId}`)
         },
         onError: (error) => {
-          if (error.data?.code === "CONFLICT") {
+          if (
+            error.data?.code === "CONFLICT" &&
+            values.type === "CollectionPage"
+          ) {
             formMethods.setError(
               "permalink",
               { message: error.message },
               { shouldFocus: true },
             )
+            return
+          } else if (
+            error.data?.code === "CONFLICT" &&
+            values.type === "CollectionLink"
+          ) {
+            formMethods.setError(
+              "title",
+              { message: error.message },
+              { shouldFocus: true },
+            )
+            return
           } else {
             console.error(error)
           }
