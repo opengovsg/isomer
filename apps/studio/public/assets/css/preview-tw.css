@@ -2376,6 +2376,11 @@ video {
   background-color: transparent;
 }
 
+.bg-utility-feedback-info-faint {
+  --tw-bg-opacity: 1;
+  background-color: rgb(234 242 255 / var(--tw-bg-opacity));
+}
+
 .bg-utility-feedback-info-subtle {
   --tw-bg-opacity: 1;
   background-color: rgb(219 234 254 / var(--tw-bg-opacity));
@@ -4654,6 +4659,10 @@ video {
 
   .md\:h-52 {
     height: 13rem;
+  }
+
+  .md\:h-60 {
+    height: 15rem;
   }
 
   .md\:h-\[240px\] {
