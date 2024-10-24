@@ -55,11 +55,11 @@ export const getRobotsTxt = (props: IsomerPageSchemaType) => {
   }
 }
 
-export const getSitemapXml = (sitemap: IsomerSitemap) => {
+export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
   return getSitemapAsArray(sitemap)
     .filter((item) => item.layout !== "file" && item.layout !== "link")
     .map(({ permalink, lastModified }) => ({
-      url: permalink,
+      url: siteUrl !== undefined ? `${siteUrl}${permalink}` : permalink,
       lastModified,
     }))
 }
