@@ -95,8 +95,6 @@ const NavigationBreadcrumbs = ({
 export const LinkEditNavbar = (): JSX.Element => {
   const { linkId, siteId } = useQueryParse(editLinkSchema)
 
-  const { pathname } = useRouter()
-
   return (
     <Flex
       h={ADMIN_NAVBAR_HEIGHT}
@@ -114,20 +112,6 @@ export const LinkEditNavbar = (): JSX.Element => {
     >
       <NavigationBreadcrumbs siteId={String(siteId)} pageId={String(linkId)} />
 
-      <Flex gap="2rem">
-        <TabLink
-          isActive={pathname === "/sites/[siteId]/links/[linkId]"}
-          href={`/sites/${siteId}/links/${linkId}`}
-        >
-          Edit
-        </TabLink>
-        <TabLink
-          isActive={pathname === "/sites/[siteId]/links/[linkId]/settings"}
-          href={`/sites/${siteId}/links/${linkId}/settings`}
-        >
-          Link Settings
-        </TabLink>
-      </Flex>
       {linkId && siteId && (
         <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
           <PublishButton pageId={linkId} siteId={siteId} />
