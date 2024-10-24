@@ -55,7 +55,8 @@ const BaseRefPageSchema = Type.Composite([
     description: Type.Optional(
       Type.String({
         title: "Summary",
-        description: "This will appear on the collection",
+        description:
+          "Add a short description to explain what this collection item is about",
         format: "textarea",
         maxLength: 120,
       }),

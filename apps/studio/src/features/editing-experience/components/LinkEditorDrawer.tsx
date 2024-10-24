@@ -63,13 +63,6 @@ const InnerDrawer = () => {
         <Text as="h6" textStyle="h6">
           Edit collection item
         </Text>
-        <Text
-          as="caption"
-          textStyle="caption-2"
-          textColor="base.content.medium"
-        >
-          When this collection item is clicked, open:
-        </Text>
       </Flex>
       <Flex flexDir="column" alignItems="start" w="full">
         <FormBuilder<Static<typeof schema>>
