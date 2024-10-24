@@ -216,11 +216,21 @@ export const collectionRouter = router({
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
     .query(async ({ input: { linkId, siteId } }) => {
-      return await db
+      const baseQuery = db
         .selectFrom("Resource")
         .where("Resource.id", "=", String(linkId))
         .where("Resource.siteId", "=", siteId)
+
+      const draft = await baseQuery
         .innerJoin("Blob", "Resource.draftBlobId", "Blob.id")
+        .select(["Blob.content", "Resource.title"])
+        .executeTakeFirst()
+
+      if (draft) return draft
+
+      return baseQuery
+        .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
+        .innerJoin("Blob", "Blob.id", "Version.blobId")
         .select(["Blob.content", "Resource.title"])
         .executeTakeFirstOrThrow()
     }),
