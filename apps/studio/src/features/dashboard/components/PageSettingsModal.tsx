@@ -135,18 +135,17 @@ const PageSettingsModalContent = ({
     },
   })
 
-  const onSubmit = handleSubmit(({ meta, ...rest }) => {
+  const onSubmit = handleSubmit((data) => {
     if (isDirty) {
       updatePageSettings(
         {
           pageId: Number(pageId),
           siteId,
-          meta: JSON.stringify(meta),
           type,
-          ...rest,
+          ...data,
         },
         {
-          onSuccess: () => reset({ meta, ...rest }),
+          onSuccess: () => reset(data),
           onSettled: onClose,
         },
       )
