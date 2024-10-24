@@ -64,38 +64,3 @@ export const SelectLayout: Story = {
     })
   },
 }
-
-export const EnterPageDetails: Story = {
-  play: async (context) => {
-    const { canvasElement } = context
-    const screen = within(canvasElement.ownerDocument.body)
-    await SelectLayout.play?.(context)
-
-    await userEvent.click(
-      screen.getByRole("button", { name: /next: page details/i }),
-    )
-
-    await userEvent.type(
-      screen.getByLabelText(/page title/i),
-      "My_new page WITH w@eird characters!",
-    )
-  },
-}
-
-export const EnterLinkDetails: Story = {
-  play: async (context) => {
-    const { canvasElement } = context
-    const screen = within(canvasElement.ownerDocument.body)
-    await SelectLayout.play?.(context)
-
-    await userEvent.click(screen.getByText("Link or file"))
-    await userEvent.click(
-      screen.getByRole("button", { name: /next: page details/i }),
-    )
-
-    await userEvent.type(
-      screen.getByLabelText(/item title/i),
-      "My_new page WITH w@eird characters!",
-    )
-  },
-}
