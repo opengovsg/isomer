@@ -125,7 +125,7 @@ export const PageEditNavbar = (): JSX.Element => {
           isActive={pathname === "/sites/[siteId]/pages/[pageId]/settings"}
           href={`/sites/${siteId}/pages/${pageId}/settings`}
         >
-          Page Settings
+          Meta Settings
         </TabLink>
       </Flex>
       {pageId && siteId && (

@@ -245,8 +245,8 @@ async function main() {
     .executeTakeFirstOrThrow()
 
   await Promise.all(
-    ISOMER_ADMINS.map((name) => {
-      return db
+    ISOMER_ADMINS.map(async (name) => {
+      const { id } = await db
         .insertInto("User")
         .values({
           id: cuid2.createId(),
@@ -259,7 +259,13 @@ async function main() {
             .column("email")
             .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
         )
+        .returning("id")
         .executeTakeFirstOrThrow()
+
+      await db
+        .insertInto("ResourcePermission")
+        .values({ userId: id, siteId, role: "Admin" })
+        .execute()
     }),
   )
 }

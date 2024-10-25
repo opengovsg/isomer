@@ -116,7 +116,6 @@ export const getRootPageSchema = z.object({
 
 export const basePageSettingsSchema = basePageSchema.extend({
   title: pageTitleSchema,
-  meta: z.string().optional(),
 })
 
 export const rootPageSettingsSchema = basePageSettingsSchema.extend({
@@ -150,4 +149,10 @@ export const readPageOutputSchema = z.object({
   type: z.nativeEnum(ResourceType),
   createdAt: z.date(),
   updatedAt: z.date(),
+})
+
+export const updatePageMetaSchema = z.object({
+  meta: z.string(),
+  siteId: z.number().min(1),
+  resourceId: z.string().min(1),
 })

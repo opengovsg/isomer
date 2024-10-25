@@ -15,6 +15,7 @@ import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
+import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { RootpageRow } from "~/features/dashboard/components/RootpageRow"
 import { CreateCollectionModal } from "~/features/editing-experience/components/CreateCollectionModal"
@@ -163,6 +164,7 @@ const SitePage: NextPageWithLayout = () => {
       <DeleteResourceModal siteId={siteId} />
       <MoveResourceModal />
       <FolderSettingsModal />
+      <PageSettingsModal />
     </>
   )
 }

@@ -19,6 +19,7 @@ import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
+import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
@@ -238,6 +239,7 @@ const FolderPage: NextPageWithLayout = () => {
       />
       <FolderSettingsModal />
       <MoveResourceModal />
+      <PageSettingsModal />
       <DeleteResourceModal siteId={parseInt(siteId)} />
     </>
   )

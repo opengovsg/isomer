@@ -8,10 +8,10 @@ import { isEmpty } from "lodash"
 import { z } from "zod"
 
 import type { CollectionLinkProps } from "../atoms"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { linkAtom } from "../atoms"
-import { BRIEF_TOAST_SETTINGS } from "./constants"
 import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
 
