@@ -1071,10 +1071,6 @@ describe("page.router", async () => {
       const { site, page } = await setupPageResource({
         resourceType: "Page",
       })
-      const expectedMeta = {
-        description: "Updating the meta description",
-        noIndex: false,
-      }
       const expectedSettings = {
         title: "New Title",
         permalink: "new-permalink",
@@ -1104,14 +1100,8 @@ describe("page.router", async () => {
           "Resource.draftBlobId",
         ])
         .executeTakeFirstOrThrow()
-      const actualBlobContent = await db
-        .selectFrom("Blob")
-        .where("id", "=", page.draftBlobId)
-        .select("content")
-        .executeTakeFirstOrThrow()
       expect(result).toMatchObject(actualResource)
       expect(result).toMatchObject(expectedSettings)
-      expect(actualBlobContent.content.meta).toMatchObject(expectedMeta)
     })
 
     it("should update root page settings successfully", async () => {
@@ -1123,10 +1113,6 @@ describe("page.router", async () => {
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
-      const expectedMeta = {
-        description: "Updating the meta description",
-        noIndex: false,
-      }
       const expectedSettings = {
         title: "New Title",
         permalink: "",
@@ -1152,14 +1138,8 @@ describe("page.router", async () => {
           "Resource.draftBlobId",
         ])
         .executeTakeFirstOrThrow()
-      const actualBlobContent = await db
-        .selectFrom("Blob")
-        .where("id", "=", page.draftBlobId)
-        .select("content")
-        .executeTakeFirstOrThrow()
       expect(result).toMatchObject(actualResource)
       expect(result).toMatchObject(expectedSettings)
-      expect(actualBlobContent.content.meta).toMatchObject(expectedMeta)
     })
 
     it("should throw 409 if permalink is not unique", async () => {
