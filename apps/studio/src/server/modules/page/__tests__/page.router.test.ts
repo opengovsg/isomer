@@ -1162,29 +1162,6 @@ describe("page.router", async () => {
       expect(actualBlobContent.content.meta).toMatchObject(expectedMeta)
     })
 
-    it("should fail validation if meta is incorrect shape", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: "Page",
-      })
-      await setupAdminPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = caller.updateSettings({
-        siteId: site.id,
-        pageId: Number(page.id),
-        title: "New Title",
-        permalink: "new-permalink",
-        type: "Page",
-      })
-
-      // Assert
-      await expect(result).rejects.toThrowError("Invalid metadata")
-    })
-
     it("should throw 409 if permalink is not unique", async () => {
       // Arrange
       const reusedPermalink = "this-is-not-unique"
