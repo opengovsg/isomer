@@ -52,6 +52,18 @@ type Story = StoryObj<typeof EditPage>
 
 export const Default: Story = {}
 
+export const EditFixedBlockState: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    await waitFor(async () => {
+      await userEvent.click(
+        canvas.getByRole("button", { name: /Content page header/i }),
+      )
+    })
+  },
+}
+
 export const AddBlock: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)

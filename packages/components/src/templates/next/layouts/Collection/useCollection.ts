@@ -9,7 +9,6 @@ import {
 import type { AppliedFilter } from "../../types/Filter"
 import type { CollectionCardProps } from "~/interfaces"
 import {
-  getAvailableFilters,
   getFilteredItems,
   getPaginatedItems,
   updateAppliedFilters,
@@ -60,8 +59,6 @@ export const useCollection = ({ items }: UseCollectionProps) => {
     setCurrPage(1)
   }, [filteredItems])
 
-  const filters = useMemo(() => getAvailableFilters(items), [items])
-
   const paginatedItems = useMemo(
     () => getPaginatedItems(filteredItems, ITEMS_PER_PAGE, currPage),
     [currPage, filteredItems],
@@ -76,7 +73,6 @@ export const useCollection = ({ items }: UseCollectionProps) => {
     paginatedItems,
     filteredCount: filteredItems.length,
     totalCount: items.length,
-    filters,
     searchValue,
     handleSearchValueChange,
     handleClearFilter,
