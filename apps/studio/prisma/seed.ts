@@ -7,7 +7,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import cuid2 from "@paralleldrive/cuid2"
 
 import type { Navbar } from "~/server/modules/resource/resource.types"
-import { db, jsonb } from "../src/server/modules/database"
+import { db, jsonb, RoleType } from "../src/server/modules/database"
 
 const MOCK_PHONE_NUMBER = "123456789"
 
@@ -244,7 +244,7 @@ async function main() {
     )
     .executeTakeFirstOrThrow()
 
-  await Promise.all(
+  const users = await Promise.all(
     ISOMER_ADMINS.map((name) => {
       return db
         .insertInto("User")
@@ -259,7 +259,21 @@ async function main() {
             .column("email")
             .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
         )
+        .returning(["id"])
         .executeTakeFirstOrThrow()
+    }),
+  )
+
+  await Promise.all(
+    users.map((user) => {
+      return db
+        .insertInto("ResourcePermission")
+        .values({
+          userId: user.id,
+          siteId,
+          role: RoleType.Admin,
+        })
+        .execute()
     }),
   )
 }
