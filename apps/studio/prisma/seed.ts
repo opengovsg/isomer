@@ -23,6 +23,9 @@ const ISOMER_ADMINS = [
   "adriangoh",
 ]
 
+const EDITOR_USER = "editor"
+const PUBLISHER_USER = "publisher"
+
 const PAGE_BLOB: IsomerSchema = {
   version: "0.1.0",
   layout: "homepage",
@@ -245,7 +248,7 @@ async function main() {
     .executeTakeFirstOrThrow()
 
   const users = await Promise.all(
-    ISOMER_ADMINS.map((name) => {
+    [...ISOMER_ADMINS, EDITOR_USER, PUBLISHER_USER].map((name) => {
       return db
         .insertInto("User")
         .values({
@@ -259,19 +262,25 @@ async function main() {
             .column("email")
             .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
         )
-        .returning(["id"])
+        .returning(["id", "name"])
         .executeTakeFirstOrThrow()
     }),
   )
 
   await Promise.all(
     users.map((user) => {
+      const role = ISOMER_ADMINS.includes(user.name)
+        ? RoleType.Admin
+        : user.name === EDITOR_USER
+          ? RoleType.Editor
+          : RoleType.Publisher
+
       return db
         .insertInto("ResourcePermission")
         .values({
           userId: user.id,
           siteId,
-          role: RoleType.Admin,
+          role,
         })
         .execute()
     }),
