@@ -30,7 +30,7 @@ export function JsonFormsCalloutTextControl({
   })
 
   return (
-    <Box mt="1.25rem" _first={{ mt: 0 }}>
+    <Box>
       <FormControl isRequired={required}>
         <FormLabel description={description}>{label}</FormLabel>
         <TiptapCalloutEditor editor={editor} />
