@@ -3,7 +3,7 @@ import type { CollectionCardProps } from "~/interfaces"
 import { getBreadcrumbFromSiteMap, getSitemapAsArray } from "~/utils"
 import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
-import { shouldShowDate } from "./utils"
+import { getAvailableFilters, shouldShowDate } from "./utils"
 
 const getCollectionItems = (
   site: IsomerSiteProps,
@@ -118,6 +118,7 @@ const CollectionLayout = ({
         page={page}
         breadcrumb={breadcrumb}
         items={items}
+        filters={getAvailableFilters(items)}
         shouldShowDate={shouldShowDate(items)}
         LinkComponent={LinkComponent}
         site={site}
