@@ -657,6 +657,26 @@ export const Default: Story = {
   }),
 }
 
+export const NoTitle: Story = {
+  args: generateArgs({
+    database: {
+      headers: [
+        "Header",
+        "Header",
+        "Header",
+        "Header",
+        "Header",
+        "Header",
+        "Header",
+        "Header",
+        "Header",
+        "Header",
+      ],
+      items: [],
+    },
+  }),
+}
+
 export const Empty: Story = {
   args: generateArgs({
     database: {
