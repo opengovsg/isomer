@@ -10,7 +10,7 @@ const skipToContentStyle = tv({
 export const SkipToContent = () => {
   return (
     <a href={`#${SKIP_TO_CONTENT_ANCHOR_ID}`} className={skipToContentStyle()}>
-      Skip to content
+      Skip to main content
     </a>
   )
 }
