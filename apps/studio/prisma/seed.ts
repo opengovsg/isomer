@@ -247,9 +247,9 @@ async function main() {
     )
     .executeTakeFirstOrThrow()
 
-  const users = await Promise.all(
-    [...ISOMER_ADMINS, EDITOR_USER, PUBLISHER_USER].map((name) => {
-      return db
+  await Promise.all(
+    [...ISOMER_ADMINS, EDITOR_USER, PUBLISHER_USER].map(async (name) => {
+      const user = await db
         .insertInto("User")
         .values({
           id: cuid2.createId(),
@@ -264,18 +264,14 @@ async function main() {
         )
         .returning(["id", "name"])
         .executeTakeFirstOrThrow()
-    }),
-  )
 
-  await Promise.all(
-    users.map((user) => {
       const role = ISOMER_ADMINS.includes(user.name)
         ? RoleType.Admin
         : user.name === EDITOR_USER
           ? RoleType.Editor
           : RoleType.Publisher
 
-      return db
+      await db
         .insertInto("ResourcePermission")
         .values({
           userId: user.id,
