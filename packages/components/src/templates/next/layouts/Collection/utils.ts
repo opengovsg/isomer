@@ -35,21 +35,25 @@ export const getAvailableFilters = (
     }
   })
 
-  const yearFilterItems = Object.entries(years).map(([label, count]) => ({
-    id: label.toLowerCase(),
-    label,
-    count,
-  }))
+  const yearFilterItems = Object.entries(years)
+    .map(([label, count]) => ({
+      id: label.toLowerCase(),
+      label,
+      count,
+    }))
+    .sort((a, b) => parseInt(b.label) - parseInt(a.label))
 
   const availableFilters: FilterType[] = [
     {
       id: FILTER_ID_CATEGORY,
       label: "Category",
-      items: Object.entries(categories).map(([label, count]) => ({
-        id: label.toLowerCase(),
-        label: label.charAt(0).toUpperCase() + label.slice(1),
-        count,
-      })),
+      items: Object.entries(categories)
+        .map(([label, count]) => ({
+          id: label.toLowerCase(),
+          label: label.charAt(0).toUpperCase() + label.slice(1),
+          count,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
     },
     {
       id: FILTER_ID_YEAR,
