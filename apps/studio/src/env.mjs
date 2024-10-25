@@ -22,7 +22,12 @@ const s3Schema = z.object({
  */
 const client = z
   .object({
-    NEXT_PUBLIC_APP_ENV: z.enum(["development", "staging", "production"]),
+    NEXT_PUBLIC_APP_ENV: z.enum([
+      "development",
+      "staging",
+      "production",
+      "vapt",
+    ]),
     NEXT_PUBLIC_ENABLE_SGID: coerceBoolean.default("false"),
     NEXT_PUBLIC_APP_URL: z.string().url().optional(),
     NEXT_PUBLIC_APP_NAME: z.string().default("Isomer Studio"),
