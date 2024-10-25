@@ -28,7 +28,7 @@ export function JsonFormsDateControl({
   errors,
 }: ControlProps) {
   return (
-    <Box mt="1.25rem" _first={{ mt: 0 }}>
+    <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <DatePicker
