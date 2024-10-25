@@ -5,6 +5,7 @@ import "../styles/editor/editorStyles.scss"
 
 import type { AppProps, AppType } from "next/app"
 import { Skeleton, Stack } from "@chakra-ui/react"
+import { datadogRum } from "@datadog/browser-rum"
 import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import Intercom from "@intercom/messenger-js-sdk"
@@ -27,6 +28,24 @@ import { trpc } from "~/utils/trpc"
 type AppPropsWithAuthAndLayout = AppProps & {
   Component: NextPageWithLayout
 }
+
+datadogRum.init({
+  applicationId: "32c64617-51e3-4a6e-a977-ad113021ffae",
+  clientToken: "pub89baaf356268edcb9ed95847d7c5d679",
+  // `site` refers to the Datadog site parameter of your organization
+  // see https://docs.datadoghq.com/getting_started/site/
+  site: "datadoghq.com",
+  service: "isomer-next",
+  env: "production",
+  // Specify a version number to identify the deployed version of your application in Datadog
+  // version: '1.0.0',
+  sessionSampleRate: 100,
+  sessionReplaySampleRate: 20,
+  trackUserInteractions: true,
+  trackResources: true,
+  trackLongTasks: true,
+  defaultPrivacyLevel: "mask-user-input",
+})
 
 // Create a GrowthBook instance
 const gb = new GrowthBook({
