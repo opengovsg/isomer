@@ -9,6 +9,8 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
       index:
         props.layout !== "file" &&
         props.layout !== "link" &&
+        props.layout !== "search" &&
+        props.layout !== "notfound" &&
         !props.meta?.noIndex,
     },
     icons: {
@@ -21,8 +23,18 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
 
   if (metadata.description === undefined && props.layout === "article") {
     metadata.description = props.page.articlePageHeader.summary
-  } else if (metadata.description === undefined && props.layout === "content") {
+  } else if (
+    metadata.description === undefined &&
+    (props.layout === "content" ||
+      props.layout === "database" ||
+      props.layout === "index")
+  ) {
     metadata.description = props.page.contentPageHeader.summary
+  } else if (
+    metadata.description === undefined &&
+    props.layout === "collection"
+  ) {
+    metadata.description = props.page.subtitle
   }
 
   if (props.page.permalink === "/") {
