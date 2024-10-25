@@ -2,6 +2,7 @@
 
 import { useRef } from "react"
 
+import type { Filter as FilterType } from "../../types/Filter"
 import type { CollectionPageSchemaType } from "~/engine"
 import type { BreadcrumbProps, CollectionCardProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
@@ -18,6 +19,7 @@ import { ITEMS_PER_PAGE, useCollection } from "./useCollection"
 interface CollectionClientProps {
   page: CollectionPageSchemaType["page"]
   items: CollectionCardProps[]
+  filters: FilterType[]
   shouldShowDate: boolean
   breadcrumb: BreadcrumbProps
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
@@ -46,13 +48,13 @@ const compoundStyles = createCollectionLayoutStyles()
 const CollectionClient = ({
   page,
   items,
+  filters,
   shouldShowDate,
   breadcrumb,
   LinkComponent,
   site,
 }: CollectionClientProps) => {
   const {
-    filters,
     paginatedItems,
     filteredCount,
     searchValue,
