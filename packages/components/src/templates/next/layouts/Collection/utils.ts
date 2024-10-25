@@ -35,11 +35,13 @@ export const getAvailableFilters = (
     }
   })
 
-  const yearFilterItems = Object.entries(years).map(([label, count]) => ({
-    id: label.toLowerCase(),
-    label,
-    count,
-  }))
+  const yearFilterItems = Object.entries(years)
+    .map(([label, count]) => ({
+      id: label.toLowerCase(),
+      label,
+      count,
+    }))
+    .sort((a, b) => parseInt(b.label) - parseInt(a.label))
 
   const availableFilters: FilterType[] = [
     {
