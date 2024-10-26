@@ -2,6 +2,8 @@ import type { IsomerPageSchemaType, IsomerSitemap } from "~/types"
 import { getSitemapAsArray } from "~/utils"
 
 export const getMetadata = (props: IsomerPageSchemaType) => {
+  const faviconUrl = `${props.site.assetsBaseUrl ?? ""}${props.site.favicon || "/favicon.ico"}`
+
   const metadata = {
     metadataBase: props.site.url ? new URL(props.site.url) : undefined,
     description: props.meta?.description || undefined,
@@ -14,7 +16,8 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
         !props.meta?.noIndex,
     },
     icons: {
-      shortcut: `${props.site.assetsBaseUrl ?? ""}${props.site.favicon || "/favicon.ico"}`,
+      icon: faviconUrl,
+      shortcut: faviconUrl,
     },
     twitter: {
       card: "summary_large_image" as const,
