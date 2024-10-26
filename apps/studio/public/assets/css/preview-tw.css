@@ -2451,8 +2451,16 @@ video {
   background-repeat: no-repeat;
 }
 
+.fill-\[\#242425\] {
+  fill: #242425;
+}
+
 .fill-\[\#2f5fd0\] {
   fill: #2f5fd0;
+}
+
+.fill-\[\#ef3320\] {
+  fill: #ef3320;
 }
 
 .fill-base-content-strong {
