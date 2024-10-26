@@ -25,6 +25,7 @@ import {
 import { BiFile } from "react-icons/bi"
 import { z } from "zod"
 
+import type { IsomerExtendedLinkJsonSchema } from "~/types/schema"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { ResourceSelector } from "~/components/ResourceSelector"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -33,7 +34,7 @@ import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { LinkHrefEditor } from "../../../LinkEditor"
-import { LINK_TYPES } from "../../../LinkEditor/constants"
+import { filterLinkTypes } from "../../../LinkEditor/constants"
 
 export const jsonFormsLinkControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.LinkControl,
@@ -259,7 +260,9 @@ export function JsonFormsLinkControl({
   path,
   description,
   required,
+  schema,
 }: ControlProps) {
+  const schemaWithLinkTypes = schema as IsomerExtendedLinkJsonSchema
   const dataString = data && typeof data === "string" ? data : ""
   // NOTE: We need to pass in `siteId` but this component is automatically used by JsonForms
   // so we are unable to pass props down
@@ -279,7 +282,7 @@ export function JsonFormsLinkControl({
   return (
     <Box>
       <LinkHrefEditor
-        linkTypes={LINK_TYPES}
+        linkTypes={filterLinkTypes(schemaWithLinkTypes.linkTypes)}
         value={dataString}
         onChange={(value) => handleChange(path, value)}
         label={label}
