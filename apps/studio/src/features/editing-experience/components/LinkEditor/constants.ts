@@ -29,9 +29,11 @@ export type LinkTypeMapping<T extends string = string> = Record<
   }
 >
 
-export function filterLinkTypes(linkTypes: LinkTypes[]): LinkTypeMapping {
+export function filterLinkTypes(
+  linkTypes: LinkTypes[] | undefined,
+): LinkTypeMapping {
   // default to all link types if no link types are specified
-  if (linkTypes.length === 0) {
+  if (!linkTypes || linkTypes.length === 0) {
     return LINK_TYPES
   }
   return Object.fromEntries(
