@@ -12,6 +12,11 @@ import {
 import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
+import {
+  LINK_TYPE_EMAIL,
+  LINK_TYPE_FILE,
+  LINK_TYPE_PAGE,
+} from "@opengovsg/isomer-components"
 import { omit } from "lodash"
 import { BiTrash } from "react-icons/bi"
 
@@ -32,7 +37,7 @@ const parseHref = (
   href: string,
   pageType: Omit<LinkTypes, "email" | "page">,
 ) => {
-  if (pageType === "file") {
+  if (pageType === LINK_TYPE_FILE) {
     return href.split("/").pop()
   }
   return href
@@ -73,8 +78,8 @@ export function JsonFormsRefControl({
         >
           {!!data ? (
             <>
-              {pageType !== "page" && <Text>{displayedHref}</Text>}
-              {pageType === "page" && dataString.length > 0 && (
+              {pageType !== LINK_TYPE_PAGE && <Text>{displayedHref}</Text>}
+              {pageType === LINK_TYPE_PAGE && dataString.length > 0 && (
                 <Suspense fallback={<Skeleton w="100%" h="100%" />}>
                   <SuspendableLabel
                     resourceId={getResourceIdFromReferenceLink(dataString)}
@@ -101,7 +106,7 @@ export function JsonFormsRefControl({
         </Flex>
       </Box>
       <LinkEditorModal
-        linkTypes={omit(LINK_TYPES, "email")}
+        linkTypes={omit(LINK_TYPES, LINK_TYPE_EMAIL)}
         linkText="Link"
         isOpen={isOpen}
         onClose={onClose}
