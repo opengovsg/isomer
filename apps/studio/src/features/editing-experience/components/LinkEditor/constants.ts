@@ -1,20 +1,26 @@
 import type { IconType } from "react-icons"
+import {
+  LINK_TYPE_EMAIL,
+  LINK_TYPE_EXTERNAL,
+  LINK_TYPE_FILE,
+  LINK_TYPE_PAGE,
+} from "@opengovsg/isomer-components"
 import { BiEnvelopeOpen, BiFile, BiFileBlank, BiLink } from "react-icons/bi"
 
 export const LINK_TYPES = {
-  page: {
+  [LINK_TYPE_PAGE]: {
     icon: BiFileBlank,
     label: "Page",
   },
-  external: {
+  [LINK_TYPE_EXTERNAL]: {
     icon: BiLink,
     label: "External",
   },
-  file: {
+  [LINK_TYPE_FILE]: {
     icon: BiFile,
     label: "File",
   },
-  email: {
+  [LINK_TYPE_EMAIL]: {
     icon: BiEnvelopeOpen,
     label: "Email",
   },
