@@ -1289,6 +1289,10 @@ video {
   margin-bottom: 2rem;
 }
 
+.mb-9 {
+  margin-bottom: 2.25rem;
+}
+
 .mb-\[0\.1875rem\] {
   margin-bottom: 0.1875rem;
 }
@@ -1899,6 +1903,10 @@ video {
 
 .flex-row {
   flex-direction: row;
+}
+
+.flex-row-reverse {
+  flex-direction: row-reverse;
 }
 
 .flex-col {
@@ -4743,6 +4751,10 @@ video {
 
   .md\:items-center {
     align-items: center;
+  }
+
+  .md\:gap-2 {
+    gap: 0.5rem;
   }
 
   .md\:gap-3 {
