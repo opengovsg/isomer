@@ -3,55 +3,47 @@ import { Type } from "@sinclair/typebox"
 
 import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 
-export const KeyStatisticsSchema = Type.Composite(
-  [
-    Type.Object({
-      type: Type.Literal("keystatistics", { default: "keystatistics" }),
+export const KeyStatisticsSchema = Type.Object(
+  {
+    type: Type.Literal("keystatistics", { default: "keystatistics" }),
+    title: Type.String({
+      title: "Title",
+      maxLength: 100,
     }),
-    Type.Object({
-      title: Type.String({
-        title: "Title",
-        maxLength: 100,
+    statistics: Type.Array(
+      Type.Object({
+        label: Type.String({
+          title: "Description",
+          maxLength: 100,
+        }),
+        value: Type.String({
+          title: "Number",
+          description: "Keep it succinct. E.g., 3.3%, $12M",
+          maxLength: 7,
+        }),
       }),
-    }),
-    Type.Object({
-      statistics: Type.Array(
-        Type.Object({
-          label: Type.String({
-            title: "Description",
-            maxLength: 100,
-          }),
-          value: Type.String({
-            title: "Number",
-            description: "Keep it succinct. E.g., 3.3%, $12M",
-            maxLength: 7,
-          }),
-        }),
-        {
-          title: "Statistics",
-          minItems: 1,
-          maxItems: 4,
-        },
-      ),
-    }),
-    Type.Object({
-      label: Type.Optional(
-        Type.String({
-          title: "Link text",
-          maxLength: 50,
-          description:
-            "Add a link under your block. Avoid generic text such as “Click here” or “Learn more”",
-        }),
-      ),
-      url: Type.Optional(
-        Type.String({
-          title: "Link destination",
-          description: "When this is clicked, open:",
-          format: "link",
-        }),
-      ),
-    }),
-  ],
+      {
+        title: "Statistics",
+        minItems: 1,
+        maxItems: 4,
+      },
+    ),
+    label: Type.Optional(
+      Type.String({
+        title: "Link text",
+        maxLength: 50,
+        description:
+          "Add a link under your block. Avoid generic text such as “Click here” or “Learn more”",
+      }),
+    ),
+    url: Type.Optional(
+      Type.String({
+        title: "Link destination",
+        description: "When this is clicked, open:",
+        format: "link",
+      }),
+    ),
+  },
   {
     groups: [
       {
