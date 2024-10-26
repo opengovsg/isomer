@@ -20,7 +20,7 @@ const createKeyStatisticsStyles = tv({
     title:
       "prose-display-md w-full max-w-[47.5rem] break-words text-base-content-strong",
     urlText: "hidden whitespace-nowrap md:block",
-    urlButtonContainer: "mx-auto block",
+    urlButtonContainer: "mx-auto mt-2 block",
     statistics: "flex flex-col flex-wrap gap-x-8 gap-y-12 md:flex-row",
     itemContainer: "flex grow flex-col gap-3",
     itemValue: "prose-display-lg text-pretty text-brand-canvas-inverse",
@@ -45,10 +45,10 @@ const createKeyStatisticsStyles = tv({
     },
     layout: {
       homepage: {
-        container: "gap-10 py-12 xs:py-24 lg:gap-24",
+        container: "gap-10 py-12 xs:py-24 lg:gap-12",
       },
       default: {
-        container: "mt-14 gap-12",
+        container: "mt-14 gap-12 first:mt-0",
       },
     },
   },
