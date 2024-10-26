@@ -6,6 +6,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 const siteSchema = z.object({
   folderId: z.string().optional(),
   resourceId: z.string().optional(),
+  linkId: z.string().optional(),
   siteId: z.string(),
 })
 
@@ -29,6 +30,8 @@ export const useIsActive = (
     case "Folder":
     case "Collection":
       return siteProps.folderId === currentResourceId
+    case "CollectionLink":
+      return siteProps.linkId === currentResourceId
     default:
       const _uncaught: never = type
       throw new Error(`Unhandled case for useIsActive`)

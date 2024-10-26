@@ -1,9 +1,11 @@
 import {
   Flex,
+  ListItem,
   ModalBody,
   ModalHeader,
   Stack,
   Text,
+  UnorderedList,
   Wrap,
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
@@ -62,7 +64,20 @@ export const CreateCollectionPageTypeScreen = () => {
             <Text as="h3" textStyle="h3-semibold">
               What kind of collection item are you creating?
             </Text>
-            <Text>Choose between a page or a PDF file.</Text>
+            <Text>
+              Depending on the type of content, we recommend:
+              <UnorderedList>
+                <ListItem>
+                  Page: If you want to add an article to the collection, like a
+                  new press release or speech.
+                </ListItem>
+                <ListItem>
+                  Link or file: If you want to link an e-service, show a PDF
+                  report directly, or get site visitors to browse a page that's
+                  already on your website.
+                </ListItem>
+              </UnorderedList>
+            </Text>
           </Flex>
           <Stack gridColumn="6 / 13" bg="white" p="2rem" justify="center">
             <Controller

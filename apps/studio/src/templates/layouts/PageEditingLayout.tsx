@@ -3,7 +3,7 @@ import { Tabs } from "@opengovsg/design-system-react"
 
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { LayoutHead } from "~/components/LayoutHead"
-import { SiteEditNavbar } from "~/features/editing-experience/components/SiteEditNavbar"
+import { PageEditNavbar } from "~/features/editing-experience/components/PageEditNavbar"
 import { editPageSchema } from "~/features/editing-experience/schema"
 import { PermissionsProvider } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -32,7 +32,7 @@ export const PageEditingLayout: GetLayout = (page) => {
               gridColumnGap={{ base: 0, md: "1rem" }}
               gridTemplateRows="auto 1fr"
             >
-              <SiteEditNavbar />
+              <PageEditNavbar />
               <Flex bg="base.canvas.alt" w="100%" height={0} minH="100%">
                 {page}
               </Flex>

@@ -6,6 +6,7 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
@@ -25,6 +26,7 @@ const SingleCardNoImageSchema = Type.Object({
       title: "Link destination",
       description: "When this is clicked, open:",
       format: "link",
+      pattern: LINK_HREF_PATTERN,
     }),
   ),
 })
@@ -95,7 +97,7 @@ const InfoCardsWithImageSchema = Type.Object(
     variant: Type.Literal("cardsWithImages", { default: "cardsWithImages" }),
     cards: Type.Array(SingleCardWithImageSchema, {
       title: "Cards",
-      maxItems: 6,
+      maxItems: 12,
       default: [],
     }),
   },
@@ -111,7 +113,7 @@ const InfoCardsNoImageSchema = Type.Object(
     }),
     cards: Type.Array(SingleCardNoImageSchema, {
       title: "Cards",
-      maxItems: 6,
+      maxItems: 12,
       default: [],
     }),
   },

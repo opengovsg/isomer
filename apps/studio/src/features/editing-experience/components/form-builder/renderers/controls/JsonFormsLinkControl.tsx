@@ -20,18 +20,20 @@ import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
   Button,
   FormLabel,
-  Input,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
 import { BiFile } from "react-icons/bi"
 import { z } from "zod"
 
+import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { ResourceSelector } from "~/components/ResourceSelector"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { LinkHrefEditor } from "../../../LinkEditor"
+import { LINK_TYPES } from "../../../LinkEditor/constants"
 
 export const jsonFormsLinkControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.LinkControl,
@@ -246,6 +248,10 @@ const PageLinkElement = ({
   )
 }
 
+const siteSchema = z.object({
+  siteId: z.coerce.number(),
+})
+
 export function JsonFormsLinkControl({
   data,
   label,
@@ -255,10 +261,25 @@ export function JsonFormsLinkControl({
   required,
 }: ControlProps) {
   const dataString = data && typeof data === "string" ? data : ""
+  // NOTE: We need to pass in `siteId` but this component is automatically used by JsonForms
+  // so we are unable to pass props down
+  const { siteId } = useQueryParse(siteSchema)
+  // NOTE: for reasons unknown, on initial load of the homepage,
+  // the data passed to this component is '/'
+  // which prevents this component from saving
+  const dummyFile =
+    !!dataString && dataString !== "/"
+      ? new File(
+          [],
+          // NOTE: Technically guaranteed since our s3 filepath has a format of `/<site>/.../<filename>`
+          dataString.split("/").at(-1) ?? "Uploaded file",
+        )
+      : undefined
 
   return (
-    <Box mt="1.25rem" _first={{ mt: 0 }}>
+    <Box>
       <LinkHrefEditor
+        linkTypes={LINK_TYPES}
         value={dataString}
         onChange={(value) => handleChange(path, value)}
         label={label}
@@ -271,11 +292,10 @@ export function JsonFormsLinkControl({
           />
         }
         fileLinkElement={
-          <Input
-            type="text"
-            value={dataString}
-            onChange={(e) => handleChange(path, e.target.value)}
-            placeholder="File link"
+          <FileAttachment
+            siteId={siteId}
+            setHref={(value) => handleChange(path, value)}
+            value={dummyFile}
           />
         }
       />

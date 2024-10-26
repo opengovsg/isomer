@@ -2,11 +2,17 @@ import type { AppliedFilter, Filter as FilterType } from "../../types/Filter"
 import type { CollectionCardProps } from "~/interfaces"
 import { getParsedDate } from "~/utils"
 
+const FILTER_ID_CATEGORY = "category"
+const FILTER_ID_YEAR = "year"
+const NO_SPECIFIED_YEAR_FILTER_ID = "not_specified"
+
 export const getAvailableFilters = (
   items: CollectionCardProps[],
 ): FilterType[] => {
   const categories: Record<string, number> = {}
   const years: Record<string, number> = {}
+
+  let numberOfUndefinedDates = 0
 
   items.forEach(({ category, lastUpdated }) => {
     // Step 1: Get all available categories
@@ -24,27 +30,48 @@ export const getAvailableFilters = (
       } else {
         years[year] = 1
       }
+    } else {
+      numberOfUndefinedDates += 1
     }
   })
 
+  const yearFilterItems = Object.entries(years)
+    .map(([label, count]) => ({
+      id: label.toLowerCase(),
+      label,
+      count,
+    }))
+    .sort((a, b) => parseInt(b.label) - parseInt(a.label))
+
   const availableFilters: FilterType[] = [
     {
-      id: "category",
+      id: FILTER_ID_CATEGORY,
       label: "Category",
-      items: Object.entries(categories).map(([label, count]) => ({
-        id: label.toLowerCase(),
-        label: label.charAt(0).toUpperCase() + label.slice(1),
-        count,
-      })),
+      items: Object.entries(categories)
+        .map(([label, count]) => ({
+          id: label.toLowerCase(),
+          label: label.charAt(0).toUpperCase() + label.slice(1),
+          count,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
     },
     {
-      id: "year",
+      id: FILTER_ID_YEAR,
       label: "Year",
-      items: Object.entries(years).map(([label, count]) => ({
-        id: label.toLowerCase(),
-        label,
-        count,
-      })),
+      items:
+        // do not show "not specified" option if all items have undefined dates
+        yearFilterItems.length === 0
+          ? []
+          : numberOfUndefinedDates === 0
+            ? yearFilterItems
+            : [
+                ...yearFilterItems,
+                {
+                  id: NO_SPECIFIED_YEAR_FILTER_ID,
+                  label: "Not specified",
+                  count: numberOfUndefinedDates,
+                },
+              ],
     },
   ]
 
@@ -69,7 +96,7 @@ export const getFilteredItems = (
 
     // Step 2: Remove items that do not match the applied category filters
     const categoryFilter = appliedFilters.find(
-      (filter) => filter.id === "category",
+      (filter) => filter.id === FILTER_ID_CATEGORY,
     )
     if (
       categoryFilter &&
@@ -81,13 +108,18 @@ export const getFilteredItems = (
     }
 
     // Step 3: Remove items that do not match the applied year filters
-    const yearFilter = appliedFilters.find((filter) => filter.id === "year")
+    const yearFilter = appliedFilters.find(
+      (filter) => filter.id === FILTER_ID_YEAR,
+    )
     if (
       yearFilter &&
-      !yearFilter.items.some(
-        (filterItem) =>
-          item.lastUpdated &&
-          new Date(item.lastUpdated).getFullYear().toString() === filterItem.id,
+      !yearFilter.items.some((filterItem) =>
+        item.lastUpdated
+          ? // if date is defined, check if year matches
+            new Date(item.lastUpdated).getFullYear().toString() ===
+            filterItem.id
+          : // if undefined date, check if "not specified" filter is applied
+            filterItem.id === NO_SPECIFIED_YEAR_FILTER_ID,
       )
     ) {
       return false
@@ -119,7 +151,8 @@ export const updateAppliedFilters = (
   const filterIndex = appliedFilters.findIndex(
     (filter) => filter.id === filterId,
   )
-  if (filterIndex > -1) {
+  const isFilterAlreadyApplied = filterIndex > -1
+  if (isFilterAlreadyApplied) {
     const itemIndex = appliedFilters[filterIndex]?.items.findIndex(
       (item) => item.id === itemId,
     )
@@ -143,4 +176,8 @@ export const updateAppliedFilters = (
       { id: filterId, items: [{ id: itemId }] },
     ])
   }
+}
+
+export const shouldShowDate = (items: CollectionCardProps[]): boolean => {
+  return items.some((item) => item.lastUpdated)
 }

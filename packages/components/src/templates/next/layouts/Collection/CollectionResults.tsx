@@ -12,6 +12,7 @@ interface CollectionResultProps
     | "handleClearFilter"
     | "totalCount"
   > {
+  shouldShowDate?: boolean
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
   site: CollectionPageSchemaType["site"]
 }
@@ -23,6 +24,7 @@ export const CollectionResults = ({
   filteredCount,
   handleClearFilter,
   totalCount,
+  shouldShowDate = true,
   LinkComponent,
   site,
 }: CollectionResultProps) => {
@@ -40,9 +42,7 @@ export const CollectionResults = ({
         <div className="flex h-full w-full items-center gap-3">
           <p className="prose-headline-lg-regular text-base-content-medium">
             {appliedFilters.length > 0 || searchValue !== ""
-              ? `${filteredCount} search result${
-                  filteredCount === 1 ? "" : "s"
-                }`
+              ? `${filteredCount} article${filteredCount === 1 ? "" : "s"}`
               : `${filteredCount} article${filteredCount === 1 ? "" : "s"}`}
             {searchValue !== "" && (
               <>
@@ -53,12 +53,14 @@ export const CollectionResults = ({
           </p>
         </div>
       </div>
-      <div className="flex h-full w-full flex-col gap-0">
+      {/* NOTE: DO NOT add h-full to this div as it will break old browsers */}
+      <div className="flex w-full flex-col gap-0">
         {paginatedItems.length > 0 &&
           paginatedItems.map((item) => (
             <CollectionCard
               key={Math.random()}
               {...item}
+              shouldShowDate={shouldShowDate}
               LinkComponent={LinkComponent}
               site={site}
             />

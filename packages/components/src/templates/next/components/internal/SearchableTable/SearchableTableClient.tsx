@@ -15,8 +15,7 @@ import { getPaginatedItems } from "./getPaginatedItems"
 const createSearchableTableStyles = tv({
   slots: {
     container: "mx-auto w-full",
-    title: "prose-display-md break-words text-base-content-strong",
-    search: "mt-9",
+    title: "prose-display-md mb-9 break-words text-base-content-strong",
     tableContainer: "mt-8 overflow-x-auto",
     table:
       "[&_>_tbody_>_tr:nth-child(even)_>_td]:bg-base-canvas-default w-full border-collapse border-spacing-0 [&_>_tbody_>_tr:nth-child(odd)_>_td]:bg-base-canvas-alt",
@@ -111,23 +110,21 @@ export const SearchableTableClient = ({
 
   return (
     <div className={compoundStyles.container()} ref={sectionTopRef}>
-      {title && (
+      {!!title && (
         <h2 id={titleId} className={compoundStyles.title()}>
           {title}
         </h2>
       )}
 
-      <div className={compoundStyles.search()}>
-        <SearchField
-          aria-label="Search table"
-          placeholder="Enter a search term"
-          value={search}
-          onChange={(value) => {
-            setSearch(value)
-            setCurrPage(1)
-          }}
-        />
-      </div>
+      <SearchField
+        aria-label="Search table"
+        placeholder="Enter a search term"
+        value={search}
+        onChange={(value) => {
+          setSearch(value)
+          setCurrPage(1)
+        }}
+      />
 
       {isInitiallyEmpty && (
         <div className={compoundStyles.emptyState()}>

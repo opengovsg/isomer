@@ -1,37 +1,19 @@
-import { useMemo } from "react"
-import { Box, Flex, Stack } from "@chakra-ui/react"
+import { Suspense, useMemo } from "react"
+import { Box, Flex, Skeleton, Stack } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { format } from "date-fns"
 
-import Preview from "../Preview"
+import collectionSitemap from "~/features/editing-experience/data/collectionSitemap.json"
+import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { PreviewIframe } from "../PreviewIframe"
+import PreviewWithoutSitemap from "../PreviewWithoutSitemap"
+import { generatePreviewSitemap } from "../utils"
 import { useCreateCollectionPageWizard } from "./CreateCollectionPageWizardContext"
 
 export const PreviewLayout = (): JSX.Element => {
   const isMobile = useIsMobile()
-  const {
-    pagePreviewJson,
-    currentType,
-    siteId,
-    formMethods: { watch },
-  } = useCreateCollectionPageWizard()
-
-  const currentPermalink = watch("permalink", "/")
-
-  const previewOverrides = useMemo(() => {
-    switch (currentType) {
-      case "pdf": {
-        return {
-          page: {
-            date: format(new Date(), "dd MMM yyyy"),
-          },
-        }
-      }
-      case "page": {
-        return {}
-      }
-    }
-  }, [currentType])
+  const { currentType } = useCreateCollectionPageWizard()
 
   return (
     <Stack
@@ -47,27 +29,66 @@ export const PreviewLayout = (): JSX.Element => {
             borderTopRadius="8px"
             width="100%"
             bg="slate.200"
-            color="white"
             textStyle="caption-2"
+            color="white"
             py="0.5rem"
             px="1rem"
             justify="center"
             whiteSpace="pre"
           >
-            {`You're previewing a ${currentType === "pdf" ? "PDF " : ""}collection page`}
+            {`You're previewing a collection ${currentType === ResourceType.CollectionLink ? "link" : "page"}`}
           </Flex>
           <Box bg="white" overflow="auto" height="100%">
-            <PreviewIframe preventPointerEvents keyForRerender={currentType}>
-              <Preview
-                overrides={previewOverrides}
-                siteId={siteId}
-                permalink={currentPermalink}
-                {...pagePreviewJson}
-              />
-            </PreviewIframe>
+            <Suspense fallback={<Skeleton height="100%" />}>
+              <SuspendableLayoutPreview />
+            </Suspense>
           </Box>
         </Box>
       )}
     </Stack>
+  )
+}
+
+const SuspendableLayoutPreview = () => {
+  const {
+    pagePreviewJson,
+    currentType,
+    siteId,
+    formMethods: { watch },
+  } = useCreateCollectionPageWizard()
+  const themeCssVars = useSiteThemeCssVars({ siteId })
+  const currentPermalink = watch("permalink", "/")
+  const title = watch("title")
+
+  const previewOverrides = useMemo(() => {
+    switch (currentType) {
+      case ResourceType.CollectionLink: {
+        return {
+          page: {
+            title: "Newsroom",
+            date: format(new Date(), "dd MMM yyyy"),
+          },
+        }
+      }
+      case ResourceType.CollectionPage: {
+        return {}
+      }
+    }
+  }, [currentType])
+
+  return (
+    <PreviewIframe
+      preventPointerEvents
+      keyForRerender={currentType}
+      style={themeCssVars}
+    >
+      <PreviewWithoutSitemap
+        overrides={previewOverrides}
+        siteId={siteId}
+        siteMap={generatePreviewSitemap(collectionSitemap, title)}
+        permalink={currentPermalink}
+        {...pagePreviewJson}
+      />
+    </PreviewIframe>
   )
 }
