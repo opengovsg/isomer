@@ -35,13 +35,6 @@ export const KeyStatisticsSchema = Type.Composite(
       ),
     }),
     Type.Object({
-      url: Type.Optional(
-        Type.String({
-          title: "Link destination",
-          description: "When this is clicked, open:",
-          format: "link",
-        }),
-      ),
       label: Type.Optional(
         Type.String({
           title: "Link text",
@@ -50,13 +43,20 @@ export const KeyStatisticsSchema = Type.Composite(
             "Add a link under your block. Avoid generic text such as “Click here” or “Learn more”",
         }),
       ),
+      url: Type.Optional(
+        Type.String({
+          title: "Link destination",
+          description: "When this is clicked, open:",
+          format: "link",
+        }),
+      ),
     }),
   ],
   {
     groups: [
       {
         label: "Add a call-to-action",
-        fields: ["url", "label"],
+        fields: ["label", "url"],
       },
     ],
     title: "KeyStatistics component",
