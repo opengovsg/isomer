@@ -26,5 +26,6 @@ export {
 export type { SearchSGInputBoxProps } from "./SearchSGInputBox"
 export type { SidePaneProps } from "./SidePane"
 export type { SiderailProps } from "./Siderail"
+export type { SkipToContentProps } from "./SkipToContent"
 export type { TableOfContentsProps } from "./TableOfContents"
 export type { WogaaProps } from "./Wogaa"

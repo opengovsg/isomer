@@ -31,29 +31,31 @@ export const Skeleton = ({
 
       {!isStaging && <DatadogRum />}
 
-      <SkipToContent />
+      <header>
+        <SkipToContent LinkComponent={LinkComponent} />
 
-      {site.isGovernment && <Masthead isStaging={isStaging} />}
+        {site.isGovernment && <Masthead isStaging={isStaging} />}
 
-      {site.notification && (
-        <Notification
-          {...site.notification}
-          LinkComponent={LinkComponent}
+        {site.notification && (
+          <Notification
+            {...site.notification}
+            LinkComponent={LinkComponent}
+            site={site}
+          />
+        )}
+
+        <UnsupportedBrowserBanner />
+
+        <Navbar
+          logoUrl={site.logoUrl}
+          logoAlt={site.siteName}
+          layout={layout}
+          search={site.search}
+          items={site.navBarItems}
           site={site}
+          LinkComponent={LinkComponent}
         />
-      )}
-
-      <UnsupportedBrowserBanner />
-
-      <Navbar
-        logoUrl={site.logoUrl}
-        logoAlt={site.siteName}
-        layout={layout}
-        search={site.search}
-        items={site.navBarItems}
-        site={site}
-        LinkComponent={LinkComponent}
-      />
+      </header>
 
       <main id={SKIP_TO_CONTENT_ANCHOR_ID}>{children}</main>
 
