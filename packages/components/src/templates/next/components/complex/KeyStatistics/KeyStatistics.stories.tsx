@@ -136,4 +136,3 @@ export const WithLinkAndLabel: Story = {
     label: "We have no achievements",
   },
 }
-

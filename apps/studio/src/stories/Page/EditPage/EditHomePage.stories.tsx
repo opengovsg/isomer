@@ -79,7 +79,9 @@ export const EditKeyStatistics: Story = {
     const canvas = within(canvasElement)
 
     await waitFor(async () => {
-      await userEvent.click(canvas.getByRole("button", { name: /KeyStatistics Component/i }))
+      await userEvent.click(
+        canvas.getByRole("button", { name: /KeyStatistics Component/i }),
+      )
     })
   },
 }
