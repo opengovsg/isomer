@@ -1,7 +1,7 @@
 import type { SkipToContentProps } from "~/interfaces"
 import { SKIP_TO_CONTENT_ANCHOR_ID } from "~/templates/next/constants"
 
-export const SkipToContent = ({ LinkComponent }: SkipToContentProps) => {
+export const SkipToContent = ({ LinkComponent = "a" }: SkipToContentProps) => {
   return (
     <LinkComponent
       href={`#${SKIP_TO_CONTENT_ANCHOR_ID}`}
