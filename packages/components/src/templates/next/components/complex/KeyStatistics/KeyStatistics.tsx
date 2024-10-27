@@ -29,18 +29,16 @@ const createKeyStatisticsStyles = tv({
   variants: {
     noOfItems: {
       1: {
-        itemContainer: "basis-full",
+        itemContainer: "md:basis-full",
       },
       2: {
-        itemContainer: "basis-[calc((100%-2.5rem)/2)]",
+        itemContainer: "md:basis-[calc((100%-2.5rem)/2)]",
       },
       3: {
-        itemContainer:
-          "basis-[calc((100%-5rem)/3)] md:max-w-[calc((100%-2.5rem)/2)]",
+        itemContainer: "md:basis-[calc((100%-5rem)/3)]",
       },
       4: {
-        itemContainer:
-          "basis-[calc((100%-7.5rem)/4)] md:max-w-[calc((100%-5rem)/3)]",
+        itemContainer: "md:basis-[calc((100%-7.5rem)/4)]",
       },
     },
     layout: {
@@ -63,6 +61,7 @@ const KeyStatistics = ({
   title,
   statistics,
   url,
+  label,
   layout,
   site,
 }: KeyStatisticsProps) => {
@@ -96,7 +95,7 @@ const KeyStatistics = ({
             variant="outline"
             isWithFocusVisibleHighlight
           >
-            Our achievements
+            {label ?? "Our achievements"}
           </LinkButton>
         </div>
       )}
