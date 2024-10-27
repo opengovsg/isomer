@@ -50,13 +50,13 @@ const getCollectionItems = (
         item.layout === "article",
     )
     .map((item) => {
-      const lastUpdated = item.date || item.lastModified
-      const date = getParsedDate(lastUpdated)
+      const date =
+        item.date !== undefined ? getParsedDate(item.date) : undefined
 
       const baseItem = {
         type: "collectionCard" as const,
         rawDate: date,
-        lastUpdated,
+        lastUpdated: date?.toISOString(),
         category: item.category || "Others",
         title: item.title,
         description: item.summary,
@@ -91,6 +91,16 @@ const getCollectionItems = (
     if (a.rawDate === b.rawDate) {
       return a.title > b.title ? 1 : -1
     }
+
+    // Rank items with no dates last
+    if (a.rawDate === undefined) {
+      return 1
+    }
+
+    if (b.rawDate === undefined) {
+      return -1
+    }
+
     return a.rawDate < b.rawDate ? 1 : -1
   }) as CollectionCardProps[]
 }
