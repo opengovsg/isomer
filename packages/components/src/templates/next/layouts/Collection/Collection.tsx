@@ -1,6 +1,10 @@
 import type { CollectionPageSchemaType, IsomerSiteProps } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
-import { getBreadcrumbFromSiteMap, getSitemapAsArray } from "~/utils"
+import {
+  getBreadcrumbFromSiteMap,
+  getParsedDate,
+  getSitemapAsArray,
+} from "~/utils"
 import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
 import { getAvailableFilters, shouldShowDate } from "./utils"
@@ -47,7 +51,7 @@ const getCollectionItems = (
     )
     .map((item) => {
       const lastUpdated = item.date || item.lastModified
-      const date = new Date(lastUpdated)
+      const date = getParsedDate(lastUpdated)
 
       const baseItem = {
         type: "collectionCard" as const,
