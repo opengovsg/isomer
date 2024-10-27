@@ -1,4 +1,4 @@
-import { db, jsonb } from "~server/db"
+import { db, jsonb, RoleType } from "~server/db"
 import { nanoid } from "nanoid"
 
 import type { ResourceState, ResourceType } from "~server/db"
@@ -17,7 +17,7 @@ export const setupAdminPermissions = async ({
     .values({
       userId: String(userId),
       siteId,
-      role: "Admin",
+      role: RoleType.Admin,
       resourceId: null,
     })
     .execute()
