@@ -4,6 +4,7 @@ import { Text } from "react-aria-components"
 
 import type { CollectionCardProps as BaseCollectionCardProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import { focusVisibleHighlight, getFormattedDate, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { Link } from "../Link"
