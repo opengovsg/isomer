@@ -8,11 +8,12 @@ import { BiChevronsLeft, BiChevronsRight } from "react-icons/bi"
 import type { SearchProps } from "~/interfaces"
 import type { SearchRecord } from "~/interfaces/internal/Search"
 
+const SEARCH_RESULTS_PER_PAGE = 10
+
 const Search: React.FC<SearchProps> = ({ index }) => {
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [results, setResults] = useState<SearchRecord[]>([])
   const [currentPage, setCurrentPage] = useState(1)
-  const [resultsPerPage, setResultsPerPage] = useState(10)
 
   // Use useRef to persist the MiniSearch instance
   const miniSearchRef = useRef(
@@ -60,19 +61,23 @@ const Search: React.FC<SearchProps> = ({ index }) => {
     return content.replace(searchTermRegex, "<strong>$1</strong>")
   }
 
-  const indexOfLastResult = currentPage * resultsPerPage
-  const indexOfFirstResult = indexOfLastResult - resultsPerPage
+  const indexOfLastResult = currentPage * SEARCH_RESULTS_PER_PAGE
+  const indexOfFirstResult = indexOfLastResult - SEARCH_RESULTS_PER_PAGE
   const currentResults = results.slice(indexOfFirstResult, indexOfLastResult)
 
   // Pagination controls
   const pageNumbers: number[] = []
-  for (let i = 1; i <= Math.ceil(results.length / resultsPerPage); i++) {
+  for (
+    let i = 1;
+    i <= Math.ceil(results.length / SEARCH_RESULTS_PER_PAGE);
+    i++
+  ) {
     pageNumbers.push(i)
   }
 
   const renderPageNumbers = () => {
     const totalItems = results.length
-    const totalPages = Math.ceil(totalItems / resultsPerPage)
+    const totalPages = Math.ceil(totalItems / SEARCH_RESULTS_PER_PAGE)
     const pagesToShow = 5 // Max pages to show at once
     let startPage = 1
     let endPage = 1
