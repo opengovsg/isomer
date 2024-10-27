@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/react"
 
-import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
+import { LINK_TYPES_MAPPING } from "~/features/editing-experience/components/LinkEditor/constants"
 import { LinkEditorModal } from "../LinkEditorModal"
 
 interface LinkEditorModalProps {
@@ -15,7 +15,7 @@ export const TiptapLinkEditorModal = ({
 }: LinkEditorModalProps) => {
   return (
     <LinkEditorModal
-      linkTypes={LINK_TYPES}
+      linkTypes={LINK_TYPES_MAPPING}
       linkText={
         editor.isActive("link")
           ? editor.state.doc.nodeAt(

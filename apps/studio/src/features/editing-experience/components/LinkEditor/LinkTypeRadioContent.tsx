@@ -1,12 +1,8 @@
 import type { ReactNode } from "react"
 import { InputGroup, InputLeftAddon } from "@chakra-ui/react"
 import { Input } from "@opengovsg/design-system-react"
-import {
-  LINK_TYPE_EMAIL,
-  LINK_TYPE_EXTERNAL,
-  LINK_TYPE_FILE,
-  LINK_TYPE_PAGE,
-} from "@opengovsg/isomer-components"
+
+import { LINK_TYPES } from "./constants"
 
 const HTTPS_PREFIX = "https://"
 type HttpsLink = `https://${string}`
@@ -36,9 +32,9 @@ export const LinkTypeRadioContent = ({
 }: LinkTypeRadioContentProps): JSX.Element => {
   return (
     <>
-      {selectedLinkType === LINK_TYPE_PAGE && pageLinkElement}
-      {selectedLinkType === LINK_TYPE_FILE && fileLinkElement}
-      {selectedLinkType === LINK_TYPE_EXTERNAL && (
+      {selectedLinkType === LINK_TYPES.Page && pageLinkElement}
+      {selectedLinkType === LINK_TYPES.File && fileLinkElement}
+      {selectedLinkType === LINK_TYPES.External && (
         <InputGroup>
           <InputLeftAddon>https://</InputLeftAddon>
           <Input
@@ -58,7 +54,7 @@ export const LinkTypeRadioContent = ({
           />
         </InputGroup>
       )}
-      {selectedLinkType === LINK_TYPE_EMAIL && (
+      {selectedLinkType === LINK_TYPES.Email && (
         <InputGroup>
           <InputLeftAddon>mailto:</InputLeftAddon>
           <Input
