@@ -18,7 +18,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       lastModified: "",
       layout: "article",
       summary:
-        "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. LASTWORD",
+        "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
       date: "07/05/2024",
       category: "Category Name",
     },
@@ -367,7 +367,7 @@ export const AllResultsNoDate: Story = {
     const yearFilter = screen.queryByText(/Year/i)
     await expect(yearFilter).not.toBeInTheDocument()
 
-    const lastWordOccurences = await screen.findAllByText(/LASTWORD/)
-    await expect(lastWordOccurences.length).toBe(3)
+    const lastWordOccurences = await screen.findAllByText(/Isomer guide-/)
+    await expect(lastWordOccurences.length).toBe(10)
   },
 }
