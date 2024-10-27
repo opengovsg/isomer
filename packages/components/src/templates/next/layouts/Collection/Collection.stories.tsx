@@ -7,6 +7,7 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { IsomerSitemap } from "~/engine"
 import { type CollectionPageSchemaType } from "~/engine"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import CollectionLayout from "./Collection"
 
 const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
@@ -71,7 +72,7 @@ const generateArgs = ({
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {

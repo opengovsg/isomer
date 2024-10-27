@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import IndexPage from "./IndexPage"
 
 const meta: Meta<typeof IndexPage> = {
@@ -30,7 +31,7 @@ export const WithSiderail: Story = {
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -169,7 +170,7 @@ export const NoSiderail: Story = {
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {

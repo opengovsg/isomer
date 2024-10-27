@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { CalloutProps } from "~/interfaces"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import Callout from "./Callout"
 
 const meta: Meta<CalloutProps> = {
@@ -26,7 +27,7 @@ export const Default: Story = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
       },
       theme: "isomer-next",

@@ -1,4 +1,5 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
+import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { useAtomValue } from "jotai"
 
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -31,7 +32,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
     id: "root",
     permalink: "/",
     lastModified: "2024-10-14T07:05:08.803Z",
-    layout: "homepage",
+    layout: ISOMER_PAGE_LAYOUTS.Homepage,
     title: "An Isomer Site",
     summary: "",
     children: [

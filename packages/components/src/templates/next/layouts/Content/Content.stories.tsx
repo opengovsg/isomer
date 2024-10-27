@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import Content from "./Content"
 
 const meta: Meta<typeof Content> = {
@@ -30,7 +31,7 @@ export const Default: Story = {
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -1425,7 +1426,7 @@ export const NoTable: Story = {
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -1838,7 +1839,7 @@ export const SmallTable: Story = {
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -2418,7 +2419,7 @@ export const FirstLevelPage: Story = {
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {

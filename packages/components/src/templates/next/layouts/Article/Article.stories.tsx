@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
-import { type ArticlePageSchemaType } from "~/types"
+import type { ArticlePageSchemaType } from "~/types"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import ArticleLayout from "./Article"
 
 const meta: Meta<ArticlePageSchemaType> = {
@@ -29,7 +30,7 @@ export const Default: Story = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -160,7 +161,7 @@ export const NoImage: Story = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -291,7 +292,7 @@ export const NoSummary: Story = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {

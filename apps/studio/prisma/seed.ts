@@ -4,6 +4,7 @@
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
 import type { IsomerSchema } from "@opengovsg/isomer-components"
+import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import cuid2 from "@paralleldrive/cuid2"
 
 import type { Navbar } from "~/server/modules/resource/resource.types"
@@ -28,7 +29,7 @@ const PUBLISHER_USER = "publisher"
 
 const PAGE_BLOB: IsomerSchema = {
   version: "0.1.0",
-  layout: "homepage",
+  layout: ISOMER_PAGE_LAYOUTS.Homepage,
   page: {},
   content: [
     {

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import Hero from "./Hero"
 
 const meta: Meta<typeof Hero> = {
@@ -19,7 +20,7 @@ const meta: Meta<typeof Hero> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [],
       },

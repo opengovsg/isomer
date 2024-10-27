@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { CollectionCardProps } from "~/interfaces"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import { CollectionCard } from "./CollectionCard"
 
 const meta: Meta<CollectionCardProps> = {
@@ -24,7 +25,7 @@ const meta: Meta<CollectionCardProps> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [],
       },

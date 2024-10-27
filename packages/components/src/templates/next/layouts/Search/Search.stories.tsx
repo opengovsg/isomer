@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { SearchPageSchemaType } from "~/engine"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import SearchLayout from "./Search"
 
 // Template for stories
@@ -54,7 +55,7 @@ export const SearchSG: Story = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [],
       },

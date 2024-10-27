@@ -3,6 +3,7 @@ import { userEvent, within } from "@storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import Accordion from "./Accordion"
 
 const meta: Meta<typeof Accordion> = {
@@ -33,7 +34,7 @@ const meta: Meta<typeof Accordion> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
       },
       theme: "isomer-next",

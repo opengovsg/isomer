@@ -1,5 +1,6 @@
 import type { InfobarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
@@ -34,7 +35,7 @@ const createInfobarStyles = tv({
     },
   },
   defaultVariants: {
-    layout: "homepage",
+    layout: ISOMER_PAGE_LAYOUTS.Homepage,
   },
 })
 
@@ -95,7 +96,11 @@ const Infobar = ({
                   site.siteMap,
                   site.assetsBaseUrl,
                 )}
-                size={simplifiedLayout === "homepage" ? "lg" : "base"}
+                size={
+                  simplifiedLayout === ISOMER_PAGE_LAYOUTS.Homepage
+                    ? "lg"
+                    : "base"
+                }
                 LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight
               >
@@ -110,7 +115,11 @@ const Infobar = ({
                   site.siteMap,
                   site.assetsBaseUrl,
                 )}
-                size={simplifiedLayout === "homepage" ? "lg" : "base"}
+                size={
+                  simplifiedLayout === ISOMER_PAGE_LAYOUTS.Homepage
+                    ? "lg"
+                    : "base"
+                }
                 variant="outline"
                 LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight

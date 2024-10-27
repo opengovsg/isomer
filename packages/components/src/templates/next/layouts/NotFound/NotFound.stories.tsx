@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { NotFoundPageSchemaType } from "~/engine"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import NotFoundLayout from "./NotFound"
 
 const meta: Meta<NotFoundPageSchemaType> = {
@@ -32,7 +33,7 @@ export const Default: Story = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [],
       },

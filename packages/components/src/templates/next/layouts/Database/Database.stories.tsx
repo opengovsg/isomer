@@ -4,6 +4,7 @@ import { userEvent, within } from "@storybook/test"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { DatabasePageSchemaType } from "~/engine"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import Database from "./Database"
 
 const meta: Meta<typeof Database> = {
@@ -38,7 +39,7 @@ const generateArgs = ({
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -46,7 +47,7 @@ const generateArgs = ({
             title: "Parent page",
             permalink: "/parent",
             lastModified: "",
-            layout: "content",
+            layout: ISOMER_PAGE_LAYOUTS.Content,
             summary: "",
             children: [
               {
@@ -54,7 +55,7 @@ const generateArgs = ({
                 title: "Irrationality",
                 permalink: "/parent/rationality",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -62,7 +63,7 @@ const generateArgs = ({
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                   {
@@ -70,7 +71,7 @@ const generateArgs = ({
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -80,7 +81,7 @@ const generateArgs = ({
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -88,7 +89,7 @@ const generateArgs = ({
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -100,7 +101,7 @@ const generateArgs = ({
             title: "Aunt/Uncle that should not appear",
             permalink: "/aunt-uncle",
             lastModified: "",
-            layout: "content",
+            layout: ISOMER_PAGE_LAYOUTS.Content,
             summary: "",
           },
         ],

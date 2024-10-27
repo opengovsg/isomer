@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { NotificationProps } from "~/interfaces"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import NotificationBanner from "./Notification"
 
 const meta: Meta<NotificationProps> = {
@@ -20,7 +21,7 @@ const meta: Meta<NotificationProps> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
       },
       theme: "isomer-next",
