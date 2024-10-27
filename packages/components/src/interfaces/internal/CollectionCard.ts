@@ -25,16 +25,16 @@ interface BaseCardProps {
 }
 
 export interface ArticleCardProps extends BaseCardProps {
-  variant: ISOMER_PAGE_LAYOUTS.Article
+  variant: typeof ISOMER_PAGE_LAYOUTS.Article
 }
 
 export interface FileCardProps extends BaseCardProps {
-  variant: ISOMER_PAGE_LAYOUTS.File
+  variant: typeof ISOMER_PAGE_LAYOUTS.File
   fileDetails: FileDetails
 }
 
 export interface LinkCardProps extends BaseCardProps {
-  variant: ISOMER_PAGE_LAYOUTS.Link
+  variant: typeof ISOMER_PAGE_LAYOUTS.Link
 }
 
 export type CollectionCardProps =
