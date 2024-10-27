@@ -74,6 +74,18 @@ export const EditHero: Story = {
   },
 }
 
+export const EditKeyStatistics: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    await waitFor(async () => {
+      await userEvent.click(
+        canvas.getByRole("button", { name: /KeyStatistics Component/i }),
+      )
+    })
+  },
+}
+
 export const PublishedState: Story = {
   parameters: {
     msw: {

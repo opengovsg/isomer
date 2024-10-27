@@ -63,6 +63,7 @@ const KeyStatistics = ({
   title,
   statistics,
   url,
+  label,
   layout,
   site,
 }: KeyStatisticsProps) => {
@@ -96,7 +97,7 @@ const KeyStatistics = ({
             variant="outline"
             isWithFocusVisibleHighlight
           >
-            Our achievements
+            {label ?? "Our achievements"}
           </LinkButton>
         </div>
       )}
