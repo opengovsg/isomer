@@ -3,7 +3,6 @@ import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash"
 import { z } from "zod"
 
-import type { ResourceType } from "../database"
 import type { PermissionsProps } from "../permissions/permissions.type"
 import {
   countResourceSchema,
@@ -18,7 +17,7 @@ import {
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
-import { db, sql } from "../database"
+import { db, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
   definePermissionsForResource,
@@ -104,7 +103,7 @@ export const resourceRouter = router({
           .selectFrom("Resource")
           .where("siteId", "=", Number(siteId))
           .where("id", "=", String(resourceId))
-          .where("Resource.type", "=", "Folder")
+          .where("Resource.type", "=", ResourceType.Folder)
           .executeTakeFirst()
 
         if (!resource) {
@@ -115,10 +114,10 @@ export const resourceRouter = router({
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
-        .where("Resource.type", "in", ["Folder"])
+        .where("Resource.type", "in", [ResourceType.Folder])
         .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
-          type: "Folder"
+          type: typeof ResourceType.Folder
         }>()
         .orderBy("type", "asc")
         .orderBy("title", "asc")
@@ -153,7 +152,11 @@ export const resourceRouter = router({
           .selectFrom("Resource")
           .where("siteId", "=", Number(siteId))
           .where("id", "=", String(resourceId))
-          .where("Resource.type", "in", ["RootPage", "Collection", "Folder"])
+          .where("Resource.type", "in", [
+            ResourceType.RootPage,
+            ResourceType.Collection,
+            ResourceType.Folder,
+          ])
           .executeTakeFirst()
 
         if (!resource) {
@@ -163,15 +166,15 @@ export const resourceRouter = router({
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
-        .where("Resource.type", "!=", "RootPage")
+        .where("Resource.type", "!=", ResourceType.RootPage)
         .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
           type: Extract<
-            | "Folder"
-            | "Page"
-            | "Collection"
-            | "CollectionPage"
-            | "CollectionLink",
+            | typeof ResourceType.Folder
+            | typeof ResourceType.Page
+            | typeof ResourceType.Collection
+            | typeof ResourceType.CollectionPage
+            | typeof ResourceType.CollectionLink,
             ResourceType
           >
         }>()
@@ -239,7 +242,7 @@ export const resourceRouter = router({
             let query = tx.selectFrom("Resource")
             query = !!destinationResourceId
               ? query.where("id", "=", destinationResourceId)
-              : query.where("type", "=", "RootPage")
+              : query.where("type", "=", ResourceType.RootPage)
             const parent = await query
               .select(["id", "type", "siteId"])
               .executeTakeFirst()
@@ -248,7 +251,8 @@ export const resourceRouter = router({
               !parent ||
               // NOTE: we only allow moves to folders/root.
               // for moves to root, we only allow this for admin
-              (parent.type !== "RootPage" && parent.type !== "Folder")
+              (parent.type !== ResourceType.RootPage &&
+                parent.type !== ResourceType.Folder)
             ) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
@@ -268,7 +272,10 @@ export const resourceRouter = router({
             await tx
               .updateTable("Resource")
               .where("id", "=", String(movedResourceId))
-              .where("Resource.type", "in", ["Page", "Folder"])
+              .where("Resource.type", "in", [
+                ResourceType.Page,
+                ResourceType.Folder,
+              ])
               .set({
                 parentId: !!destinationResourceId
                   ? String(destinationResourceId)
@@ -315,7 +322,7 @@ export const resourceRouter = router({
       let query = db
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "!=", "RootPage")
+        .where("Resource.type", "!=", ResourceType.RootPage)
         .select((eb) => [eb.fn.countAll().as("totalCount")])
 
       if (resourceId) {
@@ -334,7 +341,7 @@ export const resourceRouter = router({
       let query = db
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "!=", "RootPage")
+        .where("Resource.type", "!=", ResourceType.RootPage)
         .orderBy("Resource.updatedAt", "desc")
         .orderBy("Resource.title", "asc")
         .offset(offset)
@@ -375,7 +382,7 @@ export const resourceRouter = router({
         .deleteFrom("Resource")
         .where("Resource.id", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "!=", "RootPage")
+        .where("Resource.type", "!=", ResourceType.RootPage)
         .executeTakeFirst()
 
       if (Number(result.numDeletedRows) === 0) {

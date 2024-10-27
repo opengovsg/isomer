@@ -23,6 +23,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "../../../../../prisma/generated/generatedEnums"
 
 const sitePageSchema = z.object({
   siteId: z.coerce.number(),
@@ -114,7 +115,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
 CollectionResourceListPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
-      resourceType="Collection"
+      resourceType={ResourceType.Collection}
       page={AdminCmsSidebarLayout(page)}
     />
   )

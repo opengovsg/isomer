@@ -1,7 +1,8 @@
+import { ResourceType } from "@prisma/client"
 import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
 
-import type { ResourceState, ResourceType } from "~server/db"
+import type { ResourceState } from "~server/db"
 
 export const setupAdminPermissions = async ({
   userId,
@@ -277,7 +278,7 @@ export const setupFolder = async ({
       title,
       draftBlobId: null,
       state: "Draft",
-      type: "Folder",
+      type: ResourceType.Folder,
       publishedVersionId: null,
     })
     .returningAll()

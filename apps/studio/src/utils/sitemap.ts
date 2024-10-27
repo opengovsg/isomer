@@ -1,5 +1,6 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { Resource } from "@prisma/client"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 
@@ -23,7 +24,9 @@ const getSitemapTreeFromArray = (
   // Get the immediate children of the resource with the given parent ID
   const children = resources.filter((resource) => {
     if (parentId === null) {
-      return resource.parentId === null && resource.type !== "RootPage"
+      return (
+        resource.parentId === null && resource.type !== ResourceType.RootPage
+      )
     }
     return (
       resource.parentId === parentId &&
@@ -34,7 +37,10 @@ const getSitemapTreeFromArray = (
   return children.map((resource) => {
     const permalink = `${path}${resource.permalink}`
 
-    if (resource.type === "Page" || resource.type === "CollectionPage") {
+    if (
+      resource.type === ResourceType.Page ||
+      resource.type === ResourceType.CollectionPage
+    ) {
       return {
         id: String(resource.id),
         layout: "content", // Note: We are not using the layout field in our sitemap for preview

@@ -9,6 +9,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Button, Link } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import { trpc } from "~/utils/trpc"
@@ -114,7 +115,10 @@ const SuspensableResourceSelector = ({
                 isSelected={selectedResourceId === child.id}
                 isDisabled={isDisabled}
                 onResourceItemSelect={() => {
-                  if (child.type === "Folder" || child.type === "Collection") {
+                  if (
+                    child.type === ResourceType.Folder ||
+                    child.type === ResourceType.Collection
+                  ) {
                     setParentIdStack((prev) => [...prev, child.id])
                   } else {
                     onChange(child.id)
