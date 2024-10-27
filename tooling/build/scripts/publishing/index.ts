@@ -28,7 +28,13 @@ const SITE_ID = Number(process.env.SITE_ID)
 // Guaranteed to not be present in the database because we start from 1
 const DANGLING_DIRECTORY_PAGE_ID = "-1"
 const INDEX_PAGE_PERMALINK = "_index"
-const PAGE_RESOURCE_TYPES = ["Page", "CollectionPage", "IndexPage", "RootPage"]
+const PAGE_RESOURCE_TYPES = [
+  "Page",
+  "CollectionPage",
+  "CollectionLink",
+  "IndexPage",
+  "RootPage",
+]
 const FOLDER_RESOURCE_TYPES = ["Folder", "Collection"]
 
 const getConvertedPermalink = (fullPermalink: string) => {

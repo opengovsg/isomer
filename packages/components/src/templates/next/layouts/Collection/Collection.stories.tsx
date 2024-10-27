@@ -19,8 +19,8 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       lastModified: "",
       layout: ISOMER_PAGE_LAYOUTS.Article,
       summary:
-        "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. LASTWORD",
-      date: "2024-05-07",
+        "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
+      date: "07/05/2024",
       category: "Category Name",
     },
     {
@@ -35,7 +35,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       },
       summary:
         "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
-      date: "2024-05-07",
+      date: "07/05/2024",
       category: "Category Name",
       ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
       fileDetails: {
@@ -51,7 +51,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       layout: ISOMER_PAGE_LAYOUTS.Link,
       summary:
         "Have a look at the Isomer guide to understand how to use the Isomer CMS.",
-      date: "2023-08-12",
+      date: "12/08/2023",
       category: "Category Name",
       ref: "https://guide.isomer.gov.sg",
     },
@@ -368,7 +368,7 @@ export const AllResultsNoDate: Story = {
     const yearFilter = screen.queryByText(/Year/i)
     await expect(yearFilter).not.toBeInTheDocument()
 
-    const lastWordOccurences = await screen.findAllByText(/LASTWORD/)
-    await expect(lastWordOccurences.length).toBe(3)
+    const lastWordOccurences = await screen.findAllByText(/Isomer guide-/)
+    await expect(lastWordOccurences.length).toBe(10)
   },
 }

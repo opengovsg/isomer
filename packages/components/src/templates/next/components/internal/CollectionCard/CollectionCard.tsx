@@ -5,7 +5,12 @@ import { Text } from "react-aria-components"
 import type { CollectionCardProps as BaseCollectionCardProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { ISOMER_PAGE_LAYOUTS } from "~/types"
-import { focusVisibleHighlight, getFormattedDate, isExternalUrl } from "~/utils"
+import {
+  focusVisibleHighlight,
+  getFormattedDate,
+  getReferenceLinkHref,
+  isExternalUrl,
+} from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { Link } from "../Link"
 
@@ -49,7 +54,7 @@ export const CollectionCard = ({
         <h3 className="inline-block">
           <Link
             LinkComponent={LinkComponent}
-            href={url}
+            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
             className={collectionCardLinkStyle()}
           >
             <span title={itemTitle}>{itemTitle}</span>
