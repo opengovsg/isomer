@@ -13,6 +13,7 @@ import {
   groupFocusVisibleHighlight,
   isExternalUrl,
 } from "~/utils"
+import { TAILWIND_SIMPLIFIED_LAYOUTS } from "~/utils/getTailwindVariantLayout"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { ImageClient } from "../Image"
@@ -45,13 +46,13 @@ const createInfoCardsStyles = tv({
   },
   variants: {
     layout: {
-      homepage: {
+      [TAILWIND_SIMPLIFIED_LAYOUTS.Homepage]: {
         container: "py-12 first:pt-0 md:py-16",
         headingContainer: "gap-2.5 lg:max-w-3xl",
         headingSubtitle: "prose-headline-lg-regular",
         cardImageContainer: "h-[11.875rem] md:h-60",
       },
-      default: {
+      [TAILWIND_SIMPLIFIED_LAYOUTS.Default]: {
         container: "mt-14 first:mt-0",
         headingContainer: "gap-6",
         headingSubtitle: "prose-body-base",

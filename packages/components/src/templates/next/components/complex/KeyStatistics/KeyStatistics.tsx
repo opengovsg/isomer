@@ -1,6 +1,7 @@
 import type { KeyStatisticsProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
+import { TAILWIND_SIMPLIFIED_LAYOUTS } from "~/utils/getTailwindVariantLayout"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
 
@@ -44,16 +45,16 @@ const createKeyStatisticsStyles = tv({
       },
     },
     layout: {
-      homepage: {
+      [TAILWIND_SIMPLIFIED_LAYOUTS.Homepage]: {
         container: "gap-10 py-12 xs:py-24 lg:gap-12",
       },
-      default: {
+      [TAILWIND_SIMPLIFIED_LAYOUTS.Default]: {
         container: "mt-14 gap-12 first:mt-0",
       },
     },
   },
   defaultVariants: {
-    layout: "default",
+    layout: TAILWIND_SIMPLIFIED_LAYOUTS.Default,
   },
 })
 

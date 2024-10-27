@@ -9,6 +9,7 @@ import {
   getTailwindVariantLayout,
   groupFocusVisibleHighlight,
 } from "~/utils"
+import { TAILWIND_SIMPLIFIED_LAYOUTS } from "~/utils/getTailwindVariantLayout"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 
@@ -37,12 +38,12 @@ const createInfoColsStyles = tv({
   },
   variants: {
     layout: {
-      homepage: {
+      [TAILWIND_SIMPLIFIED_LAYOUTS.Homepage]: {
         outerContainer: "py-12 md:py-16",
         header: "gap-2.5",
         headerSubtitle: "prose-headline-lg-regular",
       },
-      default: {
+      [TAILWIND_SIMPLIFIED_LAYOUTS.Default]: {
         outerContainer: "mt-14",
         header: "gap-6",
         headerSubtitle: "prose-body-base",
@@ -50,7 +51,7 @@ const createInfoColsStyles = tv({
     },
   },
   defaultVariants: {
-    layout: "default",
+    layout: TAILWIND_SIMPLIFIED_LAYOUTS.Default,
   },
 })
 
