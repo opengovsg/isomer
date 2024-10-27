@@ -85,7 +85,7 @@ const createInfoCardsStyles = tv({
     },
   },
   defaultVariants: {
-    layout: "default",
+    layout: TAILWIND_SIMPLIFIED_LAYOUTS.Default,
     maxColumns: "3",
     imageFit: "cover",
   },
