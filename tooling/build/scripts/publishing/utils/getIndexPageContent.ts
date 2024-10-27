@@ -1,3 +1,5 @@
+import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
+
 import type { SitemapEntry } from "../types"
 
 const ISOMER_SCHEMA_VERSION = "0.1.0"
@@ -8,7 +10,7 @@ export const getIndexPageContents = (
   children: SitemapEntry[],
 ) => ({
   version: ISOMER_SCHEMA_VERSION,
-  layout: "index",
+  layout: ISOMER_PAGE_LAYOUTS.Index,
   page: {
     title,
     contentPageHeader: {

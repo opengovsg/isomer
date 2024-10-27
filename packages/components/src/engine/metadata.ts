@@ -1,4 +1,5 @@
 import type { IsomerPageSchemaType, IsomerSitemap } from "~/types"
+import { ISOMER_PAGE_LAYOUTS } from "~/types/schema"
 import { getSitemapAsArray } from "~/utils"
 
 export const getMetadata = (props: IsomerPageSchemaType) => {
@@ -9,10 +10,10 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
     description: props.meta?.description || undefined,
     robots: {
       index:
-        props.layout !== "file" &&
-        props.layout !== "link" &&
-        props.layout !== "search" &&
-        props.layout !== "notfound" &&
+        props.layout !== ISOMER_PAGE_LAYOUTS.File &&
+        props.layout !== ISOMER_PAGE_LAYOUTS.Link &&
+        props.layout !== ISOMER_PAGE_LAYOUTS.Search &&
+        props.layout !== ISOMER_PAGE_LAYOUTS.NotFound &&
         !props.meta?.noIndex,
     },
     icons: {
@@ -24,18 +25,21 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
     },
   }
 
-  if (metadata.description === undefined && props.layout === "article") {
+  if (
+    metadata.description === undefined &&
+    props.layout === ISOMER_PAGE_LAYOUTS.Article
+  ) {
     metadata.description = props.page.articlePageHeader.summary
   } else if (
     metadata.description === undefined &&
-    (props.layout === "content" ||
-      props.layout === "database" ||
-      props.layout === "index")
+    (props.layout === ISOMER_PAGE_LAYOUTS.Content ||
+      props.layout === ISOMER_PAGE_LAYOUTS.Database ||
+      props.layout === ISOMER_PAGE_LAYOUTS.Index)
   ) {
     metadata.description = props.page.contentPageHeader.summary
   } else if (
     metadata.description === undefined &&
-    props.layout === "collection"
+    props.layout === ISOMER_PAGE_LAYOUTS.Collection
   ) {
     metadata.description = props.page.subtitle
   }
@@ -72,7 +76,11 @@ export const getRobotsTxt = (props: IsomerPageSchemaType) => {
 
 export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
   return getSitemapAsArray(sitemap)
-    .filter((item) => item.layout !== "file" && item.layout !== "link")
+    .filter(
+      (item) =>
+        item.layout !== ISOMER_PAGE_LAYOUTS.File &&
+        item.layout !== ISOMER_PAGE_LAYOUTS.Link,
+    )
     .map(({ permalink, lastModified }) => ({
       url: siteUrl !== undefined ? `${siteUrl}${permalink}` : permalink,
       lastModified,

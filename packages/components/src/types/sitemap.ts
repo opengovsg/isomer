@@ -1,4 +1,4 @@
-import type { IsomerPageLayoutType } from "./schema"
+import type { ISOMER_PAGE_LAYOUTS, IsomerPageLayoutType } from "./schema"
 import type { CollectionCardProps } from "~/interfaces"
 import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
 
@@ -15,15 +15,18 @@ interface IsomerBaseSitemap {
 }
 
 interface IsomerPageSitemap extends IsomerBaseSitemap {
-  layout: Exclude<IsomerPageLayoutType, "file" | "link">
+  layout: Exclude<
+    IsomerPageLayoutType,
+    typeof ISOMER_PAGE_LAYOUTS.File | typeof ISOMER_PAGE_LAYOUTS.Link
+  >
 }
 interface IsomerFileSitemap extends IsomerBaseSitemap {
-  layout: "file"
+  layout: typeof ISOMER_PAGE_LAYOUTS.File
   ref: string
   fileDetails: FileCardProps["fileDetails"]
 }
 interface IsomerLinkSitemap extends IsomerBaseSitemap {
-  layout: "link"
+  layout: typeof ISOMER_PAGE_LAYOUTS.Link
   ref: string
 }
 

@@ -6,7 +6,11 @@ import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
-import { getMetadata, RenderEngine } from "@opengovsg/isomer-components"
+import {
+  getMetadata,
+  ISOMER_PAGE_LAYOUTS,
+  RenderEngine,
+} from "@opengovsg/isomer-components"
 
 const PAGE_TITLE = "404: Page not found"
 const PAGE_DESCRIPTION = "The page that you are accessing does not exist"
@@ -66,7 +70,7 @@ const NotFound = () => {
           footerItems: footer,
           assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
         }}
-        layout="notfound"
+        layout={ISOMER_PAGE_LAYOUTS.NotFound}
         meta={{
           noIndex: true,
           description: PAGE_DESCRIPTION,

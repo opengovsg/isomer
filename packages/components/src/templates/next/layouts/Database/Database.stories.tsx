@@ -31,7 +31,7 @@ const generateArgs = ({
   content?: DatabasePageSchemaType["content"]
 }): DatabasePageSchemaType => {
   return {
-    layout: "database",
+    layout: ISOMER_PAGE_LAYOUTS.Database,
     site: {
       siteName: "Isomer Next",
       siteMap: {

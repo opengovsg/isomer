@@ -40,7 +40,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
         id: "collection",
         permalink: parentPermalink,
         lastModified: "02 May 2023",
-        layout: "collection",
+        layout: ISOMER_PAGE_LAYOUTS.Collection,
         title: parentTitle,
         summary: "",
         children: [
@@ -50,7 +50,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
             date,
             ref: "Test",
             summary: summary ?? "",
-            layout: "link",
+            layout: ISOMER_PAGE_LAYOUTS.Link,
             permalink,
             lastModified: new Date().toString(),
             category,
@@ -65,7 +65,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
       <PreviewWithoutSitemap
         content={[]}
         page={{ title: parentTitle }}
-        layout={"collection"}
+        layout={ISOMER_PAGE_LAYOUTS.Collection}
         siteId={siteId}
         siteMap={siteMap}
         permalink={parentPermalink}

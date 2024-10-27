@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 import { Box, Flex, Skeleton, Stack, Text } from "@chakra-ui/react"
 import { useIsMobile } from "@opengovsg/design-system-react"
+import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
 
 import Suspense from "~/components/Suspense"
@@ -67,14 +68,14 @@ const SuspendableLayoutPreview = () => {
 
   const previewOverrides = useMemo(() => {
     switch (currentLayout) {
-      case "article": {
+      case ISOMER_PAGE_LAYOUTS.Article: {
         return {
           page: {
             date: format(new Date(), "dd MMM yyyy"),
           },
         }
       }
-      case "content": {
+      case ISOMER_PAGE_LAYOUTS.Content: {
         return {}
       }
     }
@@ -91,7 +92,7 @@ const SuspendableLayoutPreview = () => {
         permalink={currentPermalink}
         siteMap={{
           id: "0",
-          layout: "content",
+          layout: ISOMER_PAGE_LAYOUTS.Content,
           title: "Root",
           summary: "",
           lastModified: new Date().toISOString(),

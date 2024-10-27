@@ -47,7 +47,7 @@ const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
 export const SearchSG: Story = {
   name: "SearchSG",
   args: {
-    layout: "search",
+    layout: ISOMER_PAGE_LAYOUTS.Search,
     site: {
       siteName: "Isomer Next",
       siteMap: {

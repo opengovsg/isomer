@@ -251,7 +251,7 @@ function generateSitemapTree(
         title,
         permalink: `${pathPrefix.length === 1 ? "" : pathPrefix}/${danglingDirectory}`,
         lastModified: new Date().toISOString(),
-        layout: "index",
+        layout: ISOMER_PAGE_LAYOUTS.Index,
         summary: `Pages in ${title}`,
       }
     })

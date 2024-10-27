@@ -1,15 +1,14 @@
 import type { UnwrapTagged } from "type-fest"
+import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
 
-export const createDefaultPage = ({
-  layout,
-}: {
-  layout: "content" | "article"
-}) => {
+import type { Layout } from "~/features/editing-experience/components/CreatePageModal/constants"
+
+export const createDefaultPage = ({ layout }: { layout: Layout }) => {
   switch (layout) {
-    case "content": {
+    case ISOMER_PAGE_LAYOUTS.Content: {
       const contentDefaultPage = {
-        layout: "content",
+        layout: ISOMER_PAGE_LAYOUTS.Content,
         page: {
           contentPageHeader: {
             summary: "This is the page summary",
@@ -21,9 +20,9 @@ export const createDefaultPage = ({
       return contentDefaultPage
     }
 
-    case "article": {
+    case ISOMER_PAGE_LAYOUTS.Article: {
       const articleDefaultPage = {
-        layout: "article",
+        layout: ISOMER_PAGE_LAYOUTS.Article,
         page: {
           date: format(new Date(), "dd-MM-yyyy"),
           category: "Feature Articles",

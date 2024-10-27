@@ -1,4 +1,5 @@
 import type { UnwrapTagged } from "type-fest"
+import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
 
 import type { ResourceType } from "../database"
@@ -7,7 +8,7 @@ export const createCollectionPageJson = ({}: {
   type: typeof ResourceType.CollectionPage // Act as soft typeguard
 }) => {
   return {
-    layout: "article",
+    layout: ISOMER_PAGE_LAYOUTS.Article,
     page: {
       date: format(new Date(), "dd-MM-yyyy"),
       // TODO: this is actually supposed to be passed from the frontend
@@ -26,7 +27,7 @@ export const createCollectionLinkJson = ({}: {
   type: typeof ResourceType.CollectionLink // Act as soft typeguard
 }) => {
   return {
-    layout: "link",
+    layout: ISOMER_PAGE_LAYOUTS.Link,
     page: {
       ref: "",
       summary: "",

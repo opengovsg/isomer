@@ -25,7 +25,7 @@ type Story = StoryObj<NotFoundPageSchemaType>
 export const Default: Story = {
   name: "NotFound",
   args: {
-    layout: "notfound",
+    layout: ISOMER_PAGE_LAYOUTS.NotFound,
     site: {
       siteName: "Isomer Next",
       siteMap: {

@@ -4,6 +4,7 @@ import type {
   IsomerSiteProps,
 } from "~/engine"
 import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import {
   Accordion,
   Callout,
@@ -92,25 +93,25 @@ export const renderLayout = ({
   }
 
   switch (props.layout) {
-    case "article":
+    case ISOMER_PAGE_LAYOUTS.Article:
       return <ArticleLayout {...props} />
-    case "collection":
+    case ISOMER_PAGE_LAYOUTS.Collection:
       return <CollectionLayout {...props} />
-    case "content":
+    case ISOMER_PAGE_LAYOUTS.Content:
       return <ContentLayout {...props} />
-    case "database":
+    case ISOMER_PAGE_LAYOUTS.Database:
       return <DatabaseLayout {...props} />
-    case "homepage":
+    case ISOMER_PAGE_LAYOUTS.Homepage:
       return <HomepageLayout {...props} />
-    case "index":
+    case ISOMER_PAGE_LAYOUTS.Index:
       return <IndexPageLayout {...props} />
-    case "notfound":
+    case ISOMER_PAGE_LAYOUTS.NotFound:
       return <NotFoundLayout {...props} />
-    case "search":
+    case ISOMER_PAGE_LAYOUTS.Search:
       return <SearchLayout {...props} />
     // These are references that we should not render to the user
-    case "file":
-    case "link":
+    case ISOMER_PAGE_LAYOUTS.File:
+    case ISOMER_PAGE_LAYOUTS.Link:
       return <></>
     default:
       const _: never = props

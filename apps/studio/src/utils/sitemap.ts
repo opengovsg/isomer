@@ -38,7 +38,7 @@ const getSitemapTreeFromArray = (
     if (resource.type === "Page" || resource.type === "CollectionPage") {
       return {
         id: String(resource.id),
-        layout: "content", // Note: We are not using the layout field in our sitemap for preview
+        layout: ISOMER_PAGE_LAYOUTS.Content, // Note: We are not using the layout field in our sitemap for preview
         title: resource.title,
         summary: "", // Note: We are not using the summary field in our previews
         lastModified: new Date() // TODO: Update this to the updated_at field in DB
@@ -56,7 +56,7 @@ const getSitemapTreeFromArray = (
 
     return {
       id: String(resource.id),
-      layout: "content", // Note: We are not using the layout field in our previews
+      layout: ISOMER_PAGE_LAYOUTS.Content, // Note: We are not using the layout field in our previews
       title: titleOfPage || resource.title,
       summary: "", // Note: We are not using the summary field in our previews
       lastModified: new Date() // TODO: Update this to the updated_at field in DB

@@ -1,4 +1,5 @@
 import type { DropResult } from "@hello-pangea/dnd"
+import type { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { useCallback } from "react"
 import { Box, Button, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
@@ -107,7 +108,8 @@ export default function RootStateDrawer() {
     ],
   )
 
-  const pageLayout: string = savedPageState.layout
+  const pageLayout: (typeof ISOMER_USABLE_PAGE_LAYOUTS)[keyof typeof ISOMER_USABLE_PAGE_LAYOUTS] =
+    savedPageState.layout
 
   const isHeroFixedBlock =
     pageLayout === ISOMER_PAGE_LAYOUTS.Homepage &&

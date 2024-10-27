@@ -6,6 +6,7 @@ import { useResizeObserver } from "usehooks-ts"
 
 import type { NavbarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import { isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
@@ -125,28 +126,30 @@ export const Navbar = ({
 
           <div className="flex flex-row gap-1">
             {/* Search icon */}
-            {search && !isHamburgerOpen && layout !== "search" && (
-              <div className="flex h-[68px] items-center">
-                {isSearchOpen ? (
-                  <IconButton
-                    onPress={() => {
-                      setIsSearchOpen(!isSearchOpen)
-                    }}
-                    aria-label="Close search bar"
-                    icon={BiX}
-                  />
-                ) : (
-                  <IconButton
-                    onPress={() => {
-                      setOpenNavItemIdx(-1)
-                      setIsSearchOpen(!isSearchOpen)
-                    }}
-                    aria-label="Open search bar"
-                    icon={BiSearch}
-                  />
-                )}
-              </div>
-            )}
+            {search &&
+              !isHamburgerOpen &&
+              layout !== ISOMER_PAGE_LAYOUTS.Search && (
+                <div className="flex h-[68px] items-center">
+                  {isSearchOpen ? (
+                    <IconButton
+                      onPress={() => {
+                        setIsSearchOpen(!isSearchOpen)
+                      }}
+                      aria-label="Close search bar"
+                      icon={BiX}
+                    />
+                  ) : (
+                    <IconButton
+                      onPress={() => {
+                        setOpenNavItemIdx(-1)
+                        setIsSearchOpen(!isSearchOpen)
+                      }}
+                      aria-label="Open search bar"
+                      icon={BiSearch}
+                    />
+                  )}
+                </div>
+              )}
 
             {/* Hamburger menu for small screens */}
             <div className="flex h-[68px] items-center lg:hidden">
@@ -172,7 +175,7 @@ export const Navbar = ({
       </div>
 
       {/* Search bar */}
-      {search && layout !== "search" && (
+      {search && layout !== ISOMER_PAGE_LAYOUTS.Search && (
         <div
           className={`${
             isSearchOpen ? "block" : "hidden"

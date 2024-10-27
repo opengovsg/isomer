@@ -1,5 +1,6 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
+import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { omit, pick } from "lodash"
 import { resetTables } from "tests/integration/helpers/db"
@@ -546,7 +547,7 @@ describe("page.router", async () => {
         siteId: page.siteId,
         content: JSON.stringify({
           content: NEW_PAGE_BLOCKS,
-          layout: "content",
+          layout: ISOMER_PAGE_LAYOUTS.Content,
           page: pick(page, ["title", "permalink"]),
           version: "0.1.0",
         } as UpdatePageOutput["content"]),
@@ -676,7 +677,7 @@ describe("page.router", async () => {
         siteId: 1,
         title: "Test Page",
         permalink: "test-page",
-        layout: "content",
+        layout: ISOMER_PAGE_LAYOUTS.Content,
       })
 
       await expect(result).rejects.toThrowError(
@@ -690,7 +691,7 @@ describe("page.router", async () => {
         siteId: 999999, // should not exist
         title: "Test Page",
         permalink: "test-page",
-        layout: "content",
+        layout: ISOMER_PAGE_LAYOUTS.Content,
       })
 
       // Assert
@@ -716,7 +717,7 @@ describe("page.router", async () => {
         siteId: site.id,
         title: "Test Page",
         permalink: page.permalink,
-        layout: "content",
+        layout: ISOMER_PAGE_LAYOUTS.Content,
       })
 
       // Assert
@@ -744,7 +745,7 @@ describe("page.router", async () => {
       // Act
       const result = await caller.createPage({
         ...expectedPageArgs,
-        layout: "content",
+        layout: ISOMER_PAGE_LAYOUTS.Content,
       })
 
       // Assert
@@ -759,7 +760,7 @@ describe("page.router", async () => {
       })
       expect(actual).toMatchObject({
         ...expectedPageArgs,
-        content: createDefaultPage({ layout: "content" }),
+        content: createDefaultPage({ layout: ISOMER_PAGE_LAYOUTS.Content }),
       })
     })
 
@@ -779,7 +780,7 @@ describe("page.router", async () => {
       // Act
       const result = await caller.createPage({
         ...expectedPageArgs,
-        layout: "article",
+        layout: ISOMER_PAGE_LAYOUTS.Article,
       })
 
       // Assert
@@ -794,7 +795,7 @@ describe("page.router", async () => {
       })
       expect(actual).toMatchObject({
         ...expectedPageArgs,
-        content: createDefaultPage({ layout: "article" }),
+        content: createDefaultPage({ layout: ISOMER_PAGE_LAYOUTS.Article }),
       })
     })
 
@@ -828,7 +829,7 @@ describe("page.router", async () => {
       })
       expect(actual).toMatchObject({
         ...expectedPageArgs,
-        content: createDefaultPage({ layout: "content" }),
+        content: createDefaultPage({ layout: ISOMER_PAGE_LAYOUTS.Content }),
       })
     })
 
@@ -848,7 +849,7 @@ describe("page.router", async () => {
       // Act
       const result = await caller.createPage({
         ...expectedPageArgs,
-        layout: "content",
+        layout: ISOMER_PAGE_LAYOUTS.Content,
         folderId: Number(folder.id),
       })
 
@@ -872,7 +873,7 @@ describe("page.router", async () => {
       expect(actual).toMatchObject({
         ...expectedPageArgs,
         parentId: folder.id,
-        content: createDefaultPage({ layout: "content" }),
+        content: createDefaultPage({ layout: ISOMER_PAGE_LAYOUTS.Content }),
       })
     })
 

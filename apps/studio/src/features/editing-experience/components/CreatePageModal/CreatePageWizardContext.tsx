@@ -3,6 +3,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { createContext, useContext, useMemo, useState } from "react"
 import { useRouter } from "next/router"
+import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { merge } from "lodash"
 
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
@@ -60,7 +61,7 @@ const useCreatePageWizardContext = ({
     defaultValues: {
       title: "",
       permalink: "",
-      layout: "content",
+      layout: ISOMER_PAGE_LAYOUTS.Content,
     },
   })
 
@@ -68,7 +69,9 @@ const useCreatePageWizardContext = ({
 
   const layoutPreviewJson: IsomerSchema = useMemo(() => {
     const jsonPreview =
-      layout === "content" ? contentLayoutPreview : articleLayoutPreview
+      layout === ISOMER_PAGE_LAYOUTS.Content
+        ? contentLayoutPreview
+        : articleLayoutPreview
     return merge(jsonPreview, {
       page: {
         title: title || "Page title here",

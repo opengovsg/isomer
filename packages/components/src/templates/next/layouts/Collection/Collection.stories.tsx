@@ -17,7 +17,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       title: `This is a publication title that is really long because ${index}`,
       permalink: `/publications/item-one-${index}`,
       lastModified: "",
-      layout: "article",
+      layout: ISOMER_PAGE_LAYOUTS.Article,
       summary:
         "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. LASTWORD",
       date: "2024-05-07",
@@ -28,7 +28,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       title: `This is the title for a collection item that shows the Isomer hero banner-${index}`,
       permalink: `/publications/item-two-${index}`,
       lastModified: "",
-      layout: "file",
+      layout: ISOMER_PAGE_LAYOUTS.File,
       image: {
         src: "https://images.unsplash.com/photo-1728931710331-7f74dca643eb?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         alt: "placeholder",
@@ -48,7 +48,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       title: `Isomer guide-${index}`,
       permalink: `/publications/item-three-${index}`,
       lastModified: "",
-      layout: "link",
+      layout: ISOMER_PAGE_LAYOUTS.Link,
       summary:
         "Have a look at the Isomer guide to understand how to use the Isomer CMS.",
       date: "2023-08-12",
@@ -64,7 +64,7 @@ const generateArgs = ({
   collectionItems?: IsomerSitemap[]
 } = {}): CollectionPageSchemaType => {
   return {
-    layout: "collection",
+    layout: ISOMER_PAGE_LAYOUTS.Collection,
     site: {
       siteName: "Isomer Next",
       siteMap: {
@@ -80,7 +80,7 @@ const generateArgs = ({
             title: "Publications and other press releases",
             permalink: "/publications",
             lastModified: "",
-            layout: "collection",
+            layout: ISOMER_PAGE_LAYOUTS.Collection,
             summary: "",
             children: collectionItems,
           },
@@ -304,7 +304,7 @@ export const FilteredEmptyResults: Story = {
         title: `2025 File`,
         permalink: `/publications/item-twenty-twenty-five`,
         lastModified: "",
-        layout: "file",
+        layout: ISOMER_PAGE_LAYOUTS.File,
         summary:
           "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
         date: "2025-05-07",

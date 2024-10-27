@@ -3,7 +3,10 @@ import type { Static } from "@sinclair/typebox"
 import { useCallback } from "react"
 import { Box, Flex, useDisclosure } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { getLayoutPageSchema } from "@opengovsg/isomer-components"
+import {
+  getLayoutPageSchema,
+  ISOMER_PAGE_LAYOUTS,
+} from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
@@ -18,8 +21,8 @@ import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
 
 const HEADER_LABELS: Record<string, string> = {
-  article: "Edit article page header",
-  content: "Edit content page header",
+  [ISOMER_PAGE_LAYOUTS.Article]: "Edit article page header",
+  [ISOMER_PAGE_LAYOUTS.Content]: "Edit content page header",
 }
 
 const ajv = new Ajv({ strict: false, logger: false })

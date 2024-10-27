@@ -1,5 +1,9 @@
 import type { ImageProps } from "~/interfaces"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type {
+  ISOMER_PAGE_LAYOUTS,
+  IsomerSiteProps,
+  LinkComponentType,
+} from "~/types"
 
 export interface Tag {
   title: string
@@ -21,16 +25,16 @@ interface BaseCardProps {
 }
 
 export interface ArticleCardProps extends BaseCardProps {
-  variant: "article"
+  variant: ISOMER_PAGE_LAYOUTS.Article
 }
 
 export interface FileCardProps extends BaseCardProps {
-  variant: "file"
+  variant: ISOMER_PAGE_LAYOUTS.File
   fileDetails: FileDetails
 }
 
 export interface LinkCardProps extends BaseCardProps {
-  variant: "link"
+  variant: ISOMER_PAGE_LAYOUTS.Link
 }
 
 export type CollectionCardProps =

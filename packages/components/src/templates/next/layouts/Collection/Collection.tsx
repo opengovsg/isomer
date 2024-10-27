@@ -1,5 +1,6 @@
 import type { CollectionPageSchemaType, IsomerSiteProps } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
+import { ISOMER_PAGE_LAYOUTS } from "~/engine"
 import { getBreadcrumbFromSiteMap, getSitemapAsArray } from "~/utils"
 import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
@@ -41,9 +42,9 @@ const getCollectionItems = (
   const transformedItems = items
     .filter(
       (item) =>
-        item.layout === "file" ||
-        item.layout === "link" ||
-        item.layout === "article",
+        item.layout === ISOMER_PAGE_LAYOUTS.File ||
+        item.layout === ISOMER_PAGE_LAYOUTS.Link ||
+        item.layout === ISOMER_PAGE_LAYOUTS.Article,
     )
     .map((item) => {
       const lastUpdated = item.date || item.lastModified
@@ -60,25 +61,29 @@ const getCollectionItems = (
         site,
       }
 
-      if (item.layout === "file") {
-        return {
-          ...baseItem,
-          variant: "file",
-          url: item.ref,
-          fileDetails: item.fileDetails,
+      switch (item.layout) {
+        case ISOMER_PAGE_LAYOUTS.File: {
+          return {
+            ...baseItem,
+            variant: ISOMER_PAGE_LAYOUTS.File,
+            url: item.ref,
+            fileDetails: item.fileDetails,
+          }
         }
-      } else if (item.layout === "link") {
-        return {
-          ...baseItem,
-          variant: "link",
-          url: item.ref,
+        case ISOMER_PAGE_LAYOUTS.Link: {
+          return {
+            ...baseItem,
+            variant: ISOMER_PAGE_LAYOUTS.Link,
+            url: item.ref,
+          }
         }
-      }
-
-      return {
-        ...baseItem,
-        variant: "article",
-        url: item.permalink,
+        default: {
+          return {
+            ...baseItem,
+            variant: ISOMER_PAGE_LAYOUTS.Article,
+            url: item.permalink,
+          }
+        }
       }
     }) satisfies CollectionCardProps[]
 
