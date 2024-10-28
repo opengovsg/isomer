@@ -5,6 +5,7 @@ import {
   CodeBuildClient,
   ListBuildsForProjectCommand,
   StartBuildCommand,
+  StopBuildCommand,
 } from "@aws-sdk/client-codebuild"
 
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
@@ -73,25 +74,63 @@ export const shouldStartNewBuild = async (
     const batchGetBuildsCommand = new BatchGetBuildsCommand({ ids: buildIds })
     const batchGetBuildsResponse = await client.send(batchGetBuildsCommand)
 
+    // Case 1: Start a new build if there are no existing running builds
+    const runningBuilds = batchGetBuildsResponse.builds?.filter(
+      (build) => build.buildStatus === "IN_PROGRESS",
+    )
+
+    if (runningBuilds?.length === 0) {
+      return true
+    }
+
+    // Case 2: Start a new build if there is only 1 running build, and it is
+    // not recent
     // Find for running builds that are considered recent
-    const recentRunningBuilds =
-      batchGetBuildsResponse.builds?.filter((build) => {
+    const recentRunningBuilds = batchGetBuildsResponse.builds?.filter(
+      (build) => {
         const buildStartTime = new Date(build.startTime ?? "")
         return (
           build.buildStatus === "IN_PROGRESS" &&
           buildStartTime > thresholdTimeAgo
         )
-      }) ?? []
+      },
+    )
 
-    if (recentRunningBuilds.length > 0) {
-      logger.info(
-        { projectId, buildIds: recentRunningBuilds.map((build) => build.id) },
-        "Not starting a new build as there are recent builds that are still running",
-      )
-      return false
+    if (runningBuilds?.length === 1 && recentRunningBuilds?.length === 0) {
+      return true
     }
 
-    return true
+    // Case 3: Start a new build if there are 2 running builds, and both are
+    // not recent. We will stop one of the builds to start a new one.
+    if (runningBuilds?.length === 2 && recentRunningBuilds?.length === 0) {
+      // Stop the latest build
+      const latestBuild = runningBuilds
+        .sort((a, b) => {
+          const aStartTime = new Date(a.startTime ?? "")
+          const bStartTime = new Date(b.startTime ?? "")
+          return bStartTime.getTime() - aStartTime.getTime()
+        })
+        .at(0)
+
+      if (!latestBuild) {
+        logger.error(
+          { projectId },
+          "Unable to determine the latest build to stop",
+        )
+        return true
+      }
+
+      const stopBuildCommand = new StopBuildCommand({
+        id: latestBuild.id,
+      })
+
+      await client.send(stopBuildCommand)
+
+      return true
+    }
+
+    // Any other case, we should not start a new build
+    return false
   } catch (error) {
     logger.error(
       { projectId, error },
