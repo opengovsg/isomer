@@ -61,12 +61,7 @@ export function JsonFormsRefControl({
 
   return (
     <>
-      <Box
-        as={FormControl}
-        isInvalid={!!errors}
-        mt="1.25rem"
-        _first={{ mt: 0 }}
-      >
+      <Box as={FormControl} isInvalid={!!errors}>
         <FormLabel>{label}</FormLabel>
         <Flex
           px="1rem"

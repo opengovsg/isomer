@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { userEvent, waitFor, within } from "@storybook/test"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -52,6 +53,18 @@ type Story = StoryObj<typeof EditPage>
 
 export const Default: Story = {}
 
+export const EditFixedBlockState: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    await waitFor(async () => {
+      await userEvent.click(
+        canvas.getByRole("button", { name: /Article page header/i }),
+      )
+    })
+  },
+}
+
 export const AddBlock: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -67,7 +80,7 @@ export const PublishedState: Story = {
     msw: {
       handlers: [
         pageHandlers.readPage.article({
-          state: "Published",
+          state: ResourceState.Published,
           draftBlobId: null,
         }),
         ...COMMON_HANDLERS,

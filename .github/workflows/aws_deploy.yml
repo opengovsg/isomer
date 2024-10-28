@@ -158,7 +158,7 @@ jobs:
           tags: |
             ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
           build-args: |
-            ENV=${{env.ENV}}
+            NEXT_PUBLIC_APP_ENV=${{ inputs.environment }}
             NEXT_PUBLIC_APP_URL=${{ inputs.app-url }}
             NEXT_PUBLIC_APP_NAME=${{ inputs.app-name }}
             NEXT_PUBLIC_APP_VERSION=${{ inputs.app-version }}
@@ -243,7 +243,7 @@ jobs:
           codedeploy-deployment-group: ${{ inputs.codedeploy-deployment-group }}
 
       # - name: Upload sourcemaps to Datadog
-      #   if: ${{ env.DATADOG_API_KEY != '' }}
+      #   if: ${{ env.DD_API_KEY != '' }}
       #   env:
       #     IMAGE_TAG: ${{ env.LOCAL_IMAGE_TAG }}
       #   shell: bash

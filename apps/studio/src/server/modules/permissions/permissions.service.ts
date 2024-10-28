@@ -1,4 +1,5 @@
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
+import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 
 import type {
@@ -57,7 +58,7 @@ export const definePermissionsForSite = async ({
     builder.can("read", "Site")
   }
 
-  if (roles.some(({ role }) => role === "Admin")) {
+  if (roles.some(({ role }) => role === RoleType.Admin)) {
     CRUD_ACTIONS.map((action) => {
       builder.can(action, "Site")
     })

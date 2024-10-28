@@ -5,9 +5,11 @@ import {
   Masthead,
   Navbar,
   Notification,
+  SkipToContent,
   UnsupportedBrowserBanner,
   Wogaa,
 } from "../../components/internal"
+import { SKIP_TO_CONTENT_ANCHOR_ID } from "../../constants"
 
 export const Skeleton = ({
   site,
@@ -29,29 +31,33 @@ export const Skeleton = ({
 
       {!isStaging && <DatadogRum />}
 
-      {site.isGovernment && <Masthead isStaging={isStaging} />}
+      <header>
+        <SkipToContent LinkComponent={LinkComponent} />
 
-      {site.notification && (
-        <Notification
-          {...site.notification}
-          LinkComponent={LinkComponent}
+        {site.isGovernment && <Masthead isStaging={isStaging} />}
+
+        {site.notification && (
+          <Notification
+            {...site.notification}
+            LinkComponent={LinkComponent}
+            site={site}
+          />
+        )}
+
+        <UnsupportedBrowserBanner />
+
+        <Navbar
+          logoUrl={site.logoUrl}
+          logoAlt={site.siteName}
+          layout={layout}
+          search={site.search}
+          items={site.navBarItems}
           site={site}
+          LinkComponent={LinkComponent}
         />
-      )}
+      </header>
 
-      <UnsupportedBrowserBanner />
-
-      <Navbar
-        logoUrl={site.logoUrl}
-        logoAlt={site.siteName}
-        layout={layout}
-        search={site.search}
-        items={site.navBarItems}
-        site={site}
-        LinkComponent={LinkComponent}
-      />
-
-      {children}
+      <main id={SKIP_TO_CONTENT_ANCHOR_ID}>{children}</main>
 
       <Footer
         isGovernment={site.isGovernment}

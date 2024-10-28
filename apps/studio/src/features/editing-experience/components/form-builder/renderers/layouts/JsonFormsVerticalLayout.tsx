@@ -105,7 +105,7 @@ export function JsonFormsVerticalLayoutRenderer({
   const newElements = getUiSchemaWithGroup(schema, elements)
 
   return (
-    <Box w="100%">
+    <Box w="100%" display="flex" flexDirection="column" gap="1.25rem">
       {newElements.map((element, index) => (
         <JsonFormsDispatch
           key={`${path}-${index}`}

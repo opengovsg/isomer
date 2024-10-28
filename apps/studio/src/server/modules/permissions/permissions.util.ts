@@ -1,6 +1,6 @@
 import type { AbilityBuilder } from "@casl/ability"
+import { RoleType } from "@prisma/client"
 
-import type { RoleType } from "../database"
 import type { ResourceAbility } from "./permissions.type"
 import { ALL_ACTIONS, CRUD_ACTIONS } from "./permissions.type"
 
@@ -23,14 +23,14 @@ export const buildPermissionsForResource = (
   builder: AbilityBuilder<ResourceAbility>,
 ) => {
   switch (role) {
-    case "Editor":
+    case RoleType.Editor:
       return giveBasePermissions(builder)
-    case "Admin":
+    case RoleType.Admin:
       ALL_ACTIONS.map((action) => {
         builder.can(action, "Resource")
       })
       return
-    case "Publisher":
+    case RoleType.Publisher:
       giveBasePermissions(builder)
       builder.can("publish", "Resource")
       return
