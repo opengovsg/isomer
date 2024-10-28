@@ -91,6 +91,7 @@ export const collectionRouter = router({
         siteId: input.siteId,
         action: "create",
         userId: ctx.user.id,
+        resourceId: !!input.collectionId ? String(input.collectionId) : null,
       })
 
       let newPage: UnwrapTagged<PrismaJson.BlobJsonContent>

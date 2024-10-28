@@ -1,9 +1,13 @@
 import type { CollectionPageSchemaType, IsomerSiteProps } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
-import { getBreadcrumbFromSiteMap, getSitemapAsArray } from "~/utils"
+import {
+  getBreadcrumbFromSiteMap,
+  getParsedDate,
+  getSitemapAsArray,
+} from "~/utils"
 import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
-import { shouldShowDate } from "./utils"
+import { getAvailableFilters, shouldShowDate } from "./utils"
 
 const getCollectionItems = (
   site: IsomerSiteProps,
@@ -46,13 +50,13 @@ const getCollectionItems = (
         item.layout === "article",
     )
     .map((item) => {
-      const lastUpdated = item.date || item.lastModified
-      const date = new Date(lastUpdated)
+      const date =
+        item.date !== undefined ? getParsedDate(item.date) : undefined
 
       const baseItem = {
         type: "collectionCard" as const,
         rawDate: date,
-        lastUpdated,
+        lastUpdated: date?.toISOString(),
         category: item.category || "Others",
         title: item.title,
         description: item.summary,
@@ -87,6 +91,16 @@ const getCollectionItems = (
     if (a.rawDate === b.rawDate) {
       return a.title > b.title ? 1 : -1
     }
+
+    // Rank items with no dates last
+    if (a.rawDate === undefined) {
+      return 1
+    }
+
+    if (b.rawDate === undefined) {
+      return -1
+    }
+
     return a.rawDate < b.rawDate ? 1 : -1
   }) as CollectionCardProps[]
 }
@@ -118,6 +132,7 @@ const CollectionLayout = ({
         page={page}
         breadcrumb={breadcrumb}
         items={items}
+        filters={getAvailableFilters(items)}
         shouldShowDate={shouldShowDate(items)}
         LinkComponent={LinkComponent}
         site={site}

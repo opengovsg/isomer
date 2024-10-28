@@ -20,7 +20,7 @@ const createKeyStatisticsStyles = tv({
     title:
       "prose-display-md w-full max-w-[47.5rem] break-words text-base-content-strong",
     urlText: "hidden whitespace-nowrap md:block",
-    urlButtonContainer: "mx-auto block",
+    urlButtonContainer: "mx-auto mt-2 block",
     statistics: "flex flex-col flex-wrap gap-x-8 gap-y-12 md:flex-row",
     itemContainer: "flex grow flex-col gap-3",
     itemValue: "prose-display-lg text-pretty text-brand-canvas-inverse",
@@ -29,26 +29,24 @@ const createKeyStatisticsStyles = tv({
   variants: {
     noOfItems: {
       1: {
-        itemContainer: "basis-full",
+        itemContainer: "md:basis-full",
       },
       2: {
-        itemContainer: "basis-[calc((100%-2.5rem)/2)]",
+        itemContainer: "md:basis-[calc((100%-2.5rem)/2)]",
       },
       3: {
-        itemContainer:
-          "basis-[calc((100%-5rem)/3)] md:max-w-[calc((100%-2.5rem)/2)]",
+        itemContainer: "md:basis-[calc((100%-5rem)/3)]",
       },
       4: {
-        itemContainer:
-          "basis-[calc((100%-7.5rem)/4)] md:max-w-[calc((100%-5rem)/3)]",
+        itemContainer: "md:basis-[calc((100%-7.5rem)/4)]",
       },
     },
     layout: {
       homepage: {
-        container: "gap-10 py-12 xs:py-24 lg:gap-24",
+        container: "gap-10 py-12 xs:py-24 lg:gap-12",
       },
       default: {
-        container: "mt-14 gap-12",
+        container: "mt-14 gap-12 first:mt-0",
       },
     },
   },
@@ -63,6 +61,7 @@ const KeyStatistics = ({
   title,
   statistics,
   url,
+  label,
   layout,
   site,
 }: KeyStatisticsProps) => {
@@ -96,7 +95,7 @@ const KeyStatistics = ({
             variant="outline"
             isWithFocusVisibleHighlight
           >
-            Our achievements
+            {label ?? "Our achievements"}
           </LinkButton>
         </div>
       )}

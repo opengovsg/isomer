@@ -277,7 +277,7 @@ export function JsonFormsLinkControl({
       : undefined
 
   return (
-    <Box mt="1.25rem" _first={{ mt: 0 }}>
+    <Box>
       <LinkHrefEditor
         linkTypes={LINK_TYPES}
         value={dataString}
