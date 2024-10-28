@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { Suspense, useMemo } from "react"
 import {
   chakra,
   FormControl,
@@ -9,6 +9,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Skeleton,
   Text,
   VStack,
 } from "@chakra-ui/react"
@@ -153,7 +154,9 @@ const PageSettingsModalContent = ({
   })
 
   return (
-    <>
+    <ModalContent key={pageId}>
+      <ModalHeader>Page settings</ModalHeader>
+      <ModalCloseButton />
       <ModalBody>
         {/* NOTE: doing this because typescript doesn't infer that the property has to exist from the assertion on modal */}
         <VStack w="100%" gap="1rem" alignItems="flex-start">
@@ -233,7 +236,7 @@ const PageSettingsModalContent = ({
         </Button>
         <Button onClick={onSubmit}>Publish changes immediately</Button>
       </ModalFooter>
-    </>
+    </ModalContent>
   )
 }
 
@@ -249,16 +252,14 @@ export const PageSettingsModal = () => {
   return (
     <Modal isOpen={!!pageSettingsModalState?.pageId} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Page settings</ModalHeader>
-        <ModalCloseButton />
-        {pageSettingsModalState?.pageId && (
+      {pageSettingsModalState?.pageId && (
+        <Suspense fallback={<Skeleton />}>
           <PageSettingsModalContent
             onClose={onClose}
             {...pageSettingsModalState}
           />
-        )}
-      </ModalContent>
+        </Suspense>
+      )}
     </Modal>
   )
 }
