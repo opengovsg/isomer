@@ -15,7 +15,7 @@ import { Button, IconButton } from "@opengovsg/design-system-react"
 import { omit } from "lodash"
 import { BiTrash } from "react-icons/bi"
 
-import type { LinkTypes } from "../../../LinkEditor/constants"
+import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
 import { LinkEditorModal } from "~/components/PageEditor/LinkEditorModal"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getResourceIdFromReferenceLink } from "~/utils/link"
@@ -28,14 +28,13 @@ export const jsonFormsRefControlTester: RankedTester = rankWith(
   and(schemaMatches((schema) => schema.format === "ref")),
 )
 
-const parseHref = (
-  href: string,
-  pageType: Exclude<LinkTypes, typeof LINK_TYPES.Email | typeof LINK_TYPES.Page>,
-) => {
-  if (pageType === LINK_TYPES.File) {
-    return href.split("/").pop()
+const parseHref = (href: string, pageType: LinkTypesWithHrefFormat) => {
+  switch (pageType) {
+    case LINK_TYPES.File:
+      return href.split("/").pop()
+    default:
+      return href
   }
-  return href
 }
 
 const SuspendableLabel = ({ resourceId }: { resourceId: string }) => {
@@ -57,7 +56,10 @@ export function JsonFormsRefControl({
   const dataString = data && typeof data === "string" ? data : ""
   const { isOpen, onOpen, onClose } = useDisclosure()
   const pageType = getLinkHrefType(dataString)
-  const displayedHref = parseHref(dataString, pageType)
+  const displayedHref = parseHref(
+    dataString,
+    pageType as LinkTypesWithHrefFormat,
+  )
 
   return (
     <>
