@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import { Flex, Spacer, Text, VStack } from "@chakra-ui/react"
+import { Box, Flex, Spacer, Text, VStack } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { LAYOUT_PAGE_MAP } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
@@ -58,33 +58,43 @@ const InnerDrawer = () => {
     })
 
   return (
-    <VStack gap="1.5rem" p="1.5rem" h="full">
-      <Flex flexDir="column" alignItems="flex-start" w="full">
-        <Text as="h6" textStyle="h6">
-          Edit collection item
-        </Text>
-      </Flex>
-      <Flex flexDir="column" alignItems="start" w="full">
-        <FormBuilder<Static<typeof schema>>
-          schema={schema}
-          validateFn={validateFn}
-          data={data}
-          handleChange={(data) =>
-            setLinkAtom((oldData) => ({ ...oldData, ...data }))
-          }
-        />
-      </Flex>
-      <Spacer />
-      <Button
+    <Flex flexDir="column" position="relative" h="100%" w="100%">
+      <VStack gap="1.5rem" p="1.5rem" h="full">
+        <Flex flexDir="column" alignItems="flex-start" w="full">
+          <Text as="h6" textStyle="h6">
+            Edit collection item
+          </Text>
+        </Flex>
+        <Flex flexDir="column" alignItems="start" w="full">
+          <FormBuilder<Static<typeof schema>>
+            schema={schema}
+            validateFn={validateFn}
+            data={data}
+            handleChange={(data) =>
+              setLinkAtom((oldData) => ({ ...oldData, ...data }))
+            }
+          />
+        </Flex>
+        <Spacer />
+      </VStack>
+      <Box
         w="full"
-        alignSelf="flex-start"
-        onClick={() => mutate({ siteId, linkId, ...data })}
-        isDisabled={!isEmpty(errors) || !data.ref}
-        isLoading={isLoading}
+        bgColor="base.canvas.default"
+        boxShadow="md"
+        py="1.5rem"
+        px="2rem"
       >
-        Save
-      </Button>
-    </VStack>
+        <Button
+          w="full"
+          alignSelf="flex-start"
+          onClick={() => mutate({ siteId, linkId, ...data })}
+          isDisabled={!isEmpty(errors) || !data.ref}
+          isLoading={isLoading}
+        >
+          Save
+        </Button>
+      </Box>
+    </Flex>
   )
 }
 
