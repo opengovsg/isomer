@@ -160,6 +160,26 @@ const PageSettingsModalContent = ({
       <ModalBody>
         {/* NOTE: doing this because typescript doesn't infer that the property has to exist from the assertion on modal */}
         <VStack w="100%" gap="1rem" alignItems="flex-start">
+          <FormControl isRequired isInvalid={!!errors.title}>
+            <FormLabel
+              description="Edit this if
+                you want to show a different title on search engines."
+            >
+              Page title
+            </FormLabel>
+            <Input
+              w="100%"
+              noOfLines={1}
+              maxLength={MAX_TITLE_LENGTH}
+              {...register("title")}
+              mt="0.5rem"
+            />
+            <FormHelperText pt="0.5rem">
+              {MAX_TITLE_LENGTH - title.length} characters left
+            </FormHelperText>
+            <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
+          </FormControl>
+
           <FormControl isRequired isInvalid={!!errors.permalink}>
             <FormLabel>Page URL</FormLabel>
             <Controller
@@ -189,7 +209,7 @@ const PageSettingsModalContent = ({
               variant="info-secondary"
               size="sm"
             >
-              <Text noOfLines={1} textStyle="subhead-2">
+              <Text textStyle="subhead-2" overflow="hidden">
                 <chakra.span color="base.content.medium">
                   {permalinksToRender.parentPermalinks}
                 </chakra.span>
@@ -202,30 +222,9 @@ const PageSettingsModalContent = ({
             <FormErrorMessage>{errors.permalink?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isRequired isInvalid={!!errors.title}>
-            <FormLabel
-              description="Edit this if
-                you want to show a different title on search engines."
-            >
-              Page title
-            </FormLabel>
-            <Input
-              w="100%"
-              noOfLines={1}
-              maxLength={MAX_TITLE_LENGTH}
-              {...register("title")}
-              mt="0.5rem"
-            />
-            <FormHelperText pt="0.5rem">
-              {MAX_TITLE_LENGTH - title.length} characters left
-            </FormHelperText>
-            <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
-          </FormControl>
-
           <Infobox variant="warning">
-            Changes to your page title, URL, and meta description will get
-            published immediately. If you don't want to publish this data, make
-            this change later.
+            Changes to your page title and URL will get published immediately.
+            If you don't want to publish them, make this change later.
           </Infobox>
         </VStack>
       </ModalBody>
