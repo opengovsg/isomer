@@ -46,6 +46,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+      await utils.page.readPage.invalidate({ pageId, siteId })
     },
   })
 

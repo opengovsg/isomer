@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
@@ -60,7 +61,7 @@ export const PublishedState: Story = {
     msw: {
       handlers: [
         pageHandlers.readPage.article({
-          state: "Published",
+          state: ResourceState.Published,
           draftBlobId: null,
         }),
         ...COMMON_HANDLERS,

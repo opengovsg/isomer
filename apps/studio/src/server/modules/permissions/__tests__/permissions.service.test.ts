@@ -1,7 +1,7 @@
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 
-import type { RoleType } from "../../database"
 import type { ResourceAbility } from "../permissions.type"
+import { RoleType } from "../../database"
 import { CRUD_ACTIONS } from "../permissions.type"
 import { buildPermissionsForResource } from "../permissions.util"
 
@@ -14,7 +14,7 @@ const buildPermissions = (role: RoleType) => {
 describe("permissions.service", () => {
   it("should allow editors to perform CRUD actions on non root pages", () => {
     // Arrange
-    const perms = buildPermissions("Editor")
+    const perms = buildPermissions(RoleType.Editor)
     const expected = true
     const page = { parentId: "2" }
 
@@ -31,7 +31,7 @@ describe("permissions.service", () => {
     // Arrange
     const actions = ["update", "read"] as const
     const rootPage = { parentId: null }
-    const perms = buildPermissions("Editor")
+    const perms = buildPermissions(RoleType.Editor)
     const expected = true
 
     // Act
@@ -47,7 +47,7 @@ describe("permissions.service", () => {
     // Arrange
     const actions = ["delete", "create"] as const
     const rootPage = { parentId: null }
-    const perms = buildPermissions("Editor")
+    const perms = buildPermissions(RoleType.Editor)
     const expected = false
 
     // Act
@@ -63,7 +63,7 @@ describe("permissions.service", () => {
     // Arrange
     const actions = ["delete", "create"] as const
     const rootPage = { parentId: null }
-    const perms = buildPermissions("Admin")
+    const perms = buildPermissions(RoleType.Admin)
     const expected = true
 
     // Act
@@ -82,7 +82,7 @@ describe("permissions.service", () => {
     const expected = true
     // NOTE: order is important here because we want to make sure that
     // the later role's permissions don't overwrite the earlier one
-    const roles = ["Admin", "Editor"] as const
+    const roles = [RoleType.Admin, RoleType.Editor] as const
     const builder = new AbilityBuilder<ResourceAbility>(createMongoAbility)
     roles.forEach((role) => buildPermissionsForResource(role, builder))
     const perms = builder.build({ detectSubjectType: () => "Resource" })
@@ -101,7 +101,7 @@ describe("permissions.service", () => {
     const from = { parentId: "2" }
     const to = { parentId: "3" }
     const expected = true
-    const perms = buildPermissions("Editor")
+    const perms = buildPermissions(RoleType.Editor)
 
     // Act
     const canMoveFrom = perms.can("move", from)
@@ -117,7 +117,7 @@ describe("permissions.service", () => {
     const from = { parentId: null }
     const to = { parentId: "3" }
     const expected = true
-    const perms = buildPermissions("Editor")
+    const perms = buildPermissions(RoleType.Editor)
 
     // Act
     const canMoveFrom = perms.can("move", from)
@@ -133,7 +133,7 @@ describe("permissions.service", () => {
     const from = { parentId: "2" }
     const to = { parentId: null }
     const expected = true
-    const perms = buildPermissions("Editor")
+    const perms = buildPermissions(RoleType.Editor)
 
     // Act
     const canMoveFrom = perms.can("move", from)

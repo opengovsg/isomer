@@ -2,6 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { z } from "zod"
 import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 import { omit, pick } from "lodash"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -635,7 +636,7 @@ describe("page.router", async () => {
       // Arrange
       const { page: publishedPageToUpdate } = await setupPageResource({
         resourceType: "Page",
-        state: "Published",
+        state: ResourceState.Published,
         userId: session.userId,
       })
       await setupAdminPermissions({
