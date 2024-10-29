@@ -1,7 +1,6 @@
 import * as fs from "fs"
 import * as path from "path"
 import { performance } from "perf_hooks"
-import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import * as dotenv from "dotenv"
 import { Client } from "pg"
 
@@ -111,7 +110,7 @@ async function main() {
           title: resource.title,
           permalink: `/${getConvertedPermalink(resource.fullPermalink)}`,
           lastModified: new Date().toISOString(), // TODO: Update to updated_at column
-          layout: resource.content.layout || ISOMER_PAGE_LAYOUTS.Content,
+          layout: resource.content.layout || "content",
           summary:
             (Array.isArray(resource.content.page.contentPageHeader?.summary)
               ? resource.content.page.contentPageHeader.summary.join(" ")
@@ -147,7 +146,7 @@ async function main() {
       title: "Home",
       permalink: "/",
       lastModified: new Date().toISOString(),
-      layout: ISOMER_PAGE_LAYOUTS.Homepage,
+      layout: "homepage",
       summary: "Home page",
     }
 
@@ -257,7 +256,7 @@ function generateSitemapTree(
         title,
         permalink: `${pathPrefix.length === 1 ? "" : pathPrefix}/${danglingDirectory}`,
         lastModified: new Date().toISOString(),
-        layout: ISOMER_PAGE_LAYOUTS.Index,
+        layout: "index",
         summary: `Pages in ${title}`,
       }
     })

@@ -1,5 +1,3 @@
-import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
-
 const fs = require("fs").promises
 const path = require("path")
 
@@ -75,7 +73,7 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
     image: schemaData.page.image,
   }
 
-  if (schemaData.layout === ISOMER_PAGE_LAYOUTS.File) {
+  if (schemaData.layout === "file") {
     const refFilePath = path.join(__dirname, "../public", schemaData.page.ref)
     const refFileStats = await getDirectoryItemStats(refFilePath)
 
@@ -93,7 +91,7 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
     }
   }
 
-  if (schemaData.layout === ISOMER_PAGE_LAYOUTS.Link) {
+  if (schemaData.layout === "link") {
     return {
       ...siteMapEntry,
       ref: schemaData.page.ref,
@@ -136,7 +134,7 @@ const processDanglingDirectory = async (fullPath, relativePath, name) => {
   const pageName = name.replace(/-/g, " ")
   const title = pageName.charAt(0).toUpperCase() + pageName.slice(1)
   const summary = `Pages in ${title}`
-  const layout = ISOMER_PAGE_LAYOUTS.Index
+  const layout = "index"
 
   await fs.writeFile(
     path.join(fullPath + ".json"),
