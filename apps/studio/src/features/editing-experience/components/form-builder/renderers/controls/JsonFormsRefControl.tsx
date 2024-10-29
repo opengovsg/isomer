@@ -30,7 +30,7 @@ export const jsonFormsRefControlTester: RankedTester = rankWith(
 
 const parseHref = (
   href: string,
-  pageType: Omit<LinkTypes, typeof LINK_TYPES.Email | typeof LINK_TYPES.Page>,
+  pageType: Exclude<LinkTypes, typeof LINK_TYPES.Email | typeof LINK_TYPES.Page>,
 ) => {
   if (pageType === LINK_TYPES.File) {
     return href.split("/").pop()
