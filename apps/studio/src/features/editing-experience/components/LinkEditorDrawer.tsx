@@ -58,7 +58,7 @@ const InnerDrawer = () => {
     })
 
   return (
-    <Flex flexDir="column" position="relative" h="100%" w="100%">
+    <>
       <VStack gap="1.5rem" p="1.5rem" h="full">
         <Flex flexDir="column" alignItems="flex-start" w="full">
           <Text as="h6" textStyle="h6">
@@ -83,6 +83,7 @@ const InnerDrawer = () => {
         boxShadow="md"
         py="1.5rem"
         px="2rem"
+        pos="relative"
       >
         <Button
           w="full"
@@ -94,7 +95,7 @@ const InnerDrawer = () => {
           Save
         </Button>
       </Box>
-    </Flex>
+    </>
   )
 }
 
