@@ -1,8 +1,8 @@
-import { ResourceState } from "~prisma/generated/generatedEnums"
+import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
 
-import type { ResourceType } from "~server/db"
+import type { ResourceType } from "~prisma/generated/generatedEnums"
 
 export const setupAdminPermissions = async ({
   userId,
@@ -18,7 +18,7 @@ export const setupAdminPermissions = async ({
     .values({
       userId: String(userId),
       siteId,
-      role: "Admin",
+      role: RoleType.Admin,
       resourceId: null,
     })
     .execute()
