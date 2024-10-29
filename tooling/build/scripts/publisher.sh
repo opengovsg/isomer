@@ -106,7 +106,12 @@ ls -al
 # Publish to S3
 echo "Publishing to S3..."
 start_time=$(date +%s)
-aws s3 sync . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --delete --no-progress
+
+# Set all files to have 10 minutes of cache, except for those in the _next folder
+aws s3 sync . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --delete --no-progress --cache-control "max-age=600" --exclude "_next/*"
+
+# Set all files in the _next folder to have 1 day of cache
+aws s3 sync _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=86400"
 
 # Update CloudFront origin path
 echo "Updating CloudFront origin path..."
@@ -119,6 +124,3 @@ echo "ETag: $ETag"
 jq '.Distribution.DistributionConfig' distribution.json > distribution-new.json
 jq ".Origins.Items[0].OriginPath = \"/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest\"" distribution-new.json > distribution-config.json
 aws cloudfront update-distribution --id $CLOUDFRONT_DISTRIBUTION_ID --distribution-config file://distribution-config.json --if-match $ETag
-
-# Invalidate CloudFront cache
-aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
