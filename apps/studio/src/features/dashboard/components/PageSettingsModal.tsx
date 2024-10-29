@@ -161,10 +161,7 @@ const PageSettingsModalContent = ({
         {/* NOTE: doing this because typescript doesn't infer that the property has to exist from the assertion on modal */}
         <VStack w="100%" gap="1rem" alignItems="flex-start">
           <FormControl isRequired isInvalid={!!errors.title}>
-            <FormLabel
-              description="Edit this if
-                you want to show a different title on search engines."
-            >
+            <FormLabel description="Title should be descriptive">
               Page title
             </FormLabel>
             <Input
