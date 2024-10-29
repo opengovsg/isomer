@@ -14,7 +14,7 @@ export const EditLink = () => {
   return (
     <Grid
       h="full"
-      w="100vw"
+      w="100%"
       templateColumns="repeat(3, 1fr)"
       gap={0}
       maxH="calc(100vh - 57px)"

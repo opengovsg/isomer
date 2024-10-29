@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import { Box, Flex, Spacer, Text, VStack } from "@chakra-ui/react"
+import { Box, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { LAYOUT_PAGE_MAP } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
@@ -58,8 +58,8 @@ const InnerDrawer = () => {
     })
 
   return (
-    <>
-      <VStack gap="1.5rem" p="1.5rem" h="full">
+    <Flex flexDir="column" position="relative" h="100%" w="100%">
+      <VStack h="full" gap="1.5rem" p="1.5rem" overflow="auto">
         <Flex flexDir="column" alignItems="flex-start" w="full">
           <Text as="h6" textStyle="h6">
             Edit collection item
@@ -75,7 +75,6 @@ const InnerDrawer = () => {
             }
           />
         </Flex>
-        <Spacer />
       </VStack>
       <Box
         w="full"
@@ -95,7 +94,7 @@ const InnerDrawer = () => {
           Save
         </Button>
       </Box>
-    </>
+    </Flex>
   )
 }
 
