@@ -35,3 +35,6 @@ export type LinkTypeMapping<T extends string = string> = Record<
     label: Capitalize<T>
   }
 >
+export type LinkTypesWithHrefFormat =
+  | typeof LINK_TYPES.File
+  | typeof LINK_TYPES.External
