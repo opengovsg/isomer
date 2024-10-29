@@ -1,8 +1,10 @@
-import { ResourceType } from "@prisma/client"
+import {
+  ResourceState,
+  ResourceType,
+  RoleType,
+} from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
-
-import type { ResourceState } from "~server/db"
 
 export const setupAdminPermissions = async ({
   userId,
@@ -18,7 +20,7 @@ export const setupAdminPermissions = async ({
     .values({
       userId: String(userId),
       siteId,
-      role: "Admin",
+      role: RoleType.Admin,
       resourceId: null,
     })
     .execute()
@@ -191,7 +193,7 @@ export const setupPageResource = async ({
   siteId: siteIdProp,
   blobId: blobIdProp,
   resourceType,
-  state = "Draft",
+  state = ResourceState.Draft,
   userId,
   permalink,
   parentId,
@@ -224,7 +226,7 @@ export const setupPageResource = async ({
     .returningAll()
     .executeTakeFirstOrThrow()
 
-  if (state === "Published" && userId) {
+  if (state === ResourceState.Published && userId) {
     const version = await db
       .insertInto("Version")
       .values({
@@ -277,7 +279,7 @@ export const setupFolder = async ({
       parentId,
       title,
       draftBlobId: null,
-      state: "Draft",
+      state: ResourceState.Draft,
       type: ResourceType.Folder,
       publishedVersionId: null,
     })

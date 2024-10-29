@@ -51,6 +51,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
   const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+      await utils.page.readPage.invalidate({ pageId, siteId })
       toast({
         title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
         ...BRIEF_TOAST_SETTINGS,
