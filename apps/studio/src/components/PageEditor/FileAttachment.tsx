@@ -15,6 +15,12 @@ interface FileAttachmentProps {
 
 type FileRejections = AttachmentProps<false>["rejections"]
 
+const ACCEPTED_FILE_TYPES: string[] = ["application/pdf"]
+const ACCEPTED_FILE_TYPES_MESSAGE = ACCEPTED_FILE_TYPES.map((filetype) => {
+  const extension = filetype.split("/").at(-1)
+  return extension ? `*.${extension}` : ""
+}).join(", ")
+
 export const FileAttachment = ({
   setHref,
   siteId,
@@ -59,7 +65,7 @@ export const FileAttachment = ({
             )
           }}
           maxSize={MAX_PDF_FILE_SIZE_BYTES}
-          accept={["application/pdf"]}
+          accept={ACCEPTED_FILE_TYPES}
           onFileValidation={(file) => {
             const parseResult = getPresignedPutUrlSchema
               .pick({ fileName: true })
@@ -76,6 +82,8 @@ export const FileAttachment = ({
       </Skeleton>
       <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
         {`Maximum file size: ${MAX_PDF_FILE_SIZE_BYTES / 1000000} MB`}
+        <br />
+        {`Accepted file types: ${ACCEPTED_FILE_TYPES_MESSAGE}`}
       </Text>
     </FormControl>
   )
