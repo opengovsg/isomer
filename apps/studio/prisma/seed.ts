@@ -278,7 +278,7 @@ async function main() {
           .returning(["id", "name"])
           .executeTakeFirstOrThrow()
 
-        const role = ISOMER_ADMINS.includes(user.name)
+        const role = [...ISOMER_ADMINS, ...ISOMER_MIGRATORS].includes(user.name)
           ? RoleType.Admin
           : user.name === EDITOR_USER
             ? RoleType.Editor
