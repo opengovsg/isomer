@@ -1,4 +1,5 @@
 import type { DelayMode } from "msw"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { delay } from "msw"
 
 import type { getPageById } from "~/server/modules/resource/resource.service"
@@ -66,6 +67,19 @@ const pageListQuery = (wait?: DelayMode | number) => {
 }
 
 export const pageHandlers = {
+  updateSettings: {
+    collection: () => {
+      trpcMsw.page.updateSettings.mutation(() => {
+        return {
+          id: "1",
+          title: "Press Releases",
+          permalink: "/collection/page",
+          draftBlobId: "1",
+          type: ResourceType.CollectionPage,
+        }
+      })
+    },
+  },
   countWithoutRoot: {
     default: () =>
       trpcMsw.resource.countWithoutRoot.query(() => {
