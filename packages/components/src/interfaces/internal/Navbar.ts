@@ -16,22 +16,20 @@ export interface NavbarItem {
   referenceLinkHref?: string
 }
 
-export interface NavbarProps {
-  logoUrl: string
-  logoAlt: string
+export interface BaseNavbarProps {
   layout: IsomerPageLayoutType
   search?: LocalSearchProps | SearchSGInputBoxProps
   items: NavbarItem[]
-  site: IsomerSiteProps
   LinkComponent?: LinkComponentType
   ScriptComponent?: ScriptComponentType
 }
 
-export interface NavbarClientProps {
-  layout: IsomerPageLayoutType
-  search?: LocalSearchProps | SearchSGInputBoxProps
-  items: NavbarItem[]
+export interface NavbarProps extends BaseNavbarProps {
+  logoUrl: string
+  logoAlt: string
+  site: IsomerSiteProps
+}
+
+export interface NavbarClientProps extends BaseNavbarProps {
   imageClientProps: ImageClientProps
-  LinkComponent?: LinkComponentType
-  ScriptComponent?: ScriptComponentType
 }
