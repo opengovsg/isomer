@@ -2,16 +2,12 @@ import { BiChevronDown } from "react-icons/bi"
 
 import type { NavbarItem, NavbarProps } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
-import {
-  focusVisibleHighlight,
-  getReferenceLinkHref,
-  isExternalUrl,
-} from "~/utils"
+import { focusVisibleHighlight, isExternalUrl } from "~/utils"
 import { Link } from "../../Link"
 
 interface NavItemAccordionProps
   extends NavbarItem,
-    Pick<NavbarProps, "site" | "LinkComponent"> {
+    Pick<NavbarProps, "LinkComponent"> {
   isOpen: boolean
   onClick: () => void
   index: number
@@ -41,11 +37,11 @@ const { item, chevron, container, nestedItem, sublist } = mobileItemStyles()
 export const MobileNavItemAccordion = ({
   name,
   url,
+  referenceLinkHref,
   items,
   isOpen,
   onClick,
   index,
-  site,
   LinkComponent,
 }: NavItemAccordionProps) => {
   if (!items || items.length === 0) {
@@ -57,7 +53,7 @@ export const MobileNavItemAccordion = ({
           className={item({
             className: focusVisibleHighlight(),
           })}
-          href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+          href={referenceLinkHref}
         >
           {name}
         </Link>
@@ -101,11 +97,7 @@ export const MobileNavItemAccordion = ({
                 >
                   <Link
                     LinkComponent={LinkComponent}
-                    href={getReferenceLinkHref(
-                      subItem.url,
-                      site.siteMap,
-                      site.assetsBaseUrl,
-                    )}
+                    href={subItem.referenceLinkHref}
                     isExternal={isExternal}
                     className={nestedItem({
                       className: focusVisibleHighlight(),

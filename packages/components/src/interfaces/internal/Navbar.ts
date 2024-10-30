@@ -1,5 +1,6 @@
 import type { LocalSearchProps } from "./LocalSearchInputBox"
 import type { SearchSGInputBoxProps } from "./SearchSGInputBox"
+import type { ImageClientProps } from "~/templates/next/components/complex/Image"
 import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
@@ -12,6 +13,7 @@ export interface NavbarItem {
   url: string
   description?: string
   items?: Omit<NavbarItem, "items">[]
+  referenceLinkHref?: string
 }
 
 export interface NavbarProps {
@@ -21,6 +23,15 @@ export interface NavbarProps {
   search?: LocalSearchProps | SearchSGInputBoxProps
   items: NavbarItem[]
   site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
+  ScriptComponent?: ScriptComponentType
+}
+
+export interface NavbarClientProps {
+  layout: IsomerPageLayoutType
+  search?: LocalSearchProps | SearchSGInputBoxProps
+  items: NavbarItem[]
+  imageClientProps: ImageClientProps
   LinkComponent?: LinkComponentType
   ScriptComponent?: ScriptComponentType
 }

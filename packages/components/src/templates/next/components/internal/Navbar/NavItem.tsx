@@ -9,13 +9,8 @@ import type {
   NavbarItem as BaseNavbarItemProps,
   NavbarProps,
 } from "~/interfaces/internal/Navbar"
-import type { IsomerSiteProps } from "~/types"
 import { tv } from "~/lib/tv"
-import {
-  getReferenceLinkHref,
-  groupFocusVisibleHighlight,
-  isExternalUrl,
-} from "~/utils"
+import { groupFocusVisibleHighlight, isExternalUrl } from "~/utils"
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 
@@ -25,7 +20,6 @@ interface NavbarItemProps
   isOpen: boolean
   onClick: () => void
   onCloseMegamenu: () => void
-  site: IsomerSiteProps
 }
 
 const navbarItemStyles = tv({
@@ -54,11 +48,11 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
       LinkComponent,
       name,
       url,
+      referenceLinkHref,
       description,
       isOpen,
       onClick,
       onCloseMegamenu,
-      site,
     },
     ref,
   ): JSX.Element => {
@@ -69,7 +63,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
             LinkComponent={LinkComponent}
             isExternal={isExternalUrl(url)}
             showExternalIcon={isExternalUrl(url)}
-            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            href={referenceLinkHref}
             className={item({ isOpen })}
           >
             <span className={groupFocusVisibleHighlight()}>{name}</span>
@@ -91,7 +85,6 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
             items={items}
             LinkComponent={LinkComponent}
             onCloseMegamenu={onCloseMegamenu}
-            site={site}
           />
         )}
       </li>
@@ -105,14 +98,12 @@ const Megamenu = ({
   onCloseMegamenu,
   items,
   LinkComponent,
-  site,
 }: {
   name: string
   description?: string
   items: BaseNavbarItemProps[]
   LinkComponent: NavbarProps["LinkComponent"]
   onCloseMegamenu: () => void
-  site: IsomerSiteProps
 }) => {
   useScrollLock()
 
@@ -156,11 +147,7 @@ const Megamenu = ({
                         isExternal={isExternal}
                         showExternalIcon={isExternal}
                         isWithFocusVisibleHighlight
-                        href={getReferenceLinkHref(
-                          subItem.url,
-                          site.siteMap,
-                          site.assetsBaseUrl,
-                        )}
+                        href={subItem.referenceLinkHref}
                         className="group prose-label-md-medium inline-flex w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
                       >
                         {subItem.name}
