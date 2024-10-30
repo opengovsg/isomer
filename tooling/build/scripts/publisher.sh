@@ -11,9 +11,9 @@ calculate_duration() {
   echo "Time taken: $duration seconds"
 }
 
-# Use the main branch unless one was provided in the env var
+# Use the latest release tag unless one was provided in the env var
 if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
-  ISOMER_BUILD_REPO_BRANCH="main"
+  ISOMER_BUILD_REPO_BRANCH=$(curl https://api.github.com/repos/opengovsg/isomer/releases/latest | jq -r '.tag_name')
 fi
 
 # Cloning the repository
