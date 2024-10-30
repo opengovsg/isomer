@@ -16,7 +16,7 @@ export type { LinkProps } from "./Link"
 export type { LocalSearchInputBoxProps } from "./LocalSearchInputBox"
 export type { MastheadProps } from "./Masthead"
 export type { NavbarProps } from "./Navbar"
-export type { NotificationProps } from "./Notification"
+export type { NotificationProps, NotificationClientProps } from "./Notification"
 export type { PillProps } from "./Pill"
 export type { SearchProps } from "./Search"
 export {
