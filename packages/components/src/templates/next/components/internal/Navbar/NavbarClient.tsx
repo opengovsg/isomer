@@ -4,7 +4,7 @@ import { useCallback, useLayoutEffect, useRef, useState } from "react"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useResizeObserver } from "usehooks-ts"
 
-import type { NavbarClientProps } from "~/interfaces/internal/Navbar"
+import type { NavbarClientProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { ImageClient } from "../../complex/Image"
 import { LocalSearchInputBox, SearchSGInputBox } from "../../internal"
