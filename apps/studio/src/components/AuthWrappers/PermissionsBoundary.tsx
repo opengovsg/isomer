@@ -56,6 +56,12 @@ const ERROR_COMPONENT_PROPS: Record<ResourceType, ErrorProps> = {
       "To have access, ask your site admins to assign this folder to you",
     buttonText: "Back to My Sites",
   },
+  PageOrder: {
+    title: "You don't have access to edit the page order of this folder.",
+    description:
+      "To have access, ask your site admins to assign this folder to you",
+    buttonText: "Back to My Sites",
+  },
 } as const
 
 interface PermissionsBoundaryProps {

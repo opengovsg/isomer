@@ -4,7 +4,14 @@ import NextLink from "next/link"
 import { HStack, Icon, Text, VStack } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { BiData, BiFile, BiFolder, BiHome, BiLink } from "react-icons/bi"
+import {
+  BiData,
+  BiFile,
+  BiFolder,
+  BiHome,
+  BiLink,
+  BiSort,
+} from "react-icons/bi"
 
 import type { ResourceTableData } from "./types"
 import { getLinkToResource } from "~/utils/resource"
@@ -40,6 +47,8 @@ export const TitleCell = ({
         return BiFile
       case ResourceType.CollectionLink:
         return BiLink
+      case "PageOrder":
+        return BiSort
     }
   }, [type])
 

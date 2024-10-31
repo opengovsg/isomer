@@ -27,6 +27,7 @@ const SITE_ID = Number(process.env.SITE_ID)
 // Guaranteed to not be present in the database because we start from 1
 const DANGLING_DIRECTORY_PAGE_ID = "-1"
 const INDEX_PAGE_PERMALINK = "_index"
+const PAGE_ORDER_PERMALINK = "_pages"
 const PAGE_RESOURCE_TYPES = [
   "Page",
   "CollectionPage",
@@ -45,7 +46,9 @@ const getConvertedPermalink = (fullPermalink: string) => {
   // we prohibit users from using `_` as a character
   const fullPermalinkWithoutIndex = fullPermalink.endsWith(INDEX_PAGE_PERMALINK)
     ? fullPermalink.slice(0, -INDEX_PAGE_PERMALINK.length)
-    : fullPermalink
+    : fullPermalink.endsWith(PAGE_ORDER_PERMALINK)
+      ? fullPermalink.slice(0, -PAGE_ORDER_PERMALINK.length)
+      : fullPermalink
 
   if (fullPermalinkWithoutIndex.endsWith("/")) {
     return fullPermalinkWithoutIndex.slice(0, -1)
@@ -91,7 +94,11 @@ async function main() {
       )
 
       // Ensure the resource is a page (we don't need to write folders)
-      if (PAGE_RESOURCE_TYPES.includes(resource.type) && resource.content) {
+      if (
+        PAGE_RESOURCE_TYPES.includes(resource.type) &&
+        resource.content &&
+        !resource.permalink.endsWith(PAGE_ORDER_PERMALINK)
+      ) {
         // Inject page type and title into content before writing to file
         resource.content.page = {
           ...resource.content.page,
@@ -139,6 +146,8 @@ async function main() {
       }
     }
 
+    logDebug("Sitemap entries:", sitemapEntries)
+
     const rootPage = sitemapEntries.find(
       (entry) => entry.permalink === "/",
     ) || {
@@ -159,7 +168,7 @@ async function main() {
       ),
     }
 
-    logDebug("Intermediate sitemap:", sitemap)
+    logDebug("Intermediate sitemap:", JSON.stringify(sitemap, null, 2))
 
     await processDanglingDirectories(resources, sitemap)
 
@@ -272,9 +281,39 @@ function generateSitemapTree(
   )
   const children = [...existingChildren, ...danglingDirectories]
 
-  children.sort((a, b) =>
-    a.title.localeCompare(b.title, undefined, { numeric: true }),
-  )
+  // Get the page sorting order from the PageOrder resource
+  const pageOrder = resources.find(
+    (resource) =>
+      (resource.type === "PageOrder" ||
+        // TODO: Temporary until the database is migrated with PageOrder resource type
+        resource.permalink === PAGE_ORDER_PERMALINK) &&
+      resource.fullPermalink ===
+        (pathPrefixWithoutLeadingSlash.length === 0
+          ? PAGE_ORDER_PERMALINK
+          : `${pathPrefixWithoutLeadingSlash}/${PAGE_ORDER_PERMALINK}`),
+  )?.content?.pages
+
+  children.sort((a, b) => {
+    const aPermalink = a.permalink.split("/").pop()
+    const bPermalink = b.permalink.split("/").pop()
+
+    if (
+      pageOrder === undefined ||
+      pageOrder.indexOf(aPermalink) === pageOrder.indexOf(bPermalink)
+    ) {
+      return a.title.localeCompare(b.title, undefined, { numeric: true })
+    }
+
+    if (pageOrder.indexOf(aPermalink) === -1) {
+      return 1
+    }
+
+    if (pageOrder.indexOf(bPermalink) === -1) {
+      return -1
+    }
+
+    return pageOrder.indexOf(aPermalink) - pageOrder.indexOf(bPermalink)
+  })
 
   return children.map((child) => ({
     ...child,

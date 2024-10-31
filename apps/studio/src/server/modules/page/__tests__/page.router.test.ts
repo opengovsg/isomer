@@ -273,6 +273,33 @@ describe("page.router", async () => {
       expect(result).toMatchObject(expected)
     })
 
+    it("should return the resource if resource type is PageOrder and exists", async () => {
+      // Arrange
+      const { site, page, blob, navbar, footer } = await setupPageResource({
+        resourceType: "PageOrder",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const expected = {
+        ...pick(page, ["permalink", "title", "type"]),
+        navbar: omit(navbar, ["createdAt", "updatedAt"]),
+        footer: omit(footer, ["createdAt", "updatedAt"]),
+        content: blob.content,
+      }
+
+      // Act
+      const result = await caller.readPageAndBlob({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      expect(result.type).toEqual("PageOrder")
+      expect(result).toMatchObject(expected)
+    })
+
     it("should return 404 if resource type is not a page", async () => {
       // Arrange
       const { site, folder } = await setupFolder()

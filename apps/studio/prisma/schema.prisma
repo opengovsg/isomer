@@ -106,6 +106,7 @@ enum ResourceType {
   CollectionLink // Can only ever be inside collection
   CollectionPage // Can only live inside `Collection` resources
   IndexPage // This denotes the index page of a folder or a collection
+  PageOrder // This denotes the order of pages in a folder
 }
 
 model User {

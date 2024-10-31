@@ -32,6 +32,9 @@ export const useIsActive = (
       return siteProps.folderId === currentResourceId
     case ResourceType.CollectionLink:
       return siteProps.linkId === currentResourceId
+    case "PageOrder":
+      // TODO: Not implemented yet
+      return false
     default:
       const _uncaught: never = type
       throw new Error(`Unhandled case for useIsActive`)

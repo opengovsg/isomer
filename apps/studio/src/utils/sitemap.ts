@@ -25,7 +25,9 @@ const getSitemapTreeFromArray = (
   const children = resources.filter((resource) => {
     if (parentId === null) {
       return (
-        resource.parentId === null && resource.type !== ResourceType.RootPage
+        resource.parentId === null &&
+        resource.type !== ResourceType.RootPage &&
+        resource.type !== ResourceType.PageOrder
       )
     }
     return (
@@ -34,6 +36,7 @@ const getSitemapTreeFromArray = (
     )
   })
 
+  // TODO: Sort the children by the page ordering if the PageOrder resource exists
   return children.map((resource) => {
     const permalink = `${path}${resource.permalink}`
 
