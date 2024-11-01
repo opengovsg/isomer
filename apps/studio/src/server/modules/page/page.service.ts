@@ -25,7 +25,7 @@ export const createDefaultPage = ({
       const articleDefaultPage = {
         layout: "article",
         page: {
-          date: format(new Date(), "dd-MM-yyyy"),
+          date: format(new Date(), "dd/MM/yyyy"),
           category: "Feature Articles",
           articlePageHeader: {
             summary: "This is the page summary",
