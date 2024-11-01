@@ -27,7 +27,7 @@ const SITE_ID = Number(process.env.SITE_ID)
 // Guaranteed to not be present in the database because we start from 1
 const DANGLING_DIRECTORY_PAGE_ID = "-1"
 const INDEX_PAGE_PERMALINK = "_index"
-const PAGE_ORDER_PERMALINK = "_pages"
+const PAGE_ORDER_PERMALINK = "_meta"
 const PAGE_RESOURCE_TYPES = [
   "Page",
   "CollectionPage",
@@ -94,11 +94,7 @@ async function main() {
       )
 
       // Ensure the resource is a page (we don't need to write folders)
-      if (
-        PAGE_RESOURCE_TYPES.includes(resource.type) &&
-        resource.content &&
-        !resource.permalink.endsWith(PAGE_ORDER_PERMALINK)
-      ) {
+      if (PAGE_RESOURCE_TYPES.includes(resource.type) && resource.content) {
         // Inject page type and title into content before writing to file
         resource.content.page = {
           ...resource.content.page,
