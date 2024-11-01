@@ -129,8 +129,8 @@ export const getFullPageById = async (
   return publishedBlob
 }
 
-// There are 4 types of pages this get query supports:
-// Page, CollectionPage, RootPage, IndexPage
+// There are 6 types of pages this get query supports:
+// Page, CollectionPage, RootPage, IndexPage, CollectionLink, FolderMeta
 export const getPageById = (
   db: SafeKysely,
   args: { resourceId: number; siteId: number },
@@ -143,6 +143,7 @@ export const getPageById = (
         eb("type", "=", ResourceType.RootPage),
         eb("type", "=", ResourceType.IndexPage),
         eb("type", "=", ResourceType.CollectionLink),
+        eb("type", "=", ResourceType.FolderMeta),
       ]),
     )
     .select(defaultResourceSelect)
@@ -306,6 +307,7 @@ export const getLocalisedSitemap = async (
           }
           return fb("Resource.parentId", "=", String(resource.parentId))
         })
+        .where("Resource.type", "!=", ResourceType.FolderMeta)
         .select(defaultResourceSelect),
     )
     // Step 3: Combine all the resources in a single array
