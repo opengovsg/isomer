@@ -1,4 +1,5 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useAtomValue } from "jotai"
 
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -25,7 +26,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
   })
 
   const parentPermalink = permalink.split("/").slice(0, -1).join("/")
-  const parentTitle = parent?.title || "Collection"
+  const parentTitle = parent?.title || ResourceType.Collection
 
   const siteMap = {
     id: "root",

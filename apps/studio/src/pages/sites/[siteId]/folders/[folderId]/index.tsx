@@ -10,6 +10,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Breadcrumb, Button, Menu } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useSetAtom } from "jotai"
 import { BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
@@ -248,7 +249,7 @@ const FolderPage: NextPageWithLayout = () => {
 FolderPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
-      resourceType="Folder"
+      resourceType={ResourceType.Folder}
       page={AdminCmsSidebarLayout(page)}
     />
   )

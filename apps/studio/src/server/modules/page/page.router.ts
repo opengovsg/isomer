@@ -285,7 +285,7 @@ export const pageRouter = router({
                 .selectFrom("Resource")
                 .where("Resource.id", "=", String(folderId))
                 .where("Resource.siteId", "=", siteId)
-                .where("Resource.type", "=", "Folder")
+                .where("Resource.type", "=", ResourceType.Folder)
                 .select("Resource.id")
                 .executeTakeFirst()
               if (!folder) {
@@ -350,7 +350,7 @@ export const pageRouter = router({
         .selectFrom("Resource")
         // TODO: Only return sites that the user has access to
         .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "=", "RootPage")
+        .where("Resource.type", "=", ResourceType.RootPage)
         .select(["id", "title", "draftBlobId"])
         .executeTakeFirst()
 
@@ -450,9 +450,9 @@ export const pageRouter = router({
               .where("Resource.id", "=", String(pageId))
               .where("Resource.siteId", "=", siteId)
               .where("Resource.type", "in", [
-                "Page",
-                "CollectionPage",
-                "RootPage",
+                ResourceType.Page,
+                ResourceType.CollectionPage,
+                ResourceType.RootPage,
               ])
               .set({ title, ...settings })
               .returning([

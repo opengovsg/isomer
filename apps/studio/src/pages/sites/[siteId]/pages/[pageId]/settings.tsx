@@ -134,7 +134,10 @@ const PageSettings: NextPageWithLayout = () => {
 
 PageSettings.getLayout = (page) => {
   return (
-    <PermissionsBoundary resourceType="Page" page={PageEditingLayout(page)} />
+    <PermissionsBoundary
+      resourceType={ResourceType.Page}
+      page={PageEditingLayout(page)}
+    />
   )
 }
 

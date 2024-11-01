@@ -9,6 +9,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 
@@ -172,7 +173,7 @@ const SitePage: NextPageWithLayout = () => {
 SitePage.getLayout = (page) => {
   return (
     <PermissionsBoundary
-      resourceType="RootPage"
+      resourceType={ResourceType.RootPage}
       page={AdminCmsSidebarLayout(page)}
     />
   )

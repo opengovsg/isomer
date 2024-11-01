@@ -1,18 +1,18 @@
-import type { ResourceType } from "~prisma/generated/generatedEnums"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 // Gets the Studio URL subpath for a given resource type
 export const getResourceSubpath = (resourceType: ResourceType) => {
   switch (resourceType) {
-    case "RootPage":
-    case "Page":
-    case "IndexPage":
-    case "CollectionPage":
+    case ResourceType.RootPage:
+    case ResourceType.Page:
+    case ResourceType.IndexPage:
+    case ResourceType.CollectionPage:
       return "pages"
-    case "Folder":
+    case ResourceType.Folder:
       return "folders"
-    case "CollectionLink":
+    case ResourceType.CollectionLink:
       return "links"
-    case "Collection":
+    case ResourceType.Collection:
       return "collections"
     default:
       const _: never = resourceType
