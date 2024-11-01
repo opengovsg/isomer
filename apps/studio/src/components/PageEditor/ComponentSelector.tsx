@@ -181,7 +181,7 @@ function ComponentSelector() {
       case ResourceType.IndexPage:
         return []
       case ResourceType.Folder:
-      case ResourceType.PageOrder:
+      case ResourceType.FolderMeta:
         throw new Error(`Unsupported resource type: ${type}`)
       default:
         const exhaustiveCheck: never = type

@@ -273,10 +273,10 @@ describe("page.router", async () => {
       expect(result).toMatchObject(expected)
     })
 
-    it("should return the resource if resource type is PageOrder and exists", async () => {
+    it("should return the resource if resource type is FolderMeta and exists", async () => {
       // Arrange
       const { site, page, blob, navbar, footer } = await setupPageResource({
-        resourceType: "PageOrder",
+        resourceType: "FolderMeta",
       })
       await setupAdminPermissions({
         userId: session.userId ?? undefined,
@@ -296,7 +296,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      expect(result.type).toEqual("PageOrder")
+      expect(result.type).toEqual("FolderMeta")
       expect(result).toMatchObject(expected)
     })
 

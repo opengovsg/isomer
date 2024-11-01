@@ -1,2 +1,2 @@
 -- AlterEnum
-ALTER TYPE "ResourceType" ADD VALUE 'PageOrder';
+ALTER TYPE "ResourceType" ADD VALUE 'FolderMeta';

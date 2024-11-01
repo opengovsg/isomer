@@ -281,17 +281,15 @@ function generateSitemapTree(
   )
   const children = [...existingChildren, ...danglingDirectories]
 
-  // Get the page sorting order from the PageOrder resource
+  // Get the page sorting order from the FolderMeta resource
   const pageOrder = resources.find(
     (resource) =>
-      (resource.type === "PageOrder" ||
-        // TODO: Temporary until the database is migrated with PageOrder resource type
-        resource.permalink === PAGE_ORDER_PERMALINK) &&
+      resource.type === "FolderMeta" &&
       resource.fullPermalink ===
         (pathPrefixWithoutLeadingSlash.length === 0
           ? PAGE_ORDER_PERMALINK
           : `${pathPrefixWithoutLeadingSlash}/${PAGE_ORDER_PERMALINK}`),
-  )?.content?.pages
+  )?.content?.order
 
   children.sort((a, b) => {
     const aPermalink = a.permalink.split("/").pop()

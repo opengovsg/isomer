@@ -32,7 +32,7 @@ export const useIsActive = (
       return siteProps.folderId === currentResourceId
     case ResourceType.CollectionLink:
       return siteProps.linkId === currentResourceId
-    case "PageOrder":
+    case ResourceType.FolderMeta:
       // TODO: Not implemented yet
       return false
     default:

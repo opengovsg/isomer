@@ -47,7 +47,7 @@ export const TitleCell = ({
         return BiFile
       case ResourceType.CollectionLink:
         return BiLink
-      case "PageOrder":
+      case ResourceType.FolderMeta:
         return BiSort
     }
   }, [type])

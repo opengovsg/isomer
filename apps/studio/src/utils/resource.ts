@@ -14,7 +14,7 @@ export const getResourceSubpath = (resourceType: ResourceType) => {
       return "links"
     case ResourceType.Collection:
       return "collections"
-    case "PageOrder":
+    case ResourceType.FolderMeta:
       // TODO: Not implemented yet
       return ""
     default:

@@ -180,7 +180,7 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
   const pageOrderData = await getSchemaJson(pageOrderFilePath)
 
   if (pageOrderData) {
-    const childPages = pageOrderData["pages"]
+    const childPages = pageOrderData["order"]
 
     const childEntries = await Promise.all(
       childPages.map((child) => {

@@ -17,5 +17,5 @@ export const ICON_MAPPINGS: Record<ResourceType, IconType> = {
   [ResourceType.CollectionLink]: BiLink,
   [ResourceType.RootPage]: BiHomeAlt,
   [ResourceType.IndexPage]: BiFile,
-  [ResourceType.PageOrder]: BiSort,
+  [ResourceType.FolderMeta]: BiSort,
 }
