@@ -24,7 +24,10 @@ import { TableHeader } from "@tiptap/extension-table-header"
 import { TableRow } from "@tiptap/extension-table-row"
 import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
+import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { textblockTypeInputRule, useEditor } from "@tiptap/react"
+
+import { getHtmlWithRelativeReferenceLinks } from "../utils"
 
 const HEADING_LEVELS: Level[] = [2, 3, 4, 5]
 
@@ -34,7 +37,28 @@ export interface BaseEditorProps {
 }
 
 const BASE_EXTENSIONS: Extensions = [
-  Link.configure({
+  Link.extend({
+    addProseMirrorPlugins() {
+      return [
+        // NOTE: This plugin is used to transform links inside the HTML content
+        // copied by the user from the preview, as browsers will automatically
+        // transform relative links (in the form of [resource:siteId:resourceId])
+        // into absolute links:
+        // https://studio.isomer.gov.sg/sites/1/pages/[resource:siteId:resourceId]
+        // This plugin will transform the absolute links back into the relative
+        // links, so that the original link is preserved in the editor.
+        new Plugin({
+          key: new PluginKey("transformReferenceLinks"),
+          props: {
+            transformPastedHTML(html, _) {
+              return getHtmlWithRelativeReferenceLinks(html)
+            },
+          },
+        }),
+        ...(this.parent?.() ?? []),
+      ]
+    },
+  }).configure({
     HTMLAttributes: {
       rel: "",
       target: "_self",
