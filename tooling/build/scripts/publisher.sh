@@ -16,6 +16,22 @@ if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   ISOMER_BUILD_REPO_BRANCH=$(curl https://api.github.com/repos/opengovsg/isomer/releases/latest | jq -r '.tag_name')
 fi
 
+# Define S3 cache path
+NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/cache/$ISOMER_BUILD_REPO_BRANCH/node_modules.tar.gz"
+
+# Try to fetch cached node_modules from S3
+echo "Fetching cached node_modules..."
+start_time=$(date +%s)
+aws s3 cp $NODE_MODULES_CACHE_PATH node_modules.tar.gz || true
+if [ -f "node_modules.tar.gz" ]; then
+  tar -xzf node_modules.tar.gz
+  rm node_modules.tar.gz
+  echo "Using cached node_modules"
+else
+  echo "No cached node_modules found"
+fi
+calculate_duration $start_time
+
 # Cloning the repository
 echo "Cloning repository..."
 start_time=$(date +%s)
@@ -37,10 +53,22 @@ echo $(git branch)
 # Perform a clean of npm cache
 npm cache clean --force
 
-# Install dependencies
-echo "Installing dependencies..."
+# Install dependencies if cache miss or update dependencies if cache hit
 start_time=$(date +%s)
-npm ci
+if [ ! -d "node_modules" ]; then
+  echo "Installing dependencies..."
+  start_time=$(date +%s)
+  npm ci
+
+  # Cache node_modules to S3 only if we had to install them
+  echo "Caching node_modules..."
+  tar -czf node_modules.tar.gz node_modules/
+  aws s3 cp node_modules.tar.gz $NODE_MODULES_CACHE_PATH
+  rm node_modules.tar.gz
+  calculate_duration $start_time
+else
+  echo "node_modules already exists, skipping npm ci"
+fi
 calculate_duration $start_time
 
 # Build components
