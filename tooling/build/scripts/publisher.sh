@@ -54,22 +54,25 @@ echo $(git branch)
 npm cache clean --force
 
 # Install dependencies if cache miss or update dependencies if cache hit
-start_time=$(date +%s)
 if [ ! -d "node_modules" ]; then
   echo "Installing dependencies..."
   start_time=$(date +%s)
   npm ci
+  calculate_duration $start_time
 
   # Cache node_modules to S3 only if we had to install them
   echo "Caching node_modules..."
+  start_time=$(date +%s)
   tar -czf node_modules.tar.gz node_modules/
   aws s3 cp node_modules.tar.gz $NODE_MODULES_CACHE_PATH
   rm node_modules.tar.gz
+  echo "Cached node_modules"
   calculate_duration $start_time
 else
+  start_time=$(date +%s)
   echo "node_modules already exists, skipping npm ci"
+  calculate_duration $start_time
 fi
-calculate_duration $start_time
 
 # Build components
 echo "Building components..."
