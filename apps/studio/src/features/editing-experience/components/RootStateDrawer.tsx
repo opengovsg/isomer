@@ -41,7 +41,11 @@ export default function RootStateDrawer() {
   } = useEditorDrawerContext()
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
+  const utils = trpc.useUtils()
   const { mutate } = trpc.page.reorderBlock.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPage.invalidate({ pageId, siteId })
+    },
     onError: (error, variables) => {
       // NOTE: rollback to last known good state
       // @ts-expect-error Our zod validator runs between frontend and backend

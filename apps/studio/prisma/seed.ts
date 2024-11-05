@@ -23,6 +23,18 @@ const ISOMER_ADMINS = [
   "adriangoh",
 ]
 
+const ISOMER_MIGRATORS = [
+  "tingshian",
+  "hakeem",
+  "elora",
+  "jinhui",
+  "junxiang",
+  "rayyan",
+  "yongteng",
+  "huaying",
+  "weiping",
+]
+
 const EDITOR_USER = "editor"
 const PUBLISHER_USER = "publisher"
 
@@ -248,38 +260,40 @@ async function main() {
     .executeTakeFirstOrThrow()
 
   await Promise.all(
-    [...ISOMER_ADMINS, EDITOR_USER, PUBLISHER_USER].map(async (name) => {
-      const user = await db
-        .insertInto("User")
-        .values({
-          id: cuid2.createId(),
-          name,
-          email: `${name}@open.gov.sg`,
-          phone: MOCK_PHONE_NUMBER,
-        })
-        .onConflict((oc) =>
-          oc
-            .column("email")
-            .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
-        )
-        .returning(["id", "name"])
-        .executeTakeFirstOrThrow()
+    [...ISOMER_ADMINS, ...ISOMER_MIGRATORS, EDITOR_USER, PUBLISHER_USER].map(
+      async (name) => {
+        const user = await db
+          .insertInto("User")
+          .values({
+            id: cuid2.createId(),
+            name,
+            email: `${name}@open.gov.sg`,
+            phone: MOCK_PHONE_NUMBER,
+          })
+          .onConflict((oc) =>
+            oc
+              .column("email")
+              .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
+          )
+          .returning(["id", "name"])
+          .executeTakeFirstOrThrow()
 
-      const role = ISOMER_ADMINS.includes(user.name)
-        ? RoleType.Admin
-        : user.name === EDITOR_USER
-          ? RoleType.Editor
-          : RoleType.Publisher
+        const role = [...ISOMER_ADMINS, ...ISOMER_MIGRATORS].includes(user.name)
+          ? RoleType.Admin
+          : user.name === EDITOR_USER
+            ? RoleType.Editor
+            : RoleType.Publisher
 
-      await db
-        .insertInto("ResourcePermission")
-        .values({
-          userId: user.id,
-          siteId,
-          role,
-        })
-        .execute()
-    }),
+        await db
+          .insertInto("ResourcePermission")
+          .values({
+            userId: user.id,
+            siteId,
+            role,
+          })
+          .execute()
+      },
+    ),
   )
 }
 

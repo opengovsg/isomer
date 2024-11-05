@@ -1774,22 +1774,6 @@ video {
   flex-basis: 0px;
 }
 
-.basis-\[calc\(\(100\%-2\.5rem\)\/2\)\] {
-  flex-basis: calc((100% - 2.5rem) / 2);
-}
-
-.basis-\[calc\(\(100\%-5rem\)\/3\)\] {
-  flex-basis: calc((100% - 5rem) / 3);
-}
-
-.basis-\[calc\(\(100\%-7\.5rem\)\/4\)\] {
-  flex-basis: calc((100% - 7.5rem) / 4);
-}
-
-.basis-full {
-  flex-basis: 100%;
-}
-
 .border-collapse {
   border-collapse: collapse;
 }
@@ -4120,6 +4104,18 @@ video {
   position: static;
 }
 
+.focus\:left-0:where([data-rac])[data-focused] {
+  left: 0px;
+}
+
+.focus\:top-0:where([data-rac])[data-focused] {
+  top: 0px;
+}
+
+.focus\:z-50:where([data-rac])[data-focused] {
+  z-index: 50;
+}
+
 .focus\:h-auto:where([data-rac])[data-focused] {
   height: auto;
 }
@@ -4133,9 +4129,27 @@ video {
   border-color: rgb(247 143 30 / var(--tw-border-opacity));
 }
 
+.focus\:bg-utility-highlight:where([data-rac])[data-focused] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(251 191 36 / var(--tw-bg-opacity));
+}
+
+.focus\:text-base-content-strong:where([data-rac])[data-focused] {
+  --tw-text-opacity: 1;
+  color: rgb(17 24 39 / var(--tw-text-opacity));
+}
+
+.focus\:decoration-transparent:where([data-rac])[data-focused] {
+  text-decoration-color: transparent;
+}
+
 .focus\:outline-none:where([data-rac])[data-focused] {
   outline: 2px solid transparent;
   outline-offset: 2px;
+}
+
+.focus\:outline-0:where([data-rac])[data-focused] {
+  outline-width: 0px;
 }
 
 .focus\:ring-2:where([data-rac])[data-focused] {
@@ -4170,8 +4184,36 @@ video {
   --tw-ring-offset-width: 2px;
 }
 
+.focus\:transition-none:where([data-rac])[data-focused] {
+  transition-property: none;
+}
+
+.focus\:hover\:decoration-transparent:where([data-rac])[data-hovered]:where(
+    [data-rac]
+  )[data-focused] {
+  text-decoration-color: transparent;
+}
+
+.focus\:hover\:decoration-transparent:where(:not([data-rac])):hover:where(
+    [data-rac]
+  )[data-focused] {
+  text-decoration-color: transparent;
+}
+
 .focus\:static:where(:not([data-rac])):focus {
   position: static;
+}
+
+.focus\:left-0:where(:not([data-rac])):focus {
+  left: 0px;
+}
+
+.focus\:top-0:where(:not([data-rac])):focus {
+  top: 0px;
+}
+
+.focus\:z-50:where(:not([data-rac])):focus {
+  z-index: 50;
 }
 
 .focus\:h-auto:where(:not([data-rac])):focus {
@@ -4187,9 +4229,27 @@ video {
   border-color: rgb(247 143 30 / var(--tw-border-opacity));
 }
 
+.focus\:bg-utility-highlight:where(:not([data-rac])):focus {
+  --tw-bg-opacity: 1;
+  background-color: rgb(251 191 36 / var(--tw-bg-opacity));
+}
+
+.focus\:text-base-content-strong:where(:not([data-rac])):focus {
+  --tw-text-opacity: 1;
+  color: rgb(17 24 39 / var(--tw-text-opacity));
+}
+
+.focus\:decoration-transparent:where(:not([data-rac])):focus {
+  text-decoration-color: transparent;
+}
+
 .focus\:outline-none:where(:not([data-rac])):focus {
   outline: 2px solid transparent;
   outline-offset: 2px;
+}
+
+.focus\:outline-0:where(:not([data-rac])):focus {
+  outline-width: 0px;
 }
 
 .focus\:ring-2:where(:not([data-rac])):focus {
@@ -4224,16 +4284,20 @@ video {
   --tw-ring-offset-width: 2px;
 }
 
-.focus-visible\:left-0:where([data-rac])[data-focus-visible] {
-  left: 0px;
+.focus\:transition-none:where(:not([data-rac])):focus {
+  transition-property: none;
 }
 
-.focus-visible\:top-0:where([data-rac])[data-focus-visible] {
-  top: 0px;
+.focus\:hover\:decoration-transparent:where([data-rac])[data-hovered]:where(
+    :not([data-rac])
+  ):focus {
+  text-decoration-color: transparent;
 }
 
-.focus-visible\:z-50:where([data-rac])[data-focus-visible] {
-  z-index: 50;
+.focus\:hover\:decoration-transparent:where(:not([data-rac])):hover:where(
+    :not([data-rac])
+  ):focus {
+  text-decoration-color: transparent;
 }
 
 .focus-visible\:-m-0:where([data-rac])[data-focus-visible] {
@@ -4304,18 +4368,6 @@ video {
     :not([data-rac])
   ):hover:where([data-rac])[data-focus-visible] {
   text-decoration-color: transparent;
-}
-
-.focus-visible\:left-0:where(:not([data-rac])):focus-visible {
-  left: 0px;
-}
-
-.focus-visible\:top-0:where(:not([data-rac])):focus-visible {
-  top: 0px;
-}
-
-.focus-visible\:z-50:where(:not([data-rac])):focus-visible {
-  z-index: 50;
 }
 
 .focus-visible\:-m-0:where(:not([data-rac])):focus-visible {
@@ -4741,12 +4793,20 @@ video {
     max-width: 760px;
   }
 
-  .md\:max-w-\[calc\(\(100\%-2\.5rem\)\/2\)\] {
-    max-width: calc((100% - 2.5rem) / 2);
+  .md\:basis-\[calc\(\(100\%-2\.5rem\)\/2\)\] {
+    flex-basis: calc((100% - 2.5rem) / 2);
   }
 
-  .md\:max-w-\[calc\(\(100\%-5rem\)\/3\)\] {
-    max-width: calc((100% - 5rem) / 3);
+  .md\:basis-\[calc\(\(100\%-5rem\)\/3\)\] {
+    flex-basis: calc((100% - 5rem) / 3);
+  }
+
+  .md\:basis-\[calc\(\(100\%-7\.5rem\)\/4\)\] {
+    flex-basis: calc((100% - 7.5rem) / 4);
+  }
+
+  .md\:basis-full {
+    flex-basis: 100%;
   }
 
   .md\:grid-cols-2 {
@@ -5008,12 +5068,12 @@ video {
     gap: 2.5rem;
   }
 
-  .lg\:gap-2 {
-    gap: 0.5rem;
+  .lg\:gap-12 {
+    gap: 3rem;
   }
 
-  .lg\:gap-24 {
-    gap: 6rem;
+  .lg\:gap-2 {
+    gap: 0.5rem;
   }
 
   .lg\:gap-4 {
