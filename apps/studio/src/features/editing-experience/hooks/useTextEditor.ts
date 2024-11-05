@@ -27,6 +27,8 @@ import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { textblockTypeInputRule, useEditor } from "@tiptap/react"
 
+import { getHtmlWithRelativeReferenceLinks } from "../utils"
+
 const HEADING_LEVELS: Level[] = [2, 3, 4, 5]
 
 export interface BaseEditorProps {
@@ -49,12 +51,7 @@ const BASE_EXTENSIONS: Extensions = [
           key: new PluginKey("transformReferenceLinks"),
           props: {
             transformPastedHTML(html, _) {
-              return html.replaceAll(
-                /href="(?:http|https):\/\/[^[]*\/\[resource:(\d+):(\d+)\]"/g,
-                (_, siteId, resourceId) => {
-                  return `href="[resource:${siteId}:${resourceId}]"`
-                },
-              )
+              return getHtmlWithRelativeReferenceLinks(html)
             },
           },
         }),
