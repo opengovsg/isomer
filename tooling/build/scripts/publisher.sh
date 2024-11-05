@@ -66,16 +66,6 @@ else
   calculate_duration $start_time
 fi
 
-# Build components
-echo "Building components..."
-start_time=$(date +%s)
-cd packages/components
-npm run build
-mv opengovsg-isomer-components-0.0.13.tgz ../../tooling/template/
-cd ../.. # back to root
-echo $(pwd)
-calculate_duration $start_time
-
 # Fetch from database
 echo "Fetching from database..."
 start_time=$(date +%s)
@@ -86,8 +76,8 @@ npm install ts-node -g
 npm run start
 calculate_duration $start_time
 
-# Build site
-echo "Building site..."
+# Prebuilding...
+echo "Prebuilding site..."
 rm -rf ../../../template/schema
 rm -rf ../../../template/data
 mv schema/ ../../../template/
@@ -110,9 +100,26 @@ if [ -f "node_modules.tar.gz" ]; then
 else
   echo "node_modules.tar.gz not found in cache"
 
+  # Build components
+  echo "Building components..."
+  start_time=$(date +%s)
+  cd ../../packages/components # from tooling/template
+  npm run build
+  mv opengovsg-isomer-components-0.0.13.tgz ../../tooling/template/
+  echo $(pwd)
+  cd ../.. # back to root
+  calculate_duration $start_time
+
   echo "Installing dependencies..."
+  cd tooling/template
   start_time=$(date +%s)
   npm ci
+  calculate_duration $start_time
+
+  echo "Prebuilding..."
+  start_time=$(date +%s)
+  rm -rf node_modules && rm -rf .next
+  npm i opengovsg-isomer-components-0.0.13.tgz
   calculate_duration $start_time
 
   echo "Caching node_modules..."
@@ -123,13 +130,6 @@ else
   echo "Cached node_modules"
   calculate_duration $start_time
 fi
-
-# Prebuild
-echo "Prebuilding..."
-start_time=$(date +%s)
-rm -rf node_modules && rm -rf .next
-npm i opengovsg-isomer-components-0.0.13.tgz
-calculate_duration $start_time
 
 # Build
 echo "Building..."
