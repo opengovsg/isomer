@@ -58,7 +58,7 @@ export const LinkHrefEditor = ({
               value={
                 curHref.startsWith(HTTPS_PREFIX)
                   ? curHref.slice(HTTPS_PREFIX.length)
-                  : curHref
+                  : ""
               }
               onChange={(e) => {
                 if (!e.target.value) {
