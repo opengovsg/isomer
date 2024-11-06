@@ -116,6 +116,7 @@ S3_SYNC_CONCURRENCY=$(( 4 * NUMBER_OF_CORES )) # 4x is an arbitrary number that 
 S3_SYNC_CONCURRENCY=$(( S3_SYNC_CONCURRENCY < 20 ? 10 : S3_SYNC_CONCURRENCY )) # Minimum of 20
 S3_SYNC_CONCURRENCY=$(( S3_SYNC_CONCURRENCY > 100 ? 100 : S3_SYNC_CONCURRENCY )) # Maximum of 100 (to prevent AWS from throttling us)
 echo "S3 sync concurrency: $S3_SYNC_CONCURRENCY"
+aws configure set default.s3.max_concurrent_requests $S3_SYNC_CONCURRENCY
 
 # Set all files to have 10 minutes of cache, except for those in the _next folder
 aws s3 sync . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --delete --no-progress --cache-control "max-age=600" --exclude "_next/*"
