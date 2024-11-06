@@ -21,10 +21,10 @@ export const LINK_TYPES = {
 } as const
 
 export type LinkTypes = keyof typeof LINK_TYPES
-export type LinkTypeMapping<T extends string = string> = Record<
-  T,
+export type LinkTypeMapping = Record<
+  LinkTypes,
   {
     icon: IconType
-    label: Capitalize<T>
+    label: Capitalize<LinkTypes>
   }
 >

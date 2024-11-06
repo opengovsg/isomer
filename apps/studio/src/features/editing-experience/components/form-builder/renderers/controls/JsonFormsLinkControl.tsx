@@ -34,6 +34,8 @@ import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { LinkHrefEditor } from "../../../LinkEditor"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
+import { LinkEditorContextProvider } from "../../../LinkEditor/LinkEditorContext"
+import { getLinkHrefType } from "../../../LinkEditor/utils"
 
 export const jsonFormsLinkControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.LinkControl,
@@ -259,6 +261,7 @@ export function JsonFormsLinkControl({
   path,
   description,
   required,
+  errors,
 }: ControlProps) {
   const dataString = data && typeof data === "string" ? data : ""
   // NOTE: We need to pass in `siteId` but this component is automatically used by JsonForms
@@ -268,7 +271,7 @@ export function JsonFormsLinkControl({
   // the data passed to this component is '/'
   // which prevents this component from saving
   const dummyFile =
-    !!dataString && dataString !== "/"
+    !!dataString && dataString !== "/" && getLinkHrefType(dataString) === "file"
       ? new File(
           [],
           // NOTE: Technically guaranteed since our s3 filepath has a format of `/<site>/.../<filename>`
@@ -278,27 +281,31 @@ export function JsonFormsLinkControl({
 
   return (
     <Box>
-      <LinkHrefEditor
+      <LinkEditorContextProvider
         linkTypes={LINK_TYPES}
-        value={dataString}
+        linkHref={dataString}
         onChange={(value) => handleChange(path, value)}
-        label={label}
-        isRequired={required}
-        pageLinkElement={
-          <PageLinkElement
-            data={dataString}
-            description={description}
-            onChange={(value) => handleChange(path, value)}
-          />
-        }
-        fileLinkElement={
-          <FileAttachment
-            siteId={siteId}
-            setHref={(value) => handleChange(path, value)}
-            value={dummyFile}
-          />
-        }
-      />
+        error={errors}
+      >
+        <LinkHrefEditor
+          label={label}
+          isRequired={required}
+          pageLinkElement={
+            <PageLinkElement
+              data={dataString}
+              description={description}
+              onChange={(value) => handleChange(path, value)}
+            />
+          }
+          fileLinkElement={
+            <FileAttachment
+              siteId={siteId}
+              setHref={(value) => handleChange(path, value)}
+              value={dummyFile}
+            />
+          }
+        />
+      </LinkEditorContextProvider>
     </Box>
   )
 }

@@ -22,6 +22,7 @@ import { z } from "zod"
 
 import type { LinkTypeMapping } from "~/features/editing-experience/components/LinkEditor/constants"
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
+import { LinkEditorContextProvider } from "~/features/editing-experience/components/LinkEditor/LinkEditorContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
@@ -153,33 +154,37 @@ const LinkEditorModalContent = ({
           )}
 
           <Box>
-            <LinkHrefEditor
+            <LinkEditorContextProvider
               linkTypes={linkTypes}
-              value={watch("linkHref") ?? ""}
+              linkHref={linkHref ?? ""}
               onChange={(value) => setValue("linkHref", value)}
-              label="Link destination"
-              description="When this is clicked, open:"
-              isRequired
-              isInvalid={!!errors.linkHref}
-              pageLinkElement={
-                <PageLinkElement
-                  value={watch("linkHref") ?? ""}
-                  onChange={(value) => setValue("linkHref", value)}
-                />
-              }
-              fileLinkElement={
-                <FileAttachment
-                  siteId={siteId}
-                  setHref={(linkHref) => {
-                    setValue("linkHref", linkHref)
-                  }}
-                />
-              }
-            />
+              error={errors.linkHref?.message}
+            >
+              <LinkHrefEditor
+                label="Link destination"
+                description="When this is clicked, open:"
+                isRequired
+                isInvalid={!!errors.linkHref}
+                pageLinkElement={
+                  <PageLinkElement
+                    value={watch("linkHref") ?? ""}
+                    onChange={(value) => setValue("linkHref", value)}
+                  />
+                }
+                fileLinkElement={
+                  <FileAttachment
+                    siteId={siteId}
+                    setHref={(linkHref) => {
+                      setValue("linkHref", linkHref)
+                    }}
+                  />
+                }
+              />
 
-            {errors.linkHref?.message && (
-              <FormErrorMessage>{errors.linkHref.message}</FormErrorMessage>
-            )}
+              {errors.linkHref?.message && (
+                <FormErrorMessage>{errors.linkHref.message}</FormErrorMessage>
+              )}
+            </LinkEditorContextProvider>
           </Box>
         </ModalBody>
 

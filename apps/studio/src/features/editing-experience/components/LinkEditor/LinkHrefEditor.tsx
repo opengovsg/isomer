@@ -1,84 +1,95 @@
 import type { ReactNode } from "react"
-import { useState } from "react"
 import {
   Box,
   FormControl,
-  HStack,
-  Icon,
-  Text,
-  useRadioGroup,
+  Input,
+  InputGroup,
+  InputLeftAddon,
 } from "@chakra-ui/react"
 import { FormLabel } from "@opengovsg/design-system-react"
 
-import type { LinkTypeMapping } from "./constants"
-import { LinkTypeRadioCard } from "./LinkTypeRadioCard"
-import { LinkTypeRadioContent } from "./LinkTypeRadioContent"
-import { getLinkHrefType } from "./utils"
+import { useLinkEditor } from "./LinkEditorContext"
+import { LinkEditorRadio } from "./LinkEditorRadio"
+
+const HTTPS_PREFIX = "https://"
+type HttpsLink = `https://${string}`
+
+const generateHttpsLink = (data: string): HttpsLink => {
+  if (data.startsWith(HTTPS_PREFIX)) {
+    return data as HttpsLink
+  }
+
+  return `https://${data}`
+}
 
 interface LinkHrefEditorProps {
-  value: string
-  onChange: (href?: string) => void
   label: string
   description?: string
   isRequired?: boolean
   isInvalid?: boolean
   pageLinkElement: ReactNode
   fileLinkElement: ReactNode
-  linkTypes: LinkTypeMapping
 }
 
 export const LinkHrefEditor = ({
-  value,
-  onChange,
   label,
   description,
   isRequired,
   isInvalid,
   pageLinkElement,
   fileLinkElement,
-  linkTypes,
 }: LinkHrefEditorProps) => {
-  const linkType = getLinkHrefType(value)
-  const [selectedLinkType, setSelectedLinkType] = useState(linkType)
-
-  const handleLinkTypeChange = (value: string) => {
-    setSelectedLinkType(value)
-    onChange()
-  }
-
-  const { getRootProps, getRadioProps } = useRadioGroup({
-    name: "link-type",
-    defaultValue: linkType,
-    onChange: handleLinkTypeChange,
-  })
+  const { curHref, setHref, curType } = useLinkEditor()
 
   return (
     <FormControl isRequired={isRequired} isInvalid={isInvalid}>
       <FormLabel description={description} mb="0.5rem">
         {label}
       </FormLabel>
-      <HStack {...getRootProps()} spacing={0}>
-        {Object.entries(linkTypes).map(([key, { icon, label }]) => {
-          const radio = getRadioProps({ value: key })
-
-          return (
-            <LinkTypeRadioCard key={key} {...radio}>
-              <HStack spacing={2}>
-                <Icon as={icon} fontSize="1.25rem" />
-                <Text textStyle="subhead-2">{label}</Text>
-              </HStack>
-            </LinkTypeRadioCard>
-          )
-        })}
-      </HStack>
+      <LinkEditorRadio />
       <Box my="0.5rem">
-        <LinkTypeRadioContent
-          selectedLinkType={selectedLinkType}
-          data={value}
-          handleChange={onChange}
-          pageLinkElement={pageLinkElement}
-          fileLinkElement={fileLinkElement}
-        />
+        {curType === "page" && pageLinkElement}
+        {curType === "file" && fileLinkElement}
+        {curType === "external" && (
+          <InputGroup>
+            <InputLeftAddon>https://</InputLeftAddon>
+            <Input
+              type="text"
+              value={
+                curHref.startsWith(HTTPS_PREFIX)
+                  ? curHref.slice(HTTPS_PREFIX.length)
+                  : curHref
+              }
+              onChange={(e) => {
+                if (!e.target.value) {
+                  setHref(e.target.value)
+                }
+                setHref(generateHttpsLink(e.target.value))
+              }}
+              placeholder="www.isomer.gov.sg"
+            />
+          </InputGroup>
+        )}
+        {curType === "email" && (
+          <InputGroup>
+            <InputLeftAddon>mailto:</InputLeftAddon>
+            <Input
+              type="text"
+              value={
+                curHref.startsWith("mailto:")
+                  ? curHref.slice("mailto:".length)
+                  : ""
+              }
+              onChange={(e) => {
+                if (!e.target.value) {
+                  setHref(e.target.value)
+                }
+                setHref(`mailto:${e.target.value}`)
+              }}
+              placeholder="test@example.com"
+            />
+          </InputGroup>
+        )}
       </Box>
     </FormControl>
   )
