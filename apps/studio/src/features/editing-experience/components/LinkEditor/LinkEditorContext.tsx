@@ -13,7 +13,7 @@ const LinkEditorContext = createContext<LinkEditorContextReturn | undefined>(
 
 interface UseLinkEditorContextProps {
   linkHref: string
-  linkTypes: LinkTypeMapping
+  linkTypes: Partial<LinkTypeMapping>
   error?: string
   onChange: (value: LinkTypeMapping[LinkTypes]["label"]) => void
 }

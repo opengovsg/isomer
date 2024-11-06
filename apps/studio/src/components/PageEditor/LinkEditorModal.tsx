@@ -1,3 +1,4 @@
+import type { IconType } from "react-icons"
 import { useParams } from "next/navigation"
 import {
   Box,
@@ -20,7 +21,7 @@ import {
 import { isEmpty } from "lodash"
 import { z } from "zod"
 
-import type { LinkTypeMapping } from "~/features/editing-experience/components/LinkEditor/constants"
+import type { LinkTypes } from "~/features/editing-experience/components/LinkEditor/constants"
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
 import { LinkEditorContextProvider } from "~/features/editing-experience/components/LinkEditor/LinkEditorContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -73,7 +74,7 @@ interface LinkEditorModalContentProps {
   linkText?: string
   linkHref?: string
   onSave: (linkText: string, linkHref: string) => void
-  linkTypes: LinkTypeMapping
+  linkTypes: LinkEditorModalProps["linkTypes"]
 }
 
 const LinkEditorModalContent = ({
@@ -211,7 +212,13 @@ interface LinkEditorModalProps {
   onSave: (linkText: string, linkHref: string) => void
   isOpen: boolean
   onClose: () => void
-  linkTypes: LinkTypeMapping
+  linkTypes: Record<
+    string,
+    {
+      icon: IconType
+      label: Capitalize<LinkTypes>
+    }
+  >
 }
 export const LinkEditorModal = ({
   isOpen,
