@@ -15,7 +15,7 @@ interface UseLinkEditorContextProps {
   linkHref: string
   linkTypes: Partial<LinkTypeMapping>
   error?: string
-  onChange: (value: LinkTypeMapping[LinkTypes]["label"]) => void
+  onChange: (value: string) => void
 }
 const useLinkEditorContext = ({
   linkHref,
@@ -26,7 +26,17 @@ const useLinkEditorContext = ({
   const [curType, setCurType] = useState<LinkTypes>("page")
   const [curHref, setHref] = useState(linkHref)
 
-  return { linkTypes, curHref, setHref, error, onChange, curType, setCurType }
+  return {
+    linkTypes,
+    curHref,
+    setHref: (value: string) => {
+      onChange(value)
+      setHref(value)
+    },
+    error,
+    curType,
+    setCurType,
+  }
 }
 
 export const LinkEditorContextProvider = ({
