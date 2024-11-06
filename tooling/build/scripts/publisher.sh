@@ -107,6 +107,16 @@ ls -al
 echo "Publishing to S3..."
 start_time=$(date +%s)
 
+
+NUMBER_OF_CORES=$(nproc)
+echo "Number of cores: $NUMBER_OF_CORES"
+
+# Set the number of concurrent S3 sync operations
+S3_SYNC_CONCURRENCY=$(( 4 * NUMBER_OF_CORES )) # 4x is an arbitrary number that should work well for most cases
+S3_SYNC_CONCURRENCY=$(( S3_SYNC_CONCURRENCY < 20 ? 10 : S3_SYNC_CONCURRENCY )) # Minimum of 20
+S3_SYNC_CONCURRENCY=$(( S3_SYNC_CONCURRENCY > 100 ? 100 : S3_SYNC_CONCURRENCY )) # Maximum of 100 (to prevent AWS from throttling us)
+echo "S3 sync concurrency: $S3_SYNC_CONCURRENCY"
+
 # Set all files to have 10 minutes of cache, except for those in the _next folder
 aws s3 sync . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --delete --no-progress --cache-control "max-age=600" --exclude "_next/*"
 
