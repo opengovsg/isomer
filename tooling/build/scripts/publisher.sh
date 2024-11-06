@@ -113,6 +113,8 @@ aws s3 sync . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --d
 # Set all files in the _next folder to have 1 day of cache
 aws s3 sync _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=86400"
 
+calculate_duration $start_time
+
 # Update CloudFront origin path
 echo "Updating CloudFront origin path..."
 echo "CloudFront distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
