@@ -20,7 +20,7 @@ const meta: Meta<typeof IndexPage> = {
 export default meta
 type Story = StoryObj<typeof IndexPage>
 
-export const WithSiderail: Story = {
+export const Default: Story = {
   args: {
     layout: "index",
     site: {
@@ -47,7 +47,7 @@ export const WithSiderail: Story = {
                 permalink: "/parent/rationality",
                 lastModified: "",
                 layout: "content",
-                summary: "",
+                summary: "Pages in Irrationality",
                 children: [
                   {
                     id: "4",
@@ -73,7 +73,7 @@ export const WithSiderail: Story = {
                 permalink: "/parent/sibling",
                 lastModified: "",
                 layout: "content",
-                summary: "",
+                summary: "Pages in Sibling",
                 children: [
                   {
                     id: "7",
@@ -116,50 +116,18 @@ export const WithSiderail: Story = {
       description: "A Next.js starter for Isomer",
     },
     page: {
-      permalink: "/parent/rationality",
+      permalink: "/parent",
       title: "Index page",
       lastModified: "2024-05-02T14:12:57.160Z",
       contentPageHeader: {
         summary: "Pages in Index page",
       },
     },
-    content: [
-      {
-        type: "infocards",
-        title: "Infocards title",
-        variant: "cardsWithoutImages",
-        maxColumns: "1",
-        cards: [
-          {
-            title:
-              "Testing for a card with a long line length that spans across two lines or more",
-            description:
-              "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
-            url: "https://www.google.com",
-          },
-          {
-            title: "Card with short title",
-            description:
-              "Card description, 200 chars. In the kingdom of Veridonia, the government operates as a benevolent monarchy, guided by ancient traditions and the wisdom of its sovereign.",
-          },
-          {
-            title: "Hover on me to see me change colors",
-            description:
-              "Card description, 200 chars. In the kingdom of Veridonia, the government operates as a benevolent monarchy, guided by ancient traditions and the wisdom of its sovereign.",
-            url: "https://www.google.com",
-          },
-          {
-            title: "A non-placeholder image version",
-            description: "This is an image that is added using a URL.",
-            url: "https://www.google.com",
-          },
-        ],
-      },
-    ],
+    content: [],
   },
 }
 
-export const NoSiderail: Story = {
+export const Custom: Story = {
   args: {
     layout: "index",
     site: {
@@ -186,7 +154,7 @@ export const NoSiderail: Story = {
                 permalink: "/parent/rationality",
                 lastModified: "",
                 layout: "content",
-                summary: "",
+                summary: "Pages in Irrationality",
                 children: [
                   {
                     id: "4",
@@ -212,7 +180,7 @@ export const NoSiderail: Story = {
                 permalink: "/parent/sibling",
                 lastModified: "",
                 layout: "content",
-                summary: "",
+                summary: "Pages in Sibling",
                 children: [
                   {
                     id: "7",
@@ -264,33 +232,16 @@ export const NoSiderail: Story = {
     },
     content: [
       {
-        type: "infocards",
-        title: "Infocards title",
-        variant: "cardsWithoutImages",
-        maxColumns: "1",
-        cards: [
+        type: "prose",
+        content: [
           {
-            title:
-              "Testing for a card with a long line length that spans across two lines or more",
-            description:
-              "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
-            url: "https://www.google.com",
-          },
-          {
-            title: "Card with short title",
-            description:
-              "Card description, 200 chars. In the kingdom of Veridonia, the government operates as a benevolent monarchy, guided by ancient traditions and the wisdom of its sovereign.",
-          },
-          {
-            title: "Hover on me to see me change colors",
-            description:
-              "Card description, 200 chars. In the kingdom of Veridonia, the government operates as a benevolent monarchy, guided by ancient traditions and the wisdom of its sovereign.",
-            url: "https://www.google.com",
-          },
-          {
-            title: "A non-placeholder image version",
-            description: "This is an image that is added using a URL.",
-            url: "https://www.google.com",
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "This is a customisable index page in which content can be placed before the list of children.",
+              },
+            ],
           },
         ],
       },
