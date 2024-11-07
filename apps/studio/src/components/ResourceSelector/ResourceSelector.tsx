@@ -3,153 +3,179 @@ import {
   Box,
   Flex,
   HStack,
-  Icon,
   Skeleton,
   Spacer,
   Text,
+  VStack,
 } from "@chakra-ui/react"
 import { Button, Link } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { ResourceType } from "@prisma/client"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
+import type { PendingMoveResource } from "~/features/editing-experience/types"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
 import { ResourceItem } from "./ResourceItem"
 
+interface ResourceSelectorProps {
+  selectedResourceId?: string
+  onChange: (resourceId: string) => void
+}
+
 const SuspensableResourceSelector = ({
-  siteId,
   selectedResourceId,
   onChange,
-  isDisabledFn,
 }: ResourceSelectorProps) => {
-  const [ancestryStack] = trpc.resource.getAncestryOf.useSuspenseQuery({
-    siteId,
-    resourceId: selectedResourceId,
-  })
-  const [parentIdStack, setParentIdStack] = useState<string[]>(
-    ancestryStack.map((item) => item.id),
-  )
-  const currResourceId = parentIdStack[parentIdStack.length - 1] ?? null
+  // NOTE: This is the stack of user's navigation through the resource tree
+  // NOTE: We should always start the stack from `/` (root)
+  // so that the user will see a full overview of their site structure
+  const [resourceStack, setResourceStack] = useState<PendingMoveResource[]>([])
+  const [isResourceHighlighted, setIsResourceHighlighted] =
+    useState<boolean>(true)
+  const { siteId } = useQueryParse(sitePageSchema)
 
-  const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
-    trpc.resource.getChildrenOf.useSuspenseInfiniteQuery(
+  const moveDest = resourceStack[resourceStack.length - 1]
+  const parentDest = resourceStack[resourceStack.length - 2]
+  const curResourceId = moveDest?.resourceId
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    trpc.resource.getChildrenOf.useInfiniteQuery(
       {
-        resourceId: currResourceId,
-        siteId,
+        resourceId:
+          (isResourceHighlighted
+            ? parentDest?.resourceId
+            : moveDest?.resourceId) ?? null,
+        siteId: String(siteId),
         limit: 25,
       },
       {
         getNextPageParam: (lastPage) => lastPage.nextOffset,
       },
     )
-
-  const onBack = () => {
-    setParentIdStack((prev) => prev.slice(0, -1))
-  }
+  const shouldShowBackButton: boolean =
+    (resourceStack.length === 1 && !isResourceHighlighted) ||
+    resourceStack.length > 1
 
   return (
-    <Box
-      borderRadius="md"
-      border="1px solid"
-      borderColor="base.divider.strong"
-      w="full"
-      py="0.75rem"
-      px="0.5rem"
-      maxH="20rem"
-      overflowY="auto"
-    >
-      {parentIdStack.length > 0 ? (
-        <Link
-          variant="clear"
-          w="full"
-          justifyContent="flex-start"
-          color="base.content.default"
-          onClick={onBack}
-          as="button"
-        >
-          <HStack spacing="0.25rem" color="interaction.links.default">
-            <Icon as={BiLeftArrowAlt} />
-            <Text textStyle="caption-1">Back to parent folder</Text>
-          </HStack>
-        </Link>
-      ) : (
-        <Flex
-          w="full"
-          px="0.75rem"
-          py="0.375rem"
-          color="base.content.default"
-          alignItems="center"
-        >
-          <HStack spacing="0.5rem">
-            <Icon as={BiHomeAlt} />
-            <Text textStyle="caption-1">/</Text>
-          </HStack>
-          <Spacer />
-          <Text
-            color="base.content.medium"
-            textTransform="uppercase"
-            textStyle="caption-1"
-            overflow="hidden"
-            textOverflow="ellipsis"
-            whiteSpace="nowrap"
+    <VStack alignItems="flex-start">
+      <Box
+        borderRadius="md"
+        border="1px solid"
+        borderColor="base.divider.strong"
+        w="full"
+        py="0.75rem"
+        px="0.5rem"
+        maxH="20rem"
+        overflowY="auto"
+      >
+        {shouldShowBackButton ? (
+          <Link
+            variant="clear"
+            w="full"
+            justifyContent="flex-start"
+            color="base.content.default"
+            onClick={() => {
+              if (isResourceHighlighted) {
+                setIsResourceHighlighted(false)
+                setResourceStack((prev) => prev.slice(0, -2))
+              } else {
+                setResourceStack((prev) => prev.slice(0, -1))
+              }
+            }}
+            as="button"
           >
-            Home
-          </Text>
-        </Flex>
-      )}
+            <HStack spacing="0.25rem" color="interaction.links.default">
+              <BiLeftArrowAlt />
+              <Text textStyle="caption-1">Back to parent folder</Text>
+            </HStack>
+          </Link>
+        ) : (
+          <Flex
+            w="full"
+            px="0.75rem"
+            py="0.375rem"
+            color="base.content.default"
+            alignItems="center"
+          >
+            <HStack spacing="0.25rem">
+              <BiHomeAlt />
+              <Text textStyle="caption-1">/</Text>
+            </HStack>
+            <Spacer />
+            <Text
+              color="base.content.medium"
+              textTransform="uppercase"
+              textStyle="caption-1"
+              overflow="hidden"
+              textOverflow="ellipsis"
+              whiteSpace="nowrap"
+            >
+              Home
+            </Text>
+          </Flex>
+        )}
 
-      {data.pages.flatMap(({ items }) => items).length === 0 ? (
-        <Box py="0.5rem" pl="2.25rem">
-          <Text textStyle="caption-2" fontStyle="italic">
-            No matching results
-          </Text>
-        </Box>
-      ) : (
-        data.pages.map(({ items }) =>
-          items.map((child) => {
-            const isDisabled = isDisabledFn?.(child.id) ?? false
+        {data?.pages.map(({ items }) =>
+          items.map((item) => {
+            const isItemHighlighted: boolean =
+              isResourceHighlighted && item.id === curResourceId
+
+            const canClickIntoItem: boolean =
+              item.type === ResourceType.Folder ||
+              item.type === ResourceType.Collection
 
             return (
               <ResourceItem
-                {...child}
-                key={child.id}
-                isSelected={selectedResourceId === child.id}
-                isDisabled={isDisabled}
-                onResourceItemSelect={() => {
-                  if (
-                    child.type === ResourceType.Folder ||
-                    child.type === ResourceType.Collection
-                  ) {
-                    setParentIdStack((prev) => [...prev, child.id])
+                {...item}
+                key={item.id}
+                isDisabled={false}
+                isHighlighted={isItemHighlighted}
+                handleOnClick={() => {
+                  if (isItemHighlighted) {
+                    if (canClickIntoItem) {
+                      setIsResourceHighlighted(false)
+                    }
+                    return
+                  }
+
+                  const newResource = {
+                    ...item,
+                    parentId: parentDest?.resourceId ?? null,
+                    resourceId: item.id,
+                  }
+                  if (isResourceHighlighted) {
+                    setResourceStack((prev) => [
+                      ...prev.slice(0, -1),
+                      newResource,
+                    ])
                   } else {
-                    onChange(child.id)
+                    setIsResourceHighlighted(true)
+                    setResourceStack((prev) => [...prev, newResource])
                   }
                 }}
               />
             )
           }),
-        )
+        )}
+        {hasNextPage && (
+          <Button
+            variant="link"
+            pl="2.25rem"
+            size="xs"
+            isLoading={isFetchingNextPage}
+            onClick={() => fetchNextPage()}
+          >
+            Load more
+          </Button>
+        )}
+      </Box>
+      {!!moveDest && (
+        <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">
+          <Text textStyle="caption-1">You selected /{moveDest.permalink}</Text>
+        </Box>
       )}
-
-      {hasNextPage && (
-        <Button
-          variant="link"
-          pl="2.25rem"
-          size="xs"
-          isLoading={isFetchingNextPage}
-          onClick={() => fetchNextPage()}
-        >
-          Load more
-        </Button>
-      )}
-    </Box>
+    </VStack>
   )
-}
-
-interface ResourceSelectorProps {
-  siteId: string
-  selectedResourceId?: string
-  onChange: (resourceId: string) => void
-  isDisabledFn?: (resourceId: string) => boolean
 }
 
 export const ResourceSelector = (props: ResourceSelectorProps) => {

@@ -7,8 +7,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  ModalOverlay,
-  Text,
+  ModalOverlay
 } from "@chakra-ui/react"
 import {
   Button,
@@ -25,7 +24,6 @@ import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEdi
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
-import { trpc } from "~/utils/trpc"
 import { ResourceSelector } from "../ResourceSelector"
 import { FileAttachment } from "./FileAttachment"
 
@@ -43,28 +41,13 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
 
   const selectedResourceId = getResourceIdFromReferenceLink(value)
 
-  const { data: resource } = trpc.resource.getWithFullPermalink.useQuery({
-    resourceId: selectedResourceId,
-  })
-
   return (
-    <>
-      <ResourceSelector
-        siteId={String(siteId)}
-        onChange={(resourceId) =>
-          onChange(getReferenceLink({ siteId: String(siteId), resourceId }))
-        }
-        selectedResourceId={selectedResourceId}
-      />
-
-      {!!resource && (
-        <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full" mt="0.5rem">
-          <Text textStyle="caption-1">
-            You selected /{resource.fullPermalink}
-          </Text>
-        </Box>
-      )}
-    </>
+    <ResourceSelector
+      onChange={(resourceId) =>
+        onChange(getReferenceLink({ siteId: String(siteId), resourceId }))
+      }
+      selectedResourceId={selectedResourceId}
+    />
   )
 }
 

@@ -53,7 +53,6 @@ interface PageLinkModalContentProps {
 
 const PageLinkModalContent = ({
   data,
-  siteId,
   description,
   onClose,
   onSave,
@@ -70,16 +69,6 @@ const PageLinkModalContent = ({
   const onSubmit = handleSubmit(({ destination }) => onSave(destination))
   const destination = watch("destination")
 
-  const { data: selectedResource } =
-    trpc.resource.getWithFullPermalink.useQuery(
-      {
-        resourceId: destination,
-      },
-      {
-        enabled: !!destination,
-      },
-    )
-
   return (
     <ModalContent>
       <form onSubmit={onSubmit}>
@@ -91,25 +80,10 @@ const PageLinkModalContent = ({
             <FormLabel id="destination">
               {description || "When this link is clicked, open..."}
             </FormLabel>
-
             <ResourceSelector
-              siteId={siteId}
               onChange={(resourceId) => setValue("destination", resourceId)}
               selectedResourceId={destination}
             />
-
-            {destination !== "" && (
-              <Box
-                mt="0.5rem"
-                p="0.75rem"
-                borderRadius="0.25rem"
-                bgColor="utility.feedback.info-subtle"
-              >
-                <Text textStyle="caption-1" color="base.content.strong">
-                  You selected /{selectedResource?.fullPermalink || ""}
-                </Text>
-              </Box>
-            )}
           </FormControl>
         </ModalBody>
 

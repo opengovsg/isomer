@@ -1,86 +1,95 @@
 import type { IconType } from "react-icons"
-import { Suspense, useMemo } from "react"
-import { Box, HStack, Icon, Skeleton, Text } from "@chakra-ui/react"
-import { dataAttr } from "@chakra-ui/utils"
+import { Suspense } from "react"
+import { Icon, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
+import { ResourceType } from "@prisma/client"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { ErrorBoundary } from "react-error-boundary"
-import { BiData, BiFile, BiFolder, BiLink, BiLockAlt } from "react-icons/bi"
+import { BiData, BiFile, BiFolder, BiLink } from "react-icons/bi"
 
 import type { RouterOutput } from "~/utils/trpc"
 
 type ResourceItemProps = Pick<
-  RouterOutput["resource"]["getChildrenOf"]["items"][number],
-  "permalink" | "type"
+  RouterOutput["resource"]["getFolderChildrenOf"]["items"][number],
+  "permalink"
 > & {
-  isSelected: boolean
-  isDisabled: boolean
-  onResourceItemSelect: () => void
+  handleOnClick: () => void
+  type: ResourceType | undefined
+  isDisabled?: boolean
+  isHighlighted?: boolean
+}
+
+const getButtonProps = ({ isHighlighted }: { isHighlighted: boolean }) => {
+  if (isHighlighted) {
+    return {
+      color: "interaction.main.default",
+      bg: "interaction.muted.main.active",
+      _hover: {
+        color: "interaction.main.default",
+        bg: "interaction.muted.main.active",
+      },
+    }
+  }
+
+  return {
+    color: "base.content.default",
+  }
+}
+
+const getButtonIcon = ({
+  type,
+}: {
+  type: ResourceType | undefined
+}): IconType => {
+  switch (type) {
+    case ResourceType.CollectionLink:
+      return BiLink
+    case ResourceType.Folder:
+      return BiFolder
+    case ResourceType.CollectionPage:
+    case ResourceType.Page:
+      return BiFile
+    case ResourceType.Collection:
+      return BiData
+    default:
+      return BiData // Default to data icon
+  }
 }
 
 const SuspendableResourceItem = ({
   permalink,
-  type,
-  isSelected,
-  isDisabled,
-  onResourceItemSelect,
+  isHighlighted,
+  handleOnClick,
+  ...rest
 }: ResourceItemProps) => {
-  const icon: IconType = useMemo(() => {
-    switch (type) {
-      case ResourceType.CollectionLink:
-        return BiLink
-      case ResourceType.Folder:
-        return BiFolder
-      case ResourceType.CollectionPage:
-      case ResourceType.Page:
-        return BiFile
-      case ResourceType.Collection:
-        return BiData
-    }
-  }, [type])
+  const { type, ...restWithoutType } = rest
+
+  const buttonProps = getButtonProps({
+    isHighlighted: !!isHighlighted,
+  })
 
   return (
     <Button
       variant="clear"
       w="full"
       justifyContent="flex-start"
-      color="base.content.default"
-      isDisabled={isDisabled}
-      data-selected={dataAttr(isSelected)}
-      _selected={{
-        color: "interaction.main.default",
-        bgColor: "interaction.muted.main.active",
+      color={buttonProps.color}
+      bg={buttonProps.bg}
+      {...(buttonProps._hover && {
         _hover: {
-          bgColor: "unset",
+          color: buttonProps._hover.color,
+          bg: buttonProps._hover.bg,
         },
-      }}
-      _active={{
-        bgColor: "interaction.tinted.main.active",
-      }}
-      _disabled={{
-        color: "interaction.support.disabled-content",
-        bgColor: "unset",
-        cursor: "not-allowed",
-        _hover: {
-          bgColor: "unset",
-        },
-      }}
-      _hover={{
-        bgColor: "interaction.muted.main.hover",
-      }}
+      })}
       pl="2.25rem"
-      py="0.375rem"
-      borderRadius="0.25rem"
-      onClick={onResourceItemSelect}
-      leftIcon={<Icon as={icon} />}
+      size="xs"
+      onClick={handleOnClick}
+      leftIcon={<Icon as={getButtonIcon({ type })} />}
+      {...restWithoutType}
     >
-      <HStack align="start" w="full" justify="space-between">
-        <Text textStyle="caption-1" noOfLines={1}>
-          /{permalink}
-        </Text>
-        {isDisabled && <Icon as={BiLockAlt} fontSize="0.75rem" />}
-      </HStack>
+      <Text noOfLines={1} textStyle="caption-1" textAlign="left">
+        /{permalink}
+      </Text>
     </Button>
   )
 }
@@ -92,13 +101,13 @@ export const ResourceItem = (props: ResourceItemProps) => {
         <ErrorBoundary
           onReset={reset}
           fallbackRender={({ resetErrorBoundary }) => (
-            <Box>
+            <div>
               There was an error!
               <Button onClick={() => resetErrorBoundary()}>Try again</Button>
-            </Box>
+            </div>
           )}
         >
-          <Suspense fallback={<Skeleton />}>
+          <Suspense>
             <SuspendableResourceItem {...props} />
           </Suspense>
         </ErrorBoundary>
