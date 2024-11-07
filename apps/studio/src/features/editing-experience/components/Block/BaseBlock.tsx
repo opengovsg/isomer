@@ -59,7 +59,9 @@ export const BaseBlock = ({
         </Flex>
       )}
       <Stack align="start" gap="0.25rem">
-        <Text textStyle="subhead-2">{label}</Text>
+        <Text textStyle="subhead-2" noOfLines={1}>
+          {label}
+        </Text>
         {description && (
           <Text
             textStyle="caption-2"
