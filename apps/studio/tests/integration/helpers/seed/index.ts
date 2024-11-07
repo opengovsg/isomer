@@ -293,3 +293,20 @@ export const setupFolder = async ({
     folder,
   }
 }
+
+export const setUpWhitelist = async ({
+  email,
+  expiry,
+}: {
+  email: string
+  expiry?: Date
+}) => {
+  return db
+    .insertInto("Whitelist")
+    .values({
+      email,
+      expiry: expiry ?? null,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
