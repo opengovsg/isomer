@@ -21,13 +21,13 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "../../types"
+import { ResourceItem } from "~/components/ResourceSelector/ResourceItem"
 import { usePermissions } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
 import { moveResourceAtom } from "../../atoms"
-import { MoveItem } from "./MoveItem"
 
 const generatePermalinkPrefix = (parents: PendingMoveResource[]) => {
   return parents.map((parent) => parent.permalink).join("/")
@@ -209,7 +209,7 @@ const MoveResourceContent = withSuspense(
                     isResourceHighlighted && item.id === curResourceId
 
                   return (
-                    <MoveItem
+                    <ResourceItem
                       {...item}
                       key={item.id}
                       isDisabled={isItemDisabled}
