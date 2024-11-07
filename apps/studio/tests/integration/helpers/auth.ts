@@ -3,19 +3,10 @@ import cuid2 from "@paralleldrive/cuid2"
 import { db } from "~server/db"
 
 import type { User } from "~server/db"
+import { setUpWhitelist } from "./seed"
 
 export const auth = async ({ id, ...user }: SetOptional<User, "id">) => {
-  await db
-    .insertInto("Whitelist")
-    .values({
-      email: user.email,
-    })
-    .onConflict((oc) =>
-      oc
-        .column("email")
-        .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
-    )
-    .executeTakeFirstOrThrow()
+  await setUpWhitelist({ email: user.email })
 
   if (id !== undefined) {
     return db

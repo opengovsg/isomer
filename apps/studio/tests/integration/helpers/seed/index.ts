@@ -304,9 +304,14 @@ export const setUpWhitelist = async ({
   return db
     .insertInto("Whitelist")
     .values({
-      email,
+      email: email.toLowerCase(),
       expiry: expiry ?? null,
     })
+    .onConflict((oc) =>
+      oc
+        .column("email")
+        .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
+    )
     .returningAll()
     .executeTakeFirstOrThrow()
 }
