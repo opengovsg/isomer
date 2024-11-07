@@ -44,7 +44,13 @@ const SuspendableLabel = ({ resourceId }: { resourceId: string }) => {
       resourceId,
     })
 
-  return <Text>{`/${fullPermalink}`}</Text>
+  return (
+    <Text
+      textOverflow="ellipsis"
+      whiteSpace="nowrap"
+      overflow="auto"
+    >{`/${fullPermalink}`}</Text>
+  )
 }
 
 export function JsonFormsRefControl({
