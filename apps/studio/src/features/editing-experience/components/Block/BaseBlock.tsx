@@ -60,7 +60,18 @@ export const BaseBlock = ({
       )}
       <Stack align="start" gap="0.25rem">
         <Text textStyle="subhead-2">{label}</Text>
-        {description && <Text textStyle="caption-2">{description}</Text>}
+        {description && (
+          <Text
+            textStyle="caption-2"
+            color={
+              dragHandle
+                ? "interaction.support.placeholder"
+                : "base.content.default"
+            }
+          >
+            {description}
+          </Text>
+        )}
       </Stack>
     </HStack>
   )
