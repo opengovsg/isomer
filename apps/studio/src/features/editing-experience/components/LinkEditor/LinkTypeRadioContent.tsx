@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { InputGroup, InputLeftAddon } from "@chakra-ui/react"
+import { InputGroup, InputLeftAddon, VStack } from "@chakra-ui/react"
 import { Input } from "@opengovsg/design-system-react"
 
 const HTTPS_PREFIX = "https://"
@@ -29,7 +29,7 @@ export const LinkTypeRadioContent = ({
   fileLinkElement,
 }: LinkTypeRadioContentProps): JSX.Element => {
   return (
-    <>
+    <VStack alignItems="flex-start" w="100%" gap="0.5rem">
       {selectedLinkType === "page" && pageLinkElement}
       {selectedLinkType === "file" && fileLinkElement}
       {selectedLinkType === "external" && (
@@ -70,6 +70,6 @@ export const LinkTypeRadioContent = ({
           />
         </InputGroup>
       )}
-    </>
+    </VStack>
   )
 }
