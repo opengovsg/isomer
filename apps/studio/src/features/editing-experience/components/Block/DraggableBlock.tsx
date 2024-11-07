@@ -7,6 +7,7 @@ import { getComponentSchema } from "@opengovsg/isomer-components"
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { TYPE_TO_ICON } from "../../constants"
 import { BaseBlock, BaseBlockDragHandle } from "./BaseBlock"
+import getLabel from "./getLabel"
 
 interface DraggableBlockProps {
   block: IsomerSchema["content"][number]
@@ -23,7 +24,7 @@ export const DraggableBlock = ({
 }: DraggableBlockProps): JSX.Element => {
   const icon = TYPE_TO_ICON[block.type]
 
-  const label = useMemo(() => {
+  const description = useMemo(() => {
     // NOTE: Because we use `Type.Ref` for prose,
     // this gets a `$Ref` only and not the concrete values
     return block.type === "prose"
@@ -56,7 +57,8 @@ export const DraggableBlock = ({
                   {...provided.dragHandleProps}
                 />
               }
-              label={label}
+              label={getLabel(block)}
+              description={description}
               icon={icon}
             />
           </VStack>
