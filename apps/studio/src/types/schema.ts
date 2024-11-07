@@ -5,6 +5,8 @@ import {
   type VerticalLayout,
 } from "@jsonforms/core"
 
+import type { LinkTypes } from "~/features/editing-experience/components/LinkEditor/constants"
+
 export type IsomerExtendedJsonSchema = JsonSchema & {
   groups?: {
     label: string
@@ -22,4 +24,8 @@ export function isVerticalLayout(
   uischema: UISchemaElement,
 ): uischema is VerticalLayout {
   return uischema.type === "VerticalLayout" && "elements" in uischema
+}
+
+export type IsomerExtendedLinkJsonSchema = JsonSchema & {
+  linkTypes: LinkTypes[]
 }

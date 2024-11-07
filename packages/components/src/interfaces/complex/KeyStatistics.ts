@@ -41,6 +41,7 @@ export const KeyStatisticsSchema = Type.Object(
         title: "Link destination",
         description: "When this is clicked, open:",
         format: "link",
+        linkTypes: ["page"],
       }),
     ),
   },
