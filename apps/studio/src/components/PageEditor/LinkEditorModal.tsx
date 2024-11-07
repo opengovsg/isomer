@@ -1,5 +1,4 @@
 import type { IconType } from "react-icons"
-import { useParams } from "next/navigation"
 import {
   Box,
   FormControl,
@@ -36,6 +35,10 @@ import { FileAttachment } from "./FileAttachment"
 
 const editSiteSchema = z.object({
   siteId: z.coerce.number(),
+})
+
+const linkSchema = z.object({
+  linkId: z.coerce.string().optional(),
 })
 
 interface PageLinkElementProps {
@@ -119,7 +122,7 @@ const LinkEditorModalContent = ({
   // and ties the link editor to the url path.
   // we should instead just pass the component directly rather than using slots
 
-  const { linkId } = useParams()
+  const { linkId } = useQueryParse(linkSchema)
 
   return (
     <ModalContent>
