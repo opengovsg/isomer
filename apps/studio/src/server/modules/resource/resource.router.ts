@@ -493,14 +493,14 @@ export const resourceRouter = router({
       return query.select(["role"]).execute()
     }),
 
-  getAncestryOf: protectedProcedure
+  getAncestryWithSelf: protectedProcedure
     .input(getAncestrySchema)
     .query(async ({ input: { siteId, resourceId } }) => {
       if (!resourceId) {
         return []
       }
 
-      const ancestors = await db
+      const ancestorsWithSelf = await db
         .withRecursive("Resources", (eb) =>
           eb
             .selectFrom("Resource")
@@ -512,6 +512,13 @@ export const resourceRouter = router({
             ])
             .where("Resource.siteId", "=", Number(siteId))
             .where("Resource.id", "=", resourceId)
+            .where((eb) =>
+              // to exclude root page
+              eb.and([
+                eb("Resource.permalink", "is not", null),
+                eb("Resource.permalink", "!=", ""),
+              ]),
+            )
             .unionAll(
               eb
                 .selectFrom("Resource")
@@ -533,6 +540,6 @@ export const resourceRouter = router({
         ])
         .execute()
 
-      return ancestors.reverse().slice(0, -1)
+      return ancestorsWithSelf.reverse()
     }),
 })
