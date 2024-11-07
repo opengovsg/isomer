@@ -1,9 +1,18 @@
 import { TRPCError } from "@trpc/server"
 
+import { isValidEmail } from "~/utils/email"
 import { db } from "../database"
 
 export const isEmailWhitelisted = async (email: string) => {
   const lowercaseEmail = email.toLowerCase()
+
+  // Extra guard even if Zod validation has already checked
+  if (!isValidEmail(lowercaseEmail)) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Please sign in with a valid email address.",
+    })
+  }
 
   // Step 1: Check if the exact email address is whitelisted
   const exactMatch = await db
@@ -24,7 +33,7 @@ export const isEmailWhitelisted = async (email: string) => {
   if (emailParts.length !== 2 && !emailParts[1]) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "An invalid email was provided",
+      message: "Please sign in with a valid email address.",
     })
   }
 
