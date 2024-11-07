@@ -159,7 +159,7 @@ const LinkEditorModalContent = ({
             <LinkEditorContextProvider
               linkTypes={linkTypes}
               linkHref={linkHref ?? ""}
-              onChange={(value) => setValue("linkHref", value)}
+              onChange={(href) => setValue("linkHref", href)}
               error={errors.linkHref?.message}
             >
               <ModalLinkEditor
