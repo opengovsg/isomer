@@ -81,6 +81,7 @@ const PageLinkModalContent = ({
               {description || "When this link is clicked, open..."}
             </FormLabel>
             <ResourceSelector
+              queryFn={trpc.resource.getChildrenOf.useInfiniteQuery}
               onChange={(resourceId) => setValue("destination", resourceId)}
               selectedResourceId={destination}
             />

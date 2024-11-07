@@ -19,13 +19,23 @@ import { trpc } from "~/utils/trpc"
 import { ResourceItem } from "./ResourceItem"
 
 interface ResourceSelectorProps {
-  selectedResourceId?: string
+  queryFn:
+    | typeof trpc.resource.getChildrenOf.useInfiniteQuery
+    | typeof trpc.resource.getFolderChildrenOf.useInfiniteQuery
   onChange: (resourceId: string) => void
+  selectedResourceId?: string
+  existingResource?: PendingMoveResource | null
+}
+
+const generatePermalinkPrefix = (parents: PendingMoveResource[]) => {
+  return parents.map((parent) => parent.permalink).join("/")
 }
 
 const SuspensableResourceSelector = ({
-  selectedResourceId,
+  queryFn,
   onChange,
+  selectedResourceId,
+  existingResource,
 }: ResourceSelectorProps) => {
   // NOTE: This is the stack of user's navigation through the resource tree
   // NOTE: We should always start the stack from `/` (root)
@@ -38,20 +48,19 @@ const SuspensableResourceSelector = ({
   const moveDest = resourceStack[resourceStack.length - 1]
   const parentDest = resourceStack[resourceStack.length - 2]
   const curResourceId = moveDest?.resourceId
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    trpc.resource.getChildrenOf.useInfiniteQuery(
-      {
-        resourceId:
-          (isResourceHighlighted
-            ? parentDest?.resourceId
-            : moveDest?.resourceId) ?? null,
-        siteId: String(siteId),
-        limit: 25,
-      },
-      {
-        getNextPageParam: (lastPage) => lastPage.nextOffset,
-      },
-    )
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = queryFn(
+    {
+      resourceId:
+        (isResourceHighlighted
+          ? parentDest?.resourceId
+          : moveDest?.resourceId) ?? null,
+      siteId: String(siteId),
+      limit: 25,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextOffset,
+    },
+  )
   const ancestryStack: PendingMoveResource[] = trpc.resource.getAncestryWithSelf
     .useSuspenseQuery({
       siteId: String(siteId),
@@ -80,7 +89,7 @@ const SuspensableResourceSelector = ({
     resourceStack.length > 1
 
   return (
-    <VStack alignItems="flex-start">
+    <VStack alignItems="flex-start" w="100%">
       <Box
         borderRadius="md"
         border="1px solid"
@@ -140,6 +149,9 @@ const SuspensableResourceSelector = ({
 
         {data?.pages.map(({ items }) =>
           items.map((item) => {
+            const isItemDisabled: boolean =
+              item.id === existingResource?.resourceId
+
             const isItemHighlighted: boolean =
               isResourceHighlighted && item.id === curResourceId
 
@@ -151,7 +163,7 @@ const SuspensableResourceSelector = ({
               <ResourceItem
                 {...item}
                 key={item.id}
-                isDisabled={false}
+                isDisabled={isItemDisabled}
                 isHighlighted={isItemHighlighted}
                 handleOnClick={() => {
                   if (isItemHighlighted) {
@@ -194,7 +206,17 @@ const SuspensableResourceSelector = ({
       </Box>
       {!!moveDest && (
         <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">
-          <Text textStyle="caption-1">You selected /{moveDest.permalink}</Text>
+          <Flex flexDirection="column" gap="0.25rem">
+            <Text textStyle="caption-1">
+              You selected /{moveDest.permalink}
+            </Text>
+            {existingResource && (
+              <Text textStyle="caption-2">
+                The URL for {existingResource.title} will change to{" "}
+                {`${generatePermalinkPrefix(resourceStack)}/${existingResource.permalink}`}
+              </Text>
+            )}
+          </Flex>
         </Box>
       )}
     </VStack>

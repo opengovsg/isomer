@@ -24,6 +24,7 @@ import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEdi
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
+import { trpc } from "~/utils/trpc"
 import { ResourceSelector } from "../ResourceSelector"
 import { FileAttachment } from "./FileAttachment"
 
@@ -43,6 +44,7 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
 
   return (
     <ResourceSelector
+      queryFn={trpc.resource.getChildrenOf.useInfiniteQuery}
       onChange={(resourceId) =>
         onChange(getReferenceLink({ siteId: String(siteId), resourceId }))
       }
