@@ -67,7 +67,7 @@ export function JsonFormsRefControl({
 
   return (
     <>
-      <Box as={FormControl} isInvalid={!!errors}>
+      <Box as={FormControl}>
         <FormLabel>{label}</FormLabel>
         <Flex
           px="1rem"
@@ -99,8 +99,14 @@ export function JsonFormsRefControl({
           ) : (
             <>
               <Text>Choose a page or file to link this Collection item to</Text>
-              <Button onClick={onOpen} variant="link">
-                <Text textStyle="subhead-2">Link something...</Text>
+              <Button
+                onClick={onOpen}
+                variant="link"
+                aria-labelledby="button label"
+              >
+                <Text id="button label" textStyle="subhead-2">
+                  Link something...
+                </Text>
               </Button>{" "}
             </>
           )}
