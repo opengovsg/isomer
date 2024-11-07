@@ -2,6 +2,9 @@ import type { IsomerSchema, ProseContent } from "@opengovsg/isomer-components"
 
 type NestedObject = Record<string, unknown>
 
+// Manually iterate through the ProseContent object to get the text content
+// This is a simple recursive approach to extract text from nested content
+// Much less complex than other methods like rendering to DOM and extracting text
 function getTextContentOfProse(content: ProseContent): string {
   const values: string[] = []
 
