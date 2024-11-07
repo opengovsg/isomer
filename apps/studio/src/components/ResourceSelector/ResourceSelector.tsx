@@ -52,15 +52,32 @@ const SuspensableResourceSelector = ({
         getNextPageParam: (lastPage) => lastPage.nextOffset,
       },
     )
-  const shouldShowBackButton: boolean =
-    (resourceStack.length === 1 && !isResourceHighlighted) ||
-    resourceStack.length > 1
+  const ancestryStack: PendingMoveResource[] = trpc.resource.getAncestryWithSelf
+    .useSuspenseQuery({
+      siteId: String(siteId),
+      resourceId: selectedResourceId,
+    })[0]
+    .map((resource) => ({ ...resource, resourceId: resource.id }))
+
+  useEffect(() => {
+    if (
+      ancestryStack.length <= 0 ||
+      JSON.stringify(ancestryStack) === JSON.stringify(resourceStack)
+    ) {
+      return
+    }
+    setResourceStack(ancestryStack)
+  }, [])
 
   useEffect(() => {
     if (curResourceId) {
       onChange(curResourceId)
     }
   }, [curResourceId])
+
+  const shouldShowBackButton: boolean =
+    (resourceStack.length === 1 && !isResourceHighlighted) ||
+    resourceStack.length > 1
 
   return (
     <VStack alignItems="flex-start">
