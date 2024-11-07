@@ -1,4 +1,4 @@
-import { Suspense, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import {
   Box,
   Flex,
@@ -55,6 +55,12 @@ const SuspensableResourceSelector = ({
   const shouldShowBackButton: boolean =
     (resourceStack.length === 1 && !isResourceHighlighted) ||
     resourceStack.length > 1
+
+  useEffect(() => {
+    if (curResourceId) {
+      onChange(curResourceId)
+    }
+  }, [curResourceId])
 
   return (
     <VStack alignItems="flex-start">
