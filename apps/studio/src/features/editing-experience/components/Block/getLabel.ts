@@ -35,8 +35,6 @@ function removeLeadingSlash(str: string): string {
 export default function getLabel(
   block: IsomerSchema["content"][number],
 ): string {
-  // console.log(111, block)
-
   switch (block.type) {
     case "accordion":
       return block.summary
