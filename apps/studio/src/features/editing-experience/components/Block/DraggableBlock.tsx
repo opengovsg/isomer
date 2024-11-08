@@ -56,7 +56,7 @@ export const DraggableBlock = ({
                   {...provided.dragHandleProps}
                 />
               }
-              label={renderLabel(block)}
+              label={renderLabel({ component: block })}
               description={description}
               icon={icon}
             />

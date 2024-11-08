@@ -1,5 +1,5 @@
-import type { ProseContent } from "~/interfaces/native/Prose"
-import type { IsomerSchema } from "~/types/schema"
+import type { ProseContent } from "~/interfaces"
+import type { IsomerSchema } from "~/types"
 
 type NestedObject = Record<string, unknown>
 
@@ -36,36 +36,42 @@ function removeLeadingSlash(str: string): string {
   return str.slice(1)
 }
 
-export function renderLabel(block: IsomerSchema["content"][number]): string {
-  switch (block.type) {
+export function renderLabel({
+  component,
+}: {
+  component: IsomerSchema["content"][number]
+}): string {
+  switch (component.type) {
     case "accordion":
-      return block.summary
+      return component.summary
     case "callout":
-      return getTextContentOfProse(block.content.content)
+      return getTextContentOfProse(component.content.content)
     case "hero":
       return "" // should not show up in the sidebar
     case "iframe":
       return "Iframe" // not supported in the sidebar yet
     case "image":
-      return removeLeadingSlash(block.src)
+      return removeLeadingSlash(component.src)
     case "infobar":
-      return block.title
+      return component.title
     case "infocards":
-      return block.title
+      return component.title
     case "infocols":
-      return block.title
+      return component.title
     case "infopic":
-      return block.title
+      return component.title
     case "contentpic":
-      const textContentOfProse = getTextContentOfProse(block.content.content)
+      const textContentOfProse = getTextContentOfProse(
+        component.content.content,
+      )
       return textContentOfProse === ""
-        ? removeLeadingSlash(block.imageSrc)
+        ? removeLeadingSlash(component.imageSrc)
         : textContentOfProse
     case "keystatistics":
-      return block.title
+      return component.title
     case "prose":
-      return getTextContentOfProse(block.content)
+      return getTextContentOfProse(component.content)
     default:
-      return (block as unknown as { type: string }).type || ""
+      return (component as unknown as { type: string }).type || ""
   }
 }
