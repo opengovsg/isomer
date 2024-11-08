@@ -22,7 +22,7 @@ export const ContentPageHeaderSchema = Type.Object(
     ),
     buttonUrl: Type.Optional(
       Type.String({
-        title: "Button URL",
+        title: "Button destination",
         description: "The URL the button should link to",
         format: "link",
         pattern: LINK_HREF_PATTERN,
