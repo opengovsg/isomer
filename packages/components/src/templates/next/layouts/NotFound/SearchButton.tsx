@@ -1,5 +1,7 @@
 "use client"
 
+import { useLayoutEffect, useState } from "react"
+
 import { NotFoundPageSchemaType } from "~/engine"
 import { LinkButton } from "../../components/internal/LinkButton"
 
@@ -7,7 +9,20 @@ type NotFoundSearchButtonProps = Pick<NotFoundPageSchemaType, "LinkComponent">
 export const NotFoundSearchButton = ({
   LinkComponent,
 }: NotFoundSearchButtonProps) => {
-  const permalink = window.location.pathname
+  const [permalink, setPermalink] = useState("")
+
+  useLayoutEffect(() => {
+    // If no userAgent prop is provided, and we're on the client-side, set navigatorUserAgent from navigator
+    // The check for typeof window and navigator ensures this only runs in browser environments, not during server-side rendering
+    // We use setNavigatorUserAgent to update the state, which will trigger a re-render with the correct user agent
+    if (
+      typeof window !== "undefined" &&
+      typeof window.location !== "undefined"
+    ) {
+      setPermalink(window.location.pathname)
+    }
+  }, [])
+
   const lastUrlSegment = permalink.split("/").at(-1) ?? ""
   // NOTE: Replace all non-alphanumeric characters with spaces
   // then remove all spaces and join by `+`.
