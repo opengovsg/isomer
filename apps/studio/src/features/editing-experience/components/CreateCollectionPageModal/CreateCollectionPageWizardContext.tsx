@@ -103,7 +103,7 @@ const useCreateCollectionPageWizardContext = ({
         onError: (error) => {
           if (
             error.data?.code === "CONFLICT" &&
-            values.type === "CollectionPage"
+            values.type === ResourceType.CollectionPage
           ) {
             formMethods.setError(
               "permalink",
@@ -113,7 +113,7 @@ const useCreateCollectionPageWizardContext = ({
             return
           } else if (
             error.data?.code === "CONFLICT" &&
-            values.type === "CollectionLink"
+            values.type === ResourceType.CollectionLink
           ) {
             formMethods.setError(
               "title",

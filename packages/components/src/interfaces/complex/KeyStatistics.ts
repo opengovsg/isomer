@@ -28,6 +28,14 @@ export const KeyStatisticsSchema = Type.Object(
         maxItems: 4,
       },
     ),
+    label: Type.Optional(
+      Type.String({
+        title: "Link text",
+        maxLength: 50,
+        description:
+          "Add a link under your block. Avoid generic text such as “Click here” or “Learn more”",
+      }),
+    ),
     url: Type.Optional(
       Type.String({
         title: "Link destination",
@@ -37,6 +45,12 @@ export const KeyStatisticsSchema = Type.Object(
     ),
   },
   {
+    groups: [
+      {
+        label: "Add a call-to-action",
+        fields: ["label", "url"],
+      },
+    ],
     title: "KeyStatistics component",
     description: "A component that displays KeyStatistics",
   },

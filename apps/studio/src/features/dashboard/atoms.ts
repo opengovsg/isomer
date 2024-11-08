@@ -22,3 +22,9 @@ export const DEFAULT_FOLDER_SETTINGS_MODAL_STATE = {
 export const folderSettingsModalAtom = atom<FolderSettingsModalState>(
   DEFAULT_FOLDER_SETTINGS_MODAL_STATE,
 )
+
+export interface PageSettingsState {
+  pageId: string
+  type: typeof ResourceType.Page | typeof ResourceType.CollectionPage
+}
+export const pageSettingsModalAtom = atom<null | PageSettingsState>(null)

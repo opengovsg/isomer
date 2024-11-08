@@ -28,6 +28,32 @@ There are a few steps to getting started:
 4. Add the user to the `isomerpages` organisation by adding them to the file [here](https://github.com/opengovsg/isomer-infra/blob/main/src/github/constants.ts)
 5. Add the user to the relevant github teams [here](https://github.com/orgs/opengovsg/teams?query=isomer) by asking the maintainer
 
+### Cutting a release
+
+We run releases via the `publish` event. Hence, in order to cut a release, we have to go through the following steps:
+
+1. first, select the release commit
+2. generate a tag for the release commit from the previous tag as follows:
+   - if you're making a hotfix, add a 0.0.1 to the previous version
+   - if you're making a minor upgrade, add a 0.1 to the previous version.
+   - for all purposes, all our releases are minor upgrades so we will not be incrementing the major version number
+3. push the tag to the remote origin
+4. go to github and click on `Tags`
+5. next, click on releases and draft a new release
+6. choose the tag you have previously created
+7. generate release notes (this can be done automatically via the button)
+8. publish the release
+
+### Running database migrations
+
+1. first, add the relevant `.pem` file to the `apps/studio/ssh` folder
+   - this can be found by searching for `AWS Isomer Next <env> Bastion SSH Key` in your 1Password vault
+2. Next, duplicate the `.env.example` in `apps/studio` to `.ssh/.env.<env>`
+3. Fill in the relevant information by searching for `Isomer Next <env> Database` inside 1password
+4. Next, run `npm run jump:<env>` from within the `apps/studio` folder
+5. Next, run `npm run migrate:<env>` from within the `apps/studio` folder
+6. (Optional) If you need to run a seed, run `npm run db:seed`
+
 ### Extra tools
 
 1. Vercel

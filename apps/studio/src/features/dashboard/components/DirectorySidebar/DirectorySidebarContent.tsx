@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { Accordion, AccordionItem, AccordionPanel } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
-import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 import { ICON_MAPPINGS } from "./constants"
@@ -36,16 +36,16 @@ export const DirectorySidebarContent = ({
   const isActive = useIsActive(resourceId, item.type)
 
   const href = useMemo(() => {
-    if (item.type === "RootPage") {
+    if (item.type === ResourceType.RootPage) {
       return `/sites/${siteId}`
     }
     return `/sites/${siteId}/${getResourceSubpath(item.type)}/${resourceId}`
   }, [siteId, item.type, resourceId])
 
   const isExpandable =
-    item.type === "Folder" ||
-    item.type === "Collection" ||
-    item.type === "RootPage"
+    item.type === ResourceType.Folder ||
+    item.type === ResourceType.Collection ||
+    item.type === ResourceType.RootPage
 
   const isEnabled = expandedIndex === 0 || isActive
 

@@ -1,5 +1,6 @@
 import type { SelectExpression } from "kysely"
 import { TRPCError } from "@trpc/server"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { SafeKysely } from "../database"
@@ -102,7 +103,7 @@ export const incrementVersion = async ({
           id: parseInt(page.id),
           publishedVersionId: newVersion.versionId,
           draftBlobId: null,
-          state: "Published",
+          state: ResourceState.Published,
           siteId,
           parentId: page.parentId ? parseInt(page.parentId) : undefined,
         },

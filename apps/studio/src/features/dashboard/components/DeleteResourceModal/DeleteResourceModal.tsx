@@ -29,7 +29,14 @@ import {
 
 const getResourceLabel = (
   resourceType: ResourceType,
-): Lowercase<Extract<ResourceType, "Page" | "Collection" | "Folder">> => {
+): Lowercase<
+  Extract<
+    ResourceType,
+    | typeof ResourceType.Page
+    | typeof ResourceType.Collection
+    | typeof ResourceType.Folder
+  >
+> => {
   if (!isAllowedToHaveChildren(resourceType)) {
     return "page"
   }

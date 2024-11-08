@@ -3,7 +3,7 @@ import OrderedList from "../OrderedList"
 import Paragraph from "../Paragraph"
 import UnorderedList from "../UnorderedList"
 
-const ListItem = ({ content, LinkComponent, site }: ListItemProps) => {
+const ListItem = ({ content, level, LinkComponent, site }: ListItemProps) => {
   return (
     <li className="my-[15px] pl-2 sm:my-5 [&_>_p]:inline">
       {content.map((item, index) => {
@@ -21,6 +21,7 @@ const ListItem = ({ content, LinkComponent, site }: ListItemProps) => {
             <OrderedList
               key={index}
               {...item}
+              level={!!level ? level + 1 : 1}
               LinkComponent={LinkComponent}
               site={site}
             />
@@ -30,6 +31,7 @@ const ListItem = ({ content, LinkComponent, site }: ListItemProps) => {
             <UnorderedList
               key={index}
               {...item}
+              level={!!level ? level + 1 : 1}
               LinkComponent={LinkComponent}
               site={site}
             />

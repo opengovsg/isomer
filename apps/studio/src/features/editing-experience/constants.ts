@@ -39,3 +39,5 @@ export const TYPE_TO_ICON: Record<
   // iframe-formsg
   // iframe-youtube
 }
+
+export const REFERENCE_LINK_REGEX = /\[resource:(\d+):(\d+)\]/

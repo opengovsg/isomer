@@ -175,12 +175,12 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
 
   const children = []
 
-  // Check if _pages.json exists
-  const pageOrderFilePath = path.join(fullPath, "_pages.json")
+  // Check if _meta.json exists
+  const pageOrderFilePath = path.join(fullPath, "_meta.json")
   const pageOrderData = await getSchemaJson(pageOrderFilePath)
 
   if (pageOrderData) {
-    const childPages = pageOrderData["pages"]
+    const childPages = pageOrderData["order"]
 
     const childEntries = await Promise.all(
       childPages.map((child) => {
@@ -197,8 +197,8 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
 
     children.push(...childEntries.filter((entry) => entry !== null))
   } else {
-    // If _pages.json does not exist, process files in the directory in arbitrary order
-    console.log("No _pages.json found for:", relativePath)
+    // If _meta.json does not exist, process files in the directory in arbitrary order
+    console.log("No _meta.json found for:", relativePath)
 
     const childEntries = await Promise.all(
       fileEntries

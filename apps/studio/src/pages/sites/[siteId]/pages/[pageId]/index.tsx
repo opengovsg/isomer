@@ -1,4 +1,5 @@
 import { Grid, GridItem } from "@chakra-ui/react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -60,7 +61,10 @@ const PageEditingView = () => {
 
 EditPage.getLayout = (page) => {
   return (
-    <PermissionsBoundary resourceType="Page" page={PageEditingLayout(page)} />
+    <PermissionsBoundary
+      resourceType={ResourceType.Page}
+      page={PageEditingLayout(page)}
+    />
   )
 }
 
