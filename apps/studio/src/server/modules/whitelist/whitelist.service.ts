@@ -30,14 +30,14 @@ export const isEmailWhitelisted = async (email: string) => {
 
   // Step 2: Check if the exact email domain is whitelisted
   const emailParts = lowercaseEmail.split("@")
-  if (emailParts.length !== 2 && !emailParts[1]) {
+  if (emailParts.length !== 2) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "Please sign in with a valid email address.",
     })
   }
 
-  const emailDomain = `@${emailParts[1]}`
+  const emailDomain = `@${emailParts.pop()}`
   const domainMatch = await db
     .selectFrom("Whitelist")
     .where("email", "=", emailDomain)
