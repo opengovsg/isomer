@@ -9,4 +9,4 @@ export const RenderEngine = (props: IsomerPageSchemaType) => {
   return null
 }
 
-export default RenderEngine
+export { renderLabel } from "~/templates/next"

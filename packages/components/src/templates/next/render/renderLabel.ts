@@ -1,4 +1,5 @@
-import type { IsomerSchema, ProseContent } from "@opengovsg/isomer-components"
+import type { ProseContent } from "~/interfaces/native/Prose"
+import type { IsomerSchema } from "~/types/schema"
 
 type NestedObject = Record<string, unknown>
 
@@ -35,14 +36,11 @@ function removeLeadingSlash(str: string): string {
   return str.slice(1)
 }
 
-export default function getLabel(
-  block: IsomerSchema["content"][number],
-): string {
+export function renderLabel(block: IsomerSchema["content"][number]): string {
   switch (block.type) {
     case "accordion":
       return block.summary
     case "callout":
-      console.log(11111, block.content.content)
       return getTextContentOfProse(block.content.content)
     case "hero":
       return "" // should not show up in the sidebar

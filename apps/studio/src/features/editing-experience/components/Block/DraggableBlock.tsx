@@ -2,12 +2,11 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { useMemo } from "react"
 import { VStack } from "@chakra-ui/react"
 import { Draggable } from "@hello-pangea/dnd"
-import { getComponentSchema } from "@opengovsg/isomer-components"
+import { getComponentSchema, renderLabel } from "@opengovsg/isomer-components"
 
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { TYPE_TO_ICON } from "../../constants"
 import { BaseBlock, BaseBlockDragHandle } from "./BaseBlock"
-import getLabel from "./getLabel"
 
 interface DraggableBlockProps {
   block: IsomerSchema["content"][number]
@@ -57,7 +56,7 @@ export const DraggableBlock = ({
                   {...provided.dragHandleProps}
                 />
               }
-              label={getLabel(block)}
+              label={renderLabel(block)}
               description={description}
               icon={icon}
             />
