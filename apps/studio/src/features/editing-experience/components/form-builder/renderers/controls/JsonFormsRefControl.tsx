@@ -58,7 +58,6 @@ export function JsonFormsRefControl({
   handleChange,
   path,
   label,
-  errors,
 }: ControlProps) {
   const dataString = data && typeof data === "string" ? data : ""
   const { isOpen, onOpen, onClose } = useDisclosure()
