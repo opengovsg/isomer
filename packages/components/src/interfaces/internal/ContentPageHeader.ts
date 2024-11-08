@@ -15,7 +15,8 @@ export const ContentPageHeaderSchema = Type.Object(
     }),
     buttonLabel: Type.Optional(
       Type.String({
-        title: "Button label",
+        title:
+          "A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”",
         description: "The label for the button",
       }),
     ),
