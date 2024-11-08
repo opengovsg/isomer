@@ -31,6 +31,10 @@ export const DraggableBlock = ({
       : (getComponentSchema(block.type).title ?? "Unknown")
   }, [block.type])
 
+  const label: string = renderLabel({ component: block })
+
+  const isLabelEmpty: boolean = label === ""
+
   return (
     <Draggable
       disableInteractiveElementBlocking
@@ -56,8 +60,8 @@ export const DraggableBlock = ({
                   {...provided.dragHandleProps}
                 />
               }
-              label={renderLabel({ component: block })}
-              description={description}
+              label={isLabelEmpty ? description : label}
+              description={isLabelEmpty ? undefined : description}
               icon={icon}
             />
           </VStack>

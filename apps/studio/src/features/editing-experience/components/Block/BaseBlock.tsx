@@ -40,7 +40,7 @@ export const BaseBlock = ({
         shadow: "0px 1px 6px 0px #1361F026",
       }}
       bg="white"
-      py={label ? "0.75rem" : "0.5rem"}
+      py={description ? "0.75rem" : "0.5rem"}
       px="0.75rem"
       flexDirection="row"
       align="center"
