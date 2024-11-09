@@ -34,11 +34,11 @@ export const DraggableBlock = ({
       : (getComponentSchema(block.type).title ?? "Unknown")
   }, [block.type])
 
-  const label: string = renderComponentPreviewText({
+  const previewText: string = renderComponentPreviewText({
     component: block,
   }) as string
 
-  const isLabelEmpty: boolean = label === ""
+  const isPreviewTextEmpty: boolean = previewText === ""
 
   return (
     <Draggable
@@ -65,8 +65,8 @@ export const DraggableBlock = ({
                   {...provided.dragHandleProps}
                 />
               }
-              label={isLabelEmpty ? description : label}
-              description={isLabelEmpty ? undefined : description}
+              label={isPreviewTextEmpty ? description : previewText}
+              description={isPreviewTextEmpty ? undefined : description}
               icon={icon}
             />
           </VStack>
