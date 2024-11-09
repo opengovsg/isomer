@@ -25,7 +25,7 @@ function getTextContentOfProse(content: ProseContent): string {
 }
 
 function removeLeadingSlash(str: string): string {
-  return str.slice(1)
+  return str.startsWith("/") ? str.slice(1) : str
 }
 
 export function renderComponentPreviewText({
