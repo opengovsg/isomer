@@ -54,6 +54,7 @@ export const BaseBlock = ({
           p="0.25rem"
           bg="interaction.main-subtle.default"
           borderRadius="4px"
+          mr="0.25rem"
         >
           <Icon as={icon} fontSize="0.75rem" color="base.content.default" />
         </Flex>
