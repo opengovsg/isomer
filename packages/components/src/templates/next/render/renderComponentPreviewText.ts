@@ -14,7 +14,9 @@ function getTextContentOfProse(content: ProseContent): string {
       return
     }
     for (const key in obj) {
-      recursiveSearch(obj[key] as Record<string, unknown>)
+      if (typeof obj[key] === "object" && obj[key] !== null) {
+        recursiveSearch(obj[key] as Record<string, unknown>)
+      }
     }
   }
 
