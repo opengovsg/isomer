@@ -1,34 +1,24 @@
-import type { ProseContent } from "~/interfaces"
+import Ajv from "ajv"
+
+import type { ProseContent, TextProps } from "~/interfaces"
 import type { IsomerSchema } from "~/types"
+import { TextSchema } from "~/interfaces"
 
-type NestedObject = Record<string, unknown>
-
-// Manually iterate through the ProseContent object to get the text content
-// This is a simple recursive approach to extract text from nested content
-// Much less complex than other methods like rendering to DOM and extracting text
 function getTextContentOfProse(content: ProseContent): string {
   const values: string[] = []
 
-  function recursiveSearch(obj: NestedObject) {
-    // Check if the current object contains both "text" and "type: text"
-    if (
-      typeof obj.text === "string" &&
-      typeof obj.type === "string" &&
-      obj.type === "text"
-    ) {
-      values.push(obj.text.trim())
+  function recursiveSearch(obj: Record<string, unknown>) {
+    const isTextSchema = new Ajv().compile(TextSchema)
+    if (isTextSchema(obj)) {
+      values.push((obj as TextProps).text.trim())
+      return
     }
-
-    // Loop through each key in the object
     for (const key in obj) {
-      if (typeof obj[key] === "object" && obj[key] !== null) {
-        // Recurse if the property is an object
-        recursiveSearch(obj[key] as NestedObject)
-      }
+      recursiveSearch(obj[key] as Record<string, unknown>)
     }
   }
 
-  recursiveSearch(content as unknown as NestedObject)
+  recursiveSearch(content as unknown as Record<string, unknown>)
   return values.join(" ")
 }
 
