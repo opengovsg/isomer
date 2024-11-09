@@ -36,7 +36,7 @@ export const DraggableBlock = ({
 
   const previewText: string = renderComponentPreviewText({
     component: block,
-  }) as string
+  })
 
   const isPreviewTextEmpty: boolean = previewText === ""
 
