@@ -2,7 +2,10 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { useMemo } from "react"
 import { VStack } from "@chakra-ui/react"
 import { Draggable } from "@hello-pangea/dnd"
-import { getComponentSchema, renderLabel } from "@opengovsg/isomer-components"
+import {
+  getComponentSchema,
+  renderComponentPreviewText,
+} from "@opengovsg/isomer-components"
 
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { TYPE_TO_ICON } from "../../constants"
@@ -31,7 +34,9 @@ export const DraggableBlock = ({
       : (getComponentSchema(block.type).title ?? "Unknown")
   }, [block.type])
 
-  const label: string = renderLabel({ component: block })
+  const label: string = renderComponentPreviewText({
+    component: block,
+  }) as string
 
   const isLabelEmpty: boolean = label === ""
 

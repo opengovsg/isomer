@@ -36,7 +36,7 @@ function removeLeadingSlash(str: string): string {
   return str.slice(1)
 }
 
-export function renderLabel({
+export function renderComponentPreviewText({
   component,
 }: {
   component: IsomerSchema["content"][number]
