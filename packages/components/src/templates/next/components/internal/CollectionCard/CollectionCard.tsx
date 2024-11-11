@@ -2,27 +2,12 @@
 
 import { Text } from "react-aria-components"
 
-import type { CollectionCardProps as CollectionCardPropsInterface } from "~/interfaces"
+import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight, getFormattedDate } from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { Link } from "../Link"
-
-// NOTE: This is client-side rendering and we want as much pre-processing
-// on the server as possible to improve performance + reduce file and bandwidth size
-// Thus, only the necessary props are passed to this component.
-type CollectionCardProps = Pick<
-  CollectionCardPropsInterface,
-  "lastUpdated" | "category" | "title" | "description" | "image"
-> & {
-  referenceLinkHref: string | undefined
-  imageSrc: string | undefined
-  itemTitle: string
-}
-// NOTE: This is to ensure no additional props are being passed to this component
-export type ProcessedCollectionCardProps = CollectionCardProps &
-  Record<string, never>
 
 const collectionCardLinkStyle = tv({
   extend: focusVisibleHighlight,

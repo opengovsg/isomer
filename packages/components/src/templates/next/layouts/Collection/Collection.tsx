@@ -1,6 +1,5 @@
 import type { CollectionPageSchemaType, IsomerSiteProps } from "~/engine"
-import type { CollectionCardProps } from "~/interfaces"
-import type { ProcessedCollectionCardProps } from "~/templates/next/components/internal/CollectionCard"
+import type { AllCardProps, ProcessedCollectionCardProps } from "~/interfaces"
 import {
   getBreadcrumbFromSiteMap,
   getParsedDate,
@@ -15,7 +14,7 @@ import { getAvailableFilters, shouldShowDate } from "./utils"
 const getCollectionItems = (
   site: IsomerSiteProps,
   permalink: string,
-): CollectionCardProps[] => {
+): AllCardProps[] => {
   let currSitemap = site.siteMap
   const permalinkParts = permalink.split("/")
 
@@ -87,7 +86,7 @@ const getCollectionItems = (
         variant: "article",
         url: item.permalink,
       }
-    }) satisfies CollectionCardProps[]
+    }) satisfies AllCardProps[]
 
   return transformedItems.sort((a, b) => {
     // Sort by last updated date, tiebreaker by title
@@ -105,11 +104,11 @@ const getCollectionItems = (
     }
 
     return a.rawDate < b.rawDate ? 1 : -1
-  }) as CollectionCardProps[]
+  }) as AllCardProps[]
 }
 
 const processedCollectionItems = (
-  items: CollectionCardProps[],
+  items: AllCardProps[],
 ): ProcessedCollectionCardProps[] => {
   return items.map((item) => {
     const {
@@ -130,7 +129,7 @@ const processedCollectionItems = (
       description,
       image,
       referenceLinkHref: getReferenceLinkHref(
-        item.url,
+        url,
         site.siteMap,
         site.assetsBaseUrl,
       ),

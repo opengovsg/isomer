@@ -7,7 +7,7 @@ import {
 } from "react"
 
 import type { AppliedFilter } from "../../types/Filter"
-import type { ProcessedCollectionCardProps } from "~/templates/next/components/internal/CollectionCard"
+import type { ProcessedCollectionCardProps } from "~/interfaces"
 import {
   getFilteredItems,
   getPaginatedItems,

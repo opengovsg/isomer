@@ -1,5 +1,5 @@
 import type { AppliedFilter, Filter as FilterType } from "../../types/Filter"
-import type { ProcessedCollectionCardProps } from "~/templates/next/components/internal/CollectionCard"
+import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { getParsedDate } from "~/utils"
 
 const FILTER_ID_CATEGORY = "category"

@@ -4,8 +4,10 @@ import { useRef } from "react"
 
 import type { Filter as FilterType } from "../../types/Filter"
 import type { CollectionPageSchemaType } from "~/engine"
-import type { BreadcrumbProps } from "~/interfaces"
-import type { ProcessedCollectionCardProps } from "~/templates/next/components/internal/CollectionCard"
+import type {
+  BreadcrumbProps,
+  ProcessedCollectionCardProps,
+} from "~/interfaces"
 import { tv } from "~/lib/tv"
 import {
   BackToTopLink,

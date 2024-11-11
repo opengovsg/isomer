@@ -3,7 +3,11 @@ export {
   type ArticlePageHeaderProps,
 } from "./ArticlePageHeader"
 export type { BreadcrumbProps } from "./Breadcrumb"
-export type { CollectionCardProps } from "./CollectionCard"
+export type {
+  AllCardProps,
+  CollectionCardProps,
+  ProcessedCollectionCardProps,
+} from "./CollectionCard"
 export type { ContentProps } from "./Content"
 export {
   ContentPageHeaderSchema,
