@@ -70,7 +70,9 @@ export const LinkEditorRadio = () => {
 
   return (
     <HStack {...getRootProps()} spacing={0}>
-      {Object.entries(linkTypes).map(([key, { icon, label }]) => {
+      {Object.entries(linkTypes).map(([key, props]) => {
+        if (!props) return null
+        const { icon, label } = props
         const radio = getRadioProps({ value: key })
 
         return (
