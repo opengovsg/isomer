@@ -13,6 +13,7 @@ import {
   readPageOutputSchema,
   reorderBlobSchema,
   updatePageBlobSchema,
+  updatePageMetaSchema,
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
@@ -151,7 +152,8 @@ export const pageRouter = router({
           type !== ResourceType.Page &&
           type !== ResourceType.CollectionPage &&
           type !== ResourceType.RootPage &&
-          type !== ResourceType.IndexPage
+          type !== ResourceType.IndexPage &&
+          type !== ResourceType.FolderMeta
         ) {
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -284,7 +286,7 @@ export const pageRouter = router({
                 .selectFrom("Resource")
                 .where("Resource.id", "=", String(folderId))
                 .where("Resource.siteId", "=", siteId)
-                .where("Resource.type", "=", "Folder")
+                .where("Resource.type", "=", ResourceType.Folder)
                 .select("Resource.id")
                 .executeTakeFirst()
               if (!folder) {
@@ -349,7 +351,7 @@ export const pageRouter = router({
         .selectFrom("Resource")
         // TODO: Only return sites that the user has access to
         .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "=", "RootPage")
+        .where("Resource.type", "=", ResourceType.RootPage)
         .select(["id", "title", "draftBlobId"])
         .executeTakeFirst()
 
@@ -368,10 +370,62 @@ export const pageRouter = router({
       publishResource(ctx.logger, siteId, String(pageId), ctx.user.id),
     ),
 
+  updateMeta: protectedProcedure
+    .input(updatePageMetaSchema)
+    .mutation(async ({ ctx, input: { meta, siteId, resourceId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "update",
+      })
+      return db.transaction().execute(async (tx) => {
+        const fullPage = await getFullPageById(tx, {
+          resourceId: Number(resourceId),
+          siteId,
+        })
+
+        if (!fullPage?.content) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message:
+              "Unable to load content for the requested page, please contact Isomer Support",
+          })
+        }
+
+        const { meta: _oldMeta, ...rest } = fullPage.content
+        const pageMetaSchema = getLayoutMetadataSchema(fullPage.content.layout)
+        const validateFn = ajv.compile(pageMetaSchema)
+
+        const newMeta = safeJsonParse(meta) as PrismaJson.BlobJsonContent | null
+
+        // NOTE: if `meta` was originally passed, then we need to validate it
+        // otherwise, the meta never existed and we don't need to validate anyways
+        const isValid = !meta || validateFn(newMeta)
+
+        if (!isValid) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid metadata",
+            cause: validateFn.errors,
+          })
+        }
+
+        const newContent = !newMeta
+          ? rest
+          : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
+
+        await updateBlobById(tx, {
+          pageId: Number(resourceId),
+          content: newContent,
+          siteId,
+        })
+      })
+    }),
+
   updateSettings: protectedProcedure
     .input(pageSettingsSchema)
     .mutation(
-      async ({ ctx, input: { pageId, siteId, title, meta, ...settings } }) => {
+      async ({ ctx, input: { pageId, siteId, title, ...settings } }) => {
         await validateUserPermissionsForResource({
           userId: ctx.user.id,
           siteId,
@@ -391,47 +445,15 @@ export const pageRouter = router({
             })
           }
 
-          const { meta: _oldMeta, ...rest } = fullPage.content
-          const pageMetaSchema = getLayoutMetadataSchema(
-            fullPage.content.layout,
-          )
-          const validateFn = ajv.compile(pageMetaSchema)
-
-          const newMeta = safeJsonParse(
-            meta,
-          ) as PrismaJson.BlobJsonContent | null
-
-          // NOTE: if `meta` was originally passed, then we need to validate it
-          // otherwise, the meta never existed and we don't need to validate anyways
-          const isValid = !meta || validateFn(newMeta)
-
-          if (!isValid) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Invalid metadata",
-              cause: validateFn.errors,
-            })
-          }
-
           try {
-            const newContent = !newMeta
-              ? rest
-              : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
-
-            await updateBlobById(tx, {
-              pageId,
-              content: newContent,
-              siteId,
-            })
-
             const updatedResource = await tx
               .updateTable("Resource")
               .where("Resource.id", "=", String(pageId))
               .where("Resource.siteId", "=", siteId)
               .where("Resource.type", "in", [
-                "Page",
-                "CollectionPage",
-                "RootPage",
+                ResourceType.Page,
+                ResourceType.CollectionPage,
+                ResourceType.RootPage,
               ])
               .set({ title, ...settings })
               .returning([
@@ -457,10 +479,7 @@ export const pageRouter = router({
             // page settings immediately visible on the end site
             await publishSite(ctx.logger, siteId)
 
-            return {
-              ...updatedResource,
-              meta: newMeta,
-            }
+            return updatedResource
           } catch (err) {
             if (err instanceof TRPCError) {
               throw err

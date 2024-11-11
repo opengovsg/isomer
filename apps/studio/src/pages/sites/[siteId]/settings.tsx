@@ -16,6 +16,7 @@ import {
   Toggle,
   useToast,
 } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -222,7 +223,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
 SiteSettingsPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
-      resourceType="RootPage"
+      resourceType={ResourceType.RootPage}
       page={AdminSidebarOnlyLayout(page)}
     />
   )

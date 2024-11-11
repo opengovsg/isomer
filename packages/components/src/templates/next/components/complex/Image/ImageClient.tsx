@@ -1,6 +1,6 @@
 "use client"
 
-interface ImageClientProps {
+export interface ImageClientProps {
   src: string
   alt: string
   width: string

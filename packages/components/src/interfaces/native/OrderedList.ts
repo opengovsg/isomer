@@ -15,6 +15,7 @@ export const OrderedListSchema = orderedListSchemaBuilder(
 )
 
 export type OrderedListProps = Static<typeof OrderedListSchema> & {
+  level?: number
   LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }

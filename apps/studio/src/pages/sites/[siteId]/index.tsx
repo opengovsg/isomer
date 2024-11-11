@@ -9,12 +9,14 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
+import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { RootpageRow } from "~/features/dashboard/components/RootpageRow"
 import { CreateCollectionModal } from "~/features/editing-experience/components/CreateCollectionModal"
@@ -163,6 +165,7 @@ const SitePage: NextPageWithLayout = () => {
       <DeleteResourceModal siteId={siteId} />
       <MoveResourceModal />
       <FolderSettingsModal />
+      <PageSettingsModal />
     </>
   )
 }
@@ -170,7 +173,7 @@ const SitePage: NextPageWithLayout = () => {
 SitePage.getLayout = (page) => {
   return (
     <PermissionsBoundary
-      resourceType="RootPage"
+      resourceType={ResourceType.RootPage}
       page={AdminCmsSidebarLayout(page)}
     />
   )

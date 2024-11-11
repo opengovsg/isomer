@@ -37,7 +37,7 @@ export const collectionRouter = router({
       const resource = await getSiteResourceById({
         siteId,
         resourceId: String(resourceId),
-        type: "Collection",
+        type: ResourceType.Collection,
       })
       if (!resource) {
         throw new TRPCError({
