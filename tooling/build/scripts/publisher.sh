@@ -17,7 +17,7 @@ if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
 fi
 
 # Cloning the repository
-echo "Cloning repository..."
+echo "Cloning central repository..."
 start_time=$(date +%s)
 
 git clone --depth 1 --branch "$ISOMER_BUILD_REPO_BRANCH" https://github.com/opengovsg/isomer.git
@@ -31,8 +31,6 @@ echo "Checking out branch..."
 start_time=$(date +%s)
 git checkout $ISOMER_BUILD_REPO_BRANCH
 calculate_duration $start_time
-
-echo $(git branch)
 
 # Perform a clean of npm cache
 npm cache clean --force
