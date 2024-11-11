@@ -48,7 +48,7 @@ export const CollectionCard = ({
           {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
         </Text>
       )}
-      <div className="flex flex-col gap-3 text-base-content lg:gap-2">
+      <div className="flex flex-grow flex-col gap-3 text-base-content lg:gap-2">
         <h3 className="inline-block">
           <Link
             LinkComponent={LinkComponent}
