@@ -1,26 +1,55 @@
-import Ajv from "ajv"
-
-import type { ProseContent, TextProps } from "~/interfaces"
+import type { OrderedListProps, ProseContent } from "~/interfaces"
 import type { IsomerSchema } from "~/types"
-import { TextSchema } from "~/interfaces"
 
 function getTextContentOfProse(content: ProseContent): string {
   const values: string[] = []
 
-  function recursiveSearch(obj: Record<string, unknown>) {
-    const isTextSchema = new Ajv().compile(TextSchema)
-    if (isTextSchema(obj)) {
-      values.push((obj as TextProps).text.trim())
-      return
-    }
-    for (const key in obj) {
-      if (typeof obj[key] === "object" && obj[key] !== null) {
-        recursiveSearch(obj[key] as Record<string, unknown>)
+  function recursiveSearch(
+    content: ProseContent | OrderedListProps["content"],
+  ) {
+    content?.map((contentBlock) => {
+      switch (contentBlock.type) {
+        case "heading":
+          values.push(
+            contentBlock.content
+              ?.map((textBlock) => textBlock.text.trim())
+              .join(" ") || "",
+          )
+          break
+        case "orderedList":
+        case "unorderedList":
+          contentBlock.content.map((listItemBlock) => {
+            recursiveSearch(listItemBlock.content)
+          })
+          break
+        case "listItem":
+          recursiveSearch(contentBlock.content)
+          break
+        case "paragraph":
+          contentBlock.content
+            ?.map((paragraphContentBlock) => {
+              switch (paragraphContentBlock.type) {
+                case "text":
+                  return paragraphContentBlock.text.trim()
+                default:
+                  return ""
+              }
+            })
+            .join(" ")
+          break
+        case "table":
+          values.push(contentBlock.attrs.caption.trim())
+          break
+        case "divider":
+          break
+        default:
+          const exhaustiveCheck: never = contentBlock
+          return exhaustiveCheck
       }
-    }
+    })
   }
 
-  recursiveSearch(content as unknown as Record<string, unknown>)
+  recursiveSearch(content)
   return values.join(" ")
 }
 
