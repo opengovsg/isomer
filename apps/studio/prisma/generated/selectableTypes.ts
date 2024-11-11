@@ -14,3 +14,4 @@ export type SiteMember = Selectable<T.SiteMember>
 export type User = Selectable<T.User>
 export type VerificationToken = Selectable<T.VerificationToken>
 export type Version = Selectable<T.Version>
+export type Whitelist = Selectable<T.Whitelist>
