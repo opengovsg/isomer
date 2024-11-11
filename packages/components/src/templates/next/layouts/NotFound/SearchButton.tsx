@@ -12,9 +12,7 @@ export const NotFoundSearchButton = ({
   const [permalink, setPermalink] = useState("")
 
   useLayoutEffect(() => {
-    // If no userAgent prop is provided, and we're on the client-side, set navigatorUserAgent from navigator
     // The check for typeof window and navigator ensures this only runs in browser environments, not during server-side rendering
-    // We use setNavigatorUserAgent to update the state, which will trigger a re-render with the correct user agent
     if (
       typeof window !== "undefined" &&
       typeof window.location !== "undefined"
@@ -29,7 +27,7 @@ export const NotFoundSearchButton = ({
   // This is because we might have run-on spaces from sequences of symbols
   // like: `+=`, which would lead to 2 spaces
   const missingPath = lastUrlSegment
-    .replaceAll(/\W_/gi, " ")
+    .replaceAll(/[\W_]/gi, " ")
     .split(" ")
     .filter((v) => !!v)
     .join("+")
