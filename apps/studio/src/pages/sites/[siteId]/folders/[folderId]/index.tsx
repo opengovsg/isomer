@@ -10,6 +10,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Breadcrumb, Button, Menu } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useSetAtom } from "jotai"
 import { BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
@@ -19,6 +20,7 @@ import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
+import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
@@ -238,6 +240,7 @@ const FolderPage: NextPageWithLayout = () => {
       />
       <FolderSettingsModal />
       <MoveResourceModal />
+      <PageSettingsModal />
       <DeleteResourceModal siteId={parseInt(siteId)} />
     </>
   )
@@ -246,7 +249,7 @@ const FolderPage: NextPageWithLayout = () => {
 FolderPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
-      resourceType="Folder"
+      resourceType={ResourceType.Folder}
       page={AdminCmsSidebarLayout(page)}
     />
   )

@@ -1,6 +1,6 @@
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
-import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { useQueryParse } from "~/hooks/useQueryParse"
 
 const siteSchema = z.object({
@@ -17,21 +17,24 @@ export const useIsActive = (
   const siteProps = useQueryParse(siteSchema)
 
   switch (type) {
-    case "RootPage":
+    case ResourceType.RootPage:
       return (
         currentResourceId === null &&
         siteProps.resourceId === undefined &&
         siteProps.folderId === undefined
       )
-    case "Page":
-    case "CollectionPage":
-    case "IndexPage":
+    case ResourceType.Page:
+    case ResourceType.CollectionPage:
+    case ResourceType.IndexPage:
       return siteProps.resourceId === currentResourceId
-    case "Folder":
-    case "Collection":
+    case ResourceType.Folder:
+    case ResourceType.Collection:
       return siteProps.folderId === currentResourceId
-    case "CollectionLink":
+    case ResourceType.CollectionLink:
       return siteProps.linkId === currentResourceId
+    case ResourceType.FolderMeta:
+      // TODO: Not implemented yet
+      return false
     default:
       const _uncaught: never = type
       throw new Error(`Unhandled case for useIsActive`)

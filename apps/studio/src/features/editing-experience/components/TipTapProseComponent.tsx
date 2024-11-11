@@ -6,15 +6,13 @@ import isEqual from "lodash/isEqual"
 import { BiTrash } from "react-icons/bi"
 
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { useTextEditor } from "../hooks/useTextEditor"
 import { editPageSchema } from "../schema"
-import {
-  BRIEF_TOAST_SETTINGS,
-  CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
-} from "./constants"
+import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
 import { DrawerHeader } from "./Drawer/DrawerHeader"

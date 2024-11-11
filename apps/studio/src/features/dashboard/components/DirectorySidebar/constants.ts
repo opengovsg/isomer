@@ -1,6 +1,13 @@
 import type { IconType } from "react-icons"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { BiData, BiFile, BiFolder, BiHomeAlt, BiLink } from "react-icons/bi"
+import {
+  BiData,
+  BiFile,
+  BiFolder,
+  BiHomeAlt,
+  BiLink,
+  BiSort,
+} from "react-icons/bi"
 
 export const ICON_MAPPINGS: Record<ResourceType, IconType> = {
   [ResourceType.Page]: BiFile,
@@ -10,4 +17,5 @@ export const ICON_MAPPINGS: Record<ResourceType, IconType> = {
   [ResourceType.CollectionLink]: BiLink,
   [ResourceType.RootPage]: BiHomeAlt,
   [ResourceType.IndexPage]: BiFile,
+  [ResourceType.FolderMeta]: BiSort,
 }

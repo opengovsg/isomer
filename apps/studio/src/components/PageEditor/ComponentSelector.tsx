@@ -14,6 +14,7 @@ import {
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { type IconType } from "react-icons"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -165,22 +166,23 @@ function ComponentSelector() {
 
   const availableBlocks = useMemo(() => {
     switch (type) {
-      case "RootPage":
+      case ResourceType.RootPage:
         return HOMEPAGE_ALLOWED_BLOCKS
-      case "Page":
+      case ResourceType.Page:
         if (savedPageState.layout === ISOMER_PAGE_LAYOUTS.Content) {
           return CONTENT_ALLOWED_BLOCKS
         } else if (savedPageState.layout === ISOMER_PAGE_LAYOUTS.Article) {
           return ARTICLE_ALLOWED_BLOCKS
         }
         throw new Error(`Unsupported page layout: ${savedPageState.layout}`)
-      case "CollectionPage":
+      case ResourceType.CollectionPage:
         return ARTICLE_ALLOWED_BLOCKS
-      case "Collection":
-      case "CollectionLink":
-      case "IndexPage":
+      case ResourceType.Collection:
+      case ResourceType.CollectionLink:
+      case ResourceType.IndexPage:
         return []
-      case "Folder":
+      case ResourceType.Folder:
+      case ResourceType.FolderMeta:
         throw new Error(`Unsupported resource type: ${type}`)
       default:
         const exhaustiveCheck: never = type

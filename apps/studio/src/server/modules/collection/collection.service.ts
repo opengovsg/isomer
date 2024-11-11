@@ -10,7 +10,7 @@ export const createCollectionPageJson = ({}: {
   return {
     layout: ISOMER_PAGE_LAYOUTS.Article,
     page: {
-      date: format(new Date(), "dd-MM-yyyy"),
+      date: format(new Date(), "dd/MM/yyyy"),
       // TODO: this is actually supposed to be passed from the frontend
       // which is not done at present
       category: "Feature Articles",
@@ -32,7 +32,7 @@ export const createCollectionLinkJson = ({}: {
       ref: "",
       summary: "",
       category: "",
-      date: format(new Date(), "dd-MM-yyyy"),
+      date: format(new Date(), "dd/MM/yyyy"),
     },
     content: [],
     // TODO: Add pdf blob to content

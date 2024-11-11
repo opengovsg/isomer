@@ -274,6 +274,33 @@ describe("page.router", async () => {
       expect(result).toMatchObject(expected)
     })
 
+    it("should return the resource if resource type is FolderMeta and exists", async () => {
+      // Arrange
+      const { site, page, blob, navbar, footer } = await setupPageResource({
+        resourceType: "FolderMeta",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const expected = {
+        ...pick(page, ["permalink", "title", "type"]),
+        navbar: omit(navbar, ["createdAt", "updatedAt"]),
+        footer: omit(footer, ["createdAt", "updatedAt"]),
+        content: blob.content,
+      }
+
+      // Act
+      const result = await caller.readPageAndBlob({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      expect(result.type).toEqual("FolderMeta")
+      expect(result).toMatchObject(expected)
+    })
+
     it("should return 404 if resource type is not a page", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
@@ -1040,7 +1067,6 @@ describe("page.router", async () => {
         pageId: 1,
         title: "Test Page",
         permalink: "test-page",
-        meta: "Test meta",
         type: "Page",
       })
 
@@ -1056,7 +1082,6 @@ describe("page.router", async () => {
         pageId: 1,
         title: "Test Page",
         permalink: "test-page",
-        meta: "Test meta",
         type: "Page",
       })
 
@@ -1075,10 +1100,6 @@ describe("page.router", async () => {
       const { site, page } = await setupPageResource({
         resourceType: "Page",
       })
-      const expectedMeta = {
-        description: "Updating the meta description",
-        noIndex: false,
-      }
       const expectedSettings = {
         title: "New Title",
         permalink: "new-permalink",
@@ -1092,7 +1113,6 @@ describe("page.router", async () => {
       const result = await caller.updateSettings({
         siteId: site.id,
         pageId: Number(page.id),
-        meta: JSON.stringify(expectedMeta),
         type: "Page",
         ...expectedSettings,
       })
@@ -1109,14 +1129,8 @@ describe("page.router", async () => {
           "Resource.draftBlobId",
         ])
         .executeTakeFirstOrThrow()
-      const actualBlobContent = await db
-        .selectFrom("Blob")
-        .where("id", "=", page.draftBlobId)
-        .select("content")
-        .executeTakeFirstOrThrow()
       expect(result).toMatchObject(actualResource)
       expect(result).toMatchObject(expectedSettings)
-      expect(actualBlobContent.content.meta).toMatchObject(expectedMeta)
     })
 
     it("should update root page settings successfully", async () => {
@@ -1128,10 +1142,6 @@ describe("page.router", async () => {
         userId: session.userId ?? undefined,
         siteId: site.id,
       })
-      const expectedMeta = {
-        description: "Updating the meta description",
-        noIndex: false,
-      }
       const expectedSettings = {
         title: "New Title",
         permalink: "",
@@ -1141,7 +1151,6 @@ describe("page.router", async () => {
       const result = await caller.updateSettings({
         siteId: site.id,
         pageId: Number(page.id),
-        meta: JSON.stringify(expectedMeta),
         type: "RootPage",
         ...expectedSettings,
       })
@@ -1158,38 +1167,8 @@ describe("page.router", async () => {
           "Resource.draftBlobId",
         ])
         .executeTakeFirstOrThrow()
-      const actualBlobContent = await db
-        .selectFrom("Blob")
-        .where("id", "=", page.draftBlobId)
-        .select("content")
-        .executeTakeFirstOrThrow()
       expect(result).toMatchObject(actualResource)
       expect(result).toMatchObject(expectedSettings)
-      expect(actualBlobContent.content.meta).toMatchObject(expectedMeta)
-    })
-
-    it("should fail validation if meta is incorrect shape", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: "Page",
-      })
-      await setupAdminPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = caller.updateSettings({
-        siteId: site.id,
-        pageId: Number(page.id),
-        title: "New Title",
-        permalink: "new-permalink",
-        type: "Page",
-        meta: "do not match the shape because not a json string",
-      })
-
-      // Assert
-      await expect(result).rejects.toThrowError("Invalid metadata")
     })
 
     it("should throw 409 if permalink is not unique", async () => {
@@ -1216,10 +1195,6 @@ describe("page.router", async () => {
         title: "New Title",
         permalink: reusedPermalink,
         type: "Page",
-        meta: JSON.stringify({
-          description: "Updating the meta description",
-          noIndex: false,
-        }),
       })
 
       // Assert

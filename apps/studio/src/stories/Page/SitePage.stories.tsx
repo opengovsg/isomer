@@ -18,6 +18,9 @@ const meta: Meta<typeof SitePage> = {
         pageHandlers.listWithoutRoot.default(),
         pageHandlers.getRootPage.default(),
         pageHandlers.countWithoutRoot.default(),
+        pageHandlers.readPage.content(),
+        pageHandlers.updateSettings.collection(),
+        pageHandlers.getPermalinkTree.withParent(),
         resourceHandlers.getChildrenOf.default(),
         resourceHandlers.getRolesFor.default(),
       ],
@@ -73,5 +76,18 @@ export const WithBanner: Story = {
           "This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long.",
       }),
     ],
+  },
+}
+
+export const PageSettings: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    await PageResourceMenu.play?.(context)
+    const screen = within(canvasElement.ownerDocument.body)
+    const pageSettingsButton = screen.getByText("Edit page settings")
+
+    await userEvent.click(pageSettingsButton, {
+      pointerEventsCheck: 0,
+    })
   },
 }

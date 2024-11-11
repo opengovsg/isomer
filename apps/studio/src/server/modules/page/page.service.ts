@@ -24,7 +24,7 @@ export const createDefaultPage = ({ layout }: { layout: Layout }) => {
       const articleDefaultPage = {
         layout: ISOMER_PAGE_LAYOUTS.Article,
         page: {
-          date: format(new Date(), "dd-MM-yyyy"),
+          date: format(new Date(), "dd/MM/yyyy"),
           category: "Feature Articles",
           articlePageHeader: {
             summary: "This is the page summary",

@@ -1,8 +1,10 @@
-import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
+import {
+  ResourceState,
+  ResourceType,
+  RoleType,
+} from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
-
-import type { ResourceType } from "~prisma/generated/generatedEnums"
 
 export const setupAdminPermissions = async ({
   userId,
@@ -278,7 +280,7 @@ export const setupFolder = async ({
       title,
       draftBlobId: null,
       state: ResourceState.Draft,
-      type: "Folder",
+      type: ResourceType.Folder,
       publishedVersionId: null,
     })
     .returningAll()
