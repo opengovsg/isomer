@@ -53,8 +53,8 @@ function getTextContentOfProse(content: ProseContent): string {
   return values.join(" ")
 }
 
-function removeLeadingSlash(str: string): string {
-  return str.startsWith("/") ? str.slice(1) : str
+function getFilenameFromPath(path: string): string {
+  return path.split("/").pop() || ""
 }
 
 export function renderComponentPreviewText({
@@ -72,7 +72,7 @@ export function renderComponentPreviewText({
     case "iframe":
       return "Iframe" // not supported in the sidebar yet
     case "image":
-      return removeLeadingSlash(component.src)
+      return getFilenameFromPath(component.src)
     case "infobar":
       return component.title
     case "infocards":
@@ -86,7 +86,7 @@ export function renderComponentPreviewText({
         component.content.content,
       )
       return textContentOfProse === ""
-        ? removeLeadingSlash(component.imageSrc)
+        ? getFilenameFromPath(component.imageSrc)
         : textContentOfProse
     case "keystatistics":
       return component.title
