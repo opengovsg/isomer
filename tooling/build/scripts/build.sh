@@ -25,8 +25,10 @@ calculate_duration $start_time
 # Set up the schema folder
 rm -rf tooling/template/schema
 rm -rf tooling/template/data
+rm -rf tooling/template/public
 mv $ISOMER_REPO_DIRECTORY/schema/ tooling/template/
 mv $ISOMER_REPO_DIRECTORY/data/ tooling/template/
+mv $ISOMER_REPO_DIRECTORY/public/ tooling/template/
 
 # Generate sitemap.json
 cd tooling/template
