@@ -26,16 +26,18 @@ function getTextContentOfProse(content: ProseContent): string {
           recursiveSearch(contentBlock.content)
           break
         case "paragraph":
-          contentBlock.content
-            ?.map((paragraphContentBlock) => {
-              switch (paragraphContentBlock.type) {
-                case "text":
-                  return paragraphContentBlock.text.trim()
-                default:
-                  return ""
-              }
-            })
-            .join(" ")
+          contentBlock.content?.map((paragraphContentBlock) => {
+            switch (paragraphContentBlock.type) {
+              case "text":
+                values.push(paragraphContentBlock.text.trim())
+                break
+              case "hardBreak":
+                break
+              default:
+                const exhaustiveCheck: never = paragraphContentBlock
+                return exhaustiveCheck
+            }
+          })
           break
         case "table":
           values.push(contentBlock.attrs.caption.trim())
