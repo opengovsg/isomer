@@ -33,7 +33,7 @@ import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { LinkHrefEditor } from "../../../LinkEditor"
-import { LINK_TYPES } from "../../../LinkEditor/constants"
+import { LINK_TYPES_MAPPING, LINK_TYPES } from "../../../LinkEditor/constants"
 import {
   LinkEditorContextProvider,
   useLinkEditor,
