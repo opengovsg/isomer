@@ -246,7 +246,7 @@ const PageLinkElement = ({
         </HStack>
       ) : (
         <Button variant="solid" w="full" onClick={onPageLinkModalOpen}>
-          When this is clicked, open:
+          Select a page to link...
         </Button>
       )}
     </>
