@@ -1,9 +1,12 @@
 import type { CollectionPageSchemaType, IsomerSiteProps } from "~/engine"
 import type { CollectionCardProps } from "~/interfaces"
+import type { ProcessedCollectionCardProps } from "~/templates/next/components/internal/CollectionCard"
 import {
   getBreadcrumbFromSiteMap,
   getParsedDate,
+  getReferenceLinkHref,
   getSitemapAsArray,
+  isExternalUrl,
 } from "~/utils"
 import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
@@ -105,6 +108,41 @@ const getCollectionItems = (
   }) as CollectionCardProps[]
 }
 
+const processedCollectionItems = (
+  items: CollectionCardProps[],
+): ProcessedCollectionCardProps[] => {
+  return items.map((item) => {
+    const {
+      site,
+      variant,
+      lastUpdated,
+      category,
+      title,
+      description,
+      image,
+      url,
+    } = item
+    const file = variant === "file" ? item.fileDetails : null
+    return {
+      lastUpdated,
+      category,
+      title,
+      description,
+      image,
+      referenceLinkHref: getReferenceLinkHref(
+        item.url,
+        site.siteMap,
+        site.assetsBaseUrl,
+      ),
+      imageSrc:
+        isExternalUrl(item.image?.src) || site.assetsBaseUrl === undefined
+          ? item.image?.src
+          : `${site.assetsBaseUrl}${item.image?.src}`,
+      itemTitle: `${item.title}${file ? ` [${file.type.toUpperCase()}, ${file.size.toUpperCase()}]` : ""}`,
+    } as ProcessedCollectionCardProps // Ensure no additional props are being returned
+  })
+}
+
 const CollectionLayout = ({
   site,
   page,
@@ -115,6 +153,7 @@ const CollectionLayout = ({
   const { permalink } = page
 
   const items = getCollectionItems(site, permalink)
+  const processedItems = processedCollectionItems(items)
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
@@ -131,11 +170,11 @@ const CollectionLayout = ({
       <CollectionClient
         page={page}
         breadcrumb={breadcrumb}
-        items={items}
-        filters={getAvailableFilters(items)}
-        shouldShowDate={shouldShowDate(items)}
+        items={processedItems}
+        filters={getAvailableFilters(processedItems)}
+        shouldShowDate={shouldShowDate(processedItems)}
+        siteAssetsBaseUrl={site.assetsBaseUrl}
         LinkComponent={LinkComponent}
-        site={site}
       />
     </Skeleton>
   )
