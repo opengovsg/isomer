@@ -33,7 +33,7 @@ import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { LinkHrefEditor } from "../../../LinkEditor"
-import { LINK_TYPES_MAPPING, LINK_TYPES } from "../../../LinkEditor/constants"
+import { LINK_TYPES_MAPPING } from "../../../LinkEditor/constants"
 import {
   LinkEditorContextProvider,
   useLinkEditor,
@@ -271,7 +271,7 @@ export function JsonFormsLinkControl({
   return (
     <Box>
       <LinkEditorContextProvider
-        linkTypes={LINK_TYPES}
+        linkTypes={LINK_TYPES_MAPPING}
         linkHref={dataString}
         error={errors}
         onChange={(value) => handleChange(path, value)}
