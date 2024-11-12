@@ -24,6 +24,16 @@ import {
   validateUserPermissionsForResource,
 } from "../permissions/permissions.service"
 
+interface ResourceChildrenOfType {
+  items: {
+    title: string
+    permalink: string
+    type: ResourceType
+    id: string
+  }[]
+  nextOffset: number | null
+}
+
 const fetchResource = async (resourceId: string | null) => {
   if (resourceId === null) return { parentId: null }
 
@@ -130,18 +140,13 @@ export const resourceRouter = router({
       }
 
       const result = await query.execute()
-      if (result.length > limit) {
-        // Dont' return the last element, it's just for checking if there are more
-        result.pop()
-        return {
-          items: result,
-          nextOffset: offset + limit,
-        }
-      }
-      return {
-        items: result,
-        nextOffset: null,
-      }
+      const output: ResourceChildrenOfType =
+        result.length > limit
+          ? // Dont' return the last element, it's just for checking if there are more
+            { items: result.slice(0, limit), nextOffset: offset + limit }
+          : { items: result, nextOffset: null }
+
+      return output
     }),
   getChildrenOf: protectedProcedure
     .input(getChildrenSchema)
@@ -189,20 +194,13 @@ export const resourceRouter = router({
       } else {
         query = query.where("Resource.parentId", "=", String(resourceId))
       }
-
       const result = await query.execute()
-      if (result.length > limit) {
+      const output: ResourceChildrenOfType = {
         // Dont' return the last element, it's just for checking if there are more
-        result.pop()
-        return {
-          items: result,
-          nextOffset: offset + limit,
-        }
+        items: result.length > limit ? result.slice(0, limit) : result,
+        nextOffset: result.length > limit ? offset + limit : null,
       }
-      return {
-        items: result,
-        nextOffset: null,
-      }
+      return output
     }),
 
   move: protectedProcedure
