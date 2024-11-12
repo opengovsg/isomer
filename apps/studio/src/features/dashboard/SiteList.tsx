@@ -101,7 +101,6 @@ const SiteListSection = ({
 }
 
 const SuspendableSiteList = (): JSX.Element => {
-  // TODO: Only return sites that the user has access to
   const [sites] = trpc.site.list.useSuspenseQuery()
 
   if (sites.length === 0) {
