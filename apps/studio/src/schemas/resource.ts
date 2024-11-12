@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import type { ResourceType } from "~prisma/generated/generatedEnums"
 import {
   infiniteOffsetPaginationSchema,
   offsetPaginationSchema,
@@ -70,3 +71,13 @@ export const getAncestrySchema = z.object({
   siteId: z.string(),
   resourceId: z.string().optional(),
 })
+
+export interface ResourceChildrenOfType {
+  items: {
+    title: string
+    permalink: string
+    type: ResourceType
+    id: string
+  }[]
+  nextOffset: number | null
+}

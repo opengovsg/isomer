@@ -5,6 +5,7 @@ import { ResourceType } from "@prisma/client"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
+import type { ResourceChildrenOfType } from "~/schemas/resource"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
@@ -40,7 +41,12 @@ const SuspensableResourceSelector = ({
   const moveDest = resourceStack[resourceStack.length - 1]
   const parentDest = resourceStack[resourceStack.length - 2]
   const curResourceId = moveDest?.resourceId
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = queryFn(
+  const {
+    data: { pages } = { pages: [{ items: [], nextOffset: null }] },
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = queryFn(
     {
       resourceId:
         (isResourceHighlighted
@@ -53,6 +59,7 @@ const SuspensableResourceSelector = ({
       getNextPageParam: (lastPage) => lastPage.nextOffset,
     },
   )
+  const data: ResourceChildrenOfType[] = pages
   const ancestryStack: PendingMoveResource[] = trpc.resource.getAncestryWithSelf
     .useSuspenseQuery({
       siteId: String(siteId),
@@ -139,7 +146,7 @@ const SuspensableResourceSelector = ({
           </Flex>
         )}
 
-        {data?.pages.map(({ items }) =>
+        {data.map(({ items }) =>
           items.map((item) => {
             const isItemDisabled: boolean =
               item.id === existingResource?.resourceId

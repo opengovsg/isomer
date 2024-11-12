@@ -4,6 +4,7 @@ import { get } from "lodash"
 import { z } from "zod"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
+import type { ResourceChildrenOfType } from "~/schemas/resource"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -23,16 +24,6 @@ import {
   definePermissionsForResource,
   validateUserPermissionsForResource,
 } from "../permissions/permissions.service"
-
-interface ResourceChildrenOfType {
-  items: {
-    title: string
-    permalink: string
-    type: ResourceType
-    id: string
-  }[]
-  nextOffset: number | null
-}
 
 const fetchResource = async (resourceId: string | null) => {
   if (resourceId === null) return { parentId: null }
