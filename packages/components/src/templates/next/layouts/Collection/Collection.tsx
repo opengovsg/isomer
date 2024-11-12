@@ -1,3 +1,5 @@
+import type { Exact } from "type-fest"
+
 import type { CollectionPageSchemaType, IsomerSiteProps } from "~/engine"
 import type { AllCardProps, ProcessedCollectionCardProps } from "~/interfaces"
 import {
@@ -138,7 +140,7 @@ const processedCollectionItems = (
           ? item.image?.src
           : `${site.assetsBaseUrl}${item.image?.src}`,
       itemTitle: `${item.title}${file ? ` [${file.type.toUpperCase()}, ${file.size.toUpperCase()}]` : ""}`,
-    } as ProcessedCollectionCardProps // Ensure no additional props are being returned
+    } as Exact<ProcessedCollectionCardProps, ProcessedCollectionCardProps>
   })
 }
 
