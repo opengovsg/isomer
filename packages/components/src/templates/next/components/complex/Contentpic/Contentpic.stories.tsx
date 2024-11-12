@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { ContentpicProps } from "~/interfaces"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import { Contentpic } from "./Contentpic"
 
 const meta: Meta<ContentpicProps> = {
@@ -26,7 +27,7 @@ const meta: Meta<ContentpicProps> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
       },
       theme: "isomer-next",

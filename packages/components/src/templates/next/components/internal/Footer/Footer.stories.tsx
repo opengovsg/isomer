@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { FooterProps } from "~/interfaces"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import Footer from "./Footer"
 
 const meta: Meta<FooterProps> = {
@@ -20,7 +21,7 @@ const meta: Meta<FooterProps> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [],
       },

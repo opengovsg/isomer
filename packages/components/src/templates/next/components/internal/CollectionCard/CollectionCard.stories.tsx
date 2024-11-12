@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { CollectionCardProps } from "~/interfaces"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import { CollectionCard } from "./CollectionCard"
 
 const meta: Meta<CollectionCardProps> = {
@@ -24,7 +25,7 @@ const meta: Meta<CollectionCardProps> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [],
       },
@@ -81,42 +82,52 @@ const generateArgs = ({
           src: "https://placehold.co/500x500",
           alt: "placeholder",
         },
-    variant: variant as "link" | "article" | "file" | undefined,
+    variant: variant as
+      | typeof ISOMER_PAGE_LAYOUTS.Link
+      | typeof ISOMER_PAGE_LAYOUTS.Article
+      | typeof ISOMER_PAGE_LAYOUTS.File
+      | undefined,
     fileDetails,
     shouldShowDate,
   }
 }
 
 export const Default: Story = {
-  args: generateArgs({ variant: "article" }),
+  args: generateArgs({ variant: ISOMER_PAGE_LAYOUTS.Article }),
 }
 
 export const UndefinedDate: Story = {
-  args: generateArgs({ variant: "article", isLastUpdatedUndefined: true }),
+  args: generateArgs({
+    variant: ISOMER_PAGE_LAYOUTS.Article,
+    isLastUpdatedUndefined: true,
+  }),
 }
 
 export const HideDate: Story = {
   args: generateArgs({
-    variant: "article",
+    variant: ISOMER_PAGE_LAYOUTS.Article,
     shouldShowDate: false,
     isLastUpdatedUndefined: true,
   }),
 }
 
 export const ArticleWithoutImage: Story = {
-  args: generateArgs({ variant: "article", withoutImage: true }),
+  args: generateArgs({
+    variant: ISOMER_PAGE_LAYOUTS.Article,
+    withoutImage: true,
+  }),
 }
 
 export const File: Story = {
   args: generateArgs({
-    variant: "file",
+    variant: ISOMER_PAGE_LAYOUTS.File,
     fileDetails: { type: "pdf", size: "2.3 MB" },
   }),
 }
 
 export const FileWithoutImage: Story = {
   args: generateArgs({
-    variant: "file",
+    variant: ISOMER_PAGE_LAYOUTS.File,
     withoutImage: true,
     fileDetails: { type: "pdf", size: "2.3 MB" },
   }),

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import Content from "./Content"
 
 const meta: Meta<typeof Content> = {
@@ -22,7 +23,7 @@ type Story = StoryObj<typeof Content>
 
 export const Default: Story = {
   args: {
-    layout: "content",
+    layout: ISOMER_PAGE_LAYOUTS.Content,
     site: {
       siteName: "Isomer Next",
       siteMap: {
@@ -30,7 +31,7 @@ export const Default: Story = {
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -39,7 +40,7 @@ export const Default: Story = {
               "Parent page with a very long title that will likely cause an overflow",
             permalink: "/parent",
             lastModified: "",
-            layout: "content",
+            layout: ISOMER_PAGE_LAYOUTS.Content,
             summary: "",
             children: [
               {
@@ -48,7 +49,7 @@ export const Default: Story = {
                   "Irrationality this should have a long long long long long long long title that wraps to the max width of the content header, and its' breadcrumb truncates, but ideally should not be this long",
                 permalink: "/parent/rationality",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -56,7 +57,7 @@ export const Default: Story = {
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                   {
@@ -64,7 +65,7 @@ export const Default: Story = {
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -75,7 +76,7 @@ export const Default: Story = {
                   "Sibling with a long title that will likely cause an overflow",
                 permalink: "/parent/sibling",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -83,7 +84,7 @@ export const Default: Story = {
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -94,7 +95,7 @@ export const Default: Story = {
                   "IrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationalityIrrationality",
                 permalink: "/parent/rationality2",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -102,7 +103,7 @@ export const Default: Story = {
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                   {
@@ -110,7 +111,7 @@ export const Default: Story = {
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -120,7 +121,7 @@ export const Default: Story = {
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -128,7 +129,7 @@ export const Default: Story = {
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -138,7 +139,7 @@ export const Default: Story = {
                 title: "Irrationality3",
                 permalink: "/parent/rationality3",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -146,7 +147,7 @@ export const Default: Story = {
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                   {
@@ -154,7 +155,7 @@ export const Default: Story = {
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -164,7 +165,7 @@ export const Default: Story = {
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -172,7 +173,7 @@ export const Default: Story = {
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -182,7 +183,7 @@ export const Default: Story = {
                 title: "Irrationality4",
                 permalink: "/parent/rationality4",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -190,7 +191,7 @@ export const Default: Story = {
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                   {
@@ -198,7 +199,7 @@ export const Default: Story = {
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -208,7 +209,7 @@ export const Default: Story = {
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -216,7 +217,7 @@ export const Default: Story = {
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -226,7 +227,7 @@ export const Default: Story = {
                 title: "Irrationality5",
                 permalink: "/parent/rationality5",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -234,7 +235,7 @@ export const Default: Story = {
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                   {
@@ -242,7 +243,7 @@ export const Default: Story = {
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -252,7 +253,7 @@ export const Default: Story = {
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -260,7 +261,7 @@ export const Default: Story = {
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -270,7 +271,7 @@ export const Default: Story = {
                 title: "Irrationality6",
                 permalink: "/parent/rationality6",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -278,7 +279,7 @@ export const Default: Story = {
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                   {
@@ -286,7 +287,7 @@ export const Default: Story = {
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -296,7 +297,7 @@ export const Default: Story = {
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -304,7 +305,7 @@ export const Default: Story = {
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -316,7 +317,7 @@ export const Default: Story = {
             title: "Aunt/Uncle that should not appear",
             permalink: "/aunt-uncle",
             lastModified: "",
-            layout: "content",
+            layout: ISOMER_PAGE_LAYOUTS.Content,
             summary: "",
           },
         ],
@@ -1417,7 +1418,7 @@ export const Default: Story = {
 
 export const NoTable: Story = {
   args: {
-    layout: "content",
+    layout: ISOMER_PAGE_LAYOUTS.Content,
     site: {
       siteName: "Isomer Next",
       siteMap: {
@@ -1425,7 +1426,7 @@ export const NoTable: Story = {
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -1433,7 +1434,7 @@ export const NoTable: Story = {
             title: "Parent page",
             permalink: "/parent",
             lastModified: "",
-            layout: "content",
+            layout: ISOMER_PAGE_LAYOUTS.Content,
             summary: "",
             children: [
               {
@@ -1441,7 +1442,7 @@ export const NoTable: Story = {
                 title: "Irrationality",
                 permalink: "/parent/rationality",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -1449,7 +1450,7 @@ export const NoTable: Story = {
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                   {
@@ -1457,7 +1458,7 @@ export const NoTable: Story = {
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -1467,7 +1468,7 @@ export const NoTable: Story = {
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -1475,7 +1476,7 @@ export const NoTable: Story = {
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -1487,7 +1488,7 @@ export const NoTable: Story = {
             title: "Aunt/Uncle that should not appear",
             permalink: "/aunt-uncle",
             lastModified: "",
-            layout: "content",
+            layout: ISOMER_PAGE_LAYOUTS.Content,
             summary: "",
           },
         ],
@@ -1830,7 +1831,7 @@ export const NoTable: Story = {
 
 export const SmallTable: Story = {
   args: {
-    layout: "content",
+    layout: ISOMER_PAGE_LAYOUTS.Content,
     site: {
       siteName: "Isomer Next",
       siteMap: {
@@ -1838,7 +1839,7 @@ export const SmallTable: Story = {
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -1846,7 +1847,7 @@ export const SmallTable: Story = {
             title: "Parent page",
             permalink: "/parent",
             lastModified: "",
-            layout: "content",
+            layout: ISOMER_PAGE_LAYOUTS.Content,
             summary: "",
             children: [
               {
@@ -1854,7 +1855,7 @@ export const SmallTable: Story = {
                 title: "Irrationality",
                 permalink: "/parent/rationality",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -1862,7 +1863,7 @@ export const SmallTable: Story = {
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                   {
@@ -1870,7 +1871,7 @@ export const SmallTable: Story = {
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -1880,7 +1881,7 @@ export const SmallTable: Story = {
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -1888,7 +1889,7 @@ export const SmallTable: Story = {
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -1900,7 +1901,7 @@ export const SmallTable: Story = {
             title: "Aunt/Uncle that should not appear",
             permalink: "/aunt-uncle",
             lastModified: "",
-            layout: "content",
+            layout: ISOMER_PAGE_LAYOUTS.Content,
             summary: "",
           },
         ],
@@ -2410,7 +2411,7 @@ export const SmallTable: Story = {
 
 export const FirstLevelPage: Story = {
   args: {
-    layout: "content",
+    layout: ISOMER_PAGE_LAYOUTS.Content,
     site: {
       siteName: "Isomer Next",
       siteMap: {
@@ -2418,7 +2419,7 @@ export const FirstLevelPage: Story = {
         title: "Isomer Next",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -2426,7 +2427,7 @@ export const FirstLevelPage: Story = {
             title: "Content page",
             permalink: "/content",
             lastModified: "",
-            layout: "content",
+            layout: ISOMER_PAGE_LAYOUTS.Content,
             summary: "",
             children: [
               {
@@ -2434,7 +2435,7 @@ export const FirstLevelPage: Story = {
                 title: "Irrationality",
                 permalink: "/parent/rationality",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -2442,7 +2443,7 @@ export const FirstLevelPage: Story = {
                     title: "For Individuals",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                   {
@@ -2450,7 +2451,7 @@ export const FirstLevelPage: Story = {
                     title: "Steven Pinker's Rationality",
                     permalink: "/parent/rationality/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -2460,7 +2461,7 @@ export const FirstLevelPage: Story = {
                 title: "Sibling",
                 permalink: "/parent/sibling",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -2468,7 +2469,7 @@ export const FirstLevelPage: Story = {
                     title: "Child that should not appear",
                     permalink: "/parent/sibling/child-page-2",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -2480,7 +2481,7 @@ export const FirstLevelPage: Story = {
             title: "Aunt/Uncle that should not appear",
             permalink: "/aunt-uncle",
             lastModified: "",
-            layout: "content",
+            layout: ISOMER_PAGE_LAYOUTS.Content,
             summary: "",
           },
         ],

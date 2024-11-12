@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import Table from "./Table"
 
 const meta: Meta<typeof Table> = {
@@ -19,7 +20,7 @@ const meta: Meta<typeof Table> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
       },
       theme: "isomer-next",

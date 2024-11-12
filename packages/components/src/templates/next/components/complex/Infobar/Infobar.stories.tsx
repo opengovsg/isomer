@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { InfobarProps } from "~/interfaces"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import Infobar from "./Infobar"
 
 const meta: Meta<InfobarProps> = {
@@ -20,7 +21,7 @@ const meta: Meta<InfobarProps> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [],
       },

@@ -1,5 +1,5 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
-import { schema } from "@opengovsg/isomer-components"
+import { ISOMER_PAGE_LAYOUTS, schema } from "@opengovsg/isomer-components"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
@@ -10,8 +10,8 @@ import { generateBasePermalinkSchema } from "./common"
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
 const NEW_PAGE_LAYOUT_VALUES = [
-  "article",
-  "content",
+  ISOMER_PAGE_LAYOUTS.Article,
+  ISOMER_PAGE_LAYOUTS.Content,
 ] as const satisfies readonly PrismaJson.BlobJsonContent["layout"][]
 
 export const MAX_TITLE_LENGTH = 150
@@ -70,7 +70,7 @@ export const updatePageBlobSchema = basePageSchema.extend({
 export const createPageSchema = z.object({
   title: pageTitleSchema,
   permalink: permalinkSchema,
-  layout: z.enum(NEW_PAGE_LAYOUT_VALUES).default("content"),
+  layout: z.enum(NEW_PAGE_LAYOUT_VALUES).default(ISOMER_PAGE_LAYOUTS.Content),
   siteId: z.number().min(1),
   // NOTE: implies that top level pages are allowed
   folderId: z.number().min(1).optional(),

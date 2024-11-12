@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
-import { type ArticlePageSchemaType } from "~/types"
+import type { ArticlePageSchemaType } from "~/types"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import ArticleLayout from "./Article"
 
 const meta: Meta<ArticlePageSchemaType> = {
@@ -21,7 +22,7 @@ type Story = StoryObj<typeof ArticleLayout>
 export const Default: Story = {
   name: "Article",
   args: {
-    layout: "article",
+    layout: ISOMER_PAGE_LAYOUTS.Article,
     site: {
       siteName: "Isomer Next",
       siteMap: {
@@ -29,7 +30,7 @@ export const Default: Story = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -37,7 +38,7 @@ export const Default: Story = {
             title: "Newsroom",
             permalink: "/newsroom",
             lastModified: "",
-            layout: "content",
+            layout: ISOMER_PAGE_LAYOUTS.Content,
             summary: "",
             children: [
               {
@@ -45,7 +46,7 @@ export const Default: Story = {
                 title: "News",
                 permalink: "/newsroom/news",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -55,7 +56,7 @@ export const Default: Story = {
                     permalink:
                       "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -152,7 +153,7 @@ export const Default: Story = {
 export const NoImage: Story = {
   name: "NoImage",
   args: {
-    layout: "article",
+    layout: ISOMER_PAGE_LAYOUTS.Article,
     site: {
       siteName: "Isomer Next",
       siteMap: {
@@ -160,7 +161,7 @@ export const NoImage: Story = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -168,7 +169,7 @@ export const NoImage: Story = {
             title: "Newsroom",
             permalink: "/newsroom",
             lastModified: "",
-            layout: "content",
+            layout: ISOMER_PAGE_LAYOUTS.Content,
             summary: "",
             children: [
               {
@@ -176,7 +177,7 @@ export const NoImage: Story = {
                 title: "News",
                 permalink: "/newsroom/news",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -186,7 +187,7 @@ export const NoImage: Story = {
                     permalink:
                       "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],
@@ -283,7 +284,7 @@ export const NoImage: Story = {
 export const NoSummary: Story = {
   name: "NoSummary",
   args: {
-    layout: "article",
+    layout: ISOMER_PAGE_LAYOUTS.Article,
     site: {
       siteName: "Isomer Next",
       siteMap: {
@@ -291,7 +292,7 @@ export const NoSummary: Story = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [
           {
@@ -299,7 +300,7 @@ export const NoSummary: Story = {
             title: "Newsroom",
             permalink: "/newsroom",
             lastModified: "",
-            layout: "content",
+            layout: ISOMER_PAGE_LAYOUTS.Content,
             summary: "",
             children: [
               {
@@ -307,7 +308,7 @@ export const NoSummary: Story = {
                 title: "News",
                 permalink: "/newsroom/news",
                 lastModified: "",
-                layout: "content",
+                layout: ISOMER_PAGE_LAYOUTS.Content,
                 summary: "",
                 children: [
                   {
@@ -317,7 +318,7 @@ export const NoSummary: Story = {
                     permalink:
                       "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
                     lastModified: "",
-                    layout: "content",
+                    layout: ISOMER_PAGE_LAYOUTS.Content,
                     summary: "",
                   },
                 ],

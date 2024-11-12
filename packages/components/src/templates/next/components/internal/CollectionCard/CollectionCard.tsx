@@ -4,6 +4,7 @@ import { Text } from "react-aria-components"
 
 import type { CollectionCardProps as BaseCollectionCardProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import {
   focusVisibleHighlight,
   getFormattedDate,
@@ -34,7 +35,8 @@ export const CollectionCard = ({
   site,
   ...props
 }: CollectionCardProps): JSX.Element => {
-  const file = props.variant === "file" ? props.fileDetails : null
+  const file =
+    props.variant === ISOMER_PAGE_LAYOUTS.File ? props.fileDetails : null
   const itemTitle = `${title}${file ? ` [${file.type.toUpperCase()}, ${file.size.toUpperCase()}]` : ""}`
   const imgSrc =
     isExternalUrl(image?.src) || site.assetsBaseUrl === undefined

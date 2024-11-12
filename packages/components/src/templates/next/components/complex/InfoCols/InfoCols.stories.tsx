@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { InfoColsProps } from "~/interfaces"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import InfoCols from "./InfoCols"
 
 const meta: Meta<InfoColsProps> = {
@@ -20,7 +21,7 @@ const meta: Meta<InfoColsProps> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [],
       },

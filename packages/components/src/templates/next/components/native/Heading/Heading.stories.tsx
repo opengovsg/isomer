@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import type { HeadingProps } from "~/interfaces"
 import { HeadingLevels } from "~/interfaces/native/Heading"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import Heading from "./Heading"
 
 const meta: Meta<typeof Heading> = {
@@ -32,7 +33,7 @@ const Headings = () => {
                   title: "Home",
                   permalink: "/",
                   lastModified: "",
-                  layout: "homepage",
+                  layout: ISOMER_PAGE_LAYOUTS.Homepage,
                   summary: "",
                   children: [],
                 },

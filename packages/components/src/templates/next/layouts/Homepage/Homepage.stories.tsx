@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { HomePageSchemaType } from "~/engine"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import Homepage from "./Homepage"
 
 // Template for stories
@@ -40,7 +41,7 @@ const TEST_CLIENT_ID = "5485bb61-2d5d-440a-bc37-91c48fc0c9d4"
 export const Default: Story = {
   name: "Homepage",
   args: {
-    layout: "homepage",
+    layout: ISOMER_PAGE_LAYOUTS.Homepage,
     site: {
       siteName: "Isomer Next",
       siteMap: {
@@ -48,7 +49,7 @@ export const Default: Story = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [],
       },

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { UnorderedListProps } from "~/interfaces"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import UnorderedList from "./UnorderedList"
 
 // Template for stories
@@ -29,7 +30,7 @@ const meta: Meta<UnorderedListProps> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
       },
       theme: "isomer-next",

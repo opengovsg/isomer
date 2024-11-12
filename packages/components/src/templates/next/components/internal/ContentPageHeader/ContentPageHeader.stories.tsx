@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { ContentPageHeaderProps } from "~/interfaces"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import ContentPageHeader from "./ContentPageHeader"
 
 const meta: Meta<ContentPageHeaderProps> = {
@@ -20,7 +21,7 @@ const meta: Meta<ContentPageHeaderProps> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [],
       },

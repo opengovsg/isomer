@@ -1,6 +1,8 @@
 import type { InfobarProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
+import { TAILWIND_SIMPLIFIED_LAYOUTS } from "~/utils/getTailwindVariantLayout"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LinkButton } from "../../internal/LinkButton"
 
@@ -15,7 +17,7 @@ const createInfobarStyles = tv({
   },
   variants: {
     layout: {
-      homepage: {
+      [TAILWIND_SIMPLIFIED_LAYOUTS.Homepage]: {
         outerContainer: "mx-6 py-16 sm:mx-10 lg:py-24",
         innerContainer: "items-center gap-9 text-center lg:max-w-3xl",
         headingContainer: "gap-6",
@@ -23,7 +25,7 @@ const createInfobarStyles = tv({
         description: "prose-headline-lg-regular",
         buttonContainer: "items-center",
       },
-      default: {
+      [TAILWIND_SIMPLIFIED_LAYOUTS.Default]: {
         outerContainer: "mt-12 rounded-lg bg-base-canvas-backdrop first:mt-0",
         innerContainer: "items-start gap-7 p-8",
         headingContainer: "gap-4",
@@ -34,7 +36,7 @@ const createInfobarStyles = tv({
     },
   },
   defaultVariants: {
-    layout: "homepage",
+    layout: TAILWIND_SIMPLIFIED_LAYOUTS.Homepage,
   },
 })
 
@@ -95,7 +97,11 @@ const Infobar = ({
                   site.siteMap,
                   site.assetsBaseUrl,
                 )}
-                size={simplifiedLayout === "homepage" ? "lg" : "base"}
+                size={
+                  simplifiedLayout === ISOMER_PAGE_LAYOUTS.Homepage
+                    ? "lg"
+                    : "base"
+                }
                 LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight
               >
@@ -110,7 +116,11 @@ const Infobar = ({
                   site.siteMap,
                   site.assetsBaseUrl,
                 )}
-                size={simplifiedLayout === "homepage" ? "lg" : "base"}
+                size={
+                  simplifiedLayout === ISOMER_PAGE_LAYOUTS.Homepage
+                    ? "lg"
+                    : "base"
+                }
                 variant="outline"
                 LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight

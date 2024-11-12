@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import type { InfoCardsProps } from "~/interfaces"
 import type { IsomerPageLayoutType } from "~/types"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import InfoCards from "./InfoCards"
 
 const meta: Meta<InfoCardsProps> = {
@@ -21,7 +22,7 @@ const meta: Meta<InfoCardsProps> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [],
       },
@@ -47,7 +48,7 @@ export default meta
 type Story = StoryObj<typeof InfoCards>
 
 const generateArgs = ({
-  layout = "content",
+  layout = ISOMER_PAGE_LAYOUTS.Content,
   maxColumns,
   withoutImage = false,
   isImageFitContain = false,
@@ -134,7 +135,7 @@ export const WithImage3Columns: Story = {
 
 export const WithImage3ColumnsHomepage: Story = {
   name: "With Image (3 Cols) Homepage",
-  args: generateArgs({ maxColumns: "3", layout: "homepage" }),
+  args: generateArgs({ maxColumns: "3", layout: ISOMER_PAGE_LAYOUTS.Homepage }),
 }
 
 export const WithImage2Columns: Story = {
@@ -144,7 +145,7 @@ export const WithImage2Columns: Story = {
 
 export const WithImage2ColumnsHomepage: Story = {
   name: "With Image (2 Cols) Homepage",
-  args: generateArgs({ maxColumns: "2", layout: "homepage" }),
+  args: generateArgs({ maxColumns: "2", layout: ISOMER_PAGE_LAYOUTS.Homepage }),
 }
 
 export const WithImage1Columns: Story = {
@@ -154,7 +155,7 @@ export const WithImage1Columns: Story = {
 
 export const WithImage1ColumnsHomepage: Story = {
   name: "With Image (1 Col) Homepage",
-  args: generateArgs({ maxColumns: "1", layout: "homepage" }),
+  args: generateArgs({ maxColumns: "1", layout: ISOMER_PAGE_LAYOUTS.Homepage }),
 }
 
 export const NoImage: Story = {

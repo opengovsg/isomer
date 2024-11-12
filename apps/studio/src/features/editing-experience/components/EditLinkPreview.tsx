@@ -1,4 +1,5 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
+import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useAtomValue } from "jotai"
 
@@ -32,7 +33,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
     id: "root",
     permalink: "/",
     lastModified: "2024-10-14T07:05:08.803Z",
-    layout: "homepage",
+    layout: ISOMER_PAGE_LAYOUTS.Homepage,
     title: "An Isomer Site",
     summary: "",
     children: [
@@ -40,7 +41,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
         id: "collection",
         permalink: parentPermalink,
         lastModified: "02 May 2023",
-        layout: "collection",
+        layout: ISOMER_PAGE_LAYOUTS.Collection,
         title: parentTitle,
         summary: "",
         children: [
@@ -50,7 +51,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
             date,
             ref: "Test",
             summary: summary ?? "",
-            layout: "link",
+            layout: ISOMER_PAGE_LAYOUTS.Link,
             permalink,
             lastModified: new Date().toString(),
             category,
@@ -65,7 +66,7 @@ export const EditCollectionLinkPreview = (): JSX.Element => {
       <PreviewWithoutSitemap
         content={[]}
         page={{ title: parentTitle }}
-        layout={"collection"}
+        layout={ISOMER_PAGE_LAYOUTS.Collection}
         siteId={siteId}
         siteMap={siteMap}
         permalink={parentPermalink}

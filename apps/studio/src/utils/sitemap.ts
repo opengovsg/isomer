@@ -1,5 +1,6 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { Resource } from "@prisma/client"
+import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -46,7 +47,7 @@ const getSitemapTreeFromArray = (
     ) {
       return {
         id: String(resource.id),
-        layout: "content", // Note: We are not using the layout field in our sitemap for preview
+        layout: ISOMER_PAGE_LAYOUTS.Content, // Note: We are not using the layout field in our sitemap for preview
         title: resource.title,
         summary: "", // Note: We are not using the summary field in our previews
         lastModified: new Date() // TODO: Update this to the updated_at field in DB
@@ -64,7 +65,7 @@ const getSitemapTreeFromArray = (
 
     return {
       id: String(resource.id),
-      layout: "content", // Note: We are not using the layout field in our previews
+      layout: ISOMER_PAGE_LAYOUTS.Content, // Note: We are not using the layout field in our previews
       title: titleOfPage || resource.title,
       summary: "", // Note: We are not using the summary field in our previews
       lastModified: new Date() // TODO: Update this to the updated_at field in DB
@@ -87,7 +88,7 @@ export const getSitemapTree = (
 ): IsomerSitemap => {
   return {
     id: String(rootResource.id),
-    layout: "homepage", // Note: We are not using the layout field in our previews
+    layout: ISOMER_PAGE_LAYOUTS.Homepage, // Note: We are not using the layout field in our previews
     title: rootResource.title,
     summary: "", // Note: We are not using the summary field in our previews
     lastModified: new Date() // TODO: Update this to the updated_at field in DB

@@ -1,8 +1,10 @@
 import type { DropResult } from "@hello-pangea/dnd"
+import type { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { useCallback } from "react"
 import { Box, Button, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
+import { ISOMER_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
@@ -110,10 +112,11 @@ export default function RootStateDrawer() {
     ],
   )
 
-  const pageLayout: string = savedPageState.layout
+  const pageLayout: (typeof ISOMER_USABLE_PAGE_LAYOUTS)[keyof typeof ISOMER_USABLE_PAGE_LAYOUTS] =
+    savedPageState.layout
 
   const isHeroFixedBlock =
-    pageLayout === "homepage" &&
+    pageLayout === ISOMER_PAGE_LAYOUTS.Homepage &&
     savedPageState.content.length > 0 &&
     savedPageState.content[0]?.type === "hero"
 

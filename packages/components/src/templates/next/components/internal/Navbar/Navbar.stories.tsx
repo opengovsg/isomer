@@ -4,6 +4,7 @@ import { userEvent, within } from "@storybook/test"
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
 import type { NavbarProps } from "~/interfaces"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import { Button } from "../Button"
 import Masthead from "../Masthead"
 import Navbar from "./Navbar"
@@ -164,7 +165,7 @@ const meta: Meta<NavbarProps> = {
         title: "Home",
         permalink: "/",
         lastModified: "",
-        layout: "homepage",
+        layout: ISOMER_PAGE_LAYOUTS.Homepage,
         summary: "",
         children: [],
       },
