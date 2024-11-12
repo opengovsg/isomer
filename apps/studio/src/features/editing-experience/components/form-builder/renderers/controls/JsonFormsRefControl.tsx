@@ -103,9 +103,9 @@ export function JsonFormsRefControl({
               <Button
                 onClick={onOpen}
                 variant="link"
-                aria-labelledby="button label"
+                aria-labelledby="button-label"
               >
-                <Text id="button label" textStyle="subhead-2">
+                <Text id="button-label" textStyle="subhead-2">
                   Link something...
                 </Text>
               </Button>{" "}
