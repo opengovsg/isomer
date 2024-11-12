@@ -50,7 +50,7 @@ const NotFoundLayout = ({
                 <h2
                   className={compoundStyles.title({ layout: simplifiedLayout })}
                 >
-                  404: Page not found
+                  Page not found
                 </h2>
 
                 <p
@@ -58,7 +58,8 @@ const NotFoundLayout = ({
                     layout: simplifiedLayout,
                   })}
                 >
-                  Sorry, the page you were looking for cannot be found
+                  This page might have been moved or deleted. Try searching for
+                  this page instead.
                 </p>
               </div>
 
@@ -67,16 +68,16 @@ const NotFoundLayout = ({
                   layout: simplifiedLayout,
                 })}
               >
+                <NotFoundSearchButton LinkComponent={LinkComponent} />
                 <LinkButton
                   href="/"
                   size="lg"
+                  variant="outline"
                   LinkComponent={LinkComponent}
                   isWithFocusVisibleHighlight
                 >
                   Go to homepage
                 </LinkButton>
-
-                <NotFoundSearchButton LinkComponent={LinkComponent} />
               </div>
             </div>
           </div>

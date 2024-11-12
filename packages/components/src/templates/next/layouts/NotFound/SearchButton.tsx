@@ -36,11 +36,10 @@ export const NotFoundSearchButton = ({
     <LinkButton
       href={`/search?q=${missingPath}`}
       size="lg"
-      variant="outline"
       LinkComponent={LinkComponent}
       isWithFocusVisibleHighlight
     >
-      Search for this item
+      Search for this page
     </LinkButton>
   )
 }
