@@ -16,7 +16,7 @@ type ResourceItemProps = Pick<
   handleOnClick: () => void
   type: ResourceType | undefined
   isDisabled?: boolean
-  isHighlighted?: boolean
+  isHighlighted: boolean
 }
 
 const getButtonProps = ({ isHighlighted }: { isHighlighted: boolean }) => {
@@ -65,7 +65,7 @@ const SuspendableResourceItem = ({
   const { type, ...restWithoutType } = rest
 
   const buttonProps = getButtonProps({
-    isHighlighted: !!isHighlighted,
+    isHighlighted,
   })
 
   return (
