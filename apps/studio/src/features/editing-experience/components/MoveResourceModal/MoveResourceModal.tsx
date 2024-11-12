@@ -109,7 +109,7 @@ const MoveResourceContent = withSuspense(
               Moving a page or folder changes its URL, effective immediately
             </Infobox>
             <ResourceSelector
-              queryFn={trpc.resource.getFolderChildrenOf.useInfiniteQuery}
+              onlyShowFolders
               existingResource={movedItem}
               onChange={(resourceId) => setCurResourceId(resourceId)}
             />

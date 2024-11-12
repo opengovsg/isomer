@@ -12,12 +12,10 @@ import { trpc } from "~/utils/trpc"
 import { ResourceItem } from "./ResourceItem"
 
 interface ResourceSelectorProps {
-  queryFn:
-    | typeof trpc.resource.getChildrenOf.useInfiniteQuery
-    | typeof trpc.resource.getFolderChildrenOf.useInfiniteQuery
   onChange: (resourceId: string) => void
   selectedResourceId?: string
   existingResource?: PendingMoveResource | null
+  onlyShowFolders?: boolean
 }
 
 const generatePermalinkPrefix = (parents: PendingMoveResource[]) => {
@@ -25,10 +23,10 @@ const generatePermalinkPrefix = (parents: PendingMoveResource[]) => {
 }
 
 const SuspensableResourceSelector = ({
-  queryFn,
   onChange,
   selectedResourceId,
   existingResource,
+  onlyShowFolders = false,
 }: ResourceSelectorProps) => {
   // NOTE: This is the stack of user's navigation through the resource tree
   // NOTE: We should always start the stack from `/` (root)
@@ -41,6 +39,9 @@ const SuspensableResourceSelector = ({
   const moveDest = resourceStack[resourceStack.length - 1]
   const parentDest = resourceStack[resourceStack.length - 2]
   const curResourceId = moveDest?.resourceId
+  const queryFn = onlyShowFolders
+    ? trpc.resource.getFolderChildrenOf.useInfiniteQuery
+    : trpc.resource.getChildrenOf.useInfiniteQuery
   const {
     data: { pages } = { pages: [{ items: [], nextOffset: null }] },
     fetchNextPage,
