@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react"
 
 import type { LinkTypes } from "./constants"
+import { LINK_TYPES } from "./constants"
 import { useLinkEditor } from "./LinkEditorContext"
 
 const LinkTypeRadioCard = ({
@@ -62,7 +63,7 @@ export const LinkEditorRadio = () => {
   const { linkTypes, setCurType } = useLinkEditor()
   const { getRootProps, getRadioProps } = useRadioGroup({
     name: "link-type",
-    defaultValue: "page",
+    defaultValue: LINK_TYPES.Page,
     // NOTE: This is a safe cast because we map over the `linkTypes` below
     // so each time we are using the `linkType`
     onChange: (value) => setCurType(value as LinkTypes),

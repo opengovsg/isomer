@@ -8,6 +8,7 @@ import {
 } from "@chakra-ui/react"
 import { FormLabel } from "@opengovsg/design-system-react"
 
+import { LINK_TYPES } from "./constants"
 import { useLinkEditor } from "./LinkEditorContext"
 import { LinkEditorRadio } from "./LinkEditorRadio"
 
@@ -19,7 +20,7 @@ const generateHttpsLink = (data: string): HttpsLink => {
     return data as HttpsLink
   }
 
-  return `https://${data}`
+  return `${HTTPS_PREFIX}${data}`
 }
 
 interface LinkHrefEditorProps {
@@ -48,9 +49,9 @@ export const LinkHrefEditor = ({
       </FormLabel>
       <LinkEditorRadio />
       <Box my="0.5rem">
-        {curType === "page" && pageLinkElement}
-        {curType === "file" && fileLinkElement}
-        {curType === "external" && (
+        {curType === LINK_TYPES.Page && pageLinkElement}
+        {curType === LINK_TYPES.File && fileLinkElement}
+        {curType === LINK_TYPES.External && (
           <InputGroup>
             <InputLeftAddon>https://</InputLeftAddon>
             <Input
@@ -70,7 +71,7 @@ export const LinkHrefEditor = ({
             />
           </InputGroup>
         )}
-        {curType === "email" && (
+        {curType === LINK_TYPES.Email && (
           <InputGroup>
             <InputLeftAddon>mailto:</InputLeftAddon>
             <Input
