@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react"
 import { FormLabel } from "@opengovsg/design-system-react"
 
-import type { LinkTypeMapping } from "./constants"
+import type { LinkTypeMapping, LinkTypes } from "./constants"
 import { LinkTypeRadioCard } from "./LinkTypeRadioCard"
 import { LinkTypeRadioContent } from "./LinkTypeRadioContent"
 import { getLinkHrefType } from "./utils"
@@ -41,7 +41,7 @@ export const LinkHrefEditor = ({
   const linkType = getLinkHrefType(value)
   const [selectedLinkType, setSelectedLinkType] = useState(linkType)
 
-  const handleLinkTypeChange = (value: string) => {
+  const handleLinkTypeChange = (value: LinkTypes) => {
     setSelectedLinkType(value)
     onChange()
   }

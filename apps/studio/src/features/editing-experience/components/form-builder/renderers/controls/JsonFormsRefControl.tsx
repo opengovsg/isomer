@@ -15,12 +15,12 @@ import { Button, IconButton } from "@opengovsg/design-system-react"
 import { omit } from "lodash"
 import { BiTrash } from "react-icons/bi"
 
-import type { LinkTypes } from "../../../LinkEditor/constants"
+import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
 import { LinkEditorModal } from "~/components/PageEditor/LinkEditorModal"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
-import { LINK_TYPES } from "../../../LinkEditor/constants"
+import { LINK_TYPES, LINK_TYPES_MAPPING } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
 
 export const jsonFormsRefControlTester: RankedTester = rankWith(
@@ -28,14 +28,13 @@ export const jsonFormsRefControlTester: RankedTester = rankWith(
   and(schemaMatches((schema) => schema.format === "ref")),
 )
 
-const parseHref = (
-  href: string,
-  pageType: Omit<LinkTypes, "email" | "page">,
-) => {
-  if (pageType === "file") {
-    return href.split("/").pop()
+const parseHref = (href: string, pageType: LinkTypesWithHrefFormat) => {
+  switch (pageType) {
+    case LINK_TYPES.File:
+      return href.split("/").pop()
+    default:
+      return href
   }
-  return href
 }
 
 const SuspendableLabel = ({ resourceId }: { resourceId: string }) => {
@@ -57,7 +56,10 @@ export function JsonFormsRefControl({
   const dataString = data && typeof data === "string" ? data : ""
   const { isOpen, onOpen, onClose } = useDisclosure()
   const pageType = getLinkHrefType(dataString)
-  const displayedHref = parseHref(dataString, pageType)
+  const displayedHref = parseHref(
+    dataString,
+    pageType as LinkTypesWithHrefFormat,
+  )
 
   return (
     <>
@@ -73,8 +75,8 @@ export function JsonFormsRefControl({
         >
           {!!data ? (
             <>
-              {pageType !== "page" && <Text>{displayedHref}</Text>}
-              {pageType === "page" && dataString.length > 0 && (
+              {pageType !== LINK_TYPES.Page && <Text>{displayedHref}</Text>}
+              {pageType === LINK_TYPES.Page && dataString.length > 0 && (
                 <Suspense fallback={<Skeleton w="100%" h="100%" />}>
                   <SuspendableLabel
                     resourceId={getResourceIdFromReferenceLink(dataString)}
@@ -101,7 +103,7 @@ export function JsonFormsRefControl({
         </Flex>
       </Box>
       <LinkEditorModal
-        linkTypes={omit(LINK_TYPES, "email")}
+        linkTypes={omit(LINK_TYPES_MAPPING, LINK_TYPES.Email)}
         linkText="Link"
         isOpen={isOpen}
         onClose={onClose}

@@ -2,6 +2,8 @@ import type { ReactNode } from "react"
 import { InputGroup, InputLeftAddon, VStack } from "@chakra-ui/react"
 import { Input } from "@opengovsg/design-system-react"
 
+import { LINK_TYPES } from "./constants"
+
 const HTTPS_PREFIX = "https://"
 type HttpsLink = `https://${string}`
 
@@ -30,9 +32,9 @@ export const LinkTypeRadioContent = ({
 }: LinkTypeRadioContentProps): JSX.Element => {
   return (
     <VStack alignItems="flex-start" w="100%" gap="0.5rem">
-      {selectedLinkType === "page" && pageLinkElement}
-      {selectedLinkType === "file" && fileLinkElement}
-      {selectedLinkType === "external" && (
+      {selectedLinkType === LINK_TYPES.Page && pageLinkElement}
+      {selectedLinkType === LINK_TYPES.File && fileLinkElement}
+      {selectedLinkType === LINK_TYPES.External && (
         <InputGroup>
           <InputLeftAddon>https://</InputLeftAddon>
           <Input
@@ -52,7 +54,7 @@ export const LinkTypeRadioContent = ({
           />
         </InputGroup>
       )}
-      {selectedLinkType === "email" && (
+      {selectedLinkType === LINK_TYPES.Email && (
         <InputGroup>
           <InputLeftAddon>mailto:</InputLeftAddon>
           <Input
