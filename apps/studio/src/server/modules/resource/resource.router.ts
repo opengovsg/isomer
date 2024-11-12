@@ -513,11 +513,7 @@ export const resourceRouter = router({
             .where("Resource.siteId", "=", Number(siteId))
             .where("Resource.id", "=", resourceId)
             .where((eb) =>
-              // to exclude root page
-              eb.and([
-                eb("Resource.permalink", "is not", null),
-                eb("Resource.permalink", "!=", ""),
-              ]),
+              eb.and([eb("Resource.type", "!=", ResourceType.RootPage)]),
             )
             .unionAll(
               eb
