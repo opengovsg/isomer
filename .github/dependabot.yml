@@ -4,6 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+    versioning-strategy: increase
     groups:
       aws-sdk:
         applies-to: version-updates
