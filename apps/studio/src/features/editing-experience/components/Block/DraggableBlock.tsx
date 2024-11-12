@@ -26,7 +26,7 @@ export const DraggableBlock = ({
 }: DraggableBlockProps): JSX.Element => {
   const icon = TYPE_TO_ICON[block.type]
 
-  const description = useMemo(() => {
+  const blockComponentName = useMemo(() => {
     // NOTE: Because we use `Type.Ref` for prose,
     // this gets a `$Ref` only and not the concrete values
     return block.type === "prose"
@@ -37,8 +37,6 @@ export const DraggableBlock = ({
   const previewText: string = renderComponentPreviewText({
     component: block,
   })
-
-  const isPreviewTextEmpty: boolean = previewText === ""
 
   return (
     <Draggable
@@ -65,8 +63,12 @@ export const DraggableBlock = ({
                   {...provided.dragHandleProps}
                 />
               }
-              label={isPreviewTextEmpty ? description : previewText}
-              description={isPreviewTextEmpty ? undefined : description}
+              label={
+                previewText === ""
+                  ? `Empty ${blockComponentName.toLowerCase()}`
+                  : previewText
+              }
+              description={blockComponentName}
               icon={icon}
             />
           </VStack>

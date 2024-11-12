@@ -40,7 +40,7 @@ export const BaseBlock = ({
         shadow: "0px 1px 6px 0px #1361F026",
       }}
       bg="white"
-      py={description ? "0.75rem" : "0.5rem"}
+      py="0.75rem"
       px="0.75rem"
       flexDirection="row"
       align="center"
@@ -60,11 +60,9 @@ export const BaseBlock = ({
         </Flex>
       )}
       <Stack align="start" gap="0.25rem">
-        {label && (
-          <Text textStyle="subhead-2" noOfLines={1}>
-            {label}
-          </Text>
-        )}
+        <Text textStyle="subhead-2" noOfLines={1}>
+          {label}
+        </Text>
         {description && (
           <Text
             textStyle="caption-2"
