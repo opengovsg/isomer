@@ -76,12 +76,10 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
   )
 }
 
-interface LinkEditorModalContentProps {
-  linkText?: string
-  linkHref?: string
-  onSave: (linkText: string, linkHref: string) => void
-  linkTypes: LinkEditorModalProps["linkTypes"]
-}
+type LinkEditorModalContentProps = Pick<
+  LinkEditorModalProps,
+  "linkText" | "linkHref" | "linkTypes" | "onSave"
+>
 
 const LinkEditorModalContent = ({
   linkText,
