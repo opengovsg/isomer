@@ -1,5 +1,6 @@
 import { dirname, join } from "path"
 import type { StorybookConfig } from "@storybook/nextjs"
+import webpack from "webpack"
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
@@ -23,6 +24,16 @@ const config: StorybookConfig = {
 
   core: {
     disableTelemetry: true,
+  },
+
+  // https://github.com/vercel/next.js/issues/28774#issuecomment-1264555395
+  webpack: (config) => {
+    config.plugins?.push(
+      new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
+        resource.request = resource.request.replace(/^node:/, "")
+      }),
+    )
+    return config
   },
 
   env: (config) => ({
