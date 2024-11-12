@@ -47,14 +47,14 @@ const validateUserPermissionsForSite = async ({
 }
 
 export const siteRouter = router({
-  list: protectedProcedure.query(() => {
-    return (
-      db
-        .selectFrom("Site")
-        // TODO: Only return sites that the user has access to
-        .select(["Site.id", "Site.name", "Site.config"])
-        .execute()
-    )
+  list: protectedProcedure.query(async ({ ctx }) => {
+    // NOTE: Any role should be able to read site
+    return db
+      .selectFrom("Site")
+      .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
+      .where("ResourcePermission.userId", "=", ctx.user.id)
+      .select(["Site.id", "Site.name", "Site.config"])
+      .execute()
   }),
   getConfig: protectedProcedure
     .input(getConfigSchema)
