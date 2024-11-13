@@ -110,26 +110,6 @@ const getWithFullPermalink = async ({ resourceId }: { resourceId: string }) => {
   return result
 }
 
-const getResourcesWithFullPermalink = async ({
-  resources,
-}: {
-  resources: {
-    id: string
-    title: string
-    type: string
-    parentId: string | null
-  }[]
-}) => {
-  return await Promise.all(
-    resources.map(async (resource) => ({
-      ...resource,
-      fullPermalink: await getWithFullPermalink({
-        resourceId: resource.id,
-      }).then((r) => r?.fullPermalink),
-    })),
-  )
-}
-
 export const resourceRouter = router({
   getMetadataById: protectedProcedure
     .input(getMetadataSchema)
@@ -588,6 +568,26 @@ export const resourceRouter = router({
           .leftJoin("Blob", "Resource.draftBlobId", "Blob.id")
           .where("Resource.siteId", "=", Number(siteId))
           .where("Resource.type", "in", getUserSearchViewableResourceTypes())
+      }
+
+      const getResourcesWithFullPermalink = async ({
+        resources,
+      }: {
+        resources: {
+          id: string
+          title: string
+          type: string
+          parentId: string | null
+        }[]
+      }) => {
+        return await Promise.all(
+          resources.map(async (resource) => ({
+            ...resource,
+            fullPermalink: await getWithFullPermalink({
+              resourceId: resource.id,
+            }).then((r) => r?.fullPermalink),
+          })),
+        )
       }
 
       // defined here to ensure the return type is correct
