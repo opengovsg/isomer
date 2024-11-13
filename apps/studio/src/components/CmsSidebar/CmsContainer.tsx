@@ -19,7 +19,7 @@ export function CmsContainer({
       templateAreas={`'header header header'
                        'sidebar sidenav main'`}
       gridTemplateColumns="auto 18.75rem 1fr"
-      gridTemplateRows="2.5rem 1fr"
+      gridTemplateRows="3.75rem 1fr"
       width="100%"
     >
       <GridItem area="header" as="header" w="full" p={0}>
@@ -30,6 +30,7 @@ export function CmsContainer({
           pos="sticky"
           top={0}
           borderRight="1px solid"
+          borderTop="1px solid"
           borderColor="base.divider.medium"
           py={{ base: 0, md: "0.75rem" }}
           px={{ base: 0, md: "0.5rem" }}
@@ -58,6 +59,7 @@ export function CmsContainer({
           pos="sticky"
           top={0}
           borderRight="1px solid"
+          borderTop="1px solid"
           borderColor="base.divider.medium"
           overflow="auto"
           css={{
