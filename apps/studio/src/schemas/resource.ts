@@ -70,3 +70,8 @@ export const getAncestrySchema = z.object({
   siteId: z.string(),
   resourceId: z.string().optional(),
 })
+
+export const getRecentlyEditedWithFullPermalinkSchema = z.object({
+  siteId: z.string(),
+  limit: z.number().optional(),
+})

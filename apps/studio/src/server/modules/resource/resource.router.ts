@@ -12,10 +12,12 @@ import {
   getFullPermalinkSchema,
   getMetadataSchema,
   getParentSchema,
+  getRecentlyEditedWithFullPermalinkSchema,
   listResourceSchema,
   moveSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
+import { getUserViewableResourceTypes } from "~/utils/resources"
 import { publishSite } from "../aws/codebuild.service"
 import { db, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -70,6 +72,42 @@ const validateUserPermissionsForMove = async ({
     // and hence, the parent id is `to`
     permsFrom.can("move", resourceFrom) && permsTo.can("move", { parentId: to })
   )
+}
+
+const getWithFullPermalink = async ({ resourceId }: { resourceId: string }) => {
+  const result = await db
+    .withRecursive("resourcePath", (eb) =>
+      eb
+        .selectFrom("Resource as r")
+        .select([
+          "r.id",
+          "r.title",
+          "r.permalink",
+          "r.parentId",
+          "r.permalink as fullPermalink",
+        ])
+        .where("r.parentId", "is", null)
+        .unionAll(
+          eb
+            .selectFrom("Resource as s")
+            .innerJoin("resourcePath as rp", "s.parentId", "rp.id")
+            .select([
+              "s.id",
+              "s.title",
+              "s.permalink",
+              "s.parentId",
+              sql<string>`CONCAT(rp."fullPermalink", '/', s.permalink)`.as(
+                "fullPermalink",
+              ),
+            ]),
+        ),
+    )
+    .selectFrom("resourcePath as rp")
+    .select(["rp.id", "rp.title", "rp.fullPermalink"])
+    .where("rp.id", "=", resourceId)
+    .executeTakeFirst()
+
+  return result
 }
 
 export const resourceRouter = router({
@@ -434,37 +472,7 @@ export const resourceRouter = router({
   getWithFullPermalink: protectedProcedure
     .input(getFullPermalinkSchema)
     .query(async ({ input: { resourceId } }) => {
-      const result = await db
-        .withRecursive("resourcePath", (eb) =>
-          eb
-            .selectFrom("Resource as r")
-            .select([
-              "r.id",
-              "r.title",
-              "r.permalink",
-              "r.parentId",
-              "r.permalink as fullPermalink",
-            ])
-            .where("r.parentId", "is", null)
-            .unionAll(
-              eb
-                .selectFrom("Resource as s")
-                .innerJoin("resourcePath as rp", "s.parentId", "rp.id")
-                .select([
-                  "s.id",
-                  "s.title",
-                  "s.permalink",
-                  "s.parentId",
-                  sql<string>`CONCAT(rp."fullPermalink", '/', s.permalink)`.as(
-                    "fullPermalink",
-                  ),
-                ]),
-            ),
-        )
-        .selectFrom("resourcePath as rp")
-        .select(["rp.id", "rp.title", "rp.fullPermalink"])
-        .where("rp.id", "=", resourceId)
-        .executeTakeFirst()
+      const result = await getWithFullPermalink({ resourceId })
 
       if (!result) {
         throw new TRPCError({ code: "NOT_FOUND" })
@@ -534,5 +542,37 @@ export const resourceRouter = router({
         .execute()
 
       return ancestors.reverse().slice(0, -1)
+    }),
+
+  getRecentlyEditedWithFullPermalink: protectedProcedure
+    .input(getRecentlyEditedWithFullPermalinkSchema)
+    .query(async ({ input: { siteId, limit = 5 } }) => {
+      const resourcesToReturn = await db
+        .selectFrom("Resource")
+        .select([
+          "Resource.id",
+          "Resource.title",
+          "Resource.type",
+          "Resource.parentId",
+        ])
+        .leftJoin("Blob", "Resource.draftBlobId", "Blob.id")
+        .where("Resource.siteId", "=", Number(siteId))
+        .where("Resource.type", "in", getUserViewableResourceTypes())
+        .orderBy(
+          // To handle cases where either the resource or the blob is updated
+          sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`,
+          "desc",
+        )
+        .limit(limit)
+        .execute()
+
+      return await Promise.all(
+        resourcesToReturn.map(async (resource) => ({
+          ...resource,
+          fullPermalink: await getWithFullPermalink({
+            resourceId: resource.id,
+          }).then((r) => r?.fullPermalink),
+        })),
+      )
     }),
 })
