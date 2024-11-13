@@ -10,9 +10,8 @@ export const isAllowedToHaveChildren = (
   )
 }
 
-export const getUserViewableResourceTypes = (): ResourceType[] => {
+export const getUserSearchViewableResourceTypes = (): ResourceType[] => {
   return [
-    ResourceType.RootPage,
     ResourceType.Page,
     ResourceType.Folder,
     ResourceType.Collection,
