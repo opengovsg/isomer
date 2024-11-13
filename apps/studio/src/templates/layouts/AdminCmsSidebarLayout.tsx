@@ -69,7 +69,8 @@ const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
         <Text textStyle="subhead-2">{name}</Text>
       </Flex>
       <Spacer />
-      <Box w="42.5rem">
+      {/* NOTE: We are doing this because the searchbar has to be horizontally centered within the Flex */}
+      <Box pos="absolute" ml="25%" w="42.5rem">
         <Searchbar
           defaultIsExpanded
           size="md"
