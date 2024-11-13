@@ -12,12 +12,12 @@ import {
   getFullPermalinkSchema,
   getMetadataSchema,
   getParentSchema,
-  getRecentlyEditedWithFullPermalinkSchema,
   listResourceSchema,
   moveSchema,
+  searchSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
-import { getUserViewableResourceTypes } from "~/utils/resources"
+import { getUserSearchViewableResourceTypes } from "~/utils/resources"
 import { publishSite } from "../aws/codebuild.service"
 import { db, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -108,6 +108,26 @@ const getWithFullPermalink = async ({ resourceId }: { resourceId: string }) => {
     .executeTakeFirst()
 
   return result
+}
+
+const getResourcesWithFullPermalink = async ({
+  resources,
+}: {
+  resources: {
+    id: string
+    title: string
+    type: string
+    parentId: string | null
+  }[]
+}) => {
+  return await Promise.all(
+    resources.map(async (resource) => ({
+      ...resource,
+      fullPermalink: await getWithFullPermalink({
+        resourceId: resource.id,
+      }).then((r) => r?.fullPermalink),
+    })),
+  )
 }
 
 export const resourceRouter = router({
@@ -544,35 +564,103 @@ export const resourceRouter = router({
       return ancestors.reverse().slice(0, -1)
     }),
 
-  getRecentlyEditedWithFullPermalink: protectedProcedure
-    .input(getRecentlyEditedWithFullPermalinkSchema)
-    .query(async ({ input: { siteId, limit = 5 } }) => {
-      const resourcesToReturn = await db
-        .selectFrom("Resource")
-        .select([
-          "Resource.id",
-          "Resource.title",
-          "Resource.type",
-          "Resource.parentId",
-        ])
-        .leftJoin("Blob", "Resource.draftBlobId", "Blob.id")
-        .where("Resource.siteId", "=", Number(siteId))
-        .where("Resource.type", "in", getUserViewableResourceTypes())
-        .orderBy(
-          // To handle cases where either the resource or the blob is updated
-          sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`,
-          "desc",
-        )
-        .limit(limit)
-        .execute()
+  search: protectedProcedure
+    .input(searchSchema)
+    .query(async ({ input: { siteId, query = "", cursor: offset, limit } }) => {
+      // check if the query is only whitespaces (including multiple spaces)
+      function isWhitespaces(input: string): boolean {
+        return input.trim() === ""
+      }
 
-      return await Promise.all(
-        resourcesToReturn.map(async (resource) => ({
-          ...resource,
-          fullPermalink: await getWithFullPermalink({
-            resourceId: resource.id,
-          }).then((r) => r?.fullPermalink),
-        })),
-      )
+      // To handle cases where either the resource or the blob is updated
+      function getAllResourcesFound() {
+        return db
+          .selectFrom("Resource")
+          .select([
+            "Resource.id",
+            "Resource.title",
+            "Resource.type",
+            "Resource.parentId",
+            sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`.as(
+              "lastUpdatedAt",
+            ),
+          ])
+          .leftJoin("Blob", "Resource.draftBlobId", "Blob.id")
+          .where("Resource.siteId", "=", Number(siteId))
+          .where("Resource.type", "in", getUserSearchViewableResourceTypes())
+      }
+
+      // defined here to ensure the return type is correct
+      async function getResults(): Promise<{
+        totalCount: number | null
+        resources: { id: string }[]
+        suggestions: {
+          recentedlyEdited: { id: string }[]
+        }
+      }> {
+        if (isWhitespaces(query)) {
+          return {
+            totalCount: null,
+            resources: [],
+            suggestions: {
+              recentedlyEdited: await getResourcesWithFullPermalink({
+                // Hardcoded for now to be 5
+                resources: await getAllResourcesFound().limit(5).execute(),
+              }),
+            },
+          }
+        }
+
+        const searchTerms: string[] = Array.from(
+          new Set(query.trim().toLowerCase().split(/\s+/)),
+        )
+
+        const queriedResources = getAllResourcesFound().where((eb) =>
+          eb.or([
+            ...searchTerms.map((searchTerm) =>
+              eb("Resource.title", "ilike", `%${searchTerm}%`),
+            ),
+          ]),
+        )
+
+        // Currently ordered by number of words matched followed by `lastUpdatedAt`
+        const resourcesToReturn = queriedResources
+          .orderBy(
+            sql`(
+              ${sql.join(
+                searchTerms.map(
+                  (searchTerm) =>
+                    sql`CASE WHEN "Resource"."title" ILIKE ${"%" + searchTerm + "%"} THEN 1 ELSE 0 END`,
+                ),
+                sql` + `,
+              )}
+            ) DESC`,
+          )
+          .orderBy(
+            sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt") DESC`,
+          )
+          .offset(offset)
+          .limit(limit)
+
+        const totalCount = (
+          await db
+            .with("queriedResources", () => queriedResources)
+            .selectFrom("queriedResources")
+            .select(db.fn.countAll().as("total_count"))
+            .executeTakeFirstOrThrow()
+        ).total_count as number // needed to cast as the type can be `bigint`
+
+        return {
+          totalCount,
+          resources: await getResourcesWithFullPermalink({
+            resources: await resourcesToReturn.execute(),
+          }),
+          suggestions: {
+            recentedlyEdited: [],
+          },
+        }
+      }
+
+      return await getResults()
     }),
 })

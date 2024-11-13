@@ -71,7 +71,9 @@ export const getAncestrySchema = z.object({
   resourceId: z.string().optional(),
 })
 
-export const getRecentlyEditedWithFullPermalinkSchema = z.object({
-  siteId: z.string(),
-  limit: z.number().optional(),
-})
+export const searchSchema = z
+  .object({
+    siteId: z.string(),
+    query: z.string().optional(),
+  })
+  .merge(infiniteOffsetPaginationSchema)
