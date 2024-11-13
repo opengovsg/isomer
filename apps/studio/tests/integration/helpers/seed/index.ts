@@ -211,11 +211,32 @@ export const setupPageResource = async ({
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
   const blob = await setupBlob(blobIdProp)
 
+  let fallbackTitle  = ""
+  let fallbackPermalink = ""
+  switch (resourceType) {
+    case "RootPage":
+      fallbackTitle = "Home"
+      fallbackPermalink = ""
+      break;
+    case "CollectionPage":
+      fallbackTitle = "collection page"
+      fallbackPermalink = "collection-page"
+      break;
+    case "IndexPage":
+      fallbackTitle = "index page"
+      fallbackPermalink = "index-page"
+      break;
+    default:
+      fallbackTitle = "test page"
+      fallbackPermalink = "test-page"
+      break;
+  }
+
   let page = await db
     .insertInto("Resource")
     .values({
-      title: title ?? (resourceType === "RootPage" ? "Home" : "test page"),
-      permalink: permalink ?? (resourceType === "RootPage" ? "" : "test-page"),
+      title: title ?? fallbackTitle,
+      permalink: permalink ?? fallbackPermalink,
       siteId: site.id,
       parentId,
       publishedVersionId: null,
@@ -291,5 +312,103 @@ export const setupFolder = async ({
     navbar,
     footer,
     folder,
+  }
+}
+
+export const setupCollection = async ({
+  siteId: siteIdProp,
+  permalink = "test-collection",
+  parentId = null,
+  title = "test collection",
+}: {
+  siteId?: number
+  permalink?: string
+  parentId?: string | null
+  title?: string
+}) => {
+  const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
+
+  const collection = await db
+    .insertInto("Resource")
+    .values({
+      permalink,
+      siteId: site.id,
+      parentId,
+      title,
+      draftBlobId: null,
+      state: ResourceState.Draft,
+      type: ResourceType.Collection,
+      publishedVersionId: null,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()  
+
+  return {
+    site,
+    navbar,
+    footer,
+    collection,
+  }
+}
+
+export const setupCollectionLink = async ({
+  siteId: siteIdProp,
+  permalink = "test-collection-link",
+  collectionId,
+  title = "test collection link",
+}: {
+  siteId?: number
+  permalink?: string
+  collectionId: string
+  title?: string
+}) => {
+  const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
+
+  const collectionLink = await db
+    .insertInto("Resource")
+    .values({
+      permalink,
+      siteId: site.id,
+      parentId: collectionId,
+      title,
+      type: ResourceType.CollectionLink,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()  
+
+  return {
+    site,
+    navbar,
+    footer,
+    collectionLink,
+  }
+}
+
+export const setupFolderMeta = async ({
+  siteId: siteIdProp,
+  folderId,
+}: {
+  siteId?: number
+  folderId: string
+}) => {
+  const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
+
+  const folderMeta = await db
+    .insertInto("Resource")
+    .values({
+      siteId: site.id,
+      parentId: folderId,
+      title: "Folder meta",
+      permalink: "folder-meta",
+      type: ResourceType.FolderMeta,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  return {
+    site,
+    navbar,
+    footer,
+    folderMeta,
   }
 }
