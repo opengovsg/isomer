@@ -8,7 +8,6 @@ import {
   Button,
   IconButton,
   Menu,
-  Searchbar,
 } from "@opengovsg/design-system-react"
 import {
   BiCog,
@@ -23,6 +22,7 @@ import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { CmsContainer, CmsSidebar } from "~/components/CmsSidebar"
 import { LayoutHead } from "~/components/LayoutHead"
+import { Searchbar } from "~/components/Searchbar"
 import { DirectorySidebar } from "~/features/dashboard/components/DirectorySidebar"
 import { useMe } from "~/features/me/api"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -71,33 +71,17 @@ const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
       <Spacer />
       {/* NOTE: We are doing this because the searchbar has to be horizontally centered within the Flex */}
       <Box pos="absolute" ml="25%" w="42.5rem">
-        <Searchbar
-          defaultIsExpanded
-          size="md"
-          placeholder={`What do you need to edit today? E.g., “Press release”, “Speech by”`}
-        />
+        <Searchbar />
       </Box>
       <Spacer />
-      <HStack spacing="0.5rem" textStyle="subhead-1">
-        <Button
-          variant="clear"
-          size="xs"
-          rightIcon={<BiLinkExternal fontSize="1.25rem" />}
-          as={NextLink}
-          target="_blank"
-          href="https://go.gov.sg/isomer-issue"
-        >
-          Report an issue
-        </Button>
-        <AvatarMenu
-          name={me.name}
-          variant="subtle"
-          bg="base.canvas.brand-subtle"
-          menuListProps={{ maxWidth: "19rem" }}
-        >
-          <Menu.Item onClick={() => logout()}>Sign out</Menu.Item>
-        </AvatarMenu>
-      </HStack>
+      <AvatarMenu
+        name={me.name}
+        variant="subtle"
+        bg="base.canvas.brand-subtle"
+        menuListProps={{ maxWidth: "19rem" }}
+      >
+        <Menu.Item onClick={() => logout()}>Sign out</Menu.Item>
+      </AvatarMenu>
     </Flex>
   )
 }
