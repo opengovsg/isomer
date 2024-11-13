@@ -353,10 +353,7 @@ async function processDanglingDirectories(
   // Create index page for all immediate children that are dangling directories
   await Promise.all(
     getFolders(resources, sitemapEntry).map((child) => {
-      const indexPageContent = getIndexPageContents(
-        child.title,
-        child.children ?? [],
-      )
+      const indexPageContent = getIndexPageContents(child.title)
 
       return writeContentToFile(
         `${child.permalink}/${INDEX_PAGE_PERMALINK}`,
