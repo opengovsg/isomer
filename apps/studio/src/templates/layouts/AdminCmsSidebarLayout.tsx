@@ -2,7 +2,16 @@ import type { PropsWithChildren } from "react"
 import Image from "next/image"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
-import { Box, Flex, HStack, Spacer, Text } from "@chakra-ui/react"
+import {
+  Box,
+  Flex,
+  Grid,
+  GridItem,
+  HStack,
+  Portal,
+  Spacer,
+  Text,
+} from "@chakra-ui/react"
 import {
   AvatarMenu,
   Button,
@@ -40,14 +49,13 @@ const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
   })
 
   return (
-    <Flex
-      flexDir="row"
-      alignItems="center"
+    <Grid
+      gridTemplateColumns="1fr 42.5rem 1fr"
       py={{ base: 0, md: "0.5rem" }}
       px={{ base: 0, md: "0.5rem" }}
       background="white"
     >
-      <Flex alignItems="center">
+      <Flex alignItems="center" as={GridItem}>
         <IconButton
           mr="0.5rem"
           as={NextLink}
@@ -64,21 +72,28 @@ const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
             />
           }
         />
-        <Text textStyle="subhead-2">{name}</Text>
+        <Text textStyle="subhead-2" noOfLines={1}>
+          {name}
+        </Text>
       </Flex>
       {/* NOTE: We are doing this because the searchbar has to be horizontally centered within the Flex */}
-      <Box m="auto" w="42.5rem">
-        <Searchbar siteId={siteId} />
-      </Box>
-      <AvatarMenu
-        name={me.name}
-        variant="subtle"
-        bg="base.canvas.brand-subtle"
-        menuListProps={{ maxWidth: "19rem" }}
-      >
-        <Menu.Item onClick={() => logout()}>Sign out</Menu.Item>
-      </AvatarMenu>
-    </Flex>
+      <GridItem>
+        <Box w="42.5rem">
+          <Searchbar siteId={siteId} />
+        </Box>
+      </GridItem>
+
+      <GridItem justifyItems="flex-end" display="flex">
+        <AvatarMenu
+          name={me.name}
+          variant="subtle"
+          bg="base.canvas.brand-subtle"
+          menuListProps={{ maxWidth: "19rem" }}
+        >
+          <Menu.Item onClick={() => logout()}>Sign out</Menu.Item>
+        </AvatarMenu>
+      </GridItem>
+    </Grid>
   )
 }
 
