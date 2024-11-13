@@ -624,7 +624,7 @@ export const resourceRouter = router({
         )
 
         // Currently ordered by number of words matched followed by `lastUpdatedAt`
-        const resourcesToReturn = queriedResources
+        const resourcesToReturn = await queriedResources
           .orderBy(
             sql`(
               ${sql.join(
@@ -641,6 +641,7 @@ export const resourceRouter = router({
           )
           .offset(offset)
           .limit(limit)
+          .execute()
 
         const totalCount = (
           await db
@@ -653,7 +654,7 @@ export const resourceRouter = router({
         return {
           totalCount,
           resources: await getResourcesWithFullPermalink({
-            resources: await resourcesToReturn.execute(),
+            resources: resourcesToReturn,
           }),
           suggestions: {
             recentedlyEdited: [],
