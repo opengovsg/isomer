@@ -29,6 +29,8 @@ import {
   BiSort,
 } from "react-icons/bi"
 
+import { useBanner } from "~/hooks/useBanner"
+
 const MOCK_RECENTLY_EDITED = [
   {
     type: ResourceType.Page,
@@ -118,15 +120,18 @@ interface SearchModalProps {
   siteId: string
 }
 const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
+  const banner = useBanner()
+  const mt = banner ? "3rem" : "0.5rem"
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay bg="none" backdropFilter="brightness(80%)" />
       <ModalContent
+        mx="auto"
         rounded="md"
-        minW="42.5rem"
-        w="fit-content"
-        maxW="50vw"
+        w="42.5rem"
         p={0}
+        mt={`calc(${mt} - 1px)`}
       >
         <ModalHeader
           p={0}

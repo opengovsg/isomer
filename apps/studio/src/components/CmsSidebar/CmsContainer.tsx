@@ -76,7 +76,14 @@ export function CmsContainer({
         </Box>
       </GridItem>
       <GridItem as="main" area="main" overflow="hidden">
-        {children}
+        <Box
+          height={0}
+          minH="100%"
+          borderTop="1px solid"
+          borderColor="base.divider.medium"
+        >
+          {children}
+        </Box>
       </GridItem>
     </Grid>
   )

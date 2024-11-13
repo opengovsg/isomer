@@ -46,8 +46,6 @@ const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
       py={{ base: 0, md: "0.5rem" }}
       px={{ base: 0, md: "0.5rem" }}
       background="white"
-      borderBottom="1px solid"
-      borderColor="base.divider.medium"
     >
       <Flex alignItems="center">
         <IconButton
@@ -68,12 +66,10 @@ const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
         />
         <Text textStyle="subhead-2">{name}</Text>
       </Flex>
-      <Spacer />
       {/* NOTE: We are doing this because the searchbar has to be horizontally centered within the Flex */}
-      <Box pos="absolute" ml="25%" w="42.5rem">
+      <Box m="auto" w="42.5rem">
         <Searchbar siteId={siteId} />
       </Box>
-      <Spacer />
       <AvatarMenu
         name={me.name}
         variant="subtle"
