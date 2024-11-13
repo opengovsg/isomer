@@ -9,3 +9,14 @@ export const isAllowedToHaveChildren = (
     resourceType === ResourceType.RootPage
   )
 }
+
+export const getUserViewableResourceTypes = (): ResourceType[] => {
+  return [
+    ResourceType.RootPage,
+    ResourceType.Page,
+    ResourceType.Folder,
+    ResourceType.Collection,
+    ResourceType.CollectionLink,
+    ResourceType.CollectionPage,
+  ]
+}
