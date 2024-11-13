@@ -108,22 +108,6 @@ export const ProseMenuBar = ({ editor }: { editor: Editor }) => {
         isActive: () => editor.isActive("strike"),
       },
       {
-        type: "item",
-        icon: MdSuperscript,
-        title: "Superscript",
-        action: () =>
-          editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
-        isActive: () => editor.isActive("superscript"),
-      },
-      {
-        type: "item",
-        icon: MdSubscript,
-        title: "Subscript",
-        action: () =>
-          editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
-        isActive: () => editor.isActive("subscript"),
-      },
-      {
         type: "horizontal-list",
         label: "Lists",
         defaultIcon: BiListOl,
@@ -151,6 +135,28 @@ export const ProseMenuBar = ({ editor }: { editor: Editor }) => {
         title: "Link",
         action: onLinkModalOpen,
         isActive: () => editor.isActive("link"),
+      },
+      // Lesser-used commands are kept inside the overflow items list
+      {
+        type: "overflow-list",
+        items: [
+          {
+            type: "item",
+            icon: MdSuperscript,
+            title: "Superscript",
+            action: () =>
+              editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
+            isActive: () => editor.isActive("superscript"),
+          },
+          {
+            type: "item",
+            icon: MdSubscript,
+            title: "Subscript",
+            action: () =>
+              editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
+            isActive: () => editor.isActive("subscript"),
+          },
+        ],
       },
     ],
     [editor, onLinkModalOpen],
