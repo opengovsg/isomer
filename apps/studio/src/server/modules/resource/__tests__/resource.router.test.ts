@@ -7,13 +7,13 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
-  setupFolder,
-  setupPageResource,
-  setupSite,
-  setupFolderMeta,
+  setupBlob,
   setupCollection,
   setupCollectionLink,
-  setupBlob,
+  setupFolder,
+  setupFolderMeta,
+  setupPageResource,
+  setupSite,
 } from "tests/integration/helpers/seed"
 
 import { createCallerFactory } from "~/server/trpc"
@@ -1791,7 +1791,7 @@ describe("resource.router", async () => {
       "parentId",
       "fullPermalink",
     ] as const
-  
+
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -1822,11 +1822,31 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({ resourceType: "Page", siteId: site.id })
-      const { page: page2 } = await setupPageResource({ siteId: site.id, resourceType: "Page", permalink: "page-2" })
-      const { page: page3 } = await setupPageResource({ siteId: site.id, resourceType: "Page", permalink: "page-3" })
-      const { page: page4 } = await setupPageResource({ siteId: site.id, resourceType: "Page", permalink: "page-4" })
-      const { page: page5 } = await setupPageResource({ siteId: site.id, resourceType: "Page", permalink: "page-5" })
-      const { page: page6 } = await setupPageResource({ siteId: site.id, resourceType: "Page", permalink: "page-6" })
+      const { page: page2 } = await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "page-2",
+      })
+      const { page: page3 } = await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "page-3",
+      })
+      const { page: page4 } = await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "page-4",
+      })
+      const { page: page5 } = await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "page-5",
+      })
+      const { page: page6 } = await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "page-6",
+      })
 
       // Act
       const result = await caller.getRecentlyEditedWithFullPermalink({
@@ -1835,11 +1855,26 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = [
-        { ...pick(page6, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${page6.permalink}` },
-        { ...pick(page5, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${page5.permalink}` },
-        { ...pick(page4, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${page4.permalink}` },
-        { ...pick(page3, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${page3.permalink}` },
-        { ...pick(page2, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${page2.permalink}` },
+        {
+          ...pick(page6, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${page6.permalink}`,
+        },
+        {
+          ...pick(page5, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${page5.permalink}`,
+        },
+        {
+          ...pick(page4, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${page4.permalink}`,
+        },
+        {
+          ...pick(page3, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${page3.permalink}`,
+        },
+        {
+          ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${page2.permalink}`,
+        },
       ]
       expect(result).toEqual(expected)
     })
@@ -1848,8 +1883,15 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       const { folder: folder1 } = await setupFolder({ siteId: site.id })
-      const { folder: folder2 } = await setupFolder({ siteId: site.id, parentId: folder1.id })
-      const { page } = await setupPageResource({ resourceType: "Page", siteId: site.id, parentId: folder2.id })
+      const { folder: folder2 } = await setupFolder({
+        siteId: site.id,
+        parentId: folder1.id,
+      })
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        parentId: folder2.id,
+      })
 
       // Act
       const result = await caller.getRecentlyEditedWithFullPermalink({
@@ -1858,9 +1900,18 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = [
-        { ...pick(page, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${folder1.permalink}/${folder2.permalink}/${page.permalink}` },
-        { ...pick(folder2, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${folder1.permalink}/${folder2.permalink}` },
-        { ...pick(folder1, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${folder1.permalink}` },
+        {
+          ...pick(page, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${folder1.permalink}/${folder2.permalink}/${page.permalink}`,
+        },
+        {
+          ...pick(folder2, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${folder1.permalink}/${folder2.permalink}`,
+        },
+        {
+          ...pick(folder1, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${folder1.permalink}`,
+        },
       ]
       expect(result).toEqual(expected)
     })
@@ -1869,9 +1920,22 @@ describe("resource.router", async () => {
       // Arrange
       const { site } = await setupSite()
       const blob = await setupBlob()
-      const { page: page1 } = await setupPageResource({ resourceType: "Page", siteId: site.id, permalink: "page-1", blobId: blob.id })
-      const { page: page2 } = await setupPageResource({ resourceType: "Page", siteId: site.id, permalink: "page-2" })
-      await db.updateTable("Blob").set({ updatedAt: new Date() }).where("id", "=", blob.id).execute()
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        permalink: "page-1",
+        blobId: blob.id,
+      })
+      const { page: page2 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        permalink: "page-2",
+      })
+      await db
+        .updateTable("Blob")
+        .set({ updatedAt: new Date() })
+        .where("id", "=", blob.id)
+        .execute()
 
       // Act
       const result = await caller.getRecentlyEditedWithFullPermalink({
@@ -1880,29 +1944,53 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = [
-        { ...pick(page1, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${page1.permalink}` },
-        { ...pick(page2, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${page2.permalink}` },
+        {
+          ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${page1.permalink}`,
+        },
+        {
+          ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${page2.permalink}`,
+        },
       ]
       expect(result).toEqual(expected)
     })
 
     it("should respect the limit parameter", async () => {
       // Arrange
-      const { site } = await setupSite()      
-      await setupPageResource({ siteId: site.id, resourceType: "Page", permalink: "page-1" })
-      const { page: page2 } = await setupPageResource({ siteId: site.id, resourceType: "Page", permalink: "page-2" })
-      const { page: page3 } = await setupPageResource({ siteId: site.id, resourceType: "Page", permalink: "page-3" })
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "page-1",
+      })
+      const { page: page2 } = await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "page-2",
+      })
+      const { page: page3 } = await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "page-3",
+      })
 
       // Act
       const result = await caller.getRecentlyEditedWithFullPermalink({
         siteId: String(site.id),
-        limit: 2
+        limit: 2,
       })
 
       // Assert
       const expected = [
-        { ...pick(page3, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${page3.permalink}` },
-        { ...pick(page2, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${page2.permalink}` },
+        {
+          ...pick(page3, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${page3.permalink}`,
+        },
+        {
+          ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${page2.permalink}`,
+        },
       ]
       expect(result).toEqual(expected)
     })
@@ -1910,29 +1998,61 @@ describe("resource.router", async () => {
     it("should only return user viewable resource types", async () => {
       // Arrange
       const { site } = await setupSite()
-      const { collection: collection1 } = await setupCollection({ siteId: site.id })
+      const { collection: collection1 } = await setupCollection({
+        siteId: site.id,
+      })
       const { folder: folder1 } = await setupFolder({ siteId: site.id })
-      const { page: page1 } = await setupPageResource({ resourceType: "Page", siteId: site.id })
-      const { page: rootPage } = await setupPageResource({ resourceType: "RootPage", siteId: site.id })
-      const { page: collectionPage } = await setupPageResource({ resourceType: "CollectionPage", siteId: site.id })
-      const { collectionLink } = await setupCollectionLink({ siteId: site.id, collectionId: collection1.id })
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+      })
+      const { page: rootPage } = await setupPageResource({
+        resourceType: "RootPage",
+        siteId: site.id,
+      })
+      const { page: collectionPage } = await setupPageResource({
+        resourceType: "CollectionPage",
+        siteId: site.id,
+      })
+      const { collectionLink } = await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection1.id,
+      })
       await setupPageResource({ resourceType: "IndexPage", siteId: site.id })
       await setupFolderMeta({ siteId: site.id, folderId: folder1.id })
 
       // Act
       const result = await caller.getRecentlyEditedWithFullPermalink({
         siteId: String(site.id),
-        limit: 10 // arbitrary number larger than number of resources we've created
+        limit: 10, // arbitrary number larger than number of resources we've created
       })
 
       // Assert
       const expected = [
-        { ...pick(collectionLink, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${collection1.permalink}/${collectionLink.permalink}` },
-        { ...pick(collectionPage, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${collectionPage.permalink}` },
-        { ...pick(rootPage, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${rootPage.permalink}` },
-        { ...pick(page1, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${page1.permalink}` },
-        { ...pick(folder1, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${folder1.permalink}` },
-        { ...pick(collection1, RESOURCE_FIELDS_TO_PICK), fullPermalink: `${collection1.permalink}` },
+        {
+          ...pick(collectionLink, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${collection1.permalink}/${collectionLink.permalink}`,
+        },
+        {
+          ...pick(collectionPage, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${collectionPage.permalink}`,
+        },
+        {
+          ...pick(rootPage, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${rootPage.permalink}`,
+        },
+        {
+          ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${page1.permalink}`,
+        },
+        {
+          ...pick(folder1, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${folder1.permalink}`,
+        },
+        {
+          ...pick(collection1, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${collection1.permalink}`,
+        },
       ]
       expect(result).toEqual(expected)
     })

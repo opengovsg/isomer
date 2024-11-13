@@ -211,25 +211,25 @@ export const setupPageResource = async ({
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
   const blob = await setupBlob(blobIdProp)
 
-  let fallbackTitle  = ""
+  let fallbackTitle = ""
   let fallbackPermalink = ""
   switch (resourceType) {
     case "RootPage":
       fallbackTitle = "Home"
       fallbackPermalink = ""
-      break;
+      break
     case "CollectionPage":
       fallbackTitle = "collection page"
       fallbackPermalink = "collection-page"
-      break;
+      break
     case "IndexPage":
       fallbackTitle = "index page"
       fallbackPermalink = "index-page"
-      break;
+      break
     default:
       fallbackTitle = "test page"
       fallbackPermalink = "test-page"
-      break;
+      break
   }
 
   let page = await db
@@ -341,7 +341,7 @@ export const setupCollection = async ({
       publishedVersionId: null,
     })
     .returningAll()
-    .executeTakeFirstOrThrow()  
+    .executeTakeFirstOrThrow()
 
   return {
     site,
@@ -374,7 +374,7 @@ export const setupCollectionLink = async ({
       type: ResourceType.CollectionLink,
     })
     .returningAll()
-    .executeTakeFirstOrThrow()  
+    .executeTakeFirstOrThrow()
 
   return {
     site,
