@@ -71,7 +71,7 @@ const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
       <Spacer />
       {/* NOTE: We are doing this because the searchbar has to be horizontally centered within the Flex */}
       <Box pos="absolute" ml="25%" w="42.5rem">
-        <Searchbar />
+        <Searchbar siteId={siteId} />
       </Box>
       <Spacer />
       <AvatarMenu

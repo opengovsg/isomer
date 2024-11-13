@@ -1,7 +1,7 @@
+import { useMemo } from "react"
 import {
   ComponentWithAs as _,
   Box,
-  Button,
   ButtonProps,
   chakra,
   HStack,
@@ -15,18 +15,119 @@ import {
   Text,
   useDisclosure,
   useMultiStyleConfig,
+  VStack,
 } from "@chakra-ui/react"
-import { BiSearch } from "react-icons/bi"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+import { IconType } from "react-icons"
+import {
+  BiData,
+  BiFile,
+  BiFolder,
+  BiHome,
+  BiLink,
+  BiSearch,
+  BiSort,
+} from "react-icons/bi"
+
+const MOCK_RECENTLY_EDITED = [
+  {
+    type: ResourceType.Page,
+    title: "MOH New medisave subsidy",
+    permalink: "/press-releases/moh-new-medisave-subsidy-release/testing",
+  },
+  {
+    type: ResourceType.Collection,
+    title: "[DO NOT PUBLISH] MOH New medisave subsidy",
+    permalink: "/press-releases/moh-new-medisave-subsidy-release/testing",
+  },
+  {
+    type: ResourceType.CollectionLink,
+    title: "MOH New medisave subsidy",
+    permalink:
+      "/newsroom/intervention-by-minister-for-health-mr-ong-ye-kung-at-the-g20-joint-finance-and-health-summit/testing",
+  },
+  {
+    type: ResourceType.Folder,
+    title: "MOH New medisave subsidy",
+    permalink: "testing",
+  },
+  {
+    type: ResourceType.CollectionPage,
+    title: "MOH New medisave subsidy",
+    permalink: "testing",
+  },
+]
+
+interface SearchResultProps {
+  type: ResourceType
+  title: string
+  permalink: string
+}
+const SearchResult = ({ type, title, permalink }: SearchResultProps) => {
+  const ResourceTypeIcon: IconType = useMemo(() => {
+    switch (type) {
+      case ResourceType.RootPage:
+        return BiHome
+      case ResourceType.IndexPage:
+      case ResourceType.Page:
+        return BiFile
+      case ResourceType.Folder:
+        return BiFolder
+      case ResourceType.Collection:
+        return BiData
+      case ResourceType.CollectionPage:
+        return BiFile
+      case ResourceType.CollectionLink:
+        return BiLink
+      case ResourceType.FolderMeta:
+        return BiSort
+    }
+  }, [type])
+  return (
+    <HStack py="0.75rem" px="0.5rem" spacing="1rem" w="full">
+      <Icon as={ResourceTypeIcon} fill="base.content.medium" />
+      <VStack alignItems="flex-start">
+        <Text textStyle="subhead-2" textColor="base.content.default">
+          {title}
+        </Text>
+        <Text textStyle="caption-2" textColor="base.content.medium">
+          {permalink}
+        </Text>
+      </VStack>
+    </HStack>
+  )
+}
+
+const RecentlyEdited = ({
+  siteId: _siteId,
+}: Pick<SearchModalProps, "siteId">) => {
+  // TODO: Replace this with the trpc function to fetch the search results
+  const recent = MOCK_RECENTLY_EDITED
+  return (
+    <VStack>
+      {recent.map((item) => {
+        return <SearchResult {...item} />
+      })}
+    </VStack>
+  )
+}
 
 interface SearchModalProps {
   isOpen: boolean
   onClose: () => void
+  siteId: string
 }
-const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
+const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay bg="none" backdropFilter="brightness(80%)" />
-      <ModalContent rounded="md" w="fit-content" maxW="fit-content" p={0}>
+      <ModalContent
+        rounded="md"
+        minW="42.5rem"
+        w="fit-content"
+        maxW="50vw"
+        p={0}
+      >
         <ModalHeader
           p={0}
           rounded="md"
@@ -45,7 +146,10 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
           pt="1.5rem"
           pb="1rem"
         >
-          <Text>Hello</Text>
+          <Text textColor="base.content.medium" textStyle="body-2" mb="0.5rem">
+            Recently edited on your site
+          </Text>
+          <RecentlyEdited siteId={siteId} />
         </ModalBody>
         <ModalFooter
           bg="base.canvas.alt"
@@ -104,12 +208,12 @@ const SearchButton = (props: ButtonProps) => {
   )
 }
 
-export const Searchbar = () => {
+export const Searchbar = ({ siteId }: { siteId: string }) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
     <>
-      <SearchModal isOpen={isOpen} onClose={onClose} />
+      <SearchModal isOpen={isOpen} onClose={onClose} siteId={siteId} />
       <SearchButton onClick={onOpen} />
     </>
   )
