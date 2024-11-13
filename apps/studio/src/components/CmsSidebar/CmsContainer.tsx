@@ -5,19 +5,26 @@ export interface CmsSidebarContainerProps {
   children: ReactNode
   sidebar: ReactElement
   sidenav: ReactElement
+  header: ReactElement
 }
 
-export function CmsSidebarContainer({
+export function CmsContainer({
   children,
   sidebar,
   sidenav,
+  header,
 }: CmsSidebarContainerProps) {
   return (
     <Grid
-      templateAreas={`'sidebar sidenav main'`}
-      templateColumns="auto 18.75rem 1fr"
+      templateAreas={`'header header header'
+                       'sidebar sidenav main'`}
+      gridTemplateColumns="auto 18.75rem 1fr"
+      gridTemplateRows="2.5rem 1fr"
       width="100%"
     >
+      <GridItem area="header" as="header" w="full" p={0}>
+        {header}
+      </GridItem>
       <GridItem area="sidebar" as="aside" w="full" p={0}>
         <Box
           pos="sticky"
