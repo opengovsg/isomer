@@ -656,7 +656,7 @@ export const resourceRouter = router({
         ).total_count as number // needed to cast as the type can be `bigint`
 
         return {
-          totalCount,
+          totalCount: Number(totalCount),
           resources: await getResourcesWithFullPermalink({
             resources: resourcesToReturn,
           }),
