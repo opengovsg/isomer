@@ -2127,6 +2127,45 @@ describe("resource.router", async () => {
       expect(result).toEqual(expected)
     })
 
+    it("should not return resources matched by empty space if query terms are separated by spaces", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "test",
+        permalink: "test",
+      })
+      await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "something else",
+        permalink: "something-else",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "test  test",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 1,
+        resources: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
+        suggestions: {
+          recentlyEdited: [],
+        },
+      }
+      expect(result).toEqual(expected)
+    })
+
     it("should only return user viewable resource types", async () => {
       // Arrange
       const { site } = await setupSite()
