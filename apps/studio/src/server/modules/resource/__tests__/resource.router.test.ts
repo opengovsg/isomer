@@ -2062,6 +2062,45 @@ describe("resource.router", async () => {
       expect(result).toEqual(expected)
     })
 
+    it("should return resources that by prefix for each word in the title", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "shouldnotmatch",
+        permalink: "shouldnotmatch",
+      })
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "match",
+        permalink: "match",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "match",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 1,
+        resources: [
+          {
+            ...pick(page, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page.permalink}`,
+            lastUpdatedAt: page.updatedAt,
+          },
+        ],
+        suggestions: {
+          recentlyEdited: [],
+        },
+      }
+      expect(result).toEqual(expected)
+    })
+
     it("should not return resources that do not match the search query", async () => {
       // Arrange
       const { site } = await setupSite()

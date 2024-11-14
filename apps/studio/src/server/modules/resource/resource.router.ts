@@ -618,7 +618,11 @@ export const resourceRouter = router({
         const queriedResources = getAllResourcesFound().where((eb) =>
           eb.or([
             ...searchTerms.map((searchTerm) =>
-              eb("Resource.title", "ilike", `%${searchTerm}%`),
+              // Match if the search term is at the start of the title
+              eb("Resource.title", "ilike", `${searchTerm}%`).or(
+                // Match if the search term is in the middle of the title (after a space)
+                eb("Resource.title", "ilike", `% ${searchTerm}%`),
+              ),
             ),
           ]),
         )
@@ -631,7 +635,12 @@ export const resourceRouter = router({
               ${sql.join(
                 searchTerms.map(
                   (searchTerm) =>
-                    sql`CASE WHEN "Resource"."title" ILIKE ${"%" + searchTerm + "%"} THEN 1 ELSE 0 END`,
+                    // 1. Match if the search term is at the start of the title
+                    // 2. Match if the search term is in the middle of the title (after a space)
+                    sql`
+                      CASE WHEN "Resource"."title" ILIKE ${searchTerm + "%"} THEN 1 ELSE 0 END +
+                      CASE WHEN "Resource"."title" ILIKE ${"% " + searchTerm + "%"} THEN 1 ELSE 0 END
+                    `,
                 ),
                 sql` + `,
               )}
