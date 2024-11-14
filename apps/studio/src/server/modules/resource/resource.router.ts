@@ -624,8 +624,9 @@ export const resourceRouter = router({
         )
 
         // Currently ordered by number of words matched followed by `lastUpdatedAt`
-        const resourcesToReturn = await queriedResources
-          .orderBy(
+        let orderedResources = queriedResources
+        if (searchTerms.length > 1) {
+          orderedResources = orderedResources.orderBy(
             sql`(
               ${sql.join(
                 searchTerms.map(
@@ -636,9 +637,12 @@ export const resourceRouter = router({
               )}
             ) DESC`,
           )
-          .orderBy(
-            sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt") DESC`,
-          )
+        }
+        orderedResources = orderedResources.orderBy(
+          sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt") DESC`,
+        )
+
+        const resourcesToReturn = await orderedResources
           .offset(offset)
           .limit(limit)
           .execute()
