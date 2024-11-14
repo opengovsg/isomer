@@ -219,12 +219,12 @@ export const setupPageResource = async ({
       fallbackPermalink = ""
       break
     case "CollectionPage":
-      fallbackTitle = "collection page"
-      fallbackPermalink = "collection-page"
+      fallbackTitle = "test collection page"
+      fallbackPermalink = "test-collection-page"
       break
     case "IndexPage":
-      fallbackTitle = "index page"
-      fallbackPermalink = "index-page"
+      fallbackTitle = "test index page"
+      fallbackPermalink = "test-index-page"
       break
     default:
       fallbackTitle = "test page"
