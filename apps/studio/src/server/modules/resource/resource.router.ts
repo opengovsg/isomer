@@ -595,7 +595,7 @@ export const resourceRouter = router({
         totalCount: number | null
         resources: { id: string }[]
         suggestions: {
-          recentedlyEdited: { id: string }[]
+          recentlyEdited: { id: string }[]
         }
       }> {
         if (isWhitespaces(query)) {
@@ -603,7 +603,7 @@ export const resourceRouter = router({
             totalCount: null,
             resources: [],
             suggestions: {
-              recentedlyEdited: await getResourcesWithFullPermalink({
+              recentlyEdited: await getResourcesWithFullPermalink({
                 // Hardcoded for now to be 5
                 resources: await getAllResourcesFound().limit(5).execute(),
               }),
@@ -661,7 +661,7 @@ export const resourceRouter = router({
             resources: resourcesToReturn,
           }),
           suggestions: {
-            recentedlyEdited: [],
+            recentlyEdited: [],
           },
         }
       }
