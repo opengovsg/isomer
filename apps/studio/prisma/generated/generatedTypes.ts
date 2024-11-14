@@ -114,6 +114,13 @@ export interface Version {
   publishedBy: string
   updatedAt: Generated<Timestamp>
 }
+export interface Whitelist {
+  id: GeneratedAlways<number>
+  email: string
+  expiry: Timestamp | null
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
 export interface DB {
   Blob: Blob
   Footer: Footer
@@ -126,4 +133,5 @@ export interface DB {
   User: User
   VerificationToken: VerificationToken
   Version: Version
+  Whitelist: Whitelist
 }
