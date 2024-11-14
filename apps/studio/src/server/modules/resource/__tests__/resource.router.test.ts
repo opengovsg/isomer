@@ -2207,6 +2207,37 @@ describe("resource.router", async () => {
       expect(result).toEqual(expected)
     })
 
+    it("should return the correct values if query is a string of whitespaces", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "       ",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: null,
+        resources: [],
+        suggestions: {
+          recentlyEdited: [
+            {
+              ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+              fullPermalink: `${page1.permalink}`,
+              lastUpdatedAt: page1.updatedAt,
+            },
+          ],
+        },
+      }
+      expect(result).toEqual(expected)
+    })
+
     it("should return the correct values if query is not provided", async () => {
       // Arrange
       const { site } = await setupSite()
