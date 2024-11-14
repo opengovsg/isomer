@@ -3,8 +3,11 @@ import cuid2 from "@paralleldrive/cuid2"
 import { db } from "~server/db"
 
 import type { User } from "~server/db"
+import { setUpWhitelist } from "./seed"
 
 export const auth = async ({ id, ...user }: SetOptional<User, "id">) => {
+  await setUpWhitelist({ email: user.email })
+
   if (id !== undefined) {
     return db
       .updateTable("User")

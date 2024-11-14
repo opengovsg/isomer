@@ -412,3 +412,25 @@ export const setupFolderMeta = async ({
     folderMeta,
   }
 }
+
+export const setUpWhitelist = async ({
+  email,
+  expiry,
+}: {
+  email: string
+  expiry?: Date
+}) => {
+  return db
+    .insertInto("Whitelist")
+    .values({
+      email: email.toLowerCase(),
+      expiry: expiry ?? null,
+    })
+    .onConflict((oc) =>
+      oc
+        .column("email")
+        .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
+    )
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}

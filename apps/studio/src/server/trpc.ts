@@ -20,6 +20,7 @@ import getIP from "~/utils/getClientIp"
 import { type Context } from "./context"
 import { defaultMeSelect } from "./modules/me/me.select"
 import { checkRateLimit } from "./modules/rate-limit/rate-limit.service"
+import { isEmailWhitelisted } from "./modules/whitelist/whitelist.service"
 import { prisma } from "./prisma"
 
 interface Meta {
@@ -124,13 +125,6 @@ const baseMiddleware = t.middleware(async ({ ctx, next }) => {
 })
 
 const authMiddleware = t.middleware(async ({ next, ctx }) => {
-  const defaultWhitelist: string[] = []
-  const whitelistedUsers = ctx.gb
-    .getFeatureValue("whitelisted_users", {
-      whitelist: defaultWhitelist,
-    })
-    .whitelist.map((email) => email.toLowerCase())
-
   if (!ctx.session?.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
@@ -145,11 +139,10 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 
-  // check against Growthbook if user is whitelisted for prod/stg
-  if (env.NODE_ENV === "production") {
-    if (!whitelistedUsers.includes(user.email.toLowerCase())) {
-      throw new TRPCError({ code: "UNAUTHORIZED" })
-    }
+  // Ensure that the user is whitelisted to use the app
+  const isWhitelisted = await isEmailWhitelisted(user.email)
+  if (!isWhitelisted) {
+    throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 
   return next({
