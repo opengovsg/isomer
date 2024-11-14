@@ -50,7 +50,6 @@ const TableCellSchema = Type.Unsafe<TableCellProps>(
     attrs: Type.Optional(TableBaseCellSchema),
     content: Type.Array(
       Type.Union([
-        Type.Ref(DividerSchema),
         Type.Ref(ParagraphSchema),
         Type.Ref(OrderedListSchema),
         Type.Ref(UnorderedListSchema),
