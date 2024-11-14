@@ -8,6 +8,7 @@ export type {
   CollectionCardProps,
   ProcessedCollectionCardProps,
 } from "./CollectionCard"
+export type { ChildrenPagesProps } from "./ChildrenPages"
 export type { ContentProps } from "./Content"
 export {
   ContentPageHeaderSchema,
