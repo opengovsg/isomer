@@ -33,7 +33,7 @@ import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { LinkHrefEditor } from "../../../LinkEditor"
-import { LINK_TYPES } from "../../../LinkEditor/constants"
+import { LINK_TYPES_MAPPING } from "../../../LinkEditor/constants"
 
 export const jsonFormsLinkControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.LinkControl,
@@ -279,7 +279,7 @@ export function JsonFormsLinkControl({
   return (
     <Box>
       <LinkHrefEditor
-        linkTypes={LINK_TYPES}
+        linkTypes={LINK_TYPES_MAPPING}
         value={dataString}
         onChange={(value) => handleChange(path, value)}
         label={label}

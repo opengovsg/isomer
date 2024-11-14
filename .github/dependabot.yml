@@ -4,6 +4,8 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+    versioning-strategy: increase
+    open-pull-requests-limit: 10
     groups:
       aws-sdk:
         applies-to: version-updates
