@@ -1783,7 +1783,7 @@ describe("resource.router", async () => {
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
   })
 
-  describe("getRecentlyEditedWithFullPermalink", () => {
+  describe("search", () => {
     const RESOURCE_FIELDS_TO_PICK = [
       "id",
       "title",
@@ -1796,8 +1796,9 @@ describe("resource.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.getRecentlyEditedWithFullPermalink({
+      const result = unauthedCaller.search({
         siteId: "1",
+        query: "test",
       })
 
       await expect(result).rejects.toThrowError(
@@ -1805,84 +1806,35 @@ describe("resource.router", async () => {
       )
     })
 
-    it("should return empty array if no resources exist", async () => {
+    it.skip("should throw 403 if user does not have read access to resource", async () => {})
+
+    it("should return empty results if no resources exist", async () => {
       // Arrange
       const { site } = await setupSite()
 
       // Act
-      const result = await caller.getRecentlyEditedWithFullPermalink({
+      const result = await caller.search({
         siteId: String(site.id),
+        query: "test",
       })
 
       // Assert
-      expect(result).toEqual([])
-    })
-
-    it("should return up to 5 most recently edited resources if no limit is provided", async () => {
-      // Arrange
-      const { site } = await setupSite()
-      await setupPageResource({ resourceType: "Page", siteId: site.id })
-      const { page: page2 } = await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        permalink: "page-2",
-      })
-      const { page: page3 } = await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        permalink: "page-3",
-      })
-      const { page: page4 } = await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        permalink: "page-4",
-      })
-      const { page: page5 } = await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        permalink: "page-5",
-      })
-      const { page: page6 } = await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        permalink: "page-6",
-      })
-
-      // Act
-      const result = await caller.getRecentlyEditedWithFullPermalink({
-        siteId: String(site.id),
-      })
-
-      // Assert
-      const expected = [
-        {
-          ...pick(page6, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${page6.permalink}`,
+      const expected = {
+        totalCount: 0,
+        resources: [],
+        suggestions: {
+          recentlyEdited: [],
         },
-        {
-          ...pick(page5, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${page5.permalink}`,
-        },
-        {
-          ...pick(page4, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${page4.permalink}`,
-        },
-        {
-          ...pick(page3, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${page3.permalink}`,
-        },
-        {
-          ...pick(page2, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${page2.permalink}`,
-        },
-      ]
+      }
       expect(result).toEqual(expected)
     })
 
-    it("should return the full permalink of a resource", async () => {
+    it("should return the full permalink of resources", async () => {
       // Arrange
       const { site } = await setupSite()
-      const { folder: folder1 } = await setupFolder({ siteId: site.id })
+      const { folder: folder1 } = await setupFolder({
+        siteId: site.id,
+      })
       const { folder: folder2 } = await setupFolder({
         siteId: site.id,
         parentId: folder1.id,
@@ -1894,25 +1846,35 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.getRecentlyEditedWithFullPermalink({
+      const result = await caller.search({
         siteId: String(site.id),
+        query: "test",
       })
 
       // Assert
-      const expected = [
-        {
-          ...pick(page, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${folder1.permalink}/${folder2.permalink}/${page.permalink}`,
+      const expected = {
+        totalCount: 3,
+        resources: [
+          {
+            ...pick(page, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${folder1.permalink}/${folder2.permalink}/${page.permalink}`,
+            lastUpdatedAt: page.updatedAt,
+          },
+          {
+            ...pick(folder2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${folder1.permalink}/${folder2.permalink}`,
+            lastUpdatedAt: folder2.updatedAt,
+          },
+          {
+            ...pick(folder1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${folder1.permalink}`,
+            lastUpdatedAt: folder1.updatedAt,
+          },
+        ],
+        suggestions: {
+          recentlyEdited: [],
         },
-        {
-          ...pick(folder2, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${folder1.permalink}/${folder2.permalink}`,
-        },
-        {
-          ...pick(folder1, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${folder1.permalink}`,
-        },
-      ]
+      }
       expect(result).toEqual(expected)
     })
 
@@ -1931,67 +1893,198 @@ describe("resource.router", async () => {
         siteId: site.id,
         permalink: "page-2",
       })
-      await db
+      const updatedBlob = await db
         .updateTable("Blob")
         .set({ updatedAt: new Date() })
         .where("id", "=", blob.id)
-        .execute()
+        .returningAll()
+        .executeTakeFirstOrThrow()
 
       // Act
-      const result = await caller.getRecentlyEditedWithFullPermalink({
+      const result = await caller.search({
         siteId: String(site.id),
+        query: "test",
       })
 
       // Assert
-      const expected = [
-        {
-          ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${page1.permalink}`,
+      const expected = {
+        totalCount: 2,
+        resources: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: updatedBlob.updatedAt,
+          },
+          {
+            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page2.permalink}`,
+            lastUpdatedAt: page2.updatedAt,
+          },
+        ],
+        suggestions: {
+          recentlyEdited: [],
         },
-        {
-          ...pick(page2, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${page2.permalink}`,
-        },
-      ]
+      }
       expect(result).toEqual(expected)
     })
 
-    it("should respect the limit parameter", async () => {
+    it("should return totalCount as a number", async () => {
       // Arrange
+      const numberOfPages = 15 // arbitrary number above the default limit of 10
       const { site } = await setupSite()
-      await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        permalink: "page-1",
-      })
-      const { page: page2 } = await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        permalink: "page-2",
-      })
-      const { page: page3 } = await setupPageResource({
-        siteId: site.id,
-        resourceType: "Page",
-        permalink: "page-3",
-      })
+      for (let index = 0; index < numberOfPages; index++) {
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: `page-${index + 1}`,
+        })
+      }
 
       // Act
-      const result = await caller.getRecentlyEditedWithFullPermalink({
+      const result = await caller.search({
         siteId: String(site.id),
-        limit: 2,
+        query: "test",
       })
 
       // Assert
-      const expected = [
-        {
-          ...pick(page3, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${page3.permalink}`,
+      expect(result.totalCount).toEqual(numberOfPages)
+    })
+
+    it("should return suggestions.recentlyEdited as an empty array", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({ resourceType: "Page", siteId: site.id })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "test",
+      })
+
+      // Assert
+      expect(result.suggestions.recentlyEdited).toEqual([])
+    })
+
+    it("should match and order by splitting the query into an array of search terms", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "apple banana cherry durian", // should match 3 terms
+        permalink: "apple-banana-cherry-durian",
+      })
+      const { page: page2 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "apple banana cherry", // should match 2 terms
+        permalink: "apple-banana-cherry",
+      })
+      const { page: page3 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "banana", // should match 1 term
+        permalink: "banana",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "apple banana durian",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 3,
+        resources: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+          {
+            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page2.permalink}`,
+            lastUpdatedAt: page2.updatedAt,
+          },
+          {
+            ...pick(page3, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page3.permalink}`,
+            lastUpdatedAt: page3.updatedAt,
+          },
+        ],
+        suggestions: {
+          recentlyEdited: [],
         },
-        {
-          ...pick(page2, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${page2.permalink}`,
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should return resources in order of most recently updated if same search terms", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        permalink: "page-1",
+      })
+      const { page: page2 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        permalink: "page-2",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "test",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 2,
+        resources: [
+          {
+            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page2.permalink}`,
+            lastUpdatedAt: page2.updatedAt,
+          },
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
+        suggestions: {
+          recentlyEdited: [],
         },
-      ]
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should not return resources that do not match the search query", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "whatever",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "test",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 0,
+        resources: [],
+        suggestions: {
+          recentlyEdited: [],
+        },
+      }
       expect(result).toEqual(expected)
     })
 
@@ -2006,10 +2099,6 @@ describe("resource.router", async () => {
         resourceType: "Page",
         siteId: site.id,
       })
-      const { page: rootPage } = await setupPageResource({
-        resourceType: "RootPage",
-        siteId: site.id,
-      })
       const { page: collectionPage } = await setupPageResource({
         resourceType: "CollectionPage",
         siteId: site.id,
@@ -2022,38 +2111,45 @@ describe("resource.router", async () => {
       await setupFolderMeta({ siteId: site.id, folderId: folder1.id })
 
       // Act
-      const result = await caller.getRecentlyEditedWithFullPermalink({
+      const result = await caller.search({
         siteId: String(site.id),
-        limit: 10, // arbitrary number larger than number of resources we've created
+        query: "test",
       })
 
       // Assert
-      const expected = [
-        {
-          ...pick(collectionLink, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${collection1.permalink}/${collectionLink.permalink}`,
+      const expected = {
+        totalCount: 5,
+        resources: [
+          {
+            ...pick(collectionLink, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${collection1.permalink}/${collectionLink.permalink}`,
+            lastUpdatedAt: collectionLink.updatedAt,
+          },
+          {
+            ...pick(collectionPage, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${collectionPage.permalink}`,
+            lastUpdatedAt: collectionPage.updatedAt,
+          },
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+          {
+            ...pick(folder1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${folder1.permalink}`,
+            lastUpdatedAt: folder1.updatedAt,
+          },
+          {
+            ...pick(collection1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${collection1.permalink}`,
+            lastUpdatedAt: collection1.updatedAt,
+          },
+        ],
+        suggestions: {
+          recentlyEdited: [],
         },
-        {
-          ...pick(collectionPage, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${collectionPage.permalink}`,
-        },
-        {
-          ...pick(rootPage, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${rootPage.permalink}`,
-        },
-        {
-          ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${page1.permalink}`,
-        },
-        {
-          ...pick(folder1, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${folder1.permalink}`,
-        },
-        {
-          ...pick(collection1, RESOURCE_FIELDS_TO_PICK),
-          fullPermalink: `${collection1.permalink}`,
-        },
-      ]
+      }
       expect(result).toEqual(expected)
     })
 
@@ -2064,12 +2160,270 @@ describe("resource.router", async () => {
       await setupPageResource({ resourceType: "Page", siteId: site1.id })
 
       // Act
-      const result = await caller.getRecentlyEditedWithFullPermalink({
+      const result = await caller.search({
         siteId: String(site2.id),
+        query: "test",
       })
 
       // Assert
-      expect(result).toEqual([])
+      const expected = {
+        totalCount: 0,
+        resources: [],
+        suggestions: {
+          recentlyEdited: [],
+        },
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should return the correct values if query is empty string", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: null,
+        resources: [],
+        suggestions: {
+          recentlyEdited: [
+            {
+              ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+              fullPermalink: `${page1.permalink}`,
+              lastUpdatedAt: page1.updatedAt,
+            },
+          ],
+        },
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should return the correct values if query is not provided", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+      })
+
+      // Assert
+      const expected = {
+        totalCount: null,
+        resources: [],
+        suggestions: {
+          recentlyEdited: [
+            {
+              ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+              fullPermalink: `${page1.permalink}`,
+              lastUpdatedAt: page1.updatedAt,
+            },
+          ],
+        },
+      }
+      expect(result).toEqual(expected)
+    })
+
+    describe("limit", () => {
+      it("should return up to 10 most recently edited resources if no limit is provided", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        const pages = []
+        for (let index = 0; index < 11; index++) {
+          pages.push(
+            await setupPageResource({
+              siteId: site.id,
+              resourceType: "Page",
+              permalink: `page-${index + 1}`,
+            }),
+          )
+        }
+
+        // Act
+        const result = await caller.search({
+          siteId: String(site.id),
+          query: "test",
+        })
+
+        // Assert
+        const expected = {
+          totalCount: 11,
+          resources: pages
+            .reverse()
+            .slice(0, 10)
+            .map((page) => {
+              const { page: pageX } = page
+              return {
+                ...pick(pageX, RESOURCE_FIELDS_TO_PICK),
+                fullPermalink: `${pageX.permalink}`,
+                lastUpdatedAt: pageX.updatedAt,
+              }
+            }),
+          suggestions: {
+            recentlyEdited: [],
+          },
+        }
+        expect(result).toEqual(expected)
+      })
+
+      it("should return limit number of resources according to the the `limit` parameter", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "page-1",
+        })
+        const { page: page2 } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "page-2",
+        })
+        const { page: page3 } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "page-3",
+        })
+
+        // Act
+        const result = await caller.search({
+          siteId: String(site.id),
+          query: "test",
+          limit: 2,
+        })
+
+        // Assert
+        const expected = {
+          totalCount: 3,
+          resources: [
+            {
+              ...pick(page3, RESOURCE_FIELDS_TO_PICK),
+              fullPermalink: `${page3.permalink}`,
+              lastUpdatedAt: page3.updatedAt,
+            },
+            {
+              ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+              fullPermalink: `${page2.permalink}`,
+              lastUpdatedAt: page2.updatedAt,
+            },
+          ],
+          suggestions: {
+            recentlyEdited: [],
+          },
+        }
+        expect(result).toEqual(expected)
+      })
+
+      it("should return all items if limit is greater than the number of items", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        const { page: page1 } = await setupPageResource({
+          resourceType: "Page",
+          siteId: site.id,
+        })
+
+        // Act
+        const result = await caller.search({
+          siteId: String(site.id),
+          query: "test",
+          limit: 2,
+        })
+
+        // Assert
+        const expected = {
+          totalCount: 1,
+          resources: [
+            {
+              ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+              fullPermalink: `${page1.permalink}`,
+              lastUpdatedAt: page1.updatedAt,
+            },
+          ],
+          suggestions: {
+            recentlyEdited: [],
+          },
+        }
+        expect(result).toEqual(expected)
+      })
+    })
+
+    describe("cursor", () => {
+      it("should return empty results if `cursor` is invalid", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupPageResource({ resourceType: "Page", siteId: site.id })
+
+        // Act
+        const result = await caller.search({
+          siteId: String(site.id),
+          query: "test",
+          cursor: 600,
+        })
+
+        const expected = {
+          totalCount: 1,
+          resources: [],
+          suggestions: {
+            recentlyEdited: [],
+          },
+        }
+        expect(result).toEqual(expected)
+      })
+
+      it("should return the next set of resources if valid `cursor` is provided", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        const pages = []
+        for (let index = 0; index < 31; index++) {
+          pages.push(
+            await setupPageResource({
+              siteId: site.id,
+              resourceType: "Page",
+              permalink: `page-${index + 1}`,
+            }),
+          )
+        }
+
+        // Act
+        const result = await caller.search({
+          siteId: String(site.id),
+          query: "test",
+          cursor: 10,
+        })
+
+        // Assert
+        const expected = {
+          totalCount: 31,
+          resources: pages
+            .reverse()
+            .slice(10, 20)
+            .map((page) => {
+              const { page: pageX } = page
+              return {
+                ...pick(pageX, RESOURCE_FIELDS_TO_PICK),
+                fullPermalink: `${pageX.permalink}`,
+                lastUpdatedAt: pageX.updatedAt,
+              }
+            }),
+          suggestions: {
+            recentlyEdited: [],
+          },
+        }
+        expect(result).toEqual(expected)
+      })
     })
   })
 })
