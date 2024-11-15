@@ -24,6 +24,7 @@ import { BiSearch } from "react-icons/bi"
 
 import { ICON_MAPPINGS } from "~/features/dashboard/components/DirectorySidebar/constants"
 import { useBanner } from "~/hooks/useBanner"
+import { getLinkToResource } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 
 const getTotalCount = (pages: { totalCount: number | null }[]) => {
@@ -34,21 +35,30 @@ interface SearchResultProps {
   type: ResourceType
   title: string
   fullPermalink: string
+  id: string
+  siteId: string
 }
-const SearchResult = ({ type, title, fullPermalink }: SearchResultProps) => {
+const SearchResult = ({
+  type,
+  title,
+  fullPermalink,
+  id,
+  siteId,
+}: SearchResultProps) => {
   return (
     <HStack
       py="0.75rem"
       px="0.5rem"
       spacing="1rem"
       w="full"
-      as="button"
+      as="a"
       _hover={{
         background: "interaction.muted.main.hover",
       }}
       _focus={{
         background: "interaction.muted.main.active",
       }}
+      href={getLinkToResource({ siteId, type, resourceId: id })}
     >
       <Icon as={ICON_MAPPINGS[type]} fill="base.content.medium" />
       <VStack alignItems="flex-start" spacing={0}>
@@ -63,12 +73,18 @@ const SearchResult = ({ type, title, fullPermalink }: SearchResultProps) => {
   )
 }
 
-const RecentlyEdited = ({ items }: { items: SearchResultProps[] }) => {
+const RecentlyEdited = ({
+  items,
+  siteId,
+}: {
+  items: Omit<SearchResultProps, "siteId">[]
+  siteId: string
+}) => {
   // TODO: Replace this with the trpc function to fetch the search results
   return (
     <VStack>
       {items.map((item) => {
-        return <SearchResult {...item} />
+        return <SearchResult {...item} siteId={siteId} />
       })}
     </VStack>
   )
@@ -135,12 +151,13 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           </Text>
           {!searchValue && (
             <RecentlyEdited
+              siteId={siteId}
               items={data?.pages[0]?.suggestions.recentlyEdited ?? []}
             />
           )}
           {data?.pages.map((page) => {
             return page.resources.map((resource) => {
-              return <SearchResult {...resource} />
+              return <SearchResult {...resource} siteId={siteId} />
             })
           })}
         </ModalBody>
