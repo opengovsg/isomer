@@ -107,27 +107,24 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
   })
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} motionPreset="none">
       <ModalOverlay bg="none" backdropFilter="brightness(80%)" />
       <ModalContent
-        mx="auto"
-        rounded="md"
+        rounded="base"
         w="42.5rem"
         p={0}
-        mt={`calc(${mt} - 1px)`}
+        mt={`calc(${mt} + 1px)`}
+        // NOTE: This is required to align the inner Searchbar
+        // with the outer search bar
+        ml="3px"
         boxShadow="md"
       >
-        <ModalHeader
-          p={0}
-          borderTopRadius="md"
-          border="1px solid"
-          borderColor="base.divider.medium"
-        >
+        <ModalHeader p={0}>
           <OgpSearchBar
             defaultIsExpanded
             onChange={({ target }) => setSearchValue(target.value)}
             w="42.5rem"
-            border={0}
+            // border={0}
             placeholder={`Search pages, collections, or folders by name. e.g. "Speech by Minister"`}
           />
         </ModalHeader>
@@ -170,7 +167,7 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           flexDir="row"
           py="0.75rem"
           justifyContent="flex-start"
-          borderBottomRadius="md"
+          borderBottomRadius="base"
         >
           <Text textStyle="caption-2" textColor="base.content.medium">
             Tip: Type in the full title to get the most accurate search results.
@@ -195,23 +192,26 @@ const SearchButton = (props: ButtonProps) => {
       whiteSpace="nowrap"
       display={{ base: "none", sm: "flex" }}
       alignItems="center"
-      py="3"
-      px="4"
-      rounded="md"
+      boxSizing="initial"
+      // py="3"
+      // px="4"
+      height="2.75rem"
+      rounded="base"
       border="1px solid"
       borderColor="base.divider.strong"
       aria-label="search-button"
       {...props}
     >
-      <Box __css={styles.icon}>
+      <Box __css={styles.icon} w="44px" flexShrink={0}>
         <Icon as={BiSearch} fill="base.content.medium" />
       </Box>
-      <HStack w="full" ml="3" spacing="4px">
+      <HStack w="full" spacing="4px">
         <Text
           textColor="interaction.support.placeholder"
           textAlign="left"
           flex="1"
           textStyle="body-2"
+          ml="1px"
         >
           {`Search pages, collections, or folders by name. e.g. "Speech by Minister"`}
         </Text>
