@@ -121,9 +121,16 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
               !isLoading &&
               `${getTotalCount(data.pages)} results found with ${searchValue} in title.`}
           </Text>
-          <RecentlyEdited
-            items={data?.pages[0]?.suggestions.recentlyEdited ?? []}
-          />
+          {!searchValue && (
+            <RecentlyEdited
+              items={data?.pages[0]?.suggestions.recentlyEdited ?? []}
+            />
+          )}
+          {data?.pages.map((page) => {
+            return page.resources.map((resource) => {
+              return <SearchResult {...resource} />
+            })
+          })}
         </ModalBody>
         <ModalFooter
           bg="base.canvas.alt"
