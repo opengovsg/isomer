@@ -31,6 +31,7 @@ import {
 } from "react-icons/bi"
 
 import { useBanner } from "~/hooks/useBanner"
+import { trpc } from "~/utils/trpc"
 
 const MOCK_RECENTLY_EDITED = [
   {
@@ -123,6 +124,12 @@ interface SearchModalProps {
 const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
   const banner = useBanner()
   const mt = banner ? "3rem" : "0.5rem"
+  const [searchValue, setSearchValue] = useState("")
+  const { data, isLoading } = trpc.resource.search.useInfiniteQuery({
+    siteId,
+    query: searchValue,
+    limit: 5,
+  })
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -143,6 +150,7 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
         >
           <OgpSearchBar
             defaultIsExpanded
+            onSearch={setSearchValue}
             w="42.5rem"
             placeholder={`What do you need to edit today? E.g., "Press release", "Speech by"`}
           />
