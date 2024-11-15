@@ -154,7 +154,7 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
         >
           <OgpSearchBar
             defaultIsExpanded
-            onSearch={setSearchValue}
+            onSearch={(value) => setSearchValue(value)}
             w="42.5rem"
             border={0}
             placeholder={`Search pages, collections, or folders by name. e.g. "Speech by Minister"`}
@@ -174,6 +174,7 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
             {searchValue && isLoading && "Searching your websites high and low"}
             {!searchValue && "Recently edited on your site"}
             {data &&
+              searchValue &&
               !isLoading &&
               `${getTotalCount(data.pages)} results found with ${searchValue} in title.`}
           </Text>
