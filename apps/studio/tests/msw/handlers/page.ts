@@ -188,13 +188,6 @@ export const pageHandlers = {
                 secondaryButtonLabel: "Sub CTA",
               },
               {
-                type: "infopic",
-                title: "This is an infopic",
-                imageSrc: "https://placehold.co/600x400",
-                description:
-                  "This is the description for the infopic component",
-              },
-              {
                 type: "keystatistics",
                 title: "Irrationality in numbers",
                 statistics: [
@@ -219,6 +212,22 @@ export const pageHandlers = {
                 title: "This is an infobar",
                 description:
                   "This is the description that goes into the Infobar section",
+              },
+              {
+                type: "infopic",
+                title: "This is an infopic",
+                imageSrc: "https://placehold.co/600x400",
+              },
+              {
+                type: "infocards",
+                title: "This is an infocards block",
+                variant: "cardsWithoutImages",
+                cards: [],
+              },
+              {
+                type: "infocols",
+                title: "This is an infocols block",
+                infoBoxes: [],
               },
             ],
             version: "0.1.0",
@@ -323,6 +332,87 @@ export const pageHandlers = {
                   },
                 ],
               },
+              {
+                type: "prose",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [],
+                  },
+                ],
+              },
+              {
+                type: "image",
+                src: "https://placehold.co/600x400",
+                alt: "This is an image",
+              },
+              {
+                type: "callout",
+                content: {
+                  type: "prose",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [
+                        { text: "This is a callout block", type: "text" },
+                      ],
+                    },
+                  ],
+                },
+              },
+              {
+                type: "callout",
+                content: {
+                  type: "prose",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [],
+                    },
+                  ],
+                },
+              },
+              {
+                type: "contentpic",
+                content: {
+                  type: "prose",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [
+                        { text: "This is a contentpic block", type: "text" },
+                      ],
+                    },
+                  ],
+                },
+              },
+              {
+                type: "contentpic",
+                content: {
+                  type: "prose",
+                  content: [],
+                },
+                imageSrc: "https://placehold.co/600x400",
+              },
+              {
+                type: "infocards",
+                title: "This is an infocards block",
+                variant: "cardsWithoutImages",
+                cards: [],
+              },
+              {
+                type: "accordion",
+                summary: "This is an accordion block",
+                details: {
+                  type: "prose",
+                  content: [],
+                },
+              },
+              {
+                type: "infocols",
+                title: "This is an infocols block",
+                infoBoxes: [],
+              },
             ],
             version: "0.1.0",
           },
@@ -416,7 +506,57 @@ export const pageHandlers = {
               articlePageHeader: { summary: "" },
             },
             layout: "article",
-            content: [],
+            content: [
+              {
+                type: "prose",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ text: "This is a prose block", type: "text" }],
+                  },
+                ],
+              },
+              {
+                type: "prose",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [],
+                  },
+                ],
+              },
+              {
+                type: "image",
+                src: "https://placehold.co/600x400",
+                alt: "This is an image",
+              },
+              {
+                type: "callout",
+                content: {
+                  type: "prose",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [
+                        { text: "This is a callout block", type: "text" },
+                      ],
+                    },
+                  ],
+                },
+              },
+              {
+                type: "callout",
+                content: {
+                  type: "prose",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [],
+                    },
+                  ],
+                },
+              },
+            ],
             version: "0.1.0",
           },
           type: "Page",
