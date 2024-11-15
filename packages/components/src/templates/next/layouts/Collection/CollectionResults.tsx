@@ -13,8 +13,8 @@ interface CollectionResultProps
     | "totalCount"
   > {
   shouldShowDate?: boolean
+  siteAssetsBaseUrl: string | undefined
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
-  site: CollectionPageSchemaType["site"]
 }
 
 export const CollectionResults = ({
@@ -25,8 +25,8 @@ export const CollectionResults = ({
   handleClearFilter,
   totalCount,
   shouldShowDate = true,
+  siteAssetsBaseUrl,
   LinkComponent,
-  site,
 }: CollectionResultProps) => {
   if (totalCount === 0) {
     return (
@@ -61,8 +61,8 @@ export const CollectionResults = ({
               key={Math.random()}
               {...item}
               shouldShowDate={shouldShowDate}
+              siteAssetsBaseUrl={siteAssetsBaseUrl}
               LinkComponent={LinkComponent}
-              site={site}
             />
           ))}
         {paginatedItems.length === 0 && (
