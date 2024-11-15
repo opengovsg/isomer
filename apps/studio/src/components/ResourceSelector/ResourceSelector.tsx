@@ -18,7 +18,7 @@ interface ResourceSelectorProps {
   onlyShowFolders?: boolean
 }
 
-const generatePermalinkPrefix = (parents: PendingMoveResource[]) => {
+const generatePermalink = (parents: PendingMoveResource[]) => {
   return parents.map((parent) => parent.permalink).join("/")
 }
 
@@ -208,12 +208,12 @@ const SuspensableResourceSelector = ({
         <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">
           <Flex flexDirection="column" gap="0.25rem">
             <Text textStyle="caption-1">
-              You selected /{moveDest.permalink}
+              You selected {generatePermalink(resourceStack)}
             </Text>
             {existingResource && (
               <Text textStyle="caption-2">
                 The URL for {existingResource.title} will change to{" "}
-                {`${generatePermalinkPrefix(resourceStack)}/${existingResource.permalink}`}
+                {`${generatePermalink(resourceStack)}/${existingResource.permalink}`}
               </Text>
             )}
           </Flex>
