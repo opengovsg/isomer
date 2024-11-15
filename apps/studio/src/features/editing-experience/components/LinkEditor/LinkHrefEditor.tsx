@@ -10,7 +10,7 @@ import { FormLabel } from "@opengovsg/design-system-react"
 
 import { LINK_TYPES } from "./constants"
 import { useLinkEditor } from "./LinkEditorContext"
-import { LinkEditorRadio } from "./LinkEditorRadio"
+import { LinkEditorRadioGroup } from "./LinkEditorRadioGroup"
 
 const HTTPS_PREFIX = "https://"
 type HttpsLink = `https://${string}`
@@ -47,7 +47,7 @@ export const LinkHrefEditor = ({
       <FormLabel description={description} mb="0.5rem">
         {label}
       </FormLabel>
-      <LinkEditorRadio />
+      <LinkEditorRadioGroup />
       <Box my="0.5rem">
         {curType === LINK_TYPES.Page && pageLinkElement}
         {curType === LINK_TYPES.File && fileLinkElement}

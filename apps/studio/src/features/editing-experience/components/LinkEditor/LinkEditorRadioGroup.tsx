@@ -59,7 +59,7 @@ const LinkTypeRadioCard = ({
   )
 }
 
-export const LinkEditorRadio = () => {
+export const LinkEditorRadioGroup = () => {
   const { linkTypes, setCurType } = useLinkEditor()
   const { getRootProps, getRadioProps } = useRadioGroup({
     name: "link-type",
