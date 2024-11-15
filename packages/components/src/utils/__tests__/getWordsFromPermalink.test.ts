@@ -27,18 +27,6 @@ describe("getWordsFromPermalink", () => {
     expect(actual).toBe(expected)
   })
 
-  it("should preserve `=` in the original permalink", () => {
-    // Arrange
-    const singleLevelPermalink = "/this-._single=level|"
-    const expected = "this+single+level"
-
-    // Act
-    const actual = getWordsFromPermalink(singleLevelPermalink)
-
-    // Assert
-    expect(actual).toBe(expected)
-  })
-
   it("should handle uri-encoded strings correctly", () => {
     // Arrange
     const singleLevelPermalink = "/this-._single=level|"
