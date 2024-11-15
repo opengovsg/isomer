@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import {
   ComponentWithAs as _,
   Box,
@@ -62,6 +62,10 @@ const MOCK_RECENTLY_EDITED = [
   },
 ]
 
+const getTotalCount = (pages: { totalCount: number | null }[]) => {
+  return pages.reduce((acc, page) => acc + (page.totalCount ?? 0), 0)
+}
+
 interface SearchResultProps {
   type: ResourceType
   title: string
@@ -90,7 +94,7 @@ const SearchResult = ({ type, title, permalink }: SearchResultProps) => {
   return (
     <HStack py="0.75rem" px="0.5rem" spacing="1rem" w="full">
       <Icon as={ResourceTypeIcon} fill="base.content.medium" />
-      <VStack alignItems="flex-start">
+      <VStack alignItems="flex-start" spacing={0}>
         <Text textStyle="subhead-2" textColor="base.content.default">
           {title}
         </Text>
@@ -140,19 +144,20 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
         w="42.5rem"
         p={0}
         mt={`calc(${mt} - 1px)`}
+        boxShadow="md"
       >
         <ModalHeader
           p={0}
-          rounded="md"
+          borderTopRadius="md"
           border="1px solid"
           borderColor="base.divider.medium"
-          borderBottomRadius={0}
         >
           <OgpSearchBar
             defaultIsExpanded
             onSearch={setSearchValue}
             w="42.5rem"
-            placeholder={`What do you need to edit today? E.g., "Press release", "Speech by"`}
+            border={0}
+            placeholder={`Search pages, collections, or folders by name. e.g. "Speech by Minister"`}
           />
         </ModalHeader>
         <ModalBody
@@ -163,9 +168,14 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           px="1.25rem"
           pt="1.5rem"
           pb="1rem"
+          maxH="25.25rem"
         >
           <Text textColor="base.content.medium" textStyle="body-2" mb="0.5rem">
-            Recently edited on your site
+            {searchValue && isLoading && "Searching your websites high and low"}
+            {!searchValue && "Recently edited on your site"}
+            {data &&
+              !isLoading &&
+              `${getTotalCount(data.pages)} results found with ${searchValue} in title.`}
           </Text>
           <RecentlyEdited siteId={siteId} />
         </ModalBody>
@@ -178,6 +188,7 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           flexDir="row"
           py="0.75rem"
           justifyContent="flex-start"
+          borderBottomRadius="md"
         >
           <Text textStyle="caption-2" textColor="base.content.medium">
             Tip: Type in the full title to get the most accurate search results.
@@ -219,7 +230,7 @@ const SearchButton = (props: ButtonProps) => {
           flex="1"
           textStyle="body-2"
         >
-          {`What do you need to edit today? E.g., "Press release", "Speech by"`}
+          {`Search pages, collections, or folders by name. e.g. "Speech by Minister"`}
         </Text>
       </HStack>
     </chakra.button>
