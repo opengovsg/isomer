@@ -17,6 +17,7 @@ import {
   useMultiStyleConfig,
   VStack,
 } from "@chakra-ui/react"
+import { Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { IconType } from "react-icons"
 import {
@@ -140,7 +141,11 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           borderColor="base.divider.medium"
           borderBottomRadius={0}
         >
-          <SearchButton onClick={console.log} border={0} borderRadius={0} />
+          <OgpSearchBar
+            defaultIsExpanded
+            w="42.5rem"
+            placeholder={`What do you need to edit today? E.g., "Press release", "Speech by"`}
+          />
         </ModalHeader>
         <ModalBody
           border="1px solid"

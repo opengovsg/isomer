@@ -2,29 +2,9 @@ import type { PropsWithChildren } from "react"
 import Image from "next/image"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
-import {
-  Box,
-  Flex,
-  Grid,
-  GridItem,
-  HStack,
-  Portal,
-  Spacer,
-  Text,
-} from "@chakra-ui/react"
-import {
-  AvatarMenu,
-  Button,
-  IconButton,
-  Menu,
-} from "@opengovsg/design-system-react"
-import {
-  BiCog,
-  BiFolder,
-  BiHelpCircle,
-  BiLinkExternal,
-  BiLogOut,
-} from "react-icons/bi"
+import { Box, Flex, Grid, GridItem, Text } from "@chakra-ui/react"
+import { AvatarMenu, IconButton, Menu } from "@opengovsg/design-system-react"
+import { BiCog, BiFolder, BiHelpCircle, BiLogOut } from "react-icons/bi"
 import { z } from "zod"
 
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
@@ -83,7 +63,7 @@ const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
         </Box>
       </GridItem>
 
-      <GridItem justifyItems="flex-end" display="flex">
+      <GridItem justifyContent="flex-end" display="flex">
         <AvatarMenu
           name={me.name}
           variant="subtle"
