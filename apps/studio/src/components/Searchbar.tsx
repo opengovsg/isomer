@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import {
   ComponentWithAs as _,
   Box,
@@ -18,49 +18,13 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
+import { useDebounce } from "@uidotdev/usehooks"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { IconType } from "react-icons"
-import {
-  BiData,
-  BiFile,
-  BiFolder,
-  BiHome,
-  BiLink,
-  BiSearch,
-  BiSort,
-} from "react-icons/bi"
+import { BiSearch } from "react-icons/bi"
 
+import { ICON_MAPPINGS } from "~/features/dashboard/components/DirectorySidebar/constants"
 import { useBanner } from "~/hooks/useBanner"
 import { trpc } from "~/utils/trpc"
-
-const MOCK_RECENTLY_EDITED = [
-  {
-    type: ResourceType.Page,
-    title: "MOH New medisave subsidy",
-    permalink: "/press-releases/moh-new-medisave-subsidy-release/testing",
-  },
-  {
-    type: ResourceType.Collection,
-    title: "[DO NOT PUBLISH] MOH New medisave subsidy",
-    permalink: "/press-releases/moh-new-medisave-subsidy-release/testing",
-  },
-  {
-    type: ResourceType.CollectionLink,
-    title: "MOH New medisave subsidy",
-    permalink:
-      "/newsroom/intervention-by-minister-for-health-mr-ong-ye-kung-at-the-g20-joint-finance-and-health-summit/testing",
-  },
-  {
-    type: ResourceType.Folder,
-    title: "MOH New medisave subsidy",
-    permalink: "testing",
-  },
-  {
-    type: ResourceType.CollectionPage,
-    title: "MOH New medisave subsidy",
-    permalink: "testing",
-  },
-]
 
 const getTotalCount = (pages: { totalCount: number | null }[]) => {
   return pages.reduce((acc, page) => acc + (page.totalCount ?? 0), 0)
@@ -69,51 +33,29 @@ const getTotalCount = (pages: { totalCount: number | null }[]) => {
 interface SearchResultProps {
   type: ResourceType
   title: string
-  permalink: string
+  fullPermalink: string
 }
-const SearchResult = ({ type, title, permalink }: SearchResultProps) => {
-  const ResourceTypeIcon: IconType = useMemo(() => {
-    switch (type) {
-      case ResourceType.RootPage:
-        return BiHome
-      case ResourceType.IndexPage:
-      case ResourceType.Page:
-        return BiFile
-      case ResourceType.Folder:
-        return BiFolder
-      case ResourceType.Collection:
-        return BiData
-      case ResourceType.CollectionPage:
-        return BiFile
-      case ResourceType.CollectionLink:
-        return BiLink
-      case ResourceType.FolderMeta:
-        return BiSort
-    }
-  }, [type])
+const SearchResult = ({ type, title, fullPermalink }: SearchResultProps) => {
   return (
-    <HStack py="0.75rem" px="0.5rem" spacing="1rem" w="full">
-      <Icon as={ResourceTypeIcon} fill="base.content.medium" />
+    <HStack py="0.75rem" px="0.5rem" spacing="1rem" w="full" as="button">
+      <Icon as={ICON_MAPPINGS[type]} fill="base.content.medium" />
       <VStack alignItems="flex-start" spacing={0}>
         <Text textStyle="subhead-2" textColor="base.content.default">
           {title}
         </Text>
         <Text textStyle="caption-2" textColor="base.content.medium">
-          {permalink}
+          {fullPermalink}
         </Text>
       </VStack>
     </HStack>
   )
 }
 
-const RecentlyEdited = ({
-  siteId: _siteId,
-}: Pick<SearchModalProps, "siteId">) => {
+const RecentlyEdited = ({ items }: { items: SearchResultProps[] }) => {
   // TODO: Replace this with the trpc function to fetch the search results
-  const recent = MOCK_RECENTLY_EDITED
   return (
     <VStack>
-      {recent.map((item) => {
+      {items.map((item) => {
         return <SearchResult {...item} />
       })}
     </VStack>
@@ -129,9 +71,10 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
   const banner = useBanner()
   const mt = banner ? "3rem" : "0.5rem"
   const [searchValue, setSearchValue] = useState("")
+  const debouncedSearchTerm = useDebounce(searchValue, 300)
   const { data, isLoading } = trpc.resource.search.useInfiniteQuery({
     siteId,
-    query: searchValue,
+    query: debouncedSearchTerm,
     limit: 5,
   })
 
@@ -154,7 +97,7 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
         >
           <OgpSearchBar
             defaultIsExpanded
-            onSearch={(value) => setSearchValue(value)}
+            onChange={({ target }) => setSearchValue(target.value)}
             w="42.5rem"
             border={0}
             placeholder={`Search pages, collections, or folders by name. e.g. "Speech by Minister"`}
@@ -178,7 +121,9 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
               !isLoading &&
               `${getTotalCount(data.pages)} results found with ${searchValue} in title.`}
           </Text>
-          <RecentlyEdited siteId={siteId} />
+          <RecentlyEdited
+            items={data?.pages[0]?.suggestions.recentlyEdited ?? []}
+          />
         </ModalBody>
         <ModalFooter
           bg="base.canvas.alt"
@@ -244,7 +189,12 @@ export const Searchbar = ({ siteId }: { siteId: string }) => {
 
   return (
     <>
-      <SearchModal isOpen={isOpen} onClose={onClose} siteId={siteId} />
+      <SearchModal
+        key={String(isOpen)}
+        isOpen={isOpen}
+        onClose={onClose}
+        siteId={siteId}
+      />
       <SearchButton onClick={onOpen} />
     </>
   )

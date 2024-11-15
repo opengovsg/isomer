@@ -550,7 +550,7 @@ export const resourceRouter = router({
       interface ResourceInterface {
         id: string
         title: string
-        type: string
+        type: ResourceType
         parentId: string | null
         lastUpdatedAt: Date | null
         fullPermalink: string
