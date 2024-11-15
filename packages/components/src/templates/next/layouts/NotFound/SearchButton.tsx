@@ -1,6 +1,6 @@
 "use client"
 
-import { useLayoutEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
 import { NotFoundPageSchemaType } from "~/engine"
 import { getWordsFromPermalink } from "~/utils"
@@ -12,7 +12,7 @@ export const NotFoundSearchButton = ({
 }: NotFoundSearchButtonProps) => {
   const [permalink, setPermalink] = useState("")
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     // The check for typeof window and navigator ensures this only runs in browser environments, not during server-side rendering
     if (
       typeof window !== "undefined" &&
