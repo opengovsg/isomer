@@ -57,7 +57,13 @@ export const Skeleton = ({
         />
       </header>
 
-      <main id={SKIP_TO_CONTENT_ANCHOR_ID}>{children}</main>
+      <main
+        id={SKIP_TO_CONTENT_ANCHOR_ID}
+        tabIndex={-1}
+        className="focus-visible:outline-none"
+      >
+        {children}
+      </main>
 
       <Footer
         isGovernment={site.isGovernment}
