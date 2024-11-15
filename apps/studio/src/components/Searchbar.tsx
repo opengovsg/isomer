@@ -37,7 +37,19 @@ interface SearchResultProps {
 }
 const SearchResult = ({ type, title, fullPermalink }: SearchResultProps) => {
   return (
-    <HStack py="0.75rem" px="0.5rem" spacing="1rem" w="full" as="button">
+    <HStack
+      py="0.75rem"
+      px="0.5rem"
+      spacing="1rem"
+      w="full"
+      as="button"
+      _hover={{
+        background: "interaction.muted.main.hover",
+      }}
+      _focus={{
+        background: "interaction.muted.main.active",
+      }}
+    >
       <Icon as={ICON_MAPPINGS[type]} fill="base.content.medium" />
       <VStack alignItems="flex-start" spacing={0}>
         <Text textStyle="subhead-2" textColor="base.content.default">
