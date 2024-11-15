@@ -1,5 +1,6 @@
 import { Flex, Text } from "@chakra-ui/react"
 
+import { WithIntercomWrapper } from "~/components/Intercom"
 import { SiteList } from "~/features/dashboard/SiteList"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminLayout } from "~/templates/layouts/AdminLayout"
@@ -17,6 +18,8 @@ const DashboardPage: NextPageWithLayout = () => {
   )
 }
 
-DashboardPage.getLayout = AdminLayout
+DashboardPage.getLayout = (page: React.ReactNode) => {
+  return <WithIntercomWrapper>{AdminLayout(page)}</WithIntercomWrapper>
+}
 
 export default DashboardPage

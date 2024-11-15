@@ -9,6 +9,7 @@ import { z } from "zod"
 
 import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { WithIntercomWrapper } from "~/components/Intercom"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { editPageSchema } from "~/features/editing-experience/schema"
@@ -137,7 +138,9 @@ PageSettings.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.Page}
-      page={PageEditingLayout(page)}
+      page={
+        <WithIntercomWrapper>{PageEditingLayout(page)}</WithIntercomWrapper>
+      }
     />
   )
 }

@@ -13,6 +13,7 @@ import { BiData } from "react-icons/bi"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { WithIntercomWrapper } from "~/components/Intercom"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
 import { CollectionTable } from "~/features/dashboard/components/CollectionTable"
@@ -118,7 +119,9 @@ CollectionResourceListPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.Collection}
-      page={AdminCmsSidebarLayout(page)}
+      page={
+        <WithIntercomWrapper>{AdminCmsSidebarLayout(page)}</WithIntercomWrapper>
+      }
     />
   )
 }
