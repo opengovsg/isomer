@@ -219,6 +219,7 @@ const SearchButton = (props: ButtonProps) => {
       rounded="md"
       border="1px solid"
       borderColor="base.divider.strong"
+      aria-label="search-button"
       {...props}
     >
       <Box __css={styles.icon}>
