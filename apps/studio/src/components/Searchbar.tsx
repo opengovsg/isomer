@@ -143,7 +143,6 @@ const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
             {!searchValue && "Recently edited on your site"}
             {data &&
               searchValue &&
-              !isLoading &&
               `${getTotalCount(data.pages)} results found with ${searchValue} in title.`}
           </Text>
           {!searchValue && (

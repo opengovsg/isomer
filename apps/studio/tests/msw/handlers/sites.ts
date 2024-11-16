@@ -43,7 +43,7 @@ export const sitesHandlers = {
   },
   getSiteName: {
     default: () => {
-      return trpcMsw.site.getSiteName.query(async () => {
+      return trpcMsw.site.getSiteName.query(() => {
         return { name: "Isomer" }
       })
     },
