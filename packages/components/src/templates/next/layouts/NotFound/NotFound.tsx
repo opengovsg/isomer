@@ -3,7 +3,7 @@ import { getTailwindVariantLayout } from "~/utils"
 import { compoundStyles } from "../../components/complex/Infobar/Infobar"
 import { LinkButton } from "../../components/internal/LinkButton"
 import { Skeleton } from "../Skeleton"
-import { NotFoundSearchButton } from "./SearchButton"
+import { NotFoundSearchButton } from "./NotFoundSearchButton"
 
 const NotFoundLayout = ({
   site,
