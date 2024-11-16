@@ -1,8 +1,8 @@
+import type { ButtonProps } from "@chakra-ui/react"
 import { useState } from "react"
 import {
   ComponentWithAs as _,
   Box,
-  ButtonProps,
   chakra,
   HStack,
   Icon,
@@ -19,9 +19,9 @@ import {
 } from "@chakra-ui/react"
 import { Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
 import { useDebounce } from "@uidotdev/usehooks"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiSearch } from "react-icons/bi"
 
+import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { ICON_MAPPINGS } from "~/features/dashboard/components/DirectorySidebar/constants"
 import { useBanner } from "~/hooks/useBanner"
 import { getLinkToResource } from "~/utils/resource"
