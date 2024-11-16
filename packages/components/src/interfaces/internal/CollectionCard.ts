@@ -33,7 +33,20 @@ export interface LinkCardProps extends BaseCardProps {
   variant: "link"
 }
 
-export type CollectionCardProps =
-  | ArticleCardProps
-  | FileCardProps
-  | LinkCardProps
+export type AllCardProps = ArticleCardProps | FileCardProps | LinkCardProps
+
+// NOTE: This is client-side rendering and we want as much pre-processing
+// on the server as possible to improve performance + reduce file and bandwidth size
+// Thus, only the necessary props are passed to this component.
+export type CollectionCardProps = Pick<
+  AllCardProps,
+  "lastUpdated" | "category" | "title" | "description" | "image"
+> & {
+  referenceLinkHref: string | undefined
+  imageSrc: string | undefined
+  itemTitle: string
+}
+
+// NOTE: This is to ensure no additional props are being passed to this component
+export type ProcessedCollectionCardProps = CollectionCardProps &
+  Record<string, never>
