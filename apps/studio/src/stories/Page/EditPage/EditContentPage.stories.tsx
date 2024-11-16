@@ -123,15 +123,3 @@ export const LinkModal: Story = {
     await userEvent.click(canvas.getByRole("button", { name: /link/i }))
   },
 }
-
-export const AddTextBlock: Story = {
-  play: async (context) => {
-    const { canvasElement } = context
-    const canvas = within(canvasElement)
-    await AddBlock.play?.(context)
-
-    await userEvent.click(
-      canvas.getByRole("button", { name: /Add a block of text/i }),
-    )
-  },
-}
