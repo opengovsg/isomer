@@ -21,6 +21,8 @@ const COMMON_HANDLERS = [
   sitesHandlers.getNavbar.default(),
   sitesHandlers.getLocalisedSitemap.default(),
   resourceHandlers.getChildrenOf.default(),
+  resourceHandlers.getWithFullPermalink.default(),
+  resourceHandlers.getAncestryOf.collectionLink(),
   resourceHandlers.getMetadataById.content(),
   resourceHandlers.getRolesFor.default(),
   pageHandlers.readPageAndBlob.content(),
@@ -109,5 +111,15 @@ export const AddTextBlock: Story = {
     await userEvent.click(
       canvas.getByRole("button", { name: /Add a block of text/i }),
     )
+  },
+}
+
+export const LinkModal: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const canvas = within(canvasElement)
+    await AddTextBlock.play?.(context)
+
+    await userEvent.click(canvas.getByRole("button", { name: /link/i }))
   },
 }
