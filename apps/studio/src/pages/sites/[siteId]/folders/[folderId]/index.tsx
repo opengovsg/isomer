@@ -17,7 +17,6 @@ import { z } from "zod"
 
 import type { RouterOutput } from "~/utils/trpc"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
-import { WithIntercomWrapper } from "~/components/Intercom"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
@@ -251,9 +250,7 @@ FolderPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.Folder}
-      page={
-        <WithIntercomWrapper>{AdminCmsSidebarLayout(page)}</WithIntercomWrapper>
-      }
+      page={AdminCmsSidebarLayout(page)}
     />
   )
 }

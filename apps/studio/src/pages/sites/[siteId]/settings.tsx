@@ -20,7 +20,6 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
-import { WithIntercomWrapper } from "~/components/Intercom"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
@@ -225,11 +224,7 @@ SiteSettingsPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
-      page={
-        <WithIntercomWrapper>
-          {AdminSidebarOnlyLayout(page)}
-        </WithIntercomWrapper>
-      }
+      page={AdminSidebarOnlyLayout(page)}
     />
   )
 }

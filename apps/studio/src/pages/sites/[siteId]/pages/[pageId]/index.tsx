@@ -3,7 +3,6 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
-import { WithIntercomWrapper } from "~/components/Intercom"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import EditPageDrawer from "~/features/editing-experience/components/EditPageDrawer"
 import { EditPagePreview } from "~/features/editing-experience/components/EditPagePreview"
@@ -64,9 +63,7 @@ EditPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.Page}
-      page={
-        <WithIntercomWrapper>{PageEditingLayout(page)}</WithIntercomWrapper>
-      }
+      page={PageEditingLayout(page)}
     />
   )
 }

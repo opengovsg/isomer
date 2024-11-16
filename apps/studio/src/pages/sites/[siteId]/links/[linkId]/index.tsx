@@ -1,7 +1,6 @@
 import { Grid, GridItem } from "@chakra-ui/react"
 import { z } from "zod"
 
-import { WithIntercomWrapper } from "~/components/Intercom"
 import { EditCollectionLinkPreview } from "~/features/editing-experience/components/EditLinkPreview"
 import { LinkEditorDrawer } from "~/features/editing-experience/components/LinkEditorDrawer"
 import { LinkEditingLayout } from "~/templates/layouts/LinkEditingLayout"
@@ -30,8 +29,6 @@ export const EditLink = () => {
   )
 }
 
-EditLink.getLayout = (page: React.ReactNode) => {
-  return <WithIntercomWrapper>{LinkEditingLayout(page)}</WithIntercomWrapper>
-}
+EditLink.getLayout = LinkEditingLayout
 
 export default EditLink

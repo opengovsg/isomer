@@ -14,7 +14,6 @@ import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
-import { WithIntercomWrapper } from "~/components/Intercom"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
@@ -175,9 +174,7 @@ SitePage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
-      page={
-        <WithIntercomWrapper>{AdminCmsSidebarLayout(page)}</WithIntercomWrapper>
-      }
+      page={AdminCmsSidebarLayout(page)}
     />
   )
 }
