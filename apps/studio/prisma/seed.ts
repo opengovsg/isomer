@@ -259,6 +259,18 @@ async function main() {
     )
     .executeTakeFirstOrThrow()
 
+  await db
+    .insertInto("Whitelist")
+    .values({
+      email: "@open.gov.sg",
+    })
+    .onConflict((oc) =>
+      oc
+        .column("email")
+        .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
+    )
+    .executeTakeFirstOrThrow()
+
   await Promise.all(
     [...ISOMER_ADMINS, ...ISOMER_MIGRATORS, EDITOR_USER, PUBLISHER_USER].map(
       async (name) => {

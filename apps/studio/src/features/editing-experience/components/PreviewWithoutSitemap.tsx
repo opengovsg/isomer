@@ -26,7 +26,7 @@ export type PreviewProps = IsomerSchema & {
 // Add a fake link component to prevent the preview from navigating away
 const FakeLink = forwardRef<HTMLAnchorElement, PropsWithChildren<unknown>>(
   ({ children, ...rest }, ref) => (
-    <a {...rest} ref={ref} href="#" onClick={(e) => e.preventDefault()}>
+    <a {...rest} ref={ref} onClick={(e) => e.preventDefault()}>
       {children}
     </a>
   ),

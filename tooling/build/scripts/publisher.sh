@@ -17,7 +17,7 @@ if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
 fi
 
 # Cloning the repository
-echo "Cloning repository..."
+echo "Cloning central repository..."
 start_time=$(date +%s)
 
 git clone --depth 1 --branch "$ISOMER_BUILD_REPO_BRANCH" https://github.com/opengovsg/isomer.git
@@ -31,8 +31,6 @@ echo "Checking out branch..."
 start_time=$(date +%s)
 git checkout $ISOMER_BUILD_REPO_BRANCH
 calculate_duration $start_time
-
-echo $(git branch)
 
 # Perform a clean of npm cache
 npm cache clean --force
@@ -107,11 +105,24 @@ ls -al
 echo "Publishing to S3..."
 start_time=$(date +%s)
 
+
+NUMBER_OF_CORES=$(nproc)
+echo "Number of cores: $NUMBER_OF_CORES"
+
+# Set the number of concurrent S3 sync operations
+S3_SYNC_CONCURRENCY=$(( 4 * NUMBER_OF_CORES )) # 4x is an arbitrary number that should work well for most cases
+S3_SYNC_CONCURRENCY=$(( S3_SYNC_CONCURRENCY < 20 ? 10 : S3_SYNC_CONCURRENCY )) # Minimum of 20
+S3_SYNC_CONCURRENCY=$(( S3_SYNC_CONCURRENCY > 100 ? 100 : S3_SYNC_CONCURRENCY )) # Maximum of 100 (to prevent AWS from throttling us)
+echo "S3 sync concurrency: $S3_SYNC_CONCURRENCY"
+aws configure set default.s3.max_concurrent_requests $S3_SYNC_CONCURRENCY
+
 # Set all files to have 10 minutes of cache, except for those in the _next folder
 aws s3 sync . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --delete --no-progress --cache-control "max-age=600" --exclude "_next/*"
 
 # Set all files in the _next folder to have 1 day of cache
 aws s3 sync _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=86400"
+
+calculate_duration $start_time
 
 # Update CloudFront origin path
 echo "Updating CloudFront origin path..."

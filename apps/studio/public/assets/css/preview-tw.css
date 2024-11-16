@@ -1766,6 +1766,10 @@ video {
   flex-shrink: 0;
 }
 
+.flex-grow {
+  flex-grow: 1;
+}
+
 .grow {
   flex-grow: 1;
 }
@@ -1847,6 +1851,22 @@ video {
 
 .resize {
   resize: both;
+}
+
+.list-\[circle\] {
+  list-style-type: circle;
+}
+
+.list-\[lower-alpha\] {
+  list-style-type: lower-alpha;
+}
+
+.list-\[lower-roman\] {
+  list-style-type: lower-roman;
+}
+
+.list-\[square\] {
+  list-style-type: square;
 }
 
 .list-decimal {

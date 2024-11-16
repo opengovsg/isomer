@@ -15,6 +15,7 @@ export const UnorderedListSchema = unorderedListSchemaBuilder(
 )
 
 export type UnorderedListProps = Static<typeof UnorderedListSchema> & {
+  level?: number
   LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }
