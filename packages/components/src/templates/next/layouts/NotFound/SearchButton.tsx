@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-import { NotFoundPageSchemaType } from "~/engine"
+import type { NotFoundPageSchemaType } from "~/engine"
 import { getWordsFromPermalink } from "~/utils"
 import { LinkButton } from "../../components/internal/LinkButton"
 
