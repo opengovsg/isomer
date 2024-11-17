@@ -98,7 +98,8 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           px="1.25rem"
           display="flex"
           flexDir="row"
-          py="0.75rem"
+          pt="0.75rem"
+          pb="1rem"
           justifyContent="flex-start"
           borderBottomRadius="base"
         >
