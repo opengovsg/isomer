@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react"
 import { BiSearch } from "react-icons/bi"
 
-import { isMac } from "./IsMac"
+import { isMac } from "./isMac"
 import { SearchModal } from "./SearchModal"
 
 const SearchButton = (props: ButtonProps) => {

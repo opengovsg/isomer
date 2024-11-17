@@ -13,7 +13,7 @@ import { useDebounce } from "@uidotdev/usehooks"
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { useBanner } from "~/hooks/useBanner"
 import { trpc } from "~/utils/trpc"
-import { isMac } from "./IsMac"
+import { isMac } from "./isMac"
 import {
   InitialState,
   LoadingState,
