@@ -1,7 +1,6 @@
 import { useState } from "react"
 import {
   Modal,
-  ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -14,16 +13,12 @@ import { useDebounce } from "@uidotdev/usehooks"
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { useBanner } from "~/hooks/useBanner"
 import { trpc } from "~/utils/trpc"
-import { NoSearchResult } from "./NoSearchResult"
-import { RecentlyEditedResult } from "./RecentlyEditedResult"
-import { SearchResult } from "./SearchResult"
-
-const STATES = {
-  INITIAL: "initial",
-  LOADING: "loading",
-  NO_RESULTS: "no_results",
-  SEARCH_RESULTS: "search_results",
-} as const
+import {
+  InitialState,
+  LoadingState,
+  NoResultsState,
+  SearchResultsState,
+} from "./SearchModalBodyContentStates"
 
 interface SearchModalProps {
   isOpen: boolean
@@ -39,20 +34,38 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
     siteId,
     query: debouncedSearchTerm,
   })
-  const totalCount: number | undefined = data?.pages.reduce(
-    (acc, page) => acc + (page.totalCount ?? 0),
-    0,
-  )
   const resources: SearchResultResource[] =
     data?.pages.flatMap((page) => page.resources) ?? []
 
-  const state: (typeof STATES)[keyof typeof STATES] = !!debouncedSearchTerm
-    ? isLoading
-      ? STATES.LOADING
-      : resources.length === 0
-        ? STATES.NO_RESULTS
-        : STATES.SEARCH_RESULTS
-    : STATES.INITIAL
+  const renderModalBody = (): React.ReactNode => {
+    if (!!debouncedSearchTerm) {
+      if (isLoading) {
+        return <LoadingState />
+      }
+      if (resources.length === 0) {
+        return <NoResultsState />
+      }
+      return (
+        <SearchResultsState
+          siteId={siteId}
+          items={resources}
+          totalResultsCount={
+            data?.pages.reduce(
+              (acc, page) => acc + (page.totalCount ?? 0),
+              0,
+            ) ?? 0
+          }
+          searchTerm={debouncedSearchTerm}
+        />
+      )
+    }
+    return (
+      <InitialState
+        siteId={siteId}
+        items={data?.pages[0]?.suggestions.recentlyEdited ?? []}
+      />
+    )
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} motionPreset="none">
@@ -77,62 +90,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
             placeholder={`Search pages, collections, or folders by name. e.g. "Speech by Minister"`}
           />
         </ModalHeader>
-        <ModalBody
-          border="1px solid"
-          borderColor="base.divider.medium"
-          borderTop={0}
-          borderBottom={0}
-          px="1.25rem"
-          pt="1.5rem"
-          pb="1rem"
-          overflowY="auto"
-          display="flex"
-          flexDir="column"
-          gap="0.5rem"
-        >
-          <Text textColor="base.content.medium" textStyle="body-2">
-            {(() => {
-              switch (state) {
-                case STATES.LOADING:
-                  return "Searching your websites high and low"
-                case STATES.NO_RESULTS:
-                  return "No results found"
-                case STATES.SEARCH_RESULTS:
-                  return `${totalCount} search results found with "${debouncedSearchTerm}" in title`
-                case STATES.INITIAL:
-                  return "Recently edited on your site"
-                default:
-                  return <></>
-              }
-            })()}
-          </Text>
-          {(() => {
-            switch (state) {
-              case STATES.LOADING:
-                return "TODO: add loading state"
-              case STATES.NO_RESULTS:
-                return <NoSearchResult />
-              case STATES.SEARCH_RESULTS:
-                return resources.map((resource) => (
-                  <SearchResult
-                    key={resource.id}
-                    {...resource}
-                    siteId={siteId}
-                    searchTerms={debouncedSearchTerm.split(" ")}
-                  />
-                ))
-              case STATES.INITIAL:
-                return (
-                  <RecentlyEditedResult
-                    siteId={siteId}
-                    items={data?.pages[0]?.suggestions.recentlyEdited ?? []}
-                  />
-                )
-              default:
-                return <></>
-            }
-          })()}
-        </ModalBody>
+        {renderModalBody()}
         <ModalFooter
           bg="base.canvas.alt"
           border="1px solid"
