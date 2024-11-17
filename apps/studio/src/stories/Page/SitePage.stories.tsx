@@ -45,18 +45,6 @@ export const Default: Story = {
   args: {},
 }
 
-export const SearchModal: Story = {
-  play: async ({ canvasElement }) => {
-    await waitFor(async () => {
-      const screen = within(canvasElement)
-      const searchButton = screen.getByRole("button", {
-        name: "search-button",
-      })
-      await userEvent.click(searchButton)
-    })
-  },
-}
-
 export const PageResourceMenu: Story = {
   play: async ({ canvasElement }) => {
     await waitFor(async () => {
