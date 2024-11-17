@@ -1,4 +1,5 @@
 import { ModalBody, Text, VStack } from "@chakra-ui/react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SearchResultProps } from "./SearchResult"
 import { NoSearchResultSvgr } from "./NoSearchResultSvgr"
@@ -46,7 +47,7 @@ export const InitialState = ({
     <BaseState
       headerText="Recently edited"
       content={
-        <VStack gap="0.5rem">
+        <VStack gap="0.5rem" w="full">
           {items.map((item) => {
             return <SearchResult key={item.id} {...item} siteId={siteId} />
           })}
@@ -60,7 +61,20 @@ export const LoadingState = () => {
   return (
     <BaseState
       headerText="Searching your websites high and low"
-      content={"TODO: add loading state"}
+      content={
+        <VStack gap="0.5rem" w="full">
+          {Array.from({ length: 5 }).map((_) => (
+            <SearchResult
+              isLoading
+              type={ResourceType.Page}
+              title=""
+              fullPermalink=""
+              id=""
+              siteId=""
+            />
+          ))}
+        </VStack>
+      }
     />
   )
 }
@@ -80,7 +94,7 @@ export const SearchResultsState = ({
     <BaseState
       headerText={`${totalResultsCount} search results found`}
       content={
-        <VStack gap="0.5rem">
+        <VStack gap="0.5rem" w="full">
           {items.map((item) => (
             <SearchResult
               key={item.id}

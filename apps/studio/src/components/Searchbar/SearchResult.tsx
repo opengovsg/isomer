@@ -1,5 +1,5 @@
 import { type ReactNode } from "react"
-import { Box, HStack, Icon, Text, VStack } from "@chakra-ui/react"
+import { Box, HStack, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 
 import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { ICON_MAPPINGS } from "~/features/dashboard/components/DirectorySidebar/constants"
@@ -12,6 +12,7 @@ export interface SearchResultProps {
   id: string
   siteId: string
   searchTerms?: string[]
+  isLoading?: boolean
 }
 
 export const SearchResult = ({
@@ -21,6 +22,7 @@ export const SearchResult = ({
   id,
   siteId,
   searchTerms = [],
+  isLoading = false,
 }: SearchResultProps) => {
   const titleWithHighlightedText: ReactNode[] = title
     .split(" ")
@@ -75,12 +77,20 @@ export const SearchResult = ({
       href={getLinkToResource({ siteId, type, resourceId: id })}
     >
       <Icon as={ICON_MAPPINGS[type]} fill="base.content.medium" />
-      <VStack alignItems="flex-start" spacing={0}>
+      <VStack alignItems="flex-start" gap="0.25rem">
         <Box display="flex" gap="0.25rem" flexWrap="wrap">
-          {titleWithHighlightedText}
+          {isLoading ? (
+            <Skeleton width="12.5rem" height="1.125rem" variant="pulse" />
+          ) : (
+            titleWithHighlightedText
+          )}
         </Box>
         <Text textStyle="caption-2" textColor="base.content.medium">
-          {fullPermalink}
+          {isLoading ? (
+            <Skeleton width="18rem" height="1.125rem" variant="pulse" />
+          ) : (
+            fullPermalink
+          )}
         </Text>
       </VStack>
     </HStack>
