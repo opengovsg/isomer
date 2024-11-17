@@ -11,7 +11,7 @@ import {
 import { Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
 import { useDebounce } from "@uidotdev/usehooks"
 
-import type { SearchResultResource } from "~server/modules/resource/resource.types"
+import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { useBanner } from "~/hooks/useBanner"
 import { trpc } from "~/utils/trpc"
 import { NoSearchResult } from "./NoSearchResult"
