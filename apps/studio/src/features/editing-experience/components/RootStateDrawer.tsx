@@ -27,7 +27,7 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
   },
   content: {
     label: "Content page header",
-    description: "Summary, Button label, and Button URL",
+    description: "Summary, Button label, and Button destination",
   },
 }
 

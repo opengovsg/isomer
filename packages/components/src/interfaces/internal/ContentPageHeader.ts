@@ -16,13 +16,14 @@ export const ContentPageHeaderSchema = Type.Object(
     buttonLabel: Type.Optional(
       Type.String({
         title: "Button label",
-        description: "The label for the button",
+        description:
+          "A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”",
       }),
     ),
     buttonUrl: Type.Optional(
       Type.String({
-        title: "Button URL",
-        description: "The URL the button should link to",
+        title: "Button destination",
+        description: "When this is clicked, open:",
         format: "link",
         pattern: LINK_HREF_PATTERN,
       }),

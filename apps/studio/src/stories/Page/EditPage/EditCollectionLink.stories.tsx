@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { userEvent, waitFor, within } from "@storybook/test"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
@@ -21,6 +22,8 @@ const COMMON_HANDLERS = [
   sitesHandlers.getNavbar.default(),
   sitesHandlers.getLocalisedSitemap.default(),
   resourceHandlers.getRolesFor.default(),
+  resourceHandlers.getWithFullPermalink.default(),
+  resourceHandlers.getAncestryOf.collectionLink(),
   resourceHandlers.getChildrenOf.default(),
   resourceHandlers.getMetadataById.article(),
   resourceHandlers.getParentOf.collection(),
@@ -78,5 +81,19 @@ export const WithBanner: Story = {
         message: "This is a test banner",
       }),
     ],
+  },
+}
+
+export const WithModal: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const screen = within(canvasElement)
+
+    await waitFor(
+      async () =>
+        await userEvent.click(
+          screen.getByRole("button", { name: /Link something.../i }),
+        ),
+    )
   },
 }
