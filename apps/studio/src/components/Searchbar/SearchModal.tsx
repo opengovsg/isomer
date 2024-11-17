@@ -11,6 +11,7 @@ import {
 import { Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
 import { useDebounce } from "@uidotdev/usehooks"
 
+import type { SearchResultResource } from "~server/modules/resource/resource.types"
 import { useBanner } from "~/hooks/useBanner"
 import { trpc } from "~/utils/trpc"
 import { RecentlyEditedResult } from "./RecentlyEditedResult"
@@ -34,6 +35,8 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
     (acc, page) => acc + (page.totalCount ?? 0),
     0,
   )
+  const resources: SearchResultResource[] =
+    data?.pages.flatMap((page) => page.resources) ?? []
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} motionPreset="none">
@@ -80,18 +83,14 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
               items={data?.pages[0]?.suggestions.recentlyEdited ?? []}
             />
           )}
-          {data?.pages.map((page) => {
-            return page.resources.map((resource) => {
-              return (
-                <SearchResult
-                  key={resource.id}
-                  {...resource}
-                  siteId={siteId}
-                  searchTerms={searchValue.split(" ")}
-                />
-              )
-            })
-          })}
+          {resources.map((resource) => (
+            <SearchResult
+              key={resource.id}
+              {...resource}
+              siteId={siteId}
+              searchTerms={searchValue.split(" ")}
+            />
+          ))}
         </ModalBody>
         <ModalFooter
           bg="base.canvas.alt"

@@ -4,6 +4,7 @@ import { get } from "lodash"
 import { z } from "zod"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
+import type { SearchResultResource } from "./resource.types"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -547,15 +548,6 @@ export const resourceRouter = router({
   search: protectedProcedure
     .input(searchSchema)
     .query(async ({ input: { siteId, query = "", cursor: offset, limit } }) => {
-      interface ResourceInterface {
-        id: string
-        title: string
-        type: ResourceType
-        parentId: string | null
-        lastUpdatedAt: Date | null
-        fullPermalink: string
-      }
-
       // check if the query is only whitespaces (including multiple spaces)
       function isWhitespaces(input: string): boolean {
         return input.trim() === ""
@@ -582,8 +574,8 @@ export const resourceRouter = router({
       const getResourcesWithFullPermalink = async ({
         resources,
       }: {
-        resources: Omit<ResourceInterface, "fullPermalink">[]
-      }): Promise<ResourceInterface[]> => {
+        resources: Omit<SearchResultResource, "fullPermalink">[]
+      }): Promise<SearchResultResource[]> => {
         return await Promise.all(
           resources.map(async (resource) => ({
             ...resource,
@@ -597,9 +589,9 @@ export const resourceRouter = router({
       // defined here to ensure the return type is correct
       async function getResults(): Promise<{
         totalCount: number | null
-        resources: ResourceInterface[]
+        resources: SearchResultResource[]
         suggestions: {
-          recentlyEdited: ResourceInterface[]
+          recentlyEdited: SearchResultResource[]
         }
       }> {
         if (isWhitespaces(query)) {
@@ -611,7 +603,7 @@ export const resourceRouter = router({
                 // Hardcoded for now to be 5
                 resources: (await getAllResourcesFound()
                   .limit(5)
-                  .execute()) as ResourceInterface[],
+                  .execute()) as SearchResultResource[],
               }),
             },
           }
@@ -657,10 +649,11 @@ export const resourceRouter = router({
           sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt") DESC`,
         )
 
-        const resourcesToReturn: ResourceInterface[] = (await orderedResources
-          .offset(offset)
-          .limit(limit)
-          .execute()) as ResourceInterface[]
+        const resourcesToReturn: SearchResultResource[] =
+          (await orderedResources
+            .offset(offset)
+            .limit(limit)
+            .execute()) as SearchResultResource[]
 
         const totalCount: number = (
           await db
