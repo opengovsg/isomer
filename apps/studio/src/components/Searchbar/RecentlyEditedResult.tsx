@@ -13,7 +13,7 @@ export const RecentlyEditedResult = ({
   return (
     <VStack>
       {items.map((item) => {
-        return <SearchResult {...item} siteId={siteId} />
+        return <SearchResult key={item.id} {...item} siteId={siteId} />
       })}
     </VStack>
   )

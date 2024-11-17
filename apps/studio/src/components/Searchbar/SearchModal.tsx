@@ -83,7 +83,14 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           )}
           {data?.pages.map((page) => {
             return page.resources.map((resource) => {
-              return <SearchResult {...resource} siteId={siteId} />
+              return (
+                <SearchResult
+                  key={resource.id}
+                  {...resource}
+                  siteId={siteId}
+                  searchTerms={searchValue.split(" ")}
+                />
+              )
             })
           })}
         </ModalBody>
