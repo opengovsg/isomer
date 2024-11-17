@@ -4,7 +4,10 @@ import { useRef } from "react"
 
 import type { Filter as FilterType } from "../../types/Filter"
 import type { CollectionPageSchemaType } from "~/engine"
-import type { BreadcrumbProps, CollectionCardProps } from "~/interfaces"
+import type {
+  BreadcrumbProps,
+  ProcessedCollectionCardProps,
+} from "~/interfaces"
 import { tv } from "~/lib/tv"
 import {
   BackToTopLink,
@@ -18,12 +21,12 @@ import { ITEMS_PER_PAGE, useCollection } from "./useCollection"
 
 interface CollectionClientProps {
   page: CollectionPageSchemaType["page"]
-  items: CollectionCardProps[]
+  items: ProcessedCollectionCardProps[]
   filters: FilterType[]
   shouldShowDate: boolean
+  siteAssetsBaseUrl: string | undefined
   breadcrumb: BreadcrumbProps
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
-  site: CollectionPageSchemaType["site"]
 }
 
 const createCollectionLayoutStyles = tv({
@@ -50,9 +53,9 @@ const CollectionClient = ({
   items,
   filters,
   shouldShowDate,
+  siteAssetsBaseUrl,
   breadcrumb,
   LinkComponent,
-  site,
 }: CollectionClientProps) => {
   const {
     paginatedItems,
@@ -124,8 +127,8 @@ const CollectionClient = ({
               searchValue={searchValue}
               totalCount={totalCount}
               shouldShowDate={shouldShowDate}
+              siteAssetsBaseUrl={siteAssetsBaseUrl}
               LinkComponent={LinkComponent}
-              site={site}
             />
           </div>
           {paginatedItems.length > 0 && (
