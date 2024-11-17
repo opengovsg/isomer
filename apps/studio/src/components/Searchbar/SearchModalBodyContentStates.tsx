@@ -92,7 +92,7 @@ export const SearchResultsState = ({
 }) => {
   return (
     <BaseState
-      headerText={`${totalResultsCount} search results found`}
+      headerText={`${totalResultsCount} search results found for "${searchTerm}" in title`}
       content={
         <VStack gap="0.5rem" w="full">
           {items.map((item) => (
