@@ -29,7 +29,6 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
   const { data, isLoading } = trpc.resource.search.useInfiniteQuery({
     siteId,
     query: debouncedSearchTerm,
-    limit: 5,
   })
   const totalCount: number | undefined = data?.pages.reduce(
     (acc, page) => acc + (page.totalCount ?? 0),
