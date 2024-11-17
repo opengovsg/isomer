@@ -3,7 +3,7 @@ import { VStack } from "@chakra-ui/react"
 import type { SearchResultProps } from "./SearchResult"
 import { SearchResult } from "./SearchResult"
 
-export const RecentlyEditedResult = ({
+export const SearchResults = ({
   items,
   siteId,
 }: {
@@ -11,7 +11,7 @@ export const RecentlyEditedResult = ({
   siteId: string
 }) => {
   return (
-    <VStack gap="0.5rem">
+    <VStack>
       {items.map((item) => {
         return <SearchResult key={item.id} {...item} siteId={siteId} />
       })}

@@ -86,6 +86,9 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           pt="1.5rem"
           pb="1rem"
           overflowY="auto"
+          display="flex"
+          flexDir="column"
+          gap="0.5rem"
         >
           <Text textColor="base.content.medium" textStyle="body-2">
             {(() => {
