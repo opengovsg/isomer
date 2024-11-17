@@ -70,8 +70,9 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           pt="1.5rem"
           pb="1rem"
           maxH="25.25rem"
+          gap="0.5rem"
         >
-          <Text textColor="base.content.medium" textStyle="body-2" mb="0.5rem">
+          <Text textColor="base.content.medium" textStyle="body-2">
             {searchValue && isLoading && "Searching your websites high and low"}
             {!searchValue && "Recently edited on your site"}
             {data &&
