@@ -1,4 +1,4 @@
-import type { IconType } from "react-icons"
+import { IconType } from "react-icons"
 import { BiEnvelopeOpen, BiFile, BiFileBlank, BiLink } from "react-icons/bi"
 
 export const LINK_TYPES = {
