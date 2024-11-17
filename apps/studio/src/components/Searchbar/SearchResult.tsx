@@ -1,29 +1,24 @@
 import { type ReactNode } from "react"
 import { Box, HStack, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 
-import type { ResourceType } from "~prisma/generated/generatedEnums"
+import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { ICON_MAPPINGS } from "~/features/dashboard/components/DirectorySidebar/constants"
 import { getLinkToResource } from "~/utils/resource"
 
 export interface SearchResultProps {
-  type: ResourceType
-  title: string
-  fullPermalink: string
-  id: string
   siteId: string
+  item: SearchResultResource
   searchTerms?: string[]
   isLoading?: boolean
 }
 
 export const SearchResult = ({
-  type,
-  title,
-  fullPermalink,
-  id,
   siteId,
+  item,
   searchTerms = [],
   isLoading = false,
 }: SearchResultProps) => {
+  const { id, title, type, fullPermalink, lastUpdatedAt } = item
   const titleWithHighlightedText: ReactNode[] = title
     .split(" ")
     .map((titleWord) => {

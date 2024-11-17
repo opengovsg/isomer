@@ -2,20 +2,26 @@ import { ModalBody, Text, VStack } from "@chakra-ui/react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SearchResultProps } from "./SearchResult"
+import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { NoSearchResultSvgr } from "./NoSearchResultSvgr"
 import { SearchResult } from "./SearchResult"
 
 const SearchResults = ({
   siteId,
   items,
-}: {
-  siteId: string
-  items: Omit<SearchResultProps, "siteId">[]
-}) => {
+  searchTerms,
+  isLoading,
+}: Omit<SearchResultProps, "item"> & { items: SearchResultResource[] }) => {
   return (
     <VStack gap="0.25rem" w="full">
       {items.map((item) => (
-        <SearchResult key={item.id} {...item} siteId={siteId} />
+        <SearchResult
+          key={item.id}
+          siteId={siteId}
+          item={item}
+          searchTerms={searchTerms}
+          isLoading={isLoading}
+        />
       ))}
     </VStack>
   )
@@ -57,7 +63,7 @@ export const InitialState = ({
   items,
 }: {
   siteId: string
-  items: Omit<SearchResultProps, "siteId">[]
+  items: SearchResultResource[]
 }) => {
   return (
     <BaseState
@@ -76,11 +82,13 @@ export const LoadingState = () => {
           siteId=""
           items={Array.from({ length: 5 }).map((_, index) => ({
             id: `loading-${index}`,
+            parentId: null,
+            lastUpdatedAt: null,
             title: `Loading... ${index + 1}`,
             fullPermalink: "",
             type: ResourceType.Page,
-            isLoading: true,
           }))}
+          isLoading={true}
         />
       }
     />
@@ -94,7 +102,7 @@ export const SearchResultsState = ({
   searchTerm,
 }: {
   siteId: string
-  items: Omit<SearchResultProps, "siteId">[]
+  items: SearchResultResource[]
   totalResultsCount: number
   searchTerm: string
 }) => {
@@ -104,10 +112,8 @@ export const SearchResultsState = ({
       content={
         <SearchResults
           siteId={siteId}
-          items={items.map((item) => ({
-            ...item,
-            searchTerms: searchTerm.split(" "),
-          }))}
+          items={items}
+          searchTerms={searchTerm.split(" ")}
         />
       }
     />
