@@ -17,7 +17,6 @@ import {
   searchSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
-import { getUserSearchViewableResourceTypes } from "~/utils/resources"
 import { publishSite } from "../aws/codebuild.service"
 import { db, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -562,7 +561,7 @@ export const resourceRouter = router({
       }
 
       // To handle cases where either the resource or the blob is updated
-      function getAllResourcesFound() {
+      function getResourcesFound() {
         return db
           .selectFrom("Resource")
           .select([
@@ -576,7 +575,6 @@ export const resourceRouter = router({
           ])
           .leftJoin("Blob", "Resource.draftBlobId", "Blob.id")
           .where("Resource.siteId", "=", Number(siteId))
-          .where("Resource.type", "in", getUserSearchViewableResourceTypes())
       }
 
       const getResourcesWithFullPermalink = async ({
@@ -609,7 +607,13 @@ export const resourceRouter = router({
             suggestions: {
               recentlyEdited: await getResourcesWithFullPermalink({
                 // Hardcoded for now to be 5
-                resources: (await getAllResourcesFound()
+                resources: (await getResourcesFound()
+                  .where("Resource.type", "in", [
+                    // only show page-ish resources
+                    ResourceType.Page,
+                    ResourceType.CollectionLink,
+                    ResourceType.CollectionPage,
+                  ])
                   .limit(5)
                   .orderBy("lastUpdatedAt", "desc")
                   .execute()) as ResourceInterface[],
@@ -622,8 +626,17 @@ export const resourceRouter = router({
           new Set(query.trim().toLowerCase().split(/\s+/)),
         )
 
-        const queriedResources = getAllResourcesFound().where((eb) =>
-          eb.or([
+        const queriedResources = getResourcesFound()
+          .where("Resource.type", "in", [
+              // only show user-viewable resources (excluding root page, folder meta etc.)
+              ResourceType.Page,
+              ResourceType.Folder,
+              ResourceType.Collection,
+              ResourceType.CollectionLink,
+              ResourceType.CollectionPage,
+            ])
+          .where((eb) =>
+            eb.or([
             ...searchTerms.map((searchTerm) =>
               // Match if the search term is at the start of the title
               eb("Resource.title", "ilike", `${searchTerm}%`).or(

@@ -2389,6 +2389,30 @@ describe("resource.router", async () => {
       expect(result).toEqual(expected)
     })
 
+    it("suggestions.recentlyEdited should only return page-ish resources", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({ resourceType: "RootPage", siteId: site.id })
+      const { folder: folder1 } = await setupFolder({ siteId: site.id })
+      await setupFolderMeta({ siteId: site.id, folderId: folder1.id })
+      await setupCollection({ siteId: site.id })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+      })
+
+      // Assert
+      const expected = {
+        totalCount: null,
+        resources: [],
+        suggestions: {
+          recentlyEdited: [],
+        },
+      }
+      expect(result).toEqual(expected)
+    })
+
     describe("limit", () => {
       it("should return up to 10 most recently edited resources if no limit is provided", async () => {
         // Arrange
