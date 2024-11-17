@@ -18,6 +18,13 @@ import { NoSearchResult } from "./NoSearchResult"
 import { RecentlyEditedResult } from "./RecentlyEditedResult"
 import { SearchResult } from "./SearchResult"
 
+const STATES = {
+  INITIAL: "initial",
+  LOADING: "loading",
+  NO_RESULTS: "no_results",
+  SEARCH_RESULTS: "search_results",
+} as const
+
 interface SearchModalProps {
   isOpen: boolean
   onClose: () => void
@@ -38,6 +45,14 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
   )
   const resources: SearchResultResource[] =
     data?.pages.flatMap((page) => page.resources) ?? []
+
+  const state: (typeof STATES)[keyof typeof STATES] = !!debouncedSearchTerm
+    ? isLoading
+      ? STATES.LOADING
+      : resources.length === 0
+        ? STATES.NO_RESULTS
+        : STATES.SEARCH_RESULTS
+    : STATES.INITIAL
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} motionPreset="none">
@@ -73,28 +88,47 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           overflowY="auto"
         >
           <Text textColor="base.content.medium" textStyle="body-2">
-            {searchValue && isLoading && "Searching your websites high and low"}
-            {!searchValue && "Recently edited on your site"}
-            {data &&
-              searchValue &&
-              !!totalCount &&
-              `${totalCount} search results found with "${searchValue}" in title`}
+            {(() => {
+              switch (state) {
+                case STATES.LOADING:
+                  return "Searching your websites high and low"
+                case STATES.NO_RESULTS:
+                  return "No results found"
+                case STATES.SEARCH_RESULTS:
+                  return `${totalCount} search results found with "${debouncedSearchTerm}" in title`
+                case STATES.INITIAL:
+                  return "Recently edited on your site"
+                default:
+                  return <></>
+              }
+            })()}
           </Text>
-          {!searchValue && (
-            <RecentlyEditedResult
-              siteId={siteId}
-              items={data?.pages[0]?.suggestions.recentlyEdited ?? []}
-            />
-          )}
-          {resources.map((resource) => (
-            <SearchResult
-              key={resource.id}
-              {...resource}
-              siteId={siteId}
-              searchTerms={searchValue.split(" ")}
-            />
-          ))}
-          {!!searchValue && resources.length === 0 && <NoSearchResult />}
+          {(() => {
+            switch (state) {
+              case STATES.LOADING:
+                return "TODO: add loading state"
+              case STATES.NO_RESULTS:
+                return <NoSearchResult />
+              case STATES.SEARCH_RESULTS:
+                return resources.map((resource) => (
+                  <SearchResult
+                    key={resource.id}
+                    {...resource}
+                    siteId={siteId}
+                    searchTerms={debouncedSearchTerm.split(" ")}
+                  />
+                ))
+              case STATES.INITIAL:
+                return (
+                  <RecentlyEditedResult
+                    siteId={siteId}
+                    items={data?.pages[0]?.suggestions.recentlyEdited ?? []}
+                  />
+                )
+              default:
+                return <></>
+            }
+          })()}
         </ModalBody>
         <ModalFooter
           bg="base.canvas.alt"
