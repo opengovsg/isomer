@@ -1,4 +1,5 @@
 import type { ButtonProps } from "@chakra-ui/react"
+import { useEffect } from "react"
 import {
   Box,
   chakra,
@@ -10,6 +11,7 @@ import {
 } from "@chakra-ui/react"
 import { BiSearch } from "react-icons/bi"
 
+import { isMac } from "./IsMac"
 import { SearchModal } from "./SearchModal"
 
 const SearchButton = (props: ButtonProps) => {
@@ -56,6 +58,25 @@ const SearchButton = (props: ButtonProps) => {
 
 export const Searchbar = ({ siteId }: { siteId: string }) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
+
+  useEffect(() => {
+    // Trigger the search modal when the user presses
+    // "k" together with the meta key (cmd on mac) or ctrl on windows
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        (isMac && event.key === "k" && event.metaKey) ||
+        (!isMac && event.key === "k" && event.ctrlKey)
+      ) {
+        event.preventDefault()
+        onOpen()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [onOpen])
 
   return (
     <>

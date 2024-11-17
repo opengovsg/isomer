@@ -13,16 +13,13 @@ import { useDebounce } from "@uidotdev/usehooks"
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { useBanner } from "~/hooks/useBanner"
 import { trpc } from "~/utils/trpc"
+import { isMac } from "./IsMac"
 import {
   InitialState,
   LoadingState,
   NoResultsState,
   SearchResultsState,
 } from "./SearchModalBodyContentStates"
-
-const isMac =
-  typeof window !== "undefined" &&
-  (navigator.userAgent || navigator.platform).toLowerCase().includes("mac")
 
 interface SearchModalProps {
   isOpen: boolean
