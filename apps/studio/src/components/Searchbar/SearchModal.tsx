@@ -20,6 +20,10 @@ import {
   SearchResultsState,
 } from "./SearchModalBodyContentStates"
 
+const isMac =
+  typeof window !== "undefined" &&
+  (navigator.userAgent || navigator.platform).toLowerCase().includes("mac")
+
 interface SearchModalProps {
   isOpen: boolean
   onClose: () => void
@@ -100,13 +104,26 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           flexDir="row"
           pt="0.75rem"
           pb="1rem"
-          justifyContent="flex-start"
+          justifyContent="space-between"
           borderBottomRadius="base"
         >
           <Text textStyle="caption-2" textColor="base.content.medium">
             {resources.length === 0
               ? "Tip: Type in the full title to get the most accurate search results."
               : "Scroll to see more results. Too many results? Try typing something longer."}
+          </Text>
+          <Text
+            textStyle="caption-1"
+            textColor="base.content.medium"
+            bg="white"
+            py="0.125rem"
+            px="0.375rem"
+            borderRadius="base"
+            border="1px solid"
+            borderColor="base.divider.medium"
+            boxShadow="sm"
+          >
+            {isMac ? "⌘ + K" : "Ctrl + K"}
           </Text>
         </ModalFooter>
       </ModalContent>
