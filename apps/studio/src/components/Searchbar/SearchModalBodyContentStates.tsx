@@ -108,7 +108,7 @@ export const SearchResultsState = ({
 }) => {
   return (
     <BaseState
-      headerText={`${totalResultsCount} search results found for "${searchTerm}" in title`}
+      headerText={`${totalResultsCount} search result${totalResultsCount === 1 ? "" : "s"} found for "${searchTerm}" in title`}
       content={
         <SearchResults
           siteId={siteId}
