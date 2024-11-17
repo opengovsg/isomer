@@ -2346,6 +2346,73 @@ describe("resource.router", async () => {
       expect(result).toEqual(expected)
     })
 
+    it("suggestions.recentlyEdited should be ordered by lastUpdatedAt", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "page 1",
+        permalink: "page-1",
+      })
+      const { page: page2 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "page 2",
+        permalink: "page-2",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+      })
+
+      // Assert
+      const expected = {
+        totalCount: null,
+        resources: [],
+        suggestions: {
+          recentlyEdited: [
+            {
+              ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+              fullPermalink: `${page2.permalink}`,
+              lastUpdatedAt: page2.updatedAt,
+            },
+            {
+              ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+              fullPermalink: `${page1.permalink}`,
+              lastUpdatedAt: page1.updatedAt,
+            },
+          ],
+        },
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("suggestions.recentlyEdited should only return page-ish resources", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({ resourceType: "RootPage", siteId: site.id })
+      const { folder: folder1 } = await setupFolder({ siteId: site.id })
+      await setupFolderMeta({ siteId: site.id, folderId: folder1.id })
+      await setupCollection({ siteId: site.id })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+      })
+
+      // Assert
+      const expected = {
+        totalCount: null,
+        resources: [],
+        suggestions: {
+          recentlyEdited: [],
+        },
+      }
+      expect(result).toEqual(expected)
+    })
+
     describe("limit", () => {
       it("should return up to 10 most recently edited resources if no limit is provided", async () => {
         // Arrange
