@@ -104,4 +104,37 @@ describe("site.router", async () => {
       expect(result).toEqual([])
     })
   })
+
+  describe("getSiteName", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.getSiteName({ siteId: 1 })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return the site name", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getSiteName({ siteId: site.id })
+
+      // Assert
+      expect(result).toEqual({ name: site.name })
+    })
+
+    it.skip("should throw 403 if user does not have read access to the site", async () => {})
+  })
 })
