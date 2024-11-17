@@ -106,7 +106,12 @@ export const SearchResult = ({
       <Icon as={ICON_MAPPINGS[type]} fill="base.content.medium" />
       <Box display="flex" flexDir="column" gap="0.5rem">
         <VStack alignItems="flex-start" gap="0.25rem">
-          <Box display="flex" gap="0.25rem" flexWrap="wrap">
+          <Box
+            display="flex"
+            rowGap="0.125rem"
+            columnGap="0.25rem"
+            flexWrap="wrap"
+          >
             {isLoading ? (
               <Skeleton width="12.5rem" height="1.125rem" variant="pulse" />
             ) : (
