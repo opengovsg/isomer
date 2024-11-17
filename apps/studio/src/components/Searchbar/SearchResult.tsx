@@ -117,7 +117,7 @@ export const SearchResult = ({
             {isLoading ? (
               <Skeleton width="18rem" height="1.125rem" variant="pulse" />
             ) : (
-              fullPermalink
+              `/${fullPermalink}`
             )}
           </Text>
         </VStack>
