@@ -628,26 +628,27 @@ export const resourceRouter = router({
 
         const queriedResources = getResourcesFound()
           .where("Resource.type", "in", [
-              // only show user-viewable resources (excluding root page, folder meta etc.)
-              ResourceType.Page,
-              ResourceType.Folder,
-              ResourceType.Collection,
-              ResourceType.CollectionLink,
-              ResourceType.CollectionPage,
-            ])
+            // only show user-viewable resources (excluding root page, folder meta etc.)
+            ResourceType.Page,
+            ResourceType.Folder,
+            ResourceType.Collection,
+            ResourceType.CollectionLink,
+            ResourceType.CollectionPage,
+          ])
           .where((eb) =>
             eb.or([
-            ...searchTerms.map((searchTerm) =>
-              // Match if the search term is at the start of the title
-              eb("Resource.title", "ilike", `${searchTerm}%`).or(
-                // Match if the search term is in the middle of the title (after a space)
-                eb("Resource.title", "ilike", `% ${searchTerm}%`),
+              ...searchTerms.map((searchTerm) =>
+                // Match if the search term is at the start of the title
+                eb("Resource.title", "ilike", `${searchTerm}%`).or(
+                  // Match if the search term is in the middle of the title (after a space)
+                  eb("Resource.title", "ilike", `% ${searchTerm}%`),
+                ),
               ),
-            ),
-          ]),
-        )
+            ]),
+          )
 
-        // Currently ordered by number of words matched followed by `lastUpdatedAt`
+        // Currently ordered by number of words matched
+        // followed by `lastUpdatedAt` if there's a tie-break
         let orderedResources = queriedResources
         if (searchTerms.length > 1) {
           orderedResources = orderedResources.orderBy(
@@ -667,9 +668,7 @@ export const resourceRouter = router({
             ) DESC`,
           )
         }
-        orderedResources = orderedResources.orderBy(
-          sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt") DESC`,
-        )
+        orderedResources = orderedResources.orderBy("lastUpdatedAt", "desc")
 
         const resourcesToReturn: ResourceInterface[] = (await orderedResources
           .offset(offset)
