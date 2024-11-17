@@ -14,6 +14,7 @@ import { useDebounce } from "@uidotdev/usehooks"
 import type { SearchResultResource } from "~server/modules/resource/resource.types"
 import { useBanner } from "~/hooks/useBanner"
 import { trpc } from "~/utils/trpc"
+import { NoSearchResult } from "./NoSearchResult"
 import { RecentlyEditedResult } from "./RecentlyEditedResult"
 import { SearchResult } from "./SearchResult"
 
@@ -75,6 +76,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
             {!searchValue && "Recently edited on your site"}
             {data &&
               searchValue &&
+              !!totalCount &&
               `${totalCount} search results found with "${searchValue}" in title`}
           </Text>
           {!searchValue && (
@@ -91,6 +93,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
               searchTerms={searchValue.split(" ")}
             />
           ))}
+          {!!searchValue && resources.length === 0 && <NoSearchResult />}
         </ModalBody>
         <ModalFooter
           bg="base.canvas.alt"
