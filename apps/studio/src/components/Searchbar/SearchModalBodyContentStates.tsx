@@ -5,6 +5,22 @@ import type { SearchResultProps } from "./SearchResult"
 import { NoSearchResultSvgr } from "./NoSearchResultSvgr"
 import { SearchResult } from "./SearchResult"
 
+const SearchResults = ({
+  siteId,
+  items,
+}: {
+  siteId: string
+  items: Omit<SearchResultProps, "siteId">[]
+}) => {
+  return (
+    <VStack gap="0.25rem" w="full">
+      {items.map((item) => (
+        <SearchResult key={item.id} {...item} siteId={siteId} />
+      ))}
+    </VStack>
+  )
+}
+
 const BaseState = ({
   headerText,
   content,
@@ -46,13 +62,7 @@ export const InitialState = ({
   return (
     <BaseState
       headerText="Recently edited"
-      content={
-        <VStack gap="0.5rem" w="full">
-          {items.map((item) => {
-            return <SearchResult key={item.id} {...item} siteId={siteId} />
-          })}
-        </VStack>
-      }
+      content={<SearchResults siteId={siteId} items={items} />}
     />
   )
 }
@@ -62,18 +72,16 @@ export const LoadingState = () => {
     <BaseState
       headerText="Searching your websites high and low"
       content={
-        <VStack gap="0.5rem" w="full">
-          {Array.from({ length: 5 }).map((_) => (
-            <SearchResult
-              isLoading
-              type={ResourceType.Page}
-              title=""
-              fullPermalink=""
-              id=""
-              siteId=""
-            />
-          ))}
-        </VStack>
+        <SearchResults
+          siteId=""
+          items={Array.from({ length: 5 }).map((_, index) => ({
+            id: `loading-${index}`,
+            title: `Loading... ${index + 1}`,
+            fullPermalink: "",
+            type: ResourceType.Page,
+            isLoading: true,
+          }))}
+        />
       }
     />
   )
@@ -94,16 +102,13 @@ export const SearchResultsState = ({
     <BaseState
       headerText={`${totalResultsCount} search results found for "${searchTerm}" in title`}
       content={
-        <VStack gap="0.5rem" w="full">
-          {items.map((item) => (
-            <SearchResult
-              key={item.id}
-              {...item}
-              siteId={siteId}
-              searchTerms={searchTerm.split(" ")}
-            />
-          ))}
-        </VStack>
+        <SearchResults
+          siteId={siteId}
+          items={items.map((item) => ({
+            ...item,
+            searchTerms: searchTerm.split(" "),
+          }))}
+        />
       }
     />
   )
