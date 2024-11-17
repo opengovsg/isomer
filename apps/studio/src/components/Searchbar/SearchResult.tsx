@@ -102,6 +102,7 @@ export const SearchResult = ({
         background: "interaction.muted.main.active",
       }}
       href={getLinkToResource({ siteId, type, resourceId: id })}
+      borderRadius="0.25rem"
     >
       <Icon as={ICON_MAPPINGS[type]} fill="base.content.medium" />
       <Box display="flex" flexDir="column" gap="0.5rem">
