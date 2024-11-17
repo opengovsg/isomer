@@ -51,6 +51,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
         // with the outer search bar
         ml="3px"
         boxShadow="md"
+        h="30.625rem"
       >
         <ModalHeader p={0}>
           <OgpSearchBar
@@ -69,7 +70,6 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           px="1.25rem"
           pt="1.5rem"
           pb="1rem"
-          maxH="25.25rem"
           overflowY="auto"
         >
           <Text textColor="base.content.medium" textStyle="body-2">
