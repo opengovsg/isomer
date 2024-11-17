@@ -611,6 +611,7 @@ export const resourceRouter = router({
                 // Hardcoded for now to be 5
                 resources: (await getAllResourcesFound()
                   .limit(5)
+                  .orderBy("lastUpdatedAt", "desc")
                   .execute()) as ResourceInterface[],
               }),
             },
