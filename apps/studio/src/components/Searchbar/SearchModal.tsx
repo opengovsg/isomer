@@ -104,7 +104,9 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           borderBottomRadius="base"
         >
           <Text textStyle="caption-2" textColor="base.content.medium">
-            Tip: Type in the full title to get the most accurate search results.
+            {resources.length === 0
+              ? "Tip: Type in the full title to get the most accurate search results."
+              : "Scroll to see more results. Too many results? Try typing something longer."}
           </Text>
         </ModalFooter>
       </ModalContent>
