@@ -125,7 +125,11 @@ export const SearchResult = ({
               titleWithHighlightedText
             )}
           </Box>
-          <Text textStyle="caption-2" textColor="base.content.medium">
+          <Text
+            textStyle="caption-2"
+            textColor="base.content.medium"
+            noOfLines={1}
+          >
             {isLoading ? (
               <Skeleton width="18rem" height="1.125rem" variant="pulse" />
             ) : (
