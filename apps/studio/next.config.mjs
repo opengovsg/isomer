@@ -30,12 +30,12 @@ const ContentSecurityPolicy = `
     https://schema.isomer.gov.sg
     https://browser-intake-datadoghq.com
     https://*.browser-intake-datadoghq.com
-    https://vitals.vercel-insights.com/v1/vitals
+    https://vitals.vercel-insights.com
     https://*.amazonaws.com
     https://*.wogaa.sg
     https://placehold.co
-    https://cdn.growthbook.io/api/features/${env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY}
-    https://widget.intercom.io/widget/${env.NEXT_PUBLIC_INTERCOM_APP_ID}
+    https://cdn.growthbook.io
+    https://widget.intercom.io
     ${env.NODE_ENV === "production" ? "https://isomer-user-content.by.gov.sg" : "https://*.by.gov.sg"}
     ;
   worker-src 'self' blob:;
