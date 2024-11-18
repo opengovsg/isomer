@@ -48,7 +48,7 @@ export const Initial: Story = {
   play: async ({ canvasElement }) => {
     await waitFor(async () => {
       const screen = within(canvasElement)
-      const searchButton = screen.getByRole("button", {
+      const searchButton = await screen.findByRole("button", {
         name: "search-button",
       })
       await userEvent.click(searchButton)
@@ -65,7 +65,7 @@ export const Results: Story = {
   play: async ({ canvasElement }) => {
     await waitFor(async () => {
       const screen = within(canvasElement)
-      const searchButton = screen.getByRole("button", {
+      const searchButton = await screen.findByRole("button", {
         name: "search-button",
       })
       await userEvent.click(searchButton)
@@ -83,7 +83,7 @@ export const Loading: Story = {
   play: async ({ canvasElement }) => {
     await waitFor(async () => {
       const screen = within(canvasElement)
-      const searchButton = screen.getByRole("button", {
+      const searchButton = await screen.findByRole("button", {
         name: "search-button",
       })
       await userEvent.click(searchButton)
@@ -101,7 +101,7 @@ export const NoResults: Story = {
   play: async ({ canvasElement }) => {
     await waitFor(async () => {
       const screen = within(canvasElement)
-      const searchButton = screen.getByRole("button", {
+      const searchButton = await screen.findByRole("button", {
         name: "search-button",
       })
       await userEvent.click(searchButton)
