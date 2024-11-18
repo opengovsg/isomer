@@ -70,6 +70,7 @@ export const SearchResult = ({
               textStyle="subhead-2"
               textColor="base.content.default"
               backgroundColor="interaction.main-subtle.default"
+              borderRadius="base"
             >
               {highlightedText}
             </Text>
