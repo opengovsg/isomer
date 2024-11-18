@@ -14,7 +14,7 @@ const resourceSchema = z
 
 // NOTE: We want to accept string
 // but validate that the string conforms to bigint.
-// Oddly enough, kysely doesn't allow `bigint` to q uery
+// Oddly enough, kysely doesn't allow `bigint` to query
 export const bigIntSchema = z
   // NOTE: A valid `bigint` is one that
   // begins with a non-zero digit
