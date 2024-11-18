@@ -23,8 +23,17 @@ const ContentSecurityPolicy = `
   img-src * data: blob:;
   frame-src 'self';
   object-src 'none';
-  script-src 'self' 'unsafe-eval' https://*.wogaa.sg;
-  style-src 'self' https: 'unsafe-inline';
+  script-src
+    'self'
+    'unsafe-eval'
+    https://*.wogaa.sg
+    https://widget.intercom.io
+    ;
+  style-src
+    'self'
+    https:
+    'unsafe-inline'
+    ;
   connect-src
     'self'
     https://schema.isomer.gov.sg
