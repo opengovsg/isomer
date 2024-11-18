@@ -39,6 +39,8 @@ jobs:
       app-s3-region: "ap-southeast-1"
       app-s3-assets-bucket-name: "isomer-next-infra-vapt-assets-private-ab628e1"
       app-s3-assets-domain-name: "isomer-user-content-vapt.by.gov.sg"
+      app-growthbook-client-key: ${{ env.GROWTHBOOK_CLIENT_KEY }}
+      app-intercom-app-id: ${{ env.INTERCOM_APP_ID }}
 
     secrets:
       DD_API_KEY: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
