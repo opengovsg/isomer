@@ -93,7 +93,7 @@ export const SearchResult = ({
     <HStack
       py="0.75rem"
       px="0.5rem"
-      spacing="1rem"
+      spacing="0.75rem"
       w="full"
       as="a"
       _hover={{
@@ -104,8 +104,13 @@ export const SearchResult = ({
       }}
       href={getLinkToResource({ siteId, type, resourceId: id })}
       borderRadius="0.25rem"
+      alignItems="flex-start"
     >
-      <Icon as={ICON_MAPPINGS[type]} fill="base.content.medium" />
+      <Icon
+        as={ICON_MAPPINGS[type]}
+        fill="base.content.medium"
+        height="1.25rem" // to align with the text that has a line height of 1.25rem
+      />
       <Box display="flex" flexDir="column" gap="0.5rem">
         <VStack alignItems="flex-start" gap="0.25rem">
           <Box
