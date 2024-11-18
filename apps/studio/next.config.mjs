@@ -55,7 +55,7 @@ const ContentSecurityPolicy = `
     https:
     'unsafe-inline'
     ;
-  media-src:
+  media-src
     https://js.intercomcdn.com
     https://downloads.intercomcdn.com
     https://downloads.intercomcdn.eu
