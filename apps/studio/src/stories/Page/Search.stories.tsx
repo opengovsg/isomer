@@ -7,25 +7,24 @@ import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import SitePage from "~/pages/sites/[siteId]"
 
+const COMMON_HANDLERS = [
+  meHandlers.me(),
+  pageHandlers.listWithoutRoot.default(),
+  pageHandlers.getRootPage.default(),
+  pageHandlers.countWithoutRoot.default(),
+  pageHandlers.readPage.content(),
+  pageHandlers.updateSettings.collection(),
+  pageHandlers.getPermalinkTree.withParent(),
+  sitesHandlers.getSiteName.default(),
+  resourceHandlers.getChildrenOf.default(),
+  resourceHandlers.getRolesFor.default(),
+]
+
 const meta: Meta<typeof SitePage> = {
   title: "Pages/Site Management/Search",
   component: SitePage,
   parameters: {
     getLayout: SitePage.getLayout,
-    msw: {
-      handlers: [
-        meHandlers.me(),
-        pageHandlers.listWithoutRoot.default(),
-        pageHandlers.getRootPage.default(),
-        pageHandlers.countWithoutRoot.default(),
-        pageHandlers.readPage.content(),
-        pageHandlers.updateSettings.collection(),
-        pageHandlers.getPermalinkTree.withParent(),
-        sitesHandlers.getSiteName.default(),
-        resourceHandlers.getChildrenOf.default(),
-        resourceHandlers.getRolesFor.default(),
-      ],
-    },
     nextjs: {
       router: {
         query: {
@@ -40,7 +39,12 @@ const meta: Meta<typeof SitePage> = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const SearchModal: Story = {
+export const Initial: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS, resourceHandlers.search.initial()],
+    },
+  },
   play: async ({ canvasElement }) => {
     await waitFor(async () => {
       const screen = within(canvasElement)
@@ -51,3 +55,66 @@ export const SearchModal: Story = {
     })
   },
 }
+
+export const Results: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS, resourceHandlers.search.results()],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    await waitFor(async () => {
+      const screen = within(canvasElement)
+      const searchButton = screen.getByRole("button", {
+        name: "search-button",
+      })
+      await userEvent.click(searchButton)
+      await userEvent.keyboard("covid test")
+    })
+  },
+}
+
+export const Loading: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS, resourceHandlers.search.loading()],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    await waitFor(async () => {
+      const screen = within(canvasElement)
+      const searchButton = screen.getByRole("button", {
+        name: "search-button",
+      })
+      await userEvent.click(searchButton)
+      await userEvent.keyboard("covid test")
+    })
+  },
+}
+
+export const NoResults: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS, resourceHandlers.search.initial()],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    await waitFor(async () => {
+      const screen = within(canvasElement)
+      const searchButton = screen.getByRole("button", {
+        name: "search-button",
+      })
+      await userEvent.click(searchButton)
+      await userEvent.keyboard("fwnjebjesnlckgebjeb")
+    })
+  },
+}
+
+// Commented out for now because of https://github.com/storybookjs/storybook/issues/25815
+// export const ModalOpenOnShortcut: Story = {
+//   play: async ({ canvasElement }) => {
+//     const canvas = within(canvasElement)
+//     await userEvent.keyboard("{Meta>}{k}{/Meta}") // For Mac
+//     await userEvent.keyboard("{Control>}{k}{/Control}") // For non-Mac
+//   },
+// }
