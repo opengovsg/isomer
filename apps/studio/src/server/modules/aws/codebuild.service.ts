@@ -15,7 +15,7 @@ const client = new CodeBuildClient({ region: "ap-southeast-1" })
 // It is roughly the amount of time it takes for a build to progress before
 // the publishing script queries the database for the pages data, as that older
 // build would have already captured the latest changes
-const RECENT_BUILD_THRESHOLD_SECONDS = 60
+const RECENT_BUILD_THRESHOLD_SECONDS = 30
 
 export const publishSite = async (
   logger: Logger<string>,
