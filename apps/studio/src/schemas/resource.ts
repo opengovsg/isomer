@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import type { SearchResultResource } from "../server/modules/resource/resource.types"
 import {
   infiniteOffsetPaginationSchema,
   offsetPaginationSchema,
@@ -13,7 +14,7 @@ const resourceSchema = z
 
 // NOTE: We want to accept string
 // but validate that the string conforms to bigint.
-// Oddly enough, kysely doesn't allow `bigint` to query
+// Oddly enough, kysely doesn't allow `bigint` to q uery
 export const bigIntSchema = z
   // NOTE: A valid `bigint` is one that
   // begins with a non-zero digit
@@ -77,3 +78,11 @@ export const searchSchema = z
     query: z.string().optional(),
   })
   .merge(infiniteOffsetPaginationSchema)
+
+export const searchOutputSchema = z.object({
+  totalCount: z.number().nullable(),
+  resources: z.array(z.custom<SearchResultResource>()),
+  suggestions: z.object({
+    recentlyEdited: z.array(z.custom<SearchResultResource>()),
+  }),
+})

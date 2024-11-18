@@ -4,7 +4,6 @@ import { get } from "lodash"
 import { z } from "zod"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
-import type { SearchResultResource } from "./resource.types"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -15,6 +14,7 @@ import {
   getParentSchema,
   listResourceSchema,
   moveSchema,
+  searchOutputSchema,
   searchSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
@@ -515,43 +515,33 @@ export const resourceRouter = router({
 
   search: protectedProcedure
     .input(searchSchema)
+    .output(searchOutputSchema)
     .query(async ({ input: { siteId, query = "", cursor: offset, limit } }) => {
-      // defined here to ensure the return type is correct
-      async function getResults(): Promise<{
-        totalCount: number | null
-        resources: SearchResultResource[]
-        suggestions: {
-          recentlyEdited: SearchResultResource[]
-        }
-      }> {
-        // check if the query is only whitespaces (including multiple spaces)
-        if (query.trim() === "") {
-          return {
-            totalCount: null,
-            resources: [],
-            suggestions: {
-              recentlyEdited: await getSearchSuggestionsRecentlyEdited({
-                siteId: Number(siteId),
-              }),
-            },
-          }
-        }
-
-        const { totalCount, resources } = await getSearchResults({
-          siteId: Number(siteId),
-          query,
-          offset,
-          limit,
-        })
+      // check if the query is only whitespaces (including multiple spaces)
+      if (query.trim() === "") {
         return {
-          totalCount: Number(totalCount),
-          resources: resources,
+          totalCount: null,
+          resources: [],
           suggestions: {
-            recentlyEdited: [],
+            recentlyEdited: await getSearchSuggestionsRecentlyEdited({
+              siteId: Number(siteId),
+            }),
           },
         }
       }
 
-      return await getResults()
+      const searchResults = await getSearchResults({
+        siteId: Number(siteId),
+        query,
+        offset,
+        limit,
+      })
+      return {
+        totalCount: Number(searchResults.totalCount),
+        resources: searchResults.resources,
+        suggestions: {
+          recentlyEdited: [],
+        },
+      }
     }),
 })
