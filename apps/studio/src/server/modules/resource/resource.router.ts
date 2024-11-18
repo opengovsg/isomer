@@ -15,16 +15,22 @@ import {
   getParentSchema,
   listResourceSchema,
   moveSchema,
+  searchOutputSchema,
   searchSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
-import { db, ResourceType, sql } from "../database"
+import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
   definePermissionsForResource,
   validateUserPermissionsForResource,
 } from "../permissions/permissions.service"
+import {
+  getSearchResults,
+  getSearchSuggestionsRecentlyEdited,
+  getWithFullPermalink,
+} from "./resource.service"
 
 const fetchResource = async (resourceId: string | null) => {
   if (resourceId === null) return { parentId: null }
@@ -72,42 +78,6 @@ const validateUserPermissionsForMove = async ({
     // and hence, the parent id is `to`
     permsFrom.can("move", resourceFrom) && permsTo.can("move", { parentId: to })
   )
-}
-
-const getWithFullPermalink = async ({ resourceId }: { resourceId: string }) => {
-  const result = await db
-    .withRecursive("resourcePath", (eb) =>
-      eb
-        .selectFrom("Resource as r")
-        .select([
-          "r.id",
-          "r.title",
-          "r.permalink",
-          "r.parentId",
-          "r.permalink as fullPermalink",
-        ])
-        .where("r.parentId", "is", null)
-        .unionAll(
-          eb
-            .selectFrom("Resource as s")
-            .innerJoin("resourcePath as rp", "s.parentId", "rp.id")
-            .select([
-              "s.id",
-              "s.title",
-              "s.permalink",
-              "s.parentId",
-              sql<string>`CONCAT(rp."fullPermalink", '/', s.permalink)`.as(
-                "fullPermalink",
-              ),
-            ]),
-        ),
-    )
-    .selectFrom("resourcePath as rp")
-    .select(["rp.id", "rp.title", "rp.fullPermalink"])
-    .where("rp.id", "=", resourceId)
-    .executeTakeFirst()
-
-  return result
 }
 
 export const resourceRouter = router({
@@ -546,147 +516,33 @@ export const resourceRouter = router({
 
   search: protectedProcedure
     .input(searchSchema)
+    .output(searchOutputSchema)
     .query(async ({ input: { siteId, query = "", cursor: offset, limit } }) => {
       // check if the query is only whitespaces (including multiple spaces)
-      function isWhitespaces(input: string): boolean {
-        return input.trim() === ""
-      }
-
-      // To handle cases where either the resource or the blob is updated
-      function getResourcesFound() {
-        return db
-          .selectFrom("Resource")
-          .select([
-            "Resource.id",
-            "Resource.title",
-            "Resource.type",
-            "Resource.parentId",
-            sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`.as(
-              "lastUpdatedAt",
-            ),
-          ])
-          .leftJoin("Blob", "Resource.draftBlobId", "Blob.id")
-          .where("Resource.siteId", "=", Number(siteId))
-      }
-
-      const getResourcesWithFullPermalink = async ({
-        resources,
-      }: {
-        resources: Omit<SearchResultResource, "fullPermalink">[]
-      }): Promise<SearchResultResource[]> => {
-        return await Promise.all(
-          resources.map(async (resource) => ({
-            ...resource,
-            fullPermalink: await getWithFullPermalink({
-              resourceId: resource.id,
-            }).then((r) => r?.fullPermalink ?? ""),
-          })),
-        )
-      }
-
-      // defined here to ensure the return type is correct
-      async function getResults(): Promise<{
-        totalCount: number | null
-        resources: SearchResultResource[]
-        suggestions: {
-          recentlyEdited: SearchResultResource[]
-        }
-      }> {
-        if (isWhitespaces(query)) {
-          return {
-            totalCount: null,
-            resources: [],
-            suggestions: {
-              recentlyEdited: await getResourcesWithFullPermalink({
-                // Hardcoded for now to be 5
-                resources: (await getResourcesFound()
-                  .where("Resource.type", "in", [
-                    // only show page-ish resources
-                    ResourceType.Page,
-                    ResourceType.CollectionLink,
-                    ResourceType.CollectionPage,
-                  ])
-                  .limit(5)
-                  .orderBy("lastUpdatedAt", "desc")
-                  .execute()) as SearchResultResource[],
-              }),
-            },
-          }
-        }
-
-        const searchTerms: string[] = Array.from(
-          new Set(query.trim().toLowerCase().split(/\s+/)),
-        )
-
-        const queriedResources = getResourcesFound()
-          .where("Resource.type", "in", [
-            // only show user-viewable resources (excluding root page, folder meta etc.)
-            ResourceType.Page,
-            ResourceType.Folder,
-            ResourceType.Collection,
-            ResourceType.CollectionLink,
-            ResourceType.CollectionPage,
-          ])
-          .where((eb) =>
-            eb.or([
-              ...searchTerms.map((searchTerm) =>
-                // Match if the search term is at the start of the title
-                eb("Resource.title", "ilike", `${searchTerm}%`).or(
-                  // Match if the search term is in the middle of the title (after a space)
-                  eb("Resource.title", "ilike", `% ${searchTerm}%`),
-                ),
-              ),
-            ]),
-          )
-
-        // Currently ordered by number of words matched
-        // followed by `lastUpdatedAt` if there's a tie-break
-        let orderedResources = queriedResources
-        if (searchTerms.length > 1) {
-          orderedResources = orderedResources.orderBy(
-            sql`(
-              ${sql.join(
-                searchTerms.map(
-                  (searchTerm) =>
-                    // 1. Match if the search term is at the start of the title
-                    // 2. Match if the search term is in the middle of the title (after a space)
-                    sql`
-                      CASE WHEN "Resource"."title" ILIKE ${searchTerm + "%"} THEN 1 ELSE 0 END +
-                      CASE WHEN "Resource"."title" ILIKE ${"% " + searchTerm + "%"} THEN 1 ELSE 0 END
-                    `,
-                ),
-                sql` + `,
-              )}
-            ) DESC`,
-          )
-        }
-        orderedResources = orderedResources.orderBy("lastUpdatedAt", "desc")
-
-        const resourcesToReturn: SearchResultResource[] =
-          (await orderedResources
-            .offset(offset)
-            .limit(limit)
-            .execute()) as SearchResultResource[]
-
-        const totalCount: number = (
-          await db
-            .with("queriedResources", () => queriedResources)
-            .selectFrom("queriedResources")
-            .select(db.fn.countAll().as("total_count"))
-            .executeTakeFirstOrThrow()
-        ).total_count as number // needed to cast as the type can be `bigint`
-
+      if (query.trim() === "") {
         return {
-          totalCount: Number(totalCount),
-          resources: await getResourcesWithFullPermalink({
-            resources: resourcesToReturn,
-          }),
+          totalCount: null,
+          resources: [],
           suggestions: {
-            recentlyEdited: [],
+            recentlyEdited: await getSearchSuggestionsRecentlyEdited({
+              siteId: Number(siteId),
+            }),
           },
         }
       }
 
-      return await getResults()
+      const searchResults = await getSearchResults({
+        siteId: Number(siteId),
+        query,
+        offset,
+        limit,
+      })
+      return {
+        totalCount: Number(searchResults.totalCount),
+        resources: searchResults.resources,
+        suggestions: {
+          recentlyEdited: [],
+        },
+      }
     }),
 })

@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import type { SearchResultResource } from "../server/modules/resource/resource.types"
 import {
   infiniteOffsetPaginationSchema,
   offsetPaginationSchema,
@@ -77,3 +78,11 @@ export const searchSchema = z
     query: z.string().optional(),
   })
   .merge(infiniteOffsetPaginationSchema)
+
+export const searchOutputSchema = z.object({
+  totalCount: z.number().nullable(),
+  resources: z.array(z.custom<SearchResultResource>()),
+  suggestions: z.object({
+    recentlyEdited: z.array(z.custom<SearchResultResource>()),
+  }),
+})
