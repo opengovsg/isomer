@@ -4,7 +4,6 @@ import { get } from "lodash"
 import { z } from "zod"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
-import type { SearchResultResource } from "./resource.types"
 import {
   countResourceSchema,
   deleteResourceSchema,
