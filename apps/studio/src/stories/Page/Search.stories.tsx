@@ -46,13 +46,11 @@ export const Initial: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    await waitFor(async () => {
-      const screen = within(canvasElement)
-      const searchButton = await screen.findByRole("button", {
-        name: "search-button",
-      })
-      await userEvent.click(searchButton)
+    const screen = within(canvasElement)
+    const searchButton = await screen.findByRole("button", {
+      name: "search-button",
     })
+    await userEvent.click(searchButton)
   },
 }
 
@@ -63,14 +61,12 @@ export const Results: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    await waitFor(async () => {
-      const screen = within(canvasElement)
-      const searchButton = await screen.findByRole("button", {
-        name: "search-button",
-      })
-      await userEvent.click(searchButton)
-      await userEvent.keyboard("covid test")
+    const screen = within(canvasElement)
+    const searchButton = await screen.findByRole("button", {
+      name: "search-button",
     })
+    await userEvent.click(searchButton)
+    await userEvent.keyboard("covid test")
   },
 }
 
@@ -81,14 +77,12 @@ export const Loading: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    await waitFor(async () => {
-      const screen = within(canvasElement)
-      const searchButton = await screen.findByRole("button", {
-        name: "search-button",
-      })
-      await userEvent.click(searchButton)
-      await userEvent.keyboard("covid test")
+    const screen = within(canvasElement)
+    const searchButton = await screen.findByRole("button", {
+      name: "search-button",
     })
+    await userEvent.click(searchButton)
+    await userEvent.keyboard("covid test")
   },
 }
 
@@ -99,14 +93,12 @@ export const NoResults: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    await waitFor(async () => {
-      const screen = within(canvasElement)
-      const searchButton = await screen.findByRole("button", {
-        name: "search-button",
-      })
-      await userEvent.click(searchButton)
-      await userEvent.keyboard("fwnjebjesnlckgebjeb")
+    const screen = within(canvasElement)
+    const searchButton = await screen.findByRole("button", {
+      name: "search-button",
     })
+    await userEvent.click(searchButton)
+    await userEvent.keyboard("fwnjebjesnlckgebjeb")
   },
 }
 
