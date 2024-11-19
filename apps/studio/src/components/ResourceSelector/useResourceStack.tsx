@@ -71,9 +71,10 @@ export const useResourceStack = ({
   const addToStack = useCallback(
     (resourceItemContent: ResourceItemContent): void => {
       const newResource: PendingMoveResource = {
-        ...resourceItemContent,
-        parentId: parentDest?.resourceId ?? null,
+        permalink: resourceItemContent.permalink,
+        title: resourceItemContent.title,
         resourceId: resourceItemContent.id,
+        parentId: parentDest?.resourceId ?? null,
       }
       setResourceStack((prev) => [...prev, newResource])
     },
