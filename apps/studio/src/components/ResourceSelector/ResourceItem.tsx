@@ -1,8 +1,7 @@
-import { Suspense, useMemo } from "react"
+import { Suspense } from "react"
 import { Box, Icon, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { ErrorBoundary } from "react-error-boundary"
 
 import type { ResourceItemContent } from "~/schemas/resource"
@@ -12,10 +11,7 @@ interface ResourceItemProps {
   item: ResourceItemContent
   isDisabled?: boolean
   isHighlighted: boolean
-  isResourceHighlighted: boolean
-  setIsResourceHighlighted: (isHighlighted: boolean) => void
-  addToStack: (resourceItemContent: ResourceItemContent) => void
-  removeFromStack: (count: number) => void
+  handleOnClick: () => void
 }
 
 const getButtonProps = ({ isHighlighted }: { isHighlighted: boolean }) => {
@@ -39,35 +35,11 @@ const SuspendableResourceItem = ({
   item,
   isDisabled,
   isHighlighted,
-  isResourceHighlighted,
-  setIsResourceHighlighted,
-  addToStack,
-  removeFromStack,
+  handleOnClick,
 }: ResourceItemProps) => {
   const buttonProps = getButtonProps({
     isHighlighted,
   })
-
-  const canClickIntoItem = useMemo(
-    () =>
-      item.type === ResourceType.Folder ||
-      item.type === ResourceType.Collection,
-    [item.type],
-  )
-
-  const handleClick = (): void => {
-    if (isHighlighted && canClickIntoItem) {
-      setIsResourceHighlighted(false)
-      return
-    }
-
-    if (isResourceHighlighted) {
-      removeFromStack(1)
-    } else {
-      setIsResourceHighlighted(true)
-    }
-    addToStack(item)
-  }
 
   return (
     <Button
@@ -84,7 +56,7 @@ const SuspendableResourceItem = ({
       })}
       pl="2.25rem"
       size="xs"
-      onClick={handleClick}
+      onClick={() => handleOnClick()}
       leftIcon={<Icon as={getIcon(item.type)} />}
       isDisabled={isDisabled}
     >

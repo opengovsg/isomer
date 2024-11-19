@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import { Box, Flex, HStack, Skeleton, Spacer, Text } from "@chakra-ui/react"
 import { Button, Link } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
@@ -94,16 +95,29 @@ const SuspensableResourceSelector = ({
           </Flex>
         )}
         {resourceItems.map((item) => {
+          const isHighlighted = isResourceIdHighlighted(item.id)
+          const canClickIntoItem =
+            item.type === ResourceType.Folder ||
+            item.type === ResourceType.Collection
           return (
             <ResourceItem
               key={item.id}
               item={item}
               isDisabled={item.id === existingResource?.resourceId}
-              isHighlighted={isResourceIdHighlighted(item.id)}
-              isResourceHighlighted={isResourceHighlighted}
-              setIsResourceHighlighted={setIsResourceHighlighted}
-              addToStack={addToStack}
-              removeFromStack={removeFromStack}
+              isHighlighted={isHighlighted}
+              handleOnClick={() => {
+                if (isHighlighted && canClickIntoItem) {
+                  setIsResourceHighlighted(false)
+                  return
+                }
+
+                if (isResourceHighlighted) {
+                  removeFromStack(1)
+                } else {
+                  setIsResourceHighlighted(true)
+                }
+                addToStack(item)
+              }}
             />
           )
         })}
