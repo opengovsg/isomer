@@ -165,6 +165,16 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
+  map: {
+    type: "map",
+    title: "Singapore region",
+    url: "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d127639.0647119137!2d103.79481771806647!3d1.343949056391766!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2ssg!4v1731681854346!5m2!1sen!2ssg",
+  },
+  video: {
+    type: "video",
+    title: "Rick Astley - Never Gonna Give You Up",
+    url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -246,6 +256,19 @@ export const BLOCK_TO_META: Record<
     label: "Embed",
     description: "Embed a video or other content",
     usageText: "This block supports embedding content from other websites.",
+  },
+  map: {
+    label: "Map",
+    description: "Embed a map of a location or area",
+    usageText: "Embed a map to show your offices or an event location.",
+    imageSrc: "/assets/block-images/Map.png",
+  },
+  video: {
+    label: "Video",
+    description: "Embed an external video",
+    usageText:
+      "You can embed videos hosted on platforms such as YouTube and Vimeo.",
+    imageSrc: "/assets/block-images/Video.png",
   },
 }
 

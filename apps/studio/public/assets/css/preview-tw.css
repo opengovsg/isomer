@@ -4370,6 +4370,11 @@ video {
     var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
+.focus-visible\:outline-none:where([data-rac])[data-focus-visible] {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
 .focus-visible\:outline-0:where([data-rac])[data-focus-visible] {
   outline-width: 0px;
 }
@@ -4438,6 +4443,11 @@ video {
   --tw-shadow-colored: 0 0 #0000;
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
     var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.focus-visible\:outline-none:where(:not([data-rac])):focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
 }
 
 .focus-visible\:outline-0:where(:not([data-rac])):focus-visible {
