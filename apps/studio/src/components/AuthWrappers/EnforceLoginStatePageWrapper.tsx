@@ -1,14 +1,13 @@
 import type { PropsWithChildren } from "react"
 import { useMemo } from "react"
 import { useRouter } from "next/router"
-import Intercom from "@intercom/messenger-js-sdk"
 
-import { env } from "~/env.mjs"
 import { useLoginState } from "~/features/auth"
 import { SIGN_IN } from "~/lib/routes"
 import { callbackUrlSchema } from "~/schemas/url"
 import { appendWithRedirect } from "~/utils/url"
 import { FullscreenSpinner } from "../FullscreenSpinner"
+import { initIntercom } from "../Intercom"
 
 interface EnforceLoginStatePageWrapperProps {
   /**
@@ -48,13 +47,7 @@ export const EnforceLoginStatePageWrapper = ({
   const { hasLoginStateFlag } = useLoginState()
 
   if (hasLoginStateFlag) {
-    // Initialize Intercom
-    if (env.NEXT_PUBLIC_INTERCOM_APP_ID) {
-      Intercom({
-        app_id: env.NEXT_PUBLIC_INTERCOM_APP_ID,
-      })
-    }
-
+    initIntercom()
     return <>{children}</>
   }
 
