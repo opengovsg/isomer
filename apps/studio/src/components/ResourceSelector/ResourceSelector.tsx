@@ -14,7 +14,7 @@ import { ResourceItem } from "./ResourceItem"
 interface ResourceSelectorProps {
   onChange: (resourceId: string) => void
   selectedResourceId?: string
-  existingResource?: PendingMoveResource | null
+  existingResource?: PendingMoveResource
   onlyShowFolders?: boolean
 }
 

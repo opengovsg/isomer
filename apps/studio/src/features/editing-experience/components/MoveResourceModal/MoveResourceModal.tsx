@@ -110,7 +110,7 @@ const MoveResourceContent = withSuspense(
             </Infobox>
             <ResourceSelector
               onlyShowFolders
-              existingResource={movedItem}
+              existingResource={movedItem ?? undefined}
               onChange={(resourceId) => setCurResourceId(resourceId)}
             />
           </VStack>
