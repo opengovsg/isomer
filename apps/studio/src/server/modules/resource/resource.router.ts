@@ -8,7 +8,7 @@ import type { ResourceChildrenOfType } from "~/schemas/resource"
 import {
   countResourceSchema,
   deleteResourceSchema,
-  getAncestrySchema,
+  getAncestryWithSelfSchema,
   getChildrenSchema,
   getFullPermalinkSchema,
   getMetadataSchema,
@@ -483,7 +483,7 @@ export const resourceRouter = router({
     }),
 
   getAncestryWithSelf: protectedProcedure
-    .input(getAncestrySchema)
+    .input(getAncestryWithSelfSchema)
     .query(async ({ input: { siteId, resourceId } }) => {
       if (!resourceId) {
         return []
