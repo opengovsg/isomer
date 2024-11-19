@@ -1,13 +1,12 @@
-import type { IconType } from "react-icons"
 import { Suspense } from "react"
 import { Box, Icon, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { ErrorBoundary } from "react-error-boundary"
-import { BiData, BiFile, BiFolder, BiLink } from "react-icons/bi"
 
 import type { RouterOutput } from "~/utils/trpc"
+import type { ResourceType } from "~prisma/generated/generatedEnums"
+import { getIcon } from "~/utils/resources"
 
 type ResourceItemProps = Pick<
   RouterOutput["resource"]["getFolderChildrenOf"]["items"][number],
@@ -33,26 +32,6 @@ const getButtonProps = ({ isHighlighted }: { isHighlighted: boolean }) => {
 
   return {
     color: "base.content.default",
-  }
-}
-
-const getButtonIcon = ({
-  type,
-}: {
-  type: ResourceType | undefined
-}): IconType => {
-  switch (type) {
-    case ResourceType.CollectionLink:
-      return BiLink
-    case ResourceType.Folder:
-      return BiFolder
-    case ResourceType.CollectionPage:
-    case ResourceType.Page:
-      return BiFile
-    case ResourceType.Collection:
-      return BiData
-    default:
-      return BiData // Default to data icon
   }
 }
 
@@ -84,7 +63,7 @@ const SuspendableResourceItem = ({
       pl="2.25rem"
       size="xs"
       onClick={handleOnClick}
-      leftIcon={<Icon as={getButtonIcon({ type })} />}
+      leftIcon={<Icon as={getIcon(type)} />}
       {...restWithoutType}
     >
       <Text noOfLines={1} textStyle="caption-1" textAlign="left">
