@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
 import type { ResourceChildrenOfType } from "~/schemas/resource"
@@ -7,11 +7,13 @@ import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
 
 export const useResourceStack = ({
-  onlyShowFolders,
+  onChange,
   selectedResourceId,
+  onlyShowFolders,
 }: {
-  onlyShowFolders: boolean
+  onChange: (resourceId: string) => void
   selectedResourceId: string | undefined
+  onlyShowFolders: boolean
 }) => {
   // NOTE: This is the stack of user's navigation through the resource tree
   // NOTE: We should always start the stack from `/` (root)
@@ -23,9 +25,15 @@ export const useResourceStack = ({
 
   const { siteId } = useQueryParse(sitePageSchema)
 
-  const moveDest = resourceStack[resourceStack.length - 1]
-  const parentDest = resourceStack[resourceStack.length - 2]
-  const curResourceId = moveDest?.resourceId
+  const moveDest = useMemo(
+    () => resourceStack[resourceStack.length - 1],
+    [resourceStack],
+  )
+  const parentDest = useMemo(
+    () => resourceStack[resourceStack.length - 2],
+    [resourceStack],
+  )
+  const curResourceId = useMemo(() => moveDest?.resourceId, [moveDest])
 
   const ancestryStack: PendingMoveResource[] = trpc.resource.getAncestryWithSelf
     .useSuspenseQuery({
@@ -57,19 +65,69 @@ export const useResourceStack = ({
   )
   const data: ResourceChildrenOfType[] = pages
 
+  const addToStack = useCallback(
+    ({
+      resourceChildrenOfType,
+    }: {
+      resourceChildrenOfType: ResourceChildrenOfType["items"][number]
+    }): void => {
+      const newResource: PendingMoveResource = {
+        ...resourceChildrenOfType,
+        parentId: parentDest?.resourceId ?? null,
+        resourceId: resourceChildrenOfType.id,
+      }
+      setResourceStack((prev) => [...prev, newResource])
+    },
+    [],
+  )
+
+  const removeFromStack = useCallback((numberOfResources: number): void => {
+    setResourceStack((prev) => prev.slice(0, -numberOfResources))
+  }, [])
+
+  const isResourceIdHighlighted = useCallback(
+    (resourceId: string): boolean => {
+      return isResourceHighlighted && curResourceId === resourceId
+    },
+    [isResourceHighlighted, curResourceId],
+  )
+
+  const shouldShowBackButton = useMemo(
+    () =>
+      (resourceStack.length === 1 && !isResourceHighlighted) ||
+      resourceStack.length > 1,
+    [resourceStack.length, isResourceHighlighted],
+  )
+
+  useEffect(() => {
+    if (
+      ancestryStack.length <= 0 ||
+      JSON.stringify(ancestryStack) === JSON.stringify(resourceStack)
+    ) {
+      return
+    }
+    setResourceStack(ancestryStack)
+  }, [])
+
+  useEffect(() => {
+    if (curResourceId) {
+      onChange(curResourceId)
+    }
+  }, [curResourceId])
+
   return {
     resourceStack,
-    setResourceStack,
     isResourceHighlighted,
     setIsResourceHighlighted,
     moveDest,
-    parentDest,
-    curResourceId,
-    ancestryStack,
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    addToStack,
+    removeFromStack,
+    isResourceIdHighlighted,
+    shouldShowBackButton,
   }
 }
 

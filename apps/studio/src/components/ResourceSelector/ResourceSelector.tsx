@@ -1,11 +1,10 @@
-import { Suspense, useEffect } from "react"
+import { Suspense } from "react"
 import { Box, Flex, HStack, Skeleton, Spacer, Text } from "@chakra-ui/react"
 import { Button, Link } from "@opengovsg/design-system-react"
-import { ResourceType } from "@prisma/client"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
-import { ResourceItem } from "./ResourceItem"
+import { canClickIntoItem, ResourceItem } from "./ResourceItem"
 import { useResourceStack } from "./useResourceStack"
 
 interface ResourceSelectorProps {
@@ -27,38 +26,18 @@ const SuspensableResourceSelector = ({
 }: ResourceSelectorProps) => {
   const {
     resourceStack,
-    setResourceStack,
     isResourceHighlighted,
     setIsResourceHighlighted,
     moveDest,
-    parentDest,
-    curResourceId,
-    ancestryStack,
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useResourceStack({ onlyShowFolders, selectedResourceId })
-
-  useEffect(() => {
-    if (
-      ancestryStack.length <= 0 ||
-      JSON.stringify(ancestryStack) === JSON.stringify(resourceStack)
-    ) {
-      return
-    }
-    setResourceStack(ancestryStack)
-  }, [])
-
-  useEffect(() => {
-    if (curResourceId) {
-      onChange(curResourceId)
-    }
-  }, [curResourceId])
-
-  const shouldShowBackButton: boolean =
-    (resourceStack.length === 1 && !isResourceHighlighted) ||
-    resourceStack.length > 1
+    addToStack,
+    removeFromStack,
+    isResourceIdHighlighted,
+    shouldShowBackButton,
+  } = useResourceStack({ onChange, selectedResourceId, onlyShowFolders })
 
   return (
     <>
@@ -81,9 +60,9 @@ const SuspensableResourceSelector = ({
             onClick={() => {
               if (isResourceHighlighted) {
                 setIsResourceHighlighted(false)
-                setResourceStack((prev) => prev.slice(0, -2))
+                removeFromStack(2)
               } else {
-                setResourceStack((prev) => prev.slice(0, -1))
+                removeFromStack(1)
               }
             }}
             as="button"
@@ -121,44 +100,28 @@ const SuspensableResourceSelector = ({
 
         {data.map(({ items }) =>
           items.map((item) => {
-            const isItemDisabled: boolean =
-              item.id === existingResource?.resourceId
-
-            const isItemHighlighted: boolean =
-              isResourceHighlighted && item.id === curResourceId
-
-            const canClickIntoItem: boolean =
-              item.type === ResourceType.Folder ||
-              item.type === ResourceType.Collection
+            const isItemHighlighted: boolean = isResourceIdHighlighted(item.id)
 
             return (
               <ResourceItem
                 {...item}
                 key={item.id}
-                isDisabled={isItemDisabled}
+                isDisabled={item.id === existingResource?.resourceId}
                 isHighlighted={isItemHighlighted}
                 handleOnClick={() => {
                   if (isItemHighlighted) {
-                    if (canClickIntoItem) {
+                    if (canClickIntoItem({ resourceType: item.type })) {
                       setIsResourceHighlighted(false)
                     }
                     return
                   }
 
-                  const newResource = {
-                    ...item,
-                    parentId: parentDest?.resourceId ?? null,
-                    resourceId: item.id,
-                  }
                   if (isResourceHighlighted) {
-                    setResourceStack((prev) => [
-                      ...prev.slice(0, -1),
-                      newResource,
-                    ])
+                    removeFromStack(1)
                   } else {
                     setIsResourceHighlighted(true)
-                    setResourceStack((prev) => [...prev, newResource])
                   }
+                  addToStack({ resourceChildrenOfType: item })
                 }}
               />
             )

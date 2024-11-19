@@ -2,10 +2,10 @@ import { Suspense } from "react"
 import { Box, Icon, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { ErrorBoundary } from "react-error-boundary"
 
 import type { RouterOutput } from "~/utils/trpc"
-import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { getIcon } from "~/utils/resources"
 
 type ResourceItemProps = Pick<
@@ -16,6 +16,17 @@ type ResourceItemProps = Pick<
   type: ResourceType
   isDisabled?: boolean
   isHighlighted: boolean
+}
+
+export const canClickIntoItem = ({
+  resourceType,
+}: {
+  resourceType: ResourceType
+}): boolean => {
+  return (
+    resourceType === ResourceType.Folder ||
+    resourceType === ResourceType.Collection
+  )
 }
 
 const getButtonProps = ({ isHighlighted }: { isHighlighted: boolean }) => {
