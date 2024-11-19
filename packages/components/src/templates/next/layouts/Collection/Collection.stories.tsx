@@ -371,3 +371,17 @@ export const AllResultsNoDate: Story = {
     await expect(lastWordOccurences.length).toBe(10)
   },
 }
+
+export const FileCard: Story = {
+  args: generateArgs({
+    collectionItems: [COLLECTION_ITEMS[1]] as IsomerSitemap[],
+  }),
+}
+
+export const FileCardNoImage: Story = {
+  args: generateArgs({
+    collectionItems: [
+      { ...COLLECTION_ITEMS[1], image: undefined } as IsomerSitemap,
+    ],
+  }),
+}

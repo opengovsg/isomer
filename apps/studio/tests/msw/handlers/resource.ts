@@ -43,6 +43,31 @@ export const resourceHandlers = {
       })
     },
   },
+  getAncestryOf: {
+    collectionLink: () => {
+      return trpcMsw.resource.getAncestryOf.query(() => {
+        return [
+          {
+            parentId: null,
+            id: "1",
+            title: "Homepage",
+            permalink: "/",
+          },
+        ]
+      })
+    },
+  },
+  getWithFullPermalink: {
+    default: () => {
+      return trpcMsw.resource.getWithFullPermalink.query(() => {
+        return {
+          id: "1",
+          title: "Homepage",
+          fullPermalink: "folder/page",
+        }
+      })
+    },
+  },
   getMetadataById: {
     homepage: () =>
       trpcMsw.resource.getMetadataById.query(() => {
