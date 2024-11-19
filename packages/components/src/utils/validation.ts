@@ -18,26 +18,29 @@ export const LINK_HREF_PATTERN =
 export const REF_HREF_PATTERN =
   `(${ALLOWED_URL_REGEXES.external})|(${ALLOWED_URL_REGEXES.internal})|(${ALLOWED_URL_REGEXES.files})|(${ALLOWED_URL_REGEXES.legacy})` as const
 
-const EXTERNAL_EMBED_URL_REGEXES = {
+export const MAPS_EMBED_URL_REGEXES = {
   googlemaps: "^https://www\\.google\\.com/maps/embed?.*$",
   onemap: "^https://www\\.onemap\\.gov\\.sg/minimap/minimap\\.html.*$",
-  fbvideo: "^https://www\\.facebook\\.com/plugins/video.php?.*$",
-  vimeo: "^https://player\\.vimeo\\.com/video/.*$",
-  youtube:
-    "^https://www\\.(youtube|youtube-nocookie)\\.com/(embed/|watch\\?v=).*$",
-}
+} as const
 
 export const MAPS_EMBED_URL_PATTERN = [
-  EXTERNAL_EMBED_URL_REGEXES.googlemaps,
-  EXTERNAL_EMBED_URL_REGEXES.onemap,
+  MAPS_EMBED_URL_REGEXES.googlemaps,
+  MAPS_EMBED_URL_REGEXES.onemap,
 ]
   .map((re) => `(${re})`)
   .join("|")
 
+export const VIDEO_EMBED_URL_REGEXES = {
+  fbvideo: "^https://www\\.facebook\\.com/plugins/video.php?.*$",
+  vimeo: "^https://player\\.vimeo\\.com/video/.*$",
+  youtube:
+    "^https://www\\.(youtube|youtube-nocookie)\\.com/(embed/|watch\\?v=).*$",
+} as const
+
 export const VIDEO_EMBED_URL_PATTERN = [
-  EXTERNAL_EMBED_URL_REGEXES.fbvideo,
-  EXTERNAL_EMBED_URL_REGEXES.vimeo,
-  EXTERNAL_EMBED_URL_REGEXES.youtube,
+  VIDEO_EMBED_URL_REGEXES.fbvideo,
+  VIDEO_EMBED_URL_REGEXES.vimeo,
+  VIDEO_EMBED_URL_REGEXES.youtube,
 ]
   .map((re) => `(${re})`)
   .join("|")
