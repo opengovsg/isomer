@@ -29,7 +29,7 @@ const SuspensableResourceSelector = ({
     isResourceHighlighted,
     setIsResourceHighlighted,
     moveDest,
-    data,
+    resourceItems,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -97,23 +97,20 @@ const SuspensableResourceSelector = ({
             </Text>
           </Flex>
         )}
-
-        {data.map(({ items }) =>
-          items.map((item) => {
-            return (
-              <ResourceItem
-                key={item.id}
-                item={item}
-                isDisabled={item.id === existingResource?.resourceId}
-                isHighlighted={isResourceIdHighlighted(item.id)}
-                isResourceHighlighted={isResourceHighlighted}
-                setIsResourceHighlighted={setIsResourceHighlighted}
-                addToStack={addToStack}
-                removeFromStack={removeFromStack}
-              />
-            )
-          }),
-        )}
+        {resourceItems.map((item) => {
+          return (
+            <ResourceItem
+              key={item.id}
+              item={item}
+              isDisabled={item.id === existingResource?.resourceId}
+              isHighlighted={isResourceIdHighlighted(item.id)}
+              isResourceHighlighted={isResourceHighlighted}
+              setIsResourceHighlighted={setIsResourceHighlighted}
+              addToStack={addToStack}
+              removeFromStack={removeFromStack}
+            />
+          )
+        })}
         {hasNextPage && (
           <Button
             variant="link"

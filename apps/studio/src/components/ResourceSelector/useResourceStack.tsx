@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
-import type {
-  ResourceChildrenOfType,
-  ResourceItemContent,
-} from "~/schemas/resource"
+import type { ResourceItemContent } from "~/schemas/resource"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
@@ -66,7 +63,10 @@ export const useResourceStack = ({
       getNextPageParam: (lastPage) => lastPage.nextOffset,
     },
   )
-  const data: ResourceChildrenOfType[] = pages
+  const resourceItems: ResourceItemContent[] = useMemo(
+    () => pages.flatMap(({ items }) => items),
+    [pages],
+  )
 
   const addToStack = useCallback(
     (resourceItemContent: ResourceItemContent): void => {
@@ -120,7 +120,7 @@ export const useResourceStack = ({
     isResourceHighlighted,
     setIsResourceHighlighted,
     moveDest,
-    data,
+    resourceItems,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
