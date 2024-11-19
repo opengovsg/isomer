@@ -13,7 +13,7 @@ type ResourceItemProps = Pick<
   "permalink"
 > & {
   handleOnClick: () => void
-  type: ResourceType | undefined
+  type: ResourceType
   isDisabled?: boolean
   isHighlighted: boolean
 }
