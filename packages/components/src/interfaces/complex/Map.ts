@@ -9,6 +9,7 @@ export const MapSchema = Type.Object(
     url: Type.String({
       title: "Map to embed",
       pattern: MAPS_EMBED_URL_PATTERN,
+      format: "embed",
     }),
     title: Type.String({
       title: "Label for screen readers",
