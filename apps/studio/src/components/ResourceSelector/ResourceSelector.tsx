@@ -100,29 +100,16 @@ const SuspensableResourceSelector = ({
 
         {data.map(({ items }) =>
           items.map((item) => {
-            const isItemHighlighted: boolean = isResourceIdHighlighted(item.id)
-
             return (
               <ResourceItem
-                {...item}
                 key={item.id}
+                item={item}
                 isDisabled={item.id === existingResource?.resourceId}
-                isHighlighted={isItemHighlighted}
-                handleOnClick={() => {
-                  if (isItemHighlighted) {
-                    if (canClickIntoItem({ resourceType: item.type })) {
-                      setIsResourceHighlighted(false)
-                    }
-                    return
-                  }
-
-                  if (isResourceHighlighted) {
-                    removeFromStack(1)
-                  } else {
-                    setIsResourceHighlighted(true)
-                  }
-                  addToStack({ resourceChildrenOfType: item })
-                }}
+                isHighlighted={isResourceIdHighlighted(item.id)}
+                isResourceHighlighted={isResourceHighlighted}
+                setIsResourceHighlighted={setIsResourceHighlighted}
+                addToStack={addToStack}
+                removeFromStack={removeFromStack}
               />
             )
           }),

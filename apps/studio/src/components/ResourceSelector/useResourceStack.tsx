@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
-import type { ResourceChildrenOfType } from "~/schemas/resource"
+import type {
+  ResourceChildrenOfType,
+  ResourceItemContent,
+} from "~/schemas/resource"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
@@ -66,15 +69,11 @@ export const useResourceStack = ({
   const data: ResourceChildrenOfType[] = pages
 
   const addToStack = useCallback(
-    ({
-      resourceChildrenOfType,
-    }: {
-      resourceChildrenOfType: ResourceChildrenOfType["items"][number]
-    }): void => {
+    (resourceItemContent: ResourceItemContent): void => {
       const newResource: PendingMoveResource = {
-        ...resourceChildrenOfType,
+        ...resourceItemContent,
         parentId: parentDest?.resourceId ?? null,
-        resourceId: resourceChildrenOfType.id,
+        resourceId: resourceItemContent.id,
       }
       setResourceStack((prev) => [...prev, newResource])
     },

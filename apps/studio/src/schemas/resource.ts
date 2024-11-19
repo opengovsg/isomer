@@ -72,12 +72,14 @@ export const getAncestryWithSelfSchema = z.object({
   resourceId: z.string().optional(),
 })
 
+export interface ResourceItemContent {
+  title: string
+  permalink: string
+  type: ResourceType
+  id: string
+}
+
 export interface ResourceChildrenOfType {
-  items: {
-    title: string
-    permalink: string
-    type: ResourceType
-    id: string
-  }[]
+  items: ResourceItemContent[]
   nextOffset: number | null
 }

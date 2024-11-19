@@ -1,32 +1,21 @@
-import { Suspense } from "react"
+import { Suspense, useMemo } from "react"
 import { Box, Icon, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { ErrorBoundary } from "react-error-boundary"
 
-import type { RouterOutput } from "~/utils/trpc"
+import type { ResourceItemContent } from "~/schemas/resource"
 import { getIcon } from "~/utils/resources"
 
-type ResourceItemProps = Pick<
-  RouterOutput["resource"]["getFolderChildrenOf"]["items"][number],
-  "permalink"
-> & {
-  handleOnClick: () => void
-  type: ResourceType
+interface ResourceItemProps {
+  item: ResourceItemContent
   isDisabled?: boolean
   isHighlighted: boolean
-}
-
-export const canClickIntoItem = ({
-  resourceType,
-}: {
-  resourceType: ResourceType
-}): boolean => {
-  return (
-    resourceType === ResourceType.Folder ||
-    resourceType === ResourceType.Collection
-  )
+  isResourceHighlighted: boolean
+  setIsResourceHighlighted: (isHighlighted: boolean) => void
+  addToStack: (resourceItemContent: ResourceItemContent) => void
+  removeFromStack: (count: number) => void
 }
 
 const getButtonProps = ({ isHighlighted }: { isHighlighted: boolean }) => {
@@ -47,16 +36,38 @@ const getButtonProps = ({ isHighlighted }: { isHighlighted: boolean }) => {
 }
 
 const SuspendableResourceItem = ({
-  permalink,
+  item,
+  isDisabled,
   isHighlighted,
-  handleOnClick,
-  ...rest
+  isResourceHighlighted,
+  setIsResourceHighlighted,
+  addToStack,
+  removeFromStack,
 }: ResourceItemProps) => {
-  const { type, ...restWithoutType } = rest
-
   const buttonProps = getButtonProps({
     isHighlighted,
   })
+
+  const canClickIntoItem = useMemo(
+    () =>
+      item.type === ResourceType.Folder ||
+      item.type === ResourceType.Collection,
+    [item.type],
+  )
+
+  const handleClick = (): void => {
+    if (isHighlighted && canClickIntoItem) {
+      setIsResourceHighlighted(false)
+      return
+    }
+
+    if (isResourceHighlighted) {
+      removeFromStack(1)
+    } else {
+      setIsResourceHighlighted(true)
+    }
+    addToStack(item)
+  }
 
   return (
     <Button
@@ -73,12 +84,12 @@ const SuspendableResourceItem = ({
       })}
       pl="2.25rem"
       size="xs"
-      onClick={handleOnClick}
-      leftIcon={<Icon as={getIcon(type)} />}
-      {...restWithoutType}
+      onClick={handleClick}
+      leftIcon={<Icon as={getIcon(item.type)} />}
+      isDisabled={isDisabled}
     >
       <Text noOfLines={1} textStyle="caption-1" textAlign="left">
-        /{permalink}
+        /{item.permalink}
       </Text>
     </Button>
   )
