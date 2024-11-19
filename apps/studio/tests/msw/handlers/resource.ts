@@ -43,15 +43,21 @@ export const resourceHandlers = {
       })
     },
   },
-  getAncestryOf: {
+  getAncestryWithSelf: {
     collectionLink: () => {
-      return trpcMsw.resource.getAncestryOf.query(() => {
+      return trpcMsw.resource.getAncestryWithSelf.query(() => {
         return [
           {
             parentId: null,
             id: "1",
             title: "Homepage",
             permalink: "/",
+          },
+          {
+            parentId: "1",
+            id: "2",
+            title: "Collection",
+            permalink: "collection",
           },
         ]
       })
