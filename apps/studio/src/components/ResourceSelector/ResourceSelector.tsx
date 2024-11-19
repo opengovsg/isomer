@@ -4,7 +4,7 @@ import { Button, Link } from "@opengovsg/design-system-react"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
-import { canClickIntoItem, ResourceItem } from "./ResourceItem"
+import { ResourceItem } from "./ResourceItem"
 import { useResourceStack } from "./useResourceStack"
 
 interface ResourceSelectorProps {
