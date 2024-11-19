@@ -78,7 +78,7 @@ export const useResourceStack = ({
       }
       setResourceStack((prev) => [...prev, newResource])
     },
-    [],
+    [parentDest],
   )
 
   const removeFromStack = useCallback((numberOfResources: number): void => {
