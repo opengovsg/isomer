@@ -1,6 +1,6 @@
 import type { IconType } from "react-icons"
 import { Suspense } from "react"
-import { Icon, Text } from "@chakra-ui/react"
+import { Box, Icon, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "@prisma/client"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
@@ -101,10 +101,10 @@ export const ResourceItem = (props: ResourceItemProps) => {
         <ErrorBoundary
           onReset={reset}
           fallbackRender={({ resetErrorBoundary }) => (
-            <div>
+            <Box>
               There was an error!
               <Button onClick={() => resetErrorBoundary()}>Try again</Button>
-            </div>
+            </Box>
           )}
         >
           <Suspense>
