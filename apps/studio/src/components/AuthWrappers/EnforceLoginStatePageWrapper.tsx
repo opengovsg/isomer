@@ -7,7 +7,7 @@ import { SIGN_IN } from "~/lib/routes"
 import { callbackUrlSchema } from "~/schemas/url"
 import { appendWithRedirect } from "~/utils/url"
 import { FullscreenSpinner } from "../FullscreenSpinner"
-import { initIntercom } from "../Intercom"
+import { Intercom } from "../Intercom"
 
 interface EnforceLoginStatePageWrapperProps {
   /**
@@ -47,8 +47,12 @@ export const EnforceLoginStatePageWrapper = ({
   const { hasLoginStateFlag } = useLoginState()
 
   if (hasLoginStateFlag) {
-    initIntercom()
-    return <>{children}</>
+    return (
+      <>
+        <Intercom />
+        {children}
+      </>
+    )
   }
 
   return <Redirect redirectTo={redirectTo} />
