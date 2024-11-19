@@ -99,6 +99,10 @@ export const useResourceStack = ({
     [resourceStack.length, isResourceHighlighted],
   )
 
+  const fullPermalink: string = useMemo(() => {
+    return resourceStack.map((resource) => resource.permalink).join("/")
+  }, [resourceStack])
+
   useEffect(() => {
     if (
       ancestryStack.length <= 0 ||
@@ -116,7 +120,7 @@ export const useResourceStack = ({
   }, [curResourceId])
 
   return {
-    resourceStack,
+    fullPermalink,
     isResourceHighlighted,
     setIsResourceHighlighted,
     moveDest,
