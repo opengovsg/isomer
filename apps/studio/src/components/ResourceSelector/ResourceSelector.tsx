@@ -1,15 +1,12 @@
-import { Suspense, useEffect, useState } from "react"
+import { Suspense, useEffect } from "react"
 import { Box, Flex, HStack, Skeleton, Spacer, Text } from "@chakra-ui/react"
 import { Button, Link } from "@opengovsg/design-system-react"
 import { ResourceType } from "@prisma/client"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
-import type { ResourceChildrenOfType } from "~/schemas/resource"
-import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]"
-import { trpc } from "~/utils/trpc"
 import { ResourceItem } from "./ResourceItem"
+import { useResourceStack } from "./useResourceStack"
 
 interface ResourceSelectorProps {
   onChange: (resourceId: string) => void
@@ -28,45 +25,20 @@ const SuspensableResourceSelector = ({
   existingResource,
   onlyShowFolders = false,
 }: ResourceSelectorProps) => {
-  // NOTE: This is the stack of user's navigation through the resource tree
-  // NOTE: We should always start the stack from `/` (root)
-  // so that the user will see a full overview of their site structure
-  const [resourceStack, setResourceStack] = useState<PendingMoveResource[]>([])
-  const [isResourceHighlighted, setIsResourceHighlighted] =
-    useState<boolean>(true)
-  const { siteId } = useQueryParse(sitePageSchema)
-
-  const moveDest = resourceStack[resourceStack.length - 1]
-  const parentDest = resourceStack[resourceStack.length - 2]
-  const curResourceId = moveDest?.resourceId
-  const queryFn = onlyShowFolders
-    ? trpc.resource.getFolderChildrenOf.useInfiniteQuery
-    : trpc.resource.getChildrenOf.useInfiniteQuery
   const {
-    data: { pages } = { pages: [{ items: [], nextOffset: null }] },
+    resourceStack,
+    setResourceStack,
+    isResourceHighlighted,
+    setIsResourceHighlighted,
+    moveDest,
+    parentDest,
+    curResourceId,
+    ancestryStack,
+    data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = queryFn(
-    {
-      resourceId:
-        (isResourceHighlighted
-          ? parentDest?.resourceId
-          : moveDest?.resourceId) ?? null,
-      siteId: String(siteId),
-      limit: 25,
-    },
-    {
-      getNextPageParam: (lastPage) => lastPage.nextOffset,
-    },
-  )
-  const data: ResourceChildrenOfType[] = pages
-  const ancestryStack: PendingMoveResource[] = trpc.resource.getAncestryWithSelf
-    .useSuspenseQuery({
-      siteId: String(siteId),
-      resourceId: selectedResourceId,
-    })[0]
-    .map((resource) => ({ ...resource, resourceId: resource.id }))
+  } = useResourceStack({ onlyShowFolders, selectedResourceId })
 
   useEffect(() => {
     if (
