@@ -1,5 +1,13 @@
 import { Suspense } from "react"
-import { Box, Flex, HStack, Skeleton, Spacer, Text } from "@chakra-ui/react"
+import {
+  Box,
+  Flex,
+  HStack,
+  Skeleton,
+  Spacer,
+  Text,
+  VStack,
+} from "@chakra-ui/react"
 import { Button, Link } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
@@ -37,7 +45,7 @@ const SuspensableResourceSelector = ({
   } = useResourceStack({ onChange, selectedResourceId, onlyShowFolders })
 
   return (
-    <>
+    <VStack gap="0.5rem">
       <Box
         borderRadius="md"
         border="1px solid"
@@ -146,7 +154,7 @@ const SuspensableResourceSelector = ({
           </Flex>
         </Box>
       )}
-    </>
+    </VStack>
   )
 }
 
