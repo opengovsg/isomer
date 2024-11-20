@@ -37,6 +37,7 @@ export interface SearchResultProps {
   item: SearchResultResource
   searchTerms?: string[]
   isLoading?: boolean
+  shouldHideLastEditedText?: boolean
 }
 
 export const SearchResult = ({
@@ -44,6 +45,7 @@ export const SearchResult = ({
   item,
   searchTerms = [],
   isLoading = false,
+  shouldHideLastEditedText = false,
 }: SearchResultProps) => {
   const { id, title, type, fullPermalink, lastUpdatedAt } = item
   const titleWithHighlightedText: ReactNode[] = title
@@ -85,9 +87,10 @@ export const SearchResult = ({
     })
 
   const shouldShowLastEditedText: boolean =
-    type === ResourceType.Page ||
-    type === ResourceType.CollectionLink ||
-    type === ResourceType.CollectionPage
+    !shouldHideLastEditedText &&
+    (type === ResourceType.Page ||
+      type === ResourceType.CollectionLink ||
+      type === ResourceType.CollectionPage)
 
   return (
     <HStack

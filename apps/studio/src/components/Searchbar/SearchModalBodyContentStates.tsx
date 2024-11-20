@@ -11,7 +11,11 @@ const SearchResults = ({
   items,
   searchTerms,
   isLoading,
-}: Omit<SearchResultProps, "item"> & { items: SearchResultResource[] }) => {
+  shouldHideLastEditedText = false,
+}: Omit<SearchResultProps, "item"> & {
+  items: SearchResultResource[]
+  shouldHideLastEditedText?: boolean
+}) => {
   return (
     <VStack gap="0.25rem" w="full">
       {items.map((item) => (
@@ -21,6 +25,7 @@ const SearchResults = ({
           item={item}
           searchTerms={searchTerms}
           isLoading={isLoading}
+          shouldHideLastEditedText={shouldHideLastEditedText}
         />
       ))}
     </VStack>
@@ -68,7 +73,13 @@ export const InitialState = ({
   return (
     <BaseState
       headerText="Recently edited"
-      content={<SearchResults siteId={siteId} items={items} />}
+      content={
+        <SearchResults
+          siteId={siteId}
+          items={items}
+          shouldHideLastEditedText={true}
+        />
+      }
     />
   )
 }
