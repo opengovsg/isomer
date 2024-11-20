@@ -76,7 +76,7 @@ export const InitialState = ({
 export const LoadingState = () => {
   return (
     <BaseState
-      headerText="Searching your websites high and low"
+      headerText="Searching your website high and low"
       content={
         <SearchResults
           siteId=""
@@ -108,7 +108,7 @@ export const SearchResultsState = ({
 }) => {
   return (
     <BaseState
-      headerText={`${totalResultsCount} search result${totalResultsCount === 1 ? "" : "s"} found for "${searchTerm}" in title`}
+      headerText={`${totalResultsCount} search result${totalResultsCount === 1 ? "" : "s"} with "${searchTerm}" in title`}
       content={
         <SearchResults
           siteId={siteId}
