@@ -10,7 +10,7 @@ import {
   BiStrikethrough,
   BiUnderline,
 } from "react-icons/bi"
-import { MdSubscript, MdSuperscript } from "react-icons/md"
+import { MdHorizontalRule, MdSubscript, MdSuperscript } from "react-icons/md"
 
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import { MenuBar } from "./MenuBar"
@@ -107,6 +107,13 @@ export const CalloutMenuBar = ({ editor }: { editor: Editor }) => {
             action: () =>
               editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
             isActive: () => editor.isActive("subscript"),
+          },
+          {
+            type: "item",
+            icon: MdHorizontalRule,
+            title: "Divider",
+            action: () => editor.chain().focus().setHorizontalRule().run(),
+            isActive: () => editor.isActive("divider"),
           },
         ],
       },
