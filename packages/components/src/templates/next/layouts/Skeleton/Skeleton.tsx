@@ -2,6 +2,8 @@ import type { IsomerPageSchemaType } from "~/engine"
 import {
   DatadogRum,
   Footer,
+  GoogleTagManagerBody,
+  GoogleTagManagerHeader,
   Masthead,
   Navbar,
   Notification,
@@ -27,6 +29,11 @@ export const Skeleton = ({
 
   return (
     <>
+      <GoogleTagManagerHeader
+        siteGtmId={site.gtmId}
+        ScriptComponent={ScriptComponent}
+      />
+
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
 
       {!isStaging && <DatadogRum />}
@@ -74,6 +81,9 @@ export const Skeleton = ({
         LinkComponent={LinkComponent}
         {...site.footerItems}
       />
+
+      {/* needs to be the last element in the body */}
+      <GoogleTagManagerBody siteGtmId={site.gtmId} />
     </>
   )
 }
