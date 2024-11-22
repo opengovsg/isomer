@@ -1,6 +1,5 @@
 import { type ReactNode } from "react"
 import { Box, HStack, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { ICON_MAPPINGS } from "~/features/dashboard/components/DirectorySidebar/constants"
