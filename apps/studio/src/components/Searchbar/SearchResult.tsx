@@ -4,33 +4,8 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { ICON_MAPPINGS } from "~/features/dashboard/components/DirectorySidebar/constants"
+import { formatDate } from "~/utils/formatDate"
 import { getLinkToResource } from "~/utils/resource"
-
-const formatDate = (date: Date): string => {
-  const now = new Date()
-  const diffInMs = now.getTime() - date.getTime()
-  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
-
-  if (diffInDays === 0) {
-    return "today"
-  } else if (diffInDays === 1) {
-    return "yesterday"
-  } else if (diffInDays >= 2 && diffInDays <= 6) {
-    return `${diffInDays} days ago`
-  } else if (diffInDays >= 7 && diffInDays <= 14) {
-    return "last week"
-  } else {
-    // Format date as "DD MMM YYYY" for anything beyond 14 days
-    const options: Intl.DateTimeFormatOptions = {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }
-    return date
-      .toLocaleDateString("en-GB", options)
-      .replace(/(\d{2}) (\w{3}) (\d{4})/, "$1 $2 $3")
-  }
-}
 
 export interface SearchResultProps {
   siteId: string
