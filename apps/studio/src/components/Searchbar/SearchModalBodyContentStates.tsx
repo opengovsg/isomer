@@ -3,7 +3,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SearchResultProps } from "./SearchResult"
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
-import { NoSearchResultSvgr } from "./NoSearchResultSvgr"
+import { NoSearchResultSvgr } from "../Svg/NoSearchResultSvgr"
 import { SearchResult } from "./SearchResult"
 
 const SearchResults = ({
