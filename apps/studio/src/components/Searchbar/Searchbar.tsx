@@ -29,8 +29,6 @@ const SearchButton = (props: ButtonProps) => {
       display={{ base: "none", sm: "flex" }}
       alignItems="center"
       boxSizing="initial"
-      // py="3"
-      // px="4"
       height="2.75rem"
       rounded="base"
       border="1px solid"
