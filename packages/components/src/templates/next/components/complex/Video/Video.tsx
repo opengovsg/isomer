@@ -62,10 +62,6 @@ const getPrivacyEnhancedVimeoEmbedUrl = (urlObject: URL) => {
 }
 
 const getSanitizedEmbedUrl = (url: string) => {
-  if (!isValidVideoUrl(url)) {
-    return ""
-  }
-
   const urlObject = new URL(url)
 
   if (VALID_VIDEO_DOMAINS.youtube.includes(urlObject.hostname)) {
@@ -80,7 +76,7 @@ const getSanitizedEmbedUrl = (url: string) => {
 }
 
 export const Video = ({ title, url }: VideoProps) => {
-  if (!url || !isValidVideoUrl(url)) {
+  if (!isValidVideoUrl(url)) {
     return <></>
   }
 

@@ -14,6 +14,7 @@ export const VideoSchema = Type.Object(
       title: "Label for screen readers",
       description:
         "This is not shown on the page, but is compulsory for accessibility",
+      maxLength: 120,
     }),
   },
   {

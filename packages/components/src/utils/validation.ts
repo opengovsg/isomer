@@ -23,10 +23,7 @@ export const MAPS_EMBED_URL_REGEXES = {
   onemap: "^https://www\\.onemap\\.gov\\.sg/minimap/minimap\\.html.*$",
 } as const
 
-export const MAPS_EMBED_URL_PATTERN = [
-  MAPS_EMBED_URL_REGEXES.googlemaps,
-  MAPS_EMBED_URL_REGEXES.onemap,
-]
+export const MAPS_EMBED_URL_PATTERN = Object.values(MAPS_EMBED_URL_REGEXES)
   .map((re) => `(${re})`)
   .join("|")
 
@@ -37,10 +34,6 @@ export const VIDEO_EMBED_URL_REGEXES = {
     "^https://www\\.(youtube|youtube-nocookie)\\.com/(embed/|watch\\?v=).*$",
 } as const
 
-export const VIDEO_EMBED_URL_PATTERN = [
-  VIDEO_EMBED_URL_REGEXES.fbvideo,
-  VIDEO_EMBED_URL_REGEXES.vimeo,
-  VIDEO_EMBED_URL_REGEXES.youtube,
-]
+export const VIDEO_EMBED_URL_PATTERN = Object.values(VIDEO_EMBED_URL_REGEXES)
   .map((re) => `(${re})`)
   .join("|")

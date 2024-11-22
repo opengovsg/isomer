@@ -35,7 +35,7 @@ const isValidMapEmbedUrl = (url: string) => {
 }
 
 export const Map = ({ title, url }: MapProps) => {
-  if (!url || !isValidMapEmbedUrl(url)) {
+  if (!isValidMapEmbedUrl(url)) {
     return <></>
   }
 
