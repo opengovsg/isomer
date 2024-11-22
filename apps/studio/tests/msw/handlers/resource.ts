@@ -106,21 +106,19 @@ export const resourceHandlers = {
         return {
           totalCount: null,
           resources: [],
-          suggestions: {
-            recentlyEdited: Array.from({ length: 5 }, (_, i) => {
-              const title = `testing ${i}`
-              const permalink = title.toLowerCase().replace(/ /g, "-")
-              return {
-                id: (5 - i).toString(),
-                title,
-                permalink,
-                type: "Page",
-                parentId: null,
-                lastUpdatedAt: new Date(`2024-01-0${3 - i}`),
-                fullPermalink: permalink,
-              }
-            }),
-          },
+          recentlyEdited: Array.from({ length: 5 }, (_, i) => {
+            const title = `testing ${i}`
+            const permalink = title.toLowerCase().replace(/ /g, "-")
+            return {
+              id: (5 - i).toString(),
+              title,
+              permalink,
+              type: "Page",
+              parentId: null,
+              lastUpdatedAt: new Date(`2024-01-0${3 - i}`),
+              fullPermalink: permalink,
+            }
+          }),
         }
       })
     },
@@ -175,9 +173,7 @@ export const resourceHandlers = {
                 "covid-collection-that-should-not-display-lastupdatedat",
             },
           ],
-          suggestions: {
-            recentlyEdited: [],
-          },
+          recentlyEdited: [],
         }
       })
     },

@@ -63,7 +63,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
     return (
       <InitialState
         siteId={siteId}
-        items={data?.pages[0]?.suggestions.recentlyEdited ?? []}
+        items={data?.pages[0]?.recentlyEdited ?? []}
       />
     )
   }
