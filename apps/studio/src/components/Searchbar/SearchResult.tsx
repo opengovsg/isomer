@@ -6,6 +6,7 @@ import type { SearchResultResource } from "~/server/modules/resource/resource.ty
 import { ICON_MAPPINGS } from "~/features/dashboard/components/DirectorySidebar/constants"
 import { formatDate } from "~/utils/formatDate"
 import { getLinkToResource } from "~/utils/resource"
+import { isAllowedToHaveLastEditedText } from "~/utils/resources"
 
 export interface SearchResultProps {
   siteId: string
@@ -62,10 +63,7 @@ export const SearchResult = ({
     })
 
   const shouldShowLastEditedText: boolean =
-    !shouldHideLastEditedText &&
-    (type === ResourceType.Page ||
-      type === ResourceType.CollectionLink ||
-      type === ResourceType.CollectionPage)
+    !shouldHideLastEditedText && isAllowedToHaveLastEditedText(type)
 
   return (
     <HStack
