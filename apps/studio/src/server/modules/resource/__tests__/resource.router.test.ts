@@ -1806,11 +1806,35 @@ describe("resource.router", async () => {
       )
     })
 
+    it("should throw 403 if user does not have read access to site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.search({
+        siteId: String(site.id),
+        query: "test",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
     it.skip("should throw 403 if user does not have read access to resource", async () => {})
 
     it("should return empty results if no resources exist", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.search({
@@ -1830,6 +1854,10 @@ describe("resource.router", async () => {
     it("should return the full permalink of resources", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const { folder: folder1 } = await setupFolder({
         siteId: site.id,
       })
@@ -1877,6 +1905,10 @@ describe("resource.router", async () => {
     it("should use the draft blob updatedAt datetime if available", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const blob = await setupBlob()
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
@@ -1926,6 +1958,10 @@ describe("resource.router", async () => {
       // Arrange
       const numberOfPages = 15 // arbitrary number above the default limit of 10
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       for (let index = 0; index < numberOfPages; index++) {
         await setupPageResource({
           siteId: site.id,
@@ -1947,6 +1983,10 @@ describe("resource.router", async () => {
     it("should return recentlyEdited as an empty array", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       await setupPageResource({ resourceType: "Page", siteId: site.id })
 
       // Act
@@ -1962,6 +2002,10 @@ describe("resource.router", async () => {
     it("should match and order by splitting the query into an array of search terms", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
@@ -2015,6 +2059,10 @@ describe("resource.router", async () => {
     it("should return resources in order of most recently updated if same search terms", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
@@ -2055,6 +2103,10 @@ describe("resource.router", async () => {
     it("should return resources that by prefix for each word in the title", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
@@ -2092,6 +2144,10 @@ describe("resource.router", async () => {
     it("should rank results by not double counting ranking order for each search term", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
@@ -2134,6 +2190,10 @@ describe("resource.router", async () => {
     it("should rank results by character length of search term matches", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
@@ -2176,6 +2236,10 @@ describe("resource.router", async () => {
     it("should not return resources that do not match the search query", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
@@ -2200,6 +2264,10 @@ describe("resource.router", async () => {
     it("should not return resources matched by empty space if query terms are separated by spaces", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
@@ -2237,6 +2305,10 @@ describe("resource.router", async () => {
     it("should only return user viewable resource types", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const { collection: collection1 } = await setupCollection({
         siteId: site.id,
       })
@@ -2300,7 +2372,15 @@ describe("resource.router", async () => {
     it("should not return resources from another site", async () => {
       // Arrange
       const { site: site1 } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site1.id,
+      })
       const { site: site2 } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site2.id,
+      })
       await setupPageResource({ resourceType: "Page", siteId: site1.id })
 
       // Act
@@ -2321,6 +2401,10 @@ describe("resource.router", async () => {
     it("should return the correct values if query is empty string", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
@@ -2350,6 +2434,10 @@ describe("resource.router", async () => {
     it("should return the correct values if query is a string of whitespaces", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
@@ -2379,6 +2467,10 @@ describe("resource.router", async () => {
     it("should return the correct values if query is not provided", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
@@ -2407,6 +2499,10 @@ describe("resource.router", async () => {
     it("recentlyEdited should be ordered by lastUpdatedAt", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
@@ -2448,6 +2544,10 @@ describe("resource.router", async () => {
     it("recentlyEdited should only return page-ish resources", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       await setupPageResource({ resourceType: "RootPage", siteId: site.id })
       const { folder: folder1 } = await setupFolder({ siteId: site.id })
       await setupFolderMeta({ siteId: site.id, folderId: folder1.id })
@@ -2471,6 +2571,10 @@ describe("resource.router", async () => {
       it("should return up to 10 most recently edited resources if no limit is provided", async () => {
         // Arrange
         const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
         const pages = []
         for (let index = 0; index < 11; index++) {
           pages.push(
@@ -2510,6 +2614,10 @@ describe("resource.router", async () => {
       it("should return limit number of resources according to the the `limit` parameter", async () => {
         // Arrange
         const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
         await setupPageResource({
           siteId: site.id,
           resourceType: "Page",
@@ -2556,6 +2664,10 @@ describe("resource.router", async () => {
       it("should return all items if limit is greater than the number of items", async () => {
         // Arrange
         const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
         const { page: page1 } = await setupPageResource({
           resourceType: "Page",
           siteId: site.id,
@@ -2588,6 +2700,10 @@ describe("resource.router", async () => {
       it("should return empty results if `cursor` is invalid", async () => {
         // Arrange
         const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
         await setupPageResource({ resourceType: "Page", siteId: site.id })
 
         // Act
@@ -2608,6 +2724,10 @@ describe("resource.router", async () => {
       it("should return the next set of resources if valid `cursor` is provided", async () => {
         // Arrange
         const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
         const pages = []
         for (let index = 0; index < 31; index++) {
           pages.push(
