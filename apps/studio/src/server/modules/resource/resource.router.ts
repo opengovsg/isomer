@@ -25,9 +25,10 @@ import {
   definePermissionsForResource,
   validateUserPermissionsForResource,
 } from "../permissions/permissions.service"
+import { validateUserPermissionsForSite } from "../site/site.service"
 import {
+  getSearchRecentlyEdited,
   getSearchResults,
-  getSearchSuggestionsRecentlyEdited,
   getWithFullPermalink,
 } from "./resource.service"
 
@@ -516,32 +517,36 @@ export const resourceRouter = router({
   search: protectedProcedure
     .input(searchSchema)
     .output(searchOutputSchema)
-    .query(async ({ input: { siteId, query = "", cursor: offset, limit } }) => {
-      // check if the query is only whitespaces (including multiple spaces)
-      if (query.trim() === "") {
-        return {
-          totalCount: null,
-          resources: [],
-          suggestions: {
-            recentlyEdited: await getSearchSuggestionsRecentlyEdited({
+    .query(
+      async ({ ctx, input: { siteId, query = "", cursor: offset, limit } }) => {
+        await validateUserPermissionsForSite({
+          siteId: Number(siteId),
+          userId: ctx.user.id,
+          action: "read",
+        })
+
+        // check if the query is only whitespaces (including multiple spaces)
+        if (query.trim() === "") {
+          return {
+            totalCount: null,
+            resources: [],
+            recentlyEdited: await getSearchRecentlyEdited({
               siteId: Number(siteId),
             }),
-          },
+          }
         }
-      }
 
-      const searchResults = await getSearchResults({
-        siteId: Number(siteId),
-        query,
-        offset,
-        limit,
-      })
-      return {
-        totalCount: Number(searchResults.totalCount),
-        resources: searchResults.resources,
-        suggestions: {
+        const searchResults = await getSearchResults({
+          siteId: Number(siteId),
+          query,
+          offset,
+          limit,
+        })
+        return {
+          totalCount: Number(searchResults.totalCount),
+          resources: searchResults.resources,
           recentlyEdited: [],
-        },
-      }
-    }),
+        }
+      },
+    ),
 })

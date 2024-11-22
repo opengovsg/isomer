@@ -513,15 +513,15 @@ export const getSearchResults = async ({
       ResourceType.CollectionPage,
     ])
     .where((eb) =>
-      eb.or([
-        ...searchTerms.map((searchTerm) =>
+      eb.or(
+        searchTerms.map((searchTerm) =>
           // Match if the search term is at the start of the title
           eb("Resource.title", "ilike", `${searchTerm}%`).or(
             // Match if the search term is in the middle of the title (after a space)
             eb("Resource.title", "ilike", `% ${searchTerm}%`),
           ),
         ),
-      ]),
+      ),
     )
 
   // Currently ordered by number of words matched
@@ -536,8 +536,14 @@ export const getSearchResults = async ({
               // 1. Match if the search term is at the start of the title
               // 2. Match if the search term is in the middle of the title (after a space)
               sql`
-                CASE WHEN "Resource"."title" ILIKE ${searchTerm + "%"} THEN 1 ELSE 0 END +
-                CASE WHEN "Resource"."title" ILIKE ${"% " + searchTerm + "%"} THEN 1 ELSE 0 END
+                CASE
+                  WHEN (
+                    "Resource"."title" ILIKE ${searchTerm + "%"} OR
+                    "Resource"."title" ILIKE ${"% " + searchTerm + "%"}
+                  )
+                  THEN ${searchTerm.length}
+                  ELSE 0
+                END
               `,
           ),
           sql` + `,
@@ -568,7 +574,7 @@ export const getSearchResults = async ({
   }
 }
 
-export const getSearchSuggestionsRecentlyEdited = async ({
+export const getSearchRecentlyEdited = async ({
   siteId,
   limit = 5, // Hardcoded for now to be 5
 }: {
