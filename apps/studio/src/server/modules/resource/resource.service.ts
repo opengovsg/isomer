@@ -513,15 +513,15 @@ export const getSearchResults = async ({
       ResourceType.CollectionPage,
     ])
     .where((eb) =>
-      eb.or([
-        ...searchTerms.map((searchTerm) =>
+      eb.or(
+        searchTerms.map((searchTerm) =>
           // Match if the search term is at the start of the title
           eb("Resource.title", "ilike", `${searchTerm}%`).or(
             // Match if the search term is in the middle of the title (after a space)
             eb("Resource.title", "ilike", `% ${searchTerm}%`),
           ),
         ),
-      ]),
+      ),
     )
 
   // Currently ordered by number of words matched
