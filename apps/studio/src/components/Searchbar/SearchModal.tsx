@@ -11,7 +11,6 @@ import { Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
 import { useDebounce } from "@uidotdev/usehooks"
 
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
-import { useBanner } from "~/hooks/useBanner"
 import { trpc } from "~/utils/trpc"
 import { isMac } from "./isMac"
 import {
@@ -20,6 +19,7 @@ import {
   NoResultsState,
   SearchResultsState,
 } from "./SearchModalBodyContentStates"
+import { useSearchStyle } from "./useSearchStyle"
 
 interface SearchModalProps {
   isOpen: boolean
@@ -27,8 +27,6 @@ interface SearchModalProps {
   siteId: string
 }
 export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
-  const banner = useBanner()
-  const mt = banner ? "3rem" : "0.5rem"
   const [searchValue, setSearchValue] = useState("")
   const debouncedSearchTerm = useDebounce(searchValue, 300)
   const { data, isLoading } = trpc.resource.search.useInfiniteQuery({
@@ -67,15 +65,17 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
       />
     )
   }
+  const { minWidth, maxWidth, marginTop } = useSearchStyle()
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} motionPreset="none">
       <ModalOverlay bg="none" backdropFilter="brightness(80%)" />
       <ModalContent
         rounded="base"
-        w="42.5rem"
+        minW={minWidth}
+        maxW={maxWidth}
         p={0}
-        mt={`calc(${mt} + 1px)`}
+        mt={`calc(${marginTop} + 1px)`}
         // NOTE: This is required to align the inner Searchbar
         // with the outer search bar
         ml="3px"
@@ -86,7 +86,8 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           <OgpSearchBar
             defaultIsExpanded
             onChange={({ target }) => setSearchValue(target.value)}
-            w="42.5rem"
+            minW={minWidth}
+            maxW={maxWidth}
             // border={0}
             placeholder={`Search pages, collections, or folders by name. e.g. "Speech by Minister"`}
           />

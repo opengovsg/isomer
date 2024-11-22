@@ -2,7 +2,7 @@ import type { PropsWithChildren } from "react"
 import Image from "next/image"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
-import { Box, Flex, Grid, GridItem, Text } from "@chakra-ui/react"
+import { Flex, Grid, GridItem, Text } from "@chakra-ui/react"
 import { AvatarMenu, IconButton, Menu } from "@opengovsg/design-system-react"
 import { BiCog, BiFolder, BiHelpCircle, BiLogOut } from "react-icons/bi"
 import { z } from "zod"
@@ -11,7 +11,7 @@ import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { CmsContainer, CmsSidebar } from "~/components/CmsSidebar"
 import { LayoutHead } from "~/components/LayoutHead"
-import { Searchbar } from "~/components/Searchbar"
+import { Searchbar, useSearchStyle } from "~/components/Searchbar"
 import { DirectorySidebar } from "~/features/dashboard/components/DirectorySidebar"
 import { useMe } from "~/features/me/api"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -27,10 +27,11 @@ const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
   const [{ name }] = trpc.site.getSiteName.useSuspenseQuery({
     siteId: Number(siteId),
   })
+  const { minWidth, maxWidth } = useSearchStyle()
 
   return (
     <Grid
-      gridTemplateColumns="1fr 42.5rem 1fr"
+      gridTemplateColumns={`1fr ${maxWidth} 1fr`}
       py={{ base: 0, md: "0.5rem" }}
       px={{ base: 0, md: "0.5rem" }}
       background="white"
@@ -57,10 +58,8 @@ const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
         </Text>
       </Flex>
       {/* NOTE: We are doing this because the searchbar has to be horizontally centered within the Flex */}
-      <GridItem>
-        <Box w="42.5rem">
-          <Searchbar siteId={siteId} />
-        </Box>
+      <GridItem minW={minWidth} maxW={maxWidth}>
+        <Searchbar siteId={siteId} />
       </GridItem>
 
       <GridItem justifyContent="flex-end" display="flex">

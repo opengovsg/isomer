@@ -13,18 +13,22 @@ import { BiSearch } from "react-icons/bi"
 
 import { isMac } from "./isMac"
 import { SearchModal } from "./SearchModal"
+import { useSearchStyle } from "./useSearchStyle"
 
 const SearchButton = (props: ButtonProps) => {
   const styles = useMultiStyleConfig("Searchbar", {
     isExpanded: true,
     size: "md",
   })
+  const { minWidth, maxWidth } = useSearchStyle()
 
   return (
     <chakra.button
       flex="1"
       type="button"
-      w="42.5rem"
+      width="100%"
+      minW={minWidth}
+      maxW={maxWidth}
       whiteSpace="nowrap"
       display={{ base: "none", sm: "flex" }}
       alignItems="center"
@@ -39,15 +43,19 @@ const SearchButton = (props: ButtonProps) => {
       <Box __css={styles.icon} w="44px" flexShrink={0}>
         <Icon as={BiSearch} fill="base.content.medium" />
       </Box>
-      <HStack w="full" spacing="4px">
+      <HStack w="full" spacing="4px" overflow="hidden">
         <Text
           textColor="interaction.support.placeholder"
           textAlign="left"
           flex="1"
           textStyle="body-2"
           ml="1px"
+          whiteSpace="nowrap"
+          overflow="hidden"
+          textOverflow="ellipsis"
         >
-          {`Search pages, collections, or folders by name. e.g. "Speech by Minister"`}
+          Search pages, collections, or folders by name. e.g. "Speech by
+          Minister"
         </Text>
       </HStack>
     </chakra.button>
@@ -77,7 +85,7 @@ export const Searchbar = ({ siteId }: { siteId: string }) => {
   }, [onOpen])
 
   return (
-    <>
+    <Box id="hello">
       <SearchModal
         key={String(isOpen)}
         isOpen={isOpen}
@@ -85,6 +93,6 @@ export const Searchbar = ({ siteId }: { siteId: string }) => {
         siteId={siteId}
       />
       <SearchButton onClick={onOpen} />
-    </>
+    </Box>
   )
 }
