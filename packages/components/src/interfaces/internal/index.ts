@@ -35,6 +35,8 @@ export type { SkipToContentProps } from "./SkipToContent"
 export type { TableOfContentsProps } from "./TableOfContents"
 export type { WogaaProps } from "./Wogaa"
 export type {
+  GoogleTagManagerHeaderScriptProps,
   GoogleTagManagerHeaderProps,
+  GoogleTagManagerBodyScriptProps,
   GoogleTagManagerBodyProps,
 } from "./GoogleTagManager"

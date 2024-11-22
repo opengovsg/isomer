@@ -26,13 +26,16 @@ export const Skeleton = ({
   >
 >) => {
   const isStaging = site.environment === "staging"
+  const shouldIncludeGTM = site.environment === "production"
 
   return (
     <>
-      <GoogleTagManagerHeader
-        siteGtmId={site.gtmId}
-        ScriptComponent={ScriptComponent}
-      />
+      {shouldIncludeGTM && (
+        <GoogleTagManagerHeader
+          siteGtmId={site.gtmId}
+          ScriptComponent={ScriptComponent}
+        />
+      )}
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
 
@@ -83,7 +86,7 @@ export const Skeleton = ({
       />
 
       {/* needs to be the last element in the body */}
-      <GoogleTagManagerBody siteGtmId={site.gtmId} />
+      {shouldIncludeGTM && <GoogleTagManagerBody siteGtmId={site.gtmId} />}
     </>
   )
 }

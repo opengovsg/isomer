@@ -1,17 +1,13 @@
-import type { GoogleTagManagerHeaderProps } from "~/interfaces"
-import type { ScriptComponentType } from "~/types"
-import {
-  getIsomerGoogleTagManagerId,
-  shouldNotIncludeGoogleTagManager,
-} from "./utils"
+import type {
+  GoogleTagManagerHeaderProps,
+  GoogleTagManagerHeaderScriptProps,
+} from "~/interfaces"
+import { getIsomerGoogleTagManagerId } from "./utils"
 
 const GoogleTagManagerHeaderScript = ({
   gtmId,
   ScriptComponent,
-}: {
-  gtmId: string
-  ScriptComponent: ScriptComponentType
-}) => {
+}: GoogleTagManagerHeaderScriptProps) => {
   return (
     <ScriptComponent
       id={`_next-gtm-init-${gtmId}`}
@@ -30,8 +26,6 @@ export const GoogleTagManagerHeader = ({
   siteGtmId,
   ScriptComponent,
 }: GoogleTagManagerHeaderProps) => {
-  if (shouldNotIncludeGoogleTagManager()) return <></>
-
   const isomerGtmId: string | undefined = getIsomerGoogleTagManagerId()
   return (
     <>

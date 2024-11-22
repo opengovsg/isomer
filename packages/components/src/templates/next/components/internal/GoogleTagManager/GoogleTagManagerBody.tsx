@@ -1,11 +1,13 @@
-import type { GoogleTagManagerBodyProps } from "~/interfaces"
-import {
-  getIsomerGoogleTagManagerId,
-  shouldNotIncludeGoogleTagManager,
-} from "./utils"
+import type {
+  GoogleTagManagerBodyProps,
+  GoogleTagManagerBodyScriptProps,
+} from "~/interfaces"
+import { getIsomerGoogleTagManagerId } from "./utils"
 
 // Needed in the event that the user has disabled scripts
-const GoogleTagManagerBodyScript = ({ gtmId }: { gtmId: string }) => {
+const GoogleTagManagerBodyScript = ({
+  gtmId,
+}: GoogleTagManagerBodyScriptProps) => {
   return (
     <noscript>
       <iframe
@@ -21,8 +23,6 @@ const GoogleTagManagerBodyScript = ({ gtmId }: { gtmId: string }) => {
 export const GoogleTagManagerBody = ({
   siteGtmId,
 }: GoogleTagManagerBodyProps) => {
-  if (shouldNotIncludeGoogleTagManager()) return <></>
-
   const isomerGtmId: string | undefined = getIsomerGoogleTagManagerId()
   return (
     <>
