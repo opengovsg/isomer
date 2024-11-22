@@ -568,7 +568,7 @@ export const getSearchResults = async ({
   }
 }
 
-export const getSearchSuggestionsRecentlyEdited = async ({
+export const getSearchRecentlyEdited = async ({
   siteId,
   limit = 5, // Hardcoded for now to be 5
 }: {

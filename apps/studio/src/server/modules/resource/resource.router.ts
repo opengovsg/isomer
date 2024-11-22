@@ -26,8 +26,8 @@ import {
   validateUserPermissionsForResource,
 } from "../permissions/permissions.service"
 import {
+  getSearchRecentlyEdited,
   getSearchResults,
-  getSearchSuggestionsRecentlyEdited,
   getWithFullPermalink,
 } from "./resource.service"
 
@@ -522,11 +522,9 @@ export const resourceRouter = router({
         return {
           totalCount: null,
           resources: [],
-          suggestions: {
-            recentlyEdited: await getSearchSuggestionsRecentlyEdited({
-              siteId: Number(siteId),
-            }),
-          },
+          recentlyEdited: await getSearchRecentlyEdited({
+            siteId: Number(siteId),
+          }),
         }
       }
 
@@ -539,9 +537,7 @@ export const resourceRouter = router({
       return {
         totalCount: Number(searchResults.totalCount),
         resources: searchResults.resources,
-        suggestions: {
-          recentlyEdited: [],
-        },
+        recentlyEdited: [],
       }
     }),
 })

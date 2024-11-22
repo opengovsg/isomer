@@ -1822,9 +1822,7 @@ describe("resource.router", async () => {
       const expected = {
         totalCount: 0,
         resources: [],
-        suggestions: {
-          recentlyEdited: [],
-        },
+        recentlyEdited: [],
       }
       expect(result).toEqual(expected)
     })
@@ -1871,9 +1869,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: folder1.updatedAt,
           },
         ],
-        suggestions: {
-          recentlyEdited: [],
-        },
+        recentlyEdited: [],
       }
       expect(result).toEqual(expected)
     })
@@ -1921,9 +1917,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: page2.updatedAt,
           },
         ],
-        suggestions: {
-          recentlyEdited: [],
-        },
+        recentlyEdited: [],
       }
       expect(result).toEqual(expected)
     })
@@ -1950,7 +1944,7 @@ describe("resource.router", async () => {
       expect(result.totalCount).toEqual(numberOfPages)
     })
 
-    it("should return suggestions.recentlyEdited as an empty array", async () => {
+    it("should return recentlyEdited as an empty array", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({ resourceType: "Page", siteId: site.id })
@@ -1962,7 +1956,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(result.suggestions.recentlyEdited).toEqual([])
+      expect(result.recentlyEdited).toEqual([])
     })
 
     it("should match and order by splitting the query into an array of search terms", async () => {
@@ -2013,9 +2007,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: page3.updatedAt,
           },
         ],
-        suggestions: {
-          recentlyEdited: [],
-        },
+        recentlyEdited: [],
       }
       expect(result).toEqual(expected)
     })
@@ -2055,9 +2047,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: page1.updatedAt,
           },
         ],
-        suggestions: {
-          recentlyEdited: [],
-        },
+        recentlyEdited: [],
       }
       expect(result).toEqual(expected)
     })
@@ -2094,9 +2084,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: page.updatedAt,
           },
         ],
-        suggestions: {
-          recentlyEdited: [],
-        },
+        recentlyEdited: [],
       }
       expect(result).toEqual(expected)
     })
@@ -2120,9 +2108,7 @@ describe("resource.router", async () => {
       const expected = {
         totalCount: 0,
         resources: [],
-        suggestions: {
-          recentlyEdited: [],
-        },
+        recentlyEdited: [],
       }
       expect(result).toEqual(expected)
     })
@@ -2159,9 +2145,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: page1.updatedAt,
           },
         ],
-        suggestions: {
-          recentlyEdited: [],
-        },
+        recentlyEdited: [],
       }
       expect(result).toEqual(expected)
     })
@@ -2224,9 +2208,7 @@ describe("resource.router", async () => {
             lastUpdatedAt: collection1.updatedAt,
           },
         ],
-        suggestions: {
-          recentlyEdited: [],
-        },
+        recentlyEdited: [],
       }
       expect(result).toEqual(expected)
     })
@@ -2247,9 +2229,7 @@ describe("resource.router", async () => {
       const expected = {
         totalCount: 0,
         resources: [],
-        suggestions: {
-          recentlyEdited: [],
-        },
+        recentlyEdited: [],
       }
       expect(result).toEqual(expected)
     })
@@ -2272,15 +2252,13 @@ describe("resource.router", async () => {
       const expected = {
         totalCount: null,
         resources: [],
-        suggestions: {
-          recentlyEdited: [
-            {
-              ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-              fullPermalink: `${page1.permalink}`,
-              lastUpdatedAt: page1.updatedAt,
-            },
-          ],
-        },
+        recentlyEdited: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
       }
       expect(result).toEqual(expected)
     })
@@ -2303,15 +2281,13 @@ describe("resource.router", async () => {
       const expected = {
         totalCount: null,
         resources: [],
-        suggestions: {
-          recentlyEdited: [
-            {
-              ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-              fullPermalink: `${page1.permalink}`,
-              lastUpdatedAt: page1.updatedAt,
-            },
-          ],
-        },
+        recentlyEdited: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
       }
       expect(result).toEqual(expected)
     })
@@ -2333,20 +2309,18 @@ describe("resource.router", async () => {
       const expected = {
         totalCount: null,
         resources: [],
-        suggestions: {
-          recentlyEdited: [
-            {
-              ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-              fullPermalink: `${page1.permalink}`,
-              lastUpdatedAt: page1.updatedAt,
-            },
-          ],
-        },
+        recentlyEdited: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
       }
       expect(result).toEqual(expected)
     })
 
-    it("suggestions.recentlyEdited should be ordered by lastUpdatedAt", async () => {
+    it("recentlyEdited should be ordered by lastUpdatedAt", async () => {
       // Arrange
       const { site } = await setupSite()
       const { page: page1 } = await setupPageResource({
@@ -2371,25 +2345,23 @@ describe("resource.router", async () => {
       const expected = {
         totalCount: null,
         resources: [],
-        suggestions: {
-          recentlyEdited: [
-            {
-              ...pick(page2, RESOURCE_FIELDS_TO_PICK),
-              fullPermalink: `${page2.permalink}`,
-              lastUpdatedAt: page2.updatedAt,
-            },
-            {
-              ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-              fullPermalink: `${page1.permalink}`,
-              lastUpdatedAt: page1.updatedAt,
-            },
-          ],
-        },
+        recentlyEdited: [
+          {
+            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page2.permalink}`,
+            lastUpdatedAt: page2.updatedAt,
+          },
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
       }
       expect(result).toEqual(expected)
     })
 
-    it("suggestions.recentlyEdited should only return page-ish resources", async () => {
+    it("recentlyEdited should only return page-ish resources", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupPageResource({ resourceType: "RootPage", siteId: site.id })
@@ -2406,9 +2378,7 @@ describe("resource.router", async () => {
       const expected = {
         totalCount: null,
         resources: [],
-        suggestions: {
-          recentlyEdited: [],
-        },
+        recentlyEdited: [],
       }
       expect(result).toEqual(expected)
     })
@@ -2448,9 +2418,7 @@ describe("resource.router", async () => {
                 lastUpdatedAt: pageX.updatedAt,
               }
             }),
-          suggestions: {
-            recentlyEdited: [],
-          },
+          recentlyEdited: [],
         }
         expect(result).toEqual(expected)
       })
@@ -2496,9 +2464,7 @@ describe("resource.router", async () => {
               lastUpdatedAt: page2.updatedAt,
             },
           ],
-          suggestions: {
-            recentlyEdited: [],
-          },
+          recentlyEdited: [],
         }
         expect(result).toEqual(expected)
       })
@@ -2528,9 +2494,7 @@ describe("resource.router", async () => {
               lastUpdatedAt: page1.updatedAt,
             },
           ],
-          suggestions: {
-            recentlyEdited: [],
-          },
+          recentlyEdited: [],
         }
         expect(result).toEqual(expected)
       })
@@ -2552,9 +2516,7 @@ describe("resource.router", async () => {
         const expected = {
           totalCount: 1,
           resources: [],
-          suggestions: {
-            recentlyEdited: [],
-          },
+          recentlyEdited: [],
         }
         expect(result).toEqual(expected)
       })
@@ -2594,9 +2556,7 @@ describe("resource.router", async () => {
                 lastUpdatedAt: pageX.updatedAt,
               }
             }),
-          suggestions: {
-            recentlyEdited: [],
-          },
+          recentlyEdited: [],
         }
         expect(result).toEqual(expected)
       })

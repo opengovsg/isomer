@@ -82,7 +82,5 @@ export const searchSchema = z
 export const searchOutputSchema = z.object({
   totalCount: z.number().nullable(),
   resources: z.array(z.custom<SearchResultResource>()),
-  suggestions: z.object({
-    recentlyEdited: z.array(z.custom<SearchResultResource>()),
-  }),
+  recentlyEdited: z.array(z.custom<SearchResultResource>()),
 })
