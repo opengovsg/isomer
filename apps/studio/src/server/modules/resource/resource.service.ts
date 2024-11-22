@@ -536,8 +536,14 @@ export const getSearchResults = async ({
               // 1. Match if the search term is at the start of the title
               // 2. Match if the search term is in the middle of the title (after a space)
               sql`
-                CASE WHEN "Resource"."title" ILIKE ${searchTerm + "%"} THEN 1 ELSE 0 END +
-                CASE WHEN "Resource"."title" ILIKE ${"% " + searchTerm + "%"} THEN 1 ELSE 0 END
+                CASE
+                  WHEN (
+                    "Resource"."title" ILIKE ${searchTerm + "%"} OR
+                    "Resource"."title" ILIKE ${"% " + searchTerm + "%"}
+                  )
+                  THEN ${searchTerm.length}
+                  ELSE 0
+                END
               `,
           ),
           sql` + `,

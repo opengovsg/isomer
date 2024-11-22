@@ -2089,6 +2089,90 @@ describe("resource.router", async () => {
       expect(result).toEqual(expected)
     })
 
+    it("should rank results by not double counting ranking order for each search term", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "banana banana apple",
+        permalink: "banana-banana-apple",
+      })
+      const { page: page2 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "banana apple",
+        permalink: "banana-apple",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "banana apple",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 2,
+        resources: [
+          {
+            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page2.permalink}`,
+            lastUpdatedAt: page2.updatedAt,
+          },
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should rank results by character length of search term matches", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "looooongword",
+        permalink: "looooongword",
+      })
+      const { page: page2 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "shortword",
+        permalink: "shortword",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "shortword looooongword",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 2,
+        resources: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+          {
+            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page2.permalink}`,
+            lastUpdatedAt: page2.updatedAt,
+          },
+        ],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
     it("should not return resources that do not match the search query", async () => {
       // Arrange
       const { site } = await setupSite()
