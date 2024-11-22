@@ -42,7 +42,6 @@ const ContentSecurityPolicy = `
     https://www.google.com
     https://www.youtube.com
     https://www.youtube-nocookie.com
-    https://player.vimeo.com
     https://www.onemap.gov.sg
     https://www.facebook.com
     ;

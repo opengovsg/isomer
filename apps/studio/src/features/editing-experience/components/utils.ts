@@ -108,18 +108,14 @@ export const generatePreviewSitemap = (
   } as IsomerGeneratedSiteProps["siteMap"]
 }
 
-export const getIframeSrc = (embedCode: string) => {
+export const getIframeSrc = (embedCode: string): string | undefined => {
   const elem = DOMPurify.sanitize(embedCode, {
     ALLOWED_TAGS: ["iframe"],
     RETURN_DOM_FRAGMENT: true,
   })
   const sanitizedUrl = elem.firstElementChild?.getAttribute("src")
 
-  if (sanitizedUrl === null) {
-    return undefined
-  }
-
-  return sanitizedUrl
+  return sanitizedUrl ?? undefined
 }
 
 export const getEmbedNameFromUrl = (url: string) =>
