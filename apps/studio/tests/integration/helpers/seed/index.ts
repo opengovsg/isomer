@@ -189,6 +189,32 @@ export const setupBlob = async (blobId?: string) => {
     .executeTakeFirstOrThrow()
 }
 
+const getFallbackTitle = (resourceType: ResourceType) => {
+  switch (resourceType) {
+    case ResourceType.RootPage:
+      return "Home"
+    case ResourceType.CollectionPage:
+      return "test collection page"
+    case ResourceType.IndexPage:
+      return "test index page"
+    default:
+      return "test page"
+  }
+}
+
+const getFallbackPermalink = (resourceType: ResourceType) => {
+  switch (resourceType) {
+    case ResourceType.RootPage:
+      return ""
+    case ResourceType.CollectionPage:
+      return "test-collection-page"
+    case ResourceType.IndexPage:
+      return "test-index-page"
+    default:
+      return "test-page"
+  }
+}
+
 export const setupPageResource = async ({
   siteId: siteIdProp,
   blobId: blobIdProp,
@@ -211,32 +237,11 @@ export const setupPageResource = async ({
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
   const blob = await setupBlob(blobIdProp)
 
-  let fallbackTitle = ""
-  let fallbackPermalink = ""
-  switch (resourceType) {
-    case "RootPage":
-      fallbackTitle = "Home"
-      fallbackPermalink = ""
-      break
-    case "CollectionPage":
-      fallbackTitle = "test collection page"
-      fallbackPermalink = "test-collection-page"
-      break
-    case "IndexPage":
-      fallbackTitle = "test index page"
-      fallbackPermalink = "test-index-page"
-      break
-    default:
-      fallbackTitle = "test page"
-      fallbackPermalink = "test-page"
-      break
-  }
-
   let page = await db
     .insertInto("Resource")
     .values({
-      title: title ?? fallbackTitle,
-      permalink: permalink ?? fallbackPermalink,
+      title: title ?? getFallbackTitle(resourceType),
+      permalink: permalink ?? getFallbackPermalink(resourceType),
       siteId: site.id,
       parentId,
       publishedVersionId: null,
