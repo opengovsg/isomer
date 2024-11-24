@@ -2,7 +2,6 @@ import type {
   GoogleTagManagerBodyProps,
   GoogleTagManagerBodyScriptProps,
 } from "~/interfaces"
-import { getIsomerGoogleTagManagerId } from "./utils"
 
 // Needed in the event that the user has disabled scripts
 const GoogleTagManagerBodyScript = ({
@@ -22,8 +21,8 @@ const GoogleTagManagerBodyScript = ({
 
 export const GoogleTagManagerBody = ({
   siteGtmId,
+  isomerGtmId,
 }: GoogleTagManagerBodyProps) => {
-  const isomerGtmId: string | undefined = getIsomerGoogleTagManagerId()
   return (
     <>
       {siteGtmId && <GoogleTagManagerBodyScript gtmId={siteGtmId} />}

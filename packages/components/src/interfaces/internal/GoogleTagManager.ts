@@ -7,6 +7,7 @@ export interface GoogleTagManagerHeaderScriptProps {
 
 export interface GoogleTagManagerHeaderProps {
   siteGtmId: string | undefined
+  isomerGtmId: string | undefined
   ScriptComponent?: ScriptComponentType
 }
 
@@ -16,4 +17,5 @@ export interface GoogleTagManagerBodyScriptProps {
 
 export interface GoogleTagManagerBodyProps {
   siteGtmId: string | undefined
+  isomerGtmId: string | undefined
 }

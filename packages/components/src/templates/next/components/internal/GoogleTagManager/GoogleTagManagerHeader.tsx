@@ -2,7 +2,6 @@ import type {
   GoogleTagManagerHeaderProps,
   GoogleTagManagerHeaderScriptProps,
 } from "~/interfaces"
-import { getIsomerGoogleTagManagerId } from "./utils"
 
 const GoogleTagManagerHeaderScript = ({
   gtmId,
@@ -24,9 +23,9 @@ const GoogleTagManagerHeaderScript = ({
 
 export const GoogleTagManagerHeader = ({
   siteGtmId,
+  isomerGtmId,
   ScriptComponent,
 }: GoogleTagManagerHeaderProps) => {
-  const isomerGtmId: string | undefined = getIsomerGoogleTagManagerId()
   return (
     <>
       {siteGtmId && (

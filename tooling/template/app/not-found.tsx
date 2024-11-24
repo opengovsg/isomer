@@ -65,6 +65,7 @@ const NotFound = () => {
           // @ts-ignore to fix when types are proper
           footerItems: footer,
           assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+          isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
         }}
         layout="notfound"
         meta={{
