@@ -24,7 +24,7 @@ export interface IsomerSiteConfigProps {
   favicon?: string
   search: NavbarProps["search"]
   notification?: Omit<NotificationProps, "LinkComponent" | "site">
-  gtmId?: string
+  siteGtmId?: string
 }
 
 export type IsomerSiteProps = IsomerGeneratedSiteProps &

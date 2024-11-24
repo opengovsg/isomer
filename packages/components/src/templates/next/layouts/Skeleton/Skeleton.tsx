@@ -32,7 +32,7 @@ export const Skeleton = ({
     <>
       {shouldIncludeGTM && (
         <GoogleTagManagerHeader
-          siteGtmId={site.gtmId}
+          siteGtmId={site.siteGtmId}
           ScriptComponent={ScriptComponent}
         />
       )}
@@ -86,7 +86,7 @@ export const Skeleton = ({
       />
 
       {/* needs to be the last element in the body */}
-      {shouldIncludeGTM && <GoogleTagManagerBody siteGtmId={site.gtmId} />}
+      {shouldIncludeGTM && <GoogleTagManagerBody siteGtmId={site.siteGtmId} />}
     </>
   )
 }
