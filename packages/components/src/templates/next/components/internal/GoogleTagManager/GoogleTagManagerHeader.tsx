@@ -28,13 +28,13 @@ export const GoogleTagManagerHeader = ({
 }: GoogleTagManagerHeaderProps) => {
   return (
     <>
-      {siteGtmId && (
+      {!!siteGtmId && (
         <GoogleTagManagerHeaderScript
           gtmId={siteGtmId}
           ScriptComponent={ScriptComponent}
         />
       )}
-      {isomerGtmId && (
+      {!!isomerGtmId && (
         <GoogleTagManagerHeaderScript
           gtmId={isomerGtmId}
           ScriptComponent={ScriptComponent}

@@ -25,8 +25,8 @@ export const GoogleTagManagerBody = ({
 }: GoogleTagManagerBodyProps) => {
   return (
     <>
-      {siteGtmId && <GoogleTagManagerBodyScript gtmId={siteGtmId} />}
-      {isomerGtmId && <GoogleTagManagerBodyScript gtmId={isomerGtmId} />}
+      {!!siteGtmId && <GoogleTagManagerBodyScript gtmId={siteGtmId} />}
+      {!!isomerGtmId && <GoogleTagManagerBodyScript gtmId={isomerGtmId} />}
     </>
   )
 }
