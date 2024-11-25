@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import type { SearchResultResource } from "../server/modules/resource/resource.types"
 import {
   infiniteOffsetPaginationSchema,
   offsetPaginationSchema,
@@ -69,4 +70,17 @@ export const getFullPermalinkSchema = z.object({
 export const getAncestrySchema = z.object({
   siteId: z.string(),
   resourceId: z.string().optional(),
+})
+
+export const searchSchema = z
+  .object({
+    siteId: z.string(),
+    query: z.string().optional(),
+  })
+  .merge(infiniteOffsetPaginationSchema)
+
+export const searchOutputSchema = z.object({
+  totalCount: z.number().nullable(),
+  resources: z.array(z.custom<SearchResultResource>()),
+  recentlyEdited: z.array(z.custom<SearchResultResource>()),
 })
