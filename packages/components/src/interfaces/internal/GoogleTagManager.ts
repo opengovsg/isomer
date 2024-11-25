@@ -1,21 +1,23 @@
 import type { ScriptComponentType } from "~/types"
 
-export interface GoogleTagManagerHeaderScriptProps {
-  gtmId: string
-  ScriptComponent?: ScriptComponentType
-}
-
-export interface GoogleTagManagerHeaderProps {
-  siteGtmId?: string
-  isomerGtmId?: string
-  ScriptComponent?: ScriptComponentType
-}
-
-export interface GoogleTagManagerBodyScriptProps {
+interface GoogleTagManagerScriptProps {
   gtmId: string
 }
 
-export interface GoogleTagManagerBodyProps {
-  siteGtmId: string | undefined
-  isomerGtmId: string | undefined
+export interface GoogleTagManagerHeaderScriptProps
+  extends GoogleTagManagerScriptProps {
+  ScriptComponent?: ScriptComponentType
 }
+
+export type GoogleTagManagerBodyScriptProps = GoogleTagManagerScriptProps
+
+interface GoogleTagManagerProps {
+  siteGtmId?: GoogleTagManagerScriptProps["gtmId"]
+  isomerGtmId?: GoogleTagManagerScriptProps["gtmId"]
+}
+
+export interface GoogleTagManagerHeaderProps extends GoogleTagManagerProps {
+  ScriptComponent?: ScriptComponentType
+}
+
+export type GoogleTagManagerBodyProps = GoogleTagManagerProps
