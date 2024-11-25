@@ -166,8 +166,9 @@ aws configure set default.s3.max_concurrent_requests $S3_SYNC_CONCURRENCY
 # Set all files to have 10 minutes of cache, except for those in the _next folder
 aws s3 sync . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --delete --no-progress --cache-control "max-age=600" --exclude "_next/*"
 
-# Set all files in the _next folder to have 1 day of cache
-aws s3 sync _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=86400"
+# Set all files in the _next folder to be cached indefinitely (1 year) on users' browsers
+# Next.js uses unique content hashes in filenames, allowing updated content to have different filenames and invalidate the cache on new builds.
+aws s3 sync _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=31536000, public"
 
 calculate_duration $start_time
 

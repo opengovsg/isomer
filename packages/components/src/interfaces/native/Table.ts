@@ -6,7 +6,6 @@ import type { OrderedListProps } from "./OrderedList"
 import type { ParagraphProps } from "./Paragraph"
 import type { UnorderedListProps } from "./UnorderedList"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
-import { DividerSchema } from "./Divider"
 import { OrderedListSchema } from "./OrderedList"
 import { ParagraphSchema } from "./Paragraph"
 import { UnorderedListSchema } from "./UnorderedList"
@@ -50,7 +49,6 @@ const TableCellSchema = Type.Unsafe<TableCellProps>(
     attrs: Type.Optional(TableBaseCellSchema),
     content: Type.Array(
       Type.Union([
-        Type.Ref(DividerSchema),
         Type.Ref(ParagraphSchema),
         Type.Ref(OrderedListSchema),
         Type.Ref(UnorderedListSchema),
