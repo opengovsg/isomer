@@ -1,35 +1,6 @@
 import type { VideoProps } from "~/interfaces"
-import { VIDEO_EMBED_URL_PATTERN } from "~/utils/validation"
+import { isValidVideoUrl, VALID_VIDEO_DOMAINS } from "~/utils/validation"
 import { ComponentContent } from "../../internal/customCssClass"
-
-const VALID_VIDEO_DOMAINS = {
-  youtube: [
-    "www.youtube.com",
-    "www.youtube-nocookie.com",
-    "youtube.com",
-    "youtube-nocookie.com",
-  ],
-  vimeo: ["player.vimeo.com"],
-  fbvideo: ["www.facebook.com"],
-}
-
-const isValidVideoUrl = (url: string) => {
-  if (!url) {
-    return false
-  }
-
-  try {
-    const urlObject = new URL(url)
-    const allValidVideoDomains = Object.values(VALID_VIDEO_DOMAINS).flat()
-
-    return (
-      allValidVideoDomains.includes(urlObject.hostname) &&
-      new RegExp(VIDEO_EMBED_URL_PATTERN).test(url)
-    )
-  } catch (_) {
-    return false
-  }
-}
 
 // NOTE: We are only using the privacy-enhanced mode of YouTube embeds
 const getPrivacyEnhancedYouTubeEmbedUrl = (urlObject: URL) => {

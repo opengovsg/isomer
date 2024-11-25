@@ -1,38 +1,6 @@
 import type { MapProps } from "~/interfaces"
-import { MAPS_EMBED_URL_PATTERN } from "~/utils/validation"
+import { isValidMapEmbedUrl } from "~/utils/validation"
 import { ComponentContent } from "../../internal/customCssClass"
-
-const isValidGoogleMapsEmbedUrl = (urlObject: URL) => {
-  return (
-    urlObject.hostname === "www.google.com" &&
-    urlObject.pathname === "/maps/embed"
-  )
-}
-
-const isValidOneMapEmbedUrl = (urlObject: URL) => {
-  return (
-    urlObject.hostname === "www.onemap.gov.sg" &&
-    urlObject.pathname === "/minimap/minimap.html"
-  )
-}
-
-const isValidMapEmbedUrl = (url: string) => {
-  if (!url) {
-    return false
-  }
-
-  try {
-    const urlObject = new URL(url)
-
-    return (
-      (isValidGoogleMapsEmbedUrl(urlObject) ||
-        isValidOneMapEmbedUrl(urlObject)) &&
-      new RegExp(MAPS_EMBED_URL_PATTERN).test(url)
-    )
-  } catch (_) {
-    return false
-  }
-}
 
 export const Map = ({ title, url }: MapProps) => {
   if (!isValidMapEmbedUrl(url)) {
