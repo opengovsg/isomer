@@ -23,3 +23,7 @@ export { default as TableOfContents } from "./TableOfContents"
 export { default as UnsupportedBrowserBanner } from "./UnsupportedBrowserBanner"
 export { Wogaa } from "./Wogaa"
 export { BackToTopLink } from "./BackToTopLink"
+export {
+  GoogleTagManagerHeader,
+  GoogleTagManagerBody,
+} from "./GoogleTagManager"
