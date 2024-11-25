@@ -413,6 +413,16 @@ export const pageHandlers = {
                 title: "This is an infocols block",
                 infoBoxes: [],
               },
+              {
+                type: "map",
+                title: "Singapore region",
+                url: "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d127639.0647119137!2d103.79481771806647!3d1.343949056391766!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2ssg!4v1731681854346!5m2!1sen!2ssg",
+              },
+              {
+                type: "video",
+                title: "Rick Astley - Never Gonna Give You Up",
+                url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
+              },
             ],
             version: "0.1.0",
           },
