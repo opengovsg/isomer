@@ -38,6 +38,13 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
     props.layout === "collection"
   ) {
     metadata.description = props.page.subtitle
+  } else if (
+    metadata.description === undefined &&
+    props.layout === "homepage"
+  ) {
+    metadata.description = props.content.find(
+      (item) => item.type === "hero",
+    )?.subtitle
   }
 
   if (props.page.permalink === "/") {

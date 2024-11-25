@@ -25,6 +25,9 @@ const getPaddingForEmbed = (url: string | null) => {
   return "pt-[56.25%]"
 }
 
+/**
+ * @deprecated Replaced with individual website embed components
+ */
 const Iframe = ({ title, content }: IframeProps) => {
   const sanitizedIframe = getSanitizedIframeWithTitle(content, title)
   const iframeUrl = sanitizedIframe.getAttribute("src")

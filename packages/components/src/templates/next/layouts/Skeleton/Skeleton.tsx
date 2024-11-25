@@ -2,6 +2,8 @@ import type { IsomerPageSchemaType } from "~/engine"
 import {
   DatadogRum,
   Footer,
+  GoogleTagManagerBody,
+  GoogleTagManagerHeader,
   Masthead,
   Navbar,
   Notification,
@@ -25,8 +27,20 @@ export const Skeleton = ({
 >) => {
   const isStaging = site.environment === "staging"
 
+  const shouldIncludeGTM =
+    site.environment === "production" &&
+    (!!site.siteGtmId || !!site.isomerGtmId)
+
   return (
     <>
+      {shouldIncludeGTM && (
+        <GoogleTagManagerHeader
+          siteGtmId={site.siteGtmId}
+          isomerGtmId={site.isomerGtmId}
+          ScriptComponent={ScriptComponent}
+        />
+      )}
+
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
 
       {!isStaging && <DatadogRum />}
@@ -74,6 +88,14 @@ export const Skeleton = ({
         LinkComponent={LinkComponent}
         {...site.footerItems}
       />
+
+      {/* needs to be the last element in the body */}
+      {shouldIncludeGTM && (
+        <GoogleTagManagerBody
+          siteGtmId={site.siteGtmId}
+          isomerGtmId={site.isomerGtmId}
+        />
+      )}
     </>
   )
 }

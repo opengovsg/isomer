@@ -5,6 +5,8 @@ import {
   BiCrown,
   BiHash,
   BiImage,
+  BiMap,
+  BiMoviePlay,
   BiPointer,
   BiSolidQuoteAltLeft,
   BiText,
@@ -32,6 +34,8 @@ export const TYPE_TO_ICON: Record<
   accordion: BiChevronDown,
   hero: BiCrown,
   iframe: FaYoutube,
+  map: BiMap,
+  video: BiMoviePlay,
   // TODO: Add in these new block types
   // table: BiTable,
   // divider: DividerIcon,

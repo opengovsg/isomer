@@ -41,6 +41,13 @@ export const sitesHandlers = {
     loading: () => siteListQuery({ wait: "infinite" }),
     empty: () => siteListQuery({ isEmpty: true }),
   },
+  getSiteName: {
+    default: () => {
+      return trpcMsw.site.getSiteName.query(() => {
+        return { name: "Isomer" }
+      })
+    },
+  },
   getTheme: {
     default: () => {
       return trpcMsw.site.getTheme.query(() => {

@@ -92,9 +92,14 @@ export function renderComponentPreviewText({
         : textContentOfProse
     case "keystatistics":
       return component.title
+    case "map":
+      return component.title || "Map embed"
     case "prose":
       return getTextContentOfProse(component.content)
+    case "video":
+      return component.title || "Video embed"
     default:
+      const _: never = component
       return (component as unknown as { type: string }).type || ""
   }
 }

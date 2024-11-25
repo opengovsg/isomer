@@ -40,3 +40,13 @@ export const getIcon = (resourceType: ResourceType): IconType => {
       return BiData
   }
 }
+
+export const isAllowedToHaveLastEditedText = (
+  resourceType: ResourceType,
+): boolean => {
+  return (
+    resourceType === ResourceType.Page ||
+    resourceType === ResourceType.CollectionLink ||
+    resourceType === ResourceType.CollectionPage
+  )
+}

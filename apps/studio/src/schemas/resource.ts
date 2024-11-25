@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import type { SearchResultResource } from "../server/modules/resource/resource.types"
 import type { ResourceType } from "~prisma/generated/generatedEnums"
 import {
   infiniteOffsetPaginationSchema,
@@ -83,3 +84,16 @@ export interface ResourceChildrenOfType {
   items: ResourceItemContent[]
   nextOffset: number | null
 }
+
+export const searchSchema = z
+  .object({
+    siteId: z.string(),
+    query: z.string().optional(),
+  })
+  .merge(infiniteOffsetPaginationSchema)
+
+export const searchOutputSchema = z.object({
+  totalCount: z.number().nullable(),
+  resources: z.array(z.custom<SearchResultResource>()),
+  recentlyEdited: z.array(z.custom<SearchResultResource>()),
+})
