@@ -1,6 +1,7 @@
 import {
   getConfigSchema,
   getLocalisedSitemapSchema,
+  getNameSchema,
   getNotificationSchema,
   setNotificationSchema,
 } from "~/schemas/site"
@@ -32,6 +33,21 @@ export const siteRouter = router({
       .groupBy(["Site.id", "Site.name", "Site.config"])
       .execute()
   }),
+  getSiteName: protectedProcedure
+    .input(getNameSchema)
+    .query(async ({ ctx, input: { siteId } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      return db
+        .selectFrom("Site")
+        .where("Site.id", "=", siteId)
+        .select("name")
+        .executeTakeFirstOrThrow()
+    }),
   getConfig: protectedProcedure
     .input(getConfigSchema)
     .query(async ({ ctx, input }) => {
