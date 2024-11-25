@@ -1,7 +1,31 @@
 import { type IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 
+import type {
+  CrudResourceActions,
+  PermissionsProps,
+} from "../permissions/permissions.type"
 import { db, jsonb, sql } from "../database"
+import { definePermissionsForSite } from "../permissions/permissions.service"
+
+export const validateUserPermissionsForSite = async ({
+  siteId,
+  userId,
+  action,
+}: Omit<PermissionsProps, "resourceId"> & { action: CrudResourceActions }) => {
+  const perms = await definePermissionsForSite({
+    siteId,
+    userId,
+  })
+
+  // TODO: create should check against the current resource id
+  if (perms.cannot(action, "Site")) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You do not have sufficient permissions to perform this action",
+    })
+  }
+}
 
 export const getSiteConfig = async (siteId: number) => {
   const { config } = await db
