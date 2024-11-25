@@ -85,7 +85,7 @@ export const Searchbar = ({ siteId }: { siteId: string }) => {
   }, [onOpen])
 
   return (
-    <Box id="hello">
+    <>
       <SearchModal
         key={String(isOpen)}
         isOpen={isOpen}
@@ -93,6 +93,6 @@ export const Searchbar = ({ siteId }: { siteId: string }) => {
         siteId={siteId}
       />
       <SearchButton onClick={onOpen} />
-    </Box>
+    </>
   )
 }
