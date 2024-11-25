@@ -9,6 +9,7 @@ export const VideoSchema = Type.Object(
     url: Type.String({
       title: "Video to embed",
       pattern: VIDEO_EMBED_URL_PATTERN,
+      format: "embed",
     }),
     title: Type.String({
       title: "Label for screen readers",

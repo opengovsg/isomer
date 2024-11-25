@@ -279,6 +279,7 @@ type AllowedBlockSections = {
 
 export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
   { label: "Basic building blocks", types: ["prose", "image", "callout"] },
+  { label: "Embed external content", types: ["map", "video"] },
 ]
 
 export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
@@ -287,6 +288,7 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
     label: "Organise complex content",
     types: ["contentpic", "infocards", "accordion", "infocols"],
   },
+  { label: "Embed external content", types: ["map", "video"] },
 ]
 export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {

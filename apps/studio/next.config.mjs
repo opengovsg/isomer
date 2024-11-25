@@ -36,10 +36,14 @@ const ContentSecurityPolicy = `
   frame-src
     'self'
     https://intercom-sheets.com
-    https://www.intercom-reporting.com 
-    https://www.youtube.com
+    https://www.intercom-reporting.com
     https://player.vimeo.com
     https://fast.wistia.net
+    https://www.google.com
+    https://www.youtube.com
+    https://www.youtube-nocookie.com
+    https://www.onemap.gov.sg
+    https://www.facebook.com
     ;
   object-src 'none';
   script-src
@@ -63,7 +67,6 @@ const ContentSecurityPolicy = `
     ;
   connect-src
     'self'
-    https://schema.isomer.gov.sg
     https://browser-intake-datadoghq.com
     https://*.browser-intake-datadoghq.com
     https://vitals.vercel-insights.com
@@ -78,19 +81,19 @@ const ContentSecurityPolicy = `
     https://api.eu.intercom.io
     https://api-iam.intercom.io
     https://api-iam.eu.intercom.io
-    https://api-iam.au.intercom.io 
-    https://api-ping.intercom.io  
+    https://api-iam.au.intercom.io
+    https://api-ping.intercom.io
     https://nexus-websocket-a.intercom.io
     wss://nexus-websocket-a.intercom.io
     https://nexus-websocket-b.intercom.io
     wss://nexus-websocket-b.intercom.io
-    https://nexus-europe-websocket.intercom.io 
-    wss://nexus-europe-websocket.intercom.io 
+    https://nexus-europe-websocket.intercom.io
+    wss://nexus-europe-websocket.intercom.io
     https://nexus-australia-websocket.intercom.io
-    wss://nexus-australia-websocket.intercom.io 
+    wss://nexus-australia-websocket.intercom.io
     https://uploads.intercomcdn.com
-    https://uploads.intercomcdn.eu 
-    https://uploads.au.intercomcdn.com 
+    https://uploads.intercomcdn.eu
+    https://uploads.au.intercomcdn.com
     https://uploads.eu.intercomcdn.com
     https://uploads.intercomusercontent.com
     ;
@@ -98,7 +101,7 @@ const ContentSecurityPolicy = `
     'self'
     blob:
     https://intercom-sheets.com
-    https://www.intercom-reporting.com 
+    https://www.intercom-reporting.com
     https://www.youtube.com
     https://player.vimeo.com
     https://fast.wistia.net
