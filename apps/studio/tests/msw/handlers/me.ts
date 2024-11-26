@@ -8,7 +8,6 @@ export const defaultUser: User = {
   email: "test@example.com",
   name: "Test User",
   phone: "12345678",
-  preferredName: "test",
   createdAt: new Date(),
   updatedAt: new Date(),
 }
