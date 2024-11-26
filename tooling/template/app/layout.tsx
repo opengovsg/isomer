@@ -4,6 +4,8 @@ import "@/styles/globals.css"
 
 import type { Metadata } from "next"
 
+export const dynamic = "force-static"
+
 export const metadata: Metadata = {
   title: {
     template: "%s | " + config.site.siteName,
