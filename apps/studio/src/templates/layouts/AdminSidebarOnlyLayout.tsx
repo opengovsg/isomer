@@ -6,8 +6,9 @@ import { z } from "zod"
 
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
-import { CmsSidebar, CmsSidebarOnlyContainer } from "~/components/CmsSidebar"
+import { CmsSidebar, CmsSidebarContainer } from "~/components/CmsSidebar"
 import { LayoutHead } from "~/components/LayoutHead"
+import { SearchableHeader } from "~/components/SearchableHeader"
 import { useMe } from "~/features/me/api"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type GetLayout } from "~/lib/types"
@@ -68,12 +69,13 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
   ]
 
   return (
-    <CmsSidebarOnlyContainer
+    <CmsSidebarContainer
       sidebar={
         <CmsSidebar topNavItems={pageNavItems} bottomNavItems={userNavItems} />
       }
+      header={<SearchableHeader siteId={siteId} />}
     >
       {children}
-    </CmsSidebarOnlyContainer>
+    </CmsSidebarContainer>
   )
 }
