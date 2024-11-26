@@ -1,9 +1,6 @@
-import type { PropsWithChildren } from "react"
-
 import type { ImageProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
-import { Link } from "../../internal/Link"
+import { isExternalUrl } from "~/utils"
 import { ImageClient } from "./ImageClient"
 
 const createImageStyles = tv({
@@ -37,45 +34,14 @@ const getSizeWidth = (size: ImageProps["size"]) => {
   }
 }
 
-const ImageContainer = ({
-  href,
-  LinkComponent,
-  children,
-}: PropsWithChildren<Pick<ImageProps, "href" | "LinkComponent">>) => (
-  <div className={compoundStyles.container()}>
-    {href !== undefined ? (
-      <Link
-        href={href}
-        isExternal={isExternalUrl(href)}
-        LinkComponent={LinkComponent}
-      >
-        {children}
-      </Link>
-    ) : (
-      <>{children}</>
-    )}
-  </div>
-)
-
-export const Image = ({
-  src,
-  alt,
-  caption,
-  size,
-  href,
-  site,
-  LinkComponent,
-}: ImageProps) => {
+export const Image = ({ src, alt, caption, size, site }: ImageProps) => {
   const imgSrc =
     isExternalUrl(src) || site.assetsBaseUrl === undefined
       ? src
       : `${site.assetsBaseUrl}${src}`
 
   return (
-    <ImageContainer
-      href={getReferenceLinkHref(href, site.siteMap, site.assetsBaseUrl)}
-      LinkComponent={LinkComponent}
-    >
+    <div className={compoundStyles.container()}>
       <ImageClient
         src={imgSrc}
         alt={alt}
@@ -85,6 +51,6 @@ export const Image = ({
       />
 
       {caption && <p className={compoundStyles.caption()}>{caption}</p>}
-    </ImageContainer>
+    </div>
   )
 }
