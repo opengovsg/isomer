@@ -24,6 +24,13 @@ const BasePageMetaSchema = Type.Composite([
         default: false,
       }),
     ),
+    image: Type.Optional(
+      Type.String({
+        title: "Meta image",
+        description: "This is the image that appears on social media.",
+        format: "image",
+      }),
+    ),
   }),
 ])
 

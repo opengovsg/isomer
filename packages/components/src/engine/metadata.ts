@@ -1,12 +1,75 @@
 import type { IsomerPageSchemaType, IsomerSitemap } from "~/types"
 import { getSitemapAsArray } from "~/utils"
 
+const getMetaDescription = (props: IsomerPageSchemaType) => {
+  if (props.meta?.description) {
+    return props.meta.description
+  }
+
+  switch (props.layout) {
+    case "article":
+      return props.page.articlePageHeader.summary
+    case "content":
+    case "database":
+    case "index":
+      return props.page.contentPageHeader.summary
+    case "collection":
+      return props.page.subtitle
+    case "homepage":
+      return props.content.find((item) => item.type === "hero")?.subtitle
+    case "file":
+    case "link":
+    case "search":
+    case "notfound":
+      // NOTE: These pages do not appear in search results, so we don't need to
+      // provide a meta description
+      return undefined
+    default:
+      const _: never = props
+      return undefined
+  }
+}
+
+const getMetaImage = (props: IsomerPageSchemaType) => {
+  switch (props.layout) {
+    case "article":
+      return props.page.image?.src || props.meta?.image
+    case "content":
+    case "database":
+    case "index":
+    case "collection":
+      return props.meta?.image
+    case "homepage":
+      return (
+        props.content.find((item) => item.type === "hero")?.backgroundUrl ||
+        props.meta?.image
+      )
+    case "file":
+    case "link":
+    case "search":
+    case "notfound":
+      // NOTE: These pages do not appear in search results, so we don't need to
+      // provide a meta description
+      return undefined
+    default:
+      const _: never = props
+      return undefined
+  }
+}
+
 export const getMetadata = (props: IsomerPageSchemaType) => {
   const faviconUrl = `${props.site.assetsBaseUrl ?? ""}${props.site.favicon || "/favicon.ico"}`
+  const fullUrl = props.site.url
+    ? new URL(props.page.permalink, props.site.url).toString()
+    : props.page.permalink
+  const metaImage = getMetaImage(props)
+  const metaImageUrl = metaImage
+    ? `${props.site.assetsBaseUrl ?? ""}${metaImage}`
+    : undefined
 
   const metadata = {
     metadataBase: props.site.url ? new URL(props.site.url) : undefined,
-    description: props.meta?.description || undefined,
+    description: getMetaDescription(props),
     robots: {
       index:
         props.layout !== "file" &&
@@ -19,32 +82,23 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
       icon: faviconUrl,
       shortcut: faviconUrl,
     },
+    openGraph: {
+      title: props.page.title,
+      description: getMetaDescription(props),
+      url: fullUrl,
+      siteName: props.site.siteName,
+      type: props.layout === "article" ? "article" : "website",
+      images: !!metaImageUrl
+        ? [
+            {
+              url: metaImageUrl,
+            },
+          ]
+        : undefined,
+    },
     twitter: {
       card: "summary_large_image" as const,
     },
-  }
-
-  if (metadata.description === undefined && props.layout === "article") {
-    metadata.description = props.page.articlePageHeader.summary
-  } else if (
-    metadata.description === undefined &&
-    (props.layout === "content" ||
-      props.layout === "database" ||
-      props.layout === "index")
-  ) {
-    metadata.description = props.page.contentPageHeader.summary
-  } else if (
-    metadata.description === undefined &&
-    props.layout === "collection"
-  ) {
-    metadata.description = props.page.subtitle
-  } else if (
-    metadata.description === undefined &&
-    props.layout === "homepage"
-  ) {
-    metadata.description = props.content.find(
-      (item) => item.type === "hero",
-    )?.subtitle
   }
 
   if (props.page.permalink === "/") {
