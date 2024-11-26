@@ -14,15 +14,23 @@ import {
   getParentSchema,
   listResourceSchema,
   moveSchema,
+  searchOutputSchema,
+  searchSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
-import { db, ResourceType, sql } from "../database"
+import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
   definePermissionsForResource,
   validateUserPermissionsForResource,
 } from "../permissions/permissions.service"
+import { validateUserPermissionsForSite } from "../site/site.service"
+import {
+  getSearchRecentlyEdited,
+  getSearchResults,
+  getWithFullPermalink,
+} from "./resource.service"
 
 const fetchResource = async (resourceId: string | null) => {
   if (resourceId === null) return { parentId: null }
@@ -434,37 +442,7 @@ export const resourceRouter = router({
   getWithFullPermalink: protectedProcedure
     .input(getFullPermalinkSchema)
     .query(async ({ input: { resourceId } }) => {
-      const result = await db
-        .withRecursive("resourcePath", (eb) =>
-          eb
-            .selectFrom("Resource as r")
-            .select([
-              "r.id",
-              "r.title",
-              "r.permalink",
-              "r.parentId",
-              "r.permalink as fullPermalink",
-            ])
-            .where("r.parentId", "is", null)
-            .unionAll(
-              eb
-                .selectFrom("Resource as s")
-                .innerJoin("resourcePath as rp", "s.parentId", "rp.id")
-                .select([
-                  "s.id",
-                  "s.title",
-                  "s.permalink",
-                  "s.parentId",
-                  sql<string>`CONCAT(rp."fullPermalink", '/', s.permalink)`.as(
-                    "fullPermalink",
-                  ),
-                ]),
-            ),
-        )
-        .selectFrom("resourcePath as rp")
-        .select(["rp.id", "rp.title", "rp.fullPermalink"])
-        .where("rp.id", "=", resourceId)
-        .executeTakeFirst()
+      const result = await getWithFullPermalink({ resourceId })
 
       if (!result) {
         throw new TRPCError({ code: "NOT_FOUND" })
@@ -535,4 +513,40 @@ export const resourceRouter = router({
 
       return ancestors.reverse().slice(0, -1)
     }),
+
+  search: protectedProcedure
+    .input(searchSchema)
+    .output(searchOutputSchema)
+    .query(
+      async ({ ctx, input: { siteId, query = "", cursor: offset, limit } }) => {
+        await validateUserPermissionsForSite({
+          siteId: Number(siteId),
+          userId: ctx.user.id,
+          action: "read",
+        })
+
+        // check if the query is only whitespaces (including multiple spaces)
+        if (query.trim() === "") {
+          return {
+            totalCount: null,
+            resources: [],
+            recentlyEdited: await getSearchRecentlyEdited({
+              siteId: Number(siteId),
+            }),
+          }
+        }
+
+        const searchResults = await getSearchResults({
+          siteId: Number(siteId),
+          query,
+          offset,
+          limit,
+        })
+        return {
+          totalCount: Number(searchResults.totalCount),
+          resources: searchResults.resources,
+          recentlyEdited: [],
+        }
+      },
+    ),
 })

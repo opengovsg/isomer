@@ -15,12 +15,12 @@ import { Button, IconButton } from "@opengovsg/design-system-react"
 import { omit } from "lodash"
 import { BiTrash } from "react-icons/bi"
 
-import type { LinkTypes } from "../../../LinkEditor/constants"
+import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
 import { LinkEditorModal } from "~/components/PageEditor/LinkEditorModal"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
-import { LINK_TYPES } from "../../../LinkEditor/constants"
+import { LINK_TYPES, LINK_TYPES_MAPPING } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
 
 export const jsonFormsRefControlTester: RankedTester = rankWith(
@@ -28,14 +28,13 @@ export const jsonFormsRefControlTester: RankedTester = rankWith(
   and(schemaMatches((schema) => schema.format === "ref")),
 )
 
-const parseHref = (
-  href: string,
-  pageType: Omit<LinkTypes, "email" | "page">,
-) => {
-  if (pageType === "file") {
-    return href.split("/").pop()
+const parseHref = (href: string, pageType: LinkTypesWithHrefFormat) => {
+  switch (pageType) {
+    case LINK_TYPES.File:
+      return href.split("/").pop()
+    default:
+      return href
   }
-  return href
 }
 
 const SuspendableLabel = ({ resourceId }: { resourceId: string }) => {
@@ -44,7 +43,13 @@ const SuspendableLabel = ({ resourceId }: { resourceId: string }) => {
       resourceId,
     })
 
-  return <Text>{`/${fullPermalink}`}</Text>
+  return (
+    <Text
+      textOverflow="ellipsis"
+      whiteSpace="nowrap"
+      overflow="auto"
+    >{`/${fullPermalink}`}</Text>
+  )
 }
 
 export function JsonFormsRefControl({
@@ -52,16 +57,18 @@ export function JsonFormsRefControl({
   handleChange,
   path,
   label,
-  errors,
 }: ControlProps) {
   const dataString = data && typeof data === "string" ? data : ""
   const { isOpen, onOpen, onClose } = useDisclosure()
   const pageType = getLinkHrefType(dataString)
-  const displayedHref = parseHref(dataString, pageType)
+  const displayedHref = parseHref(
+    dataString,
+    pageType as LinkTypesWithHrefFormat,
+  )
 
   return (
     <>
-      <Box as={FormControl} isInvalid={!!errors}>
+      <Box as={FormControl}>
         <FormLabel>{label}</FormLabel>
         <Flex
           px="1rem"
@@ -73,8 +80,8 @@ export function JsonFormsRefControl({
         >
           {!!data ? (
             <>
-              {pageType !== "page" && <Text>{displayedHref}</Text>}
-              {pageType === "page" && dataString.length > 0 && (
+              {pageType !== LINK_TYPES.Page && <Text>{displayedHref}</Text>}
+              {pageType === LINK_TYPES.Page && dataString.length > 0 && (
                 <Suspense fallback={<Skeleton w="100%" h="100%" />}>
                   <SuspendableLabel
                     resourceId={getResourceIdFromReferenceLink(dataString)}
@@ -93,15 +100,21 @@ export function JsonFormsRefControl({
           ) : (
             <>
               <Text>Choose a page or file to link this Collection item to</Text>
-              <Button onClick={onOpen} variant="link">
-                <Text textStyle="subhead-2">Link something...</Text>
+              <Button
+                onClick={onOpen}
+                variant="link"
+                aria-labelledby="button-label"
+              >
+                <Text id="button-label" textStyle="subhead-2">
+                  Link something...
+                </Text>
               </Button>{" "}
             </>
           )}
         </Flex>
       </Box>
       <LinkEditorModal
-        linkTypes={omit(LINK_TYPES, "email")}
+        linkTypes={omit(LINK_TYPES_MAPPING, LINK_TYPES.Email)}
         linkText="Link"
         isOpen={isOpen}
         onClose={onClose}

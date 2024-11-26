@@ -3,6 +3,7 @@ export { default as BaseParagraph } from "./BaseParagraph"
 export { default as Breadcrumb } from "./Breadcrumb"
 export { CollectionCard } from "./CollectionCard"
 export { Checkbox, CheckboxGroup } from "./Checkbox"
+export { default as ChildrenPages } from "./ChildrenPages"
 export { default as CollectionSearch } from "./CollectionSearch"
 export { default as ContentPageHeader } from "./ContentPageHeader"
 export { DatadogRum } from "./DatadogRum"
@@ -22,3 +23,7 @@ export { default as TableOfContents } from "./TableOfContents"
 export { default as UnsupportedBrowserBanner } from "./UnsupportedBrowserBanner"
 export { Wogaa } from "./Wogaa"
 export { BackToTopLink } from "./BackToTopLink"
+export {
+  GoogleTagManagerHeader,
+  GoogleTagManagerBody,
+} from "./GoogleTagManager"

@@ -16,11 +16,13 @@ import {
   InfoColsSchema,
   InfopicSchema,
   KeyStatisticsSchema,
+  MapSchema,
   OrderedListSchema,
   ParagraphSchema,
   ProseSchema,
   TableSchema,
   UnorderedListSchema,
+  VideoSchema,
 } from "~/interfaces"
 
 export const IsomerComplexComponentsMap = {
@@ -35,6 +37,8 @@ export const IsomerComplexComponentsMap = {
   infopic: InfopicSchema,
   contentpic: ContentpicSchema,
   keystatistics: KeyStatisticsSchema,
+  map: MapSchema,
+  video: VideoSchema,
 }
 
 export const IsomerNativeComponentsMap = {

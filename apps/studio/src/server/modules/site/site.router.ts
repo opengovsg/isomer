@@ -1,19 +1,13 @@
-import { TRPCError } from "@trpc/server"
-
-import type {
-  CrudResourceActions,
-  PermissionsProps,
-} from "../permissions/permissions.type"
 import {
   getConfigSchema,
   getLocalisedSitemapSchema,
+  getNameSchema,
   getNotificationSchema,
   setNotificationSchema,
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
 import { db } from "../database"
-import { definePermissionsForSite } from "../permissions/permissions.service"
 import {
   getFooter,
   getLocalisedSitemap,
@@ -25,37 +19,35 @@ import {
   getSiteConfig,
   getSiteTheme,
   setSiteNotification,
+  validateUserPermissionsForSite,
 } from "./site.service"
 
-const validateUserPermissionsForSite = async ({
-  siteId,
-  userId,
-  action,
-}: Omit<PermissionsProps, "resourceId"> & { action: CrudResourceActions }) => {
-  const perms = await definePermissionsForSite({
-    siteId,
-    userId,
-  })
-
-  // TODO: create should check against the current resource id
-  if (perms.cannot(action, "Site")) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "You do not have sufficient permissions to perform this action",
-    })
-  }
-}
-
 export const siteRouter = router({
-  list: protectedProcedure.query(() => {
-    return (
-      db
-        .selectFrom("Site")
-        // TODO: Only return sites that the user has access to
-        .select(["Site.id", "Site.name", "Site.config"])
-        .execute()
-    )
+  list: protectedProcedure.query(async ({ ctx }) => {
+    // NOTE: Any role should be able to read site
+    return db
+      .selectFrom("Site")
+      .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
+      .where("ResourcePermission.userId", "=", ctx.user.id)
+      .select(["Site.id", "Site.name", "Site.config"])
+      .groupBy(["Site.id", "Site.name", "Site.config"])
+      .execute()
   }),
+  getSiteName: protectedProcedure
+    .input(getNameSchema)
+    .query(async ({ ctx, input: { siteId } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      return db
+        .selectFrom("Site")
+        .where("Site.id", "=", siteId)
+        .select("name")
+        .executeTakeFirstOrThrow()
+    }),
   getConfig: protectedProcedure
     .input(getConfigSchema)
     .query(async ({ ctx, input }) => {

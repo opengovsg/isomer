@@ -4,6 +4,7 @@ import type { MenubarDetailedListProps } from "./DetailedList"
 import type { MenubarDividerProps } from "./Divider"
 import type { MenubarHorizontalListProps } from "./HorizontalList"
 import type { MenubarItemProps } from "./Item"
+import type { MenubarOverflowListProps } from "./OverflowList"
 import type { MenubarVerticalListProps } from "./VerticalList"
 
 export interface MenubarNestedItem {
@@ -24,3 +25,4 @@ export type PossibleMenubarItemProps =
   | MenubarHorizontalListProps
   | MenubarDetailedListProps
   | MenubarItemProps
+  | MenubarOverflowListProps

@@ -34,7 +34,7 @@ export function AppNavbar(): JSX.Element {
           transition="margin 0.1s"
         >
           <Image
-            src="/assets/isomer-logo.svg"
+            src="/assets/isomer-logo-color.svg"
             height={24}
             width={22}
             alt="Isomer Logo"

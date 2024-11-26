@@ -1,7 +1,7 @@
 import type { IndexPageSchemaType } from "~/engine"
 import { tv } from "~/lib/tv"
 import { getBreadcrumbFromSiteMap } from "~/utils"
-import { ContentPageHeader } from "../../components/internal"
+import { ChildrenPages, ContentPageHeader } from "../../components/internal"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
 
@@ -10,7 +10,7 @@ const createIndexPageLayoutStyles = tv({
     container:
       "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-6 xl:gap-10",
     siderailContainer: "relative col-span-3 hidden lg:block",
-    content: "col-span-12 flex max-w-[54rem] flex-col gap-16",
+    content: "col-span-12 max-w-[54rem]",
   },
 })
 
@@ -53,6 +53,13 @@ const IndexPageLayout = ({
             site,
             LinkComponent,
           })}
+
+          <ChildrenPages
+            permalink={page.permalink}
+            layout={layout}
+            site={site}
+            LinkComponent={LinkComponent}
+          />
         </div>
       </div>
     </Skeleton>

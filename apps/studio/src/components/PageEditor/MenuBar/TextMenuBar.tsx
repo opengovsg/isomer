@@ -13,7 +13,7 @@ import {
   BiUnderline,
   BiWrench,
 } from "react-icons/bi"
-import { MdSubscript, MdSuperscript } from "react-icons/md"
+import { MdHorizontalRule, MdSubscript, MdSuperscript } from "react-icons/md"
 
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import {
@@ -128,22 +128,6 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         isActive: () => editor.isActive("strike"),
       },
       {
-        type: "item",
-        icon: MdSuperscript,
-        title: "Superscript",
-        action: () =>
-          editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
-        isActive: () => editor.isActive("superscript"),
-      },
-      {
-        type: "item",
-        icon: MdSubscript,
-        title: "Subscript",
-        action: () =>
-          editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
-        isActive: () => editor.isActive("subscript"),
-      },
-      {
         type: "horizontal-list",
         label: "Lists",
         defaultIcon: BiListOl,
@@ -251,6 +235,35 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
             icon: BiCog,
             title: "Table settings",
             action: onTableSettingsModalOpen,
+          },
+        ],
+      },
+      // Lesser-used commands are kept inside the overflow items list
+      {
+        type: "overflow-list",
+        items: [
+          {
+            type: "item",
+            icon: MdSuperscript,
+            title: "Superscript",
+            action: () =>
+              editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
+            isActive: () => editor.isActive("superscript"),
+          },
+          {
+            type: "item",
+            icon: MdSubscript,
+            title: "Subscript",
+            action: () =>
+              editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
+            isActive: () => editor.isActive("subscript"),
+          },
+          {
+            type: "item",
+            icon: MdHorizontalRule,
+            title: "Divider",
+            action: () => editor.chain().focus().setHorizontalRule().run(),
+            isActive: () => editor.isActive("divider"),
           },
         ],
       },
