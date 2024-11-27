@@ -14,6 +14,7 @@ polyfill()
 export const BaseParagraph = ({
   content,
   className,
+  attrs,
   id,
   site,
   LinkComponent,
@@ -48,7 +49,10 @@ export const BaseParagraph = ({
       content={isContentEmpty ? "<br />" : content}
       transform={transform}
       tagName="p"
-      attributes={isAttributesPresent ? { id } : undefined}
+      attributes={{
+        ...(isAttributesPresent && { id }),
+        ...(attrs?.dir && { dir: attrs.dir }),
+      }}
     />
   )
 }
