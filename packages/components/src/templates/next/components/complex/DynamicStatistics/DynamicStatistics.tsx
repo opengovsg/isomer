@@ -1,9 +1,16 @@
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from "@tanstack/react-query"
+
 import type { DynamicStatisticsProps } from "~/interfaces"
+import { NUMBER_OF_STATISTICS } from "~/interfaces"
 import { ComponentContent } from "../../internal/customCssClass"
 import { getSingaporeDateLong, getSingaporeDateYYYYMMDD } from "./utils"
 
 interface DynamicStatisticsUIProps {
-  title: string
+  title?: string
   statistics: { label: string; value: string }[]
   url?: string
   label?: string
@@ -32,15 +39,19 @@ export const DynamicStatisticsUI = ({
             <div className="prose-headline-base-medium">
               {getSingaporeDateLong()}
             </div>
-            <div className="text-base-divider-strong">|</div>
-            <div className="prose-headline-base-medium">{title}</div>
+            {title && (
+              <>
+                <div className="text-base-divider-strong">|</div>
+                <div className="prose-headline-base-medium">{title}</div>
+              </>
+            )}
           </div>
           {shouldRenderUrl && (
             <div className="hidden md:block">{renderUrl()}</div>
           )}
         </div>
         <div className="grid grid-cols-3 gap-y-1 md:flex md:justify-between md:justify-items-center lg:col-span-8 lg:col-start-5">
-          {statistics.map((statistic) => (
+          {statistics.slice(0, NUMBER_OF_STATISTICS).map((statistic) => (
             <div className="flex w-fit flex-col items-start justify-center gap-0.5 py-3 md:items-center">
               <div className="prose-body-sm">{statistic.label}</div>
               <div className="prose-headline-lg-medium">{statistic.value}</div>
@@ -55,19 +66,55 @@ export const DynamicStatisticsUI = ({
   )
 }
 
+const DynamicStatisticsContent = ({
+  apiEndpoint,
+  title,
+  statistics,
+  url,
+  label,
+}: Omit<DynamicStatisticsProps, "type">) => {
+  const { isPending, error, data } = useQuery({
+    queryKey: [getSingaporeDateYYYYMMDD()],
+    queryFn: async () => {
+      const response = await fetch(apiEndpoint)
+      return (await response.json()) as Record<string, object | string>
+    },
+  })
+
+  if (isPending || error || statistics.length !== NUMBER_OF_STATISTICS)
+    return <DynamicStatisticsUI statistics={[]} url={url} label={label} />
+
+  const values = data[getSingaporeDateYYYYMMDD()] as Record<string, string>
+  return (
+    <DynamicStatisticsUI
+      title={values[title.key]}
+      statistics={statistics.map((statistic) => ({
+        label: statistic.label,
+        value: values[statistic.key] || "-- : --",
+      }))}
+      url={url}
+      label={label}
+    />
+  )
+}
+
+const queryClient = new QueryClient()
 export const DynamicStatistics = ({
   apiEndpoint,
   title,
   statistics,
-  url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  label = "View all dates",
+  url,
+  label,
 }: DynamicStatisticsProps) => {
   return (
-    <DynamicStatisticsUI
-      title="placeholder title"
-      statistics={[]}
-      url={url}
-      label={label}
-    />
+    <QueryClientProvider client={queryClient}>
+      <DynamicStatisticsContent
+        apiEndpoint={apiEndpoint}
+        title={title}
+        statistics={statistics}
+        url={url}
+        label={label}
+      />
+    </QueryClientProvider>
   )
 }

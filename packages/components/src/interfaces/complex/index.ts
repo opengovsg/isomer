@@ -14,6 +14,7 @@ export { MapSchema, type MapProps } from "./Map"
 export { VideoSchema, type VideoProps } from "./Video"
 export {
   DYNAMIC_STATISTICS_TYPE,
+  NUMBER_OF_STATISTICS,
   DynamicStatisticsSchema,
   type DynamicStatisticsProps,
 } from "./DynamicStatistics"
