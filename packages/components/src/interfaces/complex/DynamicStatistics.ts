@@ -3,6 +3,11 @@ import { Type } from "@sinclair/typebox"
 
 export const DYNAMIC_STATISTICS_TYPE = "dynamicstatistics"
 
+// Hardcoded for now because
+// 1. MUIS is the only use case and there's always 6 prayer timeslots
+// 2. No other known use cases have been identified
+export const NUMBER_OF_STATISTICS = 6
+
 export const DynamicStatisticsSchema = Type.Object(
   {
     type: Type.Literal(DYNAMIC_STATISTICS_TYPE, {
@@ -35,8 +40,8 @@ export const DynamicStatisticsSchema = Type.Object(
       }),
       {
         title: "Statistics",
-        minItems: 6,
-        maxItems: 6,
+        minItems: NUMBER_OF_STATISTICS,
+        maxItems: NUMBER_OF_STATISTICS,
       },
     ),
     label: Type.Optional(
