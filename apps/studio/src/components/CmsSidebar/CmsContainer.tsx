@@ -1,7 +1,7 @@
 import type { ReactElement, ReactNode } from "react"
 import { Box, Grid, GridItem } from "@chakra-ui/react"
 
-export interface CmsSidebarContainerProps {
+export interface CmsContainerProps {
   children: ReactNode
   sidebar: ReactElement
   sidenav: ReactElement
@@ -13,7 +13,7 @@ export function CmsContainer({
   sidebar,
   sidenav,
   header,
-}: CmsSidebarContainerProps) {
+}: CmsContainerProps) {
   return (
     <Grid
       templateAreas={`'header header header'
