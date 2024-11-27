@@ -35,7 +35,7 @@ export const DynamicStatisticsSchema = Type.Object(
       }),
       {
         title: "Statistics",
-        minItems: 1,
+        minItems: 6,
         maxItems: 6,
       },
     ),
