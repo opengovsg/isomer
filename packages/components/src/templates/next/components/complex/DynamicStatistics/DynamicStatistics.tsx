@@ -1,17 +1,18 @@
 import type { DynamicStatisticsProps } from "~/interfaces"
 import { ComponentContent } from "../../internal/customCssClass"
 
-const DynamicStatisticsUI = ({
-  title,
-  statistics,
-  url,
-  label,
-}: {
+interface DynamicStatisticsUIProps {
   title: string
   statistics: { label: string; value: string }[]
   url?: string
   label?: string
-}) => {
+}
+export const DynamicStatisticsUI = ({
+  title,
+  statistics,
+  url,
+  label,
+}: DynamicStatisticsUIProps) => {
   const shouldRenderUrl: boolean = !!url && !!label
   const renderUrl = (): React.ReactNode => {
     return (
@@ -56,15 +57,8 @@ export const DynamicStatistics = ({
 }: DynamicStatisticsProps) => {
   return (
     <DynamicStatisticsUI
-      title="1 January 2025 | 1 Rejab 1446H"
-      statistics={[
-        { label: "Subuh", value: "5:43am" },
-        { label: "Syuruk", value: "7:07am" },
-        { label: "Zohor", value: "1:09pm" },
-        { label: "Asar", value: "4.33pm" },
-        { label: "Maghrib", value: "7.10pm" },
-        { label: "Isyak", value: "8.25pm" },
-      ]}
+      title="placeholder title"
+      statistics={[]}
       url={url}
       label={label}
     />
