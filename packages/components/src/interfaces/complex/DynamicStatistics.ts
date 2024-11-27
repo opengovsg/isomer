@@ -1,6 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
+
 export const DYNAMIC_STATISTICS_TYPE = "dynamicstatistics"
 
 // Hardcoded for now because
@@ -77,4 +79,7 @@ export const DynamicStatisticsSchema = Type.Object(
   },
 )
 
-export type DynamicStatisticsProps = Static<typeof DynamicStatisticsSchema>
+export type DynamicStatisticsProps = Static<typeof DynamicStatisticsSchema> & {
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
+}

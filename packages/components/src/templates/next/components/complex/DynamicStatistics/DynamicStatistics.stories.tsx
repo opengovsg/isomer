@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import { DynamicStatisticsUI } from "./DynamicStatistics"
+import { DynamicStatisticsUI } from "./DynamicStatisticsClient"
 
 const meta: Meta<typeof DynamicStatisticsUI> = {
   title: "Next/Components/DynamicStatistics",
