@@ -12,3 +12,8 @@ export { InfopicSchema, type InfopicProps } from "./Infopic"
 export { KeyStatisticsSchema, type KeyStatisticsProps } from "./KeyStatistics"
 export { MapSchema, type MapProps } from "./Map"
 export { VideoSchema, type VideoProps } from "./Video"
+export {
+  DYNAMIC_STATISTICS_TYPE,
+  DynamicStatisticsSchema,
+  type DynamicStatisticsProps,
+} from "./DynamicStatistics"
