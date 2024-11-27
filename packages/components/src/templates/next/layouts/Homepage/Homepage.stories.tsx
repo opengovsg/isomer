@@ -209,6 +209,41 @@ export const Default: Story = {
         secondaryButtonUrl: "/",
       },
       {
+        type: "dynamicstatistics",
+        apiEndpoint: "https://api.isomer.gov.sg/v1/statistics",
+        title: {
+          key: "date",
+        },
+        statistics: [
+          {
+            key: "subuh",
+            label: "Subuh",
+          },
+          {
+            key: "syuruk",
+            label: "Syuruk",
+          },
+          {
+            key: "zohor",
+            label: "Zohor",
+          },
+          {
+            key: "asar",
+            label: "Asar",
+          },
+          {
+            key: "maghrib",
+            label: "Maghrib",
+          },
+          {
+            key: "isyak",
+            label: "Ishak",
+          },
+        ],
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        label: "View all dates",
+      },
+      {
         type: "infobar",
         title: "This is a place where you can put nice content",
         description: "About a sentence worth of description here",
