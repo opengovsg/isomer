@@ -1,8 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
-import { LINK_HREF_PATTERN } from "~/utils/validation"
+import type { IsomerSiteProps } from "~/types"
 
 export const ImageSchema = Type.Object(
   {
@@ -40,14 +39,6 @@ export const ImageSchema = Type.Object(
         },
       ),
     ),
-    href: Type.Optional(
-      Type.String({
-        title: "URL Link",
-        description: "The URL to navigate to when the image is clicked",
-        format: "link",
-        pattern: LINK_HREF_PATTERN,
-      }),
-    ),
   },
   {
     title: "Image component",
@@ -56,5 +47,4 @@ export const ImageSchema = Type.Object(
 
 export type ImageProps = Static<typeof ImageSchema> & {
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
 }

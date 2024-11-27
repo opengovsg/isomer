@@ -114,13 +114,11 @@ model User {
   name          String
   email         String  @unique
   phone         String
-  preferredName String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
   ResourcePermission ResourcePermission[]
-  siteMembers SiteMember[]
   versions    Version[]
 }
 
@@ -128,7 +126,6 @@ model Site {
   id          Int          @id @default(autoincrement())
   name        String       @unique
   resources   Resource[]
-  siteMembers SiteMember[]
   // NOTE: This is `theme/isGovernment/sitemap`
   // This is currently put as `Json` for ease of extensibility
   // when we lock in what we actually want for site-wide config,
@@ -172,18 +169,6 @@ model Footer {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
-}
-
-model SiteMember {
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-  siteId Int
-  site   Site   @relation(fields: [siteId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-
-  @@id([siteId, userId])
 }
 
 model ResourcePermission {

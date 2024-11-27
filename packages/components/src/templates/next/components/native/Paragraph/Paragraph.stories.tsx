@@ -217,3 +217,59 @@ export const Combined: Story = {
     ],
   },
 }
+
+export const WithDirectionLTR: Story = {
+  args: {
+    attrs: {
+      dir: "ltr",
+    },
+    content: [
+      {
+        type: "text",
+        text: "نص لوريم إيبسوم القياسي والمستخدم ltr منذ القرن الخامس عشر",
+      },
+    ],
+  },
+}
+
+export const WithDirectionRTL: Story = {
+  args: {
+    attrs: {
+      dir: "rtl",
+    },
+    content: [
+      {
+        type: "text",
+        text: "نص لوريم إيبسوم القياسي والمستخدم rtl منذ القرن الخامس عشر",
+      },
+    ],
+  },
+}
+
+export const WithDirectionAuto: Story = {
+  args: {
+    attrs: {
+      dir: "auto",
+    },
+    content: [
+      {
+        type: "text",
+        text: "نص لوريم إيبسوم القياسي والمستخدم auto منذ القرن الخامس عشر",
+      },
+    ],
+  },
+}
+
+export const WithDirectionNull: Story = {
+  args: {
+    attrs: {
+      dir: null,
+    },
+    content: [
+      {
+        type: "text",
+        text: "نص لوريم إيبسوم القياسي والمستخدم null منذ القرن الخامس عشر",
+      },
+    ],
+  },
+}

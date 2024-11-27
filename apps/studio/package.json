@@ -39,11 +39,11 @@
     "storybook": "storybook dev -p 6007",
     "build-storybook": "storybook build",
     "clean": "git clean -xdf .next .turbo node_modules build",
-    "jump:vapt": "source .ssh/.env.vapt && ssh -L 5433:$DB_HOST:5432 $SSH_USER@$SSH_HOST -i .ssh/studio-vapt-bastion.pem",
-    "migrate:vapt": "source .ssh/.env.vapt && npx prisma migrate deploy",
     "jump": "source .ssh/.env.prod && ssh -L 5433:$DB_HOST:5432 $SSH_USER@$SSH_HOST -i .ssh/studio-prod-bastion.pem",
     "jump:staging": "source .ssh/.env.staging && ssh -L 5433:$DB_HOST:5432 $SSH_USER@$SSH_HOST -i .ssh/studio-staging-bastion.pem",
-    "migrate:staging": "source .ssh/.env.staging && npx prisma migrate deploy"
+    "jump:uat": "source .ssh/.env.uat && ssh -L 5433:$DB_HOST:5432 $SSH_USER@$SSH_HOST -i .ssh/studio-uat-bastion.pem",
+    "migrate:staging": "source .ssh/.env.staging && npx prisma migrate deploy",
+    "migrate:uat": "source .ssh/.env.uat && npx prisma migrate deploy"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -142,6 +142,7 @@
     "react-icons": "^5.2.0",
     "sass": "^1.77.6",
     "superjson": "^2.2.1",
+    "tiptap-text-direction": "^0.3.1",
     "type-fest": "^4.23.0",
     "usehooks-ts": "^3.1.0",
     "validator": "^13.11.0",
