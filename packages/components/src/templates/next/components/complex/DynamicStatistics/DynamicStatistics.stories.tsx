@@ -41,7 +41,7 @@ type Story = StoryObj<typeof DynamicStatisticsUI>
 
 export const Default: Story = {
   args: {
-    title: "1 January 2025 | 1 Rejab 1446H",
+    title: "1 Rejab 1446H",
     statistics: [
       { label: "Subuh", value: "5:43am" },
       { label: "Syuruk", value: "7:07am" },
