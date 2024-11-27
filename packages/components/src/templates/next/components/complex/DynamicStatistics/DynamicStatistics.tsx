@@ -34,7 +34,7 @@ export const DynamicStatisticsUI = ({
         </div>
         <div className="grid grid-cols-3 gap-y-1 md:flex md:justify-between md:justify-items-center lg:col-span-8 lg:col-start-5">
           {statistics.map((statistic) => (
-            <div className="flex w-fit flex-col items-start gap-0.5 py-3 md:items-center">
+            <div className="flex w-fit flex-col items-start justify-center gap-0.5 py-3 md:items-center">
               <div className="prose-body-sm">{statistic.label}</div>
               <div className="prose-headline-lg-medium">{statistic.value}</div>
             </div>
