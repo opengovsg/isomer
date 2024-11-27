@@ -1,10 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import { DynamicStatisticsUI } from "./DynamicStatistics"
 
 const meta: Meta<typeof DynamicStatisticsUI> = {
   title: "Next/Components/DynamicStatistics",
   component: DynamicStatisticsUI,
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+  },
 }
 
 export default meta
