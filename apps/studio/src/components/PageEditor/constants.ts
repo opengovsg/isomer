@@ -1,4 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
+import { DYNAMIC_STATISTICS_TYPE } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
@@ -175,6 +176,39 @@ export const DEFAULT_BLOCKS: Record<
     title: "Rick Astley - Never Gonna Give You Up",
     url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
   },
+  [DYNAMIC_STATISTICS_TYPE]: {
+    type: `${DYNAMIC_STATISTICS_TYPE}`,
+    apiEndpoint: "https://api.github.com/repos/opengovsg/isomer",
+    title: {
+      key: "owner",
+    },
+    statistics: [
+      {
+        label: "Organization",
+        key: "login",
+      },
+      {
+        label: "Owner ID",
+        key: "id",
+      },
+      {
+        label: "Visibility",
+        key: "user_view_type",
+      },
+      {
+        label: "Organization",
+        key: "login",
+      },
+      {
+        label: "Owner ID",
+        key: "id",
+      },
+      {
+        label: "Visibility",
+        key: "user_view_type",
+      },
+    ],
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -269,6 +303,11 @@ export const BLOCK_TO_META: Record<
     usageText:
       "You can embed videos hosted on platforms such as YouTube and Vimeo.",
     imageSrc: "/assets/block-images/Video.png",
+  },
+  [DYNAMIC_STATISTICS_TYPE]: {
+    label: "Dynamic statistics",
+    description: "Display dynamic statistics",
+    usageText: "This block supports fetching data from an API endpoint.",
   },
 }
 
