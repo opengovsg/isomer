@@ -1,4 +1,5 @@
 import type { IsomerPageSchemaType, IsomerSitemap } from "~/types"
+import { ISOMER_PAGE_LAYOUTS } from "~/types"
 import { getSitemapAsArray } from "~/utils"
 
 const getMetaDescription = (props: IsomerPageSchemaType) => {
@@ -7,20 +8,20 @@ const getMetaDescription = (props: IsomerPageSchemaType) => {
   }
 
   switch (props.layout) {
-    case "article":
+    case ISOMER_PAGE_LAYOUTS.Article:
       return props.page.articlePageHeader.summary
-    case "content":
-    case "database":
-    case "index":
+    case ISOMER_PAGE_LAYOUTS.Content:
+    case ISOMER_PAGE_LAYOUTS.Database:
+    case ISOMER_PAGE_LAYOUTS.Index:
       return props.page.contentPageHeader.summary
-    case "collection":
+    case ISOMER_PAGE_LAYOUTS.Collection:
       return props.page.subtitle
-    case "homepage":
+    case ISOMER_PAGE_LAYOUTS.Homepage:
       return props.content.find((item) => item.type === "hero")?.subtitle
-    case "file":
-    case "link":
-    case "search":
-    case "notfound":
+    case ISOMER_PAGE_LAYOUTS.File:
+    case ISOMER_PAGE_LAYOUTS.Link:
+    case ISOMER_PAGE_LAYOUTS.Search:
+    case ISOMER_PAGE_LAYOUTS.NotFound:
       // NOTE: These pages do not appear in search results, so we don't need to
       // provide a meta description
       return undefined
@@ -32,22 +33,22 @@ const getMetaDescription = (props: IsomerPageSchemaType) => {
 
 const getMetaImage = (props: IsomerPageSchemaType) => {
   switch (props.layout) {
-    case "article":
-      return props.page.image?.src || props.meta?.image
-    case "content":
-    case "database":
-    case "index":
-    case "collection":
+    case ISOMER_PAGE_LAYOUTS.Article:
+      return props.meta?.image || props.page.image?.src
+    case ISOMER_PAGE_LAYOUTS.Content:
+    case ISOMER_PAGE_LAYOUTS.Database:
+    case ISOMER_PAGE_LAYOUTS.Index:
+    case ISOMER_PAGE_LAYOUTS.Collection:
       return props.meta?.image
-    case "homepage":
+    case ISOMER_PAGE_LAYOUTS.Homepage:
       return (
-        props.content.find((item) => item.type === "hero")?.backgroundUrl ||
-        props.meta?.image
+        props.meta?.image ||
+        props.content.find((item) => item.type === "hero")?.backgroundUrl
       )
-    case "file":
-    case "link":
-    case "search":
-    case "notfound":
+    case ISOMER_PAGE_LAYOUTS.File:
+    case ISOMER_PAGE_LAYOUTS.Link:
+    case ISOMER_PAGE_LAYOUTS.Search:
+    case ISOMER_PAGE_LAYOUTS.NotFound:
       // NOTE: These pages do not appear in search results, so we don't need to
       // provide a meta description
       return undefined
@@ -59,23 +60,21 @@ const getMetaImage = (props: IsomerPageSchemaType) => {
 
 export const getMetadata = (props: IsomerPageSchemaType) => {
   const faviconUrl = `${props.site.assetsBaseUrl ?? ""}${props.site.favicon || "/favicon.ico"}`
-  const fullUrl = props.site.url
+  const canonicalUrl = props.site.url
     ? new URL(props.page.permalink, props.site.url).toString()
     : props.page.permalink
   const metaImage = getMetaImage(props)
-  const metaImageUrl = metaImage
-    ? `${props.site.assetsBaseUrl ?? ""}${metaImage}`
-    : undefined
+  const metaImageUrl = `${props.site.assetsBaseUrl ?? ""}${metaImage ?? props.site.logoUrl}`
 
   const metadata = {
     metadataBase: props.site.url ? new URL(props.site.url) : undefined,
     description: getMetaDescription(props),
     robots: {
       index:
-        props.layout !== "file" &&
-        props.layout !== "link" &&
-        props.layout !== "search" &&
-        props.layout !== "notfound" &&
+        props.layout !== ISOMER_PAGE_LAYOUTS.File &&
+        props.layout !== ISOMER_PAGE_LAYOUTS.Link &&
+        props.layout !== ISOMER_PAGE_LAYOUTS.Search &&
+        props.layout !== ISOMER_PAGE_LAYOUTS.NotFound &&
         !props.meta?.noIndex,
     },
     icons: {
@@ -85,9 +84,10 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
     openGraph: {
       title: props.page.title,
       description: getMetaDescription(props),
-      url: fullUrl,
+      url: canonicalUrl,
       siteName: props.site.siteName,
-      type: props.layout === "article" ? "article" : "website",
+      type:
+        props.layout === ISOMER_PAGE_LAYOUTS.Article ? "article" : "website",
       images: !!metaImageUrl
         ? [
             {
@@ -133,7 +133,11 @@ export const getRobotsTxt = (props: IsomerPageSchemaType) => {
 
 export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
   return getSitemapAsArray(sitemap)
-    .filter((item) => item.layout !== "file" && item.layout !== "link")
+    .filter(
+      (item) =>
+        item.layout !== ISOMER_PAGE_LAYOUTS.File &&
+        item.layout !== ISOMER_PAGE_LAYOUTS.Link,
+    )
     .map(({ permalink, lastModified }) => ({
       url: siteUrl !== undefined ? `${siteUrl}${permalink}` : permalink,
       lastModified,
