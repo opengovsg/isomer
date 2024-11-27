@@ -230,9 +230,7 @@ export const Default: Story = {
       {
         type: "dynamicstatistics",
         apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
-        title: {
-          key: "hijri_date",
-        },
+        title: "hijri_date",
         statistics: [
           {
             label: "Subuh",

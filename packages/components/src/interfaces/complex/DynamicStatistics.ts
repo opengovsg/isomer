@@ -18,13 +18,14 @@ export const DynamicStatisticsSchema = Type.Object(
       description: "The API endpoint to fetch the data from",
       format: "uri",
     }),
-    title: Type.Object({
-      key: Type.String({
-        title: "Key",
-        description: "Unique identifier in the JSON e.g. '2024-11-27'",
+    title: Type.Optional(
+      Type.String({
+        title: "Title JSON Key",
+        description:
+          "Unique identifier in the JSON to be used as title e.g. 'hijri_date'",
         maxLength: 100,
       }),
-    }),
+    ),
     statistics: Type.Array(
       Type.Object({
         label: Type.String({

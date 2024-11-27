@@ -87,7 +87,7 @@ const DynamicStatisticsContent = ({
   const values = data[getSingaporeDateYYYYMMDD()] as Record<string, string>
   return (
     <DynamicStatisticsUI
-      title={values[title.key]}
+      title={!!title ? values[title] : undefined}
       statistics={statistics.map((statistic) => ({
         label: statistic.label,
         value: values[statistic.key] || "-- : --",
