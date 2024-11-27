@@ -27,7 +27,7 @@ export const DynamicStatisticsUI = ({
       <div
         className={`${ComponentContent} grid grid-cols-1 gap-5 px-6 pb-4 pt-6 md:gap-4 md:px-10 md:py-2 lg:grid-cols-12 lg:justify-between lg:justify-items-stretch lg:gap-0`}
       >
-        <div className="flex flex-row items-center justify-between gap-2 md:gap-2 md:py-3 lg:col-span-3 lg:flex-col lg:items-start lg:justify-start">
+        <div className="flex flex-row items-center justify-between md:gap-1 md:py-3 lg:col-span-3 lg:flex-col lg:items-start lg:justify-start">
           <div className="flex flex-row gap-2 whitespace-nowrap">
             <div className="prose-headline-base-medium">
               {getSingaporeDateLong()}
