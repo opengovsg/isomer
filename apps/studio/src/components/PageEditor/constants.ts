@@ -176,38 +176,39 @@ export const DEFAULT_BLOCKS: Record<
     title: "Rick Astley - Never Gonna Give You Up",
     url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
   },
+  // TODO: Replace with actual working API endpoint
   [DYNAMIC_STATISTICS_TYPE]: {
     type: `${DYNAMIC_STATISTICS_TYPE}`,
-    apiEndpoint: "https://api.github.com/repos/opengovsg/isomer",
-    title: {
-      key: "owner",
-    },
+    apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
+    title: "hijri_date",
     statistics: [
       {
-        label: "Organization",
-        key: "login",
+        label: "Subuh",
+        key: "subuh",
       },
       {
-        label: "Owner ID",
-        key: "id",
+        label: "Syuruk",
+        key: "syuruk",
       },
       {
-        label: "Visibility",
-        key: "user_view_type",
+        label: "Zohor",
+        key: "zohor",
       },
       {
-        label: "Organization",
-        key: "login",
+        label: "Asar",
+        key: "asar",
       },
       {
-        label: "Owner ID",
-        key: "id",
+        label: "Maghrib",
+        key: "maghrib",
       },
       {
-        label: "Visibility",
-        key: "user_view_type",
+        label: "Ishak",
+        key: "isyak",
       },
     ],
+    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    label: "View all dates",
   },
 }
 
