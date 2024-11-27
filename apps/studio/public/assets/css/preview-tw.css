@@ -3055,6 +3055,11 @@ video {
   color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 
+.text-base-divider-strong {
+  --tw-text-opacity: 1;
+  color: rgb(156 163 175 / var(--tw-text-opacity));
+}
+
 .text-brand-canvas-inverse {
   color: var(--color-brand-canvas-inverse);
 }
@@ -4861,6 +4866,10 @@ video {
 
   .md\:justify-items-center {
     justify-items: center;
+  }
+
+  .md\:gap-1 {
+    gap: 0.25rem;
   }
 
   .md\:gap-2 {
