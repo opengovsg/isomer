@@ -4,10 +4,12 @@ import type {
   IsomerSiteProps,
 } from "~/engine"
 import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
+import { DYNAMIC_STATISTICS_TYPE } from "~/interfaces"
 import {
   Accordion,
   Callout,
   Contentpic,
+  DynamicStatistics,
   Hero,
   Iframe,
   Image,
@@ -80,6 +82,8 @@ export const renderComponent = ({
       )
     case "video":
       return <Video key={elementKey} {...component} {...rest} />
+    case DYNAMIC_STATISTICS_TYPE:
+      return <DynamicStatistics key={elementKey} {...component} {...rest} />
     default:
       const _: never = component
       return <></>
