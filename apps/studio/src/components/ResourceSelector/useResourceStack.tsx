@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useDebounce } from "@uidotdev/usehooks"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
 import type { ResourceItemContent } from "~/schemas/resource"
@@ -22,6 +23,9 @@ export const useResourceStack = ({
 
   const [isResourceHighlighted, setIsResourceHighlighted] =
     useState<boolean>(true)
+
+  const [searchValue, setSearchValue] = useState("")
+  const debouncedSearchTerm = useDebounce(searchValue, 300)
 
   const { siteId } = useQueryParse(sitePageSchema)
 
@@ -132,6 +136,7 @@ export const useResourceStack = ({
     removeFromStack,
     isResourceIdHighlighted,
     shouldShowBackButton,
+    setSearchValue,
   }
 }
 

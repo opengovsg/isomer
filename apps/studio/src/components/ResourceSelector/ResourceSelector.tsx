@@ -14,6 +14,7 @@ import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
 import { ResourceItem } from "./ResourceItem"
+import { SearchBar } from "./SearchBar"
 import { useResourceStack } from "./useResourceStack"
 
 interface ResourceSelectorProps {
@@ -42,10 +43,12 @@ const SuspensableResourceSelector = ({
     removeFromStack,
     isResourceIdHighlighted,
     shouldShowBackButton,
+    setSearchValue,
   } = useResourceStack({ onChange, selectedResourceId, onlyShowFolders })
 
   return (
     <VStack gap="0.5rem" w="full">
+      <SearchBar setSearchValue={setSearchValue} />
       <Box
         borderRadius="md"
         border="1px solid"
