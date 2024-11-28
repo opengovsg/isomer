@@ -1,4 +1,3 @@
-import { useState } from "react"
 import {
   Modal,
   ModalContent,
@@ -8,11 +7,9 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
-import { useDebounce } from "@uidotdev/usehooks"
 
-import type { SearchResultResource } from "~/server/modules/resource/resource.types"
+import { useSearchQuery } from "~/hooks/useSearchQuery"
 import { getUserViewableResourceTypes } from "~/utils/resources"
-import { trpc } from "~/utils/trpc"
 import { isMac } from "./isMac"
 import {
   InitialState,
@@ -28,15 +25,14 @@ interface SearchModalProps {
   siteId: string
 }
 export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
-  const [searchValue, setSearchValue] = useState("")
-  const debouncedSearchTerm = useDebounce(searchValue, 300)
-  const { data, isLoading } = trpc.resource.search.useInfiniteQuery({
-    siteId,
-    query: debouncedSearchTerm,
-    resourceTypes: getUserViewableResourceTypes(),
-  })
-  const resources: SearchResultResource[] =
-    data?.pages.flatMap((page) => page.resources) ?? []
+  const {
+    setSearchValue,
+    debouncedSearchTerm,
+    resources,
+    isLoading,
+    totalResultsCount,
+    recentlyEditedResources,
+  } = useSearchQuery({ siteId, resourceTypes: getUserViewableResourceTypes() })
 
   const renderModalBody = (): React.ReactNode => {
     if (!!debouncedSearchTerm) {
@@ -50,22 +46,12 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
         <SearchResultsState
           siteId={siteId}
           items={resources}
-          totalResultsCount={
-            data?.pages.reduce(
-              (acc, page) => acc + (page.totalCount ?? 0),
-              0,
-            ) ?? 0
-          }
+          totalResultsCount={totalResultsCount}
           searchTerm={debouncedSearchTerm}
         />
       )
     }
-    return (
-      <InitialState
-        siteId={siteId}
-        items={data?.pages[0]?.recentlyEdited ?? []}
-      />
-    )
+    return <InitialState siteId={siteId} items={recentlyEditedResources} />
   }
   const { minWidth, maxWidth, marginTop } = useSearchStyle()
 
