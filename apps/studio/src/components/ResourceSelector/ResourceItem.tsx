@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import { Box, Icon, Text } from "@chakra-ui/react"
+import { Box, Icon, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { ErrorBoundary } from "react-error-boundary"
@@ -55,14 +55,21 @@ const SuspendableResourceItem = ({
         },
       })}
       pl="2.25rem"
-      size="xs"
       onClick={() => handleOnClick()}
       leftIcon={<Icon as={getIcon(item.type)} />}
       isDisabled={isDisabled}
+      height="fit-content"
+      alignItems="flex-start"
+      gap="0.25rem"
     >
-      <Text noOfLines={1} textStyle="caption-1" textAlign="left">
-        /{item.permalink}
-      </Text>
+      <VStack textAlign="left" gap="0.25rem">
+        <Text noOfLines={1} textStyle="caption-1">
+          {item.title}
+        </Text>
+        <Text noOfLines={1} textStyle="caption-2">
+          {`/${item.permalink}`}
+        </Text>
+      </VStack>
     </Button>
   )
 }
