@@ -3,8 +3,6 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
 import type { ResourceItemContent } from "~/schemas/resource"
-import { useSearchQuery } from "~/hooks/useSearchQuery"
-import { getUserViewableResourceTypes } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 
 export const useResourceStack = ({
@@ -25,14 +23,6 @@ export const useResourceStack = ({
 
   const [isResourceHighlighted, setIsResourceHighlighted] =
     useState<boolean>(true)
-
-  const { searchValue, setSearchValue, debouncedSearchTerm, resources } =
-    useSearchQuery({
-      siteId: String(siteId),
-      resourceTypes: onlyShowFolders
-        ? [ResourceType.Folder]
-        : getUserViewableResourceTypes(),
-    })
 
   const moveDest = useMemo(
     () => resourceStack[resourceStack.length - 1],
@@ -141,9 +131,6 @@ export const useResourceStack = ({
     removeFromStack,
     isResourceIdHighlighted,
     shouldShowBackButton,
-    searchValue,
-    setSearchValue,
-    searchQuery: debouncedSearchTerm,
   }
 }
 

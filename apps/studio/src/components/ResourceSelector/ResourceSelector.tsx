@@ -1,8 +1,11 @@
 import { Suspense } from "react"
 import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
+import { useSearchQuery } from "~/hooks/useSearchQuery"
+import { getUserViewableResourceTypes } from "~/utils/resources"
 import {
   NoItemsInFolderResult,
   ResourceItemsResults,
@@ -32,6 +35,18 @@ const SuspensableResourceSelector = ({
   onlyShowFolders = false,
 }: ResourceSelectorProps) => {
   const {
+    searchValue,
+    setSearchValue,
+    debouncedSearchTerm: searchQuery,
+    resources,
+  } = useSearchQuery({
+    siteId: String(siteId),
+    resourceTypes: onlyShowFolders
+      ? [ResourceType.Folder]
+      : getUserViewableResourceTypes(),
+  })
+
+  const {
     fullPermalink,
     isResourceHighlighted,
     setIsResourceHighlighted,
@@ -44,9 +59,6 @@ const SuspensableResourceSelector = ({
     removeFromStack,
     isResourceIdHighlighted,
     shouldShowBackButton,
-    searchValue,
-    setSearchValue,
-    searchQuery,
   } = useResourceStack({
     siteId,
     onChange,
