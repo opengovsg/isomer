@@ -5,7 +5,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
 import { ResourceItem } from "./ResourceItem"
-import { BackButton, HomeHeader } from "./ResourceSelectorHeader"
+import { ResourceSelectorHeader } from "./ResourceSelectorHeader"
 import { SearchBar } from "./SearchBar"
 import { useResourceStack } from "./useResourceStack"
 
@@ -38,24 +38,6 @@ const SuspensableResourceSelector = ({
     setSearchValue,
   } = useResourceStack({ onChange, selectedResourceId, onlyShowFolders })
 
-  const renderHeader = () => {
-    if (shouldShowBackButton) {
-      return (
-        <BackButton
-          handleOnClick={() => {
-            if (isResourceHighlighted) {
-              setIsResourceHighlighted(false)
-              removeFromStack(2)
-            } else {
-              removeFromStack(1)
-            }
-          }}
-        />
-      )
-    }
-    return <HomeHeader />
-  }
-
   return (
     <VStack gap="0.5rem" w="full">
       <SearchBar setSearchValue={setSearchValue} />
@@ -69,7 +51,17 @@ const SuspensableResourceSelector = ({
         maxH="20rem"
         overflowY="auto"
       >
-        {renderHeader()}
+        <ResourceSelectorHeader
+          shouldShowBackButton={shouldShowBackButton}
+          handleBackButtonClick={() => {
+            if (isResourceHighlighted) {
+              setIsResourceHighlighted(false)
+              removeFromStack(2)
+            } else {
+              removeFromStack(1)
+            }
+          }}
+        />
         {resourceItems.map((item) => {
           const isHighlighted = isResourceIdHighlighted(item.id)
           const canClickIntoItem =
