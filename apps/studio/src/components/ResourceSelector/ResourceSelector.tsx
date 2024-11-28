@@ -1,11 +1,14 @@
 import { Suspense } from "react"
 import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
-import { ResourceItem } from "./ResourceItem"
 import { ResourceSelectorHeader } from "./ResourceSelectorHeader"
+import {
+  NoItemsInFolderResult,
+  ResourceItemsResults,
+  ZeroResult,
+} from "./ResultStates"
 import { SearchBar } from "./SearchBar"
 import { useResourceStack } from "./useResourceStack"
 
@@ -39,6 +42,7 @@ const SuspensableResourceSelector = ({
     searchQuery,
   } = useResourceStack({ onChange, selectedResourceId, onlyShowFolders })
 
+  // TODO: Fix this
   const isShowingSearchResults = !!searchQuery && searchQuery.length > 0
 
   return (
@@ -53,6 +57,9 @@ const SuspensableResourceSelector = ({
         px="0.5rem"
         h="17.5rem"
         overflowY="auto"
+        display="flex"
+        flexDirection="column"
+        gap="0.25rem"
       >
         <ResourceSelectorHeader
           shouldShowBackButton={shouldShowBackButton}
@@ -68,34 +75,25 @@ const SuspensableResourceSelector = ({
           resultsCount={resourceItems.length}
           searchQuery={searchQuery}
         />
-        {resourceItems.map((item) => {
-          const isHighlighted = isResourceIdHighlighted(item.id)
-          const canClickIntoItem =
-            item.type === ResourceType.Folder ||
-            item.type === ResourceType.Collection
-          return (
-            <ResourceItem
-              key={item.id}
-              item={item}
-              isDisabled={item.id === existingResource?.resourceId}
-              isHighlighted={isHighlighted}
-              handleOnClick={() => {
-                if (isHighlighted && canClickIntoItem) {
-                  setIsResourceHighlighted(false)
-                  return
-                }
-
-                if (isResourceHighlighted) {
-                  removeFromStack(1)
-                } else {
-                  setIsResourceHighlighted(true)
-                }
-                addToStack(item)
-              }}
-              hasAdditionalLeftPadding={!isShowingSearchResults}
-            />
-          )
-        })}
+        {isShowingSearchResults && resourceItems.length === 0 ? (
+          <ZeroResult
+            searchQuery={searchQuery}
+            handleClickClearSearch={() => setSearchValue("")}
+          />
+        ) : resourceItems.length === 0 ? (
+          <NoItemsInFolderResult />
+        ) : (
+          <ResourceItemsResults
+            resourceItems={resourceItems}
+            isResourceIdHighlighted={isResourceIdHighlighted}
+            existingResource={existingResource}
+            isResourceHighlighted={isResourceHighlighted}
+            setIsResourceHighlighted={setIsResourceHighlighted}
+            addToStack={addToStack}
+            removeFromStack={removeFromStack}
+            hasAdditionalLeftPadding={!isShowingSearchResults}
+          />
+        )}
         {hasNextPage && (
           <Button
             variant="link"
