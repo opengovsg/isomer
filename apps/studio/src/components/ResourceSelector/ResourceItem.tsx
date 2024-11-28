@@ -64,7 +64,7 @@ const SuspendableResourceItem = ({
       alignItems="flex-start"
       gap="0.25rem"
     >
-      <VStack textAlign="left" gap="0.25rem">
+      <VStack alignItems="flex-start" textAlign="left" gap="0.25rem">
         <Text noOfLines={1} textStyle="caption-1">
           {item.title}
         </Text>
