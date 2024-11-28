@@ -3,17 +3,17 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
 import type { ResourceItemContent } from "~/schemas/resource"
-import { useQueryParse } from "~/hooks/useQueryParse"
 import { useSearchQuery } from "~/hooks/useSearchQuery"
-import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { getUserViewableResourceTypes } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 
 export const useResourceStack = ({
+  siteId,
   onChange,
   selectedResourceId,
   onlyShowFolders,
 }: {
+  siteId: number
   onChange: (resourceId: string) => void
   selectedResourceId: string | undefined
   onlyShowFolders: boolean
@@ -25,8 +25,6 @@ export const useResourceStack = ({
 
   const [isResourceHighlighted, setIsResourceHighlighted] =
     useState<boolean>(true)
-
-  const { siteId } = useQueryParse(sitePageSchema)
 
   const { searchValue, setSearchValue, debouncedSearchTerm, resources } =
     useSearchQuery({

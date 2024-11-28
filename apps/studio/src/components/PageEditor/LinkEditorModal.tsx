@@ -51,6 +51,7 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
 
   return (
     <ResourceSelector
+      siteId={siteId}
       onChange={(resourceId) =>
         onChange(getReferenceLink({ siteId: String(siteId), resourceId }))
       }

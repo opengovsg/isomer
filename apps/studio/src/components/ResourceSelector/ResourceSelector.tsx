@@ -17,6 +17,7 @@ import { SearchBar } from "./SearchBar"
 import { useResourceStack } from "./useResourceStack"
 
 interface ResourceSelectorProps {
+  siteId: number
   onChange: (resourceId: string) => void
   selectedResourceId?: string
   existingResource?: PendingMoveResource
@@ -24,6 +25,7 @@ interface ResourceSelectorProps {
 }
 
 const SuspensableResourceSelector = ({
+  siteId,
   onChange,
   selectedResourceId,
   existingResource,
@@ -45,7 +47,12 @@ const SuspensableResourceSelector = ({
     searchValue,
     setSearchValue,
     searchQuery,
-  } = useResourceStack({ onChange, selectedResourceId, onlyShowFolders })
+  } = useResourceStack({
+    siteId,
+    onChange,
+    selectedResourceId,
+    onlyShowFolders,
+  })
 
   // TODO: Fix this
   const isShowingSearchResults = !!searchQuery && searchQuery.length > 0

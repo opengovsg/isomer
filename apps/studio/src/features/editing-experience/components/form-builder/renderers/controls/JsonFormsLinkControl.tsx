@@ -58,6 +58,7 @@ interface PageLinkModalContentProps {
 
 const PageLinkModalContent = ({
   data,
+  siteId,
   description,
   onClose,
   onSave,
@@ -86,6 +87,7 @@ const PageLinkModalContent = ({
               {description || "When this link is clicked, open..."}
             </FormLabel>
             <ResourceSelector
+              siteId={Number(siteId)}
               onChange={(resourceId) => setValue("destination", resourceId)}
               selectedResourceId={destination}
             />
