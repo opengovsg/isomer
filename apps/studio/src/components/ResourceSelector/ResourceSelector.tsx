@@ -45,7 +45,7 @@ const SuspensableResourceSelector = ({
   } = useResourceStack({ onChange, selectedResourceId, onlyShowFolders })
 
   return (
-    <VStack gap="0.5rem">
+    <VStack gap="0.5rem" w="full">
       <Box
         borderRadius="md"
         border="1px solid"
