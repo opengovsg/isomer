@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useDebounce } from "@uidotdev/usehooks"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { useSearchQuery } from "~/hooks/useSearchQuery"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
+import { getUserViewableResourceTypes } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 
 export const useResourceStack = ({
@@ -24,10 +26,15 @@ export const useResourceStack = ({
   const [isResourceHighlighted, setIsResourceHighlighted] =
     useState<boolean>(true)
 
-  const [searchValue, setSearchValue] = useState("")
-  const debouncedSearchTerm = useDebounce(searchValue, 300)
-
   const { siteId } = useQueryParse(sitePageSchema)
+
+  const { searchValue, setSearchValue, debouncedSearchTerm, resources } =
+    useSearchQuery({
+      siteId: String(siteId),
+      resourceTypes: onlyShowFolders
+        ? [ResourceType.Folder]
+        : getUserViewableResourceTypes(),
+    })
 
   const moveDest = useMemo(
     () => resourceStack[resourceStack.length - 1],
