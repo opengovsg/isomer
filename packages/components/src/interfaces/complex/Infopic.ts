@@ -27,6 +27,7 @@ export const InfopicSchema = Type.Object(
         title: "Alternate text",
         description:
           "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
+        maxLength: 120,
       }),
     ),
     buttonLabel: Type.Optional(
