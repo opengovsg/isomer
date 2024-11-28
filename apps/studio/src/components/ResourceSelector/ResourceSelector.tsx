@@ -36,6 +36,7 @@ const SuspensableResourceSelector = ({
     isResourceIdHighlighted,
     shouldShowBackButton,
     setSearchValue,
+    searchQuery,
   } = useResourceStack({ onChange, selectedResourceId, onlyShowFolders })
 
   return (
@@ -61,6 +62,8 @@ const SuspensableResourceSelector = ({
               removeFromStack(1)
             }
           }}
+          resultsCount={resourceItems.length}
+          searchQuery={searchQuery}
         />
         {resourceItems.map((item) => {
           const isHighlighted = isResourceIdHighlighted(item.id)

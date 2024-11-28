@@ -48,15 +48,44 @@ const BackButton = ({ handleOnClick }: { handleOnClick: () => void }) => {
   )
 }
 
+const SearchResultsHeader = ({
+  resultsCount,
+  searchQuery,
+}: {
+  resultsCount: number
+  searchQuery: string
+}) => {
+  return (
+    <Text textStyle="caption-2" px="0.5rem" pt="0.25rem" pb="0.5rem">
+      {resultsCount} result{resultsCount > 1 ? "s" : ""} with "{searchQuery}" in
+      title
+    </Text>
+  )
+}
+
 export const ResourceSelectorHeader = ({
   shouldShowBackButton,
   handleBackButtonClick,
+  resultsCount,
+  searchQuery,
 }: {
   shouldShowBackButton: boolean
   handleBackButtonClick: () => void
+  resultsCount: number
+  searchQuery: string
 }) => {
   if (shouldShowBackButton) {
     return <BackButton handleOnClick={handleBackButtonClick} />
   }
+
+  if (!!searchQuery && resultsCount > 0) {
+    return (
+      <SearchResultsHeader
+        resultsCount={resultsCount}
+        searchQuery={searchQuery}
+      />
+    )
+  }
+
   return <HomeHeader />
 }
