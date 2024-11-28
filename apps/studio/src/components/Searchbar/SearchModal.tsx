@@ -11,6 +11,7 @@ import { Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
 import { useDebounce } from "@uidotdev/usehooks"
 
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
+import { getUserViewableResourceTypes } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 import { isMac } from "./isMac"
 import {
@@ -32,6 +33,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
   const { data, isLoading } = trpc.resource.search.useInfiniteQuery({
     siteId,
     query: debouncedSearchTerm,
+    resourceTypes: getUserViewableResourceTypes(),
   })
   const resources: SearchResultResource[] =
     data?.pages.flatMap((page) => page.resources) ?? []

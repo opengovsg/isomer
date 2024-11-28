@@ -50,3 +50,14 @@ export const isAllowedToHaveLastEditedText = (
     resourceType === ResourceType.CollectionPage
   )
 }
+
+// only show user-viewable resources (excluding root page, folder meta etc.)
+export const getUserViewableResourceTypes = (): ResourceType[] => {
+  return [
+    ResourceType.Page,
+    ResourceType.Folder,
+    ResourceType.Collection,
+    ResourceType.CollectionLink,
+    ResourceType.CollectionPage,
+  ]
+}

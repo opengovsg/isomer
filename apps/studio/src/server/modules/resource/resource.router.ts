@@ -511,7 +511,10 @@ export const resourceRouter = router({
     .input(searchSchema)
     .output(searchOutputSchema)
     .query(
-      async ({ ctx, input: { siteId, query = "", cursor: offset, limit } }) => {
+      async ({
+        ctx,
+        input: { siteId, query = "", resourceTypes, cursor: offset, limit },
+      }) => {
         await validateUserPermissionsForSite({
           siteId: Number(siteId),
           userId: ctx.user.id,
@@ -534,6 +537,7 @@ export const resourceRouter = router({
           query,
           offset,
           limit,
+          resourceTypes,
         })
         return {
           totalCount: Number(searchResults.totalCount),

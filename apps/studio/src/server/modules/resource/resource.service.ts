@@ -488,11 +488,13 @@ export const getSearchResults = async ({
   query,
   offset,
   limit,
+  resourceTypes,
 }: {
   siteId: number
   query: string
   offset: number
   limit: number
+  resourceTypes: ResourceType[]
 }): Promise<{
   totalCount: number | null
   resources: SearchResultResource[]
@@ -504,14 +506,7 @@ export const getSearchResults = async ({
   const queriedResources = getResourcesWithLastUpdatedAt({
     siteId: Number(siteId),
   })
-    .where("Resource.type", "in", [
-      // only show user-viewable resources (excluding root page, folder meta etc.)
-      ResourceType.Page,
-      ResourceType.Folder,
-      ResourceType.Collection,
-      ResourceType.CollectionLink,
-      ResourceType.CollectionPage,
-    ])
+    .where("Resource.type", "in", resourceTypes)
     .where((eb) =>
       eb.or(
         searchTerms.map((searchTerm) =>

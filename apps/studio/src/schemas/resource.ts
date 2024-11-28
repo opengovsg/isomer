@@ -1,7 +1,7 @@
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
 import type { SearchResultResource } from "../server/modules/resource/resource.types"
-import type { ResourceType } from "~prisma/generated/generatedEnums"
 import {
   infiniteOffsetPaginationSchema,
   offsetPaginationSchema,
@@ -89,6 +89,7 @@ export const searchSchema = z
   .object({
     siteId: z.string(),
     query: z.string().optional(),
+    resourceTypes: z.array(z.nativeEnum(ResourceType)),
   })
   .merge(infiniteOffsetPaginationSchema)
 
