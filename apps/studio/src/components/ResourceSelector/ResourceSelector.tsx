@@ -1,19 +1,11 @@
 import { Suspense } from "react"
-import {
-  Box,
-  Flex,
-  HStack,
-  Skeleton,
-  Spacer,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
-import { Button, Link } from "@opengovsg/design-system-react"
+import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
+import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
 import { ResourceItem } from "./ResourceItem"
+import { BackButton, HomeHeader } from "./ResourceSelectorHeader"
 import { SearchBar } from "./SearchBar"
 import { useResourceStack } from "./useResourceStack"
 
@@ -46,6 +38,24 @@ const SuspensableResourceSelector = ({
     setSearchValue,
   } = useResourceStack({ onChange, selectedResourceId, onlyShowFolders })
 
+  const renderHeader = () => {
+    if (shouldShowBackButton) {
+      return (
+        <BackButton
+          handleOnClick={() => {
+            if (isResourceHighlighted) {
+              setIsResourceHighlighted(false)
+              removeFromStack(2)
+            } else {
+              removeFromStack(1)
+            }
+          }}
+        />
+      )
+    }
+    return <HomeHeader />
+  }
+
   return (
     <VStack gap="0.5rem" w="full">
       <SearchBar setSearchValue={setSearchValue} />
@@ -59,52 +69,7 @@ const SuspensableResourceSelector = ({
         maxH="20rem"
         overflowY="auto"
       >
-        {shouldShowBackButton ? (
-          <Link
-            variant="clear"
-            w="full"
-            justifyContent="flex-start"
-            color="base.content.default"
-            onClick={() => {
-              if (isResourceHighlighted) {
-                setIsResourceHighlighted(false)
-                removeFromStack(2)
-              } else {
-                removeFromStack(1)
-              }
-            }}
-            as="button"
-          >
-            <HStack spacing="0.25rem" color="interaction.links.default">
-              <BiLeftArrowAlt />
-              <Text textStyle="caption-1">Back to parent folder</Text>
-            </HStack>
-          </Link>
-        ) : (
-          <Flex
-            w="full"
-            px="0.75rem"
-            py="0.375rem"
-            color="base.content.default"
-            alignItems="center"
-          >
-            <HStack spacing="0.25rem">
-              <BiHomeAlt />
-              <Text textStyle="caption-1">/</Text>
-            </HStack>
-            <Spacer />
-            <Text
-              color="base.content.medium"
-              textTransform="uppercase"
-              textStyle="caption-1"
-              overflow="hidden"
-              textOverflow="ellipsis"
-              whiteSpace="nowrap"
-            >
-              Home
-            </Text>
-          </Flex>
-        )}
+        {renderHeader()}
         {resourceItems.map((item) => {
           const isHighlighted = isResourceIdHighlighted(item.id)
           const canClickIntoItem =
