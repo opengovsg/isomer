@@ -42,6 +42,7 @@ const SuspensableResourceSelector = ({
     removeFromStack,
     isResourceIdHighlighted,
     shouldShowBackButton,
+    searchValue,
     setSearchValue,
     searchQuery,
   } = useResourceStack({ onChange, selectedResourceId, onlyShowFolders })
@@ -103,7 +104,7 @@ const SuspensableResourceSelector = ({
 
   return (
     <VStack gap="0.5rem" w="full">
-      <SearchBar setSearchValue={setSearchValue} />
+      <SearchBar searchValue={searchValue} setSearchValue={setSearchValue} />
       <Box
         borderRadius="md"
         border="1px solid"

@@ -136,6 +136,7 @@ export const useResourceStack = ({
     removeFromStack,
     isResourceIdHighlighted,
     shouldShowBackButton,
+    searchValue,
     setSearchValue,
     searchQuery: debouncedSearchTerm,
   }
