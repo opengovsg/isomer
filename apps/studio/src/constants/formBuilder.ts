@@ -3,6 +3,7 @@ export const JSON_FORMS_RANKING = {
   ArrayControl: 4,
   BooleanControl: 2,
   ConstControl: 2,
+  HiddenControl: 2,
   ImageControl: 2,
   IntegerControl: 4,
   TextAreaControl: 1,

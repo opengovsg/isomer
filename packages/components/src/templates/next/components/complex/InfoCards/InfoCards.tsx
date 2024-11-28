@@ -213,6 +213,7 @@ const InfoCardWithImage = ({
 }
 
 const InfoCards = ({
+  id,
   title,
   subtitle,
   variant,
@@ -260,7 +261,10 @@ const InfoCards = ({
   }
 
   return (
-    <section className={compoundStyles.container({ layout: simplifiedLayout })}>
+    <section
+      id={id}
+      className={compoundStyles.container({ layout: simplifiedLayout })}
+    >
       {(title || subtitle) && (
         <div
           className={compoundStyles.headingContainer({

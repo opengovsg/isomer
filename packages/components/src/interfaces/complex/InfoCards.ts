@@ -66,6 +66,13 @@ const SingleCardWithImageSchema = Type.Composite([
 
 const InfoCardsBaseSchema = Type.Object({
   type: Type.Literal("infocards", { default: "infocards" }),
+  id: Type.Optional(
+    Type.String({
+      title: "Anchor ID",
+      description: "The ID to use for anchor links",
+      format: "hidden",
+    }),
+  ),
   title: Type.String({
     title: "Title",
     maxLength: 100,

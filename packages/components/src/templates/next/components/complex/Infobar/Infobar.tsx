@@ -41,6 +41,7 @@ const createInfobarStyles = tv({
 export const compoundStyles = createInfobarStyles()
 
 const Infobar = ({
+  id,
   title,
   description,
   buttonLabel,
@@ -54,7 +55,7 @@ const Infobar = ({
   const simplifiedLayout = getTailwindVariantLayout(layout)
 
   return (
-    <section>
+    <section id={id}>
       <div
         className={compoundStyles.outerContainer({ layout: simplifiedLayout })}
       >

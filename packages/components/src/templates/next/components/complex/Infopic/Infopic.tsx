@@ -42,6 +42,7 @@ interface InfopicProps
 }
 
 export const Infopic = ({
+  id,
   imageSrc,
   title,
   buttonLabel,
@@ -61,7 +62,7 @@ export const Infopic = ({
       : `${site.assetsBaseUrl}${imageSrc}`
 
   return (
-    <div className={compoundStyles.container()}>
+    <section id={id} className={compoundStyles.container()}>
       <div className={compoundStyles.content()}>
         <h2 className={compoundStyles.title()}>{title}</h2>
         <p className={compoundStyles.description()}>{description}</p>
@@ -90,6 +91,6 @@ export const Infopic = ({
           assetsBaseUrl={site.assetsBaseUrl}
         />
       </div>
-    </div>
+    </section>
   )
 }

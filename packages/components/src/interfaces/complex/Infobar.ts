@@ -11,6 +11,13 @@ import { LINK_HREF_PATTERN } from "~/utils/validation"
 export const InfobarSchema = Type.Object(
   {
     type: Type.Literal("infobar", { default: "infobar" }),
+    id: Type.Optional(
+      Type.String({
+        title: "Anchor ID",
+        description: "The ID to use for anchor links",
+        format: "hidden",
+      }),
+    ),
     title: Type.String({
       title: "Title",
       maxLength: 100,
