@@ -12,6 +12,7 @@ interface ResourceItemProps {
   isDisabled?: boolean
   isHighlighted: boolean
   handleOnClick: () => void
+  hasAdditionalLeftPadding?: boolean
 }
 
 const getButtonProps = ({ isHighlighted }: { isHighlighted: boolean }) => {
@@ -36,6 +37,7 @@ const SuspendableResourceItem = ({
   isDisabled,
   isHighlighted,
   handleOnClick,
+  hasAdditionalLeftPadding = false,
 }: ResourceItemProps) => {
   const buttonProps = getButtonProps({
     isHighlighted,
@@ -54,7 +56,7 @@ const SuspendableResourceItem = ({
           bg: buttonProps._hover.bg,
         },
       })}
-      pl="2.25rem"
+      {...(hasAdditionalLeftPadding && { pl: "2.25rem" })}
       onClick={() => handleOnClick()}
       leftIcon={<Icon as={getIcon(item.type)} />}
       isDisabled={isDisabled}

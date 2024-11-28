@@ -39,6 +39,8 @@ const SuspensableResourceSelector = ({
     searchQuery,
   } = useResourceStack({ onChange, selectedResourceId, onlyShowFolders })
 
+  const isShowingSearchResults = !!searchQuery && searchQuery.length > 0
+
   return (
     <VStack gap="0.5rem" w="full">
       <SearchBar setSearchValue={setSearchValue} />
@@ -62,6 +64,7 @@ const SuspensableResourceSelector = ({
               removeFromStack(1)
             }
           }}
+          isShowingSearchResults={isShowingSearchResults}
           resultsCount={resourceItems.length}
           searchQuery={searchQuery}
         />
@@ -89,6 +92,7 @@ const SuspensableResourceSelector = ({
                 }
                 addToStack(item)
               }}
+              hasAdditionalLeftPadding={!isShowingSearchResults}
             />
           )
         })}

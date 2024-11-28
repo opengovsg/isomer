@@ -66,11 +66,13 @@ const SearchResultsHeader = ({
 export const ResourceSelectorHeader = ({
   shouldShowBackButton,
   handleBackButtonClick,
+  isShowingSearchResults,
   resultsCount,
   searchQuery,
 }: {
   shouldShowBackButton: boolean
   handleBackButtonClick: () => void
+  isShowingSearchResults: boolean
   resultsCount: number
   searchQuery: string
 }) => {
@@ -78,7 +80,7 @@ export const ResourceSelectorHeader = ({
     return <BackButton handleOnClick={handleBackButtonClick} />
   }
 
-  if (!!searchQuery && resultsCount > 0) {
+  if (isShowingSearchResults) {
     return (
       <SearchResultsHeader
         resultsCount={resultsCount}
