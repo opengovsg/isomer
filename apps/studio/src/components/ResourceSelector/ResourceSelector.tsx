@@ -51,7 +51,7 @@ const SuspensableResourceSelector = ({
         w="full"
         py="0.75rem"
         px="0.5rem"
-        maxH="20rem"
+        h="17.5rem"
         overflowY="auto"
       >
         <ResourceSelectorHeader
