@@ -39,6 +39,7 @@ const BackButton = ({ handleOnClick }: { handleOnClick: () => void }) => {
       color="base.content.default"
       onClick={handleOnClick}
       as="button"
+      py="0.375rem"
     >
       <HStack spacing="0.25rem" color="interaction.links.default">
         <BiLeftArrowAlt />
