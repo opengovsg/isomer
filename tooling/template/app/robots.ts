@@ -5,6 +5,8 @@ import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
 import { getRobotsTxt } from "@opengovsg/isomer-components"
 
+export const dynamic = "force-static"
+
 const timeNow = new Date()
 const lastUpdated =
   timeNow.getDate().toString().padStart(2, "0") +
