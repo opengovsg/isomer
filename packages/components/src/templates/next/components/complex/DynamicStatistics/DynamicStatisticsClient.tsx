@@ -40,19 +40,17 @@ export const DynamicStatisticsUI = ({
         className={`${ComponentContent} grid grid-cols-1 gap-5 px-6 pb-4 pt-6 md:gap-4 md:px-10 md:py-2 lg:grid-cols-12 lg:justify-between lg:justify-items-stretch lg:gap-0`}
       >
         <div className="flex flex-row items-center justify-between md:gap-1 md:py-3 lg:col-span-3 lg:flex-col lg:items-start lg:justify-start">
-          <div className="flex flex-row gap-2 whitespace-nowrap">
-            <div className="prose-headline-base-medium">
+          <div className="flex flex-col gap-1 whitespace-nowrap">
+            {title && <div className="prose-headline-base-medium">{title}</div>}
+            <div className="prose-label-sm-regular flex flex-row gap-2">
               {getSingaporeDateLong()}
+              {shouldRenderUrl && (
+                <div className="hidden lg:block">{renderUrl()}</div>
+              )}
             </div>
-            {title && (
-              <>
-                <div className="text-base-divider-strong">|</div>
-                <div className="prose-headline-base-medium">{title}</div>
-              </>
-            )}
           </div>
           {shouldRenderUrl && (
-            <div className="hidden md:block">{renderUrl()}</div>
+            <div className="hidden md:block lg:hidden">{renderUrl()}</div>
           )}
         </div>
         <div className="grid grid-cols-3 gap-y-1 md:flex md:justify-between md:justify-items-center lg:col-span-8 lg:col-start-5">
