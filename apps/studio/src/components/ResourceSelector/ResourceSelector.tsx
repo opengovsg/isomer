@@ -4,15 +4,15 @@ import { Button } from "@opengovsg/design-system-react"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
 import {
+  NoItemsInFolderResult,
+  ResourceItemsResults,
+  ZeroResult,
+} from "./ResourceSelectorContent"
+import {
   BackButtonHeader,
   HomeHeader,
   SearchResultsHeader,
 } from "./ResourceSelectorHeader"
-import {
-  NoItemsInFolderResult,
-  ResourceItemsResults,
-  ZeroResult,
-} from "./ResultStates"
 import { SearchBar } from "./SearchBar"
 import { useResourceStack } from "./useResourceStack"
 
