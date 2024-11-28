@@ -2,7 +2,7 @@ import { Flex, HStack, Spacer, Text } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
-const HomeHeader = () => {
+export const HomeHeader = () => {
   return (
     <Flex
       w="full"
@@ -30,7 +30,11 @@ const HomeHeader = () => {
   )
 }
 
-const BackButton = ({ handleOnClick }: { handleOnClick: () => void }) => {
+export const BackButtonHeader = ({
+  handleOnClick,
+}: {
+  handleOnClick: () => void
+}) => {
   return (
     <Link
       variant="clear"
@@ -49,7 +53,7 @@ const BackButton = ({ handleOnClick }: { handleOnClick: () => void }) => {
   )
 }
 
-const SearchResultsHeader = ({
+export const SearchResultsHeader = ({
   resultsCount,
   searchQuery,
 }: {
@@ -62,33 +66,4 @@ const SearchResultsHeader = ({
       title
     </Text>
   )
-}
-
-export const ResourceSelectorHeader = ({
-  shouldShowBackButton,
-  handleBackButtonClick,
-  isShowingSearchResults,
-  resultsCount,
-  searchQuery,
-}: {
-  shouldShowBackButton: boolean
-  handleBackButtonClick: () => void
-  isShowingSearchResults: boolean
-  resultsCount: number
-  searchQuery: string
-}) => {
-  if (shouldShowBackButton) {
-    return <BackButton handleOnClick={handleBackButtonClick} />
-  }
-
-  if (isShowingSearchResults) {
-    return (
-      <SearchResultsHeader
-        resultsCount={resultsCount}
-        searchQuery={searchQuery}
-      />
-    )
-  }
-
-  return <HomeHeader />
 }

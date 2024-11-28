@@ -3,7 +3,11 @@ import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
-import { ResourceSelectorHeader } from "./ResourceSelectorHeader"
+import {
+  BackButtonHeader,
+  HomeHeader,
+  SearchResultsHeader,
+} from "./ResourceSelectorHeader"
 import {
   NoItemsInFolderResult,
   ResourceItemsResults,
@@ -45,6 +49,58 @@ const SuspensableResourceSelector = ({
   // TODO: Fix this
   const isShowingSearchResults = !!searchQuery && searchQuery.length > 0
 
+  const renderHeader = () => {
+    if (shouldShowBackButton) {
+      return (
+        <BackButtonHeader
+          handleOnClick={() => {
+            if (isResourceHighlighted) {
+              setIsResourceHighlighted(false)
+              removeFromStack(2)
+            } else {
+              removeFromStack(1)
+            }
+          }}
+        />
+      )
+    }
+    if (isShowingSearchResults) {
+      return (
+        <SearchResultsHeader
+          resultsCount={resourceItems.length}
+          searchQuery={searchQuery}
+        />
+      )
+    }
+    return <HomeHeader />
+  }
+
+  const renderContent = () => {
+    if (isShowingSearchResults && resourceItems.length === 0) {
+      return (
+        <ZeroResult
+          searchQuery={searchQuery}
+          handleClickClearSearch={() => setSearchValue("")}
+        />
+      )
+    }
+    if (resourceItems.length === 0) {
+      return <NoItemsInFolderResult />
+    }
+    return (
+      <ResourceItemsResults
+        resourceItems={resourceItems}
+        isResourceIdHighlighted={isResourceIdHighlighted}
+        existingResource={existingResource}
+        isResourceHighlighted={isResourceHighlighted}
+        setIsResourceHighlighted={setIsResourceHighlighted}
+        addToStack={addToStack}
+        removeFromStack={removeFromStack}
+        hasAdditionalLeftPadding={!isShowingSearchResults}
+      />
+    )
+  }
+
   return (
     <VStack gap="0.5rem" w="full">
       <SearchBar setSearchValue={setSearchValue} />
@@ -61,39 +117,8 @@ const SuspensableResourceSelector = ({
         flexDirection="column"
         gap="0.25rem"
       >
-        <ResourceSelectorHeader
-          shouldShowBackButton={shouldShowBackButton}
-          handleBackButtonClick={() => {
-            if (isResourceHighlighted) {
-              setIsResourceHighlighted(false)
-              removeFromStack(2)
-            } else {
-              removeFromStack(1)
-            }
-          }}
-          isShowingSearchResults={isShowingSearchResults}
-          resultsCount={resourceItems.length}
-          searchQuery={searchQuery}
-        />
-        {isShowingSearchResults && resourceItems.length === 0 ? (
-          <ZeroResult
-            searchQuery={searchQuery}
-            handleClickClearSearch={() => setSearchValue("")}
-          />
-        ) : resourceItems.length === 0 ? (
-          <NoItemsInFolderResult />
-        ) : (
-          <ResourceItemsResults
-            resourceItems={resourceItems}
-            isResourceIdHighlighted={isResourceIdHighlighted}
-            existingResource={existingResource}
-            isResourceHighlighted={isResourceHighlighted}
-            setIsResourceHighlighted={setIsResourceHighlighted}
-            addToStack={addToStack}
-            removeFromStack={removeFromStack}
-            hasAdditionalLeftPadding={!isShowingSearchResults}
-          />
-        )}
+        {renderHeader()}
+        {renderContent()}
         {hasNextPage && (
           <Button
             variant="link"
