@@ -1,8 +1,9 @@
 import { IsomerSchema } from "@opengovsg/isomer-components"
 
 import type { Navbar } from "~/server/modules/resource/resource.types"
-import { db, jsonb } from "~/server/modules/database"
+import { db, jsonb, RoleType } from "~/server/modules/database"
 import { addUsersToSite } from "./addUsersToSite"
+import { updateUserPermissions } from "./updateUserPermissions"
 
 const PAGE_BLOB: IsomerSchema = {
   version: "0.1.0",
@@ -241,7 +242,15 @@ export const createSite = async (siteName: string) => {
     return siteId
   })
 
-  await addUsersToSite(siteId, [...ISOMER_ADMINS, ...ISOMER_MIGRATORS])
+  await addUsersToSite(
+    siteId,
+    [...ISOMER_ADMINS, ...ISOMER_MIGRATORS].map(
+      (email) => `${email}@open.gov.sg`,
+    ),
+  )
+
+  await updateUserPermissions(siteId, RoleType.Admin)
+  return siteId
 }
 
 createSite("Put your site here")
