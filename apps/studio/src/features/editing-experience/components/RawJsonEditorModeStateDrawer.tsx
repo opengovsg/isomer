@@ -27,7 +27,7 @@ import { DiscardChangesModal } from "./DiscardChangesModal"
 
 const validateFn = ajv.compile<IsomerSchema>(schema)
 
-export default function AdminModeStateDrawer(): JSX.Element {
+export default function RawJsonEditorModeStateDrawer(): JSX.Element {
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -126,7 +126,7 @@ export default function AdminModeStateDrawer(): JSX.Element {
                 borderRadius="base"
               />
               <Heading as="h3" size="sm" textStyle="h5" fontWeight="semibold">
-                Admin Mode
+                Raw JSON Editor Mode
               </Heading>
             </HStack>
             <Spacer />

@@ -11,7 +11,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { TYPE_TO_ICON } from "../constants"
 import { editPageSchema } from "../schema"
-import { ActivateAdminMode } from "./ActivateAdminMode"
+import { ActivateRawJsonEditorMode } from "./ActivateRawJsonEditorMode"
 import { BaseBlock } from "./Block/BaseBlock"
 import { DraggableBlock } from "./Block/DraggableBlock"
 
@@ -119,7 +119,7 @@ export default function RootStateDrawer() {
 
   return (
     <VStack gap="1.5rem" p="1.5rem">
-      <ActivateAdminMode />
+      <ActivateRawJsonEditorMode />
       {/* Fixed Blocks Section */}
       <VStack gap="1rem" w="100%" align="start">
         <VStack gap="0.25rem" align="start">
