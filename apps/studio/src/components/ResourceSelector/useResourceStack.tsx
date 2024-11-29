@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
 import type { ResourceItemContent } from "~/schemas/resource"
