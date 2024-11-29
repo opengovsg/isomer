@@ -94,7 +94,7 @@ export const searchSchema = z
   .object({
     siteId: z.string(),
     query: z.string().optional(),
-    resourceTypes: z.array(z.nativeEnum(ResourceType)),
+    resourceTypes: z.array(z.nativeEnum(ResourceType)).optional(),
   })
   .merge(infiniteOffsetPaginationSchema)
 

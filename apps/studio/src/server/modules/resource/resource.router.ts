@@ -493,7 +493,13 @@ export const resourceRouter = router({
     .query(
       async ({
         ctx,
-        input: { siteId, query = "", resourceTypes, cursor: offset, limit },
+        input: {
+          siteId,
+          query = "",
+          resourceTypes = Object.values(ResourceType),
+          cursor: offset,
+          limit,
+        },
       }) => {
         await validateUserPermissionsForSite({
           siteId: Number(siteId),
