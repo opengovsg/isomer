@@ -9,8 +9,7 @@ export const getTableOfContents = (
 ): HeadingLink[] => {
   return content.flatMap((block) => {
     if (
-      (block.type === "infobar" ||
-        block.type === "infocards" ||
+      (block.type === "infocards" ||
         block.type === "infocols" ||
         block.type === "infopic" ||
         block.type === "keystatistics") &&

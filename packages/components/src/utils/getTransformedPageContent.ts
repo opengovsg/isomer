@@ -32,7 +32,6 @@ export const getTransformedPageContent = (
         }),
       }
     } else if (
-      block.type === "infobar" ||
       block.type === "infocards" ||
       block.type === "infocols" ||
       block.type === "infopic" ||
