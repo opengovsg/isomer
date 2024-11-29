@@ -2,8 +2,8 @@ import { Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import type { PendingMoveResource } from "~/features/editing-experience/types"
 import type { ResourceItemContent } from "~/schemas/resource"
-import { PendingMoveResource } from "~/features/editing-experience/types"
 import { ResourceItem } from "./ResourceItem"
 
 export const NoItemsInFolderResult = () => {
@@ -22,16 +22,21 @@ export const NoItemsInFolderResult = () => {
   )
 }
 
-interface ResourceItemsProps {
-  resourceItems: ResourceItemContent[]
-  isResourceIdHighlighted: (resourceId: string) => boolean
-  existingResource: PendingMoveResource | undefined
-  isResourceHighlighted: boolean
-  setIsResourceHighlighted: (isHighlighted: boolean) => void
-  addToStack: (item: ResourceItemContent) => void
-  removeFromStack: (numberOfResources: number) => void
-  hasAdditionalLeftPadding: boolean
+export const LoadingResourceItemsResults = () => {
+  return Array.from({ length: 5 }).map((_, index) => (
+    <ResourceItem
+      key={`loading-${index}`}
+      item={{
+        id: `loading-${index}`,
+        title: `Loading...`,
+        type: ResourceType.Folder,
+        permalink: "",
+      }}
+      isLoading={true}
+    />
+  ))
 }
+
 export const ResourceItemsResults = ({
   resourceItems,
   isResourceIdHighlighted,
@@ -41,7 +46,16 @@ export const ResourceItemsResults = ({
   addToStack,
   removeFromStack,
   hasAdditionalLeftPadding,
-}: ResourceItemsProps) => {
+}: {
+  resourceItems: ResourceItemContent[]
+  isResourceIdHighlighted: (resourceId: string) => boolean
+  existingResource: PendingMoveResource | undefined
+  isResourceHighlighted: boolean
+  setIsResourceHighlighted: (isHighlighted: boolean) => void
+  addToStack: (item: ResourceItemContent) => void
+  removeFromStack: (numberOfResources: number) => void
+  hasAdditionalLeftPadding: boolean
+}) => {
   return resourceItems.map((item) => {
     const isHighlighted = isResourceIdHighlighted(item.id)
     const canClickIntoItem =
@@ -71,14 +85,13 @@ export const ResourceItemsResults = ({
   })
 }
 
-interface ZeroResultProps {
-  searchQuery: string
-  handleClickClearSearch: () => void
-}
 export const ZeroResult = ({
   searchQuery,
   handleClickClearSearch,
-}: ZeroResultProps) => {
+}: {
+  searchQuery: string
+  handleClickClearSearch: () => void
+}) => {
   return (
     <VStack
       h="full"

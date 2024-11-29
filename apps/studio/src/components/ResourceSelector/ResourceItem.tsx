@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import { Box, Icon, Text, VStack } from "@chakra-ui/react"
+import { Box, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { ErrorBoundary } from "react-error-boundary"
@@ -10,9 +10,10 @@ import { getIcon } from "~/utils/resources"
 interface ResourceItemProps {
   item: ResourceItemContent
   isDisabled?: boolean
-  isHighlighted: boolean
-  handleOnClick: () => void
+  isHighlighted?: boolean
+  handleOnClick?: () => void
   hasAdditionalLeftPadding?: boolean
+  isLoading?: boolean
 }
 
 const getButtonProps = ({ isHighlighted }: { isHighlighted: boolean }) => {
@@ -35,9 +36,10 @@ const getButtonProps = ({ isHighlighted }: { isHighlighted: boolean }) => {
 const SuspendableResourceItem = ({
   item,
   isDisabled,
-  isHighlighted,
+  isHighlighted = false,
   handleOnClick,
   hasAdditionalLeftPadding = false,
+  isLoading = false,
 }: ResourceItemProps) => {
   const buttonProps = getButtonProps({
     isHighlighted,
@@ -65,12 +67,21 @@ const SuspendableResourceItem = ({
       gap="0.25rem"
     >
       <VStack alignItems="flex-start" textAlign="left" gap="0.25rem">
-        <Text noOfLines={1} textStyle="caption-1">
-          {item.title}
-        </Text>
-        <Text noOfLines={1} textStyle="caption-2">
-          {`/${item.permalink}`}
-        </Text>
+        {isLoading ? (
+          <>
+            <Skeleton width="12rem" height="1.125rem" variant="pulse" />
+            <Skeleton width="18rem" height="1.125rem" variant="pulse" />
+          </>
+        ) : (
+          <>
+            <Text noOfLines={1} textStyle="caption-1">
+              {item.title}
+            </Text>
+            <Text noOfLines={1} textStyle="caption-2">
+              {`/${item.permalink}`}
+            </Text>
+          </>
+        )}
       </VStack>
     </Button>
   )

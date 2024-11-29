@@ -7,6 +7,7 @@ import type { PendingMoveResource } from "~/features/editing-experience/types"
 import { useSearchQuery } from "~/hooks/useSearchQuery"
 import { getUserViewableResourceTypes } from "~/utils/resources"
 import {
+  LoadingResourceItemsResults,
   NoItemsInFolderResult,
   ResourceItemsResults,
   ZeroResult,
@@ -14,6 +15,7 @@ import {
 import {
   BackButtonHeader,
   HomeHeader,
+  LoadingHeader,
   SearchResultsHeader,
 } from "./ResourceSelectorHeader"
 import { SearchBar } from "./SearchBar"
@@ -38,7 +40,7 @@ const SuspensableResourceSelector = ({
     searchValue,
     setSearchValue,
     debouncedSearchTerm: searchQuery,
-    resources,
+    isLoading,
   } = useSearchQuery({
     siteId: String(siteId),
     resourceTypes: onlyShowFolders
@@ -70,6 +72,9 @@ const SuspensableResourceSelector = ({
   const isShowingSearchResults = !!searchQuery && searchQuery.length > 0
 
   const renderHeader = () => {
+    if (isLoading) {
+      return <LoadingHeader />
+    }
     if (shouldShowBackButton) {
       return (
         <BackButtonHeader
@@ -96,6 +101,9 @@ const SuspensableResourceSelector = ({
   }
 
   const renderContent = () => {
+    if (isLoading) {
+      return <LoadingResourceItemsResults />
+    }
     if (isShowingSearchResults && resourceItems.length === 0) {
       return (
         <ZeroResult

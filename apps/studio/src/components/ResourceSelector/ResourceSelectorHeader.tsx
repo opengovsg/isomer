@@ -30,6 +30,14 @@ export const HomeHeader = () => {
   )
 }
 
+export const LoadingHeader = () => {
+  return (
+    <Text textStyle="caption-2" py="0.375rem" px="0.375rem">
+      Searching your website, high and low
+    </Text>
+  )
+}
+
 export const BackButtonHeader = ({
   handleOnClick,
 }: {
