@@ -15,6 +15,7 @@ export const resourceHandlers = {
             | "CollectionPage",
           // ID must be unique so infinite loop won't occur
           id: `${resourceId}-${item.title}-${item.id}`,
+          parentId: item.parentId,
         }))
         return {
           items,
@@ -52,12 +53,14 @@ export const resourceHandlers = {
             id: "1",
             title: "Homepage",
             permalink: "/",
+            type: "RootPage",
           },
           {
             parentId: "1",
             id: "2",
             title: "Collection",
             permalink: "collection",
+            type: "Collection",
           },
         ]
       })

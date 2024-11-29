@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-import type { PendingMoveResource } from "~/features/editing-experience/types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { trpc } from "~/utils/trpc"
 
@@ -10,16 +9,18 @@ export const useResourceStack = ({
   onChange,
   selectedResourceId,
   onlyShowFolders,
+  resourceIds = [],
 }: {
   siteId: number
   onChange: (resourceId: string) => void
   selectedResourceId: string | undefined
   onlyShowFolders: boolean
+  resourceIds?: string[]
 }) => {
   // NOTE: This is the stack of user's navigation through the resource tree
   // NOTE: We should always start the stack from `/` (root)
   // so that the user will see a full overview of their site structure
-  const [resourceStack, setResourceStack] = useState<PendingMoveResource[]>([])
+  const [resourceStack, setResourceStack] = useState<ResourceItemContent[]>([])
 
   const [isResourceHighlighted, setIsResourceHighlighted] =
     useState<boolean>(true)
@@ -32,14 +33,15 @@ export const useResourceStack = ({
     () => resourceStack[resourceStack.length - 2],
     [resourceStack],
   )
-  const curResourceId = useMemo(() => moveDest?.resourceId, [moveDest])
+  const curResourceId = useMemo(() => moveDest?.id, [moveDest])
 
-  const ancestryStack: PendingMoveResource[] = trpc.resource.getAncestryWithSelf
-    .useSuspenseQuery({
-      siteId: String(siteId),
-      resourceId: selectedResourceId,
-    })[0]
-    .map((resource) => ({ ...resource, resourceId: resource.id }))
+  const existingAncestryStack: ResourceItemContent[] =
+    trpc.resource.getAncestryWithSelf
+      .useSuspenseQuery({
+        siteId: String(siteId),
+        resourceId: selectedResourceId,
+      })[0]
+      .map((resource) => ({ ...resource, resourceId: resource.id }))
 
   const queryFn = onlyShowFolders
     ? trpc.resource.getFolderChildrenOf.useInfiniteQuery
@@ -52,9 +54,7 @@ export const useResourceStack = ({
   } = queryFn(
     {
       resourceId:
-        (isResourceHighlighted
-          ? parentDest?.resourceId
-          : moveDest?.resourceId) ?? null,
+        (isResourceHighlighted ? parentDest?.id : moveDest?.id) ?? null,
       siteId: String(siteId),
       limit: 25,
     },
@@ -62,22 +62,31 @@ export const useResourceStack = ({
       getNextPageParam: (lastPage) => lastPage.nextOffset,
     },
   )
+
+  const resourceItemsWithAncestryStack: ResourceItemContent[][] =
+    trpc.resource.getBatchAncestryWithSelf
+      .useSuspenseQuery({
+        siteId: String(siteId),
+        resourceIds:
+          resourceIds.length > 0
+            ? resourceIds
+            : pages.flatMap(({ items }) => items).map((item) => item.id),
+      })[0]
+      .map((resource) => resource.map((r) => ({ ...r, resourceId: r.id })))
+
+  console.log(2222, resourceItemsWithAncestryStack)
+
   const resourceItems: ResourceItemContent[] = useMemo(
     () => pages.flatMap(({ items }) => items),
     [pages],
   )
+  console.log(1111, resourceItems)
 
   const addToStack = useCallback(
     (resourceItemContent: ResourceItemContent): void => {
-      const newResource: PendingMoveResource = {
-        permalink: resourceItemContent.permalink,
-        title: resourceItemContent.title,
-        resourceId: resourceItemContent.id,
-        parentId: parentDest?.resourceId ?? null,
-      }
-      setResourceStack((prev) => [...prev, newResource])
+      setResourceStack((prev) => [...prev, resourceItemContent])
     },
-    [parentDest],
+    [],
   )
 
   const removeFromStack = useCallback((numberOfResources: number): void => {
@@ -131,12 +140,12 @@ export const useResourceStack = ({
 
   useEffect(() => {
     if (
-      ancestryStack.length <= 0 ||
-      JSON.stringify(ancestryStack) === JSON.stringify(resourceStack)
+      existingAncestryStack.length <= 0 ||
+      JSON.stringify(existingAncestryStack) === JSON.stringify(resourceStack)
     ) {
       return
     }
-    setResourceStack(ancestryStack)
+    setResourceStack(existingAncestryStack)
   }, [])
 
   useEffect(() => {

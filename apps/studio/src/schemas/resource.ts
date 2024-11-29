@@ -83,6 +83,7 @@ export interface ResourceItemContent {
   permalink: string
   type: ResourceType
   id: string
+  parentId: string | null
 }
 
 export interface ResourceChildrenOfType {

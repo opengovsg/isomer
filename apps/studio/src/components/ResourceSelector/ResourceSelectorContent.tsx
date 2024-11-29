@@ -2,7 +2,6 @@ import { Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-import type { PendingMoveResource } from "~/features/editing-experience/types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { ResourceItem } from "./ResourceItem"
 
@@ -31,6 +30,7 @@ export const LoadingResourceItemsResults = () => {
         title: `Loading...`,
         type: ResourceType.Folder,
         permalink: "",
+        parentId: null,
       }}
       isLoading={true}
     />
@@ -46,7 +46,7 @@ export const ResourceItemsResults = ({
 }: {
   resourceItems: ResourceItemContent[]
   isResourceIdHighlighted: (resourceId: string) => boolean
-  existingResource: PendingMoveResource | undefined
+  existingResource: ResourceItemContent | undefined
   hasAdditionalLeftPadding: boolean
   resourceItemHandleClick: (item: ResourceItemContent) => void
 }) => {
@@ -55,7 +55,7 @@ export const ResourceItemsResults = ({
       <ResourceItem
         key={item.id}
         item={item}
-        isDisabled={item.id === existingResource?.resourceId}
+        isDisabled={item.id === existingResource?.id}
         isHighlighted={isResourceIdHighlighted(item.id)}
         handleOnClick={() => resourceItemHandleClick(item)}
         hasAdditionalLeftPadding={hasAdditionalLeftPadding}

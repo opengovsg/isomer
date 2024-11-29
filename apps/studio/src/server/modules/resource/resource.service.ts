@@ -427,6 +427,7 @@ export const getAncestryWithSelf = async ({
           "Resource.title",
           "Resource.permalink",
           "Resource.parentId",
+          "Resource.type",
         ])
         .where("Resource.siteId", "=", Number(siteId))
         .where("Resource.id", "=", String(resourceId))
@@ -442,6 +443,7 @@ export const getAncestryWithSelf = async ({
               "Resource.title",
               "Resource.permalink",
               "Resource.parentId",
+              "Resources.type",
             ]),
         ),
     )
@@ -451,6 +453,7 @@ export const getAncestryWithSelf = async ({
       "Resources.title",
       "Resources.permalink",
       "Resources.parentId",
+      "Resources.type",
     ])
     .execute()
 

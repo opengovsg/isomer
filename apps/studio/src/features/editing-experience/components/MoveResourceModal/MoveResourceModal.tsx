@@ -31,10 +31,7 @@ export const MoveResourceModal = () => {
     <Modal isOpen={!!moveItem} onClose={onClose}>
       <ModalOverlay />
       {moveItem && (
-        <MoveResourceContent
-          onClose={onClose}
-          resourceId={moveItem.resourceId}
-        />
+        <MoveResourceContent onClose={onClose} resourceId={moveItem.id} />
       )}
     </Modal>
   )
@@ -91,7 +88,7 @@ const MoveResourceContent = withSuspense(
         // and invalidate the new + old folders
         await utils.folder.getMetadata.invalidate()
         await utils.resource.getMetadataById.invalidate({
-          resourceId: movedItem?.resourceId,
+          resourceId: movedItem?.id,
         })
         toast({ title: "Resource moved!" })
       },
@@ -136,10 +133,10 @@ const MoveResourceContent = withSuspense(
             }
             isLoading={isLoading}
             onClick={() =>
-              movedItem?.resourceId &&
+              movedItem?.id &&
               mutate({
                 siteId,
-                movedResourceId: movedItem.resourceId,
+                movedResourceId: movedItem.id,
                 destinationResourceId: curResourceId,
               })
             }

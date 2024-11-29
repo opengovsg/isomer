@@ -3,7 +3,7 @@ import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-import type { PendingMoveResource } from "~/features/editing-experience/types"
+import type { ResourceItemContent } from "~/schemas/resource"
 import { useSearchQuery } from "~/hooks/useSearchQuery"
 import { getUserViewableResourceTypes } from "~/utils/resources"
 import {
@@ -25,7 +25,7 @@ interface ResourceSelectorProps {
   siteId: number
   onChange: (resourceId: string) => void
   selectedResourceId?: string
-  existingResource?: PendingMoveResource
+  existingResource?: ResourceItemContent
   onlyShowFolders?: boolean
 }
 
@@ -41,6 +41,7 @@ const SuspensableResourceSelector = ({
     setSearchValue,
     debouncedSearchTerm: searchQuery,
     isLoading,
+    resources,
   } = useSearchQuery({
     siteId: String(siteId),
     resourceTypes: onlyShowFolders
@@ -66,6 +67,7 @@ const SuspensableResourceSelector = ({
     onChange,
     selectedResourceId,
     onlyShowFolders,
+    resourceIds: resources.map((resource) => resource.id),
   })
 
   // TODO: Fix this

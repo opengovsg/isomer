@@ -124,7 +124,7 @@ export const resourceRouter = router({
 
       let query = db
         .selectFrom("Resource")
-        .select(["title", "permalink", "type", "id"])
+        .select(["title", "permalink", "type", "id", "parentId"])
         .where("Resource.type", "in", [ResourceType.Folder])
         .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
@@ -171,7 +171,7 @@ export const resourceRouter = router({
       }
       let query = db
         .selectFrom("Resource")
-        .select(["title", "permalink", "type", "id"])
+        .select(["title", "permalink", "type", "id", "parentId"])
         .where("Resource.type", "!=", ResourceType.RootPage)
         .where("Resource.type", "!=", ResourceType.IndexPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
