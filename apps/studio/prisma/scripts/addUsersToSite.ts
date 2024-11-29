@@ -8,30 +8,32 @@ export const addUsersToSite = async (siteId: number, emails: string[]) => {
 
   await Promise.all(
     lowercasedEmails.map(async (email) => {
-      const user = await db
-        .insertInto("User")
-        .values({
-          id: cuid2.createId(),
-          name: email.split("@")[0]!,
-          email,
-          phone: "",
-        })
-        .onConflict((oc) =>
-          oc
-            .column("email")
-            .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
-        )
-        .returning(["id", "name"])
-        .executeTakeFirstOrThrow()
+      await db.transaction().execute(async (tx) => {
+        const user = await tx
+          .insertInto("User")
+          .values({
+            id: cuid2.createId(),
+            name: email.split("@")[0]!,
+            email,
+            phone: "",
+          })
+          .onConflict((oc) =>
+            oc
+              .column("email")
+              .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
+          )
+          .returning(["id", "name"])
+          .executeTakeFirstOrThrow()
 
-      await db
-        .insertInto("ResourcePermission")
-        .values({
-          userId: user.id,
-          siteId,
-          role: RoleType.Editor,
-        })
-        .execute()
+        await tx
+          .insertInto("ResourcePermission")
+          .values({
+            userId: user.id,
+            siteId,
+            role: RoleType.Editor,
+          })
+          .execute()
+      })
     }),
   )
 }
