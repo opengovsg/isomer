@@ -2,8 +2,8 @@ export interface RootDrawerState {
   state: "root"
 }
 
-export interface AdminModeDrawerState {
-  state: "adminMode"
+export interface RawJsonEditorModeDrawerState {
+  state: "rawJsonEditor"
 }
 
 export interface AddNewBlockState {
@@ -28,7 +28,7 @@ export interface HeroEditorState {
 
 export type DrawerState =
   | RootDrawerState
-  | AdminModeDrawerState
+  | RawJsonEditorModeDrawerState
   | AddNewBlockState
   | NativeEditorState
   | ComplexEditorState
