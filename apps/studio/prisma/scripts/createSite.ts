@@ -1,4 +1,5 @@
 import { IsomerSchema } from "@opengovsg/isomer-components"
+import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
 
 import type { Navbar } from "~/server/modules/resource/resource.types"
 import { db, jsonb, RoleType } from "~/server/modules/database"
@@ -123,27 +124,6 @@ const FOOTER_ITEMS = [
   },
 ]
 
-const ISOMER_ADMINS = [
-  "alex",
-  "jan",
-  "jiachin",
-  "sehyun",
-  "harish",
-  "zhongjun",
-  "adriangoh",
-]
-
-const ISOMER_MIGRATORS = [
-  "tingshian",
-  "hakeem",
-  "elora",
-  "jinhui",
-  "junxiang",
-  "rayyan",
-  "yongteng",
-  "huaying",
-  "weiping",
-]
 export const createSite = async (siteName: string) => {
   const siteId = await db.transaction().execute(async (tx) => {
     const { id: siteId } = await tx
