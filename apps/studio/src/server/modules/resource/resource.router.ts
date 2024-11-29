@@ -9,6 +9,7 @@ import {
   countResourceSchema,
   deleteResourceSchema,
   getAncestryWithSelfSchema,
+  getBatchAncestryWithSelfSchema,
   getChildrenSchema,
   getFullPermalinkSchema,
   getMetadataSchema,
@@ -28,6 +29,7 @@ import {
 } from "../permissions/permissions.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
+  getAncestryWithSelf,
   getSearchRecentlyEdited,
   getSearchResults,
   getWithFullPermalink,
@@ -467,44 +469,22 @@ export const resourceRouter = router({
       if (!resourceId) {
         return []
       }
+      return await getAncestryWithSelf({
+        siteId: Number(siteId),
+        resourceId: Number(resourceId),
+      })
+    }),
 
-      const ancestorsWithSelf = await db
-        .withRecursive("Resources", (eb) =>
-          eb
-            .selectFrom("Resource")
-            .select([
-              "Resource.id",
-              "Resource.title",
-              "Resource.permalink",
-              "Resource.parentId",
-            ])
-            .where("Resource.siteId", "=", Number(siteId))
-            .where("Resource.id", "=", resourceId)
-            .where((eb) =>
-              eb.and([eb("Resource.type", "!=", ResourceType.RootPage)]),
-            )
-            .unionAll(
-              eb
-                .selectFrom("Resource")
-                .innerJoin("Resources", "Resources.parentId", "Resource.id")
-                .select([
-                  "Resource.id",
-                  "Resource.title",
-                  "Resource.permalink",
-                  "Resource.parentId",
-                ]),
-            ),
-        )
-        .selectFrom("Resources")
-        .select([
-          "Resources.id",
-          "Resources.title",
-          "Resources.permalink",
-          "Resources.parentId",
-        ])
-        .execute()
-
-      return ancestorsWithSelf.reverse()
+  getBatchAncestryWithSelf: protectedProcedure
+    .input(getBatchAncestryWithSelfSchema)
+    .query(async ({ input: { siteId, resourceIds } }) => {
+      const ancestryPromises = resourceIds.map(async (id) => {
+        return await getAncestryWithSelf({
+          siteId: Number(siteId),
+          resourceId: Number(id),
+        })
+      })
+      return await Promise.all(ancestryPromises)
     }),
 
   search: protectedProcedure

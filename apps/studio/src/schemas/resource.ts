@@ -73,6 +73,11 @@ export const getAncestryWithSelfSchema = z.object({
   resourceId: z.string().optional(),
 })
 
+export const getBatchAncestryWithSelfSchema = z.object({
+  siteId: z.string(),
+  resourceIds: z.array(z.string()),
+})
+
 export interface ResourceItemContent {
   title: string
   permalink: string

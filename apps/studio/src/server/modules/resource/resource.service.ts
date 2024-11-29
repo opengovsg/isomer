@@ -411,6 +411,52 @@ export const publishResource = async (
   return addedVersionResult
 }
 
+export const getAncestryWithSelf = async ({
+  siteId,
+  resourceId,
+}: {
+  siteId: number
+  resourceId: number
+}) => {
+  const ancestorsWithSelf = await db
+    .withRecursive("Resources", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .select([
+          "Resource.id",
+          "Resource.title",
+          "Resource.permalink",
+          "Resource.parentId",
+        ])
+        .where("Resource.siteId", "=", Number(siteId))
+        .where("Resource.id", "=", String(resourceId))
+        .where((eb) =>
+          eb.and([eb("Resource.type", "!=", ResourceType.RootPage)]),
+        )
+        .unionAll(
+          eb
+            .selectFrom("Resource")
+            .innerJoin("Resources", "Resources.parentId", "Resource.id")
+            .select([
+              "Resource.id",
+              "Resource.title",
+              "Resource.permalink",
+              "Resource.parentId",
+            ]),
+        ),
+    )
+    .selectFrom("Resources")
+    .select([
+      "Resources.id",
+      "Resources.title",
+      "Resources.permalink",
+      "Resources.parentId",
+    ])
+    .execute()
+
+  return ancestorsWithSelf.reverse()
+}
+
 export const getWithFullPermalink = async ({
   resourceId,
 }: {
