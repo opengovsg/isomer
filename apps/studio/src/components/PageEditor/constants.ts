@@ -1,5 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { DYNAMIC_STATISTICS_TYPE } from "@opengovsg/isomer-components"
+import { DYNAMIC_DATA_BANNER_TYPE } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
@@ -177,8 +177,8 @@ export const DEFAULT_BLOCKS: Record<
     url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
   },
   // TODO: Replace with actual working API endpoint
-  [DYNAMIC_STATISTICS_TYPE]: {
-    type: `${DYNAMIC_STATISTICS_TYPE}`,
+  [DYNAMIC_DATA_BANNER_TYPE]: {
+    type: `${DYNAMIC_DATA_BANNER_TYPE}`,
     apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
     title: "hijri_date",
     statistics: [
@@ -305,9 +305,9 @@ export const BLOCK_TO_META: Record<
       "You can embed videos hosted on platforms such as YouTube and Vimeo.",
     imageSrc: "/assets/block-images/Video.png",
   },
-  [DYNAMIC_STATISTICS_TYPE]: {
-    label: "Dynamic statistics",
-    description: "Display dynamic statistics",
+  [DYNAMIC_DATA_BANNER_TYPE]: {
+    label: "Dynamic Data Banner",
+    description: "Display dynamic data banner",
     usageText: "This block supports fetching data from an API endpoint.",
   },
 }

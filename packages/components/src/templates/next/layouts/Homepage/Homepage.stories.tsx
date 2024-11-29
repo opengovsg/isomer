@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { HomePageSchemaType } from "~/engine"
-import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicStatistics/utils"
+import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
 import Homepage from "./Homepage"
 
 // Template for stories
@@ -228,7 +228,7 @@ export const Default: Story = {
         secondaryButtonUrl: "/",
       },
       {
-        type: "dynamicstatistics",
+        type: "dynamicdatabanner",
         apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
         title: "hijri_date",
         statistics: [

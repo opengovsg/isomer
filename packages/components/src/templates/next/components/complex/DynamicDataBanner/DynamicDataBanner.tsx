@@ -1,8 +1,8 @@
-import type { DynamicStatisticsProps } from "~/interfaces"
+import type { DynamicDataBannerProps } from "~/interfaces"
 import { getReferenceLinkHref } from "~/utils"
-import { DynamicStatisticsClient } from "./DynamicStatisticsClient"
+import { DynamicDataBannerClient } from "./DynamicDataBannerClient"
 
-export const DynamicStatistics = ({
+export const DynamicDataBanner = ({
   apiEndpoint,
   title,
   statistics,
@@ -10,9 +10,9 @@ export const DynamicStatistics = ({
   label,
   site,
   LinkComponent,
-}: DynamicStatisticsProps) => {
+}: DynamicDataBannerProps) => {
   return (
-    <DynamicStatisticsClient
+    <DynamicDataBannerClient
       apiEndpoint={apiEndpoint}
       title={title}
       statistics={statistics}

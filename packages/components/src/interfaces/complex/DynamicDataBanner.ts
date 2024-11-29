@@ -3,17 +3,17 @@ import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 
-export const DYNAMIC_STATISTICS_TYPE = "dynamicstatistics"
+export const DYNAMIC_DATA_BANNER_TYPE = "dynamicdatabanner"
 
 // Hardcoded for now because
 // 1. MUIS is the only use case and there's always 6 prayer timeslots
 // 2. No other known use cases have been identified
-export const NUMBER_OF_STATISTICS = 6
+export const NUMBER_OF_DATA = 6
 
-export const DynamicStatisticsSchema = Type.Object(
+export const DynamicDataBannerSchema = Type.Object(
   {
-    type: Type.Literal(DYNAMIC_STATISTICS_TYPE, {
-      default: DYNAMIC_STATISTICS_TYPE,
+    type: Type.Literal(DYNAMIC_DATA_BANNER_TYPE, {
+      default: DYNAMIC_DATA_BANNER_TYPE,
     }),
     apiEndpoint: Type.String({
       title: "API endpoint",
@@ -43,8 +43,8 @@ export const DynamicStatisticsSchema = Type.Object(
       }),
       {
         title: "Statistics",
-        minItems: NUMBER_OF_STATISTICS,
-        maxItems: NUMBER_OF_STATISTICS,
+        minItems: NUMBER_OF_DATA,
+        maxItems: NUMBER_OF_DATA,
       },
     ),
     label: Type.Optional(
@@ -74,12 +74,12 @@ export const DynamicStatisticsSchema = Type.Object(
         fields: ["label", "url"],
       },
     ],
-    title: "DynamicStatistics component",
-    description: "A component that displays DynamicStatistics",
+    title: "DynamicDataBanner component",
+    description: "A component that displays DynamicDataBanner",
   },
 )
 
-export type DynamicStatisticsProps = Static<typeof DynamicStatisticsSchema> & {
+export type DynamicDataBannerProps = Static<typeof DynamicDataBannerSchema> & {
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }

@@ -6,19 +6,19 @@ import {
   useQuery,
 } from "@tanstack/react-query"
 
-import type { DynamicStatisticsProps } from "~/interfaces"
-import { NUMBER_OF_STATISTICS } from "~/interfaces"
+import type { DynamicDataBannerProps } from "~/interfaces"
+import { NUMBER_OF_DATA } from "~/interfaces"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { getSingaporeDateLong, getSingaporeDateYYYYMMDD } from "./utils"
 
-export const DynamicStatisticsUI = ({
+export const DynamicDataBannerUI = ({
   title,
   statistics,
   url,
   label,
   LinkComponent,
-}: Pick<DynamicStatisticsProps, "title" | "label" | "url" | "LinkComponent"> & {
+}: Pick<DynamicDataBannerProps, "title" | "label" | "url" | "LinkComponent"> & {
   statistics: { label: string; value: string }[]
 }) => {
   const shouldRenderUrl: boolean = !!url && !!label
@@ -54,7 +54,7 @@ export const DynamicStatisticsUI = ({
           )}
         </div>
         <div className="grid grid-cols-3 gap-y-1 md:flex md:justify-between md:justify-items-center lg:col-span-8 lg:col-start-5">
-          {statistics.slice(0, NUMBER_OF_STATISTICS).map((statistic) => (
+          {statistics.slice(0, NUMBER_OF_DATA).map((statistic) => (
             <div className="flex w-fit flex-col items-start justify-center gap-0.5 py-3 md:items-center">
               <div className="prose-body-sm">{statistic.label}</div>
               <div className="prose-headline-lg-medium">{statistic.value}</div>
@@ -69,19 +69,19 @@ export const DynamicStatisticsUI = ({
   )
 }
 
-type DynamicStatisticsClientProps = Omit<
-  DynamicStatisticsProps,
+type DynamicDataBannerClientProps = Omit<
+  DynamicDataBannerProps,
   "type" | "site"
 >
 
-const DynamicStatisticsContent = ({
+const DynamicDataBannerContent = ({
   apiEndpoint,
   title,
   statistics,
   url,
   label,
   LinkComponent,
-}: DynamicStatisticsClientProps) => {
+}: DynamicDataBannerClientProps) => {
   const { isPending, error, data } = useQuery({
     queryKey: [getSingaporeDateYYYYMMDD()],
     queryFn: async () => {
@@ -90,12 +90,12 @@ const DynamicStatisticsContent = ({
     },
   })
 
-  if (isPending || error || statistics.length !== NUMBER_OF_STATISTICS)
-    return <DynamicStatisticsUI statistics={[]} url={url} label={label} />
+  if (isPending || error || statistics.length !== NUMBER_OF_DATA)
+    return <DynamicDataBannerUI statistics={[]} url={url} label={label} />
 
   const values = data[getSingaporeDateYYYYMMDD()] as Record<string, string>
   return (
-    <DynamicStatisticsUI
+    <DynamicDataBannerUI
       title={!!title ? values[title] : undefined}
       statistics={statistics.map((statistic) => ({
         label: statistic.label,
@@ -109,12 +109,12 @@ const DynamicStatisticsContent = ({
 }
 
 const queryClient = new QueryClient()
-export const DynamicStatisticsClient = (
-  props: DynamicStatisticsClientProps,
+export const DynamicDataBannerClient = (
+  props: DynamicDataBannerClientProps,
 ) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <DynamicStatisticsContent {...props} />
+      <DynamicDataBannerContent {...props} />
     </QueryClientProvider>
   )
 }
