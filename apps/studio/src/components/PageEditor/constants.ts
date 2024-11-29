@@ -180,7 +180,7 @@ export const DEFAULT_BLOCKS: Record<
   [DYNAMIC_DATA_BANNER_TYPE]: {
     type: `${DYNAMIC_DATA_BANNER_TYPE}`,
     apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
-    title: "hijri_date",
+    title: "hijriDate",
     statistics: [
       {
         label: "Subuh",

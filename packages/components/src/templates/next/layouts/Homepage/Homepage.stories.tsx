@@ -38,7 +38,7 @@ const meta: Meta<typeof Homepage> = {
         status: 200,
         response: {
           [getSingaporeDateYYYYMMDD()]: {
-            hijri_date: "17 Jamadilawal 1442H",
+            hijriDate: "17 Jamadilawal 1442H",
             subuh: "5:44am",
             syuruk: "7:08am",
             zohor: "1:10pm",
@@ -230,7 +230,7 @@ export const Default: Story = {
       {
         type: "dynamicdatabanner",
         apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
-        title: "hijri_date",
+        title: "hijriDate",
         statistics: [
           {
             label: "Subuh",

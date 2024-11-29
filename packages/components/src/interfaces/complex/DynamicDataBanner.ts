@@ -24,7 +24,7 @@ export const DynamicDataBannerSchema = Type.Object(
       Type.String({
         title: "Title JSON Key",
         description:
-          "Unique identifier in the JSON to be used as title e.g. 'hijri_date'",
+          "Unique identifier in the JSON to be used as title e.g. 'hijriDate'",
         maxLength: 100,
       }),
     ),
@@ -37,7 +37,7 @@ export const DynamicDataBannerSchema = Type.Object(
         }),
         key: Type.String({
           title: "Key",
-          description: "Unique identifier in the JSON e.g. 'maghrib_time'",
+          description: "Unique identifier in the JSON e.g. 'maghribTime'",
           maxLength: 100,
         }),
       }),
