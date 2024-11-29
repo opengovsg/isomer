@@ -278,27 +278,28 @@ type AllowedBlockSections = {
 }[]
 
 export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
-  { label: "Basic building blocks", types: ["prose", "image", "callout"] },
+  {
+    label: "Basic content blocks",
+    types: ["prose", "image", "accordion", "callout"],
+  },
   { label: "Embed external content", types: ["map", "video"] },
 ]
 
 export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
-  { label: "Basic building blocks", types: ["prose", "image", "callout"] },
   {
-    label: "Organise complex content",
-    types: ["contentpic", "infocards", "accordion", "infocols"],
+    label: "Basic content blocks",
+    types: ["prose", "image", "accordion", "callout", "contentpic", "infobar"],
+  },
+  {
+    label: "Add a new section",
+    types: ["infocards", "infocols", "keystatistics"],
   },
   { label: "Embed external content", types: ["map", "video"] },
 ]
 export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
-    label: "Highlight important information",
+    label: "Add a new section",
     // TODO(ISOM-1552): Add back iframe component when implemented
-    types: ["keystatistics", "infobar"],
-  },
-  {
-    label: "Organise complex content",
-    // TODO(ISOM-1552): Add back iframe component when implemented
-    types: ["infopic", "infocards", "infocols"],
+    types: ["infocards", "keystatistics", "infocols", "infopic", "infobar"],
   },
 ]
