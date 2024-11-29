@@ -17,6 +17,7 @@ import {
 } from "tests/integration/helpers/seed"
 
 import { createCallerFactory } from "~/server/trpc"
+import { getUserViewableResourceTypes } from "~/utils/resources"
 import { db } from "../../database"
 import { resourceRouter } from "../resource.router"
 
@@ -2306,7 +2307,7 @@ describe("resource.router", async () => {
       expect(result).toEqual(expected)
     })
 
-    it("should only return user viewable resource types", async () => {
+    it("should only return user viewable resource types if specified", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
@@ -2336,6 +2337,7 @@ describe("resource.router", async () => {
       const result = await caller.search({
         siteId: String(site.id),
         query: "test",
+        resourceTypes: getUserViewableResourceTypes(),
       })
 
       // Assert
