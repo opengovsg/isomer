@@ -41,44 +41,23 @@ export const ResourceItemsResults = ({
   resourceItems,
   isResourceIdHighlighted,
   existingResource,
-  isResourceHighlighted,
-  setIsResourceHighlighted,
-  addToStack,
-  removeFromStack,
   hasAdditionalLeftPadding,
+  resourceItemHandleClick,
 }: {
   resourceItems: ResourceItemContent[]
   isResourceIdHighlighted: (resourceId: string) => boolean
   existingResource: PendingMoveResource | undefined
-  isResourceHighlighted: boolean
-  setIsResourceHighlighted: (isHighlighted: boolean) => void
-  addToStack: (item: ResourceItemContent) => void
-  removeFromStack: (numberOfResources: number) => void
   hasAdditionalLeftPadding: boolean
+  resourceItemHandleClick: (item: ResourceItemContent) => void
 }) => {
   return resourceItems.map((item) => {
-    const isHighlighted = isResourceIdHighlighted(item.id)
-    const canClickIntoItem =
-      item.type === ResourceType.Folder || item.type === ResourceType.Collection
     return (
       <ResourceItem
         key={item.id}
         item={item}
         isDisabled={item.id === existingResource?.resourceId}
-        isHighlighted={isHighlighted}
-        handleOnClick={() => {
-          if (isHighlighted && canClickIntoItem) {
-            setIsResourceHighlighted(false)
-            return
-          }
-
-          if (isResourceHighlighted) {
-            removeFromStack(1)
-          } else {
-            setIsResourceHighlighted(true)
-          }
-          addToStack(item)
-        }}
+        isHighlighted={isResourceIdHighlighted(item.id)}
+        handleOnClick={() => resourceItemHandleClick(item)}
         hasAdditionalLeftPadding={hasAdditionalLeftPadding}
       />
     )

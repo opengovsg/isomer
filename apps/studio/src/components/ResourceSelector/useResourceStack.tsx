@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { PendingMoveResource } from "~/features/editing-experience/types"
 import type { ResourceItemContent } from "~/schemas/resource"
@@ -101,6 +102,33 @@ export const useResourceStack = ({
     return resourceStack.map((resource) => resource.permalink).join("/")
   }, [resourceStack])
 
+  const resourceItemHandleClick = useCallback(
+    (item: ResourceItemContent): void => {
+      const isItemHighlighted = isResourceIdHighlighted(item.id)
+      const canClickIntoItem =
+        item.type === ResourceType.Folder ||
+        item.type === ResourceType.Collection
+
+      if (isItemHighlighted && canClickIntoItem) {
+        setIsResourceHighlighted(false)
+        return
+      }
+
+      if (isResourceHighlighted) {
+        removeFromStack(1)
+      } else {
+        setIsResourceHighlighted(true)
+      }
+      addToStack(item)
+    },
+    [
+      isResourceIdHighlighted,
+      isResourceHighlighted,
+      addToStack,
+      removeFromStack,
+    ],
+  )
+
   useEffect(() => {
     if (
       ancestryStack.length <= 0 ||
@@ -126,10 +154,10 @@ export const useResourceStack = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    addToStack,
     removeFromStack,
     isResourceIdHighlighted,
     shouldShowBackButton,
+    resourceItemHandleClick,
   }
 }
 

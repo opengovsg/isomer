@@ -57,10 +57,10 @@ const SuspensableResourceSelector = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    addToStack,
     removeFromStack,
     isResourceIdHighlighted,
     shouldShowBackButton,
+    resourceItemHandleClick,
   } = useResourceStack({
     siteId,
     onChange,
@@ -120,11 +120,8 @@ const SuspensableResourceSelector = ({
         resourceItems={resourceItems}
         isResourceIdHighlighted={isResourceIdHighlighted}
         existingResource={existingResource}
-        isResourceHighlighted={isResourceHighlighted}
-        setIsResourceHighlighted={setIsResourceHighlighted}
-        addToStack={addToStack}
-        removeFromStack={removeFromStack}
         hasAdditionalLeftPadding={!isShowingSearchResults}
+        resourceItemHandleClick={resourceItemHandleClick}
       />
     )
   }
