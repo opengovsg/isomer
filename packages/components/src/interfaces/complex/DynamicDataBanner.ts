@@ -28,7 +28,7 @@ export const DynamicDataBannerSchema = Type.Object(
         maxLength: 100,
       }),
     ),
-    statistics: Type.Array(
+    data: Type.Array(
       Type.Object({
         label: Type.String({
           title: "Description",
@@ -42,7 +42,7 @@ export const DynamicDataBannerSchema = Type.Object(
         }),
       }),
       {
-        title: "Statistics",
+        title: "Data",
         minItems: NUMBER_OF_DATA,
         maxItems: NUMBER_OF_DATA,
       },
@@ -67,7 +67,7 @@ export const DynamicDataBannerSchema = Type.Object(
     groups: [
       {
         label: "Map API endpoint",
-        fields: ["apiEndpoint", "title", "statistics"],
+        fields: ["apiEndpoint", "title", "data"],
       },
       {
         label: "Add a call-to-action",

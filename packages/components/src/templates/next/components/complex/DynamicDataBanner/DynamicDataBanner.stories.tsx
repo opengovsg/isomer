@@ -19,7 +19,7 @@ type Story = StoryObj<typeof DynamicDataBannerUI>
 export const Default: Story = {
   args: {
     title: "1 Rejab 1446H",
-    statistics: [
+    data: [
       { label: "Subuh", value: "5:43am" },
       { label: "Syuruk", value: "7:07am" },
       { label: "Zohor", value: "1:09pm" },

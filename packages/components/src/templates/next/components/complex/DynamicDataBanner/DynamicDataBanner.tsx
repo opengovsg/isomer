@@ -5,7 +5,7 @@ import { DynamicDataBannerClient } from "./DynamicDataBannerClient"
 export const DynamicDataBanner = ({
   apiEndpoint,
   title,
-  statistics,
+  data,
   url,
   label,
   site,
@@ -15,7 +15,7 @@ export const DynamicDataBanner = ({
     <DynamicDataBannerClient
       apiEndpoint={apiEndpoint}
       title={title}
-      statistics={statistics}
+      data={data}
       url={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
       label={label}
       LinkComponent={LinkComponent}

@@ -14,12 +14,12 @@ import { getSingaporeDateLong, getSingaporeDateYYYYMMDD } from "./utils"
 
 export const DynamicDataBannerUI = ({
   title,
-  statistics,
+  data,
   url,
   label,
   LinkComponent,
 }: Pick<DynamicDataBannerProps, "title" | "label" | "url" | "LinkComponent"> & {
-  statistics: { label: string; value: string }[]
+  data: { label: string; value: string }[]
 }) => {
   const shouldRenderUrl: boolean = !!url && !!label
   const renderUrl = (): React.ReactNode => {
@@ -54,10 +54,10 @@ export const DynamicDataBannerUI = ({
           )}
         </div>
         <div className="grid grid-cols-3 gap-y-1 md:flex md:justify-between md:justify-items-center lg:col-span-8 lg:col-start-5">
-          {statistics.slice(0, NUMBER_OF_DATA).map((statistic) => (
+          {data.slice(0, NUMBER_OF_DATA).map((singleData) => (
             <div className="flex w-fit flex-col items-start justify-center gap-0.5 py-3 md:items-center">
-              <div className="prose-body-sm">{statistic.label}</div>
-              <div className="prose-headline-lg-medium">{statistic.value}</div>
+              <div className="prose-body-sm">{singleData.label}</div>
+              <div className="prose-headline-lg-medium">{singleData.value}</div>
             </div>
           ))}
         </div>
@@ -77,12 +77,16 @@ type DynamicDataBannerClientProps = Omit<
 const DynamicDataBannerContent = ({
   apiEndpoint,
   title,
-  statistics,
+  data,
   url,
   label,
   LinkComponent,
 }: DynamicDataBannerClientProps) => {
-  const { isPending, error, data } = useQuery({
+  const {
+    isPending,
+    error,
+    data: apiData,
+  } = useQuery({
     queryKey: [getSingaporeDateYYYYMMDD()],
     queryFn: async () => {
       const response = await fetch(apiEndpoint)
@@ -90,16 +94,16 @@ const DynamicDataBannerContent = ({
     },
   })
 
-  if (isPending || error || statistics.length !== NUMBER_OF_DATA)
-    return <DynamicDataBannerUI statistics={[]} url={url} label={label} />
+  if (isPending || error || data.length !== NUMBER_OF_DATA)
+    return <DynamicDataBannerUI data={[]} url={url} label={label} />
 
-  const values = data[getSingaporeDateYYYYMMDD()] as Record<string, string>
+  const values = apiData[getSingaporeDateYYYYMMDD()] as Record<string, string>
   return (
     <DynamicDataBannerUI
       title={!!title ? values[title] : undefined}
-      statistics={statistics.map((statistic) => ({
-        label: statistic.label,
-        value: values[statistic.key] || "-- : --",
+      data={data.map((singleData) => ({
+        label: singleData.label,
+        value: values[singleData.key] || "-- : --",
       }))}
       url={url}
       label={label}
