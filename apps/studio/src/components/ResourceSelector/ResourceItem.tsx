@@ -59,7 +59,7 @@ const SuspendableResourceItem = ({
         },
       })}
       {...(hasAdditionalLeftPadding && { pl: "2.25rem" })}
-      onClick={() => handleOnClick()}
+      onClick={handleOnClick}
       leftIcon={<Icon as={getIcon(item.type)} />}
       isDisabled={isDisabled}
       height="fit-content"
