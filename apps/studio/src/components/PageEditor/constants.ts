@@ -214,15 +214,15 @@ export const BLOCK_TO_META: Record<
     imageSrc: "/assets/block-images/KeyStatistics.png",
   },
   infobar: {
-    label: "Text with CTA",
+    label: "Call-to-Action",
     description: "Add a strong call-to-action",
     usageText:
       "Use this block to highlight key initatives on your homepage. It supports up to two buttons.",
     imageSrc: "/assets/block-images/Infobar.png",
   },
   contentpic: {
-    label: "Contentpic",
-    description: "Put an image and text side-by-side",
+    label: "Image with text",
+    description: "Put image and text side-by-side",
     usageText:
       "Use this block to juxtapose text next to a smaller image than usual, such as introducing a committee member along with their headshot.",
     imageSrc: "/assets/block-images/Contentpic.png",
