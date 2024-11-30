@@ -4,6 +4,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { ResourceItemContent } from "~/schemas/resource"
 import { ResourceItem } from "./ResourceItem"
+import { lastResourceItemInAncestryStack } from "./useResourceStack"
 
 export const NoItemsInFolderResult = () => {
   return (
@@ -38,26 +39,35 @@ export const LoadingResourceItemsResults = () => {
 }
 
 export const ResourceItemsResults = ({
-  resourceItems,
+  resourceItemsWithAncestryStack,
   isResourceIdHighlighted,
   existingResource,
   hasAdditionalLeftPadding,
-  resourceItemHandleClick,
+  handleClickResourceItem,
 }: {
-  resourceItems: ResourceItemContent[]
+  resourceItemsWithAncestryStack: ResourceItemContent[][]
   isResourceIdHighlighted: (resourceId: string) => boolean
   existingResource: ResourceItemContent | undefined
   hasAdditionalLeftPadding: boolean
-  resourceItemHandleClick: (item: ResourceItemContent) => void
+  handleClickResourceItem: (
+    resourceItemWithAncestryStack: ResourceItemContent[],
+  ) => void
 }) => {
-  return resourceItems.map((item) => {
+  return resourceItemsWithAncestryStack.map((resourceItemWithAncestryStack) => {
+    const lastChild = lastResourceItemInAncestryStack(
+      resourceItemWithAncestryStack,
+    )
+    if (!lastChild) return
+
     return (
       <ResourceItem
-        key={item.id}
-        item={item}
-        isDisabled={item.id === existingResource?.id}
-        isHighlighted={isResourceIdHighlighted(item.id)}
-        handleOnClick={() => resourceItemHandleClick(item)}
+        key={lastChild.id}
+        item={lastChild}
+        isDisabled={lastChild.id === existingResource?.id}
+        isHighlighted={isResourceIdHighlighted(lastChild.id)}
+        handleOnClick={() =>
+          handleClickResourceItem(resourceItemWithAncestryStack)
+        }
         hasAdditionalLeftPadding={hasAdditionalLeftPadding}
       />
     )

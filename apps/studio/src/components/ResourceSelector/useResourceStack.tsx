@@ -4,18 +4,24 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { trpc } from "~/utils/trpc"
 
+export const lastResourceItemInAncestryStack = (
+  resourceItemWithAncestryStack: ResourceItemContent[],
+): ResourceItemContent | undefined => {
+  return resourceItemWithAncestryStack[resourceItemWithAncestryStack.length - 1]
+}
+
 export const useResourceStack = ({
   siteId,
   onChange,
   selectedResourceId,
   onlyShowFolders,
-  resourceIds = [],
+  resourceIds,
 }: {
   siteId: number
   onChange: (resourceId: string) => void
   selectedResourceId: string | undefined
   onlyShowFolders: boolean
-  resourceIds?: string[]
+  resourceIds?: ResourceItemContent["id"][]
 }) => {
   // NOTE: This is the stack of user's navigation through the resource tree
   // NOTE: We should always start the stack from `/` (root)
@@ -26,22 +32,14 @@ export const useResourceStack = ({
     useState<boolean>(true)
 
   const moveDest = useMemo(
-    () => resourceStack[resourceStack.length - 1],
+    () => resourceStack[resourceStack.length - 1], // last item in stack
     [resourceStack],
   )
   const parentDest = useMemo(
-    () => resourceStack[resourceStack.length - 2],
+    () => resourceStack[resourceStack.length - 2], // second last item in stack
     [resourceStack],
   )
   const curResourceId = useMemo(() => moveDest?.id, [moveDest])
-
-  const existingAncestryStack: ResourceItemContent[] =
-    trpc.resource.getAncestryWithSelf
-      .useSuspenseQuery({
-        siteId: String(siteId),
-        resourceId: selectedResourceId,
-      })[0]
-      .map((resource) => ({ ...resource, resourceId: resource.id }))
 
   const queryFn = onlyShowFolders
     ? trpc.resource.getFolderChildrenOf.useInfiniteQuery
@@ -67,27 +65,11 @@ export const useResourceStack = ({
     trpc.resource.getBatchAncestryWithSelf
       .useSuspenseQuery({
         siteId: String(siteId),
-        resourceIds:
-          resourceIds.length > 0
-            ? resourceIds
-            : pages.flatMap(({ items }) => items).map((item) => item.id),
+        resourceIds: !!resourceIds
+          ? resourceIds
+          : pages.flatMap(({ items }) => items).map((item) => item.id),
       })[0]
       .map((resource) => resource.map((r) => ({ ...r, resourceId: r.id })))
-
-  console.log(2222, resourceItemsWithAncestryStack)
-
-  const resourceItems: ResourceItemContent[] = useMemo(
-    () => pages.flatMap(({ items }) => items),
-    [pages],
-  )
-  console.log(1111, resourceItems)
-
-  const addToStack = useCallback(
-    (resourceItemContent: ResourceItemContent): void => {
-      setResourceStack((prev) => [...prev, resourceItemContent])
-    },
-    [],
-  )
 
   const removeFromStack = useCallback((numberOfResources: number): void => {
     setResourceStack((prev) => prev.slice(0, -numberOfResources))
@@ -111,41 +93,66 @@ export const useResourceStack = ({
     return resourceStack.map((resource) => resource.permalink).join("/")
   }, [resourceStack])
 
-  const resourceItemHandleClick = useCallback(
-    (item: ResourceItemContent): void => {
-      const isItemHighlighted = isResourceIdHighlighted(item.id)
-      const canClickIntoItem =
-        item.type === ResourceType.Folder ||
-        item.type === ResourceType.Collection
+  const handleClickResourceItem = (
+    resourceItemWithAncestryStack: ResourceItemContent[],
+  ): void => {
+    const lastChild = lastResourceItemInAncestryStack(
+      resourceItemWithAncestryStack,
+    )
 
-      if (isItemHighlighted && canClickIntoItem) {
-        setIsResourceHighlighted(false)
-        return
-      }
+    // this should never happen. only added here to satisfy typescript
+    if (!lastChild) return
 
-      if (isResourceHighlighted) {
-        removeFromStack(1)
-      } else {
-        setIsResourceHighlighted(true)
-      }
-      addToStack(item)
-    },
-    [
-      isResourceIdHighlighted,
-      isResourceHighlighted,
-      addToStack,
-      removeFromStack,
-    ],
-  )
+    const isItemHighlighted = isResourceIdHighlighted(lastChild.id)
+    const canClickIntoItem =
+      lastChild.type === ResourceType.Folder ||
+      lastChild.type === ResourceType.Collection
+
+    if (isItemHighlighted && canClickIntoItem) {
+      setIsResourceHighlighted(false)
+      return
+    }
+
+    if (isResourceHighlighted) {
+      setResourceStack(resourceItemWithAncestryStack)
+    } else {
+      setIsResourceHighlighted(true)
+    }
+  }
+
+  const handleClickBackButton = useCallback(() => {
+    if (isResourceHighlighted) {
+      setIsResourceHighlighted(false)
+      removeFromStack(2)
+    } else {
+      removeFromStack(1)
+    }
+  }, [isResourceHighlighted, removeFromStack])
 
   useEffect(() => {
+    // If there is no selected resource, we don't need to update the stack
+    if (!selectedResourceId) return
+
+    const pendingMovedItemAncestryStack: ResourceItemContent[] =
+      trpc.resource.getAncestryWithSelf
+        .useSuspenseQuery({
+          siteId: String(siteId),
+          resourceId: selectedResourceId,
+        })[0]
+        .map((resource) => ({ ...resource, resourceId: resource.id }))
+
+    // If the ancestry stack is empty, we don't need to update the stack
+    if (pendingMovedItemAncestryStack.length <= 0) return
+
+    // If the ancestry stack is the same as the current stack, we don't need to update the stack
     if (
-      existingAncestryStack.length <= 0 ||
-      JSON.stringify(existingAncestryStack) === JSON.stringify(resourceStack)
+      JSON.stringify(pendingMovedItemAncestryStack) ===
+      JSON.stringify(resourceStack)
     ) {
       return
     }
-    setResourceStack(existingAncestryStack)
+
+    setResourceStack(pendingMovedItemAncestryStack)
   }, [])
 
   useEffect(() => {
@@ -156,17 +163,15 @@ export const useResourceStack = ({
 
   return {
     fullPermalink,
-    isResourceHighlighted,
-    setIsResourceHighlighted,
     moveDest,
-    resourceItems,
+    resourceItemsWithAncestryStack,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    removeFromStack,
     isResourceIdHighlighted,
     shouldShowBackButton,
-    resourceItemHandleClick,
+    handleClickBackButton,
+    handleClickResourceItem,
   }
 }
 

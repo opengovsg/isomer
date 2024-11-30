@@ -49,81 +49,68 @@ const SuspensableResourceSelector = ({
       : getUserViewableResourceTypes(),
   })
 
+  const isSearchQueryEmpty: boolean = searchQuery.trim().length === 0
+
   const {
     fullPermalink,
-    isResourceHighlighted,
-    setIsResourceHighlighted,
     moveDest,
-    resourceItems,
+    resourceItemsWithAncestryStack,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    removeFromStack,
     isResourceIdHighlighted,
     shouldShowBackButton,
-    resourceItemHandleClick,
+    handleClickBackButton,
+    handleClickResourceItem,
   } = useResourceStack({
     siteId,
     onChange,
     selectedResourceId,
     onlyShowFolders,
-    resourceIds: resources.map((resource) => resource.id),
+    resourceIds: isSearchQueryEmpty
+      ? undefined
+      : resources.map((resource) => resource.id),
   })
-
-  // TODO: Fix this
-  const isShowingSearchResults = !!searchQuery && searchQuery.length > 0
 
   const renderHeader = () => {
     if (isLoading) {
       return <LoadingHeader />
     }
     if (shouldShowBackButton) {
-      return (
-        <BackButtonHeader
-          handleOnClick={() => {
-            if (isResourceHighlighted) {
-              setIsResourceHighlighted(false)
-              removeFromStack(2)
-            } else {
-              removeFromStack(1)
-            }
-          }}
-        />
-      )
+      return <BackButtonHeader handleOnClick={handleClickBackButton} />
     }
-    if (isShowingSearchResults) {
-      return (
-        <SearchResultsHeader
-          resultsCount={resourceItems.length}
-          searchQuery={searchQuery}
-        />
-      )
+    if (isSearchQueryEmpty) {
+      return <HomeHeader />
     }
-    return <HomeHeader />
+    return (
+      <SearchResultsHeader
+        resultsCount={resourceItemsWithAncestryStack.length}
+        searchQuery={searchQuery}
+      />
+    )
   }
 
   const renderContent = () => {
     if (isLoading) {
       return <LoadingResourceItemsResults />
     }
-    if (isShowingSearchResults && resourceItems.length === 0) {
-      return (
+    if (resourceItemsWithAncestryStack.length === 0) {
+      return isSearchQueryEmpty ? (
+        <NoItemsInFolderResult />
+      ) : (
         <ZeroResult
           searchQuery={searchQuery}
           handleClickClearSearch={() => setSearchValue("")}
         />
       )
     }
-    if (resourceItems.length === 0) {
-      return <NoItemsInFolderResult />
-    }
     return (
       <ResourceItemsResults
-        resourceItems={resourceItems}
+        resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
         isResourceIdHighlighted={isResourceIdHighlighted}
         existingResource={existingResource}
-        hasAdditionalLeftPadding={!isShowingSearchResults}
-        resourceItemHandleClick={resourceItemHandleClick}
+        hasAdditionalLeftPadding={isSearchQueryEmpty}
+        handleClickResourceItem={handleClickResourceItem}
       />
     )
   }
