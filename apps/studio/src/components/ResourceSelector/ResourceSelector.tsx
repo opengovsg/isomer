@@ -42,6 +42,7 @@ const SuspensableResourceSelector = ({
     debouncedSearchTerm: searchQuery,
     isLoading,
     resources,
+    clearSearchValue,
   } = useSearchQuery({
     siteId: String(siteId),
     resourceTypes: onlyShowFolders
@@ -65,7 +66,10 @@ const SuspensableResourceSelector = ({
     handleClickResourceItem,
   } = useResourceStack({
     siteId,
-    onChange,
+    onChange: (resourceId: string) => {
+      onChange(resourceId)
+      clearSearchValue()
+    },
     selectedResourceId,
     onlyShowFolders,
     resourceIds: isSearchQueryEmpty
@@ -101,7 +105,7 @@ const SuspensableResourceSelector = ({
       ) : (
         <ZeroResult
           searchQuery={searchQuery}
-          handleClickClearSearch={() => setSearchValue("")}
+          handleClickClearSearch={clearSearchValue}
         />
       )
     }
