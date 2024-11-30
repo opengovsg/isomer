@@ -60,12 +60,12 @@ export const useResourceStack = ({
       getNextPageParam: (lastPage) => lastPage.nextOffset,
     },
   )
-
+  const useResourceIdsFromSearch = !!resourceIds
   const resourceItemsWithAncestryStack: ResourceItemContent[][] =
     trpc.resource.getBatchAncestryWithSelf
       .useSuspenseQuery({
         siteId: String(siteId),
-        resourceIds: !!resourceIds
+        resourceIds: useResourceIdsFromSearch
           ? resourceIds
           : pages.flatMap(({ items }) => items).map((item) => item.id),
       })[0]
@@ -159,13 +159,15 @@ export const useResourceStack = ({
     }
   }, [curResourceId])
 
+  // currently do not support fetching next page for search
   return {
     fullPermalink,
     moveDest,
     resourceItemsWithAncestryStack,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    fetchNextPage: useResourceIdsFromSearch ? () => {} : fetchNextPage,
+    hasNextPage: useResourceIdsFromSearch ? false : hasNextPage,
+    isFetchingNextPage: useResourceIdsFromSearch ? false : isFetchingNextPage,
     isResourceIdHighlighted,
     shouldShowBackButton,
     handleClickBackButton,
