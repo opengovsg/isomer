@@ -173,5 +173,3 @@ export const useResourceStack = ({
     handleClickResourceItem,
   }
 }
-
-export type UseResourceStackReturn = ReturnType<typeof useResourceStack>
