@@ -50,6 +50,7 @@ const SuspensableResourceSelector = ({
   })
 
   const isSearchQueryEmpty: boolean = searchQuery.trim().length === 0
+  const hasAdditionalLeftPadding: boolean = isSearchQueryEmpty
 
   const {
     fullPermalink,
@@ -109,7 +110,7 @@ const SuspensableResourceSelector = ({
         resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
         isResourceIdHighlighted={isResourceIdHighlighted}
         existingResource={existingResource}
-        hasAdditionalLeftPadding={isSearchQueryEmpty}
+        hasAdditionalLeftPadding={hasAdditionalLeftPadding}
         handleClickResourceItem={handleClickResourceItem}
       />
     )
@@ -136,7 +137,8 @@ const SuspensableResourceSelector = ({
         {hasNextPage && (
           <Button
             variant="link"
-            pl="2.25rem"
+            py="0.5rem"
+            pl={hasAdditionalLeftPadding ? "2.25rem" : "1rem"}
             size="xs"
             isLoading={isFetchingNextPage}
             onClick={() => fetchNextPage()}
