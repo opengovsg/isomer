@@ -164,7 +164,7 @@ const SuspensableResourceSelector = ({
 
 export const ResourceSelector = (props: ResourceSelectorProps) => {
   return (
-    <Suspense fallback={<Skeleton h="4rem" />}>
+    <Suspense fallback={<Skeleton h="20.75rem" />}>
       <SuspensableResourceSelector {...props} />
     </Suspense>
   )
