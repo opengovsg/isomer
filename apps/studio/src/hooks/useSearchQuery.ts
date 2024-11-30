@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { useDebounce } from "@uidotdev/usehooks"
 
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
@@ -16,20 +16,31 @@ export const useSearchQuery = ({
   const [searchValue, setSearchValue] = useState("")
   const debouncedSearchTerm = useDebounce(searchValue, 300)
 
-  const { data, isLoading } = trpc.resource.search.useInfiniteQuery({
-    siteId,
-    query: debouncedSearchTerm,
-    resourceTypes,
-  })
+  const { data, isLoading } = useCallback(() => {
+    return trpc.resource.search.useInfiniteQuery({
+      siteId,
+      query: debouncedSearchTerm,
+      resourceTypes,
+    })
+  }, [siteId, debouncedSearchTerm, resourceTypes])()
 
-  const resources: SearchResultResource[] =
-    data?.pages.flatMap((page) => page.resources) ?? []
+  const resources = useCallback((): SearchResultResource[] => {
+    return data?.pages.flatMap((page) => page.resources) ?? []
+  }, [data])()
 
-  const totalResultsCount =
-    data?.pages.reduce((acc, page) => acc + (page.totalCount ?? 0), 0) ?? 0
+  const totalResultsCount = useCallback(() => {
+    return (
+      data?.pages.reduce((acc, page) => acc + (page.totalCount ?? 0), 0) ?? 0
+    )
+  }, [data])()
 
-  const recentlyEditedResources: SearchResultResource[] =
-    data?.pages[0]?.recentlyEdited ?? []
+  const recentlyEditedResources = useCallback((): SearchResultResource[] => {
+    return data?.pages[0]?.recentlyEdited ?? []
+  }, [data])()
+
+  const clearSearchValue = useCallback(() => {
+    setSearchValue("")
+  }, [setSearchValue])
 
   return {
     searchValue,
@@ -39,5 +50,6 @@ export const useSearchQuery = ({
     isLoading,
     totalResultsCount,
     recentlyEditedResources,
+    clearSearchValue,
   }
 }
