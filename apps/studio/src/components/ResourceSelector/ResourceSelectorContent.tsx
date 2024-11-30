@@ -54,9 +54,10 @@ export const ResourceItemsResults = ({
   ) => void
 }) => {
   return resourceItemsWithAncestryStack.map((resourceItemWithAncestryStack) => {
-    const lastChild = lastResourceItemInAncestryStack(
-      resourceItemWithAncestryStack,
-    )
+    const lastChild: ResourceItemContent | undefined =
+      lastResourceItemInAncestryStack(resourceItemWithAncestryStack)
+
+    // this should never happen. only added here to satisfy typescript
     if (!lastChild) return
 
     return (
