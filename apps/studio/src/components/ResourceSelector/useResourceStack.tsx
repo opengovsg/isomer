@@ -128,17 +128,19 @@ export const useResourceStack = ({
     }
   }, [isResourceHighlighted, removeFromStack])
 
+  const pendingMovedItemAncestryStack: ResourceItemContent[] =
+    !!selectedResourceId
+      ? trpc.resource.getAncestryWithSelf
+          .useSuspenseQuery({
+            siteId: String(siteId),
+            resourceId: selectedResourceId,
+          })[0]
+          .map((resource) => ({ ...resource, resourceId: resource.id }))
+      : []
+
   useEffect(() => {
     // If there is no selected resource, we don't need to update the stack
     if (!selectedResourceId) return
-
-    const pendingMovedItemAncestryStack: ResourceItemContent[] =
-      trpc.resource.getAncestryWithSelf
-        .useSuspenseQuery({
-          siteId: String(siteId),
-          resourceId: selectedResourceId,
-        })[0]
-        .map((resource) => ({ ...resource, resourceId: resource.id }))
 
     // If the ancestry stack is empty, we don't need to update the stack
     if (pendingMovedItemAncestryStack.length <= 0) return
