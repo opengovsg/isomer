@@ -3,12 +3,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { ResourceItemContent } from "~/schemas/resource"
 import { trpc } from "~/utils/trpc"
-
-export const lastResourceItemInAncestryStack = (
-  resourceItemWithAncestryStack: ResourceItemContent[],
-): ResourceItemContent | undefined => {
-  return resourceItemWithAncestryStack[resourceItemWithAncestryStack.length - 1]
-}
+import { lastResourceItemInAncestryStack } from "./utils"
 
 export const useResourceStack = ({
   siteId,

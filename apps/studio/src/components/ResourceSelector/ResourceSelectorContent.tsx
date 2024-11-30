@@ -4,7 +4,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { ResourceItemContent } from "~/schemas/resource"
 import { ResourceItem } from "./ResourceItem"
-import { lastResourceItemInAncestryStack } from "./useResourceStack"
+import { lastResourceItemInAncestryStack } from "./utils"
 
 export const NoItemsInFolderResult = () => {
   return (
