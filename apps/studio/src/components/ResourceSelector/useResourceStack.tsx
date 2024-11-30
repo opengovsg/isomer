@@ -29,7 +29,7 @@ export const useResourceStack = ({
   const [resourceStack, setResourceStack] = useState<ResourceItemContent[]>([])
 
   const [isResourceHighlighted, setIsResourceHighlighted] =
-    useState<boolean>(true)
+    useState<boolean>(!!selectedResourceId)
 
   const moveDest = useMemo(
     () => resourceStack[resourceStack.length - 1], // last item in stack
@@ -112,11 +112,8 @@ export const useResourceStack = ({
       return
     }
 
-    if (isResourceHighlighted) {
-      setResourceStack(resourceItemWithAncestryStack)
-    } else {
-      setIsResourceHighlighted(true)
-    }
+    setResourceStack(resourceItemWithAncestryStack)
+    setIsResourceHighlighted(true)
   }
 
   const handleClickBackButton = useCallback(() => {
