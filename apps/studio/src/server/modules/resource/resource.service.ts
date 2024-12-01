@@ -443,7 +443,7 @@ export const getAncestryWithSelf = async ({
               "Resource.title",
               "Resource.permalink",
               "Resource.parentId",
-              "Resources.type",
+              "Resource.type",
             ]),
         ),
     )
