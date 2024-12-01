@@ -77,7 +77,7 @@ export const useResourceStack = ({
     [isResourceHighlighted, curResourceId],
   )
 
-  const shouldShowBackButton = useMemo(
+  const hasParentInStack = useMemo(
     () =>
       (resourceStack.length === 1 && !isResourceHighlighted) ||
       resourceStack.length > 1,
@@ -164,7 +164,7 @@ export const useResourceStack = ({
     hasNextPage: useResourceIdsFromSearch ? false : hasNextPage,
     isFetchingNextPage: useResourceIdsFromSearch ? false : isFetchingNextPage,
     isResourceIdHighlighted,
-    shouldShowBackButton,
+    hasParentInStack,
     handleClickBackButton,
     handleClickResourceItem,
   }

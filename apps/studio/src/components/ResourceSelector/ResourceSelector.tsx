@@ -61,7 +61,7 @@ const SuspensableResourceSelector = ({
     hasNextPage,
     isFetchingNextPage,
     isResourceIdHighlighted,
-    shouldShowBackButton,
+    hasParentInStack,
     handleClickBackButton,
     handleClickResourceItem,
   } = useResourceStack({
@@ -81,11 +81,12 @@ const SuspensableResourceSelector = ({
     if (isLoading) {
       return <LoadingHeader />
     }
-    if (shouldShowBackButton) {
-      return <BackButtonHeader handleOnClick={handleClickBackButton} />
-    }
     if (isSearchQueryEmpty) {
-      return <HomeHeader />
+      return hasParentInStack ? (
+        <BackButtonHeader handleOnClick={handleClickBackButton} />
+      ) : (
+        <HomeHeader />
+      )
     }
     return (
       <SearchResultsHeader
