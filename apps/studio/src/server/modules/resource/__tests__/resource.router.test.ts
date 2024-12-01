@@ -1734,7 +1734,7 @@ describe("resource.router", async () => {
       expect(result).toEqual([])
     })
 
-    it.only("should return the ancestry (including self and excluding root page) of a nested resource", async () => {
+    it("should return the ancestry (including self and excluding root page) of a nested resource", async () => {
       // Arrange
       const { site } = await setupPageResource({
         resourceType: "RootPage",
