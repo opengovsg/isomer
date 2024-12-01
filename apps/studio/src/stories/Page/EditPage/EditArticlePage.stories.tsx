@@ -23,6 +23,7 @@ const COMMON_HANDLERS = [
   resourceHandlers.getRolesFor.default(),
   resourceHandlers.getWithFullPermalink.default(),
   resourceHandlers.getAncestryWithSelf.collectionLink(),
+  resourceHandlers.getBatchAncestryWithSelf.default(),
   resourceHandlers.getChildrenOf.default(),
   resourceHandlers.getMetadataById.article(),
   pageHandlers.readPageAndBlob.article(),

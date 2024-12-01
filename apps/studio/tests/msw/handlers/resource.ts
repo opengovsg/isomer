@@ -66,6 +66,41 @@ export const resourceHandlers = {
       })
     },
   },
+  getBatchAncestryWithSelf: {
+    default: () => {
+      return trpcMsw.resource.getBatchAncestryWithSelf.query(() => {
+        return [
+          [
+            {
+              parentId: null,
+              id: "1",
+              title: "Collection",
+              permalink: "collection",
+              type: "Collection",
+            },
+          ],
+          [
+            {
+              parentId: null,
+              id: "2",
+              title: "Folder",
+              permalink: "folder",
+              type: "Folder",
+            },
+          ],
+          [
+            {
+              parentId: null,
+              id: "3",
+              title: "Page",
+              permalink: "page",
+              type: "Page",
+            },
+          ],
+        ]
+      })
+    },
+  },
   getWithFullPermalink: {
     default: () => {
       return trpcMsw.resource.getWithFullPermalink.query(() => {
