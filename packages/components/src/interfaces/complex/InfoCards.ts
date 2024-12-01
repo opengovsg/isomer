@@ -59,6 +59,7 @@ const SingleCardWithImageSchema = Type.Composite([
       title: "Alternate text",
       description:
         "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
+      maxLength: 120,
     }),
   }),
 ])
