@@ -36,6 +36,11 @@ export const getChildrenSchema = z
   })
   .merge(infiniteOffsetPaginationSchema)
 
+export const getChildrenOutputSchema = z.object({
+  items: z.array(z.custom<ResourceItemContent>()),
+  nextOffset: z.number().nullable(),
+})
+
 export const moveSchema = z.object({
   siteId: z.number(),
   movedResourceId: bigIntSchema,
@@ -84,11 +89,6 @@ export interface ResourceItemContent {
   type: ResourceType
   id: string
   parentId: string | null
-}
-
-export interface ResourceChildrenOfType {
-  items: ResourceItemContent[]
-  nextOffset: number | null
 }
 
 export const searchSchema = z

@@ -4,12 +4,12 @@ import { get } from "lodash"
 import { z } from "zod"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
-import type { ResourceChildrenOfType } from "~/schemas/resource"
 import {
   countResourceSchema,
   deleteResourceSchema,
   getAncestryWithSelfSchema,
   getBatchAncestryWithSelfSchema,
+  getChildrenOutputSchema,
   getChildrenSchema,
   getFullPermalinkSchema,
   getMetadataSchema,
@@ -105,8 +105,10 @@ export const resourceRouter = router({
 
       return resource
     }),
+
   getFolderChildrenOf: protectedProcedure
     .input(getChildrenSchema)
+    .output(getChildrenOutputSchema)
     .query(async ({ input: { siteId, resourceId, cursor: offset, limit } }) => {
       // Validate site and resourceId exists and is a Folder
       if (resourceId !== null) {
@@ -141,16 +143,14 @@ export const resourceRouter = router({
       }
 
       const result = await query.execute()
-      const output: ResourceChildrenOfType =
-        result.length > limit
-          ? // Dont' return the last element, it's just for checking if there are more
-            { items: result.slice(0, limit), nextOffset: offset + limit }
-          : { items: result, nextOffset: null }
-
-      return output
+      return result.length > limit
+        ? // Dont' return the last element, it's just for checking if there are more
+          { items: result.slice(0, limit), nextOffset: offset + limit }
+        : { items: result, nextOffset: null }
     }),
   getChildrenOf: protectedProcedure
     .input(getChildrenSchema)
+    .output(getChildrenOutputSchema)
     .query(async ({ input: { resourceId, siteId, cursor: offset, limit } }) => {
       // Validate site and resourceId exists and is a folder
       if (resourceId !== null) {
@@ -197,12 +197,11 @@ export const resourceRouter = router({
         query = query.where("Resource.parentId", "=", String(resourceId))
       }
       const result = await query.execute()
-      const output: ResourceChildrenOfType = {
+      return {
         // Dont' return the last element, it's just for checking if there are more
         items: result.length > limit ? result.slice(0, limit) : result,
         nextOffset: result.length > limit ? offset + limit : null,
       }
-      return output
     }),
 
   move: protectedProcedure
