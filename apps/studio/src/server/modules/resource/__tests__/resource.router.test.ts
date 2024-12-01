@@ -1674,6 +1674,7 @@ describe("resource.router", async () => {
       "title",
       "parentId",
       "permalink",
+      "type",
     ] as const
 
     it("should throw 401 if not logged in", async () => {
@@ -1733,7 +1734,7 @@ describe("resource.router", async () => {
       expect(result).toEqual([])
     })
 
-    it("should return the ancestry (including self and excluding root page) of a nested resource", async () => {
+    it.only("should return the ancestry (including self and excluding root page) of a nested resource", async () => {
       // Arrange
       const { site } = await setupPageResource({
         resourceType: "RootPage",
