@@ -27,12 +27,21 @@ interface SearchModalProps {
   siteId: string
 }
 export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
+  const [queryCount, setQueryCount] = useState(0)
   const [searchValue, setSearchValue] = useState("")
   const debouncedSearchTerm = useDebounce(searchValue, 300)
-  const { data, isLoading } = trpc.resource.search.useInfiniteQuery({
-    siteId,
-    query: debouncedSearchTerm,
-  })
+  const { data, isLoading } = trpc.resource.search.useInfiniteQuery(
+    {
+      siteId,
+      query: debouncedSearchTerm,
+    },
+    {
+      onSuccess: () => {
+        setQueryCount((prev) => prev + 1)
+      },
+    },
+  )
+  console.log("queryCount", 111, queryCount)
   const resources: SearchResultResource[] =
     data?.pages.flatMap((page) => page.resources) ?? []
 
@@ -55,6 +64,9 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
             ) ?? 0
           }
           searchTerm={debouncedSearchTerm}
+          // 3 is an arbitrary number that we are trying out and our guess
+          // of the number of queries the user has to do before they are deemed "lost"
+          shouldShowHint={queryCount >= 3}
         />
       )
     }
