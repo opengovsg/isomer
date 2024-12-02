@@ -7,6 +7,7 @@ import type { SearchResultProps } from "./SearchResult"
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { NoSearchResultSvgr } from "../Svg/NoSearchResultSvgr"
 import { SearchResult } from "./SearchResult"
+import { SearchResultHint } from "./SearchResultHint"
 
 const SearchResults = ({
   siteId,
@@ -183,9 +184,7 @@ export const NoResultsState = () => {
               <Text textStyle="subhead-2">
                 We’ve looked everywhere, but we’re getting nothing.
               </Text>
-              <Text textStyle="caption-2">
-                Try searching for something else.
-              </Text>
+              <SearchResultHint maxW="27.5rem" />
             </VStack>
           }
         />
