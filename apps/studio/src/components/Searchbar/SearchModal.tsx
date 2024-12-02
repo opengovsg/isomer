@@ -41,7 +41,6 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
       },
     },
   )
-  console.log("queryCount", 111, queryCount)
   const resources: SearchResultResource[] =
     data?.pages.flatMap((page) => page.resources) ?? []
 
