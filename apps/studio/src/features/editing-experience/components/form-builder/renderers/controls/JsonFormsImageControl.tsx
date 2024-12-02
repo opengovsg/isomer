@@ -13,8 +13,8 @@ import {
 import type { ModifiedAsset } from "~/types/assets"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { useEnv } from "~/hooks/useEnv"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
+import { generateAssetUrl } from "~/utils/generateAssetUrl"
 import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPES,
   MAX_IMG_FILE_SIZE_BYTES,
@@ -37,9 +37,6 @@ export function JsonFormsImageControl({
   errors,
   data,
 }: ControlProps) {
-  const {
-    env: { NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME },
-  } = useEnv()
   const toast = useToast()
   const { modifiedAssets, setModifiedAssets } = useEditorDrawerContext()
   const [pendingAsset, setPendingAsset] = useState<ModifiedAsset | undefined>()
@@ -77,9 +74,7 @@ export function JsonFormsImageControl({
     async function convertImage(url: string) {
       const fileName = url.split("/").pop()
       const fileType = `image/${url.split(".").pop()}`
-      const imageUrl = url.startsWith("/")
-        ? `https://${NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${url}`
-        : url
+      const imageUrl = generateAssetUrl(url)
       const file = await urlToFile(imageUrl, fileName || "", fileType)
       setPendingAsset({ path, src: url, file })
     }
