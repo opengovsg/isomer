@@ -61,10 +61,12 @@ const ModalBody = ({ children, ...props }: PropsWithChildren & ChakraProps) => {
 
 const HeaderTextAndContent = ({
   headerText,
+  showSearchResultHint = false,
   content,
   ...props
 }: {
   headerText?: string
+  showSearchResultHint?: boolean
   content: React.ReactNode
 } & ChakraProps) => {
   return (
@@ -74,6 +76,7 @@ const HeaderTextAndContent = ({
           {headerText}
         </Text>
       )}
+      {showSearchResultHint && <SearchResultHint />}
       {content}
     </VStack>
   )
@@ -154,6 +157,7 @@ export const SearchResultsState = ({
     <ModalBody>
       <HeaderTextAndContent
         headerText={`${totalResultsCount} search result${totalResultsCount === 1 ? "" : "s"} with "${searchTerm}" in title`}
+        showSearchResultHint
         content={
           <SearchResults
             siteId={siteId}

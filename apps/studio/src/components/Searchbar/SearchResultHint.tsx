@@ -7,6 +7,7 @@ export const SearchResultHint = (props: ChakraProps) => {
       borderRadius="0.25rem"
       bg="utility.feedback.info-subtle"
       p="0.75rem"
+      w="100%"
       {...props}
     >
       <VStack gap="0.5rem" align="start">
