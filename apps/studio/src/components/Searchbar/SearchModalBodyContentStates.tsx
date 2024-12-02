@@ -66,6 +66,7 @@ const BaseState = ({
   )
 }
 
+const numberOfItemsToShowForEachSection = 3
 export const InitialState = ({
   siteId,
   items,
@@ -79,7 +80,7 @@ export const InitialState = ({
       content={
         <SearchResults
           siteId={siteId}
-          items={items}
+          items={items.slice(0, numberOfItemsToShowForEachSection)}
           isSimplifiedView={true}
           shouldHideLastEditedText={true}
         />
