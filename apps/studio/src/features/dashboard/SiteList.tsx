@@ -65,9 +65,8 @@ const Site = ({
             </Box>
           </Box>
           <Text
-            as="h6"
-            textStyle="h6"
-            noOfLines={1}
+            textStyle="subhead-2"
+            noOfLines={2}
             overflow="hidden"
             textOverflow="ellipsis"
           >

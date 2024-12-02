@@ -31,6 +31,28 @@ const siteListQuery = ({
           isGovernment: true,
         } as PrismaJson.SiteJsonConfig,
       },
+      {
+        id: 2,
+        name: "Having a really long name is cool i guess",
+        config: {
+          theme: "isomer-next",
+          siteName: "MTI",
+          logoUrl: "",
+          search: undefined,
+          isGovernment: true,
+        } as PrismaJson.SiteJsonConfig,
+      },
+      {
+        id: 3,
+        name: "But not if it's too long then nobody can read your name anyway so why even bother",
+        config: {
+          theme: "isomer-next",
+          siteName: "MTI",
+          logoUrl: "",
+          search: undefined,
+          isGovernment: true,
+        } as PrismaJson.SiteJsonConfig,
+      },
     ]
   })
 }
