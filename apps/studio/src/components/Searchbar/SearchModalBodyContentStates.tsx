@@ -75,7 +75,7 @@ export const InitialState = ({
 }) => {
   return (
     <BaseState
-      headerText="Recently edited"
+      headerText="Pages recently edited on your site"
       content={
         <SearchResults
           siteId={siteId}
