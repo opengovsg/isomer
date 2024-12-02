@@ -15,7 +15,7 @@ import { Link } from "@opengovsg/design-system-react"
 
 import { NoResultIcon } from "~/components/Svg/NoResultIcon"
 import { withSuspense } from "~/hocs/withSuspense"
-import { useEnv } from "~/hooks/useEnv"
+import { generateAssetUrl } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
 
 const Site = ({
@@ -102,10 +102,6 @@ const SiteListSection = ({
 }
 
 const SuspendableSiteList = (): JSX.Element => {
-  const {
-    env: { NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME },
-  } = useEnv()
-
   const [sites] = trpc.site.list.useSuspenseQuery()
 
   if (sites.length === 0) {
@@ -140,7 +136,7 @@ const SuspendableSiteList = (): JSX.Element => {
         <Site
           siteId={site.id}
           siteName={site.name}
-          siteLogoUrl={`https://${NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${site.config.logoUrl}`}
+          siteLogoUrl={generateAssetUrl(site.config.logoUrl)}
         />
       ))}
     </SiteListSection>
