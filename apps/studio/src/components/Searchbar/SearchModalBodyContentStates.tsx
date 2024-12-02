@@ -1,4 +1,6 @@
-import { ModalBody, Text, VStack } from "@chakra-ui/react"
+import type { ChakraProps } from "@chakra-ui/react"
+import type { PropsWithChildren } from "react"
+import { ModalBody as ChakraModalBody, Text, VStack } from "@chakra-ui/react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SearchResultProps } from "./SearchResult"
@@ -35,15 +37,9 @@ const SearchResults = ({
   )
 }
 
-const BaseState = ({
-  headerText,
-  content,
-}: {
-  headerText?: string
-  content: React.ReactNode
-}): React.ReactNode => {
+const ModalBody = ({ children, ...props }: PropsWithChildren) => {
   return (
-    <ModalBody
+    <ChakraModalBody
       border="1px solid"
       borderColor="base.divider.medium"
       borderTop={0}
@@ -54,15 +50,31 @@ const BaseState = ({
       overflowY="auto"
       display="flex"
       flexDir="column"
-      gap="0.5rem"
+      gap="1rem"
+      {...props}
     >
+      {children}
+    </ChakraModalBody>
+  )
+}
+
+const HeaderTextAndContent = ({
+  headerText,
+  content,
+  ...props
+}: {
+  headerText?: string
+  content: React.ReactNode
+} & ChakraProps) => {
+  return (
+    <VStack gap="0.75rem" align="start" w="full" {...props}>
       {headerText && (
         <Text textColor="base.content.medium" textStyle="body-2">
           {headerText}
         </Text>
       )}
       {content}
-    </ModalBody>
+    </VStack>
   )
 }
 
@@ -75,39 +87,54 @@ export const InitialState = ({
   items: SearchResultResource[]
 }) => {
   return (
-    <BaseState
-      headerText="Pages recently edited on your site"
-      content={
-        <SearchResults
-          siteId={siteId}
-          items={items.slice(0, numberOfItemsToShowForEachSection)}
-          isSimplifiedView={true}
-          shouldHideLastEditedText={true}
-        />
-      }
-    />
+    <ModalBody>
+      <HeaderTextAndContent
+        headerText="Pages you’ve recently opened"
+        content={
+          <SearchResults
+            siteId={siteId}
+            items={items.slice(0, numberOfItemsToShowForEachSection)}
+            isSimplifiedView={true}
+            shouldHideLastEditedText={true}
+          />
+        }
+      />
+      <HeaderTextAndContent
+        headerText="Pages recently edited on your site"
+        content={
+          <SearchResults
+            siteId={siteId}
+            items={items.slice(0, numberOfItemsToShowForEachSection)}
+            isSimplifiedView={true}
+            shouldHideLastEditedText={true}
+          />
+        }
+      />
+    </ModalBody>
   )
 }
 
 export const LoadingState = () => {
   return (
-    <BaseState
-      headerText="Searching your website high and low"
-      content={
-        <SearchResults
-          siteId=""
-          items={Array.from({ length: 5 }).map((_, index) => ({
-            id: `loading-${index}`,
-            parentId: null,
-            lastUpdatedAt: null,
-            title: `Loading... ${index + 1}`,
-            fullPermalink: "",
-            type: ResourceType.Page,
-          }))}
-          isLoading={true}
-        />
-      }
-    />
+    <ModalBody>
+      <HeaderTextAndContent
+        headerText="Searching your website high and low"
+        content={
+          <SearchResults
+            siteId=""
+            items={Array.from({ length: 5 }).map((_, index) => ({
+              id: `loading-${index}`,
+              parentId: null,
+              lastUpdatedAt: null,
+              title: `Loading... ${index + 1}`,
+              fullPermalink: "",
+              type: ResourceType.Page,
+            }))}
+            isLoading={true}
+          />
+        }
+      />
+    </ModalBody>
   )
 }
 
@@ -123,31 +150,47 @@ export const SearchResultsState = ({
   searchTerm: string
 }) => {
   return (
-    <BaseState
-      headerText={`${totalResultsCount} search result${totalResultsCount === 1 ? "" : "s"} with "${searchTerm}" in title`}
-      content={
-        <SearchResults
-          siteId={siteId}
-          items={items}
-          searchTerms={searchTerm.split(" ")}
-        />
-      }
-    />
+    <ModalBody>
+      <HeaderTextAndContent
+        headerText={`${totalResultsCount} search result${totalResultsCount === 1 ? "" : "s"} with "${searchTerm}" in title`}
+        content={
+          <SearchResults
+            siteId={siteId}
+            items={items}
+            searchTerms={searchTerm.split(" ")}
+          />
+        }
+        gap="0.5rem"
+      />
+    </ModalBody>
   )
 }
 
 export const NoResultsState = () => {
   return (
-    <BaseState
-      content={
-        <VStack align="center" gap="0.5rem" h="100%" justify="center">
-          <NoSearchResultSvgr />
-          <Text textStyle="subhead-2">
-            We’ve looked everywhere, but we’re getting nothing.
-          </Text>
-          <Text textStyle="caption-2">Try searching for something else.</Text>
-        </VStack>
+    <ModalBody
+      children={
+        <HeaderTextAndContent
+          content={
+            <VStack
+              align="center"
+              gap="0.5rem"
+              w="full"
+              h="full"
+              justify="center"
+            >
+              <NoSearchResultSvgr />
+              <Text textStyle="subhead-2">
+                We’ve looked everywhere, but we’re getting nothing.
+              </Text>
+              <Text textStyle="caption-2">
+                Try searching for something else.
+              </Text>
+            </VStack>
+          }
+        />
       }
+      justifyContent="center"
     />
   )
 }
