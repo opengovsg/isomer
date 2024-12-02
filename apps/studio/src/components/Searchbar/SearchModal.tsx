@@ -12,7 +12,7 @@ import { useDebounce } from "@uidotdev/usehooks"
 
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { trpc } from "~/utils/trpc"
-import { isMac } from "./isMac"
+import { CommandKey } from "./CommandKey"
 import {
   InitialState,
   LoadingState,
@@ -110,19 +110,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
               ? "Tip: Type in the full title to get the most accurate search results."
               : "Scroll to see more results. Too many results? Try typing something longer."}
           </Text>
-          <Text
-            textStyle="caption-1"
-            textColor="base.content.medium"
-            bg="white"
-            py="0.125rem"
-            px="0.375rem"
-            borderRadius="base"
-            border="1px solid"
-            borderColor="base.divider.medium"
-            boxShadow="sm"
-          >
-            {isMac ? "⌘ + K" : "Ctrl + K"}
-          </Text>
+          <CommandKey boxShadow="sm" />
         </ModalFooter>
       </ModalContent>
     </Modal>
