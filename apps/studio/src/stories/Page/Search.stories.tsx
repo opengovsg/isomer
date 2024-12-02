@@ -102,6 +102,26 @@ export const NoResults: Story = {
   },
 }
 
+export const ShowHint: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS, resourceHandlers.search.results()],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    const searchButton = await screen.findByRole("button", {
+      name: "search-button",
+    })
+    await userEvent.click(searchButton)
+    await userEvent.keyboard("covid")
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await userEvent.keyboard(" test")
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await userEvent.keyboard(" 1")
+  },
+}
+
 // Commented out for now because of https://github.com/storybookjs/storybook/issues/25815
 // export const ModalOpenOnShortcut: Story = {
 //   play: async ({ canvasElement }) => {
