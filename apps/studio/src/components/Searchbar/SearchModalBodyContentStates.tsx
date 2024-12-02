@@ -5,6 +5,8 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SearchResultProps } from "./SearchResult"
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
+import { useResourceLocalViewHistory } from "~/hooks/useResourceLocalViewHistory"
+import { trpc } from "~/utils/trpc"
 import { NoSearchResultSvgr } from "../Svg/NoSearchResultSvgr"
 import { SearchResult } from "./SearchResult"
 import { SearchResultHint } from "./SearchResultHint"
@@ -82,7 +84,6 @@ const HeaderTextAndContent = ({
   )
 }
 
-const numberOfItemsToShowForEachSection = 3
 export const InitialState = ({
   siteId,
   items,
@@ -90,25 +91,34 @@ export const InitialState = ({
   siteId: string
   items: SearchResultResource[]
 }) => {
+  const { get } = useResourceLocalViewHistory({ siteId })
+  const { data: localViewHistorySearchResults = [] } =
+    trpc.resource.searchWithResourceIds.useQuery({
+      siteId,
+      resourceIds: get().map((history) => history.resourceId),
+    })
+
   return (
     <ModalBody>
-      <HeaderTextAndContent
-        headerText="Pages you’ve recently opened"
-        content={
-          <SearchResults
-            siteId={siteId}
-            items={items.slice(0, numberOfItemsToShowForEachSection)}
-            isSimplifiedView={true}
-            shouldHideLastEditedText={true}
-          />
-        }
-      />
+      {localViewHistorySearchResults.length > 0 && (
+        <HeaderTextAndContent
+          headerText="Pages you’ve recently opened"
+          content={
+            <SearchResults
+              siteId={siteId}
+              items={localViewHistorySearchResults.slice(0, 3)}
+              isSimplifiedView={true}
+              shouldHideLastEditedText={true}
+            />
+          }
+        />
+      )}
       <HeaderTextAndContent
         headerText="Pages recently edited on your site"
         content={
           <SearchResults
             siteId={siteId}
-            items={items.slice(0, numberOfItemsToShowForEachSection)}
+            items={items.slice(0, 3)}
             isSimplifiedView={true}
             shouldHideLastEditedText={true}
           />
