@@ -96,6 +96,7 @@ export const ResourceTableMenu = ({
                 as="button"
                 onClick={handleMoveResourceClick}
                 icon={<BiFolderOpen fontSize="1rem" />}
+                aria-label={`Move resource to another location for ${title}`}
               >
                 Move to...
               </MenuItem>

@@ -74,8 +74,8 @@ export const resourceHandlers = {
             {
               parentId: null,
               id: "1",
-              title: "Collection",
-              permalink: "collection",
+              title: "Collection 1",
+              permalink: "collection-1",
               type: "Collection",
             },
           ],
@@ -83,8 +83,8 @@ export const resourceHandlers = {
             {
               parentId: null,
               id: "2",
-              title: "Folder",
-              permalink: "folder",
+              title: "Folder 1",
+              permalink: "folder-1",
               type: "Folder",
             },
           ],
@@ -92,12 +92,41 @@ export const resourceHandlers = {
             {
               parentId: null,
               id: "3",
-              title: "Page",
-              permalink: "page",
+              title: "Page 1",
+              permalink: "page-1",
               type: "Page",
             },
           ],
         ]
+      })
+    },
+    foldersOnly: () => {
+      return trpcMsw.resource.getBatchAncestryWithSelf.query(() => {
+        return [
+          [
+            {
+              parentId: null,
+              id: "1",
+              title: "Folder 1",
+              permalink: "folder-1",
+              type: "Folder",
+            },
+          ],
+          [
+            {
+              parentId: null,
+              id: "2",
+              title: "Folder 2",
+              permalink: "folder-2",
+              type: "Folder",
+            },
+          ],
+        ]
+      })
+    },
+    noResults: () => {
+      return trpcMsw.resource.getBatchAncestryWithSelf.query(() => {
+        return []
       })
     },
   },
