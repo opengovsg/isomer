@@ -11,9 +11,11 @@ const SearchResults = ({
   items,
   searchTerms,
   isLoading,
+  isSimplifiedView = false,
   shouldHideLastEditedText = false,
 }: Omit<SearchResultProps, "item"> & {
   items: SearchResultResource[]
+  isSimplifiedView?: boolean
   shouldHideLastEditedText?: boolean
 }) => {
   return (
@@ -25,6 +27,7 @@ const SearchResults = ({
           item={item}
           searchTerms={searchTerms}
           isLoading={isLoading}
+          isSimplifiedView={isSimplifiedView}
           shouldHideLastEditedText={shouldHideLastEditedText}
         />
       ))}
@@ -77,6 +80,7 @@ export const InitialState = ({
         <SearchResults
           siteId={siteId}
           items={items}
+          isSimplifiedView={true}
           shouldHideLastEditedText={true}
         />
       }
