@@ -38,7 +38,7 @@ const SearchResults = ({
   )
 }
 
-const ModalBody = ({ children, ...props }: PropsWithChildren) => {
+const ModalBody = ({ children, ...props }: PropsWithChildren & ChakraProps) => {
   return (
     <ChakraModalBody
       border="1px solid"
