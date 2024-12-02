@@ -44,6 +44,7 @@ const Site = ({
               aspectRatio="1/1"
               backgroundColor="white"
               fallbackSrc="/isomer-sites-placeholder.png"
+              padding="1rem" // Leave some space so that logo won't be flush with the border
             />
             <Box
               position="absolute"
