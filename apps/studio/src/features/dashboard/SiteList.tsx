@@ -15,6 +15,7 @@ import { Link } from "@opengovsg/design-system-react"
 
 import { NoResultIcon } from "~/components/Svg/NoResultIcon"
 import { withSuspense } from "~/hocs/withSuspense"
+import { generateAssetUrl } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
 
 const Site = ({
@@ -39,10 +40,11 @@ const Site = ({
               borderColor="base.divider.medium"
               width="100%"
               height="100%"
-              objectFit="cover"
+              objectFit="contain"
               aspectRatio="1/1"
               backgroundColor="white"
               fallbackSrc="/isomer-sites-placeholder.png"
+              padding="1rem" // Leave some space so that logo won't be flush with the border
             />
             <Box
               position="absolute"
@@ -65,9 +67,8 @@ const Site = ({
             </Box>
           </Box>
           <Text
-            as="h6"
-            textStyle="h6"
-            noOfLines={1}
+            textStyle="subhead-2"
+            noOfLines={2}
             overflow="hidden"
             textOverflow="ellipsis"
           >
@@ -135,7 +136,7 @@ const SuspendableSiteList = (): JSX.Element => {
         <Site
           siteId={site.id}
           siteName={site.name}
-          siteLogoUrl={site.config.logoUrl}
+          siteLogoUrl={generateAssetUrl(site.config.logoUrl)}
         />
       ))}
     </SiteListSection>

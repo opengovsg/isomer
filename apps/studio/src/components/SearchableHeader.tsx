@@ -24,6 +24,7 @@ export const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
       py={{ base: 0, md: "0.5rem" }}
       px={{ base: 0, md: "0.5rem" }}
       background="white"
+      alignItems="start"
     >
       <Flex alignItems="center" as={GridItem}>
         <IconButton
