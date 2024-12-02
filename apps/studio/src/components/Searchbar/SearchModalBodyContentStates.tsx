@@ -147,6 +147,7 @@ export const LoadingState = () => {
             isLoading={true}
           />
         }
+        gap="0.5rem"
       />
     </ModalBody>
   )
