@@ -97,7 +97,6 @@ export const EmptyFolder: Story = {
     },
   },
   play: async (context) => {
-    const { canvasElement } = context
     await Default.play?.(context)
   },
 }
