@@ -3,6 +3,8 @@ import type { IsomerSiteProps, LinkComponentType } from "~/types"
 
 export interface Tag {
   label: string
+  category: string
+  values: string[]
 }
 
 export interface FileDetails {

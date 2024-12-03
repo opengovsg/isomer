@@ -1,4 +1,8 @@
-import type { AppliedFilter, Filter as FilterType } from "../../types/Filter"
+import type {
+  AppliedFilter,
+  FilterItem,
+  Filter as FilterType,
+} from "../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { getParsedDate } from "~/utils"
 
@@ -6,15 +10,46 @@ const FILTER_ID_CATEGORY = "category"
 const FILTER_ID_YEAR = "year"
 const NO_SPECIFIED_YEAR_FILTER_ID = "not_specified"
 
+const getCategories = (
+  tagCategories: Record<string, Record<string, number>>,
+): FilterType[] => {
+  return Object.entries(tagCategories).reduce((acc: FilterType[], curValue) => {
+    const [category, values] = curValue
+    const items: FilterItem[] = Object.entries(values).map(
+      ([label, count]) => ({
+        label,
+        count,
+        id: label.toLowerCase(),
+      }),
+    )
+
+    const filters: FilterType[] = [
+      ...acc,
+      {
+        items,
+        id: category.toLowerCase(),
+        label: category,
+      },
+    ]
+
+    return filters
+  }, [])
+}
+
 export const getAvailableFilters = (
   items: ProcessedCollectionCardProps[],
 ): FilterType[] => {
   const categories: Record<string, number> = {}
   const years: Record<string, number> = {}
+  // NOTE: Each tag is a mapping of a category to its
+  // associated set of values as well as the selected value.
+  // Hence, we store a map here of the category (eg: Body parts)
+  // to the number of occurences of each value (eg: { Brain: 3, Leg: 2})
+  const tagCategories: Record<string, Record<string, number>> = {}
 
   let numberOfUndefinedDates = 0
 
-  items.forEach(({ category, lastUpdated }) => {
+  items.forEach(({ category, lastUpdated, tags }) => {
     // Step 1: Get all available categories
     if (category in categories && categories[category]) {
       categories[category] += 1
@@ -32,6 +67,24 @@ export const getAvailableFilters = (
       }
     } else {
       numberOfUndefinedDates += 1
+    }
+
+    // Step 3: Get all category tags
+    if (tags) {
+      tags.forEach(({ label, category }) => {
+        const lowercasedLabel = label.toLowerCase()
+        const lowercasedCategory = category.toLowerCase()
+
+        if (!tagCategories[lowercasedCategory]) {
+          tagCategories[lowercasedCategory] = {}
+        }
+
+        if (!tagCategories[lowercasedCategory][lowercasedLabel]) {
+          tagCategories[lowercasedCategory][lowercasedLabel] = 0
+        }
+
+        tagCategories[lowercasedCategory][lowercasedLabel] += 1
+      })
     }
   })
 
@@ -73,6 +126,7 @@ export const getAvailableFilters = (
                 },
               ],
     },
+    ...getCategories(tagCategories),
   ]
 
   // Remove filters with no items
