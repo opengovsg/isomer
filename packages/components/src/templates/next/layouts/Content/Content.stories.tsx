@@ -2908,6 +2908,14 @@ export const MultipleAccordions: Story = {
     },
     content: [
       {
+        type: "accordion",
+        summary: "This accordion should not have a margin above",
+        details: {
+          type: "prose",
+          content: [],
+        },
+      },
+      {
         type: "prose",
         content: [
           {
