@@ -54,6 +54,25 @@ export const Initial: Story = {
   },
 }
 
+export const WithRecentlyViewed: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        ...COMMON_HANDLERS,
+        resourceHandlers.search.initial(),
+        resourceHandlers.searchWithResourceIds.default(),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    const searchButton = await screen.findByRole("button", {
+      name: "search-button",
+    })
+    await userEvent.click(searchButton)
+  },
+}
+
 export const Results: Story = {
   parameters: {
     msw: {
@@ -99,6 +118,26 @@ export const NoResults: Story = {
     })
     await userEvent.click(searchButton)
     await userEvent.keyboard("fwnjebjesnlckgebjeb")
+  },
+}
+
+export const ShowHint: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS, resourceHandlers.search.results()],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    const searchButton = await screen.findByRole("button", {
+      name: "search-button",
+    })
+    await userEvent.click(searchButton)
+    await userEvent.keyboard("covid")
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await userEvent.keyboard(" test")
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await userEvent.keyboard(" 1")
   },
 }
 

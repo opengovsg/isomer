@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   Modal,
   ModalContent,
@@ -25,6 +26,7 @@ interface SearchModalProps {
   siteId: string
 }
 export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
+  const [queryCount, setQueryCount] = useState(0)
   const {
     setSearchValue,
     debouncedSearchTerm,
@@ -32,7 +34,13 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
     isLoading,
     totalResultsCount,
     recentlyEditedResources,
-  } = useSearchQuery({ siteId, resourceTypes: getUserViewableResourceTypes() })
+  } = useSearchQuery({
+    siteId,
+    resourceTypes: getUserViewableResourceTypes(),
+    onSearchSuccess: () => {
+      setQueryCount((prev) => prev + 1)
+    },
+  })
 
   const renderModalBody = (): React.ReactNode => {
     if (!!debouncedSearchTerm) {
@@ -48,6 +56,9 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           items={resources}
           totalResultsCount={totalResultsCount}
           searchTerm={debouncedSearchTerm}
+          // 3 is an arbitrary number that we are trying out and our guess
+          // of the number of queries the user has to do before they are deemed "lost"
+          shouldShowHint={queryCount >= 3}
         />
       )
     }

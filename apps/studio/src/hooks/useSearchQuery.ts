@@ -8,21 +8,28 @@ import { trpc } from "~/utils/trpc"
 interface UseSearchQueryProps {
   siteId: string
   resourceTypes: ResourceType[]
+  onSearchSuccess?: () => void
 }
 export const useSearchQuery = ({
   siteId,
   resourceTypes,
+  onSearchSuccess,
 }: UseSearchQueryProps) => {
   const [searchValue, setSearchValue] = useState("")
   const debouncedSearchTerm = useDebounce(searchValue, 300)
 
   const { data, isLoading } = useCallback(() => {
-    return trpc.resource.search.useInfiniteQuery({
-      siteId,
-      query: debouncedSearchTerm,
-      resourceTypes,
-    })
-  }, [siteId, debouncedSearchTerm, resourceTypes])()
+    return trpc.resource.search.useInfiniteQuery(
+      {
+        siteId,
+        query: debouncedSearchTerm,
+        resourceTypes,
+      },
+      {
+        onSuccess: onSearchSuccess,
+      },
+    )
+  }, [siteId, debouncedSearchTerm, resourceTypes, onSearchSuccess])()
 
   const resources = useCallback((): SearchResultResource[] => {
     return data?.pages.flatMap((page) => page.resources) ?? []

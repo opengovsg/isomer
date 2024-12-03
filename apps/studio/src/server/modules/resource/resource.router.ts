@@ -20,6 +20,8 @@ import {
   moveSchema,
   searchOutputSchema,
   searchSchema,
+  searchWithResourceIdsOutputSchema,
+  searchWithResourceIdsSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
@@ -35,6 +37,7 @@ import {
   getNestedFolderChildren,
   getSearchRecentlyEdited,
   getSearchResults,
+  getSearchWithResourceIds,
   getWithFullPermalink,
 } from "./resource.service"
 
@@ -563,4 +566,19 @@ export const resourceRouter = router({
         }
       },
     ),
+
+  searchWithResourceIds: protectedProcedure
+    .input(searchWithResourceIdsSchema)
+    .output(searchWithResourceIdsOutputSchema)
+    .query(async ({ input: { siteId, resourceIds } }) => {
+      return (
+        await getSearchWithResourceIds({
+          siteId: Number(siteId),
+          resourceIds,
+        })
+      ).sort(
+        // Sort resources to match order of input resourceIds
+        (a, b) => resourceIds.indexOf(a.id) - resourceIds.indexOf(b.id),
+      )
+    }),
 })
