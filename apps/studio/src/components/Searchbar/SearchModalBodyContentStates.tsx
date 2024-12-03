@@ -98,9 +98,11 @@ export const InitialState = ({
       resourceIds: get().map((history) => history.resourceId),
     })
 
+  const hasLocalViewHistory = localViewHistorySearchResults.length > 0
+
   return (
     <ModalBody>
-      {localViewHistorySearchResults.length > 0 && (
+      {hasLocalViewHistory && (
         <HeaderTextAndContent
           headerText="Pages you’ve recently opened"
           content={
@@ -118,7 +120,7 @@ export const InitialState = ({
         content={
           <SearchResults
             siteId={siteId}
-            items={items.slice(0, 3)}
+            items={items.slice(0, hasLocalViewHistory ? 3 : 5)}
             isSimplifiedView={true}
             shouldHideLastEditedText={true}
           />
