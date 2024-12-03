@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { ResourceItemContent } from "~/schemas/resource"
+import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 import { lastResourceItemInAncestryStack } from "./utils"
 
@@ -78,12 +79,36 @@ export const useResourceStack = ({
     },
     [isResourceHighlighted, curResourceId],
   )
+  const { data: nestedChildrenOfExistingResourceResult } =
+    trpc.resource.getNestedFolderChildrenOf.useQuery({
+      resourceId: String(existingResource?.id),
+      siteId: String(siteId),
+    })
+  const nestedChildrenOfExistingResource: ResourceItemContent[] =
+    nestedChildrenOfExistingResourceResult?.items || []
 
   const isResourceItemDisabled = useCallback(
     (resourceItem: ResourceItemContent): boolean => {
-      return existingResource?.id === resourceItem.id
+      // If there is no existing resource,
+      // Then we are linking the resource and not moving any resource
+      // Thus, no checks are needed because we can link to any resource
+      if (!existingResource) return false
+
+      // A resource should not be able to move to within itself
+      if (existingResource.id === resourceItem.id) return true
+
+      // If a resource is not allowed to have children then it is a page-ish resource
+      // Thus, it can move to within any resource and no further checks are needed
+      if (!isAllowedToHaveChildren(existingResource.type)) return false
+
+      // A resource should not be able to move to its nested children
+      return (
+        nestedChildrenOfExistingResource.some(
+          (child) => child.id === resourceItem.id,
+        ) || false
+      )
     },
-    [existingResource],
+    [siteId, existingResource, nestedChildrenOfExistingResource],
   )
 
   const hasParentInStack = useMemo(
