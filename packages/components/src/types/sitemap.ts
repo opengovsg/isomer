@@ -15,7 +15,7 @@ interface IsomerBaseSitemap {
   image?: CollectionCardProps["image"]
   date?: CollectionCardProps["lastUpdated"]
   children?: IsomerSitemap[]
-  tags: CollectionCardProps["tags"]
+  tags?: CollectionCardProps["tags"]
 }
 
 interface IsomerPageSitemap extends IsomerBaseSitemap {
