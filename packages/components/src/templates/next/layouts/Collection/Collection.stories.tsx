@@ -230,6 +230,14 @@ const generateArgs = ({
       title: "Publications and other press releases",
       permalink: "/publications",
       lastModified: "2024-05-02T14:12:57.160Z",
+      tags: [
+        { category: "Body parts", values: ["Brain", "Leg"], label: "Brain" },
+        {
+          category: "Surgery",
+          values: ["Extraction", "Amputatino"],
+          label: "Extraction",
+        },
+      ],
       subtitle:
         "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
     },
