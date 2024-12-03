@@ -21,12 +21,15 @@ import {
 import { SearchBar } from "./SearchBar"
 import { useResourceStack } from "./useResourceStack"
 
+const FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM = 17.5
+
 interface ResourceSelectorProps {
   siteId: number
   onChange: (resourceId: string) => void
   selectedResourceId?: string
   existingResource?: ResourceItemContent
   onlyShowFolders?: boolean
+  fileExplorerHeight?: number
 }
 
 const SuspensableResourceSelector = ({
@@ -35,6 +38,7 @@ const SuspensableResourceSelector = ({
   selectedResourceId,
   existingResource,
   onlyShowFolders = false,
+  fileExplorerHeight = FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM,
 }: ResourceSelectorProps) => {
   const {
     searchValue,
@@ -133,7 +137,7 @@ const SuspensableResourceSelector = ({
         w="full"
         py="0.75rem"
         px="0.5rem"
-        h="17.5rem"
+        h={`${fileExplorerHeight}rem`}
         overflowY="auto"
         display="flex"
         flexDirection="column"
@@ -173,7 +177,14 @@ const SuspensableResourceSelector = ({
 
 export const ResourceSelector = (props: ResourceSelectorProps) => {
   return (
-    <Suspense fallback={<Skeleton h="20.75rem" />}>
+    <Suspense
+      fallback={
+        <Skeleton
+          w="full"
+          h={`${props.fileExplorerHeight ?? FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM + 4.25}rem`}
+        />
+      }
+    >
       <SuspensableResourceSelector {...props} />
     </Suspense>
   )

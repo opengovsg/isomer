@@ -56,6 +56,7 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
         onChange(getReferenceLink({ siteId: String(siteId), resourceId }))
       }
       selectedResourceId={selectedResourceId}
+      fileExplorerHeight={12}
     />
   )
 }
