@@ -41,13 +41,13 @@ export const LoadingResourceItemsResults = () => {
 export const ResourceItemsResults = ({
   resourceItemsWithAncestryStack,
   isResourceIdHighlighted,
-  existingResource,
+  isResourceItemDisabled,
   hasAdditionalLeftPadding,
   handleClickResourceItem,
 }: {
   resourceItemsWithAncestryStack: ResourceItemContent[][]
   isResourceIdHighlighted: (resourceId: string) => boolean
-  existingResource: ResourceItemContent | undefined
+  isResourceItemDisabled: (resourceItem: ResourceItemContent) => boolean
   hasAdditionalLeftPadding: boolean
   handleClickResourceItem: (
     resourceItemWithAncestryStack: ResourceItemContent[],
@@ -64,7 +64,7 @@ export const ResourceItemsResults = ({
       <ResourceItem
         key={lastChild.id}
         item={lastChild}
-        isDisabled={lastChild.id === existingResource?.id}
+        isDisabled={isResourceItemDisabled(lastChild)}
         isHighlighted={isResourceIdHighlighted(lastChild.id)}
         handleOnClick={() =>
           handleClickResourceItem(resourceItemWithAncestryStack)

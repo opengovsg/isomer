@@ -10,12 +10,14 @@ export const useResourceStack = ({
   onChange,
   selectedResourceId,
   onlyShowFolders,
+  existingResource,
   resourceIds,
 }: {
   siteId: number
   onChange: (resourceId: string) => void
   selectedResourceId: string | undefined
   onlyShowFolders: boolean
+  existingResource: ResourceItemContent | undefined
   resourceIds?: ResourceItemContent["id"][]
 }) => {
   // NOTE: This is the stack of user's navigation through the resource tree
@@ -75,6 +77,13 @@ export const useResourceStack = ({
       return isResourceHighlighted && curResourceId === resourceId
     },
     [isResourceHighlighted, curResourceId],
+  )
+
+  const isResourceItemDisabled = useCallback(
+    (resourceItem: ResourceItemContent): boolean => {
+      return existingResource?.id === resourceItem.id
+    },
+    [existingResource],
   )
 
   const hasParentInStack = useMemo(
@@ -162,6 +171,7 @@ export const useResourceStack = ({
     hasNextPage: useResourceIdsFromSearch ? false : hasNextPage,
     isFetchingNextPage: useResourceIdsFromSearch ? false : isFetchingNextPage,
     isResourceIdHighlighted,
+    isResourceItemDisabled,
     hasParentInStack,
     handleClickBackButton,
     handleClickResourceItem,

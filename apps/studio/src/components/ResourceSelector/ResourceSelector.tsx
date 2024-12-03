@@ -61,6 +61,7 @@ const SuspensableResourceSelector = ({
     hasNextPage,
     isFetchingNextPage,
     isResourceIdHighlighted,
+    isResourceItemDisabled,
     hasParentInStack,
     handleClickBackButton,
     handleClickResourceItem,
@@ -72,6 +73,7 @@ const SuspensableResourceSelector = ({
     },
     selectedResourceId,
     onlyShowFolders,
+    existingResource,
     resourceIds: isSearchQueryEmpty
       ? undefined
       : resources.map((resource) => resource.id),
@@ -114,7 +116,7 @@ const SuspensableResourceSelector = ({
       <ResourceItemsResults
         resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
         isResourceIdHighlighted={isResourceIdHighlighted}
-        existingResource={existingResource}
+        isResourceItemDisabled={isResourceItemDisabled}
         hasAdditionalLeftPadding={hasAdditionalLeftPadding}
         handleClickResourceItem={handleClickResourceItem}
       />
