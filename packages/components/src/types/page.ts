@@ -64,6 +64,16 @@ const BaseRefPageSchema = Type.Composite([
   }),
 ])
 
+const TagSchema = Type.Object({
+  label: Type.String(),
+  category: Type.String(),
+  values: Type.Array(Type.String()),
+})
+
+const TagsSchema = Type.Object({
+  tags: Type.Optional(Type.Array(TagSchema)),
+})
+
 export const ArticlePagePageSchema = Type.Composite([
   dateSchemaObject,
   Type.Object({
@@ -73,20 +83,14 @@ export const ArticlePagePageSchema = Type.Composite([
   imageSchemaObject,
 ])
 
-export const CollectionPagePageSchema = Type.Object({
-  subtitle: Type.String({
-    title: "The subtitle of the collection",
+export const CollectionPagePageSchema = Type.Intersect([
+  Type.Object({
+    subtitle: Type.String({
+      title: "The subtitle of the collection",
+    }),
   }),
-  tags: Type.Optional(
-    Type.Array(
-      Type.Object({
-        label: Type.String(),
-        category: Type.String(),
-        values: Type.Array(Type.String()),
-      }),
-    ),
-  ),
-})
+  TagsSchema,
+])
 
 export const ContentPagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,
@@ -101,8 +105,11 @@ export const HomePagePageSchema = Type.Object({})
 export const NotFoundPagePageSchema = Type.Object({})
 export const SearchPagePageSchema = Type.Object({})
 
-export const FileRefPageSchema = BaseRefPageSchema
-export const LinkRefPageSchema = Type.Omit(BaseRefPageSchema, ["image"])
+export const FileRefPageSchema = Type.Intersect([BaseRefPageSchema, TagsSchema])
+export const LinkRefPageSchema = Type.Intersect([
+  TagsSchema,
+  Type.Omit(BaseRefPageSchema, ["image"]),
+])
 
 // These are props that are required by the render engine, but not enforced by
 // the JSON schema (as the data is being stored outside of the page JSON)
