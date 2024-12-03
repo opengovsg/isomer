@@ -135,7 +135,6 @@ export const getFilteredItems = (
   appliedFilters: AppliedFilter[],
   searchValue: string,
 ): ProcessedCollectionCardProps[] => {
-  console.log(appliedFilters)
   return items.filter((item) => {
     // Step 1: Filter based on search value
     if (
