@@ -105,11 +105,8 @@ export const HomePagePageSchema = Type.Object({})
 export const NotFoundPagePageSchema = Type.Object({})
 export const SearchPagePageSchema = Type.Object({})
 
-export const FileRefPageSchema = Type.Intersect([BaseRefPageSchema, TagsSchema])
-export const LinkRefPageSchema = Type.Intersect([
-  TagsSchema,
-  Type.Omit(BaseRefPageSchema, ["image"]),
-])
+export const FileRefPageSchema = BaseRefPageSchema
+export const LinkRefPageSchema = Type.Omit(BaseRefPageSchema, ["image"])
 
 // These are props that are required by the render engine, but not enforced by
 // the JSON schema (as the data is being stored outside of the page JSON)
