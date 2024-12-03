@@ -13,7 +13,7 @@ export const SearchResultHint = (props: ChakraProps) => {
       <VStack gap="0.5rem" align="start">
         <Text textStyle="caption-1">💡 Not getting the results you want?</Text>
         <Text textStyle="caption-2">
-          <UnorderedList>
+          <UnorderedList marginInlineStart="1rem">
             <ListItem>
               Type in the <u>exact</u> word. For example, “Subsidy” and
               “Subsidies” will show you different results.
