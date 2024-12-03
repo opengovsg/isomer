@@ -21,6 +21,30 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
       date: "07/05/2024",
       category: "Category Name",
+      tags: [
+        {
+          category: "Body parts",
+          values: ["Head", "Shoulders"],
+          label: "Head",
+        },
+        { category: "Jokes", values: ["Lame", "Dad"], label: "Dad" },
+        {
+          category: "Long categories",
+          values: [
+            "This is a very long tag that should be reflowed on smaller screens maybe",
+          ],
+          label:
+            "This is a very long tag that shuold be reflowed on smaller screens maybe",
+        },
+        {
+          category: "very long",
+          values: [
+            "This is a second long link that should eat into the image area so that we can see how it looks",
+          ],
+          label:
+            "This is a second long link that should eat into the image area so that we can see how it looks",
+        },
+      ],
     },
     {
       id: `${index}`,
@@ -41,6 +65,30 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         type: "png",
         size: "1.2MB",
       },
+      tags: [
+        {
+          category: "Body parts",
+          values: ["Head", "Shoulders"],
+          label: "Shoulders",
+        },
+        { category: "Jokes", values: ["Lame", "Dad"], label: "Lame" },
+        {
+          category: "long",
+          values: [
+            "This is a very long tag that should be reflowed on smaller screens maybe",
+          ],
+          label:
+            "This is a very long tag that shuold be reflowed on smaller screens maybe",
+        },
+        {
+          category: "very long",
+          values: [
+            "This is a second long link that should eat into the image area so that we can see how it looks",
+          ],
+          label:
+            "This is a second long link that should eat into the image area so that we can see how it looks",
+        },
+      ],
     },
     {
       id: `${index}`,
@@ -53,6 +101,24 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       date: "12/08/2023",
       category: "Category Name",
       ref: "https://guide.isomer.gov.sg",
+      tags: [
+        {
+          category: "long categories",
+          values: [
+            "This is a very long tag that should be reflowed on smaller screens maybe",
+          ],
+          label:
+            "This is a very long tag that shuold be reflowed on smaller screens maybe",
+        },
+        {
+          category: "very long",
+          values: [
+            "This is a second long link that should eat into the image area so that we can see how it looks",
+          ],
+          label:
+            "This is a second long link that should eat into the image area so that we can see how it looks",
+        },
+      ],
     },
   ]),
 )
@@ -82,6 +148,26 @@ const generateArgs = ({
             layout: "collection",
             summary: "",
             children: collectionItems,
+            tags: [
+              { category: "tag", values: ["A tag"], label: "A tag" },
+              { category: "tagged", values: ["tagged"], label: "tagged" },
+              {
+                category: "long",
+                values: [
+                  "This is a very long tag that should be reflowed on smaller screens maybe",
+                ],
+                label:
+                  "This is a very long tag that shuold be reflowed on smaller screens maybe",
+              },
+              {
+                category: "very long",
+                values: [
+                  "This is a second long link that should eat into the image area so that we can see how it looks",
+                ],
+                label:
+                  "This is a second long link that should eat into the image area so that we can see how it looks",
+              },
+            ],
           },
         ],
       },
@@ -230,14 +316,6 @@ const generateArgs = ({
       title: "Publications and other press releases",
       permalink: "/publications",
       lastModified: "2024-05-02T14:12:57.160Z",
-      tags: [
-        { category: "Body parts", values: ["Brain", "Leg"], label: "Brain" },
-        {
-          category: "Surgery",
-          values: ["Extraction", "Amputatino"],
-          label: "Extraction",
-        },
-      ],
       subtitle:
         "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
     },
