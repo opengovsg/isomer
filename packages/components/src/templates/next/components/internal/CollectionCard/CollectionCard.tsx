@@ -49,11 +49,13 @@ export const CollectionCard = ({
             <span title={itemTitle}>{itemTitle}</span>
           </Link>
         </h3>
-        <div className="flex gap-1.5">
-          {tags.map(({ label }) => (
-            <Tag>{label}</Tag>
-          ))}
-        </div>
+        {tags && tags.length > 0 && (
+          <div className="flex gap-1.5">
+            {tags.map(({ label }) => (
+              <Tag>{label}</Tag>
+            ))}
+          </div>
+        )}
         {description && (
           <Text className="prose-body-base line-clamp-3" title={description}>
             {description}
