@@ -353,7 +353,7 @@ export const getResourcePermalinkTree = async (
       return []
     }
 
-    const resourcePermalinks = await tx
+    const resources = await tx
       .withRecursive("Ancestors", (eb) =>
         eb
           // Base case: Get the actual resource
@@ -371,13 +371,21 @@ export const getResourcePermalinkTree = async (
           ),
       )
       .selectFrom("Ancestors")
-      .select("Ancestors.permalink")
+      .select(["Ancestors.permalink", "Ancestors.type"])
       .execute()
 
-    return resourcePermalinks
-      .map((r) => r.permalink)
+    if (
+      resources.length === 1 &&
+      resources[0]?.type === ResourceType.RootPage &&
+      resources[0]?.permalink === INDEX_PAGE_PERMALINK
+    ) {
+      return [""] // empty string to represent the root page's permalink
+    }
+
+    return resources
       .reverse()
-      .filter((v) => v !== INDEX_PAGE_PERMALINK)
+      .filter((r) => r.type !== ResourceType.IndexPage)
+      .map((r) => r.permalink)
   })
 }
 
