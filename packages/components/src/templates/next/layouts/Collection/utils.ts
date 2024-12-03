@@ -19,7 +19,7 @@ const getCategories = (
       ([label, count]) => ({
         label,
         count,
-        id: label.toLowerCase(),
+        id: label,
       }),
     )
 
@@ -27,7 +27,7 @@ const getCategories = (
       ...acc,
       {
         items,
-        id: category.toLowerCase(),
+        id: category,
         label: category,
       },
     ]
@@ -72,17 +72,15 @@ export const getAvailableFilters = (
     // Step 3: Get all category tags
     if (tags) {
       tags.forEach(({ label, category }) => {
-        const lowercasedLabel = label.toLowerCase()
-
         if (!tagCategories[category]) {
           tagCategories[category] = {}
         }
 
-        if (!tagCategories[category][lowercasedLabel]) {
-          tagCategories[category][lowercasedLabel] = 0
+        if (!tagCategories[category][label]) {
+          tagCategories[category][label] = 0
         }
 
-        tagCategories[category][lowercasedLabel] += 1
+        tagCategories[category][label] += 1
       })
     }
   })
@@ -137,6 +135,7 @@ export const getFilteredItems = (
   appliedFilters: AppliedFilter[],
   searchValue: string,
 ): ProcessedCollectionCardProps[] => {
+  console.log(appliedFilters)
   return items.filter((item) => {
     // Step 1: Filter based on search value
     if (
@@ -178,7 +177,22 @@ export const getFilteredItems = (
       return false
     }
 
-    return true
+    const remainingFilters = appliedFilters.filter(
+      ({ id }) => id !== FILTER_ID_CATEGORY && id !== FILTER_ID_YEAR,
+    )
+
+    // Step 4: Compute set intersection between remaining filters and the set of items.
+    // Take note that we use OR between items within the same filter and AND between filters.
+    return remainingFilters
+      .map(({ items: activeFilters, id }) => {
+        return item.tags?.some(({ category, label: itemLabel }) => {
+          return (
+            category === id &&
+            activeFilters.map(({ id }) => id).includes(itemLabel)
+          )
+        })
+      })
+      .every((x) => x)
   })
 }
 
