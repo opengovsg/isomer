@@ -73,17 +73,16 @@ export const getAvailableFilters = (
     if (tags) {
       tags.forEach(({ label, category }) => {
         const lowercasedLabel = label.toLowerCase()
-        const lowercasedCategory = category.toLowerCase()
 
-        if (!tagCategories[lowercasedCategory]) {
-          tagCategories[lowercasedCategory] = {}
+        if (!tagCategories[category]) {
+          tagCategories[category] = {}
         }
 
-        if (!tagCategories[lowercasedCategory][lowercasedLabel]) {
-          tagCategories[lowercasedCategory][lowercasedLabel] = 0
+        if (!tagCategories[category][lowercasedLabel]) {
+          tagCategories[category][lowercasedLabel] = 0
         }
 
-        tagCategories[lowercasedCategory][lowercasedLabel] += 1
+        tagCategories[category][lowercasedLabel] += 1
       })
     }
   })
