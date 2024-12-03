@@ -192,15 +192,23 @@ export const NoResultsState = () => {
           content={
             <VStack
               align="center"
-              gap="0.5rem"
+              gap="1rem"
               w="full"
               h="full"
               justify="center"
             >
-              <NoSearchResultSvgr />
-              <Text textStyle="subhead-2">
-                We’ve looked everywhere, but we’re getting nothing.
-              </Text>
+              <VStack
+                align="center"
+                gap="0.5rem"
+                w="full"
+                h="full"
+                justify="center"
+              >
+                <NoSearchResultSvgr />
+                <Text textStyle="subhead-2">
+                  We’ve looked everywhere, but we’re getting nothing.
+                </Text>
+              </VStack>
               <SearchResultHint maxW="27.5rem" />
             </VStack>
           }
