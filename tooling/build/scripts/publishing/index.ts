@@ -123,6 +123,7 @@ async function main() {
             resource.content.page.description ||
             "",
           category: resource.content.page.category,
+          tags: resource.content.page.tags,
           date: resource.content.page.date,
           image: resource.content.page.image,
           ref: resource.content.page.ref, // For file and link layouts
