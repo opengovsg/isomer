@@ -66,6 +66,7 @@ const getCollectionItems = (
         description: item.summary,
         image: item.image,
         site,
+        tags: item.tags,
       }
 
       if (item.layout === "file") {

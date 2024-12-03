@@ -9,9 +9,13 @@ interface IsomerBaseSitemap {
   lastModified: string
   permalink: string
   category?: string
+  // TODO: we should aim to separate BaseSiteMap into different types
+  // so that the properties that are exclusive to, for example, `CollectionCard`
+  // will only be available there
   image?: CollectionCardProps["image"]
   date?: CollectionCardProps["lastUpdated"]
   children?: IsomerSitemap[]
+  tags: CollectionCardProps["tags"]
 }
 
 interface IsomerPageSitemap extends IsomerBaseSitemap {

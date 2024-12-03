@@ -8,6 +8,12 @@ export interface Resource {
   fullPermalink: string
 }
 
+interface Tag {
+  label: string
+  category: string
+  values: string[]
+}
+
 export type SitemapEntry = Pick<Resource, "id" | "title" | "permalink"> & {
   lastModified: string
   layout: string
@@ -17,4 +23,5 @@ export type SitemapEntry = Pick<Resource, "id" | "title" | "permalink"> & {
   image?: string
   ref?: string
   children?: SitemapEntry[]
+  tags?: Tag[]
 }
