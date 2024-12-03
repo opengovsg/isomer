@@ -17,6 +17,7 @@ import {
 } from "tests/integration/helpers/seed"
 
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { createCallerFactory } from "~/server/trpc"
 import { db } from "../../database"
 import { pageRouter } from "../page.router"
@@ -1361,9 +1362,74 @@ describe("page.router", async () => {
       )
     })
 
+    it("should return the permalink tree of root page successfully", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getPermalinkTree({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      expect(result).toEqual([""])
+    })
+
+    it("should return the permalink tree of root page successfully (if root page has _index permalink)", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "RootPage",
+        permalink: INDEX_PAGE_PERMALINK,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getPermalinkTree({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      expect(result).toEqual([""])
+    })
+
     it("should return the permalink tree of root-level page successfully", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getPermalinkTree({
+        siteId: site.id,
+        pageId: Number(folder.id),
+      })
+
+      // Assert
+      expect(result).toEqual([folder.permalink])
+    })
+
+    it("should return the permalink tree of root-level page successfully (even if folder has _index permalink)", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+      await setupPageResource({
+        resourceType: "IndexPage",
+        parentId: folder.id,
+        siteId: site.id,
+        permalink: INDEX_PAGE_PERMALINK,
+      })
       await setupAdminPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
