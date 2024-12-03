@@ -13,6 +13,8 @@ import {
   getChildrenSchema,
   getFullPermalinkSchema,
   getMetadataSchema,
+  getNestedFolderChildrenOutputSchema,
+  getNestedFolderChildrenSchema,
   getParentSchema,
   listResourceSchema,
   moveSchema,
@@ -30,6 +32,7 @@ import {
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   getAncestryWithSelf,
+  getNestedFolderChildren,
   getSearchRecentlyEdited,
   getSearchResults,
   getWithFullPermalink,
@@ -201,6 +204,35 @@ export const resourceRouter = router({
         // Dont' return the last element, it's just for checking if there are more
         items: result.length > limit ? result.slice(0, limit) : result,
         nextOffset: result.length > limit ? offset + limit : null,
+      }
+    }),
+
+  getNestedFolderChildrenOf: protectedProcedure
+    .input(getNestedFolderChildrenSchema)
+    .output(getNestedFolderChildrenOutputSchema)
+    .query(async ({ ctx, input: { resourceId, siteId } }) => {
+      await validateUserPermissionsForSite({
+        siteId: Number(siteId),
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      const resource = await db
+        .selectFrom("Resource")
+        .where("siteId", "=", Number(siteId))
+        .where("id", "=", String(resourceId))
+        .where("Resource.type", "=", ResourceType.Folder)
+        .executeTakeFirst()
+
+      if (!resource) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
+      return {
+        items: await getNestedFolderChildren({
+          siteId: Number(siteId),
+          resourceId: Number(resourceId),
+        }),
       }
     }),
 

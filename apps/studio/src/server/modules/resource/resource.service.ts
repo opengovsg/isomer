@@ -7,6 +7,7 @@ import { type DB } from "~prisma/generated/generatedTypes"
 import type { Resource, SafeKysely, Transaction } from "../database"
 import type { SearchResultResource } from "./resource.types"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { ResourceItemContent } from "~/schemas/resource"
 import { getSitemapTree } from "~/utils/sitemap"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType, sql } from "../database"
@@ -639,4 +640,32 @@ export const getSearchRecentlyEdited = async ({
       .orderBy("lastUpdatedAt", "desc")
       .execute()) as SearchResultResource[],
   })
+}
+
+export const getNestedFolderChildren = async ({
+  siteId,
+  resourceId,
+}: {
+  siteId: number
+  resourceId: number
+}): Promise<ResourceItemContent[]> => {
+  return (async function getNestedChildren(
+    parentId: number,
+  ): Promise<ResourceItemContent[]> {
+    const children = await db
+      .selectFrom("Resource")
+      .select(["title", "permalink", "type", "id", "parentId"])
+      .where("Resource.type", "in", [ResourceType.Folder])
+      .where("Resource.siteId", "=", Number(siteId))
+      .where("Resource.parentId", "=", String(parentId))
+      .execute()
+
+    const nestedChildren = await Promise.all(
+      children.map(async (child) => {
+        const childrenOfChild = await getNestedChildren(Number(child.id))
+        return [child, ...childrenOfChild]
+      }),
+    )
+    return nestedChildren.flat()
+  })(resourceId)
 }

@@ -736,6 +736,143 @@ describe("resource.router", async () => {
     it.skip("should throw 403 if user does not have read access to resource", async () => {})
   })
 
+  describe("getNestedFolderChildrenOf", () => {
+    const RESOURCE_FIELDS_TO_PICK = [
+      "title",
+      "permalink",
+      "type",
+      "id",
+      "parentId",
+    ] as const
+
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.getNestedFolderChildrenOf({
+        resourceId: "1",
+        siteId: "1",
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 404 if resource does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getNestedFolderChildrenOf({
+        resourceId: "1",
+        siteId: String(site.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "NOT_FOUND" }),
+      )
+    })
+
+    it("should return 404 if resource is not a folder", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = caller.getNestedFolderChildrenOf({
+        siteId: String(site.id),
+        resourceId: page.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "NOT_FOUND" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to site", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+
+      // Act
+      const result = caller.getNestedFolderChildrenOf({
+        siteId: String(site.id),
+        resourceId: folder.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it.skip("should throw 403 if user does not have read access to resource", async () => {})
+
+    it("should return nested folder children (e.g. folders within folders)", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { folder: parentFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: null,
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const { folder: childFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: parentFolder.id,
+        permalink: "child-folder",
+        title: "Child folder",
+      })
+      const { folder: grandChildFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: childFolder.id,
+        permalink: "grand-child-folder",
+        title: "Grand child folder",
+      })
+      const { folder: grandChildFolder2 } = await setupFolder({
+        siteId: site.id,
+        parentId: childFolder.id,
+        permalink: "grand-child-folder-2",
+        title: "Grand child folder 2",
+      })
+
+      // Act
+      const result = await caller.getNestedFolderChildrenOf({
+        siteId: String(site.id),
+        resourceId: parentFolder.id,
+      })
+
+      // Assert
+      const expected = {
+        items: [childFolder, grandChildFolder, grandChildFolder2].map(
+          (resource) => pick(resource, RESOURCE_FIELDS_TO_PICK),
+        ),
+      }
+      expect(result).toEqual(expected)
+    })
+  })
+
   describe("move", () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()

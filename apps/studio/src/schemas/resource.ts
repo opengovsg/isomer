@@ -41,6 +41,15 @@ export const getChildrenOutputSchema = z.object({
   nextOffset: z.number().nullable(),
 })
 
+export const getNestedFolderChildrenSchema = z.object({
+  resourceId: bigIntSchema,
+  siteId: z.string().min(0),
+})
+
+export const getNestedFolderChildrenOutputSchema = z.object({
+  items: z.array(z.custom<ResourceItemContent>()),
+})
+
 export const moveSchema = z.object({
   siteId: z.number(),
   movedResourceId: bigIntSchema,
