@@ -79,13 +79,18 @@ export const useResourceStack = ({
     },
     [isResourceHighlighted, curResourceId],
   )
+
   const { data: nestedChildrenOfExistingResourceResult } =
     trpc.resource.getNestedFolderChildrenOf.useQuery({
       resourceId: String(existingResource?.id),
       siteId: String(siteId),
     })
-  const nestedChildrenOfExistingResource: ResourceItemContent[] =
-    nestedChildrenOfExistingResourceResult?.items || []
+
+  const nestedChildrenOfExistingResource = useMemo(
+    (): ResourceItemContent[] =>
+      nestedChildrenOfExistingResourceResult?.items ?? [],
+    [nestedChildrenOfExistingResourceResult?.items],
+  )
 
   const isResourceItemDisabled = useCallback(
     (resourceItem: ResourceItemContent): boolean => {
@@ -108,7 +113,7 @@ export const useResourceStack = ({
         ) || false
       )
     },
-    [siteId, existingResource, nestedChildrenOfExistingResource],
+    [existingResource, nestedChildrenOfExistingResource],
   )
 
   const hasParentInStack = useMemo(
