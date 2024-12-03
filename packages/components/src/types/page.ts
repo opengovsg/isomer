@@ -77,6 +77,15 @@ export const CollectionPagePageSchema = Type.Object({
   subtitle: Type.String({
     title: "The subtitle of the collection",
   }),
+  tags: Type.Optional(
+    Type.Array(
+      Type.Object({
+        label: Type.String(),
+        category: Type.String(),
+        values: Type.Array(Type.String()),
+      }),
+    ),
+  ),
 })
 
 export const ContentPagePageSchema = Type.Object({
