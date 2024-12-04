@@ -5328,6 +5328,10 @@ video {
   }
 }
 
+.\[\&\+details\]\:mt-0 + details {
+  margin-top: 0px;
+}
+
 .\[\&\.minus\]\:hidden.minus {
   display: none;
 }
@@ -5378,12 +5382,6 @@ video {
 
 .\[\&\:not\(\:first-child\)\]\:mt-9:not(:first-child) {
   margin-top: 2.25rem;
-}
-
-.\[\&\:not\(\:first-child\)\]\:first-of-type\:mt-7:first-of-type:not(
-    :first-child
-  ) {
-  margin-top: 1.75rem;
 }
 
 .\[\&\:not\(\:last-child\)\]\:mb-0:not(:last-child) {
