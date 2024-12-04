@@ -2,7 +2,6 @@ import * as fs from "fs"
 import * as path from "path"
 import { performance } from "perf_hooks"
 import { ResourceType } from "~generated/generatedEnums"
-import { Site } from "~generated/selectableTypes"
 import * as dotenv from "dotenv"
 import { Client } from "pg"
 
