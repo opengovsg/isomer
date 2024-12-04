@@ -1,5 +1,6 @@
 import type { OrderedListProps, ProseContent } from "~/interfaces"
 import type { IsomerSchema } from "~/types"
+import { DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
 
 function getTextContentOfProse(content: ProseContent): string {
   const values: string[] = []
@@ -98,6 +99,8 @@ export function renderComponentPreviewText({
       return getTextContentOfProse(component.content)
     case "video":
       return component.title || "Video embed"
+    case DYNAMIC_DATA_BANNER_TYPE:
+      return component.apiEndpoint
     default:
       const _: never = component
       return (component as unknown as { type: string }).type || ""

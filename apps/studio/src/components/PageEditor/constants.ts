@@ -1,4 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
+import { DYNAMIC_DATA_BANNER_TYPE } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
@@ -175,6 +176,40 @@ export const DEFAULT_BLOCKS: Record<
     title: "Rick Astley - Never Gonna Give You Up",
     url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
   },
+  // TODO: Replace with actual working API endpoint
+  [DYNAMIC_DATA_BANNER_TYPE]: {
+    type: `${DYNAMIC_DATA_BANNER_TYPE}`,
+    apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
+    title: "hijriDate",
+    data: [
+      {
+        label: "Subuh",
+        key: "subuh",
+      },
+      {
+        label: "Syuruk",
+        key: "syuruk",
+      },
+      {
+        label: "Zohor",
+        key: "zohor",
+      },
+      {
+        label: "Asar",
+        key: "asar",
+      },
+      {
+        label: "Maghrib",
+        key: "maghrib",
+      },
+      {
+        label: "Ishak",
+        key: "isyak",
+      },
+    ],
+    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    label: "View all dates",
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -269,6 +304,11 @@ export const BLOCK_TO_META: Record<
     usageText:
       "You can embed videos hosted on platforms such as YouTube and Vimeo.",
     imageSrc: "/assets/block-images/Video.png",
+  },
+  [DYNAMIC_DATA_BANNER_TYPE]: {
+    label: "Dynamic Data Banner",
+    description: "Display dynamic data banner",
+    usageText: "This block supports fetching data from an API endpoint.",
   },
 }
 

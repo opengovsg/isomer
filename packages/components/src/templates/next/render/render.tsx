@@ -4,10 +4,12 @@ import type {
   IsomerSiteProps,
 } from "~/engine"
 import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
+import { DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
 import {
   Accordion,
   Callout,
   Contentpic,
+  DynamicDataBanner,
   Hero,
   Iframe,
   Image,
@@ -80,6 +82,8 @@ export const renderComponent = ({
       )
     case "video":
       return <Video key={elementKey} {...component} {...rest} />
+    case DYNAMIC_DATA_BANNER_TYPE:
+      return <DynamicDataBanner key={elementKey} {...component} {...rest} />
     default:
       const _: never = component
       return <></>
