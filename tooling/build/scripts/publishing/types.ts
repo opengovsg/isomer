@@ -1,4 +1,4 @@
-import { Resource as DbResource } from "~generated/generatedTypes"
+import { Resource as DbResource } from "~generated/selectableTypes"
 
 // NOTE: this needs the `omit` because the `parentId`
 // we defined in studio
@@ -14,7 +14,10 @@ interface Tag {
   values: string[]
 }
 
-export type SitemapEntry = Pick<Resource, "id" | "title" | "permalink"> & {
+export type SitemapEntry = Pick<
+  Resource,
+  "id" | "title" | "permalink" | "type"
+> & {
   lastModified: string
   layout: string
   summary: string
