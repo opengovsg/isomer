@@ -1,9 +1,9 @@
-export interface Resource {
-  id: string
-  title: string
-  permalink: string
+import { Resource as DbResource } from "~generated/generatedTypes"
+
+// NOTE: this needs the `omit` because the `parentId`
+// we defined in studio
+export interface Resource extends Omit<DbResource, "parentId"> {
   parentId: number | null
-  type: string
   content?: any
   fullPermalink: string
 }
