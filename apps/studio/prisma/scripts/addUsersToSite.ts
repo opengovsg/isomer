@@ -13,7 +13,7 @@ export const addUsersToSite = async (siteId: number, emails: string[]) => {
           .insertInto("User")
           .values({
             id: cuid2.createId(),
-            name: email.split("@")[0]!,
+            name: email.split("@")[0] || "",
             email,
             phone: "",
           })
@@ -42,4 +42,4 @@ const emails = ["your email here"]
 
 const siteId = 0
 
-addUsersToSite(siteId, emails)
+await addUsersToSite(siteId, emails)

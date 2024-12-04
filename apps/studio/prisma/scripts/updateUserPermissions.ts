@@ -8,16 +8,18 @@ export const updateUserPermissions = async (siteId: number, role: RoleType) => {
       .selectAll()
       .execute()
 
-    perms.map(async (perm) => {
-      return tx
-        .updateTable("ResourcePermission")
-        .set({
-          role,
-        })
-        .where("id", "=", perm.id)
-        .execute()
-    })
+    await Promise.all(
+      perms.map(async (perm) => {
+        return tx
+          .updateTable("ResourcePermission")
+          .set({
+            role,
+          })
+          .where("id", "=", perm.id)
+          .execute()
+      }),
+    )
   })
 }
 
-updateUserPermissions(0, RoleType.Editor)
+await updateUserPermissions(0, RoleType.Editor)

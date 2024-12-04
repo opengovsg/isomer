@@ -233,4 +233,4 @@ export const createSite = async (siteName: string) => {
   return siteId
 }
 
-createSite("Put your site here")
+await createSite("Put your site here")
