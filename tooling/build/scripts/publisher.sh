@@ -41,7 +41,7 @@ NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$ISOMER_BUILD_REPO_BRANCH/is
 aws s3 cp $NODE_MODULES_CACHE_PATH node_modules.tar.gz || true
 if [ -f "node_modules.tar.gz" ]; then
   echo "node_modules.tar.gz found in cache"
-  
+
   echo "Using cached node_modules"
   start_time=$(date +%s)
   tar -xzf node_modules.tar.gz
@@ -70,7 +70,6 @@ start_time=$(date +%s)
 cd tooling/build/scripts/publishing
 echo $(pwd)
 npm ci
-npm install ts-node -g
 npm run start
 calculate_duration $start_time
 
@@ -95,7 +94,7 @@ TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$ISOMER_BUI
 aws s3 cp $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH node_modules.tar.gz || true
 if [ -f "node_modules.tar.gz" ]; then
   echo "node_modules.tar.gz found in cache"
-  
+
   echo "Using cached node_modules"
   start_time=$(date +%s)
   tar -xzf node_modules.tar.gz
@@ -158,14 +157,13 @@ ls -al
 echo "Publishing to S3..."
 start_time=$(date +%s)
 
-
 NUMBER_OF_CORES=$(nproc)
 echo "Number of cores: $NUMBER_OF_CORES"
 
 # Set the number of concurrent S3 sync operations
-S3_SYNC_CONCURRENCY=$(( 4 * NUMBER_OF_CORES )) # 4x is an arbitrary number that should work well for most cases
-S3_SYNC_CONCURRENCY=$(( S3_SYNC_CONCURRENCY < 20 ? 10 : S3_SYNC_CONCURRENCY )) # Minimum of 20
-S3_SYNC_CONCURRENCY=$(( S3_SYNC_CONCURRENCY > 100 ? 100 : S3_SYNC_CONCURRENCY )) # Maximum of 100 (to prevent AWS from throttling us)
+S3_SYNC_CONCURRENCY=$((4 * NUMBER_OF_CORES))                                   # 4x is an arbitrary number that should work well for most cases
+S3_SYNC_CONCURRENCY=$((S3_SYNC_CONCURRENCY < 20 ? 10 : S3_SYNC_CONCURRENCY))   # Minimum of 20
+S3_SYNC_CONCURRENCY=$((S3_SYNC_CONCURRENCY > 100 ? 100 : S3_SYNC_CONCURRENCY)) # Maximum of 100 (to prevent AWS from throttling us)
 echo "S3 sync concurrency: $S3_SYNC_CONCURRENCY"
 aws configure set default.s3.max_concurrent_requests $S3_SYNC_CONCURRENCY
 
@@ -181,11 +179,11 @@ calculate_duration $start_time
 # Update CloudFront origin path
 echo "Updating CloudFront origin path..."
 echo "CloudFront distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
-aws cloudfront get-distribution --id $CLOUDFRONT_DISTRIBUTION_ID > distribution.json
+aws cloudfront get-distribution --id $CLOUDFRONT_DISTRIBUTION_ID >distribution.json
 
-ETag=`cat distribution.json | jq -r '.ETag'`
+ETag=$(cat distribution.json | jq -r '.ETag')
 echo "ETag: $ETag"
 
-jq '.Distribution.DistributionConfig' distribution.json > distribution-new.json
-jq ".Origins.Items[0].OriginPath = \"/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest\"" distribution-new.json > distribution-config.json
+jq '.Distribution.DistributionConfig' distribution.json >distribution-new.json
+jq ".Origins.Items[0].OriginPath = \"/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest\"" distribution-new.json >distribution-config.json
 aws cloudfront update-distribution --id $CLOUDFRONT_DISTRIBUTION_ID --distribution-config file://distribution-config.json --if-match $ETag
