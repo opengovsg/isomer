@@ -2,6 +2,7 @@ import type { ArticlePageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils"
 import BaseParagraph from "../BaseParagraph"
 import Breadcrumb from "../Breadcrumb"
+import { Tag } from "../Tag"
 
 const ArticleSummaryContent = ({
   summary,
@@ -28,6 +29,7 @@ const ArticlePageHeader = ({
   summary,
   site,
   LinkComponent,
+  tags = [],
 }: ArticlePageHeaderProps) => {
   return (
     <div className="mx-auto w-full">
@@ -38,9 +40,21 @@ const ArticlePageHeader = ({
       <div className="mb-3 text-base font-medium text-gray-600">{category}</div>
 
       <div className="flex flex-col gap-5">
-        <h1 className="break-words text-3xl font-semibold tracking-tight text-content-strong lg:text-4xl">
-          {title}
-        </h1>
+        <div className="flex flex-col gap-4">
+          <h1 className="break-words text-3xl font-semibold tracking-tight text-content-strong lg:text-4xl">
+            {title}
+          </h1>
+          {tags.length > 0 &&
+            tags.flatMap(({ selected: labels }) => {
+              return (
+                <div className="flex w-full flex-wrap items-center gap-2">
+                  {labels.map((label) => {
+                    return <Tag key={label}>{label}</Tag>
+                  })}
+                </div>
+              )
+            })}
+        </div>
 
         {date && (
           <p className="text-sm text-gray-800">{getFormattedDate(date)}</p>
