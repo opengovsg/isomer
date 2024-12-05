@@ -119,8 +119,13 @@ type BasePageAdditionalProps = BaseItemAdditionalProps & {
   language?: "en"
 }
 
+type ArticlePageAdditionalProps = {
+  tags?: CollectionPagePageProps["tags"]
+}
+
 export type ArticlePagePageProps = Static<typeof ArticlePagePageSchema> &
-  BasePageAdditionalProps
+  BasePageAdditionalProps &
+  ArticlePageAdditionalProps
 export type CollectionPagePageProps = Static<typeof CollectionPagePageSchema> &
   BasePageAdditionalProps
 export type ContentPagePageProps = Static<typeof ContentPagePageSchema> &
