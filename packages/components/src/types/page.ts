@@ -118,7 +118,7 @@ type BasePageAdditionalProps = BaseItemAdditionalProps & {
   language?: "en"
 }
 
-type ArticlePageAdditionalProps = {
+interface ArticlePageAdditionalProps {
   tags?: CollectionPagePageProps["tags"]
 }
 
