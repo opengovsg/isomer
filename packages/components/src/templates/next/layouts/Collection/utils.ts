@@ -71,8 +71,8 @@ export const getAvailableFilters = (
 
     // Step 3: Get all category tags
     if (tags) {
-      tags.forEach(({ labels, category }) => {
-        labels.forEach((label) => {
+      tags.forEach(({ selected: selectedLabels, category }) => {
+        selectedLabels.forEach((label) => {
           if (!tagCategories[category]) {
             tagCategories[category] = {}
           }
@@ -185,7 +185,7 @@ export const getFilteredItems = (
     // Take note that we use OR between items within the same filter and AND between filters.
     return remainingFilters
       .map(({ items: activeFilters, id }) => {
-        return item.tags?.some(({ category, labels: itemLabels }) => {
+        return item.tags?.some(({ category, selected: itemLabels }) => {
           return (
             category === id &&
             activeFilters
