@@ -44,15 +44,16 @@ const ArticlePageHeader = ({
           <h1 className="break-words text-3xl font-semibold tracking-tight text-content-strong lg:text-4xl">
             {title}
           </h1>
-          {tags.flatMap(({ selected: labels }) => {
-            return (
-              <div className="flex w-full flex-wrap items-center gap-2">
-                {labels.map((label) => {
-                  return <Tag>{label}</Tag>
-                })}
-              </div>
-            )
-          })}
+          {tags.length > 0 &&
+            tags.flatMap(({ selected: labels }) => {
+              return (
+                <div className="flex w-full flex-wrap items-center gap-2">
+                  {labels.map((label) => {
+                    return <Tag>{label}</Tag>
+                  })}
+                </div>
+              )
+            })}
         </div>
 
         {date && (
