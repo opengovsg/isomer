@@ -249,15 +249,15 @@ export const BLOCK_TO_META: Record<
     imageSrc: "/assets/block-images/KeyStatistics.png",
   },
   infobar: {
-    label: "Text with CTA",
+    label: "Call-to-Action",
     description: "Add a strong call-to-action",
     usageText:
       "Use this block to highlight key initatives on your homepage. It supports up to two buttons.",
     imageSrc: "/assets/block-images/Infobar.png",
   },
   contentpic: {
-    label: "Contentpic",
-    description: "Put an image and text side-by-side",
+    label: "Image with text",
+    description: "Put image and text side-by-side",
     usageText:
       "Use this block to juxtapose text next to a smaller image than usual, such as introducing a committee member along with their headshot.",
     imageSrc: "/assets/block-images/Contentpic.png",
@@ -318,27 +318,28 @@ type AllowedBlockSections = {
 }[]
 
 export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
-  { label: "Basic building blocks", types: ["prose", "image", "callout"] },
+  {
+    label: "Basic content blocks",
+    types: ["prose", "image", "accordion", "callout"],
+  },
   { label: "Embed external content", types: ["map", "video"] },
 ]
 
 export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
-  { label: "Basic building blocks", types: ["prose", "image", "callout"] },
   {
-    label: "Organise complex content",
-    types: ["contentpic", "infocards", "accordion", "infocols"],
+    label: "Basic content blocks",
+    types: ["prose", "image", "accordion", "callout", "contentpic", "infobar"],
+  },
+  {
+    label: "Add a new section",
+    types: ["infocards", "infocols", "keystatistics"],
   },
   { label: "Embed external content", types: ["map", "video"] },
 ]
 export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
-    label: "Highlight important information",
+    label: "Add a new section",
     // TODO(ISOM-1552): Add back iframe component when implemented
-    types: ["keystatistics", "infobar"],
-  },
-  {
-    label: "Organise complex content",
-    // TODO(ISOM-1552): Add back iframe component when implemented
-    types: ["infopic", "infocards", "infocols"],
+    types: ["infocards", "keystatistics", "infocols", "infopic", "infobar"],
   },
 ]

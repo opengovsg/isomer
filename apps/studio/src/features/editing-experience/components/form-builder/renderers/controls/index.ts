@@ -66,3 +66,7 @@ export {
   default as JsonFormsEmbedControl,
   jsonFormsEmbedControlTester,
 } from "./JsonFormsEmbedControl"
+export {
+  default as JsonFormsHiddenControl,
+  jsonFormsHiddenControlTester,
+} from "./JsonFormsHiddenControl"

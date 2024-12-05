@@ -109,6 +109,7 @@ const InfoBoxes = ({
 }
 
 const InfoCols = ({
+  id,
   title,
   subtitle,
   infoBoxes,
@@ -119,7 +120,7 @@ const InfoCols = ({
   const simplifiedLayout = getTailwindVariantLayout(layout)
 
   return (
-    <section className={compoundStyles.section()}>
+    <section id={id} className={compoundStyles.section()}>
       <div
         className={compoundStyles.outerContainer({ layout: simplifiedLayout })}
       >
