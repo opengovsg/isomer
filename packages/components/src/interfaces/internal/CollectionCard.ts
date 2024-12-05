@@ -2,7 +2,7 @@ import type { ImageProps } from "~/interfaces"
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 
 export interface Tag {
-  labels: string[]
+  selected: string[]
   category: string
   values: string[]
 }
