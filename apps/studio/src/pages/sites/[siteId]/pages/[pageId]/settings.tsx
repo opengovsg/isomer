@@ -9,6 +9,7 @@ import { z } from "zod"
 
 import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { editPageSchema } from "~/features/editing-experience/schema"
@@ -24,7 +25,15 @@ const ajv = new Ajv({ strict: false, logger: false })
 
 const PageSettings: NextPageWithLayout = () => {
   const { pageId, siteId } = useQueryParse(editPageSchema)
-  const [{ content }] = trpc.page.readPageAndBlob.useSuspenseQuery(
+  const [{ content, type, updatedAt, title }] =
+    trpc.page.readPageAndBlob.useSuspenseQuery(
+      {
+        pageId,
+        siteId,
+      },
+      { refetchOnWindowFocus: false },
+    )
+  const [permalink] = trpc.page.getFullPermalink.useSuspenseQuery(
     {
       pageId,
       siteId,
@@ -96,40 +105,50 @@ const PageSettings: NextPageWithLayout = () => {
   })
 
   return (
-    <chakra.form onBlur={onSubmit} overflowY="auto" width="100%">
-      <Grid w="100%" my="3rem" templateColumns="repeat(4, 1fr)">
-        <GridItem gridColumn="2/4">
-          <VStack w="100%" gap="2rem" alignItems="flex-start">
-            <Box>
-              <Text as="h3" textStyle="h3-semibold">
-                Meta settings
-              </Text>
-              <Text textStyle="body-2" mt="0.5rem">
-                These settings will only affect this page. Publish the page to
-                make these changes live.
-              </Text>
-            </Box>
+    <EditorDrawerProvider
+      initialPageState={content}
+      type={type}
+      permalink={permalink}
+      siteId={siteId}
+      pageId={pageId}
+      updatedAt={updatedAt}
+      title={title}
+    >
+      <chakra.form onBlur={onSubmit} overflowY="auto" width="100%">
+        <Grid w="100%" my="3rem" templateColumns="repeat(4, 1fr)">
+          <GridItem gridColumn="2/4">
+            <VStack w="100%" gap="2rem" alignItems="flex-start">
+              <Box>
+                <Text as="h3" textStyle="h3-semibold">
+                  Meta settings
+                </Text>
+                <Text textStyle="body-2" mt="0.5rem">
+                  These settings will only affect this page. Publish the page to
+                  make these changes live.
+                </Text>
+              </Box>
 
-            <Controller
-              control={control}
-              name="meta"
-              render={({ field: { onChange, value } }) => (
-                <Box w="100%">
-                  <ErrorProvider>
-                    <FormBuilder<Static<typeof pageMetaSchema>>
-                      schema={pageMetaSchema}
-                      validateFn={validateFn}
-                      data={value}
-                      handleChange={onChange}
-                    />
-                  </ErrorProvider>
-                </Box>
-              )}
-            />
-          </VStack>
-        </GridItem>
-      </Grid>
-    </chakra.form>
+              <Controller
+                control={control}
+                name="meta"
+                render={({ field: { onChange, value } }) => (
+                  <Box w="100%">
+                    <ErrorProvider>
+                      <FormBuilder<Static<typeof pageMetaSchema>>
+                        schema={pageMetaSchema}
+                        validateFn={validateFn}
+                        data={value}
+                        handleChange={onChange}
+                      />
+                    </ErrorProvider>
+                  </Box>
+                )}
+              />
+            </VStack>
+          </GridItem>
+        </Grid>
+      </chakra.form>
+    </EditorDrawerProvider>
   )
 }
 
