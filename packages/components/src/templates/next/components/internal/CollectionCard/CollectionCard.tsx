@@ -51,9 +51,11 @@ export const CollectionCard = ({
         </h3>
         {tags && tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
-            {tags.map(({ label }) => (
-              <Tag>{label}</Tag>
-            ))}
+            {tags.flatMap(({ labels }) => {
+              return labels.map((label) => {
+                return <Tag>{label}</Tag>
+              })
+            })}
           </div>
         )}
         {description && (
