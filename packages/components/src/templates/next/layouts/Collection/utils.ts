@@ -71,16 +71,17 @@ export const getAvailableFilters = (
 
     // Step 3: Get all category tags
     if (tags) {
-      tags.forEach(({ label, category }) => {
-        if (!tagCategories[category]) {
-          tagCategories[category] = {}
-        }
+      tags.forEach(({ labels, category }) => {
+        labels.forEach((label) => {
+          if (!tagCategories[category]) {
+            tagCategories[category] = {}
+          }
+          if (!tagCategories[category][label]) {
+            tagCategories[category][label] = 0
+          }
 
-        if (!tagCategories[category][label]) {
-          tagCategories[category][label] = 0
-        }
-
-        tagCategories[category][label] += 1
+          tagCategories[category][label] += 1
+        })
       })
     }
   })
@@ -108,8 +109,8 @@ export const getAvailableFilters = (
     {
       id: FILTER_ID_YEAR,
       label: "Year",
+      // do not show "not specified" option if all items have undefined dates
       items:
-        // do not show "not specified" option if all items have undefined dates
         yearFilterItems.length === 0
           ? []
           : numberOfUndefinedDates === 0
@@ -184,10 +185,14 @@ export const getFilteredItems = (
     // Take note that we use OR between items within the same filter and AND between filters.
     return remainingFilters
       .map(({ items: activeFilters, id }) => {
-        return item.tags?.some(({ category, label: itemLabel }) => {
+        return item.tags?.some(({ category, labels: itemLabels }) => {
           return (
             category === id &&
-            activeFilters.map(({ id }) => id).includes(itemLabel)
+            activeFilters
+              .map(({ id }) => id)
+              .reduce((prev, cur) => {
+                return prev || itemLabels.includes(cur)
+              }, false) //includes(itemLabels)
           )
         })
       })

@@ -25,24 +25,26 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         {
           category: "Body parts",
           values: ["Head", "Shoulders"],
-          label: "Head",
+          labels: ["Head"],
         },
-        { category: "Jokes", values: ["Lame", "Dad"], label: "Dad" },
+        { category: "Jokes", values: ["Dad"], labels: ["Dad"] },
         {
           category: "Long categories",
           values: [
             "This is a very long tag that should be reflowed on smaller screens maybe",
           ],
-          label:
+          labels: [
             "This is a very long tag that shuold be reflowed on smaller screens maybe",
+          ],
         },
         {
           category: "very long",
           values: [
             "This is a second long link that should eat into the image area so that we can see how it looks",
           ],
-          label:
+          labels: [
             "This is a second long link that should eat into the image area so that we can see how it looks",
+          ],
         },
       ],
     },
@@ -68,25 +70,28 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       tags: [
         {
           category: "Body parts",
-          values: ["Head", "Shoulders"],
-          label: "Shoulders",
+          values: ["Knees", "Shoulders"],
+          labels: ["Knees"],
         },
-        { category: "Jokes", values: ["Lame", "Dad"], label: "Lame" },
+        { category: "Jokes", values: ["Lame"], labels: ["Lame"] },
         {
-          category: "long",
+          category: "Long categories",
           values: [
             "This is a very long tag that should be reflowed on smaller screens maybe",
           ],
-          label:
+          labels: [
             "This is a very long tag that shuold be reflowed on smaller screens maybe",
+          ],
         },
         {
           category: "very long",
           values: [
             "This is a second long link that should eat into the image area so that we can see how it looks",
           ],
-          label:
+          labels: [
             "This is a second long link that should eat into the image area so that we can see how it looks",
+            "additional label that's not in the first one",
+          ],
         },
       ],
     },
@@ -103,20 +108,22 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       ref: "https://guide.isomer.gov.sg",
       tags: [
         {
-          category: "long categories",
+          category: "Long categories",
           values: [
             "This is a very long tag that should be reflowed on smaller screens maybe",
           ],
-          label:
+          labels: [
             "This is a very long tag that shuold be reflowed on smaller screens maybe",
+          ],
         },
         {
           category: "very long",
           values: [
             "This is a second long link that should eat into the image area so that we can see how it looks",
           ],
-          label:
+          labels: [
             "This is a second long link that should eat into the image area so that we can see how it looks",
+          ],
         },
       ],
     },
@@ -149,23 +156,25 @@ const generateArgs = ({
             summary: "",
             children: collectionItems,
             tags: [
-              { category: "tag", values: ["A tag"], label: "A tag" },
-              { category: "tagged", values: ["tagged"], label: "tagged" },
+              { category: "tag", values: ["A tag"], labels: ["A tag"] },
+              { category: "tagged", values: ["tagged"], labels: ["tagged"] },
               {
                 category: "long",
                 values: [
                   "This is a very long tag that should be reflowed on smaller screens maybe",
                 ],
-                label:
+                labels: [
                   "This is a very long tag that shuold be reflowed on smaller screens maybe",
+                ],
               },
               {
                 category: "very long",
                 values: [
                   "This is a second long link that should eat into the image area so that we can see how it looks",
                 ],
-                label:
+                labels: [
                   "This is a second long link that should eat into the image area so that we can see how it looks",
+                ],
               },
             ],
           },
