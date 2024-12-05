@@ -48,6 +48,7 @@ export type CollectionCardProps = Pick<
   referenceLinkHref: string | undefined
   imageSrc: string | undefined
   itemTitle: string
+  appliedFilters: string[]
 }
 
 // NOTE: This is to ensure no additional props are being passed to this component

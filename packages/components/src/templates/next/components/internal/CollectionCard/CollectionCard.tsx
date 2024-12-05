@@ -27,6 +27,7 @@ export const CollectionCard = ({
   siteAssetsBaseUrl,
   shouldShowDate = true,
   tags = [],
+  appliedFilters = [],
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
@@ -56,7 +57,13 @@ export const CollectionCard = ({
                 <div className="flex w-full flex-wrap items-center gap-2">
                   <p className="prose-label-sm">{category}</p>
                   {labels.map((label) => {
-                    return <Tag>{label}</Tag>
+                    return (
+                      <Tag
+                        isActive={appliedFilters.some((tag) => tag === label)}
+                      >
+                        {label}
+                      </Tag>
+                    )
                   })}
                 </div>
               )

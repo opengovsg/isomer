@@ -60,6 +60,9 @@ export const CollectionResults = ({
             <CollectionCard
               key={Math.random()}
               {...item}
+              appliedFilters={appliedFilters.flatMap((filter) =>
+                filter.items.flatMap((item) => item.id),
+              )}
               shouldShowDate={shouldShowDate}
               siteAssetsBaseUrl={siteAssetsBaseUrl}
               LinkComponent={LinkComponent}
