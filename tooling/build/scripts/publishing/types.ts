@@ -9,7 +9,7 @@ export interface Resource extends Omit<DbResource, "parentId"> {
 }
 
 interface Tag {
-  labels: string[]
+  selected: string[]
   category: string
   values: string[]
 }
