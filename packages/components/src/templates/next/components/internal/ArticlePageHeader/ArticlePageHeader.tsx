@@ -49,7 +49,7 @@ const ArticlePageHeader = ({
               return (
                 <div className="flex w-full flex-wrap items-center gap-2">
                   {labels.map((label) => {
-                    return <Tag>{label}</Tag>
+                    return <Tag key={label}>{label}</Tag>
                   })}
                 </div>
               )

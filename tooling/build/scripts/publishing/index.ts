@@ -104,6 +104,13 @@ async function main() {
           ...resource.content.page,
           title: resource.title,
         }
+
+        await writeContentToFile(
+          resource.fullPermalink,
+          resource.content,
+          resource.parentId,
+        )
+
         const idOfFolder = resources.find(
           (item) =>
             resource.fullPermalink.endsWith(INDEX_PAGE_PERMALINK) &&
@@ -135,12 +142,6 @@ async function main() {
         }
 
         sitemapEntries.push(sitemapEntry)
-
-        await writeContentToFile(
-          resource.fullPermalink,
-          resource.content,
-          resource.parentId,
-        )
       } else {
         logDebug(
           `Skipping resource with id ${resource.id} as it is not a Page or has no content.`,
