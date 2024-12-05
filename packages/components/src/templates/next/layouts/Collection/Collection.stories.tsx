@@ -21,32 +21,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
       date: "07/05/2024",
       category: "Category Name",
-      tags: [
-        {
-          category: "Body parts",
-          values: ["Head", "Shoulders"],
-          selected: ["Head"],
-        },
-        { category: "Jokes", values: ["Dad"], selected: ["Dad"] },
-        {
-          category: "Long categories",
-          values: [
-            "This is a very long tag that should be reflowed on smaller screens maybe",
-          ],
-          selected: [
-            "This is a very long tag that shuold be reflowed on smaller screens maybe",
-          ],
-        },
-        {
-          category: "very long",
-          values: [
-            "This is a second long link that should eat into the image area so that we can see how it looks",
-          ],
-          selected: [
-            "This is a second long link that should eat into the image area so that we can see how it looks",
-          ],
-        },
-      ],
+      tags: [{ category: "Jokes", values: ["Dad"], selected: ["Dad"] }],
     },
     {
       id: `${index}`,
@@ -67,33 +42,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         type: "png",
         size: "1.2MB",
       },
-      tags: [
-        {
-          category: "Body parts",
-          values: ["Knees", "Shoulders"],
-          selected: ["Knees"],
-        },
-        { category: "Jokes", values: ["Lame"], selected: ["Lame"] },
-        {
-          category: "Long categories",
-          values: [
-            "This is a very long tag that should be reflowed on smaller screens maybe",
-          ],
-          selected: [
-            "This is a very long tag that shuold be reflowed on smaller screens maybe",
-          ],
-        },
-        {
-          category: "very long",
-          values: [
-            "This is a second long link that should eat into the image area so that we can see how it looks",
-          ],
-          selected: [
-            "This is a second long link that should eat into the image area so that we can see how it looks",
-            "additional label that's not in the first one",
-          ],
-        },
-      ],
+      tags: [{ category: "Jokes", values: ["Lame"], selected: ["Lame"] }],
     },
     {
       id: `${index}`,
@@ -108,20 +57,13 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       ref: "https://guide.isomer.gov.sg",
       tags: [
         {
-          category: "Long categories",
+          category: "Jokes",
           values: [
             "This is a very long tag that should be reflowed on smaller screens maybe",
           ],
           selected: [
+            "Lame",
             "This is a very long tag that shuold be reflowed on smaller screens maybe",
-          ],
-        },
-        {
-          category: "very long",
-          values: [
-            "This is a second long link that should eat into the image area so that we can see how it looks",
-          ],
-          selected: [
             "This is a second long link that should eat into the image area so that we can see how it looks",
           ],
         },
