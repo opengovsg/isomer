@@ -50,10 +50,10 @@ export const CollectionCard = ({
           </Link>
         </h3>
         {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
+          <>
             {tags.flatMap(({ category, selected: labels }) => {
               return (
-                <div className="flex w-full flex-wrap items-center gap-1">
+                <div className="flex w-full flex-wrap items-center gap-2">
                   <p className="prose-label-sm">{category}</p>
                   {labels.map((label) => {
                     return <Tag>{label}</Tag>
@@ -61,7 +61,7 @@ export const CollectionCard = ({
                 </div>
               )
             })}
-          </div>
+          </>
         )}
         {description && (
           <Text className="prose-body-base line-clamp-3" title={description}>
