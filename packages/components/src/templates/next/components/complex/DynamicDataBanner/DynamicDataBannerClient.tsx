@@ -27,7 +27,7 @@ export const DynamicDataBannerUI = ({
       <Link
         LinkComponent={LinkComponent}
         href={url}
-        className="visited:text-link-visited prose-label-sm-medium flex text-link hover:text-link-hover"
+        className="prose-label-sm-medium flex text-link visited:text-link-visited hover:text-link-hover"
       >
         {label}
       </Link>
