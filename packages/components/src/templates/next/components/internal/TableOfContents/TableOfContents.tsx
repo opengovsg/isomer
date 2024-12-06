@@ -7,7 +7,7 @@ import { Link } from "../Link"
 
 const linkStyle = tv({
   extend: focusVisibleHighlight,
-  base: "w-fit text-link underline-offset-4 hover:text-link-hover hover:underline",
+  base: "visited:text-link-visited w-fit text-link underline-offset-4 hover:text-link-hover hover:underline",
 })
 
 const TableOfContents = ({ items, LinkComponent }: TableOfContentsProps) => {
