@@ -9,8 +9,7 @@ export const ContentpicSchema = Type.Object(
     type: Type.Literal("contentpic", { default: "contentpic" }),
     content: BaseProseSchema,
     imageSrc: Type.String({
-      title: "Upload image",
-      description: "The URL to the image",
+      title: "Image",
       format: "image",
     }),
     imageAlt: Type.Optional(
