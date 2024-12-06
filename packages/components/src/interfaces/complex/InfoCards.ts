@@ -91,9 +91,8 @@ const InfoCardsBaseSchema = Type.Object({
         Type.Literal("3", { title: "3 columns" }),
       ],
       {
-        title: "Maximum columns variant",
-        description:
-          "Controls the responsive behaviour regarding the number of columns that this component will expand to in different viewports",
+        title: "Number of columns",
+        description: "This only affects how the block appears on large screens",
         default: "3",
       },
     ),
