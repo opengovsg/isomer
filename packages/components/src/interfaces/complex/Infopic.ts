@@ -24,19 +24,6 @@ export const InfopicSchema = Type.Object(
         maxLength: 200,
       }),
     ),
-    imageSrc: Type.String({
-      title: "Upload image",
-      description: "The URL to the image",
-      format: "image",
-    }),
-    imageAlt: Type.Optional(
-      Type.String({
-        title: "Alternate text",
-        description:
-          "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
-        maxLength: 120,
-      }),
-    ),
     buttonLabel: Type.Optional(
       Type.String({
         title: "Button text",
@@ -51,6 +38,19 @@ export const InfopicSchema = Type.Object(
         description: "When this is clicked, open:",
         format: "link",
         pattern: LINK_HREF_PATTERN,
+      }),
+    ),
+    imageSrc: Type.String({
+      title: "Upload image",
+      description: "The URL to the image",
+      format: "image",
+    }),
+    imageAlt: Type.Optional(
+      Type.String({
+        title: "Alternate text",
+        description:
+          "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
+        maxLength: 120,
       }),
     ),
   },
