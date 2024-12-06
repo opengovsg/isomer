@@ -7,7 +7,6 @@ import { BaseProseSchema } from "../native/Prose"
 export const ContentpicSchema = Type.Object(
   {
     type: Type.Literal("contentpic", { default: "contentpic" }),
-    content: BaseProseSchema,
     imageSrc: Type.String({
       title: "Image",
       format: "image",
@@ -20,6 +19,7 @@ export const ContentpicSchema = Type.Object(
           "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
       }),
     ),
+    content: BaseProseSchema,
   },
   {
     title: "Contentpic component",
