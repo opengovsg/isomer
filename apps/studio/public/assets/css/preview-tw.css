@@ -3051,11 +3051,6 @@ video {
   color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 
-.text-base-divider-strong {
-  --tw-text-opacity: 1;
-  color: rgb(156 163 175 / var(--tw-text-opacity));
-}
-
 .text-brand-canvas-inverse {
   color: var(--color-brand-canvas-inverse);
 }
@@ -3132,11 +3127,6 @@ video {
 .text-link {
   --tw-text-opacity: 1;
   color: rgb(26 86 229 / var(--tw-text-opacity));
-}
-
-.text-link-hover {
-  --tw-text-opacity: 1;
-  color: rgb(21 71 190 / var(--tw-text-opacity));
 }
 
 .text-site-secondary {
@@ -3778,6 +3768,10 @@ video {
 
 .last\:border-0:last-child {
   border-width: 0px;
+}
+
+.visited\:text-link-visited:visited {
+  color: rgb(76 29 149);
 }
 
 .active\:bg-base-canvas-backdrop\/80:active {
@@ -5510,6 +5504,20 @@ video {
 .\[\&_a\]\:outline-none a {
   outline: 2px solid transparent;
   outline-offset: 2px;
+}
+
+.visited\:\[\&_a\]\:text-link-visited a:visited {
+  color: rgb(76 29 149);
+}
+
+.hover\:\[\&_a\]\:text-link-hover a:where([data-rac])[data-hovered] {
+  --tw-text-opacity: 1;
+  color: rgb(21 71 190 / var(--tw-text-opacity));
+}
+
+.hover\:\[\&_a\]\:text-link-hover a:where(:not([data-rac])):hover {
+  --tw-text-opacity: 1;
+  color: rgb(21 71 190 / var(--tw-text-opacity));
 }
 
 .focus-visible\:\[\&_a\]\:bg-utility-highlight
