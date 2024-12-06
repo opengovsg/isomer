@@ -18,7 +18,7 @@ export const ImageSchema = Type.Object(
     }),
     caption: Type.Optional(
       Type.String({
-        title: "Image caption",
+        title: "Caption",
         maxLength: 100,
         format: "textarea",
       }),
