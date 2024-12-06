@@ -28,8 +28,6 @@ const imageSchemaObject = Type.Object({
     Type.Object({
       src: Type.String({
         title: "Image",
-        description:
-          "Displayed at the top of the page and as a thumbnail in the collection view",
         format: "image",
       }),
       alt: Type.String({
