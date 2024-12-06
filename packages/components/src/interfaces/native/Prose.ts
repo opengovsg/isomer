@@ -10,8 +10,7 @@ import { TableSchema } from "./Table"
 import { UnorderedListSchema } from "./UnorderedList"
 
 const BASE_PROSE_META = {
-  title: "Content block",
-  description: "A collection of native content components.",
+  title: "Content",
 }
 
 type ComponentsWithProse = "prose" | "accordion" | "callout"
@@ -34,8 +33,7 @@ const generateProseSchema = (
             Type.Ref(UnorderedListSchema),
           ]),
           {
-            title: "Content block",
-            description: "A collection of native content components.",
+            title: "Content",
             minItems: 1,
           },
         ),
