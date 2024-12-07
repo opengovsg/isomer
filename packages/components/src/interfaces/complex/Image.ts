@@ -2,6 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps } from "~/types"
+import { ARRAY_RADIO_FORMAT } from "../format"
 
 export const ImageSrcSchema = Type.String({
   title: "Image",
@@ -37,7 +38,7 @@ export const ImageSchema = Type.Object(
           title: "Image size",
           description:
             "On mobile, images will always fill up to the page width even if you choose “Small”.",
-          format: "radio",
+          format: ARRAY_RADIO_FORMAT,
           type: "string",
           default: "default",
         },

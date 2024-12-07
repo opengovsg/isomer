@@ -7,6 +7,7 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { ARRAY_RADIO_FORMAT } from "../format"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const CARDS_WITHOUT_IMAGES = "cardsWithoutImages"
@@ -56,7 +57,7 @@ const SingleCardWithImageSchema = Type.Composite([
           default: IMAGE_FIT_COVER,
           title: "Image display",
           description: `Select "Resize image to fit" only if the image has a white background.`,
-          format: "radio",
+          format: ARRAY_RADIO_FORMAT,
         },
       ),
     ),
@@ -133,7 +134,7 @@ export const InfoCardsSchema = Type.Intersect(
   [
     InfoCardsBaseSchema,
     Type.Union([InfoCardsWithImageSchema, InfoCardsNoImageSchema], {
-      format: "radio",
+      format: ARRAY_RADIO_FORMAT,
     }),
   ],
   {
