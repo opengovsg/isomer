@@ -9,7 +9,7 @@ export const ContentpicSchema = Type.Object(
   {
     type: Type.Literal("contentpic", { default: "contentpic" }),
     imageSrc: ImageSrcSchema,
-    imageAlt: AltTextSchema,
+    imageAlt: Type.Optional(AltTextSchema),
     content: BaseProseSchema,
   },
   {
