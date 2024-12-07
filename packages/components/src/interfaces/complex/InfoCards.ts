@@ -7,6 +7,7 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { AltTextSchema } from "./Image"
 
 export const CARDS_WITHOUT_IMAGES = "cardsWithoutImages"
 export const CARDS_WITH_IMAGES = "cardsWithImages"
@@ -62,13 +63,7 @@ const SingleCardWithImageSchema = Type.Composite([
         },
       ),
     ),
-    imageAlt: Type.String({
-      title: "Alternate text",
-      description:
-        "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
-      maxLength: 120,
-    }),
-  }),
+    imageAlt: AltTextSchema
 ])
 
 const InfoCardsBaseSchema = Type.Object({

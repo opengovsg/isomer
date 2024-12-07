@@ -3,6 +3,13 @@ import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps } from "~/types"
 
+export const AltTextSchema = Type.String({
+  title: "Alternate text",
+  maxLength: 120,
+  description:
+    "Add a descriptive text so that visually impaired users can understand your image",
+})
+
 export const ImageSchema = Type.Object(
   {
     type: Type.Literal("image", { default: "image" }),
@@ -10,12 +17,7 @@ export const ImageSchema = Type.Object(
       title: "Upload image",
       format: "image",
     }),
-    alt: Type.String({
-      title: "Alternate text",
-      maxLength: 120,
-      description:
-        "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
-    }),
+    alt: AltTextSchema,
     caption: Type.Optional(
       Type.String({
         title: "Caption",

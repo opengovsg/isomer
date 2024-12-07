@@ -4,7 +4,7 @@ export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { HeroSchema, type HeroProps } from "./Hero"
 export { IframeSchema, type IframeProps } from "./Iframe"
-export { ImageSchema, type ImageProps } from "./Image"
+export { AltTextSchema, ImageSchema, type ImageProps } from "./Image"
 export {
   InfoCardsSchema,
   type InfoCardsProps,

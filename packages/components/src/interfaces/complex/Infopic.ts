@@ -3,6 +3,7 @@ import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { AltTextSchema } from "./Image"
 
 export const InfopicSchema = Type.Object(
   {
@@ -45,14 +46,7 @@ export const InfopicSchema = Type.Object(
       description: "The URL to the image",
       format: "image",
     }),
-    imageAlt: Type.Optional(
-      Type.String({
-        title: "Alternate text",
-        description:
-          "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
-        maxLength: 120,
-      }),
-    ),
+    imageAlt: Type.Optional(AltTextSchema),
   },
   {
     title: "Infopic component",

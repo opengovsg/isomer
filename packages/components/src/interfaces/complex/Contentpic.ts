@@ -3,6 +3,7 @@ import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { BaseProseSchema } from "../native/Prose"
+import { AltTextSchema } from "./Image"
 
 export const ContentpicSchema = Type.Object(
   {
@@ -11,14 +12,7 @@ export const ContentpicSchema = Type.Object(
       title: "Image",
       format: "image",
     }),
-    imageAlt: Type.Optional(
-      Type.String({
-        title: "Alternate text",
-        maxLength: 120,
-        description:
-          "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
-      }),
-    ),
+    imageAlt: Type.Optional(AltTextSchema),
     content: BaseProseSchema,
   },
   {
