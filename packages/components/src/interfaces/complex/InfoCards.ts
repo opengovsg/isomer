@@ -55,6 +55,7 @@ const SingleCardWithImageSchema = Type.Composite([
           default: "cover",
           title: "Image display",
           description: `Select "Resize image to fit" only if the image has a white background.`,
+          format: "radio",
         },
       ),
     ),
