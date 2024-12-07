@@ -11,6 +11,9 @@ import { LINK_HREF_PATTERN } from "~/utils/validation"
 export const CARDS_WITHOUT_IMAGES = "cardsWithoutImages"
 export const CARDS_WITH_IMAGES = "cardsWithImages"
 
+const IMAGE_FIT_COVER = "cover"
+const IMAGE_FIT_CONTAIN = "contain"
+
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
     title: "Title",
@@ -44,15 +47,15 @@ const SingleCardWithImageSchema = Type.Composite([
     imageFit: Type.Optional(
       Type.Union(
         [
-          Type.Literal("cover", {
+          Type.Literal(IMAGE_FIT_COVER, {
             title: "Default (recommended)",
           }),
-          Type.Literal("contain", {
+          Type.Literal(IMAGE_FIT_CONTAIN, {
             title: "Resize image to fit",
           }),
         ],
         {
-          default: "cover",
+          default: IMAGE_FIT_COVER,
           title: "Image display",
           description: `Select "Resize image to fit" only if the image has a white background.`,
           format: "radio",
