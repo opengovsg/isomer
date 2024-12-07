@@ -8,6 +8,9 @@ import type {
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
+export const CARDS_WITHOUT_IMAGES = "cardsWithoutImages"
+export const CARDS_WITH_IMAGES = "cardsWithImages"
+
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
     title: "Title",
@@ -101,7 +104,7 @@ const InfoCardsBaseSchema = Type.Object({
 
 const InfoCardsWithImageSchema = Type.Object(
   {
-    variant: Type.Literal("cardsWithImages", { default: "cardsWithImages" }),
+    variant: Type.Literal(CARDS_WITH_IMAGES, { default: CARDS_WITH_IMAGES }),
     cards: Type.Array(SingleCardWithImageSchema, {
       title: "Cards",
       maxItems: 12,
@@ -115,8 +118,8 @@ const InfoCardsWithImageSchema = Type.Object(
 
 const InfoCardsNoImageSchema = Type.Object(
   {
-    variant: Type.Literal("cardsWithoutImages", {
-      default: "cardsWithoutImages",
+    variant: Type.Literal(CARDS_WITHOUT_IMAGES, {
+      default: CARDS_WITHOUT_IMAGES,
     }),
     cards: Type.Array(SingleCardNoImageSchema, {
       title: "Cards",
@@ -132,7 +135,9 @@ const InfoCardsNoImageSchema = Type.Object(
 export const InfoCardsSchema = Type.Intersect(
   [
     InfoCardsBaseSchema,
-    Type.Union([InfoCardsWithImageSchema, InfoCardsNoImageSchema]),
+    Type.Union([InfoCardsWithImageSchema, InfoCardsNoImageSchema], {
+      format: "radio",
+    }),
   ],
   {
     title: "Cards component",
