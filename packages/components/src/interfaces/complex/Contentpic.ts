@@ -12,7 +12,7 @@ export const ContentpicSchema = Type.Object(
       title: "Image",
       format: "image",
     }),
-    imageAlt: Type.Optional(AltTextSchema),
+    imageAlt: AltTextSchema,
     content: BaseProseSchema,
   },
   {

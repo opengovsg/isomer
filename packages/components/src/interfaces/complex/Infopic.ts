@@ -46,7 +46,7 @@ export const InfopicSchema = Type.Object(
       description: "The URL to the image",
       format: "image",
     }),
-    imageAlt: Type.Optional(AltTextSchema),
+    imageAlt: AltTextSchema,
   },
   {
     title: "Infopic component",
