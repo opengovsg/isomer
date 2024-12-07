@@ -7,7 +7,7 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
-import { AltTextSchema } from "./Image"
+import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const CARDS_WITHOUT_IMAGES = "cardsWithoutImages"
 export const CARDS_WITH_IMAGES = "cardsWithImages"
@@ -41,10 +41,7 @@ const SingleCardNoImageSchema = Type.Object({
 const SingleCardWithImageSchema = Type.Composite([
   SingleCardNoImageSchema,
   Type.Object({
-    imageUrl: Type.String({
-      title: "Upload image",
-      format: "image",
-    }),
+    imageUrl: ImageSrcSchema,
     imageFit: Type.Optional(
       Type.Union(
         [
@@ -63,7 +60,8 @@ const SingleCardWithImageSchema = Type.Composite([
         },
       ),
     ),
-    imageAlt: AltTextSchema
+    imageAlt: AltTextSchema,
+  }),
 ])
 
 const InfoCardsBaseSchema = Type.Object({

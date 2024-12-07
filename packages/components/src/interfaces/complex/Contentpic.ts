@@ -3,15 +3,12 @@ import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { BaseProseSchema } from "../native/Prose"
-import { AltTextSchema } from "./Image"
+import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const ContentpicSchema = Type.Object(
   {
     type: Type.Literal("contentpic", { default: "contentpic" }),
-    imageSrc: Type.String({
-      title: "Image",
-      format: "image",
-    }),
+    imageSrc: ImageSrcSchema,
     imageAlt: AltTextSchema,
     content: BaseProseSchema,
   },

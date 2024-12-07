@@ -3,7 +3,7 @@ import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
-import { AltTextSchema } from "./Image"
+import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const InfopicSchema = Type.Object(
   {
@@ -41,11 +41,7 @@ export const InfopicSchema = Type.Object(
         pattern: LINK_HREF_PATTERN,
       }),
     ),
-    imageSrc: Type.String({
-      title: "Upload image",
-      description: "The URL to the image",
-      format: "image",
-    }),
+    imageSrc: ImageSrcSchema,
     imageAlt: AltTextSchema,
   },
   {
