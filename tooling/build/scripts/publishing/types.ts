@@ -11,7 +11,6 @@ export interface Resource extends Omit<DbResource, "parentId"> {
 interface Tag {
   selected: string[]
   category: string
-  values: string[]
 }
 
 export type SitemapEntry = Pick<
