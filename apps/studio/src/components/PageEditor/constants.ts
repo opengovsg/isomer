@@ -1,4 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
+import { DYNAMIC_DATA_BANNER_TYPE } from "@opengovsg/isomer-components"
 
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS: Record<
@@ -165,6 +166,50 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
+  map: {
+    type: "map",
+    title: "Singapore region",
+    url: "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d127639.0647119137!2d103.79481771806647!3d1.343949056391766!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2ssg!4v1731681854346!5m2!1sen!2ssg",
+  },
+  video: {
+    type: "video",
+    title: "Rick Astley - Never Gonna Give You Up",
+    url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
+  },
+  // TODO: Replace with actual working API endpoint
+  [DYNAMIC_DATA_BANNER_TYPE]: {
+    type: `${DYNAMIC_DATA_BANNER_TYPE}`,
+    apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
+    title: "hijriDate",
+    data: [
+      {
+        label: "Subuh",
+        key: "subuh",
+      },
+      {
+        label: "Syuruk",
+        key: "syuruk",
+      },
+      {
+        label: "Zohor",
+        key: "zohor",
+      },
+      {
+        label: "Asar",
+        key: "asar",
+      },
+      {
+        label: "Maghrib",
+        key: "maghrib",
+      },
+      {
+        label: "Ishak",
+        key: "isyak",
+      },
+    ],
+    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    label: "View all dates",
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -204,15 +249,15 @@ export const BLOCK_TO_META: Record<
     imageSrc: "/assets/block-images/KeyStatistics.png",
   },
   infobar: {
-    label: "Text with CTA",
+    label: "Call-to-Action",
     description: "Add a strong call-to-action",
     usageText:
       "Use this block to highlight key initatives on your homepage. It supports up to two buttons.",
     imageSrc: "/assets/block-images/Infobar.png",
   },
   contentpic: {
-    label: "Contentpic",
-    description: "Put an image and text side-by-side",
+    label: "Image with text",
+    description: "Put image and text side-by-side",
     usageText:
       "Use this block to juxtapose text next to a smaller image than usual, such as introducing a committee member along with their headshot.",
     imageSrc: "/assets/block-images/Contentpic.png",
@@ -247,6 +292,24 @@ export const BLOCK_TO_META: Record<
     description: "Embed a video or other content",
     usageText: "This block supports embedding content from other websites.",
   },
+  map: {
+    label: "Map",
+    description: "Embed a map of a location or area",
+    usageText: "Embed a map to show your offices or an event location.",
+    imageSrc: "/assets/block-images/Map.png",
+  },
+  video: {
+    label: "Video",
+    description: "Embed an external video",
+    usageText:
+      "You can embed videos hosted on platforms such as YouTube and Vimeo.",
+    imageSrc: "/assets/block-images/Video.png",
+  },
+  [DYNAMIC_DATA_BANNER_TYPE]: {
+    label: "Dynamic Data Banner",
+    description: "Display dynamic data banner",
+    usageText: "This block supports fetching data from an API endpoint.",
+  },
 }
 
 type AllowedBlockSections = {
@@ -255,25 +318,28 @@ type AllowedBlockSections = {
 }[]
 
 export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
-  { label: "Basic building blocks", types: ["prose", "image", "callout"] },
+  {
+    label: "Basic content blocks",
+    types: ["prose", "image", "accordion", "callout"],
+  },
+  { label: "Embed external content", types: ["map", "video"] },
 ]
 
 export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
-  { label: "Basic building blocks", types: ["prose", "image", "callout"] },
   {
-    label: "Organise complex content",
-    types: ["contentpic", "infocards", "accordion", "infocols"],
+    label: "Basic content blocks",
+    types: ["prose", "image", "accordion", "callout", "contentpic", "infobar"],
   },
+  {
+    label: "Add a new section",
+    types: ["infocards", "infocols", "keystatistics"],
+  },
+  { label: "Embed external content", types: ["map", "video"] },
 ]
 export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
-    label: "Highlight important information",
+    label: "Add a new section",
     // TODO(ISOM-1552): Add back iframe component when implemented
-    types: ["keystatistics", "infobar"],
-  },
-  {
-    label: "Organise complex content",
-    // TODO(ISOM-1552): Add back iframe component when implemented
-    types: ["infopic", "infocards", "infocols"],
+    types: ["infocards", "keystatistics", "infocols", "infopic", "infobar"],
   },
 ]

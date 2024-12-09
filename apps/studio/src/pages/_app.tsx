@@ -8,7 +8,6 @@ import { Skeleton, Stack } from "@chakra-ui/react"
 import { datadogRum } from "@datadog/browser-rum"
 import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
-import Intercom from "@intercom/messenger-js-sdk"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { ErrorBoundary } from "react-error-boundary"
@@ -59,12 +58,6 @@ void gb.init({
 })
 
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {
-  if (env.NEXT_PUBLIC_INTERCOM_APP_ID) {
-    Intercom({
-      app_id: env.NEXT_PUBLIC_INTERCOM_APP_ID,
-    })
-  }
-
   return (
     <EnvProvider env={env}>
       <LoginStateProvider>

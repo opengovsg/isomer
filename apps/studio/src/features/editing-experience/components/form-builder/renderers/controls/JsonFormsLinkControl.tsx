@@ -34,6 +34,11 @@ import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { LinkHrefEditor } from "../../../LinkEditor"
 import { LINK_TYPES_MAPPING } from "../../../LinkEditor/constants"
+import {
+  LinkEditorContextProvider,
+  useLinkEditor,
+} from "../../../LinkEditor/LinkEditorContext"
+import { getLinkHrefType } from "../../../LinkEditor/utils"
 
 export const jsonFormsLinkControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.LinkControl,
@@ -259,8 +264,42 @@ export function JsonFormsLinkControl({
   path,
   description,
   required,
+  errors,
 }: ControlProps) {
   const dataString = data && typeof data === "string" ? data : ""
+
+  return (
+    <Box>
+      <LinkEditorContextProvider
+        linkTypes={LINK_TYPES_MAPPING}
+        linkHref={dataString}
+        error={errors}
+        onChange={(value) => handleChange(path, value)}
+      >
+        <LinkEditorContent
+          label={label}
+          isRequired={required}
+          description={description}
+          value={dataString}
+        />
+      </LinkEditorContextProvider>
+    </Box>
+  )
+}
+
+interface LinkEditorContentProps {
+  label: string
+  isRequired?: boolean
+  value: string
+  description?: string
+}
+const LinkEditorContent = ({
+  value,
+  label,
+  isRequired,
+  description,
+}: LinkEditorContentProps) => {
+  const { setHref } = useLinkEditor()
   // NOTE: We need to pass in `siteId` but this component is automatically used by JsonForms
   // so we are unable to pass props down
   const { siteId } = useQueryParse(siteSchema)
@@ -268,38 +307,34 @@ export function JsonFormsLinkControl({
   // the data passed to this component is '/'
   // which prevents this component from saving
   const dummyFile =
-    !!dataString && dataString !== "/"
+    !!value && value !== "/" && getLinkHrefType(value) === "file"
       ? new File(
           [],
           // NOTE: Technically guaranteed since our s3 filepath has a format of `/<site>/.../<filename>`
-          dataString.split("/").at(-1) ?? "Uploaded file",
+          value.split("/").at(-1) ?? "Uploaded file",
         )
       : undefined
 
   return (
-    <Box>
-      <LinkHrefEditor
-        linkTypes={LINK_TYPES_MAPPING}
-        value={dataString}
-        onChange={(value) => handleChange(path, value)}
-        label={label}
-        isRequired={required}
-        pageLinkElement={
-          <PageLinkElement
-            data={dataString}
-            description={description}
-            onChange={(value) => handleChange(path, value)}
-          />
-        }
-        fileLinkElement={
-          <FileAttachment
-            siteId={siteId}
-            setHref={(value) => handleChange(path, value)}
-            value={dummyFile}
-          />
-        }
-      />
-    </Box>
+    <LinkHrefEditor
+      label={label}
+      isRequired={isRequired}
+      description={description}
+      pageLinkElement={
+        <PageLinkElement
+          data={value}
+          description={description}
+          onChange={setHref}
+        />
+      }
+      fileLinkElement={
+        <FileAttachment
+          siteId={siteId}
+          setHref={(value) => setHref(value ?? "")}
+          value={dummyFile}
+        />
+      }
+    />
   )
 }
 

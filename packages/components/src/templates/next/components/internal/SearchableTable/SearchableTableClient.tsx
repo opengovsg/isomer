@@ -29,7 +29,7 @@ const createSearchableTableStyles = tv({
     emptyStateSubtitle:
       "text-base-content-default prose-headline-lg-regular mt-3",
     emptyStateButton:
-      "prose-headline-base-medium text-link hover:text-link-hover",
+      "prose-headline-base-medium text-link visited:text-link-visited hover:text-link-hover",
     pagination: "mt-8 flex w-full justify-center lg:justify-end",
   },
   variants: {

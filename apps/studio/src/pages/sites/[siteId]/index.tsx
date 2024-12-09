@@ -26,7 +26,7 @@ import { MoveResourceModal } from "~/features/editing-experience/components/Move
 import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
-import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
+import { AdminCmsSearchableLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
 
 export const sitePageSchema = z.object({
   siteId: z.coerce.number(),
@@ -174,7 +174,7 @@ SitePage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
-      page={AdminCmsSidebarLayout(page)}
+      page={AdminCmsSearchableLayout(page)}
     />
   )
 }

@@ -38,7 +38,7 @@ const createInfobarStyles = tv({
   },
 })
 
-const compoundStyles = createInfobarStyles()
+export const compoundStyles = createInfobarStyles()
 
 const Infobar = ({
   title,

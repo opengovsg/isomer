@@ -120,17 +120,6 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
 // Generates sitemap entries and an index file for directories without an index file
 const processDanglingDirectory = async (fullPath, relativePath, name) => {
   const children = await getSiteMapChildrenEntries(fullPath, relativePath)
-  const listOfChildPages = {
-    type: "infocards",
-    variant: "cardsWithoutImages",
-    cards: children.map((child) => ({
-      title: child.title,
-      url: child.permalink,
-      description: child.summary,
-    })),
-    maxColumns: 1,
-  }
-
   const pageName = name.replace(/-/g, " ")
   const title = pageName.charAt(0).toUpperCase() + pageName.slice(1)
   const summary = `Pages in ${title}`
@@ -148,7 +137,7 @@ const processDanglingDirectory = async (fullPath, relativePath, name) => {
             summary,
           },
         },
-        content: [listOfChildPages],
+        content: [],
       },
       null,
       2,

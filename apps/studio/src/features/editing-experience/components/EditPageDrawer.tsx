@@ -5,10 +5,10 @@ import Ajv from "ajv"
 
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import AdminModeStateDrawer from "./AdminModeStateDrawer"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import HeroEditorDrawer from "./HeroEditorDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
+import RawJsonEditorModeStateDrawer from "./RawJsonEditorModeStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
 import TipTapProseComponent from "./TipTapProseComponent"
 
@@ -40,8 +40,8 @@ export function EditPageDrawer(): JSX.Element {
   switch (currState.state) {
     case "root":
       return <RootStateDrawer />
-    case "adminMode":
-      return <AdminModeStateDrawer />
+    case "rawJsonEditor":
+      return <RawJsonEditorModeStateDrawer />
     case "addBlock":
       return <ComponentSelector />
     case "nativeEditor": {

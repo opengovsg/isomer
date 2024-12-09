@@ -6,14 +6,15 @@ import { z } from "zod"
 
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
-import { CmsSidebar, CmsSidebarContainer } from "~/components/CmsSidebar"
+import { CmsContainer, CmsSidebar } from "~/components/CmsSidebar"
 import { LayoutHead } from "~/components/LayoutHead"
+import { SearchableHeader } from "~/components/SearchableHeader"
 import { DirectorySidebar } from "~/features/dashboard/components/DirectorySidebar"
 import { useMe } from "~/features/me/api"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type GetLayout } from "~/lib/types"
 
-export const AdminCmsSidebarLayout: GetLayout = (page) => {
+export const AdminCmsSearchableLayout: GetLayout = (page) => {
   return (
     <EnforceLoginStatePageWrapper>
       <LayoutHead />
@@ -70,13 +71,14 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
   ]
 
   return (
-    <CmsSidebarContainer
+    <CmsContainer
       sidebar={
         <CmsSidebar topNavItems={pageNavItems} bottomNavItems={userNavItems} />
       }
       sidenav={<DirectorySidebar siteId={siteId} />}
+      header={<SearchableHeader siteId={siteId} />}
     >
       {children}
-    </CmsSidebarContainer>
+    </CmsContainer>
   )
 }

@@ -7,6 +7,8 @@ import {
   CalloutSchema,
   ContentpicSchema,
   DividerSchema,
+  DYNAMIC_DATA_BANNER_TYPE,
+  DynamicDataBannerSchema,
   HeadingSchema,
   HeroSchema,
   IframeSchema,
@@ -16,11 +18,13 @@ import {
   InfoColsSchema,
   InfopicSchema,
   KeyStatisticsSchema,
+  MapSchema,
   OrderedListSchema,
   ParagraphSchema,
   ProseSchema,
   TableSchema,
   UnorderedListSchema,
+  VideoSchema,
 } from "~/interfaces"
 
 export const IsomerComplexComponentsMap = {
@@ -35,6 +39,9 @@ export const IsomerComplexComponentsMap = {
   infopic: InfopicSchema,
   contentpic: ContentpicSchema,
   keystatistics: KeyStatisticsSchema,
+  map: MapSchema,
+  video: VideoSchema,
+  [DYNAMIC_DATA_BANNER_TYPE]: DynamicDataBannerSchema,
 }
 
 export const IsomerNativeComponentsMap = {

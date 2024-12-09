@@ -35,21 +35,34 @@ calculate_duration $start_time
 # Perform a clean of npm cache
 npm cache clean --force
 
-# Install dependencies
-echo "Installing dependencies..."
-start_time=$(date +%s)
-npm ci
-calculate_duration $start_time
+# Try to fetch cached node_modules from S3
+echo "Fetching cached node_modules..."
+NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$ISOMER_BUILD_REPO_BRANCH/isomer/node_modules.tar.gz"
+aws s3 cp $NODE_MODULES_CACHE_PATH node_modules.tar.gz || true
+if [ -f "node_modules.tar.gz" ]; then
+  echo "node_modules.tar.gz found in cache"
+  
+  echo "Using cached node_modules"
+  start_time=$(date +%s)
+  tar -xzf node_modules.tar.gz
+  rm node_modules.tar.gz
+  calculate_duration $start_time
+else
+  echo "node_modules.tar.gz not found in cache"
 
-# Build components
-echo "Building components..."
-start_time=$(date +%s)
-cd packages/components
-npm run build
-mv opengovsg-isomer-components-0.0.13.tgz ../../tooling/template/
-cd ../.. # back to root
-echo $(pwd)
-calculate_duration $start_time
+  echo "Installing dependencies..."
+  start_time=$(date +%s)
+  npm ci
+  calculate_duration $start_time
+
+  echo "Caching node_modules..."
+  start_time=$(date +%s)
+  tar -czf node_modules.tar.gz node_modules/
+  aws s3 cp node_modules.tar.gz $NODE_MODULES_CACHE_PATH
+  rm node_modules.tar.gz
+  echo "Cached node_modules"
+  calculate_duration $start_time
+fi
 
 # Fetch from database
 echo "Fetching from database..."
@@ -61,9 +74,8 @@ npm install ts-node -g
 npm run start
 calculate_duration $start_time
 
-# Build site
-echo "Building site..."
-start_time=$(date +%s)
+# Prebuilding...
+echo "Prebuilding site..."
 rm -rf ../../../template/schema
 rm -rf ../../../template/data
 mv schema/ ../../../template/
@@ -72,15 +84,50 @@ cp sitemap.json ../../../template/public/
 mv sitemap.json ../../../template/
 cd ../../../template
 echo $(pwd)
-npm ci
-calculate_duration $start_time
+echo "Fetching cached tooling-template node_modules..."
+TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$ISOMER_BUILD_REPO_BRANCH/isomer-tooling-template/node_modules.tar.gz"
+aws s3 cp $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH node_modules.tar.gz || true
+if [ -f "node_modules.tar.gz" ]; then
+  echo "node_modules.tar.gz found in cache"
+  
+  echo "Using cached node_modules"
+  start_time=$(date +%s)
+  tar -xzf node_modules.tar.gz
+  rm node_modules.tar.gz
+  calculate_duration $start_time
+else
+  echo "node_modules.tar.gz not found in cache"
 
-# Prebuild
-echo "Prebuilding..."
-start_time=$(date +%s)
-rm -rf node_modules && rm -rf .next
-npm i opengovsg-isomer-components-0.0.13.tgz
-calculate_duration $start_time
+  # Build components
+  echo "Building components..."
+  start_time=$(date +%s)
+  cd ../../packages/components # from tooling/template
+  npm run build
+  mv opengovsg-isomer-components-0.0.13.tgz ../../tooling/template/
+  echo $(pwd)
+  cd ../.. # back to root
+  calculate_duration $start_time
+
+  echo "Installing dependencies..."
+  cd tooling/template
+  start_time=$(date +%s)
+  npm ci
+  calculate_duration $start_time
+
+  echo "Prebuilding..."
+  start_time=$(date +%s)
+  rm -rf node_modules && rm -rf .next
+  npm i opengovsg-isomer-components-0.0.13.tgz
+  calculate_duration $start_time
+
+  echo "Caching node_modules..."
+  start_time=$(date +%s)
+  tar -czf node_modules.tar.gz node_modules/
+  aws s3 cp node_modules.tar.gz $TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH
+  rm node_modules.tar.gz
+  echo "Cached node_modules"
+  calculate_duration $start_time
+fi
 
 # Build
 echo "Building..."
@@ -119,8 +166,9 @@ aws configure set default.s3.max_concurrent_requests $S3_SYNC_CONCURRENCY
 # Set all files to have 10 minutes of cache, except for those in the _next folder
 aws s3 sync . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --delete --no-progress --cache-control "max-age=600" --exclude "_next/*"
 
-# Set all files in the _next folder to have 1 day of cache
-aws s3 sync _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=86400"
+# Set all files in the _next folder to be cached indefinitely (1 year) on users' browsers
+# Next.js uses unique content hashes in filenames, allowing updated content to have different filenames and invalidate the cache on new builds.
+aws s3 sync _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=31536000, public"
 
 calculate_duration $start_time
 

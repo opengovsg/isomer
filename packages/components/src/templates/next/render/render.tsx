@@ -4,10 +4,12 @@ import type {
   IsomerSiteProps,
 } from "~/engine"
 import type { IsomerPageLayoutType, LinkComponentType } from "~/types"
+import { DYNAMIC_DATA_BANNER_TYPE } from "~/interfaces"
 import {
   Accordion,
   Callout,
   Contentpic,
+  DynamicDataBanner,
   Hero,
   Iframe,
   Image,
@@ -16,7 +18,9 @@ import {
   InfoCols,
   Infopic,
   KeyStatistics,
+  Map,
   Prose,
+  Video,
 } from "../components"
 import {
   ArticleLayout,
@@ -65,6 +69,8 @@ export const renderComponent = ({
       return <Infopic key={elementKey} {...component} {...rest} />
     case "keystatistics":
       return <KeyStatistics key={elementKey} {...component} {...rest} />
+    case "map":
+      return <Map key={elementKey} {...component} {...rest} />
     case "prose":
       return (
         <Prose
@@ -74,6 +80,10 @@ export const renderComponent = ({
           shouldStripContentHtmlTags
         />
       )
+    case "video":
+      return <Video key={elementKey} {...component} {...rest} />
+    case DYNAMIC_DATA_BANNER_TYPE:
+      return <DynamicDataBanner key={elementKey} {...component} {...rest} />
     default:
       const _: never = component
       return <></>

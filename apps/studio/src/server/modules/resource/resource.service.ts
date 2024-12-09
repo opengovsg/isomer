@@ -5,10 +5,11 @@ import { TRPCError } from "@trpc/server"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Resource, SafeKysely, Transaction } from "../database"
+import type { SearchResultResource } from "./resource.types"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { getSitemapTree } from "~/utils/sitemap"
 import { publishSite } from "../aws/codebuild.service"
-import { db, jsonb, ResourceType } from "../database"
+import { db, jsonb, ResourceType, sql } from "../database"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
 
@@ -408,4 +409,217 @@ export const publishResource = async (
   await publishSite(logger, siteId)
 
   return addedVersionResult
+}
+
+export const getWithFullPermalink = async ({
+  resourceId,
+}: {
+  resourceId: string
+}) => {
+  const result = await db
+    .withRecursive("resourcePath", (eb) =>
+      eb
+        .selectFrom("Resource as r")
+        .select([
+          "r.id",
+          "r.title",
+          "r.permalink",
+          "r.parentId",
+          "r.permalink as fullPermalink",
+        ])
+        .where("r.parentId", "is", null)
+        .unionAll(
+          eb
+            .selectFrom("Resource as s")
+            .innerJoin("resourcePath as rp", "s.parentId", "rp.id")
+            .select([
+              "s.id",
+              "s.title",
+              "s.permalink",
+              "s.parentId",
+              sql<string>`CONCAT(rp."fullPermalink", '/', s.permalink)`.as(
+                "fullPermalink",
+              ),
+            ]),
+        ),
+    )
+    .selectFrom("resourcePath as rp")
+    .select(["rp.id", "rp.title", "rp.fullPermalink"])
+    .where("rp.id", "=", resourceId)
+    .executeTakeFirst()
+
+  return result
+}
+
+const getResourcesWithLastUpdatedAt = ({ siteId }: { siteId: number }) => {
+  return db
+    .selectFrom("Resource")
+    .select([
+      "Resource.id",
+      "Resource.title",
+      "Resource.type",
+      "Resource.parentId",
+      // To handle cases where either the resource or the blob is updated
+      sql`GREATEST("Resource"."updatedAt", "Blob"."updatedAt")`.as(
+        "lastUpdatedAt",
+      ),
+    ])
+    .leftJoin("Blob", "Resource.draftBlobId", "Blob.id")
+    .where("Resource.siteId", "=", siteId)
+}
+
+const getResourcesWithFullPermalink = async ({
+  resources,
+}: {
+  resources: Omit<SearchResultResource, "fullPermalink">[]
+}): Promise<SearchResultResource[]> => {
+  return await Promise.all(
+    resources.map(async (resource) => ({
+      ...resource,
+      fullPermalink: await getWithFullPermalink({
+        resourceId: resource.id,
+      }).then((r) => r?.fullPermalink ?? ""),
+    })),
+  )
+}
+
+export const getSearchResults = async ({
+  siteId,
+  query,
+  offset,
+  limit,
+}: {
+  siteId: number
+  query: string
+  offset: number
+  limit: number
+}): Promise<{
+  totalCount: number | null
+  resources: SearchResultResource[]
+}> => {
+  const searchTerms: string[] = Array.from(
+    new Set(query.trim().toLowerCase().split(/\s+/)),
+  )
+
+  const queriedResources = getResourcesWithLastUpdatedAt({
+    siteId: Number(siteId),
+  })
+    .where("Resource.type", "in", [
+      // only show user-viewable resources (excluding root page, folder meta etc.)
+      ResourceType.Page,
+      ResourceType.Folder,
+      ResourceType.Collection,
+      ResourceType.CollectionLink,
+      ResourceType.CollectionPage,
+    ])
+    .where((eb) =>
+      eb.or(
+        searchTerms.map((searchTerm) =>
+          // Match if the search term is at the start of the title
+          eb("Resource.title", "ilike", `${searchTerm}%`).or(
+            // Match if the search term is in the middle of the title (after a space)
+            eb("Resource.title", "ilike", `% ${searchTerm}%`),
+          ),
+        ),
+      ),
+    )
+
+  // Currently ordered by number of words matched
+  // followed by `lastUpdatedAt` if there's a tie-break
+  let orderedResources = queriedResources
+  if (searchTerms.length > 1) {
+    orderedResources = orderedResources.orderBy(
+      sql`(
+        ${sql.join(
+          searchTerms.map(
+            (searchTerm) =>
+              // 1. Match if the search term is at the start of the title
+              // 2. Match if the search term is in the middle of the title (after a space)
+              sql`
+                CASE
+                  WHEN (
+                    "Resource"."title" ILIKE ${searchTerm + "%"} OR
+                    "Resource"."title" ILIKE ${"% " + searchTerm + "%"}
+                  )
+                  THEN ${searchTerm.length}
+                  ELSE 0
+                END
+              `,
+          ),
+          sql` + `,
+        )}
+      ) DESC`,
+    )
+  }
+  orderedResources = orderedResources.orderBy("lastUpdatedAt", "desc")
+
+  const resourcesToReturn: SearchResultResource[] = (await orderedResources
+    .offset(offset)
+    .limit(limit)
+    .execute()) as SearchResultResource[]
+
+  const totalCount: number = (
+    await db
+      .with("queriedResources", () => queriedResources)
+      .selectFrom("queriedResources")
+      .select(db.fn.countAll().as("total_count"))
+      .executeTakeFirstOrThrow()
+  ).total_count as number // needed to cast as the type can be `bigint`
+
+  return {
+    totalCount,
+    resources: await getResourcesWithFullPermalink({
+      resources: resourcesToReturn,
+    }),
+  }
+}
+
+export const getSearchRecentlyEdited = async ({
+  siteId,
+  limit = 5, // Hardcoded for now to be 5
+}: {
+  siteId: number
+  limit?: number
+}): Promise<SearchResultResource[]> => {
+  return await getResourcesWithFullPermalink({
+    resources: (await getResourcesWithLastUpdatedAt({
+      siteId: Number(siteId),
+    })
+      .where("Resource.type", "in", [
+        // only show page-ish resources
+        ResourceType.Page,
+        ResourceType.CollectionLink,
+        ResourceType.CollectionPage,
+      ])
+      .limit(limit)
+      .orderBy("lastUpdatedAt", "desc")
+      .execute()) as SearchResultResource[],
+  })
+}
+
+export const getSearchWithResourceIds = async ({
+  siteId,
+  resourceIds,
+}: {
+  siteId: number
+  resourceIds: string[]
+}): Promise<SearchResultResource[]> => {
+  const resources = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", Number(siteId))
+    .where("Resource.id", "in", resourceIds)
+    .select([
+      "Resource.id",
+      "Resource.type",
+      "Resource.title",
+      "Resource.parentId",
+    ])
+    .execute()
+
+  return await getResourcesWithFullPermalink({
+    resources: resources.map((resource) => ({
+      ...resource,
+      lastUpdatedAt: null,
+    })),
+  })
 }

@@ -21,6 +21,8 @@ const COMMON_HANDLERS = [
   sitesHandlers.getNavbar.default(),
   sitesHandlers.getLocalisedSitemap.default(),
   resourceHandlers.getRolesFor.default(),
+  resourceHandlers.getWithFullPermalink.default(),
+  resourceHandlers.getAncestryOf.collectionLink(),
   resourceHandlers.getChildrenOf.default(),
   resourceHandlers.getMetadataById.article(),
   pageHandlers.readPageAndBlob.article(),
@@ -97,5 +99,25 @@ export const WithBanner: Story = {
         message: "This is a test banner",
       }),
     ],
+  },
+}
+
+export const AddTextBlock: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const canvas = within(canvasElement)
+    await AddBlock.play?.(context)
+
+    await userEvent.click(canvas.getByRole("button", { name: /text/i }))
+  },
+}
+
+export const LinkModal: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const canvas = within(canvasElement)
+    await AddTextBlock.play?.(context)
+
+    await userEvent.click(canvas.getByRole("button", { name: /link/i }))
   },
 }

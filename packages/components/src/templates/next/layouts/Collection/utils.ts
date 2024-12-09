@@ -1,5 +1,5 @@
 import type { AppliedFilter, Filter as FilterType } from "../../types/Filter"
-import type { CollectionCardProps } from "~/interfaces"
+import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { getParsedDate } from "~/utils"
 
 const FILTER_ID_CATEGORY = "category"
@@ -7,7 +7,7 @@ const FILTER_ID_YEAR = "year"
 const NO_SPECIFIED_YEAR_FILTER_ID = "not_specified"
 
 export const getAvailableFilters = (
-  items: CollectionCardProps[],
+  items: ProcessedCollectionCardProps[],
 ): FilterType[] => {
   const categories: Record<string, number> = {}
   const years: Record<string, number> = {}
@@ -80,10 +80,10 @@ export const getAvailableFilters = (
 }
 
 export const getFilteredItems = (
-  items: CollectionCardProps[],
+  items: ProcessedCollectionCardProps[],
   appliedFilters: AppliedFilter[],
   searchValue: string,
-): CollectionCardProps[] => {
+): ProcessedCollectionCardProps[] => {
   return items.filter((item) => {
     // Step 1: Filter based on search value
     if (
@@ -130,7 +130,7 @@ export const getFilteredItems = (
 }
 
 export const getPaginatedItems = (
-  items: CollectionCardProps[],
+  items: ProcessedCollectionCardProps[],
   itemsPerPage: number,
   currPage: number,
 ) => {
@@ -178,6 +178,8 @@ export const updateAppliedFilters = (
   }
 }
 
-export const shouldShowDate = (items: CollectionCardProps[]): boolean => {
+export const shouldShowDate = (
+  items: ProcessedCollectionCardProps[],
+): boolean => {
   return items.some((item) => item.lastUpdated)
 }

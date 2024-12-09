@@ -7,7 +7,7 @@ import {
 } from "react"
 
 import type { AppliedFilter } from "../../types/Filter"
-import type { CollectionCardProps } from "~/interfaces"
+import type { ProcessedCollectionCardProps } from "~/interfaces"
 import {
   getFilteredItems,
   getPaginatedItems,
@@ -16,10 +16,11 @@ import {
 
 export const ITEMS_PER_PAGE = 10
 
-interface UseCollectionProps {
-  items: CollectionCardProps[]
-}
-export const useCollection = ({ items }: UseCollectionProps) => {
+export const useCollection = ({
+  items,
+}: {
+  items: ProcessedCollectionCardProps[]
+}) => {
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([])
   const [searchValue, _setSearchValue] = useState<string>("")
 

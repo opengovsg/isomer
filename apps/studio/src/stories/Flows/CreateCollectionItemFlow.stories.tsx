@@ -25,6 +25,7 @@ const meta: Meta<typeof CollectionListPage> = {
         sitesHandlers.getFooter.default(),
         sitesHandlers.getNavbar.default(),
         sitesHandlers.getLocalisedSitemap.default(),
+        sitesHandlers.getSiteName.default(),
         resourceHandlers.getRolesFor.default(),
         resourceHandlers.getChildrenOf.default(),
         resourceHandlers.getMetadataById.article(),

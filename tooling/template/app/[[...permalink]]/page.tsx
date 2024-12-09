@@ -12,11 +12,13 @@ import {
   RenderEngine,
 } from "@opengovsg/isomer-components"
 
+export const dynamic = "force-static"
+
 const INDEX_PAGE_PERMALINK = "_index"
 interface DynamicPageProps {
-  params: {
-    permalink?: string[]
-  }
+  params: Promise<{
+    permalink: string[]
+  }>
 }
 
 const timeNow = new Date()
@@ -27,9 +29,8 @@ const lastUpdated =
   " " +
   timeNow.getFullYear()
 
-const getSchema = async (
-  permalink: DynamicPageProps["params"]["permalink"],
-) => {
+const getSchema = async (paramsPromise: DynamicPageProps) => {
+  const { permalink } = await paramsPromise.params
   const joinedPermalink = !!permalink ? permalink.join("/") : ""
 
   const schema = (await import(`@/schema/${joinedPermalink}.json`)
@@ -72,11 +73,10 @@ export const generateStaticParams = () => {
 }
 
 export const generateMetadata = async (
-  { params }: DynamicPageProps,
+  props: DynamicPageProps,
   _parent: ResolvingMetadata,
 ): Promise<Metadata> => {
-  const { permalink } = params
-  const schema = await getSchema(permalink)
+  const schema = await getSchema(props)
   schema.site = {
     ...config.site,
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
@@ -93,9 +93,8 @@ export const generateMetadata = async (
   return getMetadata(schema)
 }
 
-const Page = async ({ params }: DynamicPageProps) => {
-  const { permalink } = params
-  const renderSchema = await getSchema(permalink)
+const Page = async (props: DynamicPageProps) => {
+  const renderSchema = await getSchema(props)
 
   return (
     <RenderEngine
@@ -112,6 +111,7 @@ const Page = async ({ params }: DynamicPageProps) => {
         footerItems: footer,
         lastUpdated,
         assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+        isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
       }}
       LinkComponent={Link}
       ScriptComponent={Script}

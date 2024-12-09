@@ -19,28 +19,95 @@ TODO: Removing this CSP first
 const ContentSecurityPolicy = `
   default-src 'none';
   base-uri 'self';
-  font-src 'self' https: data:;
-  form-action 'self';
+  font-src
+    'self'
+    https:
+    data:
+    https://js.intercomcdn.com
+    https://fonts.intercomcdn.com
+    ;
+  form-action
+    'self'
+    https://intercom.help
+    https://api-iam.intercom.io
+    https://api-iam.eu.intercom.io
+    https://api-iam.au.intercom.io
+    ;
   frame-ancestors 'self';
   img-src * data: blob:;
-  frame-src 'self';
+  frame-src
+    'self'
+    https://intercom-sheets.com
+    https://www.intercom-reporting.com
+    https://player.vimeo.com
+    https://fast.wistia.net
+    https://www.google.com
+    https://www.youtube.com
+    https://www.youtube-nocookie.com
+    https://www.onemap.gov.sg
+    https://www.facebook.com
+    ;
   object-src 'none';
-  script-src 'self' 'unsafe-eval' https://*.wogaa.sg;
-  style-src 'self' https: 'unsafe-inline';
+  script-src
+    'self'
+    'unsafe-eval'
+    https://*.wogaa.sg
+    https://app.intercom.io
+    https://widget.intercom.io
+    https://js.intercomcdn.com
+    ;
+  style-src
+    'self'
+    https:
+    'unsafe-inline'
+    ;
+  media-src
+    https://js.intercomcdn.com
+    https://downloads.intercomcdn.com
+    https://downloads.intercomcdn.eu
+    https://downloads.au.intercomcdn.com
+    ;
   connect-src
     'self'
-    https://schema.isomer.gov.sg
     https://browser-intake-datadoghq.com
     https://*.browser-intake-datadoghq.com
-    https://vitals.vercel-insights.com/v1/vitals
+    https://vitals.vercel-insights.com
     https://*.amazonaws.com
     https://*.wogaa.sg
     https://placehold.co
-    https://cdn.growthbook.io/api/features/${env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY}
-    https://widget.intercom.io/widget/${env.NEXT_PUBLIC_INTERCOM_APP_ID}
+    https://cdn.growthbook.io
     ${env.NODE_ENV === "production" ? "https://isomer-user-content.by.gov.sg" : "https://*.by.gov.sg"}
+    https://via.intercom.io
+    https://api.intercom.io
+    https://api.au.intercom.io
+    https://api.eu.intercom.io
+    https://api-iam.intercom.io
+    https://api-iam.eu.intercom.io
+    https://api-iam.au.intercom.io
+    https://api-ping.intercom.io
+    https://nexus-websocket-a.intercom.io
+    wss://nexus-websocket-a.intercom.io
+    https://nexus-websocket-b.intercom.io
+    wss://nexus-websocket-b.intercom.io
+    https://nexus-europe-websocket.intercom.io
+    wss://nexus-europe-websocket.intercom.io
+    https://nexus-australia-websocket.intercom.io
+    wss://nexus-australia-websocket.intercom.io
+    https://uploads.intercomcdn.com
+    https://uploads.intercomcdn.eu
+    https://uploads.au.intercomcdn.com
+    https://uploads.eu.intercomcdn.com
+    https://uploads.intercomusercontent.com
     ;
-  worker-src 'self' blob:;
+  worker-src
+    'self'
+    blob:
+    https://intercom-sheets.com
+    https://www.intercom-reporting.com
+    https://www.youtube.com
+    https://player.vimeo.com
+    https://fast.wistia.net
+    ;
   ${env.NODE_ENV === "production" ? "upgrade-insecure-requests" : ""}
 `
 
@@ -51,9 +118,6 @@ const ContentSecurityPolicy = `
 const config = {
   output: "standalone",
   reactStrictMode: true,
-  experimental: {
-    instrumentationHook: true,
-  },
   /**
    * Dynamic configuration available for the browser and server.
    * Note: requires `ssr: true` or a `getInitialProps` in `_app.tsx`

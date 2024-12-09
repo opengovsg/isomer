@@ -20,3 +20,7 @@ export const setNotificationSchema = z.object({
     .max(100, { message: "Notification must be 100 characters or less" }),
   notificationEnabled: z.boolean(),
 })
+
+export const getNameSchema = z.object({
+  siteId: z.number().min(1),
+})

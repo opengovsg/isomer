@@ -3,7 +3,12 @@ export {
   type ArticlePageHeaderProps,
 } from "./ArticlePageHeader"
 export type { BreadcrumbProps } from "./Breadcrumb"
-export type { CollectionCardProps } from "./CollectionCard"
+export type {
+  AllCardProps,
+  CollectionCardProps,
+  ProcessedCollectionCardProps,
+} from "./CollectionCard"
+export type { ChildrenPagesProps } from "./ChildrenPages"
 export type { ContentProps } from "./Content"
 export {
   ContentPageHeaderSchema,
@@ -29,3 +34,10 @@ export type { SiderailProps } from "./Siderail"
 export type { SkipToContentProps } from "./SkipToContent"
 export type { TableOfContentsProps } from "./TableOfContents"
 export type { WogaaProps } from "./Wogaa"
+export type {
+  GoogleTagManagerHeaderScriptProps,
+  GoogleTagManagerHeaderProps,
+  GoogleTagManagerBodyScriptProps,
+  GoogleTagManagerBodyProps,
+} from "./GoogleTagManager"
+export type { AttrsDirProps } from "./AttrsDir"

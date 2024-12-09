@@ -21,6 +21,7 @@ const meta: Meta<typeof SitePage> = {
         sitesHandlers.getTheme.default(),
         sitesHandlers.getFooter.default(),
         sitesHandlers.getNavbar.default(),
+        sitesHandlers.getSiteName.default(),
         sitesHandlers.getLocalisedSitemap.default(),
         resourceHandlers.getChildrenOf.default(),
         resourceHandlers.getRolesFor.default(),

@@ -8,6 +8,8 @@ import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
 import { getMetadata, RenderEngine } from "@opengovsg/isomer-components"
 
+export const dynamic = "force-static"
+
 const PAGE_TITLE = "404: Page not found"
 const PAGE_DESCRIPTION = "The page that you are accessing does not exist"
 const PAGE_SCHEMA_VERSION = "0.1.0"
@@ -65,6 +67,7 @@ const NotFound = () => {
           // @ts-ignore to fix when types are proper
           footerItems: footer,
           assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+          isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
         }}
         layout="notfound"
         meta={{

@@ -56,6 +56,13 @@ export const InfoBoxSchema = Type.Object({
 export const InfoColsSchema = Type.Object(
   {
     type: Type.Literal("infocols", { default: "infocols" }),
+    id: Type.Optional(
+      Type.String({
+        title: "Anchor ID",
+        description: "The ID to use for anchor links",
+        format: "hidden",
+      }),
+    ),
     title: Type.String({
       title: "Title",
       maxLength: 100,

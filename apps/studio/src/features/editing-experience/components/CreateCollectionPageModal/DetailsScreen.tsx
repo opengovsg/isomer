@@ -113,14 +113,13 @@ export const CreateCollectionPageDetailsScreen = () => {
         </Stack>
       </ModalHeader>
       <ModalBody p={0} overflow="hidden" bg="white">
-        <AppGrid height="100%">
+        <AppGrid height="100%" px={0}>
           <Stack
             gridColumn="1 / 5"
             height="100%"
             gap="2rem"
             mt="10vh"
             px="3rem"
-            py="1rem"
             {...(type === ResourceType.CollectionLink && { mt: "50%" })}
           >
             <Stack>

@@ -48,7 +48,7 @@ const ContentLayout = ({
 
   // Note: We do not show side rail for first-level pages
   const sideRail = !isParentPageRoot
-    ? getSiderailFromSiteMap(site.siteMap, page.permalink.split("/").slice(1))
+    ? getSiderailFromSiteMap(site.siteMap, page.permalink)
     : null
 
   // auto-inject ids for heading level 2 blocks if does not exist

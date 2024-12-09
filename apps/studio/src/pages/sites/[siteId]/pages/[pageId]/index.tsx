@@ -8,11 +8,15 @@ import EditPageDrawer from "~/features/editing-experience/components/EditPageDra
 import { EditPagePreview } from "~/features/editing-experience/components/EditPagePreview"
 import { editPageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { useResourceLocalViewHistory } from "~/hooks/useResourceLocalViewHistory"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
 
 const EditPage: NextPageWithLayout = () => {
   const { pageId, siteId } = useQueryParse(editPageSchema)
+
+  const { upsert } = useResourceLocalViewHistory({ siteId: String(siteId) })
+  upsert({ resourceId: String(pageId) })
 
   const [{ content: page, type, updatedAt, title }] =
     trpc.page.readPageAndBlob.useSuspenseQuery(

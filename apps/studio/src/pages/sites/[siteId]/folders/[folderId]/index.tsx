@@ -27,7 +27,7 @@ import { CreatePageModal } from "~/features/editing-experience/components/Create
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
-import { AdminCmsSidebarLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
+import { AdminCmsSearchableLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
 import { trpc } from "~/utils/trpc"
 
 const folderPageSchema = z.object({
@@ -250,7 +250,7 @@ FolderPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.Folder}
-      page={AdminCmsSidebarLayout(page)}
+      page={AdminCmsSearchableLayout(page)}
     />
   )
 }

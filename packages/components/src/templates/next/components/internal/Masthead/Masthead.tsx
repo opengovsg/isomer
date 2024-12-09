@@ -180,7 +180,7 @@ const RestrictedContent = () => {
               <Link
                 LinkComponent={LinkComponent}
                 href="https://www.gov.sg/trusted-sites#govsites"
-                className="inline-flex items-center text-link underline underline-offset-4 outline-none hover:text-link-hover"
+                className="inline-flex items-center text-link underline underline-offset-4 outline-none visited:text-link-visited hover:text-link-hover"
                 isExternal
                 isWithFocusVisibleHighlight
               >

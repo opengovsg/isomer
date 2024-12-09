@@ -158,7 +158,7 @@ const InfoCardText = ({
   "title" | "description" | "url"
 >): JSX.Element => (
   <div className={compoundStyles.cardTextContainer()}>
-    <h4 className={infoCardTitleStyle({ isClickableCard: !!url })}>
+    <h3 className={infoCardTitleStyle({ isClickableCard: !!url })}>
       {title}
 
       {url && (
@@ -167,7 +167,7 @@ const InfoCardText = ({
           className={compoundStyles.cardTitleArrow()}
         />
       )}
-    </h4>
+    </h3>
     <p className={compoundStyles.cardDescription()}>{description}</p>
   </div>
 )
@@ -213,6 +213,7 @@ const InfoCardWithImage = ({
 }
 
 const InfoCards = ({
+  id,
   title,
   subtitle,
   variant,
@@ -260,7 +261,10 @@ const InfoCards = ({
   }
 
   return (
-    <section className={compoundStyles.container({ layout: simplifiedLayout })}>
+    <section
+      id={id}
+      className={compoundStyles.container({ layout: simplifiedLayout })}
+    >
       {(title || subtitle) && (
         <div
           className={compoundStyles.headingContainer({

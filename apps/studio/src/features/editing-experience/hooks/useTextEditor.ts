@@ -26,6 +26,7 @@ import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { textblockTypeInputRule, useEditor } from "@tiptap/react"
+import TextDirection from "tiptap-text-direction"
 
 import { getHtmlWithRelativeReferenceLinks } from "../utils"
 
@@ -79,6 +80,9 @@ const BASE_EXTENSIONS: Extensions = [
   Dropcursor,
   Gapcursor,
   HardBreak,
+  HorizontalRule.extend({
+    name: "divider",
+  }),
   History,
   Italic,
   ListItem.extend({
@@ -101,10 +105,6 @@ const BASE_EXTENSIONS: Extensions = [
   Text,
   Underline,
 ]
-
-const IsomerHorizontalRule = HorizontalRule.extend({
-  name: "divider",
-})
 
 const IsomerTable = Table.extend({
   addAttributes() {
@@ -150,7 +150,13 @@ const useBaseEditor = ({
 }: BaseEditorProps & { extensions: Extensions }) =>
   useEditor({
     immediatelyRender: false,
-    extensions: [...BASE_EXTENSIONS, ...extensions],
+    extensions: [
+      ...BASE_EXTENSIONS,
+      ...extensions,
+      TextDirection.configure({
+        types: ["heading", "paragraph"],
+      }),
+    ],
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     content: data,
     onUpdate: (e) => {
@@ -175,7 +181,7 @@ export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
 
 export const useCalloutEditor = ({ data, handleChange }: BaseEditorProps) => {
   return useBaseEditor({
-    extensions: [IsomerHorizontalRule],
+    extensions: [],
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange,
