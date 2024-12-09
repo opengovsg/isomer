@@ -1,10 +1,6 @@
 "use client"
 
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from "@tanstack/react-query"
+import { useEffect, useState } from "react"
 
 import type { DynamicDataBannerProps } from "~/interfaces"
 import { NUMBER_OF_DATA } from "~/interfaces"
@@ -27,7 +23,7 @@ export const DynamicDataBannerUI = ({
       <Link
         LinkComponent={LinkComponent}
         href={url}
-        className="prose-label-sm-medium flex text-link visited:text-link-visited hover:text-link-hover"
+        className="visited:text-link-visited prose-label-sm-medium flex text-link hover:text-link-hover"
       >
         {label}
       </Link>
@@ -69,32 +65,37 @@ export const DynamicDataBannerUI = ({
   )
 }
 
-type DynamicDataBannerClientProps = Omit<
-  DynamicDataBannerProps,
-  "type" | "site"
->
-
-const DynamicDataBannerContent = ({
+export const DynamicDataBannerClient = ({
   apiEndpoint,
   title,
   data,
   url,
   label,
   LinkComponent,
-}: DynamicDataBannerClientProps) => {
-  const {
-    isPending,
-    error,
-    data: apiData,
-  } = useQuery({
-    queryKey: [getSingaporeDateYYYYMMDD()],
-    queryFn: async () => {
-      const response = await fetch(apiEndpoint)
-      return (await response.json()) as Record<string, object | string>
-    },
-  })
+}: Omit<DynamicDataBannerProps, "type" | "site">) => {
+  const [isLoading, setLoading] = useState(true)
+  const [apiData, setApiData] = useState<Record<string, object>>({})
 
-  if (isPending || error || data.length !== NUMBER_OF_DATA)
+  // This is to ensure that the component is mounted before the query is executed
+  // because next.js will attempt to execute the query during static site generation
+  // which will fail because it requires "fetch" (browser API) to be available, which isn't the case
+  // Ref: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#browser-apis
+  // Also not using react-query's useQuery hook because it's not compatible with this approach of using useEffect
+  useEffect(() => {
+    // we now have access to fetch here
+    fetch(apiEndpoint)
+      .then((res) => res.json())
+      .then((data) => {
+        setApiData(data as Record<string, object>)
+        setLoading(false)
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error)
+        setLoading(false)
+      })
+  }, [])
+
+  if (isLoading || data.length !== NUMBER_OF_DATA)
     return <DynamicDataBannerUI data={[]} url={url} label={label} />
 
   const values = apiData[getSingaporeDateYYYYMMDD()] as Record<string, string>
@@ -109,16 +110,5 @@ const DynamicDataBannerContent = ({
       label={label}
       LinkComponent={LinkComponent}
     />
-  )
-}
-
-const queryClient = new QueryClient()
-export const DynamicDataBannerClient = (
-  props: DynamicDataBannerClientProps,
-) => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <DynamicDataBannerContent {...props} />
-    </QueryClientProvider>
   )
 }
