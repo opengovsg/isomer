@@ -6,6 +6,7 @@ interface User {
   email: string
   name?: string
   phone?: string
+  role?: RoleType
 }
 interface AddUsersToSiteProps {
   siteId: number
@@ -16,14 +17,15 @@ export const addUsersToSite = async ({
   siteId,
   users,
 }: AddUsersToSiteProps) => {
-  const processedUsers = users.map(({ email, phone, name }) => ({
+  const processedUsers = users.map(({ email, phone, name, role }) => ({
     email: email.toLowerCase(),
     name: name ?? "",
     phone: phone ?? "",
+    role: role ?? RoleType.Editor,
   }))
 
   await Promise.all(
-    processedUsers.map(async (props) => {
+    processedUsers.map(async ({ role, ...props }) => {
       await db.transaction().execute(async (tx) => {
         const user = await tx
           .insertInto("User")
@@ -44,7 +46,7 @@ export const addUsersToSite = async ({
           .values({
             userId: user.id,
             siteId,
-            role: RoleType.Editor,
+            role,
           })
           .execute()
       })

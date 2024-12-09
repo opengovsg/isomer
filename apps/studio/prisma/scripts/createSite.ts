@@ -4,7 +4,6 @@ import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
 import type { Navbar } from "~/server/modules/resource/resource.types"
 import { db, jsonb, RoleType } from "~/server/modules/database"
 import { addUsersToSite } from "./addUsersToSite"
-import { updateAllUserPermissionsForSite } from "./updateAllUserPermissionsForSite"
 
 const PAGE_BLOB: IsomerSchema = {
   version: "0.1.0",
@@ -124,6 +123,14 @@ const FOOTER_ITEMS = [
   },
 ]
 
+const FOOTER = {
+  contactUsLink: "/contact-us",
+  feedbackFormLink: "https://www.form.gov.sg",
+  privacyStatementLink: "/privacy",
+  termsOfUseLink: "/terms-of-use",
+  siteNavItems: FOOTER_ITEMS,
+}
+
 interface CreateSiteProps {
   siteName: string
 }
@@ -170,13 +177,7 @@ const createSite = async ({ siteName }: CreateSiteProps) => {
       .insertInto("Footer")
       .values({
         siteId,
-        content: jsonb({
-          contactUsLink: "/contact-us",
-          feedbackFormLink: "https://www.form.gov.sg",
-          privacyStatementLink: "/privacy",
-          termsOfUseLink: "/terms-of-use",
-          siteNavItems: FOOTER_ITEMS,
-        }),
+        content: jsonb(FOOTER),
       })
       .onConflict((oc) =>
         oc
@@ -227,12 +228,12 @@ const createSite = async ({ siteName }: CreateSiteProps) => {
 
   await addUsersToSite({
     siteId,
-    emails: [...ISOMER_ADMINS, ...ISOMER_MIGRATORS].map(
-      (email) => `${email}@open.gov.sg`,
-    ),
+    users: [...ISOMER_ADMINS, ...ISOMER_MIGRATORS].map((email) => ({
+      email: `${email}@open.gov.sg`,
+      role: RoleType.Admin,
+    })),
   })
 
-  await updateAllUserPermissionsForSite({ siteId, role: RoleType.Admin })
   return siteId
 }
 
