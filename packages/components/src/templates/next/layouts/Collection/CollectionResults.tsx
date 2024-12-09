@@ -54,7 +54,7 @@ export const CollectionResults = ({
         </div>
       </div>
       {/* NOTE: DO NOT add h-full to this div as it will break old browsers */}
-      <div className="flex w-full flex-col gap-0">
+      <div className="grid grid-cols-3 gap-1">
         {paginatedItems.length > 0 &&
           paginatedItems.map((item) => (
             <CollectionCard
