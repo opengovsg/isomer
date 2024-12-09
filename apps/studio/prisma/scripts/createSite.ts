@@ -4,7 +4,7 @@ import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
 import type { Navbar } from "~/server/modules/resource/resource.types"
 import { db, jsonb, RoleType } from "~/server/modules/database"
 import { addUsersToSite } from "./addUsersToSite"
-import { updateUserPermissions } from "./updateUserPermissions"
+import { updateAllUserPermissionsForSite } from "./updateAllUserPermissionsForSite"
 
 const PAGE_BLOB: IsomerSchema = {
   version: "0.1.0",
@@ -124,7 +124,10 @@ const FOOTER_ITEMS = [
   },
 ]
 
-const createSite = async (siteName: string) => {
+interface CreateSiteProps {
+  siteName: string
+}
+const createSite = async ({ siteName }: CreateSiteProps) => {
   const siteId = await db.transaction().execute(async (tx) => {
     const { id: siteId } = await tx
       .insertInto("Site")
@@ -222,15 +225,15 @@ const createSite = async (siteName: string) => {
     return siteId
   })
 
-  await addUsersToSite(
+  await addUsersToSite({
     siteId,
-    [...ISOMER_ADMINS, ...ISOMER_MIGRATORS].map(
+    emails: [...ISOMER_ADMINS, ...ISOMER_MIGRATORS].map(
       (email) => `${email}@open.gov.sg`,
     ),
-  )
+  })
 
-  await updateUserPermissions(siteId, RoleType.Admin)
+  await updateAllUserPermissionsForSite({ siteId, role: RoleType.Admin })
   return siteId
 }
 
-await createSite("Put your site here")
+await createSite({ siteName: "" })

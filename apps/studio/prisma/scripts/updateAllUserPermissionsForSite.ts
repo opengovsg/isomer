@@ -1,6 +1,13 @@
 import { db, RoleType } from "~/server/modules/database"
 
-const updateUserPermissions = async (siteId: number, role: RoleType) => {
+interface UpdateUserPermissionsProps {
+  siteId: number
+  role: RoleType
+}
+export const updateAllUserPermissionsForSite = async ({
+  siteId,
+  role,
+}: UpdateUserPermissionsProps) => {
   await db.transaction().execute(async (tx) => {
     const perms = await tx
       .selectFrom("ResourcePermission")
@@ -22,4 +29,4 @@ const updateUserPermissions = async (siteId: number, role: RoleType) => {
   })
 }
 
-await updateUserPermissions(0, RoleType.Editor)
+await updateAllUserPermissionsForSite({ siteId: -1, role: RoleType.Editor })
