@@ -86,13 +86,10 @@ export const TagsWithImage: Story = {
     title: "Collection card with tags",
     description: "This is a random description that will be on the card",
     tags: [
-      { category: "tagged", values: ["tagged"], selected: ["tagged"] },
-      { category: "tag", values: ["A tag"], selected: ["A tag"] },
+      { category: "tagged", selected: ["tagged"] },
+      { category: "tag", selected: ["A tag"] },
       {
         category: "long",
-        values: [
-          "This is a very long tag that should be reflowed on smaller screens maybe",
-        ],
         selected: [
           "This is a very long tag that shuold be reflowed on smaller screens maybe",
         ],
@@ -107,22 +104,16 @@ export const TagsWithoutImage: Story = {
     withoutImage: true,
     description: "This is a random description that will be on the card",
     tags: [
-      { category: "tag", values: ["A tag"], selected: ["A tag"] },
-      { category: "tagged", values: ["tagged"], selected: ["tagged"] },
+      { category: "tag", selected: ["A tag"] },
+      { category: "tagged", selected: ["tagged"] },
       {
         category: "long",
-        values: [
-          "This is a very long tag that should be reflowed on smaller screens maybe",
-        ],
         selected: [
           "This is a very long tag that shuold be reflowed on smaller screens maybe",
         ],
       },
       {
         category: "very long",
-        values: [
-          "This is a second long link that should eat into the image area so that we can see how it looks",
-        ],
         selected: [
           "This is a second long link that should eat into the image area so that we can see how it looks",
         ],
