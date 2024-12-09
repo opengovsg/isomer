@@ -2,27 +2,34 @@ import cuid2 from "@paralleldrive/cuid2"
 
 import { db, RoleType } from "~/server/modules/database"
 
+interface User {
+  email: string
+  name?: string
+  phone?: string
+}
 interface AddUsersToSiteProps {
   siteId: number
-  emails: string[]
+  users: User[]
 }
 // NOTE: add them as editor first as that is the one with the least permissions
 export const addUsersToSite = async ({
   siteId,
-  emails,
+  users,
 }: AddUsersToSiteProps) => {
-  const lowercasedEmails = emails.map((email) => email.toLowerCase())
+  const processedUsers = users.map(({ email, phone, name }) => ({
+    email: email.toLowerCase(),
+    name: name ?? "",
+    phone: phone ?? "",
+  }))
 
   await Promise.all(
-    lowercasedEmails.map(async (email) => {
+    processedUsers.map(async (props) => {
       await db.transaction().execute(async (tx) => {
         const user = await tx
           .insertInto("User")
           .values({
             id: cuid2.createId(),
-            name: email.split("@")[0] || "",
-            email,
-            phone: "",
+            ...props,
           })
           .onConflict((oc) =>
             oc
@@ -45,8 +52,8 @@ export const addUsersToSite = async ({
   )
 }
 
-const emails: string[] = []
+const users: User[] = []
 
 const siteId = -1
 
-await addUsersToSite({ siteId, emails })
+await addUsersToSite({ siteId, users })
