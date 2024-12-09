@@ -2,7 +2,7 @@ import type { HeadingProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils"
 
 const Heading = ({
-  attrs: { id, level },
+  attrs: { id, level, dir },
   content,
   site,
 }: Omit<HeadingProps, "type">) => {
@@ -11,6 +11,7 @@ const Heading = ({
       <h2
         id={id}
         className="prose-display-md text-base-content-strong [&:not(:first-child)]:mt-14"
+        dir={dir ?? undefined}
       >
         {getTextAsHtml({
           site,
@@ -25,6 +26,7 @@ const Heading = ({
       <h3
         id={id}
         className="prose-display-sm text-base-content-strong [&:not(:first-child)]:mt-9"
+        dir={dir ?? undefined}
       >
         {getTextAsHtml({
           site,
@@ -39,6 +41,7 @@ const Heading = ({
       <h4
         id={id}
         className="prose-title-md-semibold text-base-content-strong [&:not(:first-child)]:mt-8"
+        dir={dir ?? undefined}
       >
         {getTextAsHtml({
           site,
@@ -53,6 +56,7 @@ const Heading = ({
       <h5
         id={id}
         className="prose-headline-lg-semibold text-base-content-strong [&:not(:first-child)]:mt-7"
+        dir={dir ?? undefined}
       >
         {getTextAsHtml({
           site,
@@ -66,6 +70,7 @@ const Heading = ({
     <h6
       id={id}
       className="prose-headline-base-semibold text-base-content-strong [&:not(:first-child)]:mt-6"
+      dir={dir ?? undefined}
     >
       {getTextAsHtml({
         site,

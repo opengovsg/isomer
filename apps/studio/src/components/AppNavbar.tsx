@@ -1,7 +1,12 @@
 import Image from "next/image"
 import NextLink from "next/link"
 import { Flex, HStack } from "@chakra-ui/react"
-import { AvatarMenu, Button, Link, Menu } from "@opengovsg/design-system-react"
+import {
+  AvatarMenu,
+  Button,
+  IconButton,
+  Menu,
+} from "@opengovsg/design-system-react"
 import { BiLinkExternal } from "react-icons/bi"
 
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
@@ -19,29 +24,32 @@ export function AppNavbar(): JSX.Element {
         w="100%"
         justify="space-between"
         align="center"
-        px={{ base: "1.5rem", md: "1.8rem", xl: "2rem" }}
+        px={{ base: 0, md: "0.5rem" }}
         pl={{ base: `calc(1rem + ${ADMIN_NAVBAR_HEIGHT})`, sm: "1.5rem" }}
-        py="0.375rem"
+        py={{ base: 0, md: "0.5rem" }}
         bg="white"
         borderBottomWidth="1px"
         borderColor="base.divider.medium"
         transition="padding 0.1s"
       >
-        <Link
-          as={NextLink}
-          href={DASHBOARD}
-          mx={{ base: "auto", sm: 0 }}
-          transition="margin 0.1s"
-        >
-          <Image
-            src="/assets/isomer-logo-color.svg"
-            height={24}
-            width={22}
-            alt="Isomer Logo"
-            aria-hidden
-            priority
+        <Flex alignItems="center">
+          <IconButton
+            mr="0.5rem"
+            as={NextLink}
+            href={DASHBOARD}
+            variant="clear"
+            aria-label="Back to dashboard"
+            icon={
+              <Image
+                src="/assets/isomer-logo-color.svg"
+                height={24}
+                width={22}
+                alt="Back to dashboard"
+                priority
+              />
+            }
           />
-        </Link>
+        </Flex>
         <HStack
           textStyle="subhead-1"
           spacing={{ base: "0.75rem", md: "1.5rem" }}

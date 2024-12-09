@@ -84,3 +84,12 @@ export const searchOutputSchema = z.object({
   resources: z.array(z.custom<SearchResultResource>()),
   recentlyEdited: z.array(z.custom<SearchResultResource>()),
 })
+
+export const searchWithResourceIdsSchema = z.object({
+  siteId: z.string(),
+  resourceIds: z.array(bigIntSchema),
+})
+
+export const searchWithResourceIdsOutputSchema = z.array(
+  z.custom<SearchResultResource>(),
+)

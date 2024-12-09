@@ -185,4 +185,39 @@ export const resourceHandlers = {
       })
     },
   },
+  searchWithResourceIds: {
+    default: () => {
+      return trpcMsw.resource.searchWithResourceIds.query(() => {
+        return [
+          {
+            id: "1",
+            title: "Recently viewed page",
+            permalink: "recently-viewed-page",
+            type: "Page",
+            parentId: null,
+            lastUpdatedAt: new Date("2024-01-01"),
+            fullPermalink: "recently-viewed-page",
+          },
+          {
+            id: "2",
+            title: "Another recently viewed page",
+            permalink: "another-recently-viewed-page",
+            type: "Page",
+            parentId: null,
+            lastUpdatedAt: new Date("2024-01-01"),
+            fullPermalink: "another-recently-viewed-page",
+          },
+          {
+            id: "3",
+            title: "Third recently viewed page",
+            permalink: "third-recently-viewed-page",
+            type: "Page",
+            parentId: null,
+            lastUpdatedAt: new Date("2024-01-01"),
+            fullPermalink: "third-recently-viewed-page",
+          },
+        ]
+      })
+    },
+  },
 }

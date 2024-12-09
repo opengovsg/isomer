@@ -84,18 +84,11 @@ export interface Site {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface SiteMember {
-  userId: string
-  siteId: number
-  createdAt: Generated<Timestamp>
-  updatedAt: Generated<Timestamp>
-}
 export interface User {
   id: string
   name: string
   email: string
   phone: string
-  preferredName: string | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
@@ -129,7 +122,6 @@ export interface DB {
   Resource: Resource
   ResourcePermission: ResourcePermission
   Site: Site
-  SiteMember: SiteMember
   User: User
   VerificationToken: VerificationToken
   Version: Version

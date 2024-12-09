@@ -16,8 +16,8 @@ const COMBO: KeyboardEvent["key"][] = [
   "a",
 ]
 
-// Activate admin mode when a key combo is pressed
-export const ActivateAdminMode = () => {
+// Activate the raw JSON editor mode when a key combo is pressed
+export const ActivateRawJsonEditorMode = () => {
   const { setDrawerState } = useEditorDrawerContext()
 
   const [comboIndex, setComboIndex] = useState(0)
@@ -45,7 +45,7 @@ export const ActivateAdminMode = () => {
     }
 
     if (comboIndex === COMBO.length) {
-      setDrawerState({ state: "adminMode" })
+      setDrawerState({ state: "rawJsonEditor" })
     }
 
     window.addEventListener("keydown", handleKeyDown)

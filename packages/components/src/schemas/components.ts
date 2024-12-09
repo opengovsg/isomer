@@ -7,6 +7,8 @@ import {
   CalloutSchema,
   ContentpicSchema,
   DividerSchema,
+  DYNAMIC_DATA_BANNER_TYPE,
+  DynamicDataBannerSchema,
   HeadingSchema,
   HeroSchema,
   IframeSchema,
@@ -39,6 +41,7 @@ export const IsomerComplexComponentsMap = {
   keystatistics: KeyStatisticsSchema,
   map: MapSchema,
   video: VideoSchema,
+  [DYNAMIC_DATA_BANNER_TYPE]: DynamicDataBannerSchema,
 }
 
 export const IsomerNativeComponentsMap = {

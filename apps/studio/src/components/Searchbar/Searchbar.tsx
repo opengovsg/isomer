@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react"
 import { BiSearch } from "react-icons/bi"
 
+import { CommandKey } from "./CommandKey"
 import { isMac } from "./isMac"
 import { SearchModal } from "./SearchModal"
 import { useSearchStyle } from "./useSearchStyle"
@@ -57,6 +58,7 @@ const SearchButton = (props: ButtonProps) => {
           Search pages, collections, or folders by name. e.g. "Speech by
           Minister"
         </Text>
+        <CommandKey mr="1.25rem" />
       </HStack>
     </chakra.button>
   )

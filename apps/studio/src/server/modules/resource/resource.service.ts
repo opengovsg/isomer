@@ -596,3 +596,30 @@ export const getSearchRecentlyEdited = async ({
       .execute()) as SearchResultResource[],
   })
 }
+
+export const getSearchWithResourceIds = async ({
+  siteId,
+  resourceIds,
+}: {
+  siteId: number
+  resourceIds: string[]
+}): Promise<SearchResultResource[]> => {
+  const resources = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", Number(siteId))
+    .where("Resource.id", "in", resourceIds)
+    .select([
+      "Resource.id",
+      "Resource.type",
+      "Resource.title",
+      "Resource.parentId",
+    ])
+    .execute()
+
+  return await getResourcesWithFullPermalink({
+    resources: resources.map((resource) => ({
+      ...resource,
+      lastUpdatedAt: null,
+    })),
+  })
+}

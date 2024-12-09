@@ -58,6 +58,7 @@ const createKeyStatisticsStyles = tv({
 const compoundStyles = createKeyStatisticsStyles()
 
 const KeyStatistics = ({
+  id,
   title,
   statistics,
   url,
@@ -69,7 +70,10 @@ const KeyStatistics = ({
   const simplifiedLayout = getTailwindVariantLayout(layout)
 
   return (
-    <div className={compoundStyles.container({ layout: simplifiedLayout })}>
+    <section
+      id={id}
+      className={compoundStyles.container({ layout: simplifiedLayout })}
+    >
       <h2 className={compoundStyles.title()}>{title}</h2>
 
       <div className={compoundStyles.statistics()}>
@@ -99,7 +103,7 @@ const KeyStatistics = ({
           </LinkButton>
         </div>
       )}
-    </div>
+    </section>
   )
 }
 

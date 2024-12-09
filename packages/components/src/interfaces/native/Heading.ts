@@ -2,6 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps } from "~/types"
+import { AttrsDirSchema } from "../internal/AttrsDir"
 import { TextSchema } from "./Text"
 
 // excludes 1 as it should only be used for the page title i.e ContentPageHeader
@@ -27,6 +28,7 @@ export const HeadingSchema = Type.Object(
           type: "integer",
         },
       ),
+      dir: AttrsDirSchema,
     }),
     content: Type.Optional(Type.Array(TextSchema)),
   },

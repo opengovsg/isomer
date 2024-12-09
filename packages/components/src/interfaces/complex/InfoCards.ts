@@ -59,12 +59,20 @@ const SingleCardWithImageSchema = Type.Composite([
       title: "Alternate text",
       description:
         "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
+      maxLength: 120,
     }),
   }),
 ])
 
 const InfoCardsBaseSchema = Type.Object({
   type: Type.Literal("infocards", { default: "infocards" }),
+  id: Type.Optional(
+    Type.String({
+      title: "Anchor ID",
+      description: "The ID to use for anchor links",
+      format: "hidden",
+    }),
+  ),
   title: Type.String({
     title: "Title",
     maxLength: 100,

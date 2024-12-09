@@ -26,6 +26,7 @@ import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { textblockTypeInputRule, useEditor } from "@tiptap/react"
+import TextDirection from "tiptap-text-direction"
 
 import { getHtmlWithRelativeReferenceLinks } from "../utils"
 
@@ -149,7 +150,13 @@ const useBaseEditor = ({
 }: BaseEditorProps & { extensions: Extensions }) =>
   useEditor({
     immediatelyRender: false,
-    extensions: [...BASE_EXTENSIONS, ...extensions],
+    extensions: [
+      ...BASE_EXTENSIONS,
+      ...extensions,
+      TextDirection.configure({
+        types: ["heading", "paragraph"],
+      }),
+    ],
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     content: data,
     onUpdate: (e) => {

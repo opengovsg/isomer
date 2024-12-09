@@ -28,6 +28,7 @@ const client = z
       "production",
       "vapt",
       "test",
+      "uat",
     ]),
     NEXT_PUBLIC_ENABLE_SGID: coerceBoolean.default("false"),
     NEXT_PUBLIC_APP_URL: z.string().url().optional(),

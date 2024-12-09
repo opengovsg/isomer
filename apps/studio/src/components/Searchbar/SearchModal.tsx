@@ -12,7 +12,7 @@ import { useDebounce } from "@uidotdev/usehooks"
 
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { trpc } from "~/utils/trpc"
-import { isMac } from "./isMac"
+import { CommandKey } from "./CommandKey"
 import {
   InitialState,
   LoadingState,
@@ -27,12 +27,20 @@ interface SearchModalProps {
   siteId: string
 }
 export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
+  const [queryCount, setQueryCount] = useState(0)
   const [searchValue, setSearchValue] = useState("")
   const debouncedSearchTerm = useDebounce(searchValue, 300)
-  const { data, isLoading } = trpc.resource.search.useInfiniteQuery({
-    siteId,
-    query: debouncedSearchTerm,
-  })
+  const { data, isLoading } = trpc.resource.search.useInfiniteQuery(
+    {
+      siteId,
+      query: debouncedSearchTerm,
+    },
+    {
+      onSuccess: () => {
+        setQueryCount((prev) => prev + 1)
+      },
+    },
+  )
   const resources: SearchResultResource[] =
     data?.pages.flatMap((page) => page.resources) ?? []
 
@@ -55,6 +63,9 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
             ) ?? 0
           }
           searchTerm={debouncedSearchTerm}
+          // 3 is an arbitrary number that we are trying out and our guess
+          // of the number of queries the user has to do before they are deemed "lost"
+          shouldShowHint={queryCount >= 3}
         />
       )
     }
@@ -110,19 +121,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
               ? "Tip: Type in the full title to get the most accurate search results."
               : "Scroll to see more results. Too many results? Try typing something longer."}
           </Text>
-          <Text
-            textStyle="caption-1"
-            textColor="base.content.medium"
-            bg="white"
-            py="0.125rem"
-            px="0.375rem"
-            borderRadius="base"
-            border="1px solid"
-            borderColor="base.divider.medium"
-            boxShadow="sm"
-          >
-            {isMac ? "⌘ + K" : "Ctrl + K"}
-          </Text>
+          <CommandKey boxShadow="sm" />
         </ModalFooter>
       </ModalContent>
     </Modal>

@@ -10,7 +10,6 @@ export type RateLimiterFlexible = Selectable<T.RateLimiterFlexible>
 export type Resource = Selectable<T.Resource>
 export type ResourcePermission = Selectable<T.ResourcePermission>
 export type Site = Selectable<T.Site>
-export type SiteMember = Selectable<T.SiteMember>
 export type User = Selectable<T.User>
 export type VerificationToken = Selectable<T.VerificationToken>
 export type Version = Selectable<T.Version>

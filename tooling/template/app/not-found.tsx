@@ -8,6 +8,8 @@ import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
 import { getMetadata, RenderEngine } from "@opengovsg/isomer-components"
 
+export const dynamic = "force-static"
+
 const PAGE_TITLE = "404: Page not found"
 const PAGE_DESCRIPTION = "The page that you are accessing does not exist"
 const PAGE_SCHEMA_VERSION = "0.1.0"

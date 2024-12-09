@@ -12,6 +12,7 @@ export interface SearchResultProps {
   item: SearchResultResource
   searchTerms?: string[]
   isLoading?: boolean
+  isSimplifiedView?: boolean
   shouldHideLastEditedText?: boolean
 }
 
@@ -20,6 +21,7 @@ export const SearchResult = ({
   item,
   searchTerms = [],
   isLoading = false,
+  isSimplifiedView = false,
   shouldHideLastEditedText = false,
 }: SearchResultProps) => {
   const { id, title, type, fullPermalink, lastUpdatedAt } = item
@@ -64,6 +66,38 @@ export const SearchResult = ({
   const shouldShowLastEditedText: boolean =
     !shouldHideLastEditedText && isAllowedToHaveLastEditedText(type)
 
+  const renderTitleContent = () => {
+    if (isLoading) {
+      return <Skeleton width="12.5rem" height="1.125rem" variant="pulse" />
+    }
+    if (isSimplifiedView) {
+      return (
+        <Text
+          textStyle="subhead-2"
+          textColor="base.content.default"
+          noOfLines={1}
+        >
+          {title}
+        </Text>
+      )
+    }
+    return titleWithHighlightedText
+  }
+
+  const renderPermalink = () => {
+    if (isSimplifiedView) return null
+
+    return (
+      <Text textStyle="caption-2" textColor="base.content.medium" noOfLines={1}>
+        {isLoading ? (
+          <Skeleton width="18rem" height="1.125rem" variant="pulse" />
+        ) : (
+          `/${fullPermalink}`
+        )}
+      </Text>
+    )
+  }
+
   return (
     <HStack
       py="0.75rem"
@@ -94,23 +128,9 @@ export const SearchResult = ({
             columnGap="0.25rem"
             flexWrap="wrap"
           >
-            {isLoading ? (
-              <Skeleton width="12.5rem" height="1.125rem" variant="pulse" />
-            ) : (
-              titleWithHighlightedText
-            )}
+            {renderTitleContent()}
           </Box>
-          <Text
-            textStyle="caption-2"
-            textColor="base.content.medium"
-            noOfLines={1}
-          >
-            {isLoading ? (
-              <Skeleton width="18rem" height="1.125rem" variant="pulse" />
-            ) : (
-              `/${fullPermalink}`
-            )}
-          </Text>
+          {renderPermalink()}
         </VStack>
         {!!lastUpdatedAt && shouldShowLastEditedText && (
           <Text textStyle="legal" textColor="interaction.support.placeholder">

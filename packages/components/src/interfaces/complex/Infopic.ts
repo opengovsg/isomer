@@ -7,6 +7,13 @@ import { LINK_HREF_PATTERN } from "~/utils/validation"
 export const InfopicSchema = Type.Object(
   {
     type: Type.Literal("infopic", { default: "infopic" }),
+    id: Type.Optional(
+      Type.String({
+        title: "Anchor ID",
+        description: "The ID to use for anchor links",
+        format: "hidden",
+      }),
+    ),
     title: Type.String({
       title: "Title",
       maxLength: 100,
@@ -27,6 +34,7 @@ export const InfopicSchema = Type.Object(
         title: "Alternate text",
         description:
           "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
+        maxLength: 120,
       }),
     ),
     buttonLabel: Type.Optional(

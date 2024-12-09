@@ -12,7 +12,7 @@ export const Intercom = () => {
   const { me } = useMe()
 
   const getIntercomName = useCallback(() => {
-    return me.preferredName || me.name || me.email.split("@")[0]
+    return me.name || me.email.split("@")[0]
   }, [me])
 
   if (env.NEXT_PUBLIC_INTERCOM_APP_ID) {

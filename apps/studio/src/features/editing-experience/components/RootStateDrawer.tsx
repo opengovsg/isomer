@@ -7,11 +7,12 @@ import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { TYPE_TO_ICON } from "../constants"
 import { editPageSchema } from "../schema"
-import { ActivateAdminMode } from "./ActivateAdminMode"
+import { ActivateRawJsonEditorMode } from "./ActivateRawJsonEditorMode"
 import { BaseBlock } from "./Block/BaseBlock"
 import { DraggableBlock } from "./Block/DraggableBlock"
 
@@ -42,6 +43,7 @@ export default function RootStateDrawer() {
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const utils = trpc.useUtils()
+  const isUserIsomerAdmin = useIsUserIsomerAdmin()
   const { mutate } = trpc.page.reorderBlock.useMutation({
     onSuccess: async () => {
       await utils.page.readPage.invalidate({ pageId, siteId })
@@ -119,7 +121,7 @@ export default function RootStateDrawer() {
 
   return (
     <VStack gap="1.5rem" p="1.5rem">
-      <ActivateAdminMode />
+      {isUserIsomerAdmin && <ActivateRawJsonEditorMode />}
       {/* Fixed Blocks Section */}
       <VStack gap="1rem" w="100%" align="start">
         <VStack gap="0.25rem" align="start">
