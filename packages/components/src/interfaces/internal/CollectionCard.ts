@@ -4,7 +4,6 @@ import type { IsomerSiteProps, LinkComponentType } from "~/types"
 export interface Tag {
   selected: string[]
   category: string
-  values: string[]
 }
 
 export interface FileDetails {

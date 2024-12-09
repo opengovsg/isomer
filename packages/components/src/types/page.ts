@@ -67,7 +67,6 @@ const BaseRefPageSchema = Type.Composite([
 const TagSchema = Type.Object({
   selected: Type.Array(Type.String()),
   category: Type.String(),
-  values: Type.Array(Type.String()),
 })
 
 const TagsSchema = Type.Object({
