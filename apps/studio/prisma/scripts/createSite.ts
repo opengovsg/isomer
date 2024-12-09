@@ -124,7 +124,7 @@ const FOOTER_ITEMS = [
   },
 ]
 
-export const createSite = async (siteName: string) => {
+const createSite = async (siteName: string) => {
   const siteId = await db.transaction().execute(async (tx) => {
     const { id: siteId } = await tx
       .insertInto("Site")

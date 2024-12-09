@@ -3,7 +3,7 @@ import cuid2 from "@paralleldrive/cuid2"
 import { db, RoleType } from "~/server/modules/database"
 
 // NOTE: add them as editor first as that is the one with the least permissions
-export const addUsersToSite = async (siteId: number, emails: string[]) => {
+const addUsersToSite = async (siteId: number, emails: string[]) => {
   const lowercasedEmails = emails.map((email) => email.toLowerCase())
 
   await Promise.all(

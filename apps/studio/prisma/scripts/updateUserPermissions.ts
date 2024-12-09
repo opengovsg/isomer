@@ -1,6 +1,6 @@
 import { db, RoleType } from "~/server/modules/database"
 
-export const updateUserPermissions = async (siteId: number, role: RoleType) => {
+const updateUserPermissions = async (siteId: number, role: RoleType) => {
   await db.transaction().execute(async (tx) => {
     const perms = await tx
       .selectFrom("ResourcePermission")
