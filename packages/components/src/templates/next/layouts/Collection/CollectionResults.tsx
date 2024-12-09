@@ -13,6 +13,7 @@ interface CollectionResultProps
     | "totalCount"
   > {
   shouldShowDate?: boolean
+  variant: CollectionPageSchemaType["page"]["variant"]
   siteAssetsBaseUrl: string | undefined
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }
@@ -27,6 +28,7 @@ export const CollectionResults = ({
   shouldShowDate = true,
   siteAssetsBaseUrl,
   LinkComponent,
+  variant = "collection",
 }: CollectionResultProps) => {
   if (totalCount === 0) {
     return (
@@ -54,7 +56,7 @@ export const CollectionResults = ({
         </div>
       </div>
       {/* NOTE: DO NOT add h-full to this div as it will break old browsers */}
-      <div className="grid grid-cols-3 gap-1">
+      <div className="flex w-full flex-col gap-0">
         {paginatedItems.length > 0 &&
           paginatedItems.map((item) => (
             <CollectionCard

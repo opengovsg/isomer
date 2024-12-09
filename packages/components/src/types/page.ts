@@ -87,6 +87,13 @@ export const CollectionPagePageSchema = Type.Intersect([
     subtitle: Type.String({
       title: "The subtitle of the collection",
     }),
+    // NOTE: to maintain back-compat,
+    // if this property is missing,
+    // we will default it to the default `collection` layout
+    // as exisiting (prior to rollout) collections won't have this specified
+    variant: Type.ReadonlyOptional(
+      Type.Union([Type.Literal("blog"), Type.Literal("collection")]),
+    ),
   }),
   TagsSchema,
 ])
