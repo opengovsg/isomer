@@ -1,5 +1,3 @@
-import webpack from "webpack"
-
 /**
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
  * for Docker builds.
@@ -130,15 +128,6 @@ const config = {
   eslint: { ignoreDuringBuilds: true },
   images: {
     domains: [env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME ?? ""].filter((d) => d),
-  },
-  // https://github.com/vercel/next.js/issues/28774#issuecomment-1264555395
-  webpack: (config, options) => {
-    config.plugins.push(
-      new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
-        resource.request = resource.request.replace(/^node:/, "")
-      }),
-    )
-    return config
   },
   async headers() {
     return [
