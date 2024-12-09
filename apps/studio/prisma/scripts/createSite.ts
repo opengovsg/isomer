@@ -134,7 +134,7 @@ const FOOTER = {
 interface CreateSiteProps {
   siteName: string
 }
-const createSite = async ({ siteName }: CreateSiteProps) => {
+export const createSite = async ({ siteName }: CreateSiteProps) => {
   const siteId = await db.transaction().execute(async (tx) => {
     const { id: siteId } = await tx
       .insertInto("Site")

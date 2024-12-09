@@ -12,7 +12,7 @@ const EDITOR_USER = "editor"
 const PUBLISHER_USER = "publisher"
 
 async function main() {
-  const siteId = await createSite("Isomer")
+  const siteId = await createSite({ siteName: "Isomer" })
 
   await db
     .insertInto("Whitelist")
