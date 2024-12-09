@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 
@@ -6,10 +7,12 @@ import PageSettings from "~/pages/sites/[siteId]/pages/[pageId]/settings"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
 
 const COMMON_HANDLERS = [
+  meHandlers.me(),
   resourceHandlers.getMetadataById.content(),
   resourceHandlers.getRolesFor.default(),
   pageHandlers.readPageAndBlob.content(),
   pageHandlers.readPage.content(),
+  pageHandlers.getFullPermalink.content(),
 ]
 
 const meta: Meta<typeof PageSettings> = {
@@ -43,6 +46,7 @@ export const Root: Story = {
         pageHandlers.readPageAndBlob.homepage(),
         pageHandlers.readPage.homepage(),
         resourceHandlers.getMetadataById.homepage(),
+        ...COMMON_HANDLERS,
       ],
     },
   },
