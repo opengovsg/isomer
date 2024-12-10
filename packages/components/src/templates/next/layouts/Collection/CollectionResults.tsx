@@ -30,7 +30,7 @@ const collection = tv(
           collectionResults: "flex w-full flex-col gap-0",
         },
         blog: {
-          collectionResults: "grid grid-cols-2 gap-10",
+          collectionResults: "grid grid-cols-1 gap-10 md:grid-cols-2",
         },
       },
     },
