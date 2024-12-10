@@ -1,6 +1,7 @@
 import type { UseCollectionReturn } from "./useCollection"
 import type { CollectionPageSchemaType } from "~/types"
-import { CollectionCard } from "../../components/internal"
+import { tv } from "~/lib/tv"
+import { BlogCard, CollectionCard } from "../../components/internal"
 
 interface CollectionResultProps
   extends Pick<
@@ -18,6 +19,25 @@ interface CollectionResultProps
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }
 
+const collection = tv(
+  {
+    slots: {
+      collectionResults: "flex w-full flex-col gap-0",
+    },
+    variants: {
+      variant: {
+        collection: {
+          collectionResults: "flex w-full flex-col gap-0",
+        },
+        blog: {
+          collectionResults: "grid grid-cols-2 gap-10",
+        },
+      },
+    },
+  },
+  { responsiveVariants: ["md", "sm", "lg"] },
+)
+
 export const CollectionResults = ({
   paginatedItems,
   searchValue,
@@ -30,6 +50,8 @@ export const CollectionResults = ({
   LinkComponent,
   variant = "collection",
 }: CollectionResultProps) => {
+  const { collectionResults } = collection({ variant })
+
   if (totalCount === 0) {
     return (
       <p className="prose-body-base py-32 text-center text-base-content">
@@ -56,17 +78,27 @@ export const CollectionResults = ({
         </div>
       </div>
       {/* NOTE: DO NOT add h-full to this div as it will break old browsers */}
-      <div className="flex w-full flex-col gap-0">
+      <div className={collectionResults()}>
         {paginatedItems.length > 0 &&
-          paginatedItems.map((item) => (
-            <CollectionCard
-              key={Math.random()}
-              {...item}
-              shouldShowDate={shouldShowDate}
-              siteAssetsBaseUrl={siteAssetsBaseUrl}
-              LinkComponent={LinkComponent}
-            />
-          ))}
+          paginatedItems.map((item) =>
+            variant === "collection" ? (
+              <CollectionCard
+                key={Math.random()}
+                {...item}
+                shouldShowDate={shouldShowDate}
+                siteAssetsBaseUrl={siteAssetsBaseUrl}
+                LinkComponent={LinkComponent}
+              />
+            ) : (
+              <BlogCard
+                key={Math.random()}
+                {...item}
+                shouldShowDate={shouldShowDate}
+                siteAssetsBaseUrl={siteAssetsBaseUrl}
+                LinkComponent={LinkComponent}
+              />
+            ),
+          )}
         {paginatedItems.length === 0 && (
           <div className="flex flex-col gap-1 py-32 text-center text-content">
             <p className="prose-body-base">
