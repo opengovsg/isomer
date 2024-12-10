@@ -17,7 +17,7 @@ const createDynamicDataBannerStyles = tv({
     basicInfoInnerContainer: "flex flex-col items-start justify-start gap-1",
     title: "prose-headline-base-medium",
     dateWithDesktopUrl: "prose-label-sm-regular flex flex-row gap-2",
-    url: "visited:text-link-visited prose-label-sm-medium flex text-link hover:text-link-hover",
+    url: "prose-label-sm-medium flex text-link visited:text-link-visited hover:text-link-hover",
     dataInfoContainer:
       "grid gap-y-1 md:flex md:justify-between md:justify-items-center lg:col-span-8 lg:col-start-5",
     errorMessageContainer:
@@ -168,13 +168,7 @@ export const DynamicDataBannerClient = ({
   }
 
   if (isLoading || data.length !== NUMBER_OF_DATA)
-    return (
-      <DynamicDataBannerUI
-        data={[]}
-        url={url}
-        label={label}
-      />
-    )
+    return <DynamicDataBannerUI data={[]} url={url} label={label} />
 
   return (
     <DynamicDataBannerUI
