@@ -8,10 +8,9 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
-import { useDebounce } from "@uidotdev/usehooks"
 
-import type { SearchResultResource } from "~/server/modules/resource/resource.types"
-import { trpc } from "~/utils/trpc"
+import { useSearchQuery } from "~/hooks/useSearchQuery"
+import { getUserViewableResourceTypes } from "~/utils/resources"
 import { CommandKey } from "./CommandKey"
 import {
   InitialState,
@@ -28,21 +27,20 @@ interface SearchModalProps {
 }
 export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
   const [queryCount, setQueryCount] = useState(0)
-  const [searchValue, setSearchValue] = useState("")
-  const debouncedSearchTerm = useDebounce(searchValue, 300)
-  const { data, isLoading } = trpc.resource.search.useInfiniteQuery(
-    {
-      siteId,
-      query: debouncedSearchTerm,
+  const {
+    setSearchValue,
+    debouncedSearchTerm,
+    resources,
+    isLoading,
+    totalResultsCount,
+    recentlyEditedResources,
+  } = useSearchQuery({
+    siteId,
+    resourceTypes: getUserViewableResourceTypes(),
+    onSearchSuccess: () => {
+      setQueryCount((prev) => prev + 1)
     },
-    {
-      onSuccess: () => {
-        setQueryCount((prev) => prev + 1)
-      },
-    },
-  )
-  const resources: SearchResultResource[] =
-    data?.pages.flatMap((page) => page.resources) ?? []
+  })
 
   const renderModalBody = (): React.ReactNode => {
     if (!!debouncedSearchTerm) {
@@ -56,12 +54,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
         <SearchResultsState
           siteId={siteId}
           items={resources}
-          totalResultsCount={
-            data?.pages.reduce(
-              (acc, page) => acc + (page.totalCount ?? 0),
-              0,
-            ) ?? 0
-          }
+          totalResultsCount={totalResultsCount}
           searchTerm={debouncedSearchTerm}
           // 3 is an arbitrary number that we are trying out and our guess
           // of the number of queries the user has to do before they are deemed "lost"
@@ -69,12 +62,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
         />
       )
     }
-    return (
-      <InitialState
-        siteId={siteId}
-        items={data?.pages[0]?.recentlyEdited ?? []}
-      />
-    )
+    return <InitialState siteId={siteId} items={recentlyEditedResources} />
   }
   const { minWidth, maxWidth, marginTop } = useSearchStyle()
 
