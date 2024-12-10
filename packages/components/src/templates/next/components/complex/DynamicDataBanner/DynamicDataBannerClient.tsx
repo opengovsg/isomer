@@ -156,13 +156,23 @@ export const DynamicDataBannerClient = ({
       })
   }, [])
 
-  if (isError || isLoading || data.length !== NUMBER_OF_DATA)
+  if (isError) {
     return (
       <DynamicDataBannerUI
         data={[]}
         url={url}
         label={label}
         errorMessageBaseParagraph={errorMessageBaseParagraph}
+      />
+    )
+  }
+
+  if (isLoading || data.length !== NUMBER_OF_DATA)
+    return (
+      <DynamicDataBannerUI
+        data={[]}
+        url={url}
+        label={label}
       />
     )
 
