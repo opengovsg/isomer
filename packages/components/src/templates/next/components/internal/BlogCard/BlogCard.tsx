@@ -33,20 +33,20 @@ export const BlogCard = ({
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }): JSX.Element => {
   return (
-    <div className="flex flex-1 flex-col gap-3 py-5">
-      {
-        <div className="relative mb-3 h-40 min-h-40 w-full shrink-0">
-          {image ? (
+    <div className="flex flex-1 flex-col gap-3">
+      {image && (
+        <div className="relative mb-3 min-h-40 w-full shrink-0">
+          {
             <ImageClient
               src={imageSrc || ""}
-              alt={image?.alt ?? ""}
+              alt={image.alt}
               width="100%"
               className="absolute left-0 h-full w-full rounded object-cover"
               assetsBaseUrl={siteAssetsBaseUrl}
             />
-          ) : null}
+          }
         </div>
-      }
+      )}
       {shouldShowDate && (
         <Text className="prose-label-md-regular shrink-0 text-base-content-subtle">
           {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
