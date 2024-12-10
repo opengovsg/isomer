@@ -74,7 +74,11 @@ const ContentSecurityPolicy = `
     https://*.wogaa.sg
     https://placehold.co
     https://cdn.growthbook.io
-    ${env.NODE_ENV === "production" ? "https://isomer-user-content.by.gov.sg" : "https://*.by.gov.sg"}
+    ${
+      !!env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+        ? `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
+        : "https://*.by.gov.sg"
+    }
     https://via.intercom.io
     https://api.intercom.io
     https://api.au.intercom.io
