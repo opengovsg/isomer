@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { HomePageSchemaType } from "~/engine"
+import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
 import Homepage from "./Homepage"
 
 // Template for stories
@@ -30,6 +31,24 @@ const meta: Meta<typeof Homepage> = {
     themes: {
       themeOverride: "Isomer Next",
     },
+    mockData: [
+      {
+        url: "https://jsonplaceholder.com/muis_prayers_time",
+        method: "GET",
+        status: 200,
+        response: {
+          [getSingaporeDateYYYYMMDD()]: {
+            hijriDate: "17 Jamadilawal 1442H",
+            subuh: "5:44am",
+            syuruk: "7:08am",
+            zohor: "1:10pm",
+            asar: "4:34pm",
+            maghrib: "7:11pm",
+            isyak: "8:25pm",
+          },
+        },
+      },
+    ],
   },
 }
 export default meta
@@ -207,6 +226,39 @@ export const Default: Story = {
         buttonUrl: "/",
         secondaryButtonLabel: "Sub CTA",
         secondaryButtonUrl: "/",
+      },
+      {
+        type: "dynamicdatabanner",
+        apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
+        title: "hijriDate",
+        data: [
+          {
+            label: "Subuh",
+            key: "subuh",
+          },
+          {
+            label: "Syuruk",
+            key: "syuruk",
+          },
+          {
+            label: "Zohor",
+            key: "zohor",
+          },
+          {
+            label: "Asar",
+            key: "asar",
+          },
+          {
+            label: "Maghrib",
+            key: "maghrib",
+          },
+          {
+            label: "Ishak",
+            key: "isyak",
+          },
+        ],
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        label: "View all dates",
       },
       {
         type: "infobar",

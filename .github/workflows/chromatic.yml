@@ -40,6 +40,8 @@ jobs:
               - 'packages/components/**'
             studio:
               - 'apps/studio/**'
+              - 'packages/components/src/interfaces/**'
+              - 'packages/components/src/types/**'
   ui:
     needs: [changes, optimize_ci]
     # Only run if the user is not a bot and has changes

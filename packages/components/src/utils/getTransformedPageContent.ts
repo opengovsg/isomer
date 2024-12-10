@@ -1,16 +1,16 @@
 import type { IsomerComponent } from "~/types"
 import { getDigestFromText } from "./getDigestFromText"
-import { getRandomNumberBetIntervals } from "./getRandomNumber"
 
 // if block.id is not present for heading level 2, we auto-generate one
 // for use in table of contents anchor links
-export const getTransformedPageContent = (content: IsomerComponent[]) => {
-  const transformedContent: IsomerComponent[] = []
-  for (const block of content) {
+export const getTransformedPageContent = (
+  content: IsomerComponent[],
+): IsomerComponent[] => {
+  return content.map((block, index) => {
     if (block.type === "prose" && block.content) {
-      const transformedBlock = {
+      return {
         ...block,
-        content: block.content.map((component, index) => {
+        content: block.content.map((component, componentIndex) => {
           if (
             component.type === "heading" &&
             component.attrs.level === 2 &&
@@ -18,7 +18,7 @@ export const getTransformedPageContent = (content: IsomerComponent[]) => {
           ) {
             // generate a unique hash to auto-generate anchor links
             const anchorId = getDigestFromText(
-              `${JSON.stringify(component)}_${index}`,
+              `${JSON.stringify(component)}_${componentIndex}`,
             )
             const newAttrs = {
               ...component.attrs,
@@ -31,11 +31,18 @@ export const getTransformedPageContent = (content: IsomerComponent[]) => {
           }
         }),
       }
-
-      transformedContent.push(transformedBlock)
+    } else if (
+      block.type === "infocards" ||
+      block.type === "infocols" ||
+      block.type === "infopic" ||
+      block.type === "keystatistics"
+    ) {
+      return {
+        ...block,
+        id: getDigestFromText(`${JSON.stringify(block)}_${index}`),
+      }
     } else {
-      transformedContent.push(block)
+      return block
     }
-  }
-  return transformedContent
+  })
 }
