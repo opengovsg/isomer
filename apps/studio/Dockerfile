@@ -34,10 +34,6 @@ FROM base AS builder
 RUN apk update
 RUN apk add --no-cache libc6-compat
 
-# needed because Prisma uses OpenSSL but it has been removed from Alpine 3.21
-# Ref: https://github.com/prisma/prisma/issues/25817
-RUN apk add --no-cache openssl
-
 # Set working directory
 WORKDIR /app
 # Replace <your-major-version> with the major version installed in your repository. For example:
@@ -53,6 +49,12 @@ RUN turbo prune isomer-studio --docker
 FROM base AS installer
 RUN apk update
 RUN apk add --no-cache libc6-compat
+
+# needed because Prisma uses OpenSSL but it has been shifted to another location
+# Ref: https://github.com/prisma/prisma/issues/25817
+# Ref: solution: https://github.com/nodejs/docker-node/issues/2175#issuecomment-2530130523
+RUN ln -s /usr/lib/libssl.so.3 /lib/libssl.so.3
+
 WORKDIR /app
 
 # First install the dependencies (as they change less often)
