@@ -2,23 +2,42 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import { DynamicDataBannerClient } from "./DynamicDataBannerClient"
+import { DynamicDataBanner } from "./DynamicDataBanner"
 import { getSingaporeDateYYYYMMDD } from "./utils"
 
-const meta: Meta<typeof DynamicDataBannerClient> = {
+const meta: Meta<typeof DynamicDataBanner> = {
   title: "Next/Components/DynamicDataBanner",
-  component: DynamicDataBannerClient,
+  component: DynamicDataBanner,
   parameters: {
     layout: "fullscreen",
     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
   },
-}
-
-export default meta
-type Story = StoryObj<typeof DynamicDataBannerClient>
-
-const generateArgs = () => {
-  return {
+  args: {
+    site: {
+      siteName: "Isomer Next",
+      siteMap: {
+        id: "1",
+        title: "Home",
+        permalink: "/",
+        lastModified: "",
+        layout: "homepage",
+        summary: "",
+      },
+      theme: "isomer-next",
+      isGovernment: true,
+      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      navBarItems: [],
+      footerItems: {
+        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
+        termsOfUseLink: "https://www.isomer.gov.sg/terms",
+        siteNavItems: [],
+      },
+      lastUpdated: "1 Jan 2021",
+      search: {
+        type: "searchSG",
+        clientId: "",
+      },
+    },
     apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
     title: "hijriDate",
     data: [
@@ -49,8 +68,30 @@ const generateArgs = () => {
     ],
     url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     label: "View all dates",
-  }
+    errorMessage: [
+      {
+        text: "Not seeing the prayer times? ",
+        type: "text",
+      },
+      {
+        text: "Report an issue",
+        type: "text",
+        marks: [
+          { type: "bold" },
+          {
+            type: "link",
+            attrs: {
+              href: "https://www.form.gov.sg/some-link",
+            },
+          },
+        ],
+      },
+    ],
+  },
 }
+
+export default meta
+type Story = StoryObj<typeof DynamicDataBanner>
 
 export const Default: Story = {
   parameters: {
@@ -73,7 +114,6 @@ export const Default: Story = {
       },
     ],
   },
-  args: generateArgs(),
 }
 
 export const Error: Story = {
@@ -87,5 +127,4 @@ export const Error: Story = {
       },
     ],
   },
-  args: generateArgs(),
 }
