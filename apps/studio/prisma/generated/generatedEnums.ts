@@ -7,6 +7,7 @@ export const ResourceType = {
   RootPage: "RootPage",
   Page: "Page",
   Folder: "Folder",
+  Blog: "Blog",
   Collection: "Collection",
   CollectionLink: "CollectionLink",
   CollectionPage: "CollectionPage",

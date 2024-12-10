@@ -102,6 +102,7 @@ enum ResourceType {
   RootPage
   Page
   Folder
+  Blog
   Collection
   CollectionLink // Can only ever be inside collection
   CollectionPage // Can only live inside `Collection` resources
