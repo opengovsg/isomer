@@ -4,17 +4,60 @@ import { useEffect, useState } from "react"
 
 import type { DynamicDataBannerProps } from "~/interfaces"
 import { NUMBER_OF_DATA } from "~/interfaces"
+import { tv } from "~/lib/tv"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { getSingaporeDateLong, getSingaporeDateYYYYMMDD } from "./utils"
+
+const createDynamicDataBannerStyles = tv({
+  slots: {
+    outerContainer: `${ComponentContent} grid grid-cols-1 gap-5 bg-brand-canvas px-6 pb-4 pt-6 md:gap-4 md:px-10 md:py-2 lg:grid-cols-12 lg:justify-between lg:justify-items-stretch lg:gap-0`,
+    basicInfoContainer:
+      "flex flex-row items-center justify-between md:gap-1 md:py-3 lg:col-span-3 lg:flex-col lg:items-start lg:justify-start",
+    basicInfoInnerContainer: "flex flex-col items-start justify-start gap-1",
+    title: "prose-headline-base-medium",
+    dateWithDesktopUrl: "prose-label-sm-regular flex flex-row gap-2",
+    url: "visited:text-link-visited prose-label-sm-medium flex text-link hover:text-link-hover",
+    dataInfoContainer:
+      "grid gap-y-1 md:flex md:justify-between md:justify-items-center lg:col-span-8 lg:col-start-5",
+    errorMessageContainer:
+      "flex flex-1 flex-col gap-1 md:pb-3 lg:items-end lg:justify-center lg:py-0",
+    individualDataContainer:
+      "flex w-fit flex-col items-start justify-center gap-0.5 py-3 md:items-center",
+    individualDataLabel: "prose-body-sm",
+    individualDataValue: "prose-headline-lg-medium",
+    showOnMobileOnly: "block md:hidden",
+    showOnTabletOnly: "hidden md:block lg:hidden",
+    showOnDesktopOnly: "hidden lg:block",
+  },
+  variants: {
+    success: {
+      true: {
+        dataInfoContainer: ["grid-cols-3"],
+      },
+    },
+  },
+})
+const compoundStyles = createDynamicDataBannerStyles()
+
+type DynamicDataBannerClientProps = Omit<
+  DynamicDataBannerProps,
+  "type" | "site" | "errorMessage"
+> & {
+  errorMessageBaseParagraph?: React.ReactNode
+}
 
 const DynamicDataBannerUI = ({
   title,
   data,
   url,
   label,
+  errorMessageBaseParagraph,
   LinkComponent,
-}: Pick<DynamicDataBannerProps, "title" | "label" | "url" | "LinkComponent"> & {
+}: Pick<
+  DynamicDataBannerClientProps,
+  "title" | "label" | "url" | "LinkComponent" | "errorMessageBaseParagraph"
+> & {
   data: { label: string; value: string }[]
 }) => {
   const shouldRenderUrl: boolean = !!url && !!label
@@ -23,7 +66,7 @@ const DynamicDataBannerUI = ({
       <Link
         LinkComponent={LinkComponent}
         href={url}
-        className="visited:text-link-visited prose-label-sm-medium flex text-link hover:text-link-hover"
+        className={compoundStyles.url()}
       >
         {label}
       </Link>
@@ -31,36 +74,48 @@ const DynamicDataBannerUI = ({
   }
 
   return (
-    <div className="bg-brand-canvas">
-      <div
-        className={`${ComponentContent} grid grid-cols-1 gap-5 px-6 pb-4 pt-6 md:gap-4 md:px-10 md:py-2 lg:grid-cols-12 lg:justify-between lg:justify-items-stretch lg:gap-0`}
-      >
-        <div className="flex flex-row items-center justify-between md:gap-1 md:py-3 lg:col-span-3 lg:flex-col lg:items-start lg:justify-start">
-          <div className="flex flex-col gap-1 whitespace-nowrap">
-            {title && <div className="prose-headline-base-medium">{title}</div>}
-            <div className="prose-label-sm-regular flex flex-row gap-2">
-              {getSingaporeDateLong()}
-              {shouldRenderUrl && (
-                <div className="hidden lg:block">{renderUrl()}</div>
-              )}
-            </div>
+    <div className={compoundStyles.outerContainer()}>
+      <div className={compoundStyles.basicInfoContainer()}>
+        <div className={compoundStyles.basicInfoInnerContainer()}>
+          {title && <div className={compoundStyles.title()}>{title}</div>}
+          <div className={compoundStyles.dateWithDesktopUrl()}>
+            {getSingaporeDateLong()}
+            {shouldRenderUrl && (
+              <div className={compoundStyles.showOnDesktopOnly()}>
+                {renderUrl()}
+              </div>
+            )}
           </div>
-          {shouldRenderUrl && (
-            <div className="hidden md:block lg:hidden">{renderUrl()}</div>
-          )}
-        </div>
-        <div className="grid grid-cols-3 gap-y-1 md:flex md:justify-between md:justify-items-center lg:col-span-8 lg:col-start-5">
-          {data.slice(0, NUMBER_OF_DATA).map((singleData) => (
-            <div className="flex w-fit flex-col items-start justify-center gap-0.5 py-3 md:items-center">
-              <div className="prose-body-sm">{singleData.label}</div>
-              <div className="prose-headline-lg-medium">{singleData.value}</div>
-            </div>
-          ))}
         </div>
         {shouldRenderUrl && (
-          <div className="block md:hidden">{renderUrl()}</div>
+          <div className={compoundStyles.showOnTabletOnly()}>{renderUrl()}</div>
         )}
       </div>
+      <div
+        className={compoundStyles.dataInfoContainer({
+          success: !errorMessageBaseParagraph,
+        })}
+      >
+        {!!errorMessageBaseParagraph ? (
+          <div className={compoundStyles.errorMessageContainer()}>
+            {errorMessageBaseParagraph}
+          </div>
+        ) : (
+          data.slice(0, NUMBER_OF_DATA).map((singleData) => (
+            <div className={compoundStyles.individualDataContainer()}>
+              <div className={compoundStyles.individualDataLabel()}>
+                {singleData.label}
+              </div>
+              <div className={compoundStyles.individualDataValue()}>
+                {singleData.value}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+      {shouldRenderUrl && (
+        <div className={compoundStyles.showOnMobileOnly()}>{renderUrl()}</div>
+      )}
     </div>
   )
 }
@@ -71,8 +126,9 @@ export const DynamicDataBannerClient = ({
   data,
   url,
   label,
+  errorMessageBaseParagraph,
   LinkComponent,
-}: Omit<DynamicDataBannerProps, "type" | "site">) => {
+}: DynamicDataBannerClientProps) => {
   const [isLoading, setLoading] = useState(true)
   const [isError, setError] = useState(false)
   const [dynamicData, setDynamicData] = useState<Record<string, string>>({})
@@ -86,11 +142,11 @@ export const DynamicDataBannerClient = ({
     // we now have access to fetch here
     fetch(apiEndpoint)
       .then((res) => res.json())
-      .then((data) => {
-        if (!data || !data[getSingaporeDateYYYYMMDD()]) {
+      .then((apiData) => {
+        if (!apiData?.[getSingaporeDateYYYYMMDD()]) {
           throw new Error("No data found for current date")
         }
-        setDynamicData(data[getSingaporeDateYYYYMMDD()])
+        setDynamicData(apiData[getSingaporeDateYYYYMMDD()])
         setLoading(false)
       })
       .catch((error) => {
@@ -100,13 +156,15 @@ export const DynamicDataBannerClient = ({
       })
   }, [])
 
-  if (isError) {
-    // TODO: add error state UI
-    return <DynamicDataBannerUI data={[]} url={url} label={label} />
-  }
-
-  if (isLoading || data.length !== NUMBER_OF_DATA)
-    return <DynamicDataBannerUI data={[]} url={url} label={label} />
+  if (isError || isLoading || data.length !== NUMBER_OF_DATA)
+    return (
+      <DynamicDataBannerUI
+        data={[]}
+        url={url}
+        label={label}
+        errorMessageBaseParagraph={errorMessageBaseParagraph}
+      />
+    )
 
   return (
     <DynamicDataBannerUI
