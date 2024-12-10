@@ -1,6 +1,10 @@
 import type { Exact } from "type-fest"
 
-import type { CollectionPageSchemaType, IsomerSiteProps } from "~/engine"
+import type {
+  BlogPageSchemaType,
+  CollectionPageSchemaType,
+  IsomerSiteProps,
+} from "~/engine"
 import type { AllCardProps, ProcessedCollectionCardProps } from "~/interfaces"
 import {
   getBreadcrumbFromSiteMap,
@@ -153,7 +157,7 @@ const CollectionLayout = ({
   layout,
   LinkComponent,
   ScriptComponent,
-}: CollectionPageSchemaType) => {
+}: CollectionPageSchemaType | BlogPageSchemaType) => {
   const { permalink } = page
 
   const items = getCollectionItems(site, permalink)
