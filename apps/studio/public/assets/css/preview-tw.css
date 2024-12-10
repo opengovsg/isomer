@@ -4720,6 +4720,10 @@ video {
     padding-right: 0px;
   }
 
+  .sm\:pt-12 {
+    padding-top: 3rem;
+  }
+
   .sm\:text-4xl {
     font-size: 2.25rem;
     line-height: 2.5rem;

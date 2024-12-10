@@ -51,11 +51,13 @@ const generateArgs = ({
   maxColumns,
   withoutImage = false,
   isImageFitContain = false,
+  hasCTA = false,
 }: {
   layout?: IsomerPageLayoutType
   maxColumns: "1" | "2" | "3"
   withoutImage?: boolean
   isImageFitContain?: boolean
+  hasCTA?: boolean
 }): InfoCardsProps => {
   const cards = [
     {
@@ -124,6 +126,12 @@ const generateArgs = ({
     maxColumns: maxColumns,
     variant: withoutImage ? "cardsWithoutImages" : "cardsWithImages",
     cards: cards,
+    ...(hasCTA
+      ? {
+          label: "This is a CTA",
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        }
+      : {}),
   } as InfoCardsProps
 }
 
@@ -163,4 +171,8 @@ export const NoImage: Story = {
 
 export const WithContainImageFit: Story = {
   args: generateArgs({ maxColumns: "3", isImageFitContain: true }),
+}
+
+export const WithLink: Story = {
+  args: generateArgs({ maxColumns: "3", withoutImage: true, hasCTA: true }),
 }

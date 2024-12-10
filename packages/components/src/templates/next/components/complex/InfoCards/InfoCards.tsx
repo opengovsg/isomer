@@ -15,6 +15,7 @@ import {
 } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
+import { LinkButton } from "../../internal/LinkButton"
 import { ImageClient } from "../Image"
 
 const infoCardTitleStyle = tv({
@@ -42,6 +43,7 @@ const createInfoCardsStyles = tv({
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
     cardDescription: "prose-body-base text-base-content",
+    urlButtonContainer: "mx-auto block pt-8 sm:pt-12", // temp: following headingContainer's mb
   },
   variants: {
     layout: {
@@ -219,6 +221,8 @@ const InfoCards = ({
   variant,
   cards,
   maxColumns,
+  label,
+  url,
   layout,
   site,
   LinkComponent,
@@ -288,6 +292,19 @@ const InfoCards = ({
       <div className={compoundStyles.grid({ maxColumns })}>
         <InfoCardtoRender />
       </div>
+
+      {!!url && !!label && (
+        <div className={compoundStyles.urlButtonContainer()}>
+          <LinkButton
+            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            size="base"
+            variant="outline"
+            isWithFocusVisibleHighlight
+          >
+            {label}
+          </LinkButton>
+        </div>
+      )}
     </section>
   )
 }

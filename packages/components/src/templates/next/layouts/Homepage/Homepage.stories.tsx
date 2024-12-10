@@ -286,6 +286,8 @@ export const Default: Story = {
         subtitle:
           "Section subtitle, maximum 150 chars. These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
         variant: "cardsWithImages",
+        label: "This is a CTA",
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         cards: [
           {
             title: "Card with short title",
