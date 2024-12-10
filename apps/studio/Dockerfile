@@ -1,3 +1,6 @@
+# needed to pin to 3.20 because Prisma uses OpenSSL but it has been shifted to another location in 3.21
+# Ref: https://github.com/prisma/prisma/issues/25817
+# Solution: https://github.com/prisma/prisma/issues/25817#issuecomment-2529926082
 FROM node:22-alpine3.20 AS base
 
 ARG NEXT_PUBLIC_APP_ENV
