@@ -11,7 +11,8 @@ import { getSingaporeDateLong, getSingaporeDateYYYYMMDD } from "./utils"
 
 const createDynamicDataBannerStyles = tv({
   slots: {
-    outerContainer: `${ComponentContent} grid grid-cols-1 gap-5 bg-brand-canvas px-6 pb-4 pt-6 md:gap-4 md:px-10 md:py-2 lg:grid-cols-12 lg:justify-between lg:justify-items-stretch lg:gap-0`,
+    screenWideOuterContainer: "bg-brand-canvas",
+    outerContainer: `${ComponentContent} grid grid-cols-1 gap-5 px-6 pb-4 pt-6 md:gap-4 md:px-10 md:py-2 lg:grid-cols-12 lg:justify-between lg:justify-items-stretch lg:gap-0`,
     basicInfoContainer:
       "flex flex-row items-center justify-between md:gap-1 md:py-3 lg:col-span-3 lg:flex-col lg:items-start lg:justify-start",
     basicInfoInnerContainer: "flex flex-col items-start justify-start gap-1",
@@ -74,48 +75,52 @@ const DynamicDataBannerUI = ({
   }
 
   return (
-    <div className={compoundStyles.outerContainer()}>
-      <div className={compoundStyles.basicInfoContainer()}>
-        <div className={compoundStyles.basicInfoInnerContainer()}>
-          {title && <div className={compoundStyles.title()}>{title}</div>}
-          <div className={compoundStyles.dateWithDesktopUrl()}>
-            {getSingaporeDateLong()}
-            {shouldRenderUrl && (
-              <div className={compoundStyles.showOnDesktopOnly()}>
-                {renderUrl()}
-              </div>
-            )}
+    <div className={compoundStyles.screenWideOuterContainer()}>
+      <div className={compoundStyles.outerContainer()}>
+        <div className={compoundStyles.basicInfoContainer()}>
+          <div className={compoundStyles.basicInfoInnerContainer()}>
+            {title && <div className={compoundStyles.title()}>{title}</div>}
+            <div className={compoundStyles.dateWithDesktopUrl()}>
+              {getSingaporeDateLong()}
+              {shouldRenderUrl && (
+                <div className={compoundStyles.showOnDesktopOnly()}>
+                  {renderUrl()}
+                </div>
+              )}
+            </div>
           </div>
+          {shouldRenderUrl && (
+            <div className={compoundStyles.showOnTabletOnly()}>
+              {renderUrl()}
+            </div>
+          )}
+        </div>
+        <div
+          className={compoundStyles.dataInfoContainer({
+            success: !errorMessageBaseParagraph,
+          })}
+        >
+          {!!errorMessageBaseParagraph ? (
+            <div className={compoundStyles.errorMessageContainer()}>
+              {errorMessageBaseParagraph}
+            </div>
+          ) : (
+            data.slice(0, NUMBER_OF_DATA).map((singleData) => (
+              <div className={compoundStyles.individualDataContainer()}>
+                <div className={compoundStyles.individualDataLabel()}>
+                  {singleData.label}
+                </div>
+                <div className={compoundStyles.individualDataValue()}>
+                  {singleData.value}
+                </div>
+              </div>
+            ))
+          )}
         </div>
         {shouldRenderUrl && (
-          <div className={compoundStyles.showOnTabletOnly()}>{renderUrl()}</div>
+          <div className={compoundStyles.showOnMobileOnly()}>{renderUrl()}</div>
         )}
       </div>
-      <div
-        className={compoundStyles.dataInfoContainer({
-          success: !errorMessageBaseParagraph,
-        })}
-      >
-        {!!errorMessageBaseParagraph ? (
-          <div className={compoundStyles.errorMessageContainer()}>
-            {errorMessageBaseParagraph}
-          </div>
-        ) : (
-          data.slice(0, NUMBER_OF_DATA).map((singleData) => (
-            <div className={compoundStyles.individualDataContainer()}>
-              <div className={compoundStyles.individualDataLabel()}>
-                {singleData.label}
-              </div>
-              <div className={compoundStyles.individualDataValue()}>
-                {singleData.value}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-      {shouldRenderUrl && (
-        <div className={compoundStyles.showOnMobileOnly()}>{renderUrl()}</div>
-      )}
     </div>
   )
 }
