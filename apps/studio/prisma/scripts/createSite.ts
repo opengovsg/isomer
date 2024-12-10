@@ -1,4 +1,4 @@
-import { IsomerSchema } from "@opengovsg/isomer-components"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
 
 import type { Navbar } from "~/server/modules/resource/resource.types"
@@ -237,4 +237,5 @@ export const createSite = async ({ siteName }: CreateSiteProps) => {
   return siteId
 }
 
+// NOTE: Update the site name here before executing!
 await createSite({ siteName: "" })

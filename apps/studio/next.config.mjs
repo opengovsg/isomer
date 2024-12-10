@@ -120,6 +120,12 @@ const ContentSecurityPolicy = `
 const config = {
   output: "standalone",
   reactStrictMode: true,
+  // NOTE: this is required for datadog to work because
+  // the trace/logs are initialised via the `instrumentation` file
+  // https://nextjs.org/docs/14/app/api-reference/next-config-js/instrumentationHook
+  experimental: {
+    instrumentationHook: true,
+  },
   /**
    * Dynamic configuration available for the browser and server.
    * Note: requires `ssr: true` or a `getInitialProps` in `_app.tsx`
