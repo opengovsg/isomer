@@ -74,8 +74,10 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
 
 const generateArgs = ({
   collectionItems = COLLECTION_ITEMS,
+  variant = "collection",
 }: {
   collectionItems?: IsomerSitemap[]
+  variant?: CollectionPageSchemaType["page"]["variant"]
 } = {}): CollectionPageSchemaType => {
   return {
     layout: "collection",
@@ -263,6 +265,7 @@ const generateArgs = ({
       lastModified: "2024-05-02T14:12:57.160Z",
       subtitle:
         "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
+      variant,
     },
     content: [],
   }
@@ -414,5 +417,12 @@ export const FileCardNoImage: Story = {
     collectionItems: [
       { ...COLLECTION_ITEMS[1], image: undefined } as IsomerSitemap,
     ],
+  }),
+}
+
+export const Blog: Story = {
+  args: generateArgs({
+    collectionItems: COLLECTION_ITEMS,
+    variant: "blog",
   }),
 }
