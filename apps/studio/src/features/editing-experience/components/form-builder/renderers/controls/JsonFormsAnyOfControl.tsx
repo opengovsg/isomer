@@ -9,6 +9,7 @@ import {
 } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsAnyOfProps } from "@jsonforms/react"
 import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
+import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
@@ -83,7 +84,7 @@ export function JsonFormsAnyOfControl({
       <Box>
         <FormControl isRequired gap="0.5rem">
           <FormLabel description={description}>{label || "Variant"}</FormLabel>
-          {schema.format === "radio" ? (
+          {schema.format === ARRAY_RADIO_FORMAT ? (
             <RadioGroup
               onChange={onChange}
               value={options.find((option) => option.label === variant)?.value}
