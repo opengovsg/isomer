@@ -1,4 +1,4 @@
-FROM node:22-alpine AS base
+FROM node:22-alpine3.20 AS base
 
 ARG NEXT_PUBLIC_APP_ENV
 ENV NEXT_PUBLIC_APP_ENV=$NEXT_PUBLIC_APP_ENV
@@ -49,12 +49,6 @@ RUN turbo prune isomer-studio --docker
 FROM base AS installer
 RUN apk update
 RUN apk add --no-cache libc6-compat
-
-# needed because Prisma uses OpenSSL but it has been shifted to another location
-# Ref: https://github.com/prisma/prisma/issues/25817
-# Ref: solution: https://github.com/nodejs/docker-node/issues/2175#issuecomment-2530130523
-RUN ln -s /usr/lib/libssl.so.3 /lib/libssl.so.3
-
 WORKDIR /app
 
 # First install the dependencies (as they change less often)

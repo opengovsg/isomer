@@ -9,9 +9,6 @@ datasource db {
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
-  // # needed because Prisma uses OpenSSL but it has been shifted to another location
-  // # Ref: https://github.com/prisma/prisma/issues/25817
-  binaryTargets = ["linux-musl"]
 }
 
 /// Always after the prisma-client-js generator
