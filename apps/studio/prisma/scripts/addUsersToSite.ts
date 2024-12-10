@@ -38,7 +38,7 @@ export const addUsersToSite = async ({
               .column("email")
               .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
           )
-          .returning(["id", "name"])
+          .returning(["id", "name", "email"])
           .executeTakeFirstOrThrow()
 
         await tx
@@ -49,13 +49,15 @@ export const addUsersToSite = async ({
             role,
           })
           .execute()
+
+        console.log(`User added: ${user.email} with id: ${user.id}`)
       })
     }),
   )
 }
 
+// NOTE: Update the list of users and siteId here before executing!
 const users: User[] = []
-
 const siteId = -1
 
 await addUsersToSite({ siteId, users })

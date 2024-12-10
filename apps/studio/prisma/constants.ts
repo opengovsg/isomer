@@ -6,13 +6,14 @@ export const ISOMER_ADMINS = [
   "harish",
   "zhongjun",
   "adriangoh",
+  "shazli",
+  "jinhui",
 ]
 
 export const ISOMER_MIGRATORS = [
   "tingshian",
   "hakeem",
   "elora",
-  "jinhui",
   "junxiang",
   "rayyan",
   "yongteng",
