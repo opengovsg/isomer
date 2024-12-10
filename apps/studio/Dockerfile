@@ -34,6 +34,10 @@ FROM base AS builder
 RUN apk update
 RUN apk add --no-cache libc6-compat
 
+# needed because Prisma uses OpenSSL but it has been removed from Alpine 3.21
+# Ref: https://github.com/prisma/prisma/issues/25817
+RUN apk add --no-cache openssl
+
 # Set working directory
 WORKDIR /app
 # Replace <your-major-version> with the major version installed in your repository. For example:
