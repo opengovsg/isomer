@@ -8,7 +8,7 @@ import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { getSingaporeDateLong, getSingaporeDateYYYYMMDD } from "./utils"
 
-export const DynamicDataBannerUI = ({
+const DynamicDataBannerUI = ({
   title,
   data,
   url,
@@ -23,7 +23,7 @@ export const DynamicDataBannerUI = ({
       <Link
         LinkComponent={LinkComponent}
         href={url}
-        className="prose-label-sm-medium flex text-link visited:text-link-visited hover:text-link-hover"
+        className="visited:text-link-visited prose-label-sm-medium flex text-link hover:text-link-hover"
       >
         {label}
       </Link>
@@ -74,7 +74,8 @@ export const DynamicDataBannerClient = ({
   LinkComponent,
 }: Omit<DynamicDataBannerProps, "type" | "site">) => {
   const [isLoading, setLoading] = useState(true)
-  const [apiData, setApiData] = useState<Record<string, object>>({})
+  const [isError, setError] = useState(false)
+  const [dynamicData, setDynamicData] = useState<Record<string, string>>({})
 
   // This is to ensure that the component is mounted before the query is executed
   // because next.js will attempt to execute the query during static site generation
@@ -86,25 +87,33 @@ export const DynamicDataBannerClient = ({
     fetch(apiEndpoint)
       .then((res) => res.json())
       .then((data) => {
-        setApiData(data as Record<string, object>)
+        if (!data || !data[getSingaporeDateYYYYMMDD()]) {
+          throw new Error("No data found for current date")
+        }
+        setDynamicData(data[getSingaporeDateYYYYMMDD()])
         setLoading(false)
       })
       .catch((error) => {
         console.error("Error fetching data:", error)
         setLoading(false)
+        setError(true)
       })
   }, [])
+
+  if (isError) {
+    // TODO: add error state UI
+    return <DynamicDataBannerUI data={[]} url={url} label={label} />
+  }
 
   if (isLoading || data.length !== NUMBER_OF_DATA)
     return <DynamicDataBannerUI data={[]} url={url} label={label} />
 
-  const values = apiData[getSingaporeDateYYYYMMDD()] as Record<string, string>
   return (
     <DynamicDataBannerUI
-      title={!!title ? values[title] : undefined}
+      title={!!title ? dynamicData[title] : undefined}
       data={data.map((singleData) => ({
         label: singleData.label,
-        value: values[singleData.key] || "-- : --",
+        value: dynamicData[singleData.key] || "-- : --",
       }))}
       url={url}
       label={label}
