@@ -29,6 +29,7 @@ export const useIsActive = (
       return siteProps.resourceId === currentResourceId
     case ResourceType.Folder:
     case ResourceType.Collection:
+    case ResourceType.Blog:
       return siteProps.folderId === currentResourceId
     case ResourceType.CollectionLink:
       return siteProps.linkId === currentResourceId

@@ -176,7 +176,11 @@ const CollectionLayout = ({
       ScriptComponent={ScriptComponent}
     >
       <CollectionClient
-        page={page}
+        // NOTE: we pass in variant here because
+        // the collection page itself doesn't really exist
+        // and studio can only communicate to our collection
+        // via the `layout`
+        page={{ ...page, variant: layout }}
         breadcrumb={breadcrumb}
         items={processedItems}
         filters={getAvailableFilters(processedItems)}

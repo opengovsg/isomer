@@ -3,6 +3,7 @@ import type { TSchema } from "@sinclair/typebox"
 import type { IsomerPageLayoutType } from "~/types"
 import {
   ArticlePageMetaSchema,
+  BlogPageMetaSchema,
   CollectionPageMetaSchema,
   ContentPageMetaSchema,
   DatabasePageMetaSchema,
@@ -24,6 +25,7 @@ const LAYOUT_METADATA_MAP = {
   link: LinkRefMetaSchema,
   collection: CollectionPageMetaSchema,
   file: FileRefMetaSchema,
+  blog: BlogPageMetaSchema,
 }
 
 export const getLayoutMetadataSchema = (

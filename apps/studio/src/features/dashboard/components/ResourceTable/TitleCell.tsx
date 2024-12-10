@@ -42,6 +42,7 @@ export const TitleCell = ({
       case ResourceType.Folder:
         return BiFolder
       case ResourceType.Collection:
+      case ResourceType.Blog:
         return BiData
       case ResourceType.CollectionPage:
         return BiFile

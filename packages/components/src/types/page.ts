@@ -99,6 +99,8 @@ export const CollectionPagePageSchema = Type.Intersect([
   TagsSchema,
 ])
 
+export const BlogPagePageSchema = CollectionPagePageSchema
+
 export const ContentPagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,
 })
