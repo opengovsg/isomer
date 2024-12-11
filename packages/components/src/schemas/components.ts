@@ -26,6 +26,7 @@ import {
   UnorderedListSchema,
   VideoSchema,
 } from "~/interfaces"
+import { LogoCloudSchema } from "~/interfaces/complex/LogoCloud"
 
 export const IsomerComplexComponentsMap = {
   accordion: AccordionSchema,
@@ -42,6 +43,7 @@ export const IsomerComplexComponentsMap = {
   map: MapSchema,
   video: VideoSchema,
   [DYNAMIC_DATA_BANNER_TYPE]: DynamicDataBannerSchema,
+  logocloud: LogoCloudSchema,
 }
 
 export const IsomerNativeComponentsMap = {

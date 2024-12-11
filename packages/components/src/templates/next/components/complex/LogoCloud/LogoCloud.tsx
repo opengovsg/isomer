@@ -1,15 +1,7 @@
-import type { IsomerSiteProps } from "~/types"
+import type { LogoCloudProps } from "~/interfaces/complex/LogoCloud"
 import { isExternalUrl } from "~/utils"
 import { ImageClient } from "../Image"
 
-interface Image {
-  src: string
-  alt: string
-}
-interface LogoCloudProps extends Pick<IsomerSiteProps, "assetsBaseUrl"> {
-  images: Image[]
-  title?: string
-}
 export const LogoCloud = ({
   images: baseImages,
   title,
