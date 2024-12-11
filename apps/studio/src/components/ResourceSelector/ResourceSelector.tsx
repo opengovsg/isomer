@@ -1,160 +1,190 @@
-import { Suspense, useState } from "react"
-import {
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  Skeleton,
-  Spacer,
-  Text,
-} from "@chakra-ui/react"
-import { Button, Link } from "@opengovsg/design-system-react"
+import { Suspense } from "react"
+import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
+import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
-import { trpc } from "~/utils/trpc"
-import { ResourceItem } from "./ResourceItem"
+import type { ResourceItemContent } from "~/schemas/resource"
+import { useSearchQuery } from "~/hooks/useSearchQuery"
+import { getUserViewableResourceTypes } from "~/utils/resources"
+import {
+  LoadingResourceItemsResults,
+  NoItemsInFolderResult,
+  ResourceItemsResults,
+  ZeroResult,
+} from "./ResourceSelectorContent"
+import {
+  BackButtonHeader,
+  HomeHeader,
+  LoadingHeader,
+  SearchResultsHeader,
+} from "./ResourceSelectorHeader"
+import { SearchBar } from "./SearchBar"
+import { useResourceStack } from "./useResourceStack"
+
+const FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM = 17.5
+
+interface ResourceSelectorProps {
+  siteId: number
+  onChange: (resourceId: string) => void
+  selectedResourceId?: string
+  existingResource?: ResourceItemContent
+  onlyShowFolders?: boolean
+  fileExplorerHeight?: number
+}
 
 const SuspensableResourceSelector = ({
   siteId,
-  selectedResourceId,
   onChange,
-  isDisabledFn,
+  selectedResourceId,
+  existingResource,
+  onlyShowFolders = false,
+  fileExplorerHeight = FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM,
 }: ResourceSelectorProps) => {
-  const [ancestryStack] = trpc.resource.getAncestryOf.useSuspenseQuery({
-    siteId,
-    resourceId: selectedResourceId,
+  const {
+    searchValue,
+    setSearchValue,
+    debouncedSearchTerm: searchQuery,
+    isLoading,
+    resources,
+    clearSearchValue,
+  } = useSearchQuery({
+    siteId: String(siteId),
+    resourceTypes: onlyShowFolders
+      ? [ResourceType.Folder]
+      : getUserViewableResourceTypes(),
   })
-  const [parentIdStack, setParentIdStack] = useState<string[]>(
-    ancestryStack.map((item) => item.id),
-  )
-  const currResourceId = parentIdStack[parentIdStack.length - 1] ?? null
 
-  const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
-    trpc.resource.getChildrenOf.useSuspenseInfiniteQuery(
-      {
-        resourceId: currResourceId,
-        siteId,
-        limit: 25,
-      },
-      {
-        getNextPageParam: (lastPage) => lastPage.nextOffset,
-      },
+  const isSearchQueryEmpty: boolean = searchQuery.trim().length === 0
+  const hasAdditionalLeftPadding: boolean = isSearchQueryEmpty
+
+  const {
+    fullPermalink,
+    moveDest,
+    resourceItemsWithAncestryStack,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isResourceIdHighlighted,
+    isResourceItemDisabled,
+    hasParentInStack,
+    handleClickBackButton,
+    handleClickResourceItem,
+  } = useResourceStack({
+    siteId,
+    onChange: (resourceId: string) => {
+      onChange(resourceId)
+      clearSearchValue()
+    },
+    selectedResourceId,
+    onlyShowFolders,
+    existingResource,
+    resourceIds: isSearchQueryEmpty
+      ? undefined
+      : resources.map((resource) => resource.id),
+  })
+
+  const renderHeader = () => {
+    if (isLoading) {
+      return <LoadingHeader />
+    }
+    if (isSearchQueryEmpty) {
+      return hasParentInStack ? (
+        <BackButtonHeader handleOnClick={handleClickBackButton} />
+      ) : (
+        <HomeHeader />
+      )
+    }
+    return (
+      <SearchResultsHeader
+        resultsCount={resourceItemsWithAncestryStack.length}
+        searchQuery={searchQuery}
+      />
     )
+  }
 
-  const onBack = () => {
-    setParentIdStack((prev) => prev.slice(0, -1))
+  const renderContent = () => {
+    if (isLoading) {
+      return <LoadingResourceItemsResults />
+    }
+    if (resourceItemsWithAncestryStack.length === 0) {
+      return isSearchQueryEmpty ? (
+        <NoItemsInFolderResult />
+      ) : (
+        <ZeroResult
+          searchQuery={searchQuery}
+          handleClickClearSearch={clearSearchValue}
+        />
+      )
+    }
+    return (
+      <ResourceItemsResults
+        resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
+        isResourceIdHighlighted={isResourceIdHighlighted}
+        isResourceItemDisabled={isResourceItemDisabled}
+        hasAdditionalLeftPadding={hasAdditionalLeftPadding}
+        handleClickResourceItem={handleClickResourceItem}
+      />
+    )
   }
 
   return (
-    <Box
-      borderRadius="md"
-      border="1px solid"
-      borderColor="base.divider.strong"
-      w="full"
-      py="0.75rem"
-      px="0.5rem"
-      maxH="20rem"
-      overflowY="auto"
-    >
-      {parentIdStack.length > 0 ? (
-        <Link
-          variant="clear"
-          w="full"
-          justifyContent="flex-start"
-          color="base.content.default"
-          onClick={onBack}
-          as="button"
-        >
-          <HStack spacing="0.25rem" color="interaction.links.default">
-            <Icon as={BiLeftArrowAlt} />
-            <Text textStyle="caption-1">Back to parent folder</Text>
-          </HStack>
-        </Link>
-      ) : (
-        <Flex
-          w="full"
-          px="0.75rem"
-          py="0.375rem"
-          color="base.content.default"
-          alignItems="center"
-        >
-          <HStack spacing="0.5rem">
-            <Icon as={BiHomeAlt} />
-            <Text textStyle="caption-1">/</Text>
-          </HStack>
-          <Spacer />
-          <Text
-            color="base.content.medium"
-            textTransform="uppercase"
-            textStyle="caption-1"
-            overflow="hidden"
-            textOverflow="ellipsis"
-            whiteSpace="nowrap"
+    <VStack gap="0.5rem" w="full">
+      <SearchBar searchValue={searchValue} setSearchValue={setSearchValue} />
+      <Box
+        borderRadius="md"
+        border="1px solid"
+        borderColor="base.divider.strong"
+        w="full"
+        py="0.75rem"
+        px="0.5rem"
+        h={`${fileExplorerHeight}rem`}
+        overflowY="auto"
+        display="flex"
+        flexDirection="column"
+        gap="0.25rem"
+      >
+        {renderHeader()}
+        {renderContent()}
+        {hasNextPage && (
+          <Button
+            variant="link"
+            py="0.5rem"
+            pl={hasAdditionalLeftPadding ? "2.25rem" : "1rem"}
+            size="xs"
+            isLoading={isFetchingNextPage}
+            onClick={() => fetchNextPage()}
           >
-            Home
-          </Text>
-        </Flex>
-      )}
-
-      {data.pages.flatMap(({ items }) => items).length === 0 ? (
-        <Box py="0.5rem" pl="2.25rem">
-          <Text textStyle="caption-2" fontStyle="italic">
-            No matching results
-          </Text>
+            Load more
+          </Button>
+        )}
+      </Box>
+      {!!moveDest && (
+        <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">
+          <Flex flexDirection="column" gap="0.25rem">
+            <Text textStyle="caption-1">You selected {fullPermalink}</Text>
+            {existingResource && (
+              <Text textStyle="caption-2">
+                The URL for {existingResource.title} will change to{" "}
+                {`${fullPermalink}/${existingResource.permalink}`}
+              </Text>
+            )}
+          </Flex>
         </Box>
-      ) : (
-        data.pages.map(({ items }) =>
-          items.map((child) => {
-            const isDisabled = isDisabledFn?.(child.id) ?? false
-
-            return (
-              <ResourceItem
-                {...child}
-                key={child.id}
-                isSelected={selectedResourceId === child.id}
-                isDisabled={isDisabled}
-                onResourceItemSelect={() => {
-                  if (
-                    child.type === ResourceType.Folder ||
-                    child.type === ResourceType.Collection
-                  ) {
-                    setParentIdStack((prev) => [...prev, child.id])
-                  } else {
-                    onChange(child.id)
-                  }
-                }}
-              />
-            )
-          }),
-        )
       )}
-
-      {hasNextPage && (
-        <Button
-          variant="link"
-          pl="2.25rem"
-          size="xs"
-          isLoading={isFetchingNextPage}
-          onClick={() => fetchNextPage()}
-        >
-          Load more
-        </Button>
-      )}
-    </Box>
+    </VStack>
   )
-}
-
-interface ResourceSelectorProps {
-  siteId: string
-  selectedResourceId?: string
-  onChange: (resourceId: string) => void
-  isDisabledFn?: (resourceId: string) => boolean
 }
 
 export const ResourceSelector = (props: ResourceSelectorProps) => {
   return (
-    <Suspense fallback={<Skeleton h="4rem" />}>
+    <Suspense
+      fallback={
+        <Skeleton
+          w="full"
+          h={`${props.fileExplorerHeight ?? FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM + 4.25}rem`}
+        />
+      }
+    >
       <SuspensableResourceSelector {...props} />
     </Suspense>
   )

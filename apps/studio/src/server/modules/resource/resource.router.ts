@@ -7,10 +7,14 @@ import type { PermissionsProps } from "../permissions/permissions.type"
 import {
   countResourceSchema,
   deleteResourceSchema,
-  getAncestrySchema,
+  getAncestryWithSelfSchema,
+  getBatchAncestryWithSelfSchema,
+  getChildrenOutputSchema,
   getChildrenSchema,
   getFullPermalinkSchema,
   getMetadataSchema,
+  getNestedFolderChildrenOutputSchema,
+  getNestedFolderChildrenSchema,
   getParentSchema,
   listResourceSchema,
   moveSchema,
@@ -29,6 +33,8 @@ import {
 } from "../permissions/permissions.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
+  getAncestryWithSelf,
+  getNestedFolderChildren,
   getSearchRecentlyEdited,
   getSearchResults,
   getSearchWithResourceIds,
@@ -105,8 +111,10 @@ export const resourceRouter = router({
 
       return resource
     }),
+
   getFolderChildrenOf: protectedProcedure
     .input(getChildrenSchema)
+    .output(getChildrenOutputSchema)
     .query(async ({ input: { siteId, resourceId, cursor: offset, limit } }) => {
       // Validate site and resourceId exists and is a Folder
       if (resourceId !== null) {
@@ -124,7 +132,7 @@ export const resourceRouter = router({
 
       let query = db
         .selectFrom("Resource")
-        .select(["title", "permalink", "type", "id"])
+        .select(["title", "permalink", "type", "id", "parentId"])
         .where("Resource.type", "in", [ResourceType.Folder])
         .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
@@ -141,21 +149,14 @@ export const resourceRouter = router({
       }
 
       const result = await query.execute()
-      if (result.length > limit) {
-        // Dont' return the last element, it's just for checking if there are more
-        result.pop()
-        return {
-          items: result,
-          nextOffset: offset + limit,
-        }
-      }
-      return {
-        items: result,
-        nextOffset: null,
-      }
+      return result.length > limit
+        ? // Dont' return the last element, it's just for checking if there are more
+          { items: result.slice(0, limit), nextOffset: offset + limit }
+        : { items: result, nextOffset: null }
     }),
   getChildrenOf: protectedProcedure
     .input(getChildrenSchema)
+    .output(getChildrenOutputSchema)
     .query(async ({ input: { resourceId, siteId, cursor: offset, limit } }) => {
       // Validate site and resourceId exists and is a folder
       if (resourceId !== null) {
@@ -176,8 +177,9 @@ export const resourceRouter = router({
       }
       let query = db
         .selectFrom("Resource")
-        .select(["title", "permalink", "type", "id"])
+        .select(["title", "permalink", "type", "id", "parentId"])
         .where("Resource.type", "!=", ResourceType.RootPage)
+        .where("Resource.type", "!=", ResourceType.IndexPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
@@ -200,19 +202,40 @@ export const resourceRouter = router({
       } else {
         query = query.where("Resource.parentId", "=", String(resourceId))
       }
-
       const result = await query.execute()
-      if (result.length > limit) {
-        // Dont' return the last element, it's just for checking if there are more
-        result.pop()
-        return {
-          items: result,
-          nextOffset: offset + limit,
-        }
-      }
       return {
-        items: result,
-        nextOffset: null,
+        // Dont' return the last element, it's just for checking if there are more
+        items: result.length > limit ? result.slice(0, limit) : result,
+        nextOffset: result.length > limit ? offset + limit : null,
+      }
+    }),
+
+  getNestedFolderChildrenOf: protectedProcedure
+    .input(getNestedFolderChildrenSchema)
+    .output(getNestedFolderChildrenOutputSchema)
+    .query(async ({ ctx, input: { resourceId, siteId } }) => {
+      await validateUserPermissionsForSite({
+        siteId: Number(siteId),
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      const resource = await db
+        .selectFrom("Resource")
+        .where("siteId", "=", Number(siteId))
+        .where("id", "=", String(resourceId))
+        .where("Resource.type", "=", ResourceType.Folder)
+        .executeTakeFirst()
+
+      if (!resource) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
+      return {
+        items: await getNestedFolderChildren({
+          siteId: Number(siteId),
+          resourceId: Number(resourceId),
+        }),
       }
     }),
 
@@ -474,54 +497,44 @@ export const resourceRouter = router({
       return query.select(["role"]).execute()
     }),
 
-  getAncestryOf: protectedProcedure
-    .input(getAncestrySchema)
+  getAncestryWithSelf: protectedProcedure
+    .input(getAncestryWithSelfSchema)
     .query(async ({ input: { siteId, resourceId } }) => {
       if (!resourceId) {
         return []
       }
+      return await getAncestryWithSelf({
+        siteId: Number(siteId),
+        resourceId: Number(resourceId),
+      })
+    }),
 
-      const ancestors = await db
-        .withRecursive("Resources", (eb) =>
-          eb
-            .selectFrom("Resource")
-            .select([
-              "Resource.id",
-              "Resource.title",
-              "Resource.permalink",
-              "Resource.parentId",
-            ])
-            .where("Resource.siteId", "=", Number(siteId))
-            .where("Resource.id", "=", resourceId)
-            .unionAll(
-              eb
-                .selectFrom("Resource")
-                .innerJoin("Resources", "Resources.parentId", "Resource.id")
-                .select([
-                  "Resource.id",
-                  "Resource.title",
-                  "Resource.permalink",
-                  "Resource.parentId",
-                ]),
-            ),
-        )
-        .selectFrom("Resources")
-        .select([
-          "Resources.id",
-          "Resources.title",
-          "Resources.permalink",
-          "Resources.parentId",
-        ])
-        .execute()
-
-      return ancestors.reverse().slice(0, -1)
+  getBatchAncestryWithSelf: protectedProcedure
+    .input(getBatchAncestryWithSelfSchema)
+    .query(async ({ input: { siteId, resourceIds } }) => {
+      const ancestryPromises = resourceIds.map(async (id) => {
+        return await getAncestryWithSelf({
+          siteId: Number(siteId),
+          resourceId: Number(id),
+        })
+      })
+      return await Promise.all(ancestryPromises)
     }),
 
   search: protectedProcedure
     .input(searchSchema)
     .output(searchOutputSchema)
     .query(
-      async ({ ctx, input: { siteId, query = "", cursor: offset, limit } }) => {
+      async ({
+        ctx,
+        input: {
+          siteId,
+          query = "",
+          resourceTypes = Object.values(ResourceType),
+          cursor: offset,
+          limit,
+        },
+      }) => {
         await validateUserPermissionsForSite({
           siteId: Number(siteId),
           userId: ctx.user.id,
@@ -544,6 +557,7 @@ export const resourceRouter = router({
           query,
           offset,
           limit,
+          resourceTypes,
         })
         return {
           totalCount: Number(searchResults.totalCount),
