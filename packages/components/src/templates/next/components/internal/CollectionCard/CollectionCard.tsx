@@ -50,7 +50,7 @@ export const CollectionCard = ({
           </Link>
         </h3>
         {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {tags.map(({ label }) => (
               <Tag>{label}</Tag>
             ))}
