@@ -3,6 +3,7 @@ import type { IconType } from "react-icons"
 import { DYNAMIC_DATA_BANNER_TYPE } from "@opengovsg/isomer-components"
 import {
   BiChevronDown,
+  BiCloud,
   BiCrown,
   BiHash,
   BiImage,
@@ -38,6 +39,7 @@ export const TYPE_TO_ICON: Record<
   iframe: FaYoutube,
   map: BiMap,
   video: BiMoviePlay,
+  logocloud: BiCloud,
   [DYNAMIC_DATA_BANNER_TYPE]: TbApi,
   // TODO: Add in these new block types
   // table: BiTable,
