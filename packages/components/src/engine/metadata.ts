@@ -102,7 +102,7 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
   }
 
   if (props.page.permalink === "/") {
-    return metadata
+    return { ...metadata }
   }
 
   return {
