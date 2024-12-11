@@ -1,6 +1,7 @@
 import type { IsomerPageLayoutType } from "~/types"
 import {
   ArticlePagePageSchema,
+  BlogPagePageSchema,
   CollectionPagePageSchema,
   ContentPagePageSchema,
   DatabasePagePageSchema,
@@ -21,6 +22,7 @@ export const LAYOUT_PAGE_MAP = {
   search: SearchPagePageSchema,
   link: LinkRefPageSchema,
   collection: CollectionPagePageSchema,
+  blog: BlogPagePageSchema,
   file: FileRefPageSchema,
 } as const
 

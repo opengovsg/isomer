@@ -1,6 +1,10 @@
 import type { Exact } from "type-fest"
 
-import type { CollectionPageSchemaType, IsomerSiteProps } from "~/engine"
+import type {
+  BlogPageSchemaType,
+  CollectionPageSchemaType,
+  IsomerSiteProps,
+} from "~/engine"
 import type { AllCardProps, ProcessedCollectionCardProps } from "~/interfaces"
 import {
   getBreadcrumbFromSiteMap,
@@ -153,7 +157,7 @@ const CollectionLayout = ({
   layout,
   LinkComponent,
   ScriptComponent,
-}: CollectionPageSchemaType) => {
+}: CollectionPageSchemaType | BlogPageSchemaType) => {
   const { permalink } = page
 
   const items = getCollectionItems(site, permalink)
@@ -172,7 +176,11 @@ const CollectionLayout = ({
       ScriptComponent={ScriptComponent}
     >
       <CollectionClient
-        page={page}
+        // NOTE: we pass in variant here because
+        // the collection page itself doesn't really exist
+        // and studio can only communicate to our collection
+        // via the `layout`
+        page={{ ...page, variant: layout }}
         breadcrumb={breadcrumb}
         items={processedItems}
         filters={getAvailableFilters(processedItems)}

@@ -120,6 +120,7 @@ const CollectionClient = ({
         >
           <div className="flex w-full flex-col gap-3">
             <CollectionResults
+              variant={page.variant}
               appliedFilters={appliedFilters}
               filteredCount={filteredCount}
               handleClearFilter={handleClearFilter}

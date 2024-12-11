@@ -100,6 +100,7 @@ export const renderLayout = ({
   switch (props.layout) {
     case "article":
       return <ArticleLayout {...props} />
+    case "blog":
     case "collection":
       return <CollectionLayout {...props} />
     case "content":

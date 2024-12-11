@@ -13,6 +13,7 @@ import {
   GET_NAVBAR,
 } from "./queries"
 import {
+  getBlogIndexPageContents,
   getCollectionIndexPageContents,
   getFolderIndexPageContents,
 } from "./utils/getIndexPageContent"
@@ -39,7 +40,11 @@ const PAGE_RESOURCE_TYPES = [
   "IndexPage",
   "RootPage",
 ]
-const FOLDER_RESOURCE_TYPES = ["Folder", "Collection"]
+const DIRECTORY_RESOURCE_TYPES: ResourceType[] = [
+  "Folder",
+  "Collection",
+  "Blog",
+] as const
 
 const getConvertedPermalink = (fullPermalink: string) => {
   // NOTE: If the full permalink ends with `_index`,
@@ -262,7 +267,7 @@ function generateSitemapTree(
             (pathPrefixWithoutLeadingSlash.length === 0
               ? danglingDirectory
               : `${pathPrefixWithoutLeadingSlash}/${danglingDirectory}`) &&
-          FOLDER_RESOURCE_TYPES.includes(resource.type),
+          DIRECTORY_RESOURCE_TYPES.includes(resource.type),
       )
 
       return {
@@ -325,7 +330,7 @@ function generateSitemapTree(
   }))
 }
 
-function getFoldersAndCollections(
+function getDirectories(
   resources: Resource[],
   sitemapEntry: SitemapEntry,
 ): SitemapEntry[] {
@@ -334,12 +339,12 @@ function getFoldersAndCollections(
     return []
   }
 
-  // Get all immediate children that are folders
+  // Get all immediate children that are directories
   const folders = sitemapEntry.children.filter((child) =>
     resources.some(
       (resource) =>
         resource.id === child.id &&
-        FOLDER_RESOURCE_TYPES.includes(resource.type),
+        DIRECTORY_RESOURCE_TYPES.includes(resource.type),
     ),
   )
 
@@ -347,7 +352,7 @@ function getFoldersAndCollections(
   return [
     ...folders,
     ...sitemapEntry.children.flatMap((child) =>
-      getFoldersAndCollections(resources, child),
+      getDirectories(resources, child),
     ),
   ]
 }
@@ -362,12 +367,15 @@ async function processDanglingDirectories(
     return
   }
 
-  const directories = getFoldersAndCollections(resources, sitemapEntry)
+  const directories = getDirectories(resources, sitemapEntry)
   const folders = directories.filter(
     (siteMapEntry) => siteMapEntry.type === ResourceType.Folder,
   )
   const collections = directories.filter(
     (siteMapEntry) => siteMapEntry.type === ResourceType.Collection,
+  )
+  const blogs = directories.filter(
+    (siteMapEntry) => siteMapEntry.type === ResourceType.Blog,
   )
 
   // Create index page for all immediate children that are dangling directories
@@ -379,6 +387,10 @@ async function processDanglingDirectories(
       }),
       ...collections.map(({ title, permalink }) => {
         const content = getCollectionIndexPageContents(title)
+        return { title, permalink, content }
+      }),
+      ...blogs.map(({ title, permalink }) => {
+        const content = getBlogIndexPageContents(title)
         return { title, permalink, content }
       }),
     ].map((child) => {

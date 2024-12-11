@@ -13,6 +13,7 @@ export const getResourceSubpath = (resourceType: ResourceType) => {
     case ResourceType.CollectionLink:
       return "links"
     case ResourceType.Collection:
+    case ResourceType.Blog:
       return "collections"
     case ResourceType.FolderMeta:
       // TODO: Not implemented yet

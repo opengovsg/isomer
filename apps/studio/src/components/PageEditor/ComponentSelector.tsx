@@ -177,6 +177,7 @@ function ComponentSelector() {
       case ResourceType.CollectionPage:
         return ARTICLE_ALLOWED_BLOCKS
       case ResourceType.Collection:
+      case ResourceType.Blog:
       case ResourceType.CollectionLink:
       case ResourceType.IndexPage:
         return []

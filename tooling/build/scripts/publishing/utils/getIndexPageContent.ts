@@ -24,3 +24,15 @@ export const getCollectionIndexPageContents = (title: string) => ({
   },
   content: [],
 })
+
+export const getBlogIndexPageContents = (title: string) => ({
+  version: ISOMER_SCHEMA_VERSION,
+  layout: "blog",
+  page: {
+    title,
+    contentPageHeader: {
+      summary: `Pages in ${title}`,
+    },
+  },
+  content: [],
+})

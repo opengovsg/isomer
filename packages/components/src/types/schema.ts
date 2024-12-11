@@ -261,6 +261,12 @@ export type CollectionPageSchemaType = Static<typeof CollectionPageSchema> &
   BasePageAdditionalProps & {
     page: CollectionPagePageProps
   }
+// NOTE: The only difference between the blog and collection
+// is how the items are laid out,
+// which is why it's the same as collection
+export type BlogPageSchemaType = Omit<CollectionPageSchemaType, "layout"> & {
+  layout: "blog"
+}
 export type ContentPageSchemaType = Static<typeof ContentPageSchema> &
   BasePageAdditionalProps & {
     page: ContentPagePageProps
@@ -298,5 +304,6 @@ export type IsomerPageSchemaType =
   | SearchPageSchemaType
   | FileRefSchemaType
   | LinkRefSchemaType
+  | BlogPageSchemaType
 
 export type IsomerPageLayoutType = IsomerPageSchemaType["layout"]
