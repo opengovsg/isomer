@@ -78,12 +78,13 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
 
 type LinkEditorModalContentProps = Pick<
   LinkEditorModalProps,
-  "linkText" | "linkHref" | "linkTypes" | "onSave"
+  "linkText" | "linkHref" | "doNotShowLinkText" | "linkTypes" | "onSave"
 >
 
 const LinkEditorModalContent = ({
   linkText,
   linkHref,
+  doNotShowLinkText = false,
   onSave,
   linkTypes,
 }: LinkEditorModalContentProps) => {
@@ -131,7 +132,7 @@ const LinkEditorModalContent = ({
         <ModalCloseButton size="lg" />
 
         <ModalBody>
-          {!linkId && (
+          {!linkId && !doNotShowLinkText && (
             <FormControl
               mb="1.5rem"
               isRequired={!linkId}
@@ -191,9 +192,10 @@ const LinkEditorModalContent = ({
   )
 }
 
-interface LinkEditorModalProps {
+export interface LinkEditorModalProps {
   linkText?: string
   linkHref?: string
+  doNotShowLinkText?: boolean
   onSave: (linkText: string, linkHref: string) => void
   isOpen: boolean
   onClose: () => void
@@ -209,6 +211,7 @@ export const LinkEditorModal = ({
   isOpen,
   onClose,
   linkText,
+  doNotShowLinkText,
   linkHref,
   onSave,
   linkTypes,
@@ -220,6 +223,7 @@ export const LinkEditorModal = ({
       <LinkEditorModalContent
         linkTypes={linkTypes}
         linkText={linkText}
+        doNotShowLinkText={doNotShowLinkText}
         linkHref={linkHref}
         onSave={(linkText, linkHref) => {
           onSave(linkText, linkHref)

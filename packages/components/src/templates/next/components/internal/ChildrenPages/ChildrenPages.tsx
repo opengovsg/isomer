@@ -1,4 +1,5 @@
 import type { ChildrenPagesProps } from "~/interfaces"
+import { CARDS_WITHOUT_IMAGES } from "~/interfaces/complex/InfoCards"
 import { getNodeFromSiteMap } from "~/utils"
 import { InfoCards } from "../../complex"
 
@@ -26,7 +27,7 @@ const ChildrenPages = ({
       // NOTE: We are bypassing the validation here as we are reusing the
       // InfoCards component but we do not need a title here
       title=""
-      variant="cardsWithoutImages"
+      variant={CARDS_WITHOUT_IMAGES}
       cards={children}
       maxColumns="1"
       layout={layout}
