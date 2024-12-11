@@ -19,7 +19,7 @@ export const LogoCloud = ({
     const transformedSrc =
       isExternalUrl(src) || (assetsBaseUrl === undefined && !!src)
         ? src
-        : `${assetsBaseUrl}${baseImages}`
+        : `${assetsBaseUrl}${src}`
 
     return { src: transformedSrc, alt }
   })
