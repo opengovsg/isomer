@@ -29,7 +29,6 @@ export const ManyImages: Story = {
     images: Array(10).fill(IMAGE),
   },
 }
-// https://www.ncss.gov.sg/images/default-source/asset/fwdsg_logo.png?sfvrsn=91b23ea8_1
 
 export const Agency: Story = {
   args: {
