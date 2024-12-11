@@ -5,7 +5,7 @@ import times from "lodash/times"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import type { IsomerSitemap } from "~/engine"
+import type { BlogPageSchemaType, IsomerSitemap } from "~/engine"
 import { type CollectionPageSchemaType } from "~/engine"
 import CollectionLayout from "./Collection"
 
@@ -74,13 +74,13 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
 
 const generateArgs = ({
   collectionItems = COLLECTION_ITEMS,
-  variant = "collection",
+  layout = "collection",
 }: {
   collectionItems?: IsomerSitemap[]
-  variant?: CollectionPageSchemaType["page"]["variant"]
-} = {}): CollectionPageSchemaType => {
+  layout?: CollectionPageSchemaType["layout"] | BlogPageSchemaType["layout"]
+} = {}): CollectionPageSchemaType | BlogPageSchemaType => {
   return {
-    layout: "collection",
+    layout: layout ?? "collection",
     site: {
       siteName: "Isomer Next",
       siteMap: {
@@ -271,7 +271,6 @@ const generateArgs = ({
       lastModified: "2024-05-02T14:12:57.160Z",
       subtitle:
         "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
-      variant,
     },
     content: [],
   }
@@ -429,6 +428,6 @@ export const FileCardNoImage: Story = {
 export const Blog: Story = {
   args: generateArgs({
     collectionItems: COLLECTION_ITEMS,
-    variant: "blog",
+    layout: "blog",
   }),
 }
