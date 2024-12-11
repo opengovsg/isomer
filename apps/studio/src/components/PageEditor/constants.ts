@@ -325,7 +325,7 @@ export const BLOCK_TO_META: Record<
     // TODO: Add image source
     label: "Logo cloud",
     description: "Display logos of other agencies here",
-    usageText: "Add logos here to easily show logos from other agencies",
+    usageText: "Show an overview of related agencies",
   },
 }
 
