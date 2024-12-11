@@ -259,6 +259,25 @@ export const Default: Story = {
         ],
         url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         label: "View all dates",
+        errorMessage: [
+          {
+            text: "Not seeing the prayer times? ",
+            type: "text",
+          },
+          {
+            text: "Report an issue",
+            type: "text",
+            marks: [
+              { type: "bold" },
+              {
+                type: "link",
+                attrs: {
+                  href: "https://www.form.gov.sg/some-link",
+                },
+              },
+            ],
+          },
+        ],
       },
       {
         type: "infobar",
