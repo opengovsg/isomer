@@ -1,9 +1,9 @@
-import { IsomerSiteProps } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { isExternalUrl } from "~/utils"
 import { ImageClient } from "../Image"
 
 interface Image {
-  src?: string
+  src: string
   alt: string
 }
 interface LogoCloudProps extends Pick<IsomerSiteProps, "assetsBaseUrl"> {
