@@ -15,10 +15,23 @@ import {
 export const dynamic = "force-static"
 
 const INDEX_PAGE_PERMALINK = "_index"
+
+interface ParamsContent {
+  permalink: string[]
+}
 interface DynamicPageProps {
-  params: Promise<{
-    permalink: string[]
-  }>
+  params: Promise<ParamsContent>
+}
+
+// Note: permalink should not be able to be undefined
+// However, nextjs had some magic props passing going on that causes
+// { permalink: [""] } to be converted to {}
+// Thus the patch is necessary to convert it back if its undefined
+const getPatchedPermalink = async (
+  props: DynamicPageProps,
+): Promise<ParamsContent["permalink"]> => {
+  const params = await props.params
+  return params.permalink ?? [""]
 }
 
 const timeNow = new Date()
@@ -29,9 +42,8 @@ const lastUpdated =
   " " +
   timeNow.getFullYear()
 
-const getSchema = async (paramsPromise: DynamicPageProps) => {
-  const { permalink } = await paramsPromise.params
-  const joinedPermalink = !!permalink ? permalink.join("/") : ""
+const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
+  const joinedPermalink: string = permalink.join("/")
 
   const schema = (await import(`@/schema/${joinedPermalink}.json`)
     .then((module) => module.default)
@@ -56,7 +68,7 @@ const getSchema = async (paramsPromise: DynamicPageProps) => {
     // @ts-expect-error to fix when types are proper
     getSitemapXml(sitemap).find(
       ({ url }) => joinedPermalink === url.replace(/^\//, ""),
-    )?.lastModified || new Date().toISOString()
+    ).lastModified || new Date().toISOString()
 
   schema.page.permalink = "/" + joinedPermalink
   schema.page.lastModified = lastModified
@@ -76,7 +88,9 @@ export const generateMetadata = async (
   props: DynamicPageProps,
   _parent: ResolvingMetadata,
 ): Promise<Metadata> => {
-  const schema = await getSchema(props)
+  const schema = await getSchema({
+    permalink: await getPatchedPermalink(props),
+  })
   schema.site = {
     ...config.site,
     environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
@@ -94,7 +108,9 @@ export const generateMetadata = async (
 }
 
 const Page = async (props: DynamicPageProps) => {
-  const renderSchema = await getSchema(props)
+  const renderSchema = await getSchema({
+    permalink: await getPatchedPermalink(props),
+  })
 
   return (
     <RenderEngine
