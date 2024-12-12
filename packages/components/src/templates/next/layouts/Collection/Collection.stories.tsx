@@ -21,7 +21,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
       date: "07/05/2024",
       category: "Category Name",
-      tags: [{ category: "Jokes", values: ["Dad"], selected: ["Dad"] }],
+      tags: [{ category: "jokes", values: ["Dad"], selected: ["Dad"] }],
     },
     {
       id: `${index}`,
@@ -42,7 +42,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         type: "png",
         size: "1.2MB",
       },
-      tags: [{ category: "Jokes", values: ["Lame"], selected: ["Lame"] }],
+      tags: [{ category: "jokes", values: ["Lame"], selected: ["Lame"] }],
     },
     {
       id: `${index}`,
@@ -57,7 +57,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       ref: "https://guide.isomer.gov.sg",
       tags: [
         {
-          category: "Jokes",
+          category: "jokes",
           values: [
             "This is a very long tag that should be reflowed on smaller screens maybe",
           ],
