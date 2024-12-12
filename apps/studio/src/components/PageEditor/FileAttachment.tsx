@@ -3,7 +3,10 @@ import { useEffect, useState } from "react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
 
-import { MAX_PDF_FILE_SIZE_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import {
+  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  MAX_FILE_SIZE_BYTES,
+} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
 
@@ -15,11 +18,9 @@ interface FileAttachmentProps {
 
 type FileRejections = AttachmentProps<false>["rejections"]
 
-const ACCEPTED_FILE_TYPES: string[] = ["application/pdf"]
-const ACCEPTED_FILE_TYPES_MESSAGE = ACCEPTED_FILE_TYPES.map((filetype) => {
-  const extension = filetype.split("/").at(-1)
-  return extension ? `*.${extension}` : ""
-}).join(", ")
+const ACCEPTED_FILE_TYPES_MESSAGE = Object.keys(
+  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+).join(", ")
 
 export const FileAttachment = ({
   setHref,
@@ -64,8 +65,8 @@ export const FileAttachment = ({
               },
             )
           }}
-          maxSize={MAX_PDF_FILE_SIZE_BYTES}
-          accept={ACCEPTED_FILE_TYPES}
+          maxSize={MAX_FILE_SIZE_BYTES}
+          accept={Object.values(FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING)}
           onFileValidation={(file) => {
             const parseResult = getPresignedPutUrlSchema
               .pick({ fileName: true })
@@ -81,7 +82,7 @@ export const FileAttachment = ({
         />
       </Skeleton>
       <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
-        {`Maximum file size: ${MAX_PDF_FILE_SIZE_BYTES / 1000000} MB`}
+        {`Maximum file size: ${MAX_FILE_SIZE_BYTES / 1000000} MB`}
         <br />
         {`Accepted file types: ${ACCEPTED_FILE_TYPES_MESSAGE}`}
       </Text>

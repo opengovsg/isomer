@@ -2,6 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { TextSchema } from "../native/Text"
 
 export const DYNAMIC_DATA_BANNER_TYPE = "dynamicdatabanner"
 
@@ -47,6 +48,10 @@ export const DynamicDataBannerSchema = Type.Object(
         maxItems: NUMBER_OF_DATA,
       },
     ),
+    errorMessage: Type.Array(TextSchema, {
+      title: "Error message",
+      description: "The error message to display if the data is not loaded",
+    }),
     label: Type.Optional(
       Type.String({
         title: "Link text",

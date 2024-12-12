@@ -74,7 +74,11 @@ const ContentSecurityPolicy = `
     https://*.wogaa.sg
     https://placehold.co
     https://cdn.growthbook.io
-    ${env.NODE_ENV === "production" ? "https://isomer-user-content.by.gov.sg" : "https://*.by.gov.sg"}
+    ${
+      !!env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+        ? `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
+        : "https://*.by.gov.sg"
+    }
     https://via.intercom.io
     https://api.intercom.io
     https://api.au.intercom.io
@@ -116,6 +120,12 @@ const ContentSecurityPolicy = `
 const config = {
   output: "standalone",
   reactStrictMode: true,
+  // NOTE: this is required for datadog to work because
+  // the trace/logs are initialised via the `instrumentation` file
+  // https://nextjs.org/docs/14/app/api-reference/next-config-js/instrumentationHook
+  experimental: {
+    instrumentationHook: true,
+  },
   /**
    * Dynamic configuration available for the browser and server.
    * Note: requires `ssr: true` or a `getInitialProps` in `_app.tsx`

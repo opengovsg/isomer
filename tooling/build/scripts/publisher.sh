@@ -83,6 +83,12 @@ mv data/ ../../../template/
 cp sitemap.json ../../../template/public/
 mv sitemap.json ../../../template/
 cd ../../../template
+# Create not-found.json by copying _index.json if it doesn't exist
+# Refer to tooling/template/app/not-found.tsx for more context
+if [ ! -f "schema/not-found.json" ]; then
+  echo "Creating not-found.json..."
+  cp schema/_index.json schema/not-found.json
+fi
 echo $(pwd)
 echo "Fetching cached tooling-template node_modules..."
 TOOLING_TEMPLATE_NODE_MODULES_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$ISOMER_BUILD_REPO_BRANCH/isomer-tooling-template/node_modules.tar.gz"
