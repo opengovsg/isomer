@@ -1,4 +1,5 @@
 import type { Exact } from "type-fest"
+import capitalize from "lodash/capitalize"
 
 import type { CollectionPageSchemaType, IsomerSiteProps } from "~/engine"
 import type { AllCardProps, ProcessedCollectionCardProps } from "~/interfaces"
@@ -66,7 +67,10 @@ const getCollectionItems = (
         description: item.summary,
         image: item.image,
         site,
-        tags: item.tags,
+        tags: item.tags?.map(({ selected, category }) => ({
+          selected,
+          category: capitalize(category),
+        })),
       }
 
       if (item.layout === "file") {
