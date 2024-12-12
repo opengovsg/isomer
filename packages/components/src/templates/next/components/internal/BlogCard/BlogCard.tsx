@@ -41,7 +41,7 @@ export const BlogCard = ({
               src={imageSrc || ""}
               alt={image.alt}
               width="100%"
-              className="absolute left-0 h-full w-full rounded object-contain"
+              className="absolute left-0 h-full w-full rounded object-cover"
               assetsBaseUrl={siteAssetsBaseUrl}
             />
           }
