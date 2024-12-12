@@ -26,7 +26,12 @@ export const generateMetadata = async (
   _props: never,
   _parent: ResolvingMetadata,
 ): Promise<Metadata> => {
-  const schema = (await import(`@/schema/_index.json`).then(
+  // Context for using @/schema/not-found.json
+  // For some next15 magical reason, using @/schema/_index.json will cause
+  // duplicated generation of the homepage, resulting in wrong meta values
+  // During deployment, publisher.sh duplicate homepage "_index.json" to "not-found.json"
+  // For development, you would need to manually copy and rename
+  const schema = (await import(`@/schema/not-found.json`).then(
     (module) => module.default,
   )) as IsomerPageSchemaType
   schema.site = {
