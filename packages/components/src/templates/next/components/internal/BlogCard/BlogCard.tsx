@@ -33,7 +33,9 @@ export const BlogCard = ({
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }): JSX.Element => {
   return (
-    <div className="flex flex-1 flex-col gap-3">
+    // NOTE: In smaller viewports, we render a border between items for easy distinguishing
+    // and to do that, we add a padding on smaller viewports
+    <div className="flex flex-1 flex-col gap-3 border-b pb-5 pt-5 md:border-0 md:pb-0 md:pt-0">
       {image && (
         <div className="relative mb-3 min-h-40 w-full shrink-0">
           {
