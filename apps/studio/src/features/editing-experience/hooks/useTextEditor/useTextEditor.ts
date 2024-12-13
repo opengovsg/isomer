@@ -28,11 +28,12 @@ import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { textblockTypeInputRule, useEditor } from "@tiptap/react"
 import TextDirection from "tiptap-text-direction"
 
-import { getHtmlWithRelativeReferenceLinks } from "../utils"
+import { getHtmlWithRelativeReferenceLinks } from "../../utils"
+import { HEADING_TYPE, PARAGRAPH_TYPE } from "./constants"
 
 const HEADING_LEVELS: Level[] = [2, 3, 4, 5]
 
-export interface BaseEditorProps {
+interface BaseEditorProps {
   data: ControlProps["data"]
   handleChange: (content: JSONContent) => void
 }
@@ -154,7 +155,7 @@ const useBaseEditor = ({
       ...BASE_EXTENSIONS,
       ...extensions,
       TextDirection.configure({
-        types: ["heading", "paragraph"],
+        types: [HEADING_TYPE, PARAGRAPH_TYPE],
       }),
     ],
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
