@@ -25,6 +25,7 @@ export function JsonFormsRefControl({
       handleChange={handleChange}
       path={path}
       linkTypes={omit(LINK_TYPES_MAPPING, LINK_TYPES.Email)}
+      description="Choose a page or file to link to Collection item to"
     />
   )
 }

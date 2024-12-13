@@ -55,8 +55,9 @@ export function BaseLinkControl({
   handleChange,
   path,
   linkTypes,
+  description,
 }: Pick<ControlProps, "data" | "label" | "handleChange" | "path"> &
-  Pick<LinkEditorModalProps, "linkTypes">) {
+  Pick<LinkEditorModalProps, "linkTypes"> & { description: string }) {
   const dataString = data && typeof data === "string" ? data : ""
   const { isOpen, onOpen, onClose } = useDisclosure()
   const pageType = getLinkHrefType(dataString)
@@ -98,7 +99,7 @@ export function BaseLinkControl({
             </>
           ) : (
             <>
-              <Text>Link a page, file, external URL, or an email address.</Text>
+              <Text>{description}</Text>
               <Button
                 onClick={onOpen}
                 variant="link"

@@ -27,6 +27,7 @@ export function JsonFormsLinkControl({
       handleChange={handleChange}
       path={path}
       linkTypes={LINK_TYPES_MAPPING}
+      description="Link a page, file, external URL, or an email address."
     />
   )
 }
