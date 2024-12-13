@@ -15,10 +15,13 @@ const BASE_PROSE_META = {
 
 type ComponentsWithProse = "prose" | "accordion" | "callout"
 
-const generateProseSchema = (
-  id?: string,
-  format: ComponentsWithProse = "prose",
-) => {
+const generateProseSchema = ({
+  id,
+  format = "prose",
+}: {
+  id?: string
+  format?: ComponentsWithProse
+}) => {
   return Type.Object(
     {
       type: Type.Literal("prose"),
@@ -47,10 +50,16 @@ const generateProseSchema = (
   )
 }
 
-export const ProseSchema = generateProseSchema("components-native-prose")
-export const BaseProseSchema = generateProseSchema()
-export const AccordionProseSchema = generateProseSchema(undefined, "accordion")
-export const CalloutProseSchema = generateProseSchema(undefined, "callout")
+export const ProseSchema = generateProseSchema({
+  id: "components-native-prose",
+})
+export const BaseProseSchema = generateProseSchema({})
+export const AccordionProseSchema = generateProseSchema({
+  format: "accordion",
+})
+export const CalloutProseSchema = generateProseSchema({
+  format: "callout",
+})
 
 export type ProseProps = Static<typeof ProseSchema> & {
   LinkComponent?: LinkComponentType
