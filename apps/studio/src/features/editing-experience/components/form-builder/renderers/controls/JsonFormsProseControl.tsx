@@ -1,6 +1,6 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { ComponentsWithProse } from "@opengovsg/isomer-components"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { Box, FormControl } from "@chakra-ui/react"
 import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
@@ -75,13 +75,16 @@ export function JsonFormsProseControl({
   const editor = EditorHook({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
-    handleChange: (content) => {
-      if (required && isTiptapEditorEmpty(content)) {
-        handleChange(path, undefined)
-      } else {
-        handleChange(path, content)
-      }
-    },
+    handleChange: useCallback(
+      (content) => {
+        if (required && isTiptapEditorEmpty(content)) {
+          handleChange(path, undefined)
+        } else {
+          handleChange(path, content)
+        }
+      },
+      [handleChange, path, required],
+    ),
   })
 
   // Trigger editor.setContent when data changes from undefined to something
