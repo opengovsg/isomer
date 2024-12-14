@@ -1,6 +1,6 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { ComponentsWithProse } from "@opengovsg/isomer-components"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { Box, FormControl } from "@chakra-ui/react"
 import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
@@ -83,6 +83,15 @@ export function JsonFormsProseControl({
       }
     },
   })
+
+  // Trigger editor.setContent when data changes from undefined to something
+  // Needed to force the value to be set when user clicks on "Go back to editing" in the exit modal
+  useEffect(() => {
+    if (data !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      editor?.commands.setContent(data)
+    }
+  }, [data])
 
   return (
     <Box>
