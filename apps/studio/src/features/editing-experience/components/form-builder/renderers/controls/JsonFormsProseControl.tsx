@@ -2,7 +2,7 @@ import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { ComponentsWithProse } from "@opengovsg/isomer-components"
 import { useMemo } from "react"
 import { Box, FormControl } from "@chakra-ui/react"
-import { rankWith } from "@jsonforms/core"
+import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
 
@@ -24,14 +24,15 @@ import {
 
 export const jsonFormsProseControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ProseControl,
-  (_, schema) => {
-    return (
-      schema.format === "prose" ||
-      schema.format === "accordion" ||
-      schema.format === "callout" ||
-      schema.format === "contentpic"
-    )
-  },
+  and(
+    schemaMatches(
+      (schema) =>
+        schema.format === "prose" ||
+        schema.format === "accordion" ||
+        schema.format === "callout" ||
+        schema.format === "contentpic",
+    ),
+  ),
 )
 
 const getEditorHookAndEditor = (
@@ -63,29 +64,23 @@ export function JsonFormsProseControl({
   description,
   errors,
   schema,
+  required,
 }: ControlProps) {
   const { EditorHook, Editor } = useMemo(
     () => getEditorHookAndEditor(schema.format as ComponentsWithProse),
     [schema.format],
   )
 
-  // Uses the required property from the schema (generateProseSchema)
-  // to determine if the control is required
-  const isRequired: boolean = useMemo(
-    () => schema.required?.includes("content") ?? false,
-    [schema.required],
-  )
-
   const editor = EditorHook({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange: (content) => handleChange(path, content),
-    isRequired,
+    isRequired: required ?? false,
   })
 
   return (
     <Box>
-      <FormControl isRequired={isRequired} isInvalid={!!errors}>
+      <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <Editor editor={editor} />
         <FormErrorMessage>
