@@ -1,5 +1,6 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { ComponentsWithProse } from "@opengovsg/isomer-components"
+import { useMemo } from "react"
 import { Box, FormControl } from "@chakra-ui/react"
 import { rankWith } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
@@ -62,13 +63,18 @@ export function JsonFormsProseControl({
   description,
   schema,
 }: ControlProps) {
-  const { EditorHook, Editor } = getEditorHookAndEditor(
-    schema.format as ComponentsWithProse,
+  console.log("data", data)
+  const { EditorHook, Editor } = useMemo(
+    () => getEditorHookAndEditor(schema.format as ComponentsWithProse),
+    [schema.format],
   )
 
   // Uses the required property from the schema (generateProseSchema)
   // to determine if the control is required
-  const isRequired: boolean = schema.required?.includes("content") ?? false
+  const isRequired: boolean = useMemo(
+    () => schema.required?.includes("content") ?? false,
+    [schema.required],
+  )
 
   const editor = EditorHook({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
