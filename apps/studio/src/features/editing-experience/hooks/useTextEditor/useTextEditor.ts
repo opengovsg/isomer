@@ -33,7 +33,7 @@ import { HEADING_TYPE, PARAGRAPH_TYPE } from "./constants"
 
 const HEADING_LEVELS: Level[] = [2, 3, 4, 5]
 
-interface BaseEditorProps {
+export interface BaseEditorProps {
   data: ControlProps["data"]
   handleChange: (content: JSONContent) => void
 }
@@ -165,6 +165,7 @@ const useBaseEditor = ({
       handleChange(jsonContent)
     },
   })
+export type BaseEditorType = ReturnType<typeof useBaseEditor>
 
 export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
   useBaseEditor({
