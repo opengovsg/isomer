@@ -21,7 +21,7 @@ export function JsonFormsAccordionTextControl({
   handleChange,
   path,
   description,
-  required,
+  schema,
 }: ControlProps) {
   const editor = useAccordionEditor({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -29,9 +29,13 @@ export function JsonFormsAccordionTextControl({
     handleChange: (content) => handleChange(path, content),
   })
 
+  // Uses the required property from the schema (AccordionProseSchema)
+  // to determine if the control is required
+  const isRequired = schema.required?.includes("content")
+
   return (
     <Box>
-      <FormControl isRequired={required}>
+      <FormControl isRequired={isRequired}>
         <FormLabel description={description}>{label}</FormLabel>
         <TiptapAccordionEditor editor={editor} />
       </FormControl>

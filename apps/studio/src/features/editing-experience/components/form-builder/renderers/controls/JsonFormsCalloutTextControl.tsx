@@ -21,7 +21,7 @@ export function JsonFormsCalloutTextControl({
   handleChange,
   path,
   description,
-  required,
+  schema,
 }: ControlProps) {
   const editor = useCalloutEditor({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -29,9 +29,13 @@ export function JsonFormsCalloutTextControl({
     handleChange: (content) => handleChange(path, content),
   })
 
+  // Uses the required property from the schema (ContentpicProseSchema)
+  // to determine if the control is required
+  const isRequired = schema.required?.includes("content")
+
   return (
     <Box>
-      <FormControl isRequired={required}>
+      <FormControl isRequired={isRequired}>
         <FormLabel description={description}>{label}</FormLabel>
         <TiptapCalloutEditor editor={editor} />
       </FormControl>
