@@ -174,15 +174,9 @@ const useBaseEditor = ({
   })
 export type BaseEditorType = ReturnType<typeof useBaseEditor>
 
-export const useTextEditor = ({
-  data,
-  handleChange,
-  isRequired,
-}: BaseEditorProps) =>
+export const useTextEditor = (props: BaseEditorProps) =>
   useBaseEditor({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    data,
-    handleChange,
+    ...props,
     extensions: [
       TableRow,
       IsomerTable,
@@ -190,46 +184,22 @@ export const useTextEditor = ({
       IsomerTableHeader,
       IsomerHeading,
     ],
-    isRequired,
   })
 
-export const useCalloutEditor = ({
-  data,
-  handleChange,
-  isRequired,
-}: BaseEditorProps) => {
-  return useBaseEditor({
-    extensions: [],
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    data,
-    handleChange,
-    isRequired,
-  })
-}
-
-export const useAccordionEditor = ({
-  data,
-  handleChange,
-  isRequired,
-}: BaseEditorProps) => {
-  return useBaseEditor({
-    extensions: [TableRow, IsomerTable, IsomerTableCell, IsomerTableHeader],
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    data,
-    handleChange,
-    isRequired,
-  })
-}
-
-export const useProseEditor = ({
-  data,
-  handleChange,
-  isRequired,
-}: BaseEditorProps) =>
+export const useCalloutEditor = (props: BaseEditorProps) =>
   useBaseEditor({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    data,
-    handleChange,
+    ...props,
+    extensions: [],
+  })
+
+export const useAccordionEditor = (props: BaseEditorProps) =>
+  useBaseEditor({
+    ...props,
+    extensions: [TableRow, IsomerTable, IsomerTableCell, IsomerTableHeader],
+  })
+
+export const useProseEditor = (props: BaseEditorProps) =>
+  useBaseEditor({
+    ...props,
     extensions: [IsomerHeading],
-    isRequired,
   })
