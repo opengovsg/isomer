@@ -81,3 +81,13 @@ export const LongText: Story = {
     secondaryButtonUrl: "https://google.com",
   },
 }
+
+export const NoCTA: Story = {
+  args: {
+    sectionIdx: 0,
+    title:
+      "Longer title here that spans multiple lines and is quite long and verbose and takes up a lot of space",
+    description:
+      "About a sentence worth of description here About a sentence worth of description here About a sentence worth of description here",
+  },
+}
