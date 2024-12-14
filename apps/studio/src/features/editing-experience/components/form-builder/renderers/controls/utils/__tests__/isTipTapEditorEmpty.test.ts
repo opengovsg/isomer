@@ -23,6 +23,10 @@ describe("isTiptapEditorEmpty", () => {
     ).toBe(true)
   })
 
+  it("should return true if the editor is undefined", () => {
+    expect(isTiptapEditorEmpty(undefined)).toBe(true)
+  })
+
   it("should return false if the editor has paragraph with empty text", () => {
     expect(
       isTiptapEditorEmpty({

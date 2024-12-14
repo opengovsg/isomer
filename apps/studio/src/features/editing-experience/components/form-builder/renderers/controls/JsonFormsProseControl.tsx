@@ -21,6 +21,7 @@ import {
   TiptapCalloutEditor,
   TiptapProseEditor,
 } from "../TipTapEditor"
+import { isTiptapEditorEmpty } from "./utils"
 
 export const jsonFormsProseControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ProseControl,
@@ -74,8 +75,13 @@ export function JsonFormsProseControl({
   const editor = EditorHook({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
-    handleChange: (content) => handleChange(path, content),
-    isRequired: required ?? false,
+    handleChange: (content) => {
+      if (required && isTiptapEditorEmpty(content)) {
+        handleChange(path, undefined)
+      } else {
+        handleChange(path, content)
+      }
+    },
   })
 
   return (

@@ -13,18 +13,15 @@ import {
   PARAGRAPH_TYPE,
   TableRow,
 } from "./constants"
-import { isTiptapEditorEmpty } from "./isTipTapEditorEmpty"
 
 export interface BaseEditorProps {
   data: ControlProps["data"]
   handleChange: (content: JSONContent | undefined) => void
-  isRequired: boolean
 }
 
 const useBaseEditor = ({
   data,
   handleChange,
-  isRequired,
   extensions,
 }: BaseEditorProps & { extensions: Extensions }) =>
   useEditor({
@@ -40,11 +37,7 @@ const useBaseEditor = ({
     content: data,
     onUpdate: (e) => {
       const jsonContent = e.editor.getJSON()
-      if (isRequired && isTiptapEditorEmpty(jsonContent)) {
-        handleChange(undefined)
-      } else {
-        handleChange(jsonContent)
-      }
+      handleChange(jsonContent)
     },
   })
 export type BaseEditorType = ReturnType<typeof useBaseEditor>
