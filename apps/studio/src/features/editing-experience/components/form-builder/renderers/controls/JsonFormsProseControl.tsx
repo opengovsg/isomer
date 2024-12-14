@@ -66,15 +66,16 @@ export function JsonFormsProseControl({
     schema.format as ComponentsWithProse,
   )
 
+  // Uses the required property from the schema (generateProseSchema)
+  // to determine if the control is required
+  const isRequired: boolean = schema.required?.includes("content") ?? false
+
   const editor = EditorHook({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange: (content) => handleChange(path, content),
+    isRequired,
   })
-
-  // Uses the required property from the schema (generateProseSchema)
-  // to determine if the control is required
-  const isRequired = schema.required?.includes("content")
 
   return (
     <Box>

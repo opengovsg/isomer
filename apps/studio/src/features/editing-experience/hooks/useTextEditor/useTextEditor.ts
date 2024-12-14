@@ -30,12 +30,14 @@ import TextDirection from "tiptap-text-direction"
 
 import { getHtmlWithRelativeReferenceLinks } from "../../utils"
 import { HEADING_TYPE, PARAGRAPH_TYPE } from "./constants"
+import { isTiptapEditorEmpty } from "./isTipTapEditorEmpty"
 
 const HEADING_LEVELS: Level[] = [2, 3, 4, 5]
 
 export interface BaseEditorProps {
   data: ControlProps["data"]
   handleChange: (content: JSONContent) => void
+  isRequired: boolean
 }
 
 const BASE_EXTENSIONS: Extensions = [
@@ -147,6 +149,7 @@ const IsomerHeading = Heading.extend({
 const useBaseEditor = ({
   data,
   handleChange,
+  isRequired,
   extensions,
 }: BaseEditorProps & { extensions: Extensions }) =>
   useEditor({
@@ -162,12 +165,20 @@ const useBaseEditor = ({
     content: data,
     onUpdate: (e) => {
       const jsonContent = e.editor.getJSON()
-      handleChange(jsonContent)
+      if (isRequired && isTiptapEditorEmpty(jsonContent)) {
+        handleChange({ type: "prose" })
+      } else {
+        handleChange(jsonContent)
+      }
     },
   })
 export type BaseEditorType = ReturnType<typeof useBaseEditor>
 
-export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
+export const useTextEditor = ({
+  data,
+  handleChange,
+  isRequired,
+}: BaseEditorProps) =>
   useBaseEditor({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
@@ -179,30 +190,46 @@ export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
       IsomerTableHeader,
       IsomerHeading,
     ],
+    isRequired,
   })
 
-export const useCalloutEditor = ({ data, handleChange }: BaseEditorProps) => {
+export const useCalloutEditor = ({
+  data,
+  handleChange,
+  isRequired,
+}: BaseEditorProps) => {
   return useBaseEditor({
     extensions: [],
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange,
+    isRequired,
   })
 }
 
-export const useAccordionEditor = ({ data, handleChange }: BaseEditorProps) => {
+export const useAccordionEditor = ({
+  data,
+  handleChange,
+  isRequired,
+}: BaseEditorProps) => {
   return useBaseEditor({
     extensions: [TableRow, IsomerTable, IsomerTableCell, IsomerTableHeader],
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange,
+    isRequired,
   })
 }
 
-export const useProseEditor = ({ data, handleChange }: BaseEditorProps) =>
+export const useProseEditor = ({
+  data,
+  handleChange,
+  isRequired,
+}: BaseEditorProps) =>
   useBaseEditor({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
     handleChange,
     extensions: [IsomerHeading],
+    isRequired,
   })
