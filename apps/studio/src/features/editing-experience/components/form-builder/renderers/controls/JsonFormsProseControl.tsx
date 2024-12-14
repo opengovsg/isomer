@@ -1,4 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
+import type { ComponentsWithProse } from "@opengovsg/isomer-components"
 import { Box, FormControl } from "@chakra-ui/react"
 import { rankWith } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
@@ -33,7 +34,7 @@ export const jsonFormsProseControlTester: RankedTester = rankWith(
 )
 
 const getEditorHookAndEditor = (
-  format: string,
+  format: ComponentsWithProse,
 ): {
   EditorHook: (props: BaseEditorProps) => BaseEditorType
   Editor: typeof TiptapProseEditor
@@ -45,7 +46,10 @@ const getEditorHookAndEditor = (
       return { EditorHook: useCalloutEditor, Editor: TiptapCalloutEditor }
     case "contentpic":
       return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
+    case "prose":
+      return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
     default:
+      const _: never = format
       return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
   }
 }
@@ -59,7 +63,7 @@ export function JsonFormsProseControl({
   schema,
 }: ControlProps) {
   const { EditorHook, Editor } = getEditorHookAndEditor(
-    schema.format ?? "prose",
+    schema.format as ComponentsWithProse,
   )
 
   const editor = EditorHook({

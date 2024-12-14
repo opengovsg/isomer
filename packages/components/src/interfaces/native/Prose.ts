@@ -28,7 +28,11 @@ const BASE_PROSE_META = {
   title: "Content",
 }
 
-type ComponentsWithProse = "prose" | "accordion" | "callout" | "contentpic"
+export type ComponentsWithProse =
+  | "prose"
+  | "accordion"
+  | "callout"
+  | "contentpic"
 
 const generateProseSchema = ({
   id,
