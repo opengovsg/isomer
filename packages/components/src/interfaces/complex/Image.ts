@@ -4,10 +4,19 @@ import { Type } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { ARRAY_RADIO_FORMAT } from "../format"
 
-export const ImageSrcSchema = Type.String({
-  title: "Image",
-  format: "image",
-})
+export const generateImageSrcSchema = ({
+  description,
+}: {
+  description?: string
+}) => {
+  return Type.String({
+    title: "Image",
+    format: "image",
+    description,
+  })
+}
+
+export const ImageSrcSchema = generateImageSrcSchema({})
 
 export const AltTextSchema = Type.String({
   title: "Alternate text",
