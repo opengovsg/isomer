@@ -17,7 +17,7 @@ import { isTiptapEditorEmpty } from "./isTipTapEditorEmpty"
 
 export interface BaseEditorProps {
   data: ControlProps["data"]
-  handleChange: (content: JSONContent) => void
+  handleChange: (content: JSONContent | undefined) => void
   isRequired: boolean
 }
 
@@ -41,7 +41,7 @@ const useBaseEditor = ({
     onUpdate: (e) => {
       const jsonContent = e.editor.getJSON()
       if (isRequired && isTiptapEditorEmpty(jsonContent)) {
-        handleChange({ type: "prose" })
+        handleChange(undefined)
       } else {
         handleChange(jsonContent)
       }
