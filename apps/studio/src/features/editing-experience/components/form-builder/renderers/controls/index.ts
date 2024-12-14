@@ -27,18 +27,6 @@ export {
   jsonFormsAllOfControlTester,
 } from "./JsonFormsAllOfControl"
 export {
-  default as JsonFormsAccordionTextControl,
-  jsonFormsAccordionTextControlTester,
-} from "./JsonFormsAccordionTextControl"
-export {
-  default as JsonFormsCalloutTextControl,
-  jsonFormsCalloutTextControlTester,
-} from "./JsonFormsCalloutTextControl"
-export {
-  default as JsonFormsContentpicTextControl,
-  jsonFormsContentpicTextControlTester,
-} from "./JsonFormsContentpicTextControl"
-export {
   default as JsonFormsLinkControl,
   jsonFormsLinkControlTester,
 } from "./JsonFormsLinkControl"

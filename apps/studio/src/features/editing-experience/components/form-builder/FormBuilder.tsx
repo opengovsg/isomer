@@ -9,8 +9,6 @@ import { groupBy } from "lodash"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useBuilderErrors } from "./ErrorProvider"
 import {
-  JsonFormsAccordionTextControl,
-  jsonFormsAccordionTextControlTester,
   JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
   JsonFormsAnyOfControl,
@@ -19,12 +17,8 @@ import {
   jsonFormsArrayControlTester,
   JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
-  JsonFormsCalloutTextControl,
-  jsonFormsCalloutTextControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
-  JsonFormsContentpicTextControl,
-  jsonFormsContentpicTextControlTester,
   JsonFormsDateControl,
   jsonFormsDateControlTester,
   JsonFormsEmbedControl,
@@ -82,18 +76,6 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsRefControlTester, renderer: JsonFormsRefControl },
   { tester: jsonFormsAllOfControlTester, renderer: JsonFormsAllOfControl },
   { tester: jsonFormsAnyOfControlTester, renderer: JsonFormsAnyOfControl },
-  {
-    tester: jsonFormsAccordionTextControlTester,
-    renderer: JsonFormsAccordionTextControl,
-  },
-  {
-    tester: jsonFormsCalloutTextControlTester,
-    renderer: JsonFormsCalloutTextControl,
-  },
-  {
-    tester: jsonFormsContentpicTextControlTester,
-    renderer: JsonFormsContentpicTextControl,
-  },
   {
     tester: jsonFormsGroupLayoutTester,
     renderer: jsonFormsGroupLayoutRenderer,
