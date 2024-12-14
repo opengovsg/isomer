@@ -17,15 +17,17 @@ export function JsonFormsRefControl({
   handleChange,
   path,
   label,
+  required,
 }: ControlProps) {
   return (
     <BaseLinkControl
       data={data as string}
       label={label}
+      required={required}
       handleChange={handleChange}
       path={path}
       linkTypes={omit(LINK_TYPES_MAPPING, LINK_TYPES.Email)}
-      description="Choose a page or file to link to Collection item to"
+      description="Choose a page or file to link this Collection item to"
     />
   )
 }

@@ -6,7 +6,7 @@ import {
   ContentPageHeaderSchema,
   SearchableTableSchema,
 } from "~/interfaces"
-import { AltTextSchema, ImageSrcSchema } from "~/interfaces/complex"
+import { AltTextSchema, generateImageSrcSchema } from "~/interfaces/complex"
 import { REF_HREF_PATTERN } from "~/utils/validation"
 
 const categorySchemaObject = Type.Object({
@@ -27,7 +27,10 @@ const dateSchemaObject = Type.Object({
 const imageSchemaObject = Type.Object({
   image: Type.Optional(
     Type.Object({
-      src: ImageSrcSchema,
+      src: generateImageSrcSchema({
+        description:
+          "Displayed at the top of the page and as a thumbnail in the collection view",
+      }),
       alt: AltTextSchema,
     }),
   ),

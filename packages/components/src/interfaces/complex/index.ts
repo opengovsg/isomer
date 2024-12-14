@@ -5,6 +5,7 @@ export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { HeroSchema, type HeroProps } from "./Hero"
 export { IframeSchema, type IframeProps } from "./Iframe"
 export {
+  generateImageSrcSchema,
   ImageSrcSchema,
   AltTextSchema,
   ImageSchema,

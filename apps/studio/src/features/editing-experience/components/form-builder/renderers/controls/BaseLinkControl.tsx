@@ -52,11 +52,12 @@ const SuspendableLabel = ({ resourceId }: { resourceId: string }) => {
 export function BaseLinkControl({
   data,
   label,
+  required,
   handleChange,
   path,
   linkTypes,
   description,
-}: Pick<ControlProps, "data" | "label" | "handleChange" | "path"> &
+}: Pick<ControlProps, "data" | "label" | "handleChange" | "path" | "required"> &
   Pick<LinkEditorModalProps, "linkTypes"> & { description: string }) {
   const dataString = data && typeof data === "string" ? data : ""
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -68,7 +69,7 @@ export function BaseLinkControl({
 
   return (
     <>
-      <Box as={FormControl}>
+      <Box as={FormControl} isRequired={required}>
         <FormLabel>{label}</FormLabel>
         <Flex
           px="1rem"

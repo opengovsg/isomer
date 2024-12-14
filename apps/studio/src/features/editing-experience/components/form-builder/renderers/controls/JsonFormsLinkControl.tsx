@@ -19,15 +19,17 @@ export function JsonFormsLinkControl({
   label,
   handleChange,
   path,
+  required,
 }: ControlProps) {
   return (
     <BaseLinkControl
       data={data as string}
       label={label}
+      required={required}
       handleChange={handleChange}
       path={path}
       linkTypes={LINK_TYPES_MAPPING}
-      description="Link a page, file, external URL, or an email address."
+      description="Link a page, file, external URL, or an email address"
     />
   )
 }
