@@ -1,10 +1,10 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { ComponentsWithProse } from "@opengovsg/isomer-components"
 import { useMemo } from "react"
-import { Box, FormControl, FormErrorMessage } from "@chakra-ui/react"
+import { Box, FormControl } from "@chakra-ui/react"
 import { rankWith } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-import { FormLabel } from "@opengovsg/design-system-react"
+import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
 
 import type {
   BaseEditorProps,
