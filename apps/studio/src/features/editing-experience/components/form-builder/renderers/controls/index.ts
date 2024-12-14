@@ -35,6 +35,10 @@ export {
   jsonFormsCalloutTextControlTester,
 } from "./JsonFormsCalloutTextControl"
 export {
+  default as JsonFormsContentpicTextControl,
+  jsonFormsContentpicTextControlTester,
+} from "./JsonFormsContentpicTextControl"
+export {
   default as JsonFormsLinkControl,
   jsonFormsLinkControlTester,
 } from "./JsonFormsLinkControl"

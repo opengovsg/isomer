@@ -23,6 +23,8 @@ import {
   jsonFormsCalloutTextControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
+  JsonFormsContentpicTextControl,
+  jsonFormsContentpicTextControlTester,
   JsonFormsDateControl,
   jsonFormsDateControlTester,
   JsonFormsEmbedControl,
@@ -87,6 +89,10 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsCalloutTextControlTester,
     renderer: JsonFormsCalloutTextControl,
+  },
+  {
+    tester: jsonFormsContentpicTextControlTester,
+    renderer: JsonFormsContentpicTextControl,
   },
   {
     tester: jsonFormsGroupLayoutTester,
