@@ -21,7 +21,7 @@ import {
   TiptapCalloutEditor,
   TiptapProseEditor,
 } from "../TipTapEditor"
-import { isTiptapEditorEmpty } from "./utils"
+import { getCustomErrorMessage, isTiptapEditorEmpty } from "./utils"
 
 export const jsonFormsProseControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ProseControl,
@@ -102,7 +102,7 @@ export function JsonFormsProseControl({
         <FormLabel description={description}>{label}</FormLabel>
         <Editor editor={editor} />
         <FormErrorMessage>
-          {label} {errors}
+          {label} {getCustomErrorMessage(errors)}
         </FormErrorMessage>
       </FormControl>
     </Box>

@@ -9,6 +9,7 @@ import {
 } from "@opengovsg/design-system-react"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsTextControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextControl,
@@ -67,7 +68,7 @@ export function JsonFormsTextControl({
           </FormHelperText>
         )}
         <FormErrorMessage>
-          {label} {errors}
+          {label} {getCustomErrorMessage(errors)}
         </FormErrorMessage>
       </FormControl>
     </Box>
