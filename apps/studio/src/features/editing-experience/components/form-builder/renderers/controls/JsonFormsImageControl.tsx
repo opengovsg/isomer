@@ -19,6 +19,7 @@ import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPES,
   MAX_IMG_FILE_SIZE_BYTES,
 } from "./constants"
+import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,
@@ -154,7 +155,7 @@ export function JsonFormsImageControl({
         </Text>
         {!!errors && (
           <FormErrorMessage>
-            {label} {errors}
+            {label} {getCustomErrorMessage(errors)}
           </FormErrorMessage>
         )}
       </FormControl>
