@@ -87,6 +87,10 @@ export const getAncestryWithSelfSchema = z.object({
   resourceId: z.string().optional(),
 })
 
+export const getAncestryWithSelfOutputSchema = z.array(
+  z.custom<ResourceItemContent>(),
+)
+
 export const getBatchAncestryWithSelfSchema = z.object({
   siteId: z.string(),
   resourceIds: z.array(z.string()),

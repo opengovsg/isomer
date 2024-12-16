@@ -7,6 +7,7 @@ import type { PermissionsProps } from "../permissions/permissions.type"
 import {
   countResourceSchema,
   deleteResourceSchema,
+  getAncestryWithSelfOutputSchema,
   getAncestryWithSelfSchema,
   getBatchAncestryWithSelfSchema,
   getChildrenOutputSchema,
@@ -514,6 +515,7 @@ export const resourceRouter = router({
 
   getAncestryWithSelf: protectedProcedure
     .input(getAncestryWithSelfSchema)
+    .output(getAncestryWithSelfOutputSchema)
     .query(async ({ input: { siteId, resourceId } }) => {
       if (!resourceId) {
         return []
