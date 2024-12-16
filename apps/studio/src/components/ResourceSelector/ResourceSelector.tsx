@@ -1,4 +1,4 @@
-import { Suspense } from "react"
+import { Suspense, useMemo } from "react"
 import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -83,7 +83,7 @@ const SuspensableResourceSelector = ({
       : resources.map((resource) => resource.id),
   })
 
-  const renderHeader = () => {
+  const renderedHeader = useMemo(() => {
     if (isLoading) {
       return <LoadingHeader />
     }
@@ -100,9 +100,16 @@ const SuspensableResourceSelector = ({
         searchQuery={searchQuery}
       />
     )
-  }
+  }, [
+    isLoading,
+    isSearchQueryEmpty,
+    resourceItemsWithAncestryStack.length,
+    searchQuery,
+    hasParentInStack,
+    handleClickBackButton,
+  ])
 
-  const renderContent = () => {
+  const renderedContent = useMemo(() => {
     if (isLoading) {
       return <LoadingResourceItemsResults />
     }
@@ -125,7 +132,17 @@ const SuspensableResourceSelector = ({
         handleClickResourceItem={handleClickResourceItem}
       />
     )
-  }
+  }, [
+    isLoading,
+    resourceItemsWithAncestryStack,
+    isResourceIdHighlighted,
+    isResourceItemDisabled,
+    hasAdditionalLeftPadding,
+    handleClickResourceItem,
+    isSearchQueryEmpty,
+    searchQuery,
+    clearSearchValue,
+  ])
 
   return (
     <VStack gap="0.5rem" w="full">
@@ -143,8 +160,8 @@ const SuspensableResourceSelector = ({
         flexDirection="column"
         gap="0.25rem"
       >
-        {renderHeader()}
-        {renderContent()}
+        {renderedHeader}
+        {renderedContent}
         {hasNextPage && (
           <Button
             variant="link"

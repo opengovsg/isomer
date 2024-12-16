@@ -52,6 +52,8 @@ const Infobar = ({
   LinkComponent,
 }: InfobarProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
+  const hasPrimaryCTA = !!buttonLabel && !!buttonUrl
+  const hasSecondaryCTA = !!secondaryButtonLabel && !!secondaryButtonUrl
 
   return (
     <section>
@@ -83,42 +85,44 @@ const Infobar = ({
             )}
           </div>
 
-          <div
-            className={compoundStyles.buttonContainer({
-              layout: simplifiedLayout,
-            })}
-          >
-            {buttonLabel && buttonUrl && (
-              <LinkButton
-                href={getReferenceLinkHref(
-                  buttonUrl,
-                  site.siteMap,
-                  site.assetsBaseUrl,
-                )}
-                size={simplifiedLayout === "homepage" ? "lg" : "base"}
-                LinkComponent={LinkComponent}
-                isWithFocusVisibleHighlight
-              >
-                {buttonLabel}
-              </LinkButton>
-            )}
+          {(hasPrimaryCTA || hasSecondaryCTA) && (
+            <div
+              className={compoundStyles.buttonContainer({
+                layout: simplifiedLayout,
+              })}
+            >
+              {hasPrimaryCTA && (
+                <LinkButton
+                  href={getReferenceLinkHref(
+                    buttonUrl,
+                    site.siteMap,
+                    site.assetsBaseUrl,
+                  )}
+                  size={simplifiedLayout === "homepage" ? "lg" : "base"}
+                  LinkComponent={LinkComponent}
+                  isWithFocusVisibleHighlight
+                >
+                  {buttonLabel}
+                </LinkButton>
+              )}
 
-            {secondaryButtonLabel && secondaryButtonUrl && (
-              <LinkButton
-                href={getReferenceLinkHref(
-                  secondaryButtonUrl,
-                  site.siteMap,
-                  site.assetsBaseUrl,
-                )}
-                size={simplifiedLayout === "homepage" ? "lg" : "base"}
-                variant="outline"
-                LinkComponent={LinkComponent}
-                isWithFocusVisibleHighlight
-              >
-                {secondaryButtonLabel}
-              </LinkButton>
-            )}
-          </div>
+              {hasSecondaryCTA && (
+                <LinkButton
+                  href={getReferenceLinkHref(
+                    secondaryButtonUrl,
+                    site.siteMap,
+                    site.assetsBaseUrl,
+                  )}
+                  size={simplifiedLayout === "homepage" ? "lg" : "base"}
+                  variant="outline"
+                  LinkComponent={LinkComponent}
+                  isWithFocusVisibleHighlight
+                >
+                  {secondaryButtonLabel}
+                </LinkButton>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </section>

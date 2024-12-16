@@ -1,9 +1,8 @@
 import { Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { ResourceItemContent } from "~/schemas/resource"
-import { ResourceItem } from "./ResourceItem"
+import { ResourceItem, ResourceItemSkeleton } from "./ResourceItem"
 import { lastResourceItemInAncestryStack } from "./utils"
 
 export const NoItemsInFolderResult = () => {
@@ -24,17 +23,7 @@ export const NoItemsInFolderResult = () => {
 
 export const LoadingResourceItemsResults = () => {
   return Array.from({ length: 5 }).map((_, index) => (
-    <ResourceItem
-      key={`loading-${index}`}
-      item={{
-        id: `loading-${index}`,
-        title: `Loading...`,
-        type: ResourceType.Folder,
-        permalink: "",
-        parentId: null,
-      }}
-      isLoading={true}
-    />
+    <ResourceItemSkeleton key={`loading-${index}`} />
   ))
 }
 

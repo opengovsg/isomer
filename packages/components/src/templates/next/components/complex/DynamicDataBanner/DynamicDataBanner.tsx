@@ -1,5 +1,6 @@
 import type { DynamicDataBannerProps } from "~/interfaces"
-import { getReferenceLinkHref } from "~/utils"
+import { getReferenceLinkHref, getTextAsHtml } from "~/utils"
+import BaseParagraph from "../../internal/BaseParagraph/BaseParagraph"
 import { DynamicDataBannerClient } from "./DynamicDataBannerClient"
 
 export const DynamicDataBanner = ({
@@ -8,6 +9,7 @@ export const DynamicDataBanner = ({
   data,
   url,
   label,
+  errorMessage,
   site,
   LinkComponent,
 }: DynamicDataBannerProps) => {
@@ -18,7 +20,17 @@ export const DynamicDataBanner = ({
       data={data}
       url={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
       label={label}
-      LinkComponent={LinkComponent}
+      errorMessageBaseParagraph={
+        <BaseParagraph
+          content={getTextAsHtml({
+            site,
+            content: errorMessage,
+          })}
+          className="prose-body-sm [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0"
+          site={site}
+          LinkComponent={LinkComponent}
+        />
+      }
     />
   )
 }

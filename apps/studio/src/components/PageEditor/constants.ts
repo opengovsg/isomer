@@ -209,6 +209,12 @@ export const DEFAULT_BLOCKS: Record<
     ],
     url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     label: "View all dates",
+    errorMessage: [
+      {
+        type: "text",
+        text: "Oops! Having trouble loading the data. Try refreshing — that usually does the trick!",
+      },
+    ],
   },
 }
 

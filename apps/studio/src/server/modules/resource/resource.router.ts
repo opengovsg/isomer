@@ -149,10 +149,18 @@ export const resourceRouter = router({
       }
 
       const result = await query.execute()
-      return result.length > limit
-        ? // Dont' return the last element, it's just for checking if there are more
-          { items: result.slice(0, limit), nextOffset: offset + limit }
-        : { items: result, nextOffset: null }
+      if (result.length > limit) {
+        // Dont' return the last element, it's just for checking if there are more
+        result.pop()
+        return {
+          items: result,
+          nextOffset: offset + limit,
+        }
+      }
+      return {
+        items: result,
+        nextOffset: null,
+      }
     }),
   getChildrenOf: protectedProcedure
     .input(getChildrenSchema)
@@ -203,10 +211,17 @@ export const resourceRouter = router({
         query = query.where("Resource.parentId", "=", String(resourceId))
       }
       const result = await query.execute()
-      return {
+      if (result.length > limit) {
         // Dont' return the last element, it's just for checking if there are more
-        items: result.length > limit ? result.slice(0, limit) : result,
-        nextOffset: result.length > limit ? offset + limit : null,
+        result.pop()
+        return {
+          items: result,
+          nextOffset: offset + limit,
+        }
+      }
+      return {
+        items: result,
+        nextOffset: null,
       }
     }),
 
@@ -527,13 +542,7 @@ export const resourceRouter = router({
     .query(
       async ({
         ctx,
-        input: {
-          siteId,
-          query = "",
-          resourceTypes = Object.values(ResourceType),
-          cursor: offset,
-          limit,
-        },
+        input: { siteId, query, resourceTypes, cursor: offset, limit },
       }) => {
         await validateUserPermissionsForSite({
           siteId: Number(siteId),
@@ -541,8 +550,7 @@ export const resourceRouter = router({
           action: "read",
         })
 
-        // check if the query is only whitespaces (including multiple spaces)
-        if (query.trim() === "") {
+        if (!query) {
           return {
             totalCount: null,
             resources: [],

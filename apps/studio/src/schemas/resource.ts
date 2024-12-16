@@ -103,8 +103,11 @@ export interface ResourceItemContent {
 export const searchSchema = z
   .object({
     siteId: z.string(),
-    query: z.string().optional(),
-    resourceTypes: z.array(z.nativeEnum(ResourceType)).optional(),
+    query: z.string().trim().optional(),
+    resourceTypes: z
+      .array(z.nativeEnum(ResourceType))
+      .optional()
+      .default(Object.values(ResourceType)),
   })
   .merge(infiniteOffsetPaginationSchema)
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { ResourceItemContent } from "~/schemas/resource"
@@ -21,10 +21,18 @@ export const useResourceStack = ({
   existingResource: ResourceItemContent | undefined
   resourceIds?: ResourceItemContent["id"][]
 }) => {
+  const pendingMovedItemAncestryStack =
+    trpc.resource.getAncestryWithSelf.useSuspenseQuery({
+      siteId: String(siteId),
+      resourceId: selectedResourceId,
+    })
+
   // NOTE: This is the stack of user's navigation through the resource tree
   // NOTE: We should always start the stack from `/` (root)
   // so that the user will see a full overview of their site structure
-  const [resourceStack, setResourceStack] = useState<ResourceItemContent[]>([])
+  const [resourceStack, setResourceStack] = useState(
+    pendingMovedItemAncestryStack[0],
+  )
 
   const [isResourceHighlighted, setIsResourceHighlighted] =
     useState<boolean>(!!selectedResourceId)
@@ -37,7 +45,6 @@ export const useResourceStack = ({
     () => resourceStack[resourceStack.length - 2], // second last item in stack
     [resourceStack],
   )
-  const curResourceId = useMemo(() => moveDest?.id, [moveDest])
 
   const queryFn = onlyShowFolders
     ? trpc.resource.getFolderChildrenOf.useInfiniteQuery
@@ -75,9 +82,10 @@ export const useResourceStack = ({
 
   const isResourceIdHighlighted = useCallback(
     (resourceId: string): boolean => {
+      const curResourceId = moveDest?.id
       return isResourceHighlighted && curResourceId === resourceId
     },
-    [isResourceHighlighted, curResourceId],
+    [isResourceHighlighted, moveDest?.id],
   )
 
   const { data: nestedChildrenOfExistingResourceResult } =
@@ -147,6 +155,7 @@ export const useResourceStack = ({
     }
 
     setResourceStack(resourceItemWithAncestryStack)
+    onChange(lastChild.id)
     setIsResourceHighlighted(true)
   }
 
@@ -157,39 +166,11 @@ export const useResourceStack = ({
     } else {
       removeFromStack(1)
     }
-  }, [isResourceHighlighted, removeFromStack])
-
-  const pendingMovedItemAncestryStack: ResourceItemContent[] =
-    trpc.resource.getAncestryWithSelf
-      .useSuspenseQuery({
-        siteId: String(siteId),
-        resourceId: selectedResourceId,
-      })[0]
-      .map((resource) => ({ ...resource, resourceId: resource.id }))
-
-  useEffect(() => {
-    // If there is no selected resource, we don't need to update the stack
-    if (!selectedResourceId) return
-
-    // If the ancestry stack is empty, we don't need to update the stack
-    if (pendingMovedItemAncestryStack.length <= 0) return
-
-    // If the ancestry stack is the same as the current stack, we don't need to update the stack
-    if (
-      JSON.stringify(pendingMovedItemAncestryStack) ===
-      JSON.stringify(resourceStack)
-    ) {
-      return
+    const lastChild = lastResourceItemInAncestryStack(resourceStack)
+    if (lastChild) {
+      onChange(lastChild.id)
     }
-
-    setResourceStack(pendingMovedItemAncestryStack)
-  }, [])
-
-  useEffect(() => {
-    if (curResourceId) {
-      onChange(curResourceId)
-    }
-  }, [curResourceId])
+  }, [isResourceHighlighted, onChange, removeFromStack, resourceStack])
 
   // currently do not support fetching next page for search
   return {
