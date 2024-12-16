@@ -66,6 +66,13 @@ const SingleCardWithImageSchema = Type.Composite([
 
 const InfoCardsBaseSchema = Type.Object({
   type: Type.Literal("infocards", { default: "infocards" }),
+  id: Type.Optional(
+    Type.String({
+      title: "Anchor ID",
+      description: "The ID to use for anchor links",
+      format: "hidden",
+    }),
+  ),
   title: Type.String({
     title: "Title",
     maxLength: 100,
@@ -90,6 +97,27 @@ const InfoCardsBaseSchema = Type.Object({
         default: "3",
       },
     ),
+  ),
+  // TODO: Remove "label" and "url"
+  // Context: This one is a stopgap measure in lieu of linking collections to the homepage
+  // Will be hidden in Studio for now
+  label: Type.Optional(
+    Type.String({
+      title: "Link text",
+      maxLength: 50,
+      description:
+        "Add a link under your block. Avoid generic text such as “Click here” or “Learn more”",
+      format: "hidden",
+    }),
+  ),
+  url: Type.Optional(
+    Type.String({
+      title: "Link destination",
+      description: "When this is clicked, open:",
+      // should be link but needs to be hidden for now
+      // shall not overcomlicate the schema for now since it's unavailable in Studio
+      format: "hidden",
+    }),
   ),
 })
 

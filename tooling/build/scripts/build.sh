@@ -50,6 +50,13 @@ rm -rf scripts
 # Bridging the difference betwen the two types of homepage JSONs
 mv schema/index.json schema/_index.json
 
+# Create not-found.json by copying _index.json if it doesn't exist
+# Refer to tooling/template/app/not-found.tsx for more context
+if [ ! -f "schema/not-found.json" ]; then
+  echo "Creating not-found.json..."
+  cp schema/_index.json schema/not-found.json
+fi
+
 # Build the site
 echo "Building site..."
 start_time=$(date +%s)

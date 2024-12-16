@@ -40,4 +40,4 @@ export type {
   GoogleTagManagerBodyScriptProps,
   GoogleTagManagerBodyProps,
 } from "./GoogleTagManager"
-export { AttrsDirProps } from "./AttrsDir"
+export type { AttrsDirProps } from "./AttrsDir"

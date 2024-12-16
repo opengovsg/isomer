@@ -579,6 +579,9 @@ export const resourceRouter = router({
     .input(searchWithResourceIdsSchema)
     .output(searchWithResourceIdsOutputSchema)
     .query(async ({ input: { siteId, resourceIds } }) => {
+      if (resourceIds.length === 0) {
+        return []
+      }
       return (
         await getSearchWithResourceIds({
           siteId: Number(siteId),
