@@ -21,7 +21,7 @@ export const useResourceStack = ({
   existingResource: ResourceItemContent | undefined
   resourceIds?: ResourceItemContent["id"][]
 }) => {
-  const pendingMovedItemAncestryStack =
+  const [pendingMovedItemAncestryStack] =
     trpc.resource.getAncestryWithSelf.useSuspenseQuery({
       siteId: String(siteId),
       resourceId: selectedResourceId,
@@ -30,8 +30,8 @@ export const useResourceStack = ({
   // NOTE: This is the stack of user's navigation through the resource tree
   // NOTE: We should always start the stack from `/` (root)
   // so that the user will see a full overview of their site structure
-  const [resourceStack, setResourceStack] = useState(
-    pendingMovedItemAncestryStack[0],
+  const [resourceStack, setResourceStack] = useState<ResourceItemContent[]>(
+    pendingMovedItemAncestryStack,
   )
 
   const [isResourceHighlighted, setIsResourceHighlighted] =
@@ -66,15 +66,13 @@ export const useResourceStack = ({
     },
   )
   const useResourceIdsFromSearch = !!resourceIds
-  const resourceItemsWithAncestryStack: ResourceItemContent[][] =
-    trpc.resource.getBatchAncestryWithSelf
-      .useSuspenseQuery({
-        siteId: String(siteId),
-        resourceIds: useResourceIdsFromSearch
-          ? resourceIds
-          : pages.flatMap(({ items }) => items).map((item) => item.id),
-      })[0]
-      .map((resource) => resource.map((r) => ({ ...r, resourceId: r.id })))
+  const [resourceItemsWithAncestryStack] =
+    trpc.resource.getBatchAncestryWithSelf.useSuspenseQuery({
+      siteId: String(siteId),
+      resourceIds: useResourceIdsFromSearch
+        ? resourceIds
+        : pages.flatMap(({ items }) => items).map((item) => item.id),
+    })
 
   const removeFromStack = useCallback((numberOfResources: number): void => {
     setResourceStack((prev) => prev.slice(0, -numberOfResources))
@@ -135,29 +133,35 @@ export const useResourceStack = ({
     return resourceStack.map((resource) => resource.permalink).join("/")
   }, [resourceStack])
 
-  const handleClickResourceItem = (
-    resourceItemWithAncestryStack: ResourceItemContent[],
-  ): void => {
-    const lastChild: ResourceItemContent | undefined =
-      lastResourceItemInAncestryStack(resourceItemWithAncestryStack)
+  const handleClickResourceItem = useCallback(
+    (resourceItemWithAncestryStack: ResourceItemContent[]): void => {
+      const lastChild: ResourceItemContent | undefined =
+        lastResourceItemInAncestryStack(resourceItemWithAncestryStack)
 
-    // this should never happen. only added here to satisfy typescript
-    if (!lastChild) return
+      // this should never happen. only added here to satisfy typescript
+      if (!lastChild) return
 
-    const isItemHighlighted = isResourceIdHighlighted(lastChild.id)
-    const canClickIntoItem =
-      lastChild.type === ResourceType.Folder ||
-      lastChild.type === ResourceType.Collection
+      const isItemHighlighted = isResourceIdHighlighted(lastChild.id)
+      const canClickIntoItem =
+        lastChild.type === ResourceType.Folder ||
+        lastChild.type === ResourceType.Collection
 
-    if (isItemHighlighted && canClickIntoItem) {
-      setIsResourceHighlighted(false)
-      return
-    }
+      if (isItemHighlighted && canClickIntoItem) {
+        setIsResourceHighlighted(false)
+        return
+      }
 
-    setResourceStack(resourceItemWithAncestryStack)
-    onChange(lastChild.id)
-    setIsResourceHighlighted(true)
-  }
+      setResourceStack(resourceItemWithAncestryStack)
+      onChange(lastChild.id)
+      setIsResourceHighlighted(true)
+    },
+    [
+      onChange,
+      setIsResourceHighlighted,
+      setResourceStack,
+      isResourceIdHighlighted,
+    ],
+  )
 
   const handleClickBackButton = useCallback(() => {
     if (isResourceHighlighted) {
