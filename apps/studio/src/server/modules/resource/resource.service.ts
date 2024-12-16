@@ -432,7 +432,7 @@ export const getAncestryWithSelf = async ({
         ])
         .where("Resource.siteId", "=", Number(siteId))
         .where("Resource.id", "=", String(resourceId))
-        .where("Resource.type", "!=", ResourceType.RootPage),
+        .where("Resource.type", "!=", ResourceType.RootPage)
         .unionAll(
           eb
             .selectFrom("Resource")
