@@ -33,7 +33,7 @@ const collection = tv(
           collectionResults:
             // NOTE: we remove the gap so that the blog cards can
             // render their own border between each item
-            "grid grid-cols-1 sm:gap-0 md:grid-cols-2 md:gap-10",
+            "grid grid-cols-1 sm:gap-0 md:grid-cols-2 md:gap-5",
         },
       },
     },
