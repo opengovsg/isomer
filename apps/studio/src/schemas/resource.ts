@@ -96,6 +96,10 @@ export const getBatchAncestryWithSelfSchema = z.object({
   resourceIds: z.array(z.string()),
 })
 
+export const getBatchAncestryWithSelfOutputSchema = z.array(
+  z.array(z.custom<ResourceItemContent>()),
+)
+
 export interface ResourceItemContent {
   title: string
   permalink: string

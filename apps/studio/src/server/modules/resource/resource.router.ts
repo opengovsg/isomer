@@ -9,6 +9,7 @@ import {
   deleteResourceSchema,
   getAncestryWithSelfOutputSchema,
   getAncestryWithSelfSchema,
+  getBatchAncestryWithSelfOutputSchema,
   getBatchAncestryWithSelfSchema,
   getChildrenOutputSchema,
   getChildrenSchema,
@@ -528,6 +529,7 @@ export const resourceRouter = router({
 
   getBatchAncestryWithSelf: protectedProcedure
     .input(getBatchAncestryWithSelfSchema)
+    .output(getBatchAncestryWithSelfOutputSchema)
     .query(async ({ input: { siteId, resourceIds } }) => {
       const ancestryPromises = resourceIds.map(async (id) => {
         return await getAncestryWithSelf({
