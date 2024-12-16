@@ -135,11 +135,15 @@ export const useResourceStack = ({
 
   const handleClickResourceItem = useCallback(
     (resourceItemWithAncestryStack: ResourceItemContent[]): void => {
-      const lastChild: ResourceItemContent | undefined =
-        lastResourceItemInAncestryStack(resourceItemWithAncestryStack)
+      const lastChild = lastResourceItemInAncestryStack(
+        resourceItemWithAncestryStack,
+      )
 
-      // this should never happen. only added here to satisfy typescript
-      if (!lastChild) return
+      if (!lastChild) {
+        throw new Error(
+          "Unexpected undefined lastChild from lastResourceItemInAncestryStack",
+        )
+      }
 
       const isItemHighlighted = isResourceIdHighlighted(lastChild.id)
       const canClickIntoItem =
