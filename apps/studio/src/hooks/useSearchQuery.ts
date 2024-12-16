@@ -29,7 +29,7 @@ export const useSearchQuery = ({
     },
   )
 
-  const resources = useMemo((): SearchResultResource[] => {
+  const matchedResources = useMemo((): SearchResultResource[] => {
     return data?.pages.flatMap((page) => page.resources) ?? []
   }, [data])
 
@@ -51,7 +51,7 @@ export const useSearchQuery = ({
     searchValue,
     setSearchValue,
     debouncedSearchTerm,
-    resources,
+    matchedResources,
     isLoading,
     totalResultsCount,
     recentlyEditedResources,

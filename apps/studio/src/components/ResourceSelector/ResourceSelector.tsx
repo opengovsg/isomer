@@ -45,7 +45,7 @@ const SuspensableResourceSelector = ({
     setSearchValue,
     debouncedSearchTerm: searchQuery,
     isLoading,
-    resources,
+    matchedResources,
     clearSearchValue,
   } = useSearchQuery({
     siteId: String(siteId),
@@ -80,7 +80,7 @@ const SuspensableResourceSelector = ({
     existingResource,
     resourceIds: isSearchQueryEmpty
       ? undefined
-      : resources.map((resource) => resource.id),
+      : matchedResources.map((resource) => resource.id),
   })
 
   const renderedHeader = useMemo(() => {

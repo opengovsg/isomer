@@ -30,7 +30,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
   const {
     setSearchValue,
     debouncedSearchTerm,
-    resources,
+    matchedResources,
     isLoading,
     totalResultsCount,
     recentlyEditedResources,
@@ -47,13 +47,13 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
       if (isLoading) {
         return <LoadingState />
       }
-      if (resources.length === 0) {
+      if (matchedResources.length === 0) {
         return <NoResultsState />
       }
       return (
         <SearchResultsState
           siteId={siteId}
-          items={resources}
+          items={matchedResources}
           totalResultsCount={totalResultsCount}
           searchTerm={debouncedSearchTerm}
           // 3 is an arbitrary number that we are trying out and our guess
@@ -105,7 +105,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           borderBottomRadius="base"
         >
           <Text textStyle="caption-2" textColor="base.content.medium">
-            {resources.length === 0
+            {matchedResources.length === 0
               ? "Tip: Type in the full title to get the most accurate search results."
               : "Scroll to see more results. Too many results? Try typing something longer."}
           </Text>
