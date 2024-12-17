@@ -37,10 +37,6 @@ const editSiteSchema = z.object({
   siteId: z.coerce.number(),
 })
 
-const linkSchema = z.object({
-  linkId: z.coerce.string().optional(),
-})
-
 interface PageLinkElementProps {
   value: string
   onChange: (value: string) => void
@@ -116,13 +112,6 @@ const LinkEditorModalContent = ({
     ({ linkText, linkHref }) => !!linkHref && onSave(linkText, linkHref),
   )
 
-  // TODO: This needs to be refactored urgently
-  // This is a hacky way of seeing what to render
-  // and ties the link editor to the url path.
-  // we should instead just pass the component directly rather than using slots
-
-  const { linkId } = useQueryParse(linkSchema)
-
   return (
     <ModalContent>
       <form onSubmit={onSubmit}>
@@ -132,12 +121,8 @@ const LinkEditorModalContent = ({
         <ModalCloseButton size="lg" />
 
         <ModalBody>
-          {!linkId && showLinkText && (
-            <FormControl
-              mb="1.5rem"
-              isRequired={!linkId}
-              isInvalid={!!errors.linkText}
-            >
+          {showLinkText && (
+            <FormControl mb="1.5rem" isRequired isInvalid={!!errors.linkText}>
               <FormLabel
                 id="linkText"
                 description="A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”"
