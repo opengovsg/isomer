@@ -34,6 +34,7 @@ export const useIsActive = (
     case ResourceType.CollectionLink:
       return siteProps.linkId === currentResourceId
     case ResourceType.FolderMeta:
+    case ResourceType.CollectionMeta:
       // TODO: Not implemented yet
       return false
     default:
