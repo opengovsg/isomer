@@ -5,7 +5,7 @@ import type { ResourceItemContent } from "~/schemas/resource"
 import { ResourceItem, ResourceItemSkeleton } from "./ResourceItem"
 import { lastResourceItemInAncestryStack } from "./utils"
 
-export const NoItemsInFolderResult = () => {
+const NoItemsInFolderResult = () => {
   return (
     <Text
       h="full"
@@ -21,13 +21,7 @@ export const NoItemsInFolderResult = () => {
   )
 }
 
-export const LoadingResourceItemsResults = () => {
-  return Array.from({ length: 5 }).map((_, index) => (
-    <ResourceItemSkeleton key={`loading-${index}`} />
-  ))
-}
-
-export const ResourceItemsResults = ({
+const ResourceItemsResults = ({
   resourceItemsWithAncestryStack,
   isResourceIdHighlighted,
   isResourceItemDisabled,
@@ -68,7 +62,7 @@ export const ResourceItemsResults = ({
   })
 }
 
-export const ZeroResult = ({
+const ZeroResult = ({
   searchQuery,
   handleClickClearSearch,
 }: {
@@ -99,5 +93,58 @@ export const ZeroResult = ({
         <Text textStyle="caption-2">Clear search</Text>
       </Button>
     </VStack>
+  )
+}
+
+export const LoadingResourceItemsResults = () => {
+  return Array.from({ length: 5 }).map((_, index) => (
+    <ResourceItemSkeleton key={`loading-${index}`} />
+  ))
+}
+
+export const SuspendableContent = ({
+  resourceItemsWithAncestryStack,
+  isResourceIdHighlighted,
+  isResourceItemDisabled,
+  hasAdditionalLeftPadding,
+  handleClickResourceItem,
+  isSearchQueryEmpty,
+  searchQuery,
+  clearSearchValue,
+  isLoading,
+}: {
+  resourceItemsWithAncestryStack: ResourceItemContent[][]
+  isResourceIdHighlighted: (resourceId: string) => boolean
+  isResourceItemDisabled: (resourceItem: ResourceItemContent) => boolean
+  hasAdditionalLeftPadding: boolean
+  handleClickResourceItem: (
+    resourceItemWithAncestryStack: ResourceItemContent[],
+  ) => void
+  isSearchQueryEmpty: boolean
+  searchQuery: string
+  clearSearchValue: () => void
+  isLoading: boolean
+}) => {
+  if (isLoading) {
+    return <LoadingResourceItemsResults />
+  }
+  if (resourceItemsWithAncestryStack.length === 0) {
+    return isSearchQueryEmpty ? (
+      <NoItemsInFolderResult />
+    ) : (
+      <ZeroResult
+        searchQuery={searchQuery}
+        handleClickClearSearch={clearSearchValue}
+      />
+    )
+  }
+  return (
+    <ResourceItemsResults
+      resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
+      isResourceIdHighlighted={isResourceIdHighlighted}
+      isResourceItemDisabled={isResourceItemDisabled}
+      hasAdditionalLeftPadding={hasAdditionalLeftPadding}
+      handleClickResourceItem={handleClickResourceItem}
+    />
   )
 }

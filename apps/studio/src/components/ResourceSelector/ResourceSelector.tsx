@@ -8,16 +8,9 @@ import { useSearchQuery } from "~/hooks/useSearchQuery"
 import { getUserViewableResourceTypes } from "~/utils/resources"
 import {
   LoadingResourceItemsResults,
-  NoItemsInFolderResult,
-  ResourceItemsResults,
-  ZeroResult,
+  SuspendableContent,
 } from "./ResourceSelectorContent"
-import {
-  BackButtonHeader,
-  HomeHeader,
-  LoadingHeader,
-  SearchResultsHeader,
-} from "./ResourceSelectorHeader"
+import { LoadingHeader, SuspendableHeader } from "./ResourceSelectorHeader"
 import { SearchBar } from "./SearchBar"
 import { useResourceStack } from "./useResourceStack"
 
@@ -84,56 +77,44 @@ const SuspensableResourceSelector = ({
   })
 
   const renderedHeader = useMemo(() => {
-    if (isLoading) {
-      return <LoadingHeader />
-    }
-    if (isSearchQueryEmpty) {
-      return hasParentInStack ? (
-        <BackButtonHeader handleOnClick={handleClickBackButton} />
-      ) : (
-        <HomeHeader />
-      )
-    }
     return (
-      <SearchResultsHeader
-        resultsCount={resourceItemsWithAncestryStack.length}
-        searchQuery={searchQuery}
-      />
+      <Suspense fallback={<LoadingHeader />}>
+        <SuspendableHeader
+          isSearchQueryEmpty={isSearchQueryEmpty}
+          hasParentInStack={hasParentInStack}
+          handleClickBackButton={handleClickBackButton}
+          resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
+          searchQuery={searchQuery}
+          isLoading={isLoading}
+        />
+      </Suspense>
     )
   }, [
-    isLoading,
     isSearchQueryEmpty,
-    resourceItemsWithAncestryStack.length,
-    searchQuery,
     hasParentInStack,
     handleClickBackButton,
+    resourceItemsWithAncestryStack,
+    searchQuery,
+    isLoading,
   ])
 
   const renderedContent = useMemo(() => {
-    if (isLoading) {
-      return <LoadingResourceItemsResults />
-    }
-    if (resourceItemsWithAncestryStack.length === 0) {
-      return isSearchQueryEmpty ? (
-        <NoItemsInFolderResult />
-      ) : (
-        <ZeroResult
-          searchQuery={searchQuery}
-          handleClickClearSearch={clearSearchValue}
-        />
-      )
-    }
     return (
-      <ResourceItemsResults
-        resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
-        isResourceIdHighlighted={isResourceIdHighlighted}
-        isResourceItemDisabled={isResourceItemDisabled}
-        hasAdditionalLeftPadding={hasAdditionalLeftPadding}
-        handleClickResourceItem={handleClickResourceItem}
-      />
+      <Suspense fallback={<LoadingResourceItemsResults />}>
+        <SuspendableContent
+          resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
+          isResourceIdHighlighted={isResourceIdHighlighted}
+          isResourceItemDisabled={isResourceItemDisabled}
+          hasAdditionalLeftPadding={hasAdditionalLeftPadding}
+          handleClickResourceItem={handleClickResourceItem}
+          isSearchQueryEmpty={isSearchQueryEmpty}
+          searchQuery={searchQuery}
+          clearSearchValue={clearSearchValue}
+          isLoading={isLoading}
+        />
+      </Suspense>
     )
   }, [
-    isLoading,
     resourceItemsWithAncestryStack,
     isResourceIdHighlighted,
     isResourceItemDisabled,
@@ -142,6 +123,7 @@ const SuspensableResourceSelector = ({
     isSearchQueryEmpty,
     searchQuery,
     clearSearchValue,
+    isLoading,
   ])
 
   return (

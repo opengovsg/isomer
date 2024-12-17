@@ -2,7 +2,9 @@ import { Flex, HStack, Spacer, Text } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
-export const HomeHeader = () => {
+import type { ResourceItemContent } from "~/schemas/resource"
+
+const HomeHeader = () => {
   return (
     <Flex
       w="full"
@@ -30,19 +32,7 @@ export const HomeHeader = () => {
   )
 }
 
-export const LoadingHeader = () => {
-  return (
-    <Text textStyle="caption-2" py="0.375rem" px="0.375rem">
-      Searching your website, high and low
-    </Text>
-  )
-}
-
-export const BackButtonHeader = ({
-  handleOnClick,
-}: {
-  handleOnClick: () => void
-}) => {
+const BackButtonHeader = ({ handleOnClick }: { handleOnClick: () => void }) => {
   return (
     <Link
       variant="clear"
@@ -61,7 +51,7 @@ export const BackButtonHeader = ({
   )
 }
 
-export const SearchResultsHeader = ({
+const SearchResultsHeader = ({
   resultsCount,
   searchQuery,
 }: {
@@ -73,5 +63,46 @@ export const SearchResultsHeader = ({
       {resultsCount} result{resultsCount > 1 ? "s" : ""} with "{searchQuery}" in
       title
     </Text>
+  )
+}
+
+export const LoadingHeader = () => {
+  return (
+    <Text textStyle="caption-2" py="0.375rem" px="0.375rem">
+      Searching your website, high and low
+    </Text>
+  )
+}
+
+export const SuspendableHeader = ({
+  isSearchQueryEmpty,
+  hasParentInStack,
+  handleClickBackButton,
+  resourceItemsWithAncestryStack,
+  searchQuery,
+  isLoading,
+}: {
+  isSearchQueryEmpty: boolean
+  hasParentInStack: boolean
+  handleClickBackButton: () => void
+  resourceItemsWithAncestryStack: ResourceItemContent[][]
+  searchQuery: string
+  isLoading: boolean
+}) => {
+  if (isLoading) {
+    return <LoadingHeader />
+  }
+  if (isSearchQueryEmpty) {
+    return hasParentInStack ? (
+      <BackButtonHeader handleOnClick={handleClickBackButton} />
+    ) : (
+      <HomeHeader />
+    )
+  }
+  return (
+    <SearchResultsHeader
+      resultsCount={resourceItemsWithAncestryStack.length}
+      searchQuery={searchQuery}
+    />
   )
 }
