@@ -2,7 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
-import { BaseProseSchema } from "../native/Prose"
+import { ContentpicProseSchema } from "../native/Prose"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const ContentpicSchema = Type.Object(
@@ -10,7 +10,7 @@ export const ContentpicSchema = Type.Object(
     type: Type.Literal("contentpic", { default: "contentpic" }),
     imageSrc: ImageSrcSchema,
     imageAlt: Type.Optional(AltTextSchema),
-    content: BaseProseSchema,
+    content: ContentpicProseSchema,
   },
   {
     title: "Contentpic component",

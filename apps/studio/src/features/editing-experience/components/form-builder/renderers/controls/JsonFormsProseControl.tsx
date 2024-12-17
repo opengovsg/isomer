@@ -1,19 +1,61 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
+import type { ComponentsWithProse } from "@opengovsg/isomer-components"
+import { useCallback, useEffect, useMemo } from "react"
 import { Box, FormControl } from "@chakra-ui/react"
-import { rankWith } from "@jsonforms/core"
+import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-import { FormLabel } from "@opengovsg/design-system-react"
+import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
 
+import type {
+  BaseEditorProps,
+  BaseEditorType,
+} from "~/features/editing-experience/hooks/useTextEditor"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { useProseEditor } from "~/features/editing-experience/hooks/useTextEditor"
-import { TiptapProseEditor } from "../TipTapEditor/TiptapProseEditor"
+import {
+  useAccordionEditor,
+  useCalloutEditor,
+  useProseEditor,
+} from "~/features/editing-experience/hooks/useTextEditor"
+import {
+  TiptapAccordionEditor,
+  TiptapCalloutEditor,
+  TiptapProseEditor,
+} from "../TipTapEditor"
+import { isTiptapEditorEmpty } from "./utils"
 
 export const jsonFormsProseControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ProseControl,
-  (_, schema) => {
-    return schema.format === "prose"
-  },
+  and(
+    schemaMatches(
+      (schema) =>
+        schema.format === "prose" ||
+        schema.format === "accordion" ||
+        schema.format === "callout" ||
+        schema.format === "contentpic",
+    ),
+  ),
 )
+
+const getEditorHookAndEditor = (
+  format: ComponentsWithProse,
+): {
+  EditorHook: (props: BaseEditorProps) => BaseEditorType
+  Editor: typeof TiptapProseEditor
+} => {
+  switch (format) {
+    case "accordion":
+      return { EditorHook: useAccordionEditor, Editor: TiptapAccordionEditor }
+    case "callout":
+      return { EditorHook: useCalloutEditor, Editor: TiptapCalloutEditor }
+    case "contentpic":
+      return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
+    case "prose":
+      return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
+    default:
+      const _: never = format
+      return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
+  }
+}
 
 export function JsonFormsProseControl({
   data,
@@ -21,19 +63,47 @@ export function JsonFormsProseControl({
   handleChange,
   path,
   description,
+  errors,
+  schema,
   required,
 }: ControlProps) {
-  const editor = useProseEditor({
+  const { EditorHook, Editor } = useMemo(
+    () => getEditorHookAndEditor(schema.format as ComponentsWithProse),
+    [schema.format],
+  )
+
+  const editor = EditorHook({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
-    handleChange: (content) => handleChange(path, content),
+    handleChange: useCallback(
+      (content) => {
+        if (required && isTiptapEditorEmpty(content)) {
+          handleChange(path, undefined)
+        } else {
+          handleChange(path, content)
+        }
+      },
+      [handleChange, path, required],
+    ),
   })
+
+  // Trigger editor.setContent when data changes from undefined to something
+  // Needed to force the value to be set when user clicks on "Go back to editing" in the exit modal
+  useEffect(() => {
+    if (data !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      editor?.commands.setContent(data)
+    }
+  }, [data])
 
   return (
     <Box>
-      <FormControl isRequired={required}>
+      <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
-        <TiptapProseEditor editor={editor} />
+        <Editor editor={editor} />
+        <FormErrorMessage>
+          {label} {errors}
+        </FormErrorMessage>
       </FormControl>
     </Box>
   )

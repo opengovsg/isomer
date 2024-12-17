@@ -57,7 +57,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     },
   })
 
-  const updatePageState = (editorContent: JSONContent) => {
+  const updatePageState = (editorContent: JSONContent | undefined) => {
     const updatedBlocks = Array.from(previewPageState.content)
     // TODO: actual validation
     updatedBlocks[currActiveIdx] = editorContent as ProseProps
