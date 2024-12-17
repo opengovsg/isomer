@@ -1,5 +1,6 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
+import { Collection } from "react-aria-components"
 
 import {
   ArticlePageHeaderSchema,
@@ -8,6 +9,7 @@ import {
 } from "~/interfaces"
 import { AltTextSchema, generateImageSrcSchema } from "~/interfaces/complex"
 import { REF_HREF_PATTERN } from "~/utils/validation"
+import { CollectionVariant, CollectionVariantSchema } from "./variants"
 
 const categorySchemaObject = Type.Object({
   category: Type.String({
@@ -82,13 +84,6 @@ export const CollectionPagePageSchema = Type.Intersect([
     subtitle: Type.String({
       title: "The subtitle of the collection",
     }),
-    // NOTE: to maintain back-compat,
-    // if this property is missing,
-    // we will default it to the default `collection` layout
-    // as exisiting (prior to rollout) collections won't have this specified
-    variant: Type.ReadonlyOptional(
-      Type.Union([Type.Literal("blog"), Type.Literal("collection")]),
-    ),
   }),
   TagsSchema,
 ])
@@ -124,11 +119,16 @@ interface ArticlePageAdditionalProps {
   tags?: CollectionPagePageProps["tags"]
 }
 
+interface CollectionVariantProps {
+  variant?: CollectionVariant
+}
+
 export type ArticlePagePageProps = Static<typeof ArticlePagePageSchema> &
   BasePageAdditionalProps &
   ArticlePageAdditionalProps
 export type CollectionPagePageProps = Static<typeof CollectionPagePageSchema> &
-  BasePageAdditionalProps
+  BasePageAdditionalProps &
+  CollectionVariantProps
 export type ContentPagePageProps = Static<typeof ContentPagePageSchema> &
   BasePageAdditionalProps
 export type DatabasePagePageProps = Static<typeof DatabasePagePageSchema> &
