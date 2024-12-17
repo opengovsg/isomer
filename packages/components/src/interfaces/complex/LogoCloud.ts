@@ -1,9 +1,10 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+export const LOGO_CLOUD_TYPE = "logocloud"
 export const LogoCloudSchema = Type.Object(
   {
-    type: Type.Literal("logocloud", { default: "logocloud" }),
+    type: Type.Literal(LOGO_CLOUD_TYPE, { default: LOGO_CLOUD_TYPE }),
     images: Type.Array(
       Type.Object({
         src: Type.String({

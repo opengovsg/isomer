@@ -18,6 +18,7 @@ import {
   InfoColsSchema,
   InfopicSchema,
   KeyStatisticsSchema,
+  LogoCloudSchema,
   MapSchema,
   OrderedListSchema,
   ParagraphSchema,
@@ -26,7 +27,6 @@ import {
   UnorderedListSchema,
   VideoSchema,
 } from "~/interfaces"
-import { LogoCloudSchema } from "~/interfaces/complex/LogoCloud"
 
 export const IsomerComplexComponentsMap = {
   accordion: AccordionSchema,
