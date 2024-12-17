@@ -18,6 +18,7 @@ import {
   InfoColsSchema,
   InfopicSchema,
   KeyStatisticsSchema,
+  LogoCloudSchema,
   MapSchema,
   OrderedListSchema,
   ParagraphSchema,
@@ -42,6 +43,7 @@ export const IsomerComplexComponentsMap = {
   map: MapSchema,
   video: VideoSchema,
   [DYNAMIC_DATA_BANNER_TYPE]: DynamicDataBannerSchema,
+  logocloud: LogoCloudSchema,
 }
 
 export const IsomerNativeComponentsMap = {

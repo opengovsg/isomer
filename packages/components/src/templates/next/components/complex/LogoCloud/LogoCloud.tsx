@@ -1,15 +1,7 @@
-import type { IsomerSiteProps } from "~/types"
+import type { LogoCloudProps } from "~/interfaces/complex/LogoCloud"
 import { isExternalUrl } from "~/utils"
 import { ImageClient } from "../Image"
 
-interface Image {
-  src: string
-  alt: string
-}
-interface LogoCloudProps extends Pick<IsomerSiteProps, "assetsBaseUrl"> {
-  images: Image[]
-  title?: string
-}
 export const LogoCloud = ({
   images: baseImages,
   title,
@@ -34,7 +26,7 @@ export const LogoCloud = ({
             <ImageClient
               {...props}
               width="100%"
-              className="inset-0 w-fit max-w-52 object-contain p-2"
+              className="inset-0 max-h-24 w-fit object-contain p-2"
               assetsBaseUrl={assetsBaseUrl}
             />
           ))}
