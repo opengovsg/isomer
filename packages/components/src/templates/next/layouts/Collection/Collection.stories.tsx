@@ -21,6 +21,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
       date: "07/05/2024",
       category: "Category Name",
+      tags: [{ category: "jokes", values: ["Dad"], selected: ["Dad"] }],
     },
     {
       id: `${index}`,
@@ -41,6 +42,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         type: "png",
         size: "1.2MB",
       },
+      tags: [{ category: "jokes", values: ["Lame"], selected: ["Lame"] }],
     },
     {
       id: `${index}`,
@@ -53,6 +55,19 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       date: "12/08/2023",
       category: "Category Name",
       ref: "https://guide.isomer.gov.sg",
+      tags: [
+        {
+          category: "jokes",
+          values: [
+            "This is a very long tag that should be reflowed on smaller screens maybe",
+          ],
+          selected: [
+            "Lame",
+            "This is a very long tag that shuold be reflowed on smaller screens maybe",
+            "This is a second long link that should eat into the image area so that we can see how it looks",
+          ],
+        },
+      ],
     },
   ]),
 )
@@ -82,6 +97,22 @@ const generateArgs = ({
             layout: "collection",
             summary: "",
             children: collectionItems,
+            tags: [
+              { category: "tag", selected: ["A tag"] },
+              { category: "tagged", selected: ["tagged"] },
+              {
+                category: "long",
+                selected: [
+                  "This is a very long tag that shuold be reflowed on smaller screens maybe",
+                ],
+              },
+              {
+                category: "very long",
+                selected: [
+                  "This is a second long link that should eat into the image area so that we can see how it looks",
+                ],
+              },
+            ],
           },
         ],
       },

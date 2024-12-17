@@ -1,4 +1,8 @@
-import type { AppliedFilter, Filter as FilterType } from "../../types/Filter"
+import type {
+  AppliedFilter,
+  FilterItem,
+  Filter as FilterType,
+} from "../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { getParsedDate } from "~/utils"
 
@@ -6,15 +10,46 @@ const FILTER_ID_CATEGORY = "category"
 const FILTER_ID_YEAR = "year"
 const NO_SPECIFIED_YEAR_FILTER_ID = "not_specified"
 
+const getCategories = (
+  tagCategories: Record<string, Record<string, number>>,
+): FilterType[] => {
+  return Object.entries(tagCategories).reduce((acc: FilterType[], curValue) => {
+    const [category, values] = curValue
+    const items: FilterItem[] = Object.entries(values).map(
+      ([label, count]) => ({
+        label,
+        count,
+        id: label,
+      }),
+    )
+
+    const filters: FilterType[] = [
+      ...acc,
+      {
+        items,
+        id: category,
+        label: category,
+      },
+    ]
+
+    return filters
+  }, [])
+}
+
 export const getAvailableFilters = (
   items: ProcessedCollectionCardProps[],
 ): FilterType[] => {
   const categories: Record<string, number> = {}
   const years: Record<string, number> = {}
+  // NOTE: Each tag is a mapping of a category to its
+  // associated set of values as well as the selected value.
+  // Hence, we store a map here of the category (eg: Body parts)
+  // to the number of occurences of each value (eg: { Brain: 3, Leg: 2})
+  const tagCategories: Record<string, Record<string, number>> = {}
 
   let numberOfUndefinedDates = 0
 
-  items.forEach(({ category, lastUpdated }) => {
+  items.forEach(({ category, lastUpdated, tags }) => {
     // Step 1: Get all available categories
     if (category in categories && categories[category]) {
       categories[category] += 1
@@ -32,6 +67,22 @@ export const getAvailableFilters = (
       }
     } else {
       numberOfUndefinedDates += 1
+    }
+
+    // Step 3: Get all category tags
+    if (tags) {
+      tags.forEach(({ selected: selectedLabels, category }) => {
+        selectedLabels.forEach((label) => {
+          if (!tagCategories[category]) {
+            tagCategories[category] = {}
+          }
+          if (!tagCategories[category][label]) {
+            tagCategories[category][label] = 0
+          }
+
+          tagCategories[category][label] += 1
+        })
+      })
     }
   })
 
@@ -58,8 +109,8 @@ export const getAvailableFilters = (
     {
       id: FILTER_ID_YEAR,
       label: "Year",
+      // do not show "not specified" option if all items have undefined dates
       items:
-        // do not show "not specified" option if all items have undefined dates
         yearFilterItems.length === 0
           ? []
           : numberOfUndefinedDates === 0
@@ -73,6 +124,7 @@ export const getAvailableFilters = (
                 },
               ],
     },
+    ...getCategories(tagCategories),
   ]
 
   // Remove filters with no items
@@ -125,7 +177,26 @@ export const getFilteredItems = (
       return false
     }
 
-    return true
+    const remainingFilters = appliedFilters.filter(
+      ({ id }) => id !== FILTER_ID_CATEGORY && id !== FILTER_ID_YEAR,
+    )
+
+    // Step 4: Compute set intersection between remaining filters and the set of items.
+    // Take note that we use OR between items within the same filter and AND between filters.
+    return remainingFilters
+      .map(({ items: activeFilters, id }) => {
+        return item.tags?.some(({ category, selected: itemLabels }) => {
+          return (
+            category === id &&
+            activeFilters
+              .map(({ id }) => id)
+              .reduce((prev, cur) => {
+                return prev || itemLabels.includes(cur)
+              }, false) //includes(itemLabels)
+          )
+        })
+      })
+      .every((x) => x)
   })
 }
 
