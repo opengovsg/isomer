@@ -21,7 +21,6 @@ declare global {
     // TODO: Rename all with XXXYYYJson instead of XXXJsonYYY
     type SiteJsonConfig = Tagged<_IsomerSiteConfigProps, "JSONB">
     type SiteThemeJson = Tagged<_IsomerSiteThemeProps, "JSONB">
-    // TODO: Need to add the type in components
     type CollectionThemeJson = Tagged<
       _IsomerLayoutVariants["collection"],
       "JSONB"
