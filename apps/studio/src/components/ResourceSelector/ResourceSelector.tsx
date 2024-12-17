@@ -12,6 +12,7 @@ import {
 } from "./ResourceSelectorContent"
 import { LoadingHeader, SuspendableHeader } from "./ResourceSelectorHeader"
 import { SearchBar } from "./SearchBar"
+import { useResourceQuery } from "./useResourceQuery"
 import { useResourceSelector } from "./useResourceSelector"
 import { useResourceStack } from "./useResourceStack"
 
@@ -54,10 +55,7 @@ const SuspensableResourceSelector = ({
   const {
     fullPermalink,
     moveDest,
-    resourceItemsWithAncestryStack,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+    parentDest,
     resourceStack,
     isResourceHighlighted,
     setIsResourceHighlighted,
@@ -66,8 +64,20 @@ const SuspensableResourceSelector = ({
   } = useResourceStack({
     siteId,
     selectedResourceId,
-    onlyShowFolders,
     existingResource,
+  })
+
+  const {
+    resourceItemsWithAncestryStack,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useResourceQuery({
+    siteId,
+    moveDest,
+    parentDest,
+    isResourceHighlighted,
+    onlyShowFolders,
     resourceIds: isSearchQueryEmpty
       ? undefined
       : matchedResources.map((resource) => resource.id),
