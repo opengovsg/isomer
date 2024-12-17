@@ -270,7 +270,7 @@ function generateSitemapTree(
         title,
         permalink: `${pathPrefix.length === 1 ? "" : pathPrefix}/${danglingDirectory}`,
         lastModified: new Date().toISOString(),
-        layout: "index",
+        layout: folder?.type === "Collection" ? "collection" : "index",
         summary: `Pages in ${title}`,
         type: folder?.type ?? ResourceType.Folder,
       }
@@ -377,11 +377,10 @@ async function processDanglingDirectories(
         const content = getFolderIndexPageContents(title)
         return { title, permalink, content }
       }),
-      ...collections.map(({ title, permalink }) => {
+      ...collections.map(({ id, title, permalink }) => {
         const meta = resources.find(
-          ({ permalink: resourcePermalink, type }) =>
-            `${permalink}/${META_PERMALINK}` === resourcePermalink &&
-            type === "CollectionMeta",
+          ({ type, parentId }) =>
+            parentId === Number(id) && type === "CollectionMeta",
         )
         const content = getCollectionIndexPageContents(
           title,
