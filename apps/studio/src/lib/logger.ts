@@ -54,7 +54,7 @@ export class PinoLogger {
         formatters: {
           bindings: () => {
             return {
-              env: env.NODE_ENV,
+              env: env.NEXT_PUBLIC_APP_ENV,
             }
           },
           level: (label) => {
