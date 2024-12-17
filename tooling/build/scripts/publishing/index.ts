@@ -31,7 +31,7 @@ const SITE_ID = Number(process.env.SITE_ID)
 // Guaranteed to not be present in the database because we start from 1
 const DANGLING_DIRECTORY_PAGE_ID = "-1"
 const INDEX_PAGE_PERMALINK = "_index"
-const PAGE_ORDER_PERMALINK = "_meta"
+const META_PERMALINK = "_meta"
 const PAGE_RESOURCE_TYPES = [
   "Page",
   "CollectionPage",
@@ -50,8 +50,8 @@ const getConvertedPermalink = (fullPermalink: string) => {
   // we prohibit users from using `_` as a character
   const fullPermalinkWithoutIndex = fullPermalink.endsWith(INDEX_PAGE_PERMALINK)
     ? fullPermalink.slice(0, -INDEX_PAGE_PERMALINK.length)
-    : fullPermalink.endsWith(PAGE_ORDER_PERMALINK)
-      ? fullPermalink.slice(0, -PAGE_ORDER_PERMALINK.length)
+    : fullPermalink.endsWith(META_PERMALINK)
+      ? fullPermalink.slice(0, -META_PERMALINK.length)
       : fullPermalink
 
   if (fullPermalinkWithoutIndex.endsWith("/")) {
@@ -293,8 +293,8 @@ function generateSitemapTree(
       resource.type === "FolderMeta" &&
       resource.fullPermalink ===
         (pathPrefixWithoutLeadingSlash.length === 0
-          ? PAGE_ORDER_PERMALINK
-          : `${pathPrefixWithoutLeadingSlash}/${PAGE_ORDER_PERMALINK}`),
+          ? META_PERMALINK
+          : `${pathPrefixWithoutLeadingSlash}/${META_PERMALINK}`),
   )?.content?.order
 
   children.sort((a, b) => {
@@ -378,7 +378,12 @@ async function processDanglingDirectories(
         return { title, permalink, content }
       }),
       ...collections.map(({ title, permalink }) => {
-        const content = getCollectionIndexPageContents(title)
+        const meta = resources.find(
+          ({ permalink: resourcePermalink, type }) =>
+            `${permalink}/${META_PERMALINK}` === resourcePermalink &&
+            type === "CollectionMeta",
+        )
+        const content = getCollectionIndexPageContents(title, meta?.content)
         return { title, permalink, content }
       }),
     ].map((child) => {
