@@ -77,7 +77,9 @@ model Resource {
   // This is required so prisma does not attempt to drop the custom index.
   @@unique([siteId, parentId, permalink])
   @@index([siteId, id, parentId]) // note: ordering is important here!
-  @@index([type])
+  @@index([type])  
+
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, name: "resource_title_trgm_idx") 
 }
 
 model Blob {
