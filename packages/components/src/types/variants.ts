@@ -7,7 +7,7 @@ export const CollectionVariantSchema = Type.Union([
 
 export type CollectionVariant = Static<typeof CollectionVariantSchema>
 
-export type IsomerLayoutVariants = {
+export interface IsomerLayoutVariants {
   collection: {
     variant: CollectionVariant
   }
