@@ -383,7 +383,10 @@ async function processDanglingDirectories(
             `${permalink}/${META_PERMALINK}` === resourcePermalink &&
             type === "CollectionMeta",
         )
-        const content = getCollectionIndexPageContents(title, meta?.content)
+        const content = getCollectionIndexPageContents(
+          title,
+          meta?.content.variant,
+        )
         return { title, permalink, content }
       }),
     ].map((child) => {

@@ -1,5 +1,5 @@
 import type { UseCollectionReturn } from "./useCollection"
-import type { CollectionPageSchemaType } from "~/types"
+import type { CollectionPageSchemaType, CollectionVariant } from "~/types"
 import { tv } from "~/lib/tv"
 import { BlogCard, CollectionCard } from "../../components/internal"
 
@@ -14,7 +14,7 @@ interface CollectionResultProps
     | "totalCount"
   > {
   shouldShowDate?: boolean
-  variant: CollectionPageSchemaType["page"]["variant"]
+  variant?: CollectionVariant
   siteAssetsBaseUrl: string | undefined
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }
