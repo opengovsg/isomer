@@ -12,6 +12,7 @@ import {
 } from "./ResourceSelectorContent"
 import { LoadingHeader, SuspendableHeader } from "./ResourceSelectorHeader"
 import { SearchBar } from "./SearchBar"
+import { useResourceSelector } from "./useResourceSelector"
 import { useResourceStack } from "./useResourceStack"
 
 const FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM = 17.5
@@ -57,23 +58,40 @@ const SuspensableResourceSelector = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isResourceIdHighlighted,
-    isResourceItemDisabled,
-    hasParentInStack,
-    handleClickBackButton,
-    handleClickResourceItem,
+    resourceStack,
+    isResourceHighlighted,
+    setIsResourceHighlighted,
+    setResourceStack,
+    removeFromStack,
   } = useResourceStack({
     siteId,
-    onChange: (resourceId: string) => {
-      onChange(resourceId)
-      clearSearchValue()
-    },
     selectedResourceId,
     onlyShowFolders,
     existingResource,
     resourceIds: isSearchQueryEmpty
       ? undefined
       : matchedResources.map((resource) => resource.id),
+  })
+
+  const {
+    isResourceIdHighlighted,
+    isResourceItemDisabled,
+    hasParentInStack,
+    handleClickBackButton,
+    handleClickResourceItem,
+  } = useResourceSelector({
+    siteId,
+    moveDest,
+    resourceStack,
+    isResourceHighlighted,
+    setIsResourceHighlighted,
+    existingResource,
+    setResourceStack,
+    removeFromStack,
+    onChange: (resourceId: string) => {
+      onChange(resourceId)
+      clearSearchValue()
+    },
   })
 
   const renderedHeader = useMemo(() => {
