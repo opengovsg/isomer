@@ -95,6 +95,8 @@ export function renderComponentPreviewText({
       return component.title
     case "map":
       return component.title || "Map embed"
+    case "logocloud":
+      return component.title
     case "prose":
       return getTextContentOfProse(component.content)
     case "video":
