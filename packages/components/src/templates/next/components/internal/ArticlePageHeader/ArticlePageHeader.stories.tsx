@@ -52,7 +52,6 @@ export const ArticleWithTags: Story = {
     tags: [
       {
         category: "Tags",
-        values: [],
         selected: ["NParks Happenings", "Wild dinosaur"],
       },
     ],

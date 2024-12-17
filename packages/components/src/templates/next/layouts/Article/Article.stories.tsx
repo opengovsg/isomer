@@ -496,7 +496,6 @@ export const TaggedArticle: Story = {
       tags: [
         {
           category: "Tags",
-          values: [],
           selected: ["NParks Happenings", "Wild dinosaur"],
         },
       ],
