@@ -34,6 +34,7 @@ const ArticleLayout = ({
           date={page.date}
           site={site}
           LinkComponent={LinkComponent}
+          tags={page.tags}
         />
 
         <div className="mx-auto w-full gap-10 pb-20">

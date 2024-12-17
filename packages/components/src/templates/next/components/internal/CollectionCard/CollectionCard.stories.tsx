@@ -86,8 +86,6 @@ export const TagsWithImage: Story = {
     title: "Collection card with tags",
     description: "This is a random description that will be on the card",
     tags: [
-      { category: "tagged", selected: ["tagged"] },
-      { category: "tag", selected: ["A tag"] },
       {
         category: "long",
         selected: [
@@ -104,14 +102,6 @@ export const TagsWithoutImage: Story = {
     withoutImage: true,
     description: "This is a random description that will be on the card",
     tags: [
-      { category: "tag", selected: ["A tag"] },
-      { category: "tagged", selected: ["tagged"] },
-      {
-        category: "long",
-        selected: [
-          "This is a very long tag that shuold be reflowed on smaller screens maybe",
-        ],
-      },
       {
         category: "very long",
         selected: [
