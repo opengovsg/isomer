@@ -88,9 +88,6 @@ export const TagsWithImage: Story = {
     tags: [
       {
         category: "long",
-        values: [
-          "This is a very long tag that should be reflowed on smaller screens maybe",
-        ],
         selected: [
           "This is a very long tag that shuold be reflowed on smaller screens maybe",
         ],
@@ -107,9 +104,6 @@ export const TagsWithoutImage: Story = {
     tags: [
       {
         category: "very long",
-        values: [
-          "This is a second long link that should eat into the image area so that we can see how it looks",
-        ],
         selected: [
           "This is a second long link that should eat into the image area so that we can see how it looks",
         ],
