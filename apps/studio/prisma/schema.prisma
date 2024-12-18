@@ -79,6 +79,8 @@ model Resource {
   @@index([siteId, id, parentId]) // note: ordering is important here!
   @@index([type])  
 
+  // NOTE: This is used to create a inverted index using text trigrams for the title
+  // so that we can perform searches on the title quickly
   @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, name: "resource_title_trgm_idx") 
 }
 
