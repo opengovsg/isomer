@@ -11,13 +11,11 @@ import { LINK_HREF_PATTERN } from "~/utils/validation"
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
     title: "Title",
-    default: "This is the title of the card",
     maxLength: 100,
   }),
   description: Type.Optional(
     Type.String({
       title: "Description",
-      default: "This is an optional description for the card",
       maxLength: 150,
     }),
   ),
