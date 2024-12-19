@@ -25,11 +25,7 @@ export const DEFAULT_BLOCKS: Record<
     summary: "Title for the accordion item",
     details: {
       type: "prose",
-      content: [
-        {
-          type: "paragraph",
-        },
-      ],
+      content: [],
     },
   },
   callout: {
