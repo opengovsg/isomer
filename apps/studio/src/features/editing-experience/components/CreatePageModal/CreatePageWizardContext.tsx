@@ -65,6 +65,10 @@ const useCreatePageWizardContext = ({
   })
 
   const [layout, title] = formMethods.watch(["layout", "title"])
+  const [{ fullPermalink }] =
+    trpc.resource.getWithFullPermalink.useSuspenseQuery({
+      resourceId: folderId ? String(folderId) : "",
+    })
 
   const layoutPreviewJson: IsomerSchema = useMemo(() => {
     const jsonPreview =
@@ -132,6 +136,7 @@ const useCreatePageWizardContext = ({
     layoutPreviewJson,
     onClose,
     currentLayout: layout,
+    fullPermalink,
   }
 }
 

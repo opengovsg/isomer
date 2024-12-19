@@ -1,22 +1,27 @@
 import { useEffect } from "react"
 import {
+  chakra,
   Flex,
   FormControl,
   FormHelperText,
   FormLabel,
   Input,
-  InputGroup,
-  InputLeftAddon,
   ModalBody,
   ModalHeader,
   Stack,
   Text,
   Wrap,
 } from "@chakra-ui/react"
-import { Button, FormErrorMessage } from "@opengovsg/design-system-react"
+import {
+  Button,
+  FormErrorMessage,
+  Infobox,
+} from "@opengovsg/design-system-react"
 import { Controller } from "react-hook-form"
+import { BiLink } from "react-icons/bi"
 
 import { MAX_PAGE_URL_LENGTH, MAX_TITLE_LENGTH } from "~/schemas/page"
+import { AppGrid } from "~/templates/AppGrid"
 import { generateResourceUrl } from "../utils"
 import { useCreatePageWizard } from "./CreatePageWizardContext"
 import { PreviewLayout } from "./PreviewLayout"
@@ -28,6 +33,7 @@ export const CreatePageDetailsScreen = () => {
     handleBackToLayoutScreen,
     handleCreatePage,
     isLoading,
+    fullPermalink,
   } = useCreatePageWizard()
 
   const {
@@ -101,8 +107,8 @@ export const CreatePageDetailsScreen = () => {
         </Stack>
       </ModalHeader>
       <ModalBody p={0} overflow="hidden" bg="white">
-        <Flex height="100%">
-          <Stack height={0} minH="100%" overflow="auto">
+        <AppGrid height="100%" px={0}>
+          <Stack gridColumn="1 / 5" height={0} minH="100%" overflow="auto">
             <Stack gap="2rem" px="3rem" pb="2rem" pt="10vh">
               <Stack>
                 <Text as="h2" textStyle="h4">
@@ -142,35 +148,41 @@ export const CreatePageDetailsScreen = () => {
                       URL should be short and simple
                     </FormHelperText>
                   </FormLabel>
-                  <InputGroup>
-                    <InputLeftAddon
-                      bg="interaction.support.disabled"
-                      color="base.divider.strong"
-                    >
-                      your-site.gov.sg/
-                    </InputLeftAddon>
-                    <Controller
-                      control={control}
-                      name="permalink"
-                      render={({ field: { onChange, ...field } }) => (
-                        <Input
-                          maxLength={MAX_PAGE_URL_LENGTH}
-                          borderLeftRadius={0}
-                          placeholder="URL will be autopopulated if left untouched"
-                          {...field}
-                          onChange={(e) => {
-                            onChange(
-                              generateResourceUrl(e.target.value).slice(
-                                0,
-                                MAX_PAGE_URL_LENGTH,
-                              ),
-                            )
-                          }}
-                        />
-                      )}
-                    />
-                  </InputGroup>
+                  <Controller
+                    control={control}
+                    name="permalink"
+                    render={({ field: { onChange, ...field } }) => (
+                      <Input
+                        minW="23rem"
+                        maxLength={MAX_PAGE_URL_LENGTH}
+                        borderLeftRadius={0}
+                        placeholder="URL will be autopopulated if left untouched"
+                        {...field}
+                        onChange={(e) => {
+                          onChange(
+                            generateResourceUrl(e.target.value).slice(
+                              0,
+                              MAX_PAGE_URL_LENGTH,
+                            ),
+                          )
+                        }}
+                      />
+                    )}
+                  />
 
+                  <Infobox
+                    my="0.5rem"
+                    icon={<BiLink />}
+                    variant="info-secondary"
+                    size="sm"
+                  >
+                    <Text textStyle="subhead-2" overflow="hidden">
+                      <chakra.span color="base.content.medium">
+                        {fullPermalink}
+                      </chakra.span>
+                      /{watch("permalink")}
+                    </Text>
+                  </Infobox>
                   {errors.permalink?.message ? (
                     <FormErrorMessage>
                       {errors.permalink.message}
@@ -184,8 +196,10 @@ export const CreatePageDetailsScreen = () => {
               </Stack>
             </Stack>
           </Stack>
-          <PreviewLayout />
-        </Flex>
+          <Flex gridColumn="5 / 13">
+            <PreviewLayout />
+          </Flex>
+        </AppGrid>
       </ModalBody>
     </>
   )
