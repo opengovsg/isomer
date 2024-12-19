@@ -54,30 +54,37 @@ const t = initTRPC
 
 // Setting outer context with tRPC will not get us correct path during request batching,
 // only by setting logger context in the middleware do we get the exact path to log
-const loggerMiddleware = t.middleware(async ({ path, next, ctx, type }) => {
-  const start = Date.now()
-  const logger = createBaseLogger({ path, clientIp: getIP(ctx.req) })
+const loggerMiddleware = t.middleware(
+  async ({ path, next, ctx, type, rawInput }) => {
+    const start = Date.now()
+    const logger = createBaseLogger({ path, clientIp: getIP(ctx.req) })
 
-  const result = await next({
-    ctx: { logger },
-  })
+    const result = await next({
+      ctx: { logger },
+    })
 
-  const durationInMs = Date.now() - start
+    const durationInMs = Date.now() - start
 
-  if (result.ok) {
-    logger.info({ durationInMs }, `[${type}]: ${path} - ${durationInMs}ms - OK`)
-  } else {
-    logger.error(
-      {
-        durationInMs,
-        err: result.error,
-      },
-      `[${type}]: ${path} - ${durationInMs}ms - ${result.error.code} ${result.error.message}`,
-    )
-  }
+    if (result.ok) {
+      logger.info(
+        { durationInMs, rawInput, userId: ctx.session?.userId },
+        `[${type}]: ${path} - ${durationInMs}ms - OK`,
+      )
+    } else {
+      logger.error(
+        {
+          durationInMs,
+          err: result.error,
+          rawInput,
+          userId: ctx.session?.userId,
+        },
+        `[${type}]: ${path} - ${durationInMs}ms - ${result.error.code} ${result.error.message} - ERROR`,
+      )
+    }
 
-  return result
-})
+    return result
+  },
+)
 
 const loggerWithVersionMiddleware = loggerMiddleware.unstable_pipe(
   async ({ next, ctx }) => {
