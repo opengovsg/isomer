@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from "react"
 import { useRouter } from "next/router"
 import { Flex } from "@chakra-ui/react"
-import { BiCog, BiFolder, BiHelpCircle, BiLogOut } from "react-icons/bi"
+import { BiCog, BiFolder, BiLogOut } from "react-icons/bi"
 import { z } from "zod"
 
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
@@ -56,11 +56,6 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
 
   const userNavItems: CmsSidebarItem[] = [
     // TODO(ISOM-1552): Add back view live site functionality when implemented
-    {
-      icon: BiHelpCircle,
-      label: "Isomer Guide ",
-      href: "https://guide.isomer.gov.sg/",
-    },
     {
       icon: BiLogOut,
       label: "Sign out",
