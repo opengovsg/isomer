@@ -1,9 +1,9 @@
 import { format } from "date-fns"
 import { atom } from "jotai"
 
-import type { PendingMoveResource } from "./types"
+import type { ResourceItemContent } from "~/schemas/resource"
 
-export const moveResourceAtom = atom<null | PendingMoveResource>(null)
+export const moveResourceAtom = atom<null | ResourceItemContent>(null)
 
 export interface CollectionLinkProps {
   ref: string
