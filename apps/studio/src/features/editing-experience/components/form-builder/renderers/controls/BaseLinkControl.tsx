@@ -95,7 +95,7 @@ export function BaseLinkControl({
                 colorScheme="critical"
                 aria-label="Remove file"
                 icon={<BiTrash />}
-                onClick={() => handleChange(path, "")}
+                onClick={() => handleChange(path, undefined)}
               />
             </>
           ) : (
