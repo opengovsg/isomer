@@ -15,7 +15,7 @@ const collectionCardLinkStyle = tv({
   base: "prose-title-md-semibold line-clamp-3 w-fit underline-offset-4 hover:underline",
 })
 
-export const CollectionCard = ({
+export const BlogCard = ({
   LinkComponent,
   lastUpdated,
   description,
@@ -33,13 +33,28 @@ export const CollectionCard = ({
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }): JSX.Element => {
   return (
-    <div className="flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6">
+    // NOTE: In smaller viewports, we render a border between items for easy distinguishing
+    // and to do that, we add a padding on smaller viewports
+    <div className="flex flex-1 flex-col gap-3 border-b pb-5 pt-5 md:pt-0">
+      {image && (
+        <div className="relative mb-3 min-h-40 w-full shrink-0">
+          {
+            <ImageClient
+              src={imageSrc || ""}
+              alt={image.alt}
+              width="100%"
+              className="absolute left-0 h-full w-full rounded object-cover"
+              assetsBaseUrl={siteAssetsBaseUrl}
+            />
+          }
+        </div>
+      )}
       {shouldShowDate && (
-        <Text className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
+        <Text className="prose-label-md-regular shrink-0 text-base-content-subtle">
           {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
         </Text>
       )}
-      <div className="flex flex-grow flex-col gap-3 text-base-content lg:gap-2">
+      <div className="flex flex-grow flex-col gap-3 text-base-content">
         <h3 className="inline-block">
           <Link
             LinkComponent={LinkComponent}
@@ -50,7 +65,7 @@ export const CollectionCard = ({
           </Link>
         </h3>
         {tags && tags.length > 0 && (
-          <>
+          <div className="-mt-1">
             {tags.flatMap(({ category, selected: labels }) => {
               return (
                 <div className="flex w-full flex-wrap items-center gap-2">
@@ -61,7 +76,7 @@ export const CollectionCard = ({
                 </div>
               )
             })}
-          </>
+          </div>
         )}
         {description && (
           <Text className="prose-body-base line-clamp-3" title={description}>
@@ -69,21 +84,10 @@ export const CollectionCard = ({
           </Text>
         )}
         {/* TODO: Feature enhancement? Filter by category when clicked */}
-        <Text className="prose-label-md mt-3 text-base-content-subtle lg:mt-2">
+        <Text className="prose-label-sm-medium text-base-content-subtle">
           {category}
         </Text>
       </div>
-      {image && (
-        <div className="relative mt-3 min-h-40 w-full shrink-0 lg:ml-4 lg:mt-0 lg:h-auto lg:w-1/4">
-          <ImageClient
-            src={imageSrc || ""}
-            alt={image.alt}
-            width="100%"
-            className="absolute left-0 h-full w-full rounded object-cover"
-            assetsBaseUrl={siteAssetsBaseUrl}
-          />
-        </div>
-      )}
     </div>
   )
 }

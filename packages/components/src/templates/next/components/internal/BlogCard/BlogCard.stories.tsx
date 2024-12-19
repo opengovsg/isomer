@@ -4,11 +4,11 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { CollectionCardProps } from "~/interfaces"
 import { Tag } from "~/interfaces/internal/CollectionCard"
-import { CollectionCard } from "./CollectionCard"
+import { BlogCard } from "./BlogCard"
 
-const meta: Meta<typeof CollectionCard> = {
-  title: "Next/Internal Components/CollectionCard",
-  component: CollectionCard,
+const meta: Meta<typeof BlogCard> = {
+  title: "Next/Internal Components/Blog Card",
+  component: BlogCard,
   argTypes: {},
   parameters: {
     layout: "fullscreen",
@@ -19,7 +19,7 @@ const meta: Meta<typeof CollectionCard> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof CollectionCard>
+type Story = StoryObj<typeof BlogCard>
 
 const generateArgs = ({
   shouldShowDate = true,
