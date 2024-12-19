@@ -214,7 +214,7 @@ export const CreateCollectionPageDetailsScreen = () => {
                     <chakra.span color="base.content.medium">
                       {fullPermalink}
                     </chakra.span>
-                    /{watch("permalink")}
+                    /{url}
                   </Text>
                 </Infobox>
 

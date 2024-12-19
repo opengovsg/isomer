@@ -180,7 +180,7 @@ export const CreatePageDetailsScreen = () => {
                       <chakra.span color="base.content.medium">
                         {fullPermalink}
                       </chakra.span>
-                      /{watch("permalink")}
+                      /{url}
                     </Text>
                   </Infobox>
                   {errors.permalink?.message ? (
