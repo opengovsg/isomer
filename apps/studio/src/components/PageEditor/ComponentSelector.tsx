@@ -182,6 +182,7 @@ function ComponentSelector() {
         return []
       case ResourceType.Folder:
       case ResourceType.FolderMeta:
+      case ResourceType.CollectionMeta:
         throw new Error(`Unsupported resource type: ${type}`)
       default:
         const exhaustiveCheck: never = type

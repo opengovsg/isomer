@@ -15,7 +15,10 @@
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "paths": {
-      "~generated/*": ["../../../../apps/studio/prisma/generated/*"]
+      "~generated/*": ["../../../../apps/studio/prisma/generated/*"],
+      // NOTE: this works because we clone our repo as a whole.
+      // Respect the package's default export and use only index
+      "~schema": ["../../../../packages/components/src/index.ts"]
     }
   }
 }

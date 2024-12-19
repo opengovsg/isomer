@@ -5,6 +5,7 @@ import { HStack, Icon, Text, VStack } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import {
+  BiCog,
   BiData,
   BiFile,
   BiFolder,
@@ -43,6 +44,8 @@ export const TitleCell = ({
         return BiFolder
       case ResourceType.Collection:
         return BiData
+      case ResourceType.CollectionMeta:
+        return BiCog
       case ResourceType.CollectionPage:
         return BiFile
       case ResourceType.CollectionLink:

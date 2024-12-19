@@ -71,6 +71,7 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
     category: schemaData.page.category,
     date: schemaData.page.date,
     image: schemaData.page.image,
+    tags: schemaData.page.tags,
   }
 
   if (schemaData.layout === "file") {

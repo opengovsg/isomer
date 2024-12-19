@@ -1,7 +1,7 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
-import type { Resource } from "@prisma/client"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import type { Resource } from "~prisma/generated/selectableTypes"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 
 type ResourceDto = Omit<
@@ -27,7 +27,8 @@ const getSitemapTreeFromArray = (
       return (
         resource.parentId === null &&
         resource.type !== ResourceType.RootPage &&
-        resource.type !== ResourceType.FolderMeta
+        resource.type !== ResourceType.FolderMeta &&
+        resource.type !== ResourceType.CollectionMeta
       )
     }
     return (

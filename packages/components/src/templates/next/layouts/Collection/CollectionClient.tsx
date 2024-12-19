@@ -3,7 +3,10 @@
 import { useRef } from "react"
 
 import type { Filter as FilterType } from "../../types/Filter"
-import type { CollectionPageSchemaType } from "~/engine"
+import type {
+  CollectionPagePageProps,
+  CollectionPageSchemaType,
+} from "~/engine"
 import type {
   BreadcrumbProps,
   ProcessedCollectionCardProps,
@@ -20,7 +23,7 @@ import { CollectionResults } from "./CollectionResults"
 import { ITEMS_PER_PAGE, useCollection } from "./useCollection"
 
 interface CollectionClientProps {
-  page: CollectionPageSchemaType["page"]
+  page: CollectionPagePageProps
   items: ProcessedCollectionCardProps[]
   filters: FilterType[]
   shouldShowDate: boolean
@@ -120,6 +123,7 @@ const CollectionClient = ({
         >
           <div className="flex w-full flex-col gap-3">
             <CollectionResults
+              variant={page.variant}
               appliedFilters={appliedFilters}
               filteredCount={filteredCount}
               handleClearFilter={handleClearFilter}

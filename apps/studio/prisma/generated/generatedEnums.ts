@@ -8,6 +8,7 @@ export const ResourceType = {
   Page: "Page",
   Folder: "Folder",
   Collection: "Collection",
+  CollectionMeta: "CollectionMeta",
   CollectionLink: "CollectionLink",
   CollectionPage: "CollectionPage",
   IndexPage: "IndexPage",

@@ -15,6 +15,7 @@ export const getResourceSubpath = (resourceType: ResourceType) => {
     case ResourceType.Collection:
       return "collections"
     case ResourceType.FolderMeta:
+    case ResourceType.CollectionMeta:
       // TODO: Not implemented yet
       return ""
     default:

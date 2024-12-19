@@ -6,6 +6,7 @@
  */
 
 import type {
+  IsomerLayoutVariants as _IsomerLayoutVariants,
   IsomerPageSchemaType as _IsomerPageSchemaType,
   IsomerSchema as _IsomerSchema,
   IsomerSiteConfigProps as _IsomerSiteConfigProps,
@@ -20,6 +21,10 @@ declare global {
     // TODO: Rename all with XXXYYYJson instead of XXXJsonYYY
     type SiteJsonConfig = Tagged<_IsomerSiteConfigProps, "JSONB">
     type SiteThemeJson = Tagged<_IsomerSiteThemeProps, "JSONB">
+    type CollectionThemeJson = Tagged<
+      _IsomerLayoutVariants["collection"],
+      "JSONB"
+    >
     type BlobJsonContent = Tagged<_IsomerSchema, "JSONB">
     type NavbarJsonContent = Tagged<
       _IsomerSiteWideComponentsProps["navBarItems"],

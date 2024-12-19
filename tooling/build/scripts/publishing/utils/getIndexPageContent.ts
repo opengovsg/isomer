@@ -1,3 +1,5 @@
+import { CollectionPagePageProps } from "~schema"
+
 const ISOMER_SCHEMA_VERSION = "0.1.0"
 
 // Generate the index page content for a given folder
@@ -13,7 +15,10 @@ export const getFolderIndexPageContents = (title: string) => ({
   content: [],
 })
 
-export const getCollectionIndexPageContents = (title: string) => ({
+export const getCollectionIndexPageContents = (
+  title: string,
+  variant: CollectionPagePageProps["variant"] = "collection",
+) => ({
   version: ISOMER_SCHEMA_VERSION,
   layout: "collection",
   page: {
@@ -21,6 +26,7 @@ export const getCollectionIndexPageContents = (title: string) => ({
     contentPageHeader: {
       summary: `Pages in ${title}`,
     },
+    variant,
   },
   content: [],
 })
