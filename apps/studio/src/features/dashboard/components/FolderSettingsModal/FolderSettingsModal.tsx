@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import {
   Box,
+  chakra,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -14,6 +15,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Skeleton,
+  Text,
   VStack,
 } from "@chakra-ui/react"
 import {
@@ -117,6 +119,10 @@ const SuspendableModalContent = ({
     mutate({ ...data, resourceId: String(folderId), siteId: String(siteId) })
   })
 
+  const [{ fullPermalink }] =
+    trpc.resource.getWithFullPermalink.useSuspenseQuery({
+      resourceId: folderId ? String(folderId) : "",
+    })
   const [title, permalink] = watch(["title", "permalink"])
 
   return (
@@ -177,9 +183,16 @@ const SuspendableModalContent = ({
                   py="0.5rem"
                   px="0.75rem"
                   bg="interaction.support.disabled"
+                  display="flex"
+                  alignItems="center"
                 >
                   <Icon mr="0.5rem" as={BiLink} />
-                  {permalink}
+                  <Text textStyle="subhead-2" overflow="hidden">
+                    <chakra.span color="base.content.medium">
+                      {fullPermalink.split("/").slice(0, -1).join("/")}
+                    </chakra.span>
+                    /{permalink}
+                  </Text>
                 </Box>
               )}
 
