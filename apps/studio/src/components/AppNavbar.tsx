@@ -1,6 +1,6 @@
 import Image from "next/image"
 import NextLink from "next/link"
-import { Flex, HStack } from "@chakra-ui/react"
+import { Flex, HStack, Tooltip } from "@chakra-ui/react"
 import {
   AvatarMenu,
   Button,
@@ -33,22 +33,24 @@ export function AppNavbar(): JSX.Element {
         transition="padding 0.1s"
       >
         <Flex alignItems="center">
-          <IconButton
-            mr="0.5rem"
-            as={NextLink}
-            href={DASHBOARD}
-            variant="clear"
-            aria-label="Back to dashboard"
-            icon={
-              <Image
-                src="/assets/isomer-logo-color.svg"
-                height={24}
-                width={22}
-                alt="Back to dashboard"
-                priority
-              />
-            }
-          />
+          <Tooltip label={"Back to sites"} placement="right">
+            <IconButton
+              mr="0.5rem"
+              as={NextLink}
+              href={DASHBOARD}
+              variant="clear"
+              aria-label="Back to sites"
+              icon={
+                <Image
+                  src="/assets/isomer-logo-color.svg"
+                  height={24}
+                  width={22}
+                  alt="Back to sites"
+                  priority
+                />
+              }
+            />
+          </Tooltip>
         </Flex>
         <HStack
           textStyle="subhead-1"

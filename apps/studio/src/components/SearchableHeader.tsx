@@ -1,6 +1,6 @@
 import Image from "next/image"
 import NextLink from "next/link"
-import { Flex, Grid, GridItem, Text } from "@chakra-ui/react"
+import { Flex, Grid, GridItem, Text, Tooltip } from "@chakra-ui/react"
 import { AvatarMenu, IconButton, Menu } from "@opengovsg/design-system-react"
 
 import { Searchbar, useSearchStyle } from "~/components/Searchbar"
@@ -27,22 +27,24 @@ export const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
       alignItems="start"
     >
       <Flex alignItems="center" as={GridItem}>
-        <IconButton
-          mr="0.5rem"
-          as={NextLink}
-          href={DASHBOARD}
-          variant="clear"
-          aria-label="Back to dashboard"
-          icon={
-            <Image
-              src="/assets/isomer-logo-color.svg"
-              height={24}
-              width={22}
-              alt="Back to dashboard"
-              priority
-            />
-          }
-        />
+        <Tooltip label={"Back to sites"} placement="right">
+          <IconButton
+            mr="0.5rem"
+            as={NextLink}
+            href={DASHBOARD}
+            variant="clear"
+            aria-label="Back to sites"
+            icon={
+              <Image
+                src="/assets/isomer-logo-color.svg"
+                height={24}
+                width={22}
+                alt="Back to sites"
+                priority
+              />
+            }
+          />
+        </Tooltip>
         <Text textStyle="subhead-2" noOfLines={1}>
           {name}
         </Text>
