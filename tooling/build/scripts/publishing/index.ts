@@ -378,10 +378,11 @@ async function processDanglingDirectories(
         return { title, permalink, content }
       }),
       ...collections.map(({ id, title, permalink }) => {
-        const meta = resources.find(
-          ({ type, parentId }) =>
-            parentId === Number(id) && type === "CollectionMeta",
-        )
+        console.log("collection id", id)
+        const meta = resources.find(({ title, type, parentId }) => {
+          console.log("parentId", parentId, title)
+          return parentId === Number(id) && type === "CollectionMeta"
+        })
         const content = getCollectionIndexPageContents(
           title,
           meta?.content.variant,
