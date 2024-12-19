@@ -9,7 +9,7 @@ export const ContentPageHeaderSchema = Type.Object(
   {
     summary: Type.String({
       title: "Content page summary",
-      description: "The summary of the page's content",
+      description: "Help users understand what this page is about",
       maxLength: 300,
       format: "textarea",
     }),

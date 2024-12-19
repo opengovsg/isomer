@@ -71,10 +71,6 @@ export const DynamicDataBannerSchema = Type.Object(
   {
     groups: [
       {
-        label: "Map API endpoint",
-        fields: ["apiEndpoint", "title", "data"],
-      },
-      {
         label: "Add a call-to-action",
         fields: ["label", "url"],
       },
