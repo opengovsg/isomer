@@ -1,12 +1,11 @@
 import { useEffect } from "react"
 import {
+  chakra,
   Flex,
   FormControl,
   FormHelperText,
   FormLabel,
   Input,
-  InputGroup,
-  InputLeftAddon,
   ListItem,
   ModalBody,
   ModalHeader,
@@ -15,9 +14,14 @@ import {
   UnorderedList,
   Wrap,
 } from "@chakra-ui/react"
-import { Button, FormErrorMessage } from "@opengovsg/design-system-react"
+import {
+  Button,
+  FormErrorMessage,
+  Infobox,
+} from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { Controller } from "react-hook-form"
+import { BiLink } from "react-icons/bi"
 
 import { MAX_PAGE_URL_LENGTH, MAX_TITLE_LENGTH } from "~/schemas/page"
 import { AppGrid } from "~/templates/AppGrid"
@@ -40,6 +44,7 @@ export const CreateCollectionPageDetailsScreen = () => {
     handleBackToTypeScreen,
     handleCreatePage,
     isLoading,
+    fullPermalink,
   } = useCreateCollectionPageWizard()
 
   const {
@@ -179,34 +184,39 @@ export const CreateCollectionPageDetailsScreen = () => {
                     URL should be short and simple
                   </FormHelperText>
                 </FormLabel>
-                <InputGroup>
-                  <InputLeftAddon
-                    bg="interaction.support.disabled"
-                    color="base.divider.strong"
-                  >
-                    your-site.gov.sg/
-                  </InputLeftAddon>
-                  <Controller
-                    control={control}
-                    name="permalink"
-                    render={({ field: { onChange, ...field } }) => (
-                      <Input
-                        isDisabled={type === ResourceType.CollectionLink}
-                        borderLeftRadius={0}
-                        placeholder="URL will be autopopulated if left untouched"
-                        {...field}
-                        onChange={(e) => {
-                          onChange(
-                            generatePageUrl(e.target.value).slice(
-                              0,
-                              MAX_PAGE_URL_LENGTH,
-                            ),
-                          )
-                        }}
-                      />
-                    )}
-                  />
-                </InputGroup>
+                <Controller
+                  control={control}
+                  name="permalink"
+                  render={({ field: { onChange, ...field } }) => (
+                    <Input
+                      isDisabled={type === ResourceType.CollectionLink}
+                      borderLeftRadius={0}
+                      placeholder="URL will be autopopulated if left untouched"
+                      {...field}
+                      onChange={(e) => {
+                        onChange(
+                          generatePageUrl(e.target.value).slice(
+                            0,
+                            MAX_PAGE_URL_LENGTH,
+                          ),
+                        )
+                      }}
+                    />
+                  )}
+                />
+                <Infobox
+                  my="0.5rem"
+                  icon={<BiLink />}
+                  variant="info-secondary"
+                  size="sm"
+                >
+                  <Text textStyle="subhead-2" overflow="hidden">
+                    <chakra.span color="base.content.medium">
+                      {fullPermalink}
+                    </chakra.span>
+                    /{watch("permalink")}
+                  </Text>
+                </Infobox>
 
                 {errors.permalink?.message ? (
                   <FormErrorMessage>
