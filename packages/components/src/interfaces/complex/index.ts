@@ -1,11 +1,23 @@
 export { AccordionSchema, type AccordionProps } from "./Accordion"
+export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
 export { CalloutSchema, type CalloutProps } from "./Callout"
 export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { HeroSchema, type HeroProps } from "./Hero"
 export { IframeSchema, type IframeProps } from "./Iframe"
-export { ImageSchema, type ImageProps } from "./Image"
-export { InfoCardsSchema, type InfoCardsProps } from "./InfoCards"
+export {
+  generateImageSrcSchema,
+  ImageSrcSchema,
+  AltTextSchema,
+  ImageSchema,
+  type ImageProps,
+} from "./Image"
+export {
+  InfoCardsSchema,
+  type InfoCardsProps,
+  CARDS_WITHOUT_IMAGES,
+  CARDS_WITH_IMAGES,
+} from "./InfoCards"
 export { InfoColsSchema, type InfoColsProps } from "./InfoCols"
 export { InfobarSchema, type InfobarProps } from "./Infobar"
 export { InfopicSchema, type InfopicProps } from "./Infopic"

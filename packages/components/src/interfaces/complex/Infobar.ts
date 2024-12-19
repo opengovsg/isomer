@@ -55,6 +55,16 @@ export const InfobarSchema = Type.Object(
     ),
   },
   {
+    groups: [
+      {
+        label: "Primary call-to-action",
+        fields: ["buttonLabel", "buttonUrl"],
+      },
+      {
+        label: "Secondary call-to-action",
+        fields: ["secondaryButtonLabel", "secondaryButtonUrl"],
+      },
+    ],
     title: "Infobar component",
   },
 )

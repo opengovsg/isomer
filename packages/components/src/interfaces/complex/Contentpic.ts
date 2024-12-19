@@ -2,25 +2,15 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
-import { BaseProseSchema } from "../native/Prose"
+import { ContentpicProseSchema } from "../native/Prose"
+import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const ContentpicSchema = Type.Object(
   {
     type: Type.Literal("contentpic", { default: "contentpic" }),
-    content: BaseProseSchema,
-    imageSrc: Type.String({
-      title: "Upload image",
-      description: "The URL to the image",
-      format: "image",
-    }),
-    imageAlt: Type.Optional(
-      Type.String({
-        title: "Alternate text",
-        maxLength: 120,
-        description:
-          "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
-      }),
-    ),
+    imageSrc: ImageSrcSchema,
+    imageAlt: Type.Optional(AltTextSchema),
+    content: ContentpicProseSchema,
   },
   {
     title: "Contentpic component",

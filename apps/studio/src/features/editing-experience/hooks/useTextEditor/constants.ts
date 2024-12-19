@@ -1,6 +1,5 @@
-import type { ControlProps } from "@jsonforms/core"
 import type { Level } from "@tiptap/extension-heading"
-import type { Extensions, JSONContent } from "@tiptap/react"
+import type { Extensions } from "@tiptap/react"
 import { Bold } from "@tiptap/extension-bold"
 import { BulletList } from "@tiptap/extension-bullet-list"
 import { Document } from "@tiptap/extension-document"
@@ -21,23 +20,21 @@ import { Superscript } from "@tiptap/extension-superscript"
 import { Table } from "@tiptap/extension-table"
 import { TableCell } from "@tiptap/extension-table-cell"
 import { TableHeader } from "@tiptap/extension-table-header"
-import { TableRow } from "@tiptap/extension-table-row"
 import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
-import { textblockTypeInputRule, useEditor } from "@tiptap/react"
-import TextDirection from "tiptap-text-direction"
+import { textblockTypeInputRule } from "@tiptap/react"
 
-import { getHtmlWithRelativeReferenceLinks } from "../utils"
+import { getHtmlWithRelativeReferenceLinks } from "../../utils"
+
+export { TableRow } from "@tiptap/extension-table-row"
+
+export const HEADING_TYPE = "heading"
+export const PARAGRAPH_TYPE = "paragraph"
 
 const HEADING_LEVELS: Level[] = [2, 3, 4, 5]
 
-export interface BaseEditorProps {
-  data: ControlProps["data"]
-  handleChange: (content: JSONContent) => void
-}
-
-const BASE_EXTENSIONS: Extensions = [
+export const BASE_EXTENSIONS: Extensions = [
   Link.extend({
     addProseMirrorPlugins() {
       return [
@@ -106,7 +103,7 @@ const BASE_EXTENSIONS: Extensions = [
   Underline,
 ]
 
-const IsomerTable = Table.extend({
+export const IsomerTable = Table.extend({
   addAttributes() {
     return {
       caption: {
@@ -115,12 +112,16 @@ const IsomerTable = Table.extend({
     }
   },
 })
-const IsomerTableCell = TableCell.extend({ content: "(paragraph|list)+" })
-const IsomerTableHeader = TableHeader.extend({
+
+export const IsomerTableCell = TableCell.extend({
+  content: "(paragraph|list)+",
+})
+
+export const IsomerTableHeader = TableHeader.extend({
   content: "paragraph+",
 })
 
-const IsomerHeading = Heading.extend({
+export const IsomerHeading = Heading.extend({
   content: "text*",
   marks: "",
   // NOTE: Have to override the default input rules
@@ -142,65 +143,3 @@ const IsomerHeading = Heading.extend({
 }).configure({
   levels: HEADING_LEVELS,
 })
-
-const useBaseEditor = ({
-  data,
-  handleChange,
-  extensions,
-}: BaseEditorProps & { extensions: Extensions }) =>
-  useEditor({
-    immediatelyRender: false,
-    extensions: [
-      ...BASE_EXTENSIONS,
-      ...extensions,
-      TextDirection.configure({
-        types: ["heading", "paragraph"],
-      }),
-    ],
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    content: data,
-    onUpdate: (e) => {
-      const jsonContent = e.editor.getJSON()
-      handleChange(jsonContent)
-    },
-  })
-
-export const useTextEditor = ({ data, handleChange }: BaseEditorProps) =>
-  useBaseEditor({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    data,
-    handleChange,
-    extensions: [
-      TableRow,
-      IsomerTable,
-      IsomerTableCell,
-      IsomerTableHeader,
-      IsomerHeading,
-    ],
-  })
-
-export const useCalloutEditor = ({ data, handleChange }: BaseEditorProps) => {
-  return useBaseEditor({
-    extensions: [],
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    data,
-    handleChange,
-  })
-}
-
-export const useAccordionEditor = ({ data, handleChange }: BaseEditorProps) => {
-  return useBaseEditor({
-    extensions: [TableRow, IsomerTable, IsomerTableCell, IsomerTableHeader],
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    data,
-    handleChange,
-  })
-}
-
-export const useProseEditor = ({ data, handleChange }: BaseEditorProps) =>
-  useBaseEditor({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    data,
-    handleChange,
-    extensions: [IsomerHeading],
-  })
