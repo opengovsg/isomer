@@ -42,6 +42,29 @@ import {
   folderSettingsModalAtom,
 } from "../../atoms"
 
+interface SuspendablePermalinkProps {
+  title: string
+  folderId: string
+}
+const SuspendablePermalink = ({
+  folderId,
+  title,
+}: SuspendablePermalinkProps) => {
+  const [{ fullPermalink }] =
+    trpc.resource.getWithFullPermalink.useSuspenseQuery({
+      resourceId: folderId ? String(folderId) : "",
+    })
+
+  return (
+    <Text textStyle="subhead-2" overflow="hidden">
+      <chakra.span color="base.content.medium">
+        {fullPermalink.split("/").slice(0, -1).join("/")}
+      </chakra.span>
+      /{title}
+    </Text>
+  )
+}
+
 export const FolderSettingsModal = () => {
   const { folderId } = useAtomValue(folderSettingsModalAtom)
   const { siteId } = useQueryParse(sitePageSchema)
@@ -119,10 +142,6 @@ const SuspendableModalContent = ({
     mutate({ ...data, resourceId: String(folderId), siteId: String(siteId) })
   })
 
-  const [{ fullPermalink }] =
-    trpc.resource.getWithFullPermalink.useSuspenseQuery({
-      resourceId: folderId ? String(folderId) : "",
-    })
   const [title, permalink] = watch(["title", "permalink"])
 
   return (
@@ -178,22 +197,19 @@ const SuspendableModalContent = ({
               {errors.permalink?.message ? (
                 <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
               ) : (
-                <Box
-                  mt="0.5rem"
-                  py="0.5rem"
-                  px="0.75rem"
-                  bg="interaction.support.disabled"
-                  display="flex"
-                  alignItems="center"
-                >
-                  <Icon mr="0.5rem" as={BiLink} />
-                  <Text textStyle="subhead-2" overflow="hidden">
-                    <chakra.span color="base.content.medium">
-                      {fullPermalink.split("/").slice(0, -1).join("/")}
-                    </chakra.span>
-                    /{permalink}
-                  </Text>
-                </Box>
+                <Suspense fallback={<Skeleton w="100%" h="2rem" mt="0.5rem" />}>
+                  <Box
+                    mt="0.5rem"
+                    py="0.5rem"
+                    px="0.75rem"
+                    bg="interaction.support.disabled"
+                    display="flex"
+                    alignItems="center"
+                  >
+                    <Icon mr="0.5rem" as={BiLink} />
+                    <SuspendablePermalink title={title} folderId={folderId} />
+                  </Box>
+                </Suspense>
               )}
 
               <FormHelperText mt="0.5rem" color="base.content.medium">
