@@ -6,6 +6,10 @@ import type {
   SingleCardNoImageProps,
   SingleCardWithImageProps,
 } from "~/interfaces/complex/InfoCards"
+import {
+  CARDS_WITH_IMAGES,
+  CARDS_WITHOUT_IMAGES,
+} from "~/interfaces/complex/InfoCards"
 import { tv } from "~/lib/tv"
 import {
   getReferenceLinkHref,
@@ -231,7 +235,7 @@ const InfoCards = ({
 
   const InfoCardtoRender = () => {
     switch (variant) {
-      case "cardsWithImages":
+      case CARDS_WITH_IMAGES:
         return (
           <>
             {cards.map((card, idx) => (
@@ -245,7 +249,7 @@ const InfoCards = ({
             ))}
           </>
         )
-      case "cardsWithoutImages":
+      case CARDS_WITHOUT_IMAGES:
         return (
           <>
             {cards.map((card, idx) => (

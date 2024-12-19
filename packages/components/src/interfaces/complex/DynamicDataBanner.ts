@@ -2,6 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { LINK_HREF_PATTERN } from "~/utils/validation"
 import { TextSchema } from "../native/Text"
 
 export const DYNAMIC_DATA_BANNER_TYPE = "dynamicdatabanner"
@@ -65,15 +66,12 @@ export const DynamicDataBannerSchema = Type.Object(
         title: "Link destination",
         description: "When this is clicked, open:",
         format: "link",
+        pattern: LINK_HREF_PATTERN,
       }),
     ),
   },
   {
     groups: [
-      {
-        label: "Map API endpoint",
-        fields: ["apiEndpoint", "title", "data"],
-      },
       {
         label: "Add a call-to-action",
         fields: ["label", "url"],

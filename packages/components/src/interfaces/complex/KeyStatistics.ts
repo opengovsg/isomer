@@ -2,6 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
+import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 export const KeyStatisticsSchema = Type.Object(
   {
@@ -48,6 +49,7 @@ export const KeyStatisticsSchema = Type.Object(
         title: "Link destination",
         description: "When this is clicked, open:",
         format: "link",
+        pattern: LINK_HREF_PATTERN,
       }),
     ),
   },

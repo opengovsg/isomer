@@ -30,7 +30,6 @@ export const InfoBoxSchema = Type.Object({
       ),
       {
         title: "Column icon",
-        description: "The icon to display for the column",
         type: "string",
       },
     ),

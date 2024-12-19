@@ -70,3 +70,7 @@ export {
   default as JsonFormsHiddenControl,
   jsonFormsHiddenControlTester,
 } from "./JsonFormsHiddenControl"
+export {
+  default as JsonFormsUnionRootControl,
+  jsonFormsUnionRootControlTester,
+} from "./JsonFormsUnionRootControl"

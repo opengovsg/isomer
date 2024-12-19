@@ -1,22 +1,16 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import { AltTextSchema, ImageSrcSchema } from "./Image"
+
 export const LOGO_CLOUD_TYPE = "logocloud"
 export const LogoCloudSchema = Type.Object(
   {
     type: Type.Literal(LOGO_CLOUD_TYPE, { default: LOGO_CLOUD_TYPE }),
     images: Type.Array(
       Type.Object({
-        src: Type.String({
-          title: "Upload image",
-          format: "image",
-        }),
-        alt: Type.String({
-          title: "Alternate text",
-          maxLength: 120,
-          description:
-            "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
-        }),
+        src: ImageSrcSchema,
+        alt: AltTextSchema,
       }),
       {
         title: "Images for logo cloud",

@@ -180,11 +180,12 @@ export const pageHandlers = {
                 variant: "gradient",
                 subtitle:
                   "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
-                buttonUrl: "/",
+                buttonUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                 buttonLabel: "Main CTA",
                 backgroundUrl:
                   "https://ohno.isomer.gov.sg/images/hero-banner.png",
-                secondaryButtonUrl: "/",
+                secondaryButtonUrl:
+                  "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                 secondaryButtonLabel: "Sub CTA",
               },
               {
