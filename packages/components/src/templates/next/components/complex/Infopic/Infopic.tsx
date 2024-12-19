@@ -54,7 +54,7 @@ export const Infopic = ({
   LinkComponent,
 }: InfopicProps): JSX.Element => {
   const compoundStyles = infopicStyles({ isTextOnRight })
-  const hasLinkButton = buttonLabel && buttonUrl
+  const hasLinkButton = !!buttonLabel && !!buttonUrl
 
   const imgSrc =
     isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined

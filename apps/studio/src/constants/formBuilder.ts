@@ -16,6 +16,7 @@ export const JSON_FORMS_RANKING = {
   RefControl: 3,
   GroupLayoutRenderer: 1,
   VerticalLayoutRenderer: 1,
+  UnionRootControl: 1,
   Catchall: -99999999999,
 }
 
