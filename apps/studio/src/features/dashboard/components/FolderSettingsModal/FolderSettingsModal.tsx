@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import {
   Box,
+  chakra,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -14,6 +15,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Skeleton,
+  Text,
   VStack,
 } from "@chakra-ui/react"
 import {
@@ -39,6 +41,29 @@ import {
   DEFAULT_FOLDER_SETTINGS_MODAL_STATE,
   folderSettingsModalAtom,
 } from "../../atoms"
+
+interface SuspendablePermalinkProps {
+  title: string
+  folderId: string
+}
+const SuspendablePermalink = ({
+  folderId,
+  title,
+}: SuspendablePermalinkProps) => {
+  const [{ fullPermalink }] =
+    trpc.resource.getWithFullPermalink.useSuspenseQuery({
+      resourceId: folderId ? String(folderId) : "",
+    })
+
+  return (
+    <Text textStyle="subhead-2" overflow="hidden">
+      <chakra.span color="base.content.medium">
+        {fullPermalink.split("/").slice(0, -1).join("/")}
+      </chakra.span>
+      /{title}
+    </Text>
+  )
+}
 
 export const FolderSettingsModal = () => {
   const { folderId } = useAtomValue(folderSettingsModalAtom)
@@ -172,15 +197,19 @@ const SuspendableModalContent = ({
               {errors.permalink?.message ? (
                 <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
               ) : (
-                <Box
-                  mt="0.5rem"
-                  py="0.5rem"
-                  px="0.75rem"
-                  bg="interaction.support.disabled"
-                >
-                  <Icon mr="0.5rem" as={BiLink} />
-                  {permalink}
-                </Box>
+                <Suspense fallback={<Skeleton w="100%" h="2rem" mt="0.5rem" />}>
+                  <Box
+                    mt="0.5rem"
+                    py="0.5rem"
+                    px="0.75rem"
+                    bg="interaction.support.disabled"
+                    display="flex"
+                    alignItems="center"
+                  >
+                    <Icon mr="0.5rem" as={BiLink} />
+                    <SuspendablePermalink title={title} folderId={folderId} />
+                  </Box>
+                </Suspense>
               )}
 
               <FormHelperText mt="0.5rem" color="base.content.medium">
