@@ -27,3 +27,4 @@ export {
   GoogleTagManagerHeader,
   GoogleTagManagerBody,
 } from "./GoogleTagManager"
+export { BlogCard } from "./BlogCard"

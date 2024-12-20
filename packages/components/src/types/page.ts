@@ -1,5 +1,6 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
+import { Collection } from "react-aria-components"
 
 import {
   ArticlePageHeaderSchema,
@@ -8,6 +9,7 @@ import {
 } from "~/interfaces"
 import { AltTextSchema, generateImageSrcSchema } from "~/interfaces/complex"
 import { REF_HREF_PATTERN } from "~/utils/validation"
+import { CollectionVariant, CollectionVariantSchema } from "./variants"
 
 const categorySchemaObject = Type.Object({
   category: Type.String({
@@ -117,11 +119,16 @@ interface ArticlePageAdditionalProps {
   tags?: CollectionPagePageProps["tags"]
 }
 
+interface CollectionVariantProps {
+  variant?: CollectionVariant
+}
+
 export type ArticlePagePageProps = Static<typeof ArticlePagePageSchema> &
   BasePageAdditionalProps &
   ArticlePageAdditionalProps
 export type CollectionPagePageProps = Static<typeof CollectionPagePageSchema> &
-  BasePageAdditionalProps
+  BasePageAdditionalProps &
+  CollectionVariantProps
 export type ContentPagePageProps = Static<typeof ContentPagePageSchema> &
   BasePageAdditionalProps
 export type DatabasePagePageProps = Static<typeof DatabasePagePageSchema> &
