@@ -65,10 +65,13 @@ const useCreatePageWizardContext = ({
   })
 
   const [layout, title] = formMethods.watch(["layout", "title"])
-  const [{ fullPermalink }] =
-    trpc.resource.getWithFullPermalink.useSuspenseQuery({
-      resourceId: folderId ? String(folderId) : "",
-    })
+  const { data, isLoading: isPermalinkLoading } =
+    trpc.resource.getWithFullPermalink.useQuery(
+      {
+        resourceId: folderId ? String(folderId) : "",
+      },
+      { enabled: !!folderId },
+    )
 
   const layoutPreviewJson: IsomerSchema = useMemo(() => {
     const jsonPreview =
@@ -88,7 +91,7 @@ const useCreatePageWizardContext = ({
       await utils.resource.listWithoutRoot.invalidate()
       onClose()
     },
-    // TOOD: Error handling
+    // TODO: Error handling
   })
 
   const handleCreatePage = formMethods.handleSubmit((values) => {
@@ -130,13 +133,13 @@ const useCreatePageWizardContext = ({
     currentStep,
     formMethods,
     handleCreatePage,
-    isLoading,
+    isLoading: isLoading || isPermalinkLoading,
     handleNextToDetailScreen,
     handleBackToLayoutScreen,
     layoutPreviewJson,
     onClose,
     currentLayout: layout,
-    fullPermalink,
+    fullPermalink: !!folderId ? data?.fullPermalink : "",
   }
 }
 
