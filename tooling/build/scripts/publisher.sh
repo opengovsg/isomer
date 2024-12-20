@@ -53,6 +53,7 @@ else
   echo "Installing dependencies..."
   start_time=$(date +%s)
   npm ci
+  npm install ts-node -g
   calculate_duration $start_time
 
   echo "Caching node_modules..."
