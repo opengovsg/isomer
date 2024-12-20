@@ -9,9 +9,11 @@ import { nanoid } from "nanoid"
 export const setupAdminPermissions = async ({
   userId,
   siteId,
+  isDeleted = false,
 }: {
   userId?: string
   siteId: number
+  isDeleted?: boolean
 }) => {
   if (!userId) throw new Error("userId is a required field")
 
@@ -22,6 +24,7 @@ export const setupAdminPermissions = async ({
       siteId,
       role: RoleType.Admin,
       resourceId: null,
+      deletedAt: isDeleted ? new Date() : null,
     })
     .execute()
 }
