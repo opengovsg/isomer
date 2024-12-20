@@ -101,6 +101,7 @@ export const createTestUser = () => ({
   createdAt: new Date(),
   updatedAt: new Date(),
   phone: "123456789",
+  deletedAt: null,
 })
 
 // NOTE: The argument to this function was changed from
