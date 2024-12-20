@@ -8,7 +8,7 @@ WITH RECURSIVE "resourcePath" (id, title, permalink, parentId, type, content, "f
         r."parentId",
         r.type,
         CASE
-            WHEN r.type IN ('Page', 'CollectionPage', 'CollectionLink', 'IndexPage', 'RootPage', 'FolderMeta') THEN b."content"
+            WHEN r.type IN ('Page', 'CollectionPage', 'CollectionLink', 'IndexPage', 'RootPage', 'FolderMeta', 'CollectionMeta') THEN b."content"
             ELSE NULL
         END AS content,
         r.permalink AS "fullPermalink",
@@ -30,7 +30,7 @@ WITH RECURSIVE "resourcePath" (id, title, permalink, parentId, type, content, "f
         r."parentId",
         r.type,
         CASE
-            WHEN r.type IN ('Page', 'CollectionPage', 'CollectionLink', 'IndexPage', 'RootPage', 'FolderMeta') THEN b."content"
+            WHEN r.type IN ('Page', 'CollectionPage', 'CollectionLink', 'IndexPage', 'RootPage', 'FolderMeta', 'CollectionMeta') THEN b."content"
             ELSE NULL
         END AS content,
         CONCAT(path."fullPermalink", '/', r.permalink) AS "fullPermalink",

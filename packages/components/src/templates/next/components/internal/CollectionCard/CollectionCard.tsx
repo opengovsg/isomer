@@ -8,6 +8,7 @@ import { tv } from "~/lib/tv"
 import { focusVisibleHighlight, getFormattedDate } from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { Link } from "../Link"
+import { Tag } from "../Tag"
 
 const collectionCardLinkStyle = tv({
   extend: focusVisibleHighlight,
@@ -25,6 +26,7 @@ export const CollectionCard = ({
   itemTitle,
   siteAssetsBaseUrl,
   shouldShowDate = true,
+  tags = [],
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
@@ -47,6 +49,20 @@ export const CollectionCard = ({
             <span title={itemTitle}>{itemTitle}</span>
           </Link>
         </h3>
+        {tags && tags.length > 0 && (
+          <>
+            {tags.flatMap(({ category, selected: labels }) => {
+              return (
+                <div className="flex w-full flex-wrap items-center gap-2">
+                  <p className="prose-label-sm">{category}</p>
+                  {labels.map((label) => {
+                    return <Tag>{label}</Tag>
+                  })}
+                </div>
+              )
+            })}
+          </>
+        )}
         {description && (
           <Text className="prose-body-base line-clamp-3" title={description}>
             {description}

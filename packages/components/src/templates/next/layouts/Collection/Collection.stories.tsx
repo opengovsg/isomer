@@ -21,6 +21,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
       date: "07/05/2024",
       category: "Category Name",
+      tags: [{ category: "jokes", values: ["Dad"], selected: ["Dad"] }],
     },
     {
       id: `${index}`,
@@ -41,6 +42,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         type: "png",
         size: "1.2MB",
       },
+      tags: [{ category: "jokes", values: ["Lame"], selected: ["Lame"] }],
     },
     {
       id: `${index}`,
@@ -53,14 +55,29 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       date: "12/08/2023",
       category: "Category Name",
       ref: "https://guide.isomer.gov.sg",
+      tags: [
+        {
+          category: "jokes",
+          values: [
+            "This is a very long tag that should be reflowed on smaller screens maybe",
+          ],
+          selected: [
+            "Lame",
+            "This is a very long tag that shuold be reflowed on smaller screens maybe",
+            "This is a second long link that should eat into the image area so that we can see how it looks",
+          ],
+        },
+      ],
     },
   ]),
 )
 
 const generateArgs = ({
   collectionItems = COLLECTION_ITEMS,
+  variant = "collection",
 }: {
   collectionItems?: IsomerSitemap[]
+  variant?: CollectionPageSchemaType["page"]["variant"]
 } = {}): CollectionPageSchemaType => {
   return {
     layout: "collection",
@@ -82,6 +99,22 @@ const generateArgs = ({
             layout: "collection",
             summary: "",
             children: collectionItems,
+            tags: [
+              { category: "tag", selected: ["A tag"] },
+              { category: "tagged", selected: ["tagged"] },
+              {
+                category: "long",
+                selected: [
+                  "This is a very long tag that shuold be reflowed on smaller screens maybe",
+                ],
+              },
+              {
+                category: "very long",
+                selected: [
+                  "This is a second long link that should eat into the image area so that we can see how it looks",
+                ],
+              },
+            ],
           },
         ],
       },
@@ -232,6 +265,7 @@ const generateArgs = ({
       lastModified: "2024-05-02T14:12:57.160Z",
       subtitle:
         "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
+      variant,
     },
     content: [],
   }
@@ -383,5 +417,12 @@ export const FileCardNoImage: Story = {
     collectionItems: [
       { ...COLLECTION_ITEMS[1], image: undefined } as IsomerSitemap,
     ],
+  }),
+}
+
+export const Blog: Story = {
+  args: generateArgs({
+    collectionItems: COLLECTION_ITEMS,
+    variant: "blog",
   }),
 }
