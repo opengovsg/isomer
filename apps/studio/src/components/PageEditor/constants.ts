@@ -212,6 +212,11 @@ export const DEFAULT_BLOCKS: Record<
       },
     ],
   },
+  logocloud: {
+    type: "logocloud",
+    images: [],
+    title: "With support from these agencies",
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -311,6 +316,12 @@ export const BLOCK_TO_META: Record<
     label: "Dynamic Data Banner",
     description: "Display dynamic data banner",
     usageText: "This block supports fetching data from an API endpoint.",
+  },
+  logocloud: {
+    // TODO: Add image source
+    label: "Logo cloud",
+    description: "Display logos of other agencies here",
+    usageText: "Show an overview of related agencies",
   },
 }
 

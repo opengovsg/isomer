@@ -13,19 +13,19 @@ import { AltTextSchema, ImageSrcSchema } from "./Image"
 export const CARDS_WITHOUT_IMAGES = "cardsWithoutImages"
 export const CARDS_WITH_IMAGES = "cardsWithImages"
 
-const IMAGE_FIT_COVER = "cover"
-const IMAGE_FIT_CONTAIN = "contain"
+const IMAGE_FIT = {
+  Cover: "cover",
+  Content: "contain",
+} as const
 
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
     title: "Title",
-    default: "This is the title of the card",
     maxLength: 100,
   }),
   description: Type.Optional(
     Type.String({
       title: "Description",
-      default: "This is an optional description for the card",
       maxLength: 150,
     }),
   ),
@@ -46,15 +46,15 @@ const SingleCardWithImageSchema = Type.Composite([
     imageFit: Type.Optional(
       Type.Union(
         [
-          Type.Literal(IMAGE_FIT_COVER, {
+          Type.Literal(IMAGE_FIT.Cover, {
             title: "Default (recommended)",
           }),
-          Type.Literal(IMAGE_FIT_CONTAIN, {
+          Type.Literal(IMAGE_FIT.Content, {
             title: "Resize image to fit",
           }),
         ],
         {
-          default: IMAGE_FIT_COVER,
+          default: IMAGE_FIT.Cover,
           title: "Image display",
           description: `Select "Resize image to fit" only if the image has a white background.`,
           format: ARRAY_RADIO_FORMAT,

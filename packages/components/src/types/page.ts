@@ -59,6 +59,15 @@ const BaseRefPageSchema = Type.Composite([
   }),
 ])
 
+const TagSchema = Type.Object({
+  selected: Type.Array(Type.String()),
+  category: Type.String(),
+})
+
+const TagsSchema = Type.Object({
+  tags: Type.Optional(Type.Array(TagSchema)),
+})
+
 export const ArticlePagePageSchema = Type.Composite([
   dateSchemaObject,
   Type.Object({
@@ -68,11 +77,14 @@ export const ArticlePagePageSchema = Type.Composite([
   imageSchemaObject,
 ])
 
-export const CollectionPagePageSchema = Type.Object({
-  subtitle: Type.String({
-    title: "The subtitle of the collection",
+export const CollectionPagePageSchema = Type.Intersect([
+  Type.Object({
+    subtitle: Type.String({
+      title: "The subtitle of the collection",
+    }),
   }),
-})
+  TagsSchema,
+])
 
 export const ContentPagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,

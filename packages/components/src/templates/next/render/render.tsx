@@ -22,6 +22,7 @@ import {
   Prose,
   Video,
 } from "../components"
+import { LogoCloud } from "../components/complex/LogoCloud"
 import {
   ArticleLayout,
   CollectionLayout,
@@ -47,6 +48,8 @@ export const renderComponent = ({
   ...rest
 }: RenderComponentProps) => {
   switch (component.type) {
+    case "logocloud":
+      return <LogoCloud key={elementKey} {...component} {...rest} />
     case "accordion":
       return <Accordion key={elementKey} {...component} {...rest} />
     case "callout":
