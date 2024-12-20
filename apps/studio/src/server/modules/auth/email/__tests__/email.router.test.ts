@@ -3,7 +3,7 @@ import {
   applySession,
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
-import { setUpWhitelist } from "tests/integration/helpers/seed"
+import { setupUser, setUpWhitelist } from "tests/integration/helpers/seed"
 import { describe, expect, it } from "vitest"
 
 import { env } from "~/env.mjs"
@@ -70,6 +70,25 @@ describe("auth.email", () => {
         subject: expect.stringContaining("Sign in to"),
       })
       expect(result).toEqual(expectedReturn)
+    })
+
+    it("should throw if user is deleted", async () => {
+      // Arrange
+      await setupUser({
+        name: "Deleted",
+        userId: "deleted123",
+        email: TEST_VALID_EMAIL,
+        phone: "123",
+        isDeleted: true,
+      })
+
+      // Act
+      const result = caller.login({ email: TEST_VALID_EMAIL })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        "Unauthorized. Contact Isomer support.",
+      )
     })
   })
 
