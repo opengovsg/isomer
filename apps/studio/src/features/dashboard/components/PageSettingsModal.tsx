@@ -227,8 +227,8 @@ const PageSettingsModalContent = ({
       </ModalBody>
 
       <ModalFooter>
-        <Button mr={3} variant="clear" onClick={onSubmit}>
-          Back to editing
+        <Button mr={3} variant="clear" onClick={onClose}>
+          Close
         </Button>
         <Button onClick={onSubmit}>Publish changes immediately</Button>
       </ModalFooter>
