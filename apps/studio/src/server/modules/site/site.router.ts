@@ -28,6 +28,7 @@ export const siteRouter = router({
     return db
       .selectFrom("Site")
       .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
+      .where("ResourcePermission.deletedAt", "is", null)
       .where("ResourcePermission.userId", "=", ctx.user.id)
       .select(["Site.id", "Site.name", "Site.config"])
       .groupBy(["Site.id", "Site.name", "Site.config"])
