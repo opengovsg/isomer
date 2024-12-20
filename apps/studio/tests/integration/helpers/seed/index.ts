@@ -439,3 +439,29 @@ export const setUpWhitelist = async ({
     .returningAll()
     .executeTakeFirstOrThrow()
 }
+
+export const setupUser = async ({
+  name,
+  userId,
+  email,
+  phone,
+  isDeleted,
+}: {
+  name: string
+  userId: string
+  email: string
+  phone?: string
+  isDeleted: boolean
+}) => {
+  return db
+    .insertInto("User")
+    .values({
+      id: userId,
+      name,
+      email,
+      phone: phone ?? "",
+      deletedAt: isDeleted ? new Date() : null,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
