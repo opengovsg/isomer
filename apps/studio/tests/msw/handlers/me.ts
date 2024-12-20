@@ -10,6 +10,7 @@ export const defaultUser: User = {
   phone: "12345678",
   createdAt: new Date(),
   updatedAt: new Date(),
+  deletedAt: null,
 }
 
 const defaultMeGetQuery = () => {

@@ -136,9 +136,10 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 
-  // this code path is needed if a user does not exist in the database as they were deleted, but the session was active before
+  // with addition of soft deletes, we need to now check for deletedAt
+  // this check is required in case of an already ongoing session to logout the user
   const user = await prisma.user.findUnique({
-    where: { id: ctx.session.userId },
+    where: { id: ctx.session.userId, deletedAt: null },
     select: defaultMeSelect,
   })
 
