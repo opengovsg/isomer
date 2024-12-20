@@ -6,6 +6,7 @@ import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Resource, SafeKysely, Transaction } from "../database"
 import type { SearchResultResource } from "./resource.types"
+import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { getSitemapTree } from "~/utils/sitemap"
 import { publishSite } from "../aws/codebuild.service"
@@ -411,6 +412,53 @@ export const publishResource = async (
   return addedVersionResult
 }
 
+export const getAncestryWithSelf = async ({
+  siteId,
+  resourceId,
+}: {
+  siteId: number
+  resourceId: number
+}) => {
+  const ancestorsWithSelf = await db
+    .withRecursive("Resources", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .select([
+          "Resource.id",
+          "Resource.title",
+          "Resource.permalink",
+          "Resource.parentId",
+          "Resource.type",
+        ])
+        .where("Resource.siteId", "=", Number(siteId))
+        .where("Resource.id", "=", String(resourceId))
+        .where("Resource.type", "!=", ResourceType.RootPage)
+        .unionAll(
+          eb
+            .selectFrom("Resource")
+            .innerJoin("Resources", "Resources.parentId", "Resource.id")
+            .select([
+              "Resource.id",
+              "Resource.title",
+              "Resource.permalink",
+              "Resource.parentId",
+              "Resource.type",
+            ]),
+        ),
+    )
+    .selectFrom("Resources")
+    .select([
+      "Resources.id",
+      "Resources.title",
+      "Resources.permalink",
+      "Resources.parentId",
+      "Resources.type",
+    ])
+    .execute()
+
+  return ancestorsWithSelf.reverse()
+}
+
 export const getWithFullPermalink = async ({
   resourceId,
 }: {
@@ -488,11 +536,13 @@ export const getSearchResults = async ({
   query,
   offset,
   limit,
+  resourceTypes,
 }: {
   siteId: number
   query: string
   offset: number
   limit: number
+  resourceTypes: ResourceType[]
 }): Promise<{
   totalCount: number | null
   resources: SearchResultResource[]
@@ -504,14 +554,7 @@ export const getSearchResults = async ({
   const queriedResources = getResourcesWithLastUpdatedAt({
     siteId: Number(siteId),
   })
-    .where("Resource.type", "in", [
-      // only show user-viewable resources (excluding root page, folder meta etc.)
-      ResourceType.Page,
-      ResourceType.Folder,
-      ResourceType.Collection,
-      ResourceType.CollectionLink,
-      ResourceType.CollectionPage,
-    ])
+    .where("Resource.type", "in", resourceTypes)
     .where((eb) =>
       eb.or(
         searchTerms.map((searchTerm) =>
@@ -595,6 +638,34 @@ export const getSearchRecentlyEdited = async ({
       .orderBy("lastUpdatedAt", "desc")
       .execute()) as SearchResultResource[],
   })
+}
+
+export const getNestedFolderChildren = async ({
+  siteId,
+  resourceId,
+}: {
+  siteId: number
+  resourceId: number
+}): Promise<ResourceItemContent[]> => {
+  return (async function getNestedChildren(
+    parentId: number,
+  ): Promise<ResourceItemContent[]> {
+    const children = await db
+      .selectFrom("Resource")
+      .select(["title", "permalink", "type", "id", "parentId"])
+      .where("Resource.type", "in", [ResourceType.Folder])
+      .where("Resource.siteId", "=", Number(siteId))
+      .where("Resource.parentId", "=", String(parentId))
+      .execute()
+
+    const nestedChildren = await Promise.all(
+      children.map(async (child) => {
+        const childrenOfChild = await getNestedChildren(Number(child.id))
+        return [child, ...childrenOfChild]
+      }),
+    )
+    return nestedChildren.flat()
+  })(resourceId)
 }
 
 export const getSearchWithResourceIds = async ({
