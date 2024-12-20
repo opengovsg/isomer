@@ -1,6 +1,7 @@
 import * as fs from "fs"
 import * as path from "path"
 import { performance } from "perf_hooks"
+import { ResourceType } from "~generated/generatedEnums"
 import * as dotenv from "dotenv"
 import { Client } from "pg"
 
@@ -11,7 +12,10 @@ import {
   GET_FOOTER,
   GET_NAVBAR,
 } from "./queries"
-import { getIndexPageContents } from "./utils/getIndexPageContent"
+import {
+  getCollectionIndexPageContents,
+  getFolderIndexPageContents,
+} from "./utils/getIndexPageContent"
 
 dotenv.config()
 
@@ -100,6 +104,13 @@ async function main() {
           ...resource.content.page,
           title: resource.title,
         }
+
+        await writeContentToFile(
+          resource.fullPermalink,
+          resource.content,
+          resource.parentId,
+        )
+
         const idOfFolder = resources.find(
           (item) =>
             resource.fullPermalink.endsWith(INDEX_PAGE_PERMALINK) &&
@@ -110,6 +121,7 @@ async function main() {
 
         const sitemapEntry: SitemapEntry = {
           id: idOfFolder ?? resource.id,
+          type: resource.type,
           title: resource.title,
           permalink: `/${getConvertedPermalink(resource.fullPermalink)}`,
           lastModified: new Date().toISOString(), // TODO: Update to updated_at column
@@ -123,18 +135,13 @@ async function main() {
             resource.content.page.description ||
             "",
           category: resource.content.page.category,
+          tags: resource.content.page.tags,
           date: resource.content.page.date,
           image: resource.content.page.image,
           ref: resource.content.page.ref, // For file and link layouts
         }
 
         sitemapEntries.push(sitemapEntry)
-
-        await writeContentToFile(
-          resource.fullPermalink,
-          resource.content,
-          resource.parentId,
-        )
       } else {
         logDebug(
           `Skipping resource with id ${resource.id} as it is not a Page or has no content.`,
@@ -145,7 +152,7 @@ async function main() {
     logDebug("Sitemap entries:", sitemapEntries)
 
     const rootPage = sitemapEntries.find(
-      (entry) => entry.permalink === "/",
+      (entry) => entry.type === ResourceType.RootPage,
     ) || {
       id: "0",
       title: "Home",
@@ -153,6 +160,7 @@ async function main() {
       lastModified: new Date().toISOString(),
       layout: "homepage",
       summary: "Home page",
+      type: ResourceType.RootPage,
     }
 
     const sitemap = {
@@ -247,22 +255,24 @@ function generateSitemapTree(
           ? danglingDirectory
           : `${pathPrefixWithoutLeadingSlash}/${danglingDirectory}`,
       )
-      const idOfFolder = resources.find(
+
+      const folder = resources.find(
         (resource) =>
           getConvertedPermalink(resource.fullPermalink) ===
             (pathPrefixWithoutLeadingSlash.length === 0
               ? danglingDirectory
               : `${pathPrefixWithoutLeadingSlash}/${danglingDirectory}`) &&
           FOLDER_RESOURCE_TYPES.includes(resource.type),
-      )?.id
+      )
 
       return {
-        id: idOfFolder ?? DANGLING_DIRECTORY_PAGE_ID,
+        id: folder?.id ?? DANGLING_DIRECTORY_PAGE_ID,
         title,
         permalink: `${pathPrefix.length === 1 ? "" : pathPrefix}/${danglingDirectory}`,
         lastModified: new Date().toISOString(),
         layout: "index",
         summary: `Pages in ${title}`,
+        type: folder?.type ?? ResourceType.Folder,
       }
     })
 
@@ -315,7 +325,7 @@ function generateSitemapTree(
   }))
 }
 
-function getFolders(
+function getFoldersAndCollections(
   resources: Resource[],
   sitemapEntry: SitemapEntry,
 ): SitemapEntry[] {
@@ -336,7 +346,9 @@ function getFolders(
   // Recurse on all children
   return [
     ...folders,
-    ...sitemapEntry.children.flatMap((child) => getFolders(resources, child)),
+    ...sitemapEntry.children.flatMap((child) =>
+      getFoldersAndCollections(resources, child),
+    ),
   ]
 }
 
@@ -350,14 +362,29 @@ async function processDanglingDirectories(
     return
   }
 
+  const directories = getFoldersAndCollections(resources, sitemapEntry)
+  const folders = directories.filter(
+    (siteMapEntry) => siteMapEntry.type === ResourceType.Folder,
+  )
+  const collections = directories.filter(
+    (siteMapEntry) => siteMapEntry.type === ResourceType.Collection,
+  )
+
   // Create index page for all immediate children that are dangling directories
   await Promise.all(
-    getFolders(resources, sitemapEntry).map((child) => {
-      const indexPageContent = getIndexPageContents(child.title)
-
+    [
+      ...folders.map(({ title, permalink }) => {
+        const content = getFolderIndexPageContents(title)
+        return { title, permalink, content }
+      }),
+      ...collections.map(({ title, permalink }) => {
+        const content = getCollectionIndexPageContents(title)
+        return { title, permalink, content }
+      }),
+    ].map((child) => {
       return writeContentToFile(
         `${child.permalink}/${INDEX_PAGE_PERMALINK}`,
-        indexPageContent,
+        child.content,
         Number(DANGLING_DIRECTORY_PAGE_ID),
       )
     }),

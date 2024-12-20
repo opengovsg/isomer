@@ -95,7 +95,7 @@ export function BaseLinkControl({
                 colorScheme="critical"
                 aria-label="Remove file"
                 icon={<BiTrash />}
-                onClick={() => handleChange(path, "")}
+                onClick={() => handleChange(path, undefined)}
               />
             </>
           ) : (
@@ -121,7 +121,7 @@ export function BaseLinkControl({
         // not passing in any linkText will cause the schema validation to fail
         // (even though we don't need it here)
         linkText="Link"
-        doNotShowLinkText={true}
+        showLinkText={false}
         isOpen={isOpen}
         onClose={onClose}
         onSave={(_, linkHref) => handleChange(path, linkHref)}
