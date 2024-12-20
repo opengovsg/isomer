@@ -64,8 +64,8 @@ const useCreateCollectionPageWizardContext = ({
   })
 
   const [type, title] = formMethods.watch(["type", "title"])
-  const [{ fullPermalink }] =
-    trpc.resource.getWithFullPermalink.useSuspenseQuery({
+  const { data, isLoading: isPermalinkLoading } =
+    trpc.resource.getWithFullPermalink.useQuery({
       resourceId: collectionId ? String(collectionId) : "",
     })
 
@@ -146,13 +146,13 @@ const useCreateCollectionPageWizardContext = ({
     currentStep,
     formMethods,
     handleCreatePage,
-    isLoading,
+    isLoading: isLoading || isPermalinkLoading,
     handleNextToDetailScreen,
     handleBackToTypeScreen,
     pagePreviewJson,
     onClose,
     currentType: type,
-    fullPermalink,
+    fullPermalink: data?.fullPermalink || "",
   }
 }
 
