@@ -179,38 +179,39 @@ export const convertHtmlToSchema = async (html: string, permalink: string) => {
 
   const schema = getCleanedSchema(output.content);
   const result = convertFromTiptap(schema);
+  console.log("IMGE", IMAGE_DOWNLOADS);
 
   // Download all images
-  await Promise.all(
-    Object.keys(IMAGE_DOWNLOADS).map((url) => {
-      // NOTE: Guaranteed to exist since we map over the keys of the object
-      const fileName = IMAGE_DOWNLOADS[url]!.split("/").pop();
-      const path = url.replace(SITE_BASE_URL, "");
-
-      if (!path.startsWith("/")) {
-        return;
-      }
-
-      return downloadFile(`${SITE_BASE_URL}${path}`, "images", fileName!);
-    }),
-  );
+  // await Promise.all(
+  //   Object.keys(IMAGE_DOWNLOADS).map((url) => {
+  //     // NOTE: Guaranteed to exist since we map over the keys of the object
+  //     const fileName = IMAGE_DOWNLOADS[url]!.split("/").pop();
+  //     const path = url.replace(SITE_BASE_URL, "");
+  //
+  //     if (!path.startsWith("/")) {
+  //       return;
+  //     }
+  //
+  //     return downloadFile(`${SITE_BASE_URL}${path}`, "images", fileName!);
+  //   }),
+  // );
 
   console.log(FILE_DOWNLOADS);
 
   // Download all files
-  await Promise.all(
-    Object.keys(FILE_DOWNLOADS).map((url) => {
-      const fileName = FILE_DOWNLOADS[url]?.split("/").pop();
-      const path = url.replace(SITE_BASE_URL, "");
-
-      if (!path.startsWith("/")) {
-        console.log("Invalid file path:", path);
-        return;
-      }
-
-      return downloadFile(`${SITE_BASE_URL}${path}`, "files", fileName!);
-    }),
-  );
+  // await Promise.all(
+  //   Object.keys(FILE_DOWNLOADS).map((url) => {
+  //     const fileName = FILE_DOWNLOADS[url]?.split("/").pop();
+  //     const path = url.replace(SITE_BASE_URL, "");
+  //
+  //     if (!path.startsWith("/")) {
+  //       console.log("Invalid file path:", path);
+  //       return;
+  //     }
+  //
+  //     return downloadFile(`${SITE_BASE_URL}${path}`, "files", fileName!);
+  //   }),
+  // );
 
   const filesMapping = {
     ...IMAGE_DOWNLOADS,

@@ -17,6 +17,7 @@
     "@tiptap/extension-image": "^2.5.7",
     "@tiptap/html": "^2.5.7",
     "jsdom": "^25.0.1",
+    "markdown-it": "^14.1.0",
     "mkdirp": "^3.0.1",
     "type-fest": "^4.30.2"
   }

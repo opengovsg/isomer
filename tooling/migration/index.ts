@@ -13,30 +13,31 @@ import {
 } from "./generate/collection";
 import { generateCollectionInOutMapping } from "./migrate/collection";
 import { MigrationMapping } from "./types/migration";
-const OUTPUT_DIR = "output";
+import markdownit from "markdown-it";
+
+const md = markdownit();
+
+const OUTPUT_DIR = "output/news";
 
 const SITE_ID = 23; // NOTE: this is the mse site
 
 // NOTE: This is the path to migrate
 const migrate = async (
   mappings: MigrationMapping,
-  outdir: string,
-  indir: string,
+  ghDir: string,
   writers: Writer[],
 ) => {
   Object.entries(mappings).forEach(async ([outpath, inpath], index) => {
-    if (index <= 10) {
+    if (index <= 1) {
       const hasTerminatingSlash = outpath.endsWith("/");
-      const basePath = `${outdir}${outpath}`;
-      const filename = hasTerminatingSlash ? "index.html" : ".html";
 
-      const html = fs.readFileSync(`${basePath}${filename}`, "utf-8");
+      const html = md.render(fs.readFileSync(inpath, "utf-8"));
       const nameIndex = hasTerminatingSlash ? -2 : -1;
       const name = outpath.split("/").at(nameIndex)!;
 
-      const output = await html2schema(html, "news-images");
+      const output = await html2schema(html, "news/news-images");
       // NOTE: indir assumed to not have terminating slash here
-      const category = inpath.replace(indir, "").split("/").at(1)!;
+      const category = inpath.replace(ghDir, "").split("/").at(1)!;
 
       if (isCollectionPost(name)) {
         const { year, month, day } = parseCollectionDateFromFileName(name);
@@ -51,9 +52,8 @@ const migrate = async (
           lastModified,
         });
 
-        const jsonOutpath = `${__dirname}/${OUTPUT_DIR}/${name.replaceAll(/\.html$/g, ".json")}`;
+        const jsonOutpath = `${__dirname}/${OUTPUT_DIR}/${rawCollectionFileName}.json`;
 
-        console.log(jsonOutpath, name);
         writers.map((writer) => {
           writer.write(name, jsonOutpath, JSON.stringify(content, null, 2));
         });
@@ -68,8 +68,7 @@ const migrate = async (
           lastModified,
         });
 
-        const jsonOutpath = `${__dirname}/${OUTPUT_DIR}/${name.replace(/\.html$/g, ".json")}`;
-        console.log(jsonOutpath);
+        const jsonOutpath = `${__dirname}/${OUTPUT_DIR}/${name}.json`;
 
         writers.map((writer) => {
           writer.write(name, jsonOutpath, JSON.stringify(content, null, 2));
@@ -80,4 +79,4 @@ const migrate = async (
 };
 
 const mappings = generateCollectionInOutMapping("_repo/news");
-migrate(mappings, "_site", "_repo/news", [fileWriter]);
+migrate(mappings, "_repo/news", [fileWriter]);
