@@ -10,6 +10,14 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@types/node": "^22.10.2"
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^22.5.5"
+  },
+  "dependencies": {
+    "@tiptap/extension-image": "^2.5.7",
+    "@tiptap/html": "^2.5.7",
+    "jsdom": "^25.0.1",
+    "mkdirp": "^3.0.1",
+    "type-fest": "^4.30.2"
   }
 }

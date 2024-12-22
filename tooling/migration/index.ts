@@ -1,33 +1,83 @@
 import * as fs from "fs";
 import { Writer } from "./types/writer";
 import { fileWriter } from "./writer";
-
-const MARKDOWN_EXTENSION = ".md";
+import { html2schema } from "./migrate/html2schema";
+import {
+  getCollectionPageNameFromPage,
+  extractCollectionPostName,
+  generateCollectionArticlePage,
+  getCollectionPageNameFromPost,
+  isCollectionPost,
+  parseCollectionDateFromFileName,
+  trimNonAlphaNum,
+} from "./generate/collection";
+import { generateCollectionInOutMapping } from "./migrate/collection";
+import { MigrationMapping } from "./types/migration";
+const OUTPUT_DIR = "output";
 
 const SITE_ID = 23; // NOTE: this is the mse site
-// NOTE: Folder structure
+
 // NOTE: This is the path to migrate
-const migrate = (path: string, writers: Writer[]) => {
-  const entries = fs.readdirSync(path, { withFileTypes: true });
-  const directories = entries.filter((entry) => entry.isDirectory());
+const migrate = async (
+  mappings: MigrationMapping,
+  outdir: string,
+  indir: string,
+  writers: Writer[],
+) => {
+  Object.entries(mappings).forEach(async ([outpath, inpath], index) => {
+    if (index <= 10) {
+      const hasTerminatingSlash = outpath.endsWith("/");
+      const basePath = `${outdir}${outpath}`;
+      const filename = hasTerminatingSlash ? "index.html" : ".html";
 
-  directories.map((dirent) => {
-    const category = dirent.name.trim();
-    console.log(category);
+      const html = fs.readFileSync(`${basePath}${filename}`, "utf-8");
+      const nameIndex = hasTerminatingSlash ? -2 : -1;
+      const name = outpath.split("/").at(nameIndex)!;
 
-    // NOTE: Because this is going to be a collection,
-    // there's only a single level of pages.
-    const pages = fs
-      .readdirSync(`${dirent.parentPath}/${dirent.name}`, {
-        withFileTypes: true,
-        recursive: true,
-      })
-      .filter(
-        (entry) => entry.isFile() && entry.name.endsWith(MARKDOWN_EXTENSION),
-      );
+      const output = await html2schema(html, "news-images");
+      // NOTE: indir assumed to not have terminating slash here
+      const category = inpath.replace(indir, "").split("/").at(1)!;
 
-    console.log(pages);
+      if (isCollectionPost(name)) {
+        const { year, month, day } = parseCollectionDateFromFileName(name);
+        const lastModified = `${year}-${month}-${day}`;
+        const rawCollectionFileName = extractCollectionPostName(name);
+
+        const content = generateCollectionArticlePage({
+          category: trimNonAlphaNum(category),
+          title: getCollectionPageNameFromPost(rawCollectionFileName),
+          permalink: rawCollectionFileName,
+          content: output,
+          lastModified,
+        });
+
+        const jsonOutpath = `${__dirname}/${OUTPUT_DIR}/${name.replaceAll(/\.html$/g, ".json")}`;
+
+        console.log(jsonOutpath, name);
+        writers.map((writer) => {
+          writer.write(name, jsonOutpath, JSON.stringify(content, null, 2));
+        });
+      } else {
+        const lastModified = new Date().toISOString();
+        const title = getCollectionPageNameFromPage(name);
+        const content = generateCollectionArticlePage({
+          category: trimNonAlphaNum(category),
+          title,
+          permalink: title.replaceAll(/ /g, "-").toLowerCase(),
+          content: output,
+          lastModified,
+        });
+
+        const jsonOutpath = `${__dirname}/${OUTPUT_DIR}/${name.replace(/\.html$/g, ".json")}`;
+        console.log(jsonOutpath);
+
+        writers.map((writer) => {
+          writer.write(name, jsonOutpath, JSON.stringify(content, null, 2));
+        });
+      }
+    }
   });
 };
 
-migrate("repos/mse/news", [fileWriter]);
+const mappings = generateCollectionInOutMapping("_repo/news");
+migrate(mappings, "_site", "_repo/news", [fileWriter]);

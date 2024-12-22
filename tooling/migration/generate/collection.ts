@@ -1,3 +1,10 @@
+import { Tagged } from "type-fest";
+
+const NON_ALPHA_NUM = /[^a-zA-Z0-9]*/g;
+// TODO: figure out how to use the base regex to create these two
+const NO_STARTING_NON_ALPHA_NUM = /^[^a-zA-Z0-9]*/g;
+const NO_ENDING_NON_ALPHA_NUM = /[^a-zA-Z0-9]*$/g;
+
 const COLLECTION = {
   page: {
     articlePageHeader: { summary: "" },
@@ -6,39 +13,61 @@ const COLLECTION = {
   version: "0.1.0",
 } as const;
 
+type CollectionPageName = Tagged<string, "CollectionPageName">;
 interface GenerateCollectionArticlePageProps {
   category: string;
-  title: string;
+  title: CollectionPageName;
   permalink: string;
   content: unknown;
   lastModified: string;
 }
 
-const generateCollectionArticlePage = ({
+// lastModified: "2024-10-17T01:46:20.222Z",
+export const generateCollectionArticlePage = ({
   category,
   title,
   permalink,
   content,
+  lastModified,
 }: GenerateCollectionArticlePageProps) => {
   return {
     ...COLLECTION,
-    page: { ...COLLECTION.page, category, title, permalink },
+    page: { ...COLLECTION.page, category, title, permalink, lastModified },
     content,
   };
 };
 
-// NOTE: all non alphanumeric characters at beginning and end
-const trimNonAlphaNum = (category: string) => {
-  const NON_ALPHA = /[^a-zA-Z0-9]*/g;
-  const NO_STARTING_NON_ALPHA = "" + NON_ALPHA.source;
-  const NO_ENDING_NON_ALPHA = NON_ALPHA.source + "$";
+// NOTE: Don't export this type - this is to ensure that whatever
+// we pass to generate the collection name has been cleaned prior
+type CleanedString = Tagged<string, "Cleaned">;
 
+// NOTE: all non alphanumeric characters at beginning and end
+export const trimNonAlphaNum = (category: string): CleanedString => {
   return category
-    .replaceAll(NO_STARTING_NON_ALPHA, "")
-    .replaceAll(NO_ENDING_NON_ALPHA, "");
+    .replaceAll(NO_STARTING_NON_ALPHA_NUM, "")
+    .replaceAll(NO_ENDING_NON_ALPHA_NUM, "") as CleanedString;
 };
 
-const parseCollectionDateFromFileName = (filename: string) => {
+// NOTE: A collection post name is the date in YYYY-MM-DD- followed by the page name
+type CollectionPostName = Tagged<string, "CollectionPostName">;
+export const isCollectionPost = (
+  filename: string,
+): filename is CollectionPostName => {
+  const year = filename.slice(0, 4);
+  const month = filename.slice(5, 7);
+  const day = filename.slice(8, 10);
+
+  return (
+    year.length === 4 &&
+    !!parseInt(year) &&
+    month.length === 2 &&
+    !!parseInt(month) &&
+    day.length === 2 &&
+    !!parseInt(day)
+  );
+};
+
+export const parseCollectionDateFromFileName = (filename: string) => {
   const year = filename.slice(0, 4);
   const month = filename.slice(5, 7);
   const day = filename.slice(8, 10);
@@ -50,6 +79,26 @@ const parseCollectionDateFromFileName = (filename: string) => {
   return { year, month, day };
 };
 
-const extractCollectionFileName = (filename: string) => {
-  return filename.slice(12);
+// NOTE: used to make sure that whatever we pass to extract the filename
+// has already been cleaned of the date
+type RawCollectionPostName = Tagged<string, "RawCollectionPostName">;
+
+export const extractCollectionPostName = (
+  filename: string,
+): RawCollectionPostName => {
+  return filename.slice(11).replaceAll(/\.html$/g, "") as RawCollectionPostName;
+};
+
+export const getCollectionPageNameFromPage = (
+  filename: string,
+): CollectionPageName => {
+  return filename
+    .replaceAll("-", " ")
+    .replaceAll(/\.html$/g, "") as CollectionPageName;
+};
+
+export const getCollectionPageNameFromPost = (
+  filename: RawCollectionPostName,
+): CollectionPageName => {
+  return filename.replaceAll("-", " ") as CollectionPageName;
 };

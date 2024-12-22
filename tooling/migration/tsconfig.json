@@ -18,12 +18,10 @@
     "noUncheckedIndexedAccess": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"],
-      "~prisma/*": ["./prisma/*"],
-      "~server/db/*": ["./src/server/modules/database/*"],
-      "~server/db": ["./src/server/modules/database/index"]
+      "~/*": ["./*"],
+      "~editor/*": ["../../apps/studio/src/features/editing-experience/*"]
     },
-    "types": ["vitest/globals", "node", "jest"]
+    "types": ["vitest/globals", "node"]
   },
   "include": [
     ".storybook/**/*.tsx",
