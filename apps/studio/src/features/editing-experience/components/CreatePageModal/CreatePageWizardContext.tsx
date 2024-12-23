@@ -133,7 +133,7 @@ const useCreatePageWizardContext = ({
     currentStep,
     formMethods,
     handleCreatePage,
-    isLoading: isLoading || isPermalinkLoading,
+    isLoading: isLoading || (!!folderId && isPermalinkLoading),
     handleNextToDetailScreen,
     handleBackToLayoutScreen,
     layoutPreviewJson,
