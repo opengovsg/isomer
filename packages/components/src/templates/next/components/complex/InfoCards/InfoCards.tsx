@@ -200,7 +200,12 @@ const InfoCardNoImage = ({
 }: SingleCardNoImageProps): JSX.Element => {
   const isExternalLink = isExternalUrl(url)
   return (
-    <InfoCardContainer url={url} site={site} LinkComponent={LinkComponent}>
+    <InfoCardContainer
+      url={url}
+      site={site}
+      isExternalLink={isExternalLink}
+      LinkComponent={LinkComponent}
+    >
       <InfoCardText
         title={title}
         description={description}
@@ -224,7 +229,12 @@ const InfoCardWithImage = ({
 }: SingleCardWithImageProps): JSX.Element => {
   const isExternalLink = isExternalUrl(url)
   return (
-    <InfoCardContainer url={url} site={site} LinkComponent={LinkComponent}>
+    <InfoCardContainer
+      url={url}
+      site={site}
+      isExternalLink={isExternalLink}
+      LinkComponent={LinkComponent}
+    >
       <InfoCardImage
         imageFit={imageFit}
         imageUrl={imageUrl}
