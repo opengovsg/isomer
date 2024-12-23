@@ -2,9 +2,9 @@ const JEKYLL_FRONTMATTER_DELIMITER = "---";
 const PERMALINK_TEXT = "permalink:";
 
 export type JekyllFrontmatter = `---\n${string}\n---`;
-export type JekyllPost = `${JekyllFrontmatter}\n${string}`;
+export type JekyllFile = `${JekyllFrontmatter}\n${string}`;
 
-export const extractPermalink = (content: JekyllPost) => {
+export const extractPermalink = (content: JekyllFile) => {
   return content
     .split(JEKYLL_FRONTMATTER_DELIMITER)
     .at(1)
@@ -14,7 +14,7 @@ export const extractPermalink = (content: JekyllPost) => {
     .trim();
 };
 
-export const extractContent = (content: JekyllPost) => {
+export const extractContent = (content: JekyllFile) => {
   return content
     .split(JEKYLL_FRONTMATTER_DELIMITER)
     .slice(2)
@@ -23,7 +23,7 @@ export const extractContent = (content: JekyllPost) => {
 };
 
 export const extractFrontmatter = (
-  content: JekyllPost,
+  content: JekyllFile,
 ): Record<string, string> => {
   const lines = content.split(JEKYLL_FRONTMATTER_DELIMITER).at(1)?.split("\n");
   const records = lines?.map((line) => line.split(":").map((x) => x.trim()));

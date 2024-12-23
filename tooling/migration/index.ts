@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import _ from "lodash";
-import { Writer } from "./types/writer";
 import { fileWriter } from "./writer";
 import {
   extractCollectionPostName,
@@ -10,31 +9,34 @@ import {
   jekyllPage2CollectionPage,
 } from "./generate/collection";
 import { generateCollectionInOutMapping } from "./migrate/collection";
-import { MigrationMapping } from "./types/migration";
 import { addBlobToResource, createBlob, createResource } from "./utils";
 import path from "path";
-import { JekyllPost } from "./migrate/jekyll";
+import { JekyllFile } from "./migrate/jekyll";
 import pg from "pg";
-import { migrateAssets } from "./migrate/assets";
+import { copyToAssetsFolder, migrateAssets } from "./migrate/assets";
+import { REPO_DIR } from "./constants";
 
 const { Client } = pg;
-
 const OUTPUT_DIR = "output";
 
 // const SITE_ID = 23; // NOTE: this is the mse site
 const SITE_ID = 1;
 
 const __dirname = path.resolve();
-// NOTE: This is the path to migrate
+
+interface MigrationFileMeta {
+  inpath: string;
+  outpath: string;
+  mdContent: JekyllFile;
+}
 const migrateCollection = async (
-  mappings: MigrationMapping,
+  migrationFiles: MigrationFileMeta[],
+  // NOTE: This is the github collection to migrate
   ghDir: string,
-  writers: Writer[],
 ) => {
-  const writtenFiles = await Promise.all(
-    Object.entries(mappings).map(async ([outpath, inpath]) => {
+  return Promise.all(
+    migrationFiles.map(async ({ inpath, outpath, mdContent }) => {
       const hasTerminatingSlash = outpath.endsWith("/");
-      const mdContent = fs.readFileSync(inpath, "utf-8") as JekyllPost;
 
       const nameIndex = hasTerminatingSlash ? -2 : -1;
       const name = outpath.split("/").at(nameIndex)!;
@@ -52,22 +54,9 @@ const migrateCollection = async (
         : await jekyllPage2CollectionPage(name, mdContent, category);
 
       const jsonOutpath = `${__dirname}/${OUTPUT_DIR}/${destinationFileName}.json`;
-
-      await Promise.all(
-        writers.map(async (writer) => {
-          await writer.write(
-            name,
-            jsonOutpath,
-            JSON.stringify(content, null, 2),
-          );
-        }),
-      );
-
-      return jsonOutpath;
+      return { inpath, outpath, jsonOutpath, content, name };
     }),
   );
-
-  return writtenFiles;
 };
 
 export const walk = async (dir: string, siteId: number) => {
@@ -115,7 +104,7 @@ export const walk = async (dir: string, siteId: number) => {
 
   const rootId = await createResource(client, {
     parentId: null,
-    title: "Latest News",
+    title: "Latest news",
     permalink: "latest-news",
     type: "Collection",
     siteId,
@@ -125,11 +114,40 @@ export const walk = async (dir: string, siteId: number) => {
   return rootId;
 };
 
-const mappings = generateCollectionInOutMapping("_repo/news");
+const main = async () => {
+  // const collections = getCollectionsFromConfig();
+  // const folders = getFolders()
+  const mappings = generateCollectionInOutMapping(`${REPO_DIR}/news`);
 
-const writtenFiles = await migrateCollection(mappings, "_repo/news", [
-  fileWriter,
-]);
-await migrateAssets(writtenFiles, SITE_ID);
+  const fileContents: MigrationFileMeta[] = await Promise.all(
+    Object.entries(mappings).map(async ([outpath, inpath]) => {
+      const mdContent = fs.readFileSync(inpath, "utf-8") as JekyllFile;
+      return { mdContent, outpath, inpath };
+    }),
+  );
 
-await walk(OUTPUT_DIR, SITE_ID);
+  const filesToMigrate = await migrateCollection(
+    fileContents,
+    `${REPO_DIR}/news`,
+  );
+  const files = filesToMigrate.map(({ inpath, outpath, ...rest }) => {
+    fs.appendFileSync("mappings.csv", `${inpath},${outpath}\n`);
+    return rest;
+  });
+
+  const { seen, files: rewrittenFiles } = await migrateAssets(files, SITE_ID);
+
+  rewrittenFiles.map(({ jsonOutpath, name, content }) => {
+    fileWriter.write(name, jsonOutpath, JSON.stringify(content, null, 2));
+    return { jsonOutpath, content, name };
+  });
+
+  Object.entries(seen).map(([src, dest]) => {
+    fs.appendFileSync("asset_mappings.csv", `${src},${dest}\n`);
+    return copyToAssetsFolder(src, dest);
+  });
+
+  await walk(OUTPUT_DIR, SITE_ID);
+};
+
+await main();

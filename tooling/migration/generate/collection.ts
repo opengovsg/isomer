@@ -1,16 +1,15 @@
 import { Tagged } from "type-fest";
-import * as fs from "fs";
 import { MIGRATION_CALLOUT } from "../constants";
 import _ from "lodash";
 import {
   extractContent,
   extractFrontmatter,
-  JekyllPost,
+  JekyllFile,
 } from "~/migrate/jekyll";
 import { html2schema } from "~/migrate/html2schema";
 import { md2html } from "~/migrate/md2html";
+import { ArticlePageSchemaType } from "@opengovsg/isomer-components";
 
-const NON_ALPHA_NUM = /[^a-zA-Z0-9]*/g;
 // TODO: figure out how to use the base regex to create these two
 const NO_STARTING_NON_ALPHA_NUM = /^[^a-zA-Z0-9]*/g;
 const NO_ENDING_NON_ALPHA_NUM = /[^a-zA-Z0-9]*$/g;
@@ -38,7 +37,7 @@ export const generateCollectionArticlePage = ({
   permalink,
   content,
   lastModified,
-}: GenerateCollectionArticlePageProps) => {
+}: GenerateCollectionArticlePageProps): Omit<ArticlePageSchemaType, "site"> => {
   return {
     ...COLLECTION,
     page: {
@@ -53,7 +52,10 @@ export const generateCollectionArticlePage = ({
       },
     },
     // FIXME: Enforce typing later
-    content: [MIGRATION_CALLOUT, ...(content as unknown[])],
+    content: [
+      MIGRATION_CALLOUT,
+      ...(content as ArticlePageSchemaType["content"]),
+    ],
   };
 };
 
@@ -144,7 +146,7 @@ export const extractMetadataFromName = (name: CollectionPostName) => {
 
 export const jekyllPost2CollectionPage = async (
   name: CollectionPostName,
-  post: JekyllPost,
+  post: JekyllFile,
   category: string,
 ) => {
   const frontmatter = extractFrontmatter(post);
@@ -168,7 +170,7 @@ export const jekyllPost2CollectionPage = async (
 
 export const jekyllPage2CollectionPage = async (
   name: string,
-  post: JekyllPost,
+  post: JekyllFile,
   category: string,
 ) => {
   const frontmatter = extractFrontmatter(post);

@@ -1,3 +1,5 @@
+import { CalloutProps } from "@opengovsg/isomer-components";
+
 export const MIGRATION_CALLOUT = {
   type: "callout",
   content: {
@@ -17,4 +19,11 @@ export const MIGRATION_CALLOUT = {
       },
     ],
   },
-};
+} satisfies Omit<CalloutProps, "site">;
+
+// NOTE: This denotes the state of the repo as is
+// prior to `jekyll build` being executed
+export const REPO_DIR = "_repo";
+// NOTE: This refers to the output directory
+// after `jekyll build` is executed
+export const SITE_DIR = "_site";

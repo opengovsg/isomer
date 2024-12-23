@@ -1,52 +1,73 @@
-import { ArticlePageSchemaType } from "@opengovsg/isomer-components";
+import {
+  ArticlePageSchemaType,
+  ContentPageSchemaType,
+} from "@opengovsg/isomer-components";
 import { copyFile } from "node:fs/promises";
-import * as fs from "fs";
 import { mkdirp } from "mkdirp";
 import { getSanitisedAssetName } from "~/utils";
 import path from "node:path";
+import { WithoutSite } from "~/types/pages";
+import { SITE_DIR } from "~/constants";
 
 const __dirname = path.resolve();
-export const migrateAssets = async (writtenFiles: string[], siteId: number) => {
+
+type MigratablePages =
+  | WithoutSite<ArticlePageSchemaType>
+  | WithoutSite<ContentPageSchemaType>;
+
+interface MigratablePagesWithMeta {
+  jsonOutpath: string;
+  content: MigratablePages;
+  name: string;
+}
+export const migrateAssets = async (
+  files: MigratablePagesWithMeta[],
+  siteId: number,
+) => {
   const seen: Record<string, string> = {};
 
-  writtenFiles.map(async (filename) => {
-    const schema: ArticlePageSchemaType = JSON.parse(
-      fs.readFileSync(filename, "utf8"),
-    );
-
+  const rewrittenFiles = files.map(({ content: schema, ...rest }) => {
     const { content } = schema;
 
-    const newContent = await Promise.all(
-      content.map(async (block) => {
-        if (block.type !== "image") return block;
+    const newContent = content.map((block) => {
+      if (block.type !== "image") return block;
 
-        const { src, alt: oldAlt, ...rest } = block;
-        const alt = oldAlt ?? "This is an example alt text for an image";
-        // NOTE: Not a local image, no need to migrate
-        if (!src.startsWith("/")) return { src, alt, ...rest };
+      const { src, alt: oldAlt, ...rest } = block;
+      const alt = oldAlt ?? "This is an example alt text for an image";
+      // NOTE: Not a local image, no need to migrate
+      if (!src.startsWith("/")) return { src, alt, ...rest };
 
-        if (seen[src]) {
-          return { src: seen[src], alt, ...rest };
-        } else {
-          const sanitisedName = getSanitisedAssetName(src);
-          const uuid = crypto.randomUUID();
-          const outpath = `/${siteId}/${uuid}/${sanitisedName}`;
-          const parentPath = outpath.split("/").slice(0, -1).join("/");
-          await mkdirp(__dirname + parentPath);
+      if (seen[src]) {
+        return { src: seen[src], alt, ...rest };
+      } else {
+        const sanitisedName = getSanitisedAssetName(src);
+        const uuid = crypto.randomUUID();
+        const outpath = `/${siteId}/${uuid}/${sanitisedName}`;
 
-          await copyFile(`${__dirname}/_site${src}`, `${__dirname}${outpath}`);
+        seen[src] = outpath;
 
-          seen[src] = outpath;
-
-          return { src: outpath, alt, ...rest };
-        }
-      }),
-    );
+        return { src: outpath, alt, ...rest };
+      }
+    });
 
     schema.content = newContent;
-    // NOTE: Write back to same file
-    fs.writeFileSync(filename, JSON.stringify(schema, null, 2));
+
+    return { content: schema, ...rest };
   });
 
-  return writtenFiles;
+  return { seen, files: rewrittenFiles };
+};
+
+// NOTE: This copies a file at `from` into a `to`
+// and returns the path
+export const copyToAssetsFolder = async (
+  from: string,
+  to: string,
+): Promise<string> => {
+  const parentPath = to.split("/").slice(0, -1).join("/");
+
+  await mkdirp(__dirname + parentPath);
+  await copyFile(`${__dirname}/${SITE_DIR}${from}`, `${__dirname}${to}`);
+
+  return to;
 };
