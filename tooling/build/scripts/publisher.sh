@@ -70,7 +70,6 @@ start_time=$(date +%s)
 cd tooling/build/scripts/publishing
 echo $(pwd)
 npm ci
-npm install ts-node -g
 npm run start
 calculate_duration $start_time
 
