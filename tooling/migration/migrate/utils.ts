@@ -179,7 +179,6 @@ export const convertHtmlToSchema = async (html: string, permalink: string) => {
 
   const schema = getCleanedSchema(output.content);
   const result = convertFromTiptap(schema);
-  console.log("IMGE", IMAGE_DOWNLOADS);
 
   // Download all images
   // await Promise.all(

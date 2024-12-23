@@ -2,9 +2,10 @@
   "name": "migration",
   "version": "1.0.0",
   "main": "index.ts",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx tsx ./index.ts"
+    "test": "echo \"Error: no test specified& exit 1",
+    "start": "source .env && npx tsx ./index.ts"
   },
   "author": "",
   "license": "ISC",
@@ -17,8 +18,10 @@
     "@tiptap/extension-image": "^2.5.7",
     "@tiptap/html": "^2.5.7",
     "jsdom": "^25.0.1",
+    "lodash": "^4.17.21",
     "markdown-it": "^14.1.0",
     "mkdirp": "^3.0.1",
+    "pg": "^8.13.1",
     "type-fest": "^4.30.2"
   }
 }

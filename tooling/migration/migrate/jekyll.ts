@@ -21,3 +21,12 @@ export const extractContent = (content: JekyllPost) => {
     .join(JEKYLL_FRONTMATTER_DELIMITER)
     .trim();
 };
+
+export const extractFrontmatter = (
+  content: JekyllPost,
+): Record<string, string> => {
+  const lines = content.split(JEKYLL_FRONTMATTER_DELIMITER).at(1)?.split("\n");
+  const records = lines?.map((line) => line.split(":").map((x) => x.trim()));
+
+  return Object.fromEntries(records ?? []);
+};

@@ -1,4 +1,6 @@
 import { Tagged } from "type-fest";
+import { MIGRATION_CALLOUT } from "../constants";
+import _ from "lodash";
 
 const NON_ALPHA_NUM = /[^a-zA-Z0-9]*/g;
 // TODO: figure out how to use the base regex to create these two
@@ -13,7 +15,7 @@ const COLLECTION = {
   version: "0.1.0",
 } as const;
 
-type CollectionPageName = Tagged<string, "CollectionPageName">;
+export type CollectionPageName = Tagged<string, "CollectionPageName">;
 interface GenerateCollectionArticlePageProps {
   category: string;
   title: CollectionPageName;
@@ -32,8 +34,19 @@ export const generateCollectionArticlePage = ({
 }: GenerateCollectionArticlePageProps) => {
   return {
     ...COLLECTION,
-    page: { ...COLLECTION.page, category, title, permalink, lastModified },
-    content,
+    page: {
+      ...COLLECTION.page,
+      category,
+      title,
+      permalink,
+      lastModified,
+      date: lastModified,
+      articlePageHeader: {
+        summary: " ",
+      },
+    },
+    // FIXME: Enforce typing later
+    content: [MIGRATION_CALLOUT, ...(content as unknown[])],
   };
 };
 

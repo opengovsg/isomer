@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "target": "es2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "checkJs": true,
@@ -17,9 +16,11 @@
     "incremental": true,
     "noUncheckedIndexedAccess": true,
     "baseUrl": ".",
+    "target": "es2022",
     "paths": {
       "~/*": ["./*"],
-      "~editor/*": ["../../apps/studio/src/features/editing-experience/*"]
+      "~editor/*": ["../../apps/studio/src/features/editing-experience/*"],
+      "~database/*": ["../../apps/studio/src/server/modules/database/*"]
     },
     "types": ["vitest/globals", "node"]
   },
