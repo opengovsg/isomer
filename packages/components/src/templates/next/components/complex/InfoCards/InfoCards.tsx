@@ -88,6 +88,11 @@ const createInfoCardsStyles = tv({
         grid: "md:grid-cols-2 lg:grid-cols-3",
       },
     },
+    isExternalLink: {
+      true: {
+        cardTitleArrow: "rotate-[-45deg]",
+      },
+    },
   },
   defaultVariants: {
     layout: "default",
@@ -170,7 +175,9 @@ const InfoCardText = ({
       {url && (
         <BiRightArrowAlt
           aria-hidden
-          className={compoundStyles.cardTitleArrow()}
+          className={compoundStyles.cardTitleArrow({
+            isExternalLink: isExternalUrl(url),
+          })}
         />
       )}
     </h3>

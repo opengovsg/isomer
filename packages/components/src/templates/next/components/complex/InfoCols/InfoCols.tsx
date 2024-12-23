@@ -8,6 +8,7 @@ import {
   getReferenceLinkHref,
   getTailwindVariantLayout,
   groupFocusVisibleHighlight,
+  isExternalUrl,
 } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
@@ -46,6 +47,11 @@ const createInfoColsStyles = tv({
         outerContainer: "mt-14",
         header: "gap-6",
         headerSubtitle: "prose-body-base",
+      },
+    },
+    isExternalLink: {
+      true: {
+        infoBoxButtonIcon: "rotate-[-45deg]",
       },
     },
   },
@@ -97,7 +103,9 @@ const InfoBoxes = ({
               <div className={compoundStyles.infoBoxButton()}>
                 {buttonLabel}
                 <BiRightArrowAlt
-                  className={compoundStyles.infoBoxButtonIcon()}
+                  className={compoundStyles.infoBoxButtonIcon({
+                    isExternalLink: isExternalUrl(buttonUrl),
+                  })}
                 />
               </div>
             )}
