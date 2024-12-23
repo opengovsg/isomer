@@ -15,13 +15,13 @@ const meta: Meta<typeof LogoCloud> = {
 export default meta
 type Story = StoryObj<typeof LogoCloud>
 
-const IMAGE = { src: "https://via.placeholder.com/150", alt: "placeholder" }
+const IMAGE = { src: "https://placehold.co/150", alt: "placeholder" }
 const HORIZONTAL_IMAGE = {
-  src: "https://via.placeholder.com/1000x100",
+  src: "https://placehold.co/1000x100",
   alt: "placeholder",
 }
 const VERTICAL_IMAGE = {
-  src: "https://via.placeholder.com/100x1000",
+  src: "https://placehold.co/100x1000",
   alt: "placeholder",
 }
 
