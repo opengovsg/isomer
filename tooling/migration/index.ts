@@ -1,9 +1,8 @@
 import * as fs from "fs";
 import _ from "lodash";
-import { copyFile } from "node:fs/promises";
 import { Writer } from "./types/writer";
 import { fileWriter } from "./writer";
-import { html2schema, updateImageSrc } from "./migrate/html2schema";
+import { html2schema } from "./migrate/html2schema";
 import {
   getCollectionPageNameFromPage,
   extractCollectionPostName,
@@ -11,20 +10,13 @@ import {
   getCollectionPageNameFromPost,
   isCollectionPost,
   parseCollectionDateFromFileName,
-  trimNonAlphaNum,
   CollectionPageName,
+  getCollectionCategory,
 } from "./generate/collection";
 import { generateCollectionInOutMapping } from "./migrate/collection";
 import { MigrationMapping } from "./types/migration";
 import markdownit from "markdown-it";
-import {
-  addBlobToResource,
-  createBlob,
-  createResource,
-  getSanitisedAssetName,
-  readAllFiles,
-} from "./utils";
-import { mkdirp } from "mkdirp";
+import { addBlobToResource, createBlob, createResource } from "./utils";
 import path from "path";
 import {
   extractContent,
@@ -32,13 +24,7 @@ import {
   JekyllPost,
 } from "./migrate/jekyll";
 import pg from "pg";
-import {
-  ArticlePageSchemaType,
-  IsomerComponent,
-  IsomerPageLayoutType,
-  IsomerPageSchemaType,
-} from "@opengovsg/isomer-components";
-import { error } from "console";
+import { migrateAssets } from "./migrate/assets";
 
 const { Client } = pg;
 const md = markdownit({ html: true });
@@ -47,8 +33,6 @@ const OUTPUT_DIR = "output";
 
 // const SITE_ID = 23; // NOTE: this is the mse site
 const SITE_ID = 1;
-const DEBUG = false;
-const LIMIT = 50;
 
 const __dirname = path.resolve();
 // NOTE: This is the path to migrate
@@ -58,8 +42,7 @@ const migrate = async (
   writers: Writer[],
 ) => {
   const writtenFiles = await Promise.all(
-    Object.entries(mappings).map(async ([outpath, inpath], index) => {
-      // if (DEBUG && index <= LIMIT) {
+    Object.entries(mappings).map(async ([outpath, inpath]) => {
       const hasTerminatingSlash = outpath.endsWith("/");
       const mdContent = fs.readFileSync(inpath, "utf-8") as JekyllPost;
       const frontmatter = extractFrontmatter(mdContent);
@@ -81,10 +64,7 @@ const migrate = async (
         const rawCollectionFileName = extractCollectionPostName(name);
 
         const content = generateCollectionArticlePage({
-          category: _.upperFirst(trimNonAlphaNum(category)).replaceAll(
-            /[^a-zA-Z0-9]+/g,
-            " ",
-          ),
+          category: getCollectionCategory(category),
           title:
             (frontmatter.title as CollectionPageName) ??
             getCollectionPageNameFromPost(rawCollectionFileName),
@@ -113,10 +93,7 @@ const migrate = async (
           getCollectionPageNameFromPage(name);
 
         const content = generateCollectionArticlePage({
-          category: _.upperFirst(trimNonAlphaNum(category)).replaceAll(
-            /[^a-zA-Z0-9]+/g,
-            " ",
-          ),
+          category: getCollectionCategory(category),
           title,
           permalink: title.replaceAll(/ /g, "-").toLowerCase(),
           content: output,
@@ -137,34 +114,10 @@ const migrate = async (
 
         return jsonOutpath;
       }
-      // }
     }),
   );
 
   return writtenFiles;
-};
-
-// NOTE: structure is site id -> uuid -> filename, where filename has NO SLASHES
-const generateAssets = async (assetsPath: string, siteId: number) => {
-  const assets = readAllFiles(assetsPath);
-  const assetsMapping: Record<string, string> = {};
-
-  await Promise.all(
-    assets.map(async (fullName) => {
-      const sanitisedName = getSanitisedAssetName(fullName.split("/").at(-1)!);
-      const uuid = crypto.randomUUID();
-      const outpath = `./${siteId}/${uuid}/${sanitisedName}`;
-      const parentPath = outpath.split("/").slice(0, -1).join("/");
-      await mkdirp(parentPath);
-
-      await copyFile(fullName, outpath);
-      const initialAssetsPath = fullName.replace(assetsPath, "");
-      // NOTE: get rid of the leading `.`
-      assetsMapping[initialAssetsPath] = outpath.slice(1);
-    }),
-  );
-
-  return assetsMapping;
 };
 
 export const walk = async (dir: string, siteId: number) => {
@@ -222,56 +175,7 @@ export const walk = async (dir: string, siteId: number) => {
   return rootId;
 };
 
-export const migrateAssets = async (writtenFiles: string[], siteId: number) => {
-  const seen: Record<string, string> = {};
-
-  writtenFiles.map(async (filename) => {
-    const schema: ArticlePageSchemaType = JSON.parse(
-      fs.readFileSync(filename, "utf8"),
-    );
-
-    const { content } = schema;
-
-    const newContent = await Promise.all(
-      content.map(async (block) => {
-        if (block.type !== "image") return block;
-
-        const { src, alt: oldAlt, ...rest } = block;
-        const alt = oldAlt ?? "This is an example alt text for an image";
-        // NOTE: Not a local image, no need to migrate
-        if (!src.startsWith("/")) return { src, alt, ...rest };
-
-        if (seen[src]) {
-          return { src: seen[src], alt, ...rest };
-        } else {
-          const sanitisedName = getSanitisedAssetName(src);
-          const uuid = crypto.randomUUID();
-          const outpath = `/${siteId}/${uuid}/${sanitisedName}`;
-          console.log("OUT", outpath);
-          const parentPath = outpath.split("/").slice(0, -1).join("/");
-          await mkdirp(__dirname + parentPath);
-
-          await copyFile(`${__dirname}/_site${src}`, `${__dirname}${outpath}`);
-
-          console.log("BEFORE", block.src);
-          console.log("AFTER", outpath);
-          seen[src] = outpath;
-
-          return { src: outpath, alt, ...rest };
-        }
-      }),
-    );
-
-    schema.content = newContent;
-    // NOTE: Write back to same file
-    fs.writeFileSync(filename, JSON.stringify(schema, null, 2));
-  });
-
-  return writtenFiles;
-};
-
 const mappings = generateCollectionInOutMapping("_repo/news");
-const assetsMapping = await generateAssets("_images", SITE_ID);
 
 const writtenFiles = await migrate(mappings, "_repo/news", [fileWriter]);
 await migrateAssets(writtenFiles, SITE_ID);

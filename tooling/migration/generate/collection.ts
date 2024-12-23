@@ -115,3 +115,10 @@ export const getCollectionPageNameFromPost = (
 ): CollectionPageName => {
   return filename.replaceAll("-", " ") as CollectionPageName;
 };
+
+export const getCollectionCategory = (category: string) => {
+  return _.upperFirst(trimNonAlphaNum(category)).replaceAll(
+    /[^a-zA-Z0-9]+/g,
+    " ",
+  );
+};
