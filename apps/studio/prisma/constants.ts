@@ -1,5 +1,5 @@
 export const ISOMER_ADMINS = [
-  "alex",
+  "alexander",
   "jan",
   "jiachin",
   "sehyun",
