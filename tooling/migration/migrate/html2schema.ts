@@ -16,7 +16,7 @@ export const updateImageSrc = (
         assetMapping[`${component.src.replace(prefix, "")}`]?.replace(
           /^\./,
           "",
-        ) || "https://placehold.co/600x400";
+        ) || component.src;
       if (!component.alt) {
         // NOTE: need to do this for migration so they can save...
         component.alt = "This is an example alt text for an image";

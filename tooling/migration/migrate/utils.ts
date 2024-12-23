@@ -8,11 +8,6 @@ import { AnyExtension, Extensions, Node as TiptapNode } from "@tiptap/core";
 import { TableRow } from "@tiptap/extension-table-row";
 import fs from "fs";
 import {
-  FILES_PATH_PREFIX,
-  IMAGES_PATH_PREFIX,
-  SITE_BASE_URL,
-} from "./constants";
-import {
   ProseProps,
   HeadingProps,
   ProseContent,
@@ -38,8 +33,6 @@ global.document = document;
 global.window = window as any;
 
 let PERMALINK = "";
-const IMAGE_DOWNLOADS: Record<string, string> = {};
-const FILE_DOWNLOADS: Record<string, string> = {};
 
 export const fixTipTapContent = (html: string) => {
   let container = document.createElement("div");
@@ -195,7 +188,7 @@ export const convertHtmlToSchema = async (html: string, permalink: string) => {
   //   }),
   // );
 
-  console.log(FILE_DOWNLOADS);
+  // console.log(FILE_DOWNLOADS);
 
   // Download all files
   // await Promise.all(
@@ -212,12 +205,7 @@ export const convertHtmlToSchema = async (html: string, permalink: string) => {
   //   }),
   // );
 
-  const filesMapping = {
-    ...IMAGE_DOWNLOADS,
-    ...FILE_DOWNLOADS,
-  };
-
-  console.log(filesMapping);
+  // console.log(filesMapping);
 
   return result;
 };
@@ -375,24 +363,6 @@ const getCleanedSchema = (schema: Record<string, any>[]) => {
               href: mark.attrs.href,
             };
 
-            if (mark.attrs.href.startsWith("/docs")) {
-              const fileName = mark.attrs.href.split("?")[0].split("/").pop();
-              const newHref = `${FILES_PATH_PREFIX}/${PERMALINK}/${fileName}`;
-
-              if (Object.keys(FILE_DOWNLOADS).includes(mark.attrs.href)) {
-                // console.log("File already downloaded:", mark.attrs.href);
-              }
-
-              FILE_DOWNLOADS[mark.attrs.href] = newHref;
-              console.log(FILE_DOWNLOADS);
-              downloadFile(
-                `${SITE_BASE_URL}${mark.attrs.href.replace(SITE_BASE_URL, "")}`,
-                "files",
-                fileName,
-              );
-              newAttrs.href = newHref;
-            }
-
             if (
               mark.attrs.target === "_blank" &&
               !mark.attrs.href.startsWith("/")
@@ -503,16 +473,8 @@ const convertFromTiptap = (
           console.log("Image source:", src);
         }
 
-        const fileName = src.split("?")[0].split("/").pop();
-        const newSrc = `${IMAGES_PATH_PREFIX}/${PERMALINK}/${fileName}`;
-        if (Object.keys(IMAGE_DOWNLOADS).includes(src)) {
-          console.log("Image already downloaded:", src);
-        }
-
-        IMAGE_DOWNLOADS[src] = newSrc;
-
         outputContent.push({
-          src: newSrc,
+          src,
           alt,
           ...rest,
         });
@@ -547,13 +509,6 @@ const convertFromTiptap = (
           console.log("Contentpic image source:", imageSrc);
         }
 
-        const fileName = imageSrc.split("?")[0].split("/").pop();
-        const newSrc = `${IMAGES_PATH_PREFIX}/${PERMALINK}/${fileName}`;
-        if (Object.keys(IMAGE_DOWNLOADS).includes(imageSrc)) {
-          console.log("Image already downloaded:", imageSrc);
-        }
-
-        IMAGE_DOWNLOADS[imageSrc] = newSrc;
         // const newContent = content
         //   .filter((c) => c.type !== "image")
         //   .map((c) => {
@@ -592,7 +547,7 @@ const convertFromTiptap = (
         // });
 
         outputContent.push({
-          imageSrc: newSrc,
+          imageSrc,
           imageAlt,
           ...rest,
           content: {

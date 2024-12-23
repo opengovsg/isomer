@@ -24,7 +24,6 @@ interface GenerateCollectionArticlePageProps {
   lastModified: string;
 }
 
-// lastModified: "2024-10-17T01:46:20.222Z",
 export const generateCollectionArticlePage = ({
   category,
   title,
@@ -99,7 +98,8 @@ type RawCollectionPostName = Tagged<string, "RawCollectionPostName">;
 export const extractCollectionPostName = (
   filename: string,
 ): RawCollectionPostName => {
-  return filename.slice(11).replaceAll(/\.html$/g, "") as RawCollectionPostName;
+  const baseFileName = filename.length < 12 ? filename : filename.slice(11);
+  return baseFileName.replaceAll(/\.html$/g, "") as RawCollectionPostName;
 };
 
 export const getCollectionPageNameFromPage = (
