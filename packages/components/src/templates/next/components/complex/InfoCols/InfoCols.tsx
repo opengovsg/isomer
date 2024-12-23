@@ -78,39 +78,43 @@ const InfoBoxes = ({
   return (
     <div className={compoundStyles.infoBoxesContainer()}>
       {infoBoxes.map(
-        ({ title, icon, description, buttonUrl, buttonLabel }, idx) => (
-          <Link
-            LinkComponent={LinkComponent}
-            href={getReferenceLinkHref(
-              buttonUrl,
-              site.siteMap,
-              site.assetsBaseUrl,
-            )}
-            key={idx}
-            className={compoundStyles.infoBox()}
-          >
-            {icon && <InfoBoxIcon icon={icon} aria-hidden="true" />}
+        ({ title, icon, description, buttonUrl, buttonLabel }, idx) => {
+          const isExternalLink = isExternalUrl(buttonUrl)
+          return (
+            <Link
+              LinkComponent={LinkComponent}
+              href={getReferenceLinkHref(
+                buttonUrl,
+                site.siteMap,
+                site.assetsBaseUrl,
+              )}
+              key={idx}
+              className={compoundStyles.infoBox()}
+              isExternal={isExternalLink}
+            >
+              {icon && <InfoBoxIcon icon={icon} aria-hidden="true" />}
 
-            <h3 className={compoundStyles.infoBoxTitle()}>{title}</h3>
+              <h3 className={compoundStyles.infoBoxTitle()}>{title}</h3>
 
-            {description && (
-              <p className={compoundStyles.infoBoxDescription()}>
-                {description}
-              </p>
-            )}
+              {description && (
+                <p className={compoundStyles.infoBoxDescription()}>
+                  {description}
+                </p>
+              )}
 
-            {buttonLabel && buttonUrl && (
-              <div className={compoundStyles.infoBoxButton()}>
-                {buttonLabel}
-                <BiRightArrowAlt
-                  className={compoundStyles.infoBoxButtonIcon({
-                    isExternalLink: isExternalUrl(buttonUrl),
-                  })}
-                />
-              </div>
-            )}
-          </Link>
-        ),
+              {buttonLabel && buttonUrl && (
+                <div className={compoundStyles.infoBoxButton()}>
+                  {buttonLabel}
+                  <BiRightArrowAlt
+                    className={compoundStyles.infoBoxButtonIcon({
+                      isExternalLink,
+                    })}
+                  />
+                </div>
+              )}
+            </Link>
+          )
+        },
       )}
     </div>
   )
