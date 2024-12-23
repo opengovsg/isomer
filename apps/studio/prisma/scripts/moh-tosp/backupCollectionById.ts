@@ -2,6 +2,10 @@ import fs from "fs/promises" // Use the promise-based version of fs for async/aw
 import path from "path"
 
 import { db } from "~/server/modules/database"
+import { FileLogger } from "../FileLogger"
+
+// Update the logger path if required
+const logger = new FileLogger("./backupCollectionById.log")
 
 /**
  * Backup a collection and its relevant resources to JSON files.
@@ -50,7 +54,7 @@ export async function backupCollection(
         )
       }
 
-      console.log(`Writing backup for child with ID ${child.id}`)
+      logger.info(`Writing backup for child with ID ${child.id}`)
 
       // Parse blob content and write to a file
       const blobBuffer = blob.content // Assuming blob.content is a buffer
@@ -58,17 +62,18 @@ export async function backupCollection(
       await fs.writeFile(blobJsonPath, JSON.stringify(blobBuffer, null, 2))
     }
 
-    console.log(`Backup completed successfully in directory: ${backupDir}`)
+    logger.info(`Backup completed successfully in directory: ${backupDir}`)
   } catch (error: any) {
-    console.error(`Error backing up collection: ${error.message}`)
+    logger.error(`Error backing up collection: ${error.message}`)
   }
 }
 
 // Run the backup
 // NOTE: TODO: Put in the collection ID to backup
-const collectionId = "0"
-const backupDirectory = ""
+const collectionId = "5"
+const backupDirectory =
+  "/Users/harishv/Documents/Code/isomer/isomer-next/test-backup-tosp/backup"
 
 await backupCollection(collectionId, backupDirectory).catch((err) => {
-  console.error("Unhandled error:", err.message)
+  logger.error("Unhandled error:", err.message)
 })

@@ -2,12 +2,16 @@ import fs from "fs/promises"
 import path from "path"
 
 import { db, jsonb } from "~/server/modules/database"
+import { FileLogger } from "../FileLogger"
+
+// Update the logger path if required
+const logger = new FileLogger("./createCollectionFromLocal.log")
 
 export const createCollectionFromLocal = async (
   contentDir: string,
   siteId: number,
 ) => {
-  console.log(`Reading from ${contentDir}`)
+  logger.info(`Reading from ${contentDir}`)
   const jsonFilePath = path.join(contentDir, "cost-financing.json")
   const folderPath = path.join(contentDir, "cost-financing-original")
 
@@ -29,7 +33,7 @@ export const createCollectionFromLocal = async (
         .executeTakeFirstOrThrow()
 
       const collectionId = collection.id
-      console.log(`Collection created with ID: ${collectionId}`)
+      logger.info(`Collection created with ID: ${collectionId}`)
 
       // Step 2: Insert "cost-financing.json" as an IndexPage with permalink "_index"\
       const jsonFileContent = await fs.readFile(jsonFilePath, "utf-8")
@@ -59,22 +63,22 @@ export const createCollectionFromLocal = async (
 
       const indexPageId = indexPage.id
 
-      console.log(`Index page created with ID: ${indexPageId}`)
+      logger.info(`Index page created with ID: ${indexPageId}`)
 
       //   Step 3: Insert files from "cost-financing/" into the DB as Blobs
       const folderFiles = await fs.readdir(folderPath)
-      console.log(`Reading from folderPath: ${folderPath}`)
-      console.log(`Folder files`, folderFiles)
+      logger.info(`Reading from folderPath: ${folderPath}`)
+      logger.info(`Folder files`, folderFiles)
       for (const file of folderFiles) {
         const filePath = path.join(folderPath, file)
-        console.log(`Reading file path: ${filePath}`)
+        logger.info(`Reading file path: ${filePath}`)
 
-        console.log(`Filename: ${file}`)
+        logger.info(`Filename: ${file}`)
         //Sometimes might have hidden internal files like .DSStore
         if (!file.endsWith(".json")) {
           continue
         }
-        console.log("File path: ", filePath)
+        logger.info("File path: ", filePath)
         const fileContent = await fs.readFile(filePath, "utf-8")
 
         const parsedFileContent = JSON.parse(fileContent)
@@ -107,19 +111,20 @@ export const createCollectionFromLocal = async (
 
         const resourceId = resource.id
 
-        console.log(
+        logger.info(
           `Blob created for file ${file} with resource ID: ${resourceId}`,
         )
       }
     })
 
-    console.log("All operations completed successfully.")
+    logger.info("All operations completed successfully.")
   } catch (error) {
-    console.error("Error during transaction:", error)
+    logger.error("Error during transaction:", error)
   }
 }
 
 // NOTE: TODO: Update the content directory and siteId here before usage!
-const contentDir = ""
-const siteId = 0
+const contentDir =
+  "/Users/harishv/Documents/Code/isomer/isomer-next/test-backup-tosp/content"
+const siteId = 1
 await createCollectionFromLocal(contentDir, siteId)

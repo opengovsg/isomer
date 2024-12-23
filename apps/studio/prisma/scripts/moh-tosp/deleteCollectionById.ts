@@ -1,4 +1,8 @@
 import { db } from "~/server/modules/database"
+import { FileLogger } from "../FileLogger"
+
+// Update the logger path if required
+const logger = new FileLogger("./deleteCollectionById.log")
 
 export const deleteCollectionById = async (
   collectionId: string,
@@ -50,7 +54,7 @@ export const deleteCollectionById = async (
         // Delete the resource itself
         await tx.deleteFrom("Resource").where("id", "=", resource.id).execute()
 
-        console.log(`Resource with ID ${resource.id} deleted successfully.`)
+        logger.info(`Resource with ID ${resource.id} deleted successfully.`)
       }
 
       // Step 3: Delete the collection itself
@@ -87,15 +91,15 @@ export const deleteCollectionById = async (
       // Delete the collection resource itself
       await tx.deleteFrom("Resource").where("id", "=", collectionId).execute()
 
-      console.log(
+      logger.info(
         `Collection with ID ${collectionId} and all related data deleted successfully.`,
       )
     })
   } catch (error) {
-    console.error("Error deleting collection:", error)
+    logger.error("Error deleting collection:", error)
   }
 }
 
-const collectionIdToDelete = ""
-const siteId = 0
+const collectionIdToDelete = "3640"
+const siteId = 1
 await deleteCollectionById(collectionIdToDelete, siteId)

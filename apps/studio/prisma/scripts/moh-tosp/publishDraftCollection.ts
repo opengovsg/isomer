@@ -1,4 +1,8 @@
 import { db } from "~/server/modules/database"
+import { FileLogger } from "../FileLogger"
+
+// Update the logger path if required
+const logger = new FileLogger("./publishCollectionById.log")
 
 export const publishCollectionById = async (
   publisherId: string,
@@ -14,9 +18,9 @@ export const publishCollectionById = async (
       .executeTakeFirstOrThrow()
 
     if (collection.state !== "Draft") {
-      throw new Error(
-        `Collection with ID ${collectionId} cannot be published as it is either in Published state or draftBlobId is not present.`,
-      )
+      const errMsg = `Collection with ID ${collectionId} cannot be published as it is either in Published state or draftBlobId is not present.`
+      logger.error(errMsg)
+      throw new Error(errMsg)
     }
 
     // Update collection state to Published
@@ -39,7 +43,7 @@ export const publishCollectionById = async (
 
     for (const child of children) {
       if (child.state === "Published" || child.draftBlobId === null) {
-        console.log(
+        logger.error(
           `Child resource with ID ${child.id} cannot be published as it is either in Published state or draftBlobId is not present.`,
         )
         continue
@@ -69,12 +73,12 @@ export const publishCollectionById = async (
         .where("id", "=", child.id)
         .executeTakeFirstOrThrow()
 
-      console.log(`Published child resource with ID ${child.id}`)
+      logger.info(`Published child resource with ID ${child.id}`)
     }
   })
 }
 
 // NOTE: TODO: Put in the publisher ID and collection ID to publish
-const publisherId = "0"
-const collectionId = "0"
+const publisherId = "mblrtd177gju657mf20m32jo"
+const collectionId = "3640"
 await publishCollectionById(publisherId, collectionId)
