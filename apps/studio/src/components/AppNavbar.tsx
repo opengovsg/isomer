@@ -1,17 +1,11 @@
 import Image from "next/image"
 import NextLink from "next/link"
-import { Flex, HStack, Tooltip } from "@chakra-ui/react"
-import {
-  AvatarMenu,
-  Button,
-  IconButton,
-  Menu,
-} from "@opengovsg/design-system-react"
+import { Flex, HStack } from "@chakra-ui/react"
+import { AvatarMenu, Button, Menu } from "@opengovsg/design-system-react"
 import { BiLinkExternal } from "react-icons/bi"
 
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useMe } from "~/features/me/api"
-import { DASHBOARD } from "~/lib/routes"
 
 export function AppNavbar(): JSX.Element {
   const { me, logout } = useMe()
@@ -32,25 +26,20 @@ export function AppNavbar(): JSX.Element {
         borderColor="base.divider.medium"
         transition="padding 0.1s"
       >
-        <Flex alignItems="center">
-          <Tooltip label={"Back to sites"} placement="right">
-            <IconButton
-              mr="0.5rem"
-              as={NextLink}
-              href={DASHBOARD}
-              variant="clear"
-              aria-label="Back to sites"
-              icon={
-                <Image
-                  src="/assets/isomer-logo-color.svg"
-                  height={24}
-                  width={22}
-                  alt="Back to sites"
-                  priority
-                />
-              }
-            />
-          </Tooltip>
+        <Flex
+          justifyContent="center"
+          alignItems="center"
+          mr="0.5rem"
+          minH="2.75rem"
+          minW="2.75rem"
+        >
+          <Image
+            src="/assets/isomer-logo-color.svg"
+            height={24}
+            width={22}
+            alt="Back to sites"
+            priority
+          />
         </Flex>
         <HStack
           textStyle="subhead-1"
