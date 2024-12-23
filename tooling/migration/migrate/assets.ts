@@ -3,7 +3,9 @@ import { copyFile } from "node:fs/promises";
 import * as fs from "fs";
 import { mkdirp } from "mkdirp";
 import { getSanitisedAssetName } from "~/utils";
+import path from "node:path";
 
+const __dirname = path.resolve();
 export const migrateAssets = async (writtenFiles: string[], siteId: number) => {
   const seen: Record<string, string> = {};
 

@@ -1,6 +1,14 @@
 import { Tagged } from "type-fest";
+import * as fs from "fs";
 import { MIGRATION_CALLOUT } from "../constants";
 import _ from "lodash";
+import {
+  extractContent,
+  extractFrontmatter,
+  JekyllPost,
+} from "~/migrate/jekyll";
+import { html2schema } from "~/migrate/html2schema";
+import { md2html } from "~/migrate/md2html";
 
 const NON_ALPHA_NUM = /[^a-zA-Z0-9]*/g;
 // TODO: figure out how to use the base regex to create these two
@@ -121,4 +129,64 @@ export const getCollectionCategory = (category: string) => {
     /[^a-zA-Z0-9]+/g,
     " ",
   );
+};
+
+export const extractMetadataFromName = (name: CollectionPostName) => {
+  const { year, month, day } = parseCollectionDateFromFileName(name);
+  const lastModified = `${day}/${month}/${year}`;
+  const rawFileName = extractCollectionPostName(name);
+
+  return {
+    lastModified,
+    rawFileName,
+  };
+};
+
+export const jekyllPost2CollectionPage = async (
+  name: CollectionPostName,
+  post: JekyllPost,
+  category: string,
+) => {
+  const frontmatter = extractFrontmatter(post);
+  const jekyllContent = extractContent(post);
+
+  const html = md2html(jekyllContent);
+  const output = await html2schema(html, "");
+
+  const { lastModified, rawFileName } = extractMetadataFromName(name);
+
+  return generateCollectionArticlePage({
+    category,
+    title:
+      (frontmatter.title as CollectionPageName) ??
+      getCollectionPageNameFromPost(rawFileName),
+    permalink: rawFileName,
+    content: output,
+    lastModified,
+  });
+};
+
+export const jekyllPage2CollectionPage = async (
+  name: string,
+  post: JekyllPost,
+  category: string,
+) => {
+  const frontmatter = extractFrontmatter(post);
+  const jekyllContent = extractContent(post);
+
+  const html = md2html(jekyllContent);
+  const output = await html2schema(html, "");
+
+  const lastModified = new Date().toLocaleDateString("en-GB");
+  const title =
+    (frontmatter.title as CollectionPageName) ??
+    getCollectionPageNameFromPage(name);
+
+  return generateCollectionArticlePage({
+    category,
+    title,
+    permalink: title.replaceAll(/ /g, "-").toLowerCase(),
+    content: output,
+    lastModified,
+  });
 };

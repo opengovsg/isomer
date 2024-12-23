@@ -2,32 +2,22 @@ import * as fs from "fs";
 import _ from "lodash";
 import { Writer } from "./types/writer";
 import { fileWriter } from "./writer";
-import { html2schema } from "./migrate/html2schema";
 import {
-  getCollectionPageNameFromPage,
   extractCollectionPostName,
-  generateCollectionArticlePage,
-  getCollectionPageNameFromPost,
   isCollectionPost,
-  parseCollectionDateFromFileName,
-  CollectionPageName,
   getCollectionCategory,
+  jekyllPost2CollectionPage,
+  jekyllPage2CollectionPage,
 } from "./generate/collection";
 import { generateCollectionInOutMapping } from "./migrate/collection";
 import { MigrationMapping } from "./types/migration";
-import markdownit from "markdown-it";
 import { addBlobToResource, createBlob, createResource } from "./utils";
 import path from "path";
-import {
-  extractContent,
-  extractFrontmatter,
-  JekyllPost,
-} from "./migrate/jekyll";
+import { JekyllPost } from "./migrate/jekyll";
 import pg from "pg";
 import { migrateAssets } from "./migrate/assets";
 
 const { Client } = pg;
-const md = markdownit({ html: true });
 
 const OUTPUT_DIR = "output";
 
@@ -36,7 +26,7 @@ const SITE_ID = 1;
 
 const __dirname = path.resolve();
 // NOTE: This is the path to migrate
-const migrate = async (
+const migrateCollection = async (
   mappings: MigrationMapping,
   ghDir: string,
   writers: Writer[],
@@ -45,75 +35,35 @@ const migrate = async (
     Object.entries(mappings).map(async ([outpath, inpath]) => {
       const hasTerminatingSlash = outpath.endsWith("/");
       const mdContent = fs.readFileSync(inpath, "utf-8") as JekyllPost;
-      const frontmatter = extractFrontmatter(mdContent);
-      const jekyllContent = extractContent(mdContent);
-
-      const html = md.render(jekyllContent);
 
       const nameIndex = hasTerminatingSlash ? -2 : -1;
       const name = outpath.split("/").at(nameIndex)!;
 
-      const output = await html2schema(html, "");
-
       // NOTE: indir assumed to not have terminating slash here
-      const category = inpath.replace(ghDir, "").split("/").at(1)!;
+      const category = getCollectionCategory(
+        inpath.replace(ghDir, "").split("/").at(1)!,
+      );
 
-      if (isCollectionPost(name)) {
-        const { year, month, day } = parseCollectionDateFromFileName(name);
-        const lastModified = `${day}/${month}/${year}`;
-        const rawCollectionFileName = extractCollectionPostName(name);
+      const destinationFileName = isCollectionPost(name)
+        ? extractCollectionPostName(name)
+        : name;
+      const content = isCollectionPost(name)
+        ? await jekyllPost2CollectionPage(name, mdContent, category)
+        : await jekyllPage2CollectionPage(name, mdContent, category);
 
-        const content = generateCollectionArticlePage({
-          category: getCollectionCategory(category),
-          title:
-            (frontmatter.title as CollectionPageName) ??
-            getCollectionPageNameFromPost(rawCollectionFileName),
-          permalink: rawCollectionFileName,
-          content: output,
-          lastModified,
-        });
+      const jsonOutpath = `${__dirname}/${OUTPUT_DIR}/${destinationFileName}.json`;
 
-        const jsonOutpath = `${__dirname}/${OUTPUT_DIR}/${rawCollectionFileName}.json`;
+      await Promise.all(
+        writers.map(async (writer) => {
+          await writer.write(
+            name,
+            jsonOutpath,
+            JSON.stringify(content, null, 2),
+          );
+        }),
+      );
 
-        await Promise.all(
-          writers.map(async (writer) => {
-            await writer.write(
-              name,
-              jsonOutpath,
-              JSON.stringify(content, null, 2),
-            );
-          }),
-        );
-
-        return jsonOutpath;
-      } else {
-        const lastModified = new Date().toLocaleDateString("en-GB");
-        const title =
-          (frontmatter.title as CollectionPageName) ??
-          getCollectionPageNameFromPage(name);
-
-        const content = generateCollectionArticlePage({
-          category: getCollectionCategory(category),
-          title,
-          permalink: title.replaceAll(/ /g, "-").toLowerCase(),
-          content: output,
-          lastModified,
-        });
-
-        const jsonOutpath = `${__dirname}/${OUTPUT_DIR}/${name}.json`;
-
-        await Promise.all(
-          writers.map(async (writer) => {
-            await writer.write(
-              name,
-              jsonOutpath,
-              JSON.stringify(content, null, 2),
-            );
-          }),
-        );
-
-        return jsonOutpath;
-      }
+      return jsonOutpath;
     }),
   );
 
@@ -177,7 +127,9 @@ export const walk = async (dir: string, siteId: number) => {
 
 const mappings = generateCollectionInOutMapping("_repo/news");
 
-const writtenFiles = await migrate(mappings, "_repo/news", [fileWriter]);
+const writtenFiles = await migrateCollection(mappings, "_repo/news", [
+  fileWriter,
+]);
 await migrateAssets(writtenFiles, SITE_ID);
 
 await walk(OUTPUT_DIR, SITE_ID);
