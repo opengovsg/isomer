@@ -20,7 +20,10 @@
     "paths": {
       "~/*": ["./*"],
       "~editor/*": ["../../apps/studio/src/features/editing-experience/*"],
-      "~database/*": ["../../apps/studio/src/server/modules/database/*"]
+      "~database/*": ["../../apps/studio/src/server/modules/database/*"],
+      "~generatedTypes": [
+        "../../apps/studio/prisma/generated/selectableTypes.ts"
+      ]
     },
     "types": ["vitest/globals", "node"]
   },

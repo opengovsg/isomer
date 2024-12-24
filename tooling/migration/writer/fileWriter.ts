@@ -3,9 +3,11 @@ import { Writer } from "../types/writer";
 import * as fs from "fs";
 
 export const fileWriter: Writer = {
-  write: async (title, permalink, content) => {
-    const parentPath = permalink.split("/").slice(0, -1).join("/");
+  write: async ({ resource, blob, path }) => {
+    // TODO: remember to convert blob to json
+    const parentPath = path.split("/").slice(0, -1).join("/");
     await mkdirp(parentPath);
-    fs.writeFileSync(permalink, content);
+
+    fs.writeFileSync(path, JSON.stringify({ resource, blob }, null, 2));
   },
 };

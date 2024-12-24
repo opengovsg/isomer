@@ -26,7 +26,10 @@ export const extractFrontmatter = (
   content: JekyllFile,
 ): Record<string, string> => {
   const lines = content.split(JEKYLL_FRONTMATTER_DELIMITER).at(1)?.split("\n");
-  const records = lines?.map((line) => line.split(":").map((x) => x.trim()));
+  const records = lines
+    ?.map((line) => line.split(":").map((x) => x.trim()))
+    // NOTE: make sure a value exists for the given item in the frontmatter
+    .filter(([, v]) => !!v);
 
   return Object.fromEntries(records ?? []);
 };

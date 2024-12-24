@@ -21,6 +21,7 @@ import {
 } from "~editor/constants";
 
 import { JSDOM } from "jsdom";
+import { getSanitisedAssetName } from "~/utils";
 
 const dom = new JSDOM(
   `<html>
@@ -709,4 +710,11 @@ const fetchWithRetry = async (url: string) => {
       return res;
     }
   }
+};
+
+export const generateAssetsPath = (siteId: number, src: string) => {
+  const sanitisedName = getSanitisedAssetName(src);
+  const uuid = crypto.randomUUID();
+
+  return `/${siteId}/${uuid}/${sanitisedName}`;
 };

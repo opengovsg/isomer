@@ -15,6 +15,7 @@
     "@types/node": "^22.5.5"
   },
   "dependencies": {
+    "@sinclair/typebox": "^0.34.13",
     "@tiptap/extension-image": "^2.5.7",
     "@tiptap/html": "^2.5.7",
     "jsdom": "^25.0.1",

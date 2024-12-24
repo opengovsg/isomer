@@ -107,3 +107,21 @@ export const addBlobToResource = async (
     `UPDATE "Resource" SET "draftBlobId" = ${blobId} WHERE "id" = ${resourceId}`,
   );
 };
+
+export async function createVersion(
+  client: Client,
+  resourceId: number,
+  blobId: number,
+) {
+  const result = await client.query(
+    `INSERT INTO public."Version" ("resourceId", "blobId", "versionNum", "publishedBy") VALUES ($1, $2, $3, $4) RETURNING id`,
+    [resourceId, blobId, 1, process.env.PUBLISHER_USER_ID],
+  );
+  const versionId = result.rows[0].id;
+
+  // Update the resource with the new publishedVersionId
+  await client.query(
+    `UPDATE public."Resource" SET "publishedVersionId" = $1 WHERE id = $2`,
+    [versionId, resourceId],
+  );
+}

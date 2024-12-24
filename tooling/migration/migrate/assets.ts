@@ -8,19 +8,20 @@ import { getSanitisedAssetName } from "~/utils";
 import path from "node:path";
 import { WithoutSite } from "~/types/pages";
 import { SITE_DIR } from "~/constants";
+import { generateAssetsPath } from "./utils";
 
 const __dirname = path.resolve();
 
-type MigratablePages =
+export type MigratablePages =
   | WithoutSite<ArticlePageSchemaType>
   | WithoutSite<ContentPageSchemaType>;
 
-interface MigratablePagesWithMeta {
+export interface MigratablePagesWithMeta {
   jsonOutpath: string;
   content: MigratablePages;
   name: string;
 }
-export const migrateAssets = async (
+export const migrateImages = async (
   files: MigratablePagesWithMeta[],
   siteId: number,
 ) => {
@@ -29,6 +30,7 @@ export const migrateAssets = async (
   const rewrittenFiles = files.map(({ content: schema, ...rest }) => {
     const { content } = schema;
 
+    // NOTE: this assumes that the images have been shifted to top level
     const newContent = content.map((block) => {
       if (block.type !== "image") return block;
 
@@ -40,9 +42,7 @@ export const migrateAssets = async (
       if (seen[src]) {
         return { src: seen[src], alt, ...rest };
       } else {
-        const sanitisedName = getSanitisedAssetName(src);
-        const uuid = crypto.randomUUID();
-        const outpath = `/${siteId}/${uuid}/${sanitisedName}`;
+        const outpath = generateAssetsPath(siteId, src);
 
         seen[src] = outpath;
 
@@ -59,15 +59,25 @@ export const migrateAssets = async (
 };
 
 // NOTE: This copies a file at `from` into a `to`
-// and returns the path
+// and returns the path.
+// IMPORTANT: this assumes that `from` is rooted at `SITE_DIR`
 export const copyToAssetsFolder = async (
   from: string,
   to: string,
 ): Promise<string> => {
+  const _from = `${__dirname}/${SITE_DIR}${from}`;
+  const _to = `${__dirname}${to}`;
+
+  await copy(_from, _to);
+
+  return _to;
+};
+
+export const copy = async (from: string, to: string) => {
   const parentPath = to.split("/").slice(0, -1).join("/");
 
-  await mkdirp(__dirname + parentPath);
-  await copyFile(`${__dirname}/${SITE_DIR}${from}`, `${__dirname}${to}`);
+  await mkdirp(parentPath);
+  await copyFile(from, to);
 
   return to;
 };

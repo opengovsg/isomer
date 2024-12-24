@@ -14,13 +14,34 @@ import { ArticlePageSchemaType } from "@opengovsg/isomer-components";
 const NO_STARTING_NON_ALPHA_NUM = /^[^a-zA-Z0-9]*/g;
 const NO_ENDING_NON_ALPHA_NUM = /[^a-zA-Z0-9]*$/g;
 
-const COLLECTION = {
+const COLLECTION_PAGE = {
   page: {
     articlePageHeader: { summary: "" },
   },
   layout: "article",
   version: "0.1.0",
 } as const;
+const COLLECTION_LINK = {
+  layout: "link",
+  content: [],
+  version: "0.1.0",
+};
+
+interface GenerateCollectionLinkProps {
+  ref: string;
+  date: string;
+  category: string;
+}
+export const generateCollectionLink = ({
+  ref,
+  date,
+  category,
+}: GenerateCollectionLinkProps) => {
+  return {
+    page: { ref, date, category },
+    ...COLLECTION_LINK,
+  };
+};
 
 export type CollectionPageName = Tagged<string, "CollectionPageName">;
 interface GenerateCollectionArticlePageProps {
@@ -39,9 +60,9 @@ export const generateCollectionArticlePage = ({
   lastModified,
 }: GenerateCollectionArticlePageProps): Omit<ArticlePageSchemaType, "site"> => {
   return {
-    ...COLLECTION,
+    ...COLLECTION_PAGE,
     page: {
-      ...COLLECTION.page,
+      ...COLLECTION_PAGE.page,
       category,
       title,
       permalink,
@@ -89,10 +110,10 @@ export const isCollectionPost = (
   );
 };
 
-export const parseCollectionDateFromFileName = (filename: string) => {
-  const year = filename.slice(0, 4);
-  const month = filename.slice(5, 7);
-  const day = filename.slice(8, 10);
+export const parseCollectionDateFromString = (possibleDateString: string) => {
+  const year = possibleDateString.slice(0, 4);
+  const month = possibleDateString.slice(5, 7);
+  const day = possibleDateString.slice(8, 10);
 
   if (year.length !== 4 || month.length !== 2 || day.length !== 2) {
     throw new Error("Invalid date format");
@@ -134,7 +155,7 @@ export const getCollectionCategory = (category: string) => {
 };
 
 export const extractMetadataFromName = (name: CollectionPostName) => {
-  const { year, month, day } = parseCollectionDateFromFileName(name);
+  const { year, month, day } = parseCollectionDateFromString(name);
   const lastModified = `${day}/${month}/${year}`;
   const rawFileName = extractCollectionPostName(name);
 
