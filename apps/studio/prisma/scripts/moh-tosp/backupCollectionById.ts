@@ -63,8 +63,10 @@ export async function backupCollection(
     }
 
     logger.info(`Backup completed successfully in directory: ${backupDir}`)
-  } catch (error: any) {
-    logger.error(`Error backing up collection: ${error.message}`)
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(`Error backing up collection: ${error.message}`)
+    }
   }
 }
 
@@ -75,5 +77,7 @@ const backupDirectory =
   "/Users/harishv/Documents/Code/isomer/isomer-next/test-backup-tosp/backup"
 
 await backupCollection(collectionId, backupDirectory).catch((err) => {
-  logger.error("Unhandled error:", err.message)
+  if (err instanceof Error) {
+    logger.error(`Unhandled error: ${err.message}`)
+  }
 })

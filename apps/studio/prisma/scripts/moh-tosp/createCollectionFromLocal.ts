@@ -68,7 +68,7 @@ export const createCollectionFromLocal = async (
       //   Step 3: Insert files from "cost-financing/" into the DB as Blobs
       const folderFiles = await fs.readdir(folderPath)
       logger.info(`Reading from folderPath: ${folderPath}`)
-      logger.info(`Folder files`, folderFiles)
+      logger.info(`Folder files: ${folderFiles}`)
       for (const file of folderFiles) {
         const filePath = path.join(folderPath, file)
         logger.info(`Reading file path: ${filePath}`)
@@ -78,7 +78,6 @@ export const createCollectionFromLocal = async (
         if (!file.endsWith(".json")) {
           continue
         }
-        logger.info("File path: ", filePath)
         const fileContent = await fs.readFile(filePath, "utf-8")
 
         const parsedFileContent = JSON.parse(fileContent)
@@ -119,7 +118,9 @@ export const createCollectionFromLocal = async (
 
     logger.info("All operations completed successfully.")
   } catch (error) {
-    logger.error("Error during transaction:", error)
+    if (error instanceof Error) {
+      logger.error(`Error during transaction: ${error.message}`)
+    }
   }
 }
 

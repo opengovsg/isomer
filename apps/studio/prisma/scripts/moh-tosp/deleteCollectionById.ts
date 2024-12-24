@@ -96,10 +96,12 @@ export const deleteCollectionById = async (
       )
     })
   } catch (error) {
-    logger.error("Error deleting collection:", error)
+    if (error instanceof Error) {
+      logger.error(`Error deleting collection: ${error.message}`)
+    }
   }
 }
 
-const collectionIdToDelete = "3640"
+const collectionIdToDelete = "7249"
 const siteId = 1
 await deleteCollectionById(collectionIdToDelete, siteId)
