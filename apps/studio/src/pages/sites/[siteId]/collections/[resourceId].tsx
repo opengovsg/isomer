@@ -1,3 +1,4 @@
+import NextLink from "next/link"
 import {
   Box,
   BreadcrumbItem,
@@ -51,7 +52,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
       <Stack w="100%" p="1.75rem" gap="1rem" height="$100vh" overflow="auto">
         <Breadcrumb size="sm">
           <BreadcrumbItem>
-            <BreadcrumbLink href={`/sites/${siteId}`}>
+            <BreadcrumbLink href={`/sites/${siteId}`} as={NextLink}>
               <Text textStyle="caption-2" color="interaction.links.default">
                 Home
               </Text>
