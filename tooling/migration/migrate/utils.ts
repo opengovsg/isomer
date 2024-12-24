@@ -652,7 +652,7 @@ const convertFromTiptap = (
           newProseContent.push({
             ...(component as HeadingProps),
             attrs: {
-              level: 2,
+              level: 4,
             },
           });
         } else {
