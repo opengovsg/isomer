@@ -68,7 +68,7 @@ export const createCollectionFromLocal = async (
       //   Step 3: Insert files from "cost-financing/" into the DB as Blobs
       const folderFiles = await fs.readdir(folderPath)
       logger.info(`Reading from folderPath: ${folderPath}`)
-      logger.info(`Folder files: ${folderFiles}`)
+      logger.info(`Folder files: ${JSON.stringify(folderFiles)}`)
       for (const file of folderFiles) {
         const filePath = path.join(folderPath, file)
         logger.info(`Reading file path: ${filePath}`)
@@ -80,12 +80,21 @@ export const createCollectionFromLocal = async (
         }
         const fileContent = await fs.readFile(filePath, "utf-8")
 
-        const parsedFileContent = JSON.parse(fileContent)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let parsedFileContent: any
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          parsedFileContent = JSON.parse(fileContent)
+        } catch (error) {
+          if (error instanceof Error) {
+            logger.error(`Error parsing JSON file: ${file}`)
+          }
+        }
 
         const blob = await tx
           .insertInto("Blob")
           .values({
-            content: parsedFileContent,
+            content: parsedFileContent as PrismaJson.BlobJsonContent,
             createdAt: new Date(),
             updatedAt: new Date(),
           })
@@ -95,6 +104,7 @@ export const createCollectionFromLocal = async (
         const resource = await tx
           .insertInto("Resource")
           .values({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             title: parsedFileContent.page.title,
             permalink: file,
             siteId: siteId, // Replace with appropriate site ID
