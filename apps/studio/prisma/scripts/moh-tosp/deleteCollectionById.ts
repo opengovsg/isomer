@@ -102,6 +102,6 @@ export const deleteCollectionById = async (
   }
 }
 
-const collectionIdToDelete = "7249"
-const siteId = 1
+const collectionIdToDelete = "0"
+const siteId = 0
 await deleteCollectionById(collectionIdToDelete, siteId)

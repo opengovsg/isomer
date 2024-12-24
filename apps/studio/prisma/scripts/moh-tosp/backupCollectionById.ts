@@ -58,7 +58,7 @@ export async function backupCollection(
 
       // Parse blob content and write to a file
       const blobBuffer = blob.content // Assuming blob.content is a buffer
-      const blobJsonPath = path.join(backupDir, `${child.title}.json`)
+      const blobJsonPath = path.join(backupDir, `${child.permalink}.json`)
       await fs.writeFile(blobJsonPath, JSON.stringify(blobBuffer, null, 2))
     }
 
@@ -72,9 +72,8 @@ export async function backupCollection(
 
 // Run the backup
 // NOTE: TODO: Put in the collection ID to backup
-const collectionId = "5"
-const backupDirectory =
-  "/Users/harishv/Documents/Code/isomer/isomer-next/test-backup-tosp/backup"
+const collectionId = "0"
+const backupDirectory = "/Users/XYZ/<your-path>"
 
 await backupCollection(collectionId, backupDirectory).catch((err) => {
   if (err instanceof Error) {

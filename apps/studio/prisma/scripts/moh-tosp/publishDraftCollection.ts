@@ -85,6 +85,6 @@ export const publishCollectionById = async (
 }
 
 // NOTE: TODO: Put in the publisher ID and collection ID to publish
-const publisherId = "mblrtd177gju657mf20m32jo"
-const collectionId = "7249"
+const publisherId = "xyz"
+const collectionId = "0"
 await publishCollectionById(publisherId, collectionId)

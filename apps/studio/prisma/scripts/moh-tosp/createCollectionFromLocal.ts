@@ -10,10 +10,14 @@ const logger = new FileLogger("./createCollectionFromLocal.log")
 export const createCollectionFromLocal = async (
   contentDir: string,
   siteId: number,
+  indexPageName: string, // should be placed outside the folder
+  indexPageTitle: string, // title of the index page
+  collectionName: string,
+  nameOfNewCollectionToCreate: string,
 ) => {
   logger.info(`Reading from ${contentDir}`)
-  const jsonFilePath = path.join(contentDir, "cost-financing.json")
-  const folderPath = path.join(contentDir, "cost-financing-original")
+  const jsonFilePath = path.join(contentDir, indexPageName)
+  const folderPath = path.join(contentDir, collectionName)
 
   try {
     await db.transaction().execute(async (tx) => {
@@ -21,8 +25,8 @@ export const createCollectionFromLocal = async (
       const collection = await tx
         .insertInto("Resource")
         .values({
-          title: "cost-financing-new",
-          permalink: "cost-financing-new",
+          title: nameOfNewCollectionToCreate,
+          permalink: nameOfNewCollectionToCreate,
           siteId: siteId,
           type: "Collection",
           state: "Draft",
@@ -35,7 +39,7 @@ export const createCollectionFromLocal = async (
       const collectionId = collection.id
       logger.info(`Collection created with ID: ${collectionId}`)
 
-      // Step 2: Insert "cost-financing.json" as an IndexPage with permalink "_index"\
+      // Step 2: Insert "cost-financing.json" as an IndexPage with permalink "_index"
       const jsonFileContent = await fs.readFile(jsonFilePath, "utf-8")
       const indexPageBlob = await tx
         .insertInto("Blob")
@@ -48,7 +52,7 @@ export const createCollectionFromLocal = async (
       const indexPage = await tx
         .insertInto("Resource")
         .values({
-          title: "cost-financing-new",
+          title: nameOfNewCollectionToCreate,
           permalink: "_index",
           siteId: siteId,
           type: "IndexPage",
@@ -106,7 +110,7 @@ export const createCollectionFromLocal = async (
           .values({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             title: parsedFileContent.page.title,
-            permalink: file,
+            permalink: file.replace(/\.json$/, ""), // remove the .json at the back on permalinks
             siteId: siteId, // Replace with appropriate site ID
             type: "CollectionPage",
             parentId: collectionId,
@@ -135,7 +139,17 @@ export const createCollectionFromLocal = async (
 }
 
 // NOTE: TODO: Update the content directory and siteId here before usage!
-const contentDir =
-  "/Users/harishv/Documents/Code/isomer/isomer-next/test-backup-tosp/content"
-const siteId = 1
-await createCollectionFromLocal(contentDir, siteId)
+const contentDir = "/Users/XYZ/<your-path>"
+const indexPagePath = "cost-financing.json"
+const indexPageTitle = "Cost financing"
+const collectionName = "cost-financing"
+const nameOfNewCollectionToCreate = "cost-financing-new" // will also be the permalink
+const siteId = 0
+await createCollectionFromLocal(
+  contentDir,
+  siteId,
+  indexPagePath,
+  indexPageTitle,
+  collectionName,
+  nameOfNewCollectionToCreate,
+)
