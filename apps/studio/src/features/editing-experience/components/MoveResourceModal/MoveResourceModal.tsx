@@ -106,6 +106,7 @@ const MoveResourceContent = withSuspense(
               Moving a page or folder changes its URL, effective immediately
             </Infobox>
             <ResourceSelector
+              interactionType="move"
               siteId={siteId}
               onlyShowFolders
               existingResource={movedItem ?? undefined}

@@ -7,6 +7,7 @@ import { trpc } from "~/utils/trpc"
 import { lastResourceItemInAncestryStack } from "./utils"
 
 export const useResourceSelector = ({
+  interactionType,
   siteId,
   moveDest,
   resourceStack,
@@ -17,6 +18,7 @@ export const useResourceSelector = ({
   removeFromStack,
   onChange,
 }: {
+  interactionType: "move" | "link"
   siteId: number
   moveDest: ResourceItemContent | undefined
   resourceStack: ResourceItemContent[]
@@ -49,10 +51,11 @@ export const useResourceSelector = ({
 
   const isResourceItemDisabled = useCallback(
     (resourceItem: ResourceItemContent): boolean => {
-      // If there is no existing resource,
+      if (!existingResource) return false
+
       // Then we are linking the resource and not moving any resource
       // Thus, no checks are needed because we can link to any resource
-      if (!existingResource) return false
+      if (interactionType === "link") return false
 
       // A resource should not be able to move to within itself
       if (existingResource.id === resourceItem.id) return true
@@ -68,7 +71,7 @@ export const useResourceSelector = ({
         ) || false
       )
     },
-    [existingResource, nestedChildrenOfExistingResource],
+    [existingResource, interactionType, nestedChildrenOfExistingResource],
   )
 
   const hasParentInStack = useMemo(

@@ -42,16 +42,14 @@ interface PageLinkElementProps {
 
 const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
   const { siteId } = useQueryParse(editSiteSchema)
-
-  const selectedResourceId = getResourceIdFromReferenceLink(value)
-
   return (
     <ResourceSelector
+      interactionType="link"
       siteId={siteId}
       onChange={(resourceId) =>
         onChange(getReferenceLink({ siteId: String(siteId), resourceId }))
       }
-      selectedResourceId={selectedResourceId}
+      selectedResourceId={getResourceIdFromReferenceLink(value)}
       fileExplorerHeight={12}
     />
   )

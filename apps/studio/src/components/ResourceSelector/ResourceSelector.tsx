@@ -20,6 +20,7 @@ import { useResourceStack } from "./useResourceStack"
 const FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM = 17.5
 
 interface ResourceSelectorProps {
+  interactionType: "link" | "move"
   siteId: number
   onChange: (resourceId: string) => void
   selectedResourceId?: string
@@ -29,6 +30,7 @@ interface ResourceSelectorProps {
 }
 
 const SuspensableResourceSelector = ({
+  interactionType,
   siteId,
   onChange,
   selectedResourceId,
@@ -86,6 +88,7 @@ const SuspensableResourceSelector = ({
     handleClickBackButton,
     handleClickResourceItem,
   } = useResourceSelector({
+    interactionType,
     siteId,
     moveDest,
     resourceStack,
@@ -180,19 +183,19 @@ const SuspensableResourceSelector = ({
           </Button>
         )}
       </Box>
-      {!!moveDest && (
-        <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">
-          <Flex flexDirection="column" gap="0.25rem">
-            <Text textStyle="caption-1">You selected {fullPermalink}</Text>
-            {existingResource && (
-              <Text textStyle="caption-2">
-                The URL for {existingResource.title} will change to{" "}
-                {`${fullPermalink}/${existingResource.permalink}`}
-              </Text>
-            )}
-          </Flex>
-        </Box>
-      )}
+      <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">
+        <Flex flexDirection="column" gap="0.25rem">
+          <Text textStyle="caption-1">You selected {fullPermalink}</Text>
+          {existingResource && (
+            <Text textStyle="caption-2">
+              The URL for "{existingResource.title}" will change to{" "}
+              {existingResource.id === moveDest?.id
+                ? fullPermalink
+                : `${fullPermalink}/${existingResource.permalink}`}
+            </Text>
+          )}
+        </Flex>
+      </Box>
     </>
   )
 }
