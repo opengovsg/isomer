@@ -470,7 +470,9 @@ export const getBatchAncestryWithSelfQuery = async ({
     .execute()
 
   // Group by paths with shared parents support
-  const groupByPaths = (resources: ResourceItemContentWithPath[]) => {
+  const groupByPaths = (
+    resources: ResourceItemContentWithPath[],
+  ): ResourceItemContent[][] => {
     const groups = []
 
     // Clone the items array to track remaining items
@@ -501,12 +503,11 @@ export const getBatchAncestryWithSelfQuery = async ({
       groups.push(group)
     }
 
-    return groups
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return groups.map((group) => group.map(({ path, ...rest }) => rest))
   }
 
-  return groupByPaths(resources).map((group) =>
-    group.map(({ path, ...rest }) => rest),
-  )
+  return groupByPaths(resources)
 }
 
 export const getWithFullPermalink = async ({
