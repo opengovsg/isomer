@@ -4,6 +4,7 @@ import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { ResourceItemContent } from "~/schemas/resource"
+import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { useSearchQuery } from "~/hooks/useSearchQuery"
 import { getUserViewableResourceTypes } from "~/utils/resources"
 import {
@@ -34,21 +35,16 @@ const SuspensableResourceSelector = ({
   existingResource,
   onlyShowFolders = false,
   fileExplorerHeight = FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM,
-}: ResourceSelectorProps) => {
-  const {
-    searchValue,
-    setSearchValue,
-    debouncedSearchTerm: searchQuery,
-    isLoading,
-    matchedResources,
-    clearSearchValue,
-  } = useSearchQuery({
-    siteId: String(siteId),
-    resourceTypes: onlyShowFolders
-      ? [ResourceType.Folder]
-      : getUserViewableResourceTypes(),
-  })
-
+  searchQuery,
+  isLoading,
+  matchedResources,
+  clearSearchValue,
+}: ResourceSelectorProps & {
+  searchQuery: string
+  isLoading: boolean
+  matchedResources: SearchResultResource[]
+  clearSearchValue: () => void
+}) => {
   const isSearchQueryEmpty: boolean = searchQuery.trim().length === 0
   const hasAdditionalLeftPadding: boolean = isSearchQueryEmpty
 
@@ -155,8 +151,7 @@ const SuspensableResourceSelector = ({
   ])
 
   return (
-    <VStack gap="0.5rem" w="full">
-      <SearchBar searchValue={searchValue} setSearchValue={setSearchValue} />
+    <>
       <Box
         borderRadius="md"
         border="1px solid"
@@ -198,21 +193,44 @@ const SuspensableResourceSelector = ({
           </Flex>
         </Box>
       )}
-    </VStack>
+    </>
   )
 }
 
 export const ResourceSelector = (props: ResourceSelectorProps) => {
+  const {
+    searchValue,
+    setSearchValue,
+    debouncedSearchTerm: searchQuery,
+    isLoading,
+    matchedResources,
+    clearSearchValue,
+  } = useSearchQuery({
+    siteId: String(props.siteId),
+    resourceTypes: props.onlyShowFolders
+      ? [ResourceType.Folder]
+      : getUserViewableResourceTypes(),
+  })
+
   return (
-    <Suspense
-      fallback={
-        <Skeleton
-          w="full"
-          h={`${props.fileExplorerHeight ?? FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM + 4.25}rem`}
+    <VStack gap="0.5rem" w="full">
+      <SearchBar searchValue={searchValue} setSearchValue={setSearchValue} />
+      <Suspense
+        fallback={
+          <Skeleton
+            w="full"
+            h={`${props.fileExplorerHeight ?? FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM + 4.25}rem`}
+          />
+        }
+      >
+        <SuspensableResourceSelector
+          {...props}
+          searchQuery={searchQuery}
+          isLoading={isLoading}
+          matchedResources={matchedResources}
+          clearSearchValue={clearSearchValue}
         />
-      }
-    >
-      <SuspensableResourceSelector {...props} />
-    </Suspense>
+      </Suspense>
+    </VStack>
   )
 }
