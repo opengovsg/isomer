@@ -36,7 +36,6 @@ import {
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   getBatchAncestryWithSelfQuery,
-  getNestedFolderChildren,
   getSearchRecentlyEdited,
   getSearchResults,
   getSearchWithResourceIds,
@@ -250,10 +249,34 @@ export const resourceRouter = router({
       }
 
       return {
-        items: await getNestedFolderChildren({
-          siteId: Number(siteId),
-          resourceId: Number(resourceId),
-        }),
+        items: await db
+          .withRecursive("NestedResources", (eb) =>
+            eb
+              .selectFrom("Resource")
+              .select(["title", "permalink", "type", "id", "parentId"])
+              .where("Resource.type", "in", [ResourceType.Folder])
+              .where("Resource.siteId", "=", Number(siteId))
+              .where("Resource.parentId", "=", String(resourceId))
+              .unionAll((eb) =>
+                eb
+                  .selectFrom("Resource")
+                  .innerJoin(
+                    "NestedResources",
+                    "Resource.parentId",
+                    "NestedResources.id",
+                  )
+                  .select([
+                    "Resource.title",
+                    "Resource.permalink",
+                    "Resource.type",
+                    "Resource.id",
+                    "Resource.parentId",
+                  ]),
+              ),
+          )
+          .selectFrom("NestedResources")
+          .select(["title", "permalink", "type", "id", "parentId"])
+          .execute(),
       }
     }),
 

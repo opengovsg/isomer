@@ -691,34 +691,6 @@ export const getSearchRecentlyEdited = async ({
   })
 }
 
-export const getNestedFolderChildren = async ({
-  siteId,
-  resourceId,
-}: {
-  siteId: number
-  resourceId: number
-}): Promise<ResourceItemContent[]> => {
-  return (async function getNestedChildren(
-    parentId: number,
-  ): Promise<ResourceItemContent[]> {
-    const children = await db
-      .selectFrom("Resource")
-      .select(["title", "permalink", "type", "id", "parentId"])
-      .where("Resource.type", "in", [ResourceType.Folder])
-      .where("Resource.siteId", "=", Number(siteId))
-      .where("Resource.parentId", "=", String(parentId))
-      .execute()
-
-    const nestedChildren = await Promise.all(
-      children.map(async (child) => {
-        const childrenOfChild = await getNestedChildren(Number(child.id))
-        return [child, ...childrenOfChild]
-      }),
-    )
-    return nestedChildren.flat()
-  })(resourceId)
-}
-
 export const getSearchWithResourceIds = async ({
   siteId,
   resourceIds,
