@@ -35,7 +35,7 @@ import {
 } from "../permissions/permissions.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
-  getAncestryWithSelf,
+  getBatchAncestryWithSelfQuery,
   getNestedFolderChildren,
   getSearchRecentlyEdited,
   getSearchResults,
@@ -524,23 +524,24 @@ export const resourceRouter = router({
       if (!resourceId) {
         return []
       }
-      return await getAncestryWithSelf({
+      const batchAncestry = await getBatchAncestryWithSelfQuery({
         siteId: Number(siteId),
-        resourceId: Number(resourceId),
+        resourceIds: [resourceId],
       })
+      return batchAncestry[0] ?? []
     }),
 
   getBatchAncestryWithSelf: protectedProcedure
     .input(getBatchAncestryWithSelfSchema)
     .output(getBatchAncestryWithSelfOutputSchema)
     .query(async ({ input: { siteId, resourceIds } }) => {
-      const ancestryPromises = resourceIds.map(async (id) => {
-        return await getAncestryWithSelf({
-          siteId: Number(siteId),
-          resourceId: Number(id),
-        })
+      if (resourceIds.length === 0) {
+        return []
+      }
+      return await getBatchAncestryWithSelfQuery({
+        siteId: Number(siteId),
+        resourceIds,
       })
-      return await Promise.all(ancestryPromises)
     }),
 
   search: protectedProcedure

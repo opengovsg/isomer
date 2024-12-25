@@ -414,14 +414,17 @@ export const publishResource = async (
   return addedVersionResult
 }
 
-export const getAncestryWithSelf = async ({
+interface ResourceItemContentWithPath extends ResourceItemContent {
+  path: string[]
+}
+export const getBatchAncestryWithSelfQuery = async ({
   siteId,
-  resourceId,
+  resourceIds,
 }: {
   siteId: number
-  resourceId: number
-}) => {
-  const ancestorsWithSelf = await db
+  resourceIds: string[]
+}): Promise<ResourceItemContent[][]> => {
+  const resources: ResourceItemContentWithPath[] = await db
     .withRecursive("Resources", (eb) =>
       eb
         .selectFrom("Resource")
@@ -431,9 +434,11 @@ export const getAncestryWithSelf = async ({
           "Resource.permalink",
           "Resource.parentId",
           "Resource.type",
+          sql<number>`1`.as("depth"), // Start with depth 1 for the base case
+          sql<string[]>`ARRAY["Resource"."id"]`.as("path"),
         ])
         .where("Resource.siteId", "=", Number(siteId))
-        .where("Resource.id", "=", String(resourceId))
+        .where("Resource.id", "in", resourceIds)
         .where("Resource.type", "!=", ResourceType.RootPage)
         .unionAll(
           eb
@@ -445,6 +450,10 @@ export const getAncestryWithSelf = async ({
               "Resource.permalink",
               "Resource.parentId",
               "Resource.type",
+              sql<number>`depth + 1`.as("depth"), // Add 1 to the depth for each level of recursion
+              sql<string[]>`ARRAY["Resource"."id"] || "Resources"."path"`.as(
+                "path",
+              ),
             ]),
         ),
     )
@@ -455,10 +464,49 @@ export const getAncestryWithSelf = async ({
       "Resources.permalink",
       "Resources.parentId",
       "Resources.type",
+      "Resources.path",
     ])
+    .orderBy("Resources.depth", "desc") //  sort by depth in descending order
     .execute()
 
-  return ancestorsWithSelf.reverse()
+  // Group by paths with shared parents support
+  const groupByPaths = (resources: ResourceItemContentWithPath[]) => {
+    const groups = []
+
+    // Clone the items array to track remaining items
+    // Cannot be Set because resources might share the same parent
+    const remainingResources = [...resources]
+
+    while (remainingResources.length > 0) {
+      const currentResource = remainingResources.shift()
+      if (!currentResource) break
+
+      // Group all resources that are found in the current resource's path
+      const group = currentResource.path
+        .map(
+          (childId) =>
+            remainingResources.find((item) => item.id === childId) ??
+            currentResource,
+        )
+        .filter(Boolean)
+
+      // Remove all items in this group from remainingResources
+      group.forEach((node) => {
+        const index = remainingResources.findIndex(
+          (resource) => resource.id === node.id,
+        )
+        if (index !== -1) remainingResources.splice(index, 1)
+      })
+
+      groups.push(group)
+    }
+
+    return groups
+  }
+
+  return groupByPaths(resources).map((group) =>
+    group.map(({ path, ...rest }) => rest),
+  )
 }
 
 export const getWithFullPermalink = async ({
