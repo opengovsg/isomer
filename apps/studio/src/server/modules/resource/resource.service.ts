@@ -484,18 +484,23 @@ export const getBatchAncestryWithSelfQuery = async ({
       if (!currentResource) break
 
       // Group all resources that are found in the current resource's path
-      const group = currentResource.path
-        .map(
-          (childId) =>
-            remainingResources.find((item) => item.id === childId) ??
-            currentResource,
-        )
-        .filter(Boolean)
+      const group = [currentResource].concat(
+        currentResource.path
+          .slice(1) // without the current resource
+          .map(
+            (childId) =>
+              remainingResources.find((item) => item.id === childId) ??
+              currentResource,
+          )
+          .filter(Boolean),
+      )
 
       // Remove all items in this group from remainingResources
       group.forEach((node) => {
         const index = remainingResources.findIndex(
-          (resource) => resource.id === node.id,
+          (resource) =>
+            resource.id === node.id &&
+            JSON.stringify(resource.path) === JSON.stringify(node.path),
         )
         if (index !== -1) remainingResources.splice(index, 1)
       })
