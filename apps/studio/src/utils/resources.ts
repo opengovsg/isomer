@@ -1,6 +1,7 @@
 import type { IconType } from "react-icons"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import {
+  BiCog,
   BiData,
   BiFile,
   BiFolder,
@@ -35,6 +36,8 @@ export const getIcon = (resourceType: ResourceType): IconType => {
       return BiHome
     case ResourceType.FolderMeta:
       return BiSort
+    case ResourceType.CollectionMeta:
+      return BiCog
     default:
       const _: never = resourceType // exhaustive check
       return BiData

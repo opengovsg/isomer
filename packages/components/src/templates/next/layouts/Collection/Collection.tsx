@@ -1,4 +1,5 @@
 import type { Exact } from "type-fest"
+import capitalize from "lodash/capitalize"
 
 import type { CollectionPageSchemaType, IsomerSiteProps } from "~/engine"
 import type { AllCardProps, ProcessedCollectionCardProps } from "~/interfaces"
@@ -66,6 +67,10 @@ const getCollectionItems = (
         description: item.summary,
         image: item.image,
         site,
+        tags: item.tags?.map(({ selected, category }) => ({
+          selected,
+          category: capitalize(category),
+        })),
       }
 
       if (item.layout === "file") {
@@ -122,6 +127,7 @@ const processedCollectionItems = (
       description,
       image,
       url,
+      tags,
     } = item
     const file = variant === "file" ? item.fileDetails : null
     return {
@@ -130,6 +136,7 @@ const processedCollectionItems = (
       title,
       description,
       image,
+      tags,
       referenceLinkHref: getReferenceLinkHref(
         url,
         site.siteMap,

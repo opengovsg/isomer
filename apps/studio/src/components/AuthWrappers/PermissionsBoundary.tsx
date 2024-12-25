@@ -20,6 +20,12 @@ const ERROR_COMPONENT_PROPS: Record<ResourceType, ErrorProps> = {
       "To have access, ask your site admins to assign this collection to you",
     buttonText: "Back to My Sites",
   },
+  CollectionMeta: {
+    title: "You don't have access to edit this collection.",
+    description:
+      "To have access, ask your site admins to assign this collection to you",
+    buttonText: "Back to My Sites",
+  },
   IndexPage: {
     title: "You don't have access to edit this page.",
     description:

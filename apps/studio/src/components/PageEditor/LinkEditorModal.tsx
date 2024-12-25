@@ -35,10 +35,6 @@ const editSiteSchema = z.object({
   siteId: z.coerce.number(),
 })
 
-const linkSchema = z.object({
-  linkId: z.coerce.string().optional(),
-})
-
 interface PageLinkElementProps {
   value: string
   onChange: (value: string) => void
@@ -63,12 +59,13 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
 
 type LinkEditorModalContentProps = Pick<
   LinkEditorModalProps,
-  "linkText" | "linkHref" | "linkTypes" | "onSave"
+  "linkText" | "linkHref" | "showLinkText" | "linkTypes" | "onSave"
 >
 
 const LinkEditorModalContent = ({
   linkText,
   linkHref,
+  showLinkText = true,
   onSave,
   linkTypes,
 }: LinkEditorModalContentProps) => {
@@ -100,13 +97,6 @@ const LinkEditorModalContent = ({
     ({ linkText, linkHref }) => !!linkHref && onSave(linkText, linkHref),
   )
 
-  // TODO: This needs to be refactored urgently
-  // This is a hacky way of seeing what to render
-  // and ties the link editor to the url path.
-  // we should instead just pass the component directly rather than using slots
-
-  const { linkId } = useQueryParse(linkSchema)
-
   return (
     <ModalContent>
       <form onSubmit={onSubmit}>
@@ -116,12 +106,8 @@ const LinkEditorModalContent = ({
         <ModalCloseButton size="lg" />
 
         <ModalBody>
-          {!linkId && (
-            <FormControl
-              mb="1.5rem"
-              isRequired={!linkId}
-              isInvalid={!!errors.linkText}
-            >
+          {showLinkText && (
+            <FormControl mb="1.5rem" isRequired isInvalid={!!errors.linkText}>
               <FormLabel
                 id="linkText"
                 description="A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”"
@@ -176,9 +162,10 @@ const LinkEditorModalContent = ({
   )
 }
 
-interface LinkEditorModalProps {
+export interface LinkEditorModalProps {
   linkText?: string
   linkHref?: string
+  showLinkText?: boolean
   onSave: (linkText: string, linkHref: string) => void
   isOpen: boolean
   onClose: () => void
@@ -194,6 +181,7 @@ export const LinkEditorModal = ({
   isOpen,
   onClose,
   linkText,
+  showLinkText,
   linkHref,
   onSave,
   linkTypes,
@@ -205,6 +193,7 @@ export const LinkEditorModal = ({
       <LinkEditorModalContent
         linkTypes={linkTypes}
         linkText={linkText}
+        showLinkText={showLinkText}
         linkHref={linkHref}
         onSave={(linkText, linkHref) => {
           onSave(linkText, linkHref)

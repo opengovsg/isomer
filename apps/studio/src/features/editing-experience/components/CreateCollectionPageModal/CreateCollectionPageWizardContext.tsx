@@ -64,6 +64,10 @@ const useCreateCollectionPageWizardContext = ({
   })
 
   const [type, title] = formMethods.watch(["type", "title"])
+  const { data, isLoading: isPermalinkLoading } =
+    trpc.resource.getWithFullPermalink.useQuery({
+      resourceId: collectionId ? String(collectionId) : "",
+    })
 
   const pagePreviewJson: IsomerSchema = useMemo(() => {
     const jsonPreview =
@@ -142,12 +146,13 @@ const useCreateCollectionPageWizardContext = ({
     currentStep,
     formMethods,
     handleCreatePage,
-    isLoading,
+    isLoading: isLoading || isPermalinkLoading,
     handleNextToDetailScreen,
     handleBackToTypeScreen,
     pagePreviewJson,
     onClose,
     currentType: type,
+    fullPermalink: data?.fullPermalink || "",
   }
 }
 

@@ -91,7 +91,7 @@ const KeyStatistics = ({
         ))}
       </div>
 
-      {url !== undefined && url !== "" && (
+      {!!url && (
         <div className={compoundStyles.urlButtonContainer()}>
           <LinkButton
             href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
@@ -99,7 +99,7 @@ const KeyStatistics = ({
             variant="outline"
             isWithFocusVisibleHighlight
           >
-            {label ?? "Our achievements"}
+            {!!label ? label : "Our achievements"}
           </LinkButton>
         </div>
       )}

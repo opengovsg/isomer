@@ -9,8 +9,6 @@ import { groupBy } from "lodash"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useBuilderErrors } from "./ErrorProvider"
 import {
-  JsonFormsAccordionTextControl,
-  jsonFormsAccordionTextControlTester,
   JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
   JsonFormsAnyOfControl,
@@ -19,8 +17,6 @@ import {
   jsonFormsArrayControlTester,
   JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
-  JsonFormsCalloutTextControl,
-  jsonFormsCalloutTextControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
   JsonFormsDateControl,
@@ -47,6 +43,8 @@ import {
   jsonFormsTextAreaControlTester,
   JsonFormsTextControl,
   jsonFormsTextControlTester,
+  JsonFormsUnionRootControl,
+  jsonFormsUnionRootControlTester,
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
 } from "./renderers"
@@ -61,6 +59,10 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsArrayControlTester, renderer: JsonFormsArrayControl },
   { tester: jsonFormsBooleanControlTester, renderer: JsonFormsBooleanControl },
   { tester: jsonFormsConstControlTester, renderer: JsonFormsConstControl },
+  {
+    tester: jsonFormsUnionRootControlTester,
+    renderer: JsonFormsUnionRootControl,
+  },
   { tester: jsonFormsEmbedControlTester, renderer: JsonFormsEmbedControl },
   { tester: jsonFormsHiddenControlTester, renderer: JsonFormsHiddenControl },
   { tester: jsonFormsIntegerControlTester, renderer: JsonFormsIntegerControl },
@@ -74,14 +76,6 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsRefControlTester, renderer: JsonFormsRefControl },
   { tester: jsonFormsAllOfControlTester, renderer: JsonFormsAllOfControl },
   { tester: jsonFormsAnyOfControlTester, renderer: JsonFormsAnyOfControl },
-  {
-    tester: jsonFormsAccordionTextControlTester,
-    renderer: JsonFormsAccordionTextControl,
-  },
-  {
-    tester: jsonFormsCalloutTextControlTester,
-    renderer: JsonFormsCalloutTextControl,
-  },
   {
     tester: jsonFormsGroupLayoutTester,
     renderer: jsonFormsGroupLayoutRenderer,

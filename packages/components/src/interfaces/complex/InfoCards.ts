@@ -7,17 +7,25 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { ARRAY_RADIO_FORMAT } from "../format"
+import { AltTextSchema, ImageSrcSchema } from "./Image"
+
+export const CARDS_WITHOUT_IMAGES = "cardsWithoutImages"
+export const CARDS_WITH_IMAGES = "cardsWithImages"
+
+const IMAGE_FIT = {
+  Cover: "cover",
+  Content: "contain",
+} as const
 
 const SingleCardNoImageSchema = Type.Object({
   title: Type.String({
     title: "Title",
-    default: "This is the title of the card",
     maxLength: 100,
   }),
   description: Type.Optional(
     Type.String({
       title: "Description",
-      default: "This is an optional description for the card",
       maxLength: 150,
     }),
   ),
@@ -34,33 +42,26 @@ const SingleCardNoImageSchema = Type.Object({
 const SingleCardWithImageSchema = Type.Composite([
   SingleCardNoImageSchema,
   Type.Object({
-    imageUrl: Type.String({
-      title: "Upload image",
-      format: "image",
-    }),
+    imageUrl: ImageSrcSchema,
     imageFit: Type.Optional(
       Type.Union(
         [
-          Type.Literal("cover", {
+          Type.Literal(IMAGE_FIT.Cover, {
             title: "Default (recommended)",
           }),
-          Type.Literal("contain", {
+          Type.Literal(IMAGE_FIT.Content, {
             title: "Resize image to fit",
           }),
         ],
         {
-          default: "cover",
+          default: IMAGE_FIT.Cover,
           title: "Image display",
           description: `Select "Resize image to fit" only if the image has a white background.`,
+          format: ARRAY_RADIO_FORMAT,
         },
       ),
     ),
-    imageAlt: Type.String({
-      title: "Alternate text",
-      description:
-        "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
-      maxLength: 120,
-    }),
+    imageAlt: AltTextSchema,
   }),
 ])
 
@@ -91,9 +92,8 @@ const InfoCardsBaseSchema = Type.Object({
         Type.Literal("3", { title: "3 columns" }),
       ],
       {
-        title: "Maximum columns variant",
-        description:
-          "Controls the responsive behaviour regarding the number of columns that this component will expand to in different viewports",
+        title: "Number of columns",
+        description: "This only affects how the block appears on large screens",
         default: "3",
       },
     ),
@@ -123,7 +123,7 @@ const InfoCardsBaseSchema = Type.Object({
 
 const InfoCardsWithImageSchema = Type.Object(
   {
-    variant: Type.Literal("cardsWithImages", { default: "cardsWithImages" }),
+    variant: Type.Literal(CARDS_WITH_IMAGES, { default: CARDS_WITH_IMAGES }),
     cards: Type.Array(SingleCardWithImageSchema, {
       title: "Cards",
       maxItems: 12,
@@ -137,8 +137,8 @@ const InfoCardsWithImageSchema = Type.Object(
 
 const InfoCardsNoImageSchema = Type.Object(
   {
-    variant: Type.Literal("cardsWithoutImages", {
-      default: "cardsWithoutImages",
+    variant: Type.Literal(CARDS_WITHOUT_IMAGES, {
+      default: CARDS_WITHOUT_IMAGES,
     }),
     cards: Type.Array(SingleCardNoImageSchema, {
       title: "Cards",
@@ -154,7 +154,9 @@ const InfoCardsNoImageSchema = Type.Object(
 export const InfoCardsSchema = Type.Intersect(
   [
     InfoCardsBaseSchema,
-    Type.Union([InfoCardsWithImageSchema, InfoCardsNoImageSchema]),
+    Type.Union([InfoCardsWithImageSchema, InfoCardsNoImageSchema], {
+      format: ARRAY_RADIO_FORMAT,
+    }),
   ],
   {
     title: "Cards component",

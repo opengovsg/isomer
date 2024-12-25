@@ -191,6 +191,7 @@ export const resourceRouter = router({
         .where("Resource.type", "!=", ResourceType.RootPage)
         .where("Resource.type", "!=", ResourceType.IndexPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
+        .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
           type: Extract<
@@ -376,6 +377,7 @@ export const resourceRouter = router({
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "!=", ResourceType.RootPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
+        .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .select((eb) => [eb.fn.countAll().as("totalCount")])
 
       if (resourceId) {
@@ -396,6 +398,7 @@ export const resourceRouter = router({
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "!=", ResourceType.RootPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
+        .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .orderBy("Resource.updatedAt", "desc")
         .orderBy("Resource.title", "asc")
         .offset(offset)

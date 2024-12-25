@@ -75,7 +75,7 @@ export function CmsContainer({
           {sidenav}
         </Box>
       </GridItem>
-      <GridItem as="main" area="main" overflow="hidden">
+      <GridItem as="main" area="main" overflow="auto">
         <Box
           height={0}
           minH="100%"

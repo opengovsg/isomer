@@ -8,13 +8,14 @@ import type { IsomerSiteProps, LinkComponentType } from "~/types"
 export const ArticlePageHeaderSchema = Type.Object({
   summary: Type.String({
     title: "Article summary",
-    description: "The summary of the article’s content",
+    description: "Help users understand what this page is about",
     format: "textarea",
     maxLength: 250,
   }),
 })
 
 export type ArticlePageHeaderProps = Static<typeof ArticlePageHeaderSchema> & {
+  tags?: CollectionCardProps["tags"]
   breadcrumb: BreadcrumbProps
   title: string
   category: CollectionCardProps["category"]

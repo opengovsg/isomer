@@ -28,11 +28,13 @@ export const useIsActive = (
     case ResourceType.IndexPage:
       return siteProps.resourceId === currentResourceId
     case ResourceType.Folder:
-    case ResourceType.Collection:
       return siteProps.folderId === currentResourceId
+    case ResourceType.Collection:
+      return siteProps.resourceId === currentResourceId
     case ResourceType.CollectionLink:
       return siteProps.linkId === currentResourceId
     case ResourceType.FolderMeta:
+    case ResourceType.CollectionMeta:
       // TODO: Not implemented yet
       return false
     default:

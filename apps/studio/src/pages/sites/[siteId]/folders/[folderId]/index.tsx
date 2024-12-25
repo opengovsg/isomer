@@ -1,3 +1,4 @@
+import NextLink from "next/link"
 import {
   Box,
   BreadcrumbItem,
@@ -122,7 +123,7 @@ const FolderPage: NextPageWithLayout = () => {
             {breadcrumbs.map(({ href, label }, index) => {
               return (
                 <BreadcrumbItem key={index}>
-                  <BreadcrumbLink href={href}>
+                  <BreadcrumbLink href={href} as={NextLink}>
                     <Text
                       textStyle="caption-2"
                       color="interaction.links.default"
