@@ -165,6 +165,13 @@ export const extractMetadataFromName = (name: CollectionPostName) => {
   };
 };
 
+export const getValidPermalink = (rawPermalink: string) => {
+  return rawPermalink
+    .replaceAll(/[_ ]+/g, "-")
+    .replaceAll(/[^a-zA-Z0-9-]+/g, "")
+    .toLowerCase();
+};
+
 export const jekyllPost2CollectionPage = async (
   name: CollectionPostName,
   post: JekyllFile,
@@ -183,7 +190,7 @@ export const jekyllPost2CollectionPage = async (
     title:
       (frontmatter.title as CollectionPageName) ??
       getCollectionPageNameFromPost(rawFileName),
-    permalink: rawFileName,
+    permalink: getValidPermalink(rawFileName),
     content: output,
     lastModified,
   });
@@ -208,7 +215,7 @@ export const jekyllPage2CollectionPage = async (
   return generateCollectionArticlePage({
     category,
     title,
-    permalink: title.replaceAll(/ /g, "-").toLowerCase(),
+    permalink: getValidPermalink(title),
     content: output,
     lastModified,
   });

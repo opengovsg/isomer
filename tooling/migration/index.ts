@@ -9,6 +9,7 @@ import {
   jekyllPage2CollectionPage,
   generateCollectionLink,
   parseCollectionDateFromString,
+  getValidPermalink,
 } from "./generate/collection";
 import { generateCollectionInOutMapping } from "./migrate/collection";
 import {
@@ -33,8 +34,8 @@ import { generateFilesInOutMappings } from "./generate/files";
 const { Client } = pg;
 const OUTPUT_DIR = "output";
 
-// const SITE_ID = 23; // NOTE: this is the mse site
-const SITE_ID = 1;
+const SITE_ID = 23; // NOTE: this is the mse site
+// const SITE_ID = 1;
 
 const __dirname = path.resolve();
 
@@ -196,6 +197,9 @@ export const walkAndSeedCollection = async (dir: string, siteId: number) => {
   return rootId;
 };
 
+// Should have: 1207
+// In db: 1168
+// Difference: 39
 const main = async () => {
   const mappings = generateCollectionInOutMapping(`${REPO_DIR}/news`);
   const filesToShift = generateFilesInOutMappings(`${REPO_DIR}/news`);
@@ -228,8 +232,7 @@ const main = async () => {
       // first, we copy the file over to our assets folder
       await copyToAssetsFolder(permalink, assetsPath);
 
-      // TODO: Shift the writing of redirections out into its own function
-      const dbPermalink = title!.replaceAll(/ /g, "-").toLowerCase();
+      const dbPermalink = getValidPermalink(title!);
 
       // next, we have to copy it over to our collection as well
       // so that it gets picked up later when we are seeding our database
@@ -245,7 +248,7 @@ const main = async () => {
       });
 
       // TODO: need a deterministic way of getting the redirects
-      return { from: permalink, to: `latest-news/${dbPermalink}` };
+      return { from: permalink, to: `/latest-news/${dbPermalink}` };
     }),
   );
 
@@ -268,7 +271,7 @@ const main = async () => {
   const files = filesToMigrate.map(({ inpath, outpath, ...rest }) => {
     fs.appendFileSync(
       "redirects.csv",
-      `${outpath},${rest.content.page.permalink}\n`,
+      `${outpath},/latest-news/${rest.content.page.permalink}\n`,
     );
     return rest;
   });
