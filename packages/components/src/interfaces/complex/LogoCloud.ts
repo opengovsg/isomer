@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import { IsomerSiteProps } from "~/types"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const LOGO_CLOUD_TYPE = "logocloud"
@@ -25,10 +26,10 @@ export const LogoCloudSchema = Type.Object(
     }),
   },
   {
-    title: "Title",
+    title: "Logocloud component",
   },
 )
 
 export type LogoCloudProps = Static<typeof LogoCloudSchema> & {
-  assetsBaseUrl?: string
+  site: IsomerSiteProps
 }
