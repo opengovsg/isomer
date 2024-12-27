@@ -34,8 +34,8 @@ import { generateFilesInOutMappings } from "./generate/files";
 const { Client } = pg;
 const OUTPUT_DIR = "output";
 
-const SITE_ID = 23; // NOTE: this is the mse site
-// const SITE_ID = 1;
+// const SITE_ID = 23; // NOTE: this is the mse site
+const SITE_ID = 1;
 
 const __dirname = path.resolve();
 
@@ -197,9 +197,6 @@ export const walkAndSeedCollection = async (dir: string, siteId: number) => {
   return rootId;
 };
 
-// Should have: 1207
-// In db: 1168
-// Difference: 39
 const main = async () => {
   const mappings = generateCollectionInOutMapping(`${REPO_DIR}/news`);
   const filesToShift = generateFilesInOutMappings(`${REPO_DIR}/news`);
