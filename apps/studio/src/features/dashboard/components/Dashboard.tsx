@@ -41,7 +41,13 @@ export const Dashboard = ({
       minH="100%"
     >
       <VStack w="100%" align="start">
-        <Breadcrumb size="sm" w="100%">
+        <Breadcrumb
+          size="sm"
+          w="100%"
+          minH="1.25rem" // maintain height even when single breadcrumb
+          display="flex"
+          alignItems="center"
+        >
           {allBreadcrumbsExceptLast.map(({ href, label }, index) => {
             return (
               <BreadcrumbItem key={index}>
