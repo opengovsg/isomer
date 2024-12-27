@@ -33,9 +33,9 @@ describe("getParsedDate", () => {
     expect(result).toStrictEqual(new Date(2023, 5, 15))
   })
 
-  it("parses ISO 8601 format correctly", () => {
-    const result = getParsedDate("2023-07-20T14:30:45.123Z")
-    expect(result).toStrictEqual(new Date(2023, 6, 20, 14, 30, 45, 123))
+  it("parses ISO 8601 format correctly in Singapore timezone", () => {
+    const result = getParsedDate("2023-07-20T16:00:00.000Z")
+    expect(result).toStrictEqual(new Date(2023, 6, 21, 0, 0, 0, 0))
   })
 
   it("returns current date for unsupported format", () => {

@@ -1,5 +1,6 @@
 import { isMatch, parse } from "date-fns"
 
+const TIMEZONE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 const SUPPORTED_DATE_FORMATS = [
   "dd/MM/yyyy",
   "d MMM yyyy",
@@ -7,7 +8,7 @@ const SUPPORTED_DATE_FORMATS = [
   "dd MMM yyyy",
   "dd MMMM yyyy",
   "yyyy-MM-dd",
-  "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+  TIMEZONE_DATE_FORMAT,
 ]
 
 export const getParsedDate = (dateString: string) => {
@@ -20,7 +21,14 @@ export const getParsedDate = (dateString: string) => {
 
       try {
         if (isMatch(dateString, format)) {
-          return parse(dateString, format, new Date())
+          let offsetDate = dateString
+          if (format === TIMEZONE_DATE_FORMAT) {
+            offsetDate = new Date(
+              // Add 8 hours to account for the Singapore timezone offset
+              new Date(dateString).getTime() + 8 * 60 * 60 * 1000,
+            ).toISOString()
+          }
+          return parse(offsetDate, format, new Date())
         }
       } catch (e) {
         return new Date()
