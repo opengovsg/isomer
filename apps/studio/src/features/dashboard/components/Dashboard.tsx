@@ -16,7 +16,7 @@ export const Dashboard = ({
   icon,
   title,
   buttons,
-  banner,
+  preTableContent,
   table,
 }: {
   breadcrumbs: {
@@ -26,7 +26,7 @@ export const Dashboard = ({
   icon: ReactNode
   title: string
   buttons: ReactNode
-  banner?: ReactNode
+  preTableContent?: ReactNode
   table: ReactNode
 }) => {
   const allBreadcrumbsExceptLast = breadcrumbs.slice(0, -1)
@@ -96,7 +96,7 @@ export const Dashboard = ({
           <HStack>{buttons}</HStack>
         </Flex>
       </VStack>
-      {banner && banner}
+      {preTableContent && preTableContent}
       <Box width="100%">{table}</Box>
     </VStack>
   )
