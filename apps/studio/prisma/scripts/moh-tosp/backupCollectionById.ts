@@ -7,15 +7,20 @@ import { FileLogger } from "../FileLogger"
 // Update the logger path if required
 const logger = new FileLogger("./backupCollectionById.log")
 
+interface BackupCollectionInput {
+  resourceId: string
+  backupDir: string
+}
+
 /**
  * Backup a collection and its relevant resources to JSON files.
  * @param {string} resourceId - ID of the collection resource to back up.
  * @param {string} backupDir - Directory to save the backup files.
  */
-export async function backupCollection(
-  resourceId: string,
-  backupDir: string,
-): Promise<void> {
+export async function backupCollection({
+  resourceId,
+  backupDir,
+}: BackupCollectionInput): Promise<void> {
   try {
     // Ensure the backup directory exists
     await fs.mkdir(backupDir, { recursive: true })
@@ -75,7 +80,10 @@ export async function backupCollection(
 const collectionId = "0"
 const backupDirectory = "/Users/XYZ/<your-path>"
 
-await backupCollection(collectionId, backupDirectory).catch((err) => {
+await backupCollection({
+  resourceId: collectionId,
+  backupDir: backupDirectory,
+}).catch((err) => {
   if (err instanceof Error) {
     logger.error(`Unhandled error: ${err.message}`)
   }

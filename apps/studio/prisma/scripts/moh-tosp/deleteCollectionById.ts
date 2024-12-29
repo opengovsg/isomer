@@ -4,10 +4,14 @@ import { FileLogger } from "../FileLogger"
 // Update the logger path if required
 const logger = new FileLogger("./deleteCollectionById.log")
 
-export const deleteCollectionById = async (
-  collectionId: string,
-  siteId: number,
-) => {
+interface DeleteCollectionByIdInput {
+  collectionId: string
+  siteId: number
+}
+export const deleteCollectionById = async ({
+  collectionId,
+  siteId,
+}: DeleteCollectionByIdInput) => {
   try {
     await db.transaction().execute(async (tx) => {
       // Step 1: Find all child resources of the collection
@@ -104,4 +108,4 @@ export const deleteCollectionById = async (
 
 const collectionIdToDelete = "0"
 const siteId = 0
-await deleteCollectionById(collectionIdToDelete, siteId)
+await deleteCollectionById({ collectionId: collectionIdToDelete, siteId })

@@ -8,14 +8,22 @@ import { FileLogger } from "../FileLogger"
 // Update the logger path if required
 const logger = new FileLogger("./createCollectionFromLocal.log")
 
-export const createCollectionFromLocal = async (
-  contentDir: string,
-  siteId: number,
-  indexPageName: string, // should be placed outside the folder
-  indexPageTitle: string, // title of the index page
-  collectionName: string,
-  nameOfNewCollectionToCreate: string,
-) => {
+interface CreateCollectionFromLocalInput {
+  collectionName: string
+  contentDir: string
+  indexPageName: string // should be placed outside the folder e.g. "cost-financing.json"
+  indexPageTitle: string // title of the index page e.g. "Cost financing"
+  nameOfNewCollectionToCreate: string
+  siteId: number
+}
+export const createCollectionFromLocal = async ({
+  contentDir,
+  collectionName,
+  nameOfNewCollectionToCreate,
+  indexPageName,
+  indexPageTitle,
+  siteId,
+}: CreateCollectionFromLocalInput) => {
   logger.info(`Reading from ${contentDir}`)
   const jsonFilePath = path.join(contentDir, indexPageName)
   const folderPath = path.join(contentDir, collectionName)
@@ -53,7 +61,7 @@ export const createCollectionFromLocal = async (
       const indexPage = await tx
         .insertInto("Resource")
         .values({
-          title: nameOfNewCollectionToCreate,
+          title: indexPageTitle,
           permalink: "_index",
           siteId: siteId,
           type: ResourceType.IndexPage,
@@ -141,16 +149,17 @@ export const createCollectionFromLocal = async (
 
 // NOTE: TODO: Update the content directory and siteId here before usage!
 const contentDir = "/Users/XYZ/<your-path>"
-const indexPagePath = "cost-financing.json"
+const indexPageName = "cost-financing.json"
 const indexPageTitle = "Cost financing"
 const collectionName = "cost-financing"
 const nameOfNewCollectionToCreate = "cost-financing-new" // will also be the permalink
 const siteId = 0
-await createCollectionFromLocal(
+
+await createCollectionFromLocal({
   contentDir,
-  siteId,
-  indexPagePath,
+  indexPageName,
   indexPageTitle,
   collectionName,
   nameOfNewCollectionToCreate,
-)
+  siteId,
+})

@@ -6,10 +6,14 @@ import { FileLogger } from "../FileLogger"
 // Update the logger path if required
 const logger = new FileLogger("./publishDraftCollection.log")
 
-export const publishCollectionById = async (
-  publisherId: string,
-  collectionId: string,
-) => {
+interface PublishDraftCollectionInput {
+  publisherId: string
+  collectionId: string
+}
+export const publishCollectionById = async ({
+  publisherId,
+  collectionId,
+}: PublishDraftCollectionInput) => {
   try {
     // First publish the collection
     await db.transaction().execute(async (tx) => {
@@ -92,4 +96,4 @@ export const publishCollectionById = async (
 // NOTE: TODO: Put in the publisher ID and collection ID to publish
 const publisherId = "xyz"
 const collectionId = "0"
-await publishCollectionById(publisherId, collectionId)
+await publishCollectionById({ publisherId, collectionId })
