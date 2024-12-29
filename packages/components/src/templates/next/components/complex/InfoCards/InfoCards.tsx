@@ -88,6 +88,11 @@ const createInfoCardsStyles = tv({
         grid: "md:grid-cols-2 lg:grid-cols-3",
       },
     },
+    isExternalLink: {
+      true: {
+        cardTitleArrow: "rotate-[-45deg]",
+      },
+    },
   },
   defaultVariants: {
     layout: "default",
@@ -103,14 +108,19 @@ const InfoCardContainer = ({
   site,
   LinkComponent,
   children,
+  isExternalLink,
 }: PropsWithChildren<
-  Pick<SingleCardNoImageProps, "url" | "site" | "LinkComponent">
+  Pick<
+    SingleCardNoImageProps,
+    "url" | "site" | "isExternalLink" | "LinkComponent"
+  >
 >): JSX.Element => {
   return url ? (
     <Link
       href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
       className={compoundStyles.cardContainer()}
       LinkComponent={LinkComponent}
+      isExternal={isExternalLink}
     >
       {children}
     </Link>
@@ -159,9 +169,10 @@ const InfoCardText = ({
   title,
   description,
   url,
+  isExternalLink,
 }: Pick<
   SingleCardWithImageProps,
-  "title" | "description" | "url"
+  "title" | "description" | "url" | "isExternalLink"
 >): JSX.Element => (
   <div className={compoundStyles.cardTextContainer()}>
     <h3 className={infoCardTitleStyle({ isClickableCard: !!url })}>
@@ -170,7 +181,9 @@ const InfoCardText = ({
       {url && (
         <BiRightArrowAlt
           aria-hidden
-          className={compoundStyles.cardTitleArrow()}
+          className={compoundStyles.cardTitleArrow({
+            isExternalLink,
+          })}
         />
       )}
     </h3>
@@ -185,9 +198,20 @@ const InfoCardNoImage = ({
   site,
   LinkComponent,
 }: SingleCardNoImageProps): JSX.Element => {
+  const isExternalLink = isExternalUrl(url)
   return (
-    <InfoCardContainer url={url} site={site} LinkComponent={LinkComponent}>
-      <InfoCardText title={title} description={description} url={url} />
+    <InfoCardContainer
+      url={url}
+      site={site}
+      isExternalLink={isExternalLink}
+      LinkComponent={LinkComponent}
+    >
+      <InfoCardText
+        title={title}
+        description={description}
+        url={url}
+        isExternalLink={isExternalLink}
+      />
     </InfoCardContainer>
   )
 }
@@ -203,8 +227,14 @@ const InfoCardWithImage = ({
   site,
   LinkComponent,
 }: SingleCardWithImageProps): JSX.Element => {
+  const isExternalLink = isExternalUrl(url)
   return (
-    <InfoCardContainer url={url} site={site} LinkComponent={LinkComponent}>
+    <InfoCardContainer
+      url={url}
+      site={site}
+      isExternalLink={isExternalLink}
+      LinkComponent={LinkComponent}
+    >
       <InfoCardImage
         imageFit={imageFit}
         imageUrl={imageUrl}
@@ -213,7 +243,12 @@ const InfoCardWithImage = ({
         site={site}
         layout={layout}
       />
-      <InfoCardText title={title} description={description} url={url} />
+      <InfoCardText
+        title={title}
+        description={description}
+        url={url}
+        isExternalLink={isExternalLink}
+      />
     </InfoCardContainer>
   )
 }
