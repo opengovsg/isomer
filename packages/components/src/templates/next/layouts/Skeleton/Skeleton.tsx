@@ -1,6 +1,7 @@
 import type { IsomerPageSchemaType } from "~/engine"
 import {
   DatadogRum,
+  FontPreload,
   Footer,
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
@@ -33,6 +34,8 @@ export const Skeleton = ({
 
   return (
     <>
+      <FontPreload />
+
       {shouldIncludeGTM && (
         <GoogleTagManagerHeader
           siteGtmId={site.siteGtmId}
