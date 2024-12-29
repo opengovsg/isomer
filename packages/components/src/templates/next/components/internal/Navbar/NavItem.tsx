@@ -64,9 +64,9 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
             isExternal={isExternalUrl(url)}
             showExternalIcon={isExternalUrl(url)}
             href={referenceLinkHref}
-            className={item({ isOpen })}
+            className={`${item({ isOpen })} ${groupFocusVisibleHighlight()}`}
           >
-            <span className={groupFocusVisibleHighlight()}>{name}</span>
+            {name}
           </Link>
         </li>
       )
