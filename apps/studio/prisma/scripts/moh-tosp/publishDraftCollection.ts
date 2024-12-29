@@ -1,3 +1,5 @@
+import { ResourceState } from "@prisma/client"
+
 import { db } from "~/server/modules/database"
 import { FileLogger } from "../FileLogger"
 
@@ -18,7 +20,7 @@ export const publishCollectionById = async (
         .where("id", "=", collectionId)
         .executeTakeFirstOrThrow()
 
-      if (collection.state !== "Draft") {
+      if (collection.state !== ResourceState.Draft) {
         const errMsg = `Collection with ID ${collectionId} cannot be published as it is either in Published state or draftBlobId is not present.`
         logger.error(errMsg)
         throw new Error(errMsg)
@@ -28,7 +30,7 @@ export const publishCollectionById = async (
       await tx
         .updateTable("Resource")
         .set({
-          state: "Published",
+          state: ResourceState.Published,
           draftBlobId: null,
           updatedAt: new Date(),
         })
@@ -43,7 +45,10 @@ export const publishCollectionById = async (
         .execute()
 
       for (const child of children) {
-        if (child.state === "Published" || child.draftBlobId === null) {
+        if (
+          child.state === ResourceState.Published ||
+          child.draftBlobId === null
+        ) {
           logger.error(
             `Child resource with ID ${child.id} cannot be published as it is either in Published state or draftBlobId is not present.`,
           )
@@ -66,7 +71,7 @@ export const publishCollectionById = async (
         await tx
           .updateTable("Resource")
           .set({
-            state: "Published",
+            state: ResourceState.Published,
             publishedVersionId: childVersion.id,
             draftBlobId: null,
             updatedAt: new Date(),

@@ -1,5 +1,6 @@
 import fs from "fs/promises"
 import path from "path"
+import { ResourceState, ResourceType } from "@prisma/client"
 
 import { db, jsonb } from "~/server/modules/database"
 import { FileLogger } from "../FileLogger"
@@ -28,8 +29,8 @@ export const createCollectionFromLocal = async (
           title: nameOfNewCollectionToCreate,
           permalink: nameOfNewCollectionToCreate,
           siteId: siteId,
-          type: "Collection",
-          state: "Draft",
+          type: ResourceType.Collection,
+          state: ResourceState.Draft,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
@@ -55,10 +56,10 @@ export const createCollectionFromLocal = async (
           title: nameOfNewCollectionToCreate,
           permalink: "_index",
           siteId: siteId,
-          type: "IndexPage",
+          type: ResourceType.IndexPage,
           parentId: collectionId,
           draftBlobId: indexPageBlob.id,
-          state: "Draft",
+          state: ResourceState.Draft,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
@@ -112,7 +113,7 @@ export const createCollectionFromLocal = async (
             title: parsedFileContent.page.title,
             permalink: file.replace(/\.json$/, ""), // remove the .json at the back on permalinks
             siteId: siteId, // Replace with appropriate site ID
-            type: "CollectionPage",
+            type: ResourceType.CollectionPage,
             parentId: collectionId,
             state: "Draft",
             draftBlobId: blob.id,
