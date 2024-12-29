@@ -68,7 +68,7 @@ const generateArgs = ({
       imageUrl: "https://placehold.co/200x300",
       imageAlt: "alt text",
       imageFit: "contain",
-      url: "https://www.google.com",
+      url: "/faq",
     },
     {
       title: "Card with short title",
