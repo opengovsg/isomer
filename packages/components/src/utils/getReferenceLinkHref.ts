@@ -39,7 +39,9 @@ const convertReferenceLinks = (
     return originalLink
   }
 
-  const refPage = sitemapArray.find(({ id }) => id === refPageId)
+  const refPage = sitemapArray.find(
+    ({ id, indexPageId }) => refPageId === id || refPageId === indexPageId,
+  )
 
   if (!refPage) {
     return originalLink
