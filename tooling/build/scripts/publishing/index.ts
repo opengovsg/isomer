@@ -111,17 +111,19 @@ async function main() {
           resource.parentId,
         )
 
+        const isIndexPage =
+          resource.fullPermalink.endsWith(INDEX_PAGE_PERMALINK) &&
+          resource.type !== "RootPage"
+
         const resourceConvertedPermalink = getConvertedPermalink(resource.fullPermalink)
 
         const idOfFolder = resources.find(
-          (item) =>
-            resource.fullPermalink.endsWith(INDEX_PAGE_PERMALINK) &&
-            resource.type !== "RootPage" &&
-            item.fullPermalink === resourceConvertedPermalink,
+          (item) => isIndexPage && item.fullPermalink === resourceConvertedPermalink,
         )?.id
 
         const sitemapEntry: SitemapEntry = {
           id: idOfFolder ?? resource.id,
+          indexPageId: isIndexPage ? resource.id : undefined,
           type: resource.type,
           title: resource.title,
           permalink: `/${resourceConvertedPermalink}`,
