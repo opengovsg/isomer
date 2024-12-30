@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { useState } from "react"
-import { userEvent, waitFor, within } from "@storybook/test"
+import { userEvent, within } from "@storybook/test"
 
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
@@ -146,11 +146,10 @@ export const MobileFilterDrawer: Story = {
   args: MobileFilterButton.args,
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    await waitFor(async () => {
-      await userEvent.click(
-        screen.getByRole("button", { name: /filter results/i }),
-      )
+    const button = await screen.findByRole("button", {
+      name: /filter results/i,
     })
+    await userEvent.click(button)
   },
 }
 
