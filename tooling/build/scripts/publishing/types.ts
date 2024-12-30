@@ -17,6 +17,7 @@ export type SitemapEntry = Pick<
   Resource,
   "id" | "title" | "permalink" | "type"
 > & {
+  indexPageId?: string
   lastModified: string
   layout: string
   summary: string
