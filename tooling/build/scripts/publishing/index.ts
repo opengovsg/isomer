@@ -111,19 +111,20 @@ async function main() {
           resource.parentId,
         )
 
+        const resourceConvertedPermalink = getConvertedPermalink(resource.fullPermalink)
+
         const idOfFolder = resources.find(
           (item) =>
             resource.fullPermalink.endsWith(INDEX_PAGE_PERMALINK) &&
             resource.type !== "RootPage" &&
-            item.fullPermalink ===
-              getConvertedPermalink(resource.fullPermalink),
+            item.fullPermalink === resourceConvertedPermalink,
         )?.id
 
         const sitemapEntry: SitemapEntry = {
           id: idOfFolder ?? resource.id,
           type: resource.type,
           title: resource.title,
-          permalink: `/${getConvertedPermalink(resource.fullPermalink)}`,
+          permalink: `/${resourceConvertedPermalink}`,
           lastModified: new Date().toISOString(), // TODO: Update to updated_at column
           layout: resource.content.layout || "content",
           summary:
