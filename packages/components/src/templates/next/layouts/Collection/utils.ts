@@ -4,9 +4,9 @@ import { getParsedDate } from "~/utils"
 import {
   FILTER_ID_CATEGORY,
   FILTER_ID_YEAR,
-  getCategoryFilters,
+  getCategoryFilter,
   getTagFilters,
-  getYearFilters,
+  getYearFilter,
   NO_SPECIFIED_YEAR_FILTER_ID,
 } from "./filterUtils"
 
@@ -61,8 +61,8 @@ export const getAvailableFilters = (
   })
 
   const availableFilters: FilterType[] = [
-    getCategoryFilters({ categories }),
-    getYearFilters({ years, numberOfUndefinedDates }),
+    getCategoryFilter({ categories }),
+    getYearFilter({ years, numberOfUndefinedDates }),
     ...getTagFilters({ tagCategories }),
   ]
 
