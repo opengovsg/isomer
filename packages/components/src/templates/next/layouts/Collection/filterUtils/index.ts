@@ -1,4 +1,4 @@
-export * from "./getCategoryFilters"
-export * from "./getYearFilters"
+export * from "./getCategoryFilter"
+export * from "./getYearFilter"
 export * from "./getTagFilters"
 export * from "./constants"
