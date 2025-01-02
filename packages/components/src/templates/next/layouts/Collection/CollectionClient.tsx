@@ -26,6 +26,7 @@ interface CollectionClientProps {
   page: CollectionPagePageProps
   items: ProcessedCollectionCardProps[]
   filters: FilterType[]
+  shouldShowCategory: boolean
   shouldShowDate: boolean
   siteAssetsBaseUrl: string | undefined
   breadcrumb: BreadcrumbProps
@@ -55,6 +56,7 @@ const CollectionClient = ({
   page,
   items,
   filters,
+  shouldShowCategory,
   shouldShowDate,
   siteAssetsBaseUrl,
   breadcrumb,
@@ -130,6 +132,7 @@ const CollectionClient = ({
               paginatedItems={paginatedItems}
               searchValue={searchValue}
               totalCount={totalCount}
+              shouldShowCategory={shouldShowCategory}
               shouldShowDate={shouldShowDate}
               siteAssetsBaseUrl={siteAssetsBaseUrl}
               LinkComponent={LinkComponent}

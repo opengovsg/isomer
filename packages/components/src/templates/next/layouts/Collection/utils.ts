@@ -1,4 +1,4 @@
-import type { AppliedFilter } from "../../types/Filter"
+import type { AppliedFilter, Filter } from "../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import {
   FILTER_ID_CATEGORY,
@@ -122,6 +122,11 @@ export const updateAppliedFilters = (
       { id: filterId, items: [{ id: itemId }] },
     ])
   }
+}
+
+// use filters generated as the single source of truth
+export const shouldShowCategory = (filters: Filter[]): boolean => {
+  return Boolean(filters.find((filter) => filter.id === FILTER_ID_CATEGORY))
 }
 
 export const shouldShowDate = (
