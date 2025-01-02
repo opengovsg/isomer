@@ -11,5 +11,5 @@ export const getAvailableFilters = (
     getCategoryFilter(items),
     getYearFilter(items),
     ...getTagFilters(items),
-  ].filter((filter) => filter.items.length > 0)
+  ].filter((filter) => filter.items.length >= 2)
 }
