@@ -15,15 +15,17 @@ export const getCategoryFilter = (
     }
   })
 
+  const categoryFilterItems = Object.entries(categories)
+    .map(([label, count]) => ({
+      id: label.toLowerCase(),
+      label: label.charAt(0).toUpperCase() + label.slice(1),
+      count,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+
   return {
     id: FILTER_ID_CATEGORY,
     label: "Category",
-    items: Object.entries(categories)
-      .map(([label, count]) => ({
-        id: label.toLowerCase(),
-        label: label.charAt(0).toUpperCase() + label.slice(1),
-        count,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label)),
+    items: categoryFilterItems,
   }
 }
