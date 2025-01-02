@@ -5,10 +5,12 @@ import type {
 } from "../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { getParsedDate } from "~/utils"
-
-const FILTER_ID_CATEGORY = "category"
-const FILTER_ID_YEAR = "year"
-const NO_SPECIFIED_YEAR_FILTER_ID = "not_specified"
+import {
+  FILTER_ID_CATEGORY,
+  FILTER_ID_YEAR,
+  getYearFilters,
+  NO_SPECIFIED_YEAR_FILTER_ID,
+} from "./filterUtils"
 
 const getCategories = (
   tagCategories: Record<string, Record<string, number>>,
@@ -86,14 +88,6 @@ export const getAvailableFilters = (
     }
   })
 
-  const yearFilterItems = Object.entries(years)
-    .map(([label, count]) => ({
-      id: label.toLowerCase(),
-      label,
-      count,
-    }))
-    .sort((a, b) => parseInt(b.label) - parseInt(a.label))
-
   const availableFilters: FilterType[] = [
     {
       id: FILTER_ID_CATEGORY,
@@ -106,24 +100,7 @@ export const getAvailableFilters = (
         }))
         .sort((a, b) => a.label.localeCompare(b.label)),
     },
-    {
-      id: FILTER_ID_YEAR,
-      label: "Year",
-      // do not show "not specified" option if all items have undefined dates
-      items:
-        yearFilterItems.length === 0
-          ? []
-          : numberOfUndefinedDates === 0
-            ? yearFilterItems
-            : [
-                ...yearFilterItems,
-                {
-                  id: NO_SPECIFIED_YEAR_FILTER_ID,
-                  label: "Not specified",
-                  count: numberOfUndefinedDates,
-                },
-              ],
-    },
+    getYearFilters({ years, numberOfUndefinedDates }),
     ...getCategories(tagCategories),
   ]
 
