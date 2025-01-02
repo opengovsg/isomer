@@ -8,6 +8,7 @@ import { getParsedDate } from "~/utils"
 import {
   FILTER_ID_CATEGORY,
   FILTER_ID_YEAR,
+  getCategoryFilters,
   getYearFilters,
   NO_SPECIFIED_YEAR_FILTER_ID,
 } from "./filterUtils"
@@ -89,17 +90,7 @@ export const getAvailableFilters = (
   })
 
   const availableFilters: FilterType[] = [
-    {
-      id: FILTER_ID_CATEGORY,
-      label: "Category",
-      items: Object.entries(categories)
-        .map(([label, count]) => ({
-          id: label.toLowerCase(),
-          label: label.charAt(0).toUpperCase() + label.slice(1),
-          count,
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label)),
-    },
+    getCategoryFilters(categories),
     getYearFilters({ years, numberOfUndefinedDates }),
     ...getCategories(tagCategories),
   ]
