@@ -1,23 +1,10 @@
-import type { AppliedFilter, Filter } from "../../types/Filter"
+import type { AppliedFilter } from "../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import {
   FILTER_ID_CATEGORY,
   FILTER_ID_YEAR,
-  getCategoryFilter,
-  getTagFilters,
-  getYearFilter,
   NO_SPECIFIED_YEAR_FILTER_ID,
 } from "./filterUtils"
-
-export const getAvailableFilters = (
-  items: ProcessedCollectionCardProps[],
-): Filter[] => {
-  return [
-    getCategoryFilter(items),
-    getYearFilter(items),
-    ...getTagFilters(items),
-  ].filter((filter) => filter.items.length > 0)
-}
 
 export const getFilteredItems = (
   items: ProcessedCollectionCardProps[],
