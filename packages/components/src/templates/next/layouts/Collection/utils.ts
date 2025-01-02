@@ -1,43 +1,14 @@
-import type {
-  AppliedFilter,
-  FilterItem,
-  Filter as FilterType,
-} from "../../types/Filter"
+import type { AppliedFilter, Filter as FilterType } from "../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import { getParsedDate } from "~/utils"
 import {
   FILTER_ID_CATEGORY,
   FILTER_ID_YEAR,
   getCategoryFilters,
+  getTagFilters,
   getYearFilters,
   NO_SPECIFIED_YEAR_FILTER_ID,
 } from "./filterUtils"
-
-const getCategories = (
-  tagCategories: Record<string, Record<string, number>>,
-): FilterType[] => {
-  return Object.entries(tagCategories).reduce((acc: FilterType[], curValue) => {
-    const [category, values] = curValue
-    const items: FilterItem[] = Object.entries(values).map(
-      ([label, count]) => ({
-        label,
-        count,
-        id: label,
-      }),
-    )
-
-    const filters: FilterType[] = [
-      ...acc,
-      {
-        items,
-        id: category,
-        label: category,
-      },
-    ]
-
-    return filters
-  }, [])
-}
 
 export const getAvailableFilters = (
   items: ProcessedCollectionCardProps[],
@@ -92,7 +63,7 @@ export const getAvailableFilters = (
   const availableFilters: FilterType[] = [
     getCategoryFilters({ categories }),
     getYearFilters({ years, numberOfUndefinedDates }),
-    ...getCategories(tagCategories),
+    ...getTagFilters({ tagCategories }),
   ]
 
   // Remove filters with no items
