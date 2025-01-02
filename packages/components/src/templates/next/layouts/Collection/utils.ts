@@ -1,6 +1,5 @@
 import type { AppliedFilter, Filter as FilterType } from "../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
-import { getParsedDate } from "~/utils"
 import {
   FILTER_ID_CATEGORY,
   FILTER_ID_YEAR,
@@ -13,61 +12,11 @@ import {
 export const getAvailableFilters = (
   items: ProcessedCollectionCardProps[],
 ): FilterType[] => {
-  const categories: Record<string, number> = {}
-  const years: Record<string, number> = {}
-  // NOTE: Each tag is a mapping of a category to its
-  // associated set of values as well as the selected value.
-  // Hence, we store a map here of the category (eg: Body parts)
-  // to the number of occurences of each value (eg: { Brain: 3, Leg: 2})
-  const tagCategories: Record<string, Record<string, number>> = {}
-
-  let numberOfUndefinedDates = 0
-
-  items.forEach(({ category, lastUpdated, tags }) => {
-    // Step 1: Get all available categories
-    if (category in categories && categories[category]) {
-      categories[category] += 1
-    } else {
-      categories[category] = 1
-    }
-
-    // Step 2: Get all available years
-    if (lastUpdated) {
-      const year = getParsedDate(lastUpdated).getFullYear().toString()
-      if (year in years && years[year]) {
-        years[year] += 1
-      } else {
-        years[year] = 1
-      }
-    } else {
-      numberOfUndefinedDates += 1
-    }
-
-    // Step 3: Get all category tags
-    if (tags) {
-      tags.forEach(({ selected: selectedLabels, category }) => {
-        selectedLabels.forEach((label) => {
-          if (!tagCategories[category]) {
-            tagCategories[category] = {}
-          }
-          if (!tagCategories[category][label]) {
-            tagCategories[category][label] = 0
-          }
-
-          tagCategories[category][label] += 1
-        })
-      })
-    }
-  })
-
-  const availableFilters: FilterType[] = [
-    getCategoryFilter({ categories }),
-    getYearFilter({ years, numberOfUndefinedDates }),
-    ...getTagFilters({ tagCategories }),
-  ]
-
-  // Remove filters with no items
-  return availableFilters.filter((filter) => filter.items.length > 0)
+  return [
+    getCategoryFilter(items),
+    getYearFilter(items),
+    ...getTagFilters(items),
+  ].filter((filter) => filter.items.length > 0)
 }
 
 export const getFilteredItems = (

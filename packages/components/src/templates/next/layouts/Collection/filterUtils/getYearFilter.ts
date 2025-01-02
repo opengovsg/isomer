@@ -1,13 +1,27 @@
 import type { Filter } from "../../../types/Filter"
+import type { ProcessedCollectionCardProps } from "~/interfaces"
+import { getParsedDate } from "~/utils"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
 
-export const getYearFilter = ({
-  years,
-  numberOfUndefinedDates,
-}: {
-  years: Record<string, number>
-  numberOfUndefinedDates: number
-}): Filter => {
+export const getYearFilter = (
+  items: ProcessedCollectionCardProps[],
+): Filter => {
+  const years: Record<string, number> = {}
+  let numberOfUndefinedDates = 0
+
+  items.forEach(({ lastUpdated }) => {
+    if (lastUpdated) {
+      const year = getParsedDate(lastUpdated).getFullYear().toString()
+      if (year in years && years[year]) {
+        years[year] += 1
+      } else {
+        years[year] = 1
+      }
+    } else {
+      numberOfUndefinedDates += 1
+    }
+  })
+
   const yearFilterItems = Object.entries(years)
     .map(([label, count]) => ({
       id: label.toLowerCase(),

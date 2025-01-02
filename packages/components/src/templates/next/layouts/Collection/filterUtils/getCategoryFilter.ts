@@ -1,11 +1,20 @@
+import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { Filter } from "~/templates/next/types/Filter"
 import { FILTER_ID_CATEGORY } from "./constants"
 
-export const getCategoryFilter = ({
-  categories,
-}: {
-  categories: Record<string, number>
-}): Filter => {
+export const getCategoryFilter = (
+  items: ProcessedCollectionCardProps[],
+): Filter => {
+  const categories: Record<string, number> = {}
+
+  items.forEach(({ category }) => {
+    if (category in categories && categories[category]) {
+      categories[category] += 1
+    } else {
+      categories[category] = 1
+    }
+  })
+
   return {
     id: FILTER_ID_CATEGORY,
     label: "Category",
