@@ -1,4 +1,4 @@
-import type { AppliedFilter, Filter as FilterType } from "../../types/Filter"
+import type { AppliedFilter, Filter } from "../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import {
   FILTER_ID_CATEGORY,
@@ -11,7 +11,7 @@ import {
 
 export const getAvailableFilters = (
   items: ProcessedCollectionCardProps[],
-): FilterType[] => {
+): Filter[] => {
   return [
     getCategoryFilter(items),
     getYearFilter(items),
