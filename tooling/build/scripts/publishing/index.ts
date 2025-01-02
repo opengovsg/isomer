@@ -16,6 +16,7 @@ import {
   getCollectionIndexPageContents,
   getFolderIndexPageContents,
 } from "./utils/getIndexPageContent"
+import { getResourceImage } from "./utils/getResourceImage"
 
 dotenv.config()
 
@@ -137,11 +138,7 @@ async function main() {
           category: resource.content.page.category,
           tags: resource.content.page.tags,
           date: resource.content.page.date,
-          image:
-            resource.content.page.image ||
-            resource.content.page.content.find(
-              (item: any) => item.type === "image",
-            )?.src,
+          image: getResourceImage(resource),
           ref: resource.content.page.ref, // For file and link layouts
         }
 
