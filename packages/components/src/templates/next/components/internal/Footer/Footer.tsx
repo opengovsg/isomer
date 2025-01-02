@@ -26,6 +26,7 @@ import {
   isExternalUrl,
 } from "~/utils"
 import { Link } from "../Link"
+import { ClientCopyrightYear } from "./ClientCopyrightYear"
 
 const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
   facebook: FaFacebook,
@@ -256,7 +257,7 @@ const LegalSection = ({
     <div className="flex h-full">
       <div className="flex flex-col justify-end gap-4 lg:gap-2">
         <p className="prose-label-md-regular text-base-content-inverse-subtle">
-          &copy; {new Date().getFullYear()}{" "}
+          <ClientCopyrightYear />
           {isGovernment ? "Government of Singapore" : agencyName}, last updated{" "}
           {getFormattedDate(lastUpdated)}
         </p>
