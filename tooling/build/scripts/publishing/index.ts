@@ -137,7 +137,11 @@ async function main() {
           category: resource.content.page.category,
           tags: resource.content.page.tags,
           date: resource.content.page.date,
-          image: resource.content.page.image,
+          image:
+            resource.content.page.image ||
+            resource.content.page.content.find(
+              (item: any) => item.type === "image",
+            )?.src,
           ref: resource.content.page.ref, // For file and link layouts
         }
 
