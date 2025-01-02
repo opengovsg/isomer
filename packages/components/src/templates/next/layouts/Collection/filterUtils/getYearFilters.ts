@@ -1,4 +1,4 @@
-import type { FilterItem } from "../../../types/Filter"
+import type { Filter } from "../../../types/Filter"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
 
 export const getYearFilters = ({
@@ -7,11 +7,7 @@ export const getYearFilters = ({
 }: {
   years: Record<string, number>
   numberOfUndefinedDates: number
-}): {
-  id: string
-  label: string
-  items: FilterItem[]
-} => {
+}): Filter => {
   const yearFilterItems = Object.entries(years)
     .map(([label, count]) => ({
       id: label.toLowerCase(),

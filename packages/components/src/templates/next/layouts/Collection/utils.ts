@@ -90,7 +90,7 @@ export const getAvailableFilters = (
   })
 
   const availableFilters: FilterType[] = [
-    getCategoryFilters(categories),
+    getCategoryFilters({ categories }),
     getYearFilters({ years, numberOfUndefinedDates }),
     ...getCategories(tagCategories),
   ]

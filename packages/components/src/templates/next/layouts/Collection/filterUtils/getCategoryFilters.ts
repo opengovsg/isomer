@@ -1,6 +1,11 @@
+import type { Filter } from "~/templates/next/types/Filter"
 import { FILTER_ID_CATEGORY } from "./constants"
 
-export const getCategoryFilters = (categories: Record<string, number>) => {
+export const getCategoryFilters = ({
+  categories,
+}: {
+  categories: Record<string, number>
+}): Filter => {
   return {
     id: FILTER_ID_CATEGORY,
     label: "Category",
