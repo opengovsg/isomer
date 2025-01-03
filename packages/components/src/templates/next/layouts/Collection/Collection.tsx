@@ -12,8 +12,11 @@ import {
 } from "~/utils"
 import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
-import { getAvailableFilters } from "./filterUtils"
-import { shouldShowCategory, shouldShowDate } from "./utils"
+import {
+  getAvailableFilters,
+  shouldShowCategory,
+  shouldShowDate,
+} from "./utils"
 
 const CATEGORY_OTHERS = "Others"
 

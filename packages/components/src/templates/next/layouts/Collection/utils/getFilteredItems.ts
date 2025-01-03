@@ -1,10 +1,10 @@
-import type { AppliedFilter, Filter } from "../../types/Filter"
+import type { AppliedFilter } from "../../../types/Filter"
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import {
   FILTER_ID_CATEGORY,
   FILTER_ID_YEAR,
   NO_SPECIFIED_YEAR_FILTER_ID,
-} from "./filterUtils"
+} from "./constants"
 
 export const getFilteredItems = (
   items: ProcessedCollectionCardProps[],
@@ -73,64 +73,4 @@ export const getFilteredItems = (
       })
       .every((x) => x)
   })
-}
-
-export const getPaginatedItems = (
-  items: ProcessedCollectionCardProps[],
-  itemsPerPage: number,
-  currPage: number,
-) => {
-  const normalizedCurrPage = Math.max(1, currPage)
-
-  return items.slice(
-    (normalizedCurrPage - 1) * itemsPerPage,
-    normalizedCurrPage * itemsPerPage,
-  )
-}
-
-export const updateAppliedFilters = (
-  appliedFilters: AppliedFilter[],
-  setAppliedFilters: (appliedFilters: AppliedFilter[]) => void,
-  filterId: string,
-  itemId: string,
-) => {
-  const filterIndex = appliedFilters.findIndex(
-    (filter) => filter.id === filterId,
-  )
-  const isFilterAlreadyApplied = filterIndex > -1
-  if (isFilterAlreadyApplied) {
-    const itemIndex = appliedFilters[filterIndex]?.items.findIndex(
-      (item) => item.id === itemId,
-    )
-    if (itemIndex !== undefined && itemIndex > -1) {
-      const newAppliedFilters = [...appliedFilters]
-      newAppliedFilters[filterIndex]?.items.splice(itemIndex, 1)
-
-      if (newAppliedFilters[filterIndex]?.items.length === 0) {
-        newAppliedFilters.splice(filterIndex, 1)
-      }
-
-      setAppliedFilters(newAppliedFilters)
-    } else {
-      const newAppliedFilters = [...appliedFilters]
-      newAppliedFilters[filterIndex]?.items.push({ id: itemId })
-      setAppliedFilters(newAppliedFilters)
-    }
-  } else {
-    setAppliedFilters([
-      ...appliedFilters,
-      { id: filterId, items: [{ id: itemId }] },
-    ])
-  }
-}
-
-// use filters generated as the single source of truth
-export const shouldShowCategory = (filters: Filter[]): boolean => {
-  return filters.some((filter) => filter.id === FILTER_ID_CATEGORY)
-}
-
-export const shouldShowDate = (
-  items: ProcessedCollectionCardProps[],
-): boolean => {
-  return items.some((item) => item.lastUpdated)
 }
