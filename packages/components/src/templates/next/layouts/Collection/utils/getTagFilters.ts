@@ -27,25 +27,27 @@ export const getTagFilters = (
     }
   })
 
-  return Object.entries(tagCategories).reduce((acc: Filter[], curValue) => {
-    const [category, values] = curValue
-    const items: FilterItem[] = Object.entries(values).map(
-      ([label, count]) => ({
-        label,
-        count,
-        id: label,
-      }),
-    )
+  return Object.entries(tagCategories)
+    .reduce((acc: Filter[], curValue) => {
+      const [category, values] = curValue
+      const items: FilterItem[] = Object.entries(values)
+        .map(([label, count]) => ({
+          label,
+          count,
+          id: label,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label))
 
-    const filters: Filter[] = [
-      ...acc,
-      {
-        items,
-        id: category,
-        label: category,
-      },
-    ]
+      const filters: Filter[] = [
+        ...acc,
+        {
+          items,
+          id: category,
+          label: category,
+        },
+      ]
 
-    return filters
-  }, [])
+      return filters
+    }, [])
+    .sort((a, b) => a.label.localeCompare(b.label))
 }
