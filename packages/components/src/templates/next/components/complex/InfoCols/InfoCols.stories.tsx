@@ -141,3 +141,25 @@ export const FourInfoBoxes: Story = {
     ],
   },
 }
+
+export const HoverBehaviour: Story = {
+  args: {
+    sectionIdx: 0,
+    title: "Highlights",
+    subtitle: "Some of the things that we are working on",
+    infoBoxes: [
+      {
+        title: "Has Link",
+        description: "Should change appearance on hover",
+        icon: "bar-chart",
+        buttonUrl: "/faq",
+        buttonLabel: "Read article",
+      },
+      {
+        title: "No Link",
+        description: "Should NOT change appearance on hover",
+        icon: "bar-chart",
+      },
+    ],
+  },
+}
