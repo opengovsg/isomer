@@ -6,6 +6,7 @@ export interface ImageClientProps {
   width: string
   className: string
   assetsBaseUrl?: string
+  lazyLoading?: boolean
 }
 
 export const ImageClient = ({
@@ -14,6 +15,7 @@ export const ImageClient = ({
   width,
   className,
   assetsBaseUrl,
+  lazyLoading = true, // next/image defaults to lazy loading true too
 }: ImageClientProps) => {
   return (
     <img
@@ -26,6 +28,7 @@ export const ImageClient = ({
         currentTarget.onerror = null
         currentTarget.src = `${assetsBaseUrl ?? ""}/placeholder_no_image.png`
       }}
+      loading={lazyLoading ? "lazy" : "eager"}
     />
   )
 }
