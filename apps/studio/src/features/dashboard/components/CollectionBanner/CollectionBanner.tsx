@@ -17,6 +17,7 @@ export const CollectionBanner = (): JSX.Element | null => {
 
   return (
     <Stack
+      width="100%"
       justify="space-between"
       flexDir="row"
       bg="interaction.success-subtle.default"
