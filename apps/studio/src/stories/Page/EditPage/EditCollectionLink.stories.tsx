@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, waitFor, within } from "@storybook/test"
+import { userEvent, within } from "@storybook/test"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
@@ -88,12 +88,9 @@ export const WithModal: Story = {
   play: async (context) => {
     const { canvasElement } = context
     const screen = within(canvasElement)
-
-    await waitFor(
-      async () =>
-        await userEvent.click(
-          screen.getByRole("button", { name: /Link something.../i }),
-        ),
-    )
+    const button = await screen.findByRole("button", {
+      name: /Link something.../i,
+    })
+    await userEvent.click(button)
   },
 }
