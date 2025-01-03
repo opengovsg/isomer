@@ -15,6 +15,7 @@ export const resourceHandlers = {
             | "CollectionPage",
           // ID must be unique so infinite loop won't occur
           id: `${resourceId}-${item.title}-${item.id}`,
+          parentId: item.parentId,
         }))
         return {
           items,
@@ -43,17 +44,89 @@ export const resourceHandlers = {
       })
     },
   },
-  getAncestryOf: {
+  getAncestryWithSelf: {
     collectionLink: () => {
-      return trpcMsw.resource.getAncestryOf.query(() => {
+      return trpcMsw.resource.getAncestryWithSelf.query(() => {
         return [
           {
             parentId: null,
             id: "1",
             title: "Homepage",
             permalink: "/",
+            type: "RootPage",
+          },
+          {
+            parentId: "1",
+            id: "2",
+            title: "Collection",
+            permalink: "collection",
+            type: "Collection",
           },
         ]
+      })
+    },
+  },
+  getBatchAncestryWithSelf: {
+    default: () => {
+      return trpcMsw.resource.getBatchAncestryWithSelf.query(() => {
+        return [
+          [
+            {
+              parentId: null,
+              id: "1",
+              title: "Collection 1",
+              permalink: "collection-1",
+              type: "Collection",
+            },
+          ],
+          [
+            {
+              parentId: null,
+              id: "2",
+              title: "Folder 1",
+              permalink: "folder-1",
+              type: "Folder",
+            },
+          ],
+          [
+            {
+              parentId: null,
+              id: "3",
+              title: "Page 1",
+              permalink: "page-1",
+              type: "Page",
+            },
+          ],
+        ]
+      })
+    },
+    foldersOnly: () => {
+      return trpcMsw.resource.getBatchAncestryWithSelf.query(() => {
+        return [
+          [
+            {
+              parentId: null,
+              id: "1",
+              title: "Folder 1",
+              permalink: "folder-1",
+              type: "Folder",
+            },
+          ],
+          [
+            {
+              parentId: null,
+              id: "2",
+              title: "Folder 2",
+              permalink: "folder-2",
+              type: "Folder",
+            },
+          ],
+        ]
+      })
+    },
+    noResults: () => {
+      return trpcMsw.resource.getBatchAncestryWithSelf.query(() => {
+        return []
       })
     },
   },
