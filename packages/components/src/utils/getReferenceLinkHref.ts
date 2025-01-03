@@ -39,7 +39,11 @@ const convertReferenceLinks = (
     return originalLink
   }
 
-  const refPage = sitemapArray.find(({ id }) => id === refPageId)
+  const refPage = sitemapArray.find(({ id, indexPageId }) => {
+    // in the case of a folder with IndexPage,
+    // we must check both the folder's id and the IndexPage's id
+    return refPageId === id || refPageId === indexPageId
+  })
 
   if (!refPage) {
     return originalLink
