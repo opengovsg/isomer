@@ -23,9 +23,11 @@ export const getParsedDate = (dateString: string) => {
         if (isMatch(dateString, format)) {
           let offsetDate = dateString
           if (format === TIMEZONE_DATE_FORMAT) {
+            const localTimezoneOffsetInSeconds =
+              new Date().getTimezoneOffset() * 60 * 1000
+
             offsetDate = new Date(
-              // Add 8 hours to account for the Singapore timezone offset
-              new Date(dateString).getTime() + 8 * 60 * 60 * 1000,
+              new Date(dateString).getTime() - localTimezoneOffsetInSeconds,
             ).toISOString()
           }
           return parse(offsetDate, format, new Date())
