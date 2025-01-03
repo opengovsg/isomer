@@ -24,11 +24,10 @@ const createInfoColsStyles = tv({
     infoBoxesContainer:
       "grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 md:gap-y-12 lg:grid-cols-3",
     infoBox: "group flex flex-col items-start gap-3 text-left outline-0",
-    infoBoxIcon:
-      "h-auto w-6 text-base-content-strong group-hover:text-brand-interaction",
+    infoBoxIcon: "h-auto w-6 text-base-content-strong",
     infoBoxTitle: [
       groupFocusVisibleHighlight(),
-      "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-interaction",
+      "prose-headline-lg-semibold text-base-content-strong",
     ],
     infoBoxDescription: "prose-body-base text-base-content",
     infoBoxButton:
@@ -54,6 +53,12 @@ const createInfoColsStyles = tv({
         infoBoxButtonIcon: "rotate-[-45deg]",
       },
     },
+    hasLink: {
+      true: {
+        infoBoxTitle: "group-hover:text-brand-interaction",
+        infoBoxIcon: "group-hover:text-brand-interaction",
+      },
+    },
   },
   defaultVariants: {
     layout: "default",
@@ -62,12 +67,24 @@ const createInfoColsStyles = tv({
 
 const compoundStyles = createInfoColsStyles()
 
-const InfoBoxIcon = ({ icon }: { icon?: SupportedIconName }) => {
+const InfoBoxIcon = ({
+  icon,
+  hasLink,
+}: {
+  icon?: SupportedIconName
+  hasLink: boolean
+}) => {
   if (!icon) return null
 
   const Icon = SUPPORTED_ICONS_MAP[icon]
 
-  return <Icon className={compoundStyles.infoBoxIcon()} />
+  return (
+    <Icon
+      className={compoundStyles.infoBoxIcon({
+        hasLink,
+      })}
+    />
+  )
 }
 
 const InfoBoxes = ({
@@ -79,6 +96,7 @@ const InfoBoxes = ({
     <div className={compoundStyles.infoBoxesContainer()}>
       {infoBoxes.map(
         ({ title, icon, description, buttonUrl, buttonLabel }, idx) => {
+          const hasLink = !!buttonUrl
           const isExternalLink = isExternalUrl(buttonUrl)
           return (
             <Link
@@ -92,9 +110,17 @@ const InfoBoxes = ({
               className={compoundStyles.infoBox()}
               isExternal={isExternalLink}
             >
-              {icon && <InfoBoxIcon icon={icon} aria-hidden="true" />}
+              {icon && (
+                <InfoBoxIcon icon={icon} hasLink={hasLink} aria-hidden="true" />
+              )}
 
-              <h3 className={compoundStyles.infoBoxTitle()}>{title}</h3>
+              <h3
+                className={compoundStyles.infoBoxTitle({
+                  hasLink,
+                })}
+              >
+                {title}
+              </h3>
 
               {description && (
                 <p className={compoundStyles.infoBoxDescription()}>
@@ -102,7 +128,7 @@ const InfoBoxes = ({
                 </p>
               )}
 
-              {buttonLabel && buttonUrl && (
+              {buttonLabel && hasLink && (
                 <div className={compoundStyles.infoBoxButton()}>
                   {buttonLabel}
                   <BiRightArrowAlt
