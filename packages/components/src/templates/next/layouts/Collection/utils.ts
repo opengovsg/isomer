@@ -126,7 +126,7 @@ export const updateAppliedFilters = (
 
 // use filters generated as the single source of truth
 export const shouldShowCategory = (filters: Filter[]): boolean => {
-  return Boolean(filters.find((filter) => filter.id === FILTER_ID_CATEGORY))
+  return filters.some((filter) => filter.id === FILTER_ID_CATEGORY)
 }
 
 export const shouldShowDate = (
