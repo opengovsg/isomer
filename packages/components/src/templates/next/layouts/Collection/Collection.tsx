@@ -14,6 +14,8 @@ import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
 import { getAvailableFilters, shouldShowDate } from "./utils"
 
+const CATEGORY_OTHERS = "Others"
+
 const getCollectionItems = (
   site: IsomerSiteProps,
   permalink: string,
@@ -62,7 +64,7 @@ const getCollectionItems = (
         type: "collectionCard" as const,
         rawDate: date,
         lastUpdated: date?.toISOString(),
-        category: item.category || "Others",
+        category: item.category || CATEGORY_OTHERS,
         title: item.title,
         description: item.summary,
         image: item.image,
