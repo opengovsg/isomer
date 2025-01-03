@@ -62,13 +62,13 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
   ): JSX.Element => {
     if (!items || items.length === 0) {
       return (
-        <li>
+        <li className={item({ isOpen })}>
           <Link
             LinkComponent={LinkComponent}
             isExternal={isExternalUrl(url)}
             showExternalIcon={isExternalUrl(url)}
             href={referenceLinkHref}
-            className={`${item({ isOpen })} ${focusVisibleHighlight()}`}
+            className={focusVisibleHighlight()}
           >
             {name}
           </Link>
