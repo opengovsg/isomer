@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, waitFor, within } from "@storybook/test"
+import { userEvent, within } from "@storybook/test"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
@@ -56,34 +56,26 @@ export const Default: Story = {}
 export const AddBlock: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-
-    await waitFor(async () => {
-      await userEvent.click(canvas.getByRole("button", { name: /add block/i }))
-    })
+    const button = await canvas.findByRole("button", { name: /add block/i })
+    await userEvent.click(button)
   },
 }
 
 export const EditHero: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-
-    await waitFor(async () => {
-      await userEvent.click(
-        canvas.getByRole("button", { name: /hero banner/i }),
-      )
-    })
+    const button = await canvas.findByRole("button", { name: /hero banner/i })
+    await userEvent.click(button)
   },
 }
 
 export const EditKeyStatistics: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-
-    await waitFor(async () => {
-      await userEvent.click(
-        canvas.getByRole("button", { name: /KeyStatistics Component/i }),
-      )
+    const button = await canvas.findByRole("button", {
+      name: /KeyStatistics Component/i,
     })
+    await userEvent.click(button)
   },
 }
 
@@ -105,14 +97,15 @@ export const NestedState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
-    await waitFor(async () => {
-      await userEvent.click(
-        canvas.getByRole("button", { name: /keystatistics/i }),
-      )
-      await userEvent.click(
-        canvas.getByRole("button", { name: /average all nighters/i }),
-      )
+    const keyStatisticsButton = await canvas.findByRole("button", {
+      name: /keystatistics/i,
     })
+    await userEvent.click(keyStatisticsButton)
+
+    const averageAllNightersButton = await canvas.findByRole("button", {
+      name: /average all nighters/i,
+    })
+    await userEvent.click(averageAllNightersButton)
   },
 }
 
@@ -123,13 +116,12 @@ export const ErrorNestedState: Story = {
     const { canvasElement } = context
     const canvas = within(canvasElement)
 
-    await waitFor(async () => {
-      await userEvent.clear(
-        canvas.getByRole("textbox", { name: /description/i }),
-      )
+    const textbox = await canvas.findByRole("textbox", { name: /description/i })
+    await userEvent.clear(textbox)
 
-      await userEvent.click(canvas.getByLabelText(/return to statistics/i))
-    })
+    const returnToStatisticsButton =
+      await canvas.findByLabelText(/return to statistics/i)
+    await userEvent.click(returnToStatisticsButton)
   },
 }
 
@@ -140,13 +132,11 @@ export const FullscreenPreview: Story = {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const screen = within(canvasElement.parentElement!)
 
-    await waitFor(async () => {
-      await userEvent.click(
-        canvas.getByRole("button", { name: /default mode/i }),
-      )
+    const button = await canvas.findByRole("button", { name: /default mode/i })
+    await userEvent.click(button)
 
-      await userEvent.click(screen.getByText(/full screen/i))
-    })
+    const text = await screen.findByText(/full screen/i)
+    await userEvent.click(text)
   },
 }
 

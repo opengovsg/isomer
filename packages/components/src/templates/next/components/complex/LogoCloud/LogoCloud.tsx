@@ -5,7 +5,7 @@ import { ImageClient } from "../Image"
 export const LogoCloud = ({
   images: baseImages,
   title,
-  assetsBaseUrl,
+  site: { assetsBaseUrl },
 }: LogoCloudProps) => {
   const images = baseImages.map(({ src, alt }) => {
     const transformedSrc =

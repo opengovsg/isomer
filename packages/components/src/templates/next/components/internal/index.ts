@@ -28,3 +28,4 @@ export {
   GoogleTagManagerBody,
 } from "./GoogleTagManager"
 export { BlogCard } from "./BlogCard"
+export { FontPreload } from "./FontPreload"
