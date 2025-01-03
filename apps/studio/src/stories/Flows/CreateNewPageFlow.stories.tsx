@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, waitFor, within } from "@storybook/test"
+import { userEvent, within } from "@storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -43,21 +43,18 @@ type Story = StoryObj<typeof meta>
 
 export const SelectPageLayout: Story = {
   play: async ({ canvasElement }) => {
-    await waitFor(async () => {
-      // Used to navigate to components rendered in portals, like menus.
-      const rootScreen = within(canvasElement.ownerDocument.body)
-      const screen = within(canvasElement)
-      await userEvent.click(
-        screen.getByRole("button", {
-          name: "Create new...",
-        }),
-      )
-      await userEvent.click(
-        rootScreen.getByRole("menuitem", {
-          name: /page/i,
-        }),
-      )
+    const rootScreen = within(canvasElement.ownerDocument.body)
+    const screen = within(canvasElement)
+
+    const button = await screen.findByRole("button", {
+      name: "Create new...",
     })
+    await userEvent.click(button)
+
+    const menuItem = await rootScreen.findByRole("menuitem", {
+      name: /page/i,
+    })
+    await userEvent.click(menuItem)
   },
 }
 
@@ -67,13 +64,12 @@ export const EnterPageDetails: Story = {
     const screen = within(canvasElement.ownerDocument.body)
     await SelectPageLayout.play?.(context)
 
-    await userEvent.click(
-      screen.getByRole("button", { name: /next: page title and url/i }),
-    )
+    const button = await screen.findByRole("button", {
+      name: /next: page title and url/i,
+    })
+    await userEvent.click(button)
 
-    await userEvent.type(
-      screen.getByLabelText(/page title/i),
-      "My_new page WITH w@eird characters!",
-    )
+    const input = await screen.findByLabelText(/page title/i)
+    await userEvent.type(input, "My_new page WITH w@eird characters!")
   },
 }
