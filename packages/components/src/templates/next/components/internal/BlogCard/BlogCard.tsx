@@ -65,7 +65,7 @@ export const BlogCard = ({
           </Link>
         </h3>
         {tags && tags.length > 0 && (
-          <div className="-mt-1">
+          <div className="-mt-1 flex flex-col gap-1">
             {tags.flatMap(({ category, selected: labels }) => {
               return (
                 <div className="flex w-full flex-wrap items-center gap-2">
