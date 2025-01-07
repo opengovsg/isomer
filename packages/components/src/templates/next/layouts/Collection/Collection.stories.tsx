@@ -407,7 +407,7 @@ export const AllResultsNoDate: Story = {
 }
 
 export const AllResultsSameCategory: Story = {
-  name: "Should not show category filter if all items have same category",
+  name: "Should show category filter even if all items have same category",
   args: generateArgs({
     collectionItems: COLLECTION_ITEMS.map((item) => ({
       ...item,
@@ -417,12 +417,15 @@ export const AllResultsSameCategory: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const categoryFilter = screen.queryByText(/Category/i)
-    await expect(categoryFilter).not.toBeInTheDocument()
+    await expect(categoryFilter).toBeInTheDocument()
+
+    const categoryItems = await screen.findAllByText(/The only categ0ry \(30\)/)
+    await expect(categoryItems.length).toBe(1)
   },
 }
 
 export const AllResultsSameYear: Story = {
-  name: "Should not show year filter if all items have same year",
+  name: "Should show year filter if all items have same year",
   args: generateArgs({
     collectionItems: COLLECTION_ITEMS.map((item) => ({
       ...item,
@@ -432,7 +435,7 @@ export const AllResultsSameYear: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const yearFilter = screen.queryByText(/Year/i)
-    await expect(yearFilter).not.toBeInTheDocument()
+    await expect(yearFilter).toBeInTheDocument()
   },
 }
 

@@ -10,7 +10,11 @@ import type {
   NavbarProps,
 } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
-import { groupFocusVisibleHighlight, isExternalUrl } from "~/utils"
+import {
+  focusVisibleHighlight,
+  groupFocusVisibleHighlight,
+  isExternalUrl,
+} from "~/utils"
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 
@@ -58,15 +62,15 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
   ): JSX.Element => {
     if (!items || items.length === 0) {
       return (
-        <li>
+        <li className={item({ isOpen })}>
           <Link
             LinkComponent={LinkComponent}
             isExternal={isExternalUrl(url)}
             showExternalIcon={isExternalUrl(url)}
             href={referenceLinkHref}
-            className={item({ isOpen })}
+            className={focusVisibleHighlight()}
           >
-            <span className={groupFocusVisibleHighlight()}>{name}</span>
+            {name}
           </Link>
         </li>
       )

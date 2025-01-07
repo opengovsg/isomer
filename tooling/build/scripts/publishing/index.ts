@@ -16,6 +16,7 @@ import {
   getCollectionIndexPageContents,
   getFolderIndexPageContents,
 } from "./utils/getIndexPageContent"
+import { getResourceImage } from "./utils/getResourceImage"
 
 dotenv.config()
 
@@ -124,7 +125,7 @@ async function main() {
           type: resource.type,
           title: resource.title,
           permalink: `/${getConvertedPermalink(resource.fullPermalink)}`,
-          lastModified: new Date().toISOString(), // TODO: Update to updated_at column
+          lastModified: resource.updatedAt.toISOString(),
           layout: resource.content.layout || "content",
           summary:
             (Array.isArray(resource.content.page.contentPageHeader?.summary)
@@ -137,7 +138,7 @@ async function main() {
           category: resource.content.page.category,
           tags: resource.content.page.tags,
           date: resource.content.page.date,
-          image: resource.content.page.image,
+          image: getResourceImage(resource),
           ref: resource.content.page.ref, // For file and link layouts
         }
 

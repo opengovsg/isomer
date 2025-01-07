@@ -17,6 +17,8 @@ import { shouldShowCategory, shouldShowDate } from "./utils"
 
 const CATEGORY_OTHERS = "Others"
 
+const CATEGORY_OTHERS = "Others"
+
 const getCollectionItems = (
   site: IsomerSiteProps,
   permalink: string,

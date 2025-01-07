@@ -1,5 +1,5 @@
 export const GET_ALL_RESOURCES_WITH_FULL_PERMALINKS = `
-WITH RECURSIVE "resourcePath" (id, title, permalink, parentId, type, content, "fullPermalink", "publishedVersionId") AS (
+WITH RECURSIVE "resourcePath" (id, title, permalink, parentId, type, content, "fullPermalink", "publishedVersionId", "updatedAt") AS (
     -- Base case for all resources
     SELECT
         r.id,
@@ -12,7 +12,8 @@ WITH RECURSIVE "resourcePath" (id, title, permalink, parentId, type, content, "f
             ELSE NULL
         END AS content,
         r.permalink AS "fullPermalink",
-        r."publishedVersionId"
+        r."publishedVersionId",
+        r."updatedAt"
     FROM
         public."Resource" r
     LEFT JOIN public."Version" v ON v."id" = r."publishedVersionId"
@@ -34,7 +35,8 @@ WITH RECURSIVE "resourcePath" (id, title, permalink, parentId, type, content, "f
             ELSE NULL
         END AS content,
         CONCAT(path."fullPermalink", '/', r.permalink) AS "fullPermalink",
-        r."publishedVersionId"
+        r."publishedVersionId",
+        r."updatedAt"
     FROM
         public."Resource" r
     LEFT JOIN public."Version" v ON v."id" = r."publishedVersionId"
