@@ -406,6 +406,39 @@ export const AllResultsNoDate: Story = {
   },
 }
 
+export const AllResultsSameCategory: Story = {
+  name: "Should show category filter even if all items have same category",
+  args: generateArgs({
+    collectionItems: COLLECTION_ITEMS.map((item) => ({
+      ...item,
+      category: "The only categ0ry",
+    })),
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    const categoryFilter = screen.queryByText(/Category/i)
+    await expect(categoryFilter).toBeInTheDocument()
+
+    const categoryItems = await screen.findAllByText(/The only categ0ry \(30\)/)
+    await expect(categoryItems.length).toBe(1)
+  },
+}
+
+export const AllResultsSameYear: Story = {
+  name: "Should show year filter if all items have same year",
+  args: generateArgs({
+    collectionItems: COLLECTION_ITEMS.map((item) => ({
+      ...item,
+      date: "2026-05-07",
+    })),
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    const yearFilter = screen.queryByText(/Year/i)
+    await expect(yearFilter).toBeInTheDocument()
+  },
+}
+
 export const FileCard: Story = {
   args: generateArgs({
     collectionItems: [COLLECTION_ITEMS[1]] as IsomerSitemap[],
