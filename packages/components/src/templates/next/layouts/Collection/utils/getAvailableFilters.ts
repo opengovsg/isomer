@@ -7,9 +7,10 @@ import { getYearFilter } from "./getYearFilter"
 export const getAvailableFilters = (
   items: ProcessedCollectionCardProps[],
 ): Filter[] => {
+  // TODO: Allow user to pass in order of filters to be shown
   return [
+    ...getTagFilters(items),
     getCategoryFilter(items),
     getYearFilter(items),
-    ...getTagFilters(items),
   ].filter((filter) => filter.items.length >= 1)
 }
