@@ -11,8 +11,5 @@ export const isUserDeleted = async (email: string) => {
 
   console.log(`isUserDeleted: ${JSON.stringify(user)}`)
 
-  if (user?.deletedAt) {
-    return true
-  }
-  return false
+  return user?.deletedAt
 }
