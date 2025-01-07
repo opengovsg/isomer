@@ -12,10 +12,7 @@ import {
 } from "~/utils"
 import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
-import { getAvailableFilters } from "./filterUtils"
-import { shouldShowDate } from "./utils"
-
-const CATEGORY_OTHERS = "Others"
+import { getAvailableFilters, shouldShowDate } from "./utils"
 
 const CATEGORY_OTHERS = "Others"
 
