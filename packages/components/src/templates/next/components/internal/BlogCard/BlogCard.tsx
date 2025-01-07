@@ -1,7 +1,3 @@
-"use client"
-
-import { Text } from "react-aria-components"
-
 import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
@@ -50,9 +46,9 @@ export const BlogCard = ({
         </div>
       )}
       {shouldShowDate && (
-        <Text className="prose-label-md-regular shrink-0 text-base-content-subtle">
+        <p className="prose-label-md-regular shrink-0 text-base-content-subtle">
           {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
-        </Text>
+        </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
         <h3 className="inline-block">
@@ -79,14 +75,14 @@ export const BlogCard = ({
           </div>
         )}
         {description && (
-          <Text className="prose-body-base line-clamp-3" title={description}>
+          <p className="prose-body-base line-clamp-3 whitespace-pre-wrap">
             {description}
-          </Text>
+          </p>
         )}
         {/* TODO: Feature enhancement? Filter by category when clicked */}
-        <Text className="prose-label-sm-medium text-base-content-subtle">
+        <p className="prose-label-sm-medium text-base-content-subtle">
           {category}
-        </Text>
+        </p>
       </div>
     </div>
   )
