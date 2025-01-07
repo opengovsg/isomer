@@ -124,7 +124,7 @@ async function main() {
           type: resource.type,
           title: resource.title,
           permalink: `/${getConvertedPermalink(resource.fullPermalink)}`,
-          lastModified: new Date().toISOString(), // TODO: Update to updated_at column
+          lastModified: resource.updatedAt.toISOString(),
           layout: resource.content.layout || "content",
           summary:
             (Array.isArray(resource.content.page.contentPageHeader?.summary)
