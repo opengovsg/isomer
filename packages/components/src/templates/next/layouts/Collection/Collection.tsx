@@ -13,7 +13,7 @@ import {
 import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
 import { getAvailableFilters } from "./filterUtils"
-import { shouldShowCategory, shouldShowDate } from "./utils"
+import { shouldShowDate } from "./utils"
 
 const CATEGORY_OTHERS = "Others"
 
@@ -171,7 +171,6 @@ const CollectionLayout = ({
     site.siteMap,
     page.permalink.split("/").slice(1),
   )
-  const availableFilters = getAvailableFilters(processedItems)
 
   return (
     <Skeleton
@@ -185,8 +184,7 @@ const CollectionLayout = ({
         page={page}
         breadcrumb={breadcrumb}
         items={processedItems}
-        filters={availableFilters}
-        shouldShowCategory={shouldShowCategory(availableFilters)}
+        filters={getAvailableFilters(processedItems)}
         shouldShowDate={shouldShowDate(processedItems)}
         siteAssetsBaseUrl={site.assetsBaseUrl}
         LinkComponent={LinkComponent}

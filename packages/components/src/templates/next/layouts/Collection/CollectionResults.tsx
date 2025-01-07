@@ -13,7 +13,6 @@ interface CollectionResultProps
     | "handleClearFilter"
     | "totalCount"
   > {
-  shouldShowCategory?: boolean
   shouldShowDate?: boolean
   variant?: CollectionVariant
   siteAssetsBaseUrl: string | undefined
@@ -49,7 +48,6 @@ export const CollectionResults = ({
   filteredCount,
   handleClearFilter,
   totalCount,
-  shouldShowCategory = true,
   shouldShowDate = true,
   siteAssetsBaseUrl,
   LinkComponent,
@@ -90,7 +88,6 @@ export const CollectionResults = ({
               <CollectionCard
                 key={`${item.title}-${item.category}`}
                 {...item}
-                shouldShowCategory={shouldShowCategory}
                 shouldShowDate={shouldShowDate}
                 siteAssetsBaseUrl={siteAssetsBaseUrl}
                 LinkComponent={LinkComponent}
@@ -99,7 +96,6 @@ export const CollectionResults = ({
               <BlogCard
                 key={`${item.title}-${item.category}`}
                 {...item}
-                shouldShowCategory={shouldShowCategory}
                 shouldShowDate={shouldShowDate}
                 siteAssetsBaseUrl={siteAssetsBaseUrl}
                 LinkComponent={LinkComponent}

@@ -25,11 +25,9 @@ export const BlogCard = ({
   imageSrc,
   itemTitle,
   siteAssetsBaseUrl,
-  shouldShowCategory = true,
   shouldShowDate = true,
   tags = [],
 }: CollectionCardProps & {
-  shouldShowCategory?: boolean
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
@@ -86,11 +84,9 @@ export const BlogCard = ({
           </Text>
         )}
         {/* TODO: Feature enhancement? Filter by category when clicked */}
-        {shouldShowCategory && (
-          <Text className="prose-label-sm-medium text-base-content-subtle">
-            {category}
-          </Text>
-        )}
+        <Text className="prose-label-sm-medium text-base-content-subtle">
+          {category}
+        </Text>
       </div>
     </div>
   )
