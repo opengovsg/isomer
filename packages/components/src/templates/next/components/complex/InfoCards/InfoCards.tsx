@@ -339,6 +339,7 @@ const InfoCards = ({
             size="base"
             variant="outline"
             isWithFocusVisibleHighlight
+            LinkComponent={LinkComponent}
           >
             {label}
           </LinkButton>
