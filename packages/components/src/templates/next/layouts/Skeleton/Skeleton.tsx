@@ -8,6 +8,7 @@ import {
   Masthead,
   Navbar,
   Notification,
+  ScrollToTop,
   SkipToContent,
   UnsupportedBrowserBanner,
   Wogaa,
@@ -47,6 +48,8 @@ export const Skeleton = ({
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
 
       {!isStaging && <DatadogRum />}
+
+      <ScrollToTop />
 
       <header>
         <SkipToContent LinkComponent={LinkComponent} />
