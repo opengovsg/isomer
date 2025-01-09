@@ -22,11 +22,13 @@ const createDynamicDataBannerStyles = tv({
     url: "prose-label-sm-medium text-link visited:text-link-visited hover:text-link-hover",
     dataInfoContainer:
       "md:col-gap-10 grid grid-cols-[repeat(3,minmax(10rem,1fr))] gap-y-4 md:justify-items-end md:gap-y-2 lg:flex lg:gap-8",
-    errorMessageContainer: `${ComponentContent} flex flex-row md:items-center gap-2 px-6 py-3 md:gap-1`,
+    errorMessageContainer: `${ComponentContent} flex flex-row gap-2 px-6 py-3 md:items-center md:gap-1`,
     errorIcon: "h-full min-h-4 min-w-4",
     individualDataContainer: "flex w-fit flex-col gap-0.5 md:flex-row md:gap-1",
     individualDataLabel: "prose-label-sm-regular",
     individualDataValue: "prose-label-sm-regular font-semibold",
+    individualDataValueLoading:
+      "md:h-4.5 h-4 w-11 animate-pulse rounded-sm bg-[#0000001a]",
     showOnMobileOnly: "block md:hidden",
     hideOnMobile: "hidden md:block",
   },
@@ -62,7 +64,7 @@ const DynamicDataBannerUI = ({
   DynamicDataBannerClientProps,
   "title" | "label" | "url" | "LinkComponent" | "errorMessageBaseParagraph"
 > & {
-  data: { label: string; value: string }[]
+  data: { label: string; value: string | undefined }[]
 }) => {
   const shouldRenderUrl: boolean = !!url && !!label
   const renderUrl = ({
@@ -87,8 +89,11 @@ const DynamicDataBannerUI = ({
         <div className={compoundStyles.outerContainer()}>
           <div className={compoundStyles.basicInfoContainer()}>
             <div className={compoundStyles.titleAndDateContainer()}>
-              {title}
-              <div className={compoundStyles.divider()} />
+              {title && (
+                <>
+                  {title} <div className={compoundStyles.divider()} />
+                </>
+              )}
               {getSingaporeDateLong()}
             </div>
             {shouldRenderUrl &&
@@ -100,9 +105,15 @@ const DynamicDataBannerUI = ({
                 <div className={compoundStyles.individualDataLabel()}>
                   {singleData.label}
                 </div>
-                <div className={compoundStyles.individualDataValue()}>
-                  {singleData.value}
-                </div>
+                {singleData.value ? (
+                  <div className={compoundStyles.individualDataValue()}>
+                    {singleData.value}
+                  </div>
+                ) : (
+                  <div
+                    className={compoundStyles.individualDataValueLoading()}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -163,7 +174,7 @@ export const DynamicDataBannerClient = ({
     )
   }
 
-  if (isLoading || data.length !== NUMBER_OF_DATA)
+  if (data.length !== NUMBER_OF_DATA)
     return <DynamicDataBannerUI data={[]} url={url} label={label} />
 
   return (
@@ -171,7 +182,7 @@ export const DynamicDataBannerClient = ({
       title={!!title ? dynamicData[title] : undefined}
       data={data.map((singleData) => ({
         label: singleData.label,
-        value: dynamicData[singleData.key] || "-- : --",
+        value: isLoading ? undefined : dynamicData[singleData.key] || "-- : --",
       }))}
       url={url}
       label={label}
