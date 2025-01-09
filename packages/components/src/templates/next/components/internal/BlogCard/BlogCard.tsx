@@ -61,10 +61,10 @@ export const BlogCard = ({
           </Link>
         </h3>
         {tags && tags.length > 0 && (
-          <div className="-mt-1 flex flex-col gap-1">
+          <div className="-mt-1 flex flex-col gap-2">
             {tags.flatMap(({ category, selected: labels }) => {
               return (
-                <div className="flex w-full flex-wrap items-center gap-2">
+                <div className="flex w-full flex-wrap items-center gap-1.5">
                   <p className="prose-label-sm">{category}</p>
                   {labels.map((label) => {
                     return <Tag>{label}</Tag>
