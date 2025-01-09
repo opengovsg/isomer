@@ -17,8 +17,8 @@ const createDynamicDataBannerStyles = tv({
     basicInfoContainer:
       "flex flex-col items-start gap-2 lg:flex-row lg:items-center lg:gap-5",
     titleAndDateContainer:
-      "prose-label-sm-medium flex flex-row items-center gap-2",
-    divider: "h-full w-[10px] bg-[#9CA3AF]",
+      "prose-label-sm-medium flex flex-row items-center gap-2 whitespace-nowrap",
+    divider: "h-4 w-[1px] bg-[#9CA3AF]",
     url: "prose-label-sm-medium text-link visited:text-link-visited hover:text-link-hover",
     dataInfoContainer:
       "md:col-gap-10 grid grid-cols-[repeat(3,minmax(10rem,1fr))] gap-y-4 md:justify-items-end md:gap-y-2 lg:flex lg:gap-8",
