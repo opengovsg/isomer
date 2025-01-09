@@ -13,14 +13,15 @@ import { getSingaporeDateLong, getSingaporeDateYYYYMMDD } from "./utils"
 const createDynamicDataBannerStyles = tv({
   slots: {
     screenWideOuterContainer: "bg-brand-canvas",
-    outerContainer: `${ComponentContent} grid grid-cols-1 gap-4 px-6 pb-4 pt-6 md:gap-4 md:px-10 md:py-2 lg:grid-cols-12 lg:justify-between lg:justify-items-stretch lg:gap-0`,
-    basicInfoContainer: "flex flex-col items-start gap-2 lg:flex-row lg:gap-5",
+    outerContainer: `${ComponentContent} md:gap-auto flex flex-col gap-4 px-6 py-3 md:flex-row md:items-center md:justify-between`,
+    basicInfoContainer:
+      "flex flex-col items-start gap-2 lg:flex-row lg:items-center lg:gap-5",
     titleAndDateContainer:
       "prose-label-sm-medium flex flex-row items-center gap-2",
-    divider: "h-full w-[1px] bg-[#9CA3AF]",
+    divider: "h-full w-[10px] bg-[#9CA3AF]",
     url: "prose-label-sm-medium text-link visited:text-link-visited hover:text-link-hover",
     dataInfoContainer:
-      "grid grid-cols-3 gap-y-1 md:flex md:justify-between md:justify-items-center lg:col-span-8 lg:col-start-5",
+      "md:col-gap-10 grid grid-cols-[repeat(3,minmax(10rem,1fr))] gap-y-4 md:justify-items-end md:gap-y-2 lg:flex lg:gap-8",
     errorMessageContainer:
       "flex flex-row items-center gap-2 px-6 py-3 md:gap-1",
     errorText: "prose-label-sm-medium",
@@ -68,12 +69,16 @@ const DynamicDataBannerUI = ({
   data: { label: string; value: string }[]
 }) => {
   const shouldRenderUrl: boolean = !!url && !!label
-  const renderUrl = (): React.ReactNode => {
+  const renderUrl = ({
+    className,
+  }: {
+    className?: string
+  }): React.ReactNode => {
     return (
       <Link
         LinkComponent={LinkComponent}
         href={url}
-        className={compoundStyles.url()}
+        className={`${compoundStyles.url()} ${className}`}
       >
         {label}
       </Link>
@@ -90,9 +95,8 @@ const DynamicDataBannerUI = ({
               <div className={compoundStyles.divider()} />
               {getSingaporeDateLong()}
             </div>
-            {shouldRenderUrl && (
-              <div className={compoundStyles.hideOnMobile()}>{renderUrl()}</div>
-            )}
+            {shouldRenderUrl &&
+              renderUrl({ className: compoundStyles.hideOnMobile() })}
           </div>
           <div className={compoundStyles.dataInfoContainer()}>
             {data.slice(0, NUMBER_OF_DATA).map((singleData) => (
@@ -106,11 +110,8 @@ const DynamicDataBannerUI = ({
               </div>
             ))}
           </div>
-          {shouldRenderUrl && (
-            <div className={compoundStyles.showOnMobileOnly()}>
-              {renderUrl()}
-            </div>
-          )}
+          {shouldRenderUrl &&
+            renderUrl({ className: compoundStyles.showOnMobileOnly() })}
         </div>
       ) : (
         <ErrorMessage errorMessageBaseParagraph={errorMessageBaseParagraph} />
