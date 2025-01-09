@@ -261,21 +261,8 @@ export const Default: Story = {
         label: "View all dates",
         errorMessage: [
           {
-            text: "Not seeing the prayer times? ",
+            text: "Couldn’t load prayer times. Try refreshing the page.",
             type: "text",
-          },
-          {
-            text: "Report an issue",
-            type: "text",
-            marks: [
-              { type: "bold" },
-              {
-                type: "link",
-                attrs: {
-                  href: "https://www.form.gov.sg/some-link",
-                },
-              },
-            ],
           },
         ],
       },
