@@ -8,20 +8,20 @@
  * - Please do NOT serve this file on production.
  */
 
-const PACKAGE_VERSION = '2.4.8'
-const INTEGRITY_CHECKSUM = '26357c79639bfa20d64c0efca2a87423'
-const IS_MOCKED_RESPONSE = Symbol('isMockedResponse')
+const PACKAGE_VERSION = "2.4.8"
+const INTEGRITY_CHECKSUM = "26357c79639bfa20d64c0efca2a87423"
+const IS_MOCKED_RESPONSE = Symbol("isMockedResponse")
 const activeClientIds = new Set()
 
-self.addEventListener('install', function () {
+self.addEventListener("install", function () {
   self.skipWaiting()
 })
 
-self.addEventListener('activate', function (event) {
+self.addEventListener("activate", function (event) {
   event.waitUntil(self.clients.claim())
 })
 
-self.addEventListener('message', async function (event) {
+self.addEventListener("message", async function (event) {
   const clientId = event.source.id
 
   if (!clientId || !self.clients) {
@@ -35,20 +35,20 @@ self.addEventListener('message', async function (event) {
   }
 
   const allClients = await self.clients.matchAll({
-    type: 'window',
+    type: "window",
   })
 
   switch (event.data) {
-    case 'KEEPALIVE_REQUEST': {
+    case "KEEPALIVE_REQUEST": {
       sendToClient(client, {
-        type: 'KEEPALIVE_RESPONSE',
+        type: "KEEPALIVE_RESPONSE",
       })
       break
     }
 
-    case 'INTEGRITY_CHECK_REQUEST': {
+    case "INTEGRITY_CHECK_REQUEST": {
       sendToClient(client, {
-        type: 'INTEGRITY_CHECK_RESPONSE',
+        type: "INTEGRITY_CHECK_RESPONSE",
         payload: {
           packageVersion: PACKAGE_VERSION,
           checksum: INTEGRITY_CHECKSUM,
@@ -57,22 +57,22 @@ self.addEventListener('message', async function (event) {
       break
     }
 
-    case 'MOCK_ACTIVATE': {
+    case "MOCK_ACTIVATE": {
       activeClientIds.add(clientId)
 
       sendToClient(client, {
-        type: 'MOCKING_ENABLED',
+        type: "MOCKING_ENABLED",
         payload: true,
       })
       break
     }
 
-    case 'MOCK_DEACTIVATE': {
+    case "MOCK_DEACTIVATE": {
       activeClientIds.delete(clientId)
       break
     }
 
-    case 'CLIENT_CLOSED': {
+    case "CLIENT_CLOSED": {
       activeClientIds.delete(clientId)
 
       const remainingClients = allClients.filter((client) => {
@@ -89,17 +89,17 @@ self.addEventListener('message', async function (event) {
   }
 })
 
-self.addEventListener('fetch', function (event) {
+self.addEventListener("fetch", function (event) {
   const { request } = event
 
   // Bypass navigation requests.
-  if (request.mode === 'navigate') {
+  if (request.mode === "navigate") {
     return
   }
 
   // Opening the DevTools triggers the "only-if-cached" request
   // that cannot be handled by the worker. Bypass such requests.
-  if (request.cache === 'only-if-cached' && request.mode !== 'same-origin') {
+  if (request.cache === "only-if-cached" && request.mode !== "same-origin") {
     return
   }
 
@@ -129,7 +129,7 @@ async function handleRequest(event, requestId) {
       sendToClient(
         client,
         {
-          type: 'RESPONSE',
+          type: "RESPONSE",
           payload: {
             requestId,
             isMockedResponse: IS_MOCKED_RESPONSE in response,
@@ -155,18 +155,18 @@ async function handleRequest(event, requestId) {
 async function resolveMainClient(event) {
   const client = await self.clients.get(event.clientId)
 
-  if (client?.frameType === 'top-level') {
+  if (client?.frameType === "top-level") {
     return client
   }
 
   const allClients = await self.clients.matchAll({
-    type: 'window',
+    type: "window",
   })
 
   return allClients
     .filter((client) => {
       // Get only those clients that are currently visible.
-      return client.visibilityState === 'visible'
+      return client.visibilityState === "visible"
     })
     .find((client) => {
       // Find the client ID that's recorded in the
@@ -188,7 +188,7 @@ async function getResponse(event, client, requestId) {
     // Remove internal MSW request header so the passthrough request
     // complies with any potential CORS preflight checks on the server.
     // Some servers forbid unknown request headers.
-    delete headers['x-msw-intention']
+    delete headers["x-msw-intention"]
 
     return fetch(requestClone, { headers })
   }
@@ -211,7 +211,7 @@ async function getResponse(event, client, requestId) {
   const clientMessage = await sendToClient(
     client,
     {
-      type: 'REQUEST',
+      type: "REQUEST",
       payload: {
         id: requestId,
         url: request.url,
@@ -233,11 +233,11 @@ async function getResponse(event, client, requestId) {
   )
 
   switch (clientMessage.type) {
-    case 'MOCK_RESPONSE': {
+    case "MOCK_RESPONSE": {
       return respondWithMock(clientMessage.data)
     }
 
-    case 'PASSTHROUGH': {
+    case "PASSTHROUGH": {
       return passthrough()
     }
   }
