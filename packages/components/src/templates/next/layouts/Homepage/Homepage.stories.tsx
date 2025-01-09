@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { useEffect } from "react"
+import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -31,24 +32,23 @@ const meta: Meta<typeof Homepage> = {
     themes: {
       themeOverride: "Isomer Next",
     },
-    mockData: [
-      {
-        url: "https://jsonplaceholder.com/muis_prayers_time",
-        method: "GET",
-        status: 200,
-        response: {
-          [getSingaporeDateYYYYMMDD()]: {
-            hijriDate: "17 Jamadilawal 1442H",
-            subuh: "5:44am",
-            syuruk: "7:08am",
-            zohor: "1:10pm",
-            asar: "4:34pm",
-            maghrib: "7:11pm",
-            isyak: "8:25pm",
-          },
-        },
-      },
-    ],
+    msw: {
+      handlers: [
+        http.get("https://jsonplaceholder.com/muis_prayers_time", () => {
+          return HttpResponse.json({
+            [getSingaporeDateYYYYMMDD()]: {
+              hijriDate: "17 Jamadilawal 1442H",
+              subuh: "5:44am",
+              syuruk: "7:08am",
+              zohor: "1:10pm",
+              asar: "4:34pm",
+              maghrib: "7:11pm",
+              isyak: "8:25pm",
+            },
+          })
+        }),
+      ],
+    },
   },
 }
 export default meta
@@ -216,18 +216,6 @@ export const Default: Story = {
     },
     content: [
       {
-        type: "hero",
-        variant: "gradient",
-        backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
-        title: "Ministry of Trade and Industry",
-        subtitle:
-          "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
-        buttonLabel: "Main CTA",
-        buttonUrl: "/",
-        secondaryButtonLabel: "Sub CTA",
-        secondaryButtonUrl: "/",
-      },
-      {
         type: "dynamicdatabanner",
         apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
         title: "hijriDate",
@@ -265,6 +253,18 @@ export const Default: Story = {
             type: "text",
           },
         ],
+      },
+      {
+        type: "hero",
+        variant: "gradient",
+        backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
+        title: "Ministry of Trade and Industry",
+        subtitle:
+          "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
+        buttonLabel: "Main CTA",
+        buttonUrl: "/",
+        secondaryButtonLabel: "Sub CTA",
+        secondaryButtonUrl: "/",
       },
       {
         type: "infobar",
