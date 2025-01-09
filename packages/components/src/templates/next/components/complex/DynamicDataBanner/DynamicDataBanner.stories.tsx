@@ -103,6 +103,20 @@ export const Default: Story = {
   },
 }
 
+export const Loading: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        http.get("https://jsonplaceholder.com/muis_prayers_time", () => {
+          return new Promise(() => {
+            // Never resolve the promise
+          })
+        }),
+      ],
+    },
+  },
+}
+
 export const Error: Story = {
   parameters: {
     msw: {
