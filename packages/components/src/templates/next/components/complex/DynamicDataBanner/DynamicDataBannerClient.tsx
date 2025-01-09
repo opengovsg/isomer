@@ -22,10 +22,8 @@ const createDynamicDataBannerStyles = tv({
     url: "prose-label-sm-medium text-link visited:text-link-visited hover:text-link-hover",
     dataInfoContainer:
       "md:col-gap-10 grid grid-cols-[repeat(3,minmax(10rem,1fr))] gap-y-4 md:justify-items-end md:gap-y-2 lg:flex lg:gap-8",
-    errorMessageContainer:
-      "flex flex-row items-center gap-2 px-6 py-3 md:gap-1",
-    errorText: "prose-label-sm-medium",
-    errorIcon: "h-full",
+    errorMessageContainer: `${ComponentContent} flex flex-row md:items-center gap-2 px-6 py-3 md:gap-1`,
+    errorIcon: "h-full min-h-4 min-w-4",
     individualDataContainer: "flex w-fit flex-col gap-0.5 md:flex-row md:gap-1",
     individualDataLabel: "prose-label-sm-regular",
     individualDataValue: "prose-label-sm-regular font-semibold",
@@ -48,9 +46,7 @@ const ErrorMessage = ({
   return (
     <div className={compoundStyles.errorMessageContainer()}>
       <BiError className={compoundStyles.errorIcon()} />
-      <div className={compoundStyles.errorText()}>
-        {errorMessageBaseParagraph}
-      </div>
+      {errorMessageBaseParagraph}
     </div>
   )
 }
