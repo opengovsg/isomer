@@ -27,7 +27,13 @@ export const VicaWidget = ({
         // Reference: https://nextjs.org/docs/pages/api-reference/components/script#lazyonload
         strategy="lazyOnload"
       />
-      <div id="webchat" {...props} />
+      <div
+        id="webchat"
+        {...props}
+        app-font-family="Inter, system-ui, sans-serif"
+        // NOTE: Clarifying with VICA regarding color scheme
+        // Once confirmed, will override with site's color scheme for consistency
+      />
     </>
   )
 }
