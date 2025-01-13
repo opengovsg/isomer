@@ -17,7 +17,7 @@ export const Dashboard = ({
   title,
   buttons,
   preTableContent,
-  table,
+  children,
 }: {
   breadcrumbs: {
     href: string
@@ -27,7 +27,7 @@ export const Dashboard = ({
   title: string
   buttons: ReactNode
   preTableContent?: ReactNode
-  table: ReactNode
+  children: ReactNode
 }) => {
   const allBreadcrumbsExceptLast = breadcrumbs.slice(0, -1)
   const lastBreadcrumb = breadcrumbs[breadcrumbs.length - 1]
@@ -103,7 +103,7 @@ export const Dashboard = ({
         </Flex>
       </VStack>
       {preTableContent && preTableContent}
-      <Box width="100%">{table}</Box>
+      <Box width="100%">{children}</Box>
     </VStack>
   )
 }

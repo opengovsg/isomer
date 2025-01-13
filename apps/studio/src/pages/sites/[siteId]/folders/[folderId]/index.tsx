@@ -152,13 +152,12 @@ const FolderPage: NextPageWithLayout = () => {
             </Menu>
           </>
         }
-        table={
-          <ResourceTable
-            siteId={parseInt(siteId)}
-            resourceId={parseInt(folderId)}
-          />
-        }
-      />
+      >
+        <ResourceTable
+          siteId={parseInt(siteId)}
+          resourceId={parseInt(folderId)}
+        />
+      </Dashboard>
       <CreatePageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}

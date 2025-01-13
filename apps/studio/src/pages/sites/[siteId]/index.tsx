@@ -114,8 +114,9 @@ const SitePage: NextPageWithLayout = () => {
           />
         }
         preTableContent={<RootpageRow siteId={siteId} />}
-        table={<ResourceTable siteId={siteId} />}
-      />
+      >
+        <ResourceTable siteId={siteId} />
+      </Dashboard>
       <CreatePageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}

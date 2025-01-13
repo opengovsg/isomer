@@ -73,8 +73,9 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
           </>
         }
         preTableContent={<CollectionBanner />}
-        table={<CollectionTable resourceId={resourceId} siteId={siteId} />}
-      />
+      >
+        <CollectionTable resourceId={resourceId} siteId={siteId} />
+      </Dashboard>
       <CreateCollectionPageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}
