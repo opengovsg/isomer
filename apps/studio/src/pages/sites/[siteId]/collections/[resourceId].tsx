@@ -8,7 +8,7 @@ import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
 import { CollectionTable } from "~/features/dashboard/components/CollectionTable"
-import { Dashboard } from "~/features/dashboard/components/Dashboard"
+import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
@@ -41,7 +41,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
 
   return (
     <>
-      <Dashboard
+      <DashboardLayout
         breadcrumbs={[
           {
             href: `/sites/${siteId}`,
@@ -75,7 +75,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
         preTableContent={<CollectionBanner />}
       >
         <CollectionTable resourceId={resourceId} siteId={siteId} />
-      </Dashboard>
+      </DashboardLayout>
       <CreateCollectionPageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}

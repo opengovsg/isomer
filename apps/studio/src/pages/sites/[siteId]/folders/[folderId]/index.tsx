@@ -8,7 +8,7 @@ import { z } from "zod"
 import type { RouterOutput } from "~/utils/trpc"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
-import { Dashboard } from "~/features/dashboard/components/Dashboard"
+import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
@@ -100,7 +100,7 @@ const FolderPage: NextPageWithLayout = () => {
 
   return (
     <>
-      <Dashboard
+      <DashboardLayout
         breadcrumbs={breadcrumbs.concat({
           href: getFolderHref(siteId, folderId),
           label: title,
@@ -157,7 +157,7 @@ const FolderPage: NextPageWithLayout = () => {
           siteId={parseInt(siteId)}
           resourceId={parseInt(folderId)}
         />
-      </Dashboard>
+      </DashboardLayout>
       <CreatePageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}

@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react"
 import { Breadcrumb } from "@opengovsg/design-system-react"
 
-export const Dashboard = ({
+export const DashboardLayout = ({
   breadcrumbs,
   icon,
   title,

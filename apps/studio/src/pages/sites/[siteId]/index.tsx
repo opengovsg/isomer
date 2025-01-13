@@ -5,7 +5,7 @@ import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
-import { Dashboard } from "~/features/dashboard/components/Dashboard"
+import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
@@ -97,7 +97,7 @@ const SitePage: NextPageWithLayout = () => {
 
   return (
     <>
-      <Dashboard
+      <DashboardLayout
         breadcrumbs={[
           {
             href: `/sites/${siteId}`,
@@ -116,7 +116,7 @@ const SitePage: NextPageWithLayout = () => {
         preTableContent={<RootpageRow siteId={siteId} />}
       >
         <ResourceTable siteId={siteId} />
-      </Dashboard>
+      </DashboardLayout>
       <CreatePageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}
