@@ -94,7 +94,7 @@ export function JsonFormsProseControl({
       const selection = editor?.state.selection
       if (!selection) return
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      editor.commands.setContent(data, false)
+      editor.commands.setContent(data)
       editor.commands.setTextSelection(selection)
     }
   }, [data])
