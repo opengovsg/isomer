@@ -127,13 +127,12 @@ export const getRobotsTxt = (props: IsomerPageSchemaType) => {
 
   return {
     sitemap: props.site.url ? `${props.site.url}/sitemap.xml` : undefined,
-    rules:
-      props.site.environment === "staging"
-        ? {
-            userAgent: "*",
-            disallow: "/",
-          }
-        : rules,
+    rules: shouldBlockIndexing(props.site.environment)
+      ? {
+          userAgent: "*",
+          disallow: "/",
+        }
+      : rules,
   }
 }
 
