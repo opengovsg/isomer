@@ -5,6 +5,7 @@ import {
   Footer,
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
+  GoogleTagManagerPreload,
   Masthead,
   Navbar,
   Notification,
@@ -37,11 +38,14 @@ export const Skeleton = ({
       <FontPreload />
 
       {shouldIncludeGTM && (
-        <GoogleTagManagerHeader
-          siteGtmId={site.siteGtmId}
-          isomerGtmId={site.isomerGtmId}
-          ScriptComponent={ScriptComponent}
-        />
+        <>
+          <GoogleTagManagerPreload />
+          <GoogleTagManagerHeader
+            siteGtmId={site.siteGtmId}
+            isomerGtmId={site.isomerGtmId}
+            ScriptComponent={ScriptComponent}
+          />
+        </>
       )}
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}

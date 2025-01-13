@@ -24,6 +24,7 @@ export { default as UnsupportedBrowserBanner } from "./UnsupportedBrowserBanner"
 export { Wogaa } from "./Wogaa"
 export { BackToTopLink } from "./BackToTopLink"
 export {
+  GoogleTagManagerPreload,
   GoogleTagManagerHeader,
   GoogleTagManagerBody,
 } from "./GoogleTagManager"
