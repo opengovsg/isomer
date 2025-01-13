@@ -45,10 +45,12 @@ import {
 interface SuspendablePermalinkProps {
   title: string
   folderId: string
+  permalink: string
 }
 const SuspendablePermalink = ({
   folderId,
   title,
+  permalink,
 }: SuspendablePermalinkProps) => {
   const [{ fullPermalink }] =
     trpc.resource.getWithFullPermalink.useSuspenseQuery({
@@ -60,7 +62,7 @@ const SuspendablePermalink = ({
       <chakra.span color="base.content.medium">
         {fullPermalink.split("/").slice(0, -1).join("/")}
       </chakra.span>
-      /{title}
+      /{permalink}
     </Text>
   )
 }
@@ -207,7 +209,11 @@ const SuspendableModalContent = ({
                     alignItems="center"
                   >
                     <Icon mr="0.5rem" as={BiLink} />
-                    <SuspendablePermalink title={title} folderId={folderId} />
+                    <SuspendablePermalink
+                      title={title}
+                      folderId={folderId}
+                      permalink={permalink}
+                    />
                   </Box>
                 </Suspense>
               )}
