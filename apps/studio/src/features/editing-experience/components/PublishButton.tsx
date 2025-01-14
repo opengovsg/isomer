@@ -32,6 +32,7 @@ const SuspendablePublishButton = ({
       toast({
         status: "success",
         title: publishSuccessMsg,
+        isClosable: true,
       })
       await utils.page.readPage.invalidate({ pageId, siteId })
     },
@@ -40,6 +41,7 @@ const SuspendablePublishButton = ({
       toast({
         status: "error",
         title: publishFailureMsg,
+        isClosable: true,
       })
       await utils.page.readPage.invalidate({ pageId, siteId })
     },
