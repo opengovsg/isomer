@@ -12,6 +12,7 @@ import {
 
 import type { ModifiedAsset } from "~/types/assets"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
@@ -133,6 +134,7 @@ export function JsonFormsImageControl({
               title: "Image error",
               description: error,
               status: "error",
+              ...BRIEF_TOAST_SETTINGS,
             })
           }}
           maxSize={MAX_IMG_FILE_SIZE_BYTES}

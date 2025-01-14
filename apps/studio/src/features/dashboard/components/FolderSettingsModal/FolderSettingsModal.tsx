@@ -27,6 +27,7 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { generateResourceUrl } from "~/features/editing-experience/components/utils"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
@@ -126,7 +127,11 @@ const SuspendableModalContent = ({
       await utils.collection.getMetadata.invalidate({
         resourceId: Number(folderId),
       })
-      toast({ title: "Folder updated!", status: "success" })
+      toast({
+        title: "Folder updated!",
+        status: "success",
+        ...BRIEF_TOAST_SETTINGS,
+      })
     },
     onError: (err) => {
       toast({
@@ -134,6 +139,7 @@ const SuspendableModalContent = ({
         status: "error",
         // TODO: check if this property is correct
         description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
       })
     },
   })
