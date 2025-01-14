@@ -102,21 +102,21 @@ export const CollectionResults = ({
               />
             ),
           )}
-        {paginatedItems.length === 0 && (
-          <div className="flex flex-col gap-1 py-32 text-center text-content">
-            <p className="prose-body-base">
-              We couldn’t find any articles. Try different search terms or
-              filters.
-            </p>
-            <button
-              className="prose-headline-base-medium mx-auto w-fit text-link underline-offset-4 hover:underline"
-              onClick={handleClearFilter}
-            >
-              Clear search and filters
-            </button>
-          </div>
-        )}
       </div>
+      {paginatedItems.length === 0 && (
+        <div className="flex flex-col gap-1 py-32 text-center text-content">
+          <p className="prose-body-base">
+            We couldn’t find any articles. Try different search terms or
+            filters.
+          </p>
+          <button
+            className="prose-headline-base-medium mx-auto w-fit text-link underline-offset-4 hover:underline"
+            onClick={handleClearFilter}
+          >
+            Clear search and filters
+          </button>
+        </div>
+      )}
     </>
   )
 }
