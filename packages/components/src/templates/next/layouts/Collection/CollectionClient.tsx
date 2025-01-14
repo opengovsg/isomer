@@ -35,7 +35,7 @@ interface CollectionClientProps {
 const createCollectionLayoutStyles = tv({
   slots: {
     container:
-      "relative mx-auto grid max-w-screen-xl grid-cols-12 px-6 pb-16 pt-8 md:px-10 lg:gap-6 xl:gap-10",
+      "relative mx-auto grid max-w-screen-xl grid-cols-12 px-6 pb-16 pt-8 md:px-10",
     filterContainer: "relative col-span-12 pb-2 pt-8 lg:col-span-3 lg:pb-10",
     content: "col-span-12 flex flex-col gap-8 pt-8 lg:col-span-9 lg:ml-24",
   },
