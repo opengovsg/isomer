@@ -20,7 +20,6 @@ import { updatePageMetaSchema } from "~/schemas/page"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
 
-const THREE_SECONDS_IN_MS = 3000
 const SUCCESS_TOAST_ID = "save-page-settings-success"
 const ajv = new Ajv({ strict: false, logger: false })
 
