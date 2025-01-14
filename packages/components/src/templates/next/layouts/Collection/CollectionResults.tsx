@@ -81,7 +81,7 @@ export const CollectionResults = ({
         </div>
       </div>
       {/* NOTE: DO NOT add h-full to this div as it will break old browsers */}
-      {paginatedItems.length !== 0 ? (
+      {paginatedItems.length > 0 ? (
         <div className={collectionResults()}>
           {paginatedItems.map((item) =>
             variant === "collection" ? (
