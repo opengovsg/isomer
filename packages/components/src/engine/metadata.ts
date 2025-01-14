@@ -114,7 +114,7 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
 export const shouldBlockIndexing = (
   environment: IsomerPageSchemaType["site"]["environment"],
 ): boolean => {
-  return environment === "staging"
+  return environment !== "production"
 }
 
 export const getRobotsTxt = (props: IsomerPageSchemaType) => {
