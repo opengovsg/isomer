@@ -5,6 +5,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
@@ -32,7 +33,7 @@ const SuspendablePublishButton = ({
       toast({
         status: "success",
         title: publishSuccessMsg,
-        isClosable: true,
+        ...BRIEF_TOAST_SETTINGS,
       })
       await utils.page.readPage.invalidate({ pageId, siteId })
     },
@@ -41,7 +42,7 @@ const SuspendablePublishButton = ({
       toast({
         status: "error",
         title: publishFailureMsg,
-        isClosable: true,
+        ...BRIEF_TOAST_SETTINGS,
       })
       await utils.page.readPage.invalidate({ pageId, siteId })
     },

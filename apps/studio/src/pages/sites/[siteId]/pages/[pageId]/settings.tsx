@@ -9,6 +9,7 @@ import { z } from "zod"
 
 import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
@@ -60,7 +61,7 @@ const PageSettings: NextPageWithLayout = () => {
     },
   })
 
-  const toast = useToast({ duration: THREE_SECONDS_IN_MS, isClosable: true })
+  const toast = useToast(BRIEF_TOAST_SETTINGS)
   const utils = trpc.useUtils()
 
   const { mutate: updateMeta } = trpc.page.updateMeta.useMutation({
