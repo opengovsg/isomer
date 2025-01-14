@@ -20,6 +20,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
@@ -46,6 +47,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
         title: "Saved site settings!",
         description: "Check your site in 5-10 minutes to view it live.",
         status: "success",
+        ...BRIEF_TOAST_SETTINGS,
       })
     },
     onError: () => {
@@ -54,6 +56,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
         description:
           "If this persists, please report this issue at support@isomer.gov.sg",
         status: "error",
+        ...BRIEF_TOAST_SETTINGS,
       })
     },
   })

@@ -1,7 +1,3 @@
-"use client"
-
-import { Text } from "react-aria-components"
-
 import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
@@ -35,9 +31,9 @@ export const CollectionCard = ({
   return (
     <div className="flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6">
       {shouldShowDate && (
-        <Text className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
+        <p className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
           {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
-        </Text>
+        </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content lg:gap-2">
         <h3 className="inline-block">
@@ -64,14 +60,14 @@ export const CollectionCard = ({
           </>
         )}
         {description && (
-          <Text className="prose-body-base line-clamp-3" title={description}>
+          <p className="prose-body-base line-clamp-3 whitespace-pre-wrap">
             {description}
-          </Text>
+          </p>
         )}
         {/* TODO: Feature enhancement? Filter by category when clicked */}
-        <Text className="prose-label-md mt-3 text-base-content-subtle lg:mt-2">
+        <p className="prose-label-md mt-3 text-base-content-subtle lg:mt-2">
           {category}
-        </Text>
+        </p>
       </div>
       {image && (
         <div className="relative mt-3 min-h-40 w-full shrink-0 lg:ml-4 lg:mt-0 lg:h-auto lg:w-1/4">
