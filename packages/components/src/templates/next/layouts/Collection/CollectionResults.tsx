@@ -81,9 +81,9 @@ export const CollectionResults = ({
         </div>
       </div>
       {/* NOTE: DO NOT add h-full to this div as it will break old browsers */}
-      <div className={collectionResults()}>
-        {paginatedItems.length > 0 &&
-          paginatedItems.map((item) =>
+      {paginatedItems.length !== 0 ? (
+        <div className={collectionResults()}>
+          {paginatedItems.map((item) =>
             variant === "collection" ? (
               <CollectionCard
                 key={`${item.title}-${item.category}`}
@@ -102,8 +102,8 @@ export const CollectionResults = ({
               />
             ),
           )}
-      </div>
-      {paginatedItems.length === 0 && (
+        </div>
+      ) : (
         <div className="flex flex-col gap-1 py-32 text-center text-content">
           <p className="prose-body-base">
             We couldn’t find any articles. Try different search terms or
