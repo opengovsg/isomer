@@ -29,8 +29,8 @@ export const siteRouter = router({
       .selectFrom("Site")
       .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
       .where("ResourcePermission.userId", "=", ctx.user.id)
-      .select(["Site.id", "Site.name", "Site.config"])
-      .groupBy(["Site.id", "Site.name", "Site.config"])
+      .select(["Site.id", "Site.config"])
+      .groupBy(["Site.id", "Site.config"])
       .execute()
   }),
   getSiteName: protectedProcedure
