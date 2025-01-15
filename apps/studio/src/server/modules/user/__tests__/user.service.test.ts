@@ -13,10 +13,7 @@ describe("user.service", () => {
     const email = "active@example.com"
     // Setup active user
     await setupUser({
-      name: "Active User",
-      userId: "active123",
       email: email,
-      phone: "12345678",
       isDeleted: false,
     })
 
@@ -31,10 +28,7 @@ describe("user.service", () => {
     const email = "deleted@example.com"
     // Setup deleted user
     await setupUser({
-      name: "Deleted User",
-      userId: "deleted123",
       email: email,
-      phone: "12345678",
       isDeleted: true,
     })
 

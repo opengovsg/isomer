@@ -444,14 +444,14 @@ export const setUpWhitelist = async ({
 }
 
 export const setupUser = async ({
-  name,
-  userId,
+  name = "Test User",
+  userId = nanoid(),
   email,
-  phone,
+  phone = "",
   isDeleted,
 }: {
-  name: string
-  userId: string
+  name?: string
+  userId?: string
   email: string
   phone?: string
   isDeleted: boolean
@@ -462,7 +462,7 @@ export const setupUser = async ({
       id: userId,
       name,
       email,
-      phone: phone ?? "",
+      phone: phone,
       deletedAt: isDeleted ? new Date() : null,
     })
     .returningAll()
