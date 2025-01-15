@@ -1,19 +1,8 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { useCallback, useMemo, useState } from "react"
-import {
-  Box,
-  Heading,
-  HStack,
-  Icon,
-  Spacer,
-  Textarea,
-  useClipboard,
-  useDisclosure,
-} from "@chakra-ui/react"
-import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
+import { useToast } from "@opengovsg/design-system-react"
 import { schema } from "@opengovsg/isomer-components"
 import isEqual from "lodash/isEqual"
-import { BiDollar, BiX } from "react-icons/bi"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -23,16 +12,11 @@ import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
-import { DiscardChangesModal } from "./DiscardChangesModal"
+import { RawJsonEditor } from "./RawJsonEditor"
 
 const validateFn = ajv.compile<IsomerSchema>(schema)
 
 export default function RawJsonEditorModeStateDrawer(): JSX.Element {
-  const {
-    isOpen: isDiscardChangesModalOpen,
-    onOpen: onDiscardChangesModalOpen,
-    onClose: onDiscardChangesModalClose,
-  } = useDisclosure()
   const {
     setDrawerState,
     savedPageState,
@@ -45,7 +29,6 @@ export default function RawJsonEditorModeStateDrawer(): JSX.Element {
   const [pendingChanges, setPendingChanges] = useState(
     JSON.stringify(savedPageState, null, 2),
   )
-  const { onCopy, hasCopied } = useClipboard(pendingChanges)
 
   const utils = trpc.useUtils()
   const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
@@ -95,83 +78,18 @@ export default function RawJsonEditorModeStateDrawer(): JSX.Element {
 
   const handleDiscardChanges = () => {
     setPreviewPageState(savedPageState)
-    onDiscardChangesModalClose()
     setDrawerState({ state: "root" })
   }
 
   return (
-    <>
-      <DiscardChangesModal
-        isOpen={isDiscardChangesModalOpen}
-        onClose={onDiscardChangesModalClose}
-        onDiscard={handleDiscardChanges}
-      />
-
-      <Box h="100%" w="100%" overflow="auto">
-        <Box
-          bgColor="base.canvas.default"
-          borderBottomColor="base.divider.medium"
-          borderBottomWidth="1px"
-          px="2rem"
-          py="1.25rem"
-        >
-          <HStack justifyContent="start" w="100%">
-            <HStack spacing={3}>
-              <Icon
-                as={BiDollar}
-                fontSize="1.5rem"
-                p="0.25rem"
-                bgColor="slate.100"
-                textColor="blue.600"
-                borderRadius="base"
-              />
-              <Heading as="h3" size="sm" textStyle="h5" fontWeight="semibold">
-                Raw JSON Editor Mode
-              </Heading>
-            </HStack>
-            <Spacer />
-            <Button onClick={onCopy} variant="clear">
-              {!hasCopied ? "Copy to clipboard" : "Copied!"}
-            </Button>
-            <IconButton
-              icon={<Icon as={BiX} />}
-              variant="clear"
-              colorScheme="sub"
-              size="sm"
-              p="0.625rem"
-              onClick={() => {
-                if (!isEqual(previewPageState, savedPageState)) {
-                  onDiscardChangesModalOpen()
-                } else {
-                  handleDiscardChanges()
-                }
-              }}
-              aria-label="Close drawer"
-            />
-          </HStack>
-        </Box>
-
-        <Box px="2rem" py="1rem" maxW="33vw" overflow="auto">
-          <Textarea
-            fontFamily="monospace"
-            boxSizing="border-box"
-            minH="68vh"
-            value={pendingChanges}
-            onChange={(e) => handleChange(e.target.value)}
-          />
-        </Box>
-
-        <Box bgColor="base.canvas.default" boxShadow="md" py="1.5rem" px="2rem">
-          <Button
-            w="100%"
-            isLoading={isLoading}
-            isDisabled={!isPendingChangesValid}
-            onClick={handleSaveChanges}
-          >
-            Save changes
-          </Button>
-        </Box>
-      </Box>
-    </>
+    <RawJsonEditor
+      pendingChanges={pendingChanges}
+      isLoading={isLoading}
+      isModified={!isEqual(previewPageState, savedPageState)}
+      isPendingChangesValid={isPendingChangesValid}
+      handleChange={handleChange}
+      handleDiscardChanges={handleDiscardChanges}
+      handleSaveChanges={handleSaveChanges}
+    />
   )
 }
