@@ -33,7 +33,7 @@ const collection = tv(
           collectionResults:
             // NOTE: we remove the gap so that the blog cards can
             // render their own border between each item
-            "grid grid-cols-1 sm:gap-0 md:grid-cols-2 md:gap-5",
+            "grid grid-cols-1 sm:gap-0 md:grid-cols-2 md:gap-x-10 md:gap-y-5",
         },
       },
     },
@@ -81,9 +81,9 @@ export const CollectionResults = ({
         </div>
       </div>
       {/* NOTE: DO NOT add h-full to this div as it will break old browsers */}
-      <div className={collectionResults()}>
-        {paginatedItems.length > 0 &&
-          paginatedItems.map((item) =>
+      {paginatedItems.length > 0 ? (
+        <div className={collectionResults()}>
+          {paginatedItems.map((item) =>
             variant === "collection" ? (
               <CollectionCard
                 key={`${item.title}-${item.category}`}
@@ -102,21 +102,21 @@ export const CollectionResults = ({
               />
             ),
           )}
-        {paginatedItems.length === 0 && (
-          <div className="flex flex-col gap-1 py-32 text-center text-content">
-            <p className="prose-body-base">
-              We couldn’t find any articles. Try different search terms or
-              filters.
-            </p>
-            <button
-              className="prose-headline-base-medium mx-auto w-fit text-link underline-offset-4 hover:underline"
-              onClick={handleClearFilter}
-            >
-              Clear search and filters
-            </button>
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1 py-32 text-center text-content">
+          <p className="prose-body-base">
+            We couldn’t find any articles. Try different search terms or
+            filters.
+          </p>
+          <button
+            className="prose-headline-base-medium mx-auto w-fit text-link underline-offset-4 hover:underline"
+            onClick={handleClearFilter}
+          >
+            Clear search and filters
+          </button>
+        </div>
+      )}
     </>
   )
 }

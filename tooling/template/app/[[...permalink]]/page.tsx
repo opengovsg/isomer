@@ -10,6 +10,7 @@ import {
   getMetadata,
   getSitemapXml,
   RenderEngine,
+  shouldBlockIndexing,
 } from "@opengovsg/isomer-components"
 
 export const dynamic = "force-static"
@@ -128,6 +129,13 @@ const Page = async (props: DynamicPageProps) => {
         lastUpdated,
         assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
         isomerGtmId: process.env.NEXT_PUBLIC_ISOMER_GOOGLE_TAG_MANAGER_ID,
+      }}
+      meta={{
+        // TODO: fixup all the typing errors
+        // @ts-ignore to fix when types are proper
+        noIndex: shouldBlockIndexing(
+          process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+        ),
       }}
       LinkComponent={Link}
       ScriptComponent={Script}
