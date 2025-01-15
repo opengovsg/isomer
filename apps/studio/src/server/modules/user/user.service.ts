@@ -9,7 +9,5 @@ export const isUserDeleted = async (email: string) => {
     // Email is a unique field in User table
     .executeTakeFirst()
 
-  console.log(`isUserDeleted: ${JSON.stringify(user)}`)
-
-  return user?.deletedAt
+  return !!user?.deletedAt
 }
