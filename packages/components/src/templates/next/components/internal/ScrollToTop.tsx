@@ -10,9 +10,11 @@ import { useEffect } from "react"
   Ref: https://github.com/vercel/next.js/issues/45187#issuecomment-1639518030
 */
 export const ScrollToTop = () => {
+  // Ensures the component is mounted before executing scrollTo,
+  // as Next.js may attempt it during static site generation when "window" is unavailable.
+  // Ref: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#browser-apis
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (window) window.scrollTo(0, 0)
+    window.scrollTo(0, 0)
   }, [])
 
   return <></>
