@@ -22,4 +22,5 @@ export const ContentpicSchema = Type.Object(
 export type ContentpicProps = Static<typeof ContentpicSchema> & {
   LinkComponent?: LinkComponentType
   site: IsomerSiteProps
+  shouldLazyLoad?: boolean
 }
