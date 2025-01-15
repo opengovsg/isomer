@@ -485,7 +485,6 @@ async function fetchAndWriteSiteData(client: Client) {
       const config = {
         site: {
           ...configResult.rows[0].config,
-          siteName: configResult.rows[0].name,
         },
         ...configResult.rows[0].theme,
       }
