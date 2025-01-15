@@ -180,15 +180,15 @@ export const resourceRouter = router({
         .where("Resource.type", "!=", ResourceType.RootPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
+        .where("Resource.type", "!=", ResourceType.IndexPage)
         .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
-          type: Extract<
-            | typeof ResourceType.Folder
-            | typeof ResourceType.Page
-            | typeof ResourceType.Collection
-            | typeof ResourceType.CollectionPage
-            | typeof ResourceType.CollectionLink,
-            ResourceType
+          type: Exclude<
+            ResourceType,
+            | typeof ResourceType.RootPage
+            | typeof ResourceType.FolderMeta
+            | typeof ResourceType.CollectionMeta
+            | typeof ResourceType.IndexPage
           >
         }>()
         .orderBy("type", "asc")
