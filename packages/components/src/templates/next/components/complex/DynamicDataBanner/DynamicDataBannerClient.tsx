@@ -42,15 +42,6 @@ type DynamicDataBannerClientProps = Omit<
   errorMessageBaseParagraph?: React.ReactNode
 }
 
-const ErrorMessage = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className={compoundStyles.errorMessageContainer()}>
-      <BiError className={compoundStyles.errorIcon()} />
-      {children}
-    </div>
-  )
-}
-
 const DynamicDataBannerUI = ({
   title,
   data,
@@ -81,46 +72,51 @@ const DynamicDataBannerUI = ({
     )
   }
 
+  if (errorMessageBaseParagraph) {
+    return (
+      <div className={compoundStyles.screenWideOuterContainer()}>
+        <div className={compoundStyles.errorMessageContainer()}>
+          <BiError className={compoundStyles.errorIcon()} />
+          {errorMessageBaseParagraph}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={compoundStyles.screenWideOuterContainer()}>
-      {!errorMessageBaseParagraph ? (
-        <div className={compoundStyles.outerContainer()}>
-          <div className={compoundStyles.basicInfoContainer()}>
-            <div className={compoundStyles.titleAndDateContainer()}>
-              {title && (
-                <>
-                  {title} <div className={compoundStyles.divider()} />
-                </>
-              )}
-              {getSingaporeDateLong()}
-            </div>
-            {shouldRenderUrl &&
-              renderUrl({ className: compoundStyles.hideOnMobile() })}
-          </div>
-          <div className={compoundStyles.dataInfoContainer()}>
-            {data.slice(0, NUMBER_OF_DATA).map((singleData) => (
-              <div className={compoundStyles.individualDataContainer()}>
-                <div className={compoundStyles.individualDataLabel()}>
-                  {singleData.label}
-                </div>
-                {singleData.value ? (
-                  <div className={compoundStyles.individualDataValue()}>
-                    {singleData.value}
-                  </div>
-                ) : (
-                  <div
-                    className={compoundStyles.individualDataValueLoading()}
-                  />
-                )}
-              </div>
-            ))}
+      <div className={compoundStyles.outerContainer()}>
+        <div className={compoundStyles.basicInfoContainer()}>
+          <div className={compoundStyles.titleAndDateContainer()}>
+            {title && (
+              <>
+                {title} <div className={compoundStyles.divider()} />
+              </>
+            )}
+            {getSingaporeDateLong()}
           </div>
           {shouldRenderUrl &&
-            renderUrl({ className: compoundStyles.showOnMobileOnly() })}
+            renderUrl({ className: compoundStyles.hideOnMobile() })}
         </div>
-      ) : (
-        <ErrorMessage>{errorMessageBaseParagraph}</ErrorMessage>
-      )}
+        <div className={compoundStyles.dataInfoContainer()}>
+          {data.slice(0, NUMBER_OF_DATA).map((singleData) => (
+            <div className={compoundStyles.individualDataContainer()}>
+              <div className={compoundStyles.individualDataLabel()}>
+                {singleData.label}
+              </div>
+              {singleData.value ? (
+                <div className={compoundStyles.individualDataValue()}>
+                  {singleData.value}
+                </div>
+              ) : (
+                <div className={compoundStyles.individualDataValueLoading()} />
+              )}
+            </div>
+          ))}
+        </div>
+        {shouldRenderUrl &&
+          renderUrl({ className: compoundStyles.showOnMobileOnly() })}
+      </div>
     </div>
   )
 }
