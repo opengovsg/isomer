@@ -20,10 +20,7 @@ export const BackToTopLink = ({
     // Using default <a> tag instead of next/link
     // Because next/link for root anchor tags does not work when
     // we do <link preconnect> in the head
-    <a
-      href="#"
-      className={twMerge(linkStyle(), className)}
-    >
+    <a href="#" className={twMerge(linkStyle(), className)}>
       <BiUpArrowAlt aria-hidden className="h-6 w-6" />
       Back to top
     </a>
