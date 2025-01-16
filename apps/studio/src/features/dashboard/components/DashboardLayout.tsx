@@ -16,7 +16,6 @@ export const DashboardLayout = ({
   icon,
   title,
   buttons,
-  preTableContent,
   children,
 }: {
   breadcrumbs: {
@@ -26,7 +25,6 @@ export const DashboardLayout = ({
   icon: ReactNode
   title: string
   buttons: ReactNode
-  preTableContent?: ReactNode
   children: ReactNode
 }) => {
   const allBreadcrumbsExceptLast = breadcrumbs.slice(0, -1)
@@ -102,7 +100,6 @@ export const DashboardLayout = ({
           <HStack>{buttons}</HStack>
         </Flex>
       </VStack>
-      {preTableContent && preTableContent}
       {children}
     </VStack>
   )

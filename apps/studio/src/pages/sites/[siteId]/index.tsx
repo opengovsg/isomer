@@ -113,8 +113,8 @@ const SitePage: NextPageWithLayout = () => {
             onCollectionCreateModalOpen={onCollectionCreateModalOpen}
           />
         }
-        preTableContent={<RootpageRow siteId={siteId} />}
       >
+        <RootpageRow siteId={siteId} />
         <ResourceTable siteId={siteId} />
       </DashboardLayout>
       <CreatePageModal

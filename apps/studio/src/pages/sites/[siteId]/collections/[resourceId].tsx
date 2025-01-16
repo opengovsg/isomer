@@ -72,8 +72,8 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             </Button>
           </>
         }
-        preTableContent={<CollectionBanner />}
       >
+        <CollectionBanner />
         <CollectionTable resourceId={resourceId} siteId={siteId} />
       </DashboardLayout>
       <CreateCollectionPageModal
