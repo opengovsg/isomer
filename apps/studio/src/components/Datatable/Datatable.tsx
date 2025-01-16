@@ -48,7 +48,12 @@ export const Datatable = <T extends object>({
   const styles = useMultiStyleConfig("Table", tableProps)
 
   return (
-    <Flex flexDirection="column" layerStyle="shadow" pos="relative">
+    <Flex
+      width="100%"
+      flexDirection="column"
+      layerStyle="shadow"
+      pos="relative"
+    >
       {isFetching && (
         <>
           <Flex

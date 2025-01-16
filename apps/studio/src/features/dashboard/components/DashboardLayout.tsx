@@ -103,7 +103,7 @@ export const DashboardLayout = ({
         </Flex>
       </VStack>
       {preTableContent && preTableContent}
-      <Box width="100%">{children}</Box>
+      {children}
     </VStack>
   )
 }
