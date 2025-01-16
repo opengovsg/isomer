@@ -42,13 +42,11 @@ type DynamicDataBannerClientProps = Omit<
   errorMessageBaseParagraph?: React.ReactNode
 }
 
-const ErrorMessage = ({
-  errorMessageBaseParagraph,
-}: Pick<DynamicDataBannerClientProps, "errorMessageBaseParagraph">) => {
+const ErrorMessage = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className={compoundStyles.errorMessageContainer()}>
       <BiError className={compoundStyles.errorIcon()} />
-      {errorMessageBaseParagraph}
+      {children}
     </div>
   )
 }
@@ -121,7 +119,7 @@ const DynamicDataBannerUI = ({
             renderUrl({ className: compoundStyles.showOnMobileOnly() })}
         </div>
       ) : (
-        <ErrorMessage errorMessageBaseParagraph={errorMessageBaseParagraph} />
+        <ErrorMessage>{errorMessageBaseParagraph}</ErrorMessage>
       )}
     </div>
   )
