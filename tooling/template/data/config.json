@@ -4,6 +4,7 @@
     "url": "https://www.isomer.gov.sg",
     "agencyName": "Open Government Products",
     "theme": "isomer-next",
+    "isInverseColor": false,
     "logoUrl": "/images/isomer-logo.svg",
     "favicon": "/images/favicon-isomer.ico",
     "isGovernment": true,
