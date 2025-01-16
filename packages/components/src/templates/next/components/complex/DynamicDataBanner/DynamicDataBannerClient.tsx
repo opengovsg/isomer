@@ -53,7 +53,7 @@ const DynamicDataBannerUI = ({
   DynamicDataBannerClientProps,
   "title" | "label" | "url" | "LinkComponent" | "errorMessageBaseParagraph"
 > & {
-  data: { label: string; value: string | undefined }[]
+  data: { label: string; value?: string }[]
 }) => {
   const shouldRenderUrl: boolean = !!url && !!label
   const renderUrl = ({
