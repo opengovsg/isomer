@@ -21,6 +21,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
 import type { PendingMoveResource } from "../../types"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { usePermissions } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -92,6 +93,7 @@ const MoveResourceContent = withSuspense(
           title: "Failed to move resource",
           status: "error",
           description: err.message,
+          ...BRIEF_TOAST_SETTINGS,
         })
       },
       onSettled: () => {
@@ -128,7 +130,7 @@ const MoveResourceContent = withSuspense(
         await utils.resource.getMetadataById.invalidate({
           resourceId: movedItem?.resourceId,
         })
-        toast({ title: "Resource moved!" })
+        toast({ title: "Resource moved!", ...BRIEF_TOAST_SETTINGS })
       },
     })
 

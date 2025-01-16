@@ -5,6 +5,22 @@ const JSON_SCHEMA_VERSION = "0.1.0"
 const schemaDirPath = path.join(__dirname, "../schema")
 const sitemapPath = path.join(__dirname, "../sitemap.json")
 
+const getResourceImage = (schemaData) => {
+  if (schemaData.page.image) return schemaData.page.image
+
+  if (!Array.isArray(schemaData.content)) return undefined
+
+  const firstImageComponent = schemaData.content.find(
+    (item) => item.type === "image",
+  )
+  return firstImageComponent
+    ? {
+        src: firstImageComponent.src,
+        alt: firstImageComponent.alt,
+      }
+    : undefined
+}
+
 const getSchemaJson = async (filePath) => {
   try {
     const schemaContent = await fs.readFile(filePath, "utf8")
@@ -70,7 +86,7 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
     summary,
     category: schemaData.page.category,
     date: schemaData.page.date,
-    image: schemaData.page.image,
+    image: getResourceImage(schemaData),
     tags: schemaData.page.tags,
   }
 

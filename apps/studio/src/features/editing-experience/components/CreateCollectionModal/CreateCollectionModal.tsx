@@ -25,6 +25,7 @@ import {
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
 import { createCollectionSchema } from "~/schemas/collection"
 import {
@@ -90,7 +91,11 @@ const CreateCollectionModalContent = ({
       await utils.resource.listWithoutRoot.invalidate()
       await utils.resource.countWithoutRoot.invalidate()
       await utils.resource.getChildrenOf.invalidate()
-      toast({ title: "Collection created!", status: "success" })
+      toast({
+        title: "Collection created!",
+        status: "success",
+        ...BRIEF_TOAST_SETTINGS,
+      })
     },
     onError: (err) => {
       toast({
@@ -98,6 +103,7 @@ const CreateCollectionModalContent = ({
         status: "error",
         // TODO: check if this property is correct
         description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
       })
     },
   })
