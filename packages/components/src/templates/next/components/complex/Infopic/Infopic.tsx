@@ -9,7 +9,7 @@ import { ImageClient } from "../Image"
 const infopicStyles = tv({
   slots: {
     container:
-      "grid min-h-[360px] bg-base-canvas-backdrop [grid-template-areas:'img''content'] [grid-template-rows:auto_1fr] lg:grid-cols-2 lg:[grid-template-rows:auto]",
+      "grid min-h-[360px] bg-brand-canvas-backdrop [grid-template-areas:'img''content'] [grid-template-rows:auto_1fr] lg:grid-cols-2 lg:[grid-template-rows:auto]",
     image: "inset-0 h-full w-full object-cover lg:absolute",
     imageContainer:
       "relative max-h-[400px] min-h-[200px] w-full [grid-area:img] lg:max-h-full",

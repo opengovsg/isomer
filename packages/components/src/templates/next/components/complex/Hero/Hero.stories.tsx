@@ -25,6 +25,7 @@ const meta: Meta<typeof Hero> = {
       },
       theme: "isomer-next",
       isGovernment: true,
+      isInverseColor: false,
       logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       assetsBaseUrl: "https://cms.isomer.gov.sg",
@@ -63,13 +64,102 @@ export const ColourBlock: Story = {
   args: {
     backgroundUrl:
       "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+
     title: "Your hero title goes here, please keep it short and sweet",
+
     subtitle:
       "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
+
     buttonLabel: "Main CTA",
     buttonUrl: "/",
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
     variant: "block",
+    isInverseColor: false,
+
+    site: {
+      siteName: "Isomer Next",
+
+      siteMap: {
+        id: "1",
+        title: "Home",
+        permalink: "/",
+        lastModified: "",
+        layout: "homepage",
+        summary: "",
+        children: [],
+      },
+
+      theme: "isomer-next",
+      isGovernment: true,
+      isInverseColor: false,
+      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      lastUpdated: "2021-10-01",
+      assetsBaseUrl: "https://cms.isomer.gov.sg",
+      navBarItems: [],
+
+      footerItems: {
+        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
+        termsOfUseLink: "https://www.isomer.gov.sg/terms",
+        siteNavItems: [],
+      },
+
+      search: {
+        type: "localSearch",
+        searchUrl: "/search",
+      },
+    },
+  },
+}
+
+export const ColourBlockInverse: Story = {
+  args: {
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+
+    title: "Your hero title goes here, please keep it short and sweet",
+
+    subtitle:
+      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
+
+    buttonLabel: "Main CTA",
+    buttonUrl: "/",
+    secondaryButtonLabel: "Sub CTA",
+    secondaryButtonUrl: "/",
+    variant: "block",
+    isInverseColor: true,
+
+    site: {
+      siteName: "Isomer Next",
+
+      siteMap: {
+        id: "1",
+        title: "Home",
+        permalink: "/",
+        lastModified: "",
+        layout: "homepage",
+        summary: "",
+        children: [],
+      },
+
+      theme: "isomer-next",
+      isGovernment: true,
+      isInverseColor: false,
+      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      lastUpdated: "2021-10-01",
+      assetsBaseUrl: "https://cms.isomer.gov.sg",
+      navBarItems: [],
+
+      footerItems: {
+        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
+        termsOfUseLink: "https://www.isomer.gov.sg/terms",
+        siteNavItems: [],
+      },
+
+      search: {
+        type: "localSearch",
+        searchUrl: "/search",
+      },
+    },
   },
 }

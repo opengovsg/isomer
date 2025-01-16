@@ -84,6 +84,7 @@ const HeroBlock = ({
   backgroundUrl,
   site,
   LinkComponent,
+  isInverseColor,
 }: HeroProps) => {
   const backgroundSrc =
     isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
@@ -92,8 +93,12 @@ const HeroBlock = ({
 
   return (
     <section className="flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row">
-      <div className="flex flex-row bg-brand-canvas-inverse px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-12">
-        <div className="flex w-full max-w-[532px] flex-col justify-center gap-9 text-base-content-inverse">
+      <div
+        className={`flex flex-row ${isInverseColor ? "bg-brand-canvas-alt" : "bg-brand-canvas-inverse"} px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-12`}
+      >
+        <div
+          className={`flex w-full max-w-[532px] flex-col justify-center gap-9 ${isInverseColor ? "text-base-content" : "text-base-content-inverse"}`}
+        >
           <div className="flex flex-col gap-6">
             <h1 className="prose-display-xl break-words">{title}</h1>
             {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
@@ -107,6 +112,7 @@ const HeroBlock = ({
                   site.assetsBaseUrl,
                 )}
                 size="lg"
+                variant="solid"
                 colorScheme="inverse"
                 LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight
@@ -115,7 +121,7 @@ const HeroBlock = ({
               </LinkButton>
               {secondaryButtonLabel && secondaryButtonUrl && (
                 <LinkButton
-                  colorScheme="inverse"
+                  colorScheme={`${isInverseColor ? "default" : "inverse"}`}
                   variant="outline"
                   size="lg"
                   href={getReferenceLinkHref(

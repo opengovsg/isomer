@@ -27,6 +27,7 @@ export interface IsomerSiteConfigProps {
   notification?: Omit<NotificationProps, "LinkComponent" | "site">
   siteGtmId?: string
   vica?: VicaProps
+  isInverseColor: boolean
 }
 
 export type IsomerSiteProps = IsomerGeneratedSiteProps &
