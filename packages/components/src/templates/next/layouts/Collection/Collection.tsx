@@ -69,10 +69,7 @@ const getCollectionItems = (
         description: item.summary,
         image: item.image,
         site,
-        tags: item.tags?.map(({ selected, category }) => ({
-          selected,
-          category: capitalize(category),
-        })),
+        tags: item.tags,
       }
 
       if (item.layout === "file") {
