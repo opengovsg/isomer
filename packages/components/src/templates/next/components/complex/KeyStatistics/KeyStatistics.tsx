@@ -65,6 +65,7 @@ const KeyStatistics = ({
   label,
   layout,
   site,
+  LinkComponent,
 }: KeyStatisticsProps) => {
   const noOfItems = Math.min(MAX_ITEMS, statistics.length) as NoOfItemVariants
   const simplifiedLayout = getTailwindVariantLayout(layout)
@@ -97,6 +98,7 @@ const KeyStatistics = ({
             href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
             size="base"
             variant="outline"
+            LinkComponent={LinkComponent}
             isWithFocusVisibleHighlight
           >
             {!!label ? label : "Our achievements"}
