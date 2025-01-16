@@ -1,10 +1,8 @@
 import { BiUpArrowAlt } from "react-icons/bi"
 
-import type { LinkComponentType } from "~/types"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { focusVisibleHighlight } from "~/utils"
-import { Link } from "./Link"
 
 const linkStyle = tv({
   extend: focusVisibleHighlight,
@@ -13,21 +11,21 @@ const linkStyle = tv({
 
 interface BackToTopLinkProps {
   className?: string
-  LinkComponent?: LinkComponentType
 }
 
 export const BackToTopLink = ({
   className,
-  LinkComponent,
 }: BackToTopLinkProps): JSX.Element => {
   return (
-    <Link
+    // Using default <a> tag instead of next/link
+    // Because next/link for root anchor tags does not work when
+    // we do <link preconnect> in the head
+    <a
       href="#"
       className={twMerge(linkStyle(), className)}
-      LinkComponent={LinkComponent}
     >
       <BiUpArrowAlt aria-hidden className="h-6 w-6" />
       Back to top
-    </Link>
+    </a>
   )
 }
