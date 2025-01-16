@@ -1,5 +1,7 @@
 "use client"
 
+import { useImage } from "~/hooks/useImage"
+
 export interface ImageClientProps {
   src: string
   alt: string
@@ -17,18 +19,23 @@ export const ImageClient = ({
   assetsBaseUrl,
   lazyLoading = true, // next/image defaults to lazy loading true too
 }: ImageClientProps) => {
+  const fallback = `${assetsBaseUrl ?? ""}/placeholder_no_image.png`
+  const { isLoading, onError } = useImage({ src, fallback })
+
   return (
-    <img
-      src={src}
-      alt={alt}
-      width={width}
-      height="auto"
-      className={className}
-      onError={({ currentTarget }) => {
-        currentTarget.onerror = null
-        currentTarget.src = `${assetsBaseUrl ?? ""}/placeholder_no_image.png`
-      }}
-      loading={lazyLoading ? "lazy" : "eager"}
-    />
+    <div
+      style={{ width }}
+      className={isLoading ? `h-16 animate-pulse bg-slate-800` : undefined}
+    >
+      <img
+        src={src}
+        onError={onError}
+        alt={alt}
+        width={width}
+        height="auto"
+        className={isLoading ? "hidden" : className}
+        loading={lazyLoading ? "lazy" : "eager"}
+      />
+    </div>
   )
 }
