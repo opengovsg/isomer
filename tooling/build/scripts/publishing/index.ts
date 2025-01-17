@@ -173,8 +173,6 @@ async function main() {
       ),
     }
 
-    logDebug("Intermediate sitemap:", JSON.stringify(sitemap, null, 2))
-
     await processDanglingDirectories(resources, sitemap)
 
     try {
