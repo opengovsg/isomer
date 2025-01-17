@@ -25,7 +25,6 @@ const meta: Meta<typeof Hero> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      isInverseColor: false,
       logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       assetsBaseUrl: "https://cms.isomer.gov.sg",
@@ -92,7 +91,6 @@ export const ColourBlock: Story = {
 
       theme: "isomer-next",
       isGovernment: true,
-      isInverseColor: false,
       logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       assetsBaseUrl: "https://cms.isomer.gov.sg",
@@ -144,7 +142,6 @@ export const ColourBlockInverse: Story = {
 
       theme: "isomer-next",
       isGovernment: true,
-      isInverseColor: false,
       logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       assetsBaseUrl: "https://cms.isomer.gov.sg",
