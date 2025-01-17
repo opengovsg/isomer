@@ -74,7 +74,7 @@ export const ColourBlock: Story = {
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
     variant: "block",
-    isInverseColor: false,
+    theme: "default",
 
     site: {
       siteName: "Isomer Next",
