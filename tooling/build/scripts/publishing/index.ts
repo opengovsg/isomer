@@ -217,22 +217,24 @@ function generateSitemapTree(
   // Get the immediate children of the current path
   const childrenPaths = Array.from(
     new Set(
-      entriesWithPathPrefix.map(
-        (entry) =>
-          entry.permalink
+      entriesWithPathPrefix.map((entry) => {
+        return {
+          childPath: entry.permalink
             .slice(
               pathPrefixWithoutLeadingSlash.length +
                 (pathPrefix.length === 1 ? 1 : 2),
             )
             .split("/")[0],
-      ),
+          entry,
+        }
+      }),
     ),
   )
 
   // Identify children paths that might be dangling directories
   const danglingDirectories: SitemapEntry[] = childrenPaths
     .filter(
-      (childPath) =>
+      ({ childPath }) =>
         sitemapEntries.some((entry) =>
           entry.permalink.startsWith(
             `${pathPrefix.length === 1 ? "" : pathPrefix}/${childPath}/`,
@@ -245,31 +247,29 @@ function generateSitemapTree(
         ),
     )
     .map((danglingDirectory) => {
-      const pageName = danglingDirectory.replace(/-/g, " ")
-      const title = pageName.charAt(0).toUpperCase() + pageName.slice(1)
-      logDebug(
-        `Creating index page for dangling directory: ${danglingDirectory}`,
-      )
+      const { title } = danglingDirectory.entry
+      const directory = danglingDirectory.childPath
+      logDebug(`Creating index page for dangling directory: ${directory}`)
       logDebug(
         "Checking using permalink:",
         pathPrefixWithoutLeadingSlash.length === 0
-          ? danglingDirectory
-          : `${pathPrefixWithoutLeadingSlash}/${danglingDirectory}`,
+          ? directory
+          : `${pathPrefixWithoutLeadingSlash}/${directory}`,
       )
 
       const folder = resources.find(
         (resource) =>
           getConvertedPermalink(resource.fullPermalink) ===
             (pathPrefixWithoutLeadingSlash.length === 0
-              ? danglingDirectory
-              : `${pathPrefixWithoutLeadingSlash}/${danglingDirectory}`) &&
+              ? directory
+              : `${pathPrefixWithoutLeadingSlash}/${directory}`) &&
           FOLDER_RESOURCE_TYPES.includes(resource.type),
       )
 
       return {
         id: folder?.id ?? DANGLING_DIRECTORY_PAGE_ID,
         title,
-        permalink: `${pathPrefix.length === 1 ? "" : pathPrefix}/${danglingDirectory}`,
+        permalink: `${pathPrefix.length === 1 ? "" : pathPrefix}/${directory}`,
         lastModified: new Date().toISOString(),
         layout: folder?.type === "Collection" ? "collection" : "index",
         summary: `Pages in ${title}`,
