@@ -223,7 +223,7 @@ function generateSitemapTree(
                 (pathPrefix.length === 1 ? 1 : 2),
             )
             .split("/")[0],
-          entry,
+          title: entry.title,
         }
       }),
     ),
@@ -245,8 +245,9 @@ function generateSitemapTree(
         ),
     )
     .map((danglingDirectory) => {
-      const { title } = danglingDirectory.entry
+      const { title } = danglingDirectory
       const directory = danglingDirectory.childPath
+
       logDebug(`Creating index page for dangling directory: ${directory}`)
       logDebug(
         "Checking using permalink:",
