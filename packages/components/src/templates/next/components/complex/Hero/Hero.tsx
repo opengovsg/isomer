@@ -99,7 +99,7 @@ const HeroBlock = ({
   backgroundUrl,
   site,
   LinkComponent,
-  theme,
+  theme = "default",
 }: HeroProps) => {
   const backgroundSrc =
     isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
