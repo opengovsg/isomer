@@ -1,19 +1,17 @@
 import Image from "next/image"
 import NextLink from "next/link"
-import { Divider, Flex, Grid, GridItem, Text, Tooltip } from "@chakra-ui/react"
-import { AvatarMenu, IconButton, Menu } from "@opengovsg/design-system-react"
-import { BiUser } from "react-icons/bi"
+import { Flex, Grid, GridItem, Text, Tooltip } from "@chakra-ui/react"
+import { IconButton } from "@opengovsg/design-system-react"
 
 import { Searchbar, useSearchStyle } from "~/components/Searchbar"
-import { useMe } from "~/features/me/api"
 import { DASHBOARD } from "~/lib/routes"
 import { trpc } from "~/utils/trpc"
+import { AvatarMenu } from "./AvatarMenu"
 
 interface SearchableHeaderProps {
   siteId: string
 }
 export const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
-  const { me, logout } = useMe()
   const [{ name }] = trpc.site.getSiteName.useSuspenseQuery({
     siteId: Number(siteId),
   })
@@ -56,26 +54,7 @@ export const SearchableHeader = ({ siteId }: SearchableHeaderProps) => {
       </GridItem>
 
       <GridItem justifyContent="flex-end" display="flex">
-        <AvatarMenu
-          name={me.name}
-          variant="subtle"
-          bg="base.canvas.brand-subtle"
-          menuListProps={{ maxWidth: "19rem" }}
-        >
-          <Menu.Item
-            isDisabled
-            style={{ cursor: "default", backgroundColor: "transparent" }}
-          >
-            <Flex alignItems="center" gap="0.75rem">
-              <BiUser size="1.25rem" color="#666c7a" />
-              <Text textStyle="subhead-1" textColor="base.content.medium">
-                {me.email}
-              </Text>
-            </Flex>
-          </Menu.Item>
-          <Divider orientation="horizontal" />
-          <Menu.Item onClick={() => logout()}>Sign out</Menu.Item>
-        </AvatarMenu>
+        <AvatarMenu />
       </GridItem>
     </Grid>
   )
