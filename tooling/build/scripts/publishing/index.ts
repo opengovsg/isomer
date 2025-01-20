@@ -215,8 +215,8 @@ function generateSitemapTree(
   // Get the immediate children of the current path
   const childrenPaths = Array.from(
     new Set(
-      entriesWithPathPrefix.map((entry) => {
-        return {
+      entriesWithPathPrefix
+        .map((entry) => ({
           childPath: entry.permalink
             .slice(
               pathPrefixWithoutLeadingSlash.length +
@@ -224,10 +224,11 @@ function generateSitemapTree(
             )
             .split("/")[0],
           title: entry.title,
-        }
-      }),
+        }))
+        // Perform stringify to compare object equality
+        .map((entry) => JSON.stringify(entry)),
     ),
-  )
+  ).map((entry) => JSON.parse(entry)) as { childPath: string; title: string }[]
 
   // Identify children paths that might be dangling directories
   const danglingDirectories: SitemapEntry[] = childrenPaths
@@ -245,8 +246,7 @@ function generateSitemapTree(
         ),
     )
     .map((danglingDirectory) => {
-      const { title } = danglingDirectory
-      const directory = danglingDirectory.childPath
+      const { title, childPath: directory } = danglingDirectory
 
       logDebug(`Creating index page for dangling directory: ${directory}`)
       logDebug(
