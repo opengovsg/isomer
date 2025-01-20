@@ -4951,11 +4951,7 @@ video {
     gap: 0.75rem;
   }
 
-  <<<<<<< HEAD .md\:gap-5 {
-    gap: 1.25rem;
-  }
-
-  =======>>>>>>>main .md\:gap-7 {
+  .md\:gap-7 {
     gap: 1.75rem;
   }
 
