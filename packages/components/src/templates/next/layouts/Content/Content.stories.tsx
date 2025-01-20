@@ -2984,3 +2984,143 @@ export const MultipleAccordions: Story = {
     ],
   },
 }
+
+export const MultipleInfobars: Story = {
+  args: {
+    layout: "content",
+    site: {
+      siteName: "Isomer Next",
+      siteMap: {
+        id: "1",
+        title: "Isomer Next",
+        permalink: "/",
+        lastModified: "",
+        layout: "homepage",
+        summary: "",
+        children: [
+          {
+            id: "2",
+            title: "Content page",
+            permalink: "/content",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+            children: [
+              {
+                id: "3",
+                title: "Irrationality",
+                permalink: "/parent/rationality",
+                lastModified: "",
+                layout: "content",
+                summary: "",
+                children: [
+                  {
+                    id: "4",
+                    title: "For Individuals",
+                    permalink: "/parent/rationality/child-page-2",
+                    lastModified: "",
+                    layout: "content",
+                    summary: "",
+                  },
+                  {
+                    id: "5",
+                    title: "Steven Pinker's Rationality",
+                    permalink: "/parent/rationality/child-page-2",
+                    lastModified: "",
+                    layout: "content",
+                    summary: "",
+                  },
+                ],
+              },
+              {
+                id: "6",
+                title: "Sibling",
+                permalink: "/parent/sibling",
+                lastModified: "",
+                layout: "content",
+                summary: "",
+                children: [
+                  {
+                    id: "7",
+                    title: "Child that should not appear",
+                    permalink: "/parent/sibling/child-page-2",
+                    lastModified: "",
+                    layout: "content",
+                    summary: "",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: "8",
+            title: "Aunt/Uncle that should not appear",
+            permalink: "/aunt-uncle",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+          },
+        ],
+      },
+      theme: "isomer-next",
+      isGovernment: true,
+      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      navBarItems: [],
+      footerItems: {
+        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
+        termsOfUseLink: "https://www.isomer.gov.sg/terms",
+        siteNavItems: [],
+      },
+      lastUpdated: "1 Jan 2021",
+      search: {
+        type: "localSearch",
+        searchUrl: "/search",
+      },
+    },
+    meta: {
+      description: "A Next.js starter for Isomer",
+    },
+    page: {
+      permalink: "/content",
+      title: "Content page",
+      lastModified: "2024-05-02T14:12:57.160Z",
+      contentPageHeader: {
+        summary:
+          "Steven Pinker's exploration of rationality delves into the intricacies of human cognition, shedding light on the mechanisms behind our decision-making processes. Through empirical research and insightful analysis, Pinker illuminates the rationality that underpins human behavior, challenging conventional wisdom and offering new perspectives on the rational mind.",
+        buttonLabel: "Submit a proposal",
+        buttonUrl: "/submit-proposal",
+      },
+    },
+    content: [
+      {
+        type: "infobar",
+        title: "First item in the page - should not have a gap above",
+        description: "About a sentence worth of description here",
+      },
+      {
+        type: "prose",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "should have a gap below",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "infobar",
+        title: "This is a place where you can put nice content",
+        description: "About a sentence worth of description here",
+      },
+      {
+        type: "infobar",
+        title: "Should have a gap above",
+        description: "About a sentence worth of description here",
+      },
+    ],
+  },
+}
