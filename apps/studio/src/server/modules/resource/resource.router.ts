@@ -291,8 +291,8 @@ export const resourceRouter = router({
               .where("id", "=", String(movedResourceId))
               .where("Resource.type", "in", [
                 ResourceType.Page,
+                ResourceType.CollectionPage,
                 ResourceType.Folder,
-                ResourceType.Collection,
               ])
               .set({
                 parentId: !!destinationResourceId
