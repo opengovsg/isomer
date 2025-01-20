@@ -2180,6 +2180,10 @@ video {
   white-space: nowrap;
 }
 
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
+}
+
 .text-pretty {
   text-wrap: pretty;
 }
@@ -4947,12 +4951,17 @@ video {
     gap: 0.75rem;
   }
 
-  .md\:gap-5 {
+  <<<<<<< HEAD .md\:gap-5 {
     gap: 1.25rem;
   }
 
-  .md\:gap-7 {
+  =======>>>>>>>main .md\:gap-7 {
     gap: 1.75rem;
+  }
+
+  .md\:gap-x-10 {
+    -moz-column-gap: 2.5rem;
+    column-gap: 2.5rem;
   }
 
   .md\:gap-x-16 {
@@ -4966,6 +4975,10 @@ video {
 
   .md\:gap-y-2 {
     row-gap: 0.5rem;
+  }
+
+  .md\:gap-y-5 {
+    row-gap: 1.25rem;
   }
 
   .md\:p-16 {

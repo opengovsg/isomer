@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
-import { Collection } from "react-aria-components"
 
+import type { CollectionVariant } from "./variants"
 import {
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
@@ -9,7 +9,6 @@ import {
 } from "~/interfaces"
 import { AltTextSchema, generateImageSrcSchema } from "~/interfaces/complex"
 import { REF_HREF_PATTERN } from "~/utils/validation"
-import { CollectionVariant, CollectionVariantSchema } from "./variants"
 
 const categorySchemaObject = Type.Object({
   category: Type.String({
