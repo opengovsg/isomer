@@ -112,6 +112,9 @@ async function main() {
           resource.parentId,
         )
 
+        // NOTE: We remap the ID for _index pages to be the ID of the folder,
+        // as both will have the same permalink and the folder is recognized as
+        // the parent of all the children resources
         const idOfFolder = resources.find(
           (item) =>
             resource.fullPermalink.endsWith(INDEX_PAGE_PERMALINK) &&
@@ -246,7 +249,13 @@ function generateSitemapTree(
     )
     .map((danglingDirectory) => {
       const pageName = danglingDirectory.replace(/-/g, " ")
-      const title = pageName.charAt(0).toUpperCase() + pageName.slice(1)
+      const generatedTitle =
+        pageName.charAt(0).toUpperCase() + pageName.slice(1)
+      const folderResourceTitle = resources.find(
+        (resource) => resource.fullPermalink === danglingDirectory,
+      )?.title
+      const title = folderResourceTitle ?? generatedTitle
+
       logDebug(
         `Creating index page for dangling directory: ${danglingDirectory}`,
       )
