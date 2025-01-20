@@ -213,22 +213,27 @@ function generateSitemapTree(
   }
 
   // Get the immediate children of the current path
-  const childrenPaths = Array.from(
-    new Set(
-      entriesWithPathPrefix
-        .map((entry) => ({
-          childPath: entry.permalink
-            .slice(
-              pathPrefixWithoutLeadingSlash.length +
-                (pathPrefix.length === 1 ? 1 : 2),
-            )
-            .split("/")[0],
-          title: entry.title,
-        }))
-        // Perform stringify to compare object equality
-        .map((entry) => JSON.stringify(entry)),
-    ),
-  ).map((entry) => JSON.parse(entry)) as { childPath: string; title: string }[]
+  const childrenPaths = entriesWithPathPrefix
+    .map((entry) => ({
+      childPath: entry.permalink
+        .slice(
+          pathPrefixWithoutLeadingSlash.length +
+            (pathPrefix.length === 1 ? 1 : 2),
+        )
+        .split("/")[0],
+      title: entry.title,
+    }))
+    .reduce(
+      (acc, curr) => {
+        if (acc.some((entry) => entry.childPath === curr.childPath)) {
+          // Ensure that the array only contains unique child paths
+          return acc
+        }
+
+        return [...acc, curr]
+      },
+      [] as { childPath: string; title: string }[],
+    )
 
   // Identify children paths that might be dangling directories
   const danglingDirectories: SitemapEntry[] = childrenPaths
