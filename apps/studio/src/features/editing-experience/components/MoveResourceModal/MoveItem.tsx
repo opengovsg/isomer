@@ -3,13 +3,13 @@ import { Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { ErrorBoundary } from "react-error-boundary"
-import { BiFolder } from "react-icons/bi"
+import { BiData, BiFolder } from "react-icons/bi"
 
 import type { RouterOutput } from "~/utils/trpc"
 
 type MoveItemProps = Pick<
-  RouterOutput["resource"]["getFolderChildrenOf"]["items"][number],
-  "permalink"
+  RouterOutput["resource"]["getChildrenOf"]["items"][number],
+  "permalink" | "type"
 > & {
   handleOnClick: () => void
   isDisabled?: boolean
@@ -37,6 +37,7 @@ const SuspendableMoveItem = ({
   permalink,
   isHighlighted,
   handleOnClick,
+  type,
   ...rest
 }: MoveItemProps) => {
   const buttonProps = getButtonProps({
@@ -59,7 +60,7 @@ const SuspendableMoveItem = ({
       pl="2.25rem"
       size="xs"
       onClick={handleOnClick}
-      leftIcon={<BiFolder />}
+      leftIcon={type === "Collection" ? <BiData /> : <BiFolder />}
       {...rest}
     >
       <Text noOfLines={1} textStyle="caption-1" textAlign="left">

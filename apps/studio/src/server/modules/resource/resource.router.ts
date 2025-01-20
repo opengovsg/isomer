@@ -114,7 +114,10 @@ export const resourceRouter = router({
           .selectFrom("Resource")
           .where("siteId", "=", Number(siteId))
           .where("id", "=", String(resourceId))
-          .where("Resource.type", "=", ResourceType.Folder)
+          .where("Resource.type", "in", [
+            ResourceType.Folder,
+            ResourceType.Collection,
+          ])
           .executeTakeFirst()
 
         if (!resource) {
@@ -265,7 +268,8 @@ export const resourceRouter = router({
               // NOTE: we only allow moves to folders/root.
               // for moves to root, we only allow this for admin
               (parent.type !== ResourceType.RootPage &&
-                parent.type !== ResourceType.Folder)
+                parent.type !== ResourceType.Folder &&
+                parent.type !== ResourceType.Collection)
             ) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
@@ -288,6 +292,7 @@ export const resourceRouter = router({
               .where("Resource.type", "in", [
                 ResourceType.Page,
                 ResourceType.Folder,
+                ResourceType.Collection,
               ])
               .set({
                 parentId: !!destinationResourceId

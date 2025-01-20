@@ -71,7 +71,7 @@ const MoveResourceContent = withSuspense(
     const parentDest = resourceStack[resourceStack.length - 2]
     const curResourceId = moveDest?.resourceId
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-      trpc.resource.getFolderChildrenOf.useInfiniteQuery(
+      trpc.resource.getChildrenOf.useInfiniteQuery(
         {
           resourceId:
             (isResourceHighlighted
