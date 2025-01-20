@@ -1934,8 +1934,8 @@ video {
   grid-template-columns: 1fr min-content;
 }
 
-.grid-cols-\[repeat\(3\2c minmax\(10rem\2c 1fr\)\)\] {
-  grid-template-columns: repeat(3, minmax(10rem, 1fr));
+.grid-cols-\[repeat\(3\2c 1fr\)\] {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .grid-rows-\[1fr_min-content\] {
@@ -4921,6 +4921,10 @@ video {
 
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .md\:grid-cols-\[repeat\(3\2c minmax\(10rem\2c 1fr\)\)\] {
+    grid-template-columns: repeat(3, minmax(10rem, 1fr));
   }
 
   .md\:flex-row {
