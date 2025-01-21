@@ -16,7 +16,6 @@ const retry = async (
       // Make sure we don't wait on the first attempt
       if (retries > 0) {
         const timeToWait = baseTimeoutMs * 2 ** retries
-        console.log(`waiting for ${timeToWait}ms...`)
         await waitFor(timeToWait)
       }
       return await promise()
@@ -26,7 +25,6 @@ const retry = async (
       if (retries < maxRetries) {
         return retryWithBackoff(retries + 1)
       } else {
-        console.warn("Max retries reached. Bubbling the error up")
         throw e
       }
     }
@@ -51,8 +49,6 @@ export const useImage = ({
   const [isError, setIsError] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  // NOTE: We require the `useEffect` because `fetch` is a browser API
-  // and it won't exist at compile time for NextJS
   const onError: React.ReactEventHandler<HTMLImageElement> = ({
     currentTarget,
   }) =>
