@@ -6,19 +6,25 @@ import type { User } from "~server/db"
 import { setUpWhitelist } from "./seed"
 
 export const auth = async ({ id, ...user }: SetOptional<User, "id">) => {
-  await setUpWhitelist({ email: user.email })
+  // Ensure email is lowercase
+  const normalizedUser = {
+    ...user,
+    email: user.email.toLowerCase(),
+  }
+
+  await setUpWhitelist({ email: normalizedUser.email })
 
   if (id !== undefined) {
     return db
       .updateTable("User")
       .where("id", "=", id)
-      .set({ ...user, id })
+      .set({ ...normalizedUser, id })
       .returningAll()
       .executeTakeFirstOrThrow()
   }
   return db
     .insertInto("User")
-    .values({ ...user, id: cuid2.createId() })
+    .values({ ...normalizedUser, id: cuid2.createId() })
     .returningAll()
     .executeTakeFirstOrThrow()
 }
