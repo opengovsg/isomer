@@ -205,6 +205,7 @@ export const collectionRouter = router({
           return eb.or([
             eb("Resource.type", "=", ResourceType.CollectionPage),
             eb("Resource.type", "=", ResourceType.CollectionLink),
+            eb("Resource.type", "=", ResourceType.IndexPage),
           ])
         })
         .orderBy("Resource.type", "asc")
