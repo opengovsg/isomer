@@ -52,6 +52,7 @@ export function JsonFormsMetaImageControl({
   const { siteId } = useQueryParse(editSiteSchema)
   const { isOpen, onClose, onOpen } = useDisclosure()
   const [href, setHref] = useState("")
+  const [file, setFile] = useState<undefined | File>(undefined)
   const imgSrc = `${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${data}`
 
   return (
@@ -82,7 +83,7 @@ export function JsonFormsMetaImageControl({
           src={`https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${data}`}
           onError={({ currentTarget }) => {
             currentTarget.onerror = null
-            currentTarget.src = imgSrc
+            currentTarget.src = URL.createObjectURL(file!)
           }}
         />
       )}
@@ -98,7 +99,10 @@ export function JsonFormsMetaImageControl({
               maxSizeInBytes={MAX_IMG_FILE_SIZE_BYTES}
               acceptedFileTypes={IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
               siteId={siteId}
-              setHref={(image) => setHref(image ?? "")}
+              setHref={(image, original) => {
+                setHref(image ?? "")
+                setFile(original)
+              }}
             />
           </ModalBody>
 
