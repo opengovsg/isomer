@@ -61,4 +61,5 @@ export const ImageSchema = Type.Object(
 
 export type ImageProps = Static<typeof ImageSchema> & {
   site: IsomerSiteProps
+  shouldLazyLoad?: boolean
 }

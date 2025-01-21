@@ -27,6 +27,7 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { generateResourceUrl } from "~/features/editing-experience/components/utils"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
@@ -43,12 +44,12 @@ import {
 } from "../../atoms"
 
 interface SuspendablePermalinkProps {
-  title: string
   folderId: string
+  permalink: string
 }
 const SuspendablePermalink = ({
   folderId,
-  title,
+  permalink,
 }: SuspendablePermalinkProps) => {
   const [{ fullPermalink }] =
     trpc.resource.getWithFullPermalink.useSuspenseQuery({
@@ -60,7 +61,7 @@ const SuspendablePermalink = ({
       <chakra.span color="base.content.medium">
         {fullPermalink.split("/").slice(0, -1).join("/")}
       </chakra.span>
-      /{title}
+      /{permalink}
     </Text>
   )
 }
@@ -126,7 +127,11 @@ const SuspendableModalContent = ({
       await utils.collection.getMetadata.invalidate({
         resourceId: Number(folderId),
       })
-      toast({ title: "Folder updated!", status: "success" })
+      toast({
+        title: "Folder updated!",
+        status: "success",
+        ...BRIEF_TOAST_SETTINGS,
+      })
     },
     onError: (err) => {
       toast({
@@ -134,6 +139,7 @@ const SuspendableModalContent = ({
         status: "error",
         // TODO: check if this property is correct
         description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
       })
     },
   })
@@ -207,7 +213,10 @@ const SuspendableModalContent = ({
                     alignItems="center"
                   >
                     <Icon mr="0.5rem" as={BiLink} />
-                    <SuspendablePermalink title={title} folderId={folderId} />
+                    <SuspendablePermalink
+                      folderId={folderId}
+                      permalink={permalink}
+                    />
                   </Box>
                 </Suspense>
               )}
