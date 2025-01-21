@@ -17,7 +17,7 @@ import { withJsonFormsControlProps } from "@jsonforms/react"
 import { BiTrash } from "react-icons/bi"
 import { z } from "zod"
 
-import { ImageUpload } from "~/components/ImageUpload"
+import { ImageUploadInfobox } from "~/components/ImageUploadInfobox"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -51,7 +51,7 @@ export function JsonFormsImageControl({
 
   return (
     <>
-      <ImageUpload
+      <ImageUploadInfobox
         description={"Upload an image"}
         label={label}
         onClick={onOpen}
@@ -70,7 +70,7 @@ export function JsonFormsImageControl({
             />
           </>
         )}
-      </ImageUpload>
+      </ImageUploadInfobox>
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

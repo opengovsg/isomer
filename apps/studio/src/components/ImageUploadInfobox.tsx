@@ -9,7 +9,7 @@ interface ImageUploadProps {
   onClick: () => void
   description?: string
 }
-export const ImageUpload = ({
+export const ImageUploadInfobox = ({
   children,
   required,
   description,
