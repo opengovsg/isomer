@@ -5,7 +5,12 @@ import { ResourceType } from "~generated/generatedEnums"
 import * as dotenv from "dotenv"
 import { Client } from "pg"
 
-import type { Resource, SitemapEntry } from "./types"
+import type { PageOnlySitemapEntry, Resource, SitemapEntry } from "./types"
+import {
+  FOLDER_RESOURCE_TYPES,
+  PAGE_RESOURCE_TYPES,
+  PageResourceType,
+} from "./constants"
 import {
   GET_ALL_RESOURCES_WITH_FULL_PERMALINKS,
   GET_CONFIG,
@@ -33,14 +38,6 @@ const SITE_ID = Number(process.env.SITE_ID)
 const DANGLING_DIRECTORY_PAGE_ID = "-1"
 const INDEX_PAGE_PERMALINK = "_index"
 const META_PERMALINK = "_meta"
-const PAGE_RESOURCE_TYPES = [
-  "Page",
-  "CollectionPage",
-  "CollectionLink",
-  "IndexPage",
-  "RootPage",
-]
-const FOLDER_RESOURCE_TYPES = ["Folder", "Collection"]
 
 const getConvertedPermalink = (fullPermalink: string) => {
   // NOTE: If the full permalink ends with `_index`,
@@ -90,7 +87,7 @@ async function main() {
     const resources = await getAllResourcesWithFullPermalinks(client)
 
     // Construct an array of sitemap entries
-    const sitemapEntries: SitemapEntry[] = []
+    const sitemapEntries: PageOnlySitemapEntry[] = []
 
     // Process each resource
     for (const resource of resources) {
@@ -99,7 +96,10 @@ async function main() {
       )
 
       // Ensure the resource is a page (we don't need to write folders)
-      if (PAGE_RESOURCE_TYPES.includes(resource.type) && resource.content) {
+      if (
+        PAGE_RESOURCE_TYPES.find((t) => t === resource.type) &&
+        resource.content
+      ) {
         // Inject page type and title into content before writing to file
         resource.content.page = {
           ...resource.content.page,
@@ -123,9 +123,9 @@ async function main() {
               getConvertedPermalink(resource.fullPermalink),
         )?.id
 
-        const sitemapEntry: SitemapEntry = {
+        const sitemapEntry: PageOnlySitemapEntry = {
           id: idOfFolder ?? resource.id,
-          type: resource.type,
+          type: resource.type as PageResourceType,
           title: resource.title,
           permalink: `/${getConvertedPermalink(resource.fullPermalink)}`,
           lastModified: resource.updatedAt.toISOString(),
@@ -200,7 +200,7 @@ async function main() {
 
 function generateSitemapTree(
   resources: Resource[],
-  sitemapEntries: SitemapEntry[],
+  sitemapEntries: PageOnlySitemapEntry[],
   pathPrefix: string,
 ): SitemapEntry[] | undefined {
   const pathPrefixWithoutLeadingSlash = pathPrefix.slice(1)
@@ -272,7 +272,7 @@ function generateSitemapTree(
             (pathPrefixWithoutLeadingSlash.length === 0
               ? danglingDirectory
               : `${pathPrefixWithoutLeadingSlash}/${danglingDirectory}`) &&
-          FOLDER_RESOURCE_TYPES.includes(resource.type),
+          FOLDER_RESOURCE_TYPES.find((t) => t === resource.type),
       )
 
       return {
@@ -349,7 +349,7 @@ function getFoldersAndCollections(
     resources.some(
       (resource) =>
         resource.id === child.id &&
-        FOLDER_RESOURCE_TYPES.includes(resource.type),
+        FOLDER_RESOURCE_TYPES.find((t) => t === resource.type),
     ),
   )
 
