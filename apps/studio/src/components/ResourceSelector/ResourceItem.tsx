@@ -34,6 +34,7 @@ const SuspendableResourceItem = ({
         return BiFolder
       case ResourceType.CollectionPage:
       case ResourceType.Page:
+      case ResourceType.IndexPage:
         return BiFile
       case ResourceType.Collection:
         return BiData
