@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 
-const waitFor = (baseTimeoutMs: number = 500) => {
+const waitFor = (baseTimeoutMs = 500) => {
   return new Promise((resolve) => setTimeout(resolve, baseTimeoutMs))
 }
 
@@ -51,7 +51,7 @@ export const useImage = ({
 
   const onError: React.ReactEventHandler<HTMLImageElement> = ({
     currentTarget,
-  }) =>
+  }) => {
     retry(
       async () => {
         setIsLoading(true)
@@ -77,6 +77,7 @@ export const useImage = ({
       .finally(() => {
         setIsLoading(false)
       })
+  }
 
   return {
     isLoading,
