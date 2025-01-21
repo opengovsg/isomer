@@ -26,6 +26,7 @@ export const ImageUploadInfobox = ({
         background="brand.primary.100"
         justifyContent="space-between"
         alignItems="center"
+        overflow="auto"
       >
         {!!children ? (
           children

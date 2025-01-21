@@ -10,6 +10,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Text,
   useDisclosure,
 } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
@@ -62,7 +63,7 @@ export function JsonFormsImageControl({
       >
         {!!data && (
           <>
-            {data.split("/").pop()}
+            <Text noOfLines={1}>{data.split("/").pop()}</Text>
             <IconButton
               size="xs"
               variant="clear"
