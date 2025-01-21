@@ -5,12 +5,14 @@ import type { IsomerSiteProps } from "~/types"
 import { ARRAY_RADIO_FORMAT } from "../format"
 
 export const generateImageSrcSchema = ({
+  title = "Image",
   description,
 }: {
+  title?: string
   description?: string
 }) => {
   return Type.String({
-    title: "Image",
+    title,
     format: "image",
     description,
   })
@@ -61,4 +63,5 @@ export const ImageSchema = Type.Object(
 
 export type ImageProps = Static<typeof ImageSchema> & {
   site: IsomerSiteProps
+  shouldLazyLoad?: boolean
 }

@@ -10,6 +10,8 @@ import {
   getAncestrySchema,
   getChildrenSchema,
   getFullPermalinkSchema,
+  getIndexPageOutputSchema,
+  getIndexPageSchema,
   getMetadataSchema,
   getParentSchema,
   listResourceSchema,
@@ -182,13 +184,11 @@ export const resourceRouter = router({
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
-          type: Extract<
-            | typeof ResourceType.Folder
-            | typeof ResourceType.Page
-            | typeof ResourceType.Collection
-            | typeof ResourceType.CollectionPage
-            | typeof ResourceType.CollectionLink,
-            ResourceType
+          type: Exclude<
+            ResourceType,
+            | typeof ResourceType.RootPage
+            | typeof ResourceType.FolderMeta
+            | typeof ResourceType.CollectionMeta
           >
         }>()
         .orderBy("type", "asc")
@@ -469,6 +469,7 @@ export const resourceRouter = router({
         .selectFrom("ResourcePermission")
         .where("userId", "=", ctx.user.id)
         .where("siteId", "=", siteId)
+        .where("deletedAt", "is", null)
 
       if (!resourceId) {
         query.where("resourceId", "is", null)
@@ -572,5 +573,24 @@ export const resourceRouter = router({
         // Sort resources to match order of input resourceIds
         (a, b) => resourceIds.indexOf(a.id) - resourceIds.indexOf(b.id),
       )
+    }),
+
+  getIndexPage: protectedProcedure
+    .input(getIndexPageSchema)
+    .output(getIndexPageOutputSchema)
+    .query(async ({ input: { siteId, parentId } }) => {
+      const parent = await db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.parentId", "=", parentId)
+        .where("Resource.type", "=", ResourceType.IndexPage)
+        .select(["Resource.id"])
+        .executeTakeFirst()
+
+      if (!parent) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
+      return parent
     }),
 })

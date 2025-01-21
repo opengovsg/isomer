@@ -9,6 +9,7 @@ import { z } from "zod"
 
 import type { NextPageWithLayout } from "~/lib/types"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
@@ -19,7 +20,6 @@ import { updatePageMetaSchema } from "~/schemas/page"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { trpc } from "~/utils/trpc"
 
-const THREE_SECONDS_IN_MS = 3000
 const SUCCESS_TOAST_ID = "save-page-settings-success"
 const ajv = new Ajv({ strict: false, logger: false })
 
@@ -60,7 +60,7 @@ const PageSettings: NextPageWithLayout = () => {
     },
   })
 
-  const toast = useToast({ duration: THREE_SECONDS_IN_MS, isClosable: true })
+  const toast = useToast(BRIEF_TOAST_SETTINGS)
   const utils = trpc.useUtils()
 
   const { mutate: updateMeta } = trpc.page.updateMeta.useMutation({

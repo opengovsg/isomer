@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
-import { Collection } from "react-aria-components"
 
+import type { CollectionVariant } from "./variants"
 import {
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
@@ -9,11 +9,11 @@ import {
 } from "~/interfaces"
 import { AltTextSchema, generateImageSrcSchema } from "~/interfaces/complex"
 import { REF_HREF_PATTERN } from "~/utils/validation"
-import { CollectionVariant, CollectionVariantSchema } from "./variants"
 
 const categorySchemaObject = Type.Object({
   category: Type.String({
     title: "Article category",
+    format: "category",
     description:
       "The category is used for filtering in the parent collection page",
   }),
@@ -30,8 +30,9 @@ const imageSchemaObject = Type.Object({
   image: Type.Optional(
     Type.Object({
       src: generateImageSrcSchema({
+        title: "Thumbnail",
         description:
-          "Displayed at the top of the page and as a thumbnail in the collection view",
+          "Upload an image if you want to have a custom thumbnail for this item",
       }),
       alt: AltTextSchema,
     }),

@@ -6,8 +6,9 @@ export const ALLOWED_URL_REGEXES = {
   // and should remain in sync.
   // Unfortunately, typebox requires a string and hence, doubly escaped characters
   // but `re.source` only gives us the actual string
-  // regex for asset links: /^\/(\d+)\//
-  files: "^\\/(\\d+)\\/",
+  // regex for asset links: /^\/(\d+)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
+  files:
+    "^\\/(\\d+)\\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\/",
   // These are the standard internal links that are used by sites on GitHub.
   // We can drop them once all sites have fully migrated to Studio.
   legacy: "^\\/",

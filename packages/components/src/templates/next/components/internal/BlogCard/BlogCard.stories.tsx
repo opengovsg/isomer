@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { CollectionCardProps } from "~/interfaces"
-import { Tag } from "~/interfaces/internal/CollectionCard"
+import type { Tag } from "~/interfaces/internal/CollectionCard"
 import { BlogCard } from "./BlogCard"
 
 const meta: Meta<typeof BlogCard> = {
@@ -100,7 +100,7 @@ export const TagsWithoutImage: Story = {
   args: generateArgs({
     title: "Collection card without tags",
     withoutImage: true,
-    description: "This is a random description that will be on the card",
+    description: "This is a random description\nthat will be on the card",
     tags: [
       {
         category: "very long",

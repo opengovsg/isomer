@@ -19,4 +19,6 @@ export const ISOMER_MIGRATORS = [
   "yongteng",
   "huaying",
   "weiping",
+  "sophie",
+  "felicia",
 ]
