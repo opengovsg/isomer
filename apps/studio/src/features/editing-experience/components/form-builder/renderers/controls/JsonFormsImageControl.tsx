@@ -38,13 +38,16 @@ const editSiteSchema = z.object({
   siteId: z.coerce.number(),
 })
 
+interface JsonFormsImageControlProps extends ControlProps {
+  data: string
+}
 export function JsonFormsImageControl({
   label,
   handleChange,
   path,
   required,
   data,
-}: ControlProps) {
+}: JsonFormsImageControlProps) {
   const { siteId } = useQueryParse(editSiteSchema)
   const { isOpen, onClose, onOpen } = useDisclosure()
   const [href, setHref] = useState("")
