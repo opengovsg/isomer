@@ -49,16 +49,18 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
       return { site, navbar, footer }
     })
   }
+
+  const name = `Ministry of Testing and Development ${nanoid()}`
   return await db.transaction().execute(async (tx) => {
     const site = await tx
       .insertInto("Site")
       .values({
-        name: `Ministry of Testing and Development ${nanoid()}`,
+        name,
         // @ts-expect-error not using the specific config for tests, no need to populate
         config: {
           theme: "isomer-next",
           logoUrl: "",
-          siteName: "TST",
+          siteName: name,
           isGovernment: true,
         },
         id: siteId,

@@ -65,7 +65,6 @@ describe("site.router", async () => {
       expect(result).toEqual([
         {
           id: site.id,
-          name: site.name,
           config: site.config,
         },
       ])
@@ -87,7 +86,6 @@ describe("site.router", async () => {
       expect(result).toEqual([
         {
           id: site1.id,
-          name: site1.name,
           config: site1.config,
         },
       ])
@@ -123,7 +121,6 @@ describe("site.router", async () => {
       expect(result).toEqual([
         {
           id: site1.id,
-          name: site1.name,
           config: site1.config,
         },
       ])

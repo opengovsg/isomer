@@ -42,11 +42,13 @@ export const siteRouter = router({
         action: "read",
       })
 
-      return db
+      const { config } = await db
         .selectFrom("Site")
         .where("Site.id", "=", siteId)
-        .select("name")
+        .select("config")
         .executeTakeFirstOrThrow()
+
+      return { name: config.siteName }
     }),
   getConfig: protectedProcedure
     .input(getConfigSchema)
