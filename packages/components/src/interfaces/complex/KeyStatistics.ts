@@ -1,7 +1,11 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
+import type {
+  IsomerPageLayoutType,
+  IsomerSiteProps,
+  LinkComponentType,
+} from "~/types"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 export const KeyStatisticsSchema = Type.Object(
@@ -68,4 +72,5 @@ export const KeyStatisticsSchema = Type.Object(
 export type KeyStatisticsProps = Static<typeof KeyStatisticsSchema> & {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
 }

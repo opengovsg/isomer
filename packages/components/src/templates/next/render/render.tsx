@@ -40,6 +40,7 @@ interface RenderComponentProps {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
+  shouldLazyLoad?: boolean
 }
 
 export const renderComponent = ({

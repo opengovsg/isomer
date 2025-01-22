@@ -9,6 +9,7 @@ import {
   Masthead,
   Navbar,
   Notification,
+  ScrollToTop,
   SkipToContent,
   UnsupportedBrowserBanner,
   VicaStylesheet,
@@ -55,6 +56,8 @@ export const Skeleton = ({
       {!isStaging && <DatadogRum />}
 
       {site.vica && <VicaStylesheet />}
+
+      <ScrollToTop />
 
       <header>
         <SkipToContent LinkComponent={LinkComponent} />
