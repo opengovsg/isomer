@@ -160,22 +160,6 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
   })
 })
 
-const nonStrictAuthMiddleware = t.middleware(async ({ next, ctx }) => {
-  // this code path is needed if a user does not exist in the database as they were deleted, but the session was active before
-  const user = ctx.session?.userId
-    ? await prisma.user.findUnique({
-        where: { id: ctx.session.userId },
-        select: defaultMeSelect,
-      })
-    : null
-
-  return next({
-    ctx: {
-      user,
-    },
-  })
-})
-
 const rateLimitMiddleware = t.middleware(async ({ next, ctx, meta }) => {
   if (meta?.rateLimitOptions === undefined) {
     return next()
@@ -218,8 +202,6 @@ export const publicProcedure = baseProcedure.use(baseMiddleware)
  * Create a protected procedure
  * */
 export const protectedProcedure = baseProcedure.use(authMiddleware)
-
-export const agnosticProcedure = baseProcedure.use(nonStrictAuthMiddleware)
 
 /**
  * @see https://trpc.io/docs/v10/middlewares
