@@ -3,13 +3,14 @@ import cuid2 from "@paralleldrive/cuid2"
 import { db } from "~server/db"
 
 import type { User } from "~server/db"
+import { normalizeEmail } from "~/utils/email"
 import { setUpWhitelist } from "./seed"
 
 export const auth = async ({ id, ...user }: SetOptional<User, "id">) => {
   // Ensure email is lowercase
   const normalizedUser = {
     ...user,
-    email: user.email.toLowerCase(),
+    email: normalizeEmail(user.email),
   }
 
   await setUpWhitelist({ email: normalizedUser.email })
