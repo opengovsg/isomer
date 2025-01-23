@@ -5,6 +5,7 @@
  */
 import cuid2 from "@paralleldrive/cuid2"
 
+import { normalizeEmail } from "~/utils/email"
 import { db, RoleType } from "../src/server/modules/database"
 import { createSite } from "./scripts/createSite"
 
@@ -33,7 +34,7 @@ async function main() {
         .values({
           id: cuid2.createId(),
           name,
-          email: `${name}@open.gov.sg`,
+          email: normalizeEmail(`${name}@open.gov.sg`),
           phone: "",
         })
         .onConflict((oc) =>

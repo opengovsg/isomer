@@ -469,6 +469,7 @@ export const resourceRouter = router({
         .selectFrom("ResourcePermission")
         .where("userId", "=", ctx.user.id)
         .where("siteId", "=", siteId)
+        .where("deletedAt", "is", null)
 
       if (!resourceId) {
         query.where("resourceId", "is", null)
