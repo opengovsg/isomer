@@ -9,9 +9,11 @@ import { nanoid } from "nanoid"
 export const setupAdminPermissions = async ({
   userId,
   siteId,
+  isDeleted = false,
 }: {
   userId?: string
   siteId: number
+  isDeleted?: boolean
 }) => {
   if (!userId) throw new Error("userId is a required field")
 
@@ -22,6 +24,7 @@ export const setupAdminPermissions = async ({
       siteId,
       role: RoleType.Admin,
       resourceId: null,
+      deletedAt: isDeleted ? new Date() : null,
     })
     .execute()
 }
@@ -436,6 +439,32 @@ export const setUpWhitelist = async ({
         .column("email")
         .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
     )
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+export const setupUser = async ({
+  name = "Test User",
+  userId = nanoid(),
+  email,
+  phone = "",
+  isDeleted,
+}: {
+  name?: string
+  userId?: string
+  email: string
+  phone?: string
+  isDeleted: boolean
+}) => {
+  return db
+    .insertInto("User")
+    .values({
+      id: userId,
+      name,
+      email,
+      phone: phone,
+      deletedAt: isDeleted ? new Date() : null,
+    })
     .returningAll()
     .executeTakeFirstOrThrow()
 }

@@ -128,6 +128,32 @@ describe("site.router", async () => {
         },
       ])
     })
+
+    it("should only return sites if the permissions are not deleted for the site", async () => {
+      const { site: site1 } = await setupSite()
+      const { site: site2 } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site1.id,
+        isDeleted: true,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site2.id,
+      })
+
+      // Act
+      const result = await caller.list()
+
+      // Assert
+      expect(result).toEqual([
+        {
+          id: site2.id,
+          name: site2.name,
+          config: site2.config,
+        },
+      ])
+    })
   })
 
   describe("getSiteName", () => {
