@@ -1,9 +1,14 @@
+"use client"
+
 import type { VicaProps } from "~/interfaces"
 
 export const VicaWidget = ({
   ScriptComponent = "script",
   ...props
 }: VicaProps) => {
+  // to not render during static site generation on the server
+  if (typeof window === "undefined") return null
+
   return (
     <>
       <ScriptComponent
