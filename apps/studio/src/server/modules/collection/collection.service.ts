@@ -3,6 +3,25 @@ import { format } from "date-fns"
 
 import type { ResourceType } from "../database"
 
+export const createCollectionIndexPageJson = ({
+  title,
+}: {
+  type: typeof ResourceType.IndexPage // Act as soft typeguard
+  title: string
+}) => {
+  return {
+    layout: "collection",
+    page: {
+      title,
+      defaultSortBy: "date",
+      defaultSortDirection: "asc",
+      subtitle: "Read all our articles here.",
+    },
+    content: [],
+    version: "0.1.0",
+  } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
+}
+
 export const createCollectionPageJson = ({}: {
   type: typeof ResourceType.CollectionPage // Act as soft typeguard
 }) => {

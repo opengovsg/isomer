@@ -2,6 +2,7 @@ import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get } from "lodash"
 
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createCollectionSchema,
   editLinkSchema,
@@ -21,6 +22,7 @@ import {
 } from "../resource/resource.service"
 import { defaultCollectionSelect } from "./collection.select"
 import {
+  createCollectionIndexPageJson,
   createCollectionLinkJson,
   createCollectionPageJson,
 } from "./collection.service"
@@ -58,28 +60,60 @@ export const collectionRouter = router({
           userId: ctx.user.id,
         })
 
-        const result = await db
-          .insertInto("Resource")
-          .values({
-            permalink,
-            siteId,
-            type: ResourceType.Collection,
-            title: collectionTitle,
-            state: ResourceState.Published,
-          })
-          .returning(defaultCollectionSelect)
-          .executeTakeFirstOrThrow()
-          .catch((err) => {
-            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-              throw new TRPCError({
-                code: "CONFLICT",
-                message: "A resource with the same permalink already exists",
-              })
-            }
-            throw err
-          })
+        const indexPage = createCollectionIndexPageJson({
+          title: collectionTitle,
+          type: ResourceType.IndexPage,
+        })
 
-        // TODO: Create the index page for the collection and publish it
+        const result = await db.transaction().execute(async (tx) => {
+          const collection = await tx
+            .insertInto("Resource")
+            .values({
+              permalink,
+              siteId,
+              type: ResourceType.Collection,
+              title: collectionTitle,
+              state: ResourceState.Published,
+            })
+            .returning(defaultCollectionSelect)
+            .executeTakeFirstOrThrow()
+            .catch((err) => {
+              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw err
+            })
+
+          const blob = await tx
+            .insertInto("Blob")
+            .values({
+              content: jsonb(indexPage),
+            })
+            .returning("Blob.id")
+            .executeTakeFirstOrThrow()
+
+          await tx
+            .insertInto("Resource")
+            .values({
+              title: collectionTitle,
+              permalink: INDEX_PAGE_PERMALINK,
+              siteId,
+              parentId: collection.id,
+              draftBlobId: blob.id,
+              type: ResourceType.IndexPage,
+            })
+            .returning("Resource.id")
+            .executeTakeFirstOrThrow()
+
+          // TODO: Get confirmation from design on whether we should
+          // automatically publish this collection index page on create
+
+          return collection
+        })
+
         await publishSite(ctx.logger, siteId)
 
         return result
