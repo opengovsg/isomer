@@ -24,3 +24,13 @@ export const setNotificationSchema = z.object({
 export const getNameSchema = z.object({
   siteId: z.number().min(1),
 })
+
+// NOTE: This is a temporary schema for editing the JSON content directly,
+// until the proper editing experience is implemented
+export const setSiteConfigAdminSchema = z.object({
+  siteId: z.number().min(1),
+  config: z.string(),
+  theme: z.string(),
+  navbar: z.string(),
+  footer: z.string(),
+})
