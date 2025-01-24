@@ -60,7 +60,7 @@
     "@chakra-ui/theme-tools": "^2.1.2",
     "@chakra-ui/utils": "^2.0.15",
     "@datadog/browser-rum": "^5.29.1",
-    "@fontsource/ibm-plex-mono": "^5.0.13",
+    "@fontsource/ibm-plex-mono": "^5.1.1",
     "@formkit/auto-animate": "^0.8.2",
     "@growthbook/growthbook": "^1.2.0",
     "@growthbook/growthbook-react": "^1.2.0",
