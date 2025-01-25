@@ -6,6 +6,7 @@ import {
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
   GoogleTagManagerPreload,
+  IsoFluent,
   Masthead,
   Navbar,
   Notification,
@@ -52,6 +53,8 @@ export const Skeleton = ({
       )}
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
+
+      <IsoFluent ScriptComponent={ScriptComponent} />
 
       {!isStaging && <DatadogRum />}
 
