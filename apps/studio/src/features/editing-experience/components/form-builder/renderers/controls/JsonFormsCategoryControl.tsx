@@ -1,5 +1,6 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { FormControl, Skeleton } from "@chakra-ui/react"
+import { useFeatureValue } from "@growthbook/growthbook-react"
 import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, SingleSelect } from "@opengovsg/design-system-react"
@@ -8,7 +9,9 @@ import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { CATEGORY_DROPDOWN_FEATURE_KEY } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
+import { JsonFormsTextControl } from "./JsonFormsTextControl"
 
 export const jsonFormsCategoryControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.RefControl,
@@ -54,13 +57,27 @@ export function JsonFormsCategoryControl({
   label,
   ...props
 }: ControlProps) {
-  return (
+  const { siteId } = useQueryParse(editPageSchema)
+  const { enabledSites } = useFeatureValue<{ enabledSites: string[] }>(
+    CATEGORY_DROPDOWN_FEATURE_KEY,
+    { enabledSites: [] },
+  )
+
+  const isDropdownEnabled = enabledSites.includes(siteId.toString())
+  return isDropdownEnabled ? (
     <FormControl isRequired={required} gap="0.5rem">
       <FormLabel description={description}>{label}</FormLabel>
       <Suspense fallback={<Skeleton />}>
         <SuspendableJsonFormsCategoryControl {...props} label={label} />
       </Suspense>
     </FormControl>
+  ) : (
+    <JsonFormsTextControl
+      {...props}
+      description={description}
+      required={required}
+      label={label}
+    />
   )
 }
 
