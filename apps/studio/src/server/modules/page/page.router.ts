@@ -99,6 +99,73 @@ export const pageRouter = router({
         .execute()
     }),
 
+  getCategories: protectedProcedure
+    .input(basePageSchema)
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
+      const { parentId } = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(pageId))
+        .where("type", "=", ResourceType.CollectionPage)
+        .select("parentId")
+        .executeTakeFirstOrThrow()
+
+      const pages = await db
+        .selectFrom("Resource")
+        // NOTE: CANNOT be `inner join`
+        // because we have have resources that are
+        // never published
+        .leftJoin(
+          "Version",
+          "Version.resourceId",
+          "Resource.publishedVersionId",
+        )
+        .innerJoin("Blob", (join) =>
+          join.on((eb) =>
+            // Step 1: If the `draftBlobId` is present on the `Resource`
+            // we should always use this because it's the latest one
+            eb.or([
+              eb("Blob.id", "=", eb.ref("Resource.draftBlobId")),
+              // Step 2: Otherwise, select the latest blob
+              // that was published
+              eb(
+                "Blob.id",
+                "in",
+                eb
+                  .selectFrom("Blob")
+                  .select("id")
+                  .where("Version.resourceId", "=", eb.ref("Resource.id"))
+                  .orderBy("publishedAt desc")
+                  .limit(1),
+              ),
+            ]),
+          ),
+        )
+        .where("parentId", "=", parentId)
+        // NOTE: select the `page`
+        // We cannot select the `category`
+        // because kysely doesn't know that certain properties only exist
+        // for certain `Resources` (as we are selecting from the `Blob` table)
+        .select((eb) => eb.ref("content", "->").key("page").as("page"))
+        .distinct()
+        .execute()
+
+      return {
+        categories: pages
+          .filter(({ page }) => {
+            return !!(page as { category?: string }).category
+          })
+          .map(({ page }) => {
+            return (page as unknown as { category: string }).category
+          }),
+      }
+    }),
+
   readPage: protectedProcedure
     .input(basePageSchema)
     .output(readPageOutputSchema)

@@ -17,6 +17,8 @@ import {
   jsonFormsArrayControlTester,
   JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
+  JsonFormsCategoryControl,
+  jsonFormsCategoryControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
   JsonFormsDateControl,
@@ -89,6 +91,10 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     // we render null so that the users don't get visual noise
     tester: rankWith(JSON_FORMS_RANKING.Catchall, () => true),
     renderer: () => null,
+  },
+  {
+    tester: jsonFormsCategoryControlTester,
+    renderer: JsonFormsCategoryControl,
   },
 ]
 const ajv = new Ajv({
