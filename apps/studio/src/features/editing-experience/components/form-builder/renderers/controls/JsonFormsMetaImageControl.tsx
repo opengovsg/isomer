@@ -27,8 +27,8 @@ export function JsonFormsMetaImageControl(
   return (
     <>
       <JsonFormsImageControl {...props} />
-      NOTE: not using the `as` prop here on the `Box` because the
-      `currentTarget` will be inferred as a `div` which lacks the `src` property
+      {/* NOTE: not using the `as` prop here on the `Box` because the */}
+      {/* `currentTarget` will be inferred as a `div` which lacks the `src` property */}
       <Box mt="1rem">
         <img
           src={data}

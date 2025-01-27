@@ -7,7 +7,7 @@ import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
 
 interface FileAttachmentProps {
-  setHref: (href?: string, original?: File) => void
+  setHref: (href?: string) => void
   siteId: number
   value?: File
   maxSizeInBytes: number
@@ -57,7 +57,7 @@ export const FileAttachment = ({
               { file },
               {
                 onSuccess: ({ path }) => {
-                  setHref(path, file)
+                  setHref(path)
                 },
               },
             )
