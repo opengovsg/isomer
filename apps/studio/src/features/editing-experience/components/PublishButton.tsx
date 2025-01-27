@@ -36,6 +36,7 @@ const SuspendablePublishButton = ({
         ...BRIEF_TOAST_SETTINGS,
       })
       await utils.page.readPage.invalidate({ pageId, siteId })
+      await utils.page.getCategories.invalidate({ pageId, siteId })
     },
     onError: async (error) => {
       console.error(`Error occurred when publishing page: ${error.message}`)
