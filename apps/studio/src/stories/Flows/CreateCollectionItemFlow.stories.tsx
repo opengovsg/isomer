@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, waitFor, within } from "@storybook/test"
+import { userEvent, within } from "@storybook/test"
 import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
@@ -55,14 +55,11 @@ type Story = StoryObj<typeof meta>
 
 export const SelectLayout: Story = {
   play: async ({ canvasElement }) => {
-    await waitFor(async () => {
-      const screen = within(canvasElement)
-      await userEvent.click(
-        screen.getByRole("button", {
-          name: "Add new item",
-        }),
-      )
+    const screen = within(canvasElement)
+    const button = await screen.findByRole("button", {
+      name: "Add new item",
     })
+    await userEvent.click(button)
   },
 }
 

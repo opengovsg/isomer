@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, waitFor, within } from "@storybook/test"
+import { userEvent, within } from "@storybook/test"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
@@ -59,22 +59,18 @@ export const Default: Story = {}
 export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-
-    await waitFor(async () => {
-      await userEvent.click(
-        canvas.getByRole("button", { name: /Article page header/i }),
-      )
+    const button = await canvas.findByRole("button", {
+      name: /Article page header/i,
     })
+    await userEvent.click(button)
   },
 }
 
 export const AddBlock: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-
-    await waitFor(async () => {
-      await userEvent.click(canvas.getByRole("button", { name: /add block/i }))
-    })
+    const button = await canvas.findByRole("button", { name: /add block/i })
+    await userEvent.click(button)
   },
 }
 

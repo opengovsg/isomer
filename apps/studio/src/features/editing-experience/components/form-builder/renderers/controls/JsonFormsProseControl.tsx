@@ -91,8 +91,11 @@ export function JsonFormsProseControl({
   // Needed to force the value to be set when user clicks on "Go back to editing" in the exit modal
   useEffect(() => {
     if (data !== undefined) {
+      const selection = editor?.state.selection
+      if (!selection) return
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      editor?.commands.setContent(data)
+      editor.commands.setContent(data)
+      editor.commands.setTextSelection(selection)
     }
   }, [data])
 

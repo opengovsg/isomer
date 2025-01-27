@@ -6,6 +6,7 @@ import { Infobox, useToast } from "@opengovsg/design-system-react"
 import { BiPin, BiPlus, BiPlusCircle } from "react-icons/bi"
 
 import { BlockEditingPlaceholder } from "~/components/Svg"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -44,6 +45,8 @@ export default function RootStateDrawer() {
   const { pageId, siteId } = useQueryParse(editPageSchema)
   const utils = trpc.useUtils()
   const isUserIsomerAdmin = useIsUserIsomerAdmin()
+  const toast = useToast({ status: "error" })
+
   const { mutate } = trpc.page.reorderBlock.useMutation({
     onSuccess: async () => {
       await utils.page.readPage.invalidate({ pageId, siteId })
@@ -66,11 +69,10 @@ export default function RootStateDrawer() {
       toast({
         title: "Failed to update blocks",
         description: error.message,
+        ...BRIEF_TOAST_SETTINGS,
       })
     },
   })
-
-  const toast = useToast({ status: "error" })
 
   const onDragEnd = useCallback(
     (result: DropResult) => {
@@ -121,7 +123,11 @@ export default function RootStateDrawer() {
 
   return (
     <VStack gap="1.5rem" p="1.5rem">
-      {isUserIsomerAdmin && <ActivateRawJsonEditorMode />}
+      {isUserIsomerAdmin && (
+        <ActivateRawJsonEditorMode
+          onActivate={() => setDrawerState({ state: "rawJsonEditor" })}
+        />
+      )}
       {/* Fixed Blocks Section */}
       <VStack gap="1rem" w="100%" align="start">
         <VStack gap="0.25rem" align="start">

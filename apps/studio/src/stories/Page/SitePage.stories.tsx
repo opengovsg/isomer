@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, waitFor, within } from "@storybook/test"
+import { userEvent, within } from "@storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -47,25 +47,21 @@ export const Default: Story = {
 
 export const PageResourceMenu: Story = {
   play: async ({ canvasElement }) => {
-    await waitFor(async () => {
-      const screen = within(canvasElement)
-      const pageMenuButton = screen.getByRole("button", {
-        name: "Options for Test page 1",
-      })
-      await userEvent.click(pageMenuButton)
+    const screen = within(canvasElement)
+    const pageMenuButton = await screen.findByRole("button", {
+      name: "Options for Test page 1",
     })
+    await userEvent.click(pageMenuButton)
   },
 }
 
 export const FolderResourceMenu: Story = {
   play: async ({ canvasElement }) => {
-    await waitFor(async () => {
-      const screen = within(canvasElement)
-      const folderMenuButton = screen.getByRole("button", {
-        name: "Options for Test folder 1",
-      })
-      await userEvent.click(folderMenuButton)
+    const screen = within(canvasElement)
+    const folderMenuButton = await screen.findByRole("button", {
+      name: "Options for Test folder 1",
     })
+    await userEvent.click(folderMenuButton)
   },
 }
 

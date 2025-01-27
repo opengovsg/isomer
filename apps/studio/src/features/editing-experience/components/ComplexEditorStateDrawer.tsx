@@ -178,6 +178,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             title: "Error uploading files/images",
             description: `An error occurred while uploading ${failedUploadsCount}/${totalUploadsCount} files/images. Please try again later.`,
             status: "error",
+            ...BRIEF_TOAST_SETTINGS,
           })
 
           // NOTE: Do not save page if there are errors uploading assets

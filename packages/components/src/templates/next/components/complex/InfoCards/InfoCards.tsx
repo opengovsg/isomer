@@ -88,6 +88,11 @@ const createInfoCardsStyles = tv({
         grid: "md:grid-cols-2 lg:grid-cols-3",
       },
     },
+    isExternalLink: {
+      true: {
+        cardTitleArrow: "rotate-[-45deg]",
+      },
+    },
   },
   defaultVariants: {
     layout: "default",
@@ -103,14 +108,19 @@ const InfoCardContainer = ({
   site,
   LinkComponent,
   children,
+  isExternalLink,
 }: PropsWithChildren<
-  Pick<SingleCardNoImageProps, "url" | "site" | "LinkComponent">
+  Pick<
+    SingleCardNoImageProps,
+    "url" | "site" | "isExternalLink" | "LinkComponent"
+  >
 >): JSX.Element => {
   return url ? (
     <Link
       href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
       className={compoundStyles.cardContainer()}
       LinkComponent={LinkComponent}
+      isExternal={isExternalLink}
     >
       {children}
     </Link>
@@ -126,9 +136,16 @@ const InfoCardImage = ({
   url,
   layout,
   site,
+  shouldLazyLoad,
 }: Pick<
   SingleCardWithImageProps,
-  "imageUrl" | "imageAlt" | "url" | "imageFit" | "layout" | "site"
+  | "imageUrl"
+  | "imageAlt"
+  | "url"
+  | "imageFit"
+  | "layout"
+  | "site"
+  | "shouldLazyLoad"
 >): JSX.Element => {
   const imgSrc =
     isExternalUrl(imageUrl) || site.assetsBaseUrl === undefined
@@ -150,6 +167,7 @@ const InfoCardImage = ({
           imageFit,
         })}
         assetsBaseUrl={site.assetsBaseUrl}
+        lazyLoading={shouldLazyLoad}
       />
     </div>
   )
@@ -159,9 +177,10 @@ const InfoCardText = ({
   title,
   description,
   url,
+  isExternalLink,
 }: Pick<
   SingleCardWithImageProps,
-  "title" | "description" | "url"
+  "title" | "description" | "url" | "isExternalLink"
 >): JSX.Element => (
   <div className={compoundStyles.cardTextContainer()}>
     <h3 className={infoCardTitleStyle({ isClickableCard: !!url })}>
@@ -170,7 +189,9 @@ const InfoCardText = ({
       {url && (
         <BiRightArrowAlt
           aria-hidden
-          className={compoundStyles.cardTitleArrow()}
+          className={compoundStyles.cardTitleArrow({
+            isExternalLink,
+          })}
         />
       )}
     </h3>
@@ -185,9 +206,20 @@ const InfoCardNoImage = ({
   site,
   LinkComponent,
 }: SingleCardNoImageProps): JSX.Element => {
+  const isExternalLink = isExternalUrl(url)
   return (
-    <InfoCardContainer url={url} site={site} LinkComponent={LinkComponent}>
-      <InfoCardText title={title} description={description} url={url} />
+    <InfoCardContainer
+      url={url}
+      site={site}
+      isExternalLink={isExternalLink}
+      LinkComponent={LinkComponent}
+    >
+      <InfoCardText
+        title={title}
+        description={description}
+        url={url}
+        isExternalLink={isExternalLink}
+      />
     </InfoCardContainer>
   )
 }
@@ -202,9 +234,16 @@ const InfoCardWithImage = ({
   layout,
   site,
   LinkComponent,
+  shouldLazyLoad = true,
 }: SingleCardWithImageProps): JSX.Element => {
+  const isExternalLink = isExternalUrl(url)
   return (
-    <InfoCardContainer url={url} site={site} LinkComponent={LinkComponent}>
+    <InfoCardContainer
+      url={url}
+      site={site}
+      isExternalLink={isExternalLink}
+      LinkComponent={LinkComponent}
+    >
       <InfoCardImage
         imageFit={imageFit}
         imageUrl={imageUrl}
@@ -212,8 +251,14 @@ const InfoCardWithImage = ({
         url={url}
         site={site}
         layout={layout}
+        shouldLazyLoad={shouldLazyLoad}
       />
-      <InfoCardText title={title} description={description} url={url} />
+      <InfoCardText
+        title={title}
+        description={description}
+        url={url}
+        isExternalLink={isExternalLink}
+      />
     </InfoCardContainer>
   )
 }
@@ -229,6 +274,7 @@ const InfoCards = ({
   url,
   layout,
   site,
+  shouldLazyLoad,
   LinkComponent,
 }: InfoCardsProps): JSX.Element => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
@@ -245,6 +291,7 @@ const InfoCards = ({
                 layout={layout}
                 site={site}
                 LinkComponent={LinkComponent}
+                shouldLazyLoad={shouldLazyLoad}
               />
             ))}
           </>
@@ -304,6 +351,7 @@ const InfoCards = ({
             size="base"
             variant="outline"
             isWithFocusVisibleHighlight
+            LinkComponent={LinkComponent}
           >
             {label}
           </LinkButton>

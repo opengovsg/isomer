@@ -136,9 +136,10 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 
-  // this code path is needed if a user does not exist in the database as they were deleted, but the session was active before
+  // with addition of soft deletes, we need to now check for deletedAt
+  // this check is required in case of an already ongoing session to logout the user
   const user = await prisma.user.findUnique({
-    where: { id: ctx.session.userId },
+    where: { id: ctx.session.userId, deletedAt: null },
     select: defaultMeSelect,
   })
 
@@ -151,22 +152,6 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
   if (!isWhitelisted) {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
-
-  return next({
-    ctx: {
-      user,
-    },
-  })
-})
-
-const nonStrictAuthMiddleware = t.middleware(async ({ next, ctx }) => {
-  // this code path is needed if a user does not exist in the database as they were deleted, but the session was active before
-  const user = ctx.session?.userId
-    ? await prisma.user.findUnique({
-        where: { id: ctx.session.userId },
-        select: defaultMeSelect,
-      })
-    : null
 
   return next({
     ctx: {
@@ -217,8 +202,6 @@ export const publicProcedure = baseProcedure.use(baseMiddleware)
  * Create a protected procedure
  * */
 export const protectedProcedure = baseProcedure.use(authMiddleware)
-
-export const agnosticProcedure = baseProcedure.use(nonStrictAuthMiddleware)
 
 /**
  * @see https://trpc.io/docs/v10/middlewares

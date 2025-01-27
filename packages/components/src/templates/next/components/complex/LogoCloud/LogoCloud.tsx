@@ -5,7 +5,8 @@ import { ImageClient } from "../Image"
 export const LogoCloud = ({
   images: baseImages,
   title,
-  assetsBaseUrl,
+  site: { assetsBaseUrl },
+  shouldLazyLoad = true,
 }: LogoCloudProps) => {
   const images = baseImages.map(({ src, alt }) => {
     const transformedSrc =
@@ -13,7 +14,7 @@ export const LogoCloud = ({
         ? src
         : `${assetsBaseUrl}${src}`
 
-    return { src: transformedSrc, alt }
+    return { src: transformedSrc, alt, lazyLoading: shouldLazyLoad }
   })
   return (
     <div className="px-10 py-12">

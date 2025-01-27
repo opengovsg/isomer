@@ -20,6 +20,7 @@ import { useAtom } from "jotai"
 import upperFirst from "lodash/upperFirst"
 
 import type { DeleteResourceModalState } from "../../types"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 import {
@@ -106,7 +107,11 @@ const DeleteResourceModalContent = ({
       await utils.resource.listWithoutRoot.invalidate()
       await utils.resource.getChildrenOf.invalidate()
       await utils.collection.list.invalidate()
-      toast({ title: `${upperFirst(label)} deleted!`, status: "success" })
+      toast({
+        title: `${upperFirst(label)} deleted!`,
+        status: "success",
+        ...BRIEF_TOAST_SETTINGS,
+      })
     },
     onError: (err) => {
       toast({
@@ -114,6 +119,7 @@ const DeleteResourceModalContent = ({
         status: "error",
         // TODO: check if this property is correct
         description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
       })
     },
   })

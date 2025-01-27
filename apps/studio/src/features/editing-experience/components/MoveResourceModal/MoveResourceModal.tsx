@@ -15,6 +15,7 @@ import { Infobox, useToast } from "@opengovsg/design-system-react"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 
 import { ResourceSelector } from "~/components/ResourceSelector/ResourceSelector"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { usePermissions } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -54,6 +55,7 @@ const MoveResourceContent = withSuspense(
           title: "Failed to move resource",
           status: "error",
           description: err.message,
+          ...BRIEF_TOAST_SETTINGS,
         })
       },
       onSettled: () => {
@@ -90,7 +92,7 @@ const MoveResourceContent = withSuspense(
         await utils.resource.getMetadataById.invalidate({
           resourceId: movedItem?.id,
         })
-        toast({ title: "Resource moved!" })
+        toast({ title: "Resource moved!", ...BRIEF_TOAST_SETTINGS })
       },
     })
 
