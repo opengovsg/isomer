@@ -89,16 +89,13 @@ export const SuspendableHeader = ({
   searchQuery: string
   isLoading: boolean
 }) => {
-  if (isLoading) {
-    return <LoadingHeader />
-  }
-  if (isSearchQueryEmpty) {
-    return hasParentInStack ? (
-      <BackButtonHeader handleOnClick={handleClickBackButton} />
-    ) : (
-      <HomeHeader />
-    )
-  }
+  if (isLoading) return <LoadingHeader />
+
+  if (isSearchQueryEmpty && hasParentInStack)
+    return <BackButtonHeader handleOnClick={handleClickBackButton} />
+
+  if (isSearchQueryEmpty) return <HomeHeader />
+
   return (
     <SearchResultsHeader
       resultsCount={resourceItemsWithAncestryStack.length}

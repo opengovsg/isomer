@@ -125,19 +125,20 @@ export const SuspendableContent = ({
   clearSearchValue: () => void
   isLoading: boolean
 }) => {
-  if (isLoading) {
-    return <LoadingResourceItemsResults />
-  }
-  if (resourceItemsWithAncestryStack.length === 0) {
-    return isSearchQueryEmpty ? (
-      <NoItemsInFolderResult />
-    ) : (
+  if (isLoading) return <LoadingResourceItemsResults />
+
+  const hasNoItems = resourceItemsWithAncestryStack.length === 0
+
+  if (hasNoItems && isSearchQueryEmpty) return <NoItemsInFolderResult />
+
+  if (hasNoItems)
+    return (
       <ZeroResult
         searchQuery={searchQuery}
         handleClickClearSearch={clearSearchValue}
       />
     )
-  }
+
   return (
     <ResourceItemsResults
       resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
