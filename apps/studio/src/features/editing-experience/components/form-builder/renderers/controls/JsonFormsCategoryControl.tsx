@@ -15,12 +15,15 @@ export const jsonFormsCategoryControlTester: RankedTester = rankWith(
   and(schemaMatches((schema) => schema.format === "category")),
 )
 
+interface JsonFormsCategoryControlProps extends ControlProps {
+  data: string
+}
 function SuspendableJsonFormsCategoryControl({
   data,
   handleChange,
   path,
   label,
-}: ControlProps) {
+}: JsonFormsCategoryControlProps) {
   const { siteId, pageId } = useQueryParse(editPageSchema)
 
   const [{ categories }] = trpc.page.getCategories.useSuspenseQuery({
