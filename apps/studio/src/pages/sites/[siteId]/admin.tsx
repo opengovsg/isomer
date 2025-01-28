@@ -47,6 +47,15 @@ const SiteAdminPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteAdminSchema)
   const isUserIsomerAdmin = useIsUserIsomerAdmin()
 
+  if (isUserIsomerAdmin) {
+    toast({
+      title: "You do not have permission to access this page.",
+      status: "error",
+      ...BRIEF_TOAST_SETTINGS,
+    })
+    void router.push(`/sites/${siteId}`)
+  }
+
   const { mutate, isLoading } = trpc.site.setSiteConfigAdmin.useMutation({
     onSuccess: async () => {
       // reset({ config, theme, navbar, footer })
@@ -145,14 +154,6 @@ const SiteAdminPage: NextPageWithLayout = () => {
       ...input,
     })
   })
-
-  if (!isUserIsomerAdmin) {
-    return (
-      <Center h="full">
-        <Text>You do not have permission to access this page.</Text>
-      </Center>
-    )
-  }
 
   return (
     <>
