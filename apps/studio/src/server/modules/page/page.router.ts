@@ -118,79 +118,70 @@ export const pageRouter = router({
         .select("parentId")
         .executeTakeFirstOrThrow()
 
-      const { categories } = await db
-        .selectFrom(
-          sql<{ categories: string[] }>`
-            WITH
-              -- Step 1: Get all of the latest published versions
-              _latest_published_versions AS (
-                SELECT
-                  "resourceId",
-                  "blobId"
-                FROM
-                  (
-                    SELECT
-                      "resourceId",
-                      "blobId",
-                      ROW_NUMBER() OVER (
-                        PARTITION BY
-                          "resourceId"
-                        ORDER BY
-                          "versionNum" DESC
-                      ) AS row_num
-                    FROM
-                      "Version"
-                  ) ranked_versions
-                WHERE
-                  row_num = 1
+      const result = await db
+        // Step 1: Get all of the latest published versions
+        .with("_ranked_versions", (db) =>
+          db
+            .selectFrom("Version")
+            .select([
+              "resourceId",
+              "blobId",
+              sql`ROW_NUMBER() OVER (PARTITION BY "resourceId" ORDER BY "versionNum" DESC)`.as(
+                "row_num",
               ),
-              -- Step 2: Get all of the resources in the collection
-              -- This also reduces the number of resources that needs to be joined
-              -- thus reducing the query time
-              _filtered_resources AS (
-                SELECT
-                  *
-                FROM
-                  "Resource"
-                WHERE
-                  "parentId" = ${parentId}
-                  AND "type" IN (
-                    ${ResourceType.CollectionPage},
-                    ${ResourceType.CollectionLink}
-                  )
-              ),
-              -- Step 3: Get the latest blob id (draft + published) for each resource
-              -- If there's a draft blob, we use that. Else we use the published blob
-              _filtered_resource_latest_blob_ids AS (
-                SELECT
-                  COALESCE(
-                    "_filtered_resources.draftBlobId",
-                    _latest_published_versions."blobId"
-                  ) AS "blobId"
-                FROM
-                  _filtered_resources
-                  LEFT JOIN _latest_published_versions
-                    ON _filtered_resources.id = _latest_published_versions."resourceId"
-              )
-            -- Step 4: Get the categories from the latest blob
-            SELECT
-              DISTINCT (content -> 'page' ->> 'category') AS categories
-            FROM
-              "Blob"
-            WHERE	
-              id IN (
-                SELECT
-                  "blobId"
-                FROM
-                  _filtered_resource_latest_blob_ids
-              )
-          `.as("subquery"),
+            ]),
         )
-        .select("categories")
-        .executeTakeFirstOrThrow()
+        .with("_latest_published_versions", (db) =>
+          db
+            .selectFrom("_ranked_versions")
+            .where("row_num", "=", 1)
+            .select(["resourceId", "blobId"]),
+        )
+        // Step 2: Get all of the resources in the collection
+        // This also reduces the number of resources that needs to be joined
+        // thus reducing the query time
+        .with("_filtered_resources", (db) =>
+          db
+            .selectFrom("Resource")
+            .select(["id", "draftBlobId"])
+            .where("Resource.parentId", "=", String(parentId))
+            .where("Resource.type", "in", [
+              ResourceType.CollectionPage,
+              ResourceType.CollectionLink,
+            ]),
+        )
+        // Step 3: Get the latest blob id (draft + published) for each resource
+        // If there's a draft blob, we use that. Else we use the published blob
+        .with("_filtered_resource_latest_blob_ids", (db) =>
+          db
+            .selectFrom("_filtered_resources")
+            .select([
+              sql`COALESCE("draftBlobId", _latest_published_versions."blobId")`.as(
+                "blobId",
+              ),
+            ])
+            .leftJoin(
+              "_latest_published_versions",
+              "_filtered_resources.id",
+              "_latest_published_versions.resourceId",
+            ),
+        )
+        // Step 4: Get the categories from the latest blob
+        .selectFrom("Blob")
+        .select([
+          sql<string>`DISTINCT ("Blob"."content" -> 'page' ->> 'category')`.as(
+            "category",
+          ),
+        ])
+        .innerJoin(
+          "_filtered_resource_latest_blob_ids",
+          "Blob.id",
+          "_filtered_resource_latest_blob_ids.blobId",
+        )
+        .execute()
 
-      // Filter out other falsey values like empty strings
-      return { categories: categories.filter(Boolean) }
+      // Step 5: Filter out other falsey values like empty strings
+      return { categories: result.map((r) => r.category).filter(Boolean) }
     }),
 
   readPage: protectedProcedure
