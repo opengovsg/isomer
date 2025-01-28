@@ -67,7 +67,7 @@ export function JsonFormsCategoryControl({
     CATEGORY_DROPDOWN_FEATURE_KEY,
     { enabledSites: [] },
   )
-  const handleChange: ControlProps["handleChange"] = (path, value) => {
+  const handleChange: ControlProps["handleChange"] = (path, value: string) => {
     props.handleChange(path, value)
     setLink((prev) => ({ ...prev, category: value }))
   }
