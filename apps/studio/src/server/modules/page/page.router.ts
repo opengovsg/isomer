@@ -141,8 +141,9 @@ export const pageRouter = router({
                 "in",
                 eb
                   .selectFrom("Blob")
-                  .select("id")
-                  .where("Version.resourceId", "=", eb.ref("Resource.id"))
+                  .select("Blob.id")
+                  .leftJoin("Version", "Version.blobId", "Blob.id")
+                  .where("Version.blobId", "=", eb.ref("Blob.id"))
                   .orderBy("publishedAt desc")
                   .limit(1),
               ),
@@ -155,17 +156,20 @@ export const pageRouter = router({
         // because kysely doesn't know that certain properties only exist
         // for certain `Resources` (as we are selecting from the `Blob` table)
         .select((eb) => eb.ref("content", "->").key("page").as("page"))
-        .distinct()
         .execute()
 
+      const duplicatedCategories = pages
+        .filter(({ page }) => {
+          return !!(page as { category?: string }).category
+        })
+        .map(({ page }) => {
+          return (page as unknown as { category: string }).category
+        })
+
+      const categories = Array.from(new Set<string>(duplicatedCategories))
+
       return {
-        categories: pages
-          .filter(({ page }) => {
-            return !!(page as { category?: string }).category
-          })
-          .map(({ page }) => {
-            return (page as unknown as { category: string }).category
-          }),
+        categories,
       }
     }),
 
