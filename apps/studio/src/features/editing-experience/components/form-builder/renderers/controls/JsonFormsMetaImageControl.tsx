@@ -34,7 +34,7 @@ export function JsonFormsMetaImageControl(
           src={data}
           onError={({ currentTarget }) => {
             currentTarget.onerror = null
-            currentTarget.src = `${assetsBaseUrl ?? ""}/${PLACEHOLDER_IMAGE_FILENAME}`
+            currentTarget.src = `${assetsBaseUrl}/${PLACEHOLDER_IMAGE_FILENAME}`
           }}
         />
       </Box>
