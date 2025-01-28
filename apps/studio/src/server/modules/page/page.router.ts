@@ -19,7 +19,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { publishSite } from "../aws/codebuild.service"
-import { db, jsonb, ResourceType } from "../database"
+import { db, jsonb, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
@@ -118,55 +118,55 @@ export const pageRouter = router({
         .select("parentId")
         .executeTakeFirstOrThrow()
 
-      const pages = await db
-        .selectFrom("Resource")
-        // NOTE: CANNOT be `inner join`
-        // because we have have resources that are
-        // never published
-        .leftJoin(
-          "Version",
-          "Version.resourceId",
-          "Resource.publishedVersionId",
-        )
-        .innerJoin("Blob", (join) =>
-          join.on((eb) =>
-            // Step 1: If the `draftBlobId` is present on the `Resource`
-            // we should always use this because it's the latest one
-            eb.or([
-              eb("Blob.id", "=", eb.ref("Resource.draftBlobId")),
-              // Step 2: Otherwise, select the latest blob
-              // that was published
-              eb(
-                "Blob.id",
-                "in",
-                eb
-                  .selectFrom("Blob")
-                  .select("Blob.id")
-                  .leftJoin("Version", "Version.blobId", "Blob.id")
-                  .where("Version.blobId", "=", eb.ref("Blob.id"))
-                  .orderBy("publishedAt desc")
-                  .limit(1),
+      const blobs = await db
+        .with("draftBlobs", (db) => {
+          return db
+            .selectFrom("Resource")
+            .leftJoin("Blob", "Resource.draftBlobId", "Blob.id")
+            .select([
+              "Resource.id as resourceId",
+              "Resource.draftBlobId as draftBlobId",
+              sql<string>`"Blob"."content"->'page'->>'category'`.as(
+                "draft_category",
               ),
-            ]),
-          ),
-        )
-        .where("parentId", "=", parentId)
-        // NOTE: select the `page`
-        // We cannot select the `category`
-        // because kysely doesn't know that certain properties only exist
-        // for certain `Resources` (as we are selecting from the `Blob` table)
-        .select((eb) => eb.ref("content", "->").key("page").as("page"))
+            ])
+            .where("Resource.parentId", "=", String(parentId))
+        })
+        .with("publishedBlobs", (db) => {
+          return db
+            .selectFrom("draftBlobs")
+            .where("draftBlobId", "is", null)
+            .innerJoin("Version", "Version.resourceId", "draftBlobs.resourceId")
+            .innerJoin("Blob", "Version.blobId", "Blob.id")
+            .select([
+              "draftBlobs.resourceId as resourceId",
+              sql<string>`"Blob"."content"->'page'->>'category'`.as(
+                "published_category",
+              ),
+            ])
+            .orderBy("Version.versionNum", "desc")
+            .limit(1)
+        })
+        .with("coalescedBlobs", (db) => {
+          return db
+            .selectFrom("draftBlobs")
+            .fullJoin(
+              "publishedBlobs",
+              "draftBlobs.resourceId",
+              "publishedBlobs.resourceId",
+            )
+            .select((eb) => {
+              return eb.fn
+                .coalesce("draft_category", "published_category")
+                .as("category")
+            })
+        })
+        .selectFrom("coalescedBlobs")
+        .select("coalescedBlobs.category")
+        .where("coalescedBlobs.category", "is not", null)
         .execute()
 
-      const duplicatedCategories = pages
-        .filter(({ page }) => {
-          return !!(page as { category?: string }).category
-        })
-        .map(({ page }) => {
-          return (page as unknown as { category: string }).category
-        })
-
-      const categories = Array.from(new Set<string>(duplicatedCategories))
+      const categories = blobs.map((blob) => blob.category).filter(Boolean)
 
       return {
         categories,
