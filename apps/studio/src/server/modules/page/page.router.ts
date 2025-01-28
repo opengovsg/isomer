@@ -173,11 +173,8 @@ export const pageRouter = router({
                     ON _filtered_resources.id = _latest_published_versions."resourceId"
               )
             -- Step 4: Get the categories from the latest blob
-            -- We also need to filter out null categories
             SELECT
-              array_agg(DISTINCT (content -> 'page' ->> 'category')) FILTER (
-                WHERE content -> 'page' ->> 'category' IS NOT NULL
-              ) AS categories
+              DISTINCT (content -> 'page' ->> 'category') AS categories
             FROM
               "Blob"
             WHERE	
