@@ -14,6 +14,7 @@ const COMMON_HANDLERS = [
   meHandlers.me(),
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
+  pageHandlers.getCategories.default(),
   pageHandlers.countWithoutRoot.default(),
   sitesHandlers.getLocalisedSitemap.default(),
   sitesHandlers.getTheme.default(),
