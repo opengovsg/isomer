@@ -19,7 +19,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { publishSite } from "../aws/codebuild.service"
-import { db, jsonb, ResourceType } from "../database"
+import { db, jsonb, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
@@ -118,59 +118,82 @@ export const pageRouter = router({
         .select("parentId")
         .executeTakeFirstOrThrow()
 
-      const pages = await db
-        .selectFrom("Resource")
-        // NOTE: CANNOT be `inner join`
-        // because we have have resources that are
-        // never published
-        .leftJoin(
-          "Version",
-          "Version.resourceId",
-          "Resource.publishedVersionId",
-        )
-        .innerJoin("Blob", (join) =>
-          join.on((eb) =>
-            // Step 1: If the `draftBlobId` is present on the `Resource`
-            // we should always use this because it's the latest one
-            eb.or([
-              eb("Blob.id", "=", eb.ref("Resource.draftBlobId")),
-              // Step 2: Otherwise, select the latest blob
-              // that was published
-              eb(
-                "Blob.id",
-                "in",
-                eb
-                  .selectFrom("Blob")
-                  .select("Blob.id")
-                  .leftJoin("Version", "Version.blobId", "Blob.id")
-                  .where("Version.blobId", "=", eb.ref("Blob.id"))
-                  .orderBy("publishedAt desc")
-                  .limit(1),
+      const { categories } = await db
+        .selectFrom(
+          sql<{ categories: string[] }>`
+            WITH
+              -- Step 1: Get all of the latest published versions
+              _latest_published_versions AS (
+                SELECT
+                  "resourceId",
+                  "blobId"
+                FROM
+                  (
+                    SELECT
+                      "resourceId",
+                      "blobId",
+                      ROW_NUMBER() OVER (
+                        PARTITION BY
+                          "resourceId"
+                        ORDER BY
+                          "versionNum" DESC
+                      ) AS row_num
+                    FROM
+                      "Version"
+                  ) ranked_versions
+                WHERE
+                  row_num = 1
               ),
-            ]),
-          ),
+              -- Step 2: Get all of the resources in the collection
+              -- This also reduces the number of resources that needs to be joined
+              -- thus reducing the query time
+              _filtered_resources AS (
+                SELECT
+                  *
+                FROM
+                  "Resource"
+                WHERE
+                  "parentId" = ${parentId}
+                  AND "type" IN (
+                    ${ResourceType.CollectionPage},
+                    ${ResourceType.CollectionLink}
+                  )
+              ),
+              -- Step 3: Get the latest blob id (draft + published) for each resource
+              -- If there's a draft blob, we use that. Else we use the published blob
+              _filtered_resource_latest_blob_ids AS (
+                SELECT
+                  COALESCE(
+                    "_filtered_resources.draftBlobId",
+                    _latest_published_versions."blobId"
+                  ) AS "blobId"
+                FROM
+                  _filtered_resources
+                  LEFT JOIN _latest_published_versions
+                    ON _filtered_resources.id = _latest_published_versions."resourceId"
+              )
+            -- Step 4: Get the categories from the latest blob
+            -- We also need to filter out null categories
+            SELECT
+              array_agg(DISTINCT (content -> 'page' ->> 'category')) FILTER (
+                WHERE content -> 'page' ->> 'category' IS NOT NULL
+              ) AS categories
+            FROM
+              "Blob"
+            WHERE	
+              id IN (
+                SELECT
+                  "blobId"
+                FROM
+                  _filtered_resource_latest_blob_ids
+              )
+          `.as("subquery"),
         )
-        .where("parentId", "=", parentId)
-        // NOTE: select the `page`
-        // We cannot select the `category`
-        // because kysely doesn't know that certain properties only exist
-        // for certain `Resources` (as we are selecting from the `Blob` table)
-        .select((eb) => eb.ref("content", "->").key("page").as("page"))
-        .execute()
+        .select("categories")
+        .executeTakeFirstOrThrow()
 
-      const duplicatedCategories = pages
-        .filter(({ page }) => {
-          return !!(page as { category?: string }).category
-        })
-        .map(({ page }) => {
-          return (page as unknown as { category: string }).category
-        })
-
-      const categories = Array.from(new Set<string>(duplicatedCategories))
-
-      return {
-        categories,
-      }
+      // Filter out other falsey values like empty strings
+      return { categories: categories.filter(Boolean) }
     }),
 
   readPage: protectedProcedure
