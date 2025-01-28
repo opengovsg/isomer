@@ -6,7 +6,7 @@ import { FormLabel, SingleSelect } from "@opengovsg/design-system-react"
 
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { editPageSchema } from "~/features/editing-experience/schema"
+import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 
@@ -24,11 +24,15 @@ function SuspendableJsonFormsCategoryControl({
   path,
   label,
 }: JsonFormsCategoryControlProps) {
-  const { siteId, pageId } = useQueryParse(editPageSchema)
+  const { siteId, pageId, linkId } = useQueryParse(collectionItemSchema)
 
   const [{ categories }] = trpc.page.getCategories.useSuspenseQuery({
     siteId,
-    pageId,
+    // NOTE: This control should only be rendered inside
+    // a collection - because of this,
+    // there is either a `pageId` or a `linkId`
+    // and if there isn't, we give a dummy value
+    pageId: pageId || linkId || -1,
   })
 
   return (

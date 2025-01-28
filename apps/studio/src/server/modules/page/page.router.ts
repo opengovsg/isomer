@@ -111,7 +111,10 @@ export const pageRouter = router({
       const { parentId } = await db
         .selectFrom("Resource")
         .where("id", "=", String(pageId))
-        .where("type", "=", ResourceType.CollectionPage)
+        .where("type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+        ])
         .select("parentId")
         .executeTakeFirstOrThrow()
 
