@@ -1,5 +1,3 @@
-import Script from "next/script"
-
 import type { IsomerPageSchemaType } from "~/engine"
 import {
   DatadogRum,
@@ -55,7 +53,7 @@ export const Skeleton = ({
       )}
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
-      {site.isofluent && <IsoFluent ScriptComponent={Script} />}
+      {site.isofluent && <IsoFluent ScriptComponent={ScriptComponent} />}
 
       {!isStaging && <DatadogRum />}
 
