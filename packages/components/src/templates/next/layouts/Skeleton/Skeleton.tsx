@@ -53,6 +53,7 @@ export const Skeleton = ({
       )}
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
+      {site.isofluent && <IsoFluent ScriptComponent={ScriptComponent} />}
 
       {!isStaging && <DatadogRum />}
 
@@ -113,8 +114,6 @@ export const Skeleton = ({
 
       {/* Ensures that the webchat widget only loads after the page has loaded */}
       {site.vica && <VicaWidget {...site.vica} />}
-
-      {site.isofluent && <IsoFluent ScriptComponent={ScriptComponent} />}
     </>
   )
 }
