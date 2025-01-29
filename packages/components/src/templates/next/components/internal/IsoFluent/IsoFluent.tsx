@@ -7,10 +7,8 @@ export const IsoFluent = ({ ScriptComponent = "script" }: IsoFluentProps) => {
   if (typeof window === "undefined") return null
   return (
     <ScriptComponent
-      async
       type="text/javascript"
       src="https://isofluent-translate.hack2025.gov.sg/static/widget.iife.js"
-      strategy="beforeInteractive"
     />
   )
 }
