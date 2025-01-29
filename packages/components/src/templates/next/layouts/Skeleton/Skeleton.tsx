@@ -65,7 +65,7 @@ export const Skeleton = ({
 
       <header>
         <SkipToContent LinkComponent={LinkComponent} />
-
+        <div id="isofluent-switcher"></div>
         {site.isGovernment && <Masthead isStaging={isStaging} />}
 
         {site.notification && (
