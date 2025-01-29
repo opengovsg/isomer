@@ -10,7 +10,6 @@ export const IsoFluent = ({ ScriptComponent = "script" }: IsoFluentProps) => {
       async
       type="text/javascript"
       src="https://isofluent-translate.hack2025.gov.sg/static/widget.iife.js"
-      strategy="lazyOnload"
     />
   )
 }
