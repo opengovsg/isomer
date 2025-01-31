@@ -141,7 +141,7 @@ export const pageRouter = router({
 
       const categories = blobs
         .map((blob) => blob.category)
-        .filter((c) => c !== null && !!c.trim())
+        .filter((c) => !!c && !!c.trim())
 
       return {
         categories,
