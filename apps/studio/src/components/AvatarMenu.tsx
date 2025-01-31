@@ -3,8 +3,7 @@ import {
   Menu,
   AvatarMenu as OgpAvatarMenu,
 } from "@opengovsg/design-system-react"
-import { BiUser } from "react-icons/bi"
-import { TbLogout } from "react-icons/tb"
+import { BiLogOut, BiUser } from "react-icons/bi"
 
 import { useMe } from "~/features/me/api"
 
@@ -32,7 +31,7 @@ export const AvatarMenu = () => {
       <Divider orientation="horizontal" />
       <Menu.Item onClick={() => logout()}>
         <Flex alignItems="center" gap="0.75rem">
-          <TbLogout size="1.25rem" />
+          <BiLogOut size="1.25rem" />
           <Text>Sign Out</Text>
         </Flex>
       </Menu.Item>
