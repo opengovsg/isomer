@@ -166,7 +166,9 @@ export const pageRouter = router({
         .where("coalescedBlobs.category", "is not", null)
         .execute()
 
-      const categories = blobs.map((blob) => blob.category).filter(Boolean)
+      const categories = blobs
+        .map((blob) => blob.category)
+        .filter((c) => c !== null)
 
       return {
         categories,
