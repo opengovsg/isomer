@@ -425,8 +425,8 @@ export const getBatchAncestryWithSelfQuery = async ({
     'title', "Resource"."title",
     'permalink', "Resource"."permalink",
     'type', "Resource"."type",
-    'id', "Resource"."id",
-    'parentId', "Resource"."parentId"
+    'id', "Resource"."id"::text,
+    'parentId', "Resource"."parentId"::text
   )`
 
   const result = await db
