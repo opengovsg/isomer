@@ -414,9 +414,6 @@ export const publishResource = async (
   return addedVersionResult
 }
 
-interface ResourceItemContentWithPath extends ResourceItemContent {
-  path: string[]
-}
 export const getBatchAncestryWithSelfQuery = async ({
   siteId,
   resourceIds,
@@ -424,18 +421,24 @@ export const getBatchAncestryWithSelfQuery = async ({
   siteId: number
   resourceIds: string[]
 }): Promise<ResourceItemContent[][]> => {
-  const resources: ResourceItemContentWithPath[] = await db
-    .withRecursive("Resources", (eb) =>
+  const resourceObject = sql<ResourceItemContent>`jsonb_build_object(
+    'title', "Resource"."title",
+    'permalink', "Resource"."permalink",
+    'type', "Resource"."type",
+    'id', "Resource"."id",
+    'parentId', "Resource"."parentId"
+  )`
+
+  const result = await db
+    .withRecursive("recursiveResources", (eb) =>
       eb
         .selectFrom("Resource")
         .select([
           "Resource.id",
-          "Resource.title",
-          "Resource.permalink",
           "Resource.parentId",
-          "Resource.type",
-          sql<number>`1`.as("depth"), // Start with depth 1 for the base case
-          sql<string[]>`ARRAY["Resource"."id"]`.as("path"),
+          sql<ResourceItemContent[]>`jsonb_build_array(${resourceObject})`.as(
+            "groupedByPath",
+          ),
         ])
         .where("Resource.siteId", "=", Number(siteId))
         .where("Resource.id", "in", resourceIds)
@@ -443,76 +446,28 @@ export const getBatchAncestryWithSelfQuery = async ({
         .unionAll(
           eb
             .selectFrom("Resource")
-            .innerJoin("Resources", "Resources.parentId", "Resource.id")
+            .innerJoin(
+              "recursiveResources",
+              "recursiveResources.parentId",
+              "Resource.id",
+            )
             .select([
               "Resource.id",
-              "Resource.title",
-              "Resource.permalink",
               "Resource.parentId",
-              "Resource.type",
-              sql<number>`depth + 1`.as("depth"), // Add 1 to the depth for each level of recursion
-              sql<string[]>`ARRAY["Resource"."id"] || "Resources"."path"`.as(
-                "path",
+              sql<
+                ResourceItemContent[]
+              >`jsonb_build_array(${resourceObject}) || "recursiveResources"."groupedByPath"`.as(
+                "groupedByPath",
               ),
             ]),
         ),
     )
-    .selectFrom("Resources")
-    .select([
-      "Resources.id",
-      "Resources.title",
-      "Resources.permalink",
-      "Resources.parentId",
-      "Resources.type",
-      "Resources.path",
-    ])
-    .orderBy("Resources.depth", "desc") //  sort by depth in descending order
+    .selectFrom("recursiveResources")
+    .select("recursiveResources.groupedByPath")
+    .where("recursiveResources.parentId", "is", null)
     .execute()
 
-  // Group by paths with shared parents support
-  const groupByPaths = (
-    resources: ResourceItemContentWithPath[],
-  ): ResourceItemContent[][] => {
-    const groups = []
-
-    // Clone the items array to track remaining items
-    // Cannot be Set because resources might share the same parent
-    const remainingResources = [...resources]
-
-    while (remainingResources.length > 0) {
-      const currentResource = remainingResources.shift()
-      if (!currentResource) break
-
-      // Group all resources that are found in the current resource's path
-      const group = [currentResource].concat(
-        currentResource.path
-          .slice(1) // without the current resource
-          .map(
-            (childId) =>
-              remainingResources.find((item) => item.id === childId) ??
-              currentResource,
-          )
-          .filter(Boolean),
-      )
-
-      // Remove all items in this group from remainingResources
-      group.forEach((node) => {
-        const index = remainingResources.findIndex(
-          (resource) =>
-            resource.id === node.id &&
-            JSON.stringify(resource.path) === JSON.stringify(node.path),
-        )
-        if (index !== -1) remainingResources.splice(index, 1)
-      })
-
-      groups.push(group)
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return groups.map((group) => group.map(({ path, ...rest }) => rest))
-  }
-
-  return groupByPaths(resources)
+  return result.map((r) => r.groupedByPath)
 }
 
 export const getWithFullPermalink = async ({
