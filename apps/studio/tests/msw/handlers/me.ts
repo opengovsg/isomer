@@ -1,6 +1,7 @@
 import { type User } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 
+import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
 
 export const defaultUser: User = {
@@ -8,8 +9,8 @@ export const defaultUser: User = {
   email: "test@example.com",
   name: "Test User",
   phone: "12345678",
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  createdAt: MOCK_STORY_DATE,
+  updatedAt: MOCK_STORY_DATE,
   deletedAt: null,
 }
 

@@ -5,6 +5,7 @@ import {
 } from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
+import { MOCK_STORY_DATE } from "tests/msw/constants"
 
 export const setupAdminPermissions = async ({
   userId,
@@ -24,7 +25,7 @@ export const setupAdminPermissions = async ({
       siteId,
       role: RoleType.Admin,
       resourceId: null,
-      deletedAt: isDeleted ? new Date() : null,
+      deletedAt: isDeleted ? MOCK_STORY_DATE : null,
     })
     .execute()
 }
@@ -465,7 +466,7 @@ export const setupUser = async ({
       name,
       email,
       phone: phone,
-      deletedAt: isDeleted ? new Date() : null,
+      deletedAt: isDeleted ? MOCK_STORY_DATE : null,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
