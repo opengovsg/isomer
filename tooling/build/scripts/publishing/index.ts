@@ -251,10 +251,16 @@ function generateSitemapTree(
       const pageName = danglingDirectory.replace(/-/g, " ")
       const generatedTitle =
         pageName.charAt(0).toUpperCase() + pageName.slice(1)
-      const folderResourceTitle = resources.find(
-        (resource) => resource.fullPermalink === danglingDirectory,
-      )?.title
-      const title = folderResourceTitle ?? generatedTitle
+
+      const folder = resources.find(
+        (resource) =>
+          getConvertedPermalink(resource.fullPermalink) ===
+            (pathPrefixWithoutLeadingSlash.length === 0
+              ? danglingDirectory
+              : `${pathPrefixWithoutLeadingSlash}/${danglingDirectory}`) &&
+          FOLDER_RESOURCE_TYPES.find((t) => t === resource.type),
+      )
+      const title = folder?.title ?? generatedTitle
 
       logDebug(
         `Creating index page for dangling directory: ${danglingDirectory}`,
@@ -264,15 +270,6 @@ function generateSitemapTree(
         pathPrefixWithoutLeadingSlash.length === 0
           ? danglingDirectory
           : `${pathPrefixWithoutLeadingSlash}/${danglingDirectory}`,
-      )
-
-      const folder = resources.find(
-        (resource) =>
-          getConvertedPermalink(resource.fullPermalink) ===
-            (pathPrefixWithoutLeadingSlash.length === 0
-              ? danglingDirectory
-              : `${pathPrefixWithoutLeadingSlash}/${danglingDirectory}`) &&
-          FOLDER_RESOURCE_TYPES.find((t) => t === resource.type),
       )
 
       return {
@@ -494,7 +491,6 @@ async function fetchAndWriteSiteData(client: Client) {
       const config = {
         site: {
           ...configResult.rows[0].config,
-          siteName: configResult.rows[0].name,
         },
         ...configResult.rows[0].theme,
       }

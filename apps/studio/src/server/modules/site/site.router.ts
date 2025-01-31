@@ -28,9 +28,10 @@ export const siteRouter = router({
     return db
       .selectFrom("Site")
       .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
+      .where("ResourcePermission.deletedAt", "is", null)
       .where("ResourcePermission.userId", "=", ctx.user.id)
-      .select(["Site.id", "Site.name", "Site.config"])
-      .groupBy(["Site.id", "Site.name", "Site.config"])
+      .select(["Site.id", "Site.config"])
+      .groupBy(["Site.id", "Site.config"])
       .execute()
   }),
   getSiteName: protectedProcedure
@@ -42,11 +43,13 @@ export const siteRouter = router({
         action: "read",
       })
 
-      return db
+      const { config } = await db
         .selectFrom("Site")
         .where("Site.id", "=", siteId)
-        .select("name")
+        .select("config")
         .executeTakeFirstOrThrow()
+
+      return { name: config.siteName }
     }),
   getConfig: protectedProcedure
     .input(getConfigSchema)

@@ -1,21 +1,14 @@
-import type { VicaProps } from "~/interfaces"
+"use client"
 
-export const VicaStylesheet = () => {
-  return (
-    <>
-      <link
-        href="https://webchat.vica.gov.sg/static/css/chat.css"
-        referrerPolicy="origin"
-        rel="stylesheet"
-      />
-    </>
-  )
-}
+import type { VicaProps } from "~/interfaces"
 
 export const VicaWidget = ({
   ScriptComponent = "script",
   ...props
 }: VicaProps) => {
+  // to not render during static site generation on the server
+  if (typeof window === "undefined") return null
+
   return (
     <>
       <ScriptComponent
