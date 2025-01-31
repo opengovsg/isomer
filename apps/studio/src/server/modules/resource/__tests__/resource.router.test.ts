@@ -1805,7 +1805,7 @@ describe("resource.router", async () => {
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
   })
 
-  describe("getAncestryWithSelf", () => {
+  describe("getAncestryStack", () => {
     const RESOURCE_FIELDS_TO_PICK = [
       "id",
       "title",
@@ -1818,7 +1818,7 @@ describe("resource.router", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.getAncestryWithSelf({
+      const result = unauthedCaller.getAncestryStack({
         resourceId: "1",
         siteId: "1",
       })
@@ -1833,7 +1833,7 @@ describe("resource.router", async () => {
       const { site } = await setupSite()
 
       // Act
-      const result = await caller.getAncestryWithSelf({
+      const result = await caller.getAncestryStack({
         siteId: String(site.id),
         resourceId: "99999",
       })
@@ -1849,7 +1849,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.getAncestryWithSelf({
+      const result = await caller.getAncestryStack({
         resourceId: page.id,
         siteId: String(site.id),
       })
@@ -1863,7 +1863,7 @@ describe("resource.router", async () => {
       const { site } = await setupSite()
 
       // Act
-      const result = await caller.getAncestryWithSelf({
+      const result = await caller.getAncestryStack({
         siteId: String(site.id),
       })
 
@@ -1893,9 +1893,10 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.getAncestryWithSelf({
+      const result = await caller.getAncestryStack({
         resourceId: nestedPage.id,
         siteId: String(site.id),
+        includeSelf: true,
       })
 
       // Assert
@@ -1914,13 +1915,49 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.getAncestryWithSelf({
+      const result = await caller.getAncestryStack({
         resourceId: page.id,
         siteId: String(site.id),
+        includeSelf: true,
       })
 
       // Assert
       expect(result).toEqual([pick(page, RESOURCE_FIELDS_TO_PICK)])
+    })
+
+    it("should return the ancestry (excluding self) of a nested resource", async () => {
+      // Arrange
+      const { site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+      const { folder: parentFolder } = await setupFolder({
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const { folder: nestedFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: parentFolder.id,
+        permalink: "nested-folder",
+        title: "Nested folder",
+      })
+      const { page: nestedPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: nestedFolder.id,
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await caller.getAncestryStack({
+        resourceId: nestedPage.id,
+        siteId: String(site.id),
+        includeSelf: false,
+      })
+
+      // Assert
+      expect(result).toEqual([
+        pick(parentFolder, RESOURCE_FIELDS_TO_PICK),
+        pick(nestedFolder, RESOURCE_FIELDS_TO_PICK),
+      ])
     })
 
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})

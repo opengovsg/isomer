@@ -13,9 +13,10 @@ export const useResourceStack = ({
   existingResource: ResourceItemContent | undefined
 }) => {
   const [pendingMovedItemAncestryStack] =
-    trpc.resource.getAncestryWithSelf.useSuspenseQuery({
+    trpc.resource.getAncestryStack.useSuspenseQuery({
       siteId: String(siteId),
       resourceId: selectedResourceId ?? existingResource?.id,
+      includeSelf: !!selectedResourceId,
     })
 
   // NOTE: This is the stack of user's navigation through the resource tree

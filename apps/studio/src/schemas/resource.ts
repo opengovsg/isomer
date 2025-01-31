@@ -82,12 +82,13 @@ export const getFullPermalinkSchema = z.object({
   resourceId: bigIntSchema,
 })
 
-export const getAncestryWithSelfSchema = z.object({
+export const getAncestryStackSchema = z.object({
   siteId: z.string(),
   resourceId: z.string().optional(),
+  includeSelf: z.boolean().optional().default(true),
 })
 
-export const getAncestryWithSelfOutputSchema = z.array(
+export const getAncestryStackOutputSchema = z.array(
   z.custom<ResourceItemContent>(),
 )
 

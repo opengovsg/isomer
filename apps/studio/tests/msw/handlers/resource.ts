@@ -44,9 +44,9 @@ export const resourceHandlers = {
       })
     },
   },
-  getAncestryWithSelf: {
+  getAncestryStack: {
     collectionLink: () => {
-      return trpcMsw.resource.getAncestryWithSelf.query(() => {
+      return trpcMsw.resource.getAncestryStack.query(() => {
         return [
           {
             parentId: null,

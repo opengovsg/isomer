@@ -23,7 +23,7 @@ const COMMON_HANDLERS = [
   sitesHandlers.getLocalisedSitemap.default(),
   resourceHandlers.getRolesFor.default(),
   resourceHandlers.getWithFullPermalink.default(),
-  resourceHandlers.getAncestryWithSelf.collectionLink(),
+  resourceHandlers.getAncestryStack.collectionLink(),
   resourceHandlers.getBatchAncestryWithSelf.default(),
   resourceHandlers.getChildrenOf.default(),
   resourceHandlers.getMetadataById.article(),

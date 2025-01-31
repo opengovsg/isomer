@@ -7,8 +7,8 @@ import type { PermissionsProps } from "../permissions/permissions.type"
 import {
   countResourceSchema,
   deleteResourceSchema,
-  getAncestryWithSelfOutputSchema,
-  getAncestryWithSelfSchema,
+  getAncestryStackOutputSchema,
+  getAncestryStackSchema,
   getBatchAncestryWithSelfOutputSchema,
   getBatchAncestryWithSelfSchema,
   getChildrenOutputSchema,
@@ -539,10 +539,10 @@ export const resourceRouter = router({
       return query.select(["role"]).execute()
     }),
 
-  getAncestryWithSelf: protectedProcedure
-    .input(getAncestryWithSelfSchema)
-    .output(getAncestryWithSelfOutputSchema)
-    .query(async ({ input: { siteId, resourceId } }) => {
+  getAncestryStack: protectedProcedure
+    .input(getAncestryStackSchema)
+    .output(getAncestryStackOutputSchema)
+    .query(async ({ input: { siteId, resourceId, includeSelf } }) => {
       if (!resourceId) {
         return []
       }
@@ -550,7 +550,9 @@ export const resourceRouter = router({
         siteId: Number(siteId),
         resourceIds: [resourceId],
       })
-      return batchAncestry[0] ?? []
+      return includeSelf
+        ? (batchAncestry[0] ?? [])
+        : (batchAncestry[0]?.slice(0, -1) ?? [])
     }),
 
   getBatchAncestryWithSelf: protectedProcedure
