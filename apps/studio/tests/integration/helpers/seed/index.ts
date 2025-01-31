@@ -5,6 +5,7 @@ import {
 } from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
+import { MOCK_STORY_DATE } from "tests/msw/constants"
 
 export const setupAdminPermissions = async ({
   userId,
@@ -24,7 +25,7 @@ export const setupAdminPermissions = async ({
       siteId,
       role: RoleType.Admin,
       resourceId: null,
-      deletedAt: isDeleted ? new Date() : null,
+      deletedAt: isDeleted ? MOCK_STORY_DATE : null,
     })
     .execute()
 }
@@ -52,16 +53,18 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
       return { site, navbar, footer }
     })
   }
+
+  const name = `Ministry of Testing and Development ${nanoid()}`
   return await db.transaction().execute(async (tx) => {
     const site = await tx
       .insertInto("Site")
       .values({
-        name: `Ministry of Testing and Development ${nanoid()}`,
+        name,
         // @ts-expect-error not using the specific config for tests, no need to populate
         config: {
           theme: "isomer-next",
           logoUrl: "",
-          siteName: "TST",
+          siteName: name,
           isGovernment: true,
         },
         id: siteId,
@@ -463,7 +466,7 @@ export const setupUser = async ({
       name,
       email,
       phone: phone,
-      deletedAt: isDeleted ? new Date() : null,
+      deletedAt: isDeleted ? MOCK_STORY_DATE : null,
     })
     .returningAll()
     .executeTakeFirstOrThrow()

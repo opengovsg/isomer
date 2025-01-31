@@ -3,10 +3,6 @@ import { useEffect, useState } from "react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
 
-import {
-  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-  MAX_FILE_SIZE_BYTES,
-} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
 
@@ -14,18 +10,18 @@ interface FileAttachmentProps {
   setHref: (href?: string) => void
   siteId: number
   value?: File
+  maxSizeInBytes: number
+  acceptedFileTypes: Record<string, string>
 }
 
 type FileRejections = AttachmentProps<false>["rejections"]
-
-const ACCEPTED_FILE_TYPES_MESSAGE = Object.keys(
-  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-).join(", ")
 
 export const FileAttachment = ({
   setHref,
   siteId,
   value,
+  maxSizeInBytes,
+  acceptedFileTypes,
 }: FileAttachmentProps) => {
   const [file, setFile] = useState<File | undefined>(value)
   const [rejections, setRejections] = useState<FileRejections>([])
@@ -33,6 +29,7 @@ export const FileAttachment = ({
   const { mutate: uploadFile, isLoading } = useUploadAssetMutation({
     siteId,
   })
+  const ACCEPTED_FILE_TYPES_MESSAGE = Object.keys(acceptedFileTypes).join(", ")
 
   useEffect(() => {
     // NOTE: The outer link modal uses this to disable the button
@@ -65,8 +62,8 @@ export const FileAttachment = ({
               },
             )
           }}
-          maxSize={MAX_FILE_SIZE_BYTES}
-          accept={Object.values(FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING)}
+          maxSize={maxSizeInBytes}
+          accept={Object.values(acceptedFileTypes)}
           onFileValidation={(file) => {
             const parseResult = getPresignedPutUrlSchema
               .pick({ fileName: true })
@@ -82,7 +79,7 @@ export const FileAttachment = ({
         />
       </Skeleton>
       <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
-        {`Maximum file size: ${MAX_FILE_SIZE_BYTES / 1000000} MB`}
+        {`Maximum file size: ${maxSizeInBytes / 1000000} MB`}
         <br />
         {`Accepted file types: ${ACCEPTED_FILE_TYPES_MESSAGE}`}
       </Text>
