@@ -34,6 +34,10 @@ export const AdminCreateIndexPageButton = () => {
           }),
           utils.resource.listWithoutRoot.invalidate({ siteId: Number(siteId) }),
           utils.collection.list.invalidate({ siteId: Number(siteId) }),
+          utils.resource.getIndexPage.invalidate({
+            siteId: Number(siteId),
+            parentId: String(parentId),
+          }),
         ])
         toast({
           status: "success",
