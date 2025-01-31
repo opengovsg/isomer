@@ -1,7 +1,7 @@
 import { Divider, Flex, Text } from "@chakra-ui/react"
 import {
-  AvatarMenu as AvatarMenuComponent,
   Menu,
+  AvatarMenu as OgpAvatarMenu,
 } from "@opengovsg/design-system-react"
 import { BiUser } from "react-icons/bi"
 
@@ -11,7 +11,7 @@ export const AvatarMenu = () => {
   const { me, logout } = useMe()
 
   return (
-    <AvatarMenuComponent
+    <OgpAvatarMenu
       name={me.name}
       variant="subtle"
       bg="base.canvas.brand-subtle"
@@ -30,6 +30,6 @@ export const AvatarMenu = () => {
       </Menu.Item>
       <Divider orientation="horizontal" />
       <Menu.Item onClick={() => logout()}>Sign out</Menu.Item>
-    </AvatarMenuComponent>
+    </OgpAvatarMenu>
   )
 }
