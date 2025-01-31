@@ -163,6 +163,7 @@ export const pageRouter = router({
         })
         .selectFrom("coalescedBlobs")
         .select("coalescedBlobs.category")
+        .distinct()
         .where("coalescedBlobs.category", "is not", null)
         .execute()
 
