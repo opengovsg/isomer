@@ -1,9 +1,10 @@
-import { Divider, Flex, Text } from "@chakra-ui/react"
+import { Divider, Flex, MenuItemProps, Text } from "@chakra-ui/react"
 import {
   Menu,
   AvatarMenu as OgpAvatarMenu,
 } from "@opengovsg/design-system-react"
 import { BiUser } from "react-icons/bi"
+import { TbLogout } from "react-icons/tb"
 
 import { useMe } from "~/features/me/api"
 
@@ -29,7 +30,12 @@ export const AvatarMenu = () => {
         </Flex>
       </Menu.Item>
       <Divider orientation="horizontal" />
-      <Menu.Item onClick={() => logout()}>Sign out</Menu.Item>
+      <Menu.Item onClick={() => logout()}>
+        <Flex alignItems="center" gap="0.75rem">
+          <TbLogout size="1.25rem" />
+          <Text>Sign Out</Text>
+        </Flex>
+      </Menu.Item>
     </OgpAvatarMenu>
   )
 }
