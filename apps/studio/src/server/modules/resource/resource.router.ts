@@ -10,6 +10,8 @@ import {
   getAncestrySchema,
   getChildrenSchema,
   getFullPermalinkSchema,
+  getIndexPageOutputSchema,
+  getIndexPageSchema,
   getMetadataSchema,
   getParentSchema,
   listResourceSchema,
@@ -571,5 +573,20 @@ export const resourceRouter = router({
         // Sort resources to match order of input resourceIds
         (a, b) => resourceIds.indexOf(a.id) - resourceIds.indexOf(b.id),
       )
+    }),
+
+  getIndexPage: protectedProcedure
+    .input(getIndexPageSchema)
+    .output(getIndexPageOutputSchema)
+    .query(async ({ input: { siteId, parentId } }) => {
+      const parent = await db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.parentId", "=", parentId)
+        .where("Resource.type", "=", ResourceType.IndexPage)
+        .select(["Resource.id"])
+        .executeTakeFirstOrThrow()
+
+      return { id: parent.id }
     }),
 })
