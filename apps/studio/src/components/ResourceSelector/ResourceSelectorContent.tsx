@@ -21,13 +21,7 @@ const NoItemsInFolderResult = () => {
   )
 }
 
-const ResourceItemsResults = ({
-  resourceItemsWithAncestryStack,
-  isResourceIdHighlighted,
-  isResourceItemDisabled,
-  hasAdditionalLeftPadding,
-  handleClickResourceItem,
-}: {
+interface ResourceItemsResultsProps {
   resourceItemsWithAncestryStack: ResourceItemContent[][]
   isResourceIdHighlighted: (resourceId: string) => boolean
   isResourceItemDisabled: (resourceItem: ResourceItemContent) => boolean
@@ -35,7 +29,14 @@ const ResourceItemsResults = ({
   handleClickResourceItem: (
     resourceItemWithAncestryStack: ResourceItemContent[],
   ) => void
-}) => {
+}
+const ResourceItemsResults = ({
+  resourceItemsWithAncestryStack,
+  isResourceIdHighlighted,
+  isResourceItemDisabled,
+  hasAdditionalLeftPadding,
+  handleClickResourceItem,
+}: ResourceItemsResultsProps) => {
   return resourceItemsWithAncestryStack.map((resourceItemWithAncestryStack) => {
     const lastChild = lastResourceItemInAncestryStack(
       resourceItemWithAncestryStack,
