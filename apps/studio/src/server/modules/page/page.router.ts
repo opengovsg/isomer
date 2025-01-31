@@ -119,57 +119,29 @@ export const pageRouter = router({
         .executeTakeFirstOrThrow()
 
       const blobs = await db
-        .with("draftBlobs", (db) => {
-          return db
-            .selectFrom("Resource")
-            .leftJoin("Blob", "Resource.draftBlobId", "Blob.id")
-            .select([
-              "Resource.id as resourceId",
-              "Resource.draftBlobId as draftBlobId",
-              sql<string>`"Blob"."content"->'page'->>'category'`.as(
-                "draft_category",
-              ),
-            ])
-            .where("Resource.parentId", "=", String(parentId))
-        })
-        .with("publishedBlobs", (db) => {
-          return db
-            .selectFrom("draftBlobs")
-            .where("draftBlobId", "is", null)
-            .innerJoin("Version", "Version.resourceId", "draftBlobs.resourceId")
-            .innerJoin("Blob", "Version.blobId", "Blob.id")
-            .select([
-              "draftBlobs.resourceId as resourceId",
-              sql<string>`"Blob"."content"->'page'->>'category'`.as(
-                "published_category",
-              ),
-            ])
-            .orderBy("Version.versionNum", "desc")
-            .limit(1)
-        })
-        .with("coalescedBlobs", (db) => {
-          return db
-            .selectFrom("draftBlobs")
-            .fullJoin(
-              "publishedBlobs",
-              "draftBlobs.resourceId",
-              "publishedBlobs.resourceId",
+        .selectFrom("Resource as r")
+        .leftJoin("Blob as b", "r.draftBlobId", "b.id")
+        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
+        .leftJoin("Blob as vb", "v.blobId", "vb.id")
+        .where("r.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+        ])
+        .select((eb) => {
+          return eb.fn
+            .coalesce(
+              sql<string>`b.content->'page'->>'category'`,
+              sql<string>`vb.content->'page'->>'category'`,
             )
-            .select((eb) => {
-              return eb.fn
-                .coalesce("draft_category", "published_category")
-                .as("category")
-            })
+            .as("category")
         })
-        .selectFrom("coalescedBlobs")
-        .select("coalescedBlobs.category")
         .distinct()
-        .where("coalescedBlobs.category", "is not", null)
+        .where("r.parentId", "=", String(parentId))
         .execute()
 
       const categories = blobs
         .map((blob) => blob.category)
-        .filter((c) => c !== null)
+        .filter((c) => c !== null && !!c.trim())
 
       return {
         categories,
