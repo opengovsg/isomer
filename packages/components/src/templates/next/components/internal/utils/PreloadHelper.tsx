@@ -3,6 +3,9 @@
 // when fetching them, which can lead to faster rendering and improved user experience.
 
 export const PreloadHelper = ({ href }: { href: string }) => {
+  // TODO: replace with ReactDom.preconnect and ReactDom.dnsPrefetch
+  // However, note that they are only available in React 19 which is not yet supported by Next.js
+  // Ref: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#resource-hints
   return (
     <>
       <link

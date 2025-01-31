@@ -26,6 +26,7 @@ export const definePermissionsForResource = async ({
     .selectFrom("ResourcePermission")
     .where("userId", "=", userId)
     .where("siteId", "=", siteId)
+    .where("deletedAt", "is", null)
 
   if (!resourceId) {
     query = query.where("resourceId", "is", null)
@@ -50,6 +51,7 @@ export const definePermissionsForSite = async ({
     .where("userId", "=", userId)
     .where("siteId", "=", siteId)
     .where("resourceId", "is", null)
+    .where("deletedAt", "is", null)
     .select("role")
     .execute()
 

@@ -1418,6 +1418,10 @@ video {
   -webkit-line-clamp: 3;
 }
 
+.\!block {
+  display: block !important;
+}
+
 .block {
   display: block;
 }
@@ -2180,6 +2184,10 @@ video {
   white-space: nowrap;
 }
 
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
+}
+
 .text-pretty {
   text-wrap: pretty;
 }
@@ -2444,6 +2452,11 @@ video {
 .bg-red-500 {
   --tw-bg-opacity: 1;
   background-color: rgb(239 68 68 / var(--tw-bg-opacity));
+}
+
+.bg-slate-800 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(30 41 59 / var(--tw-bg-opacity));
 }
 
 .bg-transparent {
@@ -3192,6 +3205,11 @@ video {
 .text-link {
   --tw-text-opacity: 1;
   color: rgb(26 86 229 / var(--tw-text-opacity));
+}
+
+.text-link-hover {
+  --tw-text-opacity: 1;
+  color: rgb(21 71 190 / var(--tw-text-opacity));
 }
 
 .text-site-secondary {
@@ -4947,12 +4965,13 @@ video {
     gap: 0.75rem;
   }
 
-  .md\:gap-5 {
-    gap: 1.25rem;
-  }
-
   .md\:gap-7 {
     gap: 1.75rem;
+  }
+
+  .md\:gap-x-10 {
+    -moz-column-gap: 2.5rem;
+    column-gap: 2.5rem;
   }
 
   .md\:gap-x-16 {
@@ -4966,6 +4985,10 @@ video {
 
   .md\:gap-y-2 {
     row-gap: 0.5rem;
+  }
+
+  .md\:gap-y-5 {
+    row-gap: 1.25rem;
   }
 
   .md\:p-16 {
@@ -5490,6 +5513,12 @@ video {
 
 .\[\&\:not\(\:first-child\)\]\:mt-9:not(:first-child) {
   margin-top: 2.25rem;
+}
+
+.\[\&\:not\(\:first-child\)\]\:first-of-type\:mt-7:first-of-type:not(
+    :first-child
+  ) {
+  margin-top: 1.75rem;
 }
 
 .\[\&\:not\(\:last-child\)\]\:mb-0:not(:last-child) {
