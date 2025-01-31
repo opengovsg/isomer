@@ -6,6 +6,7 @@ import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
+import { AdminCreateIndexPageButton } from "~/features/dashboard/components/AdminCreateIndexPageButton"
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
 import { CollectionTable } from "~/features/dashboard/components/CollectionTable"
 import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
@@ -56,6 +57,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
         title={metadata.title}
         buttons={
           <>
+            <AdminCreateIndexPageButton />
             <Button
               variant="outline"
               size="md"
