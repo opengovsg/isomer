@@ -1,4 +1,4 @@
-import { Divider, Flex, MenuItemProps, Text } from "@chakra-ui/react"
+import { Divider, Flex, Text } from "@chakra-ui/react"
 import {
   Menu,
   AvatarMenu as OgpAvatarMenu,
