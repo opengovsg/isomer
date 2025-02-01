@@ -36,10 +36,6 @@ export const getLinkToResource = ({
   return `/sites/${siteId}/${getResourceSubpath(type)}/${resourceId}`
 }
 
-export const getRootHref = (siteId: string) => {
-  return `/sites/${siteId}`
-}
-
 export const getFolderHref = (siteId: string, folderId: string) => {
   return `/sites/${siteId}/folders/${folderId}`
 }

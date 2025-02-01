@@ -5,10 +5,12 @@ import { useSetAtom } from "jotai"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
-import type { RouterOutput } from "~/utils/trpc"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
-import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
+import {
+  DashboardLayout,
+  getBreadcrumbsFromRoot,
+} from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
@@ -20,55 +22,13 @@ import { MoveResourceModal } from "~/features/editing-experience/components/Move
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSearchableLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
-import { getFolderHref, getRootHref } from "~/utils/resource"
+import { getFolderHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 
 const folderPageSchema = z.object({
   siteId: z.string(),
   folderId: z.string(),
 })
-
-/**
- * NOTE: This returns the path from root down to the parent of the element.
- * The element at index 0 is always the root
- * and the last element is always the parent of the current folder
- */
-const getBreadcrumbsFrom = (
-  resource: RouterOutput["resource"]["getParentOf"],
-  siteId: string,
-): { href: string; label: string }[] => {
-  // NOTE: We only consider the 3 cases below:
-  // Root -> Folder
-  // Root -> Parent -> Folder
-  // Root -> ... -> Parent -> Folder
-  const rootHref = getRootHref(siteId)
-
-  if (resource.parent?.parentId) {
-    return [
-      { href: rootHref, label: "Home" },
-      {
-        href: getFolderHref(siteId, resource.parent.parentId),
-        label: "...",
-      },
-      {
-        href: getFolderHref(siteId, resource.parent.id),
-        label: resource.parent.title,
-      },
-    ]
-  }
-
-  if (resource.parent?.id) {
-    return [
-      { href: rootHref, label: "Home" },
-      {
-        href: getFolderHref(siteId, resource.parent.id),
-        label: resource.parent.title,
-      },
-    ]
-  }
-
-  return [{ href: rootHref, label: "Home" }]
-}
 
 const FolderPage: NextPageWithLayout = () => {
   const {
@@ -102,7 +62,7 @@ const FolderPage: NextPageWithLayout = () => {
   return (
     <>
       <DashboardLayout
-        breadcrumbs={getBreadcrumbsFrom(resource, siteId).concat({
+        breadcrumbs={getBreadcrumbsFromRoot(resource, siteId).concat({
           href: getFolderHref(siteId, folderId),
           label: title,
         })}
