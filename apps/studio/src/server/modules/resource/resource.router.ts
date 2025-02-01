@@ -585,7 +585,11 @@ export const resourceRouter = router({
         .where("Resource.parentId", "=", parentId)
         .where("Resource.type", "=", ResourceType.IndexPage)
         .select(["Resource.id"])
-        .executeTakeFirstOrThrow()
+        .executeTakeFirst()
+
+      if (!parent) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
 
       return parent
     }),
