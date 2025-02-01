@@ -1,4 +1,5 @@
 import { useParams } from "next/navigation"
+import { Tooltip } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { BiLogoDevTo } from "react-icons/bi"
 
@@ -74,16 +75,23 @@ export const AdminCreateIndexPageButton = () => {
 
   if (!siteId || !parentId || !isIsomerAdmin) return null
   return (
-    <Button
-      variant="outline"
-      size="md"
-      isDisabled={isLoading || hasIndexPage}
-      isLoading={isLoading}
-      onClick={handleCreateIndexPage}
-      leftIcon={<BiLogoDevTo fontSize="1rem" />}
-      aria-label="Create index page"
+    <Tooltip
+      label={
+        hasIndexPage ? "Index page already exists" : "For Isomer Admins only"
+      }
+      placement="top"
     >
-      Add index page
-    </Button>
+      <Button
+        variant="outline"
+        size="md"
+        isDisabled={isLoading || hasIndexPage}
+        isLoading={isLoading}
+        onClick={handleCreateIndexPage}
+        leftIcon={<BiLogoDevTo fontSize="1rem" />}
+        aria-label="Create index page"
+      >
+        Add index page
+      </Button>
+    </Tooltip>
   )
 }
