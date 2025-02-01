@@ -57,21 +57,7 @@ export const AdminCreateIndexPageButton = ({
       },
     })
 
-  const handleCreateIndexPage = () => {
-    if (!siteId || !parentId) {
-      toast({
-        status: "error",
-        title: "Missing required parameters",
-        description: "Site ID and parent ID are required",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-      return
-    }
-
-    createIndexPage({ siteId, parentId: String(parentId) })
-  }
-
-  if (!siteId || !parentId || !isIsomerAdmin) return null
+  if (!isIsomerAdmin) return null
   return (
     <Tooltip
       label={
@@ -84,7 +70,7 @@ export const AdminCreateIndexPageButton = ({
         size="md"
         isDisabled={isLoading || hasIndexPage}
         isLoading={isLoading}
-        onClick={handleCreateIndexPage}
+        onClick={() => createIndexPage({ siteId, parentId: String(parentId) })}
         leftIcon={<BiLogoDevTo fontSize="1rem" />}
         aria-label="Create index page"
       >
