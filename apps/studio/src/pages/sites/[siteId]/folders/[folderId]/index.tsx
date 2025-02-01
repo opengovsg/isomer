@@ -20,16 +20,13 @@ import { MoveResourceModal } from "~/features/editing-experience/components/Move
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSearchableLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
+import { getFolderHref, getRootHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 
 const folderPageSchema = z.object({
   siteId: z.string(),
   folderId: z.string(),
 })
-
-const getFolderHref = (siteId: string, folderId: string) => {
-  return `/sites/${siteId}/folders/${folderId}`
-}
 
 /**
  * NOTE: This returns the path from root down to the parent of the element.
@@ -44,7 +41,7 @@ const getBreadcrumbsFrom = (
   // Root -> Folder
   // Root -> Parent -> Folder
   // Root -> ... -> Parent -> Folder
-  const rootHref = `/sites/${siteId}`
+  const rootHref = getRootHref(siteId)
 
   if (resource.parent?.parentId) {
     return [
@@ -102,12 +99,10 @@ const FolderPage: NextPageWithLayout = () => {
     resourceId: parseInt(folderId),
   })
 
-  const breadcrumbs = getBreadcrumbsFrom(resource, siteId)
-
   return (
     <>
       <DashboardLayout
-        breadcrumbs={breadcrumbs.concat({
+        breadcrumbs={getBreadcrumbsFrom(resource, siteId).concat({
           href: getFolderHref(siteId, folderId),
           label: title,
         })}

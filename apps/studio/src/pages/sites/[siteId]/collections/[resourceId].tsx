@@ -4,6 +4,7 @@ import { useSetAtom } from "jotai"
 import { BiData } from "react-icons/bi"
 import { z } from "zod"
 
+import type { RouterOutput } from "~/utils/trpc"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
@@ -16,6 +17,7 @@ import { CreateCollectionPageModal } from "~/features/editing-experience/compone
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSearchableLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
+import { getCollectionHref, getFolderHref, getRootHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "../../../../../prisma/generated/generatedEnums"
 
@@ -23,6 +25,48 @@ const sitePageSchema = z.object({
   siteId: z.coerce.number(),
   resourceId: z.coerce.number(),
 })
+
+/**
+ * NOTE: This returns the path from root down to the parent of the element.
+ * The element at index 0 is always the root
+ * and the last element is always the parent of the current folder
+ */
+const getBreadcrumbsFrom = (
+  resource: RouterOutput["resource"]["getParentOf"],
+  siteId: string,
+): { href: string; label: string }[] => {
+  // NOTE: We only consider the 3 cases below:
+  // Root -> Folder
+  // Root -> Parent -> Folder
+  // Root -> ... -> Parent -> Folder
+  const rootHref = getRootHref(siteId)
+
+  if (resource.parent?.parentId) {
+    return [
+      { href: rootHref, label: "Home" },
+      {
+        href: getFolderHref(siteId, resource.parent.parentId),
+        label: "...",
+      },
+      {
+        href: getFolderHref(siteId, resource.parent.id),
+        label: resource.parent.title,
+      },
+    ]
+  }
+
+  if (resource.parent?.id) {
+    return [
+      { href: rootHref, label: "Home" },
+      {
+        href: getFolderHref(siteId, resource.parent.id),
+        label: resource.parent.title,
+      },
+    ]
+  }
+
+  return [{ href: rootHref, label: "Home" }]
+}
 
 const CollectionResourceListPage: NextPageWithLayout = () => {
   const {
@@ -33,6 +77,11 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
   const { siteId, resourceId } = useQueryParse(sitePageSchema)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
 
+  const [resource] = trpc.resource.getParentOf.useSuspenseQuery({
+    siteId: Number(siteId),
+    resourceId: String(resourceId),
+  })
+
   // TODO: Handle not found error in error boundary
   const [metadata] = trpc.collection.getMetadata.useSuspenseQuery({
     siteId,
@@ -42,16 +91,10 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
   return (
     <>
       <DashboardLayout
-        breadcrumbs={[
-          {
-            href: `/sites/${siteId}`,
-            label: "Home",
-          },
-          {
-            href: `/sites/${siteId}/collections/${resourceId}`,
-            label: metadata.title,
-          },
-        ]}
+        breadcrumbs={getBreadcrumbsFrom(resource, String(siteId)).concat({
+          href: getCollectionHref(String(siteId), String(resourceId)),
+          label: metadata.title,
+        })}
         icon={<BiData />}
         title={metadata.title}
         buttons={
