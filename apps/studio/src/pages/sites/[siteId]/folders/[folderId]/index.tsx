@@ -2,7 +2,7 @@ import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useSetAtom } from "jotai"
-import { BiFileBlank, BiFolder } from "react-icons/bi"
+import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
 import type { RouterOutput } from "~/utils/trpc"
@@ -13,6 +13,7 @@ import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResou
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
+import { CreateCollectionModal } from "~/features/editing-experience/components/CreateCollectionModal"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
@@ -83,6 +84,11 @@ const FolderPage: NextPageWithLayout = () => {
     onOpen: onFolderCreateModalOpen,
     onClose: onFolderCreateModalClose,
   } = useDisclosure()
+  const {
+    isOpen: isCollectionCreateModalOpen,
+    onOpen: onCollectionCreateModalOpen,
+    onClose: onCollectionCreateModalClose,
+  } = useDisclosure()
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
 
   const { folderId, siteId } = useQueryParse(folderPageSchema)
@@ -145,6 +151,12 @@ const FolderPage: NextPageWithLayout = () => {
                       >
                         Page
                       </Menu.Item>
+                      <Menu.Item
+                        onClick={onCollectionCreateModalOpen}
+                        icon={<BiData fontSize="1rem" />}
+                      >
+                        Collection
+                      </Menu.Item>
                     </Menu.List>
                   </Portal>
                 </>
@@ -167,6 +179,12 @@ const FolderPage: NextPageWithLayout = () => {
       <CreateFolderModal
         isOpen={isFolderCreateModalOpen}
         onClose={onFolderCreateModalClose}
+        siteId={parseInt(siteId)}
+        parentFolderId={parseInt(folderId)}
+      />
+      <CreateCollectionModal
+        isOpen={isCollectionCreateModalOpen}
+        onClose={onCollectionCreateModalClose}
         siteId={parseInt(siteId)}
         parentFolderId={parseInt(folderId)}
       />
