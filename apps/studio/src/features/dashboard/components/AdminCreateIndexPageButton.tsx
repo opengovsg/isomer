@@ -1,4 +1,3 @@
-import { useParams } from "next/navigation"
 import { Tooltip } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { BiLogoDevTo } from "react-icons/bi"
@@ -7,22 +6,24 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsIsomerAdmin } from "~/features/permissions/hooks/useIsIsomerAdmin"
 import { trpc } from "~/utils/trpc"
 
-export const AdminCreateIndexPageButton = () => {
-  const params = useParams()
+interface AdminCreateIndexPageButtonProps {
+  siteId: number
+  parentId: number
+}
+export const AdminCreateIndexPageButton = ({
+  siteId,
+  parentId,
+}: AdminCreateIndexPageButtonProps) => {
   const toast = useToast()
   const utils = trpc.useUtils()
   const isIsomerAdmin = useIsIsomerAdmin()
 
-  // Validate required parameters
-  const siteId = params.siteId
-  const parentId = params.folderId ?? params.resourceId
-
-  const { data: indexPageId } = trpc.resource.getIndexPage.useQuery({
-    siteId: Number(siteId),
+  const { data: indexPage } = trpc.resource.getIndexPage.useQuery({
+    siteId,
     parentId: String(parentId),
   })
 
-  const hasIndexPage = !!indexPageId
+  const hasIndexPage = !!indexPage
 
   const { mutate: createIndexPage, isLoading } =
     trpc.page.createIndexPage.useMutation({
@@ -36,7 +37,7 @@ export const AdminCreateIndexPageButton = () => {
           utils.resource.listWithoutRoot.invalidate({ siteId: Number(siteId) }),
           utils.collection.list.invalidate({ siteId: Number(siteId) }),
           utils.resource.getIndexPage.invalidate({
-            siteId: Number(siteId),
+            siteId,
             parentId: String(parentId),
           }),
         ])
@@ -67,10 +68,7 @@ export const AdminCreateIndexPageButton = () => {
       return
     }
 
-    createIndexPage({
-      siteId: Number(siteId),
-      parentId: String(parentId),
-    })
+    createIndexPage({ siteId, parentId: String(parentId) })
   }
 
   if (!siteId || !parentId || !isIsomerAdmin) return null

@@ -574,7 +574,7 @@ export const pageRouter = router({
       // Get the full permalink of the parent
       const parentFullPermalink = await getResourceFullPermalink(
         siteId,
-        Number(parentId),
+        parseInt(parentId),
       )
       if (!parentFullPermalink) {
         throw new TRPCError({

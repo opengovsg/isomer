@@ -587,6 +587,6 @@ export const resourceRouter = router({
         .select(["Resource.id"])
         .executeTakeFirstOrThrow()
 
-      return { id: parent.id }
+      return parent
     }),
 })

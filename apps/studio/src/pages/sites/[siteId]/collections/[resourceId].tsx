@@ -57,7 +57,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
         title={metadata.title}
         buttons={
           <>
-            <AdminCreateIndexPageButton />
+            <AdminCreateIndexPageButton siteId={siteId} parentId={resourceId} />
             <Button
               variant="outline"
               size="md"

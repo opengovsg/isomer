@@ -110,7 +110,10 @@ const FolderPage: NextPageWithLayout = () => {
         title={title}
         buttons={
           <>
-            <AdminCreateIndexPageButton />
+            <AdminCreateIndexPageButton
+              siteId={parseInt(siteId)}
+              parentId={parseInt(folderId)}
+            />
             <Button
               variant="outline"
               size="md"
