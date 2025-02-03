@@ -1,3 +1,5 @@
+import { env } from "~/env.mjs"
+
 const waitFor = (baseTimeoutMs = 500) => {
   return new Promise((resolve) => setTimeout(resolve, baseTimeoutMs))
 }
@@ -37,11 +39,12 @@ export const useImage = ({
   retries = 3,
   baseTimeoutMs = 500,
 }: UseImageProps) => {
+  const assetsBaseUrl = `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
   const handleImage = async (src: string) => {
     try {
       return await retry(
         async () => {
-          const response = await fetch(src)
+          const response = await fetch(`${assetsBaseUrl}${src}`)
           if (!response.ok) {
             throw new Error(`Unable to read from ${src}`)
           }
