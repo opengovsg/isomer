@@ -32,7 +32,7 @@ export const AvatarMenu = () => {
       <Menu.Item onClick={() => logout()}>
         <Flex alignItems="center" gap="0.75rem">
           <BiLogOut size="1.25rem" />
-          <Text>Sign Out</Text>
+          <Text>Sign out</Text>
         </Flex>
       </Menu.Item>
     </OgpAvatarMenu>
