@@ -583,11 +583,21 @@ export const pageRouter = router({
         })
       }
 
-      return db.transaction().execute(async (tx) => {
-        const blob = await tx
-          .insertInto("Blob")
-          .values({
-            content: jsonb({
+      const blobContent =
+        parent.type === ResourceType.Collection
+          ? {
+              layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
+              page: {
+                title: parent.title,
+                subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
+                defaultSortBy: "date",
+                defaultSortDirection: "asc",
+              },
+              content: [],
+              version: "0.1.0",
+            }
+          : {
+              layout: ISOMER_USABLE_PAGE_LAYOUTS.Index,
               page: {
                 title: parent.title,
                 permalink: parentFullPermalink,
@@ -597,14 +607,14 @@ export const pageRouter = router({
                   summary: `Pages in ${parent.title}`,
                 },
               },
-              layout:
-                parent.type === ResourceType.Collection
-                  ? ISOMER_USABLE_PAGE_LAYOUTS.Collection
-                  : ISOMER_USABLE_PAGE_LAYOUTS.Index,
               content: [],
               version: "0.1.0",
-            }),
-          })
+            }
+
+      return db.transaction().execute(async (tx) => {
+        const blob = await tx
+          .insertInto("Blob")
+          .values({ content: jsonb(blobContent) })
           .returning("Blob.id")
           .executeTakeFirstOrThrow()
 
