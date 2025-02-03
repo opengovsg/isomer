@@ -51,7 +51,7 @@ import {
   jsonFormsVerticalLayoutTester,
 } from "./renderers"
 
-const renderers: JsonFormsRendererRegistryEntry[] = [
+export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsProseControlTester,
     renderer: JsonFormsProseControl,
