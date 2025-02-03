@@ -47,7 +47,7 @@ const SiteAdminPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteAdminSchema)
   const isUserIsomerAdmin = useIsUserIsomerAdmin()
 
-  if (isUserIsomerAdmin) {
+  if (!isUserIsomerAdmin) {
     toast({
       title: "You do not have permission to access this page.",
       status: "error",
