@@ -127,6 +127,7 @@ export const pageRouter = router({
           ResourceType.CollectionPage,
           ResourceType.CollectionLink,
         ])
+        .where("r.parentId", "=", String(parentId))
         .select((eb) => {
           return eb.fn
             .coalesce(
@@ -136,7 +137,6 @@ export const pageRouter = router({
             .as("category")
         })
         .distinct()
-        .where("r.parentId", "=", String(parentId))
         .execute()
 
       const categories = blobs
