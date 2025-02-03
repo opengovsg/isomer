@@ -34,9 +34,13 @@ export const VicaWidgetClient = (vica: Omit<VicaProps, "site">) => {
     <div
       id="webchat"
       {...vica}
+      // We ignore config passed in from DB and manually overwrite
+      // the following attributes to ensure consistency and best brand appearance
       app-font-family="Inter, system-ui, sans-serif"
-      // NOTE: Clarifying with VICA regarding color scheme
-      // Once confirmed, will override with site's color scheme for consistency
+      app-foreground-color="#FFFFFF" // hardcoded to be white for all agencies
+      app-color="var(--color-brand-canvas-inverse)"
+      app-button-border-color="var(--color-brand-canvas-inverse)"
+      app-canvas-background-color="var(--color-brand-canvas-default)"
     />
   )
 }
