@@ -25,7 +25,7 @@ import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
-import { setSiteConfigAdminSchema } from "~/schemas/site"
+import { setSiteConfigByAdminSchema } from "~/schemas/site"
 import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
 import { trpc } from "~/utils/trpc"
 
@@ -56,31 +56,6 @@ const SiteAdminPage: NextPageWithLayout = () => {
     void router.push(`/sites/${siteId}`)
   }
 
-  const { mutate, isLoading } = trpc.site.setSiteConfigAdmin.useMutation({
-    onSuccess: async () => {
-      // reset({ config, theme, navbar, footer })
-      await trpcUtils.site.getConfig.invalidate({ id: siteId })
-      await trpcUtils.site.getTheme.invalidate({ id: siteId })
-      await trpcUtils.site.getNavbar.invalidate({ id: siteId })
-      await trpcUtils.site.getFooter.invalidate({ id: siteId })
-      toast({
-        title: "Saved site config!",
-        description: "Check your site in 5-10 minutes to view it live.",
-        status: "success",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-    onError: () => {
-      toast({
-        title: "Error saving site config!",
-        description:
-          "If this persists, please report this issue at support@isomer.gov.sg",
-        status: "error",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-  })
-
   const [previousConfig] = trpc.site.getConfig.useSuspenseQuery({
     id: siteId,
   })
@@ -94,13 +69,15 @@ const SiteAdminPage: NextPageWithLayout = () => {
     id: siteId,
   })
 
-  // NOTE: Refining the setNotificationSchema here instead of in site.ts since omit does not work after refine
+  // NOTE: Refining the setSiteConfigByAdminSchema here instead of in site.ts since omit does not work after refine
   const {
+    reset,
+    watch,
     register,
     handleSubmit,
     formState: { isDirty, errors },
   } = useZodForm({
-    schema: setSiteConfigAdminSchema
+    schema: setSiteConfigByAdminSchema
       .omit({ siteId: true })
       .refine((data) => !!data.config, {
         message: "Site config must be present",
@@ -123,6 +100,32 @@ const SiteAdminPage: NextPageWithLayout = () => {
       theme: JSON.stringify(previousTheme, null, 2),
       navbar: JSON.stringify(previousNavbar.content, null, 2),
       footer: JSON.stringify(previousFooter.content, null, 2),
+    },
+  })
+
+  const { mutate, isLoading } = trpc.site.setSiteConfigByAdmin.useMutation({
+    onSuccess: async () => {
+      await trpcUtils.site.getConfig.invalidate({ id: siteId })
+      await trpcUtils.site.getTheme.invalidate({ id: siteId })
+      await trpcUtils.site.getNavbar.invalidate({ id: siteId })
+      await trpcUtils.site.getFooter.invalidate({ id: siteId })
+      // Reset the form's isDirty but use the latest values provided by the user
+      reset(watch())
+      toast({
+        title: "Saved site config!",
+        description: "Check your site in 5-10 minutes to view it live.",
+        status: "success",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
+    onError: () => {
+      toast({
+        title: "Error saving site config!",
+        description:
+          "If this persists, please report this issue at support@isomer.gov.sg",
+        status: "error",
+        ...BRIEF_TOAST_SETTINGS,
+      })
     },
   })
 

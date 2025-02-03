@@ -10,7 +10,7 @@ import {
   getNameSchema,
   getNotificationSchema,
   setNotificationSchema,
-  setSiteConfigAdminSchema,
+  setSiteConfigByAdminSchema,
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -144,8 +144,8 @@ export const siteRouter = router({
 
       return input
     }),
-  setSiteConfigAdmin: protectedProcedure
-    .input(setSiteConfigAdminSchema)
+  setSiteConfigByAdmin: protectedProcedure
+    .input(setSiteConfigByAdminSchema)
     .mutation(async ({ ctx, input }) => {
       const { siteId, config, theme, navbar, footer } = input
       await validateUserPermissionsForSite({
