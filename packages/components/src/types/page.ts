@@ -30,8 +30,9 @@ const imageSchemaObject = Type.Object({
   image: Type.Optional(
     Type.Object({
       src: generateImageSrcSchema({
+        title: "Thumbnail",
         description:
-          "Displayed as a thumbnail in the collection view",
+          "Upload an image if you want to have a custom thumbnail for this item",
       }),
       alt: AltTextSchema,
     }),
