@@ -3,7 +3,7 @@ import { Button, useToast } from "@opengovsg/design-system-react"
 import { BiLogoDevTo } from "react-icons/bi"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useIsIsomerAdmin } from "~/features/permissions/hooks/useIsIsomerAdmin"
+import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { trpc } from "~/utils/trpc"
 
 interface AdminCreateIndexPageButtonProps {
@@ -16,7 +16,7 @@ export const AdminCreateIndexPageButton = ({
 }: AdminCreateIndexPageButtonProps) => {
   const toast = useToast()
   const utils = trpc.useUtils()
-  const isIsomerAdmin = useIsIsomerAdmin()
+  const isUserIsomerAdmin = useIsUserIsomerAdmin()
 
   const { data: indexPage } = trpc.resource.getIndexPage.useQuery({
     siteId,
@@ -57,7 +57,7 @@ export const AdminCreateIndexPageButton = ({
       },
     })
 
-  if (!isIsomerAdmin) return null
+  if (!isUserIsomerAdmin) return null
   return (
     <Tooltip
       label={
