@@ -34,6 +34,7 @@ export type { SiderailProps } from "./Siderail"
 export type { SkipToContentProps } from "./SkipToContent"
 export type { TableOfContentsProps } from "./TableOfContents"
 export type { WogaaProps } from "./Wogaa"
+export type { VicaProps } from "./Vica"
 export type {
   GoogleTagManagerHeaderScriptProps,
   GoogleTagManagerHeaderProps,

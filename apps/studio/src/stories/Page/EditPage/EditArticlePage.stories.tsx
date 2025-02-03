@@ -7,10 +7,14 @@ import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
-import { createBannerGbParameters } from "~/stories/utils/growthbook"
+import {
+  createBannerGbParameters,
+  createDropdownGbParameters,
+} from "~/stories/utils/growthbook"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
+  pageHandlers.getCategories.default(),
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
   pageHandlers.countWithoutRoot.default(),
@@ -115,5 +119,17 @@ export const LinkModal: Story = {
     await AddTextBlock.play?.(context)
 
     await userEvent.click(canvas.getByRole("button", { name: /link/i }))
+  },
+}
+
+export const Dropdown: Story = {
+  parameters: {
+    growthbook: [createDropdownGbParameters("1")],
+  },
+  play: async ({ canvasElement, ...rest }) => {
+    const canvas = within(canvasElement)
+    await EditFixedBlockState.play?.({ canvasElement, ...rest })
+    const button = await canvas.findByRole("combobox")
+    await userEvent.click(button)
   },
 }

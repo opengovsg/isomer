@@ -32,4 +32,5 @@ export const LogoCloudSchema = Type.Object(
 
 export type LogoCloudProps = Static<typeof LogoCloudSchema> & {
   site: IsomerSiteProps
+  shouldLazyLoad?: boolean
 }

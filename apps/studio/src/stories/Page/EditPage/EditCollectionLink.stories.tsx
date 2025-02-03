@@ -8,12 +8,16 @@ import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import CollectionLinkPage from "~/pages/sites/[siteId]/links/[linkId]"
-import { createBannerGbParameters } from "~/stories/utils/growthbook"
+import {
+  createBannerGbParameters,
+  createDropdownGbParameters,
+} from "~/stories/utils/growthbook"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
+  pageHandlers.getCategories.default(),
   pageHandlers.countWithoutRoot.default(),
   sitesHandlers.getLocalisedSitemap.default(),
   sitesHandlers.getTheme.default(),
@@ -58,6 +62,17 @@ export default meta
 type Story = StoryObj<typeof CollectionLinkPage>
 
 export const Default: Story = {}
+export const Dropdown: Story = {
+  parameters: {
+    growthbook: [createDropdownGbParameters("1")],
+  },
+  play: async (context) => {
+    const { canvasElement } = context
+    const screen = within(canvasElement)
+    const button = await screen.findByRole("combobox")
+    await userEvent.click(button)
+  },
+}
 
 export const PublishedState: Story = {
   parameters: {

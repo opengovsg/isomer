@@ -25,3 +25,7 @@ export const isGovEmail = (value: unknown) => {
 export const isValidEmail = (value: unknown) => {
   return typeof value === "string" && isEmail(value)
 }
+/*
+ * Normalizes an email address to lowercase.
+ */
+export const normalizeEmail = (email: string): string => email.toLowerCase()

@@ -5,11 +5,15 @@ import {
   Footer,
   GoogleTagManagerBody,
   GoogleTagManagerHeader,
+  GoogleTagManagerPreload,
   Masthead,
   Navbar,
   Notification,
+  ScrollToTop,
   SkipToContent,
   UnsupportedBrowserBanner,
+  VicaStylesheet,
+  VicaWidget,
   Wogaa,
 } from "../../components/internal"
 import { SKIP_TO_CONTENT_ANCHOR_ID } from "../../constants"
@@ -37,16 +41,23 @@ export const Skeleton = ({
       <FontPreload />
 
       {shouldIncludeGTM && (
-        <GoogleTagManagerHeader
-          siteGtmId={site.siteGtmId}
-          isomerGtmId={site.isomerGtmId}
-          ScriptComponent={ScriptComponent}
-        />
+        <>
+          <GoogleTagManagerPreload />
+          <GoogleTagManagerHeader
+            siteGtmId={site.siteGtmId}
+            isomerGtmId={site.isomerGtmId}
+            ScriptComponent={ScriptComponent}
+          />
+        </>
       )}
 
       {site.isGovernment && <Wogaa ScriptComponent={ScriptComponent} />}
 
       {!isStaging && <DatadogRum />}
+
+      {site.vica && <VicaStylesheet />}
+
+      <ScrollToTop />
 
       <header>
         <SkipToContent LinkComponent={LinkComponent} />
@@ -92,13 +103,15 @@ export const Skeleton = ({
         {...site.footerItems}
       />
 
-      {/* needs to be the last element in the body */}
       {shouldIncludeGTM && (
         <GoogleTagManagerBody
           siteGtmId={site.siteGtmId}
           isomerGtmId={site.isomerGtmId}
         />
       )}
+
+      {/* Ensures that the webchat widget only loads after the page has loaded */}
+      {site.vica && <VicaWidget {...site.vica} />}
     </>
   )
 }

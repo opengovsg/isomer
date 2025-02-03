@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -10,7 +11,12 @@ const meta: Meta<typeof DynamicDataBanner> = {
   component: DynamicDataBanner,
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    chromatic: withChromaticModes([
+      "mobileSmall",
+      "mobile",
+      "tablet",
+      "desktop",
+    ]),
   },
   args: {
     site: {
@@ -70,21 +76,8 @@ const meta: Meta<typeof DynamicDataBanner> = {
     label: "View all dates",
     errorMessage: [
       {
-        text: "Not seeing the prayer times? ",
+        text: "Couldn’t load prayer times. Try refreshing the page.",
         type: "text",
-      },
-      {
-        text: "Report an issue",
-        type: "text",
-        marks: [
-          { type: "bold" },
-          {
-            type: "link",
-            attrs: {
-              href: "https://www.form.gov.sg/some-link",
-            },
-          },
-        ],
       },
     ],
   },
@@ -95,36 +88,50 @@ type Story = StoryObj<typeof DynamicDataBanner>
 
 export const Default: Story = {
   parameters: {
-    mockData: [
-      {
-        url: "https://jsonplaceholder.com/muis_prayers_time",
-        method: "GET",
-        status: 200,
-        response: {
-          [getSingaporeDateYYYYMMDD()]: {
-            hijriDate: "17 Jamadilawal 1442H",
-            subuh: "5:44am",
-            syuruk: "7:08am",
-            zohor: "1:10pm",
-            asar: "4:34pm",
-            maghrib: "7:11pm",
-            isyak: "8:25pm",
-          },
-        },
-      },
-    ],
+    msw: {
+      handlers: [
+        http.get("https://jsonplaceholder.com/muis_prayers_time", () => {
+          return HttpResponse.json({
+            [getSingaporeDateYYYYMMDD()]: {
+              hijriDate: "17 Jamadilawal 1442H",
+              subuh: "5:44am",
+              syuruk: "7:08am",
+              zohor: "1:10pm",
+              asar: "4:34pm",
+              maghrib: "7:11pm",
+              isyak: "8:25pm",
+            },
+          })
+        }),
+      ],
+    },
+  },
+}
+
+export const Loading: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        http.get("https://jsonplaceholder.com/muis_prayers_time", () => {
+          return new Promise(() => {
+            // Never resolve the promise
+          })
+        }),
+      ],
+    },
   },
 }
 
 export const Error: Story = {
   parameters: {
-    mockData: [
-      {
-        url: "https://jsonplaceholder.com/muis_prayers_time",
-        method: "GET",
-        status: 500,
-        response: {},
-      },
-    ],
+    msw: {
+      handlers: [
+        http.get("https://jsonplaceholder.com/muis_prayers_time", () => {
+          return new HttpResponse(null, {
+            status: 500,
+          })
+        }),
+      ],
+    },
   },
 }

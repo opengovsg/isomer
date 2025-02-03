@@ -81,7 +81,9 @@ export function BaseLinkControl({
         >
           {!!data ? (
             <>
-              {pageType !== LINK_TYPES.Page && <Text>{displayedHref}</Text>}
+              {pageType !== LINK_TYPES.Page && (
+                <Text overflow="auto">{displayedHref}</Text>
+              )}
               {pageType === LINK_TYPES.Page && dataString.length > 0 && (
                 <Suspense fallback={<Skeleton w="100%" h="100%" />}>
                   <SuspendableLabel

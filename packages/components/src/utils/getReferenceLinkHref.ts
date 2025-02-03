@@ -58,7 +58,10 @@ const convertAssetLinks = (
     return originalLink
   }
 
-  const match = /^\/(\d+)\//.exec(originalLink)
+  const match =
+    /^\/(\d+)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//.exec(
+      originalLink,
+    )
 
   if (!match) {
     return originalLink

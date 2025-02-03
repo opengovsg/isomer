@@ -21,6 +21,10 @@ import { isEmpty } from "lodash"
 import { z } from "zod"
 
 import type { LinkTypes } from "~/features/editing-experience/components/LinkEditor/constants"
+import {
+  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  MAX_FILE_SIZE_BYTES,
+} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
 import {
   LinkEditorContextProvider,
@@ -242,6 +246,8 @@ const ModalLinkEditor = ({
       }
       fileLinkElement={
         <FileAttachment
+          maxSizeInBytes={MAX_FILE_SIZE_BYTES}
+          acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
           siteId={siteId}
           setHref={(href) => handleChange(href ?? "")}
         />

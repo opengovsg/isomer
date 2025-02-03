@@ -135,7 +135,7 @@ const SuspendableSiteList = (): JSX.Element => {
       {sites.map((site) => (
         <Site
           siteId={site.id}
-          siteName={site.name}
+          siteName={site.config.siteName}
           siteLogoUrl={generateAssetUrl(site.config.logoUrl)}
         />
       ))}

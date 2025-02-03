@@ -111,6 +111,12 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
   }
 }
 
+export const shouldBlockIndexing = (
+  environment: IsomerPageSchemaType["site"]["environment"],
+): boolean => {
+  return environment !== "production"
+}
+
 export const getRobotsTxt = (props: IsomerPageSchemaType) => {
   const rules = [
     {
@@ -121,13 +127,12 @@ export const getRobotsTxt = (props: IsomerPageSchemaType) => {
 
   return {
     sitemap: props.site.url ? `${props.site.url}/sitemap.xml` : undefined,
-    rules:
-      props.site.environment === "staging"
-        ? {
-            userAgent: "*",
-            disallow: "/",
-          }
-        : rules,
+    rules: shouldBlockIndexing(props.site.environment)
+      ? {
+          userAgent: "*",
+          disallow: "/",
+        }
+      : rules,
   }
 }
 
