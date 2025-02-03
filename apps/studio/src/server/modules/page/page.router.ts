@@ -118,10 +118,6 @@ export const pageRouter = router({
       const { parentId } = await db
         .selectFrom("Resource")
         .where("id", "=", String(pageId))
-        .where("type", "in", [
-          ResourceType.CollectionPage,
-          ResourceType.CollectionLink,
-        ])
         .select("parentId")
         .executeTakeFirstOrThrow()
 
@@ -130,10 +126,6 @@ export const pageRouter = router({
         .leftJoin("Blob as b", "r.draftBlobId", "b.id")
         .leftJoin("Version as v", "r.publishedVersionId", "v.id")
         .leftJoin("Blob as vb", "v.blobId", "vb.id")
-        .where("r.type", "in", [
-          ResourceType.CollectionPage,
-          ResourceType.CollectionLink,
-        ])
         .where("r.parentId", "=", String(parentId))
         .select((eb) => {
           return eb.fn
