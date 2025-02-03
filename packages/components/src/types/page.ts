@@ -31,7 +31,7 @@ const imageSchemaObject = Type.Object({
     Type.Object({
       src: generateImageSrcSchema({
         description:
-          "Displayed at the top of the page and as a thumbnail in the collection view",
+          "Displayed as a thumbnail in the collection view",
       }),
       alt: AltTextSchema,
     }),
