@@ -19,7 +19,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { publishSite } from "../aws/codebuild.service"
-import { db, jsonb, ResourceType } from "../database"
+import { db, jsonb, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
@@ -97,6 +97,55 @@ export const pageRouter = router({
           "Resource.type",
         ])
         .execute()
+    }),
+
+  getCategories: protectedProcedure
+    .input(basePageSchema)
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
+      const { parentId } = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(pageId))
+        .where("type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+        ])
+        .select("parentId")
+        .executeTakeFirstOrThrow()
+
+      const blobs = await db
+        .selectFrom("Resource as r")
+        .leftJoin("Blob as b", "r.draftBlobId", "b.id")
+        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
+        .leftJoin("Blob as vb", "v.blobId", "vb.id")
+        .where("r.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+        ])
+        .where("r.parentId", "=", String(parentId))
+        .select((eb) => {
+          return eb.fn
+            .coalesce(
+              sql<string>`b.content->'page'->>'category'`,
+              sql<string>`vb.content->'page'->>'category'`,
+            )
+            .as("category")
+        })
+        .distinct()
+        .execute()
+
+      const categories = blobs
+        .map((blob) => blob.category)
+        .filter((c) => !!c && !!c.trim())
+
+      return {
+        categories,
+      }
     }),
 
   readPage: protectedProcedure

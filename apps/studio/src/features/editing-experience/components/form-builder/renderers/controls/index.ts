@@ -66,3 +66,7 @@ export {
   default as JsonFormsUnionRootControl,
   jsonFormsUnionRootControlTester,
 } from "./JsonFormsUnionRootControl"
+export {
+  default as JsonFormsCategoryControl,
+  jsonFormsCategoryControlTester,
+} from "./JsonFormsCategoryControl"
