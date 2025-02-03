@@ -8,6 +8,7 @@ import { z } from "zod"
 import type { RouterOutput } from "~/utils/trpc"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
+import { AdminCreateIndexPageButton } from "~/features/dashboard/components/AdminCreateIndexPageButton"
 import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
@@ -109,6 +110,10 @@ const FolderPage: NextPageWithLayout = () => {
         title={title}
         buttons={
           <>
+            <AdminCreateIndexPageButton
+              siteId={parseInt(siteId)}
+              parentId={parseInt(folderId)}
+            />
             <Button
               variant="outline"
               size="md"
