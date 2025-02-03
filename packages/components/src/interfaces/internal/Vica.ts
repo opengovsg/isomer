@@ -1,4 +1,4 @@
-import type { IsomerSiteProps, ScriptComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 
 // NOTE: not all props will be used even if we passed them in
 // as we will override some of them with Isomer's configuration e.g. font-family
@@ -48,5 +48,4 @@ export interface VicaWidgetProps {
 
 export interface VicaProps extends VicaWidgetProps {
   site: IsomerSiteProps
-  ScriptComponent?: ScriptComponentType
 }
