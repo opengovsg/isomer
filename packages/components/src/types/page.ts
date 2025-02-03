@@ -13,6 +13,7 @@ import { REF_HREF_PATTERN } from "~/utils/validation"
 const categorySchemaObject = Type.Object({
   category: Type.String({
     title: "Article category",
+    format: "category",
     description:
       "The category is used for filtering in the parent collection page",
   }),
