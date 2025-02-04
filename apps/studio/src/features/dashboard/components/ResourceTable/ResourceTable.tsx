@@ -13,6 +13,7 @@ import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlacehol
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 import { ResourceTableMenu } from "./ResourceTableMenu"
+import { StateCell } from "./StateCell"
 import { TitleCell } from "./TitleCell"
 
 type ResourceTableData = RouterOutput["resource"]["listWithoutRoot"][number]
@@ -32,6 +33,10 @@ const getColumns = ({ siteId }: ResourceTableProps) => [
         type={row.original.type}
       />
     ),
+  }),
+  columnsHelper.display({
+    id: "resource_state",
+    cell: ({ row }) => <StateCell draftBlobId={row.original.draftBlobId} />,
   }),
   columnsHelper.display({
     id: "resource_menu",
