@@ -141,7 +141,7 @@ async function main() {
           category: resource.content.page.category,
           tags: resource.content.page.tags,
           date: resource.content.page.date,
-          image: getResourceImage(resource),
+          image: getResourceImage({ resource }),
           ref: resource.content.page.ref, // For file and link layouts
         }
 

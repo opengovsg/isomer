@@ -5,9 +5,10 @@ const JSON_SCHEMA_VERSION = "0.1.0"
 const schemaDirPath = path.join(__dirname, "../schema")
 const sitemapPath = path.join(__dirname, "../sitemap.json")
 
-const getResourceImage = (schemaData) => {
+const getResourceImage = ({ schemaData, useFallbackIfNoImage = false }) => {
   if (schemaData.page.image) return schemaData.page.image
 
+  if (!useFallbackIfNoImage) return undefined
   if (!Array.isArray(schemaData.content)) return undefined
 
   const firstImageComponent = schemaData.content.find(
@@ -86,7 +87,7 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
     summary,
     category: schemaData.page.category,
     date: schemaData.page.date,
-    image: getResourceImage(schemaData),
+    image: getResourceImage({ schemaData }),
     tags: schemaData.page.tags,
   }
 
