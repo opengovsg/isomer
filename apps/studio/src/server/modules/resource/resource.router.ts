@@ -31,6 +31,7 @@ import {
 } from "../permissions/permissions.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
+  defaultResourceWithPublisherInfoSelect,
   getSearchRecentlyEdited,
   getSearchResults,
   getSearchWithResourceIds,
@@ -373,20 +374,7 @@ export const resourceRouter = router({
       }
 
       // TODO: Add pagination support
-      return query
-        .select([
-          "Resource.id",
-          "Resource.permalink",
-          "Resource.title",
-          "Resource.publishedVersionId",
-          "Resource.draftBlobId",
-          "Resource.type",
-          "Resource.parentId",
-          "Resource.updatedAt",
-          "Version.publishedAt",
-          "User.email as publisherEmail",
-        ])
-        .execute()
+      return query.select(defaultResourceWithPublisherInfoSelect).execute()
     }),
 
   delete: protectedProcedure

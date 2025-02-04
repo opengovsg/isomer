@@ -16,6 +16,7 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
   defaultResourceSelect,
+  defaultResourceWithPublisherInfoSelect,
   getSiteResourceById,
   updateBlobById,
 } from "../resource/resource.service"
@@ -215,11 +216,7 @@ export const collectionRouter = router({
         .orderBy("Resource.title", "asc")
         .limit(limit)
         .offset(offset)
-        .select([
-          ...defaultResourceSelect,
-          "Version.publishedAt as publishedAt",
-          "User.email as publisherEmail",
-        ])
+        .select(defaultResourceWithPublisherInfoSelect)
         .execute()
     }),
   readCollectionLink: protectedProcedure

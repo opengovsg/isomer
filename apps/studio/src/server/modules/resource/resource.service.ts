@@ -28,6 +28,12 @@ export const defaultResourceSelect = [
   "Resource.updatedAt",
 ] satisfies SelectExpression<DB, "Resource">[]
 
+export const defaultResourceWithPublisherInfoSelect = [
+  ...defaultResourceSelect,
+  "Version.publishedAt",
+  "User.email as publisherEmail",
+] satisfies SelectExpression<DB, "Resource" | "Version" | "User">[]
+
 const defaultResourceWithBlobSelect = [
   ...defaultResourceSelect,
   "Blob.content",
