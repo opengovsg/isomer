@@ -10,6 +10,16 @@ import {
 import { AltTextSchema, generateImageSrcSchema } from "~/interfaces/complex"
 import { REF_HREF_PATTERN } from "~/utils/validation"
 
+const fallbackIfNoImageSchemaObject = Type.Object({
+  fallbackIfNoImage: Type.Optional(
+    Type.Boolean({
+      title: "Fallback if no image",
+      description: "Fallbacks to images in the content if no image is provided",
+      default: false,
+    }),
+  ),
+})
+
 const categorySchemaObject = Type.Object({
   category: Type.String({
     title: "Article category",
@@ -87,11 +97,15 @@ export const CollectionPagePageSchema = Type.Intersect([
     }),
   }),
   TagsSchema,
+  fallbackIfNoImageSchemaObject,
 ])
 
-export const ContentPagePageSchema = Type.Object({
-  contentPageHeader: ContentPageHeaderSchema,
-})
+export const ContentPagePageSchema = Type.Intersect([
+  Type.Object({
+    contentPageHeader: ContentPageHeaderSchema,
+  }),
+  fallbackIfNoImageSchemaObject,
+])
 
 export const DatabasePagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,
