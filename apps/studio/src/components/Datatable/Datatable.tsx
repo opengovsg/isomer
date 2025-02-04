@@ -119,7 +119,7 @@ export const Datatable = <T extends object>({
                 <Tr
                   key={row.id}
                   borderBottomWidth="1px"
-                  _hover={{ bg: "interaction.muted.main.hover" }}
+                  _hover={{ bgColor: "interaction.muted.main.hover" }}
                 >
                   {row.getVisibleCells().map((cell) => {
                     return (
