@@ -41,7 +41,10 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
             colorScheme={draftBlobId ? "warning" : "success"}
           >
             <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
-            <Text textStyle="legal">
+            <Text
+              textStyle="legal"
+              color={draftBlobId ? "yellow.400" : "green.600"}
+            >
               {draftBlobId ? ResourceState.Draft : ResourceState.Published}
             </Text>
           </Badge>
