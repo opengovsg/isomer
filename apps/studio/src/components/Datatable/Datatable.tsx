@@ -116,7 +116,11 @@ export const Datatable = <T extends object>({
             {rows.length === 0 && emptyPlaceholder}
             {rows.map((row) => {
               return (
-                <Tr key={row.id} borderBottomWidth="1px">
+                <Tr
+                  key={row.id}
+                  borderBottomWidth="1px"
+                  _hover={{ bgColor: "interaction.muted.main.hover" }}
+                >
                   {row.getVisibleCells().map((cell) => {
                     return (
                       <Td key={cell.id} verticalAlign="center">

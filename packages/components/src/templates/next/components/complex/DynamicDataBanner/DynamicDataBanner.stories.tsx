@@ -11,7 +11,12 @@ const meta: Meta<typeof DynamicDataBanner> = {
   component: DynamicDataBanner,
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    chromatic: withChromaticModes([
+      "mobileSmall",
+      "mobile",
+      "tablet",
+      "desktop",
+    ]),
   },
   args: {
     site: {

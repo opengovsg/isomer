@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, within } from "@storybook/test"
+import { userEvent, waitFor, within } from "@storybook/test"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
@@ -7,10 +7,14 @@ import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
-import { createBannerGbParameters } from "~/stories/utils/growthbook"
+import {
+  createBannerGbParameters,
+  createDropdownGbParameters,
+} from "~/stories/utils/growthbook"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
+  pageHandlers.getCategories.default(),
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
   pageHandlers.countWithoutRoot.default(),
@@ -115,5 +119,21 @@ export const LinkModal: Story = {
     await AddTextBlock.play?.(context)
 
     await userEvent.click(canvas.getByRole("button", { name: /link/i }))
+  },
+}
+
+export const Dropdown: Story = {
+  parameters: {
+    growthbook: [createDropdownGbParameters("1")],
+  },
+  play: async ({ canvasElement, ...rest }) => {
+    const canvas = within(canvasElement)
+    await EditFixedBlockState.play?.({ canvasElement, ...rest })
+    // waitFor used as we can override the default timeout of findByRole (1000ms)
+    // this is needed as growthbook might take more than 1000ms to initialise
+    const button = await waitFor(() => canvas.findByRole("combobox"), {
+      timeout: 5000,
+    })
+    await userEvent.click(button)
   },
 }

@@ -156,3 +156,8 @@ export const updatePageMetaSchema = z.object({
   siteId: z.number().min(1),
   resourceId: z.string().min(1),
 })
+
+export const createIndexPageSchema = z.object({
+  siteId: z.number().min(1),
+  parentId: z.string(),
+})
