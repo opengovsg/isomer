@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 
-import type { VicaProps } from "~/interfaces"
+import type { VicaWidgetProps } from "~/interfaces"
 
 // Next.js pre-fetching caused widget to disappear on page navigation
 // Doing this forces the widget to load in between page navigation
@@ -15,7 +15,7 @@ const loadVicaScript = () => {
   document.body.appendChild(scriptTag)
 }
 
-export const VicaWidgetClient = (vica: Omit<VicaProps, "site">) => {
+export const VicaWidgetClient = (vica: VicaWidgetProps) => {
   useEffect(() => {
     // to not render during static site generation on the server
     if (typeof window === "undefined") return
