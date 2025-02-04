@@ -12,6 +12,8 @@ import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
+import { PublishedInfoCell } from "../ResourceTable/PublishedInfoCell"
+import { StateCell } from "../ResourceTable/StateCell"
 import { TitleCell } from "../ResourceTable/TitleCell"
 import { CollectionTableMenu } from "./CollectionTableMenu"
 
@@ -28,6 +30,19 @@ const getColumns = ({ siteId }: CollectionTableProps) => [
         title={row.original.title}
         permalink={`/${row.original.permalink}`}
         type={row.original.type}
+      />
+    ),
+  }),
+  columnsHelper.display({
+    id: "resource_state",
+    cell: ({ row }) => <StateCell draftBlobId={row.original.draftBlobId} />,
+  }),
+  columnsHelper.display({
+    id: "published_info",
+    cell: ({ row }) => (
+      <PublishedInfoCell
+        publishedAt={row.original.publishedAt}
+        publisherEmail={row.original.publisherEmail}
       />
     ),
   }),

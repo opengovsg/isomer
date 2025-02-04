@@ -200,6 +200,8 @@ export const collectionRouter = router({
 
       return await ctx.db
         .selectFrom("Resource")
+        .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
+        .leftJoin("User", "User.id", "Version.publishedBy")
         .where("parentId", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
         .where((eb) => {
@@ -213,7 +215,11 @@ export const collectionRouter = router({
         .orderBy("Resource.title", "asc")
         .limit(limit)
         .offset(offset)
-        .select(defaultResourceSelect)
+        .select([
+          ...defaultResourceSelect,
+          "Version.publishedAt as publishedAt",
+          "User.email as publisherEmail",
+        ])
         .execute()
     }),
   readCollectionLink: protectedProcedure
