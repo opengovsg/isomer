@@ -355,6 +355,8 @@ export const resourceRouter = router({
     .query(async ({ input: { siteId, resourceId, offset, limit } }) => {
       let query = db
         .selectFrom("Resource")
+        .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
+        .leftJoin("User", "User.id", "Version.publishedBy")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "!=", ResourceType.RootPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
@@ -381,6 +383,8 @@ export const resourceRouter = router({
           "Resource.type",
           "Resource.parentId",
           "Resource.updatedAt",
+          "Version.publishedAt",
+          "User.email as publisherEmail",
         ])
         .execute()
     }),

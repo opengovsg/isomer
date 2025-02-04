@@ -12,6 +12,7 @@ import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
+import { PublishedInfoCell } from "./PublishedInfoCell"
 import { ResourceTableMenu } from "./ResourceTableMenu"
 import { StateCell } from "./StateCell"
 import { TitleCell } from "./TitleCell"
@@ -37,6 +38,15 @@ const getColumns = ({ siteId }: ResourceTableProps) => [
   columnsHelper.display({
     id: "resource_state",
     cell: ({ row }) => <StateCell draftBlobId={row.original.draftBlobId} />,
+  }),
+  columnsHelper.display({
+    id: "published_info",
+    cell: ({ row }) => (
+      <PublishedInfoCell
+        publishedAt={row.original.publishedAt}
+        publisherEmail={row.original.publisherEmail}
+      />
+    ),
   }),
   columnsHelper.display({
     id: "resource_menu",
