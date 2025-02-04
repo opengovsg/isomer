@@ -123,8 +123,9 @@ async function main() {
               getConvertedPermalink(resource.fullPermalink),
         )?.id
 
-        const parent = resources.find(
-          (item) => item.id === String(resource.parentId),
+        const parentIndexPage = resources.find(
+          (item) =>
+            item.type === "IndexPage" && item.parentId === resource.parentId,
         )
 
         const sitemapEntry: PageOnlySitemapEntry = {
@@ -148,7 +149,7 @@ async function main() {
           image: getResourceImage({
             resource,
             useFallbackIfNoImage:
-              parent?.content?.page?.fallbackIfNoImage === true,
+              parentIndexPage?.content?.page?.fallbackIfNoImage === true,
           }),
           ref: resource.content.page.ref, // For file and link layouts
         }
