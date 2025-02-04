@@ -121,8 +121,8 @@ const PageSettingsModalContent = ({
       await utils.collection.invalidate()
 
       toast({
-        title: "Saved page settings",
-        description: "Publish this page for your changes to go live.",
+        title: "Saved and published page settings",
+        description: "Check your site later to see the changes",
         status: "success",
       })
     },
