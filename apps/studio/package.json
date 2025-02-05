@@ -154,7 +154,7 @@
     "@babel/plugin-transform-object-rest-spread": "^7.25.9",
     "@babel/preset-env": "^7.26.7",
     "@babel/preset-typescript": "^7.26.0",
-    "@chakra-ui/cli": "^2.4.1",
+    "@chakra-ui/cli": "^3.7.0",
     "@isomer/eslint-config": "*",
     "@isomer/prettier-config": "*",
     "@isomer/storybook-config": "*",
