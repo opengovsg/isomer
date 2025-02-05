@@ -89,6 +89,43 @@ export const pageHandlers = {
       })
     },
   },
+  updatePageBlob: {
+    default: () => {
+      return trpcMsw.page.updatePageBlob.mutation(() => {
+        return {
+          siteId: 1,
+          pageId: 1,
+          content: {
+            page: {
+              date: "04/01/2024",
+              title: "Mock story book page",
+              category: "I love stories",
+              permalink: "/debug",
+              lastModified: "2025-02-05T03:22:09.593Z",
+              articlePageHeader: {
+                summary: "",
+              },
+            },
+            layout: "article",
+            content: [
+              {
+                type: "prose",
+                content: [
+                  {
+                    type: "paragraph",
+                    attrs: {
+                      dir: null,
+                    },
+                  },
+                ],
+              },
+            ],
+            version: "0.1.0",
+          },
+        }
+      })
+    },
+  },
   countWithoutRoot: {
     default: () =>
       trpcMsw.resource.countWithoutRoot.query(() => {
