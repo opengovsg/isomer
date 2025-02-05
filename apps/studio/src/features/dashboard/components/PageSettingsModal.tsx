@@ -122,7 +122,7 @@ const PageSettingsModalContent = ({
 
       toast({
         title: "Saved and published page settings",
-        description: "Check your site later to see the changes",
+        description: "Check your site in 5-10 minutes to view it live.",
         status: "success",
       })
     },
