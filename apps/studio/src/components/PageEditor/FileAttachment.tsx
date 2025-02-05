@@ -14,6 +14,7 @@ interface FileAttachmentProps {
   acceptedFileTypes: Record<string, string>
 }
 
+const ONE_MB_IN_BYTES = 1000000
 type FileRejections = AttachmentProps<false>["rejections"]
 
 export const FileAttachment = ({
@@ -79,7 +80,7 @@ export const FileAttachment = ({
         />
       </Skeleton>
       <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
-        {`Maximum file size: ${maxSizeInBytes / 1000000} MB`}
+        {`Maximum file size: ${maxSizeInBytes / ONE_MB_IN_BYTES} MB`}
         <br />
         {`Accepted file types: ${ACCEPTED_FILE_TYPES_MESSAGE}`}
       </Text>
