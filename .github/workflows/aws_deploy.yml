@@ -114,9 +114,6 @@ on:
       DD_API_KEY:
         description: "Datadog API key for uploading sourcemaps"
         required: false
-      RDS_READER_ENDPOINT:
-        description: "RDS reader endpoint for database connection"
-        required: false
 
 permissions:
   id-token: write
@@ -213,8 +210,6 @@ jobs:
           sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<CPU>/${{ inputs.environment == 'production' && 1024 || 512 }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<MEMORY>/${{ inputs.environment == 'production' && 2048 || 1024 }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<RDS_READER_ENDPOINT>/${{ secrets.RDS_READER_ENDPOINT }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<RDS_DATADOG_PASSWORD>/${{ secrets.RDS_DATADOG_PASSWORD}}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<DD_COMMIT_SHA>/${{ github.sha }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<ECS_TASK_ROLE>/${{ inputs.ecs-task-role }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<ECS_TASK_EXEC_ROLE>/${{ inputs.ecs-task-exec-role }}/g' ${{ inputs.ecs-task-definition-path }}
