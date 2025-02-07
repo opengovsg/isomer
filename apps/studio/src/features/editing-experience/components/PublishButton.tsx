@@ -1,6 +1,7 @@
 import { Skeleton } from "@chakra-ui/react"
 import {
   Button,
+  ButtonProps,
   TouchableTooltip,
   useToast,
 } from "@opengovsg/design-system-react"
@@ -10,7 +11,7 @@ import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
-interface PublishButtonProps {
+interface PublishButtonProps extends ButtonProps {
   pageId: number
   siteId: number
 }
@@ -18,6 +19,8 @@ interface PublishButtonProps {
 const SuspendablePublishButton = ({
   pageId,
   siteId,
+  isDisabled,
+  ...rest
 }: PublishButtonProps): JSX.Element => {
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -67,11 +70,12 @@ const SuspendablePublishButton = ({
         >
           {allowed && (
             <Button
-              isDisabled={!isChangesPendingPublish}
+              isDisabled={!isChangesPendingPublish || isDisabled}
               variant="solid"
               size="sm"
               onClick={handlePublish}
               isLoading={isLoading}
+              {...rest}
             >
               Publish
             </Button>
