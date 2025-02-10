@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box } from "@chakra-ui/react"
+import { Box, Image } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 
@@ -30,12 +30,9 @@ export function JsonFormsMetaImageControl(
       {/* NOTE: not using the `as` prop here on the `Box` because the */}
       {/* `currentTarget` will be inferred as a `div` which lacks the `src` property */}
       <Box mt="1rem">
-        <img
+        <Image
           src={data}
-          onError={({ currentTarget }) => {
-            currentTarget.onerror = null
-            currentTarget.src = `${assetsBaseUrl}/${PLACEHOLDER_IMAGE_FILENAME}`
-          }}
+          fallbackSrc={`${assetsBaseUrl}/${PLACEHOLDER_IMAGE_FILENAME}`}
         />
       </Box>
     </>
