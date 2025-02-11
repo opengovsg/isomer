@@ -3,9 +3,11 @@ import { Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { ErrorBoundary } from "react-error-boundary"
+import { IconBase } from "react-icons"
 import { BiData, BiFolder } from "react-icons/bi"
 
 import type { RouterOutput } from "~/utils/trpc"
+import { ICON_MAPPINGS } from "~/features/dashboard/components/DirectorySidebar/constants"
 
 type MoveItemProps = Pick<
   RouterOutput["resource"]["getFolderChildrenOf"]["items"][number],
@@ -43,6 +45,7 @@ const SuspendableMoveItem = ({
   const buttonProps = getButtonProps({
     isHighlighted: !!isHighlighted,
   })
+  const Icon = ICON_MAPPINGS[type]
 
   return (
     <Button
@@ -60,7 +63,7 @@ const SuspendableMoveItem = ({
       pl="2.25rem"
       size="xs"
       onClick={handleOnClick}
-      leftIcon={type === "Collection" ? <BiData /> : <BiFolder />}
+      leftIcon={<Icon />}
       {...rest}
     >
       <Text noOfLines={1} textStyle="caption-1" textAlign="left">
