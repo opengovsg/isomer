@@ -13,7 +13,6 @@ import { z } from "zod"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { useImage } from "../../hooks/useImage"
 import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
   MAX_IMG_FILE_SIZE_BYTES,
