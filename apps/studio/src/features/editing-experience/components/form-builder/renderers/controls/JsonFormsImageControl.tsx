@@ -45,7 +45,6 @@ export function JsonFormsImageControl({
   data,
 }: JsonFormsImageControlProps) {
   const { siteId } = useQueryParse(editSiteSchema)
-  const { handleImage } = useImage({})
 
   return (
     <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
@@ -74,9 +73,7 @@ export function JsonFormsImageControl({
           maxSizeInBytes={MAX_IMG_FILE_SIZE_BYTES}
           acceptedFileTypes={IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
           siteId={siteId}
-          setHref={(src) =>
-            src && handleImage(src).then((src) => handleChange(path, src))
-          }
+          setHref={(src) => handleChange(path, src)}
         />
       )}
       {!!errors && (
