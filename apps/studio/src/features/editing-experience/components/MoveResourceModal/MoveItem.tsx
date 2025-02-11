@@ -8,7 +8,7 @@ import { BiData, BiFolder } from "react-icons/bi"
 import type { RouterOutput } from "~/utils/trpc"
 
 type MoveItemProps = Pick<
-  RouterOutput["resource"]["getChildrenOf"]["items"][number],
+  RouterOutput["resource"]["getFolderChildrenOf"]["items"][number],
   "permalink" | "type"
 > & {
   handleOnClick: () => void

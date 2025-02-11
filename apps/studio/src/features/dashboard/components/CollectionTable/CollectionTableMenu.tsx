@@ -11,10 +11,7 @@ import {
 
 import type { CollectionTableData } from "./types"
 import { MenuItem } from "~/components/Menu"
-import {
-  moveResourceAtom,
-  moveTypesAtom,
-} from "~/features/editing-experience/atoms"
+import { moveResourceAtom } from "~/features/editing-experience/atoms"
 import { deleteResourceModalAtom, pageSettingsModalAtom } from "../../atoms"
 
 interface CollectionTableMenuProps {
@@ -34,11 +31,9 @@ export const CollectionTableMenu = ({
 }: CollectionTableMenuProps) => {
   const setValue = useSetAtom(deleteResourceModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
-  const setMoveResourceTypes = useSetAtom(moveTypesAtom)
   const setMoveResource = useSetAtom(moveResourceAtom)
   const handleMoveResourceClick = () => {
     setMoveResource({ resourceId, title, permalink, parentId })
-    setMoveResourceTypes([ResourceType.RootPage, ResourceType.Collection])
   }
 
   return (

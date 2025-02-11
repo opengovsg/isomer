@@ -27,7 +27,7 @@ import { withSuspense } from "~/hocs/withSuspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
-import { moveResourceAtom, moveTypesAtom } from "../../atoms"
+import { moveResourceAtom } from "../../atoms"
 import { MoveItem } from "./MoveItem"
 
 const generatePermalinkPrefix = (parents: PendingMoveResource[]) => {
@@ -60,7 +60,6 @@ const MoveResourceContent = withSuspense(
     const [resourceStack, setResourceStack] = useState<PendingMoveResource[]>(
       [],
     )
-    const allowedMoveTypes = useAtomValue(moveTypesAtom)
     const [isResourceHighlighted, setIsResourceHighlighted] =
       useState<boolean>(true)
     const { siteId } = useQueryParse(sitePageSchema)
@@ -72,7 +71,7 @@ const MoveResourceContent = withSuspense(
     const parentDest = resourceStack[resourceStack.length - 2]
     const curResourceId = moveDest?.resourceId
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-      trpc.resource.getChildrenOf.useInfiniteQuery(
+      trpc.resource.getFolderChildrenOf.useInfiniteQuery(
         {
           resourceId:
             (isResourceHighlighted
@@ -206,50 +205,46 @@ const MoveResourceContent = withSuspense(
                 </Flex>
               )}
               {data?.pages.map(({ items }) =>
-                items
-                  .filter(({ type }) => {
-                    return allowedMoveTypes.includes(type)
-                  })
-                  .map((item) => {
-                    const isItemDisabled: boolean =
-                      item.id === movedItem?.resourceId
-                    const isItemHighlighted: boolean =
-                      isResourceHighlighted && item.id === curResourceId
+                items.map((item) => {
+                  const isItemDisabled: boolean =
+                    item.id === movedItem?.resourceId
+                  const isItemHighlighted: boolean =
+                    isResourceHighlighted && item.id === curResourceId
 
-                    return (
-                      <MoveItem
-                        {...item}
-                        key={item.id}
-                        isDisabled={isItemDisabled}
-                        isHighlighted={isItemHighlighted}
-                        handleOnClick={() => {
-                          if (isItemDisabled) {
-                            return
-                          }
+                  return (
+                    <MoveItem
+                      {...item}
+                      key={item.id}
+                      isDisabled={isItemDisabled}
+                      isHighlighted={isItemHighlighted}
+                      handleOnClick={() => {
+                        if (isItemDisabled) {
+                          return
+                        }
 
-                          if (isItemHighlighted) {
-                            setIsResourceHighlighted(false)
-                            return
-                          }
+                        if (isItemHighlighted) {
+                          setIsResourceHighlighted(false)
+                          return
+                        }
 
-                          const newResource = {
-                            ...item,
-                            parentId: parentDest?.resourceId ?? null,
-                            resourceId: item.id,
-                          }
-                          if (isResourceHighlighted) {
-                            setResourceStack((prev) => [
-                              ...prev.slice(0, -1),
-                              newResource,
-                            ])
-                          } else {
-                            setIsResourceHighlighted(true)
-                            setResourceStack((prev) => [...prev, newResource])
-                          }
-                        }}
-                      />
-                    )
-                  }),
+                        const newResource = {
+                          ...item,
+                          parentId: parentDest?.resourceId ?? null,
+                          resourceId: item.id,
+                        }
+                        if (isResourceHighlighted) {
+                          setResourceStack((prev) => [
+                            ...prev.slice(0, -1),
+                            newResource,
+                          ])
+                        } else {
+                          setIsResourceHighlighted(true)
+                          setResourceStack((prev) => [...prev, newResource])
+                        }
+                      }}
+                    />
+                  )
+                }),
               )}
               {hasNextPage && (
                 <Button

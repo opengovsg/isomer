@@ -12,10 +12,7 @@ import {
 
 import type { ResourceTableData } from "./types"
 import { MenuItem } from "~/components/Menu"
-import {
-  moveResourceAtom,
-  moveTypesAtom,
-} from "~/features/editing-experience/atoms"
+import { moveResourceAtom } from "~/features/editing-experience/atoms"
 import { Can } from "~/features/permissions"
 import {
   deleteResourceModalAtom,
@@ -41,10 +38,8 @@ export const ResourceTableMenu = ({
   parentId,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
-  const setMoveResourceTypes = useSetAtom(moveTypesAtom)
   const handleMoveResourceClick = () => {
     setMoveResource({ resourceId, title, permalink, parentId })
-    setMoveResourceTypes([ResourceType.RootPage, ResourceType.Folder])
   }
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)

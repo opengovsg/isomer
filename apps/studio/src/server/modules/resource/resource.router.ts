@@ -128,11 +128,11 @@ export const resourceRouter = router({
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
-        .where("Resource.type", "in", [ResourceType.Folder])
+        .where("Resource.type", "in", [
+          ResourceType.Folder,
+          ResourceType.Collection,
+        ])
         .where("Resource.siteId", "=", Number(siteId))
-        .$narrowType<{
-          type: typeof ResourceType.Folder
-        }>()
         .orderBy("type", "asc")
         .orderBy("title", "asc")
         .offset(offset)
@@ -248,7 +248,7 @@ export const resourceRouter = router({
             const toMove = await tx
               .selectFrom("Resource")
               .where("id", "=", movedResourceId)
-              .select(["id", "siteId"])
+              .select(["id", "siteId", "type"])
               .executeTakeFirst()
 
             if (!toMove) {
@@ -258,7 +258,9 @@ export const resourceRouter = router({
             let query = tx.selectFrom("Resource")
             query = !!destinationResourceId
               ? query.where("id", "=", destinationResourceId)
-              : query.where("type", "=", ResourceType.RootPage)
+              : query
+                  .where("type", "=", ResourceType.RootPage)
+                  .where("siteId", "=", siteId)
             const parent = await query
               .select(["id", "type", "siteId"])
               .executeTakeFirst()
@@ -278,6 +280,20 @@ export const resourceRouter = router({
               })
             }
 
+            // NOTE: If the users are trying to move into a collection,
+            // check that the resource first belongs to a collection
+            if (
+              parent.type !== ResourceType.Collection &&
+              (toMove.type === ResourceType.CollectionPage ||
+                toMove.type === ResourceType.CollectionLink)
+            ) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message:
+                  "Collection items can only be moved to another collection",
+              })
+            }
+
             if (movedResourceId === destinationResourceId) {
               throw new TRPCError({ code: "BAD_REQUEST" })
             }
@@ -293,6 +309,7 @@ export const resourceRouter = router({
                 ResourceType.Page,
                 ResourceType.CollectionPage,
                 ResourceType.Folder,
+                ResourceType.CollectionLink,
               ])
               .set({
                 parentId: !!destinationResourceId
