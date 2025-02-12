@@ -1,5 +1,3 @@
-import type { Resource } from "@prisma/client"
-import { ResourceState } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash"
 import {
@@ -20,6 +18,8 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 
+import type { Resource } from "~/server/modules/database"
+import { ResourceState } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
 import { db } from "../../database"
 import { resourceRouter } from "../resource.router"
