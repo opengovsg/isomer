@@ -4,14 +4,14 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useSetAtom } from "jotai"
 import { BiCog, BiDotsHorizontalRounded, BiTrash } from "react-icons/bi"
 
-import type { CollectionTableData } from "./types"
+import type { BaseResourceTableData } from "../shared"
 import { MenuItem } from "~/components/Menu"
 import { deleteResourceModalAtom, pageSettingsModalAtom } from "../../atoms"
 
 interface CollectionTableMenuProps {
-  title: CollectionTableData["title"]
-  resourceId: CollectionTableData["id"]
-  resourceType: CollectionTableData["type"]
+  title: BaseResourceTableData["title"]
+  resourceId: BaseResourceTableData["id"]
+  resourceType: BaseResourceTableData["type"]
 }
 
 export const CollectionTableMenu = ({

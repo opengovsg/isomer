@@ -6,7 +6,7 @@ import {
   subDays,
 } from "date-fns"
 
-import type { ResourceTableData } from "./types"
+import type { BaseResourceTableData } from "../shared"
 
 export const formatDate = (date: Date) => {
   const isRecent = isWithinInterval(date, {
@@ -22,7 +22,7 @@ export const formatDate = (date: Date) => {
 }
 
 export type PublishedInfoCellProps = Pick<
-  ResourceTableData,
+  BaseResourceTableData,
   "publishedAt" | "publisherEmail"
 >
 

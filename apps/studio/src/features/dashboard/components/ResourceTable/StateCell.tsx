@@ -3,9 +3,9 @@ import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
 import { ResourceType } from "@prisma/client"
 import { BiSolidCircle } from "react-icons/bi"
 
-import type { ResourceTableData } from "./types"
+import type { BaseResourceTableData } from "../shared"
 
-export type StateCellProps = Pick<ResourceTableData, "type" | "draftBlobId">
+export type StateCellProps = Pick<BaseResourceTableData, "type" | "draftBlobId">
 
 export const StateBadge = ({ type, draftBlobId }: StateCellProps) => {
   if (type === ResourceType.Folder) return null

@@ -1,142 +1,24 @@
-import { useMemo } from "react"
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  getPaginationRowModel,
-  useReactTable,
-} from "@tanstack/react-table"
-
-import type { CollectionTableData } from "./types"
-import { TableHeader } from "~/components/Datatable"
-import { Datatable } from "~/components/Datatable/Datatable"
-import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
-import { useTablePagination } from "~/hooks/useTablePagination"
-import { trpc } from "~/utils/trpc"
-import { PublishedInfoCell } from "../ResourceTable/PublishedInfoCell"
-import { StateCell } from "../ResourceTable/StateCell"
-import { TitleCell } from "../ResourceTable/TitleCell"
+import type { BaseResourceTableProps } from "../shared"
+import { BaseResourceTable } from "../shared"
 import { CollectionTableMenu } from "./CollectionTableMenu"
-
-const columnsHelper = createColumnHelper<CollectionTableData>()
-
-const getColumns = ({ siteId }: CollectionTableProps) => [
-  columnsHelper.accessor("title", {
-    minSize: 300,
-    header: () => <TableHeader>Title</TableHeader>,
-    cell: ({ row }) => (
-      <TitleCell
-        siteId={siteId}
-        id={row.original.id}
-        title={row.original.title}
-        permalink={`/${row.original.permalink}`}
-        type={row.original.type}
-      />
-    ),
-  }),
-  columnsHelper.display({
-    id: "resource_state",
-    cell: ({ row }) => (
-      <StateCell
-        type={row.original.type}
-        draftBlobId={row.original.draftBlobId}
-      />
-    ),
-  }),
-  columnsHelper.display({
-    id: "published_info",
-    cell: ({ row }) => (
-      <PublishedInfoCell
-        publishedAt={row.original.publishedAt}
-        publisherEmail={row.original.publisherEmail}
-      />
-    ),
-  }),
-  columnsHelper.display({
-    id: "resource_menu",
-    header: () => <TableHeader>Actions</TableHeader>,
-    cell: ({ row }) => (
-      <CollectionTableMenu
-        resourceType={row.original.type}
-        title={row.original.title}
-        resourceId={row.original.id}
-      />
-    ),
-    size: 24,
-  }),
-]
-
-interface CollectionTableProps {
-  siteId: number
-  resourceId: number
-}
 
 export const CollectionTable = ({
   siteId,
   resourceId,
-}: CollectionTableProps): JSX.Element => {
-  const columns = useMemo(
-    () => getColumns({ siteId, resourceId }),
-    [siteId, resourceId],
-  )
-
-  const { data: totalRowCount = 0, isLoading: isCountLoading } =
-    trpc.resource.countWithoutRoot.useQuery({
-      siteId,
-      resourceId,
-    })
-
-  const { limit, onPaginationChange, skip, pagination, pageCount } =
-    useTablePagination({
-      pageIndex: 0,
-      pageSize: 25,
-      totalCount: totalRowCount,
-    })
-
-  const { data: resources, isFetching } =
-    trpc.resource.listWithoutRoot.useQuery(
-      {
-        siteId,
-        resourceId,
-        limit,
-        offset: skip,
-      },
-      {
-        keepPreviousData: true, // Required for table to show previous data while fetching next page
-      },
-    )
-
-  const tableInstance = useReactTable<CollectionTableData>({
-    columns,
-    data: resources ?? [],
-    getCoreRowModel: getCoreRowModel(),
-    manualFiltering: true,
-    manualPagination: true,
-    autoResetPageIndex: false,
-    getPaginationRowModel: getPaginationRowModel(),
-    onPaginationChange,
-    state: {
-      pagination,
-    },
-    pageCount,
-  })
-
+}: Pick<BaseResourceTableProps, "siteId" | "resourceId">) => {
   return (
-    <Datatable
-      pagination
-      isFetching={isFetching || isCountLoading}
-      emptyPlaceholder={
-        <EmptyTablePlaceholder
-          groupLabel="collection"
-          entityName="collection page"
-          hasSearchTerm={false}
+    <BaseResourceTable
+      siteId={siteId}
+      resourceId={resourceId}
+      entityName="collection page"
+      groupLabel="collection"
+      renderMenu={(row) => (
+        <CollectionTableMenu
+          resourceType={row.type}
+          title={row.title}
+          resourceId={row.id}
         />
-      }
-      instance={tableInstance}
-      sx={{
-        tableLayout: "auto",
-        overflowX: "auto",
-      }}
-      totalRowCount={totalRowCount}
+      )}
     />
   )
 }

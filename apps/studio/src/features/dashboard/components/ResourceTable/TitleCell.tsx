@@ -14,11 +14,11 @@ import {
   BiSort,
 } from "react-icons/bi"
 
-import type { ResourceTableData } from "./types"
+import type { BaseResourceTableData } from "../shared"
 import { getLinkToResource } from "~/utils/resource"
 
 export interface TitleCellProps
-  extends Pick<ResourceTableData, "title" | "permalink" | "type" | "id"> {
+  extends Pick<BaseResourceTableData, "title" | "permalink" | "type" | "id"> {
   siteId: number
 }
 
