@@ -16,6 +16,7 @@ const fallbackIfNoImageSchemaObject = Type.Object({
       title: "Fallback if no image",
       description: "Fallbacks to images in the content if no image is provided",
       default: false,
+      format: "hidden",
     }),
   ),
 })
