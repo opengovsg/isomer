@@ -134,6 +134,10 @@ export const pageSettingsSchema = z.discriminatedUnion("type", [
   basePageSettingsSchema.extend({
     type: z.literal(ResourceType.IndexPage),
   }),
+  basePageSettingsSchema.extend({
+    type: z.literal(ResourceType.CollectionLink),
+    permalink: permalinkSchema,
+  }),
   rootPageSettingsSchema,
 ])
 

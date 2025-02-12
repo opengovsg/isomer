@@ -33,19 +33,20 @@ export const CollectionTableMenu = ({
       />
       <Portal>
         <MenuList>
-          {resourceType === ResourceType.CollectionPage && (
-            <MenuItem
-              icon={<BiCog fontSize="1rem" />}
-              onClick={() =>
-                setPageSettingsModalState({
-                  pageId: resourceId,
-                  type: resourceType,
-                })
-              }
-            >
-              Edit page settings
-            </MenuItem>
-          )}
+          {resourceType === ResourceType.CollectionPage ||
+            (resourceType == ResourceType.CollectionLink && (
+              <MenuItem
+                icon={<BiCog fontSize="1rem" />}
+                onClick={() =>
+                  setPageSettingsModalState({
+                    pageId: resourceId,
+                    type: resourceType,
+                  })
+                }
+              >
+                Edit page settings
+              </MenuItem>
+            ))}
           <MenuItem
             onClick={() => {
               setValue({
