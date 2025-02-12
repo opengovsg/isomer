@@ -1,10 +1,9 @@
 import Link from "next/link"
 import { HStack, IconButton, Text, VStack } from "@chakra-ui/react"
-import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
-import { ResourceState } from "~prisma/generated/generatedEnums"
-import { BiChevronRight, BiHomeAlt, BiSolidCircle } from "react-icons/bi"
+import { BiChevronRight, BiHomeAlt } from "react-icons/bi"
 
 import { trpc } from "~/utils/trpc"
+import { StateBadge } from "../ResourceTable/StateCell"
 
 interface RootpageRowProps {
   siteId: number
@@ -35,19 +34,7 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
       <VStack flex={1} gap="0.25rem" alignItems="flex-start">
         <HStack gap="0.25rem">
           <Text textStyle="subhead-2">{title}</Text>
-          <Badge
-            size="xs"
-            variant="clear"
-            colorScheme={draftBlobId ? "warning" : "success"}
-          >
-            <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
-            <Text
-              textStyle="legal"
-              color={draftBlobId ? "yellow.400" : "green.600"}
-            >
-              {draftBlobId ? ResourceState.Draft : ResourceState.Published}
-            </Text>
-          </Badge>
+          <StateBadge draftBlobId={draftBlobId} />
         </HStack>
         {/*   TODO: werequire the last updated at and to display it */}
         {/* as a relative time. */}
