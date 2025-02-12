@@ -35,3 +35,11 @@ export const getLinkToResource = ({
 }) => {
   return `/sites/${siteId}/${getResourceSubpath(type)}/${resourceId}`
 }
+
+export const getFolderHref = (siteId: string, folderId: string) => {
+  return `/sites/${siteId}/folders/${folderId}`
+}
+
+export const getCollectionHref = (siteId: string, collectionId: string) => {
+  return `/sites/${siteId}/collections/${collectionId}`
+}

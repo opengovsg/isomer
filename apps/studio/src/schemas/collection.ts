@@ -56,4 +56,6 @@ export const createCollectionSchema = z.object({
     }),
   permalink: permalinkSchema,
   siteId: z.number().min(1),
+  // Nullable for top level folder
+  parentFolderId: z.number().optional(),
 })
