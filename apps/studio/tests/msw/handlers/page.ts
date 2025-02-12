@@ -11,7 +11,21 @@ const getRootPageQuery = (wait?: DelayMode | number) => {
     if (wait !== undefined) {
       await delay(wait)
     }
-    return { title: "A mock page", id: "1", draftBlobId: "1" }
+    return {
+      title: "A mock page",
+      id: "1",
+      draftBlobId: "1",
+      siteId: 1,
+      state: "Published",
+      createdAt: new Date("2024-09-12T07:00:00.000Z"),
+      updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+      permalink: "",
+      parentId: null,
+      publishedVersionId: null,
+      type: "RootPage",
+      publisherEmail: "test@test.com",
+      publishedAt: new Date("2024-09-12T07:00:00.000Z"),
+    }
   })
 }
 export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
@@ -23,7 +37,12 @@ export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     draftBlobId: null,
     type: "Collection",
     parentId: null,
+    createdAt: new Date("2024-09-12T07:00:00.000Z"),
     updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+    siteId: 1,
+    state: "Published",
+    publisherEmail: "test@test.com",
+    publishedAt: new Date("2024-09-12T07:00:00.000Z"),
   },
   {
     id: "4",
@@ -33,7 +52,12 @@ export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     draftBlobId: "3",
     type: "Page",
     parentId: null,
+    createdAt: new Date("2024-09-12T07:00:10.000Z"),
     updatedAt: new Date("2024-09-12T07:00:10.000Z"),
+    siteId: 1,
+    state: "Published",
+    publisherEmail: "test@test.com",
+    publishedAt: new Date("2024-09-12T07:00:10.000Z"),
   },
   {
     id: "5",
@@ -43,7 +67,12 @@ export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     draftBlobId: "4",
     type: "Page",
     parentId: null,
+    createdAt: new Date("2024-09-12T07:00:20.000Z"),
     updatedAt: new Date("2024-09-12T07:00:20.000Z"),
+    siteId: 1,
+    state: "Published",
+    publisherEmail: "test@test.com",
+    publishedAt: new Date("2024-09-12T07:00:20.000Z"),
   },
   {
     id: "6",
@@ -53,7 +82,12 @@ export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
     draftBlobId: null,
     type: "Folder",
     parentId: null,
+    createdAt: new Date("2024-09-12T07:00:30.000Z"),
     updatedAt: new Date("2024-09-12T07:00:30.000Z"),
+    siteId: 1,
+    state: "Published",
+    publisherEmail: "test@test.com",
+    publishedAt: new Date("2024-09-12T07:00:30.000Z"),
   },
 ]
 
