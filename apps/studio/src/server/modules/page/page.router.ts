@@ -401,7 +401,6 @@ export const pageRouter = router({
         .selectFrom("Resource")
         .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
         .leftJoin("User", "User.id", "Version.publishedBy")
-        // TODO: Only return sites that the user has access to
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "=", ResourceType.RootPage)
         .select([
