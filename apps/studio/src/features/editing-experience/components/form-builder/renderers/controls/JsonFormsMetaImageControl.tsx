@@ -30,12 +30,14 @@ export function JsonFormsMetaImageControl(
       <JsonFormsImageControl {...props} />
       {/* NOTE: not using the `as` prop here on the `Box` because the */}
       {/* `currentTarget` will be inferred as a `div` which lacks the `src` property */}
-      <Center mt="1rem">
-        <Image
-          src={`${assetsBaseUrl}${data}`}
-          fallbackSrc={`${assetsBaseUrl}/${PLACEHOLDER_IMAGE_FILENAME}`}
-        />
-      </Center>
+      {data && (
+        <Center mt="1rem">
+          <Image
+            src={`${assetsBaseUrl}${data}`}
+            fallbackSrc={`${assetsBaseUrl}/${PLACEHOLDER_IMAGE_FILENAME}`}
+          />
+        </Center>
+      )}
     </Box>
   )
 }
