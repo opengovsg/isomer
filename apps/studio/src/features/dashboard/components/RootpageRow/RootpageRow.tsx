@@ -22,13 +22,13 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
     const hasUpdateTime = !!updatedAt
 
     if (hasPublisher && hasUpdateTime) {
-      return `Last edited by ${publisherEmail} ${formatDate(updatedAt)}`
+      return `Last published by ${publisherEmail} ${formatDate(updatedAt)}`
     }
     if (hasPublisher) {
-      return `Last edited by ${publisherEmail}`
+      return `Last published by ${publisherEmail}`
     }
     if (hasUpdateTime) {
-      return `Last edited ${formatDate(updatedAt)}`
+      return `Last published ${formatDate(updatedAt)}`
     }
     return null
   }, [publisherEmail, updatedAt])
