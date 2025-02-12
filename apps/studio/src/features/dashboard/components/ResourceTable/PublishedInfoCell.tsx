@@ -8,7 +8,7 @@ import {
 
 import type { ResourceTableData } from "./types"
 
-const formatDate = (date: Date) => {
+export const formatDate = (date: Date) => {
   const isRecent = isWithinInterval(date, {
     start: subDays(new Date(), 7),
     end: new Date(),
