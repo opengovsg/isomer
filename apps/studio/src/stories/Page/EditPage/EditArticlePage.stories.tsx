@@ -15,6 +15,7 @@ import {
 const COMMON_HANDLERS = [
   meHandlers.me(),
   pageHandlers.getCategories.default(),
+  pageHandlers.updatePageBlob.default(),
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
   pageHandlers.countWithoutRoot.default(),
@@ -66,6 +67,17 @@ export const EditFixedBlockState: Story = {
       name: /Article page header/i,
     })
     await userEvent.click(button)
+  },
+}
+
+export const SaveToast: Story = {
+  play: async ({ canvasElement, ...rest }) => {
+    await EditFixedBlockState.play?.({ canvasElement, ...rest })
+    const canvas = within(canvasElement)
+    const saveButton = await canvas.findByRole("button", {
+      name: /Save changes/i,
+    })
+    await userEvent.click(saveButton)
   },
 }
 

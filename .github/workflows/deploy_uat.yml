@@ -44,4 +44,3 @@ jobs:
 
     secrets:
       DD_API_KEY: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
-      RDS_READER_ENDPOINT: ${{ secrets.RDS_READER_ENDPOINT }}
