@@ -1,4 +1,4 @@
-import type { Resource, ResourceType } from "@prisma/client"
+import type { Resource } from "@prisma/client"
 import { ResourceState } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash"

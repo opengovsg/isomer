@@ -35,7 +35,12 @@ const getColumns = ({ siteId }: CollectionTableProps) => [
   }),
   columnsHelper.display({
     id: "resource_state",
-    cell: ({ row }) => <StateCell draftBlobId={row.original.draftBlobId} />,
+    cell: ({ row }) => (
+      <StateCell
+        type={row.original.type}
+        draftBlobId={row.original.draftBlobId}
+      />
+    ),
   }),
   columnsHelper.display({
     id: "published_info",
@@ -87,17 +92,18 @@ export const CollectionTable = ({
       totalCount: totalRowCount,
     })
 
-  const { data: resources, isFetching } = trpc.collection.list.useQuery(
-    {
-      siteId,
-      resourceId,
-      limit,
-      offset: skip,
-    },
-    {
-      keepPreviousData: true, // Required for table to show previous data while fetching next page
-    },
-  )
+  const { data: resources, isFetching } =
+    trpc.resource.listWithoutRoot.useQuery(
+      {
+        siteId,
+        resourceId,
+        limit,
+        offset: skip,
+      },
+      {
+        keepPreviousData: true, // Required for table to show previous data while fetching next page
+      },
+    )
 
   const tableInstance = useReactTable<CollectionTableData>({
     columns,

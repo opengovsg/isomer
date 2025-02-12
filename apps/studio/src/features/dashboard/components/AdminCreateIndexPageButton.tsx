@@ -35,7 +35,6 @@ export const AdminCreateIndexPageButton = ({
             resourceId: String(parentId),
           }),
           utils.resource.listWithoutRoot.invalidate({ siteId: Number(siteId) }),
-          utils.collection.list.invalidate({ siteId: Number(siteId) }),
           utils.resource.getIndexPage.invalidate({
             siteId,
             parentId: String(parentId),

@@ -37,7 +37,12 @@ const getColumns = ({ siteId }: ResourceTableProps) => [
   }),
   columnsHelper.display({
     id: "resource_state",
-    cell: ({ row }) => <StateCell draftBlobId={row.original.draftBlobId} />,
+    cell: ({ row }) => (
+      <StateCell
+        type={row.original.type}
+        draftBlobId={row.original.draftBlobId}
+      />
+    ),
   }),
   columnsHelper.display({
     id: "published_info",

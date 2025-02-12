@@ -30,7 +30,7 @@ import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
-  defaultResourceWithPublisherInfoSelect,
+  defaultResourceSelect,
   getFooter,
   getFullPageById,
   getNavBar,
@@ -404,7 +404,11 @@ export const pageRouter = router({
         // TODO: Only return sites that the user has access to
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "=", ResourceType.RootPage)
-        .select(defaultResourceWithPublisherInfoSelect)
+        .select([
+          ...defaultResourceSelect,
+          "Version.publishedAt",
+          "User.email as publisherEmail",
+        ])
         .executeTakeFirst()
 
       if (!rootPage) {

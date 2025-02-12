@@ -1,12 +1,16 @@
 import { Text } from "@chakra-ui/react"
 import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
+import { ResourceType } from "@prisma/client"
 import { BiSolidCircle } from "react-icons/bi"
 
 import type { ResourceTableData } from "./types"
 
-export type StateCellProps = Pick<ResourceTableData, "draftBlobId">
+export type StateCellProps = Pick<ResourceTableData, "type" | "draftBlobId">
 
-export const StateBadge = ({ draftBlobId }: StateCellProps) => {
+export const StateBadge = ({ type, draftBlobId }: StateCellProps) => {
+  if (type === ResourceType.Folder) return null
+  if (type === ResourceType.Collection) return null
+
   const isPublished = !draftBlobId
   return (
     <Badge
@@ -22,6 +26,6 @@ export const StateBadge = ({ draftBlobId }: StateCellProps) => {
   )
 }
 
-export const StateCell = ({ draftBlobId }: StateCellProps) => {
-  return <StateBadge draftBlobId={draftBlobId} />
+export const StateCell = ({ ...props }: StateCellProps) => {
+  return <StateBadge {...props} />
 }

@@ -16,7 +16,6 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
   defaultResourceSelect,
-  defaultResourceWithPublisherInfoSelect,
   getSiteResourceById,
   updateBlobById,
 } from "../resource/resource.service"
@@ -186,38 +185,6 @@ export const collectionRouter = router({
           .select(defaultResourceSelect)
           .execute()
       })
-    }),
-  list: protectedProcedure
-    .input(readFolderSchema)
-    .query(async ({ ctx, input: { resourceId, siteId, limit, offset } }) => {
-      await validateUserPermissionsForResource({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-      // Things that aren't working yet:
-      // 1. Last Edited user and time
-      // 2. Page status(draft, published)
-
-      return await ctx.db
-        .selectFrom("Resource")
-        .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
-        .leftJoin("User", "User.id", "Version.publishedBy")
-        .where("parentId", "=", String(resourceId))
-        .where("Resource.siteId", "=", siteId)
-        .where((eb) => {
-          return eb.or([
-            eb("Resource.type", "=", ResourceType.CollectionPage),
-            eb("Resource.type", "=", ResourceType.CollectionLink),
-            eb("Resource.type", "=", ResourceType.IndexPage),
-          ])
-        })
-        .orderBy("Resource.type", "asc")
-        .orderBy("Resource.title", "asc")
-        .limit(limit)
-        .offset(offset)
-        .select(defaultResourceWithPublisherInfoSelect)
-        .execute()
     }),
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)

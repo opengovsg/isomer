@@ -30,7 +30,7 @@ export const PublishedInfoCell = ({
   publishedAt,
   publisherEmail,
 }: PublishedInfoCellProps) => {
-  if (!publishedAt || !publisherEmail) return null
+  if (!publishedAt) return null
   return (
     <VStack align="flex-start" gap="0.25rem">
       <Text textStyle="caption-2">{publisherEmail}</Text>

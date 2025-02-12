@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 import Link from "next/link"
 import { HStack, IconButton, Text, VStack } from "@chakra-ui/react"
+import { ResourceType } from "@prisma/client"
 import { BiChevronRight, BiHomeAlt } from "react-icons/bi"
 
 import { trpc } from "~/utils/trpc"
@@ -12,26 +13,26 @@ interface RootpageRowProps {
 }
 
 export const RootpageRow = ({ siteId }: RootpageRowProps) => {
-  const [{ id, title, draftBlobId, publisherEmail, updatedAt }] =
+  const [{ id, title, draftBlobId, publisherEmail, publishedAt }] =
     trpc.page.getRootPage.useSuspenseQuery({
       siteId,
     })
 
   const publishedInfoText = useMemo(() => {
     const hasPublisher = !!publisherEmail
-    const hasUpdateTime = !!updatedAt
+    const hasPublishedTime = !!publishedAt
 
-    if (hasPublisher && hasUpdateTime) {
-      return `Last published by ${publisherEmail} ${formatDate(updatedAt)}`
+    if (hasPublisher && hasPublishedTime) {
+      return `Last published by ${publisherEmail} ${formatDate(publishedAt)}`
     }
     if (hasPublisher) {
       return `Last published by ${publisherEmail}`
     }
-    if (hasUpdateTime) {
-      return `Last published ${formatDate(updatedAt)}`
+    if (hasPublishedTime) {
+      return `Last published ${formatDate(publishedAt)}`
     }
     return null
-  }, [publisherEmail, updatedAt])
+  }, [publisherEmail, publishedAt])
 
   return (
     <HStack
@@ -54,7 +55,7 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
       <VStack flex={1} gap="0.25rem" alignItems="flex-start">
         <HStack gap="0.25rem">
           <Text textStyle="subhead-2">{title}</Text>
-          <StateBadge draftBlobId={draftBlobId} />
+          <StateBadge type={ResourceType.RootPage} draftBlobId={draftBlobId} />
         </HStack>
         {publishedInfoText && (
           <Text textStyle="caption-2" color="base.content.medium">
