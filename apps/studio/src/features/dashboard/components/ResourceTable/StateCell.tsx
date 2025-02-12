@@ -6,14 +6,22 @@ import type { ResourceTableData } from "./types"
 
 export type StateCellProps = Pick<ResourceTableData, "draftBlobId">
 
-export const StateCell = ({ draftBlobId }: StateCellProps) => {
-  if (!draftBlobId) return null
+export const StateBadge = ({ draftBlobId }: StateCellProps) => {
+  const isPublished = !draftBlobId
   return (
-    <Badge size="xs" variant="clear" colorScheme="warning">
+    <Badge
+      size="xs"
+      variant="clear"
+      colorScheme={isPublished ? "success" : "warning"}
+    >
       <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
-      <Text textStyle="legal" color="yellow.400">
-        Draft
+      <Text textStyle="legal" color={isPublished ? "green.600" : "yellow.400"}>
+        {isPublished ? "Published" : "Draft"}
       </Text>
     </Badge>
   )
+}
+
+export const StateCell = ({ draftBlobId }: StateCellProps) => {
+  return <StateBadge draftBlobId={draftBlobId} />
 }
