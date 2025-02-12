@@ -1,8 +1,10 @@
+import { useMemo } from "react"
 import Link from "next/link"
 import { HStack, IconButton, Text, VStack } from "@chakra-ui/react"
 import { BiChevronRight, BiHomeAlt } from "react-icons/bi"
 
 import { trpc } from "~/utils/trpc"
+import { formatDate } from "../ResourceTable/PublishedInfoCell"
 import { StateBadge } from "../ResourceTable/StateCell"
 
 interface RootpageRowProps {
@@ -10,9 +12,27 @@ interface RootpageRowProps {
 }
 
 export const RootpageRow = ({ siteId }: RootpageRowProps) => {
-  const [{ id, title, draftBlobId }] = trpc.page.getRootPage.useSuspenseQuery({
-    siteId,
-  })
+  const [{ id, title, draftBlobId, publisherEmail, updatedAt }] =
+    trpc.page.getRootPage.useSuspenseQuery({
+      siteId,
+    })
+
+  const publishedInfoText = useMemo(() => {
+    const hasPublisher = !!publisherEmail
+    const hasUpdateTime = !!updatedAt
+
+    if (hasPublisher && hasUpdateTime) {
+      return `Last edited by ${publisherEmail} ${formatDate(updatedAt)}`
+    }
+    if (hasPublisher) {
+      return `Last edited by ${publisherEmail}`
+    }
+    if (hasUpdateTime) {
+      return `Last edited ${formatDate(updatedAt)}`
+    }
+    return null
+  }, [publisherEmail, updatedAt])
+
   return (
     <HStack
       as={Link}
@@ -36,9 +56,11 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
           <Text textStyle="subhead-2">{title}</Text>
           <StateBadge draftBlobId={draftBlobId} />
         </HStack>
-        {/*   TODO: werequire the last updated at and to display it */}
-        {/* as a relative time. */}
-        {/* we also need to give the user who did the update */}
+        {publishedInfoText && (
+          <Text textStyle="caption-2" color="base.content.medium">
+            {publishedInfoText}
+          </Text>
+        )}
       </VStack>
       <Text
         textStyle="caption-2"
