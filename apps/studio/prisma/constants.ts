@@ -8,6 +8,7 @@ export const ISOMER_ADMINS = [
   "adriangoh",
   "shazli",
   "jinhui",
+  "rachellin",
 ]
 
 export const ISOMER_MIGRATORS = [
