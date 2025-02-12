@@ -1,3 +1,5 @@
+import type { Resource, ResourceType } from "@prisma/client"
+import { ResourceState } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash"
 import {
@@ -13,7 +15,9 @@ import {
   setupFolder,
   setupFolderMeta,
   setupPageResource,
+  setupPageWithVersion,
   setupSite,
+  setupUser,
 } from "tests/integration/helpers/seed"
 
 import { createCallerFactory } from "~/server/trpc"
@@ -1112,25 +1116,47 @@ describe("resource.router", async () => {
   })
 
   describe("listWithoutRoot", () => {
-    const RESOURCE_FIELDS_TO_PICK = [
-      "id",
-      "permalink",
-      "title",
-      "publishedVersionId",
-      "draftBlobId",
-      "type",
-      "parentId",
-      "updatedAt",
-    ] as const
+    interface ResourceWithRequiredFields extends Resource {
+      publishedAt: Date | null
+      publisherEmail: string | null
+    }
 
     const testListComparable = (
-      a: { updatedAt: Date; title: string },
-      b: { updatedAt: Date; title: string },
+      resources: ResourceWithRequiredFields[],
+      expectedResources: ResourceWithRequiredFields[],
     ) => {
-      if (b.updatedAt.valueOf() === a.updatedAt.valueOf()) {
-        return a.title.localeCompare(b.title)
-      }
-      return b.updatedAt.valueOf() - a.updatedAt.valueOf()
+      expect(resources).toHaveLength(expectedResources.length)
+
+      // Sort both arrays by title for consistent comparison
+      const sortedResources = [...resources].sort((a, b) =>
+        a.title.localeCompare(b.title),
+      )
+      const sortedExpectedResources = [...expectedResources].sort((a, b) =>
+        a.title.localeCompare(b.title),
+      )
+
+      // Use Jest's built-in matchers for cleaner comparison
+      sortedResources.forEach((resource, index) => {
+        const expectedResource = sortedExpectedResources[index]
+        if (!expectedResource) {
+          throw new Error(`Expected resource at index ${index} not found`)
+        }
+
+        // Compare all fields using Jest's matchers
+        expect(resource).toEqual(
+          expect.objectContaining({
+            title: expectedResource.title,
+            type: expectedResource.type,
+            permalink: expectedResource.permalink,
+            parentId: expectedResource.parentId,
+            publishedVersionId: expectedResource.publishedVersionId,
+            draftBlobId: expectedResource.draftBlobId,
+            state: expectedResource.state,
+            publishedAt: expectedResource.publishedAt,
+            publisherEmail: expectedResource.publisherEmail,
+          }),
+        )
+      })
     }
 
     it("should throw 401 if not logged in", async () => {
@@ -1253,7 +1279,11 @@ describe("resource.router", async () => {
             title: `Test page ${i}`,
             resourceType: "Page",
           })
-          return pick(page, RESOURCE_FIELDS_TO_PICK)
+          return {
+            ...page,
+            publishedAt: null,
+            publisherEmail: null,
+          }
         }),
       )
       const folders = await Promise.all(
@@ -1263,7 +1293,11 @@ describe("resource.router", async () => {
             permalink: `folder-${i}`,
             title: `Test folder ${i}`,
           })
-          return pick(folder, RESOURCE_FIELDS_TO_PICK)
+          return {
+            ...folder,
+            publishedAt: null,
+            publisherEmail: null,
+          }
         }),
       )
 
@@ -1273,10 +1307,17 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      const expected = [...pages, ...folders]
-        .sort(testListComparable)
+      // Sort by updatedAt desc, then by title asc
+      const expected = [...folders, ...pages]
+        .sort((a, b) => {
+          const updatedAtDiff = b.updatedAt.valueOf() - a.updatedAt.valueOf()
+          if (updatedAtDiff === 0) {
+            return a.title.localeCompare(b.title)
+          }
+          return updatedAtDiff
+        })
         .slice(0, 10)
-      expect(expected).toMatchObject(result)
+      testListComparable(result, expected)
     })
 
     it("should return resources (respecting the limit) nested inside the resourceId", async () => {
@@ -1297,7 +1338,11 @@ describe("resource.router", async () => {
             title: `Test page ${i}`,
             resourceType: "Page",
           })
-          return pick(page, RESOURCE_FIELDS_TO_PICK)
+          return {
+            ...page,
+            publishedAt: null,
+            publisherEmail: null,
+          }
         }),
       )
       // Folders inside the folder
@@ -1309,7 +1354,11 @@ describe("resource.router", async () => {
             permalink: `folder-${i}`,
             title: `Test folder ${i}`,
           })
-          return pick(folder, RESOURCE_FIELDS_TO_PICK)
+          return {
+            ...folder,
+            publishedAt: null,
+            publisherEmail: null,
+          }
         }),
       )
 
@@ -1320,10 +1369,135 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      const expected = [...pages, ...folders]
-        .sort(testListComparable)
+      // Sort by updatedAt desc, then by title asc
+      const expected = [...folders, ...pages]
+        .sort((a, b) => {
+          const updatedAtDiff = b.updatedAt.valueOf() - a.updatedAt.valueOf()
+          if (updatedAtDiff === 0) {
+            return a.title.localeCompare(b.title)
+          }
+          return updatedAtDiff
+        })
         .slice(0, 10)
-      expect(expected).toMatchObject(result)
+      testListComparable(result, expected)
+    })
+
+    it("should set publishedAt to updatedAt for published folders", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupFolder({ siteId: site.id, state: ResourceState.Published })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      const resource = result[0]
+      expect(resource?.publishedAt).toEqual(resource?.updatedAt)
+      expect(resource?.publisherEmail).toBeNull()
+    })
+
+    it("should set publishedAt to null for draft folders", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupFolder({ siteId: site.id })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      const resource = result[0]
+      expect(resource?.publishedAt).toBeNull()
+      expect(resource?.publisherEmail).toBeNull()
+    })
+
+    it("should set publishedAt to updatedAt for published collections", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupCollection({ siteId: site.id, state: ResourceState.Published })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      const resource = result[0]
+      expect(resource?.publishedAt).toEqual(resource?.updatedAt)
+      expect(resource?.publisherEmail).toBeNull()
+    })
+
+    it("should set publishedAt to null for draft collections", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupCollection({ siteId: site.id })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      const resource = result[0]
+      expect(resource?.publishedAt).toBeNull()
+      expect(resource?.publisherEmail).toBeNull()
+    })
+
+    it("should set publishedAt & publisherEmail to version publishedAt & publishedBy for published pages", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const publishedAt = new Date()
+      const publisherEmail = "test-published-pages@example.com"
+      const user = await setupUser({
+        email: publisherEmail,
+        isDeleted: false,
+      })
+      await setupPageWithVersion({
+        siteId: site.id,
+        resourceType: "Page",
+        state: ResourceState.Published,
+        userId: user.id,
+        publishedAt,
+      })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      const resource = result[0]
+      expect(resource?.publishedAt).toEqual(publishedAt)
+      expect(resource?.publisherEmail).toEqual(publisherEmail)
+    })
+
+    it("should set publishedAt to null for draft pages", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        state: ResourceState.Draft,
+      })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      const resource = result[0]!
+      expect(resource.publishedAt).toBeNull()
+      expect(resource.publisherEmail).toBeNull()
     })
 
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})

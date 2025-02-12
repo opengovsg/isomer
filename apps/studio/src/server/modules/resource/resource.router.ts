@@ -23,7 +23,7 @@ import {
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
 import { publishSite } from "../aws/codebuild.service"
-import { db, ResourceType } from "../database"
+import { db, ResourceState, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
   definePermissionsForResource,
@@ -31,7 +31,7 @@ import {
 } from "../permissions/permissions.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
-  defaultResourceWithPublisherInfoSelect,
+  defaultResourceSelect,
   getSearchRecentlyEdited,
   getSearchResults,
   getSearchWithResourceIds,
@@ -355,13 +355,146 @@ export const resourceRouter = router({
     .input(listResourceSchema)
     .query(async ({ input: { siteId, resourceId, offset, limit } }) => {
       let query = db
+        // Step 1: Get all descendant resources
+        // WHAT: Reduces number of resources we need to check in subsequent steps
+        // WHY: Improves performance for large sites or folders with many (nested) descendants
+        // Adds some complexity to the query, but improves performance for large sites
+        .withRecursive("descendantResources", (eb) =>
+          eb
+            .selectFrom("Resource")
+            .select(["id"])
+            .where("siteId", "=", siteId)
+            .$if(resourceId !== undefined, (qb) =>
+              qb.where("parentId", "=", String(resourceId)),
+            )
+            .unionAll(
+              eb
+                .selectFrom("Resource as child")
+                .innerJoin(
+                  "descendantResources as parent",
+                  "child.parentId",
+                  "parent.id",
+                )
+                .select(["child.id"]),
+            ),
+        )
+        // Step 2: Get publishedAt and versionId for each resource
+        .withRecursive("resourcePublishedInfo", (eb) =>
+          eb
+            .selectFrom("Resource as r")
+            .leftJoin("Version as v", "v.id", "r.publishedVersionId")
+            .select([
+              "r.id as id",
+              "r.parentId",
+              // We use "-infinity" because we do timestamp comparison later
+              sql<Date>`COALESCE(
+                CASE
+                  -- For folders & collections, they don't have a corresponding published version so we use the updatedAt
+                  -- They are also published when they are created, but we still check for the state as defensive programming
+                  WHEN "r"."type" IN (${ResourceType.Folder}, ${ResourceType.Collection})
+                  AND "r"."state" = ${ResourceState.Published} THEN "r"."updatedAt"
+                  ELSE "v"."publishedAt"
+                END,
+                '-infinity'::timestamp
+              )`.as("publishedAt"),
+              "v.id as versionId",
+            ])
+            .$if(resourceId !== undefined, (fb) =>
+              // If resourceId is not provided, we don't need to filter by descendantResources
+              // because descendantResources will be everything in the site
+              fb.where("r.id", "in", (gb) =>
+                gb.selectFrom("descendantResources").select("id"),
+              ),
+            )
+            .where("r.siteId", "=", siteId)
+            .where("r.type", "not in", [
+              // These resource types shouldn't be considered when computing the latest publishedAt
+              ResourceType.RootPage,
+              ResourceType.FolderMeta,
+              ResourceType.CollectionMeta,
+            ]),
+        )
+        // Step 3: Get the latest publishedAt and versionId for each resource from their descendants
+        // - The corresponding version ID for that latest publish
+        // - The ID of the resource that was published last (could be the resource itself or a descendant)
+        .withRecursive("recursivePublished", (eb) =>
+          eb
+            .selectFrom("resourcePublishedInfo")
+            .select([
+              "id",
+              "parentId",
+              "publishedAt",
+              "versionId",
+              sql<string>`id`.as("latestChildId"),
+            ])
+            .unionAll((eb) =>
+              eb
+                .selectFrom("resourcePublishedInfo as p")
+                .innerJoin("recursivePublished as c", "c.parentId", "p.id")
+                .select([
+                  "p.id",
+                  "p.parentId",
+                  sql<Date>`GREATEST(p."publishedAt", c."publishedAt")`.as(
+                    "publishedAt",
+                  ),
+                  sql<string | null>`
+                    CASE
+                      WHEN p."publishedAt" >= c."publishedAt" THEN p."versionId"
+                      ELSE c."versionId"
+                    END
+                  `.as("versionId"),
+                  sql<string>`
+                    CASE
+                      WHEN p."publishedAt" >= c."publishedAt" THEN p.id
+                      ELSE c."latestChildId"
+                    END
+                  `.as("latestChildId"),
+                ]),
+            ),
+        )
+        // Step 4: Get the latest entry for each resource
+        // - Keeps only the latest published info for each resource
+        // - Converts -infinity timestamps to NULL for better readability
+        .withRecursive("latestEntryForEachResource", (eb) =>
+          eb
+            .selectFrom("recursivePublished")
+            .select([
+              "id",
+              "versionId",
+              sql<Date | null>`
+                CASE
+                  WHEN "publishedAt" = '-infinity'::timestamp THEN NULL
+                  ELSE "publishedAt"::timestamp
+                END
+              `.as("publishedAt"),
+            ])
+            .distinctOn("id")
+            .orderBy("id")
+            .orderBy(sql`"publishedAt" DESC NULLS LAST`),
+        )
+        // Step 5: Add publisher information
+        // - Get the email of the user who published each version
+        // - Maintains the latest published info from previous steps
+        .withRecursive("latestEntryForEachResourceWithPublisher", (eb) =>
+          eb
+            .selectFrom("latestEntryForEachResource as lefer")
+            .leftJoin("Version", "lefer.versionId", "Version.id")
+            .leftJoin("User", "Version.publishedBy", "User.id")
+            .select([
+              "lefer.id",
+              "lefer.publishedAt",
+              "User.email as publisherEmail",
+            ]),
+        )
+        // Step 6: Final resource selection
+        // - Joins the main Resource table with our computed publish info
         .selectFrom("Resource")
-        .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
-        .leftJoin("User", "User.id", "Version.publishedBy")
+        .innerJoin(
+          "latestEntryForEachResourceWithPublisher",
+          "Resource.id",
+          "latestEntryForEachResourceWithPublisher.id",
+        )
         .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "!=", ResourceType.RootPage)
-        .where("Resource.type", "!=", ResourceType.FolderMeta)
-        .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .orderBy("Resource.updatedAt", "desc")
         .orderBy("Resource.title", "asc")
         .offset(offset)
@@ -373,8 +506,9 @@ export const resourceRouter = router({
         query = query.where("Resource.parentId", "is", null)
       }
 
-      // TODO: Add pagination support
-      return query.select(defaultResourceWithPublisherInfoSelect).execute()
+      return query
+        .select([...defaultResourceSelect, "publishedAt", "publisherEmail"])
+        .execute()
     }),
 
   delete: protectedProcedure
