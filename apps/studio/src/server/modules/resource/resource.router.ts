@@ -31,7 +31,7 @@ import {
 } from "../permissions/permissions.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
-  defaultResourceWithPublisherInfoSelect,
+  getResourceWithPublishedInfoQuery,
   getSearchRecentlyEdited,
   getSearchResults,
   getSearchWithResourceIds,
@@ -354,10 +354,7 @@ export const resourceRouter = router({
   listWithoutRoot: protectedProcedure
     .input(listResourceSchema)
     .query(async ({ input: { siteId, resourceId, offset, limit } }) => {
-      let query = db
-        .selectFrom("Resource")
-        .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
-        .leftJoin("User", "User.id", "Version.publishedBy")
+      let query = getResourceWithPublishedInfoQuery()
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "!=", ResourceType.RootPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
@@ -374,7 +371,7 @@ export const resourceRouter = router({
       }
 
       // TODO: Add pagination support
-      return query.select(defaultResourceWithPublisherInfoSelect).execute()
+      return query.execute()
     }),
 
   delete: protectedProcedure

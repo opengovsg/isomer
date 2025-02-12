@@ -16,7 +16,7 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
   defaultResourceSelect,
-  defaultResourceWithPublisherInfoSelect,
+  getResourceWithPublishedInfoQuery,
   getSiteResourceById,
   updateBlobById,
 } from "../resource/resource.service"
@@ -195,28 +195,18 @@ export const collectionRouter = router({
         action: "read",
         userId: ctx.user.id,
       })
-      // Things that aren't working yet:
-      // 1. Last Edited user and time
-      // 2. Page status(draft, published)
-
-      return await ctx.db
-        .selectFrom("Resource")
-        .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
-        .leftJoin("User", "User.id", "Version.publishedBy")
+      return await getResourceWithPublishedInfoQuery()
         .where("parentId", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
-        .where((eb) => {
-          return eb.or([
-            eb("Resource.type", "=", ResourceType.CollectionPage),
-            eb("Resource.type", "=", ResourceType.CollectionLink),
-            eb("Resource.type", "=", ResourceType.IndexPage),
-          ])
-        })
+        .where("Resource.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+          ResourceType.IndexPage,
+        ])
         .orderBy("Resource.type", "asc")
         .orderBy("Resource.title", "asc")
         .limit(limit)
         .offset(offset)
-        .select(defaultResourceWithPublisherInfoSelect)
         .execute()
     }),
   readCollectionLink: protectedProcedure

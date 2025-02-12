@@ -30,13 +30,13 @@ import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
-  defaultResourceWithPublisherInfoSelect,
   getFooter,
   getFullPageById,
   getNavBar,
   getPageById,
   getResourceFullPermalink,
   getResourcePermalinkTree,
+  getResourceWithPublishedInfoQuery,
   publishResource,
   updateBlobById,
 } from "../resource/resource.service"
@@ -397,14 +397,9 @@ export const pageRouter = router({
         siteId,
         action: "read",
       })
-      const rootPage = await db
-        .selectFrom("Resource")
-        .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
-        .leftJoin("User", "User.id", "Version.publishedBy")
-        // TODO: Only return sites that the user has access to
+      const rootPage = await getResourceWithPublishedInfoQuery()
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "=", ResourceType.RootPage)
-        .select(defaultResourceWithPublisherInfoSelect)
         .executeTakeFirst()
 
       if (!rootPage) {

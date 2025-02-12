@@ -28,7 +28,7 @@ export const defaultResourceSelect = [
   "Resource.updatedAt",
 ] satisfies SelectExpression<DB, "Resource">[]
 
-export const defaultResourceWithPublisherInfoSelect = [
+const defaultResourceWithPublisherInfoSelect = [
   ...defaultResourceSelect,
   "Version.publishedAt",
   "User.email as publisherEmail",
@@ -630,4 +630,12 @@ export const getSearchWithResourceIds = async ({
       lastUpdatedAt: null,
     })),
   })
+}
+
+export const getResourceWithPublishedInfoQuery = () => {
+  return db
+    .selectFrom("Resource")
+    .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
+    .leftJoin("User", "User.id", "Version.publishedBy")
+    .select(defaultResourceWithPublisherInfoSelect)
 }
