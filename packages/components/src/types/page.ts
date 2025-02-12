@@ -20,10 +20,12 @@ const categorySchemaObject = Type.Object({
 })
 
 const dateSchemaObject = Type.Object({
-  date: Type.String({
-    title: "Article date",
-    format: "date",
-  }),
+  date: Type.Optional(
+    Type.String({
+      title: "Article date",
+      format: "date",
+    }),
+  ),
 })
 
 const imageSchemaObject = Type.Object({
