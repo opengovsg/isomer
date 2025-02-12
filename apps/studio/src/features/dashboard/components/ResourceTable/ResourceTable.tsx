@@ -6,7 +6,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
-import type { RouterOutput } from "~/utils/trpc"
+import type { ResourceTableData } from "./types"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
@@ -16,8 +16,6 @@ import { PublishedInfoCell } from "./PublishedInfoCell"
 import { ResourceTableMenu } from "./ResourceTableMenu"
 import { StateCell } from "./StateCell"
 import { TitleCell } from "./TitleCell"
-
-type ResourceTableData = RouterOutput["resource"]["listWithoutRoot"][number]
 
 const columnsHelper = createColumnHelper<ResourceTableData>()
 
