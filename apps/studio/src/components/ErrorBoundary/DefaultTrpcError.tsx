@@ -3,12 +3,11 @@ import { useRouter } from "next/router"
 import { type TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc"
 
 import { trpc } from "~/utils/trpc"
-import { FullscreenSpinner } from "../FullscreenSpinner"
 import { DefaultNotFound } from "./DefaultNotFound"
 import { DefaultServerError } from "./DefaultServerError"
 import { UnexpectedErrorCard } from "./UnexpectedErrorCard"
 
-function UnauthorizedError() {
+export const UnauthorizedError = () => {
   const utils = trpc.useUtils()
   const router = useRouter()
   useEffect(() => {
@@ -16,7 +15,7 @@ function UnauthorizedError() {
     void router.push("/")
   }, [utils, router])
 
-  return <FullscreenSpinner />
+  return null
 }
 
 // TODO: Make custom components for these
