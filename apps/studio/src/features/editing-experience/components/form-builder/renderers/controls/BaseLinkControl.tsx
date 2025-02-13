@@ -6,12 +6,10 @@ import {
   FormControl,
   IconButton,
   Skeleton,
-  Stack,
   Text,
   useDisclosure,
 } from "@chakra-ui/react"
-import { Button, FormLabel, Infobox } from "@opengovsg/design-system-react"
-import { ErrorBoundary } from "react-error-boundary"
+import { Button, FormLabel } from "@opengovsg/design-system-react"
 import { BiTrash } from "react-icons/bi"
 
 import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
@@ -21,6 +19,7 @@ import { getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
 import { getLinkHrefType } from "../../../LinkEditor/utils"
+import { LinkErrorBoundary } from "../../components/LinkErrorBoundary"
 
 const parseHref = (href: string, pageType: LinkTypesWithHrefFormat) => {
   switch (pageType) {
@@ -73,37 +72,7 @@ export function BaseLinkControl({
     <>
       <Box as={FormControl} isRequired={required}>
         <FormLabel>{label}</FormLabel>
-        <ErrorBoundary
-          fallbackRender={({ resetErrorBoundary }) => (
-            <Infobox
-              variant="error"
-              borderRadius="4px"
-              borderColor="utility.feedback.critical"
-              border="1px solid"
-              bg="utility.feedback.critical"
-              w="100%"
-              size="sm"
-            >
-              <Stack direction="column" w="full">
-                <Text textStyle="subhead-2">
-                  The page you linked no longer exists
-                </Text>
-                <Text textStyle="body-2"> Pick a different destination</Text>
-              </Stack>
-              <IconButton
-                size="xs"
-                variant="clear"
-                colorScheme="critical"
-                aria-label="Remove file"
-                icon={<BiTrash />}
-                onClick={() => {
-                  handleChange(path, undefined)
-                  resetErrorBoundary()
-                }}
-              />
-            </Infobox>
-          )}
-        >
+        <LinkErrorBoundary resetLink={() => handleChange(path, undefined)}>
           <Flex
             px="1rem"
             py="0.75rem"
@@ -148,7 +117,7 @@ export function BaseLinkControl({
               </>
             )}
           </Flex>
-        </ErrorBoundary>
+        </LinkErrorBoundary>
       </Box>
       <LinkEditorModal
         linkTypes={linkTypes}
