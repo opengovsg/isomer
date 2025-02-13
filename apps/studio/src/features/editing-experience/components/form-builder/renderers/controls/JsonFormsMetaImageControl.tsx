@@ -6,7 +6,6 @@ import { Attachment, FormLabel } from "@opengovsg/design-system-react"
 import { z } from "zod"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { env } from "~/env.mjs"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { useImage } from "../../hooks/useImage"
