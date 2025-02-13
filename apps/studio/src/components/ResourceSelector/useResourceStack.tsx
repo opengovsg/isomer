@@ -38,9 +38,17 @@ export const useResourceStack = ({
     [resourceStack],
   )
 
-  const removeFromStack = useCallback((numberOfResources: number): void => {
-    setResourceStack((prev) => prev.slice(0, -numberOfResources))
-  }, [])
+  const removeFromStack = useCallback(
+    (numberOfResources: number): ResourceItemContent[] => {
+      let updatedStack: ResourceItemContent[] = []
+      setResourceStack((prev) => {
+        updatedStack = prev.slice(0, -numberOfResources)
+        return updatedStack
+      })
+      return updatedStack
+    },
+    [],
+  )
 
   const fullPermalink: string = useMemo(() => {
     return resourceStack.map((resource) => resource.permalink).join("/")

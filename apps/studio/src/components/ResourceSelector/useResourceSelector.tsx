@@ -26,7 +26,7 @@ export const useResourceSelector = ({
   setIsResourceHighlighted: (isResourceHighlighted: boolean) => void
   existingResource: ResourceItemContent | undefined
   setResourceStack: (resourceStack: ResourceItemContent[]) => void
-  removeFromStack: (numberOfResources: number) => void
+  removeFromStack: (numberOfResources: number) => ResourceItemContent[]
   onChange: (resourceId: string) => void
 }) => {
   const isResourceIdHighlighted = useCallback(
@@ -82,13 +82,17 @@ export const useResourceSelector = ({
   )
 
   const handleClickBackButton = useCallback(() => {
+    let lastChild: ResourceItemContent | undefined
+
     if (isResourceHighlighted) {
       setIsResourceHighlighted(false)
-      removeFromStack(2)
+      const updatedStack = removeFromStack(2)
+      lastChild = lastResourceItemInAncestryStack(updatedStack)
     } else {
-      removeFromStack(1)
+      const updatedStack = removeFromStack(1)
+      lastChild = lastResourceItemInAncestryStack(updatedStack)
     }
-    const lastChild = lastResourceItemInAncestryStack(resourceStack)
+
     if (lastChild) {
       onChange(lastChild.id)
     }
@@ -96,7 +100,6 @@ export const useResourceSelector = ({
     isResourceHighlighted,
     onChange,
     removeFromStack,
-    resourceStack,
     setIsResourceHighlighted,
   ])
 
