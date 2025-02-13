@@ -169,7 +169,7 @@
     "@storybook/react": "8.5.2",
     "@storybook/test": "8.5.2",
     "@types/lodash": "^4.17.15",
-    "@types/node": "^22.5.5",
+    "@types/node": "^22.13.2",
     "@types/pg": "^8.11.11",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
