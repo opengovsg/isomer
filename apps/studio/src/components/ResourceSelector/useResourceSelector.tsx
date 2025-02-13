@@ -6,6 +6,19 @@ import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 import { lastResourceItemInAncestryStack } from "./utils"
 
+interface UseResourceSelectorProps {
+  interactionType: "move" | "link"
+  siteId: number
+  moveDest: ResourceItemContent | undefined
+  resourceStack: ResourceItemContent[]
+  isResourceHighlighted: boolean
+  setIsResourceHighlighted: (isResourceHighlighted: boolean) => void
+  existingResource: ResourceItemContent | undefined
+  setResourceStack: (resourceStack: ResourceItemContent[]) => void
+  removeFromStack: (numberOfResources: number) => ResourceItemContent[]
+  onChange: (resourceId: string) => void
+}
+
 export const useResourceSelector = ({
   interactionType,
   siteId,
@@ -17,18 +30,7 @@ export const useResourceSelector = ({
   setResourceStack,
   removeFromStack,
   onChange,
-}: {
-  interactionType: "move" | "link"
-  siteId: number
-  moveDest: ResourceItemContent | undefined
-  resourceStack: ResourceItemContent[]
-  isResourceHighlighted: boolean
-  setIsResourceHighlighted: (isResourceHighlighted: boolean) => void
-  existingResource: ResourceItemContent | undefined
-  setResourceStack: (resourceStack: ResourceItemContent[]) => void
-  removeFromStack: (numberOfResources: number) => ResourceItemContent[]
-  onChange: (resourceId: string) => void
-}) => {
+}: UseResourceSelectorProps) => {
   const isResourceIdHighlighted = useCallback(
     (resourceId: string): boolean => {
       const curResourceId = moveDest?.id

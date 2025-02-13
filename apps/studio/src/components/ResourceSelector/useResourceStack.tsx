@@ -3,15 +3,17 @@ import { useCallback, useMemo, useState } from "react"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { trpc } from "~/utils/trpc"
 
+interface UseResourceStackProps {
+  siteId: number
+  selectedResourceId: string | undefined
+  existingResource: ResourceItemContent | undefined
+}
+
 export const useResourceStack = ({
   siteId,
   selectedResourceId,
   existingResource,
-}: {
-  siteId: number
-  selectedResourceId: string | undefined
-  existingResource: ResourceItemContent | undefined
-}) => {
+}: UseResourceStackProps) => {
   const [pendingMovedItemAncestryStack] =
     trpc.resource.getAncestryStack.useSuspenseQuery({
       siteId: String(siteId),

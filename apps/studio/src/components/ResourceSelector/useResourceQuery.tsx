@@ -1,6 +1,15 @@
 import { type ResourceItemContent } from "~/schemas/resource"
 import { trpc } from "~/utils/trpc"
 
+interface UseResourceQueryProps {
+  siteId: number
+  moveDest: ResourceItemContent | undefined
+  parentDest: ResourceItemContent | undefined
+  isResourceHighlighted: boolean
+  onlyShowFolders: boolean
+  resourceIds?: ResourceItemContent["id"][]
+}
+
 export const useResourceQuery = ({
   siteId,
   moveDest,
@@ -8,14 +17,7 @@ export const useResourceQuery = ({
   isResourceHighlighted,
   onlyShowFolders,
   resourceIds,
-}: {
-  siteId: number
-  moveDest: ResourceItemContent | undefined
-  parentDest: ResourceItemContent | undefined
-  isResourceHighlighted: boolean
-  onlyShowFolders: boolean
-  resourceIds?: ResourceItemContent["id"][]
-}) => {
+}: UseResourceQueryProps) => {
   const queryFn = onlyShowFolders
     ? trpc.resource.getFolderChildrenOf.useInfiniteQuery
     : trpc.resource.getChildrenOf.useInfiniteQuery
