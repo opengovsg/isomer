@@ -21,22 +21,20 @@ const NoItemsInFolderResult = () => {
   )
 }
 
-interface ResourceItemsResultsProps {
-  resourceItemsWithAncestryStack: ResourceItemContent[][]
-  isResourceIdHighlighted: (resourceId: string) => boolean
-  isResourceItemDisabled: (resourceItem: ResourceItemContent) => boolean
-  hasAdditionalLeftPadding: boolean
-  handleClickResourceItem: (
-    resourceItemWithAncestryStack: ResourceItemContent[],
-  ) => void
-}
 const ResourceItemsResults = ({
   resourceItemsWithAncestryStack,
   isResourceIdHighlighted,
   isResourceItemDisabled,
   hasAdditionalLeftPadding,
   handleClickResourceItem,
-}: ResourceItemsResultsProps) => {
+}: Pick<
+  SuspendableContentProps,
+  | "resourceItemsWithAncestryStack"
+  | "isResourceIdHighlighted"
+  | "isResourceItemDisabled"
+  | "hasAdditionalLeftPadding"
+  | "handleClickResourceItem"
+>) => {
   return resourceItemsWithAncestryStack.map((resourceItemWithAncestryStack) => {
     const lastChild = lastResourceItemInAncestryStack(
       resourceItemWithAncestryStack,
@@ -66,9 +64,8 @@ const ResourceItemsResults = ({
 const ZeroResult = ({
   searchQuery,
   handleClickClearSearch,
-}: {
-  searchQuery: string
-  handleClickClearSearch: () => void
+}: Pick<SuspendableContentProps, "searchQuery"> & {
+  handleClickClearSearch: SuspendableContentProps["clearSearchValue"]
 }) => {
   return (
     <VStack
@@ -103,18 +100,8 @@ export const LoadingResourceItemsResults = () => {
   ))
 }
 
-export const SuspendableContent = ({
-  resourceItemsWithAncestryStack,
-  isResourceIdHighlighted,
-  isResourceItemDisabled,
-  hasAdditionalLeftPadding,
-  handleClickResourceItem,
-  isSearchQueryEmpty,
-  searchQuery,
-  clearSearchValue,
-  isLoading,
-}: {
-  resourceItemsWithAncestryStack: ResourceItemContent[][]
+interface SuspendableContentProps {
+  resourceItemsWithAncestryStack: ResourceItemContent[][] | undefined
   isResourceIdHighlighted: (resourceId: string) => boolean
   isResourceItemDisabled: (resourceItem: ResourceItemContent) => boolean
   hasAdditionalLeftPadding: boolean
@@ -125,7 +112,18 @@ export const SuspendableContent = ({
   searchQuery: string
   clearSearchValue: () => void
   isLoading: boolean
-}) => {
+}
+export const SuspendableContent = ({
+  resourceItemsWithAncestryStack,
+  isResourceIdHighlighted,
+  isResourceItemDisabled,
+  hasAdditionalLeftPadding,
+  handleClickResourceItem,
+  isSearchQueryEmpty,
+  searchQuery,
+  clearSearchValue,
+  isLoading,
+}: SuspendableContentProps) => {
   if (isLoading) return <LoadingResourceItemsResults />
 
   const hasNoItems = resourceItemsWithAncestryStack.length === 0

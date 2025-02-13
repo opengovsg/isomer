@@ -32,7 +32,11 @@ const HomeHeader = () => {
   )
 }
 
-const BackButtonHeader = ({ handleOnClick }: { handleOnClick: () => void }) => {
+const BackButtonHeader = ({
+  handleOnClick,
+}: {
+  handleOnClick: SuspendableHeaderProps["handleClickBackButton"]
+}) => {
   return (
     <Link
       variant="clear"
@@ -54,9 +58,8 @@ const BackButtonHeader = ({ handleOnClick }: { handleOnClick: () => void }) => {
 const SearchResultsHeader = ({
   resultsCount,
   searchQuery,
-}: {
+}: Pick<SuspendableHeaderProps, "searchQuery"> & {
   resultsCount: number
-  searchQuery: string
 }) => {
   return (
     <Text textStyle="caption-2" px="0.5rem" pt="0.25rem" pb="0.5rem">
@@ -74,6 +77,14 @@ export const LoadingHeader = () => {
   )
 }
 
+interface SuspendableHeaderProps {
+  isSearchQueryEmpty: boolean
+  hasParentInStack: boolean
+  handleClickBackButton: () => void
+  resourceItemsWithAncestryStack: ResourceItemContent[][] | undefined
+  searchQuery: string
+  isLoading: boolean
+}
 export const SuspendableHeader = ({
   isSearchQueryEmpty,
   hasParentInStack,
@@ -81,14 +92,7 @@ export const SuspendableHeader = ({
   resourceItemsWithAncestryStack,
   searchQuery,
   isLoading,
-}: {
-  isSearchQueryEmpty: boolean
-  hasParentInStack: boolean
-  handleClickBackButton: () => void
-  resourceItemsWithAncestryStack: ResourceItemContent[][]
-  searchQuery: string
-  isLoading: boolean
-}) => {
+}: SuspendableHeaderProps) => {
   if (isLoading) return <LoadingHeader />
 
   if (isSearchQueryEmpty && hasParentInStack)
