@@ -2,7 +2,6 @@ import type { Editor } from "@tiptap/react"
 import { useEffect } from "react"
 import {
   FormControl,
-  FormHelperText,
   HStack,
   Modal,
   ModalBody,
@@ -14,6 +13,7 @@ import {
 import {
   Button,
   FormErrorMessage,
+  FormHelperText,
   FormLabel,
   ModalCloseButton,
   Textarea,

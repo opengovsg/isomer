@@ -3,8 +3,6 @@ import {
   Box,
   chakra,
   FormControl,
-  FormHelperText,
-  FormLabel,
   Icon,
   Input,
   Modal,
@@ -21,6 +19,8 @@ import {
 import {
   Button,
   FormErrorMessage,
+  FormHelperText,
+  FormLabel,
   useToast,
 } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
