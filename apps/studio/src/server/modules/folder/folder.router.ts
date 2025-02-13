@@ -57,10 +57,7 @@ export const folderRouter = router({
               message: "Parent folder does not exist",
             })
           }
-          if (
-            parentFolder.type !== "Folder" &&
-            parentFolder.type !== "RootPage"
-          ) {
+          if (parentFolder.type !== "Folder") {
             throw new TRPCError({
               code: "BAD_REQUEST",
               message: "Resource ID does not point to a folder",
