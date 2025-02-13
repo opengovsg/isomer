@@ -75,6 +75,7 @@ export const folderRouter = router({
             parentId: parentFolderId ? String(parentFolderId) : null,
             state: ResourceState.Published,
           })
+          .returning(["id"])
           .executeTakeFirstOrThrow()
           .catch((err) => {
             if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
@@ -89,7 +90,7 @@ export const folderRouter = router({
         // TODO: Create the index page for the folder and publish it
         await publishSite(ctx.logger, siteId)
 
-        return { folderId: folder.insertId }
+        return { folderId: folder.id }
       },
     ),
   getMetadata: protectedProcedure

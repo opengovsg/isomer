@@ -5,6 +5,7 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import {
+  setupAdminPermissions,
   setupFolder,
   setupPageResource,
   setupSite,
@@ -16,12 +17,12 @@ import { folderRouter } from "../folder.router"
 
 const createCaller = createCallerFactory(folderRouter)
 
-describe("folder.router", () => {
+describe("folder.router", async () => {
   let caller: ReturnType<typeof createCaller>
   let unauthedCaller: ReturnType<typeof createCaller>
+  const session = await applyAuthedSession()
 
   beforeAll(async () => {
-    const session = await applyAuthedSession()
     caller = createCaller(createMockRequest(session))
     const unauthedSession = applySession()
     unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -46,6 +47,10 @@ describe("folder.router", () => {
       // Arrange
       const duplicatePermalink = "duplicate-permalink"
       const { site } = await setupFolder({ permalink: duplicatePermalink })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.create({
@@ -67,6 +72,10 @@ describe("folder.router", () => {
       // Arrange
       const invalidSiteId = 999
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       expect(site.id).not.toEqual(invalidSiteId)
 
       // Act
@@ -80,7 +89,8 @@ describe("folder.router", () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "NOT_FOUND",
-          message: "Site does not exist",
+          message:
+            "You do not have sufficient permissions to perform this action",
         }),
       )
     })
@@ -88,6 +98,10 @@ describe("folder.router", () => {
     it("should throw 404 if `parentFolderId` does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.create({
@@ -110,6 +124,10 @@ describe("folder.router", () => {
       // Arrange
       const { site, page } = await setupPageResource({
         resourceType: "Page",
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
       })
 
       // Act
@@ -136,6 +154,10 @@ describe("folder.router", () => {
         permalink: duplicatePermalink,
       })
       const { site: secondSite } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: secondSite.id,
+      })
 
       // Act
       const result = await caller.create({
@@ -156,6 +178,11 @@ describe("folder.router", () => {
       // Arrange
       const permalinkToUse = "test-folder-999"
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
       // Act
       const result = await caller.create({
         folderTitle: "test folder 999",
@@ -175,6 +202,10 @@ describe("folder.router", () => {
       // Arrange
       const permalinkToUse = "test-folder-777"
       const { folder: parentFolder, site } = await setupFolder()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.create({
@@ -194,7 +225,28 @@ describe("folder.router", () => {
     })
 
     // TODO: Add tests when permissions are implemented
-    it.skip("should throw 403 if user does not have write access to the site", async () => {})
+    it("should throw 403 if user does not have write access to the site", async () => {
+      // Arrange
+      const permalinkToUse = "test-folder-777"
+      const { folder: parentFolder, site } = await setupFolder()
+
+      // Act
+      const result = caller.create({
+        folderTitle: "test folder",
+        siteId: site.id,
+        permalink: permalinkToUse,
+        parentFolderId: Number(parentFolder.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
 
     it.skip("should throw 403 if user does not have write access to the parent folder", async () => {})
   })
