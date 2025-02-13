@@ -24,6 +24,7 @@ export const useResourceQuery = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isLoading: isLoadingChildren,
   } = queryFn(
     {
       resourceId:
@@ -37,13 +38,18 @@ export const useResourceQuery = ({
   )
 
   const useResourceIdsFromSearch = !!resourceIds
-  const [resourceItemsWithAncestryStack] =
-    trpc.resource.getBatchAncestryWithSelf.useSuspenseQuery({
-      siteId: String(siteId),
-      resourceIds: useResourceIdsFromSearch
-        ? resourceIds
-        : pages.flatMap(({ items }) => items).map((item) => item.id),
-    })
+  const { data: resourceItemsWithAncestryStack } =
+    trpc.resource.getBatchAncestryWithSelf.useQuery(
+      {
+        siteId: String(siteId),
+        resourceIds: useResourceIdsFromSearch
+          ? resourceIds
+          : pages.flatMap(({ items }) => items).map((item) => item.id),
+      },
+      {
+        enabled: !isLoadingChildren,
+      },
+    )
 
   return {
     resourceItemsWithAncestryStack,

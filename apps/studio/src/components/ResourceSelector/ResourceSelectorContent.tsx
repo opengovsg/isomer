@@ -35,30 +35,32 @@ const ResourceItemsResults = ({
   | "hasAdditionalLeftPadding"
   | "handleClickResourceItem"
 >) => {
-  return resourceItemsWithAncestryStack.map((resourceItemWithAncestryStack) => {
-    const lastChild = lastResourceItemInAncestryStack(
-      resourceItemWithAncestryStack,
-    )
-
-    if (!lastChild) {
-      throw new Error(
-        "Unexpected undefined lastChild from lastResourceItemInAncestryStack",
+  return (resourceItemsWithAncestryStack ?? []).map(
+    (resourceItemWithAncestryStack) => {
+      const lastChild = lastResourceItemInAncestryStack(
+        resourceItemWithAncestryStack,
       )
-    }
 
-    return (
-      <ResourceItem
-        key={lastChild.id}
-        item={lastChild}
-        isDisabled={isResourceItemDisabled(lastChild)}
-        isHighlighted={isResourceIdHighlighted(lastChild.id)}
-        handleOnClick={() =>
-          handleClickResourceItem(resourceItemWithAncestryStack)
-        }
-        hasAdditionalLeftPadding={hasAdditionalLeftPadding}
-      />
-    )
-  })
+      if (!lastChild) {
+        throw new Error(
+          "Unexpected undefined lastChild from lastResourceItemInAncestryStack",
+        )
+      }
+
+      return (
+        <ResourceItem
+          key={lastChild.id}
+          item={lastChild}
+          isDisabled={isResourceItemDisabled(lastChild)}
+          isHighlighted={isResourceIdHighlighted(lastChild.id)}
+          handleOnClick={() =>
+            handleClickResourceItem(resourceItemWithAncestryStack)
+          }
+          hasAdditionalLeftPadding={hasAdditionalLeftPadding}
+        />
+      )
+    },
+  )
 }
 
 const ZeroResult = ({
@@ -124,7 +126,8 @@ export const SuspendableContent = ({
   clearSearchValue,
   isLoading,
 }: SuspendableContentProps) => {
-  if (isLoading) return <LoadingResourceItemsResults />
+  if (isLoading || !resourceItemsWithAncestryStack)
+    return <LoadingResourceItemsResults />
 
   const hasNoItems = resourceItemsWithAncestryStack.length === 0
 

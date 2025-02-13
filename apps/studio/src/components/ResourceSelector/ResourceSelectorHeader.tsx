@@ -98,7 +98,8 @@ export const SuspendableHeader = ({
   if (isSearchQueryEmpty && hasParentInStack)
     return <BackButtonHeader handleOnClick={handleClickBackButton} />
 
-  if (isSearchQueryEmpty) return <HomeHeader />
+  if (isSearchQueryEmpty || !resourceItemsWithAncestryStack)
+    return <HomeHeader />
 
   return (
     <SearchResultsHeader
