@@ -12,6 +12,7 @@ import {
   JSON_FORMS_RANKING,
   TEXTAREA_CHARACTERS_PER_ROW,
 } from "~/constants/formBuilder"
+import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsTextAreaControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextAreaControl,
@@ -77,7 +78,7 @@ export function JsonFormsTextAreaControl({
           </FormHelperText>
         )}
         <FormErrorMessage>
-          {label} {errors}
+          {label} {getCustomErrorMessage(errors)}
         </FormErrorMessage>
       </FormControl>
     </Box>

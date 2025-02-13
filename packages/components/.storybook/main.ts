@@ -9,7 +9,6 @@ const config: StorybookConfig = {
     "@storybook/addon-themes",
     "@storybook/addon-a11y",
     "@storybook/addon-interactions",
-    "storybook-addon-mock",
   ],
   viteFinal(config) {
     // Merge custom configuration into the default config
@@ -29,6 +28,8 @@ const config: StorybookConfig = {
   docs: {
     autodocs: true,
   },
+
+  staticDirs: ["../public"],
 }
 
 export default config

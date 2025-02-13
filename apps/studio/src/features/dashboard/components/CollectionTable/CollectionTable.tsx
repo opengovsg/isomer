@@ -113,7 +113,6 @@ export const CollectionTable = ({
       instance={tableInstance}
       sx={{
         tableLayout: "auto",
-        minWidth: "1000px",
         overflowX: "auto",
       }}
       totalRowCount={totalRowCount}

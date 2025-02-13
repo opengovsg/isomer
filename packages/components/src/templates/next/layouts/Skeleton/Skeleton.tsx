@@ -9,6 +9,7 @@ import {
   Masthead,
   Navbar,
   Notification,
+  ScrollToTop,
   SkipToContent,
   UnsupportedBrowserBanner,
   VicaStylesheet,
@@ -55,6 +56,8 @@ export const Skeleton = ({
       {!isStaging && <DatadogRum />}
 
       {site.vica && <VicaStylesheet />}
+
+      <ScrollToTop />
 
       <header>
         <SkipToContent LinkComponent={LinkComponent} />
@@ -108,7 +111,7 @@ export const Skeleton = ({
       )}
 
       {/* Ensures that the webchat widget only loads after the page has loaded */}
-      {site.vica && <VicaWidget {...site.vica} />}
+      {site.vica && <VicaWidget site={site} {...site.vica} />}
     </>
   )
 }

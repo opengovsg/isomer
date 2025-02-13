@@ -1,5 +1,7 @@
 import { Resource as DbResource } from "~generated/selectableTypes"
 
+import { PAGE_RESOURCE_TYPES } from "./constants"
+
 // NOTE: this needs the `omit` because the `parentId`
 // we defined in studio
 export interface Resource extends Omit<DbResource, "parentId"> {
@@ -29,4 +31,8 @@ export type SitemapEntry = Pick<
   ref?: string
   children?: SitemapEntry[]
   tags?: Tag[]
+}
+
+export type PageOnlySitemapEntry = Omit<SitemapEntry, "children"> & {
+  type: (typeof PAGE_RESOURCE_TYPES)[number]
 }

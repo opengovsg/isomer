@@ -159,7 +159,7 @@ export const createSite = async ({ siteName }: CreateSiteProps) => {
         }),
         config: jsonb({
           theme: "isomer-next",
-          siteName: "MTI",
+          siteName,
           logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
           search: undefined,
           isGovernment: true,

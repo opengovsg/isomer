@@ -136,9 +136,16 @@ const InfoCardImage = ({
   url,
   layout,
   site,
+  shouldLazyLoad,
 }: Pick<
   SingleCardWithImageProps,
-  "imageUrl" | "imageAlt" | "url" | "imageFit" | "layout" | "site"
+  | "imageUrl"
+  | "imageAlt"
+  | "url"
+  | "imageFit"
+  | "layout"
+  | "site"
+  | "shouldLazyLoad"
 >): JSX.Element => {
   const imgSrc =
     isExternalUrl(imageUrl) || site.assetsBaseUrl === undefined
@@ -160,6 +167,7 @@ const InfoCardImage = ({
           imageFit,
         })}
         assetsBaseUrl={site.assetsBaseUrl}
+        lazyLoading={shouldLazyLoad}
       />
     </div>
   )
@@ -226,6 +234,7 @@ const InfoCardWithImage = ({
   layout,
   site,
   LinkComponent,
+  shouldLazyLoad = true,
 }: SingleCardWithImageProps): JSX.Element => {
   const isExternalLink = isExternalUrl(url)
   return (
@@ -242,6 +251,7 @@ const InfoCardWithImage = ({
         url={url}
         site={site}
         layout={layout}
+        shouldLazyLoad={shouldLazyLoad}
       />
       <InfoCardText
         title={title}
@@ -264,6 +274,7 @@ const InfoCards = ({
   url,
   layout,
   site,
+  shouldLazyLoad,
   LinkComponent,
 }: InfoCardsProps): JSX.Element => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
@@ -280,6 +291,7 @@ const InfoCards = ({
                 layout={layout}
                 site={site}
                 LinkComponent={LinkComponent}
+                shouldLazyLoad={shouldLazyLoad}
               />
             ))}
           </>
@@ -339,6 +351,7 @@ const InfoCards = ({
             size="base"
             variant="outline"
             isWithFocusVisibleHighlight
+            LinkComponent={LinkComponent}
           >
             {label}
           </LinkButton>

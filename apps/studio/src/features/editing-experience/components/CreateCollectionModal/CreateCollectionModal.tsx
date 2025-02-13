@@ -41,12 +41,13 @@ type CreateCollectionModalProps = Pick<
   UseDisclosureReturn,
   "isOpen" | "onClose"
 > &
-  Pick<CreateCollectionProps, "siteId">
+  Pick<CreateCollectionProps, "siteId" | "parentFolderId">
 
 export const CreateCollectionModal = ({
   isOpen,
   onClose,
   siteId,
+  parentFolderId,
 }: CreateCollectionModalProps): JSX.Element => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -56,6 +57,7 @@ export const CreateCollectionModal = ({
         key={String(isOpen)}
         onClose={onClose}
         siteId={siteId}
+        parentFolderId={parentFolderId}
       />
     </Modal>
   )
@@ -64,6 +66,7 @@ export const CreateCollectionModal = ({
 const CreateCollectionModalContent = ({
   onClose,
   siteId,
+  parentFolderId,
 }: CreateCollectionModalProps) => {
   const {
     register,
@@ -80,6 +83,7 @@ const CreateCollectionModalContent = ({
     },
     schema: createCollectionSchema.omit({
       siteId: true,
+      parentFolderId: true,
     }),
   })
   const { errors, isValid } = formState
@@ -110,7 +114,7 @@ const CreateCollectionModalContent = ({
 
   const [collectionTitle, permalink] = watch(["collectionTitle", "permalink"])
   const onSubmit = handleSubmit((data) => {
-    mutate({ ...data, siteId })
+    mutate({ ...data, parentFolderId, siteId })
   })
 
   useEffect(() => {

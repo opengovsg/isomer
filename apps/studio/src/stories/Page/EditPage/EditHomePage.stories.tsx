@@ -13,6 +13,7 @@ const COMMON_HANDLERS = [
   meHandlers.me(),
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
+  pageHandlers.updatePageBlob.default(),
   pageHandlers.countWithoutRoot.default(),
   sitesHandlers.getLocalisedSitemap.default(),
   sitesHandlers.getTheme.default(),
@@ -66,6 +67,17 @@ export const EditHero: Story = {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", { name: /hero banner/i })
     await userEvent.click(button)
+  },
+}
+
+export const SaveToast: Story = {
+  play: async ({ canvasElement, ...rest }) => {
+    await EditHero.play?.({ canvasElement, ...rest })
+    const canvas = within(canvasElement)
+    const saveButton = await canvas.findByRole("button", {
+      name: /Save changes/i,
+    })
+    await userEvent.click(saveButton)
   },
 }
 

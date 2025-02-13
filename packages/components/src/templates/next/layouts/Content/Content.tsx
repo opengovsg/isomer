@@ -97,7 +97,7 @@ const ContentLayout = ({
         {sideRail && (
           <div className={compoundStyles.siderailContainer()}>
             <Siderail {...sideRail} LinkComponent={LinkComponent} />
-            <BackToTopLink LinkComponent={LinkComponent} />
+            <BackToTopLink />
           </div>
         )}
       </div>

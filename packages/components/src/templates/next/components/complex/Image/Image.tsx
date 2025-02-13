@@ -34,7 +34,14 @@ const getSizeWidth = (size: ImageProps["size"]) => {
   }
 }
 
-export const Image = ({ src, alt, caption, size, site }: ImageProps) => {
+export const Image = ({
+  src,
+  alt,
+  caption,
+  size,
+  site,
+  shouldLazyLoad = true,
+}: ImageProps) => {
   const imgSrc =
     isExternalUrl(src) || site.assetsBaseUrl === undefined
       ? src
@@ -48,6 +55,7 @@ export const Image = ({ src, alt, caption, size, site }: ImageProps) => {
         width={getSizeWidth(size)}
         className={compoundStyles.image({ size: size ?? "default" })}
         assetsBaseUrl={site.assetsBaseUrl}
+        lazyLoading={shouldLazyLoad}
       />
 
       {caption && <p className={compoundStyles.caption()}>{caption}</p>}

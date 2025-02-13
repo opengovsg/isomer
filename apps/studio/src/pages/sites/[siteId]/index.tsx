@@ -1,19 +1,11 @@
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  HStack,
-  Portal,
-  Text,
-  useDisclosure,
-  VStack,
-} from "@chakra-ui/react"
+import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
@@ -105,48 +97,26 @@ const SitePage: NextPageWithLayout = () => {
 
   return (
     <>
-      <VStack
-        w="100%"
-        p="1.75rem"
-        gap="1rem"
-        height={0}
-        minH="100%"
-        overflow="auto"
+      <DashboardLayout
+        breadcrumbs={[
+          {
+            href: `/sites/${siteId}`,
+            label: "Home",
+          },
+        ]}
+        icon={<BiHomeAlt />}
+        title="Home"
+        buttons={
+          <HomepageMenuButton
+            onPageCreateModalOpen={onPageCreateModalOpen}
+            onFolderCreateModalOpen={onFolderCreateModalOpen}
+            onCollectionCreateModalOpen={onCollectionCreateModalOpen}
+          />
+        }
       >
-        <VStack w="100%" align="start">
-          <Breadcrumb size="sm">
-            <BreadcrumbItem>
-              <Text textStyle="caption-2" color="base.content.default">
-                Home
-              </Text>
-            </BreadcrumbItem>
-          </Breadcrumb>
-          <HStack w="100%" justify="space-between" align="center" gap={0}>
-            <HStack gap="0.75rem">
-              <Box
-                aria-hidden
-                bg="brand.secondary.100"
-                p="0.5rem"
-                borderRadius="6px"
-              >
-                <BiHomeAlt />
-              </Box>
-              <Text as="h3" textStyle="h3">
-                Home
-              </Text>
-            </HStack>
-            <HomepageMenuButton
-              onPageCreateModalOpen={onPageCreateModalOpen}
-              onFolderCreateModalOpen={onFolderCreateModalOpen}
-              onCollectionCreateModalOpen={onCollectionCreateModalOpen}
-            />
-          </HStack>
-        </VStack>
         <RootpageRow siteId={siteId} />
-        <Box width="100%">
-          <ResourceTable siteId={siteId} />
-        </Box>
-      </VStack>
+        <ResourceTable siteId={siteId} />
+      </DashboardLayout>
       <CreatePageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}

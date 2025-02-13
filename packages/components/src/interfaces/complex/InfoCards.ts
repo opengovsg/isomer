@@ -175,10 +175,12 @@ export type SingleCardWithImageProps = Static<
   layout: IsomerPageLayoutType
   isExternalLink?: boolean
   LinkComponent?: LinkComponentType
+  shouldLazyLoad?: boolean
 }
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
   sectionIdx?: number // TODO: Remove this property, only used in classic theme
+  shouldLazyLoad?: boolean
 }

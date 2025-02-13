@@ -66,6 +66,7 @@ export interface ResourcePermission {
   role: RoleType
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
+  deletedAt: Timestamp | null
 }
 export interface Site {
   id: GeneratedAlways<number>
@@ -91,6 +92,7 @@ export interface User {
   phone: string
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
+  deletedAt: Timestamp | null
 }
 export interface VerificationToken {
   identifier: string

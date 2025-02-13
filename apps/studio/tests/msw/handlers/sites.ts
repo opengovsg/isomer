@@ -1,6 +1,7 @@
 import type { DelayMode } from "msw"
 import { delay } from "msw"
 
+import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
 
 const siteListQuery = ({
@@ -145,8 +146,8 @@ export const sitesHandlers = {
             feedbackFormLink: "https://www.form.gov.sg",
             privacyStatementLink: "/privacy",
           } as PrismaJson.FooterJsonContent,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: MOCK_STORY_DATE,
+          updatedAt: MOCK_STORY_DATE,
         }
       })
     },
@@ -199,8 +200,8 @@ export const sitesHandlers = {
               ],
             },
           ] as PrismaJson.NavbarJsonContent,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: MOCK_STORY_DATE,
+          updatedAt: MOCK_STORY_DATE,
         }
       })
     },

@@ -37,11 +37,11 @@ const ArticlePageHeader = ({
         <Breadcrumb links={breadcrumb.links} LinkComponent={LinkComponent} />
       </div>
 
-      <div className="mb-3 text-base font-medium text-gray-600">{category}</div>
+      <div className="prose-body-base mb-3 text-base-content">{category}</div>
 
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4">
-          <h1 className="break-words text-3xl font-semibold tracking-tight text-content-strong lg:text-4xl">
+          <h1 className="prose-display-md break-words text-base-content-strong">
             {title}
           </h1>
           {tags.length > 0 &&
@@ -57,10 +57,12 @@ const ArticlePageHeader = ({
         </div>
 
         {date && (
-          <p className="text-sm text-gray-800">{getFormattedDate(date)}</p>
+          <p className="prose-label-sm-medium text-base-content">
+            {getFormattedDate(date)}
+          </p>
         )}
 
-        <div className="text-xl tracking-tight text-gray-500 md:text-2xl">
+        <div className="prose-title-lg text-base-content-light">
           <ArticleSummaryContent
             summary={summary}
             site={site}

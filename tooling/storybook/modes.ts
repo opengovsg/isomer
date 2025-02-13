@@ -7,6 +7,9 @@
 export type ChromaticModeKey = keyof typeof modes;
 
 export const modes = {
+  mobileSmall: {
+    viewport: "xs",
+  },
   mobile: {
     viewport: "sm",
   },

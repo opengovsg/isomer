@@ -382,6 +382,19 @@ export const NoSummary: Story = {
             ],
           },
           {
+            type: "heading",
+            attrs: {
+              id: "section2",
+              level: 2,
+            },
+            content: [
+              {
+                type: "text",
+                text: "It does look a bit odd but we can't fix until the typography scale is rejigged",
+              },
+            ],
+          },
+          {
             type: "paragraph",
             content: [
               {

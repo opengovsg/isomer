@@ -123,7 +123,11 @@ export default function RootStateDrawer() {
 
   return (
     <VStack gap="1.5rem" p="1.5rem">
-      {isUserIsomerAdmin && <ActivateRawJsonEditorMode />}
+      {isUserIsomerAdmin && (
+        <ActivateRawJsonEditorMode
+          onActivate={() => setDrawerState({ state: "rawJsonEditor" })}
+        />
+      )}
       {/* Fixed Blocks Section */}
       <VStack gap="1rem" w="100%" align="start">
         <VStack gap="0.25rem" align="start">

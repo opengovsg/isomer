@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Box, Text } from "@chakra-ui/react"
 
-import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-
 const COMBO: KeyboardEvent["key"][] = [
   "ArrowUp",
   "ArrowUp",
@@ -16,10 +14,14 @@ const COMBO: KeyboardEvent["key"][] = [
   "a",
 ]
 
-// Activate the raw JSON editor mode when a key combo is pressed
-export const ActivateRawJsonEditorMode = () => {
-  const { setDrawerState } = useEditorDrawerContext()
+interface ActivateRawJsonEditorModeProps {
+  onActivate: () => void
+}
 
+// Activate the raw JSON editor mode when a key combo is pressed
+export const ActivateRawJsonEditorMode = ({
+  onActivate,
+}: ActivateRawJsonEditorModeProps) => {
   const [comboIndex, setComboIndex] = useState(0)
   const [showCounter, setShowCounter] = useState(false)
 
@@ -45,12 +47,12 @@ export const ActivateRawJsonEditorMode = () => {
     }
 
     if (comboIndex === COMBO.length) {
-      setDrawerState({ state: "rawJsonEditor" })
+      onActivate()
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [comboIndex, setDrawerState])
+  }, [comboIndex, onActivate])
 
   return (
     <Box

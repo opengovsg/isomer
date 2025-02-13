@@ -119,7 +119,6 @@ export const ResourceTable = ({
       instance={tableInstance}
       sx={{
         tableLayout: "auto",
-        minWidth: "1000px",
         overflowX: "auto",
       }}
       totalRowCount={totalCount}

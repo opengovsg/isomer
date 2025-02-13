@@ -28,6 +28,7 @@ export const Contentpic = ({
   imageAlt,
   LinkComponent,
   site,
+  shouldLazyLoad = true,
 }: ContentpicProps): JSX.Element => {
   const imgSrc =
     isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
@@ -42,6 +43,7 @@ export const Contentpic = ({
         width="100%"
         className={compoundStyles.image()}
         assetsBaseUrl={site.assetsBaseUrl}
+        lazyLoading={shouldLazyLoad}
       />
 
       <div className={compoundStyles.content()}>

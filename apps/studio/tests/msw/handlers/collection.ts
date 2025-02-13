@@ -1,3 +1,4 @@
+import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
 
 export const collectionHandlers = {
@@ -7,8 +8,8 @@ export const collectionHandlers = {
         siteId: 1,
         type: "Collection",
         id: "2",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: MOCK_STORY_DATE,
+        updatedAt: MOCK_STORY_DATE,
         state: "Draft",
         title: "A mock title",
         permalink: "/mock/title",

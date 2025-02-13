@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { CollectionCardProps } from "~/interfaces"
-import { Tag } from "~/interfaces/internal/CollectionCard"
+import type { Tag } from "~/interfaces/internal/CollectionCard"
 import { CollectionCard } from "./CollectionCard"
 
 const meta: Meta<typeof CollectionCard> = {

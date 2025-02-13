@@ -31,3 +31,4 @@ export {
 } from "./GoogleTagManager"
 export { BlogCard } from "./BlogCard"
 export { FontPreload } from "./FontPreload"
+export { ScrollToTop } from "./ScrollToTop"
