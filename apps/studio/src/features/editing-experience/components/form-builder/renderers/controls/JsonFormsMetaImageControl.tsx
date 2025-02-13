@@ -1,5 +1,11 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box, FormControl, FormErrorMessage, Skeleton } from "@chakra-ui/react"
+import {
+  Box,
+  FormControl,
+  FormErrorMessage,
+  Skeleton,
+  Text,
+} from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { Attachment, FormLabel } from "@opengovsg/design-system-react"
@@ -8,8 +14,15 @@ import { z } from "zod"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
+import { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { useImage } from "../../hooks/useImage"
 import { useS3Image } from "../../hooks/useS3Image"
+import {
+  ACCEPTED_FILE_TYPES_MESSAGE,
+  IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  MAX_IMG_FILE_SIZE_BYTES,
+  ONE_MB_IN_BYTES,
+} from "./constants"
 import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsMetaImageControlTester: RankedTester = rankWith(
@@ -41,13 +54,27 @@ export function JsonFormsMetaImageControl(
 
   return (
     <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
+      <FormLabel description={description}>{label}</FormLabel>
+
       <Skeleton isLoaded={!isLoading}>
-        <FormLabel description={description}>{label}</FormLabel>
         <Attachment
-          accept={["image/*"]}
+          accept={Object.values(IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING)}
+          maxSize={MAX_IMG_FILE_SIZE_BYTES}
           multiple={false}
           value={image}
           name="file-upload"
+          onFileValidation={(file) => {
+            const parseResult = getPresignedPutUrlSchema
+              .pick({ fileName: true })
+              .safeParse({ fileName: file.name })
+
+            if (parseResult.success) return null
+            // NOTE: safe assertion here because we're in error path and there's at least 1 error
+            return (
+              parseResult.error.errors[0]?.message ||
+              "Please ensure that your file begins with alphanumeric characters!"
+            )
+          }}
           onChange={(file) => {
             if (!file) {
               handleChange(props.path, undefined)
@@ -65,15 +92,19 @@ export function JsonFormsMetaImageControl(
               },
             )
           }}
-          imagePreview="large"
-          showFileSize={false}
+          imagePreview="small"
         />
-        {!!errors && (
-          <FormErrorMessage>
-            {label} {getCustomErrorMessage(errors)}
-          </FormErrorMessage>
-        )}
       </Skeleton>
+      <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
+        {`Maximum file size: ${MAX_IMG_FILE_SIZE_BYTES / ONE_MB_IN_BYTES} MB`}
+        <br />
+        {`Accepted file types: ${ACCEPTED_FILE_TYPES_MESSAGE}`}
+      </Text>
+      {!!errors && (
+        <FormErrorMessage>
+          {label} {getCustomErrorMessage(errors)}
+        </FormErrorMessage>
+      )}
     </Box>
   )
 }

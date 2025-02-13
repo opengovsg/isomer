@@ -4,6 +4,10 @@ import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
 
 import { useImage } from "~/features/editing-experience/components/form-builder/hooks/useImage"
+import {
+  ACCEPTED_FILE_TYPES_MESSAGE,
+  ONE_MB_IN_BYTES,
+} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
 
@@ -15,7 +19,6 @@ interface FileAttachmentProps {
   acceptedFileTypes: Record<string, string>
 }
 
-const ONE_MB_IN_BYTES = 1000000
 type FileRejections = AttachmentProps<false>["rejections"]
 
 export const FileAttachment = ({
@@ -30,7 +33,6 @@ export const FileAttachment = ({
     siteId,
   })
   const { handleImage, isLoading } = useImage({})
-  const ACCEPTED_FILE_TYPES_MESSAGE = Object.keys(acceptedFileTypes).join(", ")
 
   useEffect(() => {
     // NOTE: The outer link modal uses this to disable the button
