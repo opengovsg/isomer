@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { useEffect } from "react"
+import { http, HttpResponse } from "msw"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import type { HomePageSchemaType } from "~/engine"
+import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
 import Homepage from "./Homepage"
 
 // Template for stories
@@ -26,9 +28,31 @@ const meta: Meta<typeof Homepage> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    chromatic: withChromaticModes([
+      "mobileSmall",
+      "mobile",
+      "tablet",
+      "desktop",
+    ]),
     themes: {
       themeOverride: "Isomer Next",
+    },
+    msw: {
+      handlers: [
+        http.get("https://jsonplaceholder.com/muis_prayers_time", () => {
+          return HttpResponse.json({
+            [getSingaporeDateYYYYMMDD()]: {
+              hijriDate: "17 Jamadilawal 1442H",
+              subuh: "5:44am",
+              syuruk: "7:08am",
+              zohor: "1:10pm",
+              asar: "4:34pm",
+              maghrib: "7:11pm",
+              isyak: "8:25pm",
+            },
+          })
+        }),
+      ],
     },
   },
 }
@@ -197,6 +221,45 @@ export const Default: Story = {
     },
     content: [
       {
+        type: "dynamicdatabanner",
+        apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
+        title: "hijriDate",
+        data: [
+          {
+            label: "Subuh",
+            key: "subuh",
+          },
+          {
+            label: "Syuruk",
+            key: "syuruk",
+          },
+          {
+            label: "Zohor",
+            key: "zohor",
+          },
+          {
+            label: "Asar",
+            key: "asar",
+          },
+          {
+            label: "Maghrib",
+            key: "maghrib",
+          },
+          {
+            label: "Ishak",
+            key: "isyak",
+          },
+        ],
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        label: "View all dates",
+        errorMessage: [
+          {
+            text: "Couldn’t load prayer times. Try refreshing the page.",
+            type: "text",
+          },
+        ],
+      },
+      {
         type: "hero",
         variant: "gradient",
         backgroundUrl: "https://ohno.isomer.gov.sg/images/hero-banner.png",
@@ -234,6 +297,8 @@ export const Default: Story = {
         subtitle:
           "Section subtitle, maximum 150 chars. These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
         variant: "cardsWithImages",
+        label: "This is a CTA",
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         cards: [
           {
             title: "Card with short title",

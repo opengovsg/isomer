@@ -7,9 +7,8 @@ import {
 } from "react"
 
 import type { AppliedFilter } from "../../types/Filter"
-import type { CollectionCardProps } from "~/interfaces"
+import type { ProcessedCollectionCardProps } from "~/interfaces"
 import {
-  getAvailableFilters,
   getFilteredItems,
   getPaginatedItems,
   updateAppliedFilters,
@@ -17,10 +16,11 @@ import {
 
 export const ITEMS_PER_PAGE = 10
 
-interface UseCollectionProps {
-  items: CollectionCardProps[]
-}
-export const useCollection = ({ items }: UseCollectionProps) => {
+export const useCollection = ({
+  items,
+}: {
+  items: ProcessedCollectionCardProps[]
+}) => {
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilter[]>([])
   const [searchValue, _setSearchValue] = useState<string>("")
 
@@ -60,8 +60,6 @@ export const useCollection = ({ items }: UseCollectionProps) => {
     setCurrPage(1)
   }, [filteredItems])
 
-  const filters = useMemo(() => getAvailableFilters(items), [items])
-
   const paginatedItems = useMemo(
     () => getPaginatedItems(filteredItems, ITEMS_PER_PAGE, currPage),
     [currPage, filteredItems],
@@ -76,7 +74,6 @@ export const useCollection = ({ items }: UseCollectionProps) => {
     paginatedItems,
     filteredCount: filteredItems.length,
     totalCount: items.length,
-    filters,
     searchValue,
     handleSearchValueChange,
     handleClearFilter,

@@ -6,6 +6,10 @@ import type {
   SingleCardNoImageProps,
   SingleCardWithImageProps,
 } from "~/interfaces/complex/InfoCards"
+import {
+  CARDS_WITH_IMAGES,
+  CARDS_WITHOUT_IMAGES,
+} from "~/interfaces/complex/InfoCards"
 import { tv } from "~/lib/tv"
 import {
   getReferenceLinkHref,
@@ -15,6 +19,7 @@ import {
 } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
+import { LinkButton } from "../../internal/LinkButton"
 import { ImageClient } from "../Image"
 
 const infoCardTitleStyle = tv({
@@ -36,12 +41,13 @@ const createInfoCardsStyles = tv({
     grid: "grid grid-cols-1 gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImageContainer:
-      "h-[11.875rem] w-full overflow-hidden rounded-lg border border-base-divider-subtle drop-shadow-none transition ease-in md:h-52",
+      "w-full overflow-hidden rounded-lg border border-base-divider-subtle drop-shadow-none transition ease-in",
     cardImage: "h-full w-full object-center",
     cardTextContainer: "flex flex-col gap-2.5 sm:gap-3",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
     cardDescription: "prose-body-base text-base-content",
+    urlButtonContainer: "mx-auto block pt-8 sm:pt-12", // temp: following headingContainer's mb
   },
   variants: {
     layout: {
@@ -49,11 +55,13 @@ const createInfoCardsStyles = tv({
         container: "py-12 first:pt-0 md:py-16",
         headingContainer: "gap-2.5 lg:max-w-3xl",
         headingSubtitle: "prose-headline-lg-regular",
+        cardImageContainer: "h-[11.875rem] md:h-60",
       },
       default: {
         container: "mt-14 first:mt-0",
         headingContainer: "gap-6",
         headingSubtitle: "prose-body-base",
+        cardImageContainer: "h-[11.875rem] md:h-52",
       },
     },
     isClickableCard: {
@@ -80,6 +88,11 @@ const createInfoCardsStyles = tv({
         grid: "md:grid-cols-2 lg:grid-cols-3",
       },
     },
+    isExternalLink: {
+      true: {
+        cardTitleArrow: "rotate-[-45deg]",
+      },
+    },
   },
   defaultVariants: {
     layout: "default",
@@ -95,14 +108,19 @@ const InfoCardContainer = ({
   site,
   LinkComponent,
   children,
+  isExternalLink,
 }: PropsWithChildren<
-  Pick<SingleCardNoImageProps, "url" | "site" | "LinkComponent">
+  Pick<
+    SingleCardNoImageProps,
+    "url" | "site" | "isExternalLink" | "LinkComponent"
+  >
 >): JSX.Element => {
   return url ? (
     <Link
-      href={getReferenceLinkHref(url, site.siteMap)}
+      href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
       className={compoundStyles.cardContainer()}
       LinkComponent={LinkComponent}
+      isExternal={isExternalLink}
     >
       {children}
     </Link>
@@ -116,10 +134,18 @@ const InfoCardImage = ({
   imageAlt,
   imageFit,
   url,
+  layout,
   site,
+  shouldLazyLoad,
 }: Pick<
   SingleCardWithImageProps,
-  "imageUrl" | "imageAlt" | "url" | "imageFit" | "site"
+  | "imageUrl"
+  | "imageAlt"
+  | "url"
+  | "imageFit"
+  | "layout"
+  | "site"
+  | "shouldLazyLoad"
 >): JSX.Element => {
   const imgSrc =
     isExternalUrl(imageUrl) || site.assetsBaseUrl === undefined
@@ -128,7 +154,10 @@ const InfoCardImage = ({
 
   return (
     <div
-      className={compoundStyles.cardImageContainer({ isClickableCard: !!url })}
+      className={compoundStyles.cardImageContainer({
+        layout: getTailwindVariantLayout(layout),
+        isClickableCard: !!url,
+      })}
     >
       <ImageClient
         src={imgSrc}
@@ -138,6 +167,7 @@ const InfoCardImage = ({
           imageFit,
         })}
         assetsBaseUrl={site.assetsBaseUrl}
+        lazyLoading={shouldLazyLoad}
       />
     </div>
   )
@@ -147,21 +177,24 @@ const InfoCardText = ({
   title,
   description,
   url,
+  isExternalLink,
 }: Pick<
   SingleCardWithImageProps,
-  "title" | "description" | "url"
+  "title" | "description" | "url" | "isExternalLink"
 >): JSX.Element => (
   <div className={compoundStyles.cardTextContainer()}>
-    <h4 className={infoCardTitleStyle({ isClickableCard: !!url })}>
+    <h3 className={infoCardTitleStyle({ isClickableCard: !!url })}>
       {title}
 
       {url && (
         <BiRightArrowAlt
           aria-hidden
-          className={compoundStyles.cardTitleArrow()}
+          className={compoundStyles.cardTitleArrow({
+            isExternalLink,
+          })}
         />
       )}
-    </h4>
+    </h3>
     <p className={compoundStyles.cardDescription()}>{description}</p>
   </div>
 )
@@ -173,9 +206,20 @@ const InfoCardNoImage = ({
   site,
   LinkComponent,
 }: SingleCardNoImageProps): JSX.Element => {
+  const isExternalLink = isExternalUrl(url)
   return (
-    <InfoCardContainer url={url} site={site} LinkComponent={LinkComponent}>
-      <InfoCardText title={title} description={description} url={url} />
+    <InfoCardContainer
+      url={url}
+      site={site}
+      isExternalLink={isExternalLink}
+      LinkComponent={LinkComponent}
+    >
+      <InfoCardText
+        title={title}
+        description={description}
+        url={url}
+        isExternalLink={isExternalLink}
+      />
     </InfoCardContainer>
   )
 }
@@ -187,51 +231,72 @@ const InfoCardWithImage = ({
   imageAlt,
   imageFit,
   url,
+  layout,
   site,
   LinkComponent,
+  shouldLazyLoad = true,
 }: SingleCardWithImageProps): JSX.Element => {
+  const isExternalLink = isExternalUrl(url)
   return (
-    <InfoCardContainer url={url} site={site} LinkComponent={LinkComponent}>
+    <InfoCardContainer
+      url={url}
+      site={site}
+      isExternalLink={isExternalLink}
+      LinkComponent={LinkComponent}
+    >
       <InfoCardImage
         imageFit={imageFit}
         imageUrl={imageUrl}
         imageAlt={imageAlt}
         url={url}
         site={site}
+        layout={layout}
+        shouldLazyLoad={shouldLazyLoad}
       />
-      <InfoCardText title={title} description={description} url={url} />
+      <InfoCardText
+        title={title}
+        description={description}
+        url={url}
+        isExternalLink={isExternalLink}
+      />
     </InfoCardContainer>
   )
 }
 
 const InfoCards = ({
+  id,
   title,
   subtitle,
   variant,
   cards,
   maxColumns,
+  label,
+  url,
   layout,
   site,
+  shouldLazyLoad,
   LinkComponent,
 }: InfoCardsProps): JSX.Element => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
 
   const InfoCardtoRender = () => {
     switch (variant) {
-      case "cardsWithImages":
+      case CARDS_WITH_IMAGES:
         return (
           <>
             {cards.map((card, idx) => (
               <InfoCardWithImage
                 key={idx}
                 {...card}
+                layout={layout}
                 site={site}
                 LinkComponent={LinkComponent}
+                shouldLazyLoad={shouldLazyLoad}
               />
             ))}
           </>
         )
-      case "cardsWithoutImages":
+      case CARDS_WITHOUT_IMAGES:
         return (
           <>
             {cards.map((card, idx) => (
@@ -251,7 +316,10 @@ const InfoCards = ({
   }
 
   return (
-    <section className={compoundStyles.container({ layout: simplifiedLayout })}>
+    <section
+      id={id}
+      className={compoundStyles.container({ layout: simplifiedLayout })}
+    >
       {(title || subtitle) && (
         <div
           className={compoundStyles.headingContainer({
@@ -275,6 +343,20 @@ const InfoCards = ({
       <div className={compoundStyles.grid({ maxColumns })}>
         <InfoCardtoRender />
       </div>
+
+      {!!url && !!label && (
+        <div className={compoundStyles.urlButtonContainer()}>
+          <LinkButton
+            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            size="base"
+            variant="outline"
+            isWithFocusVisibleHighlight
+            LinkComponent={LinkComponent}
+          >
+            {label}
+          </LinkButton>
+        </div>
+      )}
     </section>
   )
 }

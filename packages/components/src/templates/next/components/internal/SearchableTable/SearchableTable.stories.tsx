@@ -27,3 +27,28 @@ export const Default: Story = {
     ],
   },
 }
+
+export const TitleUndefined: Story = {
+  name: "Title (Undefined)",
+  args: {
+    headers: ["Header", "Header", "Header", "Header"],
+    items: [
+      ["Cell copy", "Cell copy", "Cell copy", "Cell copy"],
+      ["Cell copy", "Cell copy", "Cell copy", "Cell copy"],
+      ["Cell copy", "Cell copy", "Cell copy", "Cell copy"],
+    ],
+  },
+}
+
+export const TitleEmptyString: Story = {
+  name: "Title (Empty String)",
+  args: {
+    title: "",
+    headers: ["Header", "Header", "Header", "Header"],
+    items: [
+      ["Cell copy", "Cell copy", "Cell copy", "Cell copy"],
+      ["Cell copy", "Cell copy", "Cell copy", "Cell copy"],
+      ["Cell copy", "Cell copy", "Cell copy", "Cell copy"],
+    ],
+  },
+}

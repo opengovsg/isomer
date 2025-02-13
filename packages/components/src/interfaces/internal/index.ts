@@ -3,7 +3,12 @@ export {
   type ArticlePageHeaderProps,
 } from "./ArticlePageHeader"
 export type { BreadcrumbProps } from "./Breadcrumb"
-export type { CollectionCardProps } from "./CollectionCard"
+export type {
+  AllCardProps,
+  CollectionCardProps,
+  ProcessedCollectionCardProps,
+} from "./CollectionCard"
+export type { ChildrenPagesProps } from "./ChildrenPages"
 export type { ContentProps } from "./Content"
 export {
   ContentPageHeaderSchema,
@@ -15,8 +20,8 @@ export type { HeaderProps } from "./Header"
 export type { LinkProps } from "./Link"
 export type { LocalSearchInputBoxProps } from "./LocalSearchInputBox"
 export type { MastheadProps } from "./Masthead"
-export type { NavbarProps } from "./Navbar"
-export type { NotificationProps } from "./Notification"
+export type { NavbarProps, NavbarClientProps } from "./Navbar"
+export type { NotificationProps, NotificationClientProps } from "./Notification"
 export type { PillProps } from "./Pill"
 export type { SearchProps } from "./Search"
 export {
@@ -26,5 +31,14 @@ export {
 export type { SearchSGInputBoxProps } from "./SearchSGInputBox"
 export type { SidePaneProps } from "./SidePane"
 export type { SiderailProps } from "./Siderail"
+export type { SkipToContentProps } from "./SkipToContent"
 export type { TableOfContentsProps } from "./TableOfContents"
 export type { WogaaProps } from "./Wogaa"
+export type { VicaWidgetProps, VicaProps } from "./Vica"
+export type {
+  GoogleTagManagerHeaderScriptProps,
+  GoogleTagManagerHeaderProps,
+  GoogleTagManagerBodyScriptProps,
+  GoogleTagManagerBodyProps,
+} from "./GoogleTagManager"
+export type { AttrsDirProps } from "./AttrsDir"

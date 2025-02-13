@@ -20,6 +20,7 @@ import getIP from "~/utils/getClientIp"
 import { type Context } from "./context"
 import { defaultMeSelect } from "./modules/me/me.select"
 import { checkRateLimit } from "./modules/rate-limit/rate-limit.service"
+import { isEmailWhitelisted } from "./modules/whitelist/whitelist.service"
 import { prisma } from "./prisma"
 
 interface Meta {
@@ -53,30 +54,37 @@ const t = initTRPC
 
 // Setting outer context with tRPC will not get us correct path during request batching,
 // only by setting logger context in the middleware do we get the exact path to log
-const loggerMiddleware = t.middleware(async ({ path, next, ctx, type }) => {
-  const start = Date.now()
-  const logger = createBaseLogger({ path, clientIp: getIP(ctx.req) })
+const loggerMiddleware = t.middleware(
+  async ({ path, next, ctx, type, rawInput }) => {
+    const start = Date.now()
+    const logger = createBaseLogger({ path, clientIp: getIP(ctx.req) })
 
-  const result = await next({
-    ctx: { logger },
-  })
+    const result = await next({
+      ctx: { logger },
+    })
 
-  const durationInMs = Date.now() - start
+    const durationInMs = Date.now() - start
 
-  if (result.ok) {
-    logger.info({ durationInMs }, `[${type}]: ${path} - ${durationInMs}ms - OK`)
-  } else {
-    logger.error(
-      {
-        durationInMs,
-        err: result.error,
-      },
-      `[${type}]: ${path} - ${durationInMs}ms - ${result.error.code} ${result.error.message}`,
-    )
-  }
+    if (result.ok) {
+      logger.info(
+        { durationInMs, rawInput, userId: ctx.session?.userId },
+        `[${type}]: ${path} - ${durationInMs}ms - OK`,
+      )
+    } else {
+      logger.error(
+        {
+          durationInMs,
+          err: result.error,
+          rawInput,
+          userId: ctx.session?.userId,
+        },
+        `[${type}]: ${path} - ${durationInMs}ms - ${result.error.code} ${result.error.message} - ERROR`,
+      )
+    }
 
-  return result
-})
+    return result
+  },
+)
 
 const loggerWithVersionMiddleware = loggerMiddleware.unstable_pipe(
   async ({ next, ctx }) => {
@@ -124,20 +132,14 @@ const baseMiddleware = t.middleware(async ({ ctx, next }) => {
 })
 
 const authMiddleware = t.middleware(async ({ next, ctx }) => {
-  const defaultWhitelist: string[] = []
-  const whitelistedUsers = ctx.gb
-    .getFeatureValue("whitelisted_users", {
-      whitelist: defaultWhitelist,
-    })
-    .whitelist.map((email) => email.toLowerCase())
-
   if (!ctx.session?.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 
-  // this code path is needed if a user does not exist in the database as they were deleted, but the session was active before
+  // with addition of soft deletes, we need to now check for deletedAt
+  // this check is required in case of an already ongoing session to logout the user
   const user = await prisma.user.findUnique({
-    where: { id: ctx.session.userId },
+    where: { id: ctx.session.userId, deletedAt: null },
     select: defaultMeSelect,
   })
 
@@ -145,28 +147,11 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 
-  // check against Growthbook if user is whitelisted for prod/stg
-  if (env.NODE_ENV === "production") {
-    if (!whitelistedUsers.includes(user.email.toLowerCase())) {
-      throw new TRPCError({ code: "UNAUTHORIZED" })
-    }
+  // Ensure that the user is whitelisted to use the app
+  const isWhitelisted = await isEmailWhitelisted(user.email)
+  if (!isWhitelisted) {
+    throw new TRPCError({ code: "UNAUTHORIZED" })
   }
-
-  return next({
-    ctx: {
-      user,
-    },
-  })
-})
-
-const nonStrictAuthMiddleware = t.middleware(async ({ next, ctx }) => {
-  // this code path is needed if a user does not exist in the database as they were deleted, but the session was active before
-  const user = ctx.session?.userId
-    ? await prisma.user.findUnique({
-        where: { id: ctx.session.userId },
-        select: defaultMeSelect,
-      })
-    : null
 
   return next({
     ctx: {
@@ -217,8 +202,6 @@ export const publicProcedure = baseProcedure.use(baseMiddleware)
  * Create a protected procedure
  * */
 export const protectedProcedure = baseProcedure.use(authMiddleware)
-
-export const agnosticProcedure = baseProcedure.use(nonStrictAuthMiddleware)
 
 /**
  * @see https://trpc.io/docs/v10/middlewares

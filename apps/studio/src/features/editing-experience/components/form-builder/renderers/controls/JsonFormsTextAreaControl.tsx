@@ -1,9 +1,10 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box, FormControl, FormHelperText } from "@chakra-ui/react"
+import { Box, FormControl } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
   FormErrorMessage,
+  FormHelperText,
   FormLabel,
   Textarea,
 } from "@opengovsg/design-system-react"
@@ -12,6 +13,7 @@ import {
   JSON_FORMS_RANKING,
   TEXTAREA_CHARACTERS_PER_ROW,
 } from "~/constants/formBuilder"
+import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsTextAreaControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextAreaControl,
@@ -59,7 +61,7 @@ export function JsonFormsTextAreaControl({
   }
 
   return (
-    <Box mt="1.25rem" _first={{ mt: 0 }}>
+    <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <Textarea
@@ -77,7 +79,7 @@ export function JsonFormsTextAreaControl({
           </FormHelperText>
         )}
         <FormErrorMessage>
-          {label} {errors}
+          {label} {getCustomErrorMessage(errors)}
         </FormErrorMessage>
       </FormControl>
     </Box>

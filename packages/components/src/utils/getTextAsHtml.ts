@@ -1,8 +1,9 @@
+import DOMPurify from "isomorphic-dompurify"
 import isEqual from "lodash/isEqual"
 
 import type { HardBreakProps } from "~/interfaces"
 import type { Marks, TextProps } from "~/interfaces/native/Text"
-import type { IsomerSitemap } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { getReferenceLinkHref } from "./getReferenceLinkHref"
 
 type MarkTypes = Marks["type"]
@@ -19,16 +20,23 @@ const MARK_DOM_MAPPING: Record<MarkTypes, string> = {
 }
 
 interface GetTextAsHtmlArgs {
-  sitemap: IsomerSitemap
+  site: IsomerSiteProps
   content?: (HardBreakProps | TextProps)[]
   shouldHideEmptyHardBreak?: boolean
+  shouldStripContentHtmlTags?: boolean
+}
+
+// We want to prevent user-injected HTML tags from breaking the formatting
+function stripHtmlTags(input: string): string {
+  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] })
 }
 
 // Converts the text node with marks into the appropriate HTML
 export const getTextAsHtml = ({
-  sitemap,
+  site,
   content,
   shouldHideEmptyHardBreak,
+  shouldStripContentHtmlTags = false, // needed for content from tiptap editor
 }: GetTextAsHtmlArgs) => {
   if (!content) {
     // Note: We need to return a <br /> tag to ensure that the paragraph is not collapsed
@@ -67,7 +75,9 @@ export const getTextAsHtml = ({
 
     // If there are no marks, just push the text
     if (!node.marks) {
-      output.push(node.text)
+      output.push(
+        shouldStripContentHtmlTags ? stripHtmlTags(node.text) : node.text,
+      )
       return
     }
 
@@ -86,7 +96,7 @@ export const getTextAsHtml = ({
       node.marks.forEach((mark) => {
         if (mark.type === "link") {
           output.push(
-            `<${MARK_DOM_MAPPING.link} target="${mark.attrs.target || "_self"}" href="${getReferenceLinkHref(mark.attrs.href ?? "", sitemap)}">`,
+            `<${MARK_DOM_MAPPING.link} target="${mark.attrs.target || "_self"}" href="${getReferenceLinkHref(mark.attrs.href ?? "", site.siteMap, site.assetsBaseUrl)}">`,
           )
         } else {
           output.push(`<${MARK_DOM_MAPPING[mark.type]}>`)
@@ -102,7 +112,9 @@ export const getTextAsHtml = ({
     }
 
     // Push the text
-    output.push(node.text)
+    output.push(
+      shouldStripContentHtmlTags ? stripHtmlTags(node.text) : node.text,
+    )
 
     // Close off all marks except for links in reverse order
     const marksToClose = node.marks.filter((mark) => mark.type !== "link")

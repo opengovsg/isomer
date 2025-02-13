@@ -1,5 +1,6 @@
 import type { SelectExpression } from "kysely"
 import { TRPCError } from "@trpc/server"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { SafeKysely } from "../database"
@@ -25,8 +26,8 @@ const createVersion = async (
   db: SafeKysely,
   props: {
     versionNum: number
-    resourceId: number
-    blobId: number
+    resourceId: string
+    blobId: string
     publisherId: string
   },
 ) => {
@@ -35,8 +36,8 @@ const createVersion = async (
     .insertInto("Version")
     .values({
       versionNum,
-      resourceId: String(resourceId),
-      blobId: String(blobId),
+      resourceId: resourceId,
+      blobId,
       publishedAt: new Date(),
       publishedBy: publisherId,
     })
@@ -48,11 +49,11 @@ const createVersion = async (
 
 export const incrementVersion = async ({
   siteId,
-  pageId,
+  resourceId,
   userId,
 }: {
   siteId: number
-  pageId: number
+  resourceId: string
   userId: string
 }) => {
   return await db
@@ -61,7 +62,10 @@ export const incrementVersion = async ({
     // concurrent publishes from other users
     .setIsolationLevel("serializable")
     .execute(async (tx) => {
-      const page = await getPageById(tx, { siteId, resourceId: pageId })
+      const page = await getPageById(tx, {
+        siteId,
+        resourceId: Number(resourceId),
+      })
       if (!page) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -87,8 +91,8 @@ export const incrementVersion = async ({
       // Create the new version
       const newVersion = await createVersion(tx, {
         versionNum: newVersionNum,
-        resourceId: pageId,
-        blobId: Number(page.draftBlobId),
+        resourceId,
+        blobId: page.draftBlobId,
         publisherId: userId,
       })
 
@@ -99,7 +103,7 @@ export const incrementVersion = async ({
           id: parseInt(page.id),
           publishedVersionId: newVersion.versionId,
           draftBlobId: null,
-          state: "Published",
+          state: ResourceState.Published,
           siteId,
           parentId: page.parentId ? parseInt(page.parentId) : undefined,
         },

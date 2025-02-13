@@ -1,22 +1,27 @@
 import { useEffect } from "react"
 import {
+  chakra,
   Flex,
   FormControl,
-  FormHelperText,
-  FormLabel,
   Input,
-  InputGroup,
-  InputLeftAddon,
   ModalBody,
   ModalHeader,
   Stack,
   Text,
   Wrap,
 } from "@chakra-ui/react"
-import { Button, FormErrorMessage } from "@opengovsg/design-system-react"
+import {
+  Button,
+  FormErrorMessage,
+  FormHelperText,
+  FormLabel,
+  Infobox,
+} from "@opengovsg/design-system-react"
 import { Controller } from "react-hook-form"
+import { BiLink } from "react-icons/bi"
 
 import { MAX_PAGE_URL_LENGTH, MAX_TITLE_LENGTH } from "~/schemas/page"
+import { AppGrid } from "~/templates/AppGrid"
 import { generateResourceUrl } from "../utils"
 import { useCreatePageWizard } from "./CreatePageWizardContext"
 import { PreviewLayout } from "./PreviewLayout"
@@ -28,6 +33,7 @@ export const CreatePageDetailsScreen = () => {
     handleBackToLayoutScreen,
     handleCreatePage,
     isLoading,
+    fullPermalink,
   } = useCreatePageWizard()
 
   const {
@@ -101,53 +107,47 @@ export const CreatePageDetailsScreen = () => {
         </Stack>
       </ModalHeader>
       <ModalBody p={0} overflow="hidden" bg="white">
-        <Flex height="100%">
-          <Stack height="100%" gap="2rem" mt="10vh" px="3rem" py="1rem">
-            <Stack>
-              <Text as="h2" textStyle="h4">
-                What is your page about?
-              </Text>
-              <Text textStyle="body-2">You can change these later.</Text>
-            </Stack>
-            <Stack gap="1.5rem">
-              {/* Section 1: Page Title */}
-              <FormControl isInvalid={!!errors.title}>
-                <FormLabel color="base.content.strong">
-                  Page title
-                  <FormHelperText color="base.content.default">
-                    Title should be descriptive
-                  </FormHelperText>
-                </FormLabel>
+        <AppGrid height="100%" px={0}>
+          <Stack gridColumn="1 / 5" height={0} minH="100%" overflow="auto">
+            <Stack gap="2rem" px="3rem" pb="2rem" pt="10vh">
+              <Stack>
+                <Text as="h2" textStyle="h4">
+                  What is your page about?
+                </Text>
+                <Text textStyle="body-2">You can change these later.</Text>
+              </Stack>
+              <Stack gap="1.5rem">
+                {/* Section 1: Page Title */}
+                <FormControl isInvalid={!!errors.title}>
+                  <FormLabel color="base.content.strong">
+                    Page title
+                    <FormHelperText color="base.content.default">
+                      Title should be descriptive
+                    </FormHelperText>
+                  </FormLabel>
 
-                <Input
-                  placeholder="This is a title for your new page"
-                  {...register("title")}
-                  maxLength={MAX_TITLE_LENGTH}
-                />
-                {errors.title?.message ? (
-                  <FormErrorMessage>{errors.title.message}</FormErrorMessage>
-                ) : (
-                  <FormHelperText mt="0.5rem" color="base.content.medium">
-                    {MAX_TITLE_LENGTH - title.length} characters left
-                  </FormHelperText>
-                )}
-              </FormControl>
+                  <Input
+                    placeholder="This is a title for your new page"
+                    {...register("title")}
+                    maxLength={MAX_TITLE_LENGTH}
+                  />
+                  {errors.title?.message ? (
+                    <FormErrorMessage>{errors.title.message}</FormErrorMessage>
+                  ) : (
+                    <FormHelperText mt="0.5rem" color="base.content.medium">
+                      {MAX_TITLE_LENGTH - title.length} characters left
+                    </FormHelperText>
+                  )}
+                </FormControl>
 
-              {/* Section 2: Page URL */}
-              <FormControl isInvalid={!!errors.permalink}>
-                <FormLabel>
-                  Page URL
-                  <FormHelperText>
-                    URL should be short and simple
-                  </FormHelperText>
-                </FormLabel>
-                <InputGroup>
-                  <InputLeftAddon
-                    bg="interaction.support.disabled"
-                    color="base.divider.strong"
-                  >
-                    your-site.gov.sg/
-                  </InputLeftAddon>
+                {/* Section 2: Page URL */}
+                <FormControl isInvalid={!!errors.permalink}>
+                  <FormLabel>
+                    Page URL
+                    <FormHelperText>
+                      URL should be short and simple
+                    </FormHelperText>
+                  </FormLabel>
                   <Controller
                     control={control}
                     name="permalink"
@@ -168,22 +168,37 @@ export const CreatePageDetailsScreen = () => {
                       />
                     )}
                   />
-                </InputGroup>
 
-                {errors.permalink?.message ? (
-                  <FormErrorMessage>
-                    {errors.permalink.message}
-                  </FormErrorMessage>
-                ) : (
-                  <FormHelperText mt="0.5rem" color="base.content.medium">
-                    {MAX_PAGE_URL_LENGTH - url.length} characters left
-                  </FormHelperText>
-                )}
-              </FormControl>
+                  <Infobox
+                    my="0.5rem"
+                    icon={<BiLink />}
+                    variant="info-secondary"
+                    size="sm"
+                  >
+                    <Text textStyle="subhead-2" overflow="hidden">
+                      <chakra.span color="base.content.medium">
+                        {fullPermalink}
+                      </chakra.span>
+                      /{url}
+                    </Text>
+                  </Infobox>
+                  {errors.permalink?.message ? (
+                    <FormErrorMessage>
+                      {errors.permalink.message}
+                    </FormErrorMessage>
+                  ) : (
+                    <FormHelperText mt="0.5rem" color="base.content.medium">
+                      {MAX_PAGE_URL_LENGTH - url.length} characters left
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              </Stack>
             </Stack>
           </Stack>
-          <PreviewLayout />
-        </Flex>
+          <Flex gridColumn="5 / 13">
+            <PreviewLayout />
+          </Flex>
+        </AppGrid>
       </ModalBody>
     </>
   )

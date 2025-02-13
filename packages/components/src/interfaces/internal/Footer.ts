@@ -1,8 +1,8 @@
-import type { LinkComponentType } from "~/types"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 
 export interface FooterItem {
   title: string
-  url: string
+  url?: string
 }
 
 export const SocialMediaTypes = [
@@ -14,6 +14,7 @@ export const SocialMediaTypes = [
   "youtube",
   "github",
   "tiktok",
+  "whatsapp",
 ] as const
 
 export type SocialMediaType = (typeof SocialMediaTypes)[number]
@@ -35,6 +36,7 @@ export interface SiteConfigFooterProps {
 }
 
 export interface FooterProps extends SiteConfigFooterProps {
+  site: IsomerSiteProps
   LinkComponent?: LinkComponentType
   isGovernment?: boolean
   siteName: string

@@ -10,7 +10,11 @@ import type {
   NavbarProps,
 } from "~/interfaces/internal/Navbar"
 import { tv } from "~/lib/tv"
-import { groupFocusVisibleHighlight, isExternalUrl } from "~/utils"
+import {
+  focusVisibleHighlight,
+  groupFocusVisibleHighlight,
+  isExternalUrl,
+} from "~/utils"
 import { IconButton } from "../IconButton"
 import { Link } from "../Link"
 
@@ -48,6 +52,7 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
       LinkComponent,
       name,
       url,
+      referenceLinkHref,
       description,
       isOpen,
       onClick,
@@ -57,15 +62,15 @@ export const NavItem = forwardRef<HTMLButtonElement, NavbarItemProps>(
   ): JSX.Element => {
     if (!items || items.length === 0) {
       return (
-        <li>
+        <li className={item({ isOpen })}>
           <Link
             LinkComponent={LinkComponent}
             isExternal={isExternalUrl(url)}
             showExternalIcon={isExternalUrl(url)}
-            href={url}
-            className={item({ isOpen })}
+            href={referenceLinkHref}
+            className={focusVisibleHighlight()}
           >
-            <span className={groupFocusVisibleHighlight()}>{name}</span>
+            {name}
           </Link>
         </li>
       )
@@ -146,7 +151,7 @@ const Megamenu = ({
                         isExternal={isExternal}
                         showExternalIcon={isExternal}
                         isWithFocusVisibleHighlight
-                        href={subItem.url}
+                        href={subItem.referenceLinkHref}
                         className="group prose-label-md-medium inline-flex w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
                       >
                         {subItem.name}

@@ -1,17 +1,17 @@
-import type { IsomerSitemap, LinkComponentType } from "~/types"
+import type { IsomerSiteProps, LinkComponentType } from "~/types"
 import { getReferenceLinkHref } from "~/utils"
 import BaseParagraph from "../BaseParagraph"
 import { HYPERLINK_EXCEL_FUNCTION } from "./constants"
 
 interface CellContentProps {
   content: string | number
-  sitemap: IsomerSitemap
+  site: IsomerSiteProps
   LinkComponent?: LinkComponentType
 }
 
 export const CellContent = ({
   content,
-  sitemap,
+  site,
   LinkComponent,
 }: CellContentProps) => {
   if (
@@ -24,13 +24,18 @@ export const CellContent = ({
 
     return (
       <BaseParagraph
-        content={`<a href=${getReferenceLinkHref(linkHref?.replace(/"/g, ""), sitemap)}>${linkText || linkHref || "Link"}</a>`}
+        content={`<a href=${getReferenceLinkHref(linkHref?.replace(/"/g, ""), site.siteMap, site.assetsBaseUrl)}>${linkText || linkHref || "Link"}</a>`}
+        site={site}
         LinkComponent={LinkComponent}
       />
     )
   }
 
   return (
-    <BaseParagraph content={String(content)} LinkComponent={LinkComponent} />
+    <BaseParagraph
+      content={String(content)}
+      site={site}
+      LinkComponent={LinkComponent}
+    />
   )
 }

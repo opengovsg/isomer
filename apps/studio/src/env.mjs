@@ -22,6 +22,14 @@ const s3Schema = z.object({
  */
 const client = z
   .object({
+    NEXT_PUBLIC_APP_ENV: z.enum([
+      "development",
+      "staging",
+      "production",
+      "vapt",
+      "test",
+      "uat",
+    ]),
     NEXT_PUBLIC_ENABLE_SGID: coerceBoolean.default("false"),
     NEXT_PUBLIC_APP_URL: z.string().url().optional(),
     NEXT_PUBLIC_APP_NAME: z.string().default("Isomer Studio"),
@@ -124,6 +132,7 @@ const processEnv = {
   SGID_PRIVATE_KEY: process.env.SGID_PRIVATE_KEY,
   SGID_REDIRECT_URI: process.env.SGID_REDIRECT_URI,
   // Client-side env vars
+  NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
   NEXT_PUBLIC_APP_VERSION:
     process.env.NEXT_PUBLIC_APP_VERSION ??

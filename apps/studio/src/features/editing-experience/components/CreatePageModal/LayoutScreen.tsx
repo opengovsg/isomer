@@ -50,21 +50,24 @@ export const CreatePageLayoutScreen = () => {
         </Stack>
       </ModalHeader>
       <ModalBody p={0} overflow="hidden">
-        <Flex height="100%">
+        <Flex h="100%">
           <Stack
+            height={0}
+            minH="100%"
             borderRight="1px solid"
             borderColor="base.divider.medium"
             bg="white"
             maxWidth={{ base: "100%", md: "22.75rem" }}
-            p="2rem"
-            flexDir="row"
             overflow="auto"
+            flexDir="row"
           >
-            <Controller
-              control={control}
-              name="layout"
-              render={({ field }) => <LayoutOptionsInput {...field} />}
-            />
+            <Flex p="2rem" h="fit-content">
+              <Controller
+                control={control}
+                name="layout"
+                render={({ field }) => <LayoutOptionsInput {...field} />}
+              />
+            </Flex>
           </Stack>
           <PreviewLayout />
         </Flex>

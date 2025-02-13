@@ -1,16 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { userEvent, waitFor, within } from "@storybook/test"
+import { userEvent, within } from "@storybook/test"
+import { ResourceState } from "~prisma/generated/generatedEnums"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
+import { createBannerGbParameters } from "~/stories/utils/growthbook"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
+  pageHandlers.updatePageBlob.default(),
   pageHandlers.countWithoutRoot.default(),
   sitesHandlers.getLocalisedSitemap.default(),
   sitesHandlers.getTheme.default(),
@@ -23,6 +26,7 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.homepage(),
   pageHandlers.readPage.homepage(),
   pageHandlers.getFullPermalink.homepage(),
+  resourceHandlers.getRolesFor.default(),
 ]
 
 const meta: Meta<typeof EditPage> = {
@@ -53,22 +57,37 @@ export const Default: Story = {}
 export const AddBlock: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-
-    await waitFor(async () => {
-      await userEvent.click(canvas.getByRole("button", { name: /add block/i }))
-    })
+    const button = await canvas.findByRole("button", { name: /add block/i })
+    await userEvent.click(button)
   },
 }
 
 export const EditHero: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", { name: /hero banner/i })
+    await userEvent.click(button)
+  },
+}
 
-    await waitFor(async () => {
-      await userEvent.click(
-        canvas.getByRole("button", { name: /hero banner/i }),
-      )
+export const SaveToast: Story = {
+  play: async ({ canvasElement, ...rest }) => {
+    await EditHero.play?.({ canvasElement, ...rest })
+    const canvas = within(canvasElement)
+    const saveButton = await canvas.findByRole("button", {
+      name: /Save changes/i,
     })
+    await userEvent.click(saveButton)
+  },
+}
+
+export const EditKeyStatistics: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", {
+      name: /KeyStatistics Component/i,
+    })
+    await userEvent.click(button)
   },
 }
 
@@ -77,7 +96,7 @@ export const PublishedState: Story = {
     msw: {
       handlers: [
         pageHandlers.readPage.homepage({
-          state: "Published",
+          state: ResourceState.Published,
           draftBlobId: null,
         }),
         ...COMMON_HANDLERS,
@@ -90,14 +109,15 @@ export const NestedState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
-    await waitFor(async () => {
-      await userEvent.click(
-        canvas.getByRole("button", { name: /keystatistics/i }),
-      )
-      await userEvent.click(
-        canvas.getByRole("button", { name: /average all nighters/i }),
-      )
+    const keyStatisticsButton = await canvas.findByRole("button", {
+      name: /keystatistics/i,
     })
+    await userEvent.click(keyStatisticsButton)
+
+    const averageAllNightersButton = await canvas.findByRole("button", {
+      name: /average all nighters/i,
+    })
+    await userEvent.click(averageAllNightersButton)
   },
 }
 
@@ -108,13 +128,12 @@ export const ErrorNestedState: Story = {
     const { canvasElement } = context
     const canvas = within(canvasElement)
 
-    await waitFor(async () => {
-      await userEvent.clear(
-        canvas.getByRole("textbox", { name: /description/i }),
-      )
+    const textbox = await canvas.findByRole("textbox", { name: /description/i })
+    await userEvent.clear(textbox)
 
-      await userEvent.click(canvas.getByLabelText(/return to statistics/i))
-    })
+    const returnToStatisticsButton =
+      await canvas.findByLabelText(/return to statistics/i)
+    await userEvent.click(returnToStatisticsButton)
   },
 }
 
@@ -125,12 +144,21 @@ export const FullscreenPreview: Story = {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const screen = within(canvasElement.parentElement!)
 
-    await waitFor(async () => {
-      await userEvent.click(
-        canvas.getByRole("button", { name: /default mode/i }),
-      )
+    const button = await canvas.findByRole("button", { name: /default mode/i })
+    await userEvent.click(button)
 
-      await userEvent.click(screen.getByText(/full screen/i))
-    })
+    const text = await screen.findByText(/full screen/i)
+    await userEvent.click(text)
+  },
+}
+
+export const WithBanner: Story = {
+  parameters: {
+    growthbook: [
+      createBannerGbParameters({
+        variant: "info",
+        message: "This is a test banner",
+      }),
+    ],
   },
 }

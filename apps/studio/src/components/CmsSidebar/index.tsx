@@ -1,3 +1,3 @@
-export * from "./CmsSidebarContainer"
+export * from "./CmsContainer"
 export * from "./CmsSidebar"
-export * from "./CmsSidebarOnlyContainer"
+export * from "./CmsSidebarContainer"

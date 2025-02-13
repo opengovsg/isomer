@@ -20,10 +20,6 @@ frontend:
     baseDirectory: out
     files:
       - '**/*'
-#   cache:
-#     paths:
-#       - .next/cache/**/*
-#       - node_modules/**/*
 `
 
 const amplifyClient = new AmplifyClient({ region: "ap-southeast-1" })
@@ -42,7 +38,7 @@ const createApp = async (appName) => {
     },
     customRules: [
       {
-        source: "</^[^.]+$|.(?!(txt)$)([^.]+$)/>",
+        source: "</^[^.]+$|\\.(?!(txt)$)([^.]+$)/>",
         target: "/404.html",
         status: "404",
       },

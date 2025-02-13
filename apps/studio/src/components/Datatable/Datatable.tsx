@@ -2,7 +2,6 @@ import type { LayoutProps, TableProps } from "@chakra-ui/react"
 import type { Table as ReactTable } from "@tanstack/react-table"
 import {
   Box,
-  Divider,
   Flex,
   Spinner,
   Table,
@@ -49,7 +48,12 @@ export const Datatable = <T extends object>({
   const styles = useMultiStyleConfig("Table", tableProps)
 
   return (
-    <Flex flexDirection="column" layerStyle="shadow" pos="relative">
+    <Flex
+      width="100%"
+      flexDirection="column"
+      layerStyle="shadow"
+      pos="relative"
+    >
       {isFetching && (
         <>
           <Flex
@@ -80,7 +84,7 @@ export const Datatable = <T extends object>({
       )}
       <Box overflow={overflow} sx={styles.container}>
         <Table sx={{ tableLayout: "fixed" }} {...tableProps} pos="relative">
-          <Thead>
+          <Thead borderBottomWidth="1px">
             {instance.getHeaderGroups().map((headerGroup) => (
               <Tr
                 key={headerGroup.id}
@@ -108,14 +112,15 @@ export const Datatable = <T extends object>({
               </Tr>
             ))}
           </Thead>
-          {rows.length > 0 && (
-            <Divider width={`${instance.getAllColumns().length * 100}%`} />
-          )}
           <Tbody>
             {rows.length === 0 && emptyPlaceholder}
             {rows.map((row) => {
               return (
-                <Tr key={row.id} borderBottomWidth="1px">
+                <Tr
+                  key={row.id}
+                  borderBottomWidth="1px"
+                  _hover={{ bgColor: "interaction.muted.main.hover" }}
+                >
                   {row.getVisibleCells().map((cell) => {
                     return (
                       <Td key={cell.id} verticalAlign="center">

@@ -1,5 +1,3 @@
-import type { TSchema } from "@sinclair/typebox"
-
 import type { IsomerPageLayoutType } from "~/types"
 import {
   ArticlePagePageSchema,
@@ -13,7 +11,7 @@ import {
   SearchPagePageSchema,
 } from "~/types"
 
-const LAYOUT_PAGE_MAP = {
+export const LAYOUT_PAGE_MAP = {
   article: ArticlePagePageSchema,
   content: ContentPagePageSchema,
   database: DatabasePagePageSchema,
@@ -24,8 +22,8 @@ const LAYOUT_PAGE_MAP = {
   link: LinkRefPageSchema,
   collection: CollectionPagePageSchema,
   file: FileRefPageSchema,
-}
+} as const
 
-export const getLayoutPageSchema = (layout: IsomerPageLayoutType): TSchema => {
+export const getLayoutPageSchema = (layout: IsomerPageLayoutType) => {
   return LAYOUT_PAGE_MAP[layout]
 }

@@ -6,12 +6,13 @@ import isEqual from "lodash/isEqual"
 import { BiTrash } from "react-icons/bi"
 
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { useTextEditor } from "../hooks/useTextEditor"
 import { editPageSchema } from "../schema"
-import { BRIEF_TOAST_SETTINGS } from "./constants"
+import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
 import { DrawerHeader } from "./Drawer/DrawerHeader"
@@ -48,11 +49,15 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
   const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-      toast({ title: "Changes saved", ...BRIEF_TOAST_SETTINGS })
+      await utils.page.readPage.invalidate({ pageId, siteId })
+      toast({
+        title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+        ...BRIEF_TOAST_SETTINGS,
+      })
     },
   })
 
-  const updatePageState = (editorContent: JSONContent) => {
+  const updatePageState = (editorContent: JSONContent | undefined) => {
     const updatedBlocks = Array.from(previewPageState.content)
     // TODO: actual validation
     updatedBlocks[currActiveIdx] = editorContent as ProseProps

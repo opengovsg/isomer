@@ -13,7 +13,7 @@ const meta: Meta<typeof VersionModal> = {
   // bounding box of the button that opens the modal.
   decorators: [
     (storyFn) => (
-      <Box w="100vw" h="100vh">
+      <Box w="100%" h="100vh">
         {storyFn()}
       </Box>
     ),

@@ -1,4 +1,4 @@
-import type { Editor } from "@tiptap/react"
+import type { IconType } from "react-icons"
 import {
   Box,
   FormControl,
@@ -17,15 +17,29 @@ import {
   Input,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
+import { isEmpty } from "lodash"
 import { z } from "zod"
 
+import type { LinkTypes } from "~/features/editing-experience/components/LinkEditor/constants"
+import {
+  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  MAX_FILE_SIZE_BYTES,
+} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
-import { editPageSchema } from "~/features/editing-experience/schema"
+import {
+  LinkEditorContextProvider,
+  useLinkEditor,
+} from "~/features/editing-experience/components/LinkEditor/LinkEditorContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { ResourceSelector } from "../ResourceSelector"
+import { FileAttachment } from "./FileAttachment"
+
+const editSiteSchema = z.object({
+  siteId: z.coerce.number(),
+})
 
 interface PageLinkElementProps {
   value: string
@@ -33,7 +47,7 @@ interface PageLinkElementProps {
 }
 
 const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
-  const { siteId } = useQueryParse(editPageSchema)
+  const { siteId } = useQueryParse(editSiteSchema)
 
   const selectedResourceId = getResourceIdFromReferenceLink(value)
 
@@ -62,39 +76,44 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
   )
 }
 
-interface LinkEditorModalContentProps {
-  linkText?: string
-  linkHref?: string
-  onSave: (linkText: string, linkHref: string) => void
-}
+type LinkEditorModalContentProps = Pick<
+  LinkEditorModalProps,
+  "linkText" | "linkHref" | "showLinkText" | "linkTypes" | "onSave"
+>
 
 const LinkEditorModalContent = ({
   linkText,
   linkHref,
+  showLinkText = true,
   onSave,
+  linkTypes,
 }: LinkEditorModalContentProps) => {
   const {
     handleSubmit,
     setValue,
-    watch,
     register,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useZodForm({
+    mode: "onChange",
     schema: z.object({
       linkText: z.string().min(1),
-      linkHref: z.string().min(1),
+      // TODO: Refactor to be required
+      // Context: quick hack to ensure error message don't shown for empty linkHref for FileAttachment
+      linkHref: z.string().min(1).optional(),
     }),
     defaultValues: {
       linkText,
       linkHref,
     },
-    reValidateMode: "onBlur",
+    reValidateMode: "onChange",
   })
 
   const isEditingLink = !!linkText && !!linkHref
 
-  const onSubmit = handleSubmit(({ linkText, linkHref }) =>
-    onSave(linkText, linkHref),
+  const onSubmit = handleSubmit(
+    // TODO: Refactor to not have to check for !!linkHref
+    // Context: quick hack to ensure error message don't shown for empty linkHref for FileAttachment
+    ({ linkText, linkHref }) => !!linkHref && onSave(linkText, linkHref),
   )
 
   return (
@@ -106,52 +125,42 @@ const LinkEditorModalContent = ({
         <ModalCloseButton size="lg" />
 
         <ModalBody>
-          <FormControl isRequired isInvalid={!!errors.linkText}>
-            <FormLabel
-              id="linkText"
-              description="A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”"
+          {showLinkText && (
+            <FormControl mb="1.5rem" isRequired isInvalid={!!errors.linkText}>
+              <FormLabel
+                id="linkText"
+                description="A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”"
+              >
+                Link text
+              </FormLabel>
+
+              <Input
+                type="text"
+                placeholder="Browse grants"
+                {...register("linkText")}
+              />
+
+              {errors.linkText?.message && (
+                <FormErrorMessage>{errors.linkText.message}</FormErrorMessage>
+              )}
+            </FormControl>
+          )}
+
+          <Box>
+            <LinkEditorContextProvider
+              linkTypes={linkTypes}
+              linkHref={linkHref ?? ""}
+              onChange={(href) => setValue("linkHref", href)}
+              error={errors.linkHref?.message}
             >
-              Link text
-            </FormLabel>
+              <ModalLinkEditor
+                onChange={(value) => setValue("linkHref", value)}
+              />
 
-            <Input
-              type="text"
-              placeholder="Browse grants"
-              {...register("linkText")}
-            />
-
-            {errors.linkText?.message && (
-              <FormErrorMessage>{errors.linkText.message}</FormErrorMessage>
-            )}
-          </FormControl>
-
-          <Box mt="1.5rem">
-            <LinkHrefEditor
-              value={watch("linkHref")}
-              onChange={(value) => setValue("linkHref", value)}
-              label="Link destination"
-              description="When this is clicked, open:"
-              isRequired
-              isInvalid={!!errors.linkHref}
-              pageLinkElement={
-                <PageLinkElement
-                  value={watch("linkHref")}
-                  onChange={(value) => setValue("linkHref", value)}
-                />
-              }
-              fileLinkElement={
-                <Input
-                  type="text"
-                  value={watch("linkHref")}
-                  onChange={(e) => setValue("linkHref", e.target.value)}
-                  placeholder="File link"
-                />
-              }
-            />
-
-            {errors.linkHref?.message && (
-              <FormErrorMessage>{errors.linkHref.message}</FormErrorMessage>
-            )}
+              {errors.linkHref?.message && (
+                <FormErrorMessage>{errors.linkHref.message}</FormErrorMessage>
+              )}
+            </LinkEditorContextProvider>
           </Box>
         </ModalBody>
 
@@ -159,7 +168,9 @@ const LinkEditorModalContent = ({
           <Button
             variant="solid"
             onClick={onSubmit}
-            isDisabled={!isValid}
+            // NOTE: Using `isEmpty` here because we trigger `setError`
+            // using `isValid` doesn't trigger the error
+            isDisabled={!isEmpty(errors)}
             type="submit"
           >
             {isEditingLink ? "Save link" : "Add link"}
@@ -170,47 +181,77 @@ const LinkEditorModalContent = ({
   )
 }
 
-interface LinkEditorModalProps {
-  editor: Editor
+export interface LinkEditorModalProps {
+  linkText?: string
+  linkHref?: string
+  showLinkText?: boolean
+  onSave: (linkText: string, linkHref: string) => void
   isOpen: boolean
   onClose: () => void
+  linkTypes: Record<
+    string,
+    {
+      icon: IconType
+      label: Capitalize<LinkTypes>
+    }
+  >
 }
-
 export const LinkEditorModal = ({
-  editor,
   isOpen,
   onClose,
+  linkText,
+  showLinkText,
+  linkHref,
+  onSave,
+  linkTypes,
 }: LinkEditorModalProps) => (
   <Modal isOpen={isOpen} onClose={onClose}>
     <ModalOverlay />
 
     {isOpen && (
       <LinkEditorModalContent
-        linkText={
-          editor.isActive("link")
-            ? editor.state.doc.nodeAt(
-                Math.max(1, editor.view.state.selection.from - 1),
-              )?.textContent
-            : ""
-        }
-        linkHref={
-          editor.isActive("link")
-            ? String(editor.getAttributes("link").href ?? "")
-            : ""
-        }
+        linkTypes={linkTypes}
+        linkText={linkText}
+        showLinkText={showLinkText}
+        linkHref={linkHref}
         onSave={(linkText, linkHref) => {
-          editor
-            .chain()
-            .focus()
-            .extendMarkRange("link")
-            .unsetLink()
-            .deleteSelection()
-            .insertContent(`<a href="${linkHref}">${linkText}</a>`)
-            .run()
-
+          onSave(linkText, linkHref)
           onClose()
         }}
       />
     )}
   </Modal>
 )
+
+const ModalLinkEditor = ({
+  onChange,
+}: {
+  onChange: (value: string) => void
+}) => {
+  const { error, curHref, setHref } = useLinkEditor()
+  const { siteId } = useQueryParse(editSiteSchema)
+  const handleChange = (value: string) => {
+    onChange(value)
+    setHref(value)
+  }
+
+  return (
+    <LinkHrefEditor
+      label="Link destination"
+      description="When this is clicked, open:"
+      isRequired
+      isInvalid={!!error}
+      pageLinkElement={
+        <PageLinkElement value={curHref} onChange={handleChange} />
+      }
+      fileLinkElement={
+        <FileAttachment
+          maxSizeInBytes={MAX_FILE_SIZE_BYTES}
+          acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
+          siteId={siteId}
+          setHref={(href) => handleChange(href ?? "")}
+        />
+      }
+    />
+  )
+}

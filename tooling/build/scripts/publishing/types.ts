@@ -1,20 +1,38 @@
-export interface Resource {
-  id: string
-  title: string
-  permalink: string
+import { Resource as DbResource } from "~generated/selectableTypes"
+
+import { PAGE_RESOURCE_TYPES } from "./constants"
+
+// NOTE: this needs the `omit` because the `parentId`
+// we defined in studio
+export interface Resource extends Omit<DbResource, "parentId"> {
   parentId: number | null
-  type: string
   content?: any
-  fullPermalink?: string
+  fullPermalink: string
 }
 
-export type SitemapEntry = Pick<Resource, "id" | "title" | "permalink"> & {
+interface Tag {
+  selected: string[]
+  category: string
+}
+
+export type SitemapEntry = Pick<
+  Resource,
+  "id" | "title" | "permalink" | "type"
+> & {
   lastModified: string
   layout: string
   summary: string
   category?: string
   date?: string
-  image?: string
+  image?: {
+    src?: string
+    alt?: string
+  }
   ref?: string
   children?: SitemapEntry[]
+  tags?: Tag[]
+}
+
+export type PageOnlySitemapEntry = Omit<SitemapEntry, "children"> & {
+  type: (typeof PAGE_RESOURCE_TYPES)[number]
 }

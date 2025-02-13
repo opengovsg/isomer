@@ -1,4 +1,5 @@
 import { type ReactNode } from "react"
+import { chakra } from "@chakra-ui/react"
 
 import { LayoutHead } from "~/components/LayoutHead"
 
@@ -10,8 +11,9 @@ export const DefaultLayout = ({ children }: DefaultLayoutProps) => {
   return (
     <>
       <LayoutHead />
-
-      <main>{children}</main>
+      <chakra.main display="flex" flex={1}>
+        {children}
+      </chakra.main>
     </>
   )
 }

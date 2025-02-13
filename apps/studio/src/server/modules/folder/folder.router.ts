@@ -7,82 +7,103 @@ import {
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
-import { db } from "../database"
+import { publishSite } from "../aws/codebuild.service"
+import { db, ResourceState, ResourceType } from "../database"
+import { PG_ERROR_CODES } from "../database/constants"
+import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
   create: protectedProcedure
     .input(createFolderSchema)
     .mutation(
-      async ({ input: { folderTitle, parentFolderId, siteId, permalink } }) => {
-        const folder = await db.transaction().execute(async (tx) => {
-          // TODO: Validate user has permissions to site.
-          // Validate site is valid
-          const site = await tx
-            .selectFrom("Site")
-            .where("id", "=", siteId)
-            .select(["id"])
+      async ({
+        ctx,
+        input: { siteId, folderTitle, parentFolderId, permalink },
+      }) => {
+        await validateUserPermissionsForResource({
+          siteId,
+          action: "create",
+          userId: ctx.user.id,
+          resourceId: !!parentFolderId ? String(parentFolderId) : null,
+        })
+
+        // Validate site is valid
+        const site = await db
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .select(["id"])
+          .executeTakeFirst()
+
+        if (!site) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Site does not exist",
+          })
+        }
+
+        // Validate parentFolderId is a folder
+        if (parentFolderId) {
+          const parentFolder = await db
+            .selectFrom("Resource")
+            .where("Resource.id", "=", String(parentFolderId))
+            .where("Resource.siteId", "=", siteId)
+            .select(["Resource.type", "Resource.id"])
             .executeTakeFirst()
 
-          if (!site) {
+          if (!parentFolder) {
             throw new TRPCError({
               code: "NOT_FOUND",
-              message: "Site does not exist",
+              message: "Parent folder does not exist",
             })
           }
-
-          // Validate parentFolderId is a folder
-          if (parentFolderId) {
-            const parentFolder = await tx
-              .selectFrom("Resource")
-              .where("Resource.id", "=", String(parentFolderId))
-              .where("Resource.siteId", "=", siteId)
-              .select(["Resource.type", "Resource.id"])
-              .executeTakeFirst()
-
-            if (!parentFolder) {
-              throw new TRPCError({
-                code: "NOT_FOUND",
-                message: "Parent folder does not exist",
-              })
-            }
-            if (parentFolder.type !== "Folder") {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message: "Resource ID does not point to a folder",
-              })
-            }
+          if (
+            parentFolder.type !== "Folder" &&
+            parentFolder.type !== "RootPage"
+          ) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Resource ID does not point to a folder",
+            })
           }
+        }
 
-          return tx
-            .insertInto("Resource")
-            .values({
-              siteId,
-              permalink,
-              type: "Folder",
-              title: folderTitle,
-              parentId: parentFolderId ? String(parentFolderId) : null,
-            })
-            .returning("id")
-            .executeTakeFirstOrThrow()
-            .catch((err) => {
-              if (get(err, "code") === "23505") {
-                throw new TRPCError({
-                  code: "CONFLICT",
-                  message: "A resource with the same permalink already exists",
-                })
-              }
-              throw err
-            })
-        })
-        return { folderId: folder.id }
+        const folder = await db
+          .insertInto("Resource")
+          .values({
+            permalink,
+            siteId,
+            type: ResourceType.Folder,
+            title: folderTitle,
+            parentId: parentFolderId ? String(parentFolderId) : null,
+            state: ResourceState.Published,
+          })
+          .executeTakeFirstOrThrow()
+          .catch((err) => {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
+
+        // TODO: Create the index page for the folder and publish it
+        await publishSite(ctx.logger, siteId)
+
+        return { folderId: folder.insertId }
       },
     ),
   getMetadata: protectedProcedure
     .input(readFolderSchema)
     .query(async ({ ctx, input }) => {
+      await validateUserPermissionsForResource({
+        siteId: input.siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
       // Things that aren't working yet:
-      // 0. Perm checking
       // 1. Last Edited user and time
       // 2. Page status(draft, published)
 
@@ -94,26 +115,41 @@ export const folderRouter = router({
     }),
   editFolder: protectedProcedure
     .input(editFolderSchema)
-    .mutation(async ({ input: { resourceId, permalink, title, siteId } }) => {
-      return db
-        .updateTable("Resource")
-        .where("Resource.id", "=", resourceId)
-        .where("Resource.siteId", "=", Number(siteId))
-        .where("Resource.type", "in", ["Folder", "Collection"])
-        .set({
-          permalink,
-          title,
+    .mutation(
+      async ({ ctx, input: { resourceId, permalink, title, siteId } }) => {
+        await validateUserPermissionsForResource({
+          siteId: Number(siteId),
+          action: "update",
+          userId: ctx.user.id,
         })
-        .returning(defaultFolderSelect)
-        .execute()
-        .catch((err) => {
-          if (get(err, "code") === "23505") {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "A resource with the same permalink already exists",
-            })
-          }
-          throw err
-        })
-    }),
+
+        const result = await db
+          .updateTable("Resource")
+          .where("Resource.id", "=", resourceId)
+          .where("Resource.siteId", "=", Number(siteId))
+          .where("Resource.type", "in", [
+            ResourceType.Folder,
+            ResourceType.Collection,
+          ])
+          .set({
+            permalink,
+            title,
+          })
+          .returning(defaultFolderSelect)
+          .execute()
+          .catch((err) => {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
+
+        await publishSite(ctx.logger, Number(siteId))
+
+        return result
+      },
+    ),
 })

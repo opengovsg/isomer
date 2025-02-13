@@ -37,6 +37,7 @@ const { item, chevron, container, nestedItem, sublist } = mobileItemStyles()
 export const MobileNavItemAccordion = ({
   name,
   url,
+  referenceLinkHref,
   items,
   isOpen,
   onClick,
@@ -52,7 +53,7 @@ export const MobileNavItemAccordion = ({
           className={item({
             className: focusVisibleHighlight(),
           })}
-          href={url}
+          href={referenceLinkHref}
         >
           {name}
         </Link>
@@ -96,7 +97,7 @@ export const MobileNavItemAccordion = ({
                 >
                   <Link
                     LinkComponent={LinkComponent}
-                    href={subItem.url}
+                    href={subItem.referenceLinkHref}
                     isExternal={isExternal}
                     className={nestedItem({
                       className: focusVisibleHighlight(),

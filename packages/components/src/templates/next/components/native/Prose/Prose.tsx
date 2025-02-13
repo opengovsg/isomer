@@ -13,9 +13,13 @@ const ProseComponent = ({
   component,
   LinkComponent,
   site,
+  shouldStripContentHtmlTags,
 }: {
   component: NonNullable<ProseProps["content"]>[number]
-} & Pick<ProseProps, "LinkComponent" | "site">): JSX.Element => {
+} & Pick<
+  ProseProps,
+  "LinkComponent" | "site" | "shouldStripContentHtmlTags"
+>): JSX.Element => {
   switch (component.type) {
     case "divider":
       return <Divider {...component} />
@@ -29,10 +33,13 @@ const ProseComponent = ({
       return (
         <BaseParagraph
           content={getTextAsHtml({
-            sitemap: site.siteMap,
+            site,
             content: component.content,
+            shouldStripContentHtmlTags: shouldStripContentHtmlTags,
           })}
           className="prose-body-base text-base-content"
+          attrs={component.attrs}
+          site={site}
           LinkComponent={LinkComponent}
         />
       )
@@ -49,7 +56,12 @@ const ProseComponent = ({
   }
 }
 
-const Prose = ({ content, LinkComponent, site }: ProseProps) => {
+const Prose = ({
+  content,
+  LinkComponent,
+  site,
+  shouldStripContentHtmlTags = false,
+}: ProseProps) => {
   if (!content) {
     return <></>
   }
@@ -62,6 +74,7 @@ const Prose = ({ content, LinkComponent, site }: ProseProps) => {
           key={index}
           LinkComponent={LinkComponent}
           site={site}
+          shouldStripContentHtmlTags={shouldStripContentHtmlTags}
         />
       ))}
     </>

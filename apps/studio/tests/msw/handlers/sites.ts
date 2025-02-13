@@ -1,6 +1,7 @@
 import type { DelayMode } from "msw"
 import { delay } from "msw"
 
+import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
 
 const siteListQuery = ({
@@ -23,6 +24,35 @@ const siteListQuery = ({
       {
         id: 1,
         name: "Ministry of Trade and Industry",
+        config: {
+          theme: "isomer-next",
+          siteName: "MTI",
+          logoUrl: "",
+          search: undefined,
+          isGovernment: true,
+        } as PrismaJson.SiteJsonConfig,
+      },
+      {
+        id: 2,
+        name: "Having a really long name is cool i guess",
+        config: {
+          theme: "isomer-next",
+          siteName: "MTI",
+          logoUrl: "",
+          search: undefined,
+          isGovernment: true,
+        } as PrismaJson.SiteJsonConfig,
+      },
+      {
+        id: 3,
+        name: "But not if it's too long then nobody can read your name anyway so why even bother",
+        config: {
+          theme: "isomer-next",
+          siteName: "MTI",
+          logoUrl: "",
+          search: undefined,
+          isGovernment: true,
+        } as PrismaJson.SiteJsonConfig,
       },
     ]
   })
@@ -33,6 +63,13 @@ export const sitesHandlers = {
     default: () => siteListQuery({}),
     loading: () => siteListQuery({ wait: "infinite" }),
     empty: () => siteListQuery({ isEmpty: true }),
+  },
+  getSiteName: {
+    default: () => {
+      return trpcMsw.site.getSiteName.query(() => {
+        return { name: "Isomer" }
+      })
+    },
   },
   getTheme: {
     default: () => {
@@ -109,8 +146,8 @@ export const sitesHandlers = {
             feedbackFormLink: "https://www.form.gov.sg",
             privacyStatementLink: "/privacy",
           } as PrismaJson.FooterJsonContent,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: MOCK_STORY_DATE,
+          updatedAt: MOCK_STORY_DATE,
         }
       })
     },
@@ -163,8 +200,8 @@ export const sitesHandlers = {
               ],
             },
           ] as PrismaJson.NavbarJsonContent,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: MOCK_STORY_DATE,
+          updatedAt: MOCK_STORY_DATE,
         }
       })
     },

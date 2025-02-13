@@ -7,6 +7,7 @@ import type {
   LinkComponentType,
 } from "~/types"
 import { SUPPORTED_ICON_NAMES } from "~/common/icons"
+import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 export const InfoBoxSchema = Type.Object({
   title: Type.String({
@@ -29,7 +30,6 @@ export const InfoBoxSchema = Type.Object({
       ),
       {
         title: "Column icon",
-        description: "The icon to display for the column",
         type: "string",
       },
     ),
@@ -47,6 +47,7 @@ export const InfoBoxSchema = Type.Object({
       title: "Link destination",
       description: "When this is clicked, open:",
       format: "link",
+      pattern: LINK_HREF_PATTERN,
     }),
   ),
 })
@@ -54,6 +55,13 @@ export const InfoBoxSchema = Type.Object({
 export const InfoColsSchema = Type.Object(
   {
     type: Type.Literal("infocols", { default: "infocols" }),
+    id: Type.Optional(
+      Type.String({
+        title: "Anchor ID",
+        description: "The ID to use for anchor links",
+        format: "hidden",
+      }),
+    ),
     title: Type.String({
       title: "Title",
       maxLength: 100,

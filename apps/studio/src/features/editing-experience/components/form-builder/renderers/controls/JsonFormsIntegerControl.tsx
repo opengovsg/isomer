@@ -68,7 +68,7 @@ export function JsonFormsIntegerControl({
   }
 
   return (
-    <Box mt="1.25rem" _first={{ mt: 0 }}>
+    <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <NumberInput

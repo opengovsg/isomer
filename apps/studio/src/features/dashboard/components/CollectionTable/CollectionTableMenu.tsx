@@ -1,35 +1,26 @@
-import { useMemo } from "react"
-import NextLink from "next/link"
 import { MenuButton, MenuList, Portal } from "@chakra-ui/react"
 import { IconButton, Menu } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useSetAtom } from "jotai"
 import { BiCog, BiDotsHorizontalRounded, BiTrash } from "react-icons/bi"
 
 import type { CollectionTableData } from "./types"
 import { MenuItem } from "~/components/Menu"
-import { getLinkToResource } from "~/utils/resource"
-import { deleteResourceModalAtom } from "../../atoms"
+import { deleteResourceModalAtom, pageSettingsModalAtom } from "../../atoms"
 
 interface CollectionTableMenuProps {
   title: CollectionTableData["title"]
   resourceId: CollectionTableData["id"]
   resourceType: CollectionTableData["type"]
-  siteId: number
 }
 
 export const CollectionTableMenu = ({
-  siteId,
   title,
   resourceId,
   resourceType,
 }: CollectionTableMenuProps) => {
   const setValue = useSetAtom(deleteResourceModalAtom)
-
-  const linkToResourceSettings = useMemo(
-    () =>
-      `${getLinkToResource({ siteId, resourceId, type: resourceType })}/settings`,
-    [siteId, resourceId, resourceType],
-  )
+  const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
 
   return (
     <Menu isLazy size="sm">
@@ -42,14 +33,19 @@ export const CollectionTableMenu = ({
       />
       <Portal>
         <MenuList>
-          <MenuItem
-            icon={<BiCog fontSize="1rem" />}
-            as={NextLink}
-            // @ts-expect-error type inconsistency with `as`
-            href={linkToResourceSettings}
-          >
-            Edit page settings
-          </MenuItem>
+          {resourceType === ResourceType.CollectionPage && (
+            <MenuItem
+              icon={<BiCog fontSize="1rem" />}
+              onClick={() =>
+                setPageSettingsModalState({
+                  pageId: resourceId,
+                  type: resourceType,
+                })
+              }
+            >
+              Edit page settings
+            </MenuItem>
+          )}
           <MenuItem
             onClick={() => {
               setValue({

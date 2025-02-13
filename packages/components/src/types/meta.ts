@@ -24,17 +24,14 @@ const BasePageMetaSchema = Type.Composite([
         default: false,
       }),
     ),
-  }),
-])
-
-const BaseRefMetaSchema = Type.Composite([
-  BaseItemMetaSchema,
-  Type.Object({
-    ref: Type.String({
-      title: "URL to the actual item",
-      description:
-        "The link that users will open immediately when they click on the item in the parent collection page",
-    }),
+    image: Type.Optional(
+      Type.String({
+        title: "Meta image",
+        description:
+          "This image may appear when the page is shared on social media such as LinkedIn or Facebook.",
+        format: "image",
+      }),
+    ),
   }),
 ])
 
@@ -46,8 +43,8 @@ export const HomePageMetaSchema = BasePageMetaSchema
 export const NotFoundPageMetaSchema = BasePageMetaSchema
 export const SearchPageMetaSchema = BasePageMetaSchema
 
-export const FileRefMetaSchema = BaseRefMetaSchema
-export const LinkRefMetaSchema = BaseRefMetaSchema
+export const FileRefMetaSchema = BaseItemMetaSchema
+export const LinkRefMetaSchema = BaseItemMetaSchema
 
 export type ArticlePageMetaProps = Static<typeof ArticlePageMetaSchema>
 export type CollectionPageMetaProps = Static<typeof CollectionPageMetaSchema>

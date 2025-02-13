@@ -59,8 +59,6 @@ model Resource {
 
   children Resource[] @relation("ParentRelation")
 
-  permission Permission[]
-
   publishedVersionId BigInt?  @unique
   publishedVersion   Version? @relation(fields: [publishedVersionId], references: [id])
 
@@ -70,16 +68,19 @@ model Resource {
   state ResourceState? @default(Draft)
   type  ResourceType
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @default(now()) @updatedAt
+  ResourcePermission ResourcePermission[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
   // This is required so prisma does not attempt to drop the custom index.
   @@unique([siteId, parentId, permalink])
-  @@index([siteId])
-  @@index([siteId, id])
-  @@index([siteId, id, parentId])
+  @@index([siteId, id, parentId]) // note: ordering is important here!
+  @@index([type])
+  // NOTE: This is used to create a inverted index using text trigrams for the title
+  // so that we can perform searches on the title quickly
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, name: "resource_title_trgm_idx")
 }
 
 model Blob {
@@ -105,43 +106,31 @@ enum ResourceType {
   Page
   Folder
   Collection
+  CollectionMeta // Can only ever be inside collection
+  CollectionLink // Can only ever be inside collection
   CollectionPage // Can only live inside `Collection` resources
+  IndexPage // This denotes the index page of a folder or a collection
+  FolderMeta // This denotes some of the metadata of a folder (e.g. page ordering)
 }
 
 model User {
-  id            String  @id @default(cuid())
-  name          String
-  email         String  @unique
-  phone         String
-  preferredName String?
+  id    String @id @default(cuid())
+  name  String
+  email String @unique
+  phone String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime?
 
-  permissions Permission[]
-  siteMembers SiteMember[]
-  versions    Version[]
-}
-
-model Permission {
-  id         Int      @id @default(autoincrement())
-  resourceId BigInt
-  resource   Resource @relation(fields: [resourceId], references: [id])
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  role       RoleType
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-
-  // Delete the row if either resource or user is deleted, default behavior cascade
+  ResourcePermission ResourcePermission[]
+  versions           Version[]
 }
 
 model Site {
-  id          Int          @id @default(autoincrement())
-  name        String       @unique
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
   resources   Resource[]
-  siteMembers SiteMember[]
   // NOTE: This is `theme/isGovernment/sitemap`
   // This is currently put as `Json` for ease of extensibility
   // when we lock in what we actually want for site-wide config,
@@ -156,8 +145,9 @@ model Site {
   footer      Footer?
   codeBuildId String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @default(now()) @updatedAt
+  ResourcePermission ResourcePermission[]
 }
 
 model Navbar {
@@ -186,16 +176,20 @@ model Footer {
   updatedAt DateTime @default(now()) @updatedAt
 }
 
-model SiteMember {
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-  siteId Int
-  site   Site   @relation(fields: [siteId], references: [id])
+model ResourcePermission {
+  id         BigInt    @id @default(autoincrement())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  siteId     Int
+  site       Site      @relation(fields: [siteId], references: [id])
+  resourceId BigInt?
+  resource   Resource? @relation(fields: [resourceId], references: [id])
+  role       RoleType
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+  deletedAt  DateTime?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-
-  @@id([siteId, userId])
+  @@unique([userId, siteId, resourceId, role])
 }
 
 enum RoleType {
@@ -208,4 +202,14 @@ model RateLimiterFlexible {
   key    String    @id
   points Int
   expire DateTime?
+}
+
+model Whitelist {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  expiry    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+
+  @@index([email])
 }

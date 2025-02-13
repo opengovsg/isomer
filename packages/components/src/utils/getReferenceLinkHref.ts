@@ -22,41 +22,65 @@ const getSanitizedLinkHref = (url?: string) => {
 }
 
 // Convert the given reference link to the actual permalink
-const getActualLinkFromReference = (
-  referenceLink: string,
+const convertReferenceLinks = (
+  originalLink: string,
   sitemap: IsomerSitemap,
 ) => {
   const sitemapArray = getSitemapAsArray(sitemap)
-  const match = /\[resource:(\d+):(\d+)\]/.exec(referenceLink)
+  const match = /^\[resource:(\d+):(\d+)\]/.exec(originalLink)
 
   if (!match) {
-    return referenceLink
+    return originalLink
   }
 
   const refPageId = match[2]
 
   if (!refPageId) {
-    return referenceLink
+    return originalLink
   }
 
   const refPage = sitemapArray.find(({ id }) => id === refPageId)
 
   if (!refPage) {
-    return referenceLink
+    return originalLink
   }
 
   return refPage.permalink
 }
 
+// Prepend the assets base URL for asset links
+// Asset links are assumed to start with /{site_id}/
+const convertAssetLinks = (
+  originalLink: string,
+  assetsBaseUrl: string | undefined,
+) => {
+  if (!assetsBaseUrl) {
+    return originalLink
+  }
+
+  const match =
+    /^\/(\d+)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//.exec(
+      originalLink,
+    )
+
+  if (!match) {
+    return originalLink
+  }
+
+  return `${assetsBaseUrl}${originalLink}`
+}
+
 export const getReferenceLinkHref = (
   referenceLink: string | undefined,
   sitemap: IsomerSitemap,
+  assetsBaseUrl: string | undefined,
 ) => {
   if (!referenceLink) {
     return undefined
   }
 
-  const actualLink = getActualLinkFromReference(referenceLink, sitemap)
+  const assetLink = convertAssetLinks(referenceLink, assetsBaseUrl)
+  const actualLink = convertReferenceLinks(assetLink, sitemap)
 
   return getSanitizedLinkHref(actualLink)
 }

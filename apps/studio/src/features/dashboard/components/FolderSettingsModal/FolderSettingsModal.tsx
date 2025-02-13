@@ -1,9 +1,8 @@
 import { Suspense } from "react"
 import {
   Box,
+  chakra,
   FormControl,
-  FormHelperText,
-  FormLabel,
   Icon,
   Input,
   Modal,
@@ -14,17 +13,21 @@ import {
   ModalHeader,
   ModalOverlay,
   Skeleton,
+  Text,
   VStack,
 } from "@chakra-ui/react"
 import {
   Button,
   FormErrorMessage,
+  FormHelperText,
+  FormLabel,
   useToast,
 } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { generateResourceUrl } from "~/features/editing-experience/components/utils"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
@@ -39,6 +42,29 @@ import {
   DEFAULT_FOLDER_SETTINGS_MODAL_STATE,
   folderSettingsModalAtom,
 } from "../../atoms"
+
+interface SuspendablePermalinkProps {
+  folderId: string
+  permalink: string
+}
+const SuspendablePermalink = ({
+  folderId,
+  permalink,
+}: SuspendablePermalinkProps) => {
+  const [{ fullPermalink }] =
+    trpc.resource.getWithFullPermalink.useSuspenseQuery({
+      resourceId: folderId ? String(folderId) : "",
+    })
+
+  return (
+    <Text textStyle="subhead-2" overflow="hidden">
+      <chakra.span color="base.content.medium">
+        {fullPermalink.split("/").slice(0, -1).join("/")}
+      </chakra.span>
+      /{permalink}
+    </Text>
+  )
+}
 
 export const FolderSettingsModal = () => {
   const { folderId } = useAtomValue(folderSettingsModalAtom)
@@ -101,7 +127,11 @@ const SuspendableModalContent = ({
       await utils.collection.getMetadata.invalidate({
         resourceId: Number(folderId),
       })
-      toast({ title: "Folder updated!", status: "success" })
+      toast({
+        title: "Folder updated!",
+        status: "success",
+        ...BRIEF_TOAST_SETTINGS,
+      })
     },
     onError: (err) => {
       toast({
@@ -109,6 +139,7 @@ const SuspendableModalContent = ({
         status: "error",
         // TODO: check if this property is correct
         description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
       })
     },
   })
@@ -172,15 +203,22 @@ const SuspendableModalContent = ({
               {errors.permalink?.message ? (
                 <FormErrorMessage>{errors.permalink.message}</FormErrorMessage>
               ) : (
-                <Box
-                  mt="0.5rem"
-                  py="0.5rem"
-                  px="0.75rem"
-                  bg="interaction.support.disabled"
-                >
-                  <Icon mr="0.5rem" as={BiLink} />
-                  {permalink}
-                </Box>
+                <Suspense fallback={<Skeleton w="100%" h="2rem" mt="0.5rem" />}>
+                  <Box
+                    mt="0.5rem"
+                    py="0.5rem"
+                    px="0.75rem"
+                    bg="interaction.support.disabled"
+                    display="flex"
+                    alignItems="center"
+                  >
+                    <Icon mr="0.5rem" as={BiLink} />
+                    <SuspendablePermalink
+                      folderId={folderId}
+                      permalink={permalink}
+                    />
+                  </Box>
+                </Suspense>
               )}
 
               <FormHelperText mt="0.5rem" color="base.content.medium">

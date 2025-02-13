@@ -10,12 +10,16 @@ import isEqual from "lodash/isEqual"
 import { BiTrash } from "react-icons/bi"
 
 import type { ModifiedAsset } from "~/types/assets"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
-import { BRIEF_TOAST_SETTINGS, PLACEHOLDER_IMAGE_FILENAME } from "./constants"
+import {
+  CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+  PLACEHOLDER_IMAGE_FILENAME,
+} from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
 import { DiscardChangesModal } from "./DiscardChangesModal"
 import { DrawerHeader } from "./Drawer/DrawerHeader"
@@ -57,7 +61,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-        toast({ title: "Changes saved", ...BRIEF_TOAST_SETTINGS })
+        await utils.page.readPage.invalidate({ pageId, siteId })
+        toast({
+          title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+          ...BRIEF_TOAST_SETTINGS,
+        })
       },
     })
 
@@ -170,6 +178,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
             title: "Error uploading files/images",
             description: `An error occurred while uploading ${failedUploadsCount}/${totalUploadsCount} files/images. Please try again later.`,
             status: "error",
+            ...BRIEF_TOAST_SETTINGS,
           })
 
           // NOTE: Do not save page if there are errors uploading assets

@@ -1,11 +1,17 @@
 import type { IsomerSitemap } from "./sitemap"
-import type { NavbarProps, NotificationProps } from "~/interfaces"
+import type {
+  NavbarProps,
+  NotificationProps,
+  VicaWidgetProps,
+} from "~/interfaces"
 import type { SiteConfigFooterProps } from "~/interfaces/internal/Footer"
 
 export interface IsomerGeneratedSiteProps {
   siteMap: IsomerSitemap
   environment?: string
   lastUpdated: string
+  assetsBaseUrl?: string
+  isomerGtmId?: string
 }
 
 export interface IsomerSiteWideComponentsProps {
@@ -23,7 +29,8 @@ export interface IsomerSiteConfigProps {
   favicon?: string
   search: NavbarProps["search"]
   notification?: Omit<NotificationProps, "LinkComponent" | "site">
-  assetsBaseUrl?: string
+  siteGtmId?: string
+  vica?: VicaWidgetProps
 }
 
 export type IsomerSiteProps = IsomerGeneratedSiteProps &

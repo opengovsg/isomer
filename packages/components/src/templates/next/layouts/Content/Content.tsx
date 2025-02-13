@@ -48,12 +48,12 @@ const ContentLayout = ({
 
   // Note: We do not show side rail for first-level pages
   const sideRail = !isParentPageRoot
-    ? getSiderailFromSiteMap(site.siteMap, page.permalink.split("/").slice(1))
+    ? getSiderailFromSiteMap(site.siteMap, page.permalink)
     : null
 
   // auto-inject ids for heading level 2 blocks if does not exist
   const transformedContent = getTransformedPageContent(content)
-  const tableOfContents = getTableOfContents(site.siteMap, transformedContent)
+  const tableOfContents = getTableOfContents(site, transformedContent)
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
@@ -97,7 +97,7 @@ const ContentLayout = ({
         {sideRail && (
           <div className={compoundStyles.siderailContainer()}>
             <Siderail {...sideRail} LinkComponent={LinkComponent} />
-            <BackToTopLink LinkComponent={LinkComponent} />
+            <BackToTopLink />
           </div>
         )}
       </div>

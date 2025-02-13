@@ -47,6 +47,7 @@ export const colors = {
   link: {
     DEFAULT: "#1A56E5",
     hover: "#1547BE",
+    visited: twColors.violet["900"],
   },
   utility: {
     highlight: twColors.amber["400"],
@@ -54,7 +55,9 @@ export const colors = {
       info: {
         DEFAULT: twColors.blue["500"],
         subtle: twColors.blue["100"],
+        faint: "#EAF2FF",
       },
+      warning: "#FFCC15",
     },
   },
 }

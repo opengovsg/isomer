@@ -4,8 +4,6 @@ import { useEffect } from "react"
 import {
   Box,
   FormControl,
-  FormHelperText,
-  FormLabel,
   Icon,
   Input,
   Modal,
@@ -19,12 +17,15 @@ import {
 import {
   Button,
   FormErrorMessage,
+  FormHelperText,
+  FormLabel,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
 import { createCollectionSchema } from "~/schemas/collection"
 import {
@@ -40,12 +41,13 @@ type CreateCollectionModalProps = Pick<
   UseDisclosureReturn,
   "isOpen" | "onClose"
 > &
-  Pick<CreateCollectionProps, "siteId">
+  Pick<CreateCollectionProps, "siteId" | "parentFolderId">
 
 export const CreateCollectionModal = ({
   isOpen,
   onClose,
   siteId,
+  parentFolderId,
 }: CreateCollectionModalProps): JSX.Element => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -55,6 +57,7 @@ export const CreateCollectionModal = ({
         key={String(isOpen)}
         onClose={onClose}
         siteId={siteId}
+        parentFolderId={parentFolderId}
       />
     </Modal>
   )
@@ -63,6 +66,7 @@ export const CreateCollectionModal = ({
 const CreateCollectionModalContent = ({
   onClose,
   siteId,
+  parentFolderId,
 }: CreateCollectionModalProps) => {
   const {
     register,
@@ -79,6 +83,7 @@ const CreateCollectionModalContent = ({
     },
     schema: createCollectionSchema.omit({
       siteId: true,
+      parentFolderId: true,
     }),
   })
   const { errors, isValid } = formState
@@ -90,7 +95,11 @@ const CreateCollectionModalContent = ({
       await utils.resource.listWithoutRoot.invalidate()
       await utils.resource.countWithoutRoot.invalidate()
       await utils.resource.getChildrenOf.invalidate()
-      toast({ title: "Collection created!", status: "success" })
+      toast({
+        title: "Collection created!",
+        status: "success",
+        ...BRIEF_TOAST_SETTINGS,
+      })
     },
     onError: (err) => {
       toast({
@@ -98,13 +107,14 @@ const CreateCollectionModalContent = ({
         status: "error",
         // TODO: check if this property is correct
         description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
       })
     },
   })
 
   const [collectionTitle, permalink] = watch(["collectionTitle", "permalink"])
   const onSubmit = handleSubmit((data) => {
-    mutate({ ...data, siteId })
+    mutate({ ...data, parentFolderId, siteId })
   })
 
   useEffect(() => {

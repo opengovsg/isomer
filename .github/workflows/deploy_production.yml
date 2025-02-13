@@ -34,12 +34,13 @@ jobs:
       ecs-task-exec-role: studio-production-ecs-task-exec-role
       app-url: "https://studio.isomer.gov.sg"
       app-name: "Isomer Studio"
-      app-version: ${{ github.sha }}
+      app-version: ${{ github.event.release.tag_name }}
       app-enable-sgid: false
       app-s3-region: "ap-southeast-1"
       app-s3-assets-bucket-name: "isomer-next-infra-prod-assets-private-a319984"
       app-s3-assets-domain-name: "isomer-user-content.by.gov.sg"
+      app-growthbook-client-key: "sdk-r07MHTLLgfdVDThi"
+      app-intercom-app-id: "jv2tjc3g"
 
     secrets:
       DD_API_KEY: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
-      RDS_READER_ENDPOINT: ${{ secrets.RDS_READER_ENDPOINT }}

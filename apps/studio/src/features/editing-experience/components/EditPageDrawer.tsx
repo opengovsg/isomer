@@ -5,10 +5,10 @@ import Ajv from "ajv"
 
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import AdminModeStateDrawer from "./AdminModeStateDrawer"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import HeroEditorDrawer from "./HeroEditorDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
+import RawJsonEditorModeStateDrawer from "./RawJsonEditorModeStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
 import TipTapProseComponent from "./TipTapProseComponent"
 
@@ -25,7 +25,7 @@ export function EditPageDrawer(): JSX.Element {
 
   const inferAsProse = (component?: IsomerComponent): ProseProps => {
     if (!component) {
-      throw new Error(`Expected component of type prose but got undefined`)
+      throw new Error("Expected component of type prose but got undefined")
     }
 
     if (validate(component)) {
@@ -40,12 +40,13 @@ export function EditPageDrawer(): JSX.Element {
   switch (currState.state) {
     case "root":
       return <RootStateDrawer />
-    case "adminMode":
-      return <AdminModeStateDrawer />
+    case "rawJsonEditor":
+      return <RawJsonEditorModeStateDrawer />
     case "addBlock":
       return <ComponentSelector />
     case "nativeEditor": {
       const component = previewPageState.content[currActiveIdx]
+      if (!component) return <div />
       return <TipTapProseComponent content={inferAsProse(component)} />
     }
     case "complexEditor":

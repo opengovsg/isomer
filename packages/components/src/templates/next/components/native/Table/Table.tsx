@@ -1,6 +1,4 @@
-"use client"
-
-import { useId, useRef } from "react"
+import { useId } from "react"
 
 import type { TableProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
@@ -26,7 +24,6 @@ const Table = ({
   LinkComponent,
   site,
 }: TableProps) => {
-  const tableRef = useRef<HTMLTableElement>(null)
   const tableDescriptionId = useId()
 
   return (
@@ -35,13 +32,13 @@ const Table = ({
         id={tableDescriptionId}
         content={caption}
         className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
+        site={site}
         LinkComponent={LinkComponent}
       />
       <div className="overflow-x-auto" tabIndex={0}>
         <table
           className="w-full border-collapse border-spacing-0 border border-base-divider-medium"
           aria-describedby={tableDescriptionId}
-          ref={tableRef}
         >
           <tbody>
             {content.map((row, index) => {

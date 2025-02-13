@@ -68,7 +68,7 @@ const RestrictedHeaderBarContent = ({ children }: PropsWithChildren) => {
         width="32"
         height="32"
         viewBox="0 0 32 32"
-        className="h-7 w-5 flex-shrink-0 has-[path]:fill-[#ef3320]"
+        className="h-7 w-5 flex-shrink-0 fill-[#ef3320]"
       >
         <path d="M5.896 11.185c0 0-0.949 1.341 0.294 3.075 0 0 0.196-0.883 2.159-0.883h2.356c2.225 0 3.893-2.126 2.846-4.319 0 0 1.57 0.164 2.095-0.818 0.523-0.981-0.033-1.374-0.818-1.374h-3.959c0 0.704-1.341 0.802-1.341 0h-2.225c0 0-1.669 0-1.701 1.407 0 0 0.377-0.229 0.752-0.261v0.375c0 0-0.458 0.082-0.671 0.197-0.212 0.114-0.523 0.425-0.228 1.227 0.294 0.801 0.409 1.079 0.409 1.079s0.475-0.41 1.244-0.41h0.9c1.602 0 1.308 1.554-0.295 1.554s-1.815-0.85-1.815-0.85z"></path>
         <path d="M14.255 9.566c0 0 0.54 0.033 0.932-0.31 0 0 3.55 2.765-1.717 8.326-5.268 5.562-1.195 9.162-1.195 9.162s-0.948 0.915-0.409 2.699c0 0-2.191-1.237-3.867-3.338-2.422-3.036-3.902-7.681 2.749-11.386 0 0 4.389-2.208 3.506-5.153z"></path>
@@ -77,7 +77,7 @@ const RestrictedHeaderBarContent = ({ children }: PropsWithChildren) => {
         <path d="M16.093 6.845c8.005-0.24 10.863 9.357 5.693 13.676l-5.191 2.509c0 0-0.676-2.181 1.833-4.734 2.509-2.551 4.929-7.328-2.006-10.469 0 0 0.131-0.654-0.327-0.981z"></path>
         <path d="M15.678 9.004c0 0 0.393-0.371 0.524-0.676 5.954 2.486 5.017 6.697 1.461 10.23-2.181 2.246-1.505 4.668-1.505 4.668s-2.66 1.657-3.577 3.097c0 0-3.852-3.28 1.483-8.724 5.235-5.344 1.614-8.594 1.614-8.594z"></path>
       </svg>
-      <div className="flex flex-1 flex-wrap py-1 lg:flex-row">
+      <div className="prose-label-sm-regular flex flex-1 flex-wrap gap-1 py-1 text-base-content-medium lg:flex-row">
         <span>
           A Singapore Government Agency Website&nbsp;
           {isStaging ? <b>[NOTE: THIS IS A STAGING WEBSITE]&nbsp;</b> : null}
@@ -165,7 +165,7 @@ const RestrictedContent = () => {
               height="17"
               viewBox="0 0 17 17"
               fill="none"
-              className="w-3 has-[path]:fill-[#242425] lg:w-[1.125rem]"
+              className="w-3 fill-[#242425] lg:w-[1.125rem]"
             >
               <path d="M0.166016 5.6665V9.00067H0.999349V13.9998H0.166016V16.4998H0.999349H3.49935H5.16602H7.66601H9.33268H11.8327H13.4993L15.9993 16.5007V16.4998H16.8327V13.9998H15.9993V9.00067H16.8327V5.6665L8.49935 0.666504L0.166016 5.6665ZM3.49935 13.9998V9.00067H5.16602V13.9998H3.49935ZM7.66601 13.9998V9.00067H9.33268V13.9998H7.66601ZM13.4993 13.9998H11.8327V9.00067H13.4993V13.9998ZM10.166 5.6665C10.166 6.58651 9.41935 7.33317 8.49935 7.33317C7.57935 7.33317 6.83268 6.58651 6.83268 5.6665C6.83268 4.7465 7.57935 3.99984 8.49935 3.99984C9.41935 3.99984 10.166 4.7465 10.166 5.6665Z"></path>
             </svg>
@@ -180,7 +180,7 @@ const RestrictedContent = () => {
               <Link
                 LinkComponent={LinkComponent}
                 href="https://www.gov.sg/trusted-sites#govsites"
-                className="inline-flex items-center text-link underline underline-offset-4 outline-none hover:text-link-hover"
+                className="inline-flex items-center text-link underline underline-offset-4 outline-none visited:text-link-visited hover:text-link-hover"
                 isExternal
                 isWithFocusVisibleHighlight
               >
@@ -208,7 +208,7 @@ const RestrictedContent = () => {
               height="18"
               viewBox="0 0 15 18"
               fill="none"
-              className="inline-block w-3 has-[path]:fill-[#242425] lg:w-[1.125rem]"
+              className="inline-block w-3 fill-[#242425] lg:w-[1.125rem]"
             >
               <path d="M14.1663 9.00008C14.1663 8.08091 13.4188 7.33342 12.4997 7.33342H11.6663V4.83342C11.6663 2.53591 9.79717 0.666748 7.49967 0.666748C5.20217 0.666748 3.33301 2.53591 3.33301 4.83342V7.33342H2.49967C1.58051 7.33342 0.833008 8.08091 0.833008 9.00008V15.6667C0.833008 16.5859 1.58051 17.3334 2.49967 17.3334H12.4997C13.4188 17.3334 14.1663 16.5859 14.1663 15.6667V9.00008ZM4.99967 4.83342C4.99967 3.45508 6.12134 2.33341 7.49967 2.33341C8.87801 2.33341 9.99967 3.45508 9.99967 4.83342V7.33342H4.99967V4.83342Z"></path>
             </svg>
@@ -225,7 +225,7 @@ const RestrictedContent = () => {
                 height="18"
                 viewBox="0 0 15 18"
                 fill="none"
-                className="mb-[0.1875rem] inline-block h-[0.6rem] w-[0.6rem] has-[path]:fill-[#242425] lg:h-auto lg:w-auto"
+                className="mb-[0.1875rem] inline-block h-[0.6rem] w-[0.6rem] fill-[#242425] lg:h-auto lg:w-auto"
               >
                 <path d="M14.1663 9.00008C14.1663 8.08091 13.4188 7.33342 12.4997 7.33342H11.6663V4.83342C11.6663 2.53591 9.79717 0.666748 7.49967 0.666748C5.20217 0.666748 3.33301 2.53591 3.33301 4.83342V7.33342H2.49967C1.58051 7.33342 0.833008 8.08091 0.833008 9.00008V15.6667C0.833008 16.5859 1.58051 17.3334 2.49967 17.3334H12.4997C13.4188 17.3334 14.1663 16.5859 14.1663 15.6667V9.00008ZM4.99967 4.83342C4.99967 3.45508 6.12134 2.33341 7.49967 2.33341C8.87801 2.33341 9.99967 3.45508 9.99967 4.83342V7.33342H4.99967V4.83342Z"></path>
               </svg>
@@ -242,7 +242,7 @@ const RestrictedContent = () => {
 export const Masthead = (props: Omit<MastheadProps, "type">) => {
   return (
     <MastheadProvider {...props}>
-      <div className="bg-[#f0f0f0] text-[0.875rem]">
+      <div className="bg-base-canvas-backdrop">
         <RestrictedHeaderBar />
         <RestrictedContent />
       </div>

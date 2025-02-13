@@ -1,18 +1,20 @@
 import type { UnwrapTagged } from "type-fest"
 import { format } from "date-fns"
 
+import type { ResourceType } from "../database"
+
 export const createCollectionPageJson = ({}: {
-  type: "page" // Act as soft typeguard
+  type: typeof ResourceType.CollectionPage // Act as soft typeguard
 }) => {
   return {
     layout: "article",
     page: {
-      date: format(new Date(), "dd-MM-yyyy"),
+      date: format(new Date(), "dd/MM/yyyy"),
       // TODO: this is actually supposed to be passed from the frontend
       // which is not done at present
       category: "Feature Articles",
       articlePageHeader: {
-        summary: [],
+        summary: "A concise summary of the main points regarding this article.",
       },
     },
     content: [],
@@ -20,21 +22,19 @@ export const createCollectionPageJson = ({}: {
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
 
-export const createCollectionPdfJson = ({
-  url: _url,
-}: {
-  type: "pdf" // Act as soft typeguard
-  url: string
+export const createCollectionLinkJson = ({}: {
+  type: typeof ResourceType.CollectionLink // Act as soft typeguard
 }) => {
   return {
-    layout: "content",
+    layout: "link",
     page: {
-      contentPageHeader: {
-        summary: "",
-      },
+      ref: "",
+      summary: "",
+      category: "",
+      date: format(new Date(), "dd/MM/yyyy"),
     },
-    // TODO: Add pdf blob to content
     content: [],
+    // TODO: Add pdf blob to content
     version: "0.1.0",
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }

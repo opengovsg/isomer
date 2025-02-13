@@ -2,7 +2,10 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { useMemo } from "react"
 import { VStack } from "@chakra-ui/react"
 import { Draggable } from "@hello-pangea/dnd"
-import { getComponentSchema } from "@opengovsg/isomer-components"
+import {
+  getComponentSchema,
+  renderComponentPreviewText,
+} from "@opengovsg/isomer-components"
 
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { TYPE_TO_ICON } from "../../constants"
@@ -23,13 +26,17 @@ export const DraggableBlock = ({
 }: DraggableBlockProps): JSX.Element => {
   const icon = TYPE_TO_ICON[block.type]
 
-  const label = useMemo(() => {
+  const blockComponentName = useMemo(() => {
     // NOTE: Because we use `Type.Ref` for prose,
     // this gets a `$Ref` only and not the concrete values
     return block.type === "prose"
       ? PROSE_COMPONENT_NAME
       : (getComponentSchema(block.type).title ?? "Unknown")
   }, [block.type])
+
+  const previewText: string = renderComponentPreviewText({
+    component: block,
+  })
 
   return (
     <Draggable
@@ -56,7 +63,12 @@ export const DraggableBlock = ({
                   {...provided.dragHandleProps}
                 />
               }
-              label={label}
+              label={
+                previewText === ""
+                  ? `Empty ${blockComponentName.toLowerCase()}`
+                  : previewText
+              }
+              description={blockComponentName}
               icon={icon}
             />
           </VStack>

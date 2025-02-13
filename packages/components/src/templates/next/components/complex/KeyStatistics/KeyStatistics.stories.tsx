@@ -12,6 +12,35 @@ const meta: Meta<KeyStatisticsProps> = {
       themeOverride: "Isomer Next",
     },
   },
+  args: {
+    site: {
+      siteName: "Isomer Next",
+      siteMap: {
+        id: "1",
+        title: "Home",
+        permalink: "/",
+        lastModified: "",
+        layout: "homepage",
+        summary: "",
+        children: [],
+      },
+      theme: "isomer-next",
+      isGovernment: true,
+      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      lastUpdated: "2021-10-01",
+      assetsBaseUrl: "https://cms.isomer.gov.sg",
+      navBarItems: [],
+      footerItems: {
+        privacyStatementLink: "https://www.isomer.gov.sg/privacy",
+        termsOfUseLink: "https://www.isomer.gov.sg/terms",
+        siteNavItems: [],
+      },
+      search: {
+        type: "localSearch",
+        searchUrl: "/search",
+      },
+    },
+  },
 }
 export default meta
 type Story = StoryObj<typeof KeyStatistics>
@@ -66,5 +95,44 @@ export const ThreeStats: Story = {
         value: "4.0",
       },
     ],
+  },
+}
+
+export const WithLink: Story = {
+  args: {
+    title: "Short title",
+    statistics: [
+      {
+        label: "Average all nighters pulled in a typical calendar month",
+        value: "300,000",
+      },
+      { label: "Growth in tasks assigned Q4 2024 (YoY)", value: "+123.2%" },
+      {
+        label:
+          "Number of lies in this stat block along with a lot of content and text that may not be read by users",
+        value: "4.0",
+      },
+    ],
+    url: "https://www.google.com",
+  },
+}
+
+export const WithLinkAndLabel: Story = {
+  args: {
+    title: "Short title",
+    statistics: [
+      {
+        label: "Average all nighters pulled in a typical calendar month",
+        value: "300,000",
+      },
+      { label: "Growth in tasks assigned Q4 2024 (YoY)", value: "+123.2%" },
+      {
+        label:
+          "Number of lies in this stat block along with a lot of content and text that may not be read by users",
+        value: "4.0",
+      },
+    ],
+    url: "https://www.google.com",
+    label: "We have no achievements",
   },
 }

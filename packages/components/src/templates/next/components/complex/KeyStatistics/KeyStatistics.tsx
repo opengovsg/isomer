@@ -1,7 +1,8 @@
 import type { KeyStatisticsProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getTailwindVariantLayout } from "~/utils"
+import { getReferenceLinkHref, getTailwindVariantLayout } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
+import { LinkButton } from "../../internal/LinkButton"
 
 const MAX_ITEMS = 4
 type NoOfItemVariants = 1 | 2 | 3 | 4
@@ -18,6 +19,8 @@ const createKeyStatisticsStyles = tv({
     container: `${ComponentContent} flex flex-col`,
     title:
       "prose-display-md w-full max-w-[47.5rem] break-words text-base-content-strong",
+    urlText: "hidden whitespace-nowrap md:block",
+    urlButtonContainer: "mx-auto mt-2 block",
     statistics: "flex flex-col flex-wrap gap-x-8 gap-y-12 md:flex-row",
     itemContainer: "flex grow flex-col gap-3",
     itemValue: "prose-display-lg text-pretty text-brand-canvas-inverse",
@@ -26,26 +29,24 @@ const createKeyStatisticsStyles = tv({
   variants: {
     noOfItems: {
       1: {
-        itemContainer: "basis-full",
+        itemContainer: "md:basis-full",
       },
       2: {
-        itemContainer: "basis-[calc((100%-2.5rem)/2)]",
+        itemContainer: "md:basis-[calc((100%-2.5rem)/2)]",
       },
       3: {
-        itemContainer:
-          "basis-[calc((100%-5rem)/3)] md:max-w-[calc((100%-2.5rem)/2)]",
+        itemContainer: "md:basis-[calc((100%-5rem)/3)]",
       },
       4: {
-        itemContainer:
-          "basis-[calc((100%-7.5rem)/4)] md:max-w-[calc((100%-5rem)/3)]",
+        itemContainer: "md:basis-[calc((100%-7.5rem)/4)]",
       },
     },
     layout: {
       homepage: {
-        container: "gap-10 py-12 xs:py-24 lg:gap-24",
+        container: "gap-10 py-12 xs:py-24 lg:gap-12",
       },
       default: {
-        container: "mt-14 gap-12",
+        container: "mt-14 gap-12 first:mt-0",
       },
     },
   },
@@ -56,12 +57,24 @@ const createKeyStatisticsStyles = tv({
 
 const compoundStyles = createKeyStatisticsStyles()
 
-const KeyStatistics = ({ title, statistics, layout }: KeyStatisticsProps) => {
+const KeyStatistics = ({
+  id,
+  title,
+  statistics,
+  url,
+  label,
+  layout,
+  site,
+  LinkComponent,
+}: KeyStatisticsProps) => {
   const noOfItems = Math.min(MAX_ITEMS, statistics.length) as NoOfItemVariants
   const simplifiedLayout = getTailwindVariantLayout(layout)
 
   return (
-    <div className={compoundStyles.container({ layout: simplifiedLayout })}>
+    <section
+      id={id}
+      className={compoundStyles.container({ layout: simplifiedLayout })}
+    >
       <h2 className={compoundStyles.title()}>{title}</h2>
 
       <div className={compoundStyles.statistics()}>
@@ -78,7 +91,21 @@ const KeyStatistics = ({ title, statistics, layout }: KeyStatisticsProps) => {
           </div>
         ))}
       </div>
-    </div>
+
+      {!!url && (
+        <div className={compoundStyles.urlButtonContainer()}>
+          <LinkButton
+            href={getReferenceLinkHref(url, site.siteMap, site.assetsBaseUrl)}
+            size="base"
+            variant="outline"
+            LinkComponent={LinkComponent}
+            isWithFocusVisibleHighlight
+          >
+            {!!label ? label : "Our achievements"}
+          </LinkButton>
+        </div>
+      )}
+    </section>
   )
 }
 
