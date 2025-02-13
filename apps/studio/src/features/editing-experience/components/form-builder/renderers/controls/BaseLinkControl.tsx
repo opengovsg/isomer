@@ -6,10 +6,12 @@ import {
   FormControl,
   IconButton,
   Skeleton,
+  Stack,
   Text,
   useDisclosure,
 } from "@chakra-ui/react"
-import { Button, FormLabel } from "@opengovsg/design-system-react"
+import { Button, FormLabel, Infobox } from "@opengovsg/design-system-react"
+import { ErrorBoundary } from "react-error-boundary"
 import { BiTrash } from "react-icons/bi"
 
 import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
@@ -71,50 +73,82 @@ export function BaseLinkControl({
     <>
       <Box as={FormControl} isRequired={required}>
         <FormLabel>{label}</FormLabel>
-        <Flex
-          px="1rem"
-          py="0.75rem"
-          flexDir="row"
-          background="brand.primary.100"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          {!!data ? (
-            <>
-              {pageType !== LINK_TYPES.Page && (
-                <Text overflow="auto">{displayedHref}</Text>
-              )}
-              {pageType === LINK_TYPES.Page && dataString.length > 0 && (
-                <Suspense fallback={<Skeleton w="100%" h="100%" />}>
-                  <SuspendableLabel
-                    resourceId={getResourceIdFromReferenceLink(dataString)}
-                  />
-                </Suspense>
-              )}
+        <ErrorBoundary
+          fallbackRender={({ resetErrorBoundary }) => (
+            <Infobox
+              variant="error"
+              borderRadius="4px"
+              borderColor="utility.feedback.critical"
+              border="1px solid"
+              bg="utility.feedback.critical"
+              w="100%"
+              size="sm"
+            >
+              <Stack direction="column" w="full">
+                <Text textStyle="subhead-2">
+                  The page you linked no longer exists
+                </Text>
+                <Text textStyle="body-2"> Pick a different destination</Text>
+              </Stack>
               <IconButton
                 size="xs"
                 variant="clear"
                 colorScheme="critical"
                 aria-label="Remove file"
                 icon={<BiTrash />}
-                onClick={() => handleChange(path, undefined)}
+                onClick={() => {
+                  handleChange(path, undefined)
+                  resetErrorBoundary()
+                }}
               />
-            </>
-          ) : (
-            <>
-              <Text>{description}</Text>
-              <Button
-                onClick={onOpen}
-                variant="link"
-                aria-labelledby="button-label"
-              >
-                <Text id="button-label" textStyle="subhead-2">
-                  Link something...
-                </Text>
-              </Button>
-            </>
+            </Infobox>
           )}
-        </Flex>
+        >
+          <Flex
+            px="1rem"
+            py="0.75rem"
+            flexDir="row"
+            background="brand.primary.100"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            {!!data ? (
+              <>
+                {pageType !== LINK_TYPES.Page && (
+                  <Text overflow="auto">{displayedHref}</Text>
+                )}
+                {pageType === LINK_TYPES.Page && dataString.length > 0 && (
+                  <Suspense fallback={<Skeleton w="100%" h="100%" />}>
+                    <SuspendableLabel
+                      resourceId={getResourceIdFromReferenceLink(dataString)}
+                    />
+                  </Suspense>
+                )}
+                <IconButton
+                  size="xs"
+                  variant="clear"
+                  colorScheme="critical"
+                  aria-label="Remove file"
+                  icon={<BiTrash />}
+                  onClick={() => handleChange(path, undefined)}
+                />
+              </>
+            ) : (
+              <>
+                <Text>{description}</Text>
+                <Button
+                  onClick={onOpen}
+                  variant="link"
+                  aria-labelledby="button-label"
+                >
+                  <Text id="button-label" textStyle="subhead-2">
+                    Link something...
+                  </Text>
+                </Button>
+              </>
+            )}
+          </Flex>
+        </ErrorBoundary>
       </Box>
       <LinkEditorModal
         linkTypes={linkTypes}
