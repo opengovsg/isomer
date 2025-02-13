@@ -1,14 +1,18 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box, Center, Image } from "@chakra-ui/react"
+import { Box, FormControl, FormErrorMessage, Skeleton } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
+import { Attachment, FormLabel } from "@opengovsg/design-system-react"
+import { z } from "zod"
 
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { env } from "~/env.mjs"
-import { PLACEHOLDER_IMAGE_FILENAME } from "../../../constants"
-import { JsonFormsImageControl } from "./JsonFormsImageControl"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
+import { useImage } from "../../hooks/useImage"
+import { useS3Image } from "../../hooks/useS3Image"
+import { getCustomErrorMessage } from "./utils"
 
-const assetsBaseUrl = `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
 export const jsonFormsMetaImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,
   and(
@@ -17,27 +21,60 @@ export const jsonFormsMetaImageControlTester: RankedTester = rankWith(
   ),
 )
 
+const schema = z.object({
+  siteId: z.coerce.number(),
+})
+
 interface JsonFormsMetaImageControlProps extends ControlProps {
   data: string
 }
 export function JsonFormsMetaImageControl(
   props: JsonFormsMetaImageControlProps,
 ) {
-  const { data } = props
+  const { label, handleChange, path, required, errors, description, data } =
+    props
+  const { image } = useS3Image(data)
+  const { handleImage, isLoading } = useImage({})
+  const { siteId } = useQueryParse(schema)
+  const { mutate: uploadFile } = useUploadAssetMutation({
+    siteId,
+  })
 
   return (
-    <Box tabIndex={1}>
-      <JsonFormsImageControl {...props} />
-      {/* NOTE: not using the `as` prop here on the `Box` because the */}
-      {/* `currentTarget` will be inferred as a `div` which lacks the `src` property */}
-      {data && (
-        <Center mt="1rem">
-          <Image
-            src={`${assetsBaseUrl}${data}`}
-            fallbackSrc={`${assetsBaseUrl}/${PLACEHOLDER_IMAGE_FILENAME}`}
-          />
-        </Center>
-      )}
+    <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
+      <Skeleton isLoaded={!isLoading}>
+        <FormLabel description={description}>{label}</FormLabel>
+        <Attachment
+          accept={["image/*"]}
+          multiple={false}
+          value={image}
+          name="file-upload"
+          onChange={(file) => {
+            if (!file) {
+              handleChange(props.path, undefined)
+              return
+            }
+
+            uploadFile(
+              { file },
+              {
+                onSuccess: ({ path: imagePath }) => {
+                  void handleImage(imagePath).then((src) => {
+                    handleChange(path, src)
+                  })
+                },
+              },
+            )
+          }}
+          imagePreview="large"
+          showFileSize={false}
+        />
+        {!!errors && (
+          <FormErrorMessage>
+            {label} {getCustomErrorMessage(errors)}
+          </FormErrorMessage>
+        )}
+      </Skeleton>
     </Box>
   )
 }
