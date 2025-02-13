@@ -67,6 +67,15 @@ const pageListQuery = (wait?: DelayMode | number) => {
 }
 
 export const pageHandlers = {
+  getCategories: {
+    default: () => {
+      return trpcMsw.page.getCategories.query(() => {
+        return {
+          categories: ["Category 1", "Category 2", "Category 3"],
+        }
+      })
+    },
+  },
   updateSettings: {
     collection: () => {
       trpcMsw.page.updateSettings.mutation(() => {
@@ -76,6 +85,43 @@ export const pageHandlers = {
           permalink: "/collection/page",
           draftBlobId: "1",
           type: ResourceType.CollectionPage,
+        }
+      })
+    },
+  },
+  updatePageBlob: {
+    default: () => {
+      return trpcMsw.page.updatePageBlob.mutation(() => {
+        return {
+          siteId: 1,
+          pageId: 1,
+          content: {
+            page: {
+              date: "04/01/2024",
+              title: "Mock story book page",
+              category: "I love stories",
+              permalink: "/debug",
+              lastModified: "2025-02-05T03:22:09.593Z",
+              articlePageHeader: {
+                summary: "",
+              },
+            },
+            layout: "article",
+            content: [
+              {
+                type: "prose",
+                content: [
+                  {
+                    type: "paragraph",
+                    attrs: {
+                      dir: null,
+                    },
+                  },
+                ],
+              },
+            ],
+            version: "0.1.0",
+          },
         }
       })
     },

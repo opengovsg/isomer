@@ -200,7 +200,7 @@ export const LinkEditorDrawer = () => {
     title,
   }
   const handleChange = (data: IsomerLinkSchema) =>
-    setLinkAtom((oldData) => ({ ...oldData, ...data }))
+    setLinkAtom(data as CollectionLinkProps)
 
   return (
     <ErrorProvider>

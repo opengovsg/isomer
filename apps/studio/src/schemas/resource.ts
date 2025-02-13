@@ -134,3 +134,12 @@ export const searchWithResourceIdsSchema = z.object({
 export const searchWithResourceIdsOutputSchema = z.array(
   z.custom<SearchResultResource>(),
 )
+
+export const getIndexPageSchema = z.object({
+  siteId: z.number(),
+  parentId: z.string(),
+})
+
+export const getIndexPageOutputSchema = z.object({
+  id: z.string(),
+})

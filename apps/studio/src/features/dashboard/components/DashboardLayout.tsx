@@ -11,6 +11,51 @@ import {
 } from "@chakra-ui/react"
 import { Breadcrumb } from "@opengovsg/design-system-react"
 
+import type { RouterOutput } from "~/utils/trpc"
+import { getFolderHref } from "~/utils/resource"
+
+/**
+ * NOTE: This returns the path from root down to the parent of the element.
+ * The element at index 0 is always the root
+ * and the last element is always the parent of the current folder
+ */
+export const getBreadcrumbsFromRoot = (
+  resource: RouterOutput["resource"]["getParentOf"],
+  siteId: string,
+): { href: string; label: string }[] => {
+  // NOTE: We only consider the 3 cases below:
+  // Root -> Folder
+  // Root -> Parent -> Folder
+  // Root -> ... -> Parent -> Folder
+  const rootHref = `/sites/${siteId}`
+
+  if (resource.parent?.parentId) {
+    return [
+      { href: rootHref, label: "Home" },
+      {
+        href: getFolderHref(siteId, resource.parent.parentId),
+        label: "...",
+      },
+      {
+        href: getFolderHref(siteId, resource.parent.id),
+        label: resource.parent.title,
+      },
+    ]
+  }
+
+  if (resource.parent?.id) {
+    return [
+      { href: rootHref, label: "Home" },
+      {
+        href: getFolderHref(siteId, resource.parent.id),
+        label: resource.parent.title,
+      },
+    ]
+  }
+
+  return [{ href: rootHref, label: "Home" }]
+}
+
 export const DashboardLayout = ({
   breadcrumbs,
   icon,

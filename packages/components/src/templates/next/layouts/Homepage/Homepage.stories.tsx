@@ -28,7 +28,12 @@ const meta: Meta<typeof Homepage> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    chromatic: withChromaticModes([
+      "mobileSmall",
+      "mobile",
+      "tablet",
+      "desktop",
+    ]),
     themes: {
       themeOverride: "Isomer Next",
     },

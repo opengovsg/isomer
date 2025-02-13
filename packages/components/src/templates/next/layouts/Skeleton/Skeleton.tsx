@@ -111,7 +111,7 @@ export const Skeleton = ({
       )}
 
       {/* Ensures that the webchat widget only loads after the page has loaded */}
-      {site.vica && <VicaWidget {...site.vica} />}
+      {site.vica && <VicaWidget site={site} {...site.vica} />}
     </>
   )
 }

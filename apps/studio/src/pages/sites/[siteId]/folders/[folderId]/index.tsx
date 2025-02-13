@@ -2,75 +2,34 @@ import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { useSetAtom } from "jotai"
-import { BiFileBlank, BiFolder } from "react-icons/bi"
+import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 
-import type { RouterOutput } from "~/utils/trpc"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
-import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
+import { AdminCreateIndexPageButton } from "~/features/dashboard/components/AdminCreateIndexPageButton"
+import {
+  DashboardLayout,
+  getBreadcrumbsFromRoot,
+} from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
+import { CreateCollectionModal } from "~/features/editing-experience/components/CreateCollectionModal"
 import { CreateFolderModal } from "~/features/editing-experience/components/CreateFolderModal"
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSearchableLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
+import { getFolderHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 
 const folderPageSchema = z.object({
   siteId: z.string(),
   folderId: z.string(),
 })
-
-const getFolderHref = (siteId: string, folderId: string) => {
-  return `/sites/${siteId}/folders/${folderId}`
-}
-
-/**
- * NOTE: This returns the path from root down to the parent of the element.
- * The element at index 0 is always the root
- * and the last element is always the parent of the current folder
- */
-const getBreadcrumbsFrom = (
-  resource: RouterOutput["resource"]["getParentOf"],
-  siteId: string,
-): { href: string; label: string }[] => {
-  // NOTE: We only consider the 3 cases below:
-  // Root -> Folder
-  // Root -> Parent -> Folder
-  // Root -> ... -> Parent -> Folder
-  const rootHref = `/sites/${siteId}`
-
-  if (resource.parent?.parentId) {
-    return [
-      { href: rootHref, label: "Home" },
-      {
-        href: getFolderHref(siteId, resource.parent.parentId),
-        label: "...",
-      },
-      {
-        href: getFolderHref(siteId, resource.parent.id),
-        label: resource.parent.title,
-      },
-    ]
-  }
-
-  if (resource.parent?.id) {
-    return [
-      { href: rootHref, label: "Home" },
-      {
-        href: getFolderHref(siteId, resource.parent.id),
-        label: resource.parent.title,
-      },
-    ]
-  }
-
-  return [{ href: rootHref, label: "Home" }]
-}
 
 const FolderPage: NextPageWithLayout = () => {
   const {
@@ -82,6 +41,11 @@ const FolderPage: NextPageWithLayout = () => {
     isOpen: isFolderCreateModalOpen,
     onOpen: onFolderCreateModalOpen,
     onClose: onFolderCreateModalClose,
+  } = useDisclosure()
+  const {
+    isOpen: isCollectionCreateModalOpen,
+    onOpen: onCollectionCreateModalOpen,
+    onClose: onCollectionCreateModalClose,
   } = useDisclosure()
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
 
@@ -96,12 +60,10 @@ const FolderPage: NextPageWithLayout = () => {
     resourceId: parseInt(folderId),
   })
 
-  const breadcrumbs = getBreadcrumbsFrom(resource, siteId)
-
   return (
     <>
       <DashboardLayout
-        breadcrumbs={breadcrumbs.concat({
+        breadcrumbs={getBreadcrumbsFromRoot(resource, siteId).concat({
           href: getFolderHref(siteId, folderId),
           label: title,
         })}
@@ -109,6 +71,10 @@ const FolderPage: NextPageWithLayout = () => {
         title={title}
         buttons={
           <>
+            <AdminCreateIndexPageButton
+              siteId={parseInt(siteId)}
+              parentId={parseInt(folderId)}
+            />
             <Button
               variant="outline"
               size="md"
@@ -145,6 +111,12 @@ const FolderPage: NextPageWithLayout = () => {
                       >
                         Page
                       </Menu.Item>
+                      <Menu.Item
+                        onClick={onCollectionCreateModalOpen}
+                        icon={<BiData fontSize="1rem" />}
+                      >
+                        Collection
+                      </Menu.Item>
                     </Menu.List>
                   </Portal>
                 </>
@@ -167,6 +139,12 @@ const FolderPage: NextPageWithLayout = () => {
       <CreateFolderModal
         isOpen={isFolderCreateModalOpen}
         onClose={onFolderCreateModalClose}
+        siteId={parseInt(siteId)}
+        parentFolderId={parseInt(folderId)}
+      />
+      <CreateCollectionModal
+        isOpen={isCollectionCreateModalOpen}
+        onClose={onCollectionCreateModalClose}
         siteId={parseInt(siteId)}
         parentFolderId={parseInt(folderId)}
       />

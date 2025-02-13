@@ -3,8 +3,6 @@ import {
   chakra,
   Flex,
   FormControl,
-  FormHelperText,
-  FormLabel,
   Input,
   ListItem,
   ModalBody,
@@ -17,6 +15,8 @@ import {
 import {
   Button,
   FormErrorMessage,
+  FormHelperText,
+  FormLabel,
   Infobox,
 } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"

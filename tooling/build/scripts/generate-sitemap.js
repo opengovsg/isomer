@@ -244,10 +244,27 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
 
   children.push(...danglingDirEntries)
 
-  // Ensure that the result is ordered in alphabetical order
-  children.sort((a, b) =>
-    a.title.localeCompare(b.title, undefined, { numeric: true }),
-  )
+  children.sort((a, b) => {
+    const aPermalink = a.permalink.split("/").pop()
+    const bPermalink = b.permalink.split("/").pop()
+
+    if (!pageOrderData) {
+      return a.title.localeCompare(b.title, undefined, { numeric: true })
+    }
+
+    if (pageOrderData.order.indexOf(aPermalink) === -1) {
+      return 1
+    }
+
+    if (pageOrderData.order.indexOf(bPermalink) === -1) {
+      return -1
+    }
+
+    return (
+      pageOrderData.order.indexOf(aPermalink) -
+      pageOrderData.order.indexOf(bPermalink)
+    )
+  })
 
   return children
 }

@@ -56,7 +56,7 @@ export const ResourceTableMenu = ({
       <Portal>
         <MenuList>
           {/* TODO: Open edit modal depending on resource  */}
-          {type === ResourceType.Page ? (
+          {type === ResourceType.Page && (
             <>
               <MenuItem
                 onClick={() =>
@@ -77,7 +77,8 @@ export const ResourceTableMenu = ({
                 </MenuItem>
               </Can>
             </>
-          ) : (
+          )}
+          {type === ResourceType.Folder && (
             <MenuItem
               onClick={() =>
                 setFolderSettingsModalState({

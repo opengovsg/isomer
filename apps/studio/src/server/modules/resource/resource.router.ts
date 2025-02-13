@@ -14,6 +14,8 @@ import {
   getChildrenOutputSchema,
   getChildrenSchema,
   getFullPermalinkSchema,
+  getIndexPageOutputSchema,
+  getIndexPageSchema,
   getMetadataSchema,
   getNestedFolderChildrenOutputSchema,
   getNestedFolderChildrenSchema,
@@ -623,5 +625,24 @@ export const resourceRouter = router({
         // Sort resources to match order of input resourceIds
         (a, b) => resourceIds.indexOf(a.id) - resourceIds.indexOf(b.id),
       )
+    }),
+
+  getIndexPage: protectedProcedure
+    .input(getIndexPageSchema)
+    .output(getIndexPageOutputSchema)
+    .query(async ({ input: { siteId, parentId } }) => {
+      const parent = await db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.parentId", "=", parentId)
+        .where("Resource.type", "=", ResourceType.IndexPage)
+        .select(["Resource.id"])
+        .executeTakeFirst()
+
+      if (!parent) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
+      return parent
     }),
 })

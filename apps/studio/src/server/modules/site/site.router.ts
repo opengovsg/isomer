@@ -1,13 +1,21 @@
+import type {
+  IsomerSiteConfigProps,
+  IsomerSiteThemeProps,
+  IsomerSiteWideComponentsProps,
+} from "@opengovsg/isomer-components"
+
 import {
   getConfigSchema,
   getLocalisedSitemapSchema,
   getNameSchema,
   getNotificationSchema,
   setNotificationSchema,
+  setSiteConfigByAdminSchema,
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
+import { safeJsonParse } from "~/utils/safeJsonParse"
 import { publishSite } from "../aws/codebuild.service"
-import { db } from "../database"
+import { db, jsonb } from "../database"
 import {
   getFooter,
   getLocalisedSitemap,
@@ -137,5 +145,52 @@ export const siteRouter = router({
       await publishSite(ctx.logger, siteId)
 
       return input
+    }),
+  setSiteConfigByAdmin: protectedProcedure
+    .input(setSiteConfigByAdminSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { siteId, config, theme, navbar, footer } = input
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+
+      await db.transaction().execute(async (tx) => {
+        await tx
+          .updateTable("Site")
+          .set({
+            config: jsonb(safeJsonParse(config) as IsomerSiteConfigProps),
+            theme: jsonb(safeJsonParse(theme) as IsomerSiteThemeProps),
+          })
+          .where("id", "=", siteId)
+          .execute()
+
+        await tx
+          .updateTable("Navbar")
+          .set({
+            content: jsonb(
+              safeJsonParse(
+                navbar,
+              ) as IsomerSiteWideComponentsProps["navBarItems"],
+            ),
+          })
+          .where("siteId", "=", siteId)
+          .execute()
+
+        await tx
+          .updateTable("Footer")
+          .set({
+            content: jsonb(
+              safeJsonParse(
+                footer,
+              ) as IsomerSiteWideComponentsProps["footerItems"],
+            ),
+          })
+          .where("siteId", "=", siteId)
+          .execute()
+      })
+
+      await publishSite(ctx.logger, siteId)
     }),
 })

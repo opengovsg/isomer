@@ -21,7 +21,7 @@ const createDynamicDataBannerStyles = tv({
     divider: "h-4 w-[1px] bg-[#9CA3AF]",
     url: "prose-label-sm-medium text-link visited:text-link-visited hover:text-link-hover",
     dataInfoContainer:
-      "md:col-gap-10 grid grid-cols-[repeat(3,minmax(10rem,1fr))] gap-y-4 md:justify-items-end md:gap-y-2 lg:flex lg:gap-8",
+      "md:col-gap-10 grid grid-cols-[repeat(3,1fr)] gap-y-4 md:grid-cols-[repeat(3,minmax(9rem,1fr))] md:justify-items-end md:gap-y-2 lg:flex lg:gap-8",
     errorMessageContainer: `${ComponentContent} flex flex-row gap-2 px-6 py-3 md:items-center md:gap-1`,
     errorIcon: "h-full min-h-4 min-w-4",
     individualDataContainer: "flex w-fit flex-col gap-0.5 md:flex-row md:gap-1",

@@ -7,18 +7,28 @@ import { MAX_FOLDER_PERMALINK_LENGTH, MAX_FOLDER_TITLE_LENGTH } from "./folder"
 // NOTE: zod's internal date schema uses `YYYY-MM-DD` but our format is
 // dd/mm/yyyy. Hence, we will run a 2 way conversion from
 // our format -> zod then zod -> our format
+// If the date is nullish, then we will return as undefined
 const slashDateSchema = z
   .string()
+  .nullish()
   .transform((d) => {
+    if (!d) {
+      return undefined
+    }
+
     return parse(d, "dd/mm/yyyy", new Date())
   })
-  .pipe(z.date())
+  .pipe(z.date().nullish())
   .transform((d) => {
+    if (!d) {
+      return undefined
+    }
+
     return format(d, "dd/mm/yyyy")
   })
 
 export const editLinkSchema = z.object({
-  date: slashDateSchema,
+  date: slashDateSchema.optional(),
   category: z.string(),
   linkId: z.number().min(1),
   siteId: z.number().min(1),
@@ -46,4 +56,6 @@ export const createCollectionSchema = z.object({
     }),
   permalink: permalinkSchema,
   siteId: z.number().min(1),
+  // Nullable for top level folder
+  parentFolderId: z.number().optional(),
 })
