@@ -51,11 +51,15 @@ export const collectionRouter = router({
   create: protectedProcedure
     .input(createCollectionSchema)
     .mutation(
-      async ({ ctx, input: { collectionTitle, permalink, siteId } }) => {
+      async ({
+        ctx,
+        input: { collectionTitle, permalink, siteId, parentFolderId },
+      }) => {
         await validateUserPermissionsForResource({
           siteId,
           action: "create",
           userId: ctx.user.id,
+          resourceId: !!parentFolderId ? String(parentFolderId) : null,
         })
 
         const result = await db
@@ -65,6 +69,7 @@ export const collectionRouter = router({
             siteId,
             type: ResourceType.Collection,
             title: collectionTitle,
+            parentId: parentFolderId ? String(parentFolderId) : null,
             state: ResourceState.Published,
           })
           .returning(defaultCollectionSelect)

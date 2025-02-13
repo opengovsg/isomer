@@ -40,6 +40,10 @@ export default [
               message:
                 "Please use export from ~/lib/twMerge instead of the node module",
             },
+            {
+              name: "next/navigation",
+              message: "Please use export from next instead of next/navigation",
+            },
           ],
         },
       ],
