@@ -5,9 +5,11 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import {
+  clearPermissions,
   setupAdminPermissions,
   setupFolder,
   setupPageResource,
+  setupPermissions,
   setupSite,
 } from "tests/integration/helpers/seed"
 
@@ -29,6 +31,10 @@ describe("folder.router", async () => {
   })
 
   describe("create", () => {
+    afterEach(async () => {
+      clearPermissions()
+    })
+
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.create({
@@ -224,8 +230,34 @@ describe("folder.router", async () => {
       expect(result).toEqual({ folderId: actualFolder.id })
     })
 
-    // TODO: Add tests when permissions are implemented
-    it("should throw 403 if user does not have write access to the site", async () => {
+    it("should throw 403 if user does not have access to the site", async () => {
+      // Arrange
+      const permalinkToUse = "test-folder-777"
+      const { site } = await setupSite()
+      await setupPermissions({
+        userId: session.userId,
+        siteId: site.id,
+        role: "Editor",
+      })
+
+      // Act
+      const result = caller.create({
+        folderTitle: "test folder",
+        siteId: site.id,
+        permalink: permalinkToUse,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw 403 if user does not have admin access to the site and tries to create a root level folder", async () => {
       // Arrange
       const permalinkToUse = "test-folder-777"
       const { folder: parentFolder, site } = await setupFolder()
@@ -249,6 +281,90 @@ describe("folder.router", async () => {
     })
 
     it.skip("should throw 403 if user does not have write access to the parent folder", async () => {})
+  })
+
+  describe("getMetadata", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Act
+      const result = unauthedCaller.getMetadata({
+        siteId: 1,
+        resourceId: -1,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 404 if `siteId` does not exist", async () => {
+      // Arrange
+      const invalidSiteId = 999
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      expect(site.id).not.toEqual(invalidSiteId)
+
+      // Act
+      const result = caller.getMetadata({
+        siteId: invalidSiteId,
+        resourceId: 1,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw 404 if `folderId` does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getMetadata({
+        siteId: site.id,
+        resourceId: 999,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This folder does not exist",
+        }),
+      )
+    })
+
+    it("should throw 403 if user does not have write access to the site", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+
+      // Act
+      const result = caller.getMetadata({
+        siteId: site.id,
+        resourceId: Number(folder.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
   })
 })
 

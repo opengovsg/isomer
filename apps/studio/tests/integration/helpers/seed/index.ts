@@ -30,6 +30,35 @@ export const setupAdminPermissions = async ({
     .execute()
 }
 
+export const clearPermissions = async () => {
+  await db.deleteFrom("ResourcePermission").execute()
+}
+
+export const setupPermissions = async ({
+  userId,
+  siteId,
+  role = RoleType.Editor,
+  isDeleted = false,
+}: {
+  userId?: string
+  siteId: number
+  isDeleted?: boolean
+  role: (typeof RoleType)[keyof typeof RoleType]
+}) => {
+  if (!userId) throw new Error("userId is a required field")
+
+  await db
+    .insertInto("ResourcePermission")
+    .values({
+      userId: String(userId),
+      siteId,
+      role,
+      resourceId: null,
+      deletedAt: isDeleted ? MOCK_STORY_DATE : null,
+    })
+    .execute()
+}
+
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
   if (siteId !== undefined && fetch) {
     return db.transaction().execute(async (tx) => {

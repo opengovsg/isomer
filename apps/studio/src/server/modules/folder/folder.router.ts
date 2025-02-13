@@ -105,11 +105,20 @@ export const folderRouter = router({
       // 1. Last Edited user and time
       // 2. Page status(draft, published)
 
-      return await ctx.db
+      const data = await ctx.db
         .selectFrom("Resource")
         .select(["Resource.title", "Resource.permalink", "Resource.parentId"])
         .where("id", "=", String(input.resourceId))
-        .executeTakeFirstOrThrow()
+        .executeTakeFirst()
+
+      if (!data) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "This folder does not exist",
+        })
+      }
+
+      return data
     }),
   editFolder: protectedProcedure
     .input(editFolderSchema)
