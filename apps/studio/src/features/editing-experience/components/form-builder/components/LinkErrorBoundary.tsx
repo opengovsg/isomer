@@ -16,7 +16,7 @@ export const LinkErrorBoundary = ({
       fallbackRender={({ resetErrorBoundary }) => (
         <Infobox
           variant="error"
-          borderRadius="4px"
+          borderRadius="0.25rem"
           borderColor="utility.feedback.critical"
           border="1px solid"
           bg="utility.feedback.critical"
