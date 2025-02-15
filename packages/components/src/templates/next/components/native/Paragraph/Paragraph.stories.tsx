@@ -24,7 +24,7 @@ const meta: Meta<typeof Paragraph> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "/.storybook/assets/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",

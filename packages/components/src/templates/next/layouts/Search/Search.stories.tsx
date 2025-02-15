@@ -60,7 +60,7 @@ export const SearchSG: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "/.storybook/assets/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",

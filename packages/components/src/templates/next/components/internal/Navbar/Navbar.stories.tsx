@@ -27,7 +27,7 @@ const meta: Meta<NavbarProps> = {
   title: "Next/Internal Components/Navbar",
   component: Renderer,
   args: {
-    logoUrl: "/.storybook/assets/isomer-logo.svg",
+    logoUrl: "/isomer-logo.svg",
     logoAlt: "Isomer logo",
     search: {
       type: "localSearch",
@@ -170,7 +170,7 @@ const meta: Meta<NavbarProps> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "/.storybook/assets/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       assetsBaseUrl: "https://cms.isomer.gov.sg",
       navBarItems: [],

@@ -5,7 +5,7 @@ export const Navbar = {
       id: "Navbar",
       props: {
         logo: {
-          url: "/.storybook/assets/isomer-logo.svg",
+          url: "/isomer-logo.svg",
           alt: "Isomer logo",
         },
         search: { isEnabled: true, searchUrl: "/search" },

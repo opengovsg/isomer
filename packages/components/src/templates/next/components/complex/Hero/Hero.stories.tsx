@@ -25,7 +25,7 @@ const meta: Meta<typeof Hero> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "/.storybook/assets/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       assetsBaseUrl: "https://cms.isomer.gov.sg",
       navBarItems: [],
