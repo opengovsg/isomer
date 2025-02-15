@@ -20,6 +20,7 @@ const SuspendablePublishButton = ({
   pageId,
   siteId,
   isDisabled,
+  onClick,
   ...rest
 }: PublishButtonProps): JSX.Element => {
   const toast = useToast()
@@ -73,7 +74,10 @@ const SuspendablePublishButton = ({
               isDisabled={!isChangesPendingPublish || isDisabled}
               variant="solid"
               size="sm"
-              onClick={handlePublish}
+              onClick={(e) => {
+                handlePublish()
+                onClick?.(e)
+              }}
               isLoading={isLoading}
               {...rest}
             >
