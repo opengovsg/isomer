@@ -120,7 +120,7 @@ const generateArgs = ({
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/.storybook/assets/isomer-logo.svg",
       navBarItems: [
         {
           name: "About us",
