@@ -3,8 +3,6 @@ import { Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { ErrorBoundary } from "react-error-boundary"
-import { IconBase } from "react-icons"
-import { BiData, BiFolder } from "react-icons/bi"
 
 import type { RouterOutput } from "~/utils/trpc"
 import { ICON_MAPPINGS } from "~/features/dashboard/components/DirectorySidebar/constants"
