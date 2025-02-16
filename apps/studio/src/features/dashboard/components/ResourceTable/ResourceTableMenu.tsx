@@ -10,7 +10,7 @@ import {
   BiTrash,
 } from "react-icons/bi"
 
-import type { ResourceTableData } from "./types"
+import type { BaseResourceTableData } from "../shared"
 import { MenuItem } from "~/components/Menu"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
 import { Can } from "~/features/permissions"
@@ -21,12 +21,12 @@ import {
 } from "../../atoms"
 
 interface ResourceTableMenuProps {
-  title: ResourceTableData["title"]
-  resourceId: ResourceTableData["id"]
-  type: ResourceTableData["type"]
-  permalink: ResourceTableData["permalink"]
-  resourceType: ResourceTableData["type"]
-  parentId: ResourceTableData["parentId"]
+  title: BaseResourceTableData["title"]
+  resourceId: BaseResourceTableData["id"]
+  type: BaseResourceTableData["type"]
+  permalink: BaseResourceTableData["permalink"]
+  resourceType: BaseResourceTableData["type"]
+  parentId: BaseResourceTableData["parentId"]
 }
 
 export const ResourceTableMenu = ({

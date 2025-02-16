@@ -86,7 +86,7 @@ const useCreateCollectionPageWizardContext = ({
   const { mutate, isLoading } =
     trpc.collection.createCollectionPage.useMutation({
       onSuccess: async () => {
-        await utils.collection.list.invalidate()
+        await utils.resource.listWithoutRoot.invalidate()
         onClose()
       },
       // TOOD: Error handling

@@ -295,11 +295,13 @@ export const setupFolder = async ({
   permalink = "test-folder",
   parentId = null,
   title = "test folder",
+  state = ResourceState.Draft,
 }: {
   siteId?: number
   permalink?: string
   parentId?: string | null
   title?: string
+  state?: ResourceState
 } = {}) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
 
@@ -311,7 +313,7 @@ export const setupFolder = async ({
       parentId,
       title,
       draftBlobId: null,
-      state: ResourceState.Draft,
+      state,
       type: ResourceType.Folder,
       publishedVersionId: null,
     })
@@ -331,11 +333,13 @@ export const setupCollection = async ({
   permalink = "test-collection",
   parentId = null,
   title = "test collection",
+  state = ResourceState.Draft,
 }: {
   siteId?: number
   permalink?: string
   parentId?: string | null
   title?: string
+  state?: ResourceState
 }) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
 
@@ -347,7 +351,7 @@ export const setupCollection = async ({
       parentId,
       title,
       draftBlobId: null,
-      state: ResourceState.Draft,
+      state,
       type: ResourceType.Collection,
       publishedVersionId: null,
     })
@@ -470,4 +474,67 @@ export const setupUser = async ({
     })
     .returningAll()
     .executeTakeFirstOrThrow()
+}
+
+export const setupVersion = async ({
+  versionNum = 1,
+  resourceId,
+  blobId,
+  publishedBy,
+  publishedAt = new Date(),
+}: {
+  versionNum?: number
+  resourceId: string
+  blobId: string
+  publishedBy: string
+  publishedAt?: Date
+}) => {
+  return db
+    .insertInto("Version")
+    .values({
+      versionNum,
+      resourceId,
+      blobId,
+      publishedBy,
+      publishedAt,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+export const setupPageWithVersion = async ({
+  siteId,
+  resourceType = ResourceType.Page,
+  state = ResourceState.Draft,
+  userId,
+  publishedAt = new Date(),
+}: {
+  siteId: number
+  resourceType?: ResourceType
+  state?: ResourceState
+  userId: string
+  publishedAt?: Date
+}) => {
+  const { page } = await setupPageResource({
+    siteId,
+    resourceType,
+    state,
+  })
+
+  const blob = await setupBlob()
+
+  const version = await setupVersion({
+    resourceId: page.id,
+    blobId: blob.id,
+    publishedBy: userId,
+    publishedAt,
+  })
+
+  await db
+    .updateTable("Resource")
+    .set({ publishedVersionId: version.id })
+    .where("id", "=", page.id)
+    .execute()
+
+  return { page, blob, version }
 }
