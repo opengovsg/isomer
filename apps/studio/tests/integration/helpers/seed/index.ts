@@ -5,13 +5,16 @@ import {
 } from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
+import { MOCK_STORY_DATE } from "tests/msw/constants"
 
 export const setupAdminPermissions = async ({
   userId,
   siteId,
+  isDeleted = false,
 }: {
   userId?: string
   siteId: number
+  isDeleted?: boolean
 }) => {
   if (!userId) throw new Error("userId is a required field")
 
@@ -22,6 +25,7 @@ export const setupAdminPermissions = async ({
       siteId,
       role: RoleType.Admin,
       resourceId: null,
+      deletedAt: isDeleted ? MOCK_STORY_DATE : null,
     })
     .execute()
 }
@@ -49,16 +53,18 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
       return { site, navbar, footer }
     })
   }
+
+  const name = `Ministry of Testing and Development ${nanoid()}`
   return await db.transaction().execute(async (tx) => {
     const site = await tx
       .insertInto("Site")
       .values({
-        name: `Ministry of Testing and Development ${nanoid()}`,
+        name,
         // @ts-expect-error not using the specific config for tests, no need to populate
         config: {
           theme: "isomer-next",
           logoUrl: "",
-          siteName: "TST",
+          siteName: name,
           isGovernment: true,
         },
         id: siteId,
@@ -436,6 +442,32 @@ export const setUpWhitelist = async ({
         .column("email")
         .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
     )
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+export const setupUser = async ({
+  name = "Test User",
+  userId = nanoid(),
+  email,
+  phone = "",
+  isDeleted,
+}: {
+  name?: string
+  userId?: string
+  email: string
+  phone?: string
+  isDeleted: boolean
+}) => {
+  return db
+    .insertInto("User")
+    .values({
+      id: userId,
+      name,
+      email,
+      phone: phone,
+      deletedAt: isDeleted ? MOCK_STORY_DATE : null,
+    })
     .returningAll()
     .executeTakeFirstOrThrow()
 }

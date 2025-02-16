@@ -18,7 +18,7 @@ import { type NextPageWithLayout } from "~/lib/types"
 const SignIn: NextPageWithLayout = () => {
   return (
     <PublicPageWrapper strict>
-      <Flex flexDir="column" h="inherit" minH="$100vh">
+      <Flex w="100%" flexDir="column" h="inherit" minH="$100vh">
         <RestrictedGovtMasthead />
         <BaseGridLayout flex={1}>
           <NonMobileSidebarGridArea>

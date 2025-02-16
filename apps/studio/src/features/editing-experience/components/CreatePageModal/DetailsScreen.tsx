@@ -3,8 +3,6 @@ import {
   chakra,
   Flex,
   FormControl,
-  FormHelperText,
-  FormLabel,
   Input,
   ModalBody,
   ModalHeader,
@@ -15,6 +13,8 @@ import {
 import {
   Button,
   FormErrorMessage,
+  FormHelperText,
+  FormLabel,
   Infobox,
 } from "@opengovsg/design-system-react"
 import { Controller } from "react-hook-form"
@@ -153,7 +153,6 @@ export const CreatePageDetailsScreen = () => {
                     name="permalink"
                     render={({ field: { onChange, ...field } }) => (
                       <Input
-                        minW="23rem"
                         maxLength={MAX_PAGE_URL_LENGTH}
                         borderLeftRadius={0}
                         placeholder="URL will be autopopulated if left untouched"

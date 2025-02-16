@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from "react"
 import { useRouter } from "next/router"
 import { Flex } from "@chakra-ui/react"
-import { BiCog, BiFolder, BiLogOut } from "react-icons/bi"
+import { BiCog, BiFolder, BiLogOut, BiStar } from "react-icons/bi"
 import { z } from "zod"
 
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
@@ -11,6 +11,7 @@ import { LayoutHead } from "~/components/LayoutHead"
 import { SearchableHeader } from "~/components/SearchableHeader"
 import { DirectorySidebar } from "~/features/dashboard/components/DirectorySidebar"
 import { useMe } from "~/features/me/api"
+import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type GetLayout } from "~/lib/types"
 
@@ -41,6 +42,7 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
   const { siteId } = useQueryParse(siteSchema)
 
   const { logout } = useMe()
+  const isUserIsomerAdmin = useIsUserIsomerAdmin()
 
   const pageNavItems: CmsSidebarItem[] = [
     {
@@ -54,6 +56,15 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
 
     // TODO(ISOM-1552): Add back manage users functionality when implemented
     { icon: BiCog, label: "Settings", href: `/sites/${siteId}/settings` },
+    ...(isUserIsomerAdmin
+      ? [
+          {
+            icon: BiStar,
+            label: "Isomer Admin Settings",
+            href: `/sites/${siteId}/admin`,
+          },
+        ]
+      : []),
   ]
 
   const userNavItems: CmsSidebarItem[] = [

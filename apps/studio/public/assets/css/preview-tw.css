@@ -1934,8 +1934,8 @@ video {
   grid-template-columns: 1fr min-content;
 }
 
-.grid-cols-\[repeat\(3\2c minmax\(10rem\2c 1fr\)\)\] {
-  grid-template-columns: repeat(3, minmax(10rem, 1fr));
+.grid-cols-\[repeat\(3\2c 1fr\)\] {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .grid-rows-\[1fr_min-content\] {
@@ -2178,6 +2178,10 @@ video {
 
 .whitespace-nowrap {
   white-space: nowrap;
+}
+
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
 }
 
 .text-pretty {
@@ -4919,6 +4923,10 @@ video {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .md\:grid-cols-\[repeat\(3\2c minmax\(9rem\2c 1fr\)\)\] {
+    grid-template-columns: repeat(3, minmax(9rem, 1fr));
+  }
+
   .md\:flex-row {
     flex-direction: row;
   }
@@ -4947,12 +4955,13 @@ video {
     gap: 0.75rem;
   }
 
-  .md\:gap-5 {
-    gap: 1.25rem;
-  }
-
   .md\:gap-7 {
     gap: 1.75rem;
+  }
+
+  .md\:gap-x-10 {
+    -moz-column-gap: 2.5rem;
+    column-gap: 2.5rem;
   }
 
   .md\:gap-x-16 {
@@ -4966,6 +4975,10 @@ video {
 
   .md\:gap-y-2 {
     row-gap: 0.5rem;
+  }
+
+  .md\:gap-y-5 {
+    row-gap: 1.25rem;
   }
 
   .md\:p-16 {

@@ -1,1 +1,2 @@
-export * from "./Vica"
+export * from "./VicaWidget"
+export * from "./VicaStylesheet"

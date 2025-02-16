@@ -17,6 +17,7 @@ import { validateUserPermissionsForResource } from "../permissions/permissions.s
 import {
   defaultResourceSelect,
   getSiteResourceById,
+  updateBlobById,
 } from "../resource/resource.service"
 import { defaultCollectionSelect } from "./collection.select"
 import {
@@ -50,11 +51,15 @@ export const collectionRouter = router({
   create: protectedProcedure
     .input(createCollectionSchema)
     .mutation(
-      async ({ ctx, input: { collectionTitle, permalink, siteId } }) => {
+      async ({
+        ctx,
+        input: { collectionTitle, permalink, siteId, parentFolderId },
+      }) => {
         await validateUserPermissionsForResource({
           siteId,
           action: "create",
           userId: ctx.user.id,
+          resourceId: !!parentFolderId ? String(parentFolderId) : null,
         })
 
         const result = await db
@@ -64,6 +69,7 @@ export const collectionRouter = router({
             siteId,
             type: ResourceType.Collection,
             title: collectionTitle,
+            parentId: parentFolderId ? String(parentFolderId) : null,
             state: ResourceState.Published,
           })
           .returning(defaultCollectionSelect)
@@ -205,6 +211,7 @@ export const collectionRouter = router({
           return eb.or([
             eb("Resource.type", "=", ResourceType.CollectionPage),
             eb("Resource.type", "=", ResourceType.CollectionLink),
+            eb("Resource.type", "=", ResourceType.IndexPage),
           ])
         })
         .orderBy("Resource.type", "asc")
@@ -241,11 +248,32 @@ export const collectionRouter = router({
     .mutation(
       async ({
         input: { date, category, linkId, siteId, description, ref },
+        ctx,
       }) => {
         // Things that aren't working yet:
-        // 0. Perm checking
         // 1. Last Edited user and time
         // 2. Page status(draft, published)
+        await validateUserPermissionsForResource({
+          userId: ctx.user.id,
+          siteId,
+          action: "update",
+        })
+
+        const content = createCollectionLinkJson({
+          type: ResourceType.CollectionLink,
+        })
+
+        await db.transaction().execute(async (tx) => {
+          return updateBlobById(tx, {
+            content: {
+              ...content,
+              page: { description, ref, date, category },
+            },
+            pageId: linkId,
+            siteId,
+          })
+        })
+
         return await db.transaction().execute(async (tx) => {
           const { draftBlobId } = await tx
             .selectFrom("Resource")
