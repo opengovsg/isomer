@@ -143,7 +143,7 @@ export const folderRouter = router({
             title,
           })
           .returning(defaultFolderSelect)
-          .execute()
+          .executeTakeFirst()
           .catch((err) => {
             if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
               throw new TRPCError({
