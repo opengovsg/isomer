@@ -123,6 +123,11 @@ async function main() {
               getConvertedPermalink(resource.fullPermalink),
         )?.id
 
+        const parentIndexPage = resources.find(
+          (item) =>
+            item.type === "IndexPage" && item.parentId === resource.parentId,
+        )
+
         const sitemapEntry: PageOnlySitemapEntry = {
           id: idOfFolder ?? resource.id,
           type: resource.type as PageResourceType,
@@ -141,7 +146,11 @@ async function main() {
           category: resource.content.page.category,
           tags: resource.content.page.tags,
           date: resource.content.page.date,
-          image: getResourceImage(resource),
+          image: getResourceImage({
+            resource,
+            useFallbackIfNoImage:
+              parentIndexPage?.content?.page?.fallbackIfNoImage === true,
+          }),
           ref: resource.content.page.ref, // For file and link layouts
         }
 
