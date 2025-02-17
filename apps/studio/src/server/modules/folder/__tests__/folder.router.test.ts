@@ -24,7 +24,7 @@ describe("folder.router", async () => {
   let unauthedCaller: ReturnType<typeof createCaller>
   const session = await applyAuthedSession()
 
-  beforeAll(async () => {
+  beforeAll(() => {
     caller = createCaller(createMockRequest(session))
     const unauthedSession = applySession()
     unauthedCaller = createCaller(createMockRequest(unauthedSession))
@@ -32,7 +32,7 @@ describe("folder.router", async () => {
 
   describe("create", () => {
     afterEach(async () => {
-      clearPermissions()
+      await clearPermissions()
     })
 
     it("should throw 401 if not logged in", async () => {
@@ -389,7 +389,7 @@ describe("folder.router", async () => {
 
   describe("editFolder", () => {
     afterEach(async () => {
-      clearPermissions()
+      await clearPermissions()
     })
 
     it("should return an empty array if the resourceId is not a folder", async () => {
