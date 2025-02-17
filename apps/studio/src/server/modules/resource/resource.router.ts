@@ -373,7 +373,10 @@ export const resourceRouter = router({
             }
 
             if (toMove.siteId !== parent.siteId) {
-              throw new TRPCError({ code: "FORBIDDEN" })
+              throw new TRPCError({
+                code: "FORBIDDEN",
+                message: "You cannot move a resource to a different site",
+              })
             }
 
             await tx
