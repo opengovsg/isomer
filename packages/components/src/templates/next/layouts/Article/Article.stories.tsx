@@ -66,7 +66,7 @@ export const Default: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [
         {
           name: "Home",
@@ -197,7 +197,7 @@ export const NoImage: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [
         {
           name: "Home",
@@ -328,7 +328,7 @@ export const NoSummary: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [
         {
           name: "Home",
@@ -466,7 +466,7 @@ export const TaggedArticle: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [
         {
           name: "Home",
