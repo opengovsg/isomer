@@ -40,7 +40,12 @@ export const MoveResourceModal = () => {
 
 const MoveResourceContent = withSuspense(
   ({ resourceId, onClose }: { resourceId: string; onClose: () => void }) => {
-    const [curResourceId, setCurResourceId] = useState<string | null>(null)
+    // undefined means that the user has not selected a destination yet
+    // because null is a valid resourceId (root page)
+    // this is used to disable the move button when the user has not selected a destination
+    const [curResourceId, setCurResourceId] = useState<
+      string | null | undefined
+    >(undefined)
     const { siteId } = useQueryParse(sitePageSchema)
     const setMovedItem = useSetAtom(moveResourceAtom)
     const [{ title }] = trpc.resource.getMetadataById.useSuspenseQuery({
@@ -133,8 +138,9 @@ const MoveResourceContent = withSuspense(
             // NOTE: disable this button if the resourceId to be moved is missing
             // or if the user does not have sufficient permissions to move to the destination
             isDisabled={
+              curResourceId === undefined ||
               ability.cannot("move", {
-                parentId: curResourceId,
+                parentId: curResourceId ?? null,
               }) ||
               ability.cannot("move", { parentId: movedItem?.parentId ?? null })
             }
@@ -144,7 +150,7 @@ const MoveResourceContent = withSuspense(
               mutate({
                 siteId,
                 movedResourceId: movedItem.id,
-                destinationResourceId: curResourceId,
+                destinationResourceId: curResourceId ?? null,
               })
             }
           >
