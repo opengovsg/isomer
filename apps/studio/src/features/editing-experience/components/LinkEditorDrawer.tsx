@@ -4,7 +4,7 @@ import { Box, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { LAYOUT_PAGE_MAP } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
-import { useAtom } from "jotai"
+import { useAtom, useSetAtom } from "jotai"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
 import { z } from "zod"
@@ -15,7 +15,7 @@ import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
-import { linkAtom } from "../atoms"
+import { linkAtom, linkRefAtom } from "../atoms"
 import { ActivateRawJsonEditorMode } from "./ActivateRawJsonEditorMode"
 import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
@@ -165,6 +165,7 @@ export const LinkEditorDrawer = () => {
   const [data, setLinkAtom] = useAtom(linkAtom)
   const utils = trpc.useUtils()
   const toast = useToast()
+  const setLinkRef = useSetAtom(linkRefAtom)
 
   const [{ content, title }] =
     trpc.collection.readCollectionLink.useSuspenseQuery(
@@ -178,6 +179,7 @@ export const LinkEditorDrawer = () => {
             ...(data.content.page as CollectionLinkProps),
             title: data.title,
           })
+          setLinkRef((data.content.page as CollectionLinkProps).ref)
         },
         refetchOnWindowFocus: false,
       },

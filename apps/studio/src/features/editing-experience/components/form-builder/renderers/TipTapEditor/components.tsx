@@ -30,7 +30,7 @@ export const EditorContainer = ({
 
   return (
     <Box
-      wordBreak="break-all"
+      wordBreak="break-word"
       h="100%"
       transitionProperty="common"
       transitionDuration="normal"

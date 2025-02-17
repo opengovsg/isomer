@@ -323,7 +323,7 @@ export const Default: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -1494,7 +1494,7 @@ export const NoTable: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -1907,7 +1907,7 @@ export const SmallTable: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -2487,7 +2487,7 @@ export const FirstLevelPage: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -2879,7 +2879,7 @@ export const MultipleAccordions: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -3064,7 +3064,7 @@ export const MultipleInfobars: Story = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",

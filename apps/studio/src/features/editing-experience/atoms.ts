@@ -19,3 +19,9 @@ export const linkAtom = atom<CollectionLinkProps>({
   category: "",
   title: "",
 })
+
+// NOTE: We need this because this atom takes in the value
+// for the ref when the link itself is saved.
+// This is strictly used for validation to see
+// if we should allow the `Publish`
+export const linkRefAtom = atom("")

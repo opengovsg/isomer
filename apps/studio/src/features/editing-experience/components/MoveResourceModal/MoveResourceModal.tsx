@@ -63,6 +63,7 @@ const MoveResourceContent = withSuspense(
         setMovedItem(null)
       },
       onSuccess: async () => {
+        await utils.collection.list.invalidate()
         await utils.page.readPageAndBlob.invalidate()
         await utils.resource.getParentOf.invalidate()
         await utils.resource.getChildrenOf.invalidate()

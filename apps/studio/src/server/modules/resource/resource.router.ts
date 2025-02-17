@@ -125,7 +125,10 @@ export const resourceRouter = router({
           .selectFrom("Resource")
           .where("siteId", "=", Number(siteId))
           .where("id", "=", String(resourceId))
-          .where("Resource.type", "=", ResourceType.Folder)
+          .where("Resource.type", "in", [
+            ResourceType.Folder,
+            ResourceType.Collection,
+          ])
           .executeTakeFirst()
 
         if (!resource) {
@@ -136,11 +139,11 @@ export const resourceRouter = router({
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id", "parentId"])
-        .where("Resource.type", "in", [ResourceType.Folder])
+        .where("Resource.type", "in", [
+          ResourceType.Folder,
+          ResourceType.Collection,
+        ])
         .where("Resource.siteId", "=", Number(siteId))
-        .$narrowType<{
-          type: typeof ResourceType.Folder
-        }>()
         .orderBy("type", "asc")
         .orderBy("title", "asc")
         .offset(offset)
@@ -308,7 +311,7 @@ export const resourceRouter = router({
             const toMove = await tx
               .selectFrom("Resource")
               .where("id", "=", movedResourceId)
-              .select(["id", "siteId"])
+              .select(["id", "siteId", "type"])
               .executeTakeFirst()
 
             if (!toMove) {
@@ -318,7 +321,9 @@ export const resourceRouter = router({
             let query = tx.selectFrom("Resource")
             query = !!destinationResourceId
               ? query.where("id", "=", destinationResourceId)
-              : query.where("type", "=", ResourceType.RootPage)
+              : query
+                  .where("type", "=", ResourceType.RootPage)
+                  .where("siteId", "=", siteId)
             const parent = await query
               .select(["id", "type", "siteId"])
               .executeTakeFirst()
@@ -328,12 +333,38 @@ export const resourceRouter = router({
               // NOTE: we only allow moves to folders/root.
               // for moves to root, we only allow this for admin
               (parent.type !== ResourceType.RootPage &&
-                parent.type !== ResourceType.Folder)
+                parent.type !== ResourceType.Folder &&
+                parent.type !== ResourceType.Collection)
             ) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
                 message:
                   "Please ensure that you are trying to move your resource into a valid destination",
+              })
+            }
+
+            // NOTE: If the users are trying to move into a collection,
+            // check that the resource first belongs to a collection
+            if (
+              parent.type !== ResourceType.Collection &&
+              (toMove.type === ResourceType.CollectionPage ||
+                toMove.type === ResourceType.CollectionLink)
+            ) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message:
+                  "Collection items can only be moved to another collection",
+              })
+            }
+
+            if (
+              parent.type === ResourceType.Collection &&
+              toMove.type !== ResourceType.CollectionPage &&
+              toMove.type !== ResourceType.CollectionLink
+            ) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Folder items can only be moved to another folder",
               })
             }
 
@@ -350,7 +381,9 @@ export const resourceRouter = router({
               .where("id", "=", String(movedResourceId))
               .where("Resource.type", "in", [
                 ResourceType.Page,
+                ResourceType.CollectionPage,
                 ResourceType.Folder,
+                ResourceType.CollectionLink,
               ])
               .set({
                 parentId: !!destinationResourceId
