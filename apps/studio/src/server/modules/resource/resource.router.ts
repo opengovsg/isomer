@@ -294,6 +294,17 @@ export const resourceRouter = router({
               })
             }
 
+            if (
+              parent.type === ResourceType.Collection &&
+              toMove.type !== ResourceType.CollectionPage &&
+              toMove.type !== ResourceType.CollectionLink
+            ) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Folder items can only be moved to another folder",
+              })
+            }
+
             if (movedResourceId === destinationResourceId) {
               throw new TRPCError({ code: "BAD_REQUEST" })
             }
