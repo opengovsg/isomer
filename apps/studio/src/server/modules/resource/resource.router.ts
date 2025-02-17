@@ -311,7 +311,7 @@ export const resourceRouter = router({
             const toMove = await tx
               .selectFrom("Resource")
               .where("id", "=", movedResourceId)
-              .select(["id", "siteId", "type"])
+              .select(["id", "siteId", "type", "parentId"])
               .executeTakeFirst()
 
             if (!toMove) {
@@ -340,6 +340,13 @@ export const resourceRouter = router({
                 code: "BAD_REQUEST",
                 message:
                   "Please ensure that you are trying to move your resource into a valid destination",
+              })
+            }
+
+            if (toMove.parentId === parent.id) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "You cannot move a resource to the same folder",
               })
             }
 
