@@ -17,6 +17,7 @@ import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResou
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
 import { CreateCollectionPageModal } from "~/features/editing-experience/components/CreateCollectionPageModal"
+import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminCmsSearchableLayout } from "~/templates/layouts/AdminCmsSidebarLayout"
@@ -90,6 +91,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
       <DeleteResourceModal siteId={siteId} />
       <FolderSettingsModal />
       <PageSettingsModal />
+      <MoveResourceModal />
     </>
   )
 }

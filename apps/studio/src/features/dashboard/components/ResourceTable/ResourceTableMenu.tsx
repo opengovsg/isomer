@@ -38,8 +38,9 @@ export const ResourceTableMenu = ({
   parentId,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
-  const handleMoveResourceClick = () =>
+  const handleMoveResourceClick = () => {
     setMoveResource({ resourceId, title, permalink, parentId })
+  }
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
