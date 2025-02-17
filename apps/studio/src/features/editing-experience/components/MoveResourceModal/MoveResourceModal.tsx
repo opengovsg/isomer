@@ -66,7 +66,10 @@ const MoveResourceContent = withSuspense(
         await utils.collection.list.invalidate()
         await utils.page.readPageAndBlob.invalidate()
         await utils.resource.getParentOf.invalidate()
+        await utils.resource.getFolderChildrenOf.invalidate()
         await utils.resource.getChildrenOf.invalidate()
+        await utils.resource.getAncestryStack.invalidate()
+        await utils.resource.getBatchAncestryWithSelf.invalidate()
         await utils.resource.countWithoutRoot.invalidate({
           // TODO: Update backend `list` to use the proper schema
           resourceId: curResourceId ? Number(curResourceId) : undefined,
