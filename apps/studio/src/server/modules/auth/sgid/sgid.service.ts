@@ -20,7 +20,9 @@ export const upsertSgidAccountAndUser = async ({
       where: {
         email: pocdexEmail,
       },
-      update: {},
+      update: {
+        lastLoginAt: new Date(),
+      },
       create: {
         email: pocdexEmail,
         name,
