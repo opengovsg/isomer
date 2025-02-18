@@ -970,6 +970,37 @@ describe("resource.router", async () => {
       )
     })
 
+    it("should return 400 if destination is the same as the origin", async () => {
+      // Arrange
+      const { folder: originFolder, site } = await setupFolder({
+        permalink: "origin-folder",
+      })
+      const { page: pageToMove } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        parentId: originFolder.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: pageToMove.siteId,
+      })
+
+      // Act
+      const result = caller.move({
+        siteId: pageToMove.siteId,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: pageToMove.parentId,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot move a resource to the same folder",
+        }),
+      )
+    })
+
     it("should return 403 if source and destination resources belong to different sites", async () => {
       // Arrange
       const { page: originPage, site: originSite } = await setupPageResource({
