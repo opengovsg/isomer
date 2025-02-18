@@ -10,6 +10,7 @@ import {
   setupBlob,
   setupCollection,
   setupCollectionLink,
+  setUpEditorPermissions,
   setupFolder,
   setupFolderMeta,
   setupPageResource,
@@ -1001,6 +1002,42 @@ describe("resource.router", async () => {
       )
     })
 
+    it("should return 403 if destination is a root page but user is not an admin", async () => {
+      // Arrange
+      const { folder: originFolder, site } = await setupFolder({
+        permalink: "origin-folder",
+      })
+      await setupPageResource({
+        resourceType: "RootPage",
+        siteId: site.id,
+      })
+      const { page: pageToMove } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        parentId: originFolder.id,
+      })
+      await setUpEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: null,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Please ensure that you have the required permissions to perform a move!",
+        }),
+      )
+    })
+
     it("should return 403 if source and destination resources belong to different sites", async () => {
       // Arrange
       const { page: originPage, site: originSite } = await setupPageResource({
@@ -1028,6 +1065,40 @@ describe("resource.router", async () => {
           message: "You cannot move a resource to a different site",
         }),
       )
+    })
+
+    it("admin should be able to move resource to root page", async () => {
+      // Arrange
+      const { folder: originFolder, site } = await setupFolder({
+        permalink: "origin-folder",
+      })
+      await setupPageResource({
+        resourceType: "RootPage",
+        siteId: site.id,
+      })
+      const { page: pageToMove } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        parentId: originFolder.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.move({
+        siteId: site.id,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: null,
+      })
+
+      // Assert
+      const expected = {
+        ...pick(pageToMove, ["id", "type", "permalink", "title"]),
+        parentId: null,
+      }
+      expect(result).toMatchObject(expected)
     })
 
     it("should move nested resource to destination folder", async () => {
