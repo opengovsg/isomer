@@ -39,7 +39,7 @@ export const setUpEditorPermissions = async ({
   siteId,
   isDeleted = false,
 }: Omit<UserPermissionsProps, "role">) => {
-  setUpUserPermissions({
+  await setUpUserPermissions({
     userId,
     siteId,
     isDeleted,
@@ -52,7 +52,7 @@ export const setupAdminPermissions = async ({
   siteId,
   isDeleted = false,
 }: Omit<UserPermissionsProps, "role">) => {
-  setUpUserPermissions({
+  await setUpUserPermissions({
     userId,
     siteId,
     isDeleted,
