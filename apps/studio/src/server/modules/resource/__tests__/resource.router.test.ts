@@ -992,7 +992,10 @@ describe("resource.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "FORBIDDEN" }),
+        new TRPCError({
+          code: "FORBIDDEN",
+          message: "You cannot move a resource to a different site",
+        }),
       )
     })
 
