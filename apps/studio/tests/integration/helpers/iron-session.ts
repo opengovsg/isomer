@@ -103,6 +103,7 @@ export const createTestUser = () => ({
   updatedAt: MOCK_STORY_DATE,
   phone: "123456789",
   deletedAt: null,
+  lastLoginAt: null,
 })
 
 // NOTE: The argument to this function was changed from
