@@ -99,7 +99,9 @@ export const emailSessionRouter = router({
 
       const user = await ctx.prisma.user.upsert({
         where: { email },
-        update: {},
+        update: {
+          lastLoginAt: new Date(),
+        },
         create: {
           email,
           // TODO: add the phone in later, this is a wip
