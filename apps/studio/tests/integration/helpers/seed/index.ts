@@ -7,15 +7,19 @@ import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
 
-export const setupAdminPermissions = async ({
-  userId,
-  siteId,
-  isDeleted = false,
-}: {
+interface UserPermissionsProps {
   userId?: string
   siteId: number
   isDeleted?: boolean
-}) => {
+  role: RoleType
+}
+
+const setUpUserPermissions = async ({
+  userId,
+  siteId,
+  isDeleted = false,
+  role,
+}: UserPermissionsProps) => {
   if (!userId) throw new Error("userId is a required field")
 
   await db
@@ -23,11 +27,37 @@ export const setupAdminPermissions = async ({
     .values({
       userId: String(userId),
       siteId,
-      role: RoleType.Admin,
+      role,
       resourceId: null,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
     })
     .execute()
+}
+
+export const setUpEditorPermissions = async ({
+  userId,
+  siteId,
+  isDeleted = false,
+}: Omit<UserPermissionsProps, "role">) => {
+  await setUpUserPermissions({
+    userId,
+    siteId,
+    isDeleted,
+    role: RoleType.Editor,
+  })
+}
+
+export const setupAdminPermissions = async ({
+  userId,
+  siteId,
+  isDeleted = false,
+}: Omit<UserPermissionsProps, "role">) => {
+  await setUpUserPermissions({
+    userId,
+    siteId,
+    isDeleted,
+    role: RoleType.Admin,
+  })
 }
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
