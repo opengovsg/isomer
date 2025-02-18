@@ -482,12 +482,14 @@ export const setupUser = async ({
   email,
   phone = "",
   isDeleted,
+  hasLoggedIn = false,
 }: {
   name?: string
   userId?: string
   email: string
   phone?: string
   isDeleted: boolean
+  hasLoggedIn?: boolean
 }) => {
   return db
     .insertInto("User")
@@ -497,6 +499,7 @@ export const setupUser = async ({
       email,
       phone: phone,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
+      lastLoginAt: hasLoggedIn ? MOCK_STORY_DATE : null,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
