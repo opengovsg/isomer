@@ -822,21 +822,120 @@ describe("user.router", () => {
       )
     })
 
-    it("should throw 400 if phone is not a singapore phone number (not 8 number)", async () => {
-      // Arrange
-      const name = "Test User"
-      const nonSingaporePhone = "123456789"
+    describe("name validation", () => {
+      it("should throw error if name is empty", async () => {
+        // Arrange
+        const emptyNames = ["", " ", "  "]
 
-      // Act
-      const result = caller.updateDetails({ name, phone: nonSingaporePhone })
+        // Act & Assert
+        for (const name of emptyNames) {
+          await expect(
+            caller.updateDetails({ name, phone: "81234567" }),
+          ).rejects.toThrow("Name is required")
+        }
+      })
 
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Only Singapore phone numbers are allowed",
-        }),
-      )
+      it("should trim whitespace from name", async () => {
+        // Arrange
+        const name = "  John Doe  "
+        const phone = "81234567"
+
+        // Act
+        await caller.updateDetails({ name, phone })
+
+        // Assert
+        const updatedUser = await db
+          .selectFrom("User")
+          .where("id", "=", session.userId!)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        expect(updatedUser.name).toBe("John Doe")
+      })
+    })
+
+    describe("phone validation", () => {
+      it("should throw error if phone is empty", async () => {
+        // Arrange
+        const emptyPhones = ["", " ", "  "]
+
+        // Act & Assert
+        for (const phone of emptyPhones) {
+          await expect(
+            caller.updateDetails({ name: "Test User", phone }),
+          ).rejects.toThrow("Phone number is required")
+        }
+      })
+
+      it("should throw error if phone number has incorrect length", async () => {
+        // Arrange
+        const invalidPhones = ["1234567", "123456789", "812345"]
+
+        // Act & Assert
+        for (const phone of invalidPhones) {
+          await expect(
+            caller.updateDetails({ name: "Test User", phone }),
+          ).rejects.toThrow("Phone number must be exactly 8 digits")
+        }
+      })
+
+      it("should throw error if phone number starts with invalid digit", async () => {
+        // Arrange
+        const invalidPhones = ["12345678", "23456789", "45678901", "78901234"]
+
+        // Act & Assert
+        for (const phone of invalidPhones) {
+          await expect(
+            caller.updateDetails({ name: "Test User", phone }),
+          ).rejects.toThrow("Phone number must start with 6, 8, or 9")
+        }
+      })
+
+      it("should handle phone numbers with whitespace", async () => {
+        // Arrange
+        const validPhonesWithSpaces = [
+          " 81234567 ",
+          "8123 4567",
+          " 8123 4567 ",
+          "  81234567  ",
+        ]
+
+        // Act & Assert
+        for (const phone of validPhonesWithSpaces) {
+          const result = await caller.updateDetails({
+            name: "Test User",
+            phone,
+          })
+          expect(result).toBe(true)
+
+          const updatedUser = await db
+            .selectFrom("User")
+            .where("id", "=", session.userId!)
+            .selectAll()
+            .executeTakeFirstOrThrow()
+          expect(updatedUser.phone).toBe("81234567")
+        }
+      })
+
+      it("should accept valid Singapore phone numbers", async () => {
+        // Arrange
+        const validPhones = ["61234567", "81234567", "91234567"]
+
+        // Act & Assert
+        for (const phone of validPhones) {
+          const result = await caller.updateDetails({
+            name: "Test User",
+            phone,
+          })
+          expect(result).toBe(true)
+
+          const updatedUser = await db
+            .selectFrom("User")
+            .where("id", "=", session.userId!)
+            .selectAll()
+            .executeTakeFirstOrThrow()
+          expect(updatedUser.phone).toBe(phone)
+        }
+      })
     })
 
     it("should update user details successfully", async () => {
