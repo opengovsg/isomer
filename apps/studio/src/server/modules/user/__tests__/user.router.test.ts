@@ -804,4 +804,60 @@ describe("user.router", () => {
       expect(updatedUser?.role).toBe(RoleType.Admin)
     })
   })
+
+  describe("updateDetails", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.updateDetails({
+        name: "Test User",
+        phone: "1234567890",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 400 if phone is not a singapore phone number (not 8 number)", async () => {
+      // Arrange
+      const name = "Test User"
+      const nonSingaporePhone = "123456789"
+
+      // Act
+      const result = caller.updateDetails({ name, phone: nonSingaporePhone })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Only Singapore phone numbers are allowed",
+        }),
+      )
+    })
+
+    it("should update user details successfully", async () => {
+      // Arrange
+      const name = "Test User"
+      const phone = "81234567"
+
+      // Act
+      const result = await caller.updateDetails({ name, phone })
+
+      // Assert
+      expect(result).toBe(true)
+
+      // Assert: Verify in database
+      const updatedUser = await db
+        .selectFrom("User")
+        .where("id", "=", session.userId!)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedUser.name).toBe(name)
+      expect(updatedUser.phone).toBe(phone)
+    })
+  })
 })

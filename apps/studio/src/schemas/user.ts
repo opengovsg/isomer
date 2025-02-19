@@ -50,3 +50,10 @@ export const updateInputSchema = z.object({
 })
 
 export const updateOutputSchema = z.boolean()
+
+export const updateDetailsInputSchema = z.object({
+  name: z.string().min(1),
+  phone: z.string().min(1),
+})
+
+export const updateDetailsOutputSchema = z.boolean()

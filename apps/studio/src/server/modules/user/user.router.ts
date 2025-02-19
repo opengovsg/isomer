@@ -7,9 +7,12 @@ import {
   deleteOutputSchema,
   listInputSchema,
   listOutputSchema,
+  updateDetailsInputSchema,
+  updateDetailsOutputSchema,
   updateInputSchema,
   updateOutputSchema,
 } from "~/schemas/user"
+import { isSingaporePhoneNumber } from "~/utils/phone"
 import { protectedProcedure, router } from "../../trpc"
 import { db, sql } from "../database"
 import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
@@ -170,6 +173,31 @@ export const userRouter = router({
           message: "User permissions not found",
         })
       }
+
+      return true
+    }),
+
+  updateDetails: protectedProcedure
+    .input(updateDetailsInputSchema)
+    .output(updateDetailsOutputSchema)
+    .mutation(async ({ ctx, input: { name, phone } }) => {
+      // We don't have to check if the user is admin here
+      // because we only allow users to update their own details
+      // They should be able to update their own details even without any resource permissions
+
+      if (!isSingaporePhoneNumber(phone)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Only Singapore phone numbers are allowed",
+        })
+      }
+
+      await db
+        .updateTable("User")
+        .where("id", "=", ctx.user.id)
+        .set({ name, phone })
+        .returningAll()
+        .executeTakeFirst()
 
       return true
     }),
