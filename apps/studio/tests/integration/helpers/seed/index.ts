@@ -34,7 +34,7 @@ const setUpUserPermissions = async ({
     .execute()
 }
 
-export const setUpEditorPermissions = async ({
+export const setupEditorPermissions = async ({
   userId,
   siteId,
   isDeleted = false,

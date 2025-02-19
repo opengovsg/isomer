@@ -7,7 +7,7 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
-  setUpEditorPermissions,
+  setupEditorPermissions,
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
@@ -377,7 +377,7 @@ describe("user.router", () => {
         email: TEST_EMAIL,
         isDeleted: false,
       })
-      await setUpEditorPermissions({ userId: userToDelete.id, siteId })
+      await setupEditorPermissions({ userId: userToDelete.id, siteId })
 
       // Act
       const result = await caller.delete({
@@ -409,7 +409,7 @@ describe("user.router", () => {
         email: TEST_EMAIL,
         isDeleted: false,
       })
-      await setUpEditorPermissions({ userId: userToDelete.id, siteId })
+      await setupEditorPermissions({ userId: userToDelete.id, siteId })
 
       // Act
       const result = await caller.delete({
@@ -461,7 +461,7 @@ describe("user.router", () => {
 
     it("should return array with self when no other users exist", async () => {
       // Arrange
-      await setUpEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ userId: session.userId, siteId })
 
       // Act
       const result = await caller.list({ siteId })
@@ -479,14 +479,14 @@ describe("user.router", () => {
 
     it("should return paginated results (10 users per page)", async () => {
       // Arrange
-      await setUpEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ userId: session.userId, siteId })
 
       for (let i = 0; i < 15; i++) {
         const editorUser = await setupUser({
           email: `editor.user.${i}@open.gov.sg`,
           isDeleted: false,
         })
-        await setUpEditorPermissions({ userId: editorUser.id, siteId })
+        await setupEditorPermissions({ userId: editorUser.id, siteId })
       }
 
       // Act
@@ -498,14 +498,14 @@ describe("user.router", () => {
 
     it("should return paginated results (10 users per page) with offset", async () => {
       // Arrange
-      await setUpEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ userId: session.userId, siteId })
 
       for (let i = 0; i < 15; i++) {
         const editorUser = await setupUser({
           email: `editor.user.${i}@open.gov.sg`,
           isDeleted: false,
         })
-        await setUpEditorPermissions({ userId: editorUser.id, siteId })
+        await setupEditorPermissions({ userId: editorUser.id, siteId })
       }
 
       // Act
@@ -676,7 +676,7 @@ describe("user.router", () => {
         isDeleted: false,
       })
 
-      await setUpEditorPermissions({ userId: userToUpdate.id, siteId })
+      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
 
       // Act
       const result = await caller.update({
