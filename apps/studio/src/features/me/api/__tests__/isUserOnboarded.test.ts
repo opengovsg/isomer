@@ -128,5 +128,28 @@ describe("isUserOnboarded", () => {
         expect(isUserOnboarded(user)).toBe(false)
       })
     })
+
+    it("should return false for inputs with whitespace and formatting quirks", () => {
+      // Arrange
+      const invalidUsers = [
+        { name: "Test User", phone: " 91234567" }, // Leading space
+        { name: "Test User", phone: "91234567 " }, // Trailing space
+        { name: "Test User", phone: " 91234567 " }, // Both leading and trailing spaces
+        { name: "Test User", phone: "\t91234567" }, // Tab character
+        { name: "Test User", phone: "91234567\n" }, // Newline
+        { name: "Test User", phone: "\r91234567" }, // Carriage return
+        { name: "Test User", phone: "9 1234567" }, // Space in middle
+        { name: "Test User", phone: "912 34567" }, // Space in middle
+        { name: "Test User", phone: "9123 4567" }, // Space in middle
+        { name: "Test User", phone: "91234 567" }, // Space in middle
+        { name: "Test User", phone: "912345 67" }, // Space in middle
+        { name: "Test User", phone: "9123456 7" }, // Space in middle
+      ]
+
+      // Act & Assert
+      invalidUsers.forEach((user) => {
+        expect(isUserOnboarded(user)).toBe(false)
+      })
+    })
   })
 })
