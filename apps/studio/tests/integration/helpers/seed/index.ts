@@ -451,20 +451,20 @@ export const setupUser = async ({
   userId = nanoid(),
   email,
   phone = "",
-  isDeleted,
+  isDeleted = false,
 }: {
   name?: string
   userId?: string
-  email: string
+  email?: string
   phone?: string
-  isDeleted: boolean
+  isDeleted?: boolean
 }) => {
   return db
     .insertInto("User")
     .values({
       id: userId,
       name,
-      email,
+      email: email ?? `${nanoid()}@test.com`,
       phone: phone,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
     })

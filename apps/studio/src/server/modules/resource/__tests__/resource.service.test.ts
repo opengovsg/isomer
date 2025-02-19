@@ -1,16 +1,21 @@
 import { pick } from "lodash"
 import {
+  setupBlob,
   setupPageResource,
-  setupTestUser,
+  setupSite,
+  setupUser,
 } from "tests/integration/helpers/seed"
 
 import type { Resource } from "../../database"
-import { db } from "../../database"
+import { db, ResourceState, ResourceType } from "../../database"
 import {
   getFullPageById,
   getPageById,
   getSiteResourceById,
+  updateBlobById,
+  updatePageById,
 } from "../resource.service"
+import { PAGE_BLOB } from "./constants"
 
 describe("resource.service", () => {
   describe("getSiteResourceById", () => {
@@ -126,14 +131,14 @@ describe("resource.service", () => {
 
     it("should return resource with published blob if draft blob does not exist", async () => {
       // Arrange
-      const testUser = await setupTestUser()
+      const testUser = await setupUser({})
       const {
         site,
         page: actualPage,
         blob: actualBlob,
       } = await setupPageResource({
         resourceType: "Page",
-        state: "Published",
+        state: ResourceState.Published,
         userId: testUser.id,
       })
 
@@ -287,18 +292,248 @@ describe("resource.service", () => {
   })
 
   describe("updatePageById", () => {
-    it("should throw a 404 if the page could not be found", async () => {})
+    it("should not update any rows if no matching `id` can be found", async () => {
+      // Arrange
+      const { site } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await updatePageById(
+        {
+          siteId: site.id,
+          id: 99999,
+          title: "Updated Title",
+        },
+        db,
+      )
+
+      // Assert
+      expect(result.numUpdatedRows).toBe(BigInt(0))
+    })
+
+    it("should update the page successfully", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await updatePageById(
+        {
+          siteId: site.id,
+          id: Number(page.id),
+          title: "Updated Title",
+        },
+        db,
+      )
+
+      // Assert
+      const actualPage = await getPageById(db, {
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+      expect(actualPage?.title).toBe("Updated Title")
+      expect(result.numUpdatedRows).toBe(BigInt(1))
+    })
+
+    it("should do nothing when the page does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = await updatePageById(
+        {
+          siteId: site.id,
+          id: 2,
+        },
+        db,
+      )
+
+      // Assert
+      expect(result.numUpdatedRows).toBe(BigInt(0))
+    })
+
+    it("should fail when the parent does not exist", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = updatePageById(
+        {
+          siteId: site.id,
+          id: Number(page.id),
+          parentId: -1,
+        },
+        db,
+      )
+
+      // Assert
+      expect(result).rejects.toThrowError()
+    })
   })
-  describe("updateBlobById", () => {})
-  describe("getNavBar", () => {})
-  describe("getFooter", () => {})
-  describe("moveResource", () => {})
-  describe("getLocalisedSitemap", () => {})
-  describe("getResourcePermalinkTree", () => {})
-  describe("getResourceFullPermalink", () => {})
-  describe("publishResource", () => {})
-  describe("getWithFulPermalink", () => {})
-  describe("getSearchResults", () => {})
-  describe("getSearchRecentlyEdited", () => {})
-  describe("getSearchWithResourceIds", () => {})
+  describe("updateBlobById", () => {
+    let site: Awaited<ReturnType<typeof setupPageResource>>["site"]
+
+    beforeEach(async () => {
+      const { site: _site } = await setupSite()
+      site = _site
+    })
+
+    afterEach(async () => {
+      await db.deleteFrom("Resource").execute()
+    })
+
+    it("should throw an error if no matching `id` can be found for the page", async () => {
+      // Act
+      const result = db.transaction().execute((tx) => {
+        return updateBlobById(tx, {
+          siteId: site.id,
+          pageId: 99999,
+          content: PAGE_BLOB,
+        })
+      })
+
+      // Assert
+      expect(result).rejects.toThrowError()
+    })
+
+    it("should create a draft blob if the page is already published", async () => {
+      // Arrange
+      const user = await setupUser({})
+      const { page } = await setupPageResource({
+        state: ResourceState.Published,
+        resourceType: ResourceType.Page,
+        userId: user.id,
+        siteId: site.id,
+        permalink: "another_permalink",
+      })
+      expect(page.draftBlobId).toBeNull()
+      const publishedBlob = await setupBlob()
+      await linkPublishedBlobToPage({
+        blobId: publishedBlob.id,
+        pageId: page.id,
+      })
+
+      // Act
+      await db.transaction().execute((tx) => {
+        return updateBlobById(tx, {
+          siteId: site.id,
+          pageId: Number(page.id),
+          content: PAGE_BLOB,
+        })
+      })
+
+      // Assert
+      const result = await getFullPageById(db, {
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+      const actualPublishedBlob = await db
+        .selectFrom("Version")
+        .innerJoin("Blob", "Version.blobId", "Blob.id")
+        .where("Version.id", "=", result?.publishedVersionId!)
+        .select("content")
+        .executeTakeFirstOrThrow()
+      expect(result?.content).toStrictEqual(PAGE_BLOB)
+      expect(actualPublishedBlob.content).toStrictEqual(publishedBlob.content)
+      expect(page.draftBlobId).toBeDefined()
+    })
+
+    it("should update the existing draft blob if one exists", async () => {
+      // Arrange
+      const blob = await setupBlob()
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.Page,
+      })
+      await linkDraftBlobToPage({ blobId: blob.id, pageId: page.id })
+
+      // Act
+      await db.transaction().execute((tx) => {
+        return updateBlobById(tx, {
+          siteId: site.id,
+          pageId: Number(page.id),
+          content: PAGE_BLOB,
+        })
+      })
+
+      // Assert
+      const result = await getFullPageById(db, {
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+      expect(result?.content).toStrictEqual(PAGE_BLOB)
+      expect(result?.publishedVersionId).toBeNull()
+    })
+
+    it("should not update when no matching `siteId` can be found", async () => {
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.Page,
+      })
+      // Act
+      const result = db.transaction().execute((tx) => {
+        return updateBlobById(tx, {
+          siteId: 99999,
+          pageId: Number(page.id),
+          content: PAGE_BLOB,
+        })
+      })
+
+      // Assert
+      expect(result).rejects.toThrowError()
+    })
+  })
+  describe.skip("getNavBar", () => {})
+  describe.skip("getFooter", () => {})
+  describe.skip("moveResource", () => {})
+  describe.skip("getLocalisedSitemap", () => {})
+  describe.skip("getResourcePermalinkTree", () => {})
+  describe.skip("getResourceFullPermalink", () => {})
+  describe.skip("publishResource", () => {})
+  describe.skip("getWithFulPermalink", () => {})
+  describe.skip("getSearchResults", () => {})
+  describe.skip("getSearchRecentlyEdited", () => {})
+  describe.skip("getSearchWithResourceIds", () => {})
 })
+
+const linkDraftBlobToPage = ({
+  blobId,
+  pageId,
+}: {
+  blobId: string
+  pageId: string
+}) => {
+  return db
+    .updateTable("Resource")
+    .where("id", "=", pageId)
+    .set({
+      draftBlobId: blobId,
+    })
+    .executeTakeFirstOrThrow()
+}
+
+const linkPublishedBlobToPage = async ({
+  blobId,
+  pageId,
+}: {
+  blobId: string
+  pageId: string
+}) => {
+  const { publishedVersionId } = await db
+    .selectFrom("Resource")
+    .where("id", "=", pageId)
+    .select("publishedVersionId")
+    .executeTakeFirstOrThrow()
+
+  return db
+    .updateTable("Version")
+    .where("Version.id", "=", publishedVersionId)
+    .set({
+      blobId,
+    })
+    .executeTakeFirstOrThrow()
+}
