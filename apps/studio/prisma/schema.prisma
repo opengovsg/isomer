@@ -126,6 +126,8 @@ model User {
 
   ResourcePermission ResourcePermission[]
   versions           Version[]
+
+  @@index([lastLoginAt])
 }
 
 model Site {
