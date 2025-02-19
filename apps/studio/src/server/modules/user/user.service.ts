@@ -59,6 +59,24 @@ export const createUser = async ({
       .returning(["id", "email", "name", "phone"])
       .executeTakeFirstOrThrow()
 
+    // unique constraint (@@unique([userId, siteId, resourceId, role]))
+    // does not work if one column is NULL e.g. resourceId
+    // Thus we have to check on the application layer
+    const existingResourcePermission = await tx
+      .selectFrom("ResourcePermission")
+      .where("userId", "=", user.id)
+      .where("siteId", "=", siteId)
+      .where("resourceId", "is", null) // because we are granting site-wide permissions
+      .selectAll()
+      .executeTakeFirst()
+
+    if (existingResourcePermission) {
+      throw new TRPCError({
+        code: "CONFLICT",
+        message: "User and permissions already exists",
+      })
+    }
+
     const resourcePermission = await tx
       .insertInto("ResourcePermission")
       .values({

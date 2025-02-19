@@ -1,7 +1,11 @@
 import { TRPCError } from "@trpc/server"
 import { RoleType } from "~prisma/generated/generatedEnums"
 import { resetTables } from "tests/integration/helpers/db"
-import { setupSite, setupUser } from "tests/integration/helpers/seed"
+import {
+  setupAdminPermissions,
+  setupSite,
+  setupUser,
+} from "tests/integration/helpers/seed"
 
 import { db } from "~/server/modules/database"
 import { createUser, isUserDeleted } from "../user.service"
@@ -80,6 +84,27 @@ describe("user.service", () => {
 
       // Assert
       await expect(result).rejects.toThrowError()
+    })
+
+    it("should throw 409 if user and permissions already exists", async () => {
+      // Arrange
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      await setupAdminPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = createUser({
+        email: TEST_EMAIL,
+        role: RoleType.Editor,
+        siteId,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "User and permissions already exists",
+        }),
+      )
     })
 
     it("should create a new user with default values", async () => {
