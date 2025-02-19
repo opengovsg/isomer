@@ -1,7 +1,7 @@
 import type { InvitationEmailTemplateData } from "./templates"
 import { createBaseLogger } from "~/lib/logger"
 import { isValidEmail } from "~/utils/email"
-import { sendMail } from "../mail"
+import { sendMail } from "../../lib/mail"
 import { templates } from "./templates/templates"
 
 const logger = createBaseLogger({ path: "lib/mail/service" })
