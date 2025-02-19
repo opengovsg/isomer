@@ -107,6 +107,27 @@ describe("user.service", () => {
       )
     })
 
+    it("should throw 409 if user already exists but has non-null deletedAt", async () => {
+      // Arrange
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
+      await setupAdminPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = createUser({
+        email: TEST_EMAIL,
+        role: RoleType.Editor,
+        siteId,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "User was deleted before. Contact support to restore.",
+        }),
+      )
+    })
+
     it("should create a new user with default values", async () => {
       // Act
       const { user } = await createUser({
