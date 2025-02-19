@@ -3,29 +3,43 @@ import { Tabs } from "@opengovsg/design-system-react"
 
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { LayoutHead } from "~/components/LayoutHead"
-import { APP_GRID_TEMPLATE_AREA } from "~/constants/layouts"
-import { SiteEditNavbar } from "~/features/editing-experience/components/SiteEditNavbar"
+import { PageEditNavbar } from "~/features/editing-experience/components/PageEditNavbar"
+import { editPageSchema } from "~/features/editing-experience/schema"
+import { PermissionsProvider } from "~/features/permissions"
+import { useQueryParse } from "~/hooks/useQueryParse"
 import { type GetLayout } from "~/lib/types"
 
 export const PageEditingLayout: GetLayout = (page) => {
+  const { pageId, siteId } = useQueryParse(editPageSchema)
+
   return (
     <EnforceLoginStatePageWrapper>
-      <LayoutHead />
-      <Tabs>
-        <Flex minH="100vh" flexDir="column" bg="base.canvas.alt" pos="relative">
-          <Grid
-            flex={1}
-            width="100vw"
-            gridColumnGap={{ base: 0, md: "1rem" }}
-            gridTemplate={APP_GRID_TEMPLATE_AREA}
+      <PermissionsProvider siteId={siteId} resourceId={String(pageId)}>
+        <LayoutHead />
+        <Tabs flex={1} height={0}>
+          <Flex
+            flexDir="column"
+            bg="base.canvas.alt"
+            pos="relative"
+            height={0}
+            minH="100%"
           >
-            <SiteEditNavbar />
-            <Flex flex={1} bg="base.canvas.alt" w="100vw">
-              {page}
-            </Flex>
-          </Grid>
-        </Flex>
-      </Tabs>
+            <Grid
+              flex={1}
+              height={0}
+              minH="100%"
+              width="100%"
+              gridColumnGap={{ base: 0, md: "1rem" }}
+              gridTemplateRows="auto 1fr"
+            >
+              <PageEditNavbar />
+              <Flex bg="base.canvas.alt" w="100%" height={0} minH="100%">
+                {page}
+              </Flex>
+            </Grid>
+          </Flex>
+        </Tabs>
+      </PermissionsProvider>
     </EnforceLoginStatePageWrapper>
   )
 }

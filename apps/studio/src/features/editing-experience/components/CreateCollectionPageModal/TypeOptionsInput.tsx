@@ -11,7 +11,8 @@ import {
   useRadioGroup,
 } from "@chakra-ui/react"
 import { Badge } from "@opengovsg/design-system-react"
-import { BiFile, BiUpload } from "react-icons/bi"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+import { BiFile, BiLink } from "react-icons/bi"
 
 import type { CollectionItemType } from "./constants"
 import { COLLECTION_ITEM_TYPES } from "./constants"
@@ -23,19 +24,15 @@ interface TypeTileProps extends UseRadioProps {
 const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
   (props, ref) => {
     const styles = useMultiStyleConfig("Tile", {})
-    const isDisabled = props.value === "pdf"
 
-    const { getInputProps, getRadioProps } = useRadio({
-      ...props,
-      isDisabled,
-    })
+    const { getInputProps, getRadioProps } = useRadio(props)
     const input = getInputProps(undefined, ref)
     const checkbox = getRadioProps()
     const { value } = props
 
     const { TileIcon, title, description, badge } = useMemo(() => {
       switch (value) {
-        case "page": {
+        case ResourceType.CollectionPage: {
           return {
             TileIcon: BiFile,
             title: "Page",
@@ -48,19 +45,19 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
             ),
           }
         }
-        case "pdf": {
+        case ResourceType.CollectionLink: {
           return {
-            TileIcon: BiUpload,
-            title: "PDF file",
+            TileIcon: BiLink,
+            title: "Link or file",
             description:
-              "Select this option if you want to upload a single PDF file as a resource. This option is currently under development and will be available soon.",
+              "Select this option if you want to link to an existing page on your site, link an external page, or upload a PDF file.",
           }
         }
       }
     }, [value])
 
     return (
-      <Box as="label" {...(isDisabled && { cursor: "not-allowed" })}>
+      <Box as="label">
         <input {...input} />
         <Box
           {...checkbox}
@@ -72,10 +69,6 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
           }}
           data-group
           cursor="pointer"
-          _disabled={{
-            pointerEvents: "none",
-            bgColor: "base.canvas.alt",
-          }}
         >
           <Flex
             p="0.5rem"
@@ -98,21 +91,12 @@ const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
               _groupChecked={{
                 color: "base.content.brand",
               }}
-              _groupDisabled={{
-                textColor: "interaction.support.disabled-content",
-              }}
             >
               {title}
             </Text>
             {badge}
           </Stack>
-          <Text
-            _groupDisabled={{
-              textColor: "interaction.support.disabled-content",
-            }}
-            textStyle="body-1"
-            mt="0.5rem"
-          >
+          <Text textStyle="body-1" mt="0.5rem">
             {description}
           </Text>
         </Box>

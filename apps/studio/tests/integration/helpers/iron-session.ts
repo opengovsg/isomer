@@ -2,6 +2,7 @@ import type { RequestOptions, ResponseOptions } from "node-mocks-http"
 import type { SetOptional } from "type-fest"
 import { type NextApiRequest, type NextApiResponse } from "next"
 import { createMocks } from "node-mocks-http"
+import { MOCK_STORY_DATE } from "tests/msw/constants"
 
 import type { Context } from "~/server/context"
 import type { User } from "~server/db"
@@ -94,6 +95,15 @@ export const applySession = () => {
 
   return session
 }
+
+export const createTestUser = () => ({
+  email: `test${nanoid()}@example.com`,
+  name: "Test User",
+  createdAt: MOCK_STORY_DATE,
+  updatedAt: MOCK_STORY_DATE,
+  phone: "123456789",
+  deletedAt: null,
+})
 
 // NOTE: The argument to this function was changed from
 // `Partial<User>` to `User`

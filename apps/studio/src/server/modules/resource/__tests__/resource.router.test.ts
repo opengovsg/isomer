@@ -6,7 +6,12 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import {
+  setupAdminPermissions,
+  setupBlob,
+  setupCollection,
+  setupCollectionLink,
   setupFolder,
+  setupFolderMeta,
   setupPageResource,
   setupSite,
 } from "tests/integration/helpers/seed"
@@ -17,11 +22,11 @@ import { resourceRouter } from "../resource.router"
 
 const createCaller = createCallerFactory(resourceRouter)
 
-describe("resource.router", () => {
+describe("resource.router", async () => {
   let caller: ReturnType<typeof createCaller>
+  const session = await applyAuthedSession()
 
-  beforeAll(async () => {
-    const session = await applyAuthedSession()
+  beforeAll(() => {
     caller = createCaller(createMockRequest(session))
   })
 
@@ -733,9 +738,11 @@ describe("resource.router", () => {
   describe("move", () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
+      const { site } = await setupSite()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
       const result = unauthedCaller.move({
+        siteId: site.id,
         movedResourceId: "1",
         destinationResourceId: "1",
       })
@@ -747,10 +754,16 @@ describe("resource.router", () => {
 
     it("should return 400 if moved resource does not exist", async () => {
       // Arrange
+      const { site } = await setupSite()
       const { folder } = await setupFolder()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.move({
+        siteId: site.id,
         movedResourceId: "99999", // should not exist
         destinationResourceId: folder.id,
       })
@@ -764,16 +777,26 @@ describe("resource.router", () => {
     it("should return 400 if destination resource does not exist", async () => {
       // Arrange
       const { folder } = await setupFolder()
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.move({
+        siteId: site.id,
         movedResourceId: folder.id,
         destinationResourceId: "99999", // should not exist
       })
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Please ensure that you are trying to move your resource into a valid destination",
+        }),
       )
     })
 
@@ -787,16 +810,25 @@ describe("resource.router", () => {
         siteId: site.id,
         permalink: "another-page",
       })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.move({
+        siteId: site.id,
         movedResourceId: pageToMove.id,
         destinationResourceId: anotherPage.id,
       })
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Please ensure that you are trying to move your resource into a valid destination",
+        }),
       )
     })
 
@@ -808,9 +840,14 @@ describe("resource.router", () => {
       const { folder: destinationFolder, site: destinationSite } =
         await setupFolder()
       expect(originSite.id).not.toEqual(destinationSite.id)
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: originSite.id,
+      })
 
       // Act
       const result = caller.move({
+        siteId: originSite.id,
         movedResourceId: originPage.id,
         destinationResourceId: destinationFolder.id,
       })
@@ -835,9 +872,14 @@ describe("resource.router", () => {
         siteId: site.id,
         permalink: "destination-folder",
       })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.move({
+        siteId: site.id,
         movedResourceId: pageToMove.id,
         destinationResourceId: destinationFolder.id,
       })
@@ -866,9 +908,14 @@ describe("resource.router", () => {
         siteId: site.id,
         permalink: "destination-folder",
       })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.move({
+        siteId: site.id,
         movedResourceId: pageToMove.id,
         destinationResourceId: destinationFolder.id,
       })
@@ -1300,6 +1347,10 @@ describe("resource.router", () => {
     it("should return 400 if resource to delete does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.delete({
@@ -1309,7 +1360,7 @@ describe("resource.router", () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
       )
     })
 
@@ -1317,6 +1368,10 @@ describe("resource.router", () => {
       // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "Page",
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
       })
 
       // Act
@@ -1337,6 +1392,10 @@ describe("resource.router", () => {
     it("should delete a folder and all its children (recursively) successfully", async () => {
       // Arrange
       const { folder: folderToUse, site } = await setupFolder()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
       const nestedPages = await Promise.all(
         Array.from({ length: 3 }, (_, i) => i).map(async (i) => {
           const { page } = await setupPageResource({
@@ -1398,6 +1457,10 @@ describe("resource.router", () => {
       // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "RootPage",
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
       })
 
       // Act
@@ -1718,5 +1781,989 @@ describe("resource.router", () => {
     })
 
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
+  })
+
+  describe("search", () => {
+    const RESOURCE_FIELDS_TO_PICK = [
+      "id",
+      "title",
+      "type",
+      "parentId",
+      "fullPermalink",
+    ] as const
+
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.search({
+        siteId: "1",
+        query: "test",
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.search({
+        siteId: String(site.id),
+        query: "test",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it.skip("should throw 403 if user does not have read access to resource", async () => {})
+
+    it("should return empty results if no resources exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "test",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 0,
+        resources: [],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should return the full permalink of resources", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { folder: folder1 } = await setupFolder({
+        siteId: site.id,
+      })
+      const { folder: folder2 } = await setupFolder({
+        siteId: site.id,
+        parentId: folder1.id,
+      })
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        parentId: folder2.id,
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "test",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 3,
+        resources: [
+          {
+            ...pick(page, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${folder1.permalink}/${folder2.permalink}/${page.permalink}`,
+            lastUpdatedAt: page.updatedAt,
+          },
+          {
+            ...pick(folder2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${folder1.permalink}/${folder2.permalink}`,
+            lastUpdatedAt: folder2.updatedAt,
+          },
+          {
+            ...pick(folder1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${folder1.permalink}`,
+            lastUpdatedAt: folder1.updatedAt,
+          },
+        ],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should use the draft blob updatedAt datetime if available", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const blob = await setupBlob()
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        permalink: "page-1",
+        blobId: blob.id,
+      })
+      const { page: page2 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        permalink: "page-2",
+      })
+      const updatedBlob = await db
+        .updateTable("Blob")
+        .set({ updatedAt: new Date() })
+        .where("id", "=", blob.id)
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "test",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 2,
+        resources: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: updatedBlob.updatedAt,
+          },
+          {
+            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page2.permalink}`,
+            lastUpdatedAt: page2.updatedAt,
+          },
+        ],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should return totalCount as a number", async () => {
+      // Arrange
+      const numberOfPages = 15 // arbitrary number above the default limit of 10
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      for (let index = 0; index < numberOfPages; index++) {
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: `page-${index + 1}`,
+        })
+      }
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "test",
+      })
+
+      // Assert
+      expect(result.totalCount).toEqual(numberOfPages)
+    })
+
+    it("should return recentlyEdited as an empty array", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({ resourceType: "Page", siteId: site.id })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "test",
+      })
+
+      // Assert
+      expect(result.recentlyEdited).toEqual([])
+    })
+
+    it("should match and order by splitting the query into an array of search terms", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "apple banana cherry durian", // should match 3 terms
+        permalink: "apple-banana-cherry-durian",
+      })
+      const { page: page2 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "apple banana cherry", // should match 2 terms
+        permalink: "apple-banana-cherry",
+      })
+      const { page: page3 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "banana", // should match 1 term
+        permalink: "banana",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "apple banana durian",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 3,
+        resources: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+          {
+            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page2.permalink}`,
+            lastUpdatedAt: page2.updatedAt,
+          },
+          {
+            ...pick(page3, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page3.permalink}`,
+            lastUpdatedAt: page3.updatedAt,
+          },
+        ],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should return resources in order of most recently updated if same search terms", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        permalink: "page-1",
+      })
+      const { page: page2 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        permalink: "page-2",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "test",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 2,
+        resources: [
+          {
+            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page2.permalink}`,
+            lastUpdatedAt: page2.updatedAt,
+          },
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should return resources that by prefix for each word in the title", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "shouldnotmatch",
+        permalink: "shouldnotmatch",
+      })
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "match",
+        permalink: "match",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "match",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 1,
+        resources: [
+          {
+            ...pick(page, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page.permalink}`,
+            lastUpdatedAt: page.updatedAt,
+          },
+        ],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should rank results by not double counting ranking order for each search term", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "banana banana apple",
+        permalink: "banana-banana-apple",
+      })
+      const { page: page2 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "banana apple",
+        permalink: "banana-apple",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "banana apple",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 2,
+        resources: [
+          {
+            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page2.permalink}`,
+            lastUpdatedAt: page2.updatedAt,
+          },
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should rank results by character length of search term matches", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "looooongword",
+        permalink: "looooongword",
+      })
+      const { page: page2 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "shortword",
+        permalink: "shortword",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "shortword looooongword",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 2,
+        resources: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+          {
+            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page2.permalink}`,
+            lastUpdatedAt: page2.updatedAt,
+          },
+        ],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should not return resources that do not match the search query", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "whatever",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "test",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 0,
+        resources: [],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should not return resources matched by empty space if query terms are separated by spaces", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "test",
+        permalink: "test",
+      })
+      await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "something else",
+        permalink: "something-else",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "test  test",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 1,
+        resources: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should only return user viewable resource types", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { collection: collection1 } = await setupCollection({
+        siteId: site.id,
+      })
+      const { folder: folder1 } = await setupFolder({ siteId: site.id })
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+      })
+      const { page: collectionPage } = await setupPageResource({
+        resourceType: "CollectionPage",
+        siteId: site.id,
+      })
+      const { collectionLink } = await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection1.id,
+      })
+      await setupPageResource({ resourceType: "IndexPage", siteId: site.id })
+      await setupFolderMeta({ siteId: site.id, folderId: folder1.id })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "test",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 5,
+        resources: [
+          {
+            ...pick(collectionLink, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${collection1.permalink}/${collectionLink.permalink}`,
+            lastUpdatedAt: collectionLink.updatedAt,
+          },
+          {
+            ...pick(collectionPage, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${collectionPage.permalink}`,
+            lastUpdatedAt: collectionPage.updatedAt,
+          },
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+          {
+            ...pick(folder1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${folder1.permalink}`,
+            lastUpdatedAt: folder1.updatedAt,
+          },
+          {
+            ...pick(collection1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${collection1.permalink}`,
+            lastUpdatedAt: collection1.updatedAt,
+          },
+        ],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should not return resources from another site", async () => {
+      // Arrange
+      const { site: site1 } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site1.id,
+      })
+      const { site: site2 } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site2.id,
+      })
+      await setupPageResource({ resourceType: "Page", siteId: site1.id })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site2.id),
+        query: "test",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 0,
+        resources: [],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should return the correct values if query is empty string", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: null,
+        resources: [],
+        recentlyEdited: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should return the correct values if query is a string of whitespaces", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "       ",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: null,
+        resources: [],
+        recentlyEdited: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should return the correct values if query is not provided", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+      })
+
+      // Assert
+      const expected = {
+        totalCount: null,
+        resources: [],
+        recentlyEdited: [
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("recentlyEdited should be ordered by lastUpdatedAt", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page: page1 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "page 1",
+        permalink: "page-1",
+      })
+      const { page: page2 } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "page 2",
+        permalink: "page-2",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+      })
+
+      // Assert
+      const expected = {
+        totalCount: null,
+        resources: [],
+        recentlyEdited: [
+          {
+            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page2.permalink}`,
+            lastUpdatedAt: page2.updatedAt,
+          },
+          {
+            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page1.permalink}`,
+            lastUpdatedAt: page1.updatedAt,
+          },
+        ],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("recentlyEdited should only return page-ish resources", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({ resourceType: "RootPage", siteId: site.id })
+      const { folder: folder1 } = await setupFolder({ siteId: site.id })
+      await setupFolderMeta({ siteId: site.id, folderId: folder1.id })
+      await setupCollection({ siteId: site.id })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+      })
+
+      // Assert
+      const expected = {
+        totalCount: null,
+        resources: [],
+        recentlyEdited: [],
+      }
+      expect(result).toEqual(expected)
+    })
+
+    describe("limit", () => {
+      it("should return up to 10 most recently edited resources if no limit is provided", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+        const pages = []
+        for (let index = 0; index < 11; index++) {
+          pages.push(
+            await setupPageResource({
+              siteId: site.id,
+              resourceType: "Page",
+              permalink: `page-${index + 1}`,
+            }),
+          )
+        }
+
+        // Act
+        const result = await caller.search({
+          siteId: String(site.id),
+          query: "test",
+        })
+
+        // Assert
+        const expected = {
+          totalCount: 11,
+          resources: pages
+            .reverse()
+            .slice(0, 10)
+            .map((page) => {
+              const { page: pageX } = page
+              return {
+                ...pick(pageX, RESOURCE_FIELDS_TO_PICK),
+                fullPermalink: `${pageX.permalink}`,
+                lastUpdatedAt: pageX.updatedAt,
+              }
+            }),
+          recentlyEdited: [],
+        }
+        expect(result).toEqual(expected)
+      })
+
+      it("should return limit number of resources according to the the `limit` parameter", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "page-1",
+        })
+        const { page: page2 } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "page-2",
+        })
+        const { page: page3 } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "page-3",
+        })
+
+        // Act
+        const result = await caller.search({
+          siteId: String(site.id),
+          query: "test",
+          limit: 2,
+        })
+
+        // Assert
+        const expected = {
+          totalCount: 3,
+          resources: [
+            {
+              ...pick(page3, RESOURCE_FIELDS_TO_PICK),
+              fullPermalink: `${page3.permalink}`,
+              lastUpdatedAt: page3.updatedAt,
+            },
+            {
+              ...pick(page2, RESOURCE_FIELDS_TO_PICK),
+              fullPermalink: `${page2.permalink}`,
+              lastUpdatedAt: page2.updatedAt,
+            },
+          ],
+          recentlyEdited: [],
+        }
+        expect(result).toEqual(expected)
+      })
+
+      it("should return all items if limit is greater than the number of items", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+        const { page: page1 } = await setupPageResource({
+          resourceType: "Page",
+          siteId: site.id,
+        })
+
+        // Act
+        const result = await caller.search({
+          siteId: String(site.id),
+          query: "test",
+          limit: 2,
+        })
+
+        // Assert
+        const expected = {
+          totalCount: 1,
+          resources: [
+            {
+              ...pick(page1, RESOURCE_FIELDS_TO_PICK),
+              fullPermalink: `${page1.permalink}`,
+              lastUpdatedAt: page1.updatedAt,
+            },
+          ],
+          recentlyEdited: [],
+        }
+        expect(result).toEqual(expected)
+      })
+    })
+
+    describe("cursor", () => {
+      it("should return empty results if `cursor` is invalid", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+        await setupPageResource({ resourceType: "Page", siteId: site.id })
+
+        // Act
+        const result = await caller.search({
+          siteId: String(site.id),
+          query: "test",
+          cursor: 600,
+        })
+
+        const expected = {
+          totalCount: 1,
+          resources: [],
+          recentlyEdited: [],
+        }
+        expect(result).toEqual(expected)
+      })
+
+      it("should return the next set of resources if valid `cursor` is provided", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+        const pages = []
+        for (let index = 0; index < 31; index++) {
+          pages.push(
+            await setupPageResource({
+              siteId: site.id,
+              resourceType: "Page",
+              permalink: `page-${index + 1}`,
+            }),
+          )
+        }
+
+        // Act
+        const result = await caller.search({
+          siteId: String(site.id),
+          query: "test",
+          cursor: 10,
+        })
+
+        // Assert
+        const expected = {
+          totalCount: 31,
+          resources: pages
+            .reverse()
+            .slice(10, 20)
+            .map((page) => {
+              const { page: pageX } = page
+              return {
+                ...pick(pageX, RESOURCE_FIELDS_TO_PICK),
+                fullPermalink: `${pageX.permalink}`,
+                lastUpdatedAt: pageX.updatedAt,
+              }
+            }),
+          recentlyEdited: [],
+        }
+        expect(result).toEqual(expected)
+      })
+    })
   })
 })

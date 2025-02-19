@@ -85,11 +85,10 @@ export const publishPageSchema = z.object({
 export const createCollectionPageFormSchema = z
   .discriminatedUnion("type", [
     z.object({
-      type: z.literal("pdf"),
-      url: z.string().url(),
+      type: z.literal(ResourceType.CollectionLink),
     }),
     z.object({
-      type: z.literal("page"),
+      type: z.literal(ResourceType.CollectionPage),
     }),
   ])
   .and(
@@ -117,7 +116,6 @@ export const getRootPageSchema = z.object({
 
 export const basePageSettingsSchema = basePageSchema.extend({
   title: pageTitleSchema,
-  meta: z.string().optional(),
 })
 
 export const rootPageSettingsSchema = basePageSettingsSchema.extend({
@@ -132,6 +130,9 @@ export const pageSettingsSchema = z.discriminatedUnion("type", [
   basePageSettingsSchema.extend({
     type: z.literal(ResourceType.CollectionPage),
     permalink: permalinkSchema,
+  }),
+  basePageSettingsSchema.extend({
+    type: z.literal(ResourceType.IndexPage),
   }),
   rootPageSettingsSchema,
 ])
@@ -148,4 +149,15 @@ export const readPageOutputSchema = z.object({
   type: z.nativeEnum(ResourceType),
   createdAt: z.date(),
   updatedAt: z.date(),
+})
+
+export const updatePageMetaSchema = z.object({
+  meta: z.string(),
+  siteId: z.number().min(1),
+  resourceId: z.string().min(1),
+})
+
+export const createIndexPageSchema = z.object({
+  siteId: z.number().min(1),
+  parentId: z.string(),
 })

@@ -1,44 +1,55 @@
 #!/bin/sh
 
+# Exit immediately if a command exits with a non-zero status.
 set -x
 
-#######################################################################
-# Download package.json and package-lock.json files from central repo #
-#######################################################################
+# Helper function to calculate duration
+calculate_duration() {
+  start_time=$1
+  end_time=$(date +%s)
+  duration=$((end_time - start_time))
+  echo "Time taken: $duration seconds"
+}
 
-# curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/package.json -o package.json
-# curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/package-lock.json -o package-lock.json
-curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/template/tailwind.config.js -o tailwind.config.js
+# Use the latest release tag unless one was provided in the env var
+# NOTE: jq is not available in the Amplify build image, hence we use python
+if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
+  ISOMER_BUILD_REPO_BRANCH=$(curl https://api.github.com/repos/opengovsg/isomer/releases/latest | \
+    python3 -c "import sys, json; print(json.load(sys.stdin)['tag_name'])")
+fi
 
-#######################
-# Install NPM modules #
-#######################
+# Store the current directory
+ISOMER_REPO_DIRECTORY=$(pwd)
 
-# Temporary until we start doing proper releases of the Isomer components
-curl -L https://raw.githubusercontent.com/isomerpages/isomer-components-package/main/opengovsg-isomer-components-0.0.13.tgz -o opengovsg-isomer-components-0.0.13.tgz
-npm install opengovsg-isomer-components-0.0.13.tgz
+# Cloning the repository
+echo "Cloning central repository..."
+start_time=$(date +%s)
 
-#######################################################################
-# Generate sitemap.json and search index                              #
-#######################################################################
-mkdir -p scripts/
+cd ../
+git clone --depth 1 --branch "$ISOMER_BUILD_REPO_BRANCH" https://github.com/opengovsg/isomer.git
+cd isomer/
+calculate_duration $start_time
 
-curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/generate-sitemap.js -o scripts/generate-sitemap.js
-# curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/generate-search-index.js -o scripts/generate-search-index.js
+echo $(pwd)
 
-node scripts/generate-sitemap.js
+# Checkout specific branch
+echo "Checking out branch..."
+start_time=$(date +%s)
+git checkout $ISOMER_BUILD_REPO_BRANCH
+calculate_duration $start_time
 
-echo "Sitemap generated"
+# Perform a clean of npm cache
+npm cache clean --force
 
-# node scripts/generate-search-index.js
+# Install dependencies
+echo "Installing dependencies..."
+start_time=$(date +%s)
+npm i
+echo "Dependencies installed"
+calculate_duration $start_time
 
-# echo "Search index generated"
-
-#######################################################################
-# Copy to public folder                                               #
-#######################################################################
-
-cp -v sitemap.json public/
-# cp -v searchIndex.json public/
-
-echo "Copied sitemap and search index to public folder"
+# Build components
+echo "Building components..."
+start_time=$(date +%s)
+cd packages/components
+npm run build

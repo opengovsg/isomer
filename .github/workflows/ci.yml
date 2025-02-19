@@ -23,6 +23,16 @@ jobs:
         uses: withgraphite/graphite-ci-action@main
         with:
           graphite_token: ${{ secrets.GRAPHITE_CI_OPTIMIZER_TOKEN }}
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Build
+        run: npm run build
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -80,6 +90,15 @@ jobs:
         env:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
+          # Set timezone to Singapore to ensure that the tests are run in the correct timezone
+          TZ: Asia/Singapore
+      - name: Test Components
+        run: turbo test-ci:unit --filter=@opengovsg/isomer-components --env-mode=loose
+        env:
+          # Required to allow Datadog to trace Vitest tests
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
+          # Set timezone to Singapore to ensure that the tests are run in the correct timezone
+          TZ: Asia/Singapore
 
   end-to-end-tests:
     name: End-to-end tests

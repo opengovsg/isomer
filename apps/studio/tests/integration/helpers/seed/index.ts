@@ -1,3 +1,8 @@
+import {
+  ResourceState,
+  ResourceType,
+  RoleType,
+} from "~prisma/generated/generatedEnums"
 import type { SetOptional } from "type-fest"
 import cuid2 from "@paralleldrive/cuid2"
 import { db, jsonb } from "~server/db"
@@ -33,6 +38,30 @@ export const setupTestUser = async (user?: SetOptional<User, "id">) => {
     .returningAll()
     .executeTakeFirstOrThrow()
 }
+import { MOCK_STORY_DATE } from "tests/msw/constants"
+
+export const setupAdminPermissions = async ({
+  userId,
+  siteId,
+  isDeleted = false,
+}: {
+  userId?: string
+  siteId: number
+  isDeleted?: boolean
+}) => {
+  if (!userId) throw new Error("userId is a required field")
+
+  await db
+    .insertInto("ResourcePermission")
+    .values({
+      userId: String(userId),
+      siteId,
+      role: RoleType.Admin,
+      resourceId: null,
+      deletedAt: isDeleted ? MOCK_STORY_DATE : null,
+    })
+    .execute()
+}
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
   if (siteId !== undefined && fetch) {
@@ -57,16 +86,18 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
       return { site, navbar, footer }
     })
   }
+
+  const name = `Ministry of Testing and Development ${nanoid()}`
   return await db.transaction().execute(async (tx) => {
     const site = await tx
       .insertInto("Site")
       .values({
-        name: `Ministry of Testing and Development ${nanoid()}`,
+        name,
         // @ts-expect-error not using the specific config for tests, no need to populate
         config: {
           theme: "isomer-next",
           logoUrl: "",
-          siteName: "TST",
+          siteName: name,
           isGovernment: true,
         },
         id: siteId,
@@ -197,11 +228,37 @@ export const setupBlob = async (blobId?: string) => {
     .executeTakeFirstOrThrow()
 }
 
+const getFallbackTitle = (resourceType: ResourceType) => {
+  switch (resourceType) {
+    case ResourceType.RootPage:
+      return "Home"
+    case ResourceType.CollectionPage:
+      return "test collection page"
+    case ResourceType.IndexPage:
+      return "test index page"
+    default:
+      return "test page"
+  }
+}
+
+const getFallbackPermalink = (resourceType: ResourceType) => {
+  switch (resourceType) {
+    case ResourceType.RootPage:
+      return ""
+    case ResourceType.CollectionPage:
+      return "test-collection-page"
+    case ResourceType.IndexPage:
+      return "test-index-page"
+    default:
+      return "test-page"
+  }
+}
+
 export const setupPageResource = async ({
   siteId: siteIdProp,
   blobId: blobIdProp,
   resourceType,
-  state = "Draft",
+  state = ResourceState.Draft,
   userId,
   permalink,
   parentId,
@@ -222,8 +279,8 @@ export const setupPageResource = async ({
   let page = await db
     .insertInto("Resource")
     .values({
-      title: title ?? (resourceType === "RootPage" ? "Home" : "test page"),
-      permalink: permalink ?? (resourceType === "RootPage" ? "" : "test-page"),
+      title: title ?? getFallbackTitle(resourceType),
+      permalink: permalink ?? getFallbackPermalink(resourceType),
       siteId: site.id,
       parentId,
       publishedVersionId: null,
@@ -234,7 +291,7 @@ export const setupPageResource = async ({
     .returningAll()
     .executeTakeFirstOrThrow()
 
-  if (state === "Published" && userId) {
+  if (state === ResourceState.Published && userId) {
     const version = await db
       .insertInto("Version")
       .values({
@@ -287,8 +344,8 @@ export const setupFolder = async ({
       parentId,
       title,
       draftBlobId: null,
-      state: "Draft",
-      type: "Folder",
+      state: ResourceState.Draft,
+      type: ResourceType.Folder,
       publishedVersionId: null,
     })
     .returningAll()
@@ -300,4 +357,150 @@ export const setupFolder = async ({
     footer,
     folder,
   }
+}
+
+export const setupCollection = async ({
+  siteId: siteIdProp,
+  permalink = "test-collection",
+  parentId = null,
+  title = "test collection",
+}: {
+  siteId?: number
+  permalink?: string
+  parentId?: string | null
+  title?: string
+}) => {
+  const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
+
+  const collection = await db
+    .insertInto("Resource")
+    .values({
+      permalink,
+      siteId: site.id,
+      parentId,
+      title,
+      draftBlobId: null,
+      state: ResourceState.Draft,
+      type: ResourceType.Collection,
+      publishedVersionId: null,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  return {
+    site,
+    navbar,
+    footer,
+    collection,
+  }
+}
+
+export const setupCollectionLink = async ({
+  siteId: siteIdProp,
+  permalink = "test-collection-link",
+  collectionId,
+  title = "test collection link",
+}: {
+  siteId?: number
+  permalink?: string
+  collectionId: string
+  title?: string
+}) => {
+  const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
+
+  const collectionLink = await db
+    .insertInto("Resource")
+    .values({
+      permalink,
+      siteId: site.id,
+      parentId: collectionId,
+      title,
+      type: ResourceType.CollectionLink,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  return {
+    site,
+    navbar,
+    footer,
+    collectionLink,
+  }
+}
+
+export const setupFolderMeta = async ({
+  siteId: siteIdProp,
+  folderId,
+}: {
+  siteId?: number
+  folderId: string
+}) => {
+  const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
+
+  const folderMeta = await db
+    .insertInto("Resource")
+    .values({
+      siteId: site.id,
+      parentId: folderId,
+      title: "Folder meta",
+      permalink: "folder-meta",
+      type: ResourceType.FolderMeta,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  return {
+    site,
+    navbar,
+    footer,
+    folderMeta,
+  }
+}
+
+export const setUpWhitelist = async ({
+  email,
+  expiry,
+}: {
+  email: string
+  expiry?: Date
+}) => {
+  return db
+    .insertInto("Whitelist")
+    .values({
+      email: email.toLowerCase(),
+      expiry: expiry ?? null,
+    })
+    .onConflict((oc) =>
+      oc
+        .column("email")
+        .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
+    )
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+export const setupUser = async ({
+  name = "Test User",
+  userId = nanoid(),
+  email,
+  phone = "",
+  isDeleted,
+}: {
+  name?: string
+  userId?: string
+  email: string
+  phone?: string
+  isDeleted: boolean
+}) => {
+  return db
+    .insertInto("User")
+    .values({
+      id: userId,
+      name,
+      email,
+      phone: phone,
+      deletedAt: isDeleted ? MOCK_STORY_DATE : null,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
 }

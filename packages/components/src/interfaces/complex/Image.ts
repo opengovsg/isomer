@@ -1,24 +1,40 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
+import { ARRAY_RADIO_FORMAT } from "../format"
+
+export const generateImageSrcSchema = ({
+  title = "Image",
+  description,
+}: {
+  title?: string
+  description?: string
+}) => {
+  return Type.String({
+    title,
+    format: "image",
+    description,
+  })
+}
+
+export const ImageSrcSchema = generateImageSrcSchema({})
+
+export const AltTextSchema = Type.String({
+  title: "Alternate text",
+  maxLength: 120,
+  description:
+    "Add a descriptive text so that visually impaired users can understand your image",
+})
 
 export const ImageSchema = Type.Object(
   {
     type: Type.Literal("image", { default: "image" }),
-    src: Type.String({
-      title: "Upload image",
-      format: "image",
-    }),
-    alt: Type.String({
-      title: "Alternate text",
-      maxLength: 120,
-      description:
-        "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
-    }),
+    src: ImageSrcSchema,
+    alt: AltTextSchema,
     caption: Type.Optional(
       Type.String({
-        title: "Image caption",
+        title: "Caption",
         maxLength: 100,
         format: "textarea",
       }),
@@ -33,18 +49,11 @@ export const ImageSchema = Type.Object(
           title: "Image size",
           description:
             "On mobile, images will always fill up to the page width even if you choose “Small”.",
-          format: "radio",
+          format: ARRAY_RADIO_FORMAT,
           type: "string",
           default: "default",
         },
       ),
-    ),
-    href: Type.Optional(
-      Type.String({
-        title: "URL Link",
-        description: "The URL to navigate to when the image is clicked",
-        format: "link",
-      }),
     ),
   },
   {
@@ -54,5 +63,5 @@ export const ImageSchema = Type.Object(
 
 export type ImageProps = Static<typeof ImageSchema> & {
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
+  shouldLazyLoad?: boolean
 }

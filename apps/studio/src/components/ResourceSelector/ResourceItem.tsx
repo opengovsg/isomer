@@ -4,8 +4,9 @@ import { Box, HStack, Icon, Skeleton, Text } from "@chakra-ui/react"
 import { dataAttr } from "@chakra-ui/utils"
 import { Button } from "@opengovsg/design-system-react"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { ErrorBoundary } from "react-error-boundary"
-import { BiData, BiFile, BiFolder, BiLockAlt } from "react-icons/bi"
+import { BiData, BiFile, BiFolder, BiLink, BiLockAlt } from "react-icons/bi"
 
 import type { RouterOutput } from "~/utils/trpc"
 
@@ -27,12 +28,15 @@ const SuspendableResourceItem = ({
 }: ResourceItemProps) => {
   const icon: IconType = useMemo(() => {
     switch (type) {
-      case "Folder":
+      case ResourceType.CollectionLink:
+        return BiLink
+      case ResourceType.Folder:
         return BiFolder
-      case "CollectionPage":
-      case "Page":
+      case ResourceType.CollectionPage:
+      case ResourceType.Page:
+      case ResourceType.IndexPage:
         return BiFile
-      case "Collection":
+      case ResourceType.Collection:
         return BiData
     }
   }, [type])

@@ -2,20 +2,27 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { useCallback } from "react"
 import { Box, Flex, useDisclosure } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button, useToast } from "@opengovsg/design-system-react"
 import { getLayoutPageSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import isEmpty from "lodash/isEmpty"
 import isEqual from "lodash/isEqual"
 
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 import { editPageSchema } from "../schema"
+import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
 import { DiscardChangesModal } from "./DiscardChangesModal"
 import { DrawerHeader } from "./Drawer/DrawerHeader"
 import { ErrorProvider, useBuilderErrors } from "./form-builder/ErrorProvider"
 import FormBuilder from "./form-builder/FormBuilder"
+
+const HEADER_LABELS: Record<string, string> = {
+  article: "Edit article page header",
+  content: "Edit content page header",
+}
 
 const ajv = new Ajv({ strict: false, logger: false })
 
@@ -34,10 +41,17 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   } = useEditorDrawerContext()
 
   const { pageId, siteId } = useQueryParse(editPageSchema)
+  const toast = useToast()
   const utils = trpc.useUtils()
   const { mutate, isLoading } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+      await utils.page.readPage.invalidate({ pageId, siteId })
+      await utils.page.getCategories.invalidate({ pageId, siteId })
+      toast({
+        title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+        ...BRIEF_TOAST_SETTINGS,
+      })
     },
   })
 
@@ -99,7 +113,9 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               handleDiscardChanges()
             }
           }}
-          label="Edit page description and summary"
+          label={
+            HEADER_LABELS[savedPageState.layout] || "Edit header information"
+          }
         />
 
         <ErrorProvider>

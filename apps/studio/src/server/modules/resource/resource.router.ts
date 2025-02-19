@@ -1,21 +1,89 @@
 import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash"
+import { z } from "zod"
 
-import type { ResourceType } from "../database"
+import type { PermissionsProps } from "../permissions/permissions.type"
 import {
   countResourceSchema,
   deleteResourceSchema,
   getAncestrySchema,
   getChildrenSchema,
   getFullPermalinkSchema,
+  getIndexPageOutputSchema,
+  getIndexPageSchema,
   getMetadataSchema,
   getParentSchema,
   listResourceSchema,
   moveSchema,
+  searchOutputSchema,
+  searchSchema,
+  searchWithResourceIdsOutputSchema,
+  searchWithResourceIdsSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
-import { db, sql } from "../database"
+import { publishSite } from "../aws/codebuild.service"
+import { db, ResourceType } from "../database"
+import { PG_ERROR_CODES } from "../database/constants"
+import {
+  definePermissionsForResource,
+  validateUserPermissionsForResource,
+} from "../permissions/permissions.service"
+import { validateUserPermissionsForSite } from "../site/site.service"
+import {
+  getSearchRecentlyEdited,
+  getSearchResults,
+  getSearchWithResourceIds,
+  getWithFullPermalink,
+} from "./resource.service"
+
+const fetchResource = async (resourceId: string | null) => {
+  if (resourceId === null) return { parentId: null }
+
+  const resource = await db
+    .selectFrom("Resource")
+    .where("Resource.id", "=", resourceId)
+    .select("parentId")
+    // NOTE: if we don't have a resource,
+    // this means that they tried to fetch a resource that cannot be found
+    .executeTakeFirst()
+
+  if (!resource) {
+    throw new TRPCError({ code: "BAD_REQUEST" })
+  }
+
+  return resource
+}
+
+const validateUserPermissionsForMove = async ({
+  from,
+  to,
+  ...rest
+}: Omit<PermissionsProps, "resourceId"> & {
+  from: string
+  to: string | null
+}) => {
+  // TODO: this is using site wide permissions for now
+  // we should fetch the oldest `parent` of this resource eventually.
+  // Putting this in here first because eventually we'll have to lookup both
+  // even though for now they are the same thing
+  const permsFrom = await definePermissionsForResource({
+    ...rest,
+    resourceId: null,
+  })
+  const permsTo = await definePermissionsForResource({
+    ...rest,
+    resourceId: null,
+  })
+
+  const resourceFrom = await fetchResource(from)
+
+  return (
+    // NOTE: This is because we want to check whether we can move to within `to`
+    // and hence, the parent id is `to`
+    permsFrom.can("move", resourceFrom) && permsTo.can("move", { parentId: to })
+  )
+}
 
 export const resourceRouter = router({
   getMetadataById: protectedProcedure
@@ -48,7 +116,10 @@ export const resourceRouter = router({
           .selectFrom("Resource")
           .where("siteId", "=", Number(siteId))
           .where("id", "=", String(resourceId))
-          .where("Resource.type", "=", "Folder")
+          .where("Resource.type", "in", [
+            ResourceType.Folder,
+            ResourceType.Collection,
+          ])
           .executeTakeFirst()
 
         if (!resource) {
@@ -59,11 +130,11 @@ export const resourceRouter = router({
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
-        .where("Resource.type", "in", ["Folder"])
+        .where("Resource.type", "in", [
+          ResourceType.Folder,
+          ResourceType.Collection,
+        ])
         .where("Resource.siteId", "=", Number(siteId))
-        .$narrowType<{
-          type: "Folder"
-        }>()
         .orderBy("type", "asc")
         .orderBy("title", "asc")
         .offset(offset)
@@ -97,7 +168,11 @@ export const resourceRouter = router({
           .selectFrom("Resource")
           .where("siteId", "=", Number(siteId))
           .where("id", "=", String(resourceId))
-          .where("Resource.type", "=", "Folder")
+          .where("Resource.type", "in", [
+            ResourceType.RootPage,
+            ResourceType.Collection,
+            ResourceType.Folder,
+          ])
           .executeTakeFirst()
 
         if (!resource) {
@@ -107,12 +182,16 @@ export const resourceRouter = router({
       let query = db
         .selectFrom("Resource")
         .select(["title", "permalink", "type", "id"])
-        .where("Resource.type", "!=", "RootPage")
+        .where("Resource.type", "!=", ResourceType.RootPage)
+        .where("Resource.type", "!=", ResourceType.FolderMeta)
+        .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .where("Resource.siteId", "=", Number(siteId))
         .$narrowType<{
-          type: Extract<
-            "Folder" | "Page" | "Collection" | "CollectionPage",
-            ResourceType
+          type: Exclude<
+            ResourceType,
+            | typeof ResourceType.RootPage
+            | typeof ResourceType.FolderMeta
+            | typeof ResourceType.CollectionMeta
           >
         }>()
         .orderBy("type", "asc")
@@ -143,64 +222,144 @@ export const resourceRouter = router({
 
   move: protectedProcedure
     .input(moveSchema)
-    .mutation(async ({ input: { movedResourceId, destinationResourceId } }) => {
-      return await db
-        .transaction()
-        .execute(async (tx) => {
-          const toMove = await tx
-            .selectFrom("Resource")
-            .where("id", "=", movedResourceId)
-            .select(["id", "siteId"])
-            .executeTakeFirst()
-          if (!toMove) {
-            throw new TRPCError({ code: "BAD_REQUEST" })
-          }
-          const parent = await tx
-            .selectFrom("Resource")
-            .where("id", "=", destinationResourceId)
-            .select(["id", "type", "siteId"])
-            .executeTakeFirst()
-
-          if (!parent || parent.type !== "Folder") {
-            throw new TRPCError({ code: "BAD_REQUEST" })
-          }
-
-          if (movedResourceId === destinationResourceId) {
-            throw new TRPCError({ code: "BAD_REQUEST" })
-          }
-
-          if (toMove.siteId !== parent.siteId) {
-            throw new TRPCError({ code: "FORBIDDEN" })
-          }
-
-          await tx
-            .updateTable("Resource")
-            .where("id", "=", String(movedResourceId))
-            .where("Resource.type", "in", ["Page", "Folder"])
-            .set({ parentId: String(destinationResourceId) })
-            .execute()
-          return tx
-            .selectFrom("Resource")
-            .where("id", "=", String(movedResourceId))
-            .select([
-              "Resource.parentId",
-              "Resource.id",
-              "Resource.type",
-              "Resource.permalink",
-              "Resource.title",
-            ])
-            .executeTakeFirst()
+    .mutation(
+      async ({
+        ctx,
+        input: { siteId, movedResourceId, destinationResourceId },
+      }) => {
+        const isValid = await validateUserPermissionsForMove({
+          from: movedResourceId,
+          to: destinationResourceId,
+          userId: ctx.user.id,
+          siteId,
         })
-        .catch((err) => {
-          if (get(err, "code") === "23505") {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "A resource with the same permalink already exists",
-            })
-          }
-          throw err
-        })
-    }),
+
+        if (!isValid) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "Please ensure that you have the required permissions to perform a move!",
+          })
+        }
+
+        const result = await db
+          .transaction()
+          .execute(async (tx) => {
+            const toMove = await tx
+              .selectFrom("Resource")
+              .where("id", "=", movedResourceId)
+              .select(["id", "siteId", "type"])
+              .executeTakeFirst()
+
+            if (!toMove) {
+              throw new TRPCError({ code: "BAD_REQUEST" })
+            }
+
+            let query = tx.selectFrom("Resource")
+            query = !!destinationResourceId
+              ? query.where("id", "=", destinationResourceId)
+              : query
+                  .where("type", "=", ResourceType.RootPage)
+                  .where("siteId", "=", siteId)
+            const parent = await query
+              .select(["id", "type", "siteId"])
+              .executeTakeFirst()
+
+            if (
+              !parent ||
+              // NOTE: we only allow moves to folders/root.
+              // for moves to root, we only allow this for admin
+              (parent.type !== ResourceType.RootPage &&
+                parent.type !== ResourceType.Folder &&
+                parent.type !== ResourceType.Collection)
+            ) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message:
+                  "Please ensure that you are trying to move your resource into a valid destination",
+              })
+            }
+
+            // NOTE: If the users are trying to move into a collection,
+            // check that the resource first belongs to a collection
+            if (
+              parent.type !== ResourceType.Collection &&
+              (toMove.type === ResourceType.CollectionPage ||
+                toMove.type === ResourceType.CollectionLink)
+            ) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message:
+                  "Collection items can only be moved to another collection",
+              })
+            }
+
+            if (
+              parent.type === ResourceType.Collection &&
+              toMove.type !== ResourceType.CollectionPage &&
+              toMove.type !== ResourceType.CollectionLink
+            ) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Folder items can only be moved to another folder",
+              })
+            }
+
+            if (movedResourceId === destinationResourceId) {
+              throw new TRPCError({ code: "BAD_REQUEST" })
+            }
+
+            if (toMove.siteId !== parent.siteId) {
+              throw new TRPCError({ code: "FORBIDDEN" })
+            }
+
+            await tx
+              .updateTable("Resource")
+              .where("id", "=", String(movedResourceId))
+              .where("Resource.type", "in", [
+                ResourceType.Page,
+                ResourceType.CollectionPage,
+                ResourceType.Folder,
+                ResourceType.CollectionLink,
+              ])
+              .set({
+                parentId: !!destinationResourceId
+                  ? String(destinationResourceId)
+                  : null,
+              })
+              .execute()
+
+            return tx
+              .selectFrom("Resource")
+              .where("id", "=", String(movedResourceId))
+              .select([
+                "Resource.siteId",
+                "Resource.parentId",
+                "Resource.id",
+                "Resource.type",
+                "Resource.permalink",
+                "Resource.title",
+              ])
+              .executeTakeFirst()
+          })
+          .catch((err) => {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
+
+        if (!result) {
+          throw new TRPCError({ code: "NOT_FOUND" })
+        }
+
+        await publishSite(ctx.logger, result.siteId)
+        return result
+      },
+    ),
 
   countWithoutRoot: protectedProcedure
     .input(countResourceSchema)
@@ -209,7 +368,9 @@ export const resourceRouter = router({
       let query = db
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "!=", "RootPage")
+        .where("Resource.type", "!=", ResourceType.RootPage)
+        .where("Resource.type", "!=", ResourceType.FolderMeta)
+        .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .select((eb) => [eb.fn.countAll().as("totalCount")])
 
       if (resourceId) {
@@ -228,7 +389,9 @@ export const resourceRouter = router({
       let query = db
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "!=", "RootPage")
+        .where("Resource.type", "!=", ResourceType.RootPage)
+        .where("Resource.type", "!=", ResourceType.FolderMeta)
+        .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .orderBy("Resource.updatedAt", "desc")
         .orderBy("Resource.title", "asc")
         .offset(offset)
@@ -257,17 +420,27 @@ export const resourceRouter = router({
 
   delete: protectedProcedure
     .input(deleteResourceSchema)
-    .mutation(async ({ input: { siteId, resourceId } }) => {
+    .mutation(async ({ ctx, input: { siteId, resourceId } }) => {
+      await validateUserPermissionsForResource({
+        action: "delete",
+        userId: ctx.user.id,
+        siteId,
+        resourceId,
+      })
+
       const result = await db
         .deleteFrom("Resource")
         .where("Resource.id", "=", String(resourceId))
         .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "!=", "RootPage")
+        .where("Resource.type", "!=", ResourceType.RootPage)
         .executeTakeFirst()
 
       if (Number(result.numDeletedRows) === 0) {
         throw new TRPCError({ code: "BAD_REQUEST" })
       }
+
+      await publishSite(ctx.logger, siteId)
+
       // NOTE: We need to do this cast as the property is a `bigint`
       // and trpc cannot serialise it, which leads to errors
       return Number(result.numDeletedRows)
@@ -308,43 +481,34 @@ export const resourceRouter = router({
   getWithFullPermalink: protectedProcedure
     .input(getFullPermalinkSchema)
     .query(async ({ input: { resourceId } }) => {
-      const result = await db
-        .withRecursive("resourcePath", (eb) =>
-          eb
-            .selectFrom("Resource as r")
-            .select([
-              "r.id",
-              "r.title",
-              "r.permalink",
-              "r.parentId",
-              "r.permalink as fullPermalink",
-            ])
-            .where("r.parentId", "is", null)
-            .unionAll(
-              eb
-                .selectFrom("Resource as s")
-                .innerJoin("resourcePath as rp", "s.parentId", "rp.id")
-                .select([
-                  "s.id",
-                  "s.title",
-                  "s.permalink",
-                  "s.parentId",
-                  sql<string>`CONCAT(rp."fullPermalink", '/', s.permalink)`.as(
-                    "fullPermalink",
-                  ),
-                ]),
-            ),
-        )
-        .selectFrom("resourcePath as rp")
-        .select(["rp.id", "rp.title", "rp.fullPermalink"])
-        .where("rp.id", "=", resourceId)
-        .executeTakeFirst()
+      const result = await getWithFullPermalink({ resourceId })
 
       if (!result) {
         throw new TRPCError({ code: "NOT_FOUND" })
       }
 
       return result
+    }),
+
+  getRolesFor: protectedProcedure
+    .input(
+      z.object({
+        resourceId: z.string().nullable(),
+        siteId: z.number(),
+      }),
+    )
+    .query(({ ctx, input: { resourceId, siteId } }) => {
+      const query = db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", ctx.user.id)
+        .where("siteId", "=", siteId)
+        .where("deletedAt", "is", null)
+
+      if (!resourceId) {
+        query.where("resourceId", "is", null)
+      } else query.where("resourceId", "=", resourceId)
+
+      return query.select(["role"]).execute()
     }),
 
   getAncestryOf: protectedProcedure
@@ -388,5 +552,78 @@ export const resourceRouter = router({
         .execute()
 
       return ancestors.reverse().slice(0, -1)
+    }),
+
+  search: protectedProcedure
+    .input(searchSchema)
+    .output(searchOutputSchema)
+    .query(
+      async ({ ctx, input: { siteId, query = "", cursor: offset, limit } }) => {
+        await validateUserPermissionsForSite({
+          siteId: Number(siteId),
+          userId: ctx.user.id,
+          action: "read",
+        })
+
+        // check if the query is only whitespaces (including multiple spaces)
+        if (query.trim() === "") {
+          return {
+            totalCount: null,
+            resources: [],
+            recentlyEdited: await getSearchRecentlyEdited({
+              siteId: Number(siteId),
+            }),
+          }
+        }
+
+        const searchResults = await getSearchResults({
+          siteId: Number(siteId),
+          query,
+          offset,
+          limit,
+        })
+        return {
+          totalCount: Number(searchResults.totalCount),
+          resources: searchResults.resources,
+          recentlyEdited: [],
+        }
+      },
+    ),
+
+  searchWithResourceIds: protectedProcedure
+    .input(searchWithResourceIdsSchema)
+    .output(searchWithResourceIdsOutputSchema)
+    .query(async ({ input: { siteId, resourceIds } }) => {
+      if (resourceIds.length === 0) {
+        return []
+      }
+      return (
+        await getSearchWithResourceIds({
+          siteId: Number(siteId),
+          resourceIds,
+        })
+      ).sort(
+        // Sort resources to match order of input resourceIds
+        (a, b) => resourceIds.indexOf(a.id) - resourceIds.indexOf(b.id),
+      )
+    }),
+
+  getIndexPage: protectedProcedure
+    .input(getIndexPageSchema)
+    .output(getIndexPageOutputSchema)
+    .query(async ({ input: { siteId, parentId } }) => {
+      const parent = await db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.parentId", "=", parentId)
+        .where("Resource.type", "=", ResourceType.IndexPage)
+        .select(["Resource.id"])
+        .executeTakeFirst()
+
+      if (!parent) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
+      return parent
     }),
 })

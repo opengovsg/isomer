@@ -2,6 +2,7 @@
 import type { Decorator, Preview } from "@storybook/react"
 import { withThemeByDataAttribute } from "@storybook/addon-themes"
 import { MINIMAL_VIEWPORTS } from "@storybook/addon-viewport"
+import { initialize, mswLoader } from "msw-storybook-addon"
 
 import "bootstrap-icons/font/bootstrap-icons.css"
 import "../src/index.css"
@@ -77,7 +78,13 @@ const CUSTOM_GSIB_VIEWPORTS = {
   },
 }
 
+// Initialize MSW
+initialize({
+  onUnhandledRequest: "bypass",
+})
+
 const preview: Preview = {
+  loaders: [mswLoader],
   parameters: {
     viewport: {
       viewports: {

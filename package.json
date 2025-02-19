@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "build": "dotenv -- turbo build",
+    "build:template": "dotenv -- turbo build:template",
     "clean": "turbo clean",
     "dev": "dotenv -- turbo run dev",
     "setup:test": "turbo setup:test",
@@ -17,7 +18,7 @@
     "format:fix": "turbo format --continue -- --write --cache --cache-location node_modules/.cache/.prettiercache  --ignore-path ./.prettierignore",
     "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:fix": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
-    "lint:ws": "npx sherif@0.10.0",
+    "lint:ws": "npx sherif@0.10.0 -i next",
     "lint:ws:fix": "npx sherif@0.10.0 --fix",
     "postinstall": "npm run lint:ws"
   },

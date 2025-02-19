@@ -18,6 +18,25 @@ export default [
         "error",
         { ignorePrimitives: true },
       ],
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@chakra-ui/react",
+              importNames: ["useToast"],
+              message:
+                "Please use useToast from @opengovsg/design-system-react instead.",
+            },
+            {
+              name: "@chakra-ui/react",
+              importNames: ["FormLabel", "FormErrorMessage", "FormHelperText"],
+              message:
+                "Please use FormLabel, FormErrorMessage, and FormHelperText from @opengovsg/design-system-react instead.",
+            },
+          ],
+        },
+      ],
     },
   },
 ]

@@ -1,9 +1,18 @@
-import { getLayoutMetadataSchema } from "@opengovsg/isomer-components"
+import type { IsomerSchema } from "@opengovsg/isomer-components"
+import {
+  getLayoutMetadataSchema,
+  ISOMER_USABLE_PAGE_LAYOUTS,
+  schema,
+} from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 import { get, isEmpty, isEqual } from "lodash"
+import { z } from "zod"
 
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   basePageSchema,
+  createIndexPageSchema,
   createPageSchema,
   getRootPageSchema,
   pageSettingsSchema,
@@ -11,12 +20,15 @@ import {
   readPageOutputSchema,
   reorderBlobSchema,
   updatePageBlobSchema,
+  updatePageMetaSchema,
 } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { startProjectById, stopRunningBuilds } from "../aws/codebuild.service"
-import { db, jsonb, ResourceType } from "../database"
+import { publishSite } from "../aws/codebuild.service"
+import { db, jsonb, sql } from "../database"
+import { PG_ERROR_CODES } from "../database/constants"
+import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
   getFooter,
   getFullPageById,
@@ -24,21 +36,132 @@ import {
   getPageById,
   getResourceFullPermalink,
   getResourcePermalinkTree,
+  publishResource,
   updateBlobById,
 } from "../resource/resource.service"
-import { getSiteConfig, getSiteNameAndCodeBuildId } from "../site/site.service"
-import { incrementVersion } from "../version/version.service"
+import { getSiteConfig } from "../site/site.service"
 import { createDefaultPage } from "./page.service"
 
+const schemaValidator = ajv.compile<IsomerSchema>(schema)
+
+// TODO: Need to do validation like checking for existence of the page
+// and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
+const validatedPageProcedure = protectedProcedure.use(
+  async ({ next, rawInput }) => {
+    if (
+      typeof rawInput === "object" &&
+      rawInput !== null &&
+      "content" in rawInput
+    ) {
+      // NOTE: content will be the entire page schema for now...
+      if (!schemaValidator(safeJsonParse(rawInput.content as string))) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Schema validation failed.",
+          cause: schemaValidator.errors,
+        })
+      }
+    } else {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Missing request parameters.",
+      })
+    }
+
+    return next()
+  },
+)
+
 export const pageRouter = router({
+  list: protectedProcedure
+    .input(
+      z.object({
+        siteId: z.number(),
+        resourceId: z.number().optional(),
+      }),
+    )
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
+      let query = db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+
+      if (resourceId) {
+        query = query.where("Resource.parentId", "=", String(resourceId))
+      }
+      return query
+        .select([
+          "Resource.id",
+          "Resource.permalink",
+          "Resource.title",
+          "Resource.publishedVersionId",
+          "Resource.draftBlobId",
+          "Resource.type",
+        ])
+        .execute()
+    }),
+
+  getCategories: protectedProcedure
+    .input(basePageSchema)
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
+      const { parentId } = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(pageId))
+        .select("parentId")
+        .executeTakeFirstOrThrow()
+
+      const blobs = await db
+        .selectFrom("Resource as r")
+        .leftJoin("Blob as b", "r.draftBlobId", "b.id")
+        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
+        .leftJoin("Blob as vb", "v.blobId", "vb.id")
+        .where("r.parentId", "=", String(parentId))
+        .select((eb) => {
+          return eb.fn
+            .coalesce(
+              sql<string>`b.content->'page'->>'category'`,
+              sql<string>`vb.content->'page'->>'category'`,
+            )
+            .as("category")
+        })
+        .distinct()
+        .execute()
+
+      const categories = blobs
+        .map((blob) => blob.category)
+        .filter((c) => !!c && !!c.trim())
+
+      return {
+        categories,
+      }
+    }),
+
   readPage: protectedProcedure
     .input(basePageSchema)
     .output(readPageOutputSchema)
-    .query(async ({ input: { pageId, siteId } }) => {
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
       const retrievedPage = await getPageById(db, {
         resourceId: pageId,
         siteId,
       })
+
       if (!retrievedPage) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -51,7 +174,12 @@ export const pageRouter = router({
 
   readPageAndBlob: protectedProcedure
     .input(basePageSchema)
-    .query(async ({ input: { pageId, siteId } }) => {
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
       // TODO: Return blob last modified so the renderer can show last modified
       return db.transaction().execute(async (tx) => {
         const page = await getFullPageById(tx, { resourceId: pageId, siteId })
@@ -71,7 +199,10 @@ export const pageRouter = router({
         if (
           type !== ResourceType.Page &&
           type !== ResourceType.CollectionPage &&
-          type !== ResourceType.RootPage
+          type !== ResourceType.RootPage &&
+          type !== ResourceType.IndexPage &&
+          type !== ResourceType.FolderMeta &&
+          type !== ResourceType.CollectionMeta
         ) {
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -96,10 +227,15 @@ export const pageRouter = router({
 
   reorderBlock: protectedProcedure
     .input(reorderBlobSchema)
-    .mutation(async ({ input: { pageId, from, to, blocks, siteId } }) => {
+    .mutation(async ({ ctx, input: { pageId, from, to, blocks, siteId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "update",
+      })
+
       // NOTE: we have to check against the page's content that we retrieve from db
       // we adopt a strict check such that we allow the update iff the checksum is the same
-
       return db.transaction().execute(async (tx) => {
         const fullPage = await getFullPageById(tx, {
           resourceId: pageId,
@@ -157,9 +293,15 @@ export const pageRouter = router({
         return actualBlocks
       })
     }),
-  updatePageBlob: protectedProcedure
+
+  updatePageBlob: validatedPageProcedure
     .input(updatePageBlobSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId: input.siteId,
+        action: "update",
+      })
       await db.transaction().execute(async (tx) => {
         return updateBlobById(tx, input)
       })
@@ -170,7 +312,16 @@ export const pageRouter = router({
   createPage: protectedProcedure
     .input(createPageSchema)
     .mutation(
-      async ({ input: { permalink, siteId, folderId, title, layout } }) => {
+      async ({
+        ctx,
+        input: { permalink, siteId, folderId, title, layout },
+      }) => {
+        await validateUserPermissionsForResource({
+          userId: ctx.user.id,
+          siteId,
+          action: "create",
+          resourceId: !!folderId ? String(folderId) : null,
+        })
         const newPage = createDefaultPage({ layout })
 
         // TODO: Validate whether siteId is a valid site
@@ -184,7 +335,7 @@ export const pageRouter = router({
                 .selectFrom("Resource")
                 .where("Resource.id", "=", String(folderId))
                 .where("Resource.siteId", "=", siteId)
-                .where("Resource.type", "=", "Folder")
+                .where("Resource.type", "=", ResourceType.Folder)
                 .select("Resource.id")
                 .executeTakeFirst()
               if (!folder) {
@@ -218,9 +369,7 @@ export const pageRouter = router({
             return addedResource
           })
           .catch((err) => {
-            // TODO: Extract into reusable util function
-            // Unique constraint violation error
-            if (get(err, "code") === "23505") {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "A resource with the same permalink already exists",
@@ -241,12 +390,17 @@ export const pageRouter = router({
 
   getRootPage: protectedProcedure
     .input(getRootPageSchema)
-    .query(async ({ input: { siteId } }) => {
+    .query(async ({ ctx, input: { siteId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
       const rootPage = await db
         .selectFrom("Resource")
         // TODO: Only return sites that the user has access to
         .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "=", "RootPage")
+        .where("Resource.type", "=", ResourceType.RootPage)
         .select(["id", "title", "draftBlobId"])
         .executeTakeFirst()
 
@@ -261,37 +415,71 @@ export const pageRouter = router({
 
   publishPage: protectedProcedure
     .input(publishPageSchema)
-    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
-      /* Step 1: Update DB table to latest state */
-      // Create a new version
-      const addedVersionResult = await incrementVersion({
-        siteId,
-        pageId,
+    .mutation(async ({ ctx, input: { siteId, pageId } }) =>
+      publishResource(ctx.logger, siteId, String(pageId), ctx.user.id),
+    ),
+
+  updateMeta: protectedProcedure
+    .input(updatePageMetaSchema)
+    .mutation(async ({ ctx, input: { meta, siteId, resourceId } }) => {
+      await validateUserPermissionsForResource({
         userId: ctx.user.id,
+        siteId,
+        action: "update",
       })
-
-      /* Step 2: Use AWS SDK to start a CodeBuild */
-      const site = await getSiteNameAndCodeBuildId(siteId)
-      const codeBuildId = site.codeBuildId
-      if (!codeBuildId) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "No CodeBuild project ID found for site",
+      return db.transaction().execute(async (tx) => {
+        const fullPage = await getFullPageById(tx, {
+          resourceId: Number(resourceId),
+          siteId,
         })
-      }
 
-      // stop any currently running builds for the site
-      await stopRunningBuilds(ctx.logger, codeBuildId)
+        if (!fullPage?.content) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message:
+              "Unable to load content for the requested page, please contact Isomer Support",
+          })
+        }
 
-      // initiate new build
-      await startProjectById(ctx.logger, codeBuildId)
-      return addedVersionResult
+        const { meta: _oldMeta, ...rest } = fullPage.content
+        const pageMetaSchema = getLayoutMetadataSchema(fullPage.content.layout)
+        const validateFn = ajv.compile(pageMetaSchema)
+
+        const newMeta = safeJsonParse(meta) as PrismaJson.BlobJsonContent | null
+
+        // NOTE: if `meta` was originally passed, then we need to validate it
+        // otherwise, the meta never existed and we don't need to validate anyways
+        const isValid = !meta || validateFn(newMeta)
+
+        if (!isValid) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid metadata",
+            cause: validateFn.errors,
+          })
+        }
+
+        const newContent = !newMeta
+          ? rest
+          : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
+
+        await updateBlobById(tx, {
+          pageId: Number(resourceId),
+          content: newContent,
+          siteId,
+        })
+      })
     }),
 
   updateSettings: protectedProcedure
     .input(pageSettingsSchema)
     .mutation(
-      async ({ input: { pageId, siteId, title, meta, ...settings } }) => {
+      async ({ ctx, input: { pageId, siteId, title, ...settings } }) => {
+        await validateUserPermissionsForResource({
+          userId: ctx.user.id,
+          siteId,
+          action: "update",
+        })
         return db.transaction().execute(async (tx) => {
           const fullPage = await getFullPageById(tx, {
             resourceId: pageId,
@@ -306,47 +494,15 @@ export const pageRouter = router({
             })
           }
 
-          const { meta: _oldMeta, ...rest } = fullPage.content
-          const pageMetaSchema = getLayoutMetadataSchema(
-            fullPage.content.layout,
-          )
-          const validateFn = ajv.compile(pageMetaSchema)
-
-          const newMeta = safeJsonParse(
-            meta,
-          ) as PrismaJson.BlobJsonContent | null
-
-          // NOTE: if `meta` was originally passed, then we need to validate it
-          // otherwise, the meta never existed and we don't need to validate anyways
-          const isValid = !meta || validateFn(newMeta)
-
-          if (!isValid) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Invalid metadata",
-              cause: validateFn.errors,
-            })
-          }
-
           try {
-            const newContent = !newMeta
-              ? rest
-              : ({ ...rest, meta: newMeta } as PrismaJson.BlobJsonContent)
-
-            await updateBlobById(tx, {
-              pageId,
-              content: newContent,
-              siteId,
-            })
-
             const updatedResource = await tx
               .updateTable("Resource")
               .where("Resource.id", "=", String(pageId))
               .where("Resource.siteId", "=", siteId)
               .where("Resource.type", "in", [
-                "Page",
-                "CollectionPage",
-                "RootPage",
+                ResourceType.Page,
+                ResourceType.CollectionPage,
+                ResourceType.RootPage,
               ])
               .set({ title, ...settings })
               .returning([
@@ -358,7 +514,7 @@ export const pageRouter = router({
               ])
               .executeTakeFirstOrThrow()
               .catch((err) => {
-                if (get(err, "code") === "23505") {
+                if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
                   throw new TRPCError({
                     code: "CONFLICT",
                     message:
@@ -368,10 +524,11 @@ export const pageRouter = router({
                 throw err
               })
 
-            return {
-              ...updatedResource,
-              meta: newMeta,
-            }
+            // We do an implicit publish so that we can make the changes to the
+            // page settings immediately visible on the end site
+            await publishSite(ctx.logger, siteId)
+
+            return updatedResource
           } catch (err) {
             if (err instanceof TRPCError) {
               throw err
@@ -388,8 +545,14 @@ export const pageRouter = router({
     ),
   getFullPermalink: protectedProcedure
     .input(basePageSchema)
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const { pageId, siteId } = input
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
       const permalink = await getResourceFullPermalink(siteId, pageId)
       if (!permalink) {
         throw new TRPCError({
@@ -402,8 +565,14 @@ export const pageRouter = router({
     }),
   getPermalinkTree: protectedProcedure
     .input(basePageSchema)
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const { pageId, siteId } = input
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId,
+        action: "read",
+      })
+
       const permalinkTree = await getResourcePermalinkTree(siteId, pageId)
       if (isEmpty(permalinkTree)) {
         throw new TRPCError({
@@ -411,7 +580,96 @@ export const pageRouter = router({
           message: "No permalink tree could be found for the given page",
         })
       }
-
       return permalinkTree
+    }),
+
+  createIndexPage: protectedProcedure
+    .input(createIndexPageSchema)
+    .mutation(async ({ ctx, input: { siteId, parentId } }) => {
+      await validateUserPermissionsForResource({
+        userId: ctx.user.id,
+        siteId: siteId,
+        action: "create",
+        resourceId: parentId,
+      })
+
+      // Validate whether parentId exists and is a Folder or Collection
+      const parent = await db
+        .selectFrom("Resource")
+        .where("Resource.id", "=", parentId)
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "in", [
+          ResourceType.Folder,
+          ResourceType.Collection,
+        ])
+        .select(["title", "permalink", "type"])
+        .executeTakeFirst()
+
+      if (!parent) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Parent resource not found or is not a folder/collection",
+        })
+      }
+
+      const blobContent =
+        parent.type === ResourceType.Collection
+          ? {
+              layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
+              page: {
+                title: parent.title,
+                subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
+                defaultSortBy: "date",
+                defaultSortDirection: "asc",
+              },
+              content: [],
+              version: "0.1.0",
+            }
+          : {
+              layout: ISOMER_USABLE_PAGE_LAYOUTS.Index,
+              page: {
+                title: parent.title,
+                lastModified: new Date().toISOString(),
+                contentPageHeader: {
+                  // follow the same format as autogenerated index pages
+                  summary: `Pages in ${parent.title}`,
+                },
+              },
+              content: [],
+              version: "0.1.0",
+            }
+
+      return db.transaction().execute(async (tx) => {
+        const blob = await tx
+          .insertInto("Blob")
+          .values({ content: jsonb(blobContent) })
+          .returning("Blob.id")
+          .executeTakeFirstOrThrow()
+
+        const addedResource = await tx
+          .insertInto("Resource")
+          .values({
+            title: parent.title,
+            permalink: INDEX_PAGE_PERMALINK,
+            siteId,
+            parentId,
+            draftBlobId: blob.id,
+            type: ResourceType.IndexPage,
+            state: ResourceState.Draft,
+          })
+          .returning("Resource.id")
+          .executeTakeFirstOrThrow()
+          .catch((err) => {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
+
+        return { pageId: addedResource.id }
+      })
     }),
 })

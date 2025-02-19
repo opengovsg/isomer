@@ -26,7 +26,7 @@ const meta: Meta<ImageProps> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       assetsBaseUrl: "https://cms.isomer.gov.sg",
       navBarItems: [],
@@ -58,30 +58,6 @@ export const Smaller: Story = {
     src: "https://placehold.co/200x200",
     alt: "alt",
     size: "smaller",
-  },
-}
-
-export const ImageWithExternalLink: Story = {
-  args: {
-    src: "https://placehold.co/200x200",
-    alt: "alt",
-    href: "https://www.google.com",
-  },
-}
-
-export const ImageWithIllegalLink: Story = {
-  args: {
-    src: "https://placehold.co/200x200",
-    alt: "alt",
-    href: "javascript:alert()",
-  },
-}
-
-export const ImageWithInternalLink: Story = {
-  args: {
-    src: "https://placehold.co/200x200",
-    alt: "alt",
-    href: "[resource:1:1]",
   },
 }
 

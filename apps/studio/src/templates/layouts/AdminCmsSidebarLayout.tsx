@@ -1,24 +1,31 @@
 import type { PropsWithChildren } from "react"
 import { useRouter } from "next/router"
 import { Flex } from "@chakra-ui/react"
-import { BiCog, BiFolder, BiHelpCircle, BiLogOut } from "react-icons/bi"
+import { BiCog, BiFolder, BiLogOut, BiStar } from "react-icons/bi"
 import { z } from "zod"
 
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
-import { CmsSidebar, CmsSidebarContainer } from "~/components/CmsSidebar"
+import { CmsContainer, CmsSidebar } from "~/components/CmsSidebar"
 import { LayoutHead } from "~/components/LayoutHead"
+import { SearchableHeader } from "~/components/SearchableHeader"
 import { DirectorySidebar } from "~/features/dashboard/components/DirectorySidebar"
 import { useMe } from "~/features/me/api"
+import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type GetLayout } from "~/lib/types"
 
-export const AdminCmsSidebarLayout: GetLayout = (page) => {
+export const AdminCmsSearchableLayout: GetLayout = (page) => {
   return (
     <EnforceLoginStatePageWrapper>
       <LayoutHead />
-
-      <Flex minH="$100vh" flexDir="row" bg="base.canvas.alt" pos="relative">
+      <Flex
+        flex={1}
+        overflow="hidden"
+        flexDir="row"
+        bg="base.canvas.alt"
+        pos="relative"
+      >
         <CmsSidebarWrapper>{page}</CmsSidebarWrapper>
       </Flex>
     </EnforceLoginStatePageWrapper>
@@ -35,6 +42,7 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
   const { siteId } = useQueryParse(siteSchema)
 
   const { logout } = useMe()
+  const isUserIsomerAdmin = useIsUserIsomerAdmin()
 
   const pageNavItems: CmsSidebarItem[] = [
     {
@@ -48,15 +56,19 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
 
     // TODO(ISOM-1552): Add back manage users functionality when implemented
     { icon: BiCog, label: "Settings", href: `/sites/${siteId}/settings` },
+    ...(isUserIsomerAdmin
+      ? [
+          {
+            icon: BiStar,
+            label: "Isomer Admin Settings",
+            href: `/sites/${siteId}/admin`,
+          },
+        ]
+      : []),
   ]
 
   const userNavItems: CmsSidebarItem[] = [
     // TODO(ISOM-1552): Add back view live site functionality when implemented
-    {
-      icon: BiHelpCircle,
-      label: "Isomer Guide ",
-      href: "https://guide.isomer.gov.sg/",
-    },
     {
       icon: BiLogOut,
       label: "Sign out",
@@ -65,13 +77,14 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
   ]
 
   return (
-    <CmsSidebarContainer
+    <CmsContainer
       sidebar={
         <CmsSidebar topNavItems={pageNavItems} bottomNavItems={userNavItems} />
       }
       sidenav={<DirectorySidebar siteId={siteId} />}
+      header={<SearchableHeader siteId={siteId} />}
     >
       {children}
-    </CmsSidebarContainer>
+    </CmsContainer>
   )
 }

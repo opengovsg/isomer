@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "ResourcePermission" ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+CREATE TRIGGER update_timestamp BEFORE UPDATE ON "ResourcePermission" FOR EACH ROW EXECUTE PROCEDURE moddatetime("updatedAt");

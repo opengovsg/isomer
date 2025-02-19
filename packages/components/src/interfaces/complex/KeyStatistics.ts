@@ -1,11 +1,23 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
-import type { IsomerPageLayoutType } from "~/types"
+import type {
+  IsomerPageLayoutType,
+  IsomerSiteProps,
+  LinkComponentType,
+} from "~/types"
+import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 export const KeyStatisticsSchema = Type.Object(
   {
     type: Type.Literal("keystatistics", { default: "keystatistics" }),
+    id: Type.Optional(
+      Type.String({
+        title: "Anchor ID",
+        description: "The ID to use for anchor links",
+        format: "hidden",
+      }),
+    ),
     title: Type.String({
       title: "Title",
       maxLength: 100,
@@ -28,8 +40,30 @@ export const KeyStatisticsSchema = Type.Object(
         maxItems: 4,
       },
     ),
+    label: Type.Optional(
+      Type.String({
+        title: "Link text",
+        maxLength: 50,
+        description:
+          "Add a link under your block. Avoid generic text such as “Click here” or “Learn more”",
+      }),
+    ),
+    url: Type.Optional(
+      Type.String({
+        title: "Link destination",
+        description: "When this is clicked, open:",
+        format: "link",
+        pattern: LINK_HREF_PATTERN,
+      }),
+    ),
   },
   {
+    groups: [
+      {
+        label: "Add a call-to-action",
+        fields: ["label", "url"],
+      },
+    ],
     title: "KeyStatistics component",
     description: "A component that displays KeyStatistics",
   },
@@ -37,4 +71,6 @@ export const KeyStatisticsSchema = Type.Object(
 
 export type KeyStatisticsProps = Static<typeof KeyStatisticsSchema> & {
   layout: IsomerPageLayoutType
+  site: IsomerSiteProps
+  LinkComponent?: LinkComponentType
 }

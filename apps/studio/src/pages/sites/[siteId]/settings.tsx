@@ -3,6 +3,7 @@ import { useRouter } from "next/router"
 import {
   Button,
   Center,
+  chakra,
   FormControl,
   HStack,
   Text,
@@ -15,8 +16,11 @@ import {
   Toggle,
   useToast,
 } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
+import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
@@ -43,6 +47,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
         title: "Saved site settings!",
         description: "Check your site in 5-10 minutes to view it live.",
         status: "success",
+        ...BRIEF_TOAST_SETTINGS,
       })
     },
     onError: () => {
@@ -51,6 +56,7 @@ const SiteSettingsPage: NextPageWithLayout = () => {
         description:
           "If this persists, please report this issue at support@isomer.gov.sg",
         status: "error",
+        ...BRIEF_TOAST_SETTINGS,
       })
     },
   })
@@ -119,8 +125,13 @@ const SiteSettingsPage: NextPageWithLayout = () => {
         onClose={() => setNextUrl("")}
         nextUrl={nextUrl}
       />
-      <form onSubmit={onClickUpdate}>
-        <Center pt="5.5rem" px="2rem">
+      <chakra.form
+        onSubmit={onClickUpdate}
+        overflow="auto"
+        height={0}
+        minH="100%"
+      >
+        <Center py="5.5rem" px="2rem">
           <VStack w="48rem" alignItems="flex-start" spacing="1.5rem">
             <FormControl isInvalid={!!errors.notification}>
               <Text w="full" textStyle="h3-semibold">
@@ -207,10 +218,18 @@ const SiteSettingsPage: NextPageWithLayout = () => {
             </FormControl>
           </VStack>
         </Center>
-      </form>
+      </chakra.form>
     </>
   )
 }
 
-SiteSettingsPage.getLayout = AdminSidebarOnlyLayout
+SiteSettingsPage.getLayout = (page) => {
+  return (
+    <PermissionsBoundary
+      resourceType={ResourceType.RootPage}
+      page={AdminSidebarOnlyLayout(page)}
+    />
+  )
+}
+
 export default SiteSettingsPage

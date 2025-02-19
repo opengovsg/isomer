@@ -3,7 +3,7 @@ import {
   type IsomerSiteProps,
 } from "@opengovsg/isomer-components"
 
-import type { Resource } from "~server/db"
+import type { Resource, ResourceType } from "~server/db"
 
 export type PageContent = Omit<
   IsomerPageSchemaType,
@@ -17,3 +17,12 @@ export interface Navbar {
 }
 
 export type Footer = IsomerSiteProps["footerItems"]
+
+export interface SearchResultResource {
+  id: string
+  title: string
+  type: ResourceType
+  parentId: string | null
+  lastUpdatedAt: Date | null
+  fullPermalink: string
+}

@@ -1,13 +1,25 @@
+import type { Exact } from "type-fest"
+import capitalize from "lodash/capitalize"
+
 import type { CollectionPageSchemaType, IsomerSiteProps } from "~/engine"
-import type { CollectionCardProps } from "~/interfaces"
-import { getBreadcrumbFromSiteMap, getSitemapAsArray } from "~/utils"
+import type { AllCardProps, ProcessedCollectionCardProps } from "~/interfaces"
+import {
+  getBreadcrumbFromSiteMap,
+  getParsedDate,
+  getReferenceLinkHref,
+  getSitemapAsArray,
+  isExternalUrl,
+} from "~/utils"
 import { Skeleton } from "../Skeleton"
 import CollectionClient from "./CollectionClient"
+import { getAvailableFilters, shouldShowDate } from "./utils"
+
+const CATEGORY_OTHERS = "Others"
 
 const getCollectionItems = (
   site: IsomerSiteProps,
   permalink: string,
-): CollectionCardProps[] => {
+): AllCardProps[] => {
   let currSitemap = site.siteMap
   const permalinkParts = permalink.split("/")
 
@@ -45,18 +57,19 @@ const getCollectionItems = (
         item.layout === "article",
     )
     .map((item) => {
-      const lastUpdated = item.date || item.lastModified
-      const date = new Date(lastUpdated)
+      const date =
+        item.date !== undefined ? getParsedDate(item.date) : undefined
 
       const baseItem = {
         type: "collectionCard" as const,
         rawDate: date,
-        lastUpdated,
-        category: item.category || "Others",
+        lastUpdated: date?.toISOString(),
+        category: item.category || CATEGORY_OTHERS,
         title: item.title,
         description: item.summary,
         image: item.image,
         site,
+        tags: item.tags,
       }
 
       if (item.layout === "file") {
@@ -79,15 +92,62 @@ const getCollectionItems = (
         variant: "article",
         url: item.permalink,
       }
-    }) satisfies CollectionCardProps[]
+    }) satisfies AllCardProps[]
 
   return transformedItems.sort((a, b) => {
     // Sort by last updated date, tiebreaker by title
     if (a.rawDate === b.rawDate) {
       return a.title > b.title ? 1 : -1
     }
+
+    // Rank items with no dates last
+    if (a.rawDate === undefined) {
+      return 1
+    }
+
+    if (b.rawDate === undefined) {
+      return -1
+    }
+
     return a.rawDate < b.rawDate ? 1 : -1
-  }) as CollectionCardProps[]
+  }) as AllCardProps[]
+}
+
+const processedCollectionItems = (
+  items: AllCardProps[],
+): ProcessedCollectionCardProps[] => {
+  return items.map((item) => {
+    const {
+      site,
+      variant,
+      lastUpdated,
+      category,
+      title,
+      description,
+      image,
+      url,
+      tags,
+    } = item
+    const file = variant === "file" ? item.fileDetails : null
+    return {
+      lastUpdated,
+      category,
+      title,
+      description,
+      image,
+      tags,
+      referenceLinkHref: getReferenceLinkHref(
+        url,
+        site.siteMap,
+        site.assetsBaseUrl,
+      ),
+      imageSrc:
+        isExternalUrl(item.image?.src) || site.assetsBaseUrl === undefined
+          ? item.image?.src
+          : `${site.assetsBaseUrl}${item.image?.src}`,
+      itemTitle: `${item.title}${file ? ` [${file.type.toUpperCase()}, ${file.size.toUpperCase()}]` : ""}`,
+    } as Exact<ProcessedCollectionCardProps, ProcessedCollectionCardProps>
+  })
 }
 
 const CollectionLayout = ({
@@ -100,6 +160,7 @@ const CollectionLayout = ({
   const { permalink } = page
 
   const items = getCollectionItems(site, permalink)
+  const processedItems = processedCollectionItems(items)
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
@@ -116,9 +177,11 @@ const CollectionLayout = ({
       <CollectionClient
         page={page}
         breadcrumb={breadcrumb}
-        items={items}
+        items={processedItems}
+        filters={getAvailableFilters(processedItems)}
+        shouldShowDate={shouldShowDate(processedItems)}
+        siteAssetsBaseUrl={site.assetsBaseUrl}
         LinkComponent={LinkComponent}
-        site={site}
       />
     </Skeleton>
   )

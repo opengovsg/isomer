@@ -1,48 +1,30 @@
-"use client"
-
-import { useState } from "react"
-import { BiInfoCircle, BiX } from "react-icons/bi"
-
 import type { NotificationProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils"
-import BaseParagraph from "../BaseParagraph"
-import { IconButton } from "../IconButton"
+import BaseParagraph from "../BaseParagraph/BaseParagraph"
+import NotificationClient from "./NotificationClient"
 
-const NotificationBanner = ({
+const Notification = ({
   content,
   title,
   LinkComponent,
   site,
 }: NotificationProps) => {
-  const [isShown, setIsShown] = useState(true)
-  const onDismiss = () => {
-    setIsShown(false)
-  }
-
   return (
-    isShown && (
-      <div className="bg-base-canvas-backdrop">
-        <div className="relative mx-auto flex max-w-screen-xl flex-row gap-4 px-6 py-8 text-base-content md:px-10 md:py-6">
-          <BiInfoCircle className="mt-0.5 h-6 w-6 shrink-0" />
-          <div className="flex flex-1 flex-col gap-1">
-            {!!title && <h2 className="prose-headline-lg-medium">{title}</h2>}
-            <BaseParagraph
-              content={getTextAsHtml({ sitemap: site.siteMap, content })}
-              className="prose-body-base [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0"
-              LinkComponent={LinkComponent}
-            />
-          </div>
-          <div aria-hidden className="flex h-6 w-6 shrink-0" />
-          <IconButton
-            onPress={onDismiss}
-            icon={BiX}
-            className="absolute right-3 top-[22px] md:right-7 md:top-3.5"
-            aria-label="Dismiss notification temporarily"
-          />
-        </div>
-      </div>
-    )
+    <NotificationClient
+      title={title}
+      // Temporary solution for server-side rendering to optimize performance by
+      // avoiding large sitemap transfers needed by BaseParagraph.
+      // TODO: more robust refactor is required for BaseParagraph component
+      baseParagraph={
+        <BaseParagraph
+          content={getTextAsHtml({ site, content })}
+          className="prose-body-base [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0"
+          site={site}
+          LinkComponent={LinkComponent}
+        />
+      }
+    />
   )
 }
 
-export default NotificationBanner
+export default Notification

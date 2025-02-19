@@ -26,3 +26,10 @@ export type NotificationProps = Static<typeof NotificationSchema> & {
   LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }
+
+export type NotificationClientProps = Pick<
+  Static<typeof NotificationSchema>,
+  "title"
+> & {
+  baseParagraph: React.ReactNode
+}

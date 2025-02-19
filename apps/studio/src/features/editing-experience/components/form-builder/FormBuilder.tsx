@@ -9,8 +9,6 @@ import { groupBy } from "lodash"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useBuilderErrors } from "./ErrorProvider"
 import {
-  JsonFormsAccordionTextControl,
-  jsonFormsAccordionTextControlTester,
   JsonFormsAllOfControl,
   jsonFormsAllOfControlTester,
   JsonFormsAnyOfControl,
@@ -19,14 +17,18 @@ import {
   jsonFormsArrayControlTester,
   JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
-  JsonFormsCalloutTextControl,
-  jsonFormsCalloutTextControlTester,
+  JsonFormsCategoryControl,
+  jsonFormsCategoryControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
   JsonFormsDateControl,
   jsonFormsDateControlTester,
+  JsonFormsEmbedControl,
+  jsonFormsEmbedControlTester,
   jsonFormsGroupLayoutRenderer,
   jsonFormsGroupLayoutTester,
+  JsonFormsHiddenControl,
+  jsonFormsHiddenControlTester,
   JsonFormsImageControl,
   jsonFormsImageControlTester,
   JsonFormsIntegerControl,
@@ -37,15 +39,19 @@ import {
   jsonFormsObjectControlTester,
   JsonFormsProseControl,
   jsonFormsProseControlTester,
+  JsonFormsRefControl,
+  jsonFormsRefControlTester,
   JsonFormsTextAreaControl,
   jsonFormsTextAreaControlTester,
   JsonFormsTextControl,
   jsonFormsTextControlTester,
+  JsonFormsUnionRootControl,
+  jsonFormsUnionRootControlTester,
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
 } from "./renderers"
 
-const renderers: JsonFormsRendererRegistryEntry[] = [
+export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsProseControlTester,
     renderer: JsonFormsProseControl,
@@ -55,6 +61,12 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsArrayControlTester, renderer: JsonFormsArrayControl },
   { tester: jsonFormsBooleanControlTester, renderer: JsonFormsBooleanControl },
   { tester: jsonFormsConstControlTester, renderer: JsonFormsConstControl },
+  {
+    tester: jsonFormsUnionRootControlTester,
+    renderer: JsonFormsUnionRootControl,
+  },
+  { tester: jsonFormsEmbedControlTester, renderer: JsonFormsEmbedControl },
+  { tester: jsonFormsHiddenControlTester, renderer: JsonFormsHiddenControl },
   { tester: jsonFormsIntegerControlTester, renderer: JsonFormsIntegerControl },
   { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },
   { tester: jsonFormsLinkControlTester, renderer: JsonFormsLinkControl },
@@ -63,16 +75,9 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsTextAreaControl,
   },
   { tester: jsonFormsTextControlTester, renderer: JsonFormsTextControl },
+  { tester: jsonFormsRefControlTester, renderer: JsonFormsRefControl },
   { tester: jsonFormsAllOfControlTester, renderer: JsonFormsAllOfControl },
   { tester: jsonFormsAnyOfControlTester, renderer: JsonFormsAnyOfControl },
-  {
-    tester: jsonFormsAccordionTextControlTester,
-    renderer: JsonFormsAccordionTextControl,
-  },
-  {
-    tester: jsonFormsCalloutTextControlTester,
-    renderer: JsonFormsCalloutTextControl,
-  },
   {
     tester: jsonFormsGroupLayoutTester,
     renderer: jsonFormsGroupLayoutRenderer,
@@ -86,6 +91,10 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
     // we render null so that the users don't get visual noise
     tester: rankWith(JSON_FORMS_RANKING.Catchall, () => true),
     renderer: () => null,
+  },
+  {
+    tester: jsonFormsCategoryControlTester,
+    renderer: JsonFormsCategoryControl,
   },
 ]
 const ajv = new Ajv({

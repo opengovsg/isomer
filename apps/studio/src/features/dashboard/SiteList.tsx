@@ -1,8 +1,12 @@
 import NextLink from "next/link"
 import {
+  Box,
+  Button,
   Card,
-  CardHeader,
   Flex,
+  Image,
+  LinkBox,
+  LinkOverlay,
   SimpleGrid,
   Skeleton,
   Text,
@@ -11,7 +15,70 @@ import { Link } from "@opengovsg/design-system-react"
 
 import { NoResultIcon } from "~/components/Svg/NoResultIcon"
 import { withSuspense } from "~/hocs/withSuspense"
+import { generateAssetUrl } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
+
+const Site = ({
+  siteId,
+  siteName,
+  siteLogoUrl,
+}: {
+  siteId?: number
+  siteName?: string
+  siteLogoUrl?: string
+}): JSX.Element => {
+  return (
+    <LinkBox cursor="pointer" role="group">
+      <LinkOverlay href={`/sites/${siteId}`} as={NextLink}>
+        <Flex key={siteId} flexDirection="column" gap="1rem" width="100%">
+          <Box position="relative">
+            <Image
+              src={siteLogoUrl}
+              alt={siteName}
+              borderRadius="0.5rem"
+              border="1.5px solid"
+              borderColor="base.divider.medium"
+              width="100%"
+              height="100%"
+              objectFit="contain"
+              aspectRatio="1/1"
+              backgroundColor="white"
+              fallbackSrc="/isomer-sites-placeholder.png"
+              padding="1rem" // Leave some space so that logo won't be flush with the border
+            />
+            <Box
+              position="absolute"
+              top="0"
+              left="0"
+              right="0"
+              bottom="0"
+              backgroundColor="base.canvas.overlay"
+              borderRadius="0.5rem"
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              opacity="0"
+              transition="opacity 0.2s"
+              _groupHover={{ opacity: 1 }}
+            >
+              <Button backgroundColor="interaction.main.default">
+                <Text textStyle="subhead-1">Start editing site</Text>
+              </Button>
+            </Box>
+          </Box>
+          <Text
+            textStyle="subhead-2"
+            noOfLines={2}
+            overflow="hidden"
+            textOverflow="ellipsis"
+          >
+            {siteName}
+          </Text>
+        </Flex>
+      </LinkOverlay>
+    </LinkBox>
+  )
+}
 
 const SiteListSection = ({
   children,
@@ -35,7 +102,6 @@ const SiteListSection = ({
 }
 
 const SuspendableSiteList = (): JSX.Element => {
-  // TODO: Only return sites that the user has access to
   const [sites] = trpc.site.list.useSuspenseQuery()
 
   if (sites.length === 0) {
@@ -67,13 +133,11 @@ const SuspendableSiteList = (): JSX.Element => {
   return (
     <SiteListSection>
       {sites.map((site) => (
-        <Card key={site.id} width="100%">
-          <CardHeader>
-            <Link href={`/sites/${site.id}`} as={NextLink}>
-              {site.name}
-            </Link>
-          </CardHeader>
-        </Card>
+        <Site
+          siteId={site.id}
+          siteName={site.config.siteName}
+          siteLogoUrl={generateAssetUrl(site.config.logoUrl)}
+        />
       ))}
     </SiteListSection>
   )
@@ -85,7 +149,7 @@ const SiteListSkeleton = (): JSX.Element => {
       {[1, 2, 3].map((index) => (
         <Card key={index} width="100%">
           <Skeleton>
-            <CardHeader>Loading...</CardHeader>
+            <Site />
           </Skeleton>
         </Card>
       ))}

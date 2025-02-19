@@ -3,6 +3,7 @@ import {
   applySession,
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
+import { setupUser, setUpWhitelist } from "tests/integration/helpers/seed"
 import { describe, expect, it } from "vitest"
 
 import { env } from "~/env.mjs"
@@ -15,16 +16,17 @@ import { getIpFingerprint, LOCALHOST } from "../utils"
 describe("auth.email", () => {
   let caller: Awaited<ReturnType<typeof emailSessionRouter.createCaller>>
   let session: ReturnType<typeof applySession>
+  const TEST_VALID_EMAIL = "test@open.gov.sg"
 
   beforeEach(async () => {
-    await resetTables("User", "VerificationToken")
+    await resetTables("User", "VerificationToken", "Whitelist")
+    await setUpWhitelist({ email: TEST_VALID_EMAIL })
     session = applySession()
     const ctx = createMockRequest(session)
     caller = emailSessionRouter.createCaller(ctx)
   })
 
   describe("login", () => {
-    const TEST_VALID_EMAIL = "test@open.gov.sg"
     it("should throw if email is not provided", async () => {
       // Act
       const result = caller.login({ email: "" })
@@ -69,10 +71,28 @@ describe("auth.email", () => {
       })
       expect(result).toEqual(expectedReturn)
     })
+
+    it("should throw if user is deleted", async () => {
+      // Arrange
+      await setupUser({
+        name: "Deleted",
+        userId: "deleted123",
+        email: TEST_VALID_EMAIL,
+        phone: "123",
+        isDeleted: true,
+      })
+
+      // Act
+      const result = caller.login({ email: TEST_VALID_EMAIL })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        "Unauthorized. Contact Isomer support.",
+      )
+    })
   })
 
   describe("verifyOtp", () => {
-    const TEST_VALID_EMAIL = "test@open.gov.sg"
     const VALID_OTP = "123456"
     const VALID_TOKEN_HASH = createTokenHash(VALID_OTP, TEST_VALID_EMAIL)
     const INVALID_OTP = "987643"

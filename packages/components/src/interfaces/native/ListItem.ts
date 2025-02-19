@@ -57,6 +57,7 @@ export const ListItemSchema = Type.Unsafe<ListItem>(
 )
 
 export type ListItemProps = Static<typeof ListItemSchema> & {
+  level?: number
   LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }

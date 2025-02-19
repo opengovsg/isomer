@@ -1,14 +1,17 @@
 import { Skeleton } from "@chakra-ui/react"
 import {
   Button,
+  ButtonProps,
   TouchableTooltip,
   useToast,
 } from "@opengovsg/design-system-react"
 
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
-interface PublishButtonProps {
+interface PublishButtonProps extends ButtonProps {
   pageId: number
   siteId: number
 }
@@ -16,6 +19,9 @@ interface PublishButtonProps {
 const SuspendablePublishButton = ({
   pageId,
   siteId,
+  isDisabled,
+  onClick,
+  ...rest
 }: PublishButtonProps): JSX.Element => {
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -31,14 +37,17 @@ const SuspendablePublishButton = ({
       toast({
         status: "success",
         title: publishSuccessMsg,
+        ...BRIEF_TOAST_SETTINGS,
       })
       await utils.page.readPage.invalidate({ pageId, siteId })
+      await utils.page.getCategories.invalidate({ pageId, siteId })
     },
     onError: async (error) => {
       console.error(`Error occurred when publishing page: ${error.message}`)
       toast({
         status: "error",
         title: publishFailureMsg,
+        ...BRIEF_TOAST_SETTINGS,
       })
       await utils.page.readPage.invalidate({ pageId, siteId })
     },
@@ -50,28 +59,39 @@ const SuspendablePublishButton = ({
     if (coercedSiteId && coercedPageId)
       mutate({ pageId: coercedPageId, siteId: coercedSiteId })
   }
+
+  const isChangesPendingPublish = !!currPage.draftBlobId
+
   return (
-    <TouchableTooltip
-      hidden={!!currPage.draftBlobId}
-      // label="All changes have been published"
-      label="This feature is currently not available in beta"
-    >
-      <Button
-        variant="solid"
-        size="sm"
-        onClick={handlePublish}
-        isLoading={isLoading}
-        // TODO(ISOM-1552): Add back functionality when implemented
-        isDisabled
-      >
-        Publish
-      </Button>
-    </TouchableTooltip>
+    <Can do="publish" on="Resource" passThrough>
+      {(allowed) => (
+        <TouchableTooltip
+          hidden={isChangesPendingPublish}
+          label="All changes have been published"
+        >
+          {allowed && (
+            <Button
+              isDisabled={!isChangesPendingPublish || isDisabled}
+              variant="solid"
+              size="sm"
+              onClick={(e) => {
+                handlePublish()
+                onClick?.(e)
+              }}
+              isLoading={isLoading}
+              {...rest}
+            >
+              Publish
+            </Button>
+          )}
+        </TouchableTooltip>
+      )}
+    </Can>
   )
 }
 
 const PublishButton = withSuspense(
   SuspendablePublishButton,
-  <Skeleton width={"100%"} height={"100%"} />,
+  <Skeleton width="100%" height="100%" />,
 )
 export default PublishButton

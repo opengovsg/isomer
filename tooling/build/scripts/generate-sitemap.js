@@ -5,6 +5,22 @@ const JSON_SCHEMA_VERSION = "0.1.0"
 const schemaDirPath = path.join(__dirname, "../schema")
 const sitemapPath = path.join(__dirname, "../sitemap.json")
 
+const getResourceImage = (schemaData) => {
+  if (schemaData.page.image) return schemaData.page.image
+
+  if (!Array.isArray(schemaData.content)) return undefined
+
+  const firstImageComponent = schemaData.content.find(
+    (item) => item.type === "image",
+  )
+  return firstImageComponent
+    ? {
+        src: firstImageComponent.src,
+        alt: firstImageComponent.alt,
+      }
+    : undefined
+}
+
 const getSchemaJson = async (filePath) => {
   try {
     const schemaContent = await fs.readFile(filePath, "utf8")
@@ -54,8 +70,11 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
     schemaData.page.title ||
     pageName.charAt(0).toUpperCase() + pageName.slice(1)
   const summary =
-    schemaData.page.contentPageHeader?.summary ||
-    schemaData.page.articlePageHeader?.summary.join(" ") ||
+    (Array.isArray(schemaData.page.contentPageHeader?.summary)
+      ? schemaData.page.contentPageHeader.summary.join(" ")
+      : schemaData.page.contentPageHeader?.summary) ||
+    schemaData.page.articlePageHeader?.summary ||
+    schemaData.page.subtitle ||
     schemaData.page.description ||
     ""
 
@@ -67,7 +86,8 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
     summary,
     category: schemaData.page.category,
     date: schemaData.page.date,
-    image: schemaData.page.image,
+    image: getResourceImage(schemaData),
+    tags: schemaData.page.tags,
   }
 
   if (schemaData.layout === "file") {
@@ -117,17 +137,6 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
 // Generates sitemap entries and an index file for directories without an index file
 const processDanglingDirectory = async (fullPath, relativePath, name) => {
   const children = await getSiteMapChildrenEntries(fullPath, relativePath)
-  const listOfChildPages = {
-    type: "infocards",
-    variant: "cardsWithoutImages",
-    cards: children.map((child) => ({
-      title: child.title,
-      url: child.permalink,
-      description: child.summary,
-    })),
-    maxColumns: 1,
-  }
-
   const pageName = name.replace(/-/g, " ")
   const title = pageName.charAt(0).toUpperCase() + pageName.slice(1)
   const summary = `Pages in ${title}`
@@ -145,7 +154,7 @@ const processDanglingDirectory = async (fullPath, relativePath, name) => {
             summary,
           },
         },
-        content: [listOfChildPages],
+        content: [],
       },
       null,
       2,
@@ -172,12 +181,12 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
 
   const children = []
 
-  // Check if _pages.json exists
-  const pageOrderFilePath = path.join(fullPath, "_pages.json")
+  // Check if _meta.json exists
+  const pageOrderFilePath = path.join(fullPath, "_meta.json")
   const pageOrderData = await getSchemaJson(pageOrderFilePath)
 
   if (pageOrderData) {
-    const childPages = pageOrderData["pages"]
+    const childPages = pageOrderData["order"]
 
     const childEntries = await Promise.all(
       childPages.map((child) => {
@@ -194,8 +203,8 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
 
     children.push(...childEntries.filter((entry) => entry !== null))
   } else {
-    // If _pages.json does not exist, process files in the directory in arbitrary order
-    console.log("No _pages.json found for:", relativePath)
+    // If _meta.json does not exist, process files in the directory in arbitrary order
+    console.log("No _meta.json found for:", relativePath)
 
     const childEntries = await Promise.all(
       fileEntries
@@ -235,10 +244,27 @@ const getSiteMapChildrenEntries = async (fullPath, relativePath) => {
 
   children.push(...danglingDirEntries)
 
-  // Ensure that the result is ordered in alphabetical order
-  children.sort((a, b) =>
-    a.title.localeCompare(b.title, undefined, { numeric: true }),
-  )
+  children.sort((a, b) => {
+    const aPermalink = a.permalink.split("/").pop()
+    const bPermalink = b.permalink.split("/").pop()
+
+    if (!pageOrderData) {
+      return a.title.localeCompare(b.title, undefined, { numeric: true })
+    }
+
+    if (pageOrderData.order.indexOf(aPermalink) === -1) {
+      return 1
+    }
+
+    if (pageOrderData.order.indexOf(bPermalink) === -1) {
+      return -1
+    }
+
+    return (
+      pageOrderData.order.indexOf(aPermalink) -
+      pageOrderData.order.indexOf(bPermalink)
+    )
+  })
 
   return children
 }

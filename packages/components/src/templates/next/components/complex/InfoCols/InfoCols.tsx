@@ -8,6 +8,7 @@ import {
   getReferenceLinkHref,
   getTailwindVariantLayout,
   groupFocusVisibleHighlight,
+  isExternalUrl,
 } from "~/utils"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
@@ -23,11 +24,10 @@ const createInfoColsStyles = tv({
     infoBoxesContainer:
       "grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 md:gap-y-12 lg:grid-cols-3",
     infoBox: "group flex flex-col items-start gap-3 text-left outline-0",
-    infoBoxIcon:
-      "h-auto w-6 text-base-content-strong group-hover:text-brand-interaction",
+    infoBoxIcon: "h-auto w-6 text-base-content-strong",
     infoBoxTitle: [
       groupFocusVisibleHighlight(),
-      "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-interaction",
+      "prose-headline-lg-semibold text-base-content-strong",
     ],
     infoBoxDescription: "prose-body-base text-base-content",
     infoBoxButton:
@@ -48,6 +48,17 @@ const createInfoColsStyles = tv({
         headerSubtitle: "prose-body-base",
       },
     },
+    isExternalLink: {
+      true: {
+        infoBoxButtonIcon: "rotate-[-45deg]",
+      },
+    },
+    hasLink: {
+      true: {
+        infoBoxTitle: "group-hover:text-brand-interaction",
+        infoBoxIcon: "group-hover:text-brand-interaction",
+      },
+    },
   },
   defaultVariants: {
     layout: "default",
@@ -56,12 +67,24 @@ const createInfoColsStyles = tv({
 
 const compoundStyles = createInfoColsStyles()
 
-const InfoBoxIcon = ({ icon }: { icon?: SupportedIconName }) => {
+const InfoBoxIcon = ({
+  icon,
+  hasLink,
+}: {
+  icon?: SupportedIconName
+  hasLink: boolean
+}) => {
   if (!icon) return null
 
   const Icon = SUPPORTED_ICONS_MAP[icon]
 
-  return <Icon className={compoundStyles.infoBoxIcon()} />
+  return (
+    <Icon
+      className={compoundStyles.infoBoxIcon({
+        hasLink,
+      })}
+    />
+  )
 }
 
 const InfoBoxes = ({
@@ -72,39 +95,59 @@ const InfoBoxes = ({
   return (
     <div className={compoundStyles.infoBoxesContainer()}>
       {infoBoxes.map(
-        ({ title, icon, description, buttonUrl, buttonLabel }, idx) => (
-          <Link
-            LinkComponent={LinkComponent}
-            href={getReferenceLinkHref(buttonUrl, site.siteMap)}
-            key={idx}
-            className={compoundStyles.infoBox()}
-          >
-            {icon && <InfoBoxIcon icon={icon} aria-hidden="true" />}
+        ({ title, icon, description, buttonUrl, buttonLabel }, idx) => {
+          const hasLink = !!buttonUrl
+          const isExternalLink = isExternalUrl(buttonUrl)
+          return (
+            <Link
+              LinkComponent={LinkComponent}
+              href={getReferenceLinkHref(
+                buttonUrl,
+                site.siteMap,
+                site.assetsBaseUrl,
+              )}
+              key={idx}
+              className={compoundStyles.infoBox()}
+              isExternal={isExternalLink}
+            >
+              {icon && (
+                <InfoBoxIcon icon={icon} hasLink={hasLink} aria-hidden="true" />
+              )}
 
-            <h3 className={compoundStyles.infoBoxTitle()}>{title}</h3>
+              <h3
+                className={compoundStyles.infoBoxTitle({
+                  hasLink,
+                })}
+              >
+                {title}
+              </h3>
 
-            {description && (
-              <p className={compoundStyles.infoBoxDescription()}>
-                {description}
-              </p>
-            )}
+              {description && (
+                <p className={compoundStyles.infoBoxDescription()}>
+                  {description}
+                </p>
+              )}
 
-            {buttonLabel && buttonUrl && (
-              <div className={compoundStyles.infoBoxButton()}>
-                {buttonLabel}
-                <BiRightArrowAlt
-                  className={compoundStyles.infoBoxButtonIcon()}
-                />
-              </div>
-            )}
-          </Link>
-        ),
+              {buttonLabel && hasLink && (
+                <div className={compoundStyles.infoBoxButton()}>
+                  {buttonLabel}
+                  <BiRightArrowAlt
+                    className={compoundStyles.infoBoxButtonIcon({
+                      isExternalLink,
+                    })}
+                  />
+                </div>
+              )}
+            </Link>
+          )
+        },
       )}
     </div>
   )
 }
 
 const InfoCols = ({
+  id,
   title,
   subtitle,
   infoBoxes,
@@ -115,7 +158,7 @@ const InfoCols = ({
   const simplifiedLayout = getTailwindVariantLayout(layout)
 
   return (
-    <section className={compoundStyles.section()}>
+    <section id={id} className={compoundStyles.section()}>
       <div
         className={compoundStyles.outerContainer({ layout: simplifiedLayout })}
       >

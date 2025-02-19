@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react"
 
 import type { NotificationProps } from "~/interfaces"
-import NotificationBanner from "./Notification"
+import Notification from "./Notification"
 
 const meta: Meta<NotificationProps> = {
   title: "Next/Internal Components/Notification",
-  component: NotificationBanner,
+  component: Notification,
   argTypes: {},
   parameters: {
     themes: {
@@ -25,7 +25,7 @@ const meta: Meta<NotificationProps> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",
@@ -41,7 +41,7 @@ const meta: Meta<NotificationProps> = {
   },
 }
 export default meta
-type Story = StoryObj<typeof NotificationBanner>
+type Story = StoryObj<typeof Notification>
 
 export const NoTitle: Story = {
   args: {

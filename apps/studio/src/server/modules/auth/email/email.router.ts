@@ -10,6 +10,8 @@ import {
 import { publicProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
 import { defaultMeSelect } from "../../me/me.select"
+import { isUserDeleted } from "../../user/user.service"
+import { isEmailWhitelisted } from "../../whitelist/whitelist.service"
 import { VerificationError } from "../auth.error"
 import { verifyToken } from "../auth.service"
 import { createTokenHash, createVfnPrefix, createVfnToken } from "../auth.util"
@@ -21,19 +23,15 @@ export const emailSessionRouter = router({
     .input(emailSignInSchema)
     .meta({ rateLimitOptions: {} })
     .mutation(async ({ ctx, input: { email } }) => {
-      if (env.NODE_ENV === "production") {
-        // check if whitelisted email on Growthbook
-        const defaultWhitelist: string[] = []
-        const whitelistedUsers = ctx.gb.getFeatureValue("whitelisted_users", {
-          whitelist: defaultWhitelist,
-        })
+      const isWhitelisted = await isEmailWhitelisted(email)
+      const isDeleted = await isUserDeleted(email)
 
-        if (!whitelistedUsers.whitelist.includes(email)) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Unauthorized. Contact Isomer support.",
-          })
-        }
+      // Assert that the user is both whitelisted and not deleted
+      if (!isWhitelisted || isDeleted) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Unauthorized. Contact Isomer support.",
+        })
       }
 
       // TODO: instead of storing expires, store issuedAt to calculate when the next otp can be re-issued

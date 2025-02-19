@@ -1,12 +1,9 @@
-import type { SitemapEntry } from "../types"
+import { CollectionPagePageProps } from "~schema"
 
 const ISOMER_SCHEMA_VERSION = "0.1.0"
 
-// Generate the index page content for a given directory
-export const getIndexPageContents = (
-  title: string,
-  children: SitemapEntry[],
-) => ({
+// Generate the index page content for a given folder
+export const getFolderIndexPageContents = (title: string) => ({
   version: ISOMER_SCHEMA_VERSION,
   layout: "index",
   page: {
@@ -15,16 +12,21 @@ export const getIndexPageContents = (
       summary: `Pages in ${title}`,
     },
   },
-  content: [
-    {
-      type: "infocards",
-      variant: "cardsWithoutImages",
-      cards: children.map((child) => ({
-        title: child.title,
-        url: child.permalink,
-        description: child.summary,
-      })),
-      maxColumns: 1,
+  content: [],
+})
+
+export const getCollectionIndexPageContents = (
+  title: string,
+  variant: CollectionPagePageProps["variant"] = "collection",
+) => ({
+  version: ISOMER_SCHEMA_VERSION,
+  layout: "collection",
+  page: {
+    title,
+    contentPageHeader: {
+      summary: `Pages in ${title}`,
     },
-  ],
+    variant,
+  },
+  content: [],
 })

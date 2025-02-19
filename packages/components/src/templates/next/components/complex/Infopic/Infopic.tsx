@@ -42,6 +42,7 @@ interface InfopicProps
 }
 
 export const Infopic = ({
+  id,
   imageSrc,
   title,
   buttonLabel,
@@ -53,7 +54,7 @@ export const Infopic = ({
   LinkComponent,
 }: InfopicProps): JSX.Element => {
   const compoundStyles = infopicStyles({ isTextOnRight })
-  const hasLinkButton = buttonLabel && buttonUrl
+  const hasLinkButton = !!buttonLabel && !!buttonUrl
 
   const imgSrc =
     isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
@@ -61,7 +62,7 @@ export const Infopic = ({
       : `${site.assetsBaseUrl}${imageSrc}`
 
   return (
-    <div className={compoundStyles.container()}>
+    <section id={id} className={compoundStyles.container()}>
       <div className={compoundStyles.content()}>
         <h2 className={compoundStyles.title()}>{title}</h2>
         <p className={compoundStyles.description()}>{description}</p>
@@ -69,7 +70,11 @@ export const Infopic = ({
           <div className={compoundStyles.button()}>
             <LinkButton
               LinkComponent={LinkComponent}
-              href={getReferenceLinkHref(buttonUrl, site.siteMap)}
+              href={getReferenceLinkHref(
+                buttonUrl,
+                site.siteMap,
+                site.assetsBaseUrl,
+              )}
               isWithFocusVisibleHighlight
             >
               {buttonLabel}
@@ -86,6 +91,6 @@ export const Infopic = ({
           assetsBaseUrl={site.assetsBaseUrl}
         />
       </div>
-    </div>
+    </section>
   )
 }

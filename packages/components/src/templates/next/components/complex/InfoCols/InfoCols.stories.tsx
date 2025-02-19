@@ -26,7 +26,7 @@ const meta: Meta<InfoColsProps> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       assetsBaseUrl: "https://cms.isomer.gov.sg",
       navBarItems: [],
@@ -136,6 +136,28 @@ export const FourInfoBoxes: Story = {
         description: "Building a Vibrant Economy, Nurturing Enterprises",
         buttonLabel: "Read article",
         buttonUrl: "https://google.com",
+        icon: "bar-chart",
+      },
+    ],
+  },
+}
+
+export const HoverBehaviour: Story = {
+  args: {
+    sectionIdx: 0,
+    title: "Highlights",
+    subtitle: "Some of the things that we are working on",
+    infoBoxes: [
+      {
+        title: "Has Link",
+        description: "Should change appearance on hover",
+        icon: "bar-chart",
+        buttonUrl: "/faq",
+        buttonLabel: "Read article",
+      },
+      {
+        title: "No Link",
+        description: "Should NOT change appearance on hover",
         icon: "bar-chart",
       },
     ],

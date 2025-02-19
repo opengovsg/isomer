@@ -2,10 +2,19 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
 import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const InfopicSchema = Type.Object(
   {
     type: Type.Literal("infopic", { default: "infopic" }),
+    id: Type.Optional(
+      Type.String({
+        title: "Anchor ID",
+        description: "The ID to use for anchor links",
+        format: "hidden",
+      }),
+    ),
     title: Type.String({
       title: "Title",
       maxLength: 100,
@@ -14,18 +23,6 @@ export const InfopicSchema = Type.Object(
       Type.String({
         title: "Description",
         maxLength: 200,
-      }),
-    ),
-    imageSrc: Type.String({
-      title: "Upload image",
-      description: "The URL to the image",
-      format: "image",
-    }),
-    imageAlt: Type.Optional(
-      Type.String({
-        title: "Alternate text",
-        description:
-          "Add a descriptive alternative text for this image. This helps visually impaired users to understand your image.",
       }),
     ),
     buttonLabel: Type.Optional(
@@ -41,8 +38,11 @@ export const InfopicSchema = Type.Object(
         title: "Button destination",
         description: "When this is clicked, open:",
         format: "link",
+        pattern: LINK_HREF_PATTERN,
       }),
     ),
+    imageSrc: ImageSrcSchema,
+    imageAlt: Type.Optional(AltTextSchema),
   },
   {
     title: "Infopic component",

@@ -40,14 +40,6 @@ export interface Navbar {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface Permission {
-  id: GeneratedAlways<number>
-  resourceId: string
-  userId: string
-  role: RoleType
-  createdAt: Generated<Timestamp>
-  updatedAt: Generated<Timestamp>
-}
 export interface RateLimiterFlexible {
   key: string
   points: number
@@ -66,6 +58,16 @@ export interface Resource {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
+export interface ResourcePermission {
+  id: GeneratedAlways<string>
+  userId: string
+  siteId: number
+  resourceId: string | null
+  role: RoleType
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+  deletedAt: Timestamp | null
+}
 export interface Site {
   id: GeneratedAlways<number>
   name: string
@@ -83,20 +85,14 @@ export interface Site {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export interface SiteMember {
-  userId: string
-  siteId: number
-  createdAt: Generated<Timestamp>
-  updatedAt: Generated<Timestamp>
-}
 export interface User {
   id: string
   name: string
   email: string
   phone: string
-  preferredName: string | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
+  deletedAt: Timestamp | null
 }
 export interface VerificationToken {
   identifier: string
@@ -113,16 +109,23 @@ export interface Version {
   publishedBy: string
   updatedAt: Generated<Timestamp>
 }
+export interface Whitelist {
+  id: GeneratedAlways<number>
+  email: string
+  expiry: Timestamp | null
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
 export interface DB {
   Blob: Blob
   Footer: Footer
   Navbar: Navbar
-  Permission: Permission
   RateLimiterFlexible: RateLimiterFlexible
   Resource: Resource
+  ResourcePermission: ResourcePermission
   Site: Site
-  SiteMember: SiteMember
   User: User
   VerificationToken: VerificationToken
   Version: Version
+  Whitelist: Whitelist
 }

@@ -13,6 +13,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { type IconType } from "react-icons"
 
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -164,19 +165,24 @@ function ComponentSelector() {
 
   const availableBlocks = useMemo(() => {
     switch (type) {
-      case "RootPage":
+      case ResourceType.RootPage:
         return HOMEPAGE_ALLOWED_BLOCKS
-      case "Page":
+      case ResourceType.Page:
         if (savedPageState.layout === "content") {
           return CONTENT_ALLOWED_BLOCKS
         } else if (savedPageState.layout === "article") {
           return ARTICLE_ALLOWED_BLOCKS
         }
         throw new Error(`Unsupported page layout: ${savedPageState.layout}`)
-      case "CollectionPage":
+      case ResourceType.CollectionPage:
         return ARTICLE_ALLOWED_BLOCKS
-      case "Collection":
-      case "Folder":
+      case ResourceType.Collection:
+      case ResourceType.CollectionLink:
+      case ResourceType.IndexPage:
+        return []
+      case ResourceType.Folder:
+      case ResourceType.FolderMeta:
+      case ResourceType.CollectionMeta:
         throw new Error(`Unsupported resource type: ${type}`)
       default:
         const exhaustiveCheck: never = type

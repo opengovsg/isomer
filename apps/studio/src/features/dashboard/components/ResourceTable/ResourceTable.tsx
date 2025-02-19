@@ -38,7 +38,6 @@ const getColumns = ({ siteId }: ResourceTableProps) => [
     header: () => <TableHeader>Actions</TableHeader>,
     cell: ({ row }) => (
       <ResourceTableMenu
-        siteId={siteId}
         parentId={row.original.parentId}
         title={row.original.title}
         resourceId={row.original.id}
@@ -120,7 +119,6 @@ export const ResourceTable = ({
       instance={tableInstance}
       sx={{
         tableLayout: "auto",
-        minWidth: "1000px",
         overflowX: "auto",
       }}
       totalRowCount={totalCount}

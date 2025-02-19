@@ -1,44 +1,29 @@
 import type { IsomerSitemap } from "~/engine"
 import type { SiderailProps } from "~/interfaces"
+import { getNodeFromSiteMap } from "./getNodeFromSiteMap"
 
 export const getSiderailFromSiteMap = (
   sitemap: IsomerSitemap,
-  permalink: string[],
+  permalink: string,
 ): SiderailProps | null => {
-  let node = sitemap
-  let currentPath = ""
+  const parentNode = getNodeFromSiteMap(
+    sitemap,
+    permalink.split("/").slice(0, -1).join("/"),
+  )
 
-  let i = 0
-  while (i < permalink.length - 1) {
-    currentPath += "/" + permalink[i]
-    const nextNode = node.children?.find(
-      (node) => node.permalink === currentPath,
-    )
-    if (!nextNode) {
-      // TODO: handle this unexpected case where cannot traverse to parent in the sitemap
-      return null
-    }
-    node = nextNode
-    i++
-  }
-  if (!node.children) {
-    // TODO: handle this unexpected case where parent does not contain current page
+  if (!parentNode?.children) {
+    // NOTE: This would be unexpected, as we should be able to find the parent
+    // and the current page in the sitemap
     return null
   }
-  const parentTitle = node.title
-  const parentUrl = node.permalink
-
-  // get all siblings of page
-  const pagePath = "/" + permalink.join("/")
-  const pages = node.children.map((sibling) => ({
-    title: sibling.title,
-    url: sibling.permalink,
-    isCurrent: sibling.permalink === pagePath,
-  }))
 
   return {
-    parentTitle,
-    parentUrl,
-    pages,
+    parentTitle: parentNode.title,
+    parentUrl: parentNode.permalink,
+    pages: parentNode.children.map((sibling) => ({
+      title: sibling.title,
+      url: sibling.permalink,
+      isCurrent: sibling.permalink === permalink,
+    })),
   }
 }

@@ -1,16 +1,13 @@
 import Image from "next/image"
 import NextLink from "next/link"
 import { Flex, HStack } from "@chakra-ui/react"
-import { AvatarMenu, Button, Link, Menu } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/design-system-react"
 import { BiLinkExternal } from "react-icons/bi"
 
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
-import { useMe } from "~/features/me/api"
-import { DASHBOARD } from "~/lib/routes"
+import { AvatarMenu } from "./AvatarMenu"
 
 export function AppNavbar(): JSX.Element {
-  const { me, logout } = useMe()
-
   return (
     <Flex flex="0 0 auto" gridColumn="1/-1" height={ADMIN_NAVBAR_HEIGHT}>
       <Flex
@@ -19,29 +16,29 @@ export function AppNavbar(): JSX.Element {
         w="100%"
         justify="space-between"
         align="center"
-        px={{ base: "1.5rem", md: "1.8rem", xl: "2rem" }}
+        px={{ base: 0, md: "0.5rem" }}
         pl={{ base: `calc(1rem + ${ADMIN_NAVBAR_HEIGHT})`, sm: "1.5rem" }}
-        py="0.375rem"
+        py={{ base: 0, md: "0.5rem" }}
         bg="white"
         borderBottomWidth="1px"
         borderColor="base.divider.medium"
         transition="padding 0.1s"
       >
-        <Link
-          as={NextLink}
-          href={DASHBOARD}
-          mx={{ base: "auto", sm: 0 }}
-          transition="margin 0.1s"
+        <Flex
+          justifyContent="center"
+          alignItems="center"
+          mr="0.5rem"
+          minH="2.75rem"
+          minW="2.75rem"
         >
           <Image
-            src="/assets/isomer-logo.svg"
+            src="/assets/isomer-logo-color.svg"
             height={24}
             width={22}
-            alt="Isomer Logo"
-            aria-hidden
+            alt="Back to sites"
             priority
           />
-        </Link>
+        </Flex>
         <HStack
           textStyle="subhead-1"
           spacing={{ base: "0.75rem", md: "1.5rem" }}
@@ -56,14 +53,7 @@ export function AppNavbar(): JSX.Element {
           >
             Report an issue
           </Button>
-          <AvatarMenu
-            name={me.name}
-            variant="subtle"
-            bg="base.canvas.brand-subtle"
-            menuListProps={{ maxWidth: "19rem" }}
-          >
-            <Menu.Item onClick={() => logout()}>Sign out</Menu.Item>
-          </AvatarMenu>
+          <AvatarMenu />
         </HStack>
       </Flex>
     </Flex>

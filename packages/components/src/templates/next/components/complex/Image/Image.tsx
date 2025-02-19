@@ -1,9 +1,6 @@
-import type { PropsWithChildren } from "react"
-
 import type { ImageProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
-import { getReferenceLinkHref, isExternalUrl } from "~/utils"
-import { Link } from "../../internal/Link"
+import { isExternalUrl } from "~/utils"
 import { ImageClient } from "./ImageClient"
 
 const createImageStyles = tv({
@@ -37,34 +34,13 @@ const getSizeWidth = (size: ImageProps["size"]) => {
   }
 }
 
-const ImageContainer = ({
-  href,
-  LinkComponent,
-  children,
-}: PropsWithChildren<Pick<ImageProps, "href" | "LinkComponent">>) => (
-  <div className={compoundStyles.container()}>
-    {href !== undefined ? (
-      <Link
-        href={href}
-        isExternal={isExternalUrl(href)}
-        LinkComponent={LinkComponent}
-      >
-        {children}
-      </Link>
-    ) : (
-      <>{children}</>
-    )}
-  </div>
-)
-
 export const Image = ({
   src,
   alt,
   caption,
   size,
-  href,
   site,
-  LinkComponent,
+  shouldLazyLoad = true,
 }: ImageProps) => {
   const imgSrc =
     isExternalUrl(src) || site.assetsBaseUrl === undefined
@@ -72,19 +48,17 @@ export const Image = ({
       : `${site.assetsBaseUrl}${src}`
 
   return (
-    <ImageContainer
-      href={getReferenceLinkHref(href, site.siteMap)}
-      LinkComponent={LinkComponent}
-    >
+    <div className={compoundStyles.container()}>
       <ImageClient
         src={imgSrc}
         alt={alt}
         width={getSizeWidth(size)}
         className={compoundStyles.image({ size: size ?? "default" })}
         assetsBaseUrl={site.assetsBaseUrl}
+        lazyLoading={shouldLazyLoad}
       />
 
       {caption && <p className={compoundStyles.caption()}>{caption}</p>}
-    </ImageContainer>
+    </div>
   )
 }

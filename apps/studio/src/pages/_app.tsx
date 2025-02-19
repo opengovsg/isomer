@@ -5,9 +5,9 @@ import "../styles/editor/editorStyles.scss"
 
 import type { AppProps, AppType } from "next/app"
 import { Skeleton, Stack } from "@chakra-ui/react"
+import { datadogRum } from "@datadog/browser-rum"
 import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
-import Intercom from "@intercom/messenger-js-sdk"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { ErrorBoundary } from "react-error-boundary"
@@ -28,6 +28,23 @@ type AppPropsWithAuthAndLayout = AppProps & {
   Component: NextPageWithLayout
 }
 
+datadogRum.init({
+  applicationId: "32c64617-51e3-4a6e-a977-ad113021ffae",
+  clientToken: "pub89baaf356268edcb9ed95847d7c5d679",
+  // `site` refers to the Datadog site parameter of your organization
+  // see https://docs.datadoghq.com/getting_started/site/
+  site: "datadoghq.com",
+  service: "isomer-next",
+  env: env.NEXT_PUBLIC_APP_ENV,
+  version: env.NEXT_PUBLIC_APP_VERSION,
+  sessionSampleRate: 100,
+  sessionReplaySampleRate: 100,
+  trackUserInteractions: true,
+  trackResources: true,
+  trackLongTasks: true,
+  defaultPrivacyLevel: "mask-user-input",
+})
+
 // Create a GrowthBook instance
 const gb = new GrowthBook({
   apiHost: "https://cdn.growthbook.io",
@@ -41,12 +58,6 @@ void gb.init({
 })
 
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {
-  if (env.NEXT_PUBLIC_INTERCOM_APP_ID) {
-    Intercom({
-      app_id: env.NEXT_PUBLIC_INTERCOM_APP_ID,
-    })
-  }
-
   return (
     <EnvProvider env={env}>
       <LoginStateProvider>
@@ -54,8 +65,8 @@ const MyApp = ((props: AppPropsWithAuthAndLayout) => {
           <FeatureProvider>
             <GrowthBookProvider growthbook={gb}>
               <ErrorBoundary FallbackComponent={DefaultFallback}>
-                <Suspense fallback={<Skeleton width="100vw" height="100vh" />}>
-                  <Stack spacing={0} minH="$100vh">
+                <Suspense fallback={<Skeleton width="100%" height="$100vh" />}>
+                  <Stack spacing={0} height="$100vh" flexDirection="column">
                     <AppBanner />
                     <VersionWrapper />
                     <ChildWithLayout {...props} />

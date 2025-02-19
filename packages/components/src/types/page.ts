@@ -1,61 +1,95 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import type { CollectionVariant } from "./variants"
 import {
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
   SearchableTableSchema,
 } from "~/interfaces"
+import { AltTextSchema, generateImageSrcSchema } from "~/interfaces/complex"
+import { REF_HREF_PATTERN } from "~/utils/validation"
 
-const BaseCollectionItemPageSchema = Type.Object({
+const categorySchemaObject = Type.Object({
   category: Type.String({
-    title: "Category of the actual item",
+    title: "Article category",
+    format: "category",
     description:
       "The category is used for filtering in the parent collection page",
   }),
-  date: Type.String({
-    title: "Date of the actual item",
-    format: "date",
-  }),
+})
+
+const dateSchemaObject = Type.Object({
+  date: Type.Optional(
+    Type.String({
+      title: "Article date",
+      format: "date",
+    }),
+  ),
+})
+
+const imageSchemaObject = Type.Object({
   image: Type.Optional(
     Type.Object({
-      src: Type.String({
-        title: "Image source URL",
-        description: "The source URL of the image",
-        format: "image",
+      src: generateImageSrcSchema({
+        title: "Thumbnail",
+        description:
+          "Upload an image if you want to have a custom thumbnail for this item",
       }),
-      alt: Type.String({
-        title: "Image alt text",
-        description: "The alt text of the image",
-        maxLength: 120,
-      }),
+      alt: AltTextSchema,
     }),
   ),
 })
 
 const BaseRefPageSchema = Type.Composite([
-  BaseCollectionItemPageSchema,
+  categorySchemaObject,
+  dateSchemaObject,
+  imageSchemaObject,
   Type.Object({
     ref: Type.String({
-      title: "URL to the actual item",
-      description:
-        "The link that users will open immediately when they click on the item in the parent collection page",
+      title: "Link",
+      description: "Choose a page or file to link to this Collection item",
+      format: "ref",
+      pattern: REF_HREF_PATTERN,
     }),
+    description: Type.Optional(
+      Type.String({
+        title: "Summary",
+        description:
+          "Add a short description to explain what this collection item is about",
+        format: "textarea",
+        maxLength: 120,
+      }),
+    ),
   }),
 ])
 
+const TagSchema = Type.Object({
+  selected: Type.Array(Type.String()),
+  category: Type.String(),
+})
+
+const TagsSchema = Type.Object({
+  tags: Type.Optional(Type.Array(TagSchema)),
+})
+
 export const ArticlePagePageSchema = Type.Composite([
-  BaseCollectionItemPageSchema,
+  dateSchemaObject,
   Type.Object({
     articlePageHeader: ArticlePageHeaderSchema,
   }),
+  categorySchemaObject,
+  imageSchemaObject,
 ])
 
-export const CollectionPagePageSchema = Type.Object({
-  subtitle: Type.String({
-    title: "The subtitle of the collection",
+export const CollectionPagePageSchema = Type.Intersect([
+  Type.Object({
+    subtitle: Type.String({
+      title: "The subtitle of the collection",
+    }),
   }),
-})
+  TagsSchema,
+])
 
 export const ContentPagePageSchema = Type.Object({
   contentPageHeader: ContentPageHeaderSchema,
@@ -71,7 +105,7 @@ export const NotFoundPagePageSchema = Type.Object({})
 export const SearchPagePageSchema = Type.Object({})
 
 export const FileRefPageSchema = BaseRefPageSchema
-export const LinkRefPageSchema = BaseRefPageSchema
+export const LinkRefPageSchema = Type.Omit(BaseRefPageSchema, ["image"])
 
 // These are props that are required by the render engine, but not enforced by
 // the JSON schema (as the data is being stored outside of the page JSON)
@@ -84,10 +118,20 @@ type BasePageAdditionalProps = BaseItemAdditionalProps & {
   language?: "en"
 }
 
+interface ArticlePageAdditionalProps {
+  tags?: CollectionPagePageProps["tags"]
+}
+
+interface CollectionVariantProps {
+  variant?: CollectionVariant
+}
+
 export type ArticlePagePageProps = Static<typeof ArticlePagePageSchema> &
-  BasePageAdditionalProps
+  BasePageAdditionalProps &
+  ArticlePageAdditionalProps
 export type CollectionPagePageProps = Static<typeof CollectionPagePageSchema> &
-  BasePageAdditionalProps
+  BasePageAdditionalProps &
+  CollectionVariantProps
 export type ContentPagePageProps = Static<typeof ContentPagePageSchema> &
   BasePageAdditionalProps
 export type DatabasePagePageProps = Static<typeof DatabasePagePageSchema> &

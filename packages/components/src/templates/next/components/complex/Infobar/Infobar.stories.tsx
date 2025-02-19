@@ -26,7 +26,7 @@ const meta: Meta<InfobarProps> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       assetsBaseUrl: "https://cms.isomer.gov.sg",
       navBarItems: [],
@@ -79,5 +79,15 @@ export const LongText: Story = {
     buttonUrl: "https://google.com",
     secondaryButtonLabel: "Secondary CTA",
     secondaryButtonUrl: "https://google.com",
+  },
+}
+
+export const NoCTA: Story = {
+  args: {
+    sectionIdx: 0,
+    title:
+      "Longer title here that spans multiple lines and is quite long and verbose and takes up a lot of space",
+    description:
+      "About a sentence worth of description here About a sentence worth of description here About a sentence worth of description here",
   },
 }

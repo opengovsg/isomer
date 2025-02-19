@@ -1,5 +1,8 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
-import type { Resource } from "@prisma/client"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import type { Resource } from "~prisma/generated/selectableTypes"
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 
 type ResourceDto = Omit<
   Resource,
@@ -21,81 +24,61 @@ const getSitemapTreeFromArray = (
   // Get the immediate children of the resource with the given parent ID
   const children = resources.filter((resource) => {
     if (parentId === null) {
-      return resource.parentId === null && resource.type !== "RootPage"
+      return (
+        resource.parentId === null &&
+        resource.type !== ResourceType.RootPage &&
+        resource.type !== ResourceType.FolderMeta &&
+        resource.type !== ResourceType.CollectionMeta
+      )
     }
-    return resource.parentId === parentId
+    return (
+      resource.parentId === parentId &&
+      resource.permalink !== INDEX_PAGE_PERMALINK
+    )
   })
 
-  // Filter out duplicate resources with the same permalink, keeping only the
-  // Folder or Collection resource, then re-assigning the resource ID to the ID
-  // of the resource with the Page type
-  return children
-    .filter(
-      (child) =>
-        !(
-          child.type === "Page" &&
-          children.some(
-            (otherChild) =>
-              otherChild.id !== child.id &&
-              otherChild.permalink === child.permalink &&
-              otherChild.type === "Folder",
-          )
-        ),
-    )
-    .filter(
-      (child) =>
-        !(
-          child.type === "CollectionPage" &&
-          children.some(
-            (otherChild) =>
-              otherChild.id !== child.id &&
-              otherChild.permalink === child.permalink &&
-              otherChild.type === "Collection",
-          )
-        ),
-    )
-    .map((resource) => {
-      const permalink = `${path}${resource.permalink}`
+  // TODO: Sort the children by the page ordering if the FolderMeta resource exists
+  return children.map((resource) => {
+    const permalink = `${path}${resource.permalink}`
 
-      if (
-        resource.type === "RootPage" ||
-        resource.type === "Page" ||
-        resource.type === "CollectionPage"
-      ) {
-        return {
-          id: String(resource.id),
-          layout: "content", // Note: We are not using the layout field in our previews
-          title: resource.title,
-          summary: "", // Note: We are not using the summary field in our previews
-          lastModified: new Date() // TODO: Update this to the updated_at field in DB
-            .toISOString(),
-          permalink,
-        }
-      }
-
-      const idOfPage = children.find(
-        (child) =>
-          child.id !== resource.id &&
-          child.permalink === resource.permalink &&
-          child.type ===
-            (resource.type === "Folder" ? "Page" : "CollectionPage"),
-      )?.id
-
+    if (
+      resource.type === ResourceType.Page ||
+      resource.type === ResourceType.CollectionPage
+    ) {
       return {
-        id: String(idOfPage ?? resource.id),
-        layout: "content", // Note: We are not using the layout field in our previews
+        id: String(resource.id),
+        layout: "content", // Note: We are not using the layout field in our sitemap for preview
         title: resource.title,
         summary: "", // Note: We are not using the summary field in our previews
         lastModified: new Date() // TODO: Update this to the updated_at field in DB
           .toISOString(),
         permalink,
-        children: getSitemapTreeFromArray(
-          resources,
-          resource.id,
-          `${permalink}/`,
-        ),
       }
-    })
+    }
+
+    const titleOfPage = resources.find(
+      (child) =>
+        // NOTE: This child is the index page of this resource
+        child.permalink === INDEX_PAGE_PERMALINK &&
+        child.parentId === resource.id,
+    )?.title
+
+    return {
+      id: String(resource.id),
+      layout: "content", // Note: We are not using the layout field in our previews
+      title: titleOfPage || resource.title,
+      summary: "", // Note: We are not using the summary field in our previews
+      lastModified: new Date() // TODO: Update this to the updated_at field in DB
+        .toISOString(),
+      // NOTE: This permalink is unused in the preview
+      permalink,
+      children: getSitemapTreeFromArray(
+        resources,
+        resource.id,
+        `${permalink}/`,
+      ),
+    }
+  })
 }
 
 // Construct the sitemap tree given an array of individual sitemap items
@@ -105,11 +88,12 @@ export const getSitemapTree = (
 ): IsomerSitemap => {
   return {
     id: String(rootResource.id),
-    layout: "content", // Note: We are not using the layout field in our previews
+    layout: "homepage", // Note: We are not using the layout field in our previews
     title: rootResource.title,
     summary: "", // Note: We are not using the summary field in our previews
     lastModified: new Date() // TODO: Update this to the updated_at field in DB
       .toISOString(),
+    // NOTE: This permalink is unused in the preview
     permalink: "/",
     children: getSitemapTreeFromArray(resources, null, "/"),
   }
