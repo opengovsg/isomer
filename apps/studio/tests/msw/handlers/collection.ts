@@ -1,5 +1,6 @@
 import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
+import { DEFAULT_COLLECTION_ITEMS } from "./page"
 
 export const collectionHandlers = {
   getMetadata: {
@@ -17,6 +18,18 @@ export const collectionHandlers = {
         publishedVersionId: null,
         draftBlobId: "1",
       })),
+  },
+  list: {
+    default: () => {
+      return trpcMsw.collection.list.query(() => {
+        return DEFAULT_COLLECTION_ITEMS.map((item) => ({
+          ...item,
+          siteId: 1,
+          state: "Draft",
+          createdAt: MOCK_STORY_DATE,
+        }))
+      })
+    },
   },
   readCollectionLink: {
     default: () => {
