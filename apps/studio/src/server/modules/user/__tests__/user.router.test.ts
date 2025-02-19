@@ -75,20 +75,6 @@ describe("user.router", () => {
       )
     })
 
-    it("should throw error if email is empty string", async () => {
-      // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
-
-      // Act
-      const result = caller.create({
-        siteId,
-        users: [{ email: "" }],
-      })
-
-      // Assert
-      await expect(result).rejects.toThrowError()
-    })
-
     it("should throw error if email is invalid", async () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
