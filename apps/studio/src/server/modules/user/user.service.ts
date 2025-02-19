@@ -2,6 +2,7 @@ import cuid2 from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import isEmail from "validator/lib/isEmail"
 
+import type { SafeKysely } from "../database"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { db, RoleType } from "../database"
 
@@ -23,6 +24,7 @@ interface CreateUserProps {
   phone?: User["phone"]
   role: ResourcePermission["role"]
   siteId: ResourcePermission["siteId"]
+  trx?: SafeKysely // allows for transaction to be passed in from parent transaction
 }
 
 export const createUser = async ({
@@ -31,6 +33,7 @@ export const createUser = async ({
   phone = "",
   role = RoleType.Editor,
   siteId,
+  trx,
 }: CreateUserProps) => {
   if (!isEmail(email)) {
     throw new TRPCError({
@@ -39,40 +42,42 @@ export const createUser = async ({
     })
   }
 
-  const { user, resourcePermission } = await db
-    .transaction()
-    .execute(async (tx) => {
-      const user = await tx
-        .insertInto("User")
-        .values({
-          id: cuid2.createId(),
-          email,
-          name,
-          phone,
-        })
-        .onConflict((oc) =>
-          oc
-            .column("email")
-            .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
-        )
-        .returning(["id", "email", "name", "phone"])
-        .executeTakeFirstOrThrow()
+  const executeInTransaction = async (tx: SafeKysely) => {
+    const user = await tx
+      .insertInto("User")
+      .values({
+        id: cuid2.createId(),
+        email,
+        name,
+        phone,
+      })
+      .onConflict((oc) =>
+        oc
+          .column("email")
+          .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
+      )
+      .returning(["id", "email", "name", "phone"])
+      .executeTakeFirstOrThrow()
 
-      const resourcePermission = await tx
-        .insertInto("ResourcePermission")
-        .values({
-          userId: user.id,
-          siteId,
-          role,
-        })
-        .returning(["userId", "siteId", "role"])
-        .executeTakeFirstOrThrow()
+    const resourcePermission = await tx
+      .insertInto("ResourcePermission")
+      .values({
+        userId: user.id,
+        siteId,
+        role,
+      })
+      .returning(["userId", "siteId", "role"])
+      .executeTakeFirstOrThrow()
 
-      return {
-        user,
-        resourcePermission,
-      }
-    })
+    return {
+      user,
+      resourcePermission,
+    }
+  }
 
-  return { user, resourcePermission }
+  if (trx) {
+    return await executeInTransaction(trx)
+  }
+
+  return await db.transaction().execute(executeInTransaction)
 }
