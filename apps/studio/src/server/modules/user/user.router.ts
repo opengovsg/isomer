@@ -13,7 +13,7 @@ import {
 import { protectedProcedure, router } from "../../trpc"
 import { db, sql } from "../database"
 import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
-import { createUser } from "./user.service"
+import { createUser, validateEmailRoleCombination } from "./user.service"
 
 export const userRouter = router({
   create: protectedProcedure
@@ -152,6 +152,8 @@ export const userRouter = router({
           message: "User was deleted before. Contact support to restore.",
         })
       }
+
+      validateEmailRoleCombination({ email: user.email, role })
 
       const updatedUserPermissions = await db
         .updateTable("ResourcePermission")

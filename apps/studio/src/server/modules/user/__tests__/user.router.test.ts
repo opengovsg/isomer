@@ -10,6 +10,7 @@ import {
   setupEditorPermissions,
   setupSite,
   setupUser,
+  setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { MOCK_TEST_USER_NAME } from "tests/msw/constants"
 import { beforeEach, describe, expect, it } from "vitest"
@@ -26,6 +27,10 @@ describe("user.router", () => {
   let caller: ReturnType<typeof createCaller>
   let session: Awaited<ReturnType<typeof applyAuthedSession>>
   let siteId: number
+
+  beforeAll(async () => {
+    await setUpWhitelist({ email: TEST_EMAIL })
+  })
 
   beforeEach(async () => {
     await resetTables("User", "Site", "ResourcePermission")
@@ -130,6 +135,64 @@ describe("user.router", () => {
           message: "User and permissions already exists",
         }),
       )
+    })
+
+    it("should throw 403 if creating a non-whitelisted non-gov.sg email with any role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test@coolvendor.com"
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        users: [{ email: nonGovSgEmail, role: RoleType.Editor }],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message: "There are non-gov.sg domains that need to be whitelisted.",
+        }),
+      )
+    })
+
+    it("should throw 403 if assigning a whitelisted non-gov.sg email with admin role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test@coolvendor.com"
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setUpWhitelist({ email: nonGovSgEmail })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        users: [{ email: nonGovSgEmail, role: RoleType.Admin }],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Non-gov.sg emails cannot be added as admin. Select another role.",
+        }),
+      )
+    })
+
+    it("should create a whitelisted non-gov.sg email with non-admin role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test@coolvendor.com"
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setUpWhitelist({ email: nonGovSgEmail })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        users: [{ email: nonGovSgEmail, role: RoleType.Editor }],
+      })
+
+      // Assert
+      await expect(result).resolves.toEqual(expect.anything())
     })
 
     it("should create user permissions successfully if user already exists but permissions do not exist", async () => {
@@ -651,6 +714,63 @@ describe("user.router", () => {
           message: "You cannot update your own role",
         }),
       )
+    })
+
+    it("should throw 403 if assigning a non-gov.sg email with admin role", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const userToUpdate = await setupUser({
+        email: "test@coolvendor.com",
+        isDeleted: false,
+      })
+      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+
+      // Act
+      const result = caller.update({
+        siteId,
+        userId: userToUpdate.id,
+        role: RoleType.Admin,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Non-gov.sg emails cannot be added as admin. Select another role.",
+        }),
+      )
+    })
+
+    it("should update a non-gov.sg email with non-admin role successfully", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const userToUpdate = await setupUser({
+        email: "test@coolvendor.com",
+        isDeleted: false,
+      })
+      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+
+      // Act
+      const result = await caller.update({
+        siteId,
+        userId: userToUpdate.id,
+        role: RoleType.Publisher,
+      })
+
+      // Assert
+      expect(result).toBe(true)
+
+      // Verify in database
+      const updatedUser = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToUpdate.id)
+        .where("siteId", "=", siteId)
+        .select("role")
+        .executeTakeFirst()
+      expect(updatedUser?.role).toBe(RoleType.Publisher)
     })
 
     it("should update a user's role successfully", async () => {

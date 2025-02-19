@@ -5,6 +5,7 @@ import {
   setupAdminPermissions,
   setupSite,
   setupUser,
+  setUpWhitelist,
 } from "tests/integration/helpers/seed"
 
 import { db } from "~/server/modules/database"
@@ -48,8 +49,12 @@ describe("user.service", () => {
   })
 
   describe("createUser", () => {
-    const TEST_EMAIL = "test@example.com"
+    const TEST_EMAIL = "test@open.gov.sg"
     let siteId: number
+
+    beforeAll(async () => {
+      await setUpWhitelist({ email: TEST_EMAIL })
+    })
 
     beforeEach(async () => {
       await resetTables("User", "ResourcePermission", "Site")
@@ -126,6 +131,64 @@ describe("user.service", () => {
           message: "User was deleted before. Contact support to restore.",
         }),
       )
+    })
+
+    it("should throw 403 if creating a non-whitelisted non-gov.sg email with any role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test@coolvendor.com"
+
+      // Act
+      const result = createUser({
+        email: nonGovSgEmail,
+        role: RoleType.Editor,
+        siteId,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message: "There are non-gov.sg domains that need to be whitelisted.",
+        }),
+      )
+    })
+
+    it("should throw 403 if assigning a non-gov.sg email with admin role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test@coolvendor.com"
+      await setUpWhitelist({ email: nonGovSgEmail })
+
+      // Act
+      const result = createUser({
+        email: nonGovSgEmail,
+        role: RoleType.Admin,
+        siteId,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Non-gov.sg emails cannot be added as admin. Select another role.",
+        }),
+      )
+    })
+
+    it("should create a non-gov.sg email with non-admin role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test@coolvendor.com"
+      await setUpWhitelist({ email: nonGovSgEmail })
+
+      // Act
+      const result = await createUser({
+        email: nonGovSgEmail,
+        role: RoleType.Editor,
+        siteId,
+      })
+
+      // Assert
+      expect(result).toEqual(expect.anything())
     })
 
     it("should create a new user with default values", async () => {
