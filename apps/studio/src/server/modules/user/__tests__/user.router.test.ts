@@ -854,6 +854,8 @@ describe("user.router", () => {
     })
 
     describe("phone validation", () => {
+      const testUserName = "Test User"
+
       it("should throw error if phone is empty", async () => {
         // Arrange
         const emptyPhones = ["", " ", "  "]
@@ -902,10 +904,10 @@ describe("user.router", () => {
         // Act & Assert
         for (const phone of validPhonesWithSpaces) {
           const result = await caller.updateDetails({
-            name: "Test User",
+            name: testUserName,
             phone,
           })
-          expect(result).toBe(true)
+          expect(result).toEqual({ name: testUserName, phone })
 
           const updatedUser = await db
             .selectFrom("User")
@@ -923,10 +925,10 @@ describe("user.router", () => {
         // Act & Assert
         for (const phone of validPhones) {
           const result = await caller.updateDetails({
-            name: "Test User",
+            name: testUserName,
             phone,
           })
-          expect(result).toBe(true)
+          expect(result).toEqual({ name: testUserName, phone })
 
           const updatedUser = await db
             .selectFrom("User")
@@ -947,7 +949,7 @@ describe("user.router", () => {
       const result = await caller.updateDetails({ name, phone })
 
       // Assert
-      expect(result).toBe(true)
+      expect(result).toEqual({ name, phone })
 
       // Assert: Verify in database
       const updatedUser = await db

@@ -72,4 +72,7 @@ export const updateDetailsInputSchema = z.object({
     .transform((phone) => phone.replace(/\s+/g, "")), // Clean up any remaining whitespace
 })
 
-export const updateDetailsOutputSchema = z.boolean()
+export const updateDetailsOutputSchema = z.object({
+  name: z.string().nullable(),
+  phone: z.string().nullable(),
+})

@@ -191,6 +191,6 @@ export const userRouter = router({
         .returningAll()
         .executeTakeFirst()
 
-      return true
+      return { name, phone }
     }),
 })
