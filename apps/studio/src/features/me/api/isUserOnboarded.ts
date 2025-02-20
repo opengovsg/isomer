@@ -18,13 +18,5 @@ const isSingaporePhoneNumber = (phone: string) => {
 }
 
 export const isUserOnboarded = ({ name, phone }: isUserOnboardedProps) => {
-  if (!name || !phone) {
-    return false
-  }
-
-  if (!isSingaporePhoneNumber(phone)) {
-    return false
-  }
-
-  return true
+  return !!name && !!phone && isSingaporePhoneNumber(phone)
 }
