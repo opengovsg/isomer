@@ -1,6 +1,10 @@
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import type { EmailTemplate, InvitationEmailTemplateData } from "./types"
+import type {
+  BaseEmailTemplateData,
+  EmailTemplate,
+  InvitationEmailTemplateData,
+} from "./types"
 import { env } from "~/env.mjs"
 
 export const invitationTemplate = (
@@ -37,6 +41,11 @@ export const invitationTemplate = (
   }
 }
 
+type EmailTemplateFunction<
+  T extends BaseEmailTemplateData = BaseEmailTemplateData,
+> = (data: T) => EmailTemplate
+
 export const templates = {
-  invitation: invitationTemplate,
-}
+  invitation:
+    invitationTemplate as EmailTemplateFunction<InvitationEmailTemplateData>,
+} as const
