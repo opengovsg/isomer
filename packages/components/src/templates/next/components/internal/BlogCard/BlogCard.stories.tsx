@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
+import { expect, userEvent, within } from "@storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -57,6 +58,15 @@ const generateArgs = ({
 
 export const Default: Story = {
   args: generateArgs({}),
+}
+
+export const Hover: Story = {
+  args: generateArgs({}),
+  parameters: {
+    pseudo: {
+      hover: [".group", "img"],
+    },
+  },
 }
 
 export const UndefinedDate: Story = {
