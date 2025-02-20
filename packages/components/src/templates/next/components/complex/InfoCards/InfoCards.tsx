@@ -55,7 +55,7 @@ const createInfoCardsStyles = tv({
         container: "py-12 first:pt-0 md:py-16",
         headingContainer: "gap-2.5 lg:max-w-3xl",
         headingSubtitle: "prose-headline-lg-regular",
-        cardImageContainer: "aspect-[2/1]",
+        cardImageContainer: "aspect-[3/2]",
       },
       default: {
         container: "mt-14 first:mt-0",
