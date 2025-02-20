@@ -184,13 +184,13 @@ export const userRouter = router({
       // because we only allow users to update their own details
       // They should be able to update their own details even without any resource permissions
 
-      await db
+      const updatedUser = await db
         .updateTable("User")
         .where("id", "=", ctx.user.id)
         .set({ name, phone })
-        .returningAll()
-        .executeTakeFirst()
+        .returning(["name", "phone"])
+        .executeTakeFirstOrThrow()
 
-      return { name, phone }
+      return { name: updatedUser.name, phone: updatedUser.phone }
     }),
 })
