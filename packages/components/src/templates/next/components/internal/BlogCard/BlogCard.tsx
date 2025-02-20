@@ -33,7 +33,7 @@ export const BlogCard = ({
     // and to do that, we add a padding on smaller viewports
     <div className="flex flex-1 flex-col gap-3 border-b pb-5 pt-5 md:pt-0">
       {image && (
-        <div className="relative mb-3 min-h-40 w-full shrink-0">
+        <div className="relative mb-3 aspect-[2/1] h-auto min-h-40 shrink-0">
           {
             <ImageClient
               src={imageSrc || ""}
