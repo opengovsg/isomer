@@ -57,19 +57,16 @@ export const updateDetailsInputSchema = z.object({
     .string()
     .trim()
     .min(1, "Phone number is required")
-    .refine((phone) => {
-      const cleanPhone = phone.replace(/\s+/g, "")
-      return !isNaN(Number(cleanPhone)) && cleanPhone.length === 8
-    }, "Phone number must be exactly 8 digits")
-    .refine((phone) => {
-      const cleanPhone = phone.replace(/\s+/g, "")
-      return (
-        cleanPhone.startsWith("6") ||
-        cleanPhone.startsWith("8") ||
-        cleanPhone.startsWith("9")
-      )
-    }, "Phone number must start with 6, 8, or 9")
-    .transform((phone) => phone.replace(/\s+/g, "")), // Clean up any remaining whitespace
+    .transform((phone) => phone.replace(/\s+/g, ""))
+    .refine(
+      (phone) => !isNaN(Number(phone)) && phone.length === 8,
+      "Phone number must be exactly 8 digits",
+    )
+    .refine(
+      (phone) =>
+        phone.startsWith("6") || phone.startsWith("8") || phone.startsWith("9"),
+      "Phone number must start with 6, 8, or 9",
+    ),
 })
 
 export const updateDetailsOutputSchema = z.object({
