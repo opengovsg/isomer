@@ -12,12 +12,8 @@ const isSingaporePhoneNumber = (phone: string) => {
     return false
   }
 
-  // Check if the phone number contains any whitespace
-  if (/\s/.test(phone)) {
-    return false
-  }
-
   // Check if it's exactly 8 digits with valid starting number
+  // This also checks if it contains any whitespace
   return /^[689]\d{7}$/.test(phone)
 }
 
