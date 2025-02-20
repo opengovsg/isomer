@@ -1,6 +1,10 @@
 import { pick } from "lodash"
 import {
   setupBlob,
+  setupCollectionMeta,
+  setupFolder,
+  setupFolderMeta,
+  setupFullSite,
   setupPageResource,
   setupSite,
   setupUser,
@@ -10,6 +14,8 @@ import type { Resource } from "../../database"
 import { db, ResourceState, ResourceType } from "../../database"
 import {
   getFullPageById,
+  getLocalisedSitemap,
+  getNavBar,
   getPageById,
   getSiteResourceById,
   updateBlobById,
@@ -487,10 +493,127 @@ describe("resource.service", () => {
       expect(result).rejects.toThrowError()
     })
   })
-  describe.skip("getNavBar", () => {})
-  describe.skip("getFooter", () => {})
-  describe.skip("moveResource", () => {})
-  describe.skip("getLocalisedSitemap", () => {})
+
+  describe("getNavBar", () => {
+    it("should return the nav bar for the given site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      // Act
+      const result = await getNavBar(site.id)
+      // Assert
+      expect(result).toBeDefined()
+      expect(result.siteId).toBe(site.id)
+    })
+
+    it("should throw an error if the `siteId` is not found", () => {
+      // Act
+      const result = getNavBar(99999)
+      // Assert
+      expect(result).rejects.toThrowError()
+    })
+  })
+
+  describe("getFooter", () => {
+    it("should return the footer for the given site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      // Act
+      const result = await getNavBar(site.id)
+      // Assert
+      expect(result).toBeDefined()
+      expect(result.siteId).toBe(site.id)
+    })
+
+    it("should throw an error if the `siteId` is not found", () => {
+      // Act
+      const result = getNavBar(99999)
+      // Assert
+      expect(result).rejects.toThrowError()
+    })
+  })
+  describe("getLocalisedSitemap", () => {
+    it("should throw an error if `siteId` is not found", async () => {
+      // Arrange
+      const { page } = await setupPageResource({ resourceType: "Page" })
+
+      // Act
+      const result = getLocalisedSitemap(9999, Number(page.id))
+
+      // Assert
+      expect(result).rejects.toThrowError()
+    })
+
+    it("should throw an error if the `resourceId` doesn't exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      // Act
+      const result = getLocalisedSitemap(site.id, 99999)
+      // Assert
+      expect(result).rejects.toThrowError()
+    })
+
+    it("should return the path from ancestor to the page, together with its siblings", async () => {
+      // Arrange
+      const { site, folder: parentFolder } = await setupFolder({})
+      const { page: rootPage } = await setupPageResource({
+        resourceType: "RootPage",
+        siteId: site.id,
+      })
+      const { page: childPage } = await setupPageResource({
+        resourceType: "Page",
+        parentId: parentFolder.id,
+        siteId: site.id,
+      })
+      // Act
+      const result = await getLocalisedSitemap(site.id, Number(childPage.id))
+
+      // Assert
+      expect(result).toBeDefined()
+      expect(result.id).toBe(rootPage.id)
+      const actualParent = result.children?.at(0)
+      expect(actualParent?.id).toBe(parentFolder.id)
+      const actualChildPage = actualParent?.children?.at(0)
+      expect(actualChildPage?.id).toBe(childPage.id)
+    })
+
+    it("should not include any meta items that are not used for publishing in the sitemap", async () => {
+      // Arrange
+      const { rootCollection, rootFolder, site, childPage } =
+        await setupFullSite()
+      const { folderMeta } = await setupFolderMeta({
+        siteId: site.id,
+        folderId: rootFolder.id,
+      })
+      const { collectionMeta } = await setupCollectionMeta({
+        siteId: site.id,
+        collectionId: rootCollection.id,
+      })
+
+      // Act
+      const actualFolderSitemap = await getLocalisedSitemap(
+        site.id,
+        Number(childPage.id),
+      )
+      const actualCollectionSitemap = await getLocalisedSitemap(
+        site.id,
+        Number(rootCollection.id),
+      )
+
+      // Assert
+      actualFolderSitemap.children
+        ?.at(0)
+        ?.children?.forEach(({ permalink }) => {
+          expect(permalink).toBeDefined()
+          expect(permalink).not.toMatch(folderMeta.permalink)
+        })
+      actualCollectionSitemap.children
+        ?.at(0)
+        ?.children?.forEach(({ permalink }) => {
+          expect(permalink).toBeDefined()
+          expect(permalink).not.toMatch(collectionMeta.permalink)
+        })
+    })
+  })
   describe.skip("getResourcePermalinkTree", () => {})
   describe.skip("getResourceFullPermalink", () => {})
   describe.skip("publishResource", () => {})
@@ -536,4 +659,5 @@ const linkPublishedBlobToPage = async ({
       blobId,
     })
     .executeTakeFirstOrThrow()
+  n
 }

@@ -229,19 +229,6 @@ export const getFooter = async (siteId: number) => {
   return { ...rest, content }
 }
 
-export const moveResource = async (
-  siteId: number,
-  resourceId: number,
-  newParentId: number | null,
-) => {
-  return db
-    .updateTable("Resource")
-    .set({ parentId: !!newParentId ? String(newParentId) : null })
-    .where("siteId", "=", siteId)
-    .where("id", "=", String(resourceId))
-    .executeTakeFirstOrThrow()
-}
-
 // Returns a sparse IsomerSitemap object that revolves around the given
 // resourceId, which includes:
 // - The full path from root to the actual resource
