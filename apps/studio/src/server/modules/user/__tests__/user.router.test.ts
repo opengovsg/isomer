@@ -907,7 +907,7 @@ describe("user.router", () => {
             name: testUserName,
             phone,
           })
-          expect(result).toEqual({ name: testUserName, phone })
+          expect(result).toEqual({ name: testUserName, phone: "81234567" })
 
           const updatedUser = await db
             .selectFrom("User")
