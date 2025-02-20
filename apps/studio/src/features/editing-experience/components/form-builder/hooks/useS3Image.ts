@@ -20,7 +20,7 @@ export const useS3Image = (imagePath: string) => {
       setImage(undefined)
       return
     }
-    void getImageAsFile(`${assetsBaseUrl}${imagePath}`)
+    getImageAsFile(`${assetsBaseUrl}${imagePath}`)
       .then((image) => {
         setImage(image)
       })
