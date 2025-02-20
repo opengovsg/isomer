@@ -7,7 +7,6 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import {
-  clearPermissions,
   setupAdminPermissions,
   setupFolder,
   setupPageResource,
@@ -401,10 +400,6 @@ describe("folder.router", async () => {
   })
 
   describe("editFolder", () => {
-    afterEach(async () => {
-      await clearPermissions()
-    })
-
     it("should throw 401 if not logged in", async () => {
       // Act
       const { folder, site } = await setupFolder()

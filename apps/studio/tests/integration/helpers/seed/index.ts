@@ -15,10 +15,6 @@ export const setupAdminPermissions = async (props: {
   await setupPermissions({ ...props, role: RoleType.Admin })
 }
 
-export const clearPermissions = async () => {
-  await db.deleteFrom("ResourcePermission").execute()
-}
-
 export const setupPermissions = async ({
   userId,
   siteId,
