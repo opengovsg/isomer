@@ -4,7 +4,7 @@ import { isValidEmail } from "~/utils/email"
 import { sendMail } from "../../lib/mail"
 import { templates } from "./templates/templates"
 
-const logger = createBaseLogger({ path: "lib/mail/service" })
+const logger = createBaseLogger({ path: "features/mail/service" })
 
 export async function sendInvitation(
   email: string,
