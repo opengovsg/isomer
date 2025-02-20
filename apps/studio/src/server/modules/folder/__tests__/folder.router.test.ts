@@ -8,9 +8,9 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
+  setupEditorPermissions,
   setupFolder,
   setupPageResource,
-  setupPermissions,
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
@@ -246,11 +246,7 @@ describe("folder.router", async () => {
       // Arrange
       const permalinkToUse = "test-folder-777"
       const { site } = await setupSite()
-      await setupPermissions({
-        userId: session.userId,
-        siteId: site.id,
-        role: "Editor",
-      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
 
       // Act
       const result = caller.create({
@@ -578,11 +574,7 @@ describe("folder.router", async () => {
       // Arrange
       const permalink = "test-folder-777"
       const { site, folder } = await setupFolder()
-      await setupPermissions({
-        userId: session.userId,
-        siteId: site.id,
-        role: "Editor",
-      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
 
       // Act
       const result = await caller.editFolder({
@@ -611,11 +603,7 @@ describe("folder.router", async () => {
         siteId: site.id,
         parentId: parentFolder.id,
       })
-      await setupPermissions({
-        userId: session.userId,
-        siteId: site.id,
-        role: "Editor",
-      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
 
       // Act
       const result = await caller.editFolder({

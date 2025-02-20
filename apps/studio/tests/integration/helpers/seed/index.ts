@@ -14,7 +14,7 @@ interface SetupPermissionsProps {
   role: (typeof RoleType)[keyof typeof RoleType]
 }
 
-export const setupPermissions = async ({
+const setupPermissions = async ({
   userId,
   siteId,
   role,
