@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,
@@ -12,10 +13,11 @@ import {
   setupPageResource,
   setupPermissions,
   setupSite,
+  setupUser,
 } from "tests/integration/helpers/seed"
 
 import { createCallerFactory } from "~/server/trpc"
-import { db } from "../../database"
+import { db, ResourceType } from "../../database"
 import { folderRouter } from "../folder.router"
 
 const createCaller = createCallerFactory(folderRouter)
@@ -24,12 +26,6 @@ describe("folder.router", async () => {
   let caller: ReturnType<typeof createCaller>
   let unauthedCaller: ReturnType<typeof createCaller>
   const session = await applyAuthedSession()
-
-  beforeAll(() => {
-    caller = createCaller(createMockRequest(session))
-    const unauthedSession = applySession()
-    unauthedCaller = createCaller(createMockRequest(unauthedSession))
-  })
 
   beforeEach(async () => {
     await resetTables(
@@ -40,6 +36,15 @@ describe("folder.router", async () => {
       "User",
       "ResourcePermission",
     )
+    caller = createCaller(createMockRequest(session))
+    const unauthedSession = applySession()
+    unauthedCaller = createCaller(createMockRequest(unauthedSession))
+    const user = await setupUser({
+      userId: session.userId,
+      email: "test@mock.com",
+      isDeleted: false,
+    })
+    await auth(user)
   })
 
   describe("create", () => {
@@ -354,7 +359,7 @@ describe("folder.router", async () => {
       )
     })
 
-    it("should throw 403 if user does not write access to the site", async () => {
+    it("should throw 403 if user does not have read access to the site", async () => {
       // Arrange
       const { folder, site } = await setupFolder()
 
@@ -398,24 +403,6 @@ describe("folder.router", async () => {
   describe("editFolder", () => {
     afterEach(async () => {
       await clearPermissions()
-    })
-
-    it("should return an empty array if the resourceId is not a folder", async () => {
-      // Arrange
-      const { site } = await setupSite()
-      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
-      const { page } = await setupPageResource({ resourceType: "Page" })
-
-      // Act
-      const result = await caller.editFolder({
-        siteId: String(site.id),
-        resourceId: page.id,
-        title: "fake",
-        permalink: "news",
-      })
-
-      // Assert
-      expect(result).toEqual(undefined)
     })
 
     it("should throw 401 if not logged in", async () => {
@@ -574,6 +561,24 @@ describe("folder.router", async () => {
       )
     })
 
+    it("should return undefined if the resourceId is not a folder", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
+      const { page } = await setupPageResource({ resourceType: "Page" })
+
+      // Act
+      const result = await caller.editFolder({
+        siteId: String(site.id),
+        resourceId: page.id,
+        title: "fake",
+        permalink: "news",
+      })
+
+      // Assert
+      expect(result).toEqual(undefined)
+    })
+
     it("should allow edits on a root level folder regardless of the role", async () => {
       // Arrange
       const permalink = "test-folder-777"
@@ -593,7 +598,14 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      expect(result).toMatchObject({ permalink, id: folder.id })
+      const expected = await getFolderWithPermalink({
+        siteId: site.id,
+        permalink,
+      })
+      expect(result).toMatchObject({
+        permalink: expected.permalink,
+        id: expected.id,
+      })
     })
 
     it("should allow edits on a nested folder regardless of the role", async () => {
@@ -619,7 +631,14 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      expect(result).toMatchObject({ permalink, id: folder.id })
+      const expected = await getFolderWithPermalink({
+        siteId: site.id,
+        permalink,
+      })
+      expect(result).toMatchObject({
+        permalink: expected.permalink,
+        id: expected.id,
+      })
     })
   })
 })
@@ -634,7 +653,7 @@ const getFolderWithPermalink = ({
 }) => {
   return db
     .selectFrom("Resource")
-    .where("type", "=", "Folder")
+    .where("type", "=", ResourceType.Folder)
     .where("siteId", "=", siteId)
     .where("permalink", "=", permalink)
     .selectAll()
