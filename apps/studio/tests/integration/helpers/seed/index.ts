@@ -7,14 +7,24 @@ import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
 
-export const setupAdminPermissions = async ({
+export const setupAdminPermissions = async (props: {
+  userId?: string
+  siteId: number
+  isDeleted?: boolean
+}) => {
+  await setupPermissions({ ...props, role: RoleType.Admin })
+}
+
+export const setupPermissions = async ({
   userId,
   siteId,
+  role = RoleType.Editor,
   isDeleted = false,
 }: {
   userId?: string
   siteId: number
   isDeleted?: boolean
+  role: (typeof RoleType)[keyof typeof RoleType]
 }) => {
   if (!userId) throw new Error("userId is a required field")
 
@@ -23,7 +33,7 @@ export const setupAdminPermissions = async ({
     .values({
       userId: String(userId),
       siteId,
-      role: RoleType.Admin,
+      role,
       resourceId: null,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
     })
