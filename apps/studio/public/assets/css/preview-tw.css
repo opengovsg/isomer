@@ -1458,6 +1458,14 @@ video {
   aspect-ratio: 16/9;
 }
 
+.aspect-\[2\/1\] {
+  aspect-ratio: 2/1;
+}
+
+.aspect-\[5\/6\] {
+  aspect-ratio: 5/6;
+}
+
 .size-5 {
   width: 1.25rem;
   height: 1.25rem;
@@ -4856,10 +4864,6 @@ video {
 
   .md\:h-\[240px\] {
     height: 240px;
-  }
-
-  .md\:max-h-full {
-    max-height: 100%;
   }
 
   .md\:w-1\/2 {

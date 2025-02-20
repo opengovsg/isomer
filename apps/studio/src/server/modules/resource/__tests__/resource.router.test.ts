@@ -10,7 +10,7 @@ import {
   setupBlob,
   setupCollection,
   setupCollectionLink,
-  setUpEditorPermissions,
+  setupEditorPermissions,
   setupFolder,
   setupFolderMeta,
   setupPageResource,
@@ -1016,7 +1016,7 @@ describe("resource.router", async () => {
         siteId: site.id,
         parentId: originFolder.id,
       })
-      await setUpEditorPermissions({
+      await setupEditorPermissions({
         userId: session.userId,
         siteId: site.id,
       })
