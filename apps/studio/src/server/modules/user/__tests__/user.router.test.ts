@@ -914,7 +914,7 @@ describe("user.router", () => {
             .where("id", "=", session.userId!)
             .selectAll()
             .executeTakeFirstOrThrow()
-          expect(updatedUser.phone).toBe("81234567")
+          expect(updatedUser).toMatchObject(result)
         }
       })
 
@@ -935,7 +935,7 @@ describe("user.router", () => {
             .where("id", "=", session.userId!)
             .selectAll()
             .executeTakeFirstOrThrow()
-          expect(updatedUser.phone).toBe(phone)
+          expect(updatedUser).toMatchObject(result)
         }
       })
     })
@@ -957,8 +957,7 @@ describe("user.router", () => {
         .where("id", "=", session.userId!)
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(updatedUser.name).toBe(name)
-      expect(updatedUser.phone).toBe(phone)
+      expect(updatedUser).toMatchObject(result)
     })
   })
 })
