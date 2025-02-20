@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,
   applySession,
@@ -30,11 +31,18 @@ describe("folder.router", async () => {
     unauthedCaller = createCaller(createMockRequest(unauthedSession))
   })
 
-  describe("create", () => {
-    afterEach(async () => {
-      await clearPermissions()
-    })
+  beforeEach(async () => {
+    await resetTables(
+      "Blob",
+      "Resource",
+      "Site",
+      "Version",
+      "User",
+      "ResourcePermission",
+    )
+  })
 
+  describe("create", () => {
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.create({
