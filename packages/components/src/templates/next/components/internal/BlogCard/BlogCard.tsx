@@ -34,57 +34,55 @@ export const BlogCard = ({
     <Link
       LinkComponent={LinkComponent}
       href={referenceLinkHref}
-      className="group border-b"
+      className="group flex flex-1 flex-col gap-3 border-b pb-5 pt-5 md:pt-0"
     >
-      <div className="flex flex-1 flex-col gap-3 pb-5 pt-5 md:pt-0">
-        {image && (
-          <div className="relative mb-3 aspect-[2/1] h-auto min-h-40 shrink-0">
-            {
-              <ImageClient
-                src={imageSrc || ""}
-                alt={image.alt}
-                width="100%"
-                className="absolute left-0 h-full w-full rounded object-cover"
-                assetsBaseUrl={siteAssetsBaseUrl}
-              />
-            }
+      {image && (
+        <div className="relative mb-3 aspect-[2/1] h-auto min-h-40 shrink-0">
+          {
+            <ImageClient
+              src={imageSrc || ""}
+              alt={image.alt}
+              width="100%"
+              className="absolute left-0 h-full w-full rounded object-cover"
+              assetsBaseUrl={siteAssetsBaseUrl}
+            />
+          }
+        </div>
+      )}
+      {shouldShowDate && (
+        <p className="prose-label-md-regular shrink-0 text-base-content-subtle">
+          {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
+        </p>
+      )}
+      <div className="flex flex-grow flex-col gap-3 text-base-content">
+        <h3 className="inline-block">
+          <span className={collectionCardLinkStyle()} title={itemTitle}>
+            {itemTitle}
+          </span>
+        </h3>
+        {tags && tags.length > 0 && (
+          <div className="-mt-1 flex flex-col gap-2">
+            {tags.flatMap(({ category, selected: labels }) => {
+              return (
+                <div className="flex w-full flex-wrap items-center gap-1.5">
+                  <p className="prose-label-sm">{category}</p>
+                  {labels.map((label) => {
+                    return <Tag>{label}</Tag>
+                  })}
+                </div>
+              )
+            })}
           </div>
         )}
-        {shouldShowDate && (
-          <p className="prose-label-md-regular shrink-0 text-base-content-subtle">
-            {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
+        {description && (
+          <p className="prose-body-base line-clamp-3 whitespace-pre-wrap">
+            {description}
           </p>
         )}
-        <div className="flex flex-grow flex-col gap-3 text-base-content">
-          <h3 className="inline-block">
-            <span className={collectionCardLinkStyle()} title={itemTitle}>
-              {itemTitle}
-            </span>
-          </h3>
-          {tags && tags.length > 0 && (
-            <div className="-mt-1 flex flex-col gap-2">
-              {tags.flatMap(({ category, selected: labels }) => {
-                return (
-                  <div className="flex w-full flex-wrap items-center gap-1.5">
-                    <p className="prose-label-sm">{category}</p>
-                    {labels.map((label) => {
-                      return <Tag>{label}</Tag>
-                    })}
-                  </div>
-                )
-              })}
-            </div>
-          )}
-          {description && (
-            <p className="prose-body-base line-clamp-3 whitespace-pre-wrap">
-              {description}
-            </p>
-          )}
-          {/* TODO: Feature enhancement? Filter by category when clicked */}
-          <p className="prose-label-sm-medium text-base-content-subtle">
-            {category}
-          </p>
-        </div>
+        {/* TODO: Feature enhancement? Filter by category when clicked */}
+        <p className="prose-label-sm-medium text-base-content-subtle">
+          {category}
+        </p>
       </div>
     </Link>
   )
