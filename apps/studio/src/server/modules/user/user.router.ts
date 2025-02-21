@@ -97,16 +97,29 @@ export const userRouter = router({
       })
 
       return db
-        .selectFrom("User")
-        .innerJoin("ResourcePermission", "User.id", "ResourcePermission.userId")
-        .where("ResourcePermission.siteId", "=", siteId)
-        .orderBy("User.lastLoginAt", sql.raw(`DESC NULLS LAST`))
+        .with("ActiveResourcePermission", (qb) =>
+          qb
+            .selectFrom("ResourcePermission")
+            .selectAll()
+            .where("deletedAt", "is", null)
+            .where("siteId", "=", siteId),
+        )
+        .with("ActiveUser", (qb) =>
+          qb.selectFrom("User").selectAll().where("deletedAt", "is", null),
+        )
+        .selectFrom("ActiveUser")
+        .innerJoin(
+          "ActiveResourcePermission",
+          "ActiveUser.id",
+          "ActiveResourcePermission.userId",
+        )
+        .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
         .select([
-          "User.id",
-          "User.email",
-          "User.name",
-          "User.lastLoginAt",
-          "ResourcePermission.role",
+          "ActiveUser.id",
+          "ActiveUser.email",
+          "ActiveUser.name",
+          "ActiveUser.lastLoginAt",
+          "ActiveResourcePermission.role",
         ])
         .limit(limit)
         .offset(offset)

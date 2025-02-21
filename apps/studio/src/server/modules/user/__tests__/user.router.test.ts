@@ -510,6 +510,75 @@ describe("user.router", () => {
       )
     })
 
+    it("should not return users with deletedAt set", async () => {
+      // Arrange
+      await setupEditorPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
+      await setupEditorPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(1) // only the current admin user
+      expect(result).not.toContain(
+        expect.objectContaining({
+          id: user.id,
+        }),
+      )
+    })
+
+    it("should not return users with all permissions deleted", async () => {
+      // Arrange
+      await setupEditorPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      await setupEditorPermissions({ userId: user.id, siteId, isDeleted: true })
+      await setupAdminPermissions({ userId: user.id, siteId, isDeleted: true })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(1) // only the current admin user
+      expect(result).not.toContain(
+        expect.objectContaining({
+          id: user.id,
+        }),
+      )
+    })
+
+    it("should return users with at least one non-deleted permission", async () => {
+      // Arrange
+      await setupEditorPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      await setupEditorPermissions({
+        userId: user.id,
+        siteId,
+        isDeleted: true, // assuming previously soft deleted
+      })
+      await setupEditorPermissions({
+        userId: user.id,
+        siteId,
+        isDeleted: false, // assuming being granted new permissions
+      })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(2)
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: user.id,
+          }),
+        ]),
+      )
+    })
+
     it("should return array with self when no other users exist", async () => {
       // Arrange
       await setupEditorPermissions({ userId: session.userId, siteId })
@@ -518,7 +587,7 @@ describe("user.router", () => {
       const result = await caller.list({ siteId })
 
       // Assert
-      expect(result).toHaveLength(1)
+      expect(result).toHaveLength(1) // only the current admin user
       expect(result).toEqual([
         expect.objectContaining({
           id: session.userId,
