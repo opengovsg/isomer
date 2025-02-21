@@ -173,7 +173,11 @@ export const userRouter = router({
         })
       }
 
-      return true
+      return {
+        siteId,
+        userId,
+        role: updatedUserPermissions.role,
+      }
     }),
 
   updateDetails: protectedProcedure
