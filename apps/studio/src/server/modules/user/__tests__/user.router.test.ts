@@ -901,9 +901,10 @@ describe("user.router", () => {
         .selectFrom("ResourcePermission")
         .where("userId", "=", userToUpdate.id)
         .where("siteId", "=", siteId)
+        .where("role", "=", newRole)
         .select("role")
         .executeTakeFirst()
-      expect(updatedUser?.role).toBe(newRole)
+      expect(updatedUser).not.toBeNull()
     })
 
     it("should update a user's role successfully", async () => {
@@ -941,6 +942,60 @@ describe("user.router", () => {
         .select("role")
         .executeTakeFirst()
       expect(updatedUser?.role).toBe(newRole)
+    })
+
+    it("when updating a user's role, create a new permission for the user and update the old permission's deletedAt", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const userToUpdate = await setupUser({
+        email: TEST_EMAIL,
+        isDeleted: false,
+      })
+      const originalPermission = await setupEditorPermissions({
+        userId: userToUpdate.id,
+        siteId,
+      })
+      const newRole = RoleType.Publisher
+
+      // Act
+      const result = await caller.update({
+        siteId,
+        userId: userToUpdate.id,
+        role: newRole,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        id: expect.not.stringContaining(originalPermission.id),
+        siteId,
+        userId: userToUpdate.id,
+        role: newRole,
+      })
+
+      // Assert: Verify in DB
+      const userPermissions = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToUpdate.id)
+        .where("siteId", "=", siteId)
+        .selectAll()
+        .execute()
+      console.log(111, userPermissions)
+      expect(userPermissions).toHaveLength(2) // 1 old + 1 new
+      expect(userPermissions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: originalPermission.id,
+            role: RoleType.Editor,
+            deletedAt: expect.any(Date),
+          }),
+          expect.objectContaining({
+            id: result.id,
+            role: RoleType.Publisher,
+            deletedAt: null,
+          }),
+        ]),
+      )
     })
   })
 })

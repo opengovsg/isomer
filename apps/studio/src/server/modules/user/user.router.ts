@@ -188,26 +188,32 @@ export const userRouter = router({
 
       validateEmailRoleCombination({ email: user.email, role })
 
-      const updatedUserPermissions = await db
-        .updateTable("ResourcePermission")
-        .where("userId", "=", userId)
-        .where("siteId", "=", siteId)
-        .where("resourceId", "is", null) // because we are updating site-wide permissions
-        .set({ role })
-        .returningAll()
-        .executeTakeFirst()
+      const updatedUserPermission = await db
+        .transaction()
+        .execute(async (trx) => {
+          const oldPermissions = await trx
+            .updateTable("ResourcePermission")
+            .where("userId", "=", userId)
+            .where("siteId", "=", siteId)
+            .where("resourceId", "is", null) // because we are updating site-wide permissions
+            .set({ deletedAt: new Date() }) // soft delete the old permission
+            .returningAll()
+            .executeTakeFirst()
 
-      if (!updatedUserPermissions) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User permissions not found",
+          if (!oldPermissions) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "User permissions not found",
+            })
+          }
+
+          return await trx
+            .insertInto("ResourcePermission")
+            .values({ userId, siteId, role, resourceId: null }) // because we are updating site-wide permissions
+            .returningAll()
+            .executeTakeFirst()
         })
-      }
 
-      return {
-        siteId,
-        userId,
-        role: updatedUserPermissions.role,
-      }
+      return updatedUserPermission
     }),
 })
