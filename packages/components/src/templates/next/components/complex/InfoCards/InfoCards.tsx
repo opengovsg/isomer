@@ -61,7 +61,7 @@ const createInfoCardsStyles = tv({
         container: "mt-14 first:mt-0",
         headingContainer: "gap-6",
         headingSubtitle: "prose-body-base",
-        cardImageContainer: "aspect-[2/1] lg:aspect-square",
+        cardImageContainer: "aspect-[3/2] lg:aspect-square",
       },
     },
     isClickableCard: {
