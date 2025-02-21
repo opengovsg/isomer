@@ -210,8 +210,8 @@ export const userRouter = router({
           return await trx
             .insertInto("ResourcePermission")
             .values({ userId, siteId, role, resourceId: null }) // because we are updating site-wide permissions
-            .returningAll()
-            .executeTakeFirst()
+            .returning(["id", "userId", "siteId", "role"])
+            .executeTakeFirstOrThrow()
         })
 
       return updatedUserPermission
