@@ -1,5 +1,7 @@
+import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 
+import type { ResourcePermission } from "~prisma/generated/generatedTypes"
 import {
   createInputSchema,
   createOutputSchema,
@@ -14,6 +16,10 @@ import { protectedProcedure, router } from "../../trpc"
 import { db, sql } from "../database"
 import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
 import { createUser, validateEmailRoleCombination } from "./user.service"
+
+interface RankedResourcePermission extends ResourcePermission {
+  rn: number
+}
 
 export const userRouter = router({
   create: protectedProcedure
@@ -99,10 +105,24 @@ export const userRouter = router({
       return db
         .with("ActiveResourcePermission", (qb) =>
           qb
-            .selectFrom("ResourcePermission")
+            .selectFrom(
+              sql<RankedResourcePermission>`(
+                SELECT *,
+                  ROW_NUMBER() OVER (
+                    PARTITION BY "userId", "siteId", "resourceId"
+                    ORDER BY CASE 
+                      WHEN role = ${RoleType.Admin} THEN 1
+                      WHEN role = ${RoleType.Publisher} THEN 2
+                      WHEN role = ${RoleType.Editor} THEN 3
+                    END ASC
+                  ) as rn
+                FROM "ResourcePermission"
+                WHERE "deletedAt" IS NULL
+                AND "siteId" = ${siteId}
+              )`.as("ranked_permissions"),
+            )
             .selectAll()
-            .where("deletedAt", "is", null)
-            .where("siteId", "=", siteId),
+            .where("rn", "=", 1),
         )
         .with("ActiveUser", (qb) =>
           qb.selectFrom("User").selectAll().where("deletedAt", "is", null),
@@ -114,12 +134,12 @@ export const userRouter = router({
           "ActiveResourcePermission.userId",
         )
         .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
-        .select([
+        .select((eb) => [
           "ActiveUser.id",
           "ActiveUser.email",
           "ActiveUser.name",
           "ActiveUser.lastLoginAt",
-          "ActiveResourcePermission.role",
+          eb.ref("ActiveResourcePermission.role").as("role"),
         ])
         .limit(limit)
         .offset(offset)

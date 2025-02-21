@@ -8,6 +8,7 @@ import {
 import {
   setupAdminPermissions,
   setupEditorPermissions,
+  setupPublisherPermissions,
   setupSite,
   setupUser,
   setUpWhitelist,
@@ -616,6 +617,39 @@ describe("user.router", () => {
           lastLoginAt: MOCK_STORY_DATE,
         }),
       ])
+    })
+
+    // In the event where a user has multiple permissions (for unknown reasons),
+    // we should only return the most powerful role
+    it("should return users only with their most powerful role", async () => {
+      // Arrange
+      // Current user has all 3 permissions
+      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupPublisherPermissions({ userId: session.userId, siteId })
+
+      // Arrange - This user has Editor and Publisher permissions
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      await setupEditorPermissions({ userId: user.id, siteId })
+      await setupPublisherPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(2)
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: session.userId,
+            role: RoleType.Admin, // Admin > Publisher > Editor
+          }),
+          expect.objectContaining({
+            id: user.id,
+            role: RoleType.Publisher, // Publisher > Editor
+          }),
+        ]),
+      )
     })
 
     it("should return paginated results (10 users per page)", async () => {

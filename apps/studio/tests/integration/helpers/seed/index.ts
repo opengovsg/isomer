@@ -47,6 +47,19 @@ export const setupEditorPermissions = async ({
   })
 }
 
+export const setupPublisherPermissions = async ({
+  userId,
+  siteId,
+  isDeleted = false,
+}: Omit<UserPermissionsProps, "role">) => {
+  await setUpUserPermissions({
+    userId,
+    siteId,
+    isDeleted,
+    role: RoleType.Publisher,
+  })
+}
+
 export const setupAdminPermissions = async ({
   userId,
   siteId,
