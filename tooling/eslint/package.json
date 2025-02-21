@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@eslint/compat": "^1.1.0",
+    "@eslint/compat": "^1.2.7",
     "@eslint/js": "^9.10.0",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",
