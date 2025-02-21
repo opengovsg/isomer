@@ -12,7 +12,7 @@ import {
   setupUser,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
-import { MOCK_TEST_USER_NAME } from "tests/msw/constants"
+import { MOCK_STORY_DATE, MOCK_TEST_USER_NAME } from "tests/msw/constants"
 import { beforeEach, describe, expect, it } from "vitest"
 
 import { db, RoleType } from "~/server/modules/database"
@@ -593,6 +593,27 @@ describe("user.router", () => {
           id: session.userId,
           name: MOCK_TEST_USER_NAME,
           lastLoginAt: null,
+        }),
+      ])
+    })
+
+    it("should return users with their last login date", async () => {
+      // Arrange
+      await setupEditorPermissions({ userId: session.userId, siteId })
+      await db
+        .updateTable("User")
+        .where("id", "=", session.userId!)
+        .set({ lastLoginAt: MOCK_STORY_DATE })
+        .execute()
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toEqual([
+        expect.objectContaining({
+          id: session.userId,
+          lastLoginAt: MOCK_STORY_DATE,
         }),
       ])
     })
