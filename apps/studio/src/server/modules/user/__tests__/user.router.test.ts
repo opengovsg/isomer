@@ -209,12 +209,13 @@ describe("user.router", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result).toEqual([
+      const createdUser = result[0]
+      expect(createdUser).toEqual(
         expect.objectContaining({
           email: TEST_EMAIL,
           id: expect.any(String),
         }),
-      ])
+      )
 
       // Assert: No new user was created
       const dbUserResult = await db
@@ -234,7 +235,7 @@ describe("user.router", () => {
       expect(resourcePermissions).toHaveLength(1)
       expect(resourcePermissions).toEqual([
         expect.objectContaining({
-          userId: user.id,
+          userId: createdUser?.id,
           siteId,
           role: RoleType.Editor,
         }),
@@ -253,12 +254,13 @@ describe("user.router", () => {
 
       // Assert
       expect(createdUsers).toHaveLength(1)
-      expect(createdUsers).toEqual([
+      const createdUser = createdUsers[0]
+      expect(createdUser).toEqual(
         expect.objectContaining({
           email: TEST_EMAIL,
           id: expect.any(String),
         }),
-      ])
+      )
 
       // Assert: Verify user in database
       const user = await db
@@ -268,7 +270,7 @@ describe("user.router", () => {
         .executeTakeFirstOrThrow()
       expect(user).toMatchObject({
         email: TEST_EMAIL,
-        id: createdUsers[0]?.id,
+        id: createdUser?.id,
         deletedAt: null,
       })
 
@@ -282,7 +284,7 @@ describe("user.router", () => {
       expect(resourcePermissions).toHaveLength(1)
       expect(resourcePermissions).toEqual([
         expect.objectContaining({
-          userId: user.id,
+          userId: createdUser?.id,
           siteId,
         }),
       ])
@@ -752,16 +754,23 @@ describe("user.router", () => {
         isDeleted: false,
       })
       await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+      const newRole = RoleType.Publisher
 
       // Act
       const result = await caller.update({
         siteId,
         userId: userToUpdate.id,
-        role: RoleType.Publisher,
+        role: newRole,
       })
 
       // Assert
-      expect(result).toBe(true)
+      expect(result).toEqual(
+        expect.objectContaining({
+          siteId,
+          userId: userToUpdate.id,
+          role: newRole,
+        }),
+      )
 
       // Verify in database
       const updatedUser = await db
@@ -770,7 +779,7 @@ describe("user.router", () => {
         .where("siteId", "=", siteId)
         .select("role")
         .executeTakeFirst()
-      expect(updatedUser?.role).toBe(RoleType.Publisher)
+      expect(updatedUser?.role).toBe(newRole)
     })
 
     it("should update a user's role successfully", async () => {
@@ -781,18 +790,24 @@ describe("user.router", () => {
         email: TEST_EMAIL,
         isDeleted: false,
       })
-
       await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+      const newRole = RoleType.Admin
 
       // Act
       const result = await caller.update({
         siteId,
         userId: userToUpdate.id,
-        role: RoleType.Admin,
+        role: newRole,
       })
 
       // Assert
-      expect(result).toBe(true)
+      expect(result).toEqual(
+        expect.objectContaining({
+          siteId,
+          userId: userToUpdate.id,
+          role: newRole,
+        }),
+      )
 
       // Verify in database
       const updatedUser = await db
@@ -801,7 +816,7 @@ describe("user.router", () => {
         .where("siteId", "=", siteId)
         .select("role")
         .executeTakeFirst()
-      expect(updatedUser?.role).toBe(RoleType.Admin)
+      expect(updatedUser?.role).toBe(newRole)
     })
   })
 })

@@ -49,4 +49,8 @@ export const updateInputSchema = z.object({
   role: z.nativeEnum(RoleType),
 })
 
-export const updateOutputSchema = z.boolean()
+export const updateOutputSchema = z.object({
+  siteId: z.number().min(1),
+  userId: z.string(),
+  role: z.nativeEnum(RoleType),
+})
