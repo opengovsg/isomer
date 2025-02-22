@@ -1,12 +1,11 @@
 import { useMemo } from "react"
-import { Menu, MenuButton, Text, VStack } from "@chakra-ui/react"
+import { Text, VStack } from "@chakra-ui/react"
 import {
   createColumnHelper,
   getCoreRowModel,
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { BiDotsVertical } from "react-icons/bi"
 
 import type { UserTableData } from "./types"
 import { TableHeader } from "~/components/Datatable"
@@ -14,8 +13,9 @@ import { Datatable } from "~/components/Datatable/Datatable"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 import { LastLoginCell } from "./LastLoginCell"
+import { UserTableMenu } from "./UserTableMenu"
 
-interface UserTableProps {
+export interface UserTableProps {
   siteId: number
 }
 
@@ -46,11 +46,7 @@ const getColumns = ({ siteId }: UserTableProps) => [
     id: "user_menu",
     header: () => <TableHeader>Actions</TableHeader>,
     cell: ({ row }) => (
-      <Menu>
-        <MenuButton>
-          <BiDotsVertical />
-        </MenuButton>
-      </Menu>
+      <UserTableMenu siteId={siteId} userId={row.original.id} />
     ),
     size: 24,
   }),
