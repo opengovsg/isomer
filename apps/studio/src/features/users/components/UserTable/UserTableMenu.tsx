@@ -1,3 +1,4 @@
+import { useContext } from "react"
 import {
   IconButton,
   Menu,
@@ -10,12 +11,15 @@ import { BiDotsVerticalRounded, BiPencil, BiTrash } from "react-icons/bi"
 import type { UserTableData } from "./types"
 import type { UserTableProps } from "./UserTable"
 import { MenuItem } from "~/components/Menu"
+import { UserManagementContext } from "~/features/users"
 
 interface UserTableMenuProps extends Pick<UserTableProps, "siteId"> {
   userId: UserTableData["id"]
 }
 
 export const UserTableMenu = ({ siteId, userId }: UserTableMenuProps) => {
+  const ability = useContext(UserManagementContext)
+
   return (
     <Menu isLazy size="sm">
       <MenuButton
@@ -26,23 +30,27 @@ export const UserTableMenu = ({ siteId, userId }: UserTableMenuProps) => {
       />
       <Portal>
         <MenuList>
-          <MenuItem
-            onClick={() => {
-              console.log(`TODO: Edit user: ${userId} ${siteId}`)
-            }}
-            icon={<BiPencil fontSize="1rem" />}
-          >
-            Edit user
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              console.log(`TODO: Remove user access: ${userId} ${siteId}`)
-            }}
-            colorScheme="critical"
-            icon={<BiTrash fontSize="1rem" />}
-          >
-            Remove user access
-          </MenuItem>
+          {ability.can("update", "UserManagement") && (
+            <MenuItem
+              onClick={() => {
+                console.log(`TODO: Edit user: ${userId} ${siteId}`)
+              }}
+              icon={<BiPencil fontSize="1rem" />}
+            >
+              Edit user
+            </MenuItem>
+          )}
+          {ability.can("delete", "UserManagement") && (
+            <MenuItem
+              onClick={() => {
+                console.log(`TODO: Remove user access: ${userId} ${siteId}`)
+              }}
+              colorScheme="critical"
+              icon={<BiTrash fontSize="1rem" />}
+            >
+              Remove user access
+            </MenuItem>
+          )}
         </MenuList>
       </Portal>
     </Menu>

@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useContext, useMemo } from "react"
 import { Text, VStack } from "@chakra-ui/react"
 import {
   createColumnHelper,
@@ -10,6 +10,7 @@ import {
 import type { UserTableData } from "./types"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
+import { UserManagementContext } from "~/features/users"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 import { LastLoginCell } from "./LastLoginCell"
@@ -22,39 +23,62 @@ export interface UserTableProps {
 
 const columnsHelper = createColumnHelper<UserTableData>()
 
-const getColumns = ({ siteId }: Pick<UserTableProps, "siteId">) => [
-  columnsHelper.display({
-    id: "user_info",
-    header: () => <TableHeader>User</TableHeader>,
-    cell: ({ row }) => (
-      <VStack gap="0.25rem" align="start">
-        <Text textStyle="subhead-2">{row.original.name}</Text>
-        <Text textStyle="caption-2">{row.original.email}</Text>
-      </VStack>
-    ),
-  }),
-  columnsHelper.display({
-    id: "user_role",
-    header: () => <TableHeader>Role</TableHeader>,
-    cell: ({ row }) => <Text textStyle="caption-2">{row.original.role}</Text>,
-  }),
-  columnsHelper.display({
-    id: "user_last_login",
-    header: () => <TableHeader>Last login</TableHeader>,
-    cell: ({ row }) => <LastLoginCell lastLoginAt={row.original.lastLoginAt} />,
-  }),
-  columnsHelper.display({
-    id: "user_menu",
-    header: () => <TableHeader>Actions</TableHeader>,
-    cell: ({ row }) => (
-      <UserTableMenu siteId={siteId} userId={row.original.id} />
-    ),
-    size: 24,
-  }),
-]
+const getColumns = ({
+  siteId,
+  canManageUsers,
+}: Pick<UserTableProps, "siteId"> & { canManageUsers: boolean }) => {
+  const baseColumns = [
+    columnsHelper.display({
+      id: "user_info",
+      header: () => <TableHeader>User</TableHeader>,
+      cell: ({ row }) => (
+        <VStack gap="0.25rem" align="start">
+          <Text textStyle="subhead-2">{row.original.name}</Text>
+          <Text textStyle="caption-2">{row.original.email}</Text>
+        </VStack>
+      ),
+    }),
+    columnsHelper.display({
+      id: "user_role",
+      header: () => <TableHeader>Role</TableHeader>,
+      cell: ({ row }) => <Text textStyle="caption-2">{row.original.role}</Text>,
+    }),
+    columnsHelper.display({
+      id: "user_last_login",
+      header: () => <TableHeader>Last login</TableHeader>,
+      cell: ({ row }) => (
+        <LastLoginCell lastLoginAt={row.original.lastLoginAt} />
+      ),
+    }),
+  ]
+
+  if (!canManageUsers) {
+    return baseColumns
+  }
+
+  return [
+    ...baseColumns,
+    columnsHelper.display({
+      id: "user_menu",
+      header: () => <TableHeader>Actions</TableHeader>,
+      cell: ({ row }) => (
+        <UserTableMenu siteId={siteId} userId={row.original.id} />
+      ),
+      size: 24,
+    }),
+  ]
+}
 
 export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
-  const columns = useMemo(() => getColumns({ siteId }), [siteId])
+  const ability = useContext(UserManagementContext)
+  const canManageUsers =
+    ability.can("update", "UserManagement") ||
+    ability.can("delete", "UserManagement")
+
+  const columns = useMemo(
+    () => getColumns({ siteId, canManageUsers }),
+    [siteId, canManageUsers],
+  )
 
   const { data: totalRowCount = 0, isLoading: isCountLoading } =
     trpc.user.count.useQuery({
