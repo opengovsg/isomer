@@ -63,7 +63,11 @@ const SiteUsersPage: NextPageWithLayout = () => {
               View and manage people that you collaborate with you on this site.
             </Text>
           </VStack>
-          <Button variant="solid" leftIcon={<BiPlus />}>
+          <Button
+            variant="solid"
+            leftIcon={<BiPlus />}
+            onClick={() => console.log("TODO: add new user")}
+          >
             Add new user
           </Button>
         </HStack>
