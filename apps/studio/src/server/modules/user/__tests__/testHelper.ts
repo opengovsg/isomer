@@ -9,9 +9,15 @@ import {
 
 export const isomerAdminsCount = ISOMER_ADMINS_AND_MIGRATORS.length
 
-export const setupIsomerAdmins = async ({ siteId }: { siteId: number }) => {
+export const setupIsomerAdmins = async ({
+  siteId,
+  hasLoggedIn = false,
+}: {
+  siteId: number
+  hasLoggedIn?: boolean
+}) => {
   for (const email of ISOMER_ADMINS_AND_MIGRATORS_EMAILS) {
-    const user = await setupUser({ email, isDeleted: false })
+    const user = await setupUser({ email, isDeleted: false, hasLoggedIn })
     await setupAdminPermissions({ userId: user.id, siteId })
   }
 }
