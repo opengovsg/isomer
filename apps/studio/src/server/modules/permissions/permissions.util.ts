@@ -48,9 +48,7 @@ export const buildUserManagementPermissions = (roles: { role: RoleType }[]) => {
 
   // Only Admin role can manage permissions
   if (roles.some(({ role }) => role === RoleType.Admin)) {
-    CRUD_ACTIONS.map((action) => {
-      builder.can(action, "UserManagement")
-    })
+    builder.can("manage", "UserManagement")
   }
 
   return builder.build({ detectSubjectType: () => "UserManagement" })

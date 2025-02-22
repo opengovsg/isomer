@@ -6,10 +6,7 @@ import { UserManagementContext } from "~/features/users"
 export const CollaboratorsDescription = () => {
   const ability = useContext(UserManagementContext)
 
-  const canCreate = ability.can("create", "UserManagement")
-  const canUpdate = ability.can("update", "UserManagement")
-
-  if (canCreate || canUpdate) {
+  if (ability.can("manage", "UserManagement")) {
     return (
       <Text textStyle="body-2">
         View and manage people that you collaborate with you on this site
@@ -17,8 +14,7 @@ export const CollaboratorsDescription = () => {
     )
   }
 
-  const canRead = ability.can("read", "UserManagement")
-  if (canRead) {
+  if (ability.can("read", "UserManagement")) {
     return (
       <Text textStyle="body-2">
         View people that you collaborate with you on this site

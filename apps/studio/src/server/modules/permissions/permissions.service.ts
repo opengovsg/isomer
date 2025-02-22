@@ -7,6 +7,7 @@ import type {
   PermissionsProps,
   ResourceAbility,
   SiteAbility,
+  UserManagementActions,
 } from "./permissions.type"
 import { db } from "../database"
 import { CRUD_ACTIONS } from "./permissions.type"
@@ -139,7 +140,9 @@ export const validatePermissionsForManagingUsers = async ({
   siteId,
   userId,
   action,
-}: Omit<PermissionsProps, "resourceId"> & { action: CrudResourceActions }) => {
+}: Omit<PermissionsProps, "resourceId"> & {
+  action: UserManagementActions
+}) => {
   const perms = await definePermissionsForManagingUsers({
     siteId,
     userId,

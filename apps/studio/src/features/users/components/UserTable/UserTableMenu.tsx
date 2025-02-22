@@ -36,26 +36,26 @@ export const UserTableMenu = ({
       />
       <Portal>
         <MenuList>
-          {ability.can("update", "UserManagement") && (
-            <MenuItem
-              onClick={() => {
-                console.log(`TODO: Edit user: ${userId} ${siteId}`)
-              }}
-              icon={<BiPencil fontSize="1rem" />}
-            >
-              Edit user
-            </MenuItem>
-          )}
-          {ability.can("delete", "UserManagement") && (
-            <MenuItem
-              onClick={() => {
-                console.log(`TODO: Remove user access: ${userId} ${siteId}`)
-              }}
-              colorScheme="critical"
-              icon={<BiTrash fontSize="1rem" />}
-            >
-              Remove user access
-            </MenuItem>
+          {ability.can("manage", "UserManagement") && (
+            <>
+              <MenuItem
+                onClick={() => {
+                  console.log(`TODO: Edit user: ${userId} ${siteId}`)
+                }}
+                icon={<BiPencil fontSize="1rem" />}
+              >
+                Edit user
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  console.log(`TODO: Remove user access: ${userId} ${siteId}`)
+                }}
+                colorScheme="critical"
+                icon={<BiTrash fontSize="1rem" />}
+              >
+                Remove user access
+              </MenuItem>
+            </>
           )}
         </MenuList>
       </Portal>

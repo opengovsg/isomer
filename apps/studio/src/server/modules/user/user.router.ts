@@ -43,7 +43,7 @@ export const userRouter = router({
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
-        action: "create",
+        action: "manage",
       })
 
       const createdUsers = await db.transaction().execute(async (trx) => {
@@ -77,7 +77,7 @@ export const userRouter = router({
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
-        action: "delete",
+        action: "manage",
       })
 
       if (userId === ctx.user.id) {
@@ -178,7 +178,7 @@ export const userRouter = router({
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
-        action: "update",
+        action: "manage",
       })
 
       if (userId === ctx.user.id) {

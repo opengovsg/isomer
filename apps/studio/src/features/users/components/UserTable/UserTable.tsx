@@ -75,9 +75,6 @@ const getColumns = ({
 
 export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
   const ability = useContext(UserManagementContext)
-  const canManageUsers =
-    ability.can("update", "UserManagement") ||
-    ability.can("delete", "UserManagement")
 
   const columns = useMemo(
     () =>
@@ -85,9 +82,10 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
         siteId,
         // Only show actions if not "Isomer Admins" tab
         // because we should not let agencies manage isomer admins
-        shouldShowActions: canManageUsers && !getIsomerAdmins,
+        shouldShowActions:
+          ability.can("manage", "UserManagement") && !getIsomerAdmins,
       }),
-    [siteId, canManageUsers, getIsomerAdmins],
+    [siteId, ability, getIsomerAdmins],
   )
 
   const { data: totalRowCount = 0, isLoading: isCountLoading } =

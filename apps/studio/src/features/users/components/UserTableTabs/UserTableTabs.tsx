@@ -20,7 +20,6 @@ export const UserTableTabs = ({
   hasInactiveUsers,
 }: UserTableTabsProps) => {
   const ability = useContext(UserManagementContext)
-  const canCreate = ability.can("create", "UserManagement")
 
   return (
     <Tabs w="100%">
@@ -30,7 +29,9 @@ export const UserTableTabs = ({
       </TabList>
       <TabPanels>
         <TabPanel>
-          {hasInactiveUsers && canCreate && <InactiveUsersBanner />}
+          {hasInactiveUsers && ability.can("manage", "UserManagement") && (
+            <InactiveUsersBanner />
+          )}
           <UserTable siteId={siteId} getIsomerAdmins={false} />
         </TabPanel>
         <TabPanel>

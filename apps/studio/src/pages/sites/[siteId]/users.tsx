@@ -80,7 +80,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
             </HStack>
             <CollaboratorsDescription />
           </VStack>
-          {ability.can("create", "UserManagement") && (
+          {ability.can("manage", "UserManagement") && (
             <Button
               variant="solid"
               leftIcon={<BiPlus />}
