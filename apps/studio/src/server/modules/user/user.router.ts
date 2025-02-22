@@ -1,8 +1,8 @@
-import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 
-import type { ResourcePermission } from "~prisma/generated/generatedTypes"
 import {
+  countInputSchema,
+  countOutputSchema,
   createInputSchema,
   createOutputSchema,
   deleteInputSchema,
@@ -17,11 +17,11 @@ import {
 import { protectedProcedure, router } from "../../trpc"
 import { db, sql } from "../database"
 import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
-import { createUser, validateEmailRoleCombination } from "./user.service"
-
-interface RankedResourcePermission extends ResourcePermission {
-  rn: number
-}
+import {
+  createUser,
+  getUsersQuery,
+  validateEmailRoleCombination,
+} from "./user.service"
 
 export const userRouter = router({
   create: protectedProcedure
@@ -97,55 +97,44 @@ export const userRouter = router({
   list: protectedProcedure
     .input(listInputSchema)
     .output(listOutputSchema)
-    .query(async ({ ctx, input: { siteId, offset, limit } }) => {
+    .query(
+      async ({ ctx, input: { siteId, getIsomerAdmins, offset, limit } }) => {
+        await validatePermissionsForManagingUsers({
+          siteId,
+          userId: ctx.user.id,
+          action: "read",
+        })
+
+        return getUsersQuery({ siteId, getIsomerAdmins })
+          .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
+          .select((eb) => [
+            "ActiveUser.id",
+            "ActiveUser.email",
+            "ActiveUser.name",
+            "ActiveUser.lastLoginAt",
+            eb.ref("ActiveResourcePermission.role").as("role"),
+          ])
+          .limit(limit)
+          .offset(offset)
+          .execute()
+      },
+    ),
+
+  count: protectedProcedure
+    .input(countInputSchema)
+    .output(countOutputSchema)
+    .query(async ({ ctx, input: { siteId, getIsomerAdmins } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
         action: "read",
       })
 
-      return db
-        .with("ActiveResourcePermission", (qb) =>
-          qb
-            .selectFrom(
-              sql<RankedResourcePermission>`(
-                SELECT *,
-                  ROW_NUMBER() OVER (
-                    PARTITION BY "userId", "siteId", "resourceId"
-                    ORDER BY CASE 
-                      WHEN role = ${RoleType.Admin} THEN 1
-                      WHEN role = ${RoleType.Publisher} THEN 2
-                      WHEN role = ${RoleType.Editor} THEN 3
-                    END ASC
-                  ) as rn
-                FROM "ResourcePermission"
-                WHERE "deletedAt" IS NULL
-                AND "siteId" = ${siteId}
-              )`.as("ranked_permissions"),
-            )
-            .selectAll()
-            .where("rn", "=", 1),
-        )
-        .with("ActiveUser", (qb) =>
-          qb.selectFrom("User").selectAll().where("deletedAt", "is", null),
-        )
-        .selectFrom("ActiveUser")
-        .innerJoin(
-          "ActiveResourcePermission",
-          "ActiveUser.id",
-          "ActiveResourcePermission.userId",
-        )
-        .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
-        .select((eb) => [
-          "ActiveUser.id",
-          "ActiveUser.email",
-          "ActiveUser.name",
-          "ActiveUser.lastLoginAt",
-          eb.ref("ActiveResourcePermission.role").as("role"),
-        ])
-        .limit(limit)
-        .offset(offset)
-        .execute()
+      const result = await getUsersQuery({ siteId, getIsomerAdmins })
+        .select((eb) => [eb.fn.countAll().as("count")])
+        .executeTakeFirstOrThrow()
+
+      return Number(result.count)
     }),
 
   update: protectedProcedure

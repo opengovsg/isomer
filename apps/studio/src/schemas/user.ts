@@ -30,6 +30,7 @@ export const deleteOutputSchema = z.boolean()
 
 export const listInputSchema = z.object({
   siteId: z.number().min(1),
+  getIsomerAdmins: z.boolean().optional().default(false),
   ...offsetPaginationSchema.shape,
 })
 
@@ -42,6 +43,13 @@ export const listOutputSchema = z.array(
     role: z.nativeEnum(RoleType),
   }),
 )
+
+export const countInputSchema = z.object({
+  siteId: z.number().min(1),
+  getIsomerAdmins: z.boolean().optional().default(false),
+})
+
+export const countOutputSchema = z.number()
 
 export const updateInputSchema = z.object({
   siteId: z.number().min(1),
