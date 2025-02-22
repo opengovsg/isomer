@@ -43,6 +43,12 @@ export const listOutputSchema = z.array(
   }),
 )
 
+export const countInputSchema = z.object({
+  siteId: z.number().min(1),
+})
+
+export const countOutputSchema = z.number()
+
 export const updateInputSchema = z.object({
   siteId: z.number().min(1),
   userId: z.string(),
