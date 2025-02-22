@@ -26,8 +26,21 @@ export const UserTableMenu = ({ siteId, userId }: UserTableMenuProps) => {
       />
       <Portal>
         <MenuList>
-          <MenuItem icon={<BiPencil fontSize="1rem" />}>Edit user</MenuItem>
-          <MenuItem colorScheme="critical" icon={<BiTrash fontSize="1rem" />}>
+          <MenuItem
+            onClick={() => {
+              console.log(`TODO: Edit user: ${userId} ${siteId}`)
+            }}
+            icon={<BiPencil fontSize="1rem" />}
+          >
+            Edit user
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              console.log(`TODO: Remove user access: ${userId} ${siteId}`)
+            }}
+            colorScheme="critical"
+            icon={<BiTrash fontSize="1rem" />}
+          >
             Remove user access
           </MenuItem>
         </MenuList>
