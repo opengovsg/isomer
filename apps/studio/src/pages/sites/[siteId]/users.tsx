@@ -18,14 +18,21 @@ const siteUsersSchema = z.object({
 
 const SiteUsersPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteUsersSchema)
+
   const { data: agencyUsersCount = 0 } = trpc.user.count.useQuery({
     siteId,
     getIsomerAdmins: false,
   })
+
   const { data: isomerAdminsCount = 0 } = trpc.user.count.useQuery({
     siteId,
     getIsomerAdmins: true,
   })
+
+  const { data: hasInactiveUsers = false } =
+    trpc.user.hasInactiveUsers.useQuery({
+      siteId,
+    })
 
   return (
     <VStack
@@ -76,6 +83,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
         siteId={siteId}
         agencyUsersCount={agencyUsersCount}
         isomerAdminsCount={isomerAdminsCount}
+        hasInactiveUsers={hasInactiveUsers}
       />
     </VStack>
   )
