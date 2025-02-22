@@ -7,6 +7,7 @@ import {
   createOutputSchema,
   deleteInputSchema,
   deleteOutputSchema,
+  getPermissionsInputSchema,
   hasInactiveUsersInputSchema,
   hasInactiveUsersOutputSchema,
   listInputSchema,
@@ -18,7 +19,10 @@ import {
 } from "~/schemas/user"
 import { protectedProcedure, router } from "../../trpc"
 import { db, sql } from "../database"
-import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
+import {
+  sitePermissions,
+  validatePermissionsForManagingUsers,
+} from "../permissions/permissions.service"
 import {
   createUser,
   getUsersQuery,
@@ -26,6 +30,12 @@ import {
 } from "./user.service"
 
 export const userRouter = router({
+  getPermissions: protectedProcedure
+    .input(getPermissionsInputSchema)
+    .query(async ({ ctx, input: { siteId } }) => {
+      return await sitePermissions({ userId: ctx.user.id, siteId })
+    }),
+
   create: protectedProcedure
     .input(createInputSchema)
     .output(createOutputSchema)
