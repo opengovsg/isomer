@@ -1,3 +1,4 @@
+import { useContext } from "react"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -6,7 +7,7 @@ import { LuUsers } from "react-icons/lu"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers/PermissionsBoundary"
-import { UserManagementProvider } from "~/features/users"
+import { UserManagementContext, UserManagementProvider } from "~/features/users"
 import { UserTableTabs } from "~/features/users/components"
 import { CollaboratorsDescription } from "~/features/users/components/CollaboratorsDescription"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -19,6 +20,8 @@ const siteUsersSchema = z.object({
 })
 
 const SiteUsersPage: NextPageWithLayout = () => {
+  const ability = useContext(UserManagementContext)
+
   const { siteId } = useQueryParse(siteUsersSchema)
 
   const { data: agencyUsersCount = 0 } = trpc.user.count.useQuery({
@@ -71,13 +74,15 @@ const SiteUsersPage: NextPageWithLayout = () => {
               </HStack>
               <CollaboratorsDescription />
             </VStack>
-            <Button
-              variant="solid"
-              leftIcon={<BiPlus />}
-              onClick={() => console.log("TODO: add new user")}
-            >
-              Add new user
-            </Button>
+            {ability.can("create", "UserManagement") && (
+              <Button
+                variant="solid"
+                leftIcon={<BiPlus />}
+                onClick={() => console.log("TODO: add new user")}
+              >
+                Add new user
+              </Button>
+            )}
           </HStack>
         </VStack>
         <UserTableTabs
