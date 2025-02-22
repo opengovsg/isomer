@@ -11,7 +11,7 @@ import type { UserTableData } from "./types"
 import type { UserTableProps } from "./UserTable"
 import { MenuItem } from "~/components/Menu"
 
-interface UserTableMenuProps extends UserTableProps {
+interface UserTableMenuProps extends Pick<UserTableProps, "siteId"> {
   userId: UserTableData["id"]
 }
 

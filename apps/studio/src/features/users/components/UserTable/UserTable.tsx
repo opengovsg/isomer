@@ -17,11 +17,12 @@ import { UserTableMenu } from "./UserTableMenu"
 
 export interface UserTableProps {
   siteId: number
+  getIsomerAdmins: boolean
 }
 
 const columnsHelper = createColumnHelper<UserTableData>()
 
-const getColumns = ({ siteId }: UserTableProps) => [
+const getColumns = ({ siteId }: Pick<UserTableProps, "siteId">) => [
   columnsHelper.display({
     id: "user_info",
     header: () => <TableHeader>User</TableHeader>,
@@ -52,9 +53,8 @@ const getColumns = ({ siteId }: UserTableProps) => [
   }),
 ]
 
-export const UserTable = ({ siteId }: UserTableProps) => {
+export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
   const columns = useMemo(() => getColumns({ siteId }), [siteId])
-  const getIsomerAdmins = true // to add logic
 
   const { data: totalRowCount = 0, isLoading: isCountLoading } =
     trpc.user.count.useQuery({

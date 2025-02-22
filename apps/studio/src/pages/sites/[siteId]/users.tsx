@@ -1,5 +1,15 @@
-import { Box, HStack, Text, VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import {
+  Box,
+  HStack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
+  VStack,
+} from "@chakra-ui/react"
+import { Badge, Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiPlus } from "react-icons/bi"
 import { LuUsers } from "react-icons/lu"
@@ -10,6 +20,7 @@ import { UserTable } from "~/features/users/components/UserTable"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
+import { trpc } from "~/utils/trpc"
 
 const siteUsersSchema = z.object({
   siteId: z.coerce.number(),
@@ -17,6 +28,14 @@ const siteUsersSchema = z.object({
 
 const SiteUsersPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteUsersSchema)
+  const { data: agencyUsersCount = 0 } = trpc.user.count.useQuery({
+    siteId,
+    getIsomerAdmins: false,
+  })
+  const { data: isomerAdminsCount = 0 } = trpc.user.count.useQuery({
+    siteId,
+    getIsomerAdmins: true,
+  })
 
   return (
     <VStack
@@ -26,6 +45,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
       height="0"
       overflow="auto"
       minH="100%"
+      alignItems="start"
     >
       <VStack w="100%" align="start">
         <HStack w="100%" justifyContent="space-between" alignItems="end">
@@ -58,7 +78,62 @@ const SiteUsersPage: NextPageWithLayout = () => {
           </Button>
         </HStack>
       </VStack>
-      <UserTable siteId={siteId} />
+      <Tabs w="100%">
+        <TabList mb="1rem" borderBottomColor="base.divider.medium">
+          <Tab
+            textTransform="none"
+            _selected={{
+              color: "base.content.brand",
+              "& .count-badge": {
+                bg: "base.content.brand",
+                color: "base.content.inverse",
+              },
+            }}
+          >
+            <Text textStyle="subhead-2">Your users</Text>
+            <Badge
+              className="count-badge"
+              variant="subtle"
+              colorScheme="neutral"
+              size="xs"
+              ml={1}
+              borderRadius="full"
+            >
+              {agencyUsersCount}
+            </Badge>
+          </Tab>
+          <Tab
+            textTransform="none"
+            _selected={{
+              color: "base.content.brand",
+              "& .count-badge": {
+                bg: "base.content.brand",
+                color: "base.content.inverse",
+              },
+            }}
+          >
+            <Text textStyle="subhead-2">Isomer admins</Text>
+            <Badge
+              className="count-badge"
+              variant="subtle"
+              colorScheme="neutral"
+              size="xs"
+              ml={1}
+              borderRadius="full"
+            >
+              {isomerAdminsCount}
+            </Badge>
+          </Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel>
+            <UserTable siteId={siteId} getIsomerAdmins={false} />
+          </TabPanel>
+          <TabPanel>
+            <UserTable siteId={siteId} getIsomerAdmins={true} />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
     </VStack>
   )
 }
