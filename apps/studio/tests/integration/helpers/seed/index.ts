@@ -22,7 +22,7 @@ const setUpUserPermissions = async ({
 }: UserPermissionsProps) => {
   if (!userId) throw new Error("userId is a required field")
 
-  await db
+  return await db
     .insertInto("ResourcePermission")
     .values({
       userId: String(userId),
@@ -31,7 +31,8 @@ const setUpUserPermissions = async ({
       resourceId: null,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
     })
-    .execute()
+    .returningAll()
+    .executeTakeFirstOrThrow()
 }
 
 export const setupEditorPermissions = async ({
@@ -39,11 +40,24 @@ export const setupEditorPermissions = async ({
   siteId,
   isDeleted = false,
 }: Omit<UserPermissionsProps, "role">) => {
-  await setUpUserPermissions({
+  return await setUpUserPermissions({
     userId,
     siteId,
     isDeleted,
     role: RoleType.Editor,
+  })
+}
+
+export const setupPublisherPermissions = async ({
+  userId,
+  siteId,
+  isDeleted = false,
+}: Omit<UserPermissionsProps, "role">) => {
+  return await setUpUserPermissions({
+    userId,
+    siteId,
+    isDeleted,
+    role: RoleType.Publisher,
   })
 }
 
@@ -52,7 +66,7 @@ export const setupAdminPermissions = async ({
   siteId,
   isDeleted = false,
 }: Omit<UserPermissionsProps, "role">) => {
-  await setUpUserPermissions({
+  return await setUpUserPermissions({
     userId,
     siteId,
     isDeleted,

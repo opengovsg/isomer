@@ -8,11 +8,12 @@ import {
 import {
   setupAdminPermissions,
   setupEditorPermissions,
+  setupPublisherPermissions,
   setupSite,
   setupUser,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
-import { MOCK_TEST_USER_NAME } from "tests/msw/constants"
+import { MOCK_STORY_DATE, MOCK_TEST_USER_NAME } from "tests/msw/constants"
 import { beforeEach, describe, expect, it } from "vitest"
 
 import { db, RoleType } from "~/server/modules/database"
@@ -510,6 +511,75 @@ describe("user.router", () => {
       )
     })
 
+    it("should not return users with deletedAt set", async () => {
+      // Arrange
+      await setupEditorPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
+      await setupEditorPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(1) // only the current admin user
+      expect(result).not.toContain(
+        expect.objectContaining({
+          id: user.id,
+        }),
+      )
+    })
+
+    it("should not return users with all permissions deleted", async () => {
+      // Arrange
+      await setupEditorPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      await setupEditorPermissions({ userId: user.id, siteId, isDeleted: true })
+      await setupAdminPermissions({ userId: user.id, siteId, isDeleted: true })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(1) // only the current admin user
+      expect(result).not.toContain(
+        expect.objectContaining({
+          id: user.id,
+        }),
+      )
+    })
+
+    it("should return users with at least one non-deleted permission", async () => {
+      // Arrange
+      await setupEditorPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      await setupEditorPermissions({
+        userId: user.id,
+        siteId,
+        isDeleted: true, // assuming previously soft deleted
+      })
+      await setupEditorPermissions({
+        userId: user.id,
+        siteId,
+        isDeleted: false, // assuming being granted new permissions
+      })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(2)
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: user.id,
+          }),
+        ]),
+      )
+    })
+
     it("should return array with self when no other users exist", async () => {
       // Arrange
       await setupEditorPermissions({ userId: session.userId, siteId })
@@ -518,7 +588,7 @@ describe("user.router", () => {
       const result = await caller.list({ siteId })
 
       // Assert
-      expect(result).toHaveLength(1)
+      expect(result).toHaveLength(1) // only the current admin user
       expect(result).toEqual([
         expect.objectContaining({
           id: session.userId,
@@ -526,6 +596,60 @@ describe("user.router", () => {
           lastLoginAt: null,
         }),
       ])
+    })
+
+    it("should return users with their last login date", async () => {
+      // Arrange
+      await setupEditorPermissions({ userId: session.userId, siteId })
+      await db
+        .updateTable("User")
+        .where("id", "=", session.userId!)
+        .set({ lastLoginAt: MOCK_STORY_DATE })
+        .execute()
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toEqual([
+        expect.objectContaining({
+          id: session.userId,
+          lastLoginAt: MOCK_STORY_DATE,
+        }),
+      ])
+    })
+
+    // In the event where a user has multiple permissions (for unknown reasons),
+    // we should only return the most powerful role
+    it("should return users only with their most powerful role", async () => {
+      // Arrange
+      // Current user has all 3 permissions
+      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupPublisherPermissions({ userId: session.userId, siteId })
+
+      // Arrange - This user has Editor and Publisher permissions
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      await setupEditorPermissions({ userId: user.id, siteId })
+      await setupPublisherPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(2)
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: session.userId,
+            role: RoleType.Admin, // Admin > Publisher > Editor
+          }),
+          expect.objectContaining({
+            id: user.id,
+            role: RoleType.Publisher, // Publisher > Editor
+          }),
+        ]),
+      )
     })
 
     it("should return paginated results (10 users per page)", async () => {
@@ -777,9 +901,10 @@ describe("user.router", () => {
         .selectFrom("ResourcePermission")
         .where("userId", "=", userToUpdate.id)
         .where("siteId", "=", siteId)
+        .where("role", "=", newRole)
         .select("role")
         .executeTakeFirst()
-      expect(updatedUser?.role).toBe(newRole)
+      expect(updatedUser).not.toBeNull()
     })
 
     it("should update a user's role successfully", async () => {
@@ -817,6 +942,60 @@ describe("user.router", () => {
         .select("role")
         .executeTakeFirst()
       expect(updatedUser?.role).toBe(newRole)
+    })
+
+    it("when updating a user's role, create a new permission for the user and update the old permission's deletedAt", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const userToUpdate = await setupUser({
+        email: TEST_EMAIL,
+        isDeleted: false,
+      })
+      const originalPermission = await setupEditorPermissions({
+        userId: userToUpdate.id,
+        siteId,
+      })
+      const newRole = RoleType.Publisher
+
+      // Act
+      const result = await caller.update({
+        siteId,
+        userId: userToUpdate.id,
+        role: newRole,
+      })
+
+      // Assert
+      expect(result).toEqual({
+        id: expect.not.stringContaining(originalPermission.id),
+        siteId,
+        userId: userToUpdate.id,
+        role: newRole,
+      })
+
+      // Assert: Verify in DB
+      const userPermissions = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToUpdate.id)
+        .where("siteId", "=", siteId)
+        .selectAll()
+        .execute()
+      console.log(111, userPermissions)
+      expect(userPermissions).toHaveLength(2) // 1 old + 1 new
+      expect(userPermissions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: originalPermission.id,
+            role: RoleType.Editor,
+            deletedAt: expect.any(Date),
+          }),
+          expect.objectContaining({
+            id: result.id,
+            role: RoleType.Publisher,
+            deletedAt: null,
+          }),
+        ]),
+      )
     })
   })
 

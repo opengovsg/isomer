@@ -50,6 +50,7 @@ export const updateInputSchema = z.object({
 })
 
 export const updateOutputSchema = z.object({
+  id: z.string().min(1),
   siteId: z.number().min(1),
   userId: z.string(),
   role: z.nativeEnum(RoleType),

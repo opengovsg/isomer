@@ -1,5 +1,7 @@
+import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 
+import type { ResourcePermission } from "~prisma/generated/generatedTypes"
 import {
   createInputSchema,
   createOutputSchema,
@@ -16,6 +18,10 @@ import { protectedProcedure, router } from "../../trpc"
 import { db, sql } from "../database"
 import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
 import { createUser, validateEmailRoleCombination } from "./user.service"
+
+interface RankedResourcePermission extends ResourcePermission {
+  rn: number
+}
 
 export const userRouter = router({
   create: protectedProcedure
@@ -99,16 +105,43 @@ export const userRouter = router({
       })
 
       return db
-        .selectFrom("User")
-        .innerJoin("ResourcePermission", "User.id", "ResourcePermission.userId")
-        .where("ResourcePermission.siteId", "=", siteId)
-        .orderBy("User.lastLoginAt", sql.raw(`DESC NULLS LAST`))
-        .select([
-          "User.id",
-          "User.email",
-          "User.name",
-          "User.lastLoginAt",
-          "ResourcePermission.role",
+        .with("ActiveResourcePermission", (qb) =>
+          qb
+            .selectFrom(
+              sql<RankedResourcePermission>`(
+                SELECT *,
+                  ROW_NUMBER() OVER (
+                    PARTITION BY "userId", "siteId", "resourceId"
+                    ORDER BY CASE 
+                      WHEN role = ${RoleType.Admin} THEN 1
+                      WHEN role = ${RoleType.Publisher} THEN 2
+                      WHEN role = ${RoleType.Editor} THEN 3
+                    END ASC
+                  ) as rn
+                FROM "ResourcePermission"
+                WHERE "deletedAt" IS NULL
+                AND "siteId" = ${siteId}
+              )`.as("ranked_permissions"),
+            )
+            .selectAll()
+            .where("rn", "=", 1),
+        )
+        .with("ActiveUser", (qb) =>
+          qb.selectFrom("User").selectAll().where("deletedAt", "is", null),
+        )
+        .selectFrom("ActiveUser")
+        .innerJoin(
+          "ActiveResourcePermission",
+          "ActiveUser.id",
+          "ActiveResourcePermission.userId",
+        )
+        .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
+        .select((eb) => [
+          "ActiveUser.id",
+          "ActiveUser.email",
+          "ActiveUser.name",
+          "ActiveUser.lastLoginAt",
+          eb.ref("ActiveResourcePermission.role").as("role"),
         ])
         .limit(limit)
         .offset(offset)
@@ -157,27 +190,33 @@ export const userRouter = router({
 
       validateEmailRoleCombination({ email: user.email, role })
 
-      const updatedUserPermissions = await db
-        .updateTable("ResourcePermission")
-        .where("userId", "=", userId)
-        .where("siteId", "=", siteId)
-        .where("resourceId", "is", null) // because we are updating site-wide permissions
-        .set({ role })
-        .returningAll()
-        .executeTakeFirst()
+      const updatedUserPermission = await db
+        .transaction()
+        .execute(async (trx) => {
+          const oldPermissions = await trx
+            .updateTable("ResourcePermission")
+            .where("userId", "=", userId)
+            .where("siteId", "=", siteId)
+            .where("resourceId", "is", null) // because we are updating site-wide permissions
+            .set({ deletedAt: new Date() }) // soft delete the old permission
+            .returningAll()
+            .executeTakeFirst()
 
-      if (!updatedUserPermissions) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User permissions not found",
+          if (!oldPermissions) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "User permissions not found",
+            })
+          }
+
+          return await trx
+            .insertInto("ResourcePermission")
+            .values({ userId, siteId, role, resourceId: null }) // because we are updating site-wide permissions
+            .returning(["id", "userId", "siteId", "role"])
+            .executeTakeFirstOrThrow()
         })
-      }
 
-      return {
-        siteId,
-        userId,
-        role: updatedUserPermissions.role,
-      }
+      return updatedUserPermission
     }),
 
   updateDetails: protectedProcedure
