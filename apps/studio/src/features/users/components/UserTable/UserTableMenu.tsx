@@ -15,9 +15,14 @@ import { UserManagementContext } from "~/features/users"
 
 interface UserTableMenuProps extends Pick<UserTableProps, "siteId"> {
   userId: UserTableData["id"]
+  userName: UserTableData["name"]
 }
 
-export const UserTableMenu = ({ siteId, userId }: UserTableMenuProps) => {
+export const UserTableMenu = ({
+  siteId,
+  userId,
+  userName,
+}: UserTableMenuProps) => {
   const ability = useContext(UserManagementContext)
 
   return (
@@ -27,6 +32,7 @@ export const UserTableMenu = ({ siteId, userId }: UserTableMenuProps) => {
         colorScheme="neutral"
         icon={<BiDotsVerticalRounded />}
         variant="clear"
+        aria-label={`Options for ${userName}`}
       />
       <Portal>
         <MenuList>

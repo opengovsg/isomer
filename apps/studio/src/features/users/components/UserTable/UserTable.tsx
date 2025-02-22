@@ -62,7 +62,11 @@ const getColumns = ({
       id: "user_menu",
       header: () => <TableHeader>Actions</TableHeader>,
       cell: ({ row }) => (
-        <UserTableMenu siteId={siteId} userId={row.original.id} />
+        <UserTableMenu
+          siteId={siteId}
+          userId={row.original.id}
+          userName={row.original.name}
+        />
       ),
       size: 24,
     }),
