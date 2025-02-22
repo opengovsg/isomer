@@ -25,8 +25,8 @@ const columnsHelper = createColumnHelper<UserTableData>()
 
 const getColumns = ({
   siteId,
-  canManageUsers,
-}: Pick<UserTableProps, "siteId"> & { canManageUsers: boolean }) => {
+  shouldShowActions,
+}: Pick<UserTableProps, "siteId"> & { shouldShowActions: boolean }) => {
   const baseColumns = [
     columnsHelper.display({
       id: "user_info",
@@ -52,7 +52,7 @@ const getColumns = ({
     }),
   ]
 
-  if (!canManageUsers) {
+  if (!shouldShowActions) {
     return baseColumns
   }
 
@@ -80,8 +80,14 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
     ability.can("delete", "UserManagement")
 
   const columns = useMemo(
-    () => getColumns({ siteId, canManageUsers }),
-    [siteId, canManageUsers],
+    () =>
+      getColumns({
+        siteId,
+        // Only show actions if not "Isomer Admins" tab
+        // because we should not let agencies manage isomer admins
+        shouldShowActions: canManageUsers && !getIsomerAdmins,
+      }),
+    [siteId, canManageUsers, getIsomerAdmins],
   )
 
   const { data: totalRowCount = 0, isLoading: isCountLoading } =
