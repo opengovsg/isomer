@@ -3,7 +3,7 @@ import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiPlus } from "react-icons/bi"
-import { LuUsers } from "react-icons/lu"
+import { PiUsersBold } from "react-icons/pi"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers/PermissionsBoundary"
@@ -60,7 +60,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
                   p="0.5rem"
                   borderRadius="6px"
                 >
-                  <LuUsers />
+                  <PiUsersBold />
                 </Box>
                 <Text
                   noOfLines={1}
