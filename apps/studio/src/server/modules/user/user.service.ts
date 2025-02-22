@@ -1,5 +1,6 @@
 import cuid2 from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
+import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 import isEmail from "validator/lib/isEmail"
 
 import type { SafeKysely } from "../database"
@@ -138,11 +139,19 @@ export const createUser = async ({
   return await db.transaction().execute(executeInTransaction)
 }
 
+interface GetUsersQueryProps {
+  siteId: number
+  getIsomerAdmins: boolean
+}
+
 interface RankedResourcePermission extends ResourcePermission {
   rn: number
 }
 
-export const getUsersQuery = ({ siteId }: { siteId: number }) => {
+export const getUsersQuery = ({
+  siteId,
+  getIsomerAdmins,
+}: GetUsersQueryProps) => {
   return db
     .with("ActiveResourcePermission", (qb) =>
       qb
@@ -166,7 +175,15 @@ export const getUsersQuery = ({ siteId }: { siteId: number }) => {
         .where("rn", "=", 1),
     )
     .with("ActiveUser", (qb) =>
-      qb.selectFrom("User").selectAll().where("deletedAt", "is", null),
+      qb
+        .selectFrom("User")
+        .selectAll()
+        .where("deletedAt", "is", null)
+        .where(
+          "email",
+          getIsomerAdmins ? "in" : "not in",
+          ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
+        ),
     )
     .selectFrom("ActiveUser")
     .innerJoin(
