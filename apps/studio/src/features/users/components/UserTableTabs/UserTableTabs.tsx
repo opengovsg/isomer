@@ -1,6 +1,7 @@
 import { TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react"
 
 import { UserTable } from "../UserTable"
+import { IsomerAdminAccessBanner } from "./Banners"
 import { UserTableTab } from "./UserTableTab"
 
 interface UserTableTabsProps {
@@ -25,6 +26,7 @@ export const UserTableTabs = ({
           <UserTable siteId={siteId} getIsomerAdmins={false} />
         </TabPanel>
         <TabPanel>
+          <IsomerAdminAccessBanner />
           <UserTable siteId={siteId} getIsomerAdmins={true} />
         </TabPanel>
       </TabPanels>
