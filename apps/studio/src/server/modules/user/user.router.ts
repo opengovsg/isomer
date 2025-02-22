@@ -7,6 +7,8 @@ import {
   createOutputSchema,
   deleteInputSchema,
   deleteOutputSchema,
+  hasInactiveUsersInputSchema,
+  hasInactiveUsersOutputSchema,
   listInputSchema,
   listOutputSchema,
   updateDetailsInputSchema,
@@ -135,6 +137,28 @@ export const userRouter = router({
         .executeTakeFirstOrThrow()
 
       return Number(result.count)
+    }),
+
+  hasInactiveUsers: protectedProcedure
+    .input(hasInactiveUsersInputSchema)
+    .output(hasInactiveUsersOutputSchema)
+    .query(async ({ ctx, input: { siteId } }) => {
+      await validatePermissionsForManagingUsers({
+        siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      const ninetyDaysAgo = new Date()
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
+
+      const result = await getUsersQuery({ siteId, getIsomerAdmins: false })
+        .select((eb) => [eb.fn.countAll().as("count")])
+        .where("ActiveUser.lastLoginAt", "is not", null)
+        .where("ActiveUser.lastLoginAt", "<", ninetyDaysAgo)
+        .executeTakeFirstOrThrow()
+
+      return Number(result.count) > 0
     }),
 
   update: protectedProcedure
