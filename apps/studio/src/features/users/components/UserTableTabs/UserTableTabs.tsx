@@ -1,5 +1,7 @@
+import { useContext } from "react"
 import { TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react"
 
+import { UserManagementContext } from "~/features/users"
 import { UserTable } from "../UserTable"
 import { InactiveUsersBanner, IsomerAdminAccessBanner } from "./Banners"
 import { UserTableTab } from "./UserTableTab"
@@ -17,6 +19,9 @@ export const UserTableTabs = ({
   isomerAdminsCount,
   hasInactiveUsers,
 }: UserTableTabsProps) => {
+  const ability = useContext(UserManagementContext)
+  const canCreate = ability.can("create", "UserManagement")
+
   return (
     <Tabs w="100%">
       <TabList mb="1rem" borderBottomColor="base.divider.medium">
@@ -25,7 +30,7 @@ export const UserTableTabs = ({
       </TabList>
       <TabPanels>
         <TabPanel>
-          {hasInactiveUsers && <InactiveUsersBanner />}
+          {hasInactiveUsers && canCreate && <InactiveUsersBanner />}
           <UserTable siteId={siteId} getIsomerAdmins={false} />
         </TabPanel>
         <TabPanel>
