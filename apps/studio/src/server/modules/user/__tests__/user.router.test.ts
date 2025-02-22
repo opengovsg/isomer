@@ -691,6 +691,97 @@ describe("user.router", () => {
     })
   })
 
+  describe("count", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.count({ siteId })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have any permissions to the site", async () => {
+      // Act
+      const result = caller.count({ siteId })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+  })
+
+  it("should not return users with deletedAt set", async () => {
+    // Arrange
+    await setupEditorPermissions({ userId: session.userId, siteId })
+
+    const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
+    await setupEditorPermissions({ userId: user.id, siteId })
+
+    // Act
+    const result = await caller.count({ siteId })
+
+    // Assert
+    expect(result).toBe(1) // only the current admin user
+  })
+
+  it("should not return users with all permissions deleted", async () => {
+    // Arrange
+    await setupEditorPermissions({ userId: session.userId, siteId })
+
+    const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+    await setupEditorPermissions({ userId: user.id, siteId, isDeleted: true })
+    await setupAdminPermissions({ userId: user.id, siteId, isDeleted: true })
+
+    // Act
+    const result = await caller.count({ siteId })
+
+    // Assert
+    expect(result).toBe(1) // only the current admin user
+  })
+
+  it("should return users with at least one non-deleted permission", async () => {
+    // Arrange
+    await setupEditorPermissions({ userId: session.userId, siteId })
+
+    const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+    await setupEditorPermissions({
+      userId: user.id,
+      siteId,
+      isDeleted: true, // assuming previously soft deleted
+    })
+    await setupAdminPermissions({
+      userId: user.id,
+      siteId,
+      isDeleted: false, // assuming being granted new permissions
+    })
+    // Act
+    const result = await caller.count({ siteId })
+
+    // Assert
+    expect(result).toBe(2)
+  })
+
+  it("should return array with self when no other users exist", async () => {
+    // Arrange
+    await setupEditorPermissions({ userId: session.userId, siteId })
+
+    // Act
+    const result = await caller.count({ siteId })
+
+    // Assert
+    expect(result).toBe(1) // only the current admin user
+  })
+
   describe("update", () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
@@ -980,7 +1071,6 @@ describe("user.router", () => {
         .where("siteId", "=", siteId)
         .selectAll()
         .execute()
-      console.log(111, userPermissions)
       expect(userPermissions).toHaveLength(2) // 1 old + 1 new
       expect(userPermissions).toEqual(
         expect.arrayContaining([
