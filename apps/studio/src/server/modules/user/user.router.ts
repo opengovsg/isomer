@@ -97,38 +97,40 @@ export const userRouter = router({
   list: protectedProcedure
     .input(listInputSchema)
     .output(listOutputSchema)
-    .query(async ({ ctx, input: { siteId, offset, limit } }) => {
-      await validatePermissionsForManagingUsers({
-        siteId,
-        userId: ctx.user.id,
-        action: "read",
-      })
+    .query(
+      async ({ ctx, input: { siteId, getIsomerAdmins, offset, limit } }) => {
+        await validatePermissionsForManagingUsers({
+          siteId,
+          userId: ctx.user.id,
+          action: "read",
+        })
 
-      return getUsersQuery({ siteId })
-        .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
-        .select((eb) => [
-          "ActiveUser.id",
-          "ActiveUser.email",
-          "ActiveUser.name",
-          "ActiveUser.lastLoginAt",
-          eb.ref("ActiveResourcePermission.role").as("role"),
-        ])
-        .limit(limit)
-        .offset(offset)
-        .execute()
-    }),
+        return getUsersQuery({ siteId, getIsomerAdmins })
+          .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
+          .select((eb) => [
+            "ActiveUser.id",
+            "ActiveUser.email",
+            "ActiveUser.name",
+            "ActiveUser.lastLoginAt",
+            eb.ref("ActiveResourcePermission.role").as("role"),
+          ])
+          .limit(limit)
+          .offset(offset)
+          .execute()
+      },
+    ),
 
   count: protectedProcedure
     .input(countInputSchema)
     .output(countOutputSchema)
-    .query(async ({ ctx, input: { siteId } }) => {
+    .query(async ({ ctx, input: { siteId, getIsomerAdmins } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
         action: "read",
       })
 
-      const result = await getUsersQuery({ siteId })
+      const result = await getUsersQuery({ siteId, getIsomerAdmins })
         .select((eb) => [eb.fn.countAll().as("count")])
         .executeTakeFirstOrThrow()
 
