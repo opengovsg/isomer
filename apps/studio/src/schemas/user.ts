@@ -51,6 +51,12 @@ export const countInputSchema = z.object({
 
 export const countOutputSchema = z.number()
 
+export const hasInactiveUsersInputSchema = z.object({
+  siteId: z.number().min(1),
+})
+
+export const hasInactiveUsersOutputSchema = z.boolean()
+
 export const updateInputSchema = z.object({
   siteId: z.number().min(1),
   userId: z.string(),
