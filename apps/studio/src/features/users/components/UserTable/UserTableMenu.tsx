@@ -51,7 +51,7 @@ export const UserTableMenu = ({
                 Edit user
               </MenuItem>
               <MenuItem
-                onClick={() => setRemoveUserModalState({ siteId, userId })}
+                onClick={() => setRemoveUserModalState({ userId })}
                 colorScheme="critical"
                 icon={<BiTrash fontSize="1rem" />}
               >
