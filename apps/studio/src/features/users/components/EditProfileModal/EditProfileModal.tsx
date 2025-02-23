@@ -1,5 +1,7 @@
 import {
   Button,
+  FormControl,
+  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -9,6 +11,7 @@ import {
   ModalOverlay,
   VStack,
 } from "@chakra-ui/react"
+import { FormLabel, PhoneNumberInput } from "@opengovsg/design-system-react"
 
 interface EditProfileModalProps {
   isOnboarded: boolean
@@ -41,7 +44,26 @@ export const EditProfileModal = ({
             </ModalHeader>
           )}
           <ModalBody>
-            <VStack gap="1rem"></VStack>
+            <VStack gap="1rem" width="100%">
+              <FormControl isRequired>
+                <FormLabel description="Used to address you on support channels">
+                  Your full name
+                </FormLabel>
+                <Input
+                  noOfLines={1}
+                  maxLength={256} // arbitrary limit
+                />
+              </FormControl>
+              <FormControl isRequired>
+                <FormLabel description="Used for two-factor authentication (2FA). Make sure it is accurate">
+                  Your phone number
+                </FormLabel>
+                <PhoneNumberInput
+                  allowInternational={false}
+                  defaultCountry="SG"
+                />
+              </FormControl>
+            </VStack>
           </ModalBody>
           <ModalFooter>
             <Button variant="solid" onClick={onSaveChanges}>
