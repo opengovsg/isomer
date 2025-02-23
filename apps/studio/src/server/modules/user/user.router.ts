@@ -7,6 +7,8 @@ import {
   createOutputSchema,
   deleteInputSchema,
   deleteOutputSchema,
+  getUserInputSchema,
+  getUserOutputSchema,
   hasInactiveUsersInputSchema,
   hasInactiveUsersOutputSchema,
   listInputSchema,
@@ -92,6 +94,37 @@ export const userRouter = router({
       }
 
       return true
+    }),
+
+  getUser: protectedProcedure
+    .input(getUserInputSchema)
+    .output(getUserOutputSchema)
+    .query(async ({ ctx, input: { siteId, userId } }) => {
+      await validatePermissionsForManagingUsers({
+        siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      const result = await getUsersQuery({ siteId, getIsomerAdmins: false })
+        .where("ActiveUser.id", "=", userId)
+        .select((eb) => [
+          "ActiveUser.id",
+          "ActiveUser.email",
+          "ActiveUser.name",
+          "ActiveUser.lastLoginAt",
+          eb.ref("ActiveResourcePermission.role").as("role"),
+        ])
+        .executeTakeFirst()
+
+      if (!result) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        })
+      }
+
+      return result
     }),
 
   list: protectedProcedure
