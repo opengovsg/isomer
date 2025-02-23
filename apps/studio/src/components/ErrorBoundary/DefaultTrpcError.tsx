@@ -8,7 +8,7 @@ import { DefaultNotFound } from "./DefaultNotFound"
 import { DefaultServerError } from "./DefaultServerError"
 import { UnexpectedErrorCard } from "./UnexpectedErrorCard"
 
-export const UnauthorizedError = ({
+const UnauthorizedError = ({
   resetErrorBoundary,
 }: Pick<FallbackProps, "resetErrorBoundary">) => {
   const utils = trpc.useUtils()
