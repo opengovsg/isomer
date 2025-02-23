@@ -3,7 +3,7 @@ import {
   Menu,
   AvatarMenu as OgpAvatarMenu,
 } from "@opengovsg/design-system-react"
-import { BiLogOut, BiUser } from "react-icons/bi"
+import { BiLogOut, BiPencil, BiUser } from "react-icons/bi"
 
 import { useMe } from "~/features/me/api"
 
@@ -29,6 +29,12 @@ export const AvatarMenu = () => {
         </Flex>
       </Menu.Item>
       <Divider orientation="horizontal" />
+      <Menu.Item onClick={() => console.log("TODO: Edit profile")}>
+        <Flex alignItems="center" gap="0.75rem">
+          <BiPencil size="1.25rem" />
+          <Text>Edit profile</Text>
+        </Flex>
+      </Menu.Item>
       <Menu.Item onClick={() => logout()}>
         <Flex alignItems="center" gap="0.75rem">
           <BiLogOut size="1.25rem" />
