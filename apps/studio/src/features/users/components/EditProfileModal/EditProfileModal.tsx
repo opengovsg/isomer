@@ -34,12 +34,14 @@ export const EditProfileModal = ({
   isOpen,
   onClose,
 }: EditProfileModalProps) => {
-  const { me, isOnboarded } = useMe()
-
   const toast = useToast(BRIEF_TOAST_SETTINGS)
+  const utils = trpc.useUtils()
+
+  const { me, isOnboarded } = useMe()
 
   const { mutate: updateDetails } = trpc.user.updateDetails.useMutation({
     onSuccess: () => {
+      void utils.me.get.invalidate()
       toast({
         status: "success",
         title: "Profile updated",
@@ -72,6 +74,11 @@ export const EditProfileModal = ({
     reValidateMode: "onChange",
   })
 
+  const handleClose = () => {
+    reset()
+    onClose()
+  }
+
   const onSubmit = handleSubmit((data) => {
     updateDetails(
       {
@@ -80,13 +87,15 @@ export const EditProfileModal = ({
       },
       {
         onSuccess: () => reset(data),
-        onSettled: onClose,
+        onSettled: () => {
+          void handleClose()
+        },
       },
     )
   })
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalOverlay>
         <ModalContent>
           {isOnboarded ? (
