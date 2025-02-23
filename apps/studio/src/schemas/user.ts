@@ -26,7 +26,10 @@ export const deleteInputSchema = z.object({
   userId: z.string(),
 })
 
-export const deleteOutputSchema = z.boolean()
+export const deleteOutputSchema = z.object({
+  id: z.string(),
+  email: z.string().email(),
+})
 
 export const getUserInputSchema = z.object({
   siteId: z.number().min(1),
