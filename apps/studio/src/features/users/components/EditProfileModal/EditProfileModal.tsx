@@ -68,6 +68,8 @@ export const EditProfileModal = ({
       name: me.name,
       phone: me.phone,
     },
+    mode: "onChange",
+    reValidateMode: "onChange",
   })
 
   const onSubmit = handleSubmit((data) => {
