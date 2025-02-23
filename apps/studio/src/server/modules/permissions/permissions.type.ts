@@ -16,6 +16,9 @@ export type ResourceAbility = PureAbility<ResourcePermissionTuple>
 export type SitePermissionTuple = [CrudResourceActions, "Site"]
 export type SiteAbility = PureAbility<SitePermissionTuple>
 
+export type UserManagementTuple = [CrudResourceActions, "UserManagement"]
+export type UserManagementAbility = PureAbility<UserManagementTuple>
+
 export interface PermissionsProps {
   userId: string
   siteId: number

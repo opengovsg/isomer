@@ -202,5 +202,64 @@ describe("auth.email", () => {
       // Assert
       await expect(result).rejects.toThrowError("Too many attempts")
     })
+
+    it("should set lastLoginAt to null when creating a new user", async () => {
+      // Arrange
+      await prisma.verificationToken.create({
+        data: {
+          expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
+          identifier: TEST_OTP_FINGERPRINT,
+          token: VALID_TOKEN_HASH,
+        },
+      })
+
+      // Act
+      await caller.verifyOtp({
+        email: TEST_VALID_EMAIL,
+        token: VALID_OTP,
+      })
+
+      // Assert
+      const user = await prisma.user.findUnique({
+        where: { email: TEST_VALID_EMAIL },
+      })
+      expect(user?.lastLoginAt).toBe(null)
+    })
+
+    it("should update lastLoginAt when user logs in", async () => {
+      // Arrange
+      const beforeLogin = new Date()
+      await prisma.verificationToken.create({
+        data: {
+          expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
+          identifier: TEST_OTP_FINGERPRINT,
+          token: VALID_TOKEN_HASH,
+        },
+      })
+      // Create user first
+      await prisma.user.create({
+        data: {
+          email: TEST_VALID_EMAIL,
+          name: "Test User",
+          phone: "",
+          lastLoginAt: null,
+        },
+      })
+
+      // Act
+      await caller.verifyOtp({
+        email: TEST_VALID_EMAIL,
+        token: VALID_OTP,
+      })
+
+      // Assert
+      const user = await prisma.user.findUnique({
+        where: { email: TEST_VALID_EMAIL },
+      })
+      expect(user?.lastLoginAt).toBeInstanceOf(Date)
+      expect(user?.lastLoginAt!.getTime()).toBeGreaterThan(
+        beforeLogin.getTime(),
+      )
+    })
   })
 })

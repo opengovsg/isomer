@@ -7,27 +7,71 @@ import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
 
-export const setupAdminPermissions = async ({
-  userId,
-  siteId,
-  isDeleted = false,
-}: {
+interface UserPermissionsProps {
   userId?: string
   siteId: number
   isDeleted?: boolean
-}) => {
+  role: RoleType
+}
+
+const setUpUserPermissions = async ({
+  userId,
+  siteId,
+  isDeleted = false,
+  role,
+}: UserPermissionsProps) => {
   if (!userId) throw new Error("userId is a required field")
 
-  await db
+  return await db
     .insertInto("ResourcePermission")
     .values({
       userId: String(userId),
       siteId,
-      role: RoleType.Admin,
+      role,
       resourceId: null,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
     })
-    .execute()
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+export const setupEditorPermissions = async ({
+  userId,
+  siteId,
+  isDeleted = false,
+}: Omit<UserPermissionsProps, "role">) => {
+  return await setUpUserPermissions({
+    userId,
+    siteId,
+    isDeleted,
+    role: RoleType.Editor,
+  })
+}
+
+export const setupPublisherPermissions = async ({
+  userId,
+  siteId,
+  isDeleted = false,
+}: Omit<UserPermissionsProps, "role">) => {
+  return await setUpUserPermissions({
+    userId,
+    siteId,
+    isDeleted,
+    role: RoleType.Publisher,
+  })
+}
+
+export const setupAdminPermissions = async ({
+  userId,
+  siteId,
+  isDeleted = false,
+}: Omit<UserPermissionsProps, "role">) => {
+  return await setUpUserPermissions({
+    userId,
+    siteId,
+    isDeleted,
+    role: RoleType.Admin,
+  })
 }
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
@@ -452,12 +496,14 @@ export const setupUser = async ({
   email,
   phone = "",
   isDeleted,
+  hasLoggedIn = false,
 }: {
   name?: string
   userId?: string
   email: string
   phone?: string
   isDeleted: boolean
+  hasLoggedIn?: boolean
 }) => {
   return db
     .insertInto("User")
@@ -467,6 +513,7 @@ export const setupUser = async ({
       email,
       phone: phone,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
+      lastLoginAt: hasLoggedIn ? MOCK_STORY_DATE : null,
     })
     .returningAll()
     .executeTakeFirstOrThrow()

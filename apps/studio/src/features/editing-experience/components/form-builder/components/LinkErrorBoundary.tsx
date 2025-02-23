@@ -1,4 +1,4 @@
-import { PropsWithChildren } from "react"
+import type { PropsWithChildren } from "react"
 import { IconButton, Stack, Text } from "@chakra-ui/react"
 import { Infobox } from "@opengovsg/design-system-react"
 import { ErrorBoundary } from "react-error-boundary"

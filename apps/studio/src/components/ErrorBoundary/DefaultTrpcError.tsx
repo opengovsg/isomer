@@ -1,6 +1,6 @@
+import type { FallbackProps } from "react-error-boundary"
 import { useRouter } from "next/router"
 import { type TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc"
-import { FallbackProps } from "react-error-boundary"
 
 import { trpc } from "~/utils/trpc"
 import { FullscreenSpinner } from "../FullscreenSpinner"

@@ -1,7 +1,7 @@
+import type { ButtonProps } from "@opengovsg/design-system-react"
 import { Skeleton } from "@chakra-ui/react"
 import {
   Button,
-  ButtonProps,
   TouchableTooltip,
   useToast,
 } from "@opengovsg/design-system-react"
