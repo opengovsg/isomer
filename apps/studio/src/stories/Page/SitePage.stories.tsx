@@ -100,3 +100,15 @@ export const ExpandedProfileDropdown: Story = {
     }
   },
 }
+
+export const EditProfileModal: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    await ExpandedProfileDropdown.play?.(context)
+    const screen = within(canvasElement)
+    const editProfileButton = await screen.findByText("Edit profile")
+    await userEvent.click(editProfileButton, {
+      pointerEventsCheck: 0,
+    })
+  },
+}
