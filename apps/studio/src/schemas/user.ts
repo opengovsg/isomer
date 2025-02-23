@@ -32,6 +32,19 @@ export const deleteInputSchema = z.object({
 
 export const deleteOutputSchema = z.boolean()
 
+export const getUserInputSchema = z.object({
+  siteId: z.number().min(1),
+  userId: z.string(),
+})
+
+export const getUserOutputSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string().email(),
+  role: z.nativeEnum(RoleType),
+  lastLoginAt: z.date().nullable(),
+})
+
 export const listInputSchema = z.object({
   siteId: z.number().min(1),
   getIsomerAdmins: z.boolean().optional().default(false),

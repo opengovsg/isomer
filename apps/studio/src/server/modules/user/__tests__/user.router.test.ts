@@ -484,6 +484,156 @@ describe("user.router", () => {
     })
   })
 
+  describe("getUser", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.getUser({
+        siteId,
+        userId: "test-user-id",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have any permissions to the site", async () => {
+      // Act
+      const result = caller.getUser({
+        siteId,
+        userId: "test-user-id",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw 404 if user does not exist", async () => {
+      // Arrange
+      await setupEditorPermissions({ userId: session.userId, siteId })
+
+      // Act
+      const result = caller.getUser({
+        siteId,
+        userId: "non-existent-id",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        }),
+      )
+    })
+
+    it("should throw 404 if user exists but has no permissions for the site", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const { site: newSite } = await setupSite()
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      await setupEditorPermissions({ userId: user.id, siteId: newSite.id })
+
+      // Act
+      const result = caller.getUser({
+        siteId,
+        userId: user.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        }),
+      )
+    })
+
+    it("should not return user if all their permissions are deleted", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      await setupEditorPermissions({ userId: user.id, siteId, isDeleted: true })
+
+      // Act
+      const result = caller.getUser({
+        siteId,
+        userId: user.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        }),
+      )
+    })
+
+    it("should return user with their most powerful role when they have multiple permissions", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      await setupEditorPermissions({ userId: user.id, siteId })
+      await setupPublisherPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = await caller.getUser({
+        siteId,
+        userId: user.id,
+      })
+
+      // Assert
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: user.id,
+          email: TEST_EMAIL,
+          role: RoleType.Publisher, // Publisher > Editor
+        }),
+      )
+    })
+
+    it("should return user with their last login date", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      await setupEditorPermissions({ userId: user.id, siteId })
+      await db
+        .updateTable("User")
+        .where("id", "=", user.id)
+        .set({ lastLoginAt: MOCK_STORY_DATE })
+        .execute()
+
+      // Act
+      const result = await caller.getUser({
+        siteId,
+        userId: user.id,
+      })
+
+      // Assert
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: user.id,
+          email: TEST_EMAIL,
+          lastLoginAt: MOCK_STORY_DATE,
+        }),
+      )
+    })
+  })
+
   describe("list", () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
