@@ -49,7 +49,6 @@ export const AvatarMenu = () => {
         </Menu.Item>
       </OgpAvatarMenu>
       <EditProfileModal
-        isOnboarded={isOnboarded}
         isOpen={isEditProfileModalOpen}
         onClose={() => setIsEditProfileModalOpen(false)}
       />
