@@ -5,7 +5,7 @@ import { formatDate } from "~/features/users/utils"
 import { trpc } from "~/utils/trpc"
 
 interface UserInfoContentProps {
-  siteId: number | undefined
+  siteId: number
   userId: string
 }
 
@@ -14,10 +14,7 @@ const SuspendableUserInfoContent = ({
   userId,
 }: UserInfoContentProps) => {
   const [{ name, email, role, lastLoginAt }] =
-    trpc.user.getUser.useSuspenseQuery({
-      siteId: siteId ?? -1,
-      userId,
-    })
+    trpc.user.getUser.useSuspenseQuery({ siteId, userId })
 
   return (
     <>
