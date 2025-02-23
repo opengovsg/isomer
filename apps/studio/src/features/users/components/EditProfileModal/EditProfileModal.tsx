@@ -147,7 +147,11 @@ export const EditProfileModal = ({
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button variant="solid" onClick={onSubmit} isDisabled={!isDirty}>
+            <Button
+              variant="solid"
+              onClick={onSubmit}
+              isDisabled={!isDirty || Object.keys(errors).length > 0}
+            >
               Save changes
             </Button>
           </ModalFooter>
