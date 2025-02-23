@@ -2,7 +2,7 @@ import { chakra, HStack, Text, Tooltip } from "@chakra-ui/react"
 import { RiInformationLine } from "react-icons/ri"
 
 import type { UserTableData } from "./types"
-import { daysFromLastLogin, formatDate } from "./utils"
+import { daysFromLastLogin, formatDate } from "../../utils"
 
 const ChakraRiInformationLine = chakra(RiInformationLine)
 
