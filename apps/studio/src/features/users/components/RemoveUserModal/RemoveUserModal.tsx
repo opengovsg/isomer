@@ -9,19 +9,54 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button, useToast } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
 
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { trpc } from "~/utils/trpc"
 import {
   DEFAULT_REMOVE_USER_MODAL_STATE,
   removeUserModalAtom,
 } from "../../atoms"
 import { UserInfoContent } from "./UserInfoContent"
 
-export const RemoveUserModal = () => {
-  const { siteId, userId } = useAtomValue(removeUserModalAtom)
+interface RemoveUserModalProps {
+  siteId: number
+}
+
+export const RemoveUserModal = ({ siteId }: RemoveUserModalProps) => {
+  const toast = useToast()
+  const utils = trpc.useUtils()
+
+  const { userId } = useAtomValue(removeUserModalAtom)
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
   const onClose = () => setRemoveUserModalState(DEFAULT_REMOVE_USER_MODAL_STATE)
+
+  const { mutate, isLoading } = trpc.user.delete.useMutation({
+    onSettled: onClose,
+    onSuccess: async (result) => {
+      await utils.user.list.invalidate()
+      await utils.user.count.invalidate()
+      await utils.user.hasInactiveUsers.invalidate()
+      toast({
+        status: "success",
+        title: `Removed ${result.email} from site.`,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
+    onError: (err) => {
+      toast({
+        status: "error",
+        title: "Failed to remove user",
+        description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
+  })
+
+  const onRemoveUser = () => {
+    mutate({ siteId, userId })
+  }
 
   return (
     <Modal isOpen={!!siteId && !!userId} onClose={onClose}>
@@ -47,7 +82,12 @@ export const RemoveUserModal = () => {
             >
               No, cancel
             </Button>
-            <Button colorScheme="critical" variant="solid">
+            <Button
+              colorScheme="critical"
+              variant="solid"
+              onClick={onRemoveUser}
+              isLoading={isLoading}
+            >
               Remove user
             </Button>
           </ModalFooter>

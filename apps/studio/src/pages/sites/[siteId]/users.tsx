@@ -99,7 +99,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
           hasInactiveUsers={hasInactiveUsers}
         />
       </VStack>
-      <RemoveUserModal />
+      <RemoveUserModal siteId={siteId} />
     </>
   )
 }
