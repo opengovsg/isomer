@@ -96,4 +96,17 @@ export const userHandlers = {
       })
     },
   },
+  getUser: {
+    default: () => {
+      return trpcMsw.user.getUser.query(() => {
+        return {
+          id: "1",
+          name: "Admin User",
+          email: "admin@example.com",
+          role: RoleType.Admin,
+          lastLoginAt: new Date(),
+        }
+      })
+    },
+  },
 }

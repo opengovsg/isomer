@@ -108,3 +108,25 @@ export const IsomerAdminsTab: Story = {
     await userEvent.click(isomerAdminsTab)
   },
 }
+
+export const RemoveUserModal: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        ...COMMON_HANDLERS,
+        userHandlers.getPermissions.admin(),
+        userHandlers.list.users(),
+        userHandlers.getUser.default(),
+      ],
+    },
+  },
+  play: async (context) => {
+    const { canvasElement } = context
+    await ExpandedMenu.play?.(context)
+    const screen = within(canvasElement.ownerDocument.body)
+    const removeUserButton = await screen.findByText("Remove user access")
+    await userEvent.click(removeUserButton, {
+      pointerEventsCheck: 0,
+    })
+  },
+}
