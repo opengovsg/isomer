@@ -1,7 +1,6 @@
 import {
   Button,
   FormControl,
-  FormErrorMessage,
   Input,
   Modal,
   ModalBody,
@@ -12,12 +11,19 @@ import {
   ModalOverlay,
   VStack,
 } from "@chakra-ui/react"
-import { FormLabel, PhoneNumberInput } from "@opengovsg/design-system-react"
+import {
+  FormErrorMessage,
+  FormLabel,
+  PhoneNumberInput,
+  useToast,
+} from "@opengovsg/design-system-react"
 import { Controller } from "react-hook-form"
 
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useMe } from "~/features/me/api"
 import { useZodForm } from "~/lib/form"
 import { updateDetailsInputSchema } from "~/schemas/user"
+import { trpc } from "~/utils/trpc"
 
 interface EditProfileModalProps {
   isOpen: boolean
@@ -30,9 +36,28 @@ export const EditProfileModal = ({
 }: EditProfileModalProps) => {
   const { me, isOnboarded } = useMe()
 
+  const toast = useToast(BRIEF_TOAST_SETTINGS)
+
+  const { mutate: updateDetails } = trpc.user.updateDetails.useMutation({
+    onSuccess: () => {
+      toast({
+        status: "success",
+        title: "Profile updated",
+        description: "Your profile has been updated successfully",
+      })
+    },
+    onError: (error) => {
+      toast({
+        status: "error",
+        title: "Failed to update profile",
+        description: error.message,
+      })
+      reset()
+    },
+  })
+
   const {
     register,
-    watch,
     control,
     reset,
     handleSubmit,
@@ -45,10 +70,18 @@ export const EditProfileModal = ({
     },
   })
 
-  const onSaveChanges = () => {
-    console.log("TODO: Save changes")
-    onClose()
-  }
+  const onSubmit = handleSubmit((data) => {
+    updateDetails(
+      {
+        name: data.name,
+        phone: data.phone,
+      },
+      {
+        onSuccess: () => reset(data),
+        onSettled: onClose,
+      },
+    )
+  })
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -66,7 +99,7 @@ export const EditProfileModal = ({
           )}
           <ModalBody>
             <VStack gap="1rem" width="100%">
-              <FormControl isRequired>
+              <FormControl isRequired isInvalid={!!errors.name}>
                 <FormLabel description="Used to address you on support channels">
                   Your full name
                 </FormLabel>
@@ -79,7 +112,7 @@ export const EditProfileModal = ({
                   <FormErrorMessage>{errors.name.message}</FormErrorMessage>
                 )}
               </FormControl>
-              <FormControl isRequired>
+              <FormControl isRequired isInvalid={!!errors.phone}>
                 <FormLabel description="Used for two-factor authentication (2FA). Make sure it is accurate">
                   Your phone number
                 </FormLabel>
@@ -103,7 +136,7 @@ export const EditProfileModal = ({
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button variant="solid" onClick={onSaveChanges}>
+            <Button variant="solid" onClick={onSubmit} isDisabled={!isDirty}>
               Save changes
             </Button>
           </ModalFooter>
