@@ -59,6 +59,15 @@ export const Default: Story = {
   args: generateArgs({}),
 }
 
+export const Hover: Story = {
+  args: generateArgs({}),
+  parameters: {
+    pseudo: {
+      hover: [".group", "img"],
+    },
+  },
+}
+
 export const UndefinedDate: Story = {
   args: generateArgs({ isLastUpdatedUndefined: true }),
 }

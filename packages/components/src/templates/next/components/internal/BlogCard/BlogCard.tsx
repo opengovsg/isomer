@@ -8,7 +8,7 @@ import { Tag } from "../Tag"
 
 const collectionCardLinkStyle = tv({
   extend: focusVisibleHighlight,
-  base: "prose-title-md-semibold line-clamp-3 w-fit underline-offset-4 hover:underline",
+  base: "prose-title-md-semibold line-clamp-3 w-fit underline-offset-4 group-hover:underline",
 })
 
 export const BlogCard = ({
@@ -31,7 +31,11 @@ export const BlogCard = ({
   return (
     // NOTE: In smaller viewports, we render a border between items for easy distinguishing
     // and to do that, we add a padding on smaller viewports
-    <div className="flex flex-1 flex-col gap-3 border-b pb-5 pt-5 md:pt-0">
+    <Link
+      LinkComponent={LinkComponent}
+      href={referenceLinkHref}
+      className="group flex flex-1 flex-col gap-3 border-b pb-5 pt-5 md:pt-0"
+    >
       {image && (
         <div className="relative mb-3 aspect-[2/1] h-auto min-h-40 shrink-0">
           {
@@ -52,13 +56,9 @@ export const BlogCard = ({
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
         <h3 className="inline-block">
-          <Link
-            LinkComponent={LinkComponent}
-            href={referenceLinkHref}
-            className={collectionCardLinkStyle()}
-          >
-            <span title={itemTitle}>{itemTitle}</span>
-          </Link>
+          <span className={collectionCardLinkStyle()} title={itemTitle}>
+            {itemTitle}
+          </span>
         </h3>
         {tags && tags.length > 0 && (
           <div className="-mt-1 flex flex-col gap-2">
@@ -84,6 +84,6 @@ export const BlogCard = ({
           {category}
         </p>
       </div>
-    </div>
+    </Link>
   )
 }

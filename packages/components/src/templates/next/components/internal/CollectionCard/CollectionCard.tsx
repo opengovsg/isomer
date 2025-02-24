@@ -8,7 +8,7 @@ import { Tag } from "../Tag"
 
 const collectionCardLinkStyle = tv({
   extend: focusVisibleHighlight,
-  base: "prose-title-md-semibold line-clamp-3 w-fit underline-offset-4 hover:underline",
+  base: "prose-title-md-semibold line-clamp-3 w-fit underline-offset-4 group-hover:underline",
 })
 
 export const CollectionCard = ({
@@ -29,21 +29,19 @@ export const CollectionCard = ({
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }): JSX.Element => {
   return (
-    <div className="flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6">
+    <Link
+      LinkComponent={LinkComponent}
+      href={referenceLinkHref}
+      className="group flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6"
+    >
       {shouldShowDate && (
         <p className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
           {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content lg:gap-2">
-        <h3 className="inline-block">
-          <Link
-            LinkComponent={LinkComponent}
-            href={referenceLinkHref}
-            className={collectionCardLinkStyle()}
-          >
-            <span title={itemTitle}>{itemTitle}</span>
-          </Link>
+        <h3 className={collectionCardLinkStyle()}>
+          <span title={itemTitle}>{itemTitle}</span>
         </h3>
         {tags && tags.length > 0 && (
           <>
@@ -80,6 +78,6 @@ export const CollectionCard = ({
           />
         </div>
       )}
-    </div>
+    </Link>
   )
 }

@@ -4122,6 +4122,10 @@ video {
   color: rgb(21 71 190 / var(--tw-text-opacity));
 }
 
+.group:where([data-rac])[data-hovered] .group-hover\:underline {
+  text-decoration-line: underline;
+}
+
 .group:where([data-rac])[data-hovered] .group-hover\:opacity-100 {
   opacity: 1;
 }
@@ -4157,6 +4161,10 @@ video {
 .group:where(:not([data-rac])):hover .group-hover\:text-link-hover {
   --tw-text-opacity: 1;
   color: rgb(21 71 190 / var(--tw-text-opacity));
+}
+
+.group:where(:not([data-rac])):hover .group-hover\:underline {
+  text-decoration-line: underline;
 }
 
 .group:where(:not([data-rac])):hover .group-hover\:opacity-100 {
