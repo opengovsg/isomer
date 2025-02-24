@@ -53,7 +53,7 @@ export const useResourceStack = ({
   )
 
   const fullPermalink: string = useMemo(() => {
-    return resourceStack.map((resource) => resource.permalink).join("/")
+    return `/${resourceStack.map((resource) => resource.permalink).join("/")}`
   }, [resourceStack])
 
   // currently do not support fetching next page for search
