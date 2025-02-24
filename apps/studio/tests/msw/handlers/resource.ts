@@ -45,17 +45,9 @@ export const resourceHandlers = {
     },
   },
   getAncestryStack: {
-    collectionLink: () => {
+    default: () => {
       return trpcMsw.resource.getAncestryStack.query(() => {
-        return [
-          {
-            parentId: "1",
-            id: "2",
-            title: "Collection",
-            permalink: "collection",
-            type: "Collection",
-          },
-        ]
+        return []
       })
     },
   },

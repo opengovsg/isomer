@@ -19,7 +19,7 @@ const COMMON_HANDLERS = [
   resourceHandlers.getChildrenOf.default(),
   resourceHandlers.getRolesFor.default(),
   resourceHandlers.getWithFullPermalink.default(),
-  resourceHandlers.getAncestryStack.collectionLink(),
+  resourceHandlers.getAncestryStack.default(),
   resourceHandlers.getMetadataById.content(),
 ]
 
