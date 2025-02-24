@@ -1,7 +1,7 @@
 import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
-import { focusVisibleHighlight, getFormattedDate } from "~/utils"
+import { focusVisibleHighlight, getFormattedDate, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { Link } from "../Link"
 import { Tag } from "../Tag"
@@ -9,6 +9,11 @@ import { Tag } from "../Tag"
 const collectionCardLinkStyle = tv({
   extend: focusVisibleHighlight,
   base: "prose-title-md-semibold line-clamp-3 w-fit underline-offset-4 group-hover:underline",
+  variants: {
+    isExternalLink: {
+      true: "after:content-['_↗']",
+    },
+  },
 })
 
 export const CollectionCard = ({
@@ -28,11 +33,14 @@ export const CollectionCard = ({
   siteAssetsBaseUrl: string | undefined
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }): JSX.Element => {
+  const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
+
   return (
     <Link
       LinkComponent={LinkComponent}
       href={referenceLinkHref}
       className="group flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6"
+      isExternal={isExternalLink}
     >
       {shouldShowDate && (
         <p className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
@@ -40,7 +48,7 @@ export const CollectionCard = ({
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content lg:gap-2">
-        <h3 className={collectionCardLinkStyle()}>
+        <h3 className={collectionCardLinkStyle({ isExternalLink })}>
           <span title={itemTitle}>{itemTitle}</span>
         </h3>
         {tags && tags.length > 0 && (
