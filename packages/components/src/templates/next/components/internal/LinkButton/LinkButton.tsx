@@ -5,6 +5,7 @@ import type { VariantProps } from "tailwind-variants"
 
 import type { LinkProps } from "~/interfaces"
 import { twMerge } from "~/lib/twMerge"
+import { isExternalUrl } from "~/utils"
 import { buttonStyles } from "../Button"
 import { Link } from "../Link"
 
@@ -24,6 +25,9 @@ export const LinkButton = ({
   colorScheme,
   ...props
 }: LinkButtonProps) => {
+  const href = props.href
+  const isExternalLink = !!href && isExternalUrl(props.href)
+
   return (
     <Link
       {...props}
@@ -31,6 +35,8 @@ export const LinkButton = ({
         buttonStyles({ variant, size, className, colorScheme }),
         className,
       )}
+      isExternal={isExternalLink}
+      showExternalIcon={isExternalLink}
     />
   )
 }
