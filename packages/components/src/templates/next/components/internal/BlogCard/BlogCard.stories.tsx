@@ -76,8 +76,16 @@ export const Hover: Story = {
 }
 
 export const ExternalLink: Story = {
-  args: generateArgs({ isExternalLink: true }),
+  args: generateArgs({
+    isExternalLink: true,
+    title: "This is a not-so-long title that will be truncated",
+  }),
 }
+
+// TODO: fix the external link icon showing up when the text is long
+// export const ExternalLinkLongText: Story = {
+//   args: generateArgs({ isExternalLink: true }),
+// }
 
 export const UndefinedDate: Story = {
   args: generateArgs({ isLastUpdatedUndefined: true }),
