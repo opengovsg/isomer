@@ -1,3 +1,5 @@
+import { BiLinkExternal } from "react-icons/bi"
+
 import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { tv } from "~/lib/tv"
@@ -9,11 +11,6 @@ import { Tag } from "../Tag"
 const collectionCardLinkStyle = tv({
   extend: focusVisibleHighlight,
   base: "prose-title-md-semibold line-clamp-3 w-fit underline-offset-4 group-hover:underline",
-  variants: {
-    isExternalLink: {
-      true: "after:content-['_↗']",
-    },
-  },
 })
 
 export const BlogCard = ({
@@ -63,12 +60,12 @@ export const BlogCard = ({
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
-        <h3 className="inline-block">
-          <span
-            className={collectionCardLinkStyle({ isExternalLink })}
-            title={itemTitle}
-          >
-            {itemTitle}
+        <h3 className={collectionCardLinkStyle()}>
+          <span className="relative inline">
+            <span title={itemTitle}>{itemTitle}</span>
+            {isExternalLink && (
+              <BiLinkExternal className="ml-1 inline-block h-auto w-3.5 align-middle lg:w-4" />
+            )}
           </span>
         </h3>
         {tags && tags.length > 0 && (
