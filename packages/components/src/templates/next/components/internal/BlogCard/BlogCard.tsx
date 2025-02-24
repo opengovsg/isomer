@@ -64,7 +64,7 @@ export const BlogCard = ({
           <span className="relative inline">
             <span title={itemTitle}>{itemTitle}</span>
             {isExternalLink && (
-              <BiLinkExternal className="ml-1 inline-block h-auto w-3.5 align-middle lg:w-4" />
+              <BiLinkExternal className="ml-1 inline-block h-auto w-3.5 align-middle lg:w-5" />
             )}
           </span>
         </h3>
