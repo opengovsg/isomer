@@ -49,13 +49,6 @@ export const resourceHandlers = {
       return trpcMsw.resource.getAncestryStack.query(() => {
         return [
           {
-            parentId: null,
-            id: "1",
-            title: "Homepage",
-            permalink: "/",
-            type: "RootPage",
-          },
-          {
             parentId: "1",
             id: "2",
             title: "Collection",
