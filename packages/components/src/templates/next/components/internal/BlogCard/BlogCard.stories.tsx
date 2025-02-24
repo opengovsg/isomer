@@ -22,6 +22,16 @@ const meta: Meta<typeof BlogCard> = {
 export default meta
 type Story = StoryObj<typeof BlogCard>
 
+interface GenerateArgsProps {
+  shouldShowDate?: boolean
+  isLastUpdatedUndefined?: boolean
+  withoutImage?: boolean
+  title?: string
+  description?: string
+  tags?: Tag[]
+  isExternalLink?: boolean
+}
+
 const generateArgs = ({
   shouldShowDate = true,
   isLastUpdatedUndefined = false,
@@ -29,14 +39,10 @@ const generateArgs = ({
   title = "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
   description = "We've looked at how people's spending correlates with how much microscopic plastic they consumed over the year. We've looked at how people's spending correlates with how much microscopic plastic they consumed over the year.",
   tags = [],
-}: {
+  isExternalLink = false,
+}: GenerateArgsProps): Partial<CollectionCardProps> & {
   shouldShowDate?: boolean
-  isLastUpdatedUndefined?: boolean
-  withoutImage?: boolean
-  title?: string
-  description?: string
-  tags?: Tag[]
-}): Partial<CollectionCardProps> & { shouldShowDate?: boolean } => {
+} => {
   return {
     lastUpdated: isLastUpdatedUndefined ? undefined : "December 2, 2023",
     category: "Research",
@@ -48,7 +54,7 @@ const generateArgs = ({
           src: "https://placehold.co/500x500",
           alt: "placeholder",
         },
-    referenceLinkHref: "/",
+    referenceLinkHref: isExternalLink ? "https://www.google.com" : "/",
     imageSrc: "https://placehold.co/500x500",
     itemTitle: title,
     shouldShowDate,
@@ -67,6 +73,10 @@ export const Hover: Story = {
       hover: [".group", "img"],
     },
   },
+}
+
+export const ExternalLink: Story = {
+  args: generateArgs({ isExternalLink: true }),
 }
 
 export const UndefinedDate: Story = {
