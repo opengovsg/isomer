@@ -43,7 +43,12 @@ const BackButtonHeader = ({
       w="full"
       justifyContent="flex-start"
       color="base.content.default"
-      onClick={handleOnClick}
+      onClick={(e) => {
+        // Stop propagation and prevent default to avoid any focus issues
+        e.stopPropagation()
+        e.preventDefault()
+        handleOnClick()
+      }}
       as="button"
       py="0.375rem"
     >
