@@ -1,18 +1,10 @@
-import { useEffect, useRef, useState } from "react"
-import { BiLinkExternal } from "react-icons/bi"
-
 import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
-import { tv } from "~/lib/tv"
-import { focusVisibleHighlight, getFormattedDate, isExternalUrl } from "~/utils"
+import { getFormattedDate, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
+import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
 import { Link } from "../Link"
 import { Tag } from "../Tag"
-
-const collectionCardLinkStyle = tv({
-  extend: focusVisibleHighlight,
-  base: "prose-title-md-semibold line-clamp-3 w-fit underline-offset-4 group-hover:underline",
-})
 
 export const BlogCard = ({
   LinkComponent,
@@ -32,22 +24,6 @@ export const BlogCard = ({
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
-
-  const textRef = useRef<HTMLSpanElement | null>(null)
-  const [isTruncated, setIsTruncated] = useState(false)
-  useEffect(() => {
-    const checkTruncation = () => {
-      const element = textRef.current
-      if (!element) return
-
-      setIsTruncated(element.scrollHeight > element.clientHeight)
-    }
-
-    checkTruncation()
-
-    window.addEventListener("resize", checkTruncation)
-    return () => window.removeEventListener("resize", checkTruncation)
-  }, [itemTitle])
 
   return (
     // NOTE: In smaller viewports, we render a border between items for easy distinguishing
@@ -77,21 +53,7 @@ export const BlogCard = ({
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
-        <h3 className={collectionCardLinkStyle()}>
-          <span ref={textRef} className="line-clamp-3" title={itemTitle}>
-            {itemTitle}
-            {isExternalLink && !isTruncated && (
-              <BiLinkExternal className="ml-1 inline-block h-auto w-3.5 align-middle lg:ml-1.5 lg:w-4" />
-            )}
-          </span>
-
-          {/* Show icon below text if truncated */}
-          {isExternalLink && isTruncated && (
-            <div className="mt-1">
-              <BiLinkExternal className="h-auto w-3.5 text-base-content-subtle lg:w-4" />
-            </div>
-          )}
-        </h3>
+        <Title title={itemTitle} isExternalLink={isExternalLink} />
         {tags && tags.length > 0 && (
           <div className="-mt-1 flex flex-col gap-2">
             {tags.flatMap(({ category, selected: labels }) => {
