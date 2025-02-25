@@ -14,8 +14,8 @@ export const useResourceStack = ({
   selectedResourceId,
   existingResource,
 }: UseResourceStackProps) => {
-  const [pendingMovedItemAncestryStack] =
-    trpc.resource.getAncestryStack.useSuspenseQuery({
+  const { data: pendingMovedItemAncestryStack } =
+    trpc.resource.getAncestryStack.useQuery({
       siteId: String(siteId),
       resourceId: selectedResourceId ?? existingResource?.id,
       includeSelf: !!selectedResourceId,
@@ -25,7 +25,7 @@ export const useResourceStack = ({
   // NOTE: We should always start the stack from `/` (root)
   // so that the user will see a full overview of their site structure
   const [resourceStack, setResourceStack] = useState<ResourceItemContent[]>(
-    pendingMovedItemAncestryStack,
+    pendingMovedItemAncestryStack ?? [],
   )
 
   const [isResourceHighlighted, setIsResourceHighlighted] =
