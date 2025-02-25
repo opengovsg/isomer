@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react"
 import { BiLinkExternal } from "react-icons/bi"
 
 import type { CollectionCardProps } from "~/interfaces"
@@ -10,7 +11,7 @@ import { Tag } from "../Tag"
 
 const collectionCardLinkStyle = tv({
   extend: focusVisibleHighlight,
-  base: "prose-title-md-semibold line-clamp-3 w-fit underline-offset-4 group-hover:underline",
+  base: "prose-title-md-semibold flex w-fit flex-col underline-offset-4 group-hover:underline",
 })
 
 export const CollectionCard = ({
@@ -32,6 +33,22 @@ export const CollectionCard = ({
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
+  const textRef = useRef<HTMLSpanElement | null>(null)
+  const [isTruncated, setIsTruncated] = useState(false)
+  useEffect(() => {
+    const checkTruncation = () => {
+      const element = textRef.current
+      if (!element) return
+
+      setIsTruncated(element.scrollHeight > element.clientHeight)
+    }
+
+    checkTruncation()
+
+    window.addEventListener("resize", checkTruncation)
+    return () => window.removeEventListener("resize", checkTruncation)
+  }, [itemTitle])
+
   return (
     <Link
       LinkComponent={LinkComponent}
@@ -46,12 +63,19 @@ export const CollectionCard = ({
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content lg:gap-2">
         <h3 className={collectionCardLinkStyle()}>
-          <span className="relative inline">
-            <span title={itemTitle}>{itemTitle}</span>
-            {isExternalLink && (
-              <BiLinkExternal className="ml-1 inline-block h-auto w-3.5 align-middle lg:ml-1.5 lg:w-5" />
+          <span ref={textRef} className="line-clamp-3" title={itemTitle}>
+            {itemTitle}
+            {isExternalLink && !isTruncated && (
+              <BiLinkExternal className="ml-1 inline-block h-auto w-3.5 align-middle lg:ml-1.5 lg:w-4" />
             )}
           </span>
+
+          {/* Show icon below text if truncated */}
+          {isExternalLink && isTruncated && (
+            <div className="mt-1">
+              <BiLinkExternal className="h-auto w-3.5 text-base-content-subtle lg:w-4" />
+            </div>
+          )}
         </h3>
         {tags && tags.length > 0 && (
           <>
