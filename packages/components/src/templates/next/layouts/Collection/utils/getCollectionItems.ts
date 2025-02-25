@@ -85,7 +85,9 @@ export const getCollectionItems = (
   return transformedItems.sort((a, b) => {
     // Sort by last updated date, tiebreaker by title
     if (a.rawDate && b.rawDate && a.rawDate.getTime() === b.rawDate.getTime()) {
-      return a.title > b.title ? 1 : -1
+      // localeCompare better than > operator as
+      // it properly handles international and special characters
+      return a.title.localeCompare(b.title)
     }
 
     // Rank items with no dates last
