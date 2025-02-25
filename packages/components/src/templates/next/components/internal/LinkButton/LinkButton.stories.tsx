@@ -2,18 +2,29 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { LinkButton } from "./LinkButton"
 
-const BUTTON_SIZES = ["base", "lg"] as const
-
 const meta: Meta<typeof LinkButton> = {
   title: "Next/Internal Components/LinkButton",
   component: LinkButton,
-  render: (args) => (
-    <div className="flex flex-wrap gap-2">
-      {BUTTON_SIZES.map((size) => (
-        <LinkButton key={size} {...args} size={size} />
-      ))}
-    </div>
-  ),
+  render: (args) => {
+    // Define matrices for link types and sizes
+    const links = ["/", "https://www.google.com"] as const
+    const sizes = ["base", "lg"] as const
+
+    // Generate all combinations
+    const combinations = sizes.flatMap((size) =>
+      links.map((link) => ({ size, link })),
+    )
+
+    return (
+      <div className="flex flex-col gap-2">
+        {combinations.map((combo, index) => (
+          <div key={index}>
+            <LinkButton {...args} size={combo.size} href={combo.link} />
+          </div>
+        ))}
+      </div>
+    )
+  },
   argTypes: {
     colorScheme: {
       options: ["default", "inverse"],
@@ -47,13 +58,6 @@ export const Default: Story = {
 export const LongerButtonText: Story = {
   args: {
     children: "slightly longer (link) button text",
-  },
-}
-
-export const ExternalLink: Story = {
-  args: {
-    ...Default.args,
-    href: "https://www.google.com",
   },
 }
 
