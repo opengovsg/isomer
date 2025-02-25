@@ -84,7 +84,7 @@ export const getCollectionItems = (
 
   return transformedItems.sort((a, b) => {
     // Sort by last updated date, tiebreaker by title
-    if (a.rawDate === b.rawDate) {
+    if (a.rawDate && b.rawDate && a.rawDate.getTime() === b.rawDate.getTime()) {
       return a.title > b.title ? 1 : -1
     }
 
@@ -97,6 +97,6 @@ export const getCollectionItems = (
       return -1
     }
 
-    return a.rawDate < b.rawDate ? 1 : -1
+    return a.rawDate.getTime() < b.rawDate.getTime() ? 1 : -1
   }) as AllCardProps[]
 }
