@@ -50,6 +50,13 @@ export const LongerButtonText: Story = {
   },
 }
 
+export const ExternalLink: Story = {
+  args: {
+    ...Default.args,
+    href: "https://www.google.com",
+  },
+}
+
 export const OutlineVariant: Story = {
   args: {
     ...Default.args,
