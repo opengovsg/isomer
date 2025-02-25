@@ -52,6 +52,7 @@ const SuspensableResourceSelector = ({
 
   const {
     fullPermalink,
+    moveDestPermalink,
     moveDest,
     parentDest,
     resourceStack,
@@ -185,13 +186,11 @@ const SuspensableResourceSelector = ({
       </Box>
       <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">
         <Flex flexDirection="column" gap="0.25rem">
-          <Text textStyle="caption-1">You selected {fullPermalink}</Text>
+          <Text textStyle="caption-1">You selected /{fullPermalink}</Text>
           {existingResource && (
             <Text textStyle="caption-2">
-              The URL for "{existingResource.title}" will change to{" "}
-              {existingResource.id === moveDest?.id
-                ? fullPermalink
-                : `${fullPermalink}/${existingResource.permalink}`}
+              The URL for "{existingResource.title}" will change to /
+              {moveDestPermalink}
             </Text>
           )}
         </Flex>

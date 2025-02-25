@@ -106,6 +106,7 @@ const MoveResourceContent = withSuspense(
     })
 
     const movedItem = useAtomValue(moveResourceAtom)
+    console.log(11111, movedItem, movedItem?.permalink)
 
     return (
       <ModalContent>

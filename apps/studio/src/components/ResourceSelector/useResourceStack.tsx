@@ -52,13 +52,24 @@ export const useResourceStack = ({
     [],
   )
 
-  const fullPermalink: string = useMemo(() => {
-    return `/${resourceStack.map((resource) => resource.permalink).join("/")}`
+  const fullPermalink = useMemo(() => {
+    return resourceStack.map((resource) => resource.permalink).join("/")
   }, [resourceStack])
+
+  const moveDestPermalink = useMemo(() => {
+    const resourcesForPath = [...resourceStack]
+
+    if (existingResource) {
+      resourcesForPath.push(existingResource)
+    }
+
+    return resourcesForPath.map((resource) => resource.permalink).join("/")
+  }, [resourceStack, existingResource])
 
   // currently do not support fetching next page for search
   return {
     fullPermalink,
+    moveDestPermalink,
     moveDest,
     parentDest,
     resourceStack,
