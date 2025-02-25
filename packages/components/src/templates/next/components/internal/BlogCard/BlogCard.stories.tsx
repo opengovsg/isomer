@@ -81,11 +81,11 @@ export const ExternalLink: Story = {
   }),
 }
 
-// TODO: fix external link icon not visible when the text is being truncated
-// because the icon is at the end of the text
-// export const ExternalLinkLongText: Story = {
-//   args: generateArgs({ isExternalLink: true }),
-// }
+// TODO: ideally when the text is being truncated,
+// the external link icon should be at the end of the text instead of the newline
+export const ExternalLinkLongText: Story = {
+  args: generateArgs({ isExternalLink: true }),
+}
 
 export const UndefinedDate: Story = {
   args: generateArgs({ isLastUpdatedUndefined: true }),
