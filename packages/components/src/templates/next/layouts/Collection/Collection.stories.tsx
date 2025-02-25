@@ -402,7 +402,7 @@ export const AllResultsNoDate: Story = {
     await expect(yearFilter).not.toBeInTheDocument()
 
     const lastWordOccurences = await screen.findAllByText(/Isomer guide-/)
-    await expect(lastWordOccurences.length).toBe(10)
+    await expect(lastWordOccurences.length).toBe(3)
   },
 }
 
