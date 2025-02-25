@@ -80,7 +80,8 @@ export const ExternalLink: Story = {
   }),
 }
 
-// TODO: fix the external link icon showing up when the text is long
+// TODO: fix external link icon not visible when the text is being truncated
+// because the icon is at the end of the text
 // export const ExternalLinkLongText: Story = {
 //   args: generateArgs({ isExternalLink: true }),
 // }
