@@ -3,6 +3,10 @@ import { z } from "zod"
 
 import { offsetPaginationSchema } from "./pagination"
 
+export const getPermissionsInputSchema = z.object({
+  siteId: z.number().min(1),
+})
+
 export const createInputSchema = z.object({
   siteId: z.number().min(1),
   users: z.array(
