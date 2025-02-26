@@ -44,6 +44,7 @@ const getColumns = ({
       id: "user_role",
       header: () => <TableHeader>Role</TableHeader>,
       cell: ({ row }) => <Text textStyle="caption-2">{row.original.role}</Text>,
+      size: 80,
     }),
     columnsHelper.display({
       id: "user_last_login",
@@ -51,6 +52,7 @@ const getColumns = ({
       cell: ({ row }) => (
         <LastLoginCell lastLoginAt={row.original.lastLoginAt} />
       ),
+      size: 80,
     }),
   ]
 
