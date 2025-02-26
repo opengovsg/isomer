@@ -15,15 +15,9 @@ const meta: Meta<typeof SitePage> = {
     msw: {
       handlers: [
         meHandlers.me(),
-        pageHandlers.listWithoutRoot.default(),
-        pageHandlers.getRootPage.default(),
-        pageHandlers.countWithoutRoot.default(),
-        pageHandlers.readPage.content(),
-        pageHandlers.updateSettings.collection(),
-        pageHandlers.getPermalinkTree.withParent(),
-        sitesHandlers.getSiteName.default(),
-        resourceHandlers.getChildrenOf.default(),
         resourceHandlers.getRolesFor.default(),
+        sitesHandlers.getSiteName.default(),
+        pageHandlers.getRootPage.default(),
       ],
     },
     nextjs: {
@@ -40,25 +34,44 @@ const meta: Meta<typeof SitePage> = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const ExpandedProfileDropdown: Story = {
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
+export const Default: Story = {
+  play: async (context) => {
+    const screen = within(context.canvasElement)
     const testUserSelector = await screen.findByText(/TU/i)
     const testUserSelectorButton = testUserSelector.closest("button")
     if (testUserSelectorButton) {
       await userEvent.click(testUserSelectorButton)
     }
-  },
-}
-
-export const Default: Story = {
-  play: async (context) => {
-    const { canvasElement } = context
-    await ExpandedProfileDropdown.play?.(context)
-    const screen = within(canvasElement)
     const editProfileButton = await screen.findByText("Edit profile")
     await userEvent.click(editProfileButton, {
       pointerEventsCheck: 0,
     })
+  },
+}
+
+export const Unfilled: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    await Default.play?.(context)
+
+    // Check for name input
+    const nameInput = Array.from(
+      canvasElement.ownerDocument.querySelectorAll(
+        'input[name="name"][required]',
+      ),
+    )[0]
+    if (nameInput) {
+      await userEvent.clear(nameInput)
+    }
+
+    // Check for phone input
+    const phoneInput = Array.from(
+      canvasElement.ownerDocument.querySelectorAll(
+        'input[name="phone"][required]',
+      ),
+    )[0]
+    if (phoneInput) {
+      await userEvent.clear(phoneInput)
+    }
   },
 }
