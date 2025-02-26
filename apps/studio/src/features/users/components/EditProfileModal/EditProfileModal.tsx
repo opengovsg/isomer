@@ -124,9 +124,7 @@ export const EditProfileModal = ({
                 )}
               </FormControl>
               <FormControl isRequired isInvalid={!!errors.phone}>
-                <FormLabel description="Used for two-factor authentication (2FA). Make sure it is accurate">
-                  Your phone number
-                </FormLabel>
+                <FormLabel>Your phone number</FormLabel>
                 <Controller
                   control={control}
                   name="phone"
