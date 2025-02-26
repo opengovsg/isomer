@@ -75,3 +75,37 @@ export const Unfilled: Story = {
     }
   },
 }
+
+export const PhoneNumberNot8Digits: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    await Default.play?.(context)
+
+    const phoneInput = Array.from(
+      canvasElement.ownerDocument.querySelectorAll(
+        'input[name="phone"][required]',
+      ),
+    )[0]
+    if (phoneInput) {
+      await userEvent.clear(phoneInput)
+      await userEvent.type(phoneInput, "6512345678")
+    }
+  },
+}
+
+export const NonSingaporePhone: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    await Default.play?.(context)
+
+    const phoneInput = Array.from(
+      canvasElement.ownerDocument.querySelectorAll(
+        'input[name="phone"][required]',
+      ),
+    )[0]
+    if (phoneInput) {
+      await userEvent.clear(phoneInput)
+      await userEvent.type(phoneInput, "12345678")
+    }
+  },
+}
