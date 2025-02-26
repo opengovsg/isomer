@@ -35,7 +35,13 @@ export const AvatarMenu = () => {
           </Flex>
         </Menu.Item>
         <Divider orientation="horizontal" />
-        <Menu.Item onClick={() => setIsEditProfileModalOpen(true)}>
+        <Menu.Item
+          onClick={() => setIsEditProfileModalOpen(true)}
+          // This is a hotfix because OGPDS MenuItem has an issue of the next item
+          // covering the bottom border of the current item when current item is active
+          // Reference: https://github.com/opengovsg/isomer/pull/1138#issuecomment-2683836810
+          sx={{ mb: "0.125rem" }}
+        >
           <Flex alignItems="center" gap="0.75rem">
             <BiPencil size="1.25rem" />
             <Text>Edit profile</Text>
