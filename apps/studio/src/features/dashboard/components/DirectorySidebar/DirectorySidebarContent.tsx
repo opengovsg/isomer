@@ -4,8 +4,8 @@ import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { getResourceSubpath } from "~/utils/resource"
+import { getIcon } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
-import { ICON_MAPPINGS } from "./constants"
 import { RowEntry } from "./RowEntry"
 import { useIsActive } from "./useIsActive"
 
@@ -87,7 +87,7 @@ export const DirectorySidebarContent = ({
         >
           <RowEntry
             href={href}
-            icon={ICON_MAPPINGS[item.type]}
+            icon={getIcon(item.type)}
             label={`/${item.permalink}`}
             isFetchingChildren={isFetchingChildren}
             isActive={isActive}
@@ -136,7 +136,7 @@ export const DirectorySidebarContent = ({
   return (
     <RowEntry
       href={href}
-      icon={ICON_MAPPINGS[item.type]}
+      icon={getIcon(item.type)}
       label={`/${item.permalink}`}
       isActive={isActive}
       isExpandable={isExpandable}
