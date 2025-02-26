@@ -90,6 +90,11 @@ export const getCollectionItems = (
       return a.title.localeCompare(b.title)
     }
 
+    // If both items have no dates, sort by title
+    if (a.rawDate === undefined && b.rawDate === undefined) {
+      return a.title.localeCompare(b.title)
+    }
+
     // Rank items with no dates last
     if (a.rawDate === undefined) {
       return 1
