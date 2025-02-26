@@ -34,7 +34,9 @@ const getColumns = ({
       cell: ({ row }) => (
         <VStack gap="0.25rem" align="start">
           <Text textStyle="subhead-2">{row.original.name}</Text>
-          <Text textStyle="caption-2">{row.original.email}</Text>
+          <Text textStyle="caption-2" textColor="base.content.medium">
+            {row.original.email}
+          </Text>
         </VStack>
       ),
     }),
