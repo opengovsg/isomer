@@ -113,7 +113,7 @@ export const WithLink: Story = {
         value: "4.0",
       },
     ],
-    url: "https://www.google.com",
+    url: "/",
   },
 }
 
@@ -132,7 +132,7 @@ export const WithLinkAndLabel: Story = {
         value: "4.0",
       },
     ],
-    url: "https://www.google.com",
+    url: "/",
     label: "We have no achievements",
   },
 }
