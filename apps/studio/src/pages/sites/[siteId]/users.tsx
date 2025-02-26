@@ -1,4 +1,4 @@
-import { useContext } from "react"
+import { useContext, useState } from "react"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -10,6 +10,7 @@ import { PermissionsBoundary } from "~/components/AuthWrappers/PermissionsBounda
 import { UserManagementContext, UserManagementProvider } from "~/features/users"
 import { UserTableTabs } from "~/features/users/components"
 import { CollaboratorsDescription } from "~/features/users/components/CollaboratorsDescription"
+import { AddUserModal } from "~/features/users/components/UserPermissionModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
@@ -27,6 +28,8 @@ const UserManagementLayout = ({ children }: { children: React.ReactNode }) => {
 }
 
 const SiteUsersPage: NextPageWithLayout = () => {
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false)
+
   const ability = useContext(UserManagementContext)
 
   const { siteId } = useQueryParse(siteUsersSchema)
@@ -84,7 +87,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
             <Button
               variant="solid"
               leftIcon={<BiPlus />}
-              onClick={() => console.log("TODO: add new user")}
+              onClick={() => setIsAddUserModalOpen(true)}
             >
               Add new user
             </Button>
@@ -96,6 +99,10 @@ const SiteUsersPage: NextPageWithLayout = () => {
         agencyUsersCount={agencyUsersCount}
         isomerAdminsCount={isomerAdminsCount}
         hasInactiveUsers={hasInactiveUsers}
+      />
+      <AddUserModal
+        isOpen={isAddUserModalOpen}
+        onClose={() => setIsAddUserModalOpen(false)}
       />
     </VStack>
   )
