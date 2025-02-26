@@ -1308,9 +1308,9 @@ export const Default: Story = {
         title: "This is a place where you can put nice content",
         description: "About a sentence worth of description here",
         buttonLabel: "Primary CTA",
-        buttonUrl: "https://google.com",
+        buttonUrl: "/",
         secondaryButtonLabel: "Secondary CTA",
-        secondaryButtonUrl: "https://google.com",
+        secondaryButtonUrl: "/",
       },
       {
         type: "infocards",

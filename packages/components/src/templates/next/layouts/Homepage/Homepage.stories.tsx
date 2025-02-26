@@ -276,9 +276,9 @@ export const Default: Story = {
         title: "This is a place where you can put nice content",
         description: "About a sentence worth of description here",
         buttonLabel: "Primary CTA",
-        buttonUrl: "https://google.com",
+        buttonUrl: "/",
         secondaryButtonLabel: "Secondary CTA",
-        secondaryButtonUrl: "https://google.com",
+        secondaryButtonUrl: "/",
       },
       {
         type: "infopic",
@@ -289,7 +289,7 @@ export const Default: Story = {
         imageAlt: "alt",
         imageSrc: "https://placehold.co/200x200",
         buttonLabel: "Primary CTA",
-        buttonUrl: "https://www.google.com",
+        buttonUrl: "/",
       },
       {
         type: "infocards",
@@ -298,7 +298,7 @@ export const Default: Story = {
           "Section subtitle, maximum 150 chars. These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
         variant: "cardsWithImages",
         label: "This is a CTA",
-        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        url: "/",
         cards: [
           {
             title: "Card with short title",
