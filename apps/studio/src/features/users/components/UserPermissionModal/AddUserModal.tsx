@@ -27,7 +27,9 @@ import { z as zod } from "zod"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
 import { createInputSchema } from "~/schemas/user"
+import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
+import { NonGovEmailCannotBeAdmin } from "./Banners"
 import { ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
 
@@ -79,6 +81,7 @@ export const AddUserModal = ({
   })
 
   const {
+    watch,
     register,
     reset,
     handleSubmit,
@@ -172,6 +175,9 @@ export const AddUserModal = ({
                 ))}
               </HStack>
             </FormControl>
+            {!errors.email && watch("email") && !isGovEmail(watch("email")) && (
+              <NonGovEmailCannotBeAdmin />
+            )}
           </VStack>
         </ModalBody>
         <ModalFooter gap="1rem">
