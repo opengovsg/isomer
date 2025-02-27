@@ -101,6 +101,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
         hasInactiveUsers={hasInactiveUsers}
       />
       <AddUserModal
+        siteId={siteId}
         isOpen={isAddUserModalOpen}
         onClose={() => setIsAddUserModalOpen(false)}
       />
