@@ -7,11 +7,23 @@ interface ContentItemProps {
   text: (typeof ROLES_LABELS)[number]
 }
 
-export const HavePermissionContentItem = ({ text }: ContentItemProps) => {
+export const HavePermissionContentItem = ({
+  text,
+  isDisabled = false,
+}: ContentItemProps & { isDisabled?: boolean }) => {
   return (
     <HStack gap={1} w="100%">
-      <Icon as={BiCheck} color="green.500" size={4} />
-      <Text textStyle="caption-1">{text}</Text>
+      <Icon
+        as={BiCheck}
+        color={isDisabled ? "gray.400" : "green.500"}
+        size={4}
+      />
+      <Text
+        textStyle="caption-1"
+        {...(isDisabled && { color: "interaction.support.disabled-content" })}
+      >
+        {text}
+      </Text>
     </HStack>
   )
 }

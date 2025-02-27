@@ -1,5 +1,5 @@
 import type { z } from "zod"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   Button,
   FormControl,
@@ -66,8 +66,8 @@ export const AddUserModal = ({
         title: "Profile updated",
         description:
           createdUsers.length === 1
-            ? `Sent invite to ${createdUsers[0]?.email}. They’ll receive an email in a few minutes.`
-            : `Sent invite to ${createdUsers.length} users. They’ll receive an email in a few minutes.`,
+            ? `Sent invite to ${createdUsers[0]?.email}. They'll receive an email in a few minutes.`
+            : `Sent invite to ${createdUsers.length} users. They'll receive an email in a few minutes.`,
       })
     },
     onError: (error) => {
@@ -125,6 +125,19 @@ export const AddUserModal = ({
     )
   })
 
+  const isNonGovEmailInput = !!(
+    !errors.email &&
+    watch("email") &&
+    !isGovEmail(watch("email"))
+  )
+
+  // Add effect to change role from Admin to Editor when non-gov email is entered
+  useEffect(() => {
+    if (isNonGovEmailInput && selectedRole === RoleType.Admin) {
+      setSelectedRole(RoleType.Editor)
+    }
+  }, [isNonGovEmailInput, selectedRole])
+
   return (
     <Modal isOpen={isOpen} onClose={handleOnClose}>
       <ModalOverlay />
@@ -173,13 +186,12 @@ export const AddUserModal = ({
                       isSelected={selectedRole === role}
                       onClick={() => setSelectedRole(role)}
                       permissionLabels={permissionLabels}
+                      isDisabled={role === RoleType.Admin && isNonGovEmailInput}
                     />
                   ))}
                 </HStack>
               </FormControl>
-              {!errors.email &&
-                watch("email") &&
-                !isGovEmail(watch("email")) && <NonGovEmailCannotBeAdmin />}
+              {isNonGovEmailInput && <NonGovEmailCannotBeAdmin />}
             </VStack>
           </VStack>
         </ModalBody>
