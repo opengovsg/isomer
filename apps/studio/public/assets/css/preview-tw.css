@@ -1929,10 +1929,6 @@ video {
   grid-template-columns: 1fr min-content;
 }
 
-.grid-cols-\[repeat\(3\2c 1fr\)\] {
-  grid-template-columns: repeat(3, 1fr);
-}
-
 .grid-rows-\[1fr_min-content\] {
   grid-template-rows: 1fr min-content;
 }
@@ -4922,8 +4918,8 @@ video {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .md\:grid-cols-\[repeat\(3\2c minmax\(9rem\2c 1fr\)\)\] {
-    grid-template-columns: repeat(3, minmax(9rem, 1fr));
+  .md\:grid-cols-\[auto\2c 1fr\2c auto\] {
+    grid-template-columns: auto 1fr auto;
   }
 
   .md\:flex-row {
@@ -4974,6 +4970,11 @@ video {
   .md\:gap-x-16 {
     -moz-column-gap: 4rem;
     column-gap: 4rem;
+  }
+
+  .md\:gap-x-6 {
+    -moz-column-gap: 1.5rem;
+    column-gap: 1.5rem;
   }
 
   .md\:gap-y-12 {
@@ -5236,6 +5237,10 @@ video {
 
   .lg\:gap-10 {
     gap: 2.5rem;
+  }
+
+  .lg\:gap-11 {
+    gap: 2.75rem;
   }
 
   .lg\:gap-12 {
