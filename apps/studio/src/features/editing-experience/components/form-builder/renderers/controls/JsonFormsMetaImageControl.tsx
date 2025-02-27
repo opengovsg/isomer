@@ -16,7 +16,7 @@ import { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { useImageUpload } from "../../hooks/useImage"
 import { useS3Image } from "../../hooks/useS3Image"
 import {
-  ACCEPTED_FILE_TYPES_MESSAGE,
+  ACCEPTED_IMAGE_TYPES_MESSAGE,
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
   MAX_IMG_FILE_SIZE_BYTES,
   ONE_MB_IN_BYTES,
@@ -96,7 +96,7 @@ export function JsonFormsMetaImageControl(
       <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
         {`Maximum file size: ${MAX_IMG_FILE_SIZE_BYTES / ONE_MB_IN_BYTES} MB`}
         <br />
-        {`Accepted file types: ${ACCEPTED_FILE_TYPES_MESSAGE}`}
+        {`Accepted file types: ${ACCEPTED_IMAGE_TYPES_MESSAGE}`}
       </Text>
       {!!errors && (
         <FormErrorMessage>

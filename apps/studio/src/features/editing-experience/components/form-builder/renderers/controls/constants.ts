@@ -9,6 +9,10 @@ export const IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
   ".webp": "image/webp",
 }
 
+export const ACCEPTED_IMAGE_TYPES_MESSAGE = Object.keys(
+  IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+).join(", ")
+
 export const MAX_FILE_SIZE_BYTES = 20000000
 export const FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
   ".pdf": "application/pdf",
@@ -19,7 +23,7 @@ export const FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
 }
 
 export const ACCEPTED_FILE_TYPES_MESSAGE = Object.keys(
-  IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 ).join(", ")
 
 export const ONE_MB_IN_BYTES = 1000000
