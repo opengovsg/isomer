@@ -18,18 +18,18 @@ const createDynamicDataBannerStyles = tv({
     screenWideOuterContainer: "bg-[#E1EAE6]",
     outerContainer: `${ComponentContent} md:gap-auto flex flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between md:px-10 md:py-5`,
     basicInfoContainer:
-      "flex flex-col items-center gap-0.5 md:items-start md:gap-2",
-    title: "base-content-default prose-headline-lg-semibold",
+      "flex flex-col items-center gap-0.5 md:items-start md:gap-1",
+    title: "text-base-content-default prose-headline-lg-semibold",
     dateAndUrlContainer: "align-center flex justify-center gap-2",
-    date: "base-content-medium prose-body-sm",
-    url: "prose-label-md-regular text-link visited:text-link-visited hover:text-link-hover",
+    date: "prose-body-sm text-base-content-medium",
+    url: "hover:text-link-hove prose-label-md-regular text-link underline-offset-4 visited:text-link-visited hover:underline",
     dataInfoContainer:
-      "md:col-gap-10 grid grid-cols-[repeat(3,1fr)] justify-items-center gap-y-4 md:grid-cols-[repeat(3,minmax(9rem,1fr))] md:justify-items-end md:gap-y-2 lg:flex lg:gap-8",
+      "md:col-gap-10 grid grid-cols-[repeat(3,1fr)] justify-items-center gap-y-4 md:grid-cols-[repeat(3,minmax(9rem,1fr))] md:justify-items-end md:gap-y-2 lg:flex lg:gap-11",
     errorMessageContainer: `${ComponentContent} flex flex-row gap-2 px-6 py-3 md:items-center md:gap-1`,
     errorIcon: "h-full min-h-4 min-w-4",
     individualDataContainer:
       "flex w-fit flex-col items-center justify-center gap-0.5 md:flex-row md:gap-1.5 lg:flex-col lg:items-end",
-    individualDataLabel: "base-content-default prose-headline-base-medium",
+    individualDataLabel: "text-base-content-default prose-headline-base-medium",
     individualDataValue:
       "prose-headline-lg-semibold text-brand-interaction-hover",
     individualDataValueLoading:
