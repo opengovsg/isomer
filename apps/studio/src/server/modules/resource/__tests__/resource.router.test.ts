@@ -10,6 +10,7 @@ import {
   setupBlob,
   setupCollection,
   setupCollectionLink,
+  setupEditorPermissions,
   setupFolder,
   setupFolderMeta,
   setupPageResource,
@@ -17,6 +18,7 @@ import {
 } from "tests/integration/helpers/seed"
 
 import { createCallerFactory } from "~/server/trpc"
+import { getUserViewableResourceTypes } from "~/utils/resources"
 import { db } from "../../database"
 import { resourceRouter } from "../resource.router"
 
@@ -735,6 +737,143 @@ describe("resource.router", async () => {
     it.skip("should throw 403 if user does not have read access to resource", async () => {})
   })
 
+  describe("getNestedFolderChildrenOf", () => {
+    const RESOURCE_FIELDS_TO_PICK = [
+      "title",
+      "permalink",
+      "type",
+      "id",
+      "parentId",
+    ] as const
+
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.getNestedFolderChildrenOf({
+        resourceId: "1",
+        siteId: "1",
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 404 if resource does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getNestedFolderChildrenOf({
+        resourceId: "1",
+        siteId: String(site.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "NOT_FOUND" }),
+      )
+    })
+
+    it("should return 404 if resource is not a folder", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = caller.getNestedFolderChildrenOf({
+        siteId: String(site.id),
+        resourceId: page.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "NOT_FOUND" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to site", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+
+      // Act
+      const result = caller.getNestedFolderChildrenOf({
+        siteId: String(site.id),
+        resourceId: folder.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it.skip("should throw 403 if user does not have read access to resource", async () => {})
+
+    it("should return nested folder children (e.g. folders within folders)", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { folder: parentFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: null,
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const { folder: childFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: parentFolder.id,
+        permalink: "child-folder",
+        title: "Child folder",
+      })
+      const { folder: grandChildFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: childFolder.id,
+        permalink: "grand-child-folder",
+        title: "Grand child folder",
+      })
+      const { folder: grandChildFolder2 } = await setupFolder({
+        siteId: site.id,
+        parentId: childFolder.id,
+        permalink: "grand-child-folder-2",
+        title: "Grand child folder 2",
+      })
+
+      // Act
+      const result = await caller.getNestedFolderChildrenOf({
+        siteId: String(site.id),
+        resourceId: parentFolder.id,
+      })
+
+      // Assert
+      const expected = {
+        items: [childFolder, grandChildFolder, grandChildFolder2].map(
+          (resource) => pick(resource, RESOURCE_FIELDS_TO_PICK),
+        ),
+      }
+      expect(result).toEqual(expected)
+    })
+  })
+
   describe("move", () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
@@ -832,6 +971,73 @@ describe("resource.router", async () => {
       )
     })
 
+    it("should return 400 if destination is the same as the origin", async () => {
+      // Arrange
+      const { folder: originFolder, site } = await setupFolder({
+        permalink: "origin-folder",
+      })
+      const { page: pageToMove } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        parentId: originFolder.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: pageToMove.siteId,
+      })
+
+      // Act
+      const result = caller.move({
+        siteId: pageToMove.siteId,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: pageToMove.parentId,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot move a resource to the same folder",
+        }),
+      )
+    })
+
+    it("should return 403 if destination is a root page but user is not an admin", async () => {
+      // Arrange
+      const { folder: originFolder, site } = await setupFolder({
+        permalink: "origin-folder",
+      })
+      await setupPageResource({
+        resourceType: "RootPage",
+        siteId: site.id,
+      })
+      const { page: pageToMove } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        parentId: originFolder.id,
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: null,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Please ensure that you have the required permissions to perform a move!",
+        }),
+      )
+    })
+
     it("should return 403 if source and destination resources belong to different sites", async () => {
       // Arrange
       const { page: originPage, site: originSite } = await setupPageResource({
@@ -854,8 +1060,45 @@ describe("resource.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "FORBIDDEN" }),
+        new TRPCError({
+          code: "FORBIDDEN",
+          message: "You cannot move a resource to a different site",
+        }),
       )
+    })
+
+    it("admin should be able to move resource to root page", async () => {
+      // Arrange
+      const { folder: originFolder, site } = await setupFolder({
+        permalink: "origin-folder",
+      })
+      await setupPageResource({
+        resourceType: "RootPage",
+        siteId: site.id,
+      })
+      const { page: pageToMove } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        parentId: originFolder.id,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.move({
+        siteId: site.id,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: null,
+      })
+
+      // Assert
+      const expected = {
+        ...pick(pageToMove, ["id", "type", "permalink", "title"]),
+        parentId: null,
+      }
+      expect(result).toMatchObject(expected)
     })
 
     it("should move nested resource to destination folder", async () => {
@@ -1667,19 +1910,20 @@ describe("resource.router", async () => {
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
   })
 
-  describe("getAncestryOf", () => {
+  describe("getAncestryStack", () => {
     const RESOURCE_FIELDS_TO_PICK = [
       "id",
       "title",
       "parentId",
       "permalink",
+      "type",
     ] as const
 
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.getAncestryOf({
+      const result = unauthedCaller.getAncestryStack({
         resourceId: "1",
         siteId: "1",
       })
@@ -1694,7 +1938,7 @@ describe("resource.router", async () => {
       const { site } = await setupSite()
 
       // Act
-      const result = await caller.getAncestryOf({
+      const result = await caller.getAncestryStack({
         siteId: String(site.id),
         resourceId: "99999",
       })
@@ -1710,7 +1954,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.getAncestryOf({
+      const result = await caller.getAncestryStack({
         resourceId: page.id,
         siteId: String(site.id),
       })
@@ -1724,7 +1968,7 @@ describe("resource.router", async () => {
       const { site } = await setupSite()
 
       // Act
-      const result = await caller.getAncestryOf({
+      const result = await caller.getAncestryStack({
         siteId: String(site.id),
       })
 
@@ -1732,9 +1976,12 @@ describe("resource.router", async () => {
       expect(result).toEqual([])
     })
 
-    it("should return the ancestry of a nested resource", async () => {
+    it("should return the ancestry (including self and excluding root page) of a nested resource", async () => {
       // Arrange
-      const { folder: parentFolder, site } = await setupFolder({
+      const { site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+      const { folder: parentFolder } = await setupFolder({
         permalink: "parent-folder",
         title: "Parent folder",
       })
@@ -1751,33 +1998,71 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.getAncestryOf({
+      const result = await caller.getAncestryStack({
         resourceId: nestedPage.id,
         siteId: String(site.id),
+        includeSelf: true,
       })
 
       // Assert
       const expected = [
         pick(parentFolder, RESOURCE_FIELDS_TO_PICK),
         pick(nestedFolder, RESOURCE_FIELDS_TO_PICK),
+        pick(nestedPage, RESOURCE_FIELDS_TO_PICK),
       ]
       expect(result).toEqual(expected)
     })
 
-    it("should return empty array if resource is a root-level resource", async () => {
+    it("should return empty resource if resource is a root-level resource", async () => {
       // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "Page",
       })
 
       // Act
-      const result = await caller.getAncestryOf({
+      const result = await caller.getAncestryStack({
         resourceId: page.id,
         siteId: String(site.id),
+        includeSelf: true,
       })
 
       // Assert
-      expect(result).toEqual([])
+      expect(result).toEqual([pick(page, RESOURCE_FIELDS_TO_PICK)])
+    })
+
+    it("should return the ancestry (excluding self) of a nested resource", async () => {
+      // Arrange
+      const { site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+      const { folder: parentFolder } = await setupFolder({
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const { folder: nestedFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: parentFolder.id,
+        permalink: "nested-folder",
+        title: "Nested folder",
+      })
+      const { page: nestedPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: nestedFolder.id,
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = await caller.getAncestryStack({
+        resourceId: nestedPage.id,
+        siteId: String(site.id),
+        includeSelf: false,
+      })
+
+      // Assert
+      expect(result).toEqual([
+        pick(parentFolder, RESOURCE_FIELDS_TO_PICK),
+        pick(nestedFolder, RESOURCE_FIELDS_TO_PICK),
+      ])
     })
 
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
@@ -2302,7 +2587,7 @@ describe("resource.router", async () => {
       expect(result).toEqual(expected)
     })
 
-    it("should only return user viewable resource types", async () => {
+    it("should only return user viewable resource types if specified", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
@@ -2332,6 +2617,7 @@ describe("resource.router", async () => {
       const result = await caller.search({
         siteId: String(site.id),
         query: "test",
+        resourceTypes: getUserViewableResourceTypes(),
       })
 
       // Assert

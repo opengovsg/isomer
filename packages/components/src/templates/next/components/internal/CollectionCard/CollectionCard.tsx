@@ -1,15 +1,10 @@
 import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
-import { tv } from "~/lib/tv"
-import { focusVisibleHighlight, getFormattedDate } from "~/utils"
+import { getFormattedDate, isExternalUrl } from "~/utils"
 import { ImageClient } from "../../complex/Image"
 import { Link } from "../Link"
 import { Tag } from "../Tag"
-
-const collectionCardLinkStyle = tv({
-  extend: focusVisibleHighlight,
-  base: "prose-title-md-semibold line-clamp-3 w-fit underline-offset-4 hover:underline",
-})
+import { Title } from "./Title"
 
 export const CollectionCard = ({
   LinkComponent,
@@ -28,23 +23,22 @@ export const CollectionCard = ({
   siteAssetsBaseUrl: string | undefined
   LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }): JSX.Element => {
+  const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
+
   return (
-    <div className="flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6">
+    <Link
+      LinkComponent={LinkComponent}
+      href={referenceLinkHref}
+      className="group flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6"
+      isExternal={isExternalLink}
+    >
       {shouldShowDate && (
         <p className="prose-label-md-regular shrink-0 text-base-content-subtle lg:w-[140px]">
           {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content lg:gap-2">
-        <h3 className="inline-block">
-          <Link
-            LinkComponent={LinkComponent}
-            href={referenceLinkHref}
-            className={collectionCardLinkStyle()}
-          >
-            <span title={itemTitle}>{itemTitle}</span>
-          </Link>
-        </h3>
+        <Title title={itemTitle} isExternalLink={isExternalLink} />
         {tags && tags.length > 0 && (
           <>
             {tags.flatMap(({ category, selected: labels }) => {
@@ -80,6 +74,6 @@ export const CollectionCard = ({
           />
         </div>
       )}
-    </div>
+    </Link>
   )
 }

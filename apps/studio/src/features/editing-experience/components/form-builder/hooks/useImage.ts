@@ -1,3 +1,5 @@
+import { useState } from "react"
+
 import { env } from "~/env.mjs"
 
 const waitFor = (baseTimeoutMs = 500) => {
@@ -35,14 +37,16 @@ interface UseImageProps {
   retries?: number
   baseTimeoutMs?: number
 }
-export const useImage = ({
+export const useImageUpload = ({
   retries = 3,
   baseTimeoutMs = 500,
 }: UseImageProps) => {
   const assetsBaseUrl = `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
-  const handleImage = async (src: string) => {
+  const [isLoading, setIsLoading] = useState(false)
+  const handleImageUpload = async (src: string) => {
+    setIsLoading(true)
     try {
-      return await retry(
+      const res = await retry(
         async () => {
           const response = await fetch(`${assetsBaseUrl}${src}`)
           if (!response.ok) {
@@ -53,10 +57,13 @@ export const useImage = ({
         baseTimeoutMs,
         retries,
       )
+      setIsLoading(false)
+      return res
     } catch (e) {
       console.error(e)
+      setIsLoading(false)
     }
   }
 
-  return { handleImage }
+  return { handleImageUpload, isLoading }
 }

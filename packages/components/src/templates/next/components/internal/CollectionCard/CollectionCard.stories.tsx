@@ -21,6 +21,15 @@ const meta: Meta<typeof CollectionCard> = {
 export default meta
 type Story = StoryObj<typeof CollectionCard>
 
+interface GenerateArgsProps {
+  shouldShowDate?: boolean
+  isLastUpdatedUndefined?: boolean
+  withoutImage?: boolean
+  title?: string
+  description?: string
+  tags?: Tag[]
+  isExternalLink?: boolean
+}
 const generateArgs = ({
   shouldShowDate = true,
   isLastUpdatedUndefined = false,
@@ -28,14 +37,10 @@ const generateArgs = ({
   title = "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
   description = "We've looked at how people's spending correlates with how much microscopic plastic they consumed over the year. We've looked at how people's spending correlates with how much microscopic plastic they consumed over the year.",
   tags = [],
-}: {
+  isExternalLink = false,
+}: GenerateArgsProps): Partial<CollectionCardProps> & {
   shouldShowDate?: boolean
-  isLastUpdatedUndefined?: boolean
-  withoutImage?: boolean
-  title?: string
-  description?: string
-  tags?: Tag[]
-}): Partial<CollectionCardProps> & { shouldShowDate?: boolean } => {
+} => {
   return {
     lastUpdated: isLastUpdatedUndefined ? undefined : "December 2, 2023",
     category: "Research",
@@ -47,7 +52,7 @@ const generateArgs = ({
           src: "https://placehold.co/500x500",
           alt: "placeholder",
         },
-    referenceLinkHref: "/",
+    referenceLinkHref: isExternalLink ? "https://www.google.com" : "/",
     imageSrc: "https://placehold.co/500x500",
     itemTitle: title,
     shouldShowDate,
@@ -57,6 +62,28 @@ const generateArgs = ({
 
 export const Default: Story = {
   args: generateArgs({}),
+}
+
+export const Hover: Story = {
+  args: generateArgs({}),
+  parameters: {
+    pseudo: {
+      hover: [".group", "img"],
+    },
+  },
+}
+
+export const ExternalLink: Story = {
+  args: generateArgs({
+    isExternalLink: true,
+    title: "This is a not-so-long title that will be truncated",
+  }),
+}
+
+// TODO: ideally when the text is being truncated,
+// the external link icon should be at the end of the text instead of the newline
+export const ExternalLinkLongText: Story = {
+  args: generateArgs({ isExternalLink: true }),
 }
 
 export const UndefinedDate: Story = {

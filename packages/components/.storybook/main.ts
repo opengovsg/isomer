@@ -9,6 +9,7 @@ const config: StorybookConfig = {
     "@storybook/addon-themes",
     "@storybook/addon-a11y",
     "@storybook/addon-interactions",
+    "storybook-addon-pseudo-states",
   ],
   viteFinal(config) {
     // Merge custom configuration into the default config
@@ -29,7 +30,7 @@ const config: StorybookConfig = {
     autodocs: true,
   },
 
-  staticDirs: ["../public"],
+  staticDirs: ["../public", "./assets"],
 }
 
 export default config

@@ -2,7 +2,6 @@ import { useState } from "react"
 import { useRouter } from "next/router"
 import {
   FormControl,
-  FormLabel,
   InputGroup,
   InputLeftAddon,
   Stack,
@@ -10,6 +9,7 @@ import {
 import {
   Button,
   FormErrorMessage,
+  FormLabel,
   Infobox,
   Input,
 } from "@opengovsg/design-system-react"

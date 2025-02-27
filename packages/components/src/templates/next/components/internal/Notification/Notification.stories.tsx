@@ -25,7 +25,7 @@ const meta: Meta<NotificationProps> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       navBarItems: [],
       footerItems: {
         privacyStatementLink: "https://www.isomer.gov.sg/privacy",

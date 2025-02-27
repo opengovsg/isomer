@@ -384,6 +384,20 @@ export const pageHandlers = {
                 content: [
                   {
                     type: "paragraph",
+                    content: [
+                      {
+                        text: "Thisisaproseblockthathasnospacesandshouldautomaticallytruncatetopreventoverflow",
+                        type: "text",
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "prose",
+                content: [
+                  {
+                    type: "paragraph",
                     content: [],
                   },
                 ],
@@ -579,6 +593,20 @@ export const pageHandlers = {
                   {
                     type: "paragraph",
                     content: [],
+                  },
+                ],
+              },
+              {
+                type: "prose",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      {
+                        text: "Thisisaproseblockthathasnospacesandshouldautomaticallytruncatetopreventoverflow",
+                        type: "text",
+                      },
+                    ],
                   },
                 ],
               },

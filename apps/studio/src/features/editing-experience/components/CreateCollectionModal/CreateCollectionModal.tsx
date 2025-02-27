@@ -4,8 +4,6 @@ import { useEffect } from "react"
 import {
   Box,
   FormControl,
-  FormHelperText,
-  FormLabel,
   Icon,
   Input,
   Modal,
@@ -19,6 +17,8 @@ import {
 import {
   Button,
   FormErrorMessage,
+  FormHelperText,
+  FormLabel,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"

@@ -35,6 +35,8 @@ import {
   jsonFormsIntegerControlTester,
   JsonFormsLinkControl,
   jsonFormsLinkControlTester,
+  JsonFormsMetaImageControl,
+  jsonFormsMetaImageControlTester,
   JsonFormsObjectControl,
   jsonFormsObjectControlTester,
   JsonFormsProseControl,
@@ -85,6 +87,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsVerticalLayoutTester,
     renderer: jsonFormsVerticalLayoutRenderer,
+  },
+  {
+    tester: jsonFormsMetaImageControlTester,
+    renderer: JsonFormsMetaImageControl,
   },
   {
     // NOTE: If we fall through all our previous testers,

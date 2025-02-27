@@ -1132,10 +1132,6 @@ video {
   bottom: 0px;
 }
 
-.end-1 {
-  inset-inline-end: 0.25rem;
-}
-
 .left-0 {
   left: 0px;
 }
@@ -1454,10 +1450,6 @@ video {
   display: contents;
 }
 
-.\!hidden {
-  display: none !important;
-}
-
 .hidden {
   display: none;
 }
@@ -1466,9 +1458,12 @@ video {
   aspect-ratio: 16/9;
 }
 
-.size-1 {
-  width: 0.25rem;
-  height: 0.25rem;
+.aspect-\[2\/1\] {
+  aspect-ratio: 2/1;
+}
+
+.aspect-\[5\/6\] {
+  aspect-ratio: 5/6;
 }
 
 .size-5 {
@@ -2892,6 +2887,10 @@ video {
   vertical-align: top;
 }
 
+.align-middle {
+  vertical-align: middle;
+}
+
 .text-2xl {
   font-size: 1.5rem;
   line-height: 2rem;
@@ -3168,11 +3167,6 @@ video {
   color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 
-.text-gray-800 {
-  --tw-text-opacity: 1;
-  color: rgb(31 41 55 / var(--tw-text-opacity));
-}
-
 .text-gray-900 {
   --tw-text-opacity: 1;
   color: rgb(17 24 39 / var(--tw-text-opacity));
@@ -3361,13 +3355,6 @@ video {
 
 .drop-shadow-none {
   --tw-drop-shadow: drop-shadow(0 0 #0000);
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast)
-    var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate)
-    var(--tw-sepia) var(--tw-drop-shadow);
-}
-
-.grayscale {
-  --tw-grayscale: grayscale(100%);
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast)
     var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate)
     var(--tw-sepia) var(--tw-drop-shadow);
@@ -4139,6 +4126,10 @@ video {
   color: rgb(21 71 190 / var(--tw-text-opacity));
 }
 
+.group:where([data-rac])[data-hovered] .group-hover\:underline {
+  text-decoration-line: underline;
+}
+
 .group:where([data-rac])[data-hovered] .group-hover\:opacity-100 {
   opacity: 1;
 }
@@ -4174,6 +4165,10 @@ video {
 .group:where(:not([data-rac])):hover .group-hover\:text-link-hover {
   --tw-text-opacity: 1;
   color: rgb(21 71 190 / var(--tw-text-opacity));
+}
+
+.group:where(:not([data-rac])):hover .group-hover\:underline {
+  text-decoration-line: underline;
 }
 
 .group:where(:not([data-rac])):hover .group-hover\:opacity-100 {
@@ -4883,10 +4878,6 @@ video {
     height: 240px;
   }
 
-  .md\:max-h-full {
-    max-height: 100%;
-  }
-
   .md\:w-1\/2 {
     width: 50%;
   }
@@ -5021,11 +5012,6 @@ video {
     text-align: center;
   }
 
-  .md\:text-2xl {
-    font-size: 1.5rem;
-    line-height: 2rem;
-  }
-
   .md\:text-5xl {
     font-size: 3rem;
     line-height: 1;
@@ -5056,6 +5042,14 @@ video {
 
   .lg\:mb-2 {
     margin-bottom: 0.5rem;
+  }
+
+  .lg\:ml-1 {
+    margin-left: 0.25rem;
+  }
+
+  .lg\:ml-1\.5 {
+    margin-left: 0.375rem;
   }
 
   .lg\:ml-24 {
@@ -5140,6 +5134,10 @@ video {
 
   .lg\:w-4 {
     width: 1rem;
+  }
+
+  .lg\:w-5 {
+    width: 1.25rem;
   }
 
   .lg\:w-64 {
@@ -5311,11 +5309,6 @@ video {
 
   .lg\:pt-10 {
     padding-top: 2.5rem;
-  }
-
-  .lg\:text-4xl {
-    font-size: 2.25rem;
-    line-height: 2.5rem;
   }
 
   .lg\:text-\[0\.875rem\] {

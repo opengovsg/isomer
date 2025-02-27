@@ -41,7 +41,7 @@ const createInfoCardsStyles = tv({
     grid: "grid grid-cols-1 gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImageContainer:
-      "w-full overflow-hidden rounded-lg border border-base-divider-subtle drop-shadow-none transition ease-in",
+      "w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in",
     cardImage: "h-full w-full object-center",
     cardTextContainer: "flex flex-col gap-2.5 sm:gap-3",
     cardTitleArrow:

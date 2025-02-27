@@ -1,15 +1,18 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box, Flex, FormControl, IconButton, Text } from "@chakra-ui/react"
+import { Box, Flex, FormControl, Text } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
+import {
+  FormErrorMessage,
+  FormLabel,
+  IconButton,
+} from "@opengovsg/design-system-react"
 import { BiTrash } from "react-icons/bi"
 import { z } from "zod"
 
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { useImage } from "../../hooks/useImage"
 import {
   IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
   MAX_IMG_FILE_SIZE_BYTES,
@@ -41,7 +44,6 @@ export function JsonFormsImageControl({
   data,
 }: JsonFormsImageControlProps) {
   const { siteId } = useQueryParse(editSiteSchema)
-  const { handleImage } = useImage({})
 
   return (
     <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
@@ -70,9 +72,7 @@ export function JsonFormsImageControl({
           maxSizeInBytes={MAX_IMG_FILE_SIZE_BYTES}
           acceptedFileTypes={IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
           siteId={siteId}
-          setHref={(src) =>
-            src && handleImage(src).then((src) => handleChange(path, src))
-          }
+          setHref={(src) => handleChange(path, src)}
         />
       )}
       {!!errors && (

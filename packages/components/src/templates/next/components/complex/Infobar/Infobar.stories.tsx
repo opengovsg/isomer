@@ -26,7 +26,7 @@ const meta: Meta<InfobarProps> = {
       },
       theme: "isomer-next",
       isGovernment: true,
-      logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+      logoUrl: "/isomer-logo.svg",
       lastUpdated: "2021-10-01",
       assetsBaseUrl: "https://cms.isomer.gov.sg",
       navBarItems: [],
@@ -52,9 +52,9 @@ export const Default: Story = {
     title: "This is a place where you can put nice content",
     description: "About a sentence worth of description here",
     buttonLabel: "Primary CTA",
-    buttonUrl: "https://google.com",
+    buttonUrl: "/",
     secondaryButtonLabel: "Secondary CTA",
-    secondaryButtonUrl: "https://google.com",
+    secondaryButtonUrl: "/",
   },
 }
 
@@ -64,7 +64,7 @@ export const OneButton: Story = {
     title: "This is a place where you can put nice content",
     description: "About a sentence worth of description here",
     buttonLabel: "Primary CTA",
-    buttonUrl: "https://google.com",
+    buttonUrl: "/",
   },
 }
 
@@ -76,9 +76,9 @@ export const LongText: Story = {
     description:
       "About a sentence worth of description here About a sentence worth of description here About a sentence worth of description here",
     buttonLabel: "Primary CTA",
-    buttonUrl: "https://google.com",
+    buttonUrl: "/",
     secondaryButtonLabel: "Secondary CTA",
-    secondaryButtonUrl: "https://google.com",
+    secondaryButtonUrl: "/",
   },
 }
 

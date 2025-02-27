@@ -7,7 +7,7 @@ import { UnexpectedErrorCard } from "./UnexpectedErrorCard"
 
 export const DefaultFallback: ComponentType<FallbackProps> = ({
   error,
-  // resetErrorBoundary,
+  resetErrorBoundary,
 }) => {
   // Call resetErrorBoundary() to reset the error boundary and retry the render.
 
@@ -15,5 +15,7 @@ export const DefaultFallback: ComponentType<FallbackProps> = ({
 
   if (!res.success) return <UnexpectedErrorCard />
 
-  return <DefaultTrpcError code={res.data} />
+  return (
+    <DefaultTrpcError code={res.data} resetErrorBoundary={resetErrorBoundary} />
+  )
 }

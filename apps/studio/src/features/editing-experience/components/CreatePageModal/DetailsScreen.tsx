@@ -3,8 +3,6 @@ import {
   chakra,
   Flex,
   FormControl,
-  FormHelperText,
-  FormLabel,
   Input,
   ModalBody,
   ModalHeader,
@@ -15,6 +13,8 @@ import {
 import {
   Button,
   FormErrorMessage,
+  FormHelperText,
+  FormLabel,
   Infobox,
 } from "@opengovsg/design-system-react"
 import { Controller } from "react-hook-form"

@@ -1,161 +1,238 @@
-import { Suspense, useState } from "react"
-import {
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  Skeleton,
-  Spacer,
-  Text,
-} from "@chakra-ui/react"
-import { Button, Link } from "@opengovsg/design-system-react"
+import { Suspense, useMemo } from "react"
+import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
+import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
-import { trpc } from "~/utils/trpc"
-import { ResourceItem } from "./ResourceItem"
+import type { ResourceItemContent } from "~/schemas/resource"
+import type { SearchResultResource } from "~/server/modules/resource/resource.types"
+import { useSearchQuery } from "~/hooks/useSearchQuery"
+import { getUserViewableResourceTypes } from "~/utils/resources"
+import {
+  LoadingResourceItemsResults,
+  SuspendableContent,
+} from "./ResourceSelectorContent"
+import { LoadingHeader, SuspendableHeader } from "./ResourceSelectorHeader"
+import { SearchBar } from "./SearchBar"
+import { useResourceQuery } from "./useResourceQuery"
+import { useResourceSelector } from "./useResourceSelector"
+import { useResourceStack } from "./useResourceStack"
 
-const SuspensableResourceSelector = ({
-  siteId,
-  selectedResourceId,
-  onChange,
-  isDisabledFn,
-}: ResourceSelectorProps) => {
-  const [ancestryStack] = trpc.resource.getAncestryOf.useSuspenseQuery({
-    siteId,
-    resourceId: selectedResourceId,
-  })
-  const [parentIdStack, setParentIdStack] = useState<string[]>(
-    ancestryStack.map((item) => item.id),
-  )
-  const currResourceId = parentIdStack[parentIdStack.length - 1] ?? null
-
-  const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
-    trpc.resource.getChildrenOf.useSuspenseInfiniteQuery(
-      {
-        resourceId: currResourceId,
-        siteId,
-        limit: 25,
-      },
-      {
-        getNextPageParam: (lastPage) => lastPage.nextOffset,
-      },
-    )
-
-  const onBack = () => {
-    setParentIdStack((prev) => prev.slice(0, -1))
-  }
-
-  return (
-    <Box
-      borderRadius="md"
-      border="1px solid"
-      borderColor="base.divider.strong"
-      w="full"
-      py="0.75rem"
-      px="0.5rem"
-      maxH="20rem"
-      overflowY="auto"
-    >
-      {parentIdStack.length > 0 ? (
-        <Link
-          variant="clear"
-          w="full"
-          justifyContent="flex-start"
-          color="base.content.default"
-          onClick={onBack}
-          as="button"
-        >
-          <HStack spacing="0.25rem" color="interaction.links.default">
-            <Icon as={BiLeftArrowAlt} />
-            <Text textStyle="caption-1">Back to parent folder</Text>
-          </HStack>
-        </Link>
-      ) : (
-        <Flex
-          w="full"
-          px="0.75rem"
-          py="0.375rem"
-          color="base.content.default"
-          alignItems="center"
-        >
-          <HStack spacing="0.5rem">
-            <Icon as={BiHomeAlt} />
-            <Text textStyle="caption-1">/</Text>
-          </HStack>
-          <Spacer />
-          <Text
-            color="base.content.medium"
-            textTransform="uppercase"
-            textStyle="caption-1"
-            overflow="hidden"
-            textOverflow="ellipsis"
-            whiteSpace="nowrap"
-          >
-            Home
-          </Text>
-        </Flex>
-      )}
-
-      {data.pages.flatMap(({ items }) => items).length === 0 ? (
-        <Box py="0.5rem" pl="2.25rem">
-          <Text textStyle="caption-2" fontStyle="italic">
-            No matching results
-          </Text>
-        </Box>
-      ) : (
-        data.pages.map(({ items }) =>
-          items.map((child) => {
-            const isDisabled = isDisabledFn?.(child.id) ?? false
-
-            return (
-              <ResourceItem
-                {...child}
-                key={child.id}
-                isSelected={selectedResourceId === child.id}
-                isDisabled={isDisabled}
-                onResourceItemSelect={() => {
-                  if (
-                    child.type === ResourceType.Folder ||
-                    child.type === ResourceType.Collection
-                  ) {
-                    setParentIdStack((prev) => [...prev, child.id])
-                  } else {
-                    onChange(child.id)
-                  }
-                }}
-              />
-            )
-          }),
-        )
-      )}
-
-      {hasNextPage && (
-        <Button
-          variant="link"
-          pl="2.25rem"
-          size="xs"
-          isLoading={isFetchingNextPage}
-          onClick={() => fetchNextPage()}
-        >
-          Load more
-        </Button>
-      )}
-    </Box>
-  )
-}
+const FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM = 17.5
 
 interface ResourceSelectorProps {
-  siteId: string
+  interactionType: "link" | "move"
+  siteId: number
+  onChange: (resourceId: string | null) => void
   selectedResourceId?: string
-  onChange: (resourceId: string) => void
-  isDisabledFn?: (resourceId: string) => boolean
+  existingResource?: ResourceItemContent
+  onlyShowFolders?: boolean
+  fileExplorerHeight?: number
+}
+
+const SuspensableResourceSelector = ({
+  interactionType,
+  siteId,
+  onChange,
+  selectedResourceId,
+  existingResource,
+  onlyShowFolders = false,
+  fileExplorerHeight = FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM,
+  searchQuery,
+  isLoading,
+  matchedResources,
+  clearSearchValue,
+}: ResourceSelectorProps & {
+  searchQuery: string
+  isLoading: boolean
+  matchedResources: SearchResultResource[]
+  clearSearchValue: () => void
+}) => {
+  const isSearchQueryEmpty: boolean = searchQuery.trim().length === 0
+  const hasAdditionalLeftPadding: boolean = isSearchQueryEmpty
+
+  const {
+    fullPermalink,
+    moveDestPermalink,
+    moveDest,
+    parentDest,
+    resourceStack,
+    isResourceHighlighted,
+    setIsResourceHighlighted,
+    setResourceStack,
+    removeFromStack,
+  } = useResourceStack({
+    siteId,
+    selectedResourceId,
+    existingResource,
+  })
+
+  const {
+    resourceItemsWithAncestryStack,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useResourceQuery({
+    siteId,
+    moveDest,
+    parentDest,
+    isResourceHighlighted,
+    onlyShowFolders,
+    resourceIds: isSearchQueryEmpty
+      ? undefined
+      : matchedResources.map((resource) => resource.id),
+  })
+
+  const {
+    isResourceIdHighlighted,
+    isResourceItemDisabled,
+    hasParentInStack,
+    handleClickBackButton,
+    handleClickResourceItem,
+  } = useResourceSelector({
+    interactionType,
+    siteId,
+    moveDest,
+    resourceStack,
+    isResourceHighlighted,
+    setIsResourceHighlighted,
+    existingResource,
+    setResourceStack,
+    removeFromStack,
+    onChange: (resourceId: string | null) => {
+      onChange(resourceId)
+      clearSearchValue()
+    },
+  })
+
+  const renderedHeader = useMemo(() => {
+    return (
+      <Suspense fallback={<LoadingHeader />}>
+        <SuspendableHeader
+          isSearchQueryEmpty={isSearchQueryEmpty}
+          hasParentInStack={hasParentInStack}
+          handleClickBackButton={handleClickBackButton}
+          resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
+          searchQuery={searchQuery}
+          isLoading={isLoading}
+        />
+      </Suspense>
+    )
+  }, [
+    isSearchQueryEmpty,
+    hasParentInStack,
+    handleClickBackButton,
+    resourceItemsWithAncestryStack,
+    searchQuery,
+    isLoading,
+  ])
+
+  const renderedContent = useMemo(() => {
+    return (
+      <Suspense fallback={<LoadingResourceItemsResults />}>
+        <SuspendableContent
+          resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
+          isResourceIdHighlighted={isResourceIdHighlighted}
+          isResourceItemDisabled={isResourceItemDisabled}
+          hasAdditionalLeftPadding={hasAdditionalLeftPadding}
+          handleClickResourceItem={handleClickResourceItem}
+          isSearchQueryEmpty={isSearchQueryEmpty}
+          searchQuery={searchQuery}
+          clearSearchValue={clearSearchValue}
+          isLoading={isLoading}
+        />
+      </Suspense>
+    )
+  }, [
+    resourceItemsWithAncestryStack,
+    isResourceIdHighlighted,
+    isResourceItemDisabled,
+    hasAdditionalLeftPadding,
+    handleClickResourceItem,
+    isSearchQueryEmpty,
+    searchQuery,
+    clearSearchValue,
+    isLoading,
+  ])
+
+  return (
+    <>
+      <Box
+        borderRadius="md"
+        border="1px solid"
+        borderColor="base.divider.strong"
+        w="full"
+        py="0.75rem"
+        px="0.5rem"
+        h={`${fileExplorerHeight}rem`}
+        overflowY="auto"
+        display="flex"
+        flexDirection="column"
+        gap="0.25rem"
+      >
+        {renderedHeader}
+        {renderedContent}
+        {hasNextPage && (
+          <Button
+            variant="link"
+            py="0.5rem"
+            pl={hasAdditionalLeftPadding ? "2.25rem" : "1rem"}
+            size="xs"
+            isLoading={isFetchingNextPage}
+            onClick={() => fetchNextPage()}
+          >
+            Load more
+          </Button>
+        )}
+      </Box>
+      <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">
+        <Flex flexDirection="column" gap="0.25rem">
+          <Text textStyle="caption-1">You selected /{fullPermalink}</Text>
+          {existingResource && (
+            <Text textStyle="caption-2">
+              The URL for "{existingResource.title}" will change to /
+              {moveDestPermalink}
+            </Text>
+          )}
+        </Flex>
+      </Box>
+    </>
+  )
 }
 
 export const ResourceSelector = (props: ResourceSelectorProps) => {
+  const {
+    searchValue,
+    setSearchValue,
+    debouncedSearchTerm: searchQuery,
+    isLoading,
+    matchedResources,
+    clearSearchValue,
+  } = useSearchQuery({
+    siteId: String(props.siteId),
+    resourceTypes: props.onlyShowFolders
+      ? [ResourceType.Folder]
+      : getUserViewableResourceTypes(),
+  })
+
   return (
-    <Suspense fallback={<Skeleton h="4rem" />}>
-      <SuspensableResourceSelector {...props} />
-    </Suspense>
+    <VStack gap="0.5rem" w="full">
+      <SearchBar searchValue={searchValue} setSearchValue={setSearchValue} />
+      <Suspense
+        fallback={
+          <Skeleton
+            w="full"
+            h={`${props.fileExplorerHeight ?? FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM + 4.25}rem`}
+          />
+        }
+      >
+        <SuspensableResourceSelector
+          {...props}
+          searchQuery={searchQuery}
+          isLoading={isLoading}
+          matchedResources={matchedResources}
+          clearSearchValue={clearSearchValue}
+        />
+      </Suspense>
+    </VStack>
   )
 }

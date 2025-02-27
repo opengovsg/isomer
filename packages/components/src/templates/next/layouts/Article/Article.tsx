@@ -1,5 +1,6 @@
 import { type ArticlePageSchemaType } from "~/engine"
 import { getBreadcrumbFromSiteMap } from "~/utils"
+import { BackToTopLink } from "../../components/internal"
 import ArticlePageHeader from "../../components/internal/ArticlePageHeader"
 import { renderPageContent } from "../../render"
 import { Skeleton } from "../Skeleton"
@@ -46,6 +47,7 @@ const ArticleLayout = ({
               LinkComponent,
             })}
           </div>
+          <BackToTopLink />
         </div>
       </div>
     </Skeleton>

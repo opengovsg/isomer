@@ -23,7 +23,8 @@ const COMMON_HANDLERS = [
   sitesHandlers.getLocalisedSitemap.default(),
   resourceHandlers.getChildrenOf.default(),
   resourceHandlers.getWithFullPermalink.default(),
-  resourceHandlers.getAncestryOf.collectionLink(),
+  resourceHandlers.getAncestryStack.default(),
+  resourceHandlers.getBatchAncestryWithSelf.default(),
   resourceHandlers.getMetadataById.content(),
   resourceHandlers.getRolesFor.default(),
   pageHandlers.readPageAndBlob.content(),
@@ -55,6 +56,21 @@ export default meta
 type Story = StoryObj<typeof EditPage>
 
 export const Default: Story = {}
+export const Wordbreak: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", {
+      name: /This is a prose block/i,
+    })
+    await userEvent.click(button)
+
+    const textbox = await canvas.findByRole("textbox")
+    await userEvent.type(
+      textbox,
+      "long words should be preserved: supercalifragilisticexpialidocious",
+    )
+  },
+}
 
 export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
