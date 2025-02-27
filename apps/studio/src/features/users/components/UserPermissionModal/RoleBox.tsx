@@ -45,6 +45,8 @@ export const RoleBox = ({
       }}
       _disabled={{
         color: "interaction.support.disabled-content",
+        bg: "interaction.support.disabled",
+        borderColor: "interaction.support.disabled",
         opacity: 0.6,
         cursor: "not-allowed",
         _hover: {
@@ -58,7 +60,10 @@ export const RoleBox = ({
               borderColor: "blue.500",
               boxShadow: "sm",
             }
-          : undefined
+          : {
+              bg: "interaction.support.disabled",
+              borderColor: "interaction.support.disabled",
+            }
       }
     >
       <VStack gap={2} alignItems="flex-start">
