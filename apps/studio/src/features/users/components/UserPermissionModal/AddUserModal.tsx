@@ -29,7 +29,7 @@ import { useZodForm } from "~/lib/form"
 import { createInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
-import { NonGovEmailCannotBeAdmin } from "./Banners"
+import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
 import { ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
 
@@ -191,6 +191,7 @@ export const AddUserModal = ({
                   ))}
                 </HStack>
               </FormControl>
+              {selectedRole === RoleType.Admin && <AddAdminWarning />}
               {isNonGovEmailInput && <NonGovEmailCannotBeAdmin />}
             </VStack>
           </VStack>
