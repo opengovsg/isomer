@@ -144,40 +144,43 @@ export const AddUserModal = ({
                 <FormErrorMessage>{errors.email.message}</FormErrorMessage>
               )}
             </FormControl>
-            <FormControl isRequired>
-              <FormLabel
-                description={
-                  <Text>
-                    You can change this later. Read more about user roles on the{" "}
-                    <Link
-                      // TODO: update this placeholder
-                      href="https://guide.isomer.gov.sg/user-management/user-roles"
-                      isExternal
-                    >
-                      Isomer Guide
-                    </Link>
-                    .
-                  </Text>
-                }
-                mb={4}
-              >
-                Role
-              </FormLabel>
-              <HStack spacing={3} width="100%">
-                {ROLE_CONFIGS.map(({ role, permissionLabels }) => (
-                  <RoleBox
-                    key={role}
-                    value={role}
-                    isSelected={selectedRole === role}
-                    onClick={() => setSelectedRole(role)}
-                    permissionLabels={permissionLabels}
-                  />
-                ))}
-              </HStack>
-            </FormControl>
-            {!errors.email && watch("email") && !isGovEmail(watch("email")) && (
-              <NonGovEmailCannotBeAdmin />
-            )}
+            <VStack gap="1rem" w="100%">
+              <FormControl isRequired>
+                <FormLabel
+                  description={
+                    <Text>
+                      You can change this later. Read more about user roles on
+                      the{" "}
+                      <Link
+                        // TODO: update this placeholder
+                        href="https://guide.isomer.gov.sg/user-management/user-roles"
+                        isExternal
+                      >
+                        Isomer Guide
+                      </Link>
+                      .
+                    </Text>
+                  }
+                  mb={4}
+                >
+                  Role
+                </FormLabel>
+                <HStack spacing={3} width="100%">
+                  {ROLE_CONFIGS.map(({ role, permissionLabels }) => (
+                    <RoleBox
+                      key={role}
+                      value={role}
+                      isSelected={selectedRole === role}
+                      onClick={() => setSelectedRole(role)}
+                      permissionLabels={permissionLabels}
+                    />
+                  ))}
+                </HStack>
+              </FormControl>
+              {!errors.email &&
+                watch("email") &&
+                !isGovEmail(watch("email")) && <NonGovEmailCannotBeAdmin />}
+            </VStack>
           </VStack>
         </ModalBody>
         <ModalFooter gap="1rem">
