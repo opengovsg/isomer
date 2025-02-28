@@ -4918,10 +4918,6 @@ video {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .md\:grid-cols-\[auto\2c 1fr\2c auto\] {
-    grid-template-columns: auto 1fr auto;
-  }
-
   .md\:flex-row {
     flex-direction: row;
   }
@@ -4970,11 +4966,6 @@ video {
   .md\:gap-x-16 {
     -moz-column-gap: 4rem;
     column-gap: 4rem;
-  }
-
-  .md\:gap-x-6 {
-    -moz-column-gap: 1.5rem;
-    column-gap: 1.5rem;
   }
 
   .md\:gap-y-12 {
@@ -5041,6 +5032,25 @@ video {
 
   .md\:text-\[2\.25rem\] {
     font-size: 2.25rem;
+  }
+
+  @media not all and (min-width: 1024px) {
+    .md\:max-lg\:w-\[70px\] {
+      width: 70px;
+    }
+
+    .md\:max-lg\:grid-cols-\[auto\2c auto\2c auto\] {
+      grid-template-columns: auto auto auto;
+    }
+
+    .md\:max-lg\:gap-x-6 {
+      -moz-column-gap: 1.5rem;
+      column-gap: 1.5rem;
+    }
+
+    .md\:max-lg\:text-right {
+      text-align: right;
+    }
   }
 }
 
