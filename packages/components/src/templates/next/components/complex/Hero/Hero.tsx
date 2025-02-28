@@ -74,6 +74,21 @@ const HeroGradient = ({
   )
 }
 
+const HERO_THEME_MAPPINGS = {
+  hero: {
+    default: "bg-brand-canvas-inverse",
+    inverse: "bg-brand-canvas-alt",
+  },
+  text: {
+    default: "text-base-content-inverse",
+    inverse: "text-base-content",
+  },
+  button: {
+    default: "inverse",
+    inverse: "default",
+  },
+} as const
+
 const HeroBlock = ({
   title,
   subtitle,
@@ -84,16 +99,25 @@ const HeroBlock = ({
   backgroundUrl,
   site,
   LinkComponent,
+  theme = "default",
 }: HeroProps) => {
   const backgroundSrc =
     isExternalUrl(backgroundUrl) || site.assetsBaseUrl === undefined
       ? backgroundUrl
       : `${site.assetsBaseUrl}${backgroundUrl}`
 
+  const heroColour = HERO_THEME_MAPPINGS.hero[theme]
+  const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
+  const heroButton = HERO_THEME_MAPPINGS.button[theme]
+
   return (
     <section className="flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row">
-      <div className="flex flex-row bg-brand-canvas-inverse px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-12">
-        <div className="flex w-full max-w-[532px] flex-col justify-center gap-9 text-base-content-inverse">
+      <div
+        className={`flex flex-row ${heroColour} px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-12`}
+      >
+        <div
+          className={`flex w-full max-w-[532px] flex-col justify-center gap-9 ${heroTextColour}`}
+        >
           <div className="flex flex-col gap-6">
             <h1 className="prose-display-xl break-words">{title}</h1>
             {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
@@ -107,6 +131,7 @@ const HeroBlock = ({
                   site.assetsBaseUrl,
                 )}
                 size="lg"
+                variant="solid"
                 colorScheme="inverse"
                 LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight
@@ -115,7 +140,7 @@ const HeroBlock = ({
               </LinkButton>
               {secondaryButtonLabel && secondaryButtonUrl && (
                 <LinkButton
-                  colorScheme="inverse"
+                  colorScheme={heroButton}
                   variant="outline"
                   size="lg"
                   href={getReferenceLinkHref(
