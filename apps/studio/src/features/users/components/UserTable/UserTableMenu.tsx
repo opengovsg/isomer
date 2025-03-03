@@ -6,12 +6,14 @@ import {
   MenuList,
   Portal,
 } from "@chakra-ui/react"
+import { useSetAtom } from "jotai"
 import { BiDotsVerticalRounded, BiPencil, BiTrash } from "react-icons/bi"
 
 import type { UserTableData } from "./types"
 import type { UserTableProps } from "./UserTable"
 import { MenuItem } from "~/components/Menu"
 import { UserManagementContext } from "~/features/users"
+import { updateUserModalAtom } from "../../atom"
 
 interface UserTableMenuProps extends Pick<UserTableProps, "siteId"> {
   userId: UserTableData["id"]
@@ -24,6 +26,8 @@ export const UserTableMenu = ({
   userName,
 }: UserTableMenuProps) => {
   const ability = useContext(UserManagementContext)
+
+  const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
 
   return (
     <Menu isLazy size="sm">
@@ -39,10 +43,9 @@ export const UserTableMenu = ({
           {ability.can("manage", "UserManagement") && (
             <>
               <MenuItem
-                onClick={() => {
-                  console.log(`TODO: Edit user: ${userId} ${siteId}`)
-                }}
+                onClick={() => setUpdateUserModalState({ userId })}
                 icon={<BiPencil fontSize="1rem" />}
+                aria-label={`Edit user ${userName}`}
               >
                 Edit user
               </MenuItem>
