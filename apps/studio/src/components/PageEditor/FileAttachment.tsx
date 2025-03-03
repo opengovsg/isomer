@@ -3,6 +3,8 @@ import { useEffect, useState } from "react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
 
+import { useImageUpload } from "~/features/editing-experience/components/form-builder/hooks/useImage"
+import { ONE_MB_IN_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
 
@@ -19,17 +21,15 @@ type FileRejections = AttachmentProps<false>["rejections"]
 export const FileAttachment = ({
   setHref,
   siteId,
-  value,
   maxSizeInBytes,
   acceptedFileTypes,
 }: FileAttachmentProps) => {
-  const [file, setFile] = useState<File | undefined>(value)
   const [rejections, setRejections] = useState<FileRejections>([])
   // TODO: Add a mutation for deletion next time of s3 resources
-  const { mutate: uploadFile, isLoading } = useUploadAssetMutation({
+  const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
   })
-  const ACCEPTED_FILE_TYPES_MESSAGE = Object.keys(acceptedFileTypes).join(", ")
+  const { handleImageUpload, isLoading } = useImageUpload({})
 
   useEffect(() => {
     // NOTE: The outer link modal uses this to disable the button
@@ -43,11 +43,10 @@ export const FileAttachment = ({
           isRequired
           name="file-upload"
           multiple={false}
-          value={file}
+          value={undefined}
           rejections={rejections}
           onRejection={setRejections}
           onChange={(file) => {
-            setFile(file)
             if (!file) {
               setHref()
               return
@@ -57,7 +56,7 @@ export const FileAttachment = ({
               { file },
               {
                 onSuccess: ({ path }) => {
-                  setHref(path)
+                  void handleImageUpload(path).then((src) => setHref(src))
                 },
               },
             )
@@ -79,9 +78,9 @@ export const FileAttachment = ({
         />
       </Skeleton>
       <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
-        {`Maximum file size: ${maxSizeInBytes / 1000000} MB`}
+        {`Maximum file size: ${maxSizeInBytes / ONE_MB_IN_BYTES} MB`}
         <br />
-        {`Accepted file types: ${ACCEPTED_FILE_TYPES_MESSAGE}`}
+        {`Accepted file types: ${Object.keys(acceptedFileTypes).join(", ")}`}
       </Text>
     </FormControl>
   )
