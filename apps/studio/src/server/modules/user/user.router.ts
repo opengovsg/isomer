@@ -79,6 +79,20 @@ export const userRouter = router({
         })
       }
 
+      const userToDeletePermissionsFrom = await db
+        .selectFrom("User")
+        .where("id", "=", userId)
+        .where("deletedAt", "is", null)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!userToDeletePermissionsFrom) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        })
+      }
+
       const deletedUserPermissions = await db
         .updateTable("ResourcePermission")
         .where("userId", "=", userId)
@@ -95,7 +109,10 @@ export const userRouter = router({
         })
       }
 
-      return true
+      return {
+        id: userToDeletePermissionsFrom.id,
+        email: userToDeletePermissionsFrom.email,
+      }
     }),
 
   getUser: protectedProcedure

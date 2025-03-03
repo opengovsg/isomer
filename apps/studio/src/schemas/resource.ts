@@ -1,3 +1,4 @@
+import { ResourceType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
 import type { SearchResultResource } from "../server/modules/resource/resource.types"
@@ -35,6 +36,20 @@ export const getChildrenSchema = z
   })
   .merge(infiniteOffsetPaginationSchema)
 
+export const getChildrenOutputSchema = z.object({
+  items: z.array(z.custom<ResourceItemContent>()),
+  nextOffset: z.number().nullable(),
+})
+
+export const getNestedFolderChildrenSchema = z.object({
+  resourceId: bigIntSchema,
+  siteId: z.string().min(0),
+})
+
+export const getNestedFolderChildrenOutputSchema = z.object({
+  items: z.array(z.custom<ResourceItemContent>()),
+})
+
 export const moveSchema = z.object({
   siteId: z.number(),
   movedResourceId: bigIntSchema,
@@ -67,15 +82,41 @@ export const getFullPermalinkSchema = z.object({
   resourceId: bigIntSchema,
 })
 
-export const getAncestrySchema = z.object({
+export const getAncestryStackSchema = z.object({
   siteId: z.string(),
   resourceId: z.string().optional(),
+  includeSelf: z.boolean().optional().default(true),
 })
+
+export const getAncestryStackOutputSchema = z.array(
+  z.custom<ResourceItemContent>(),
+)
+
+export const getBatchAncestryWithSelfSchema = z.object({
+  siteId: z.string(),
+  resourceIds: z.array(z.string()),
+})
+
+export const getBatchAncestryWithSelfOutputSchema = z.array(
+  z.array(z.custom<ResourceItemContent>()),
+)
+
+export interface ResourceItemContent {
+  title: string
+  permalink: string
+  type: ResourceType
+  id: string
+  parentId: string | null
+}
 
 export const searchSchema = z
   .object({
     siteId: z.string(),
-    query: z.string().optional(),
+    query: z.string().trim().optional(),
+    resourceTypes: z
+      .array(z.nativeEnum(ResourceType))
+      .optional()
+      .default(Object.values(ResourceType)),
   })
   .merge(infiniteOffsetPaginationSchema)
 

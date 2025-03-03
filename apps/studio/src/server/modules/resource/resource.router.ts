@@ -7,12 +7,18 @@ import type { PermissionsProps } from "../permissions/permissions.type"
 import {
   countResourceSchema,
   deleteResourceSchema,
-  getAncestrySchema,
+  getAncestryStackOutputSchema,
+  getAncestryStackSchema,
+  getBatchAncestryWithSelfOutputSchema,
+  getBatchAncestryWithSelfSchema,
+  getChildrenOutputSchema,
   getChildrenSchema,
   getFullPermalinkSchema,
   getIndexPageOutputSchema,
   getIndexPageSchema,
   getMetadataSchema,
+  getNestedFolderChildrenOutputSchema,
+  getNestedFolderChildrenSchema,
   getParentSchema,
   listResourceSchema,
   moveSchema,
@@ -31,6 +37,7 @@ import {
 } from "../permissions/permissions.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
+  getBatchAncestryWithSelfQuery,
   getSearchRecentlyEdited,
   getSearchResults,
   getSearchWithResourceIds,
@@ -107,8 +114,10 @@ export const resourceRouter = router({
 
       return resource
     }),
+
   getFolderChildrenOf: protectedProcedure
     .input(getChildrenSchema)
+    .output(getChildrenOutputSchema)
     .query(async ({ input: { siteId, resourceId, cursor: offset, limit } }) => {
       // Validate site and resourceId exists and is a Folder
       if (resourceId !== null) {
@@ -129,7 +138,7 @@ export const resourceRouter = router({
 
       let query = db
         .selectFrom("Resource")
-        .select(["title", "permalink", "type", "id"])
+        .select(["title", "permalink", "type", "id", "parentId"])
         .where("Resource.type", "in", [
           ResourceType.Folder,
           ResourceType.Collection,
@@ -161,6 +170,7 @@ export const resourceRouter = router({
     }),
   getChildrenOf: protectedProcedure
     .input(getChildrenSchema)
+    .output(getChildrenOutputSchema)
     .query(async ({ input: { resourceId, siteId, cursor: offset, limit } }) => {
       // Validate site and resourceId exists and is a folder
       if (resourceId !== null) {
@@ -181,8 +191,9 @@ export const resourceRouter = router({
       }
       let query = db
         .selectFrom("Resource")
-        .select(["title", "permalink", "type", "id"])
+        .select(["title", "permalink", "type", "id", "parentId"])
         .where("Resource.type", "!=", ResourceType.RootPage)
+        .where("Resource.type", "!=", ResourceType.IndexPage)
         .where("Resource.type", "!=", ResourceType.FolderMeta)
         .where("Resource.type", "!=", ResourceType.CollectionMeta)
         .where("Resource.siteId", "=", Number(siteId))
@@ -204,7 +215,6 @@ export const resourceRouter = router({
       } else {
         query = query.where("Resource.parentId", "=", String(resourceId))
       }
-
       const result = await query.execute()
       if (result.length > limit) {
         // Dont' return the last element, it's just for checking if there are more
@@ -217,6 +227,59 @@ export const resourceRouter = router({
       return {
         items: result,
         nextOffset: null,
+      }
+    }),
+
+  getNestedFolderChildrenOf: protectedProcedure
+    .input(getNestedFolderChildrenSchema)
+    .output(getNestedFolderChildrenOutputSchema)
+    .query(async ({ ctx, input: { resourceId, siteId } }) => {
+      await validateUserPermissionsForSite({
+        siteId: Number(siteId),
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      const resource = await db
+        .selectFrom("Resource")
+        .where("siteId", "=", Number(siteId))
+        .where("id", "=", String(resourceId))
+        .where("Resource.type", "=", ResourceType.Folder)
+        .executeTakeFirst()
+
+      if (!resource) {
+        throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
+      return {
+        items: await db
+          .withRecursive("NestedResources", (eb) =>
+            eb
+              .selectFrom("Resource")
+              .select(["title", "permalink", "type", "id", "parentId"])
+              .where("Resource.type", "in", [ResourceType.Folder])
+              .where("Resource.siteId", "=", Number(siteId))
+              .where("Resource.parentId", "=", String(resourceId))
+              .unionAll((eb) =>
+                eb
+                  .selectFrom("Resource")
+                  .innerJoin(
+                    "NestedResources",
+                    "Resource.parentId",
+                    "NestedResources.id",
+                  )
+                  .select([
+                    "Resource.title",
+                    "Resource.permalink",
+                    "Resource.type",
+                    "Resource.id",
+                    "Resource.parentId",
+                  ]),
+              ),
+          )
+          .selectFrom("NestedResources")
+          .select(["title", "permalink", "type", "id", "parentId"])
+          .execute(),
       }
     }),
 
@@ -248,7 +311,7 @@ export const resourceRouter = router({
             const toMove = await tx
               .selectFrom("Resource")
               .where("id", "=", movedResourceId)
-              .select(["id", "siteId", "type"])
+              .select(["id", "siteId", "type", "parentId"])
               .executeTakeFirst()
 
             if (!toMove) {
@@ -277,6 +340,13 @@ export const resourceRouter = router({
                 code: "BAD_REQUEST",
                 message:
                   "Please ensure that you are trying to move your resource into a valid destination",
+              })
+            }
+
+            if (toMove.parentId === parent.id) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "You cannot move a resource to the same folder",
               })
             }
 
@@ -310,7 +380,10 @@ export const resourceRouter = router({
             }
 
             if (toMove.siteId !== parent.siteId) {
-              throw new TRPCError({ code: "FORBIDDEN" })
+              throw new TRPCError({
+                code: "FORBIDDEN",
+                message: "You cannot move a resource to a different site",
+              })
             }
 
             await tx
@@ -511,62 +584,50 @@ export const resourceRouter = router({
       return query.select(["role"]).execute()
     }),
 
-  getAncestryOf: protectedProcedure
-    .input(getAncestrySchema)
-    .query(async ({ input: { siteId, resourceId } }) => {
+  getAncestryStack: protectedProcedure
+    .input(getAncestryStackSchema)
+    .output(getAncestryStackOutputSchema)
+    .query(async ({ input: { siteId, resourceId, includeSelf } }) => {
       if (!resourceId) {
         return []
       }
+      const batchAncestry = await getBatchAncestryWithSelfQuery({
+        siteId: Number(siteId),
+        resourceIds: [resourceId],
+      })
+      return includeSelf
+        ? (batchAncestry[0] ?? [])
+        : (batchAncestry[0]?.slice(0, -1) ?? [])
+    }),
 
-      const ancestors = await db
-        .withRecursive("Resources", (eb) =>
-          eb
-            .selectFrom("Resource")
-            .select([
-              "Resource.id",
-              "Resource.title",
-              "Resource.permalink",
-              "Resource.parentId",
-            ])
-            .where("Resource.siteId", "=", Number(siteId))
-            .where("Resource.id", "=", resourceId)
-            .unionAll(
-              eb
-                .selectFrom("Resource")
-                .innerJoin("Resources", "Resources.parentId", "Resource.id")
-                .select([
-                  "Resource.id",
-                  "Resource.title",
-                  "Resource.permalink",
-                  "Resource.parentId",
-                ]),
-            ),
-        )
-        .selectFrom("Resources")
-        .select([
-          "Resources.id",
-          "Resources.title",
-          "Resources.permalink",
-          "Resources.parentId",
-        ])
-        .execute()
-
-      return ancestors.reverse().slice(0, -1)
+  getBatchAncestryWithSelf: protectedProcedure
+    .input(getBatchAncestryWithSelfSchema)
+    .output(getBatchAncestryWithSelfOutputSchema)
+    .query(async ({ input: { siteId, resourceIds } }) => {
+      if (resourceIds.length === 0) {
+        return []
+      }
+      return await getBatchAncestryWithSelfQuery({
+        siteId: Number(siteId),
+        resourceIds,
+      })
     }),
 
   search: protectedProcedure
     .input(searchSchema)
     .output(searchOutputSchema)
     .query(
-      async ({ ctx, input: { siteId, query = "", cursor: offset, limit } }) => {
+      async ({
+        ctx,
+        input: { siteId, query, resourceTypes, cursor: offset, limit },
+      }) => {
         await validateUserPermissionsForSite({
           siteId: Number(siteId),
           userId: ctx.user.id,
           action: "read",
         })
 
-        // check if the query is only whitespaces (including multiple spaces)
-        if (query.trim() === "") {
+        if (!query) {
           return {
             totalCount: null,
             resources: [],
@@ -581,6 +642,7 @@ export const resourceRouter = router({
           query,
           offset,
           limit,
+          resourceTypes,
         })
         return {
           totalCount: Number(searchResults.totalCount),

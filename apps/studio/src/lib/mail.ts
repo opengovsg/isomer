@@ -2,12 +2,15 @@ import sendgrid from "@sendgrid/mail"
 import wretch from "wretch"
 
 import { env } from "~/env.mjs"
+import { createBaseLogger } from "~/lib/logger"
 
 interface SendMailParams {
   recipient: string
   body: string
   subject: string
 }
+
+const logger = createBaseLogger({ path: "lib/mail" })
 
 if (env.SENDGRID_API_KEY) {
   sendgrid.setApiKey(env.SENDGRID_API_KEY)
@@ -17,12 +20,30 @@ export const sgClient = env.SENDGRID_API_KEY ? sendgrid : null
 
 export const sendMail = async (params: SendMailParams): Promise<void> => {
   if (env.POSTMAN_API_KEY) {
-    return await wretch(
-      "https://api.postman.gov.sg/v1/transactional/email/send",
-    )
-      .auth(`Bearer ${env.POSTMAN_API_KEY}`)
-      .post(params)
-      .res()
+    try {
+      const response = await wretch(
+        "https://api.postman.gov.sg/v1/transactional/email/send",
+      )
+        .auth(`Bearer ${env.POSTMAN_API_KEY}`)
+        .post(params)
+        .res()
+
+      if (response.status !== 200) {
+        logger.error({
+          error: "Postman API error",
+          status: response.status,
+          recipient: params.recipient,
+        })
+      }
+      return
+    } catch (error) {
+      logger.error({
+        error: "Postman API call failed",
+        originalError: error,
+        recipient: params.recipient,
+      })
+      throw error
+    }
   }
 
   if (sgClient && env.SENDGRID_FROM_ADDRESS) {
