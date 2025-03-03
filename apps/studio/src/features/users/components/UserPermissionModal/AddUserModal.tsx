@@ -158,13 +158,6 @@ export const AddUserModal = ({
 
   const isNonGovEmailInput = !!(!errors.email && email && !isGovEmail(email))
 
-  // Add effect to change role from Admin to Editor when non-gov email is entered
-  useEffect(() => {
-    if (isNonGovEmailInput && selectedRole === RoleType.Admin) {
-      setSelectedRole(RoleType.Editor)
-    }
-  }, [isNonGovEmailInput, selectedRole])
-
   return (
     <Modal isOpen={isOpen} onClose={handleOnClose}>
       <ModalOverlay />
@@ -194,7 +187,12 @@ export const AddUserModal = ({
               )}
             </FormControl>
             <VStack gap="1rem" w="100%">
-              <FormControl isRequired>
+              <FormControl
+                isRequired
+                isInvalid={
+                  selectedRole === RoleType.Admin && isNonGovEmailInput
+                }
+              >
                 <FormLabel
                   description={
                     <Text>
@@ -227,8 +225,12 @@ export const AddUserModal = ({
                   ))}
                 </HStack>
               </FormControl>
-              {selectedRole === RoleType.Admin && <AddAdminWarning />}
-              {isNonGovEmailInput && <NonGovEmailCannotBeAdmin />}
+              {selectedRole === RoleType.Admin && !isNonGovEmailInput && (
+                <AddAdminWarning />
+              )}
+              {selectedRole === RoleType.Admin && isNonGovEmailInput && (
+                <NonGovEmailCannotBeAdmin />
+              )}
             </VStack>
           </VStack>
         </ModalBody>
