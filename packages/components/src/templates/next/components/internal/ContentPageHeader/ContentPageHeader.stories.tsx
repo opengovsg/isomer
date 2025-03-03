@@ -67,6 +67,6 @@ export const Default: Story = {
       ],
     },
     buttonLabel: "Submit a proposal",
-    buttonUrl: "https://www.google.com",
+    buttonUrl: "/",
   },
 }

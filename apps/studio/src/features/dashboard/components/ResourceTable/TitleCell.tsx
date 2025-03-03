@@ -3,19 +3,10 @@ import { useMemo } from "react"
 import NextLink from "next/link"
 import { HStack, Icon, Text, VStack } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-import {
-  BiCog,
-  BiData,
-  BiFile,
-  BiFolder,
-  BiHome,
-  BiLink,
-  BiSort,
-} from "react-icons/bi"
 
 import type { ResourceTableData } from "./types"
 import { getLinkToResource } from "~/utils/resource"
+import { getIcon } from "~/utils/resources"
 
 export interface TitleCellProps
   extends Pick<ResourceTableData, "title" | "permalink" | "type" | "id"> {
@@ -34,25 +25,7 @@ export const TitleCell = ({
   }, [id, siteId, type])
 
   const ResourceTypeIcon: IconType = useMemo(() => {
-    switch (type) {
-      case ResourceType.RootPage:
-        return BiHome
-      case ResourceType.IndexPage:
-      case ResourceType.Page:
-        return BiFile
-      case ResourceType.Folder:
-        return BiFolder
-      case ResourceType.Collection:
-        return BiData
-      case ResourceType.CollectionMeta:
-        return BiCog
-      case ResourceType.CollectionPage:
-        return BiFile
-      case ResourceType.CollectionLink:
-        return BiLink
-      case ResourceType.FolderMeta:
-        return BiSort
-    }
+    return getIcon(type)
   }, [type])
 
   return (
