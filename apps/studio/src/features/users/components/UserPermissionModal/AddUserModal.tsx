@@ -141,13 +141,6 @@ export const AddUserModal = ({
         ],
       },
       {
-        onError: (error) => {
-          toast({
-            status: "error",
-            title: "Failed to create user",
-            description: error.message,
-          })
-        },
         onSuccess: () => reset(),
         onSettled: () => {
           void handleOnClose()
