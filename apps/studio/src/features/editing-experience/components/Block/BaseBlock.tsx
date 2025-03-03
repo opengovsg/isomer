@@ -60,7 +60,7 @@ export const BaseBlock = ({
         </Flex>
       )}
       <Stack align="start" gap="0.25rem" overflow="auto">
-        <Text textStyle="subhead-2" noOfLines={1}>
+        <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
           {label}
         </Text>
         {description && (
