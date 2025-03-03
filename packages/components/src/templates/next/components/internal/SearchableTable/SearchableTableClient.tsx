@@ -26,8 +26,7 @@ const createSearchableTableStyles = tv({
       "flex flex-col items-center justify-center gap-8 self-stretch px-10 py-20 pt-24",
     emptyStateHeadings: "text-center",
     emptyStateTitle: "prose-headline-lg-regular",
-    emptyStateSubtitle:
-      "text-base-content-default prose-headline-lg-regular mt-3",
+    emptyStateSubtitle: "prose-headline-lg-regular mt-3 text-base-content",
     emptyStateButton:
       "prose-headline-base-medium text-link visited:text-link-visited hover:text-link-hover",
     pagination: "mt-8 flex w-full justify-center lg:justify-end",

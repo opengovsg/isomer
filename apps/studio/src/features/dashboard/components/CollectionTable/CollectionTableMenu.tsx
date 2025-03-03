@@ -33,7 +33,13 @@ export const CollectionTableMenu = ({
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
   const setMoveResource = useSetAtom(moveResourceAtom)
   const handleMoveResourceClick = () => {
-    setMoveResource({ resourceId, title, permalink, parentId })
+    setMoveResource({
+      id: resourceId,
+      title,
+      permalink,
+      parentId,
+      type: resourceType,
+    })
   }
 
   return (

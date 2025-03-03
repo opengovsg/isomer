@@ -28,6 +28,43 @@ export const folderRouter = router({
           resourceId: !!parentFolderId ? String(parentFolderId) : null,
         })
 
+        // Validate site is valid
+        const site = await db
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .select(["id"])
+          .executeTakeFirst()
+
+        if (!site) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Site does not exist",
+          })
+        }
+
+        // Validate parentFolderId is a folder
+        if (parentFolderId) {
+          const parentFolder = await db
+            .selectFrom("Resource")
+            .where("Resource.id", "=", String(parentFolderId))
+            .where("Resource.siteId", "=", siteId)
+            .select(["Resource.type", "Resource.id"])
+            .executeTakeFirst()
+
+          if (!parentFolder) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Parent folder does not exist",
+            })
+          }
+          if (parentFolder.type !== "Folder") {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Resource ID does not point to a folder",
+            })
+          }
+        }
+
         const folder = await db
           .insertInto("Resource")
           .values({
@@ -38,6 +75,7 @@ export const folderRouter = router({
             parentId: parentFolderId ? String(parentFolderId) : null,
             state: ResourceState.Published,
           })
+          .returning(["id"])
           .executeTakeFirstOrThrow()
           .catch((err) => {
             if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
@@ -52,7 +90,7 @@ export const folderRouter = router({
         // TODO: Create the index page for the folder and publish it
         await publishSite(ctx.logger, siteId)
 
-        return { folderId: folder.insertId }
+        return { folderId: folder.id }
       },
     ),
   getMetadata: protectedProcedure
@@ -67,11 +105,20 @@ export const folderRouter = router({
       // 1. Last Edited user and time
       // 2. Page status(draft, published)
 
-      return await ctx.db
+      const data = await ctx.db
         .selectFrom("Resource")
         .select(["Resource.title", "Resource.permalink", "Resource.parentId"])
         .where("id", "=", String(input.resourceId))
-        .executeTakeFirstOrThrow()
+        .executeTakeFirst()
+
+      if (!data) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "This folder does not exist",
+        })
+      }
+
+      return data
     }),
   editFolder: protectedProcedure
     .input(editFolderSchema)
@@ -96,7 +143,7 @@ export const folderRouter = router({
             title,
           })
           .returning(defaultFolderSelect)
-          .execute()
+          .executeTakeFirst()
           .catch((err) => {
             if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
               throw new TRPCError({
