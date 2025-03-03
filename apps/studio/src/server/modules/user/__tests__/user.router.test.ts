@@ -354,7 +354,7 @@ describe("user.router", () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "NOT_FOUND",
-          message: "User permissions not found",
+          message: "User not found",
         }),
       )
     })
@@ -439,7 +439,12 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toBe(true)
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: userToDelete.id,
+          email: userToDelete.email,
+        }),
+      )
 
       // Verify in database
       const deletedUserPermissions = await db
@@ -471,7 +476,12 @@ describe("user.router", () => {
       })
 
       // Assert
-      expect(result).toBe(true)
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: userToDelete.id,
+          email: userToDelete.email,
+        }),
+      )
 
       // Verify in database
       const dbUsers = await db

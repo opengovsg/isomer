@@ -70,3 +70,7 @@ export {
   default as JsonFormsCategoryControl,
   jsonFormsCategoryControlTester,
 } from "./JsonFormsCategoryControl"
+export {
+  default as JsonFormsMetaImageControl,
+  jsonFormsMetaImageControlTester,
+} from "./JsonFormsMetaImageControl"
