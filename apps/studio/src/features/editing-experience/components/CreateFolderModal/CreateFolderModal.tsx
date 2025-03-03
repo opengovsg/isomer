@@ -134,7 +134,7 @@ const CreateFolderModalContent = ({
         <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.5rem">
-            <FormControl isInvalid={!!errors.folderTitle}>
+            <FormControl isRequired isInvalid={!!errors.folderTitle}>
               <FormLabel color="base.content.strong">
                 Folder name
                 <FormHelperText color="base.content.default">
@@ -157,7 +157,7 @@ const CreateFolderModalContent = ({
                 </FormHelperText>
               )}
             </FormControl>
-            <FormControl isInvalid={!!errors.permalink}>
+            <FormControl isRequired isInvalid={!!errors.permalink}>
               <FormLabel color="base.content.strong">
                 Folder URL
                 <FormHelperText color="base.content.default">
