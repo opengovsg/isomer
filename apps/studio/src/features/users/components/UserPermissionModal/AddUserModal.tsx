@@ -54,8 +54,22 @@ export const AddUserModal = ({
 }: AddUserModalProps) => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const utils = trpc.useUtils()
-
+  const [whitelistError, setWhitelistError] = useState<boolean>(false)
   const [selectedRole, setSelectedRole] = useState<RoleType>(RoleType.Editor)
+
+  const {
+    watch,
+    register,
+    reset,
+    handleSubmit,
+    formState: { errors },
+  } = useZodForm({
+    schema: addUserFormSchema,
+    mode: "onChange",
+    reValidateMode: "onChange",
+  })
+
+  const email = watch("email")
 
   const { mutate: createUser } = trpc.user.create.useMutation({
     onSuccess: async (createdUsers) => {
@@ -80,21 +94,38 @@ export const AddUserModal = ({
     },
   })
 
-  const {
-    watch,
-    register,
-    reset,
-    handleSubmit,
-    formState: { errors },
-  } = useZodForm({
-    schema: addUserFormSchema,
-    mode: "onChange",
-    reValidateMode: "onChange",
-  })
+  const { refetch: checkWhitelist } =
+    trpc.whitelist.isEmailWhitelisted.useQuery(
+      { siteId, email: email || "" },
+      {
+        enabled: false,
+        onSuccess: (isWhitelisted) => {
+          if (!isWhitelisted) {
+            setWhitelistError(true)
+          } else {
+            setWhitelistError(false)
+          }
+        },
+        onError: () => {
+          setWhitelistError(false)
+        },
+      },
+    )
+
+  // Check whitelist when email changes and is valid
+  useEffect(() => {
+    // Only check whitelist if email is valid (no errors)
+    if (email && !errors.email) {
+      void checkWhitelist()
+    } else {
+      setWhitelistError(false)
+    }
+  }, [email, errors.email, checkWhitelist])
 
   const handleOnClose = () => {
     reset()
     setSelectedRole(RoleType.Editor)
+    setWhitelistError(false)
     onClose()
   }
 
@@ -125,11 +156,7 @@ export const AddUserModal = ({
     )
   })
 
-  const isNonGovEmailInput = !!(
-    !errors.email &&
-    watch("email") &&
-    !isGovEmail(watch("email"))
-  )
+  const isNonGovEmailInput = !!(!errors.email && email && !isGovEmail(email))
 
   // Add effect to change role from Admin to Editor when non-gov email is entered
   useEffect(() => {
@@ -146,7 +173,10 @@ export const AddUserModal = ({
         <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack gap="1.25rem" w="100%">
-            <FormControl isRequired isInvalid={!!errors.email}>
+            <FormControl
+              isRequired
+              isInvalid={!!errors.email || whitelistError}
+            >
               <FormLabel>Email address</FormLabel>
               <Input
                 {...register("email")}
@@ -155,6 +185,12 @@ export const AddUserModal = ({
               />
               {errors.email && (
                 <FormErrorMessage>{errors.email.message}</FormErrorMessage>
+              )}
+              {!errors.email && whitelistError && (
+                <FormErrorMessage>
+                  There are non-gov.sg domains that need to be whitelisted. Chat
+                  with Isomer Support to whitelist domains.
+                </FormErrorMessage>
               )}
             </FormControl>
             <VStack gap="1rem" w="100%">
@@ -207,7 +243,7 @@ export const AddUserModal = ({
           <Button
             variant="solid"
             onClick={onSendInvite}
-            isDisabled={Object.keys(errors).length > 0}
+            isDisabled={Object.keys(errors).length > 0 || whitelistError}
           >
             Send invite
           </Button>
