@@ -38,19 +38,19 @@ const setupPermissions = async ({
 export const setupPublisherPermissions = async (
   props: Omit<SetupPermissionsProps, "role">,
 ) => {
-  await setupPermissions({ ...props, role: RoleType.Publisher })
+  return await setupPermissions({ ...props, role: RoleType.Publisher })
 }
 
 export const setupEditorPermissions = async (
   props: Omit<SetupPermissionsProps, "role">,
 ) => {
-  await setupPermissions({ ...props, role: RoleType.Editor })
+  return await setupPermissions({ ...props, role: RoleType.Editor })
 }
 
 export const setupAdminPermissions = async (
   props: Omit<SetupPermissionsProps, "role">,
 ) => {
-  await setupPermissions({ ...props, role: RoleType.Admin })
+  return await setupPermissions({ ...props, role: RoleType.Admin })
 }
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
