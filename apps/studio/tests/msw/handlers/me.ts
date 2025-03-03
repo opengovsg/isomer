@@ -12,6 +12,7 @@ export const defaultUser: User = {
   createdAt: MOCK_STORY_DATE,
   updatedAt: MOCK_STORY_DATE,
   deletedAt: null,
+  lastLoginAt: null,
 }
 
 const defaultMeGetQuery = () => {

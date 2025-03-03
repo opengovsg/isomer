@@ -22,7 +22,7 @@ const setupPermissions = async ({
 }: SetupPermissionsProps) => {
   if (!userId) throw new Error("userId is a required field")
 
-  await db
+  return await db
     .insertInto("ResourcePermission")
     .values({
       userId: String(userId),
@@ -31,19 +31,26 @@ const setupPermissions = async ({
       resourceId: null,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
     })
-    .execute()
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+export const setupPublisherPermissions = async (
+  props: Omit<SetupPermissionsProps, "role">,
+) => {
+  return await setupPermissions({ ...props, role: RoleType.Publisher })
 }
 
 export const setupEditorPermissions = async (
   props: Omit<SetupPermissionsProps, "role">,
 ) => {
-  await setupPermissions({ ...props, role: RoleType.Editor })
+  return await setupPermissions({ ...props, role: RoleType.Editor })
 }
 
 export const setupAdminPermissions = async (
   props: Omit<SetupPermissionsProps, "role">,
 ) => {
-  await setupPermissions({ ...props, role: RoleType.Admin })
+  return await setupPermissions({ ...props, role: RoleType.Admin })
 }
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
@@ -468,12 +475,14 @@ export const setupUser = async ({
   email,
   phone = "",
   isDeleted,
+  hasLoggedIn = false,
 }: {
   name?: string
   userId?: string
   email: string
   phone?: string
   isDeleted: boolean
+  hasLoggedIn?: boolean
 }) => {
   return db
     .insertInto("User")
@@ -483,6 +492,7 @@ export const setupUser = async ({
       email,
       phone: phone,
       deletedAt: isDeleted ? MOCK_STORY_DATE : null,
+      lastLoginAt: hasLoggedIn ? MOCK_STORY_DATE : null,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
