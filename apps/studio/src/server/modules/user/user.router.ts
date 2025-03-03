@@ -13,6 +13,8 @@ import {
   hasInactiveUsersOutputSchema,
   listInputSchema,
   listOutputSchema,
+  updateDetailsInputSchema,
+  updateDetailsOutputSchema,
   updateInputSchema,
   updateOutputSchema,
 } from "~/schemas/user"
@@ -278,5 +280,23 @@ export const userRouter = router({
         })
 
       return updatedUserPermission
+    }),
+
+  updateDetails: protectedProcedure
+    .input(updateDetailsInputSchema)
+    .output(updateDetailsOutputSchema)
+    .mutation(async ({ ctx, input: { name, phone } }) => {
+      // We don't have to check if the user is admin here
+      // because we only allow users to update their own details
+      // They should be able to update their own details even without any resource permissions
+
+      const updatedUser = await db
+        .updateTable("User")
+        .where("id", "=", ctx.user.id)
+        .set({ name, phone })
+        .returning(["name", "phone"])
+        .executeTakeFirstOrThrow()
+
+      return { name: updatedUser.name, phone: updatedUser.phone }
     }),
 })
