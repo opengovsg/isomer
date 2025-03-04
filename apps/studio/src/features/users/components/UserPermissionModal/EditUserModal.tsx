@@ -1,5 +1,5 @@
 import type { z } from "zod"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import {
   Button,
   FormControl,
@@ -90,7 +90,8 @@ export const EditUserModal = ({ siteId }: EditUserModalProps) => {
   })
 
   const selectedRole = watch("role")
-  const isNonGovEmailInput = !isGovEmail(email)
+
+  const isNonGovEmailInput = useMemo(() => !isGovEmail(email), [email])
 
   return (
     <Modal isOpen={!!siteId && !!userId} onClose={onClose}>
