@@ -59,7 +59,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
             </HStack>
             <CollaboratorsDescription />
           </VStack>
-          <AddNewUserButton />
+          <AddNewUserButton siteId={siteId} />
         </HStack>
       </VStack>
       <UserTableTabs siteId={siteId} />

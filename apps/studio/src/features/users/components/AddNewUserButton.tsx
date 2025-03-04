@@ -4,7 +4,11 @@ import { BiPlus } from "react-icons/bi"
 
 import { UserManagementContext } from "~/features/users"
 
-export const AddNewUserButton = () => {
+interface AddNewUserButtonProps {
+  siteId: number
+}
+
+export const AddNewUserButton = ({ siteId }: AddNewUserButtonProps) => {
   const ability = useContext(UserManagementContext)
   const canManageUsers = ability.can("manage", "UserManagement")
 
@@ -12,7 +16,7 @@ export const AddNewUserButton = () => {
     <Button
       variant="solid"
       leftIcon={<BiPlus />}
-      onClick={() => console.log("TODO: add new user")}
+      onClick={() => console.log(`TODO: add new user for site ${siteId}`)}
       isDisabled={!canManageUsers}
     >
       Add new user

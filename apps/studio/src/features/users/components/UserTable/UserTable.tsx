@@ -144,7 +144,7 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
       }}
       totalRowCount={totalRowCount}
       emptyPlaceholder={
-        <UserTableEmptyState promptAddUser={!getIsomerAdmins} />
+        <UserTableEmptyState siteId={siteId} promptAddUser={!getIsomerAdmins} />
       }
     />
   )
