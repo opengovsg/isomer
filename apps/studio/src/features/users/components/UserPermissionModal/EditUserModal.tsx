@@ -33,15 +33,11 @@ import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
 import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
 
-interface EditUserModalProps {
-  siteId: z.infer<typeof updateInputSchema>["siteId"]
-}
-
-export const EditUserModal = ({ siteId }: EditUserModalProps) => {
+export const EditUserModal = () => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const utils = trpc.useUtils()
 
-  const { userId, email, role } = useAtomValue(updateUserModalAtom)
+  const { siteId, userId, email, role } = useAtomValue(updateUserModalAtom)
   const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
   const onClose = () => setUpdateUserModalState(DEFAULT_UPDATE_USER_MODAL_STATE)
 

@@ -47,7 +47,9 @@ export const UserTableMenu = ({
           {ability.can("manage", "UserManagement") && (
             <>
               <MenuItem
-                onClick={() => setUpdateUserModalState({ userId, email, role })}
+                onClick={() =>
+                  setUpdateUserModalState({ siteId, userId, email, role })
+                }
                 icon={<BiPencil fontSize="1rem" />}
                 aria-label={`Edit user ${userName}`}
               >

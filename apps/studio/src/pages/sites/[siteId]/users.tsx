@@ -92,7 +92,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
         />
       </VStack>
       <AddUserModal siteId={siteId} />
-      <EditUserModal siteId={siteId} />
+      <EditUserModal />
     </>
   )
 }
