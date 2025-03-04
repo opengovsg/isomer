@@ -12,3 +12,5 @@ export const DEFAULT_UPDATE_USER_MODAL_STATE = {
 export const updateUserModalAtom = atom<UpdateUserModalState>(
   DEFAULT_UPDATE_USER_MODAL_STATE,
 )
+
+export const addUserModalOpenAtom = atom<boolean>(false)

@@ -22,6 +22,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { RoleType } from "~prisma/generated/generatedEnums"
+import { useAtomValue, useSetAtom } from "jotai"
 import { z as zod } from "zod"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -29,15 +30,10 @@ import { useZodForm } from "~/lib/form"
 import { createInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
+import { addUserModalOpenAtom } from "../../atom"
 import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
 import { ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
-
-interface AddUserModalProps {
-  siteId: z.infer<typeof createInputSchema>["siteId"]
-  isOpen: boolean
-  onClose: () => void
-}
 
 // Create a simplified schema for the form that only collects email
 // Using the email validation from createInputSchema
@@ -47,13 +43,17 @@ const addUserFormSchema = zod.object({
 
 type AddUserFormValues = z.infer<typeof addUserFormSchema>
 
-export const AddUserModal = ({
-  siteId,
-  isOpen,
-  onClose,
-}: AddUserModalProps) => {
+interface AddUserModalProps {
+  siteId: z.infer<typeof createInputSchema>["siteId"]
+}
+
+export const AddUserModal = ({ siteId }: AddUserModalProps) => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const utils = trpc.useUtils()
+
+  const isOpen = useAtomValue(addUserModalOpenAtom)
+  const setAddUserModalOpen = useSetAtom(addUserModalOpenAtom)
+
   const [whitelistError, setWhitelistError] = useState<boolean>(false)
   const [selectedRole, setSelectedRole] = useState<RoleType>(RoleType.Editor)
 
@@ -126,7 +126,7 @@ export const AddUserModal = ({
     reset()
     setSelectedRole(RoleType.Editor)
     setWhitelistError(false)
-    onClose()
+    setAddUserModalOpen(false)
   }
 
   const onSendInvite = handleSubmit((data: AddUserFormValues) => {

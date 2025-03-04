@@ -1,13 +1,15 @@
-import { useContext, useState } from "react"
+import { useContext } from "react"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
+import { useSetAtom } from "jotai"
 import { BiPlus } from "react-icons/bi"
 import { PiUsersBold } from "react-icons/pi"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers/PermissionsBoundary"
 import { UserManagementContext, UserManagementProvider } from "~/features/users"
+import { addUserModalOpenAtom } from "~/features/users/atom"
 import { EditUserModal, UserTableTabs } from "~/features/users/components"
 import { CollaboratorsDescription } from "~/features/users/components/CollaboratorsDescription"
 import { AddUserModal } from "~/features/users/components/UserPermissionModal"
@@ -28,9 +30,9 @@ const UserManagementLayout = ({ children }: { children: React.ReactNode }) => {
 }
 
 const SiteUsersPage: NextPageWithLayout = () => {
-  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false)
-
   const ability = useContext(UserManagementContext)
+
+  const setAddUserModalOpen = useSetAtom(addUserModalOpenAtom)
 
   const { siteId } = useQueryParse(siteUsersSchema)
 
@@ -88,7 +90,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
               <Button
                 variant="solid"
                 leftIcon={<BiPlus />}
-                onClick={() => setIsAddUserModalOpen(true)}
+                onClick={() => setAddUserModalOpen(true)}
               >
                 Add new user
               </Button>
@@ -101,12 +103,8 @@ const SiteUsersPage: NextPageWithLayout = () => {
           isomerAdminsCount={isomerAdminsCount}
           hasInactiveUsers={hasInactiveUsers}
         />
-        <AddUserModal
-          siteId={siteId}
-          isOpen={isAddUserModalOpen}
-          onClose={() => setIsAddUserModalOpen(false)}
-        />
       </VStack>
+      <AddUserModal siteId={siteId} />
       <EditUserModal siteId={siteId} />
     </>
   )
