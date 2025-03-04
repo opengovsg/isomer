@@ -28,7 +28,7 @@ const meta: Meta<InfopicProps> = {
     imageSrc:
       "https://images.unsplash.com/photo-1527436826045-8805c615a6df?w=1280",
     buttonLabel: "Sign up",
-    buttonUrl: "https://open.gov.sg",
+    buttonUrl: "/",
     site: {
       siteName: "Isomer Next",
       siteMap: {

@@ -12,6 +12,7 @@ import { pageRouter } from "./page/page.router"
 import { resourceRouter } from "./resource/resource.router"
 import { siteRouter } from "./site/site.router"
 import { userRouter } from "./user/user.router"
+import { whitelistRouter } from "./whitelist/whitelist.router"
 
 export const appRouter = router({
   healthcheck: publicProcedure.query(() => "yay!"),
@@ -24,6 +25,7 @@ export const appRouter = router({
   site: siteRouter,
   resource: resourceRouter,
   user: userRouter,
+  whitelist: whitelistRouter,
 })
 
 export type AppRouter = typeof appRouter

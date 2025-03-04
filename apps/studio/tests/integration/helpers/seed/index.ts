@@ -7,19 +7,19 @@ import { db, jsonb } from "~server/db"
 import { nanoid } from "nanoid"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
 
-interface UserPermissionsProps {
+interface SetupPermissionsProps {
   userId?: string
   siteId: number
   isDeleted?: boolean
-  role: RoleType
+  role: (typeof RoleType)[keyof typeof RoleType]
 }
 
-const setUpUserPermissions = async ({
+const setupPermissions = async ({
   userId,
   siteId,
-  isDeleted = false,
   role,
-}: UserPermissionsProps) => {
+  isDeleted = false,
+}: SetupPermissionsProps) => {
   if (!userId) throw new Error("userId is a required field")
 
   return await db
@@ -35,43 +35,22 @@ const setUpUserPermissions = async ({
     .executeTakeFirstOrThrow()
 }
 
-export const setupEditorPermissions = async ({
-  userId,
-  siteId,
-  isDeleted = false,
-}: Omit<UserPermissionsProps, "role">) => {
-  return await setUpUserPermissions({
-    userId,
-    siteId,
-    isDeleted,
-    role: RoleType.Editor,
-  })
+export const setupPublisherPermissions = async (
+  props: Omit<SetupPermissionsProps, "role">,
+) => {
+  return await setupPermissions({ ...props, role: RoleType.Publisher })
 }
 
-export const setupPublisherPermissions = async ({
-  userId,
-  siteId,
-  isDeleted = false,
-}: Omit<UserPermissionsProps, "role">) => {
-  return await setUpUserPermissions({
-    userId,
-    siteId,
-    isDeleted,
-    role: RoleType.Publisher,
-  })
+export const setupEditorPermissions = async (
+  props: Omit<SetupPermissionsProps, "role">,
+) => {
+  return await setupPermissions({ ...props, role: RoleType.Editor })
 }
 
-export const setupAdminPermissions = async ({
-  userId,
-  siteId,
-  isDeleted = false,
-}: Omit<UserPermissionsProps, "role">) => {
-  return await setUpUserPermissions({
-    userId,
-    siteId,
-    isDeleted,
-    role: RoleType.Admin,
-  })
+export const setupAdminPermissions = async (
+  props: Omit<SetupPermissionsProps, "role">,
+) => {
+  return await setupPermissions({ ...props, role: RoleType.Admin })
 }
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {

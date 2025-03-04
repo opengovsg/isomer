@@ -179,7 +179,7 @@ const ContactUsSection = ({
     <div className="prose-body-sm flex flex-col gap-3">
       {contactUsLink && (
         <FooterItem
-          title="Contact Us"
+          title="Contact"
           url={getReferenceLinkHref(
             contactUsLink,
             site.siteMap,
@@ -190,7 +190,7 @@ const ContactUsSection = ({
       )}
       {feedbackFormLink && (
         <FooterItem
-          title="Feedback Form"
+          title="Feedback"
           url={getReferenceLinkHref(
             feedbackFormLink,
             site.siteMap,

@@ -12,7 +12,7 @@ const COMMON_HANDLERS = [
   resourceHandlers.getRolesFor.default(),
   sitesHandlers.getSiteName.default(),
   userHandlers.count.default(),
-  userHandlers.hasInactiveUsers.default(),
+  userHandlers.hasInactiveUsers.true(),
 ]
 
 const meta: Meta<typeof UsersPage> = {
@@ -106,5 +106,21 @@ export const IsomerAdminsTab: Story = {
     const screen = within(canvasElement)
     const isomerAdminsTab = await screen.findByText("Isomer admins")
     await userEvent.click(isomerAdminsTab)
+  },
+}
+
+export const NoUsers: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        meHandlers.me(),
+        resourceHandlers.getRolesFor.default(),
+        sitesHandlers.getSiteName.default(),
+        userHandlers.getPermissions.admin(),
+        userHandlers.list.noUsers(),
+        userHandlers.count.noUsers(),
+        userHandlers.hasInactiveUsers.false(),
+      ],
+    },
   },
 }

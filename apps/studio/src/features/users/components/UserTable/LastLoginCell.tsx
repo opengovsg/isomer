@@ -1,8 +1,8 @@
 import { chakra, HStack, Text, Tooltip } from "@chakra-ui/react"
+import { differenceInDays } from "date-fns"
 import { RiInformationLine } from "react-icons/ri"
 
 import type { UserTableData } from "./types"
-import { daysFromLastLogin, formatDate } from "./utils"
 
 const ChakraRiInformationLine = chakra(RiInformationLine)
 
@@ -17,7 +17,9 @@ export const LastLoginCell = ({ lastLoginAt }: LastLoginCellProps) => {
     )
   }
 
-  if (daysFromLastLogin(lastLoginAt) > 90) {
+  const daysFromLastLogin = differenceInDays(new Date(), lastLoginAt)
+
+  if (daysFromLastLogin > 90) {
     return (
       <Tooltip label="For security, remove users that haven't accessed Studio for more than 3 months.">
         <HStack gap="0.5rem">
@@ -30,5 +32,7 @@ export const LastLoginCell = ({ lastLoginAt }: LastLoginCellProps) => {
     )
   }
 
-  return <Text textStyle="caption-2">{formatDate(lastLoginAt)}</Text>
+  return (
+    <Text textStyle="caption-2">{`${daysFromLastLogin} ${daysFromLastLogin === 1 ? "day" : "days"} ago`}</Text>
+  )
 }
