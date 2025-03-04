@@ -100,11 +100,7 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
       {
         enabled: false,
         onSuccess: (isWhitelisted) => {
-          if (!isWhitelisted) {
-            setWhitelistError(true)
-          } else {
-            setWhitelistError(false)
-          }
+          setWhitelistError(!isWhitelisted)
         },
         onError: () => {
           setWhitelistError(false)
