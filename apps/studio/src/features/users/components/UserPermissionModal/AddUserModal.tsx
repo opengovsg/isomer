@@ -32,6 +32,7 @@ import { trpc } from "~/utils/trpc"
 import {
   addUserModalAtom,
   addUserModalOpenAtom,
+  DEFAULT_ADD_USER_MODAL_OPEN_STATE,
   DEFAULT_ADD_USER_MODAL_STATE,
 } from "../../atom"
 import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
@@ -154,7 +155,7 @@ export const AddUserModal = () => {
       ...addUserModalState,
       whitelistError: false,
     })
-    setAddUserModalOpen(false)
+    setAddUserModalOpen(DEFAULT_ADD_USER_MODAL_OPEN_STATE)
     setAddUserModalState(DEFAULT_ADD_USER_MODAL_STATE)
   }, [reset, addUserModalState, setAddUserModalOpen, setAddUserModalState])
 

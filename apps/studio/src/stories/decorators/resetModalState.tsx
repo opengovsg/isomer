@@ -5,6 +5,7 @@ import { useSetAtom } from "jotai"
 import {
   addUserModalAtom,
   addUserModalOpenAtom,
+  DEFAULT_ADD_USER_MODAL_OPEN_STATE,
   DEFAULT_ADD_USER_MODAL_STATE,
   DEFAULT_UPDATE_USER_MODAL_STATE,
   updateUserModalAtom,
@@ -35,7 +36,7 @@ export const ResetAddUserModalDecorator: Decorator = (Story) => {
 
   // Reset modal state when the decorator mounts
   useEffect(() => {
-    setAddUserModalOpen(false)
+    setAddUserModalOpen(DEFAULT_ADD_USER_MODAL_OPEN_STATE)
     setAddUserModalState(DEFAULT_ADD_USER_MODAL_STATE)
   }, [setAddUserModalOpen, setAddUserModalState])
 
