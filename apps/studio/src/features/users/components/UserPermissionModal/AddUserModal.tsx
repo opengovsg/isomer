@@ -1,5 +1,5 @@
 import type { z } from "zod"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   Button,
   FormControl,
@@ -72,6 +72,16 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
 
   const email = watch("email")
 
+  const isNonGovEmailInput = useMemo(
+    () => !!(!errors.email && email && !isGovEmail(email)),
+    [errors.email, email],
+  )
+
+  const additionalEmailError = useMemo(
+    () => isNonGovEmailInput && whitelistError,
+    [isNonGovEmailInput, whitelistError],
+  )
+
   const { mutate: createUser } = trpc.user.create.useMutation({
     onSuccess: async (createdUsers) => {
       await utils.user.list.invalidate()
@@ -110,19 +120,19 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
 
   // Check whitelist when email changes and is valid
   useEffect(() => {
-    // Only check whitelist if email is valid (no errors)
-    if (email && !errors.email) {
+    // Only check whitelist if email is not-gov.sg and valid (no errors)
+    if (email && !additionalEmailError && !errors.email) {
       void checkWhitelist()
     } else {
       setWhitelistError(false)
     }
-  }, [email, errors.email, checkWhitelist])
+  }, [email, additionalEmailError, errors.email, checkWhitelist])
 
-  const handleOnClose = () => {
+  const handleOnClose = useCallback(() => {
     reset()
     setWhitelistError(false)
     setAddUserModalOpen(false)
-  }
+  }, [reset, setWhitelistError, setAddUserModalOpen])
 
   const onSendInvite = handleSubmit((data) => {
     createUser(
@@ -144,8 +154,6 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
     )
   })
 
-  const isNonGovEmailInput = !!(!errors.email && email && !isGovEmail(email))
-
   return (
     <Modal isOpen={isOpen} onClose={handleOnClose}>
       <ModalOverlay />
@@ -156,7 +164,7 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
           <VStack gap="1.25rem" w="100%">
             <FormControl
               isRequired
-              isInvalid={!!errors.email || whitelistError}
+              isInvalid={!!errors.email || additionalEmailError}
             >
               <FormLabel>Email address</FormLabel>
               <Input
@@ -167,7 +175,7 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
               {errors.email && (
                 <FormErrorMessage>{errors.email.message}</FormErrorMessage>
               )}
-              {!errors.email && isNonGovEmailInput && whitelistError && (
+              {!errors.email && additionalEmailError && (
                 <FormErrorMessage>
                   There are non-gov.sg domains that need to be whitelisted. Chat
                   with Isomer Support to whitelist domains.
@@ -231,8 +239,8 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
             onClick={onSendInvite}
             isDisabled={
               Object.keys(errors).length > 0 ||
-              whitelistError ||
               email === "" ||
+              additionalEmailError ||
               (watch("role") === RoleType.Admin && isNonGovEmailInput)
             }
           >
