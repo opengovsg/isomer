@@ -6,6 +6,7 @@ import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
 
 import UsersPage from "~/pages/sites/[siteId]/users"
+import { ResetEditUserModalDecorator } from "../decorators/resetModalState"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
@@ -33,7 +34,7 @@ const meta: Meta<typeof UsersPage> = {
       },
     },
   },
-  decorators: [],
+  decorators: [ResetEditUserModalDecorator],
 }
 
 export default meta
