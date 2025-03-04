@@ -22,7 +22,6 @@ import {
 } from "@opengovsg/design-system-react"
 import { RoleType } from "~prisma/generated/generatedEnums"
 import { useAtomValue, useSetAtom } from "jotai"
-import { z as zod } from "zod"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
@@ -58,12 +57,9 @@ export const AddUserModal = () => {
     setValue,
     formState: { errors },
   } = useZodForm({
-    // Create a simplified schema for the form that only collects email
-    // Using the email validation from createInputSchema
-    schema: zod.object({
-      email: createInputSchema.shape.users.element.shape.email,
-      role: createInputSchema.shape.users.element.shape.role,
-    }),
+    // Create a simplified schema that only accept 1 user with email and role
+    // as we currently only support adding 1 user at a time
+    schema: createInputSchema.shape.users.element,
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: {
