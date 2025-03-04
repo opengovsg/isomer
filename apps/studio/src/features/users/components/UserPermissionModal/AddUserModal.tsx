@@ -77,7 +77,6 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
       await utils.user.count.invalidate()
       toast({
         status: "success",
-        title: "Profile updated",
         description:
           createdUsers.length === 1
             ? `Sent invite to ${createdUsers[0]?.email}. They'll receive an email in a few minutes.`
