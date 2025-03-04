@@ -19,7 +19,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { db, RoleType } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
 import { userRouter } from "../user.router"
-import { isomerAdminsCount, setupIsomerAdmins } from "./testHelper"
+import { isomerAdminsCount, setupIsomerAdmins } from "./utils"
 
 const createCaller = createCallerFactory(userRouter)
 
