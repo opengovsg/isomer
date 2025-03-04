@@ -1,5 +1,5 @@
 import { useContext } from "react"
-import { Box, HStack, Text, VStack } from "@chakra-ui/react"
+import { Box, HStack, Text, Tooltip, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { BiPlus } from "react-icons/bi"
@@ -80,15 +80,16 @@ const SiteUsersPage: NextPageWithLayout = () => {
             </HStack>
             <CollaboratorsDescription />
           </VStack>
-          {ability.can("manage", "UserManagement") && (
+          <Tooltip label="Only admins can add users." placement="bottom">
             <Button
               variant="solid"
               leftIcon={<BiPlus />}
               onClick={() => console.log("TODO: add new user")}
+              isDisabled={!ability.can("manage", "UserManagement")}
             >
               Add new user
             </Button>
-          )}
+          </Tooltip>
         </HStack>
       </VStack>
       <UserTableTabs
