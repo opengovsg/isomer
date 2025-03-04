@@ -15,7 +15,6 @@ const COMMON_HANDLERS = [
   userHandlers.count.default(),
   userHandlers.hasInactiveUsers.default(),
   userHandlers.getPermissions.admin(),
-  whitelistHandlers.isEmailWhitelisted.true(),
 ]
 
 const meta: Meta<typeof UsersPage> = {
