@@ -1,14 +1,11 @@
-import { useContext } from "react"
-import { Box, HStack, Text, Tooltip, VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { BiPlus } from "react-icons/bi"
 import { PiUsersBold } from "react-icons/pi"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
-import { UserManagementContext, UserManagementProvider } from "~/features/users"
-import { UserTableTabs } from "~/features/users/components"
+import { UserManagementProvider } from "~/features/users"
+import { AddNewUserButton, UserTableTabs } from "~/features/users/components"
 import { CollaboratorsDescription } from "~/features/users/components/CollaboratorsDescription"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
@@ -27,8 +24,6 @@ const UserManagementLayout = ({ children }: { children: React.ReactNode }) => {
 }
 
 const SiteUsersPage: NextPageWithLayout = () => {
-  const ability = useContext(UserManagementContext)
-
   const { siteId } = useQueryParse(siteUsersSchema)
 
   const { data: agencyUsersCount = 0 } = trpc.user.count.useQuery({
@@ -80,16 +75,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
             </HStack>
             <CollaboratorsDescription />
           </VStack>
-          <Tooltip label="Only admins can add users." placement="bottom">
-            <Button
-              variant="solid"
-              leftIcon={<BiPlus />}
-              onClick={() => console.log("TODO: add new user")}
-              isDisabled={!ability.can("manage", "UserManagement")}
-            >
-              Add new user
-            </Button>
-          </Tooltip>
+          <AddNewUserButton />
         </HStack>
       </VStack>
       <UserTableTabs
