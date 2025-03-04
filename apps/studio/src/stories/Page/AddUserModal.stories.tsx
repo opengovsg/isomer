@@ -43,10 +43,20 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body)
-    const addUserButton = await screen.findByText("Add new user")
-    await userEvent.click(addUserButton, {
-      pointerEventsCheck: 0,
-    })
+
+    // Wait for 1 seconds before proceeding
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    const addUserButtons = await screen.findAllByText("Add new user")
+    const addUserButton = addUserButtons[0] // take the first one
+    if (addUserButton) {
+      await userEvent.click(addUserButton, {
+        pointerEventsCheck: 0,
+      })
+    }
+
+    const modalHeader = await screen.findByText("Invite to collaborate")
+    await expect(modalHeader).toBeVisible()
   },
 }
 
@@ -163,7 +173,13 @@ export const ToastAfterAddingUser: Story = {
       await userEvent.type(emailInput, EMAIL)
     }
 
+    // Find the Send invite button
     const sendInviteButton = await screen.findByText("Send invite")
+
+    // Wait for the button to be enabled
+    await expect(sendInviteButton).not.toBeDisabled()
+
+    // Click the button
     await userEvent.click(sendInviteButton)
   },
 }
