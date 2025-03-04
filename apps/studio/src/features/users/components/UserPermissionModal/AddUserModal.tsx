@@ -30,21 +30,24 @@ import { useZodForm } from "~/lib/form"
 import { createInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
-import { addUserModalOpenAtom } from "../../atom"
+import {
+  addUserModalAtom,
+  addUserModalOpenAtom,
+  DEFAULT_ADD_USER_MODAL_STATE,
+} from "../../atom"
 import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
 import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
 
-interface AddUserModalProps {
-  siteId: z.infer<typeof createInputSchema>["siteId"]
-}
-
-export const AddUserModal = ({ siteId }: AddUserModalProps) => {
+export const AddUserModal = () => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const utils = trpc.useUtils()
 
   const isOpen = useAtomValue(addUserModalOpenAtom)
   const setAddUserModalOpen = useSetAtom(addUserModalOpenAtom)
+
+  const { siteId } = useAtomValue(addUserModalAtom)
+  const setAddUserModalState = useSetAtom(addUserModalAtom)
 
   const [whitelistError, setWhitelistError] = useState<boolean>(false)
 
@@ -138,7 +141,8 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
     reset()
     setWhitelistError(false)
     setAddUserModalOpen(false)
-  }, [reset, setWhitelistError, setAddUserModalOpen])
+    setAddUserModalState(DEFAULT_ADD_USER_MODAL_STATE)
+  }, [reset, setWhitelistError, setAddUserModalOpen, setAddUserModalState])
 
   const onSendInvite = handleSubmit((data) => {
     createUser(

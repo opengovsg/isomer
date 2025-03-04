@@ -6,3 +6,7 @@ export interface UpdateUserModalState {
   email: string
   role: (typeof RoleType)[keyof typeof RoleType]
 }
+
+export interface AddUserModalState {
+  siteId: number
+}

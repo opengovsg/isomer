@@ -91,7 +91,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
           hasInactiveUsers={hasInactiveUsers}
         />
       </VStack>
-      <AddUserModal siteId={siteId} />
+      <AddUserModal />
       <EditUserModal />
     </>
   )

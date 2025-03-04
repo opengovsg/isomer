@@ -1,7 +1,7 @@
 import { RoleType } from "~prisma/generated/generatedEnums"
 import { atom } from "jotai"
 
-import type { UpdateUserModalState } from "./types"
+import type { AddUserModalState, UpdateUserModalState } from "./types"
 
 export const DEFAULT_UPDATE_USER_MODAL_STATE = {
   siteId: 0,
@@ -15,3 +15,11 @@ export const updateUserModalAtom = atom<UpdateUserModalState>(
 )
 
 export const addUserModalOpenAtom = atom<boolean>(false)
+
+export const DEFAULT_ADD_USER_MODAL_STATE = {
+  siteId: 0,
+}
+
+export const addUserModalAtom = atom<AddUserModalState>(
+  DEFAULT_ADD_USER_MODAL_STATE,
+)
