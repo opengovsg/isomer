@@ -1,4 +1,5 @@
 import type { z } from "zod"
+import { useEffect } from "react"
 import {
   Button,
   FormControl,
@@ -34,34 +35,33 @@ import { RoleBox } from "./RoleBox"
 
 interface EditUserModalProps {
   siteId: z.infer<typeof updateInputSchema>["siteId"]
-  email: string
 }
 
-export const EditUserModal = ({
-  siteId,
-  email = "placeholder@open.gov.sg",
-}: EditUserModalProps) => {
+export const EditUserModal = ({ siteId }: EditUserModalProps) => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const utils = trpc.useUtils()
 
-  const { userId } = useAtomValue(updateUserModalAtom)
+  const { userId, email, role } = useAtomValue(updateUserModalAtom)
   const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
   const onClose = () => setUpdateUserModalState(DEFAULT_UPDATE_USER_MODAL_STATE)
 
-  const {
-    watch,
-    register,
-    reset,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useZodForm({
+  console.log(1111, userId, email, role)
+
+  const { watch, handleSubmit, setValue } = useZodForm({
     schema: zod.object({
       role: updateInputSchema.shape.role,
     }),
     mode: "onChange",
     reValidateMode: "onChange",
+    defaultValues: {
+      role,
+    },
   })
+
+  // Update form value when role from atom changes
+  useEffect(() => {
+    setValue("role", role)
+  }, [role, setValue])
 
   const { mutate, isLoading } = trpc.user.update.useMutation({
     onSettled: onClose,
@@ -104,7 +104,9 @@ export const EditUserModal = ({
           <VStack gap="0.75rem" w="100%">
             <VStack gap="0.5rem" w="100%" align="start">
               <Text textStyle="subhead-1">Email address</Text>
-              <Text textStyle="body-1">{email}</Text>
+              <Text textStyle="body-1" textColor="base.content.medium">
+                {email}
+              </Text>
             </VStack>
             <VStack gap="0.75rem" w="100%">
               <FormControl isRequired>

@@ -18,12 +18,16 @@ import { updateUserModalAtom } from "../../atom"
 interface UserTableMenuProps extends Pick<UserTableProps, "siteId"> {
   userId: UserTableData["id"]
   userName: UserTableData["name"]
+  email: UserTableData["email"]
+  role: UserTableData["role"]
 }
 
 export const UserTableMenu = ({
   siteId,
   userId,
   userName,
+  email,
+  role,
 }: UserTableMenuProps) => {
   const ability = useContext(UserManagementContext)
 
@@ -43,7 +47,7 @@ export const UserTableMenu = ({
           {ability.can("manage", "UserManagement") && (
             <>
               <MenuItem
-                onClick={() => setUpdateUserModalState({ userId })}
+                onClick={() => setUpdateUserModalState({ userId, email, role })}
                 icon={<BiPencil fontSize="1rem" />}
                 aria-label={`Edit user ${userName}`}
               >
