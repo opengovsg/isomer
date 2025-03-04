@@ -1,3 +1,4 @@
+import { useCallback, useEffect } from "react"
 import {
   Button,
   FormControl,
@@ -17,6 +18,7 @@ import {
   PhoneNumberInput,
   useToast,
 } from "@opengovsg/design-system-react"
+import { useAtomValue, useSetAtom } from "jotai"
 import { Controller } from "react-hook-form"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -24,20 +26,22 @@ import { useMe } from "~/features/me/api"
 import { useZodForm } from "~/lib/form"
 import { updateDetailsInputSchema } from "~/schemas/user"
 import { trpc } from "~/utils/trpc"
+import { updateProfileModalOpenAtom } from "../../atom"
 
-interface EditProfileModalProps {
-  isOpen: boolean
-  onClose: () => void
-}
-
-export const EditProfileModal = ({
-  isOpen,
-  onClose,
-}: EditProfileModalProps) => {
+export const EditProfileModal = () => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const utils = trpc.useUtils()
 
+  const isOpen = useAtomValue(updateProfileModalOpenAtom)
+  const setIsOpen = useSetAtom(updateProfileModalOpenAtom)
+
   const { me, isOnboarded } = useMe()
+
+  useEffect(() => {
+    if (!isOnboarded) {
+      setIsOpen(true)
+    }
+  }, [isOnboarded, setIsOpen])
 
   const { mutate: updateDetails } = trpc.user.updateDetails.useMutation({
     onSuccess: () => {
@@ -47,6 +51,7 @@ export const EditProfileModal = ({
         title: "Profile updated",
         description: "Your profile has been updated successfully",
       })
+      handleClose()
     },
     onError: (error) => {
       toast({
@@ -74,10 +79,10 @@ export const EditProfileModal = ({
     reValidateMode: "onChange",
   })
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     reset()
-    onClose()
-  }
+    setIsOpen(false)
+  }, [reset, setIsOpen])
 
   const onSubmit = handleSubmit((data) => {
     updateDetails(
@@ -87,9 +92,6 @@ export const EditProfileModal = ({
       },
       {
         onSuccess: () => reset(data),
-        onSettled: () => {
-          void handleClose()
-        },
       },
     )
   })

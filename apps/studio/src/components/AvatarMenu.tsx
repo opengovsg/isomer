@@ -1,19 +1,19 @@
-import { useState } from "react"
 import { Divider, Flex, Text } from "@chakra-ui/react"
 import {
   Menu,
   AvatarMenu as OgpAvatarMenu,
 } from "@opengovsg/design-system-react"
+import { useSetAtom } from "jotai"
 import { BiLogOut, BiPencil, BiUser } from "react-icons/bi"
 
 import { useMe } from "~/features/me/api"
+import { updateProfileModalOpenAtom } from "~/features/users/atom"
 import { EditProfileModal } from "~/features/users/components"
 
 export const AvatarMenu = () => {
-  const { me, logout, isOnboarded } = useMe()
+  const { me, logout } = useMe()
 
-  const [isEditProfileModalOpen, setIsEditProfileModalOpen] =
-    useState(!isOnboarded)
+  const setIsEditProfileModalOpen = useSetAtom(updateProfileModalOpenAtom)
 
   return (
     <>
@@ -54,10 +54,7 @@ export const AvatarMenu = () => {
           </Flex>
         </Menu.Item>
       </OgpAvatarMenu>
-      <EditProfileModal
-        isOpen={isEditProfileModalOpen}
-        onClose={() => setIsEditProfileModalOpen(false)}
-      />
+      <EditProfileModal />
     </>
   )
 }
