@@ -13,8 +13,8 @@ import { Datatable } from "~/components/Datatable/Datatable"
 import { UserManagementContext } from "~/features/users"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
-import { UserTableEmptyState } from "./EmptyState"
 import { LastLoginCell } from "./LastLoginCell"
+import { UserTableEmptyState } from "./UserTableEmptyState"
 import { UserTableMenu } from "./UserTableMenu"
 
 export interface UserTableProps {
