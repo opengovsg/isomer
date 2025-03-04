@@ -143,7 +143,9 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
         overflowX: "auto",
       }}
       totalRowCount={totalRowCount}
-      emptyPlaceholder={getIsomerAdmins ? undefined : <UserTableEmptyState />}
+      emptyPlaceholder={
+        <UserTableEmptyState promptAddUser={!getIsomerAdmins} />
+      }
     />
   )
 }
