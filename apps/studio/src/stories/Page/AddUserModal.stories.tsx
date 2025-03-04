@@ -73,6 +73,12 @@ export const InvalidEmail: Story = {
     if (emailInput) {
       await userEvent.type(emailInput, "invalid-email")
     }
+
+    const screen = within(canvasElement.ownerDocument.body)
+    const errorMessage = await screen.findByText(
+      "This doesn't look like a valid email address.",
+    )
+    await expect(errorMessage).toBeVisible()
   },
 }
 
