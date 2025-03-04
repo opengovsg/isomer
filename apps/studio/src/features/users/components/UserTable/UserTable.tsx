@@ -13,6 +13,7 @@ import { Datatable } from "~/components/Datatable/Datatable"
 import { UserManagementContext } from "~/features/users"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
+import { UserTableEmptyState } from "./EmptyState"
 import { LastLoginCell } from "./LastLoginCell"
 import { UserTableMenu } from "./UserTableMenu"
 
@@ -143,6 +144,7 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
         overflowX: "auto",
       }}
       totalRowCount={totalRowCount}
+      emptyPlaceholder={<UserTableEmptyState />}
     />
   )
 }
