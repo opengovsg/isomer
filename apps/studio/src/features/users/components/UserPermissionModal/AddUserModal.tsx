@@ -237,7 +237,12 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
           <Button
             variant="solid"
             onClick={onSendInvite}
-            isDisabled={Object.keys(errors).length > 0 || whitelistError}
+            isDisabled={
+              Object.keys(errors).length > 0 ||
+              whitelistError ||
+              email === "" ||
+              (watch("role") === RoleType.Admin && isNonGovEmailInput)
+            }
           >
             Send invite
           </Button>
