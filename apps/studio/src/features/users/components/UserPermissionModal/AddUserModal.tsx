@@ -1,5 +1,4 @@
-import type { z } from "zod"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import {
   Button,
   FormControl,
@@ -46,10 +45,9 @@ export const AddUserModal = () => {
   const isOpen = useAtomValue(addUserModalOpenAtom)
   const setAddUserModalOpen = useSetAtom(addUserModalOpenAtom)
 
-  const { siteId } = useAtomValue(addUserModalAtom)
+  const addUserModalState = useAtomValue(addUserModalAtom)
+  const { siteId, whitelistError } = addUserModalState
   const setAddUserModalState = useSetAtom(addUserModalAtom)
-
-  const [whitelistError, setWhitelistError] = useState<boolean>(false)
 
   const {
     watch,
@@ -115,10 +113,13 @@ export const AddUserModal = () => {
       {
         enabled: false,
         onSuccess: (isWhitelisted) => {
-          setWhitelistError(!isWhitelisted)
+          setAddUserModalState({
+            ...addUserModalState,
+            whitelistError: !isWhitelisted,
+          })
         },
         onError: () => {
-          setWhitelistError(false)
+          setAddUserModalState({ ...addUserModalState, whitelistError: false })
         },
       },
     )
@@ -130,19 +131,32 @@ export const AddUserModal = () => {
 
     // no need to check whitelist if email is gov.sg
     if (!isNonGovEmailInput) {
-      setWhitelistError(false)
+      setAddUserModalState({
+        ...addUserModalState,
+        whitelistError: false,
+      })
       return
     }
 
     void checkWhitelist()
-  }, [email, isNonGovEmailInput, errors.email, checkWhitelist])
+  }, [
+    email,
+    isNonGovEmailInput,
+    errors.email,
+    checkWhitelist,
+    addUserModalState,
+    setAddUserModalState,
+  ])
 
   const handleOnClose = useCallback(() => {
     reset()
-    setWhitelistError(false)
+    setAddUserModalState({
+      ...addUserModalState,
+      whitelistError: false,
+    })
     setAddUserModalOpen(false)
     setAddUserModalState(DEFAULT_ADD_USER_MODAL_STATE)
-  }, [reset, setWhitelistError, setAddUserModalOpen, setAddUserModalState])
+  }, [reset, addUserModalState, setAddUserModalOpen, setAddUserModalState])
 
   const onSendInvite = handleSubmit((data) => {
     createUser(
