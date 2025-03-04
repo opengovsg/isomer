@@ -120,15 +120,19 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
       },
     )
 
-  // Check whitelist when email changes and is valid
+  // Check whitelist when email changes
   useEffect(() => {
-    // Only check whitelist if email is not-gov.sg and valid (no errors)
-    if (email && !additionalEmailError && !errors.email) {
-      void checkWhitelist()
-    } else {
+    // no need to check whitelist if email is not entered or already invalid
+    if (!email || errors.email) return
+
+    // no need to check whitelist if email is gov.sg
+    if (!isNonGovEmailInput) {
       setWhitelistError(false)
+      return
     }
-  }, [email, additionalEmailError, errors.email, checkWhitelist])
+
+    void checkWhitelist()
+  }, [email, isNonGovEmailInput, errors.email, checkWhitelist])
 
   const handleOnClose = useCallback(() => {
     reset()
