@@ -3,7 +3,9 @@ import { type Decorator } from "@storybook/react"
 import { useSetAtom } from "jotai"
 
 import {
+  addUserModalAtom,
   addUserModalOpenAtom,
+  DEFAULT_ADD_USER_MODAL_STATE,
   DEFAULT_UPDATE_USER_MODAL_STATE,
   updateUserModalAtom,
 } from "~/features/users/atom"
@@ -29,11 +31,13 @@ export const ResetEditUserModalDecorator: Decorator = (Story) => {
  */
 export const ResetAddUserModalDecorator: Decorator = (Story) => {
   const setAddUserModalOpen = useSetAtom(addUserModalOpenAtom)
+  const setAddUserModalState = useSetAtom(addUserModalAtom)
 
   // Reset modal state when the decorator mounts
   useEffect(() => {
     setAddUserModalOpen(false)
-  }, [setAddUserModalOpen])
+    setAddUserModalState(DEFAULT_ADD_USER_MODAL_STATE)
+  }, [setAddUserModalOpen, setAddUserModalState])
 
   return <Story />
 }
