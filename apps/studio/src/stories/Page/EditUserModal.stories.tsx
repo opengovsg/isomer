@@ -90,3 +90,19 @@ export const ToastAfterEditingUser: Story = {
     await userEvent.click(saveChangesButton)
   },
 }
+
+export const NonGovEmailCannotBeAdmin: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const rootScreen = within(canvasElement.ownerDocument.body)
+    const screen = within(canvasElement)
+
+    const actionMenu = await screen.findByRole("button", {
+      name: "Options for Editor User",
+    })
+    await userEvent.click(actionMenu)
+
+    const editUserButton = await rootScreen.findByText("Edit user")
+    await userEvent.click(editUserButton, { pointerEventsCheck: 0 })
+  },
+}
