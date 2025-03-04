@@ -35,14 +35,6 @@ import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
 import { ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
 
-// Create a simplified schema for the form that only collects email
-// Using the email validation from createInputSchema
-const addUserFormSchema = zod.object({
-  email: createInputSchema.shape.users.element.shape.email,
-})
-
-type AddUserFormValues = z.infer<typeof addUserFormSchema>
-
 interface AddUserModalProps {
   siteId: z.infer<typeof createInputSchema>["siteId"]
 }
@@ -55,18 +47,27 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
   const setAddUserModalOpen = useSetAtom(addUserModalOpenAtom)
 
   const [whitelistError, setWhitelistError] = useState<boolean>(false)
-  const [selectedRole, setSelectedRole] = useState<RoleType>(RoleType.Editor)
 
   const {
     watch,
     register,
     reset,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useZodForm({
-    schema: addUserFormSchema,
+    // Create a simplified schema for the form that only collects email
+    // Using the email validation from createInputSchema
+    schema: zod.object({
+      email: createInputSchema.shape.users.element.shape.email,
+      role: createInputSchema.shape.users.element.shape.role,
+    }),
     mode: "onChange",
     reValidateMode: "onChange",
+    defaultValues: {
+      email: "",
+      role: RoleType.Editor,
+    },
   })
 
   const email = watch("email")
@@ -123,19 +124,18 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
 
   const handleOnClose = () => {
     reset()
-    setSelectedRole(RoleType.Editor)
     setWhitelistError(false)
     setAddUserModalOpen(false)
   }
 
-  const onSendInvite = handleSubmit((data: AddUserFormValues) => {
+  const onSendInvite = handleSubmit((data) => {
     createUser(
       {
         siteId,
         users: [
           {
             email: data.email,
-            role: selectedRole,
+            role: watch("role"),
           },
         ],
       },
@@ -182,7 +182,7 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
               <FormControl
                 isRequired
                 isInvalid={
-                  selectedRole === RoleType.Admin && isNonGovEmailInput
+                  watch("role") === RoleType.Admin && isNonGovEmailInput
                 }
               >
                 <FormLabel
@@ -209,18 +209,18 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
                     <RoleBox
                       key={role}
                       value={role}
-                      isSelected={selectedRole === role}
-                      onClick={() => setSelectedRole(role)}
+                      isSelected={watch("role") === role}
+                      onClick={() => setValue("role", role)}
                       permissionLabels={permissionLabels}
                       isDisabled={role === RoleType.Admin && isNonGovEmailInput}
                     />
                   ))}
                 </HStack>
               </FormControl>
-              {selectedRole === RoleType.Admin && !isNonGovEmailInput && (
+              {watch("role") === RoleType.Admin && !isNonGovEmailInput && (
                 <AddAdminWarning />
               )}
-              {selectedRole === RoleType.Admin && isNonGovEmailInput && (
+              {watch("role") === RoleType.Admin && isNonGovEmailInput && (
                 <NonGovEmailCannotBeAdmin />
               )}
             </VStack>
