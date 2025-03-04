@@ -65,6 +65,7 @@ export const RoleBox = ({
               borderColor: "interaction.support.disabled",
             }
       }
+      aria-label={`${value} role`}
     >
       <VStack gap={2} alignItems="flex-start">
         <Icon
