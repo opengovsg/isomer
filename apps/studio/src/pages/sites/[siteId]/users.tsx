@@ -1,16 +1,15 @@
-import { useContext } from "react"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { useSetAtom } from "jotai"
-import { BiPlus } from "react-icons/bi"
 import { PiUsersBold } from "react-icons/pi"
 import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
-import { UserManagementContext, UserManagementProvider } from "~/features/users"
-import { addUserModalOpenAtom } from "~/features/users/atom"
-import { EditUserModal, UserTableTabs } from "~/features/users/components"
+import { UserManagementProvider } from "~/features/users"
+import {
+  AddNewUserButton,
+  EditUserModal,
+  UserTableTabs,
+} from "~/features/users/components"
 import { CollaboratorsDescription } from "~/features/users/components/CollaboratorsDescription"
 import { AddUserModal } from "~/features/users/components/UserPermissionModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -30,10 +29,6 @@ const UserManagementLayout = ({ children }: { children: React.ReactNode }) => {
 }
 
 const SiteUsersPage: NextPageWithLayout = () => {
-  const ability = useContext(UserManagementContext)
-
-  const setAddUserModalOpen = useSetAtom(addUserModalOpenAtom)
-
   const { siteId } = useQueryParse(siteUsersSchema)
 
   const { data: agencyUsersCount = 0 } = trpc.user.count.useQuery({
@@ -86,15 +81,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
               </HStack>
               <CollaboratorsDescription />
             </VStack>
-            {ability.can("manage", "UserManagement") && (
-              <Button
-                variant="solid"
-                leftIcon={<BiPlus />}
-                onClick={() => setAddUserModalOpen(true)}
-              >
-                Add new user
-              </Button>
-            )}
+            <AddNewUserButton />
           </HStack>
         </VStack>
         <UserTableTabs

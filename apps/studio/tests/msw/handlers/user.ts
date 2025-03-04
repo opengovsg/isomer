@@ -8,6 +8,10 @@ export const userHandlers = {
       trpcMsw.user.count.query(() => {
         return 5
       }),
+    noUsers: () =>
+      trpcMsw.user.count.query(() => {
+        return 0
+      }),
   },
   list: {
     users: () => {
@@ -85,11 +89,21 @@ export const userHandlers = {
         ]
       })
     },
+    noUsers: () => {
+      return trpcMsw.user.list.query(() => {
+        return []
+      })
+    },
   },
   hasInactiveUsers: {
-    default: () => {
+    true: () => {
       return trpcMsw.user.hasInactiveUsers.query(() => {
         return true
+      })
+    },
+    false: () => {
+      return trpcMsw.user.hasInactiveUsers.query(() => {
+        return false
       })
     },
   },
