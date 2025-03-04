@@ -167,7 +167,7 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
               {errors.email && (
                 <FormErrorMessage>{errors.email.message}</FormErrorMessage>
               )}
-              {!errors.email && whitelistError && (
+              {!errors.email && isNonGovEmailInput && whitelistError && (
                 <FormErrorMessage>
                   There are non-gov.sg domains that need to be whitelisted. Chat
                   with Isomer Support to whitelist domains.
