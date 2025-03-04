@@ -32,7 +32,7 @@ import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
 import { addUserModalOpenAtom } from "../../atom"
 import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
-import { ROLE_CONFIGS } from "./constants"
+import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
 
 interface AddUserModalProps {
@@ -190,11 +190,7 @@ export const AddUserModal = ({ siteId }: AddUserModalProps) => {
                     <Text>
                       You can change this later. Read more about user roles on
                       the{" "}
-                      <Link
-                        // TODO: update this placeholder
-                        href="https://guide.isomer.gov.sg/user-management/user-roles"
-                        isExternal
-                      >
+                      <Link href={ISOMER_GUIDE_URL} isExternal>
                         Isomer Guide
                       </Link>
                       .

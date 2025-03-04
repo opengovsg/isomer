@@ -30,7 +30,7 @@ import {
   updateUserModalAtom,
 } from "../../atom"
 import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
-import { ROLE_CONFIGS } from "./constants"
+import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
 
 interface EditUserModalProps {
@@ -112,11 +112,7 @@ export const EditUserModal = ({ siteId }: EditUserModalProps) => {
                   description={
                     <Text>
                       Read more about user roles on the{" "}
-                      <Link
-                        // TODO: update this placeholder
-                        href="https://guide.isomer.gov.sg/user-management/user-roles"
-                        isExternal
-                      >
+                      <Link href={ISOMER_GUIDE_URL} isExternal>
                         Isomer Guide
                       </Link>
                       .
