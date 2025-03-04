@@ -20,15 +20,11 @@ import {
 } from "../../atoms"
 import { UserInfoContent } from "./UserInfoContent"
 
-interface RemoveUserModalProps {
-  siteId: number
-}
-
-export const RemoveUserModal = ({ siteId }: RemoveUserModalProps) => {
+export const RemoveUserModal = () => {
   const toast = useToast()
   const utils = trpc.useUtils()
 
-  const { userId } = useAtomValue(removeUserModalAtom)
+  const { siteId, userId } = useAtomValue(removeUserModalAtom)
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
   const onClose = () => setRemoveUserModalState(DEFAULT_REMOVE_USER_MODAL_STATE)
 

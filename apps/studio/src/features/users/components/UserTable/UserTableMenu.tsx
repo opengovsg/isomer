@@ -51,7 +51,7 @@ export const UserTableMenu = ({
                 Edit user
               </MenuItem>
               <MenuItem
-                onClick={() => setRemoveUserModalState({ userId })}
+                onClick={() => setRemoveUserModalState({ siteId, userId })}
                 colorScheme="critical"
                 icon={<BiTrash fontSize="1rem" />}
                 aria-label={`Remove user access for ${userName}`}
