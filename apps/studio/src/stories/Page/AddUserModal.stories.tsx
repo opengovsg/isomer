@@ -39,7 +39,7 @@ const meta: Meta<typeof UsersPage> = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const AddUserModal: Story = {
+export const Default: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body)
     const addUserButton = await screen.findByText("Add new user")
@@ -52,7 +52,7 @@ export const AddUserModal: Story = {
 export const InvalidEmail: Story = {
   play: async (context) => {
     const { canvasElement } = context
-    await AddUserModal.play?.(context)
+    await Default.play?.(context)
 
     const emailInput = Array.from(
       canvasElement.ownerDocument.querySelectorAll(
@@ -68,7 +68,7 @@ export const InvalidEmail: Story = {
 export const AdminWarningBanner: Story = {
   play: async (context) => {
     const { canvasElement } = context
-    await AddUserModal.play?.(context)
+    await Default.play?.(context)
 
     const screen = within(canvasElement.ownerDocument.body)
     const AdminRoleButton = await screen.findByText("Admin")
@@ -84,7 +84,7 @@ export const AdminWarningBanner: Story = {
 export const NonGovEmailCannotBeAdmin: Story = {
   play: async (context) => {
     const { canvasElement } = context
-    await AddUserModal.play?.(context)
+    await Default.play?.(context)
 
     const screen = within(canvasElement.ownerDocument.body)
     const AdminRoleButton = await screen.findByText("Admin")
@@ -117,7 +117,7 @@ export const EmailIsNotWhitelisted: Story = {
   },
   play: async (context) => {
     const { canvasElement } = context
-    await AddUserModal.play?.(context)
+    await Default.play?.(context)
 
     const screen = within(canvasElement.ownerDocument.body)
 
@@ -149,7 +149,7 @@ export const ToastAfterAddingUser: Story = {
   },
   play: async (context) => {
     const { canvasElement } = context
-    await AddUserModal.play?.(context)
+    await Default.play?.(context)
 
     const screen = within(canvasElement.ownerDocument.body)
     const emailInput = Array.from(
