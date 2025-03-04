@@ -6,7 +6,7 @@ import { BiPlus } from "react-icons/bi"
 import { PiUsersBold } from "react-icons/pi"
 import { z } from "zod"
 
-import { PermissionsBoundary } from "~/components/AuthWrappers/PermissionsBoundary"
+import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { UserManagementContext, UserManagementProvider } from "~/features/users"
 import { UserTableTabs } from "~/features/users/components"
 import { CollaboratorsDescription } from "~/features/users/components/CollaboratorsDescription"
