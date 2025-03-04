@@ -1,20 +1,20 @@
 import { TRPCError } from "@trpc/server"
 
 import {
-  countInputSchema,
-  countOutputSchema,
-  createInputSchema,
-  createOutputSchema,
-  deleteInputSchema,
-  deleteOutputSchema,
+  countUsersInputSchema,
+  countUsersOutputSchema,
+  createUserInputSchema,
+  createUserOutputSchema,
+  deleteUserInputSchema,
+  deleteUserOutputSchema,
   getUserInputSchema,
   getUserOutputSchema,
   hasInactiveUsersInputSchema,
   hasInactiveUsersOutputSchema,
-  listInputSchema,
-  listOutputSchema,
-  updateInputSchema,
-  updateOutputSchema,
+  listUsersInputSchema,
+  listUsersOutputSchema,
+  updateUserInputSchema,
+  updateUserOutputSchema,
 } from "~/schemas/user"
 import { protectedProcedure, router } from "../../trpc"
 import { db, sql } from "../database"
@@ -27,8 +27,8 @@ import {
 
 export const userRouter = router({
   create: protectedProcedure
-    .input(createInputSchema)
-    .output(createOutputSchema)
+    .input(createUserInputSchema)
+    .output(createUserOutputSchema)
     .mutation(async ({ ctx, input: { siteId, users } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
@@ -61,8 +61,8 @@ export const userRouter = router({
     }),
 
   delete: protectedProcedure
-    .input(deleteInputSchema)
-    .output(deleteOutputSchema)
+    .input(deleteUserInputSchema)
+    .output(deleteUserOutputSchema)
     .mutation(async ({ ctx, input: { siteId, userId } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
@@ -145,8 +145,8 @@ export const userRouter = router({
     }),
 
   list: protectedProcedure
-    .input(listInputSchema)
-    .output(listOutputSchema)
+    .input(listUsersInputSchema)
+    .output(listUsersOutputSchema)
     .query(
       async ({ ctx, input: { siteId, getIsomerAdmins, offset, limit } }) => {
         await validatePermissionsForManagingUsers({
@@ -171,8 +171,8 @@ export const userRouter = router({
     ),
 
   count: protectedProcedure
-    .input(countInputSchema)
-    .output(countOutputSchema)
+    .input(countUsersInputSchema)
+    .output(countUsersOutputSchema)
     .query(async ({ ctx, input: { siteId, getIsomerAdmins } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
@@ -210,8 +210,8 @@ export const userRouter = router({
     }),
 
   update: protectedProcedure
-    .input(updateInputSchema)
-    .output(updateOutputSchema)
+    .input(updateUserInputSchema)
+    .output(updateUserOutputSchema)
     .mutation(async ({ ctx, input: { siteId, userId, role } }) => {
       await validatePermissionsForManagingUsers({
         siteId,

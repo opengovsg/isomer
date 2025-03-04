@@ -3,7 +3,7 @@ import { z } from "zod"
 
 import { offsetPaginationSchema } from "./pagination"
 
-export const createInputSchema = z.object({
+export const createUserInputSchema = z.object({
   siteId: z.number().min(1),
   users: z.array(
     z.object({
@@ -13,7 +13,7 @@ export const createInputSchema = z.object({
   ),
 })
 
-export const createOutputSchema = z.array(
+export const createUserOutputSchema = z.array(
   z.object({
     id: z.string(),
     email: z.string().email(),
@@ -21,12 +21,12 @@ export const createOutputSchema = z.array(
   }),
 )
 
-export const deleteInputSchema = z.object({
+export const deleteUserInputSchema = z.object({
   siteId: z.number().min(1),
   userId: z.string(),
 })
 
-export const deleteOutputSchema = z.object({
+export const deleteUserOutputSchema = z.object({
   id: z.string(),
   email: z.string().email(),
 })
@@ -44,13 +44,13 @@ export const getUserOutputSchema = z.object({
   lastLoginAt: z.date().nullable(),
 })
 
-export const listInputSchema = z.object({
+export const listUsersInputSchema = z.object({
   siteId: z.number().min(1),
   getIsomerAdmins: z.boolean().optional().default(false),
   ...offsetPaginationSchema.shape,
 })
 
-export const listOutputSchema = z.array(
+export const listUsersOutputSchema = z.array(
   z.object({
     id: z.string(),
     email: z.string().email(),
@@ -60,12 +60,12 @@ export const listOutputSchema = z.array(
   }),
 )
 
-export const countInputSchema = z.object({
+export const countUsersInputSchema = z.object({
   siteId: z.number().min(1),
   getIsomerAdmins: z.boolean().optional().default(false),
 })
 
-export const countOutputSchema = z.number()
+export const countUsersOutputSchema = z.number()
 
 export const hasInactiveUsersInputSchema = z.object({
   siteId: z.number().min(1),
@@ -73,13 +73,13 @@ export const hasInactiveUsersInputSchema = z.object({
 
 export const hasInactiveUsersOutputSchema = z.boolean()
 
-export const updateInputSchema = z.object({
+export const updateUserInputSchema = z.object({
   siteId: z.number().min(1),
   userId: z.string(),
   role: z.nativeEnum(RoleType),
 })
 
-export const updateOutputSchema = z.object({
+export const updateUserOutputSchema = z.object({
   id: z.string().min(1),
   siteId: z.number().min(1),
   userId: z.string(),
