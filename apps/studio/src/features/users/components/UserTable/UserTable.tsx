@@ -134,7 +134,6 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
   })
 
   return (
-    // Note: did not add emptyPlaceholder since there will always be at least one user
     <Datatable
       pagination
       isFetching={isFetching || isCountLoading}
@@ -144,7 +143,7 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
         overflowX: "auto",
       }}
       totalRowCount={totalRowCount}
-      emptyPlaceholder={<UserTableEmptyState />}
+      emptyPlaceholder={getIsomerAdmins ? undefined : <UserTableEmptyState />}
     />
   )
 }
