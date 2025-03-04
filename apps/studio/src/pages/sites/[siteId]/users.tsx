@@ -102,11 +102,12 @@ const SiteUsersPage: NextPageWithLayout = () => {
 }
 
 SiteUsersPage.getLayout = (page: React.ReactNode) => {
-  const wrappedPage = AdminSidebarOnlyLayout(page)
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
-      page={<UserManagementLayout>{wrappedPage}</UserManagementLayout>}
+      page={AdminSidebarOnlyLayout(
+        <UserManagementLayout>{page}</UserManagementLayout>,
+      )}
     />
   )
 }
