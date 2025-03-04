@@ -114,13 +114,13 @@ export const AddUserModal = () => {
       {
         enabled: false,
         onSuccess: (isWhitelisted) => {
-          setAddUserModalState({
-            ...addUserModalState,
+          setAddUserModalState((prev) => ({
+            ...prev,
             whitelistError: !isWhitelisted,
-          })
+          }))
         },
         onError: () => {
-          setAddUserModalState({ ...addUserModalState, whitelistError: false })
+          setAddUserModalState((prev) => ({ ...prev, whitelistError: false }))
         },
       },
     )
@@ -132,10 +132,7 @@ export const AddUserModal = () => {
 
     // no need to check whitelist if email is gov.sg
     if (!isNonGovEmailInput) {
-      setAddUserModalState({
-        ...addUserModalState,
-        whitelistError: false,
-      })
+      setAddUserModalState((prev) => ({ ...prev, whitelistError: false }))
       return
     }
 
@@ -145,19 +142,14 @@ export const AddUserModal = () => {
     isNonGovEmailInput,
     errors.email,
     checkWhitelist,
-    addUserModalState,
     setAddUserModalState,
   ])
 
   const handleOnClose = useCallback(() => {
     reset()
-    setAddUserModalState({
-      ...addUserModalState,
-      whitelistError: false,
-    })
     setAddUserModalOpen(DEFAULT_ADD_USER_MODAL_OPEN_STATE)
     setAddUserModalState(DEFAULT_ADD_USER_MODAL_STATE)
-  }, [reset, addUserModalState, setAddUserModalOpen, setAddUserModalState])
+  }, [reset, setAddUserModalOpen, setAddUserModalState])
 
   const onSendInvite = handleSubmit((data) => {
     createUser(
