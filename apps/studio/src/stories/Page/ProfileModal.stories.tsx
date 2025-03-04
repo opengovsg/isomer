@@ -6,6 +6,7 @@ import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 
 import SitePage from "~/pages/sites/[siteId]"
+import { ResetUpdateProfileModalDecorator } from "~/stories/decorators/resetModalState"
 
 const meta: Meta<typeof SitePage> = {
   title: "Pages/Profile Management/Profile Modal",
@@ -28,7 +29,7 @@ const meta: Meta<typeof SitePage> = {
       },
     },
   },
-  decorators: [],
+  decorators: [ResetUpdateProfileModalDecorator],
 }
 
 export default meta
