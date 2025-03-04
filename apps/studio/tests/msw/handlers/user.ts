@@ -123,4 +123,16 @@ export const userHandlers = {
       })
     },
   },
+  update: {
+    success: () => {
+      return trpcMsw.user.update.mutation(() => {
+        return {
+          id: "1",
+          userId: "1",
+          siteId: 1,
+          role: RoleType.Admin,
+        }
+      })
+    },
+  },
 }
