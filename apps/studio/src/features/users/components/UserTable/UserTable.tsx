@@ -14,6 +14,7 @@ import { UserManagementContext } from "~/features/users"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 import { LastLoginCell } from "./LastLoginCell"
+import { UserTableEmptyState } from "./UserTableEmptyState"
 import { UserTableMenu } from "./UserTableMenu"
 
 export interface UserTableProps {
@@ -133,7 +134,6 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
   })
 
   return (
-    // Note: did not add emptyPlaceholder since there will always be at least one user
     <Datatable
       pagination
       isFetching={isFetching || isCountLoading}
@@ -143,6 +143,9 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
         overflowX: "auto",
       }}
       totalRowCount={totalRowCount}
+      emptyPlaceholder={
+        <UserTableEmptyState promptAddUser={!getIsomerAdmins} />
+      }
     />
   )
 }
