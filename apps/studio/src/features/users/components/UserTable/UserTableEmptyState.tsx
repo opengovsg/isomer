@@ -3,10 +3,12 @@ import { Flex, Td, Text, Tr, VStack } from "@chakra-ui/react"
 import { AddNewUserButton } from "~/features/users/components"
 
 interface UserTableEmptyStateProps {
+  siteId: number
   promptAddUser?: boolean
 }
 
 export const UserTableEmptyState = ({
+  siteId,
   promptAddUser = true,
 }: UserTableEmptyStateProps) => {
   return (
@@ -22,7 +24,7 @@ export const UserTableEmptyState = ({
                 </Text>
               )}
             </VStack>
-            {promptAddUser && <AddNewUserButton />}
+            {promptAddUser && <AddNewUserButton siteId={siteId} />}
           </VStack>
         </Flex>
       </Td>

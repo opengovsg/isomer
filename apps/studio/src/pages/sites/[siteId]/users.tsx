@@ -15,7 +15,6 @@ import { AddUserModal } from "~/features/users/components/UserPermissionModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
-import { trpc } from "~/utils/trpc"
 
 const siteUsersSchema = z.object({
   siteId: z.coerce.number(),
@@ -30,21 +29,6 @@ const UserManagementLayout = ({ children }: { children: React.ReactNode }) => {
 
 const SiteUsersPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteUsersSchema)
-
-  const { data: agencyUsersCount = 0 } = trpc.user.count.useQuery({
-    siteId,
-    getIsomerAdmins: false,
-  })
-
-  const { data: isomerAdminsCount = 0 } = trpc.user.count.useQuery({
-    siteId,
-    getIsomerAdmins: true,
-  })
-
-  const { data: hasInactiveUsers = false } =
-    trpc.user.hasInactiveUsers.useQuery({
-      siteId,
-    })
 
   return (
     <>
@@ -81,15 +65,10 @@ const SiteUsersPage: NextPageWithLayout = () => {
               </HStack>
               <CollaboratorsDescription />
             </VStack>
-            <AddNewUserButton />
+            <AddNewUserButton siteId={siteId} />
           </HStack>
         </VStack>
-        <UserTableTabs
-          siteId={siteId}
-          agencyUsersCount={agencyUsersCount}
-          isomerAdminsCount={isomerAdminsCount}
-          hasInactiveUsers={hasInactiveUsers}
-        />
+        <UserTableTabs siteId={siteId} />
       </VStack>
       <AddUserModal />
       <EditUserModal />

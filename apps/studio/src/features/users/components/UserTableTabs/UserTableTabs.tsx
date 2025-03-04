@@ -2,24 +2,32 @@ import { useContext } from "react"
 import { TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react"
 
 import { UserManagementContext } from "~/features/users"
+import { trpc } from "~/utils/trpc"
 import { UserTable } from "../UserTable"
 import { InactiveUsersBanner, IsomerAdminAccessBanner } from "./Banners"
 import { UserTableTab } from "./UserTableTab"
 
 interface UserTableTabsProps {
   siteId: number
-  agencyUsersCount: number
-  isomerAdminsCount: number
-  hasInactiveUsers: boolean
 }
 
-export const UserTableTabs = ({
-  siteId,
-  agencyUsersCount,
-  isomerAdminsCount,
-  hasInactiveUsers,
-}: UserTableTabsProps) => {
+export const UserTableTabs = ({ siteId }: UserTableTabsProps) => {
   const ability = useContext(UserManagementContext)
+
+  const { data: agencyUsersCount = 0 } = trpc.user.count.useQuery({
+    siteId,
+    getIsomerAdmins: false,
+  })
+
+  const { data: isomerAdminsCount = 0 } = trpc.user.count.useQuery({
+    siteId,
+    getIsomerAdmins: true,
+  })
+
+  const { data: hasInactiveUsers = false } =
+    trpc.user.hasInactiveUsers.useQuery({
+      siteId,
+    })
 
   return (
     <Tabs w="100%">
