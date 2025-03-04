@@ -96,4 +96,17 @@ export const userHandlers = {
       })
     },
   },
+  create: {
+    success: ({ email }: { email: string }) => {
+      return trpcMsw.user.create.mutation(() => {
+        return [
+          {
+            id: "1",
+            email,
+            role: RoleType.Admin,
+          },
+        ]
+      })
+    },
+  },
 }
