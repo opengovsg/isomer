@@ -1,5 +1,4 @@
 import {
-  differenceInDays,
   format,
   formatDistanceToNow,
   isWithinInterval,
@@ -19,9 +18,4 @@ export const formatDate = (date: Date) => {
   }
 
   return format(date, "MMM d, yyyy")
-}
-
-export const daysFromLastLogin = (date: Date) => {
-  const now = new Date()
-  return differenceInDays(now, date)
 }

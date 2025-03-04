@@ -14,6 +14,7 @@ import { UserManagementContext } from "~/features/users"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 import { LastLoginCell } from "./LastLoginCell"
+import { UserTableEmptyState } from "./UserTableEmptyState"
 import { UserTableMenu } from "./UserTableMenu"
 
 export interface UserTableProps {
@@ -30,11 +31,13 @@ const getColumns = ({
   const baseColumns = [
     columnsHelper.display({
       id: "user_info",
-      header: () => <TableHeader>User</TableHeader>,
+      header: () => <TableHeader>Collaborator</TableHeader>,
       cell: ({ row }) => (
         <VStack gap="0.25rem" align="start">
           <Text textStyle="subhead-2">{row.original.name}</Text>
-          <Text textStyle="caption-2">{row.original.email}</Text>
+          <Text textStyle="caption-2" textColor="base.content.medium">
+            {row.original.email}
+          </Text>
         </VStack>
       ),
     }),
@@ -42,6 +45,7 @@ const getColumns = ({
       id: "user_role",
       header: () => <TableHeader>Role</TableHeader>,
       cell: ({ row }) => <Text textStyle="caption-2">{row.original.role}</Text>,
+      size: 80,
     }),
     columnsHelper.display({
       id: "user_last_login",
@@ -49,6 +53,7 @@ const getColumns = ({
       cell: ({ row }) => (
         <LastLoginCell lastLoginAt={row.original.lastLoginAt} />
       ),
+      size: 80,
     }),
   ]
 
@@ -129,7 +134,6 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
   })
 
   return (
-    // Note: did not add emptyPlaceholder since there will always be at least one user
     <Datatable
       pagination
       isFetching={isFetching || isCountLoading}
@@ -139,6 +143,9 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
         overflowX: "auto",
       }}
       totalRowCount={totalRowCount}
+      emptyPlaceholder={
+        <UserTableEmptyState promptAddUser={!getIsomerAdmins} />
+      }
     />
   )
 }

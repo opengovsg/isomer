@@ -1,109 +1,77 @@
-import type { IconType } from "react-icons"
-import { Suspense, useMemo } from "react"
-import { Box, HStack, Icon, Skeleton, Text } from "@chakra-ui/react"
+import type { ButtonProps } from "@opengovsg/design-system-react"
+import { Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { dataAttr } from "@chakra-ui/utils"
 import { Button } from "@opengovsg/design-system-react"
-import { QueryErrorResetBoundary } from "@tanstack/react-query"
-import { ResourceType } from "~prisma/generated/generatedEnums"
-import { ErrorBoundary } from "react-error-boundary"
-import { BiData, BiFile, BiFolder, BiLink, BiLockAlt } from "react-icons/bi"
 
-import type { RouterOutput } from "~/utils/trpc"
+import type { ResourceItemContent } from "~/schemas/resource"
+import { getIcon } from "~/utils/resources"
 
-type ResourceItemProps = Pick<
-  RouterOutput["resource"]["getChildrenOf"]["items"][number],
-  "permalink" | "type"
-> & {
-  isSelected: boolean
-  isDisabled: boolean
-  onResourceItemSelect: () => void
+interface ResourceItemProps {
+  item: ResourceItemContent
+  isDisabled?: boolean
+  isHighlighted?: boolean
+  handleOnClick?: () => void
+  hasAdditionalLeftPadding?: boolean
+  isLoading?: boolean
 }
 
-const SuspendableResourceItem = ({
-  permalink,
-  type,
-  isSelected,
-  isDisabled,
-  onResourceItemSelect,
-}: ResourceItemProps) => {
-  const icon: IconType = useMemo(() => {
-    switch (type) {
-      case ResourceType.CollectionLink:
-        return BiLink
-      case ResourceType.Folder:
-        return BiFolder
-      case ResourceType.CollectionPage:
-      case ResourceType.Page:
-      case ResourceType.IndexPage:
-        return BiFile
-      case ResourceType.Collection:
-        return BiData
-    }
-  }, [type])
-
+const ResourceItemContainer = (props: ButtonProps) => {
   return (
     <Button
       variant="clear"
       w="full"
       justifyContent="flex-start"
-      color="base.content.default"
-      isDisabled={isDisabled}
-      data-selected={dataAttr(isSelected)}
-      _selected={{
-        color: "interaction.main.default",
-        bgColor: "interaction.muted.main.active",
-        _hover: {
-          bgColor: "unset",
-        },
-      }}
-      _active={{
-        bgColor: "interaction.tinted.main.active",
-      }}
-      _disabled={{
-        color: "interaction.support.disabled-content",
-        bgColor: "unset",
-        cursor: "not-allowed",
-        _hover: {
-          bgColor: "unset",
-        },
-      }}
-      _hover={{
-        bgColor: "interaction.muted.main.hover",
-      }}
-      pl="2.25rem"
-      py="0.375rem"
-      borderRadius="0.25rem"
-      onClick={onResourceItemSelect}
-      leftIcon={<Icon as={icon} />}
-    >
-      <HStack align="start" w="full" justify="space-between">
-        <Text textStyle="caption-1" noOfLines={1}>
-          /{permalink}
-        </Text>
-        {isDisabled && <Icon as={BiLockAlt} fontSize="0.75rem" />}
-      </HStack>
-    </Button>
+      color={"base.content.default"}
+      height="fit-content"
+      alignItems="flex-start"
+      gap="0.25rem"
+      {...props}
+    />
   )
 }
 
-export const ResourceItem = (props: ResourceItemProps) => {
+export const ResourceItemSkeleton = () => {
   return (
-    <QueryErrorResetBoundary>
-      {({ reset }) => (
-        <ErrorBoundary
-          onReset={reset}
-          fallbackRender={({ resetErrorBoundary }) => (
-            <Box>
-              There was an error!
-              <Button onClick={() => resetErrorBoundary()}>Try again</Button>
-            </Box>
-          )}
-        >
-          <Suspense fallback={<Skeleton />}>
-            <SuspendableResourceItem {...props} />
-          </Suspense>
-        </ErrorBoundary>
-      )}
-    </QueryErrorResetBoundary>
+    <ResourceItemContainer isDisabled>
+      <VStack alignItems="flex-start" textAlign="left" gap="0.25rem">
+        <Skeleton width="12rem" height="1.125rem" variant="pulse" />
+        <Skeleton width="18rem" height="1.125rem" variant="pulse" />
+      </VStack>
+    </ResourceItemContainer>
+  )
+}
+
+export const ResourceItem = ({
+  item,
+  isDisabled,
+  isHighlighted = false,
+  handleOnClick,
+  hasAdditionalLeftPadding = false,
+}: ResourceItemProps) => {
+  return (
+    <ResourceItemContainer
+      data-selected={dataAttr(isHighlighted)}
+      _selected={{
+        color: "interaction.main.default",
+        bg: "interaction.muted.main.active",
+        _hover: {
+          color: "interaction.main.default",
+          bg: "interaction.muted.main.active",
+        },
+      }}
+      {...(hasAdditionalLeftPadding && { pl: "2.25rem" })}
+      onClick={handleOnClick}
+      leftIcon={<Icon as={getIcon(item.type)} />}
+      isDisabled={isDisabled}
+    >
+      <VStack alignItems="flex-start" textAlign="left" gap="0.25rem">
+        <Text noOfLines={1} textStyle="caption-1">
+          {item.title}
+        </Text>
+        <Text noOfLines={1} textStyle="caption-2">
+          {`/${item.permalink}`}
+        </Text>
+      </VStack>
+    </ResourceItemContainer>
   )
 }

@@ -11,6 +11,7 @@ export const UserTableTab = ({ label, count }: UserTableTabProps) => {
       textTransform="none"
       _selected={{
         color: "base.content.brand",
+        borderBottomColor: "base.content.brand",
         "& > .badge": {
           bg: "base.content.brand",
           color: "base.content.inverse",

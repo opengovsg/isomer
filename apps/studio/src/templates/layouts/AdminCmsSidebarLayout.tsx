@@ -54,7 +54,11 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
         router.asPath === `/sites/${siteId}` ||
         router.asPath.startsWith(`/sites/${siteId}/pages`),
     },
-    { icon: PiUsersBold, label: "Users", href: `/sites/${siteId}/users` },
+    {
+      icon: PiUsersBold,
+      label: "Collaborators",
+      href: `/sites/${siteId}/users`,
+    },
     { icon: BiCog, label: "Settings", href: `/sites/${siteId}/settings` },
     ...(isUserIsomerAdmin
       ? [

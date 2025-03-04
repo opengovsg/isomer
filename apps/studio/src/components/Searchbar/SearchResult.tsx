@@ -2,10 +2,9 @@ import { type ReactNode } from "react"
 import { Box, HStack, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
-import { ICON_MAPPINGS } from "~/features/dashboard/components/DirectorySidebar/constants"
 import { formatDate } from "~/utils/formatDate"
 import { getLinkToResource } from "~/utils/resource"
-import { isAllowedToHaveLastEditedText } from "~/utils/resources"
+import { getIcon, isAllowedToHaveLastEditedText } from "~/utils/resources"
 
 export interface SearchResultProps {
   siteId: string
@@ -116,7 +115,7 @@ export const SearchResult = ({
       alignItems="flex-start"
     >
       <Icon
-        as={ICON_MAPPINGS[type]}
+        as={getIcon(type)}
         fill="base.content.medium"
         height="1.25rem" // to align with the text that has a line height of 1.25rem
       />

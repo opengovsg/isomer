@@ -1,14 +1,15 @@
-import { useContext } from "react"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-import { BiPlus } from "react-icons/bi"
 import { PiUsersBold } from "react-icons/pi"
 import { z } from "zod"
 
-import { PermissionsBoundary } from "~/components/AuthWrappers/PermissionsBoundary"
-import { UserManagementContext, UserManagementProvider } from "~/features/users"
-import { RemoveUserModal, UserTableTabs } from "~/features/users/components"
+import { PermissionsBoundary } from "~/components/AuthWrappers"
+import { UserManagementProvider } from "~/features/users"
+import {
+  AddNewUserButton,
+  RemoveUserModal,
+  UserTableTabs,
+} from "~/features/users/components"
 import { CollaboratorsDescription } from "~/features/users/components/CollaboratorsDescription"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
@@ -27,8 +28,6 @@ const UserManagementLayout = ({ children }: { children: React.ReactNode }) => {
 }
 
 const SiteUsersPage: NextPageWithLayout = () => {
-  const ability = useContext(UserManagementContext)
-
   const { siteId } = useQueryParse(siteUsersSchema)
 
   const { data: agencyUsersCount = 0 } = trpc.user.count.useQuery({
@@ -81,15 +80,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
               </HStack>
               <CollaboratorsDescription />
             </VStack>
-            {ability.can("manage", "UserManagement") && (
-              <Button
-                variant="solid"
-                leftIcon={<BiPlus />}
-                onClick={() => console.log("TODO: add new user")}
-              >
-                Add new user
-              </Button>
-            )}
+            <AddNewUserButton />
           </HStack>
         </VStack>
         <UserTableTabs
@@ -105,11 +96,12 @@ const SiteUsersPage: NextPageWithLayout = () => {
 }
 
 SiteUsersPage.getLayout = (page: React.ReactNode) => {
-  const wrappedPage = AdminSidebarOnlyLayout(page)
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
-      page={<UserManagementLayout>{wrappedPage}</UserManagementLayout>}
+      page={AdminSidebarOnlyLayout(
+        <UserManagementLayout>{page}</UserManagementLayout>,
+      )}
     />
   )
 }

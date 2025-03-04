@@ -126,12 +126,7 @@ const generateArgs = ({
     maxColumns: maxColumns,
     variant: withoutImage ? "cardsWithoutImages" : "cardsWithImages",
     cards: cards,
-    ...(hasCTA
-      ? {
-          label: "This is a CTA",
-          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        }
-      : {}),
+    ...(hasCTA ? { label: "This is a CTA", url: "/" } : {}),
   } as InfoCardsProps
 }
 
