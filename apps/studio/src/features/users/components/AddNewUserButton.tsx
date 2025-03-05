@@ -1,3 +1,4 @@
+import type { ButtonProps } from "@chakra-ui/react"
 import { useContext } from "react"
 import { Button, Tooltip } from "@chakra-ui/react"
 import { useSetAtom } from "jotai"
@@ -10,11 +11,14 @@ import {
   DEFAULT_ADD_USER_MODAL_STATE,
 } from "~/features/users/atom"
 
-interface AddNewUserButtonProps {
+interface AddNewUserButtonProps extends Omit<ButtonProps, "onClick"> {
   siteId: number
 }
 
-export const AddNewUserButton = ({ siteId }: AddNewUserButtonProps) => {
+export const AddNewUserButton = ({
+  siteId,
+  ...buttonProps
+}: AddNewUserButtonProps) => {
   const ability = useContext(UserManagementContext)
   const canManageUsers = ability.can("manage", "UserManagement")
 
@@ -30,6 +34,7 @@ export const AddNewUserButton = ({ siteId }: AddNewUserButtonProps) => {
         setAddUserModalState({ ...DEFAULT_ADD_USER_MODAL_STATE, siteId })
       }}
       isDisabled={!canManageUsers}
+      {...buttonProps}
     >
       Add new user
     </Button>

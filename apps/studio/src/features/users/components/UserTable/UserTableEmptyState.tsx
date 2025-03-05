@@ -24,7 +24,7 @@ export const UserTableEmptyState = ({
                 </Text>
               )}
             </VStack>
-            {promptAddUser && <AddNewUserButton siteId={siteId} />}
+            {promptAddUser && <AddNewUserButton siteId={siteId} size="sm" />}
           </VStack>
         </Flex>
       </Td>
