@@ -32,6 +32,10 @@ export const LastLoginCell = ({ lastLoginAt }: LastLoginCellProps) => {
     )
   }
 
+  if (daysFromLastLogin === 0) {
+    return <Text textStyle="caption-2">Today</Text>
+  }
+
   return (
     <Text textStyle="caption-2">{`${daysFromLastLogin} ${daysFromLastLogin === 1 ? "day" : "days"} ago`}</Text>
   )
