@@ -27,7 +27,7 @@ export const RoleBox = ({
   return (
     <Button
       variant="unstyled"
-      border="1px solid"
+      border="1.5px solid"
       p={5}
       borderColor={isSelected ? "blue.500" : "gray.200"}
       bg={isSelected ? "blue.50" : "white"}
@@ -40,8 +40,8 @@ export const RoleBox = ({
       onClick={onClick}
       data-selected={dataAttr(isSelected)}
       _selected={{
-        borderColor: "blue.500",
-        bg: "blue.50",
+        bg: "interaction.muted.main.active",
+        borderColor: "base.divider.brand",
       }}
       _disabled={{
         color: "interaction.support.disabled-content",
@@ -49,21 +49,22 @@ export const RoleBox = ({
         borderColor: "interaction.support.disabled",
         opacity: 0.6,
         cursor: "not-allowed",
-        _hover: {
-          borderColor: "gray.200",
-          boxShadow: "none",
-        },
       }}
       _hover={
-        !isDisabled
+        isDisabled
           ? {
-              borderColor: "blue.500",
-              boxShadow: "sm",
-            }
-          : {
               bg: "interaction.support.disabled",
               borderColor: "interaction.support.disabled",
             }
+          : isSelected
+            ? {
+                bg: "interaction.muted.main.active",
+                borderColor: "base.divider.brand",
+              }
+            : {
+                bg: "interaction.muted.main.hover",
+                borderColor: "base.divider.medium",
+              }
       }
       aria-label={`${value} role`}
     >
@@ -72,13 +73,21 @@ export const RoleBox = ({
           boxSize={5}
           as={ROLES_ICONS[value]}
           color={
-            isDisabled ? "interaction.support.disabled-content" : undefined
+            isSelected
+              ? "base.divider.brand"
+              : isDisabled
+                ? "interaction.support.disabled-content"
+                : undefined
           }
         />
         <Text
           textStyle="subhead-1"
           color={
-            isDisabled ? "interaction.support.disabled-content" : undefined
+            isSelected
+              ? "base.divider.brand"
+              : isDisabled
+                ? "interaction.support.disabled-content"
+                : undefined
           }
         >
           {value}
