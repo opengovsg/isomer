@@ -44,9 +44,12 @@ export const getUserOutputSchema = z.object({
   lastLoginAt: z.date().nullable(),
 })
 
+const ADMIN_TYPE = z.enum(["agency", "isomer"] as const)
+export type AdminType = z.infer<typeof ADMIN_TYPE>
+
 export const listUsersInputSchema = z.object({
   siteId: z.number().min(1),
-  getIsomerAdmins: z.boolean().optional().default(false),
+  adminType: ADMIN_TYPE.optional().default("agency"),
   ...offsetPaginationSchema.shape,
 })
 
@@ -62,7 +65,7 @@ export const listUsersOutputSchema = z.array(
 
 export const countUsersInputSchema = z.object({
   siteId: z.number().min(1),
-  getIsomerAdmins: z.boolean().optional().default(false),
+  adminType: ADMIN_TYPE.optional().default("agency"),
 })
 
 export const countUsersOutputSchema = z.number()

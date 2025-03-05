@@ -4,6 +4,7 @@ import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 import isEmail from "validator/lib/isEmail"
 
 import type { SafeKysely } from "../database"
+import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { isGovEmail } from "~/utils/email"
 import { db, RoleType, sql } from "../database"
@@ -141,17 +142,14 @@ export const createUser = async ({
 
 interface GetUsersQueryProps {
   siteId: number
-  getIsomerAdmins: boolean
+  adminType: AdminType
 }
 
 interface RankedResourcePermission extends ResourcePermission {
   rn: number
 }
 
-export const getUsersQuery = ({
-  siteId,
-  getIsomerAdmins,
-}: GetUsersQueryProps) => {
+export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
   return db
     .with("ActiveResourcePermission", (qb) =>
       qb
@@ -181,7 +179,7 @@ export const getUsersQuery = ({
         .where("deletedAt", "is", null)
         .where(
           "email",
-          getIsomerAdmins ? "in" : "not in",
+          adminType === "isomer" ? "in" : "not in",
           ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
         ),
     )

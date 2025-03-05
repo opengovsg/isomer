@@ -813,7 +813,7 @@ describe("user.router", () => {
       )
     })
 
-    it("should not return isomer admins if getIsomerAdmins is not set", async () => {
+    it("should not return isomer admins if adminType is not set", async () => {
       // Arrange
       await setupEditorPermissions({ userId: session.userId, siteId })
       await setupIsomerAdmins({ siteId })
@@ -831,13 +831,13 @@ describe("user.router", () => {
       )
     })
 
-    it("should not return isomer admins if getIsomerAdmins is set to false", async () => {
+    it("should not return isomer admins if adminType is set to agency", async () => {
       // Arrange
       await setupEditorPermissions({ userId: session.userId, siteId })
       await setupIsomerAdmins({ siteId })
 
       // Act
-      const result = await caller.list({ siteId, getIsomerAdmins: false })
+      const result = await caller.list({ siteId, adminType: "agency" })
 
       // Assert
       expect(result).toHaveLength(1) // only the current admin user
@@ -849,13 +849,13 @@ describe("user.router", () => {
       )
     })
 
-    it("should only return isomer admins if getIsomerAdmins is set as true", async () => {
+    it("should only return isomer admins if adminType is set as isomer", async () => {
       // Arrange
       await setupEditorPermissions({ userId: session.userId, siteId })
       await setupIsomerAdmins({ siteId })
 
       // Act
-      const result = await caller.list({ siteId, getIsomerAdmins: true })
+      const result = await caller.list({ siteId, adminType: "isomer" })
 
       // Assert
       expect(result).toHaveLength(Math.min(isomerAdminsCount, 10))
@@ -996,7 +996,7 @@ describe("user.router", () => {
       expect(result).toBe(1) // only the current admin user
     })
 
-    it("should not return isomer admins if getIsomerAdmins is not set", async () => {
+    it("should not return isomer admins if adminType is not set", async () => {
       // Arrange
       await setupEditorPermissions({ userId: session.userId, siteId })
       await setupIsomerAdmins({ siteId })
@@ -1008,25 +1008,25 @@ describe("user.router", () => {
       expect(result).toBe(1) // only the current admin user
     })
 
-    it("should not return isomer admins if getIsomerAdmins is set to false", async () => {
+    it("should not return isomer admins if adminType is set to agency", async () => {
       // Arrange
       await setupEditorPermissions({ userId: session.userId, siteId })
       await setupIsomerAdmins({ siteId })
 
       // Act
-      const result = await caller.count({ siteId, getIsomerAdmins: false })
+      const result = await caller.count({ siteId, adminType: "agency" })
 
       // Assert
       expect(result).toBe(1) // only the current admin user
     })
 
-    it("should only return isomer admins if getIsomerAdmins is set as true", async () => {
+    it("should only return isomer admins if adminType is set as isomer", async () => {
       // Arrange
       await setupEditorPermissions({ userId: session.userId, siteId })
       await setupIsomerAdmins({ siteId })
 
       // Act
-      const result = await caller.count({ siteId, getIsomerAdmins: true })
+      const result = await caller.count({ siteId, adminType: "isomer" })
 
       // Assert
       expect(result).toBe(isomerAdminsCount)

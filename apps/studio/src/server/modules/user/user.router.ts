@@ -123,7 +123,7 @@ export const userRouter = router({
         action: "read",
       })
 
-      const result = await getUsersQuery({ siteId, getIsomerAdmins: false })
+      const result = await getUsersQuery({ siteId, adminType: "agency" })
         .where("ActiveUser.id", "=", userId)
         .select((eb) => [
           "ActiveUser.id",
@@ -147,40 +147,38 @@ export const userRouter = router({
   list: protectedProcedure
     .input(listUsersInputSchema)
     .output(listUsersOutputSchema)
-    .query(
-      async ({ ctx, input: { siteId, getIsomerAdmins, offset, limit } }) => {
-        await validatePermissionsForManagingUsers({
-          siteId,
-          userId: ctx.user.id,
-          action: "read",
-        })
-
-        return getUsersQuery({ siteId, getIsomerAdmins })
-          .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
-          .select((eb) => [
-            "ActiveUser.id",
-            "ActiveUser.email",
-            "ActiveUser.name",
-            "ActiveUser.lastLoginAt",
-            eb.ref("ActiveResourcePermission.role").as("role"),
-          ])
-          .limit(limit)
-          .offset(offset)
-          .execute()
-      },
-    ),
-
-  count: protectedProcedure
-    .input(countUsersInputSchema)
-    .output(countUsersOutputSchema)
-    .query(async ({ ctx, input: { siteId, getIsomerAdmins } }) => {
+    .query(async ({ ctx, input: { siteId, adminType, offset, limit } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
         action: "read",
       })
 
-      const result = await getUsersQuery({ siteId, getIsomerAdmins })
+      return getUsersQuery({ siteId, adminType })
+        .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
+        .select((eb) => [
+          "ActiveUser.id",
+          "ActiveUser.email",
+          "ActiveUser.name",
+          "ActiveUser.lastLoginAt",
+          eb.ref("ActiveResourcePermission.role").as("role"),
+        ])
+        .limit(limit)
+        .offset(offset)
+        .execute()
+    }),
+
+  count: protectedProcedure
+    .input(countUsersInputSchema)
+    .output(countUsersOutputSchema)
+    .query(async ({ ctx, input: { siteId, adminType } }) => {
+      await validatePermissionsForManagingUsers({
+        siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      const result = await getUsersQuery({ siteId, adminType })
         .select((eb) => [eb.fn.countAll().as("count")])
         .executeTakeFirstOrThrow()
 
@@ -200,7 +198,7 @@ export const userRouter = router({
       const ninetyDaysAgo = new Date()
       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
 
-      const result = await getUsersQuery({ siteId, getIsomerAdmins: false })
+      const result = await getUsersQuery({ siteId, adminType: "agency" })
         .select((eb) => [eb.fn.countAll().as("count")])
         .where("ActiveUser.lastLoginAt", "is not", null)
         .where("ActiveUser.lastLoginAt", "<", ninetyDaysAgo)
