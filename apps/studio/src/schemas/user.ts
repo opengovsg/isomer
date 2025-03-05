@@ -89,7 +89,7 @@ export const updateUserOutputSchema = z.object({
   role: z.nativeEnum(RoleType),
 })
 
-export const updateDetailsInputSchema = z.object({
+export const updateUserDetailsInputSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   phone: z
     .string()
@@ -107,7 +107,7 @@ export const updateDetailsInputSchema = z.object({
     ),
 })
 
-export const updateDetailsOutputSchema = z.object({
+export const updateUserDetailsOutputSchema = z.object({
   name: z.string().nullable(),
   phone: z.string().nullable(),
 })

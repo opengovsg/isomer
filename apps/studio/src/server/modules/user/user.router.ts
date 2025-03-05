@@ -13,8 +13,8 @@ import {
   hasInactiveUsersOutputSchema,
   listUsersInputSchema,
   listUsersOutputSchema,
-  updateDetailsInputSchema,
-  updateDetailsOutputSchema,
+  updateUserDetailsInputSchema,
+  updateUserDetailsOutputSchema,
   updateUserInputSchema,
   updateUserOutputSchema,
 } from "~/schemas/user"
@@ -281,8 +281,8 @@ export const userRouter = router({
     }),
 
   updateDetails: protectedProcedure
-    .input(updateDetailsInputSchema)
-    .output(updateDetailsOutputSchema)
+    .input(updateUserDetailsInputSchema)
+    .output(updateUserDetailsOutputSchema)
     .mutation(async ({ ctx, input: { name, phone } }) => {
       // We don't have to check if the user is admin here
       // because we only allow users to update their own details
