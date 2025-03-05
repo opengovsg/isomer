@@ -83,7 +83,7 @@ export const createUser = async ({
       })
       .onConflict((oc) =>
         oc
-          .column("email")
+          .columns(["email", "deletedAt"])
           .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
       )
       .returning(["id", "email", "name", "phone", "deletedAt"])
