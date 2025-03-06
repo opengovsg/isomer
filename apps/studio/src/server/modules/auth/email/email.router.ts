@@ -97,17 +97,25 @@ export const emailSessionRouter = router({
 
       const emailName = email.split("@")[0] ?? "unknown"
 
-      const user = await ctx.prisma.user.upsert({
-        where: { email },
-        update: {},
-        create: {
-          email,
-          // TODO: add the phone in later, this is a wip
-          phone: "",
-          name: emailName,
-        },
-        select: defaultMeSelect,
-      })
+      // Not using Prisma's `upsert` because Prisma's unique constraint with nullable fields
+      // like `deletedAt` causes type issues. Prisma expects `deletedAt` to be `string|Date`
+      // even when `null` is valid in the database schema.
+      const user =
+        (await ctx.prisma.user.findFirst({
+          where: {
+            email,
+            deletedAt: null,
+          },
+          select: defaultMeSelect,
+        })) ??
+        (await ctx.prisma.user.create({
+          data: {
+            email,
+            phone: "", // TODO: add the phone in later, this is a wip
+            name: emailName,
+          },
+          select: defaultMeSelect,
+        }))
 
       ctx.session.userId = user.id
       await ctx.session.save()
