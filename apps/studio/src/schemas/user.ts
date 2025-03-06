@@ -88,3 +88,26 @@ export const updateUserOutputSchema = z.object({
   userId: z.string(),
   role: z.nativeEnum(RoleType),
 })
+
+export const updateUserDetailsInputSchema = z.object({
+  name: z.string().trim().min(1, "Name is required"),
+  phone: z
+    .string()
+    .trim()
+    .min(1, "Phone number is required")
+    .transform((phone) => phone.replace(/\s+/g, ""))
+    .refine(
+      (phone) => !isNaN(Number(phone)) && phone.length === 8,
+      "Phone number must be exactly 8 digits",
+    )
+    .refine(
+      (phone) =>
+        phone.startsWith("6") || phone.startsWith("8") || phone.startsWith("9"),
+      "Phone number must start with 6, 8, or 9",
+    ),
+})
+
+export const updateUserDetailsOutputSchema = z.object({
+  name: z.string().nullable(),
+  phone: z.string().nullable(),
+})
