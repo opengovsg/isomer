@@ -237,16 +237,6 @@ export const userRouter = router({
         })
       }
 
-      // Temporary test to ensure that we don't allow creating a user that was deleted before
-      // We prevent this as there's no complete audit trail of what happened to the user
-      // TODO: Remove this after audit logging is implemented
-      if (user.deletedAt) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "User was deleted before. Contact support to restore.",
-        })
-      }
-
       validateEmailRoleCombination({ email: user.email, role })
 
       const updatedUserPermission = await db

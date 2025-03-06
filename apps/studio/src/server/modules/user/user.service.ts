@@ -83,21 +83,11 @@ export const createUser = async ({
       })
       .onConflict((oc) =>
         oc
-          .column("email")
+          .columns(["email", "deletedAt"])
           .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
       )
       .returning(["id", "email", "name", "phone", "deletedAt"])
       .executeTakeFirstOrThrow()
-
-    // Temporary test to ensure that we don't allow creating a user that was deleted before
-    // We prevent this as there's no complete audit trail of what happened to the user
-    // TODO: Remove this after audit logging is implemented
-    if (user.deletedAt) {
-      throw new TRPCError({
-        code: "CONFLICT",
-        message: "User was deleted before. Contact support to restore.",
-      })
-    }
 
     // unique constraint (@@unique([userId, siteId, resourceId, role]))
     // does not work if one column is NULL e.g. resourceId
