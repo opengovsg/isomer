@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 
+import { sendInvitation } from "~/features/mail/service"
 import {
   countUsersInputSchema,
   countUsersOutputSchema,
@@ -19,6 +20,7 @@ import {
 import { protectedProcedure, router } from "../../trpc"
 import { db, sql } from "../database"
 import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
+import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import {
   createUser,
   getUsersQuery,
@@ -54,8 +56,17 @@ export const userRouter = router({
         )
       })
 
-      // TODO: Send welcome email to users
-      // Email service is not ready yet
+      // Send welcome email to users
+      const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
+      await Promise.all(
+        createdUsers.map((createdUser) =>
+          sendInvitation({
+            recipientEmail: createdUser.email,
+            siteName,
+            role: createdUser.role,
+          }),
+        ),
+      )
 
       return createdUsers
     }),
