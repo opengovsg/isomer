@@ -7,7 +7,7 @@ import type { SafeKysely } from "../database"
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { isGovEmail } from "~/utils/email"
-import { db, RoleType, sql } from "../database"
+import { db, RoleType } from "../database"
 import { isEmailWhitelisted } from "../whitelist/whitelist.service"
 
 export const isUserDeleted = async (email: string) => {
@@ -135,32 +135,14 @@ interface GetUsersQueryProps {
   adminType: AdminType
 }
 
-interface RankedResourcePermission extends ResourcePermission {
-  rn: number
-}
-
 export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
   return db
     .with("ActiveResourcePermission", (qb) =>
       qb
-        .selectFrom(
-          sql<RankedResourcePermission>`(
-          SELECT *,
-            ROW_NUMBER() OVER (
-              PARTITION BY "userId", "siteId", "resourceId"
-              ORDER BY CASE 
-                WHEN role = ${RoleType.Admin} THEN 1
-                WHEN role = ${RoleType.Publisher} THEN 2
-                WHEN role = ${RoleType.Editor} THEN 3
-              END ASC
-            ) as rn
-          FROM "ResourcePermission"
-          WHERE "deletedAt" IS NULL
-          AND "siteId" = ${siteId}
-        )`.as("ranked_permissions"),
-        )
-        .selectAll()
-        .where("rn", "=", 1),
+        .selectFrom("ResourcePermission")
+        .where("deletedAt", "is", null)
+        .where("siteId", "=", siteId)
+        .selectAll(),
     )
     .with("ActiveUser", (qb) =>
       qb
