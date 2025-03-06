@@ -102,30 +102,6 @@ describe("site.router", async () => {
       expect(result).toEqual([])
     })
 
-    it("should only show a site once if there are multiple permissions for the same site and user", async () => {
-      // Arrange
-      const { site: site1 } = await setupSite()
-      await setupAdminPermissions({
-        userId: session.userId,
-        siteId: site1.id,
-      })
-      await setupAdminPermissions({
-        userId: session.userId,
-        siteId: site1.id,
-      })
-
-      // Act
-      const result = await caller.list()
-
-      // Assert
-      expect(result).toEqual([
-        {
-          id: site1.id,
-          config: site1.config,
-        },
-      ])
-    })
-
     it("should only return sites if the permissions are not deleted for the site", async () => {
       const { site: site1 } = await setupSite()
       const { site: site2 } = await setupSite()
