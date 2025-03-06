@@ -17,7 +17,7 @@ export const whitelistRouter = router({
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
-        action: "create",
+        action: "manage",
       })
 
       return await isEmailWhitelisted(email)
