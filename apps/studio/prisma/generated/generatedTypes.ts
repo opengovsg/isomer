@@ -93,6 +93,7 @@ export interface User {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
   deletedAt: Timestamp | null
+  lastLoginAt: Timestamp | null
 }
 export interface VerificationToken {
   identifier: string

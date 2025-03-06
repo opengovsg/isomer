@@ -7,6 +7,7 @@ import type {
   PermissionsProps,
   ResourceAbility,
   SiteAbility,
+  UserManagementAbility,
 } from "./permissions.type"
 import { db } from "../database"
 import { CRUD_ACTIONS } from "./permissions.type"
@@ -56,7 +57,7 @@ export const definePermissionsForSite = async ({
     .execute()
 
   // NOTE: Any role should be able to read site
-  if (roles.length > 0) {
+  if (roles.length === 1) {
     builder.can("read", "Site")
   }
 
@@ -103,6 +104,53 @@ export const validateUserPermissionsForResource = async ({
 
   // TODO: create should check against the current resource id
   if (perms.cannot(action, resource)) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You do not have sufficient permissions to perform this action",
+    })
+  }
+}
+
+const definePermissionsForManagingUsers = async ({
+  userId,
+  siteId,
+}: Omit<PermissionsProps, "resourceId">) => {
+  const builder = new AbilityBuilder<UserManagementAbility>(createMongoAbility)
+  const roles = await db
+    .selectFrom("ResourcePermission")
+    .where("userId", "=", userId)
+    .where("siteId", "=", siteId)
+    .where("resourceId", "is", null)
+    .where("deletedAt", "is", null)
+    .select("role")
+    .execute()
+
+  // NOTE: Any role should be able to read the list of user permissions
+  if (roles.length === 1) {
+    builder.can("read", "UserManagement")
+  }
+
+  // Only Admin role can manage permissions
+  if (roles.some(({ role }) => role === RoleType.Admin)) {
+    CRUD_ACTIONS.map((action) => {
+      builder.can(action, "UserManagement")
+    })
+  }
+
+  return builder.build({ detectSubjectType: () => "UserManagement" })
+}
+
+export const validatePermissionsForManagingUsers = async ({
+  siteId,
+  userId,
+  action,
+}: Omit<PermissionsProps, "resourceId"> & { action: CrudResourceActions }) => {
+  const perms = await definePermissionsForManagingUsers({
+    siteId,
+    userId,
+  })
+
+  if (perms.cannot(action, "UserManagement")) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "You do not have sufficient permissions to perform this action",
