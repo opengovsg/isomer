@@ -24,7 +24,7 @@ describe("sgid.service", () => {
       })
 
       // Assert
-      const user = await prisma.user.findUnique({
+      const user = await prisma.user.findFirst({
         where: { email: TEST_EMAIL },
       })
       expect(user?.lastLoginAt).toBe(null)
@@ -51,7 +51,7 @@ describe("sgid.service", () => {
       })
 
       // Assert
-      const user = await prisma.user.findUnique({
+      const user = await prisma.user.findFirst({
         where: { email: TEST_EMAIL },
       })
       expect(user?.lastLoginAt).toBeInstanceOf(Date)

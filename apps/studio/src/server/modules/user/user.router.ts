@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 
+import { sendInvitation } from "~/features/mail/service"
 import {
   countUsersInputSchema,
   countUsersOutputSchema,
@@ -21,6 +22,7 @@ import {
 import { protectedProcedure, router } from "../../trpc"
 import { db, sql } from "../database"
 import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
+import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import {
   createUser,
   getUsersQuery,
@@ -56,8 +58,17 @@ export const userRouter = router({
         )
       })
 
-      // TODO: Send welcome email to users
-      // Email service is not ready yet
+      // Send welcome email to users
+      const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
+      await Promise.all(
+        createdUsers.map((createdUser) =>
+          sendInvitation({
+            recipientEmail: createdUser.email,
+            siteName,
+            role: createdUser.role,
+          }),
+        ),
+      )
 
       return createdUsers
     }),
@@ -236,16 +247,6 @@ export const userRouter = router({
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
-        })
-      }
-
-      // Temporary test to ensure that we don't allow creating a user that was deleted before
-      // We prevent this as there's no complete audit trail of what happened to the user
-      // TODO: Remove this after audit logging is implemented
-      if (user.deletedAt) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "User was deleted before. Contact support to restore.",
         })
       }
 
