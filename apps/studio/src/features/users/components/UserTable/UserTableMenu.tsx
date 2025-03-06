@@ -13,21 +13,26 @@ import type { UserTableData } from "./types"
 import type { UserTableProps } from "./UserTable"
 import { MenuItem } from "~/components/Menu"
 import { UserManagementContext } from "~/features/users"
-import { removeUserModalAtom } from "../../atoms"
+import { removeUserModalAtom, updateUserModalAtom } from "../../atoms"
 
 interface UserTableMenuProps extends Pick<UserTableProps, "siteId"> {
   userId: UserTableData["id"]
   userName: UserTableData["name"]
+  email: UserTableData["email"]
+  role: UserTableData["role"]
 }
 
 export const UserTableMenu = ({
   siteId,
   userId,
   userName,
+  email,
+  role,
 }: UserTableMenuProps) => {
   const ability = useContext(UserManagementContext)
 
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
+  const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
 
   return (
     <Menu isLazy size="sm">
@@ -43,10 +48,11 @@ export const UserTableMenu = ({
           {ability.can("manage", "UserManagement") && (
             <>
               <MenuItem
-                onClick={() => {
-                  console.log(`TODO: Edit user: ${userId} ${siteId}`)
-                }}
+                onClick={() =>
+                  setUpdateUserModalState({ siteId, userId, email, role })
+                }
                 icon={<BiPencil fontSize="1rem" />}
+                aria-label={`Edit user ${userName}`}
               >
                 Edit user
               </MenuItem>

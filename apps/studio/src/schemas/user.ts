@@ -11,7 +11,9 @@ export const createUserInputSchema = z.object({
   siteId: z.number().min(1),
   users: z.array(
     z.object({
-      email: z.string().email(),
+      email: z.string().email({
+        message: "This doesn't look like a valid email address.",
+      }),
       role: z.nativeEnum(RoleType).optional().default(RoleType.Editor),
     }),
   ),

@@ -19,41 +19,55 @@ export const userHandlers = {
         return [
           {
             id: "1",
+            name: "Government Admin",
+            email: "example_admin@isomer.gov.sg",
+            role: RoleType.Admin,
+            lastLoginAt: new Date(),
+          },
+          {
+            id: "2",
+            name: "Government Editor",
+            email: "example_editor@isomer.gov.sg",
+            role: RoleType.Editor,
+            lastLoginAt: new Date(),
+          },
+          {
+            id: "3",
             name: "Admin User",
             email: "admin@example.com",
             role: RoleType.Admin,
             lastLoginAt: new Date(),
           },
           {
-            id: "2",
+            id: "4",
             name: "Editor User",
             email: "editor@example.com",
             role: RoleType.Editor,
             lastLoginAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
           },
           {
-            id: "3",
+            id: "5",
             name: "Publisher User",
             email: "publisher@example.com",
             role: RoleType.Publisher,
             lastLoginAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
           },
           {
-            id: "4",
+            id: "6",
             name: "User who last logged in 1 month ago",
             email: "last-login-1-month-ago@example.com",
             role: RoleType.Editor,
             lastLoginAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           },
           {
-            id: "5",
+            id: "7",
             name: "User who last logged in 6 months ago",
             email: "last-login-6-months-ago@example.com",
             role: RoleType.Editor,
             lastLoginAt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
           },
           {
-            id: "6",
+            id: "8",
             name: "User who has never logged in",
             email: "never-logged-in@example.com",
             role: RoleType.Editor,
@@ -119,6 +133,31 @@ export const userHandlers = {
           email: "admin@example.com",
           role: RoleType.Admin,
           lastLoginAt: new Date(),
+        }
+      })
+    },
+  },
+  create: {
+    success: ({ email }: { email: string }) => {
+      return trpcMsw.user.create.mutation(() => {
+        return [
+          {
+            id: "1",
+            email,
+            role: RoleType.Admin,
+          },
+        ]
+      })
+    },
+  },
+  update: {
+    success: () => {
+      return trpcMsw.user.update.mutation(() => {
+        return {
+          id: "1",
+          userId: "1",
+          siteId: 1,
+          role: RoleType.Admin,
         }
       })
     },
