@@ -12,6 +12,7 @@ interface SetupPermissionsProps {
   siteId: number
   isDeleted?: boolean
   role: (typeof RoleType)[keyof typeof RoleType]
+  useCurrentTime?: boolean
 }
 
 const setupPermissions = async ({
@@ -19,9 +20,11 @@ const setupPermissions = async ({
   siteId,
   role,
   isDeleted = false,
+  useCurrentTime = false,
 }: SetupPermissionsProps) => {
   if (!userId) throw new Error("userId is a required field")
 
+  const time = useCurrentTime ? new Date() : MOCK_STORY_DATE
   return await db
     .insertInto("ResourcePermission")
     .values({
@@ -29,7 +32,9 @@ const setupPermissions = async ({
       siteId,
       role,
       resourceId: null,
-      deletedAt: isDeleted ? MOCK_STORY_DATE : null,
+      deletedAt: isDeleted ? time : null,
+      createdAt: time,
+      updatedAt: time,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
