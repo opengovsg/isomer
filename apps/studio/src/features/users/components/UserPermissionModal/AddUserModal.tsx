@@ -82,7 +82,7 @@ export const AddUserModal = () => {
     [isNonGovEmailInput, whitelistError],
   )
 
-  const { mutate: createUser } = trpc.user.create.useMutation({
+  const { mutate: createUser, isLoading } = trpc.user.create.useMutation({
     onSuccess: async (createdUsers) => {
       await utils.user.list.invalidate()
       await utils.user.count.invalidate()
@@ -250,6 +250,7 @@ export const AddUserModal = () => {
           <Button
             variant="solid"
             onClick={onSendInvite}
+            isLoading={isLoading}
             isDisabled={
               Object.keys(errors).length > 0 ||
               email === "" ||
