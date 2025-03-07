@@ -25,7 +25,7 @@ import { useAtomValue, useSetAtom } from "jotai"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
-import { createInputSchema } from "~/schemas/user"
+import { createUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
 import {
@@ -59,7 +59,7 @@ export const AddUserModal = () => {
   } = useZodForm({
     // Create a simplified schema that only accept 1 user with email and role
     // as we currently only support adding 1 user at a time
-    schema: createInputSchema.shape.users.element,
+    schema: createUserInputSchema.shape.users.element,
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: {

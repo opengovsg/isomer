@@ -21,7 +21,7 @@ import { z as zod } from "zod"
 
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
-import { updateInputSchema } from "~/schemas/user"
+import { updateUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
 import {
@@ -42,7 +42,7 @@ export const EditUserModal = () => {
 
   const { watch, handleSubmit, setValue } = useZodForm({
     schema: zod.object({
-      role: updateInputSchema.shape.role,
+      role: updateUserInputSchema.shape.role,
     }),
     mode: "onChange",
     reValidateMode: "onChange",
