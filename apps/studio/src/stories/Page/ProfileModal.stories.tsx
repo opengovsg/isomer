@@ -4,9 +4,17 @@ import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
+import { userHandlers } from "tests/msw/handlers/user"
 
 import SitePage from "~/pages/sites/[siteId]"
 import { ResetUpdateProfileModalDecorator } from "~/stories/decorators/resetModalState"
+
+const COMMON_HANDLERS = [
+  meHandlers.me(),
+  resourceHandlers.getRolesFor.default(),
+  sitesHandlers.getSiteName.default(),
+  pageHandlers.getRootPage.default(),
+]
 
 const meta: Meta<typeof SitePage> = {
   title: "Pages/Profile Management/Profile Modal",
@@ -14,12 +22,7 @@ const meta: Meta<typeof SitePage> = {
   parameters: {
     getLayout: SitePage.getLayout,
     msw: {
-      handlers: [
-        meHandlers.me(),
-        resourceHandlers.getRolesFor.default(),
-        sitesHandlers.getSiteName.default(),
-        pageHandlers.getRootPage.default(),
-      ],
+      handlers: COMMON_HANDLERS,
     },
     nextjs: {
       router: {
@@ -108,5 +111,39 @@ export const NonSingaporePhone: Story = {
       await userEvent.clear(phoneInput)
       await userEvent.type(phoneInput, "12345678")
     }
+  },
+}
+
+export const Loading: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS, userHandlers.updateDetails.loading()],
+    },
+  },
+  play: async (context) => {
+    await Default.play?.(context)
+
+    const rootScreen = within(context.canvasElement.ownerDocument.body)
+    const saveButton = await rootScreen.findByText("Save changes")
+    await userEvent.click(saveButton, {
+      pointerEventsCheck: 0,
+    })
+  },
+}
+
+export const Success: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS, userHandlers.updateDetails.success()],
+    },
+  },
+  play: async (context) => {
+    await Default.play?.(context)
+
+    const rootScreen = within(context.canvasElement.ownerDocument.body)
+    const saveButton = await rootScreen.findByText("Save changes")
+    await userEvent.click(saveButton, {
+      pointerEventsCheck: 0,
+    })
   },
 }
