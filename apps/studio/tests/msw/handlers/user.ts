@@ -136,6 +136,11 @@ export const userHandlers = {
         ]
       })
     },
+    loading: () => {
+      return trpcMsw.user.create.mutation(() => {
+        return new Promise(() => {})
+      })
+    },
   },
   update: {
     success: () => {

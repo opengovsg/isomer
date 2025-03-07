@@ -9,6 +9,7 @@ import { whitelistHandlers } from "tests/msw/handlers/whitelist"
 import UsersPage from "~/pages/sites/[siteId]/users"
 import { ResetAddUserModalDecorator } from "../decorators/resetModalState"
 
+const EMAIL = "chillguy@isomer.gov.sg"
 const COMMON_HANDLERS = [
   meHandlers.me(),
   resourceHandlers.getRolesFor.default(),
@@ -162,7 +163,38 @@ export const EmailIsNotWhitelisted: Story = {
   },
 }
 
-const EMAIL = "chillguy@isomer.gov.sg"
+export const Loading: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS, userHandlers.create.loading()],
+    },
+  },
+  play: async (context) => {
+    const { canvasElement } = context
+    await Baseline.play?.(context)
+
+    const screen = within(canvasElement.ownerDocument.body)
+    const emailInput = Array.from(
+      canvasElement.ownerDocument.querySelectorAll(
+        'input[name="email"][required]',
+      ),
+    )[0]
+
+    if (emailInput) {
+      await userEvent.type(emailInput, EMAIL)
+    }
+
+    // Find the Send invite button
+    const sendInviteButton = await screen.findByText("Send invite")
+
+    // Wait for the button to be enabled
+    await expect(sendInviteButton).not.toBeDisabled()
+
+    // Click the button
+    await userEvent.click(sendInviteButton)
+  },
+}
+
 export const ToastAfterAddingUser: Story = {
   parameters: {
     msw: {
