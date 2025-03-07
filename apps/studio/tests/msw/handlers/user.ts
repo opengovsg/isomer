@@ -110,4 +110,34 @@ export const userHandlers = {
       })
     },
   },
+  getUser: {
+    default: () => {
+      return trpcMsw.user.getUser.query(() => {
+        return {
+          id: "1",
+          name: "Admin User",
+          email: "admin@example.com",
+          role: RoleType.Admin,
+          lastLoginAt: new Date(),
+        }
+      })
+    },
+  },
+  delete: {
+    success: () => {
+      return trpcMsw.user.delete.mutation(() => {
+        return {
+          id: "1",
+          email: "admin@example.com",
+        }
+      })
+    },
+    loading: () => {
+      return trpcMsw.user.delete.mutation(() => {
+        return new Promise(() => {
+          // Never resolve to simulate infinite loading
+        })
+      })
+    },
+  },
 }

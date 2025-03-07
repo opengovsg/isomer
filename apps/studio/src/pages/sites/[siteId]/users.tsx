@@ -5,7 +5,11 @@ import { z } from "zod"
 
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { UserManagementProvider } from "~/features/users"
-import { AddNewUserButton, UserTableTabs } from "~/features/users/components"
+import {
+  AddNewUserButton,
+  RemoveUserModal,
+  UserTableTabs,
+} from "~/features/users/components"
 import { CollaboratorsDescription } from "~/features/users/components/CollaboratorsDescription"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
@@ -26,44 +30,47 @@ const SiteUsersPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteUsersSchema)
 
   return (
-    <VStack
-      w="100%"
-      p="1.75rem"
-      gap="1rem"
-      height="0"
-      overflow="auto"
-      minH="100%"
-      alignItems="start"
-    >
-      <VStack w="100%" align="start">
-        <HStack w="100%" justifyContent="space-between" alignItems="end">
-          <VStack gap="0.5rem" align="start">
-            <HStack mr="1.25rem" overflow="auto" gap="0.75rem" flex={1}>
-              <Box
-                aria-hidden
-                bg="brand.secondary.100"
-                p="0.5rem"
-                borderRadius="6px"
-              >
-                <PiUsersBold />
-              </Box>
-              <Text
-                noOfLines={1}
-                as="h3"
-                textStyle="h3"
-                textOverflow="ellipsis"
-                wordBreak="break-all"
-              >
-                Collaborators
-              </Text>
-            </HStack>
-            <CollaboratorsDescription />
-          </VStack>
-          <AddNewUserButton siteId={siteId} />
-        </HStack>
+    <>
+      <VStack
+        w="100%"
+        p="1.75rem"
+        gap="1rem"
+        height="0"
+        overflow="auto"
+        minH="100%"
+        alignItems="start"
+      >
+        <VStack w="100%" align="start">
+          <HStack w="100%" justifyContent="space-between" alignItems="end">
+            <VStack gap="0.5rem" align="start">
+              <HStack mr="1.25rem" overflow="auto" gap="0.75rem" flex={1}>
+                <Box
+                  aria-hidden
+                  bg="brand.secondary.100"
+                  p="0.5rem"
+                  borderRadius="6px"
+                >
+                  <PiUsersBold />
+                </Box>
+                <Text
+                  noOfLines={1}
+                  as="h3"
+                  textStyle="h3"
+                  textOverflow="ellipsis"
+                  wordBreak="break-all"
+                >
+                  Collaborators
+                </Text>
+              </HStack>
+              <CollaboratorsDescription />
+            </VStack>
+            <AddNewUserButton siteId={siteId} />
+          </HStack>
+        </VStack>
+        <UserTableTabs siteId={siteId} />
       </VStack>
-      <UserTableTabs siteId={siteId} />
-    </VStack>
+      <RemoveUserModal />
+    </>
   )
 }
 
