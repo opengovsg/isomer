@@ -24,7 +24,7 @@ import { Controller } from "react-hook-form"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useMe } from "~/features/me/api"
 import { useZodForm } from "~/lib/form"
-import { updateDetailsInputSchema } from "~/schemas/user"
+import { updateUserDetailsInputSchema } from "~/schemas/user"
 import { trpc } from "~/utils/trpc"
 import { updateProfileModalOpenAtom } from "../../atoms"
 
@@ -71,7 +71,7 @@ export const EditProfileModal = () => {
     handleSubmit,
     formState: { isDirty, errors },
   } = useZodForm({
-    schema: updateDetailsInputSchema,
+    schema: updateUserDetailsInputSchema,
     defaultValues: {
       name: me.name,
       phone: me.phone,
