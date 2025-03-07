@@ -88,10 +88,7 @@ export const AddUserModal = () => {
       await utils.user.count.invalidate()
       toast({
         status: "success",
-        description:
-          createdUsers.length === 1
-            ? `Sent invite to ${createdUsers[0]?.email}. They'll receive an email in a few minutes.`
-            : `Sent invite to ${createdUsers.length} users. They'll receive an email in a few minutes.`,
+        description: `Sent invite to ${createdUsers.length === 1 ? createdUsers[0]?.email : createdUsers.length + " users"}. They'll receive an email in a few minutes.`,
       })
     },
     onError: (error) => {
