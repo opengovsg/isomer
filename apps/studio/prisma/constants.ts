@@ -23,3 +23,11 @@ export const ISOMER_MIGRATORS = [
   "sophie",
   "felicia",
 ]
+
+export const ISOMER_ADMINS_AND_MIGRATORS = [
+  ...ISOMER_ADMINS,
+  ...ISOMER_MIGRATORS,
+]
+
+export const ISOMER_ADMINS_AND_MIGRATORS_EMAILS =
+  ISOMER_ADMINS_AND_MIGRATORS.map((username) => `${username}@open.gov.sg`)

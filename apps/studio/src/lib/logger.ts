@@ -1,8 +1,7 @@
-import "pino-pretty"
-
 import type { DestinationStream } from "pino"
 import { nanoid } from "nanoid"
-import { pino } from "pino"
+import pino from "pino"
+import pinoPretty from "pino-pretty"
 
 import { env } from "~/env.mjs"
 
@@ -33,13 +32,9 @@ export class PinoLogger {
   private static createBaseLogger = (): pino.Logger<string> => {
     let transport: DestinationStream
     if (env.NODE_ENV === "development" || env.NODE_ENV === "test") {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      transport = pino.transport({
-        target: "pino-pretty",
-        options: {
-          colorize: true,
-          hideObject: true,
-        },
+      transport = pinoPretty({
+        colorize: true,
+        hideObject: true,
       })
     } else {
       transport = pino.destination(1)

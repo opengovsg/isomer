@@ -1,8 +1,9 @@
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import Router from "next/router"
 
 import { useLoginState } from "~/features/auth"
 import { trpc } from "~/utils/trpc"
+import { isUserOnboarded } from "./isUserOnboarded"
 
 export const useMe = () => {
   const [me] = trpc.me.get.useSuspenseQuery()
@@ -24,5 +25,7 @@ export const useMe = () => {
     [logoutMutation, removeLoginStateFlag],
   )
 
-  return { me, logout }
+  const isOnboarded = useMemo(() => isUserOnboarded(me), [me])
+
+  return { me, logout, isOnboarded }
 }

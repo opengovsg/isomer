@@ -1,17 +1,22 @@
 import { type User } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 
-import { MOCK_STORY_DATE } from "../constants"
+import {
+  MOCK_STORY_DATE,
+  MOCK_TEST_PHONE,
+  MOCK_TEST_USER_NAME,
+} from "../constants"
 import { trpcMsw } from "../mockTrpc"
 
 export const defaultUser: User = {
   id: "cljcnahpn0000xlwynuea40lv",
   email: "test@example.com",
-  name: "Test User",
-  phone: "12345678",
+  name: MOCK_TEST_USER_NAME,
+  phone: MOCK_TEST_PHONE,
   createdAt: MOCK_STORY_DATE,
   updatedAt: MOCK_STORY_DATE,
   deletedAt: null,
+  lastLoginAt: null,
 }
 
 const defaultMeGetQuery = () => {
