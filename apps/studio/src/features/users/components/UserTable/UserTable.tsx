@@ -103,7 +103,7 @@ export const UserTable = ({ siteId, adminType }: UserTableProps) => {
   const { limit, onPaginationChange, skip, pagination, pageCount } =
     useTablePagination({
       pageIndex: 0,
-      pageSize: 10,
+      pageSize: 25,
       totalCount: totalRowCount,
     })
 
