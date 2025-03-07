@@ -74,6 +74,23 @@ export const AdminWarningBanner: Story = {
   },
 }
 
+export const Loading: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS, userHandlers.update.loading()],
+    },
+  },
+  play: async (context) => {
+    const { canvasElement } = context
+    await AdminWarningBanner.play?.(context)
+
+    const screen = within(canvasElement.ownerDocument.body)
+
+    const saveChangesButton = await screen.findByText("Save changes")
+    await userEvent.click(saveChangesButton)
+  },
+}
+
 export const ToastAfterEditingUser: Story = {
   parameters: {
     msw: {

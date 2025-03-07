@@ -183,6 +183,13 @@ export const userHandlers = {
         }
       })
     },
+    loading: () => {
+      return trpcMsw.user.update.mutation(() => {
+        return new Promise(() => {
+          // Never resolve to simulate infinite loading
+        })
+      })
+    },
   },
   delete: {
     success: () => {
