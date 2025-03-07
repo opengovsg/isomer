@@ -14,6 +14,9 @@ const COMMON_HANDLERS = [
   sitesHandlers.getSiteName.default(),
   userHandlers.count.default(),
   userHandlers.hasInactiveUsers.true(),
+  userHandlers.getPermissions.admin(),
+  userHandlers.list.users(),
+  userHandlers.getUser.default(),
 ]
 
 const meta: Meta<typeof UsersPage> = {
@@ -41,12 +44,7 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   parameters: {
     msw: {
-      handlers: [
-        ...COMMON_HANDLERS,
-        userHandlers.getPermissions.admin(),
-        userHandlers.list.users(),
-        userHandlers.getUser.default(),
-      ],
+      handlers: COMMON_HANDLERS,
     },
   },
   play: async ({ canvasElement }) => {
@@ -59,6 +57,40 @@ export const Default: Story = {
     await userEvent.click(actionMenu)
 
     const removeUserButton = await rootScreen.findByText("Remove user access")
+    await userEvent.click(removeUserButton, {
+      pointerEventsCheck: 0,
+    })
+  },
+}
+
+export const Loading: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS, userHandlers.delete.loading()],
+    },
+  },
+  play: async (context) => {
+    await Default.play?.(context)
+
+    const rootScreen = within(context.canvasElement.ownerDocument.body)
+    const removeUserButton = await rootScreen.findByText("Remove user")
+    await userEvent.click(removeUserButton, {
+      pointerEventsCheck: 0,
+    })
+  },
+}
+
+export const Success: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS, userHandlers.delete.success()],
+    },
+  },
+  play: async (context) => {
+    await Default.play?.(context)
+
+    const rootScreen = within(context.canvasElement.ownerDocument.body)
+    const removeUserButton = await rootScreen.findByText("Remove user")
     await userEvent.click(removeUserButton, {
       pointerEventsCheck: 0,
     })
