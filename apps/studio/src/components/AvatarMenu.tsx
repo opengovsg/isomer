@@ -7,7 +7,7 @@ import { useSetAtom } from "jotai"
 import { BiLogOut, BiPencil, BiUser } from "react-icons/bi"
 
 import { useMe } from "~/features/me/api"
-import { updateProfileModalOpenAtom } from "~/features/users/atom"
+import { updateProfileModalOpenAtom } from "~/features/users/atoms"
 import { EditProfileModal } from "~/features/users/components"
 
 export const AvatarMenu = () => {

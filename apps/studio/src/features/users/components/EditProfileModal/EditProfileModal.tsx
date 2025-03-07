@@ -26,7 +26,7 @@ import { useMe } from "~/features/me/api"
 import { useZodForm } from "~/lib/form"
 import { updateDetailsInputSchema } from "~/schemas/user"
 import { trpc } from "~/utils/trpc"
-import { updateProfileModalOpenAtom } from "../../atom"
+import { updateProfileModalOpenAtom } from "../../atoms"
 
 export const EditProfileModal = () => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)

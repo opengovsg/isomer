@@ -5,7 +5,7 @@ import { useSetAtom } from "jotai"
 import {
   DEFAULT_UPDATE_PROFILE_MODAL_STATE,
   updateProfileModalOpenAtom,
-} from "~/features/users/atom"
+} from "~/features/users/atoms"
 
 /**
  * Decorator that resets the UpdateProfileModal state between story renders
