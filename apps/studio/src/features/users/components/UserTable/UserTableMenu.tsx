@@ -13,7 +13,7 @@ import type { UserTableData } from "./types"
 import type { UserTableProps } from "./UserTable"
 import { MenuItem } from "~/components/Menu"
 import { UserManagementContext } from "~/features/users"
-import { updateUserModalAtom } from "../../atom"
+import { updateUserModalAtom } from "../../atoms"
 
 interface UserTableMenuProps extends Pick<UserTableProps, "siteId"> {
   userId: UserTableData["id"]

@@ -9,7 +9,7 @@ import {
   addUserModalAtom,
   addUserModalOpenAtom,
   DEFAULT_ADD_USER_MODAL_STATE,
-} from "~/features/users/atom"
+} from "~/features/users/atoms"
 
 interface AddNewUserButtonProps extends Omit<ButtonProps, "onClick"> {
   siteId: number

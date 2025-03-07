@@ -9,7 +9,7 @@ import {
   DEFAULT_ADD_USER_MODAL_STATE,
   DEFAULT_UPDATE_USER_MODAL_STATE,
   updateUserModalAtom,
-} from "~/features/users/atom"
+} from "~/features/users/atoms"
 
 /**
  * Decorator that resets the EditUserModal state between story renders

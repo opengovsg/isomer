@@ -33,7 +33,7 @@ import {
   addUserModalOpenAtom,
   DEFAULT_ADD_USER_MODAL_OPEN_STATE,
   DEFAULT_ADD_USER_MODAL_STATE,
-} from "../../atom"
+} from "../../atoms"
 import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
 import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"

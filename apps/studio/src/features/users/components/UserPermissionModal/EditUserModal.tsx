@@ -27,7 +27,7 @@ import { trpc } from "~/utils/trpc"
 import {
   DEFAULT_UPDATE_USER_MODAL_STATE,
   updateUserModalAtom,
-} from "../../atom"
+} from "../../atoms"
 import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
 import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
