@@ -29,7 +29,7 @@ export const CollectionCard = ({
     <Link
       LinkComponent={LinkComponent}
       href={referenceLinkHref}
-      className="group flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t lg:flex-row lg:gap-6"
+      className="group flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t md:flex-row md:gap-6"
       isExternal={isExternalLink}
     >
       {shouldShowDate && (
@@ -37,7 +37,7 @@ export const CollectionCard = ({
           {lastUpdated ? getFormattedDate(lastUpdated) : "-"}
         </p>
       )}
-      <div className="flex flex-grow flex-col gap-3 text-base-content lg:gap-2">
+      <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
         <Title title={itemTitle} isExternalLink={isExternalLink} />
         {tags && tags.length > 0 && (
           <>
@@ -59,12 +59,12 @@ export const CollectionCard = ({
           </p>
         )}
         {/* TODO: Feature enhancement? Filter by category when clicked */}
-        <p className="prose-label-md mt-3 text-base-content-subtle lg:mt-2">
+        <p className="prose-label-md mt-3 text-base-content-subtle md:mt-2">
           {category}
         </p>
       </div>
       {image && (
-        <div className="relative mt-3 min-h-40 w-full shrink-0 lg:ml-4 lg:mt-0 lg:h-auto lg:w-1/4">
+        <div className="relative mt-3 h-[160px] w-[200px] shrink-0 md:ml-4 md:mt-0">
           <ImageClient
             src={imageSrc || ""}
             alt={image.alt}
