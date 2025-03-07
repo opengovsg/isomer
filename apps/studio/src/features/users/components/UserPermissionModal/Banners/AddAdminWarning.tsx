@@ -11,6 +11,6 @@ export const AddAdminWarning = () => (
     border="none"
   >
     You are adding a new admin to the website. An admin can make any change to
-    the site content, settings, and users.s admin. Select another role.
+    the site content, settings, and users.
   </Infobox>
 )
