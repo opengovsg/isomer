@@ -43,25 +43,26 @@ export const EditProfileModal = () => {
     }
   }, [isOnboarded, setIsOpen])
 
-  const { mutate: updateDetails } = trpc.user.updateDetails.useMutation({
-    onSuccess: () => {
-      void utils.me.get.invalidate()
-      toast({
-        status: "success",
-        title: "Profile updated",
-        description: "Your profile has been updated successfully",
-      })
-      handleClose()
-    },
-    onError: (error) => {
-      toast({
-        status: "error",
-        title: "Failed to update profile",
-        description: error.message,
-      })
-      reset()
-    },
-  })
+  const { mutate: updateDetails, isLoading } =
+    trpc.user.updateDetails.useMutation({
+      onSuccess: () => {
+        void utils.me.get.invalidate()
+        toast({
+          status: "success",
+          title: "Profile updated",
+          description: "Your profile has been updated successfully",
+        })
+        handleClose()
+      },
+      onError: (error) => {
+        toast({
+          status: "error",
+          title: "Failed to update profile",
+          description: error.message,
+        })
+        reset()
+      },
+    })
 
   const {
     register,
@@ -151,6 +152,7 @@ export const EditProfileModal = () => {
               variant="solid"
               onClick={onSubmit}
               isDisabled={!isDirty || Object.keys(errors).length > 0}
+              isLoading={isLoading}
             >
               Save changes
             </Button>
