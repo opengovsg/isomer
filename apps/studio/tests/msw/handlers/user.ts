@@ -29,14 +29,14 @@ export const userHandlers = {
             name: "Editor User",
             email: "editor@example.com",
             role: RoleType.Editor,
-            lastLoginAt: new Date(),
+            lastLoginAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
           },
           {
             id: "3",
             name: "Publisher User",
             email: "publisher@example.com",
             role: RoleType.Publisher,
-            lastLoginAt: new Date(),
+            lastLoginAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
           },
           {
             id: "4",

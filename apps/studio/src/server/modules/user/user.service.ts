@@ -4,9 +4,10 @@ import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 import isEmail from "validator/lib/isEmail"
 
 import type { SafeKysely } from "../database"
+import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { isGovEmail } from "~/utils/email"
-import { db, RoleType, sql } from "../database"
+import { db, RoleType } from "../database"
 import { isEmailWhitelisted } from "../whitelist/whitelist.service"
 
 export const isUserDeleted = async (email: string) => {
@@ -82,21 +83,11 @@ export const createUser = async ({
       })
       .onConflict((oc) =>
         oc
-          .column("email")
+          .columns(["email", "deletedAt"])
           .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
       )
       .returning(["id", "email", "name", "phone", "deletedAt"])
       .executeTakeFirstOrThrow()
-
-    // Temporary test to ensure that we don't allow creating a user that was deleted before
-    // We prevent this as there's no complete audit trail of what happened to the user
-    // TODO: Remove this after audit logging is implemented
-    if (user.deletedAt) {
-      throw new TRPCError({
-        code: "CONFLICT",
-        message: "User was deleted before. Contact support to restore.",
-      })
-    }
 
     // unique constraint (@@unique([userId, siteId, resourceId, role]))
     // does not work if one column is NULL e.g. resourceId
@@ -141,38 +132,17 @@ export const createUser = async ({
 
 interface GetUsersQueryProps {
   siteId: number
-  getIsomerAdmins: boolean
+  adminType: AdminType
 }
 
-interface RankedResourcePermission extends ResourcePermission {
-  rn: number
-}
-
-export const getUsersQuery = ({
-  siteId,
-  getIsomerAdmins,
-}: GetUsersQueryProps) => {
+export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
   return db
     .with("ActiveResourcePermission", (qb) =>
       qb
-        .selectFrom(
-          sql<RankedResourcePermission>`(
-          SELECT *,
-            ROW_NUMBER() OVER (
-              PARTITION BY "userId", "siteId", "resourceId"
-              ORDER BY CASE 
-                WHEN role = ${RoleType.Admin} THEN 1
-                WHEN role = ${RoleType.Publisher} THEN 2
-                WHEN role = ${RoleType.Editor} THEN 3
-              END ASC
-            ) as rn
-          FROM "ResourcePermission"
-          WHERE "deletedAt" IS NULL
-          AND "siteId" = ${siteId}
-        )`.as("ranked_permissions"),
-        )
-        .selectAll()
-        .where("rn", "=", 1),
+        .selectFrom("ResourcePermission")
+        .where("deletedAt", "is", null)
+        .where("siteId", "=", siteId)
+        .selectAll(),
     )
     .with("ActiveUser", (qb) =>
       qb
@@ -181,7 +151,7 @@ export const getUsersQuery = ({
         .where("deletedAt", "is", null)
         .where(
           "email",
-          getIsomerAdmins ? "in" : "not in",
+          adminType === "isomer" ? "in" : "not in",
           ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
         ),
     )

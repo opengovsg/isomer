@@ -60,7 +60,7 @@ export const definePermissionsForSite = async ({
     .execute()
 
   // NOTE: Any role should be able to read site
-  if (roles.length > 0) {
+  if (roles.length === 1) {
     builder.can("read", "Site")
   }
 
@@ -128,14 +128,6 @@ export const sitePermissions = async ({
     .execute()
 }
 
-export const definePermissionsForManagingUsers = async ({
-  userId,
-  siteId,
-}: Omit<PermissionsProps, "resourceId">) => {
-  const roles = await sitePermissions({ userId, siteId })
-  return buildUserManagementPermissions(roles)
-}
-
 export const validatePermissionsForManagingUsers = async ({
   siteId,
   userId,
@@ -143,10 +135,8 @@ export const validatePermissionsForManagingUsers = async ({
 }: Omit<PermissionsProps, "resourceId"> & {
   action: UserManagementActions
 }) => {
-  const perms = await definePermissionsForManagingUsers({
-    siteId,
-    userId,
-  })
+  const roles = await sitePermissions({ userId, siteId })
+  const perms = buildUserManagementPermissions(roles)
 
   if (perms.cannot(action, "UserManagement")) {
     throw new TRPCError({
