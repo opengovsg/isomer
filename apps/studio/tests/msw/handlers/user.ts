@@ -168,7 +168,9 @@ export const userHandlers = {
     },
     loading: () => {
       return trpcMsw.user.create.mutation(() => {
-        return new Promise(() => {})
+        return new Promise(() => {
+          // Never resolve to simulate infinite loading
+        })
       })
     },
   },
