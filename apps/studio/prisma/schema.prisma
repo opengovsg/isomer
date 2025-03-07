@@ -116,7 +116,7 @@ enum ResourceType {
 model User {
   id    String @id @default(cuid())
   name  String
-  email String @unique
+  email String
   phone String
 
   createdAt DateTime  @default(now())
@@ -128,6 +128,11 @@ model User {
   versions           Version[]
 
   @@index([lastLoginAt])
+
+  // This unique index is subsequently replaced with a custom index that
+  // treats nulls as not distinct.
+  // This is required so prisma does not attempt to drop the custom index.
+  @@unique([email, deletedAt])
 }
 
 model Site {
@@ -192,7 +197,10 @@ model ResourcePermission {
   updatedAt  DateTime  @default(now()) @updatedAt
   deletedAt  DateTime?
 
-  @@unique([userId, siteId, resourceId, role])
+  // This unique index is subsequently replaced with a custom index that
+  // treats nulls as not distinct.
+  // This is required so prisma does not attempt to drop the custom index.
+  @@unique([userId, siteId, resourceId, deletedAt])
 }
 
 enum RoleType {

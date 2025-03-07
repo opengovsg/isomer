@@ -42,7 +42,7 @@ export const buildUserManagementPermissions = (roles: { role: RoleType }[]) => {
   const builder = new AbilityBuilder<UserManagementAbility>(createMongoAbility)
 
   // NOTE: Any role should be able to read the list of user permissions
-  if (roles.length > 0) {
+  if (roles.length === 1) {
     builder.can("read", "UserManagement")
   }
 

@@ -34,12 +34,12 @@ export const UserTableTabs = ({
 
   const { data: agencyUsersCount = 0 } = trpc.user.count.useQuery({
     siteId,
-    getIsomerAdmins: false,
+    adminType: "agency",
   })
 
   const { data: isomerAdminsCount = 0 } = trpc.user.count.useQuery({
     siteId,
-    getIsomerAdmins: true,
+    adminType: "isomer",
   })
 
   const { data: hasInactiveUsers = false } =
@@ -69,11 +69,11 @@ export const UserTableTabs = ({
             {hasInactiveUsers && ability.can("manage", "UserManagement") && (
               <InactiveUsersBanner />
             )}
-            <UserTable siteId={siteId} getIsomerAdmins={false} />
+            <UserTable siteId={siteId} adminType="agency" />
           </TabPanel>
           <TabPanel>
             <IsomerAdminAccessBanner />
-            <UserTable siteId={siteId} getIsomerAdmins={true} />
+            <UserTable siteId={siteId} adminType="isomer" />
           </TabPanel>
         </TabPanels>
       </Tabs>

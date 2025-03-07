@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-table"
 
 import type { UserTableData } from "./types"
+import type { AdminType } from "~/schemas/user"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { UserManagementContext } from "~/features/users"
@@ -19,7 +20,7 @@ import { UserTableMenu } from "./UserTableMenu"
 
 export interface UserTableProps {
   siteId: number
-  getIsomerAdmins: boolean
+  adminType: AdminType
 }
 
 const columnsHelper = createColumnHelper<UserTableData>()
@@ -80,7 +81,7 @@ const getColumns = ({
   ]
 }
 
-export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
+export const UserTable = ({ siteId, adminType }: UserTableProps) => {
   const ability = useContext(UserManagementContext)
 
   const columns = useMemo(
@@ -90,15 +91,15 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
         // Only show actions if not "Isomer Admins" tab
         // because we should not let agencies manage isomer admins
         shouldShowActions:
-          ability.can("manage", "UserManagement") && !getIsomerAdmins,
+          ability.can("manage", "UserManagement") && adminType === "agency",
       }),
-    [siteId, ability, getIsomerAdmins],
+    [siteId, ability, adminType],
   )
 
   const { data: totalRowCount = 0, isLoading: isCountLoading } =
     trpc.user.count.useQuery({
       siteId,
-      getIsomerAdmins,
+      adminType,
     })
 
   const { limit, onPaginationChange, skip, pagination, pageCount } =
@@ -111,7 +112,7 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
   const { data: users, isFetching } = trpc.user.list.useQuery(
     {
       siteId,
-      getIsomerAdmins,
+      adminType,
       limit,
       offset: skip,
     },
@@ -146,7 +147,10 @@ export const UserTable = ({ siteId, getIsomerAdmins }: UserTableProps) => {
       }}
       totalRowCount={totalRowCount}
       emptyPlaceholder={
-        <UserTableEmptyState siteId={siteId} promptAddUser={!getIsomerAdmins} />
+        <UserTableEmptyState
+          siteId={siteId}
+          promptAddUser={adminType === "agency"}
+        />
       }
     />
   )
