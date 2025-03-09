@@ -7,15 +7,23 @@ import {
   Portal,
 } from "@chakra-ui/react"
 import { useSetAtom } from "jotai"
-import { BiDotsVerticalRounded, BiPencil, BiTrash } from "react-icons/bi"
+import {
+  BiDotsVerticalRounded,
+  BiMailSend,
+  BiPencil,
+  BiTrash,
+} from "react-icons/bi"
 
 import type { UserTableData } from "./types"
 import type { UserTableProps } from "./UserTable"
 import { MenuItem } from "~/components/Menu"
 import { UserManagementContext } from "~/features/users"
 import { removeUserModalAtom } from "../../atoms"
+import { canResendInviteToUser } from "../../utils"
 
-interface UserTableMenuProps extends Pick<UserTableProps, "siteId"> {
+interface UserTableMenuProps
+  extends Pick<UserTableProps, "siteId">,
+    Pick<UserTableData, "createdAt" | "lastLoginAt"> {
   userId: UserTableData["id"]
   userName: UserTableData["name"]
 }
@@ -24,6 +32,8 @@ export const UserTableMenu = ({
   siteId,
   userId,
   userName,
+  createdAt,
+  lastLoginAt,
 }: UserTableMenuProps) => {
   const ability = useContext(UserManagementContext)
 
@@ -50,6 +60,16 @@ export const UserTableMenu = ({
               >
                 Edit user
               </MenuItem>
+              {canResendInviteToUser({ createdAt, lastLoginAt }) && (
+                <MenuItem
+                  onClick={() => {
+                    console.log(`TODO: Resend invite: ${userId} ${siteId}`)
+                  }}
+                  icon={<BiMailSend fontSize="1rem" />}
+                >
+                  Resend invite
+                </MenuItem>
+              )}
               <MenuItem
                 onClick={() => setRemoveUserModalState({ siteId, userId })}
                 colorScheme="critical"

@@ -74,6 +74,8 @@ const getColumns = ({
           siteId={siteId}
           userId={row.original.id}
           userName={row.original.name}
+          createdAt={row.original.createdAt}
+          lastLoginAt={row.original.lastLoginAt}
         />
       ),
       size: 24,
