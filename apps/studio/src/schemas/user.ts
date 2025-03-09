@@ -47,6 +47,7 @@ export const getUserOutputSchema = z.object({
   name: z.string(),
   email: z.string().email(),
   role: z.nativeEnum(RoleType),
+  createdAt: z.date().nullable(),
   lastLoginAt: z.date().nullable(),
 })
 
@@ -65,6 +66,7 @@ export const listUsersOutputSchema = z.array(
     email: z.string().email(),
     name: z.string().optional().nullable(),
     lastLoginAt: z.date().nullable(),
+    createdAt: z.date().nullable(),
     role: z.nativeEnum(RoleType),
   }),
 )
@@ -117,4 +119,13 @@ export const updateUserDetailsInputSchema = z.object({
 export const updateUserDetailsOutputSchema = z.object({
   name: z.string().nullable(),
   phone: z.string().nullable(),
+})
+
+export const resendInviteInputSchema = z.object({
+  siteId: z.number().min(1),
+  userId: z.string(),
+})
+
+export const resendInviteOutputSchema = z.object({
+  email: z.string().email(),
 })
