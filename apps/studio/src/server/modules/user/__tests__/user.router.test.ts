@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,
@@ -456,6 +457,28 @@ describe("user.router", () => {
         new TRPCError({
           code: "FORBIDDEN",
           message: "You cannot delete your own account",
+        }),
+      )
+    })
+
+    it("should throw 403 if non-isomer admins try to delete isomer admins", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const isomerAdmin = await setupUser({
+        email: ISOMER_ADMINS_AND_MIGRATORS_EMAILS[0]!,
+        isDeleted: false,
+      })
+      await setupAdminPermissions({ userId: isomerAdmin.id, siteId })
+
+      // Act
+      const result = caller.delete({ siteId, userId: isomerAdmin.id })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have permission to delete this user",
         }),
       )
     })
@@ -1412,6 +1435,18 @@ describe("user.router", () => {
         email: TEST_EMAIL,
         isDeleted: false,
       })
+      // If deletedAt is set, it should not be overwritten
+      const originalDeletedPermission = await setupEditorPermissions({
+        userId: userToUpdate.id,
+        siteId,
+      })
+      const originalDeletedPermissionDeletedAt = new Date()
+      await db
+        .updateTable("ResourcePermission")
+        .where("id", "=", originalDeletedPermission.id)
+        .set({ deletedAt: originalDeletedPermissionDeletedAt })
+        .execute()
+      // original active permission
       const originalPermission = await setupEditorPermissions({
         userId: userToUpdate.id,
         siteId,
@@ -1440,9 +1475,14 @@ describe("user.router", () => {
         .where("siteId", "=", siteId)
         .selectAll()
         .execute()
-      expect(userPermissions).toHaveLength(2) // 1 old + 1 new
+      expect(userPermissions).toHaveLength(3) // 1 old (deleted) + 1 old (active) + 1 new
       expect(userPermissions).toEqual(
         expect.arrayContaining([
+          expect.objectContaining({
+            id: originalDeletedPermission.id,
+            role: RoleType.Editor,
+            deletedAt: originalDeletedPermissionDeletedAt,
+          }),
           expect.objectContaining({
             id: originalPermission.id,
             role: RoleType.Editor,
