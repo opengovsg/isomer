@@ -1,22 +1,27 @@
+import { createEmailSchema } from "@opengovsg/starter-kitty-validators/email"
 import { RoleType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
 import { offsetPaginationSchema } from "./pagination"
 
+const emailSchema = createEmailSchema()
+
 export const createUserInputSchema = z.object({
   siteId: z.number().min(1),
-  users: z.array(
-    z.object({
-      email: z.string().email(),
-      role: z.nativeEnum(RoleType).optional().default(RoleType.Editor),
-    }),
-  ),
+  users: z
+    .array(
+      z.object({
+        email: emailSchema,
+        role: z.nativeEnum(RoleType).optional().default(RoleType.Editor),
+      }),
+    )
+    .max(100),
 })
 
 export const createUserOutputSchema = z.array(
   z.object({
     id: z.string(),
-    email: z.string().email(),
+    email: emailSchema,
     role: z.nativeEnum(RoleType),
   }),
 )
@@ -28,7 +33,7 @@ export const deleteUserInputSchema = z.object({
 
 export const deleteUserOutputSchema = z.object({
   id: z.string(),
-  email: z.string().email(),
+  email: emailSchema,
 })
 
 export const getUserInputSchema = z.object({
@@ -39,7 +44,7 @@ export const getUserInputSchema = z.object({
 export const getUserOutputSchema = z.object({
   id: z.string(),
   name: z.string(),
-  email: z.string().email(),
+  email: emailSchema,
   role: z.nativeEnum(RoleType),
   lastLoginAt: z.date().nullable(),
 })
@@ -56,7 +61,7 @@ export const listUsersInputSchema = z.object({
 export const listUsersOutputSchema = z.array(
   z.object({
     id: z.string(),
-    email: z.string().email(),
+    email: emailSchema,
     name: z.string().optional().nullable(),
     lastLoginAt: z.date().nullable(),
     role: z.nativeEnum(RoleType),
