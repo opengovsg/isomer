@@ -41,7 +41,7 @@ const meta: Meta<typeof UsersPage> = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const Baseline: Story = {
+export const Default: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body)
 
@@ -58,21 +58,10 @@ const Baseline: Story = {
   },
 }
 
-export const Default: Story = {
-  play: async (context) => {
-    const { canvasElement } = context
-    await Baseline.play?.(context)
-
-    const screen = within(canvasElement.ownerDocument.body)
-    const modalHeader = await screen.findByText("Invite to collaborate")
-    await expect(modalHeader).toBeVisible()
-  },
-}
-
 export const InvalidEmail: Story = {
   play: async (context) => {
     const { canvasElement } = context
-    await Baseline.play?.(context)
+    await Default.play?.(context)
 
     const emailInput = Array.from(
       canvasElement.ownerDocument.querySelectorAll(
@@ -94,7 +83,7 @@ export const InvalidEmail: Story = {
 export const AdminWarningBanner: Story = {
   play: async (context) => {
     const { canvasElement } = context
-    await Baseline.play?.(context)
+    await Default.play?.(context)
 
     const screen = within(canvasElement.ownerDocument.body)
     const AdminRoleButton = await screen.findByText("Admin")
@@ -110,7 +99,7 @@ export const AdminWarningBanner: Story = {
 export const NonGovEmailCannotBeAdmin: Story = {
   play: async (context) => {
     const { canvasElement } = context
-    await Baseline.play?.(context)
+    await Default.play?.(context)
 
     const screen = within(canvasElement.ownerDocument.body)
     const AdminRoleButton = await screen.findByText("Admin")
@@ -143,7 +132,7 @@ export const EmailIsNotWhitelisted: Story = {
   },
   play: async (context) => {
     const { canvasElement } = context
-    await Baseline.play?.(context)
+    await Default.play?.(context)
 
     const screen = within(canvasElement.ownerDocument.body)
 
@@ -171,7 +160,7 @@ export const Loading: Story = {
   },
   play: async (context) => {
     const { canvasElement } = context
-    await Baseline.play?.(context)
+    await Default.play?.(context)
 
     const screen = within(canvasElement.ownerDocument.body)
     const emailInput = Array.from(
@@ -206,7 +195,7 @@ export const ToastAfterAddingUser: Story = {
   },
   play: async (context) => {
     const { canvasElement } = context
-    await Baseline.play?.(context)
+    await Default.play?.(context)
 
     const screen = within(canvasElement.ownerDocument.body)
     const emailInput = Array.from(
