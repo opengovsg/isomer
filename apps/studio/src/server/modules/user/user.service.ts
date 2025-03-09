@@ -1,6 +1,6 @@
 import cuid2 from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
-import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
+import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 import isEmail from "validator/lib/isEmail"
 
 import type { SafeKysely } from "../database"
@@ -152,7 +152,7 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
         .where(
           "email",
           adminType === "isomer" ? "in" : "not in",
-          ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
+          PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS,
         ),
     )
     .selectFrom("ActiveUser")
