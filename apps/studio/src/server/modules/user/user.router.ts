@@ -1,23 +1,24 @@
 import { TRPCError } from "@trpc/server"
 
+import { sendInvitation } from "~/features/mail/service"
 import {
-  countInputSchema,
-  countOutputSchema,
-  createInputSchema,
-  createOutputSchema,
-  deleteInputSchema,
-  deleteOutputSchema,
+  countUsersInputSchema,
+  countUsersOutputSchema,
+  createUserInputSchema,
+  createUserOutputSchema,
+  deleteUserInputSchema,
+  deleteUserOutputSchema,
   getPermissionsInputSchema,
   getUserInputSchema,
   getUserOutputSchema,
   hasInactiveUsersInputSchema,
   hasInactiveUsersOutputSchema,
-  listInputSchema,
-  listOutputSchema,
-  updateDetailsInputSchema,
-  updateDetailsOutputSchema,
-  updateInputSchema,
-  updateOutputSchema,
+  listUsersInputSchema,
+  listUsersOutputSchema,
+  updateUserDetailsInputSchema,
+  updateUserDetailsOutputSchema,
+  updateUserInputSchema,
+  updateUserOutputSchema,
 } from "~/schemas/user"
 import { protectedProcedure, router } from "../../trpc"
 import { db, sql } from "../database"
@@ -25,6 +26,7 @@ import {
   sitePermissions,
   validatePermissionsForManagingUsers,
 } from "../permissions/permissions.service"
+import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import {
   createUser,
   getUsersQuery,
@@ -39,8 +41,8 @@ export const userRouter = router({
     }),
 
   create: protectedProcedure
-    .input(createInputSchema)
-    .output(createOutputSchema)
+    .input(createUserInputSchema)
+    .output(createUserOutputSchema)
     .mutation(async ({ ctx, input: { siteId, users } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
@@ -66,15 +68,24 @@ export const userRouter = router({
         )
       })
 
-      // TODO: Send welcome email to users
-      // Email service is not ready yet
+      // Send welcome email to users
+      const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
+      await Promise.all(
+        createdUsers.map((createdUser) =>
+          sendInvitation({
+            recipientEmail: createdUser.email,
+            siteName,
+            role: createdUser.role,
+          }),
+        ),
+      )
 
       return createdUsers
     }),
 
   delete: protectedProcedure
-    .input(deleteInputSchema)
-    .output(deleteOutputSchema)
+    .input(deleteUserInputSchema)
+    .output(deleteUserOutputSchema)
     .mutation(async ({ ctx, input: { siteId, userId } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
@@ -135,7 +146,7 @@ export const userRouter = router({
         action: "read",
       })
 
-      const result = await getUsersQuery({ siteId, getIsomerAdmins: false })
+      const result = await getUsersQuery({ siteId, adminType: "agency" })
         .where("ActiveUser.id", "=", userId)
         .select((eb) => [
           "ActiveUser.id",
@@ -158,43 +169,41 @@ export const userRouter = router({
     }),
 
   list: protectedProcedure
-    .input(listInputSchema)
-    .output(listOutputSchema)
-    .query(
-      async ({ ctx, input: { siteId, getIsomerAdmins, offset, limit } }) => {
-        await validatePermissionsForManagingUsers({
-          siteId,
-          userId: ctx.user.id,
-          action: "read",
-        })
-
-        return getUsersQuery({ siteId, getIsomerAdmins })
-          .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
-          .select((eb) => [
-            "ActiveUser.id",
-            "ActiveUser.email",
-            "ActiveUser.name",
-            "ActiveUser.lastLoginAt",
-            "ActiveUser.createdAt",
-            eb.ref("ActiveResourcePermission.role").as("role"),
-          ])
-          .limit(limit)
-          .offset(offset)
-          .execute()
-      },
-    ),
-
-  count: protectedProcedure
-    .input(countInputSchema)
-    .output(countOutputSchema)
-    .query(async ({ ctx, input: { siteId, getIsomerAdmins } }) => {
+    .input(listUsersInputSchema)
+    .output(listUsersOutputSchema)
+    .query(async ({ ctx, input: { siteId, adminType, offset, limit } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
         action: "read",
       })
 
-      const result = await getUsersQuery({ siteId, getIsomerAdmins })
+      return getUsersQuery({ siteId, adminType })
+        .orderBy("ActiveUser.lastLoginAt", sql.raw(`DESC NULLS LAST`))
+        .select((eb) => [
+          "ActiveUser.id",
+          "ActiveUser.email",
+          "ActiveUser.name",
+          "ActiveUser.lastLoginAt",
+          "ActiveUser.createdAt",
+          eb.ref("ActiveResourcePermission.role").as("role"),
+        ])
+        .limit(limit)
+        .offset(offset)
+        .execute()
+    }),
+
+  count: protectedProcedure
+    .input(countUsersInputSchema)
+    .output(countUsersOutputSchema)
+    .query(async ({ ctx, input: { siteId, adminType } }) => {
+      await validatePermissionsForManagingUsers({
+        siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      const result = await getUsersQuery({ siteId, adminType })
         .select((eb) => [eb.fn.countAll().as("count")])
         .executeTakeFirstOrThrow()
 
@@ -214,7 +223,7 @@ export const userRouter = router({
       const ninetyDaysAgo = new Date()
       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
 
-      const result = await getUsersQuery({ siteId, getIsomerAdmins: false })
+      const result = await getUsersQuery({ siteId, adminType: "agency" })
         .select((eb) => [eb.fn.countAll().as("count")])
         .where("ActiveUser.lastLoginAt", "is not", null)
         .where("ActiveUser.lastLoginAt", "<", ninetyDaysAgo)
@@ -224,8 +233,8 @@ export const userRouter = router({
     }),
 
   update: protectedProcedure
-    .input(updateInputSchema)
-    .output(updateOutputSchema)
+    .input(updateUserInputSchema)
+    .output(updateUserOutputSchema)
     .mutation(async ({ ctx, input: { siteId, userId, role } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
@@ -250,16 +259,6 @@ export const userRouter = router({
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
-        })
-      }
-
-      // Temporary test to ensure that we don't allow creating a user that was deleted before
-      // We prevent this as there's no complete audit trail of what happened to the user
-      // TODO: Remove this after audit logging is implemented
-      if (user.deletedAt) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "User was deleted before. Contact support to restore.",
         })
       }
 
@@ -295,8 +294,8 @@ export const userRouter = router({
     }),
 
   updateDetails: protectedProcedure
-    .input(updateDetailsInputSchema)
-    .output(updateDetailsOutputSchema)
+    .input(updateUserDetailsInputSchema)
+    .output(updateUserDetailsOutputSchema)
     .mutation(async ({ ctx, input: { name, phone } }) => {
       // We don't have to check if the user is admin here
       // because we only allow users to update their own details

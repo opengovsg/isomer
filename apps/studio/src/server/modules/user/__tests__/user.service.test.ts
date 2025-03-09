@@ -112,25 +112,54 @@ describe("user.service", () => {
       )
     })
 
-    it("should throw 409 if user already exists but has non-null deletedAt", async () => {
+    it("should create user if user already exists but has non-null deletedAt", async () => {
       // Arrange
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
       await setupAdminPermissions({ userId: user.id, siteId })
 
       // Act
-      const result = createUser({
+      const roleToCreate = RoleType.Editor
+      const { user: createdUser } = await createUser({
         email: TEST_EMAIL,
-        role: RoleType.Editor,
+        role: roleToCreate,
         siteId,
       })
 
-      // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "CONFLICT",
-          message: "User was deleted before. Contact support to restore.",
+      // Assert: Verify user in database
+      const dbUserResult = await db
+        .selectFrom("User")
+        .where("email", "=", TEST_EMAIL)
+        .selectAll()
+        .execute()
+      expect(dbUserResult).toHaveLength(2) // original + newly created record
+      expect(dbUserResult).toEqual([
+        expect.objectContaining({
+          email: TEST_EMAIL,
+          id: user.id, // original record
+          deletedAt: expect.any(Date),
         }),
-      )
+        expect.objectContaining({
+          email: TEST_EMAIL,
+          id: expect.any(String),
+          deletedAt: null,
+        }),
+      ])
+
+      // Assert: Verify resource permission in database
+      const dbResourcePermissionResult = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", createdUser.id)
+        .where("siteId", "=", siteId)
+        .selectAll()
+        .execute()
+      expect(dbResourcePermissionResult).toHaveLength(1)
+      expect(dbResourcePermissionResult).toEqual([
+        expect.objectContaining({
+          userId: expect.any(String),
+          siteId,
+          role: roleToCreate,
+        }),
+      ])
     })
 
     it("should throw 403 if creating a non-whitelisted non-gov.sg email with any role", async () => {
@@ -212,7 +241,7 @@ describe("user.service", () => {
       expect(dbUserResult[0]).toMatchObject({
         id: user.id,
         email: TEST_EMAIL,
-        name: "",
+        name: TEST_EMAIL.split("@")[0],
         phone: "",
       })
 

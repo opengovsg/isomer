@@ -220,7 +220,7 @@ describe("auth.email", () => {
       })
 
       // Assert
-      const user = await prisma.user.findUnique({
+      const user = await prisma.user.findFirst({
         where: { email: TEST_VALID_EMAIL },
       })
       expect(user?.lastLoginAt).toBe(null)
@@ -253,7 +253,7 @@ describe("auth.email", () => {
       })
 
       // Assert
-      const user = await prisma.user.findUnique({
+      const user = await prisma.user.findFirst({
         where: { email: TEST_VALID_EMAIL },
       })
       expect(user?.lastLoginAt).toBeInstanceOf(Date)

@@ -3,10 +3,9 @@
  *
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
-import cuid2 from "@paralleldrive/cuid2"
 
-import { normalizeEmail } from "~/utils/email"
 import { db, RoleType } from "../src/server/modules/database"
+import { addUsersToSite } from "./scripts/addUsersToSite"
 import { createSite } from "./scripts/createSite"
 
 const EDITOR_USER = "editor"
@@ -27,37 +26,19 @@ async function main() {
     )
     .executeTakeFirstOrThrow()
 
-  await Promise.all(
-    [EDITOR_USER, PUBLISHER_USER].map(async (name) => {
-      const user = await db
-        .insertInto("User")
-        .values({
-          id: cuid2.createId(),
-          name,
-          email: normalizeEmail(`${name}@open.gov.sg`),
-          phone: "",
-        })
-        .onConflict((oc) =>
-          oc
-            .column("email")
-            .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
-        )
-        .returning(["id", "name"])
-        .executeTakeFirstOrThrow()
-
-      const role =
-        user.name === EDITOR_USER ? RoleType.Editor : RoleType.Publisher
-
-      await db
-        .insertInto("ResourcePermission")
-        .values({
-          userId: user.id,
-          siteId,
-          role,
-        })
-        .execute()
-    }),
-  )
+  await addUsersToSite({
+    siteId,
+    users: [
+      {
+        email: `${EDITOR_USER}@open.gov.sg`,
+        role: RoleType.Editor,
+      },
+      {
+        email: `${PUBLISHER_USER}@open.gov.sg`,
+        role: RoleType.Publisher,
+      },
+    ],
+  })
 }
 
 main()
