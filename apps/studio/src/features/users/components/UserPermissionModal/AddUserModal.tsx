@@ -46,7 +46,7 @@ export const AddUserModal = () => {
   const setAddUserModalOpen = useSetAtom(addUserModalOpenAtom)
 
   const addUserModalState = useAtomValue(addUserModalAtom)
-  const { siteId, whitelistError } = addUserModalState
+  const { siteId, hasWhitelistError } = addUserModalState
   const setAddUserModalState = useSetAtom(addUserModalAtom)
 
   const {
@@ -78,8 +78,8 @@ export const AddUserModal = () => {
   // Reason we are not using zodForm build-in schema is because the checking of whitelist
   // is an async operation requiring an API call, and combining them will be less readable
   const additionalEmailError = useMemo(
-    () => isNonGovEmailInput || whitelistError,
-    [isNonGovEmailInput, whitelistError],
+    () => isNonGovEmailInput || hasWhitelistError,
+    [isNonGovEmailInput, hasWhitelistError],
   )
 
   const { mutate: createUser, isLoading } = trpc.user.create.useMutation({
@@ -109,11 +109,14 @@ export const AddUserModal = () => {
         onSuccess: (isWhitelisted) => {
           setAddUserModalState((prev) => ({
             ...prev,
-            whitelistError: !isWhitelisted,
+            hasWhitelistError: !isWhitelisted,
           }))
         },
         onError: () => {
-          setAddUserModalState((prev) => ({ ...prev, whitelistError: false }))
+          setAddUserModalState((prev) => ({
+            ...prev,
+            hasWhitelistError: false,
+          }))
         },
       },
     )

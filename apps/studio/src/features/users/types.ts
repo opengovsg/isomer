@@ -9,5 +9,5 @@ export interface UpdateUserModalState {
 
 export interface AddUserModalState {
   siteId: number
-  whitelistError: boolean
+  hasWhitelistError: boolean
 }
