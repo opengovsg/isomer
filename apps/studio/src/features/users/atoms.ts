@@ -41,7 +41,7 @@ export const addUserModalOpenAtom = atom<boolean>(
 
 export const DEFAULT_ADD_USER_MODAL_STATE = {
   siteId: 0,
-  whitelistError: false,
+  hasWhitelistError: false,
 }
 
 export const addUserModalAtom = atom<AddUserModalState>(

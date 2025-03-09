@@ -68,7 +68,7 @@ export const AdminWarningBanner: Story = {
     await userEvent.click(AdminRoleButton)
 
     const adminWarningText = await screen.findByText(
-      "You are adding a new admin to the website. An admin can make any change to the site content, settings, and users.s admin. Select another role.",
+      "You are adding a new admin to the website. An admin can make any change to the site content, settings, and users.",
     )
     await expect(adminWarningText).toBeVisible()
   },

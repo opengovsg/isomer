@@ -46,7 +46,7 @@ export const AddUserModal = () => {
   const setAddUserModalOpen = useSetAtom(addUserModalOpenAtom)
 
   const addUserModalState = useAtomValue(addUserModalAtom)
-  const { siteId, whitelistError } = addUserModalState
+  const { siteId, hasWhitelistError } = addUserModalState
   const setAddUserModalState = useSetAtom(addUserModalAtom)
 
   const {
@@ -78,8 +78,8 @@ export const AddUserModal = () => {
   // Reason we are not using zodForm build-in schema is because the checking of whitelist
   // is an async operation requiring an API call, and combining them will be less readable
   const additionalEmailError = useMemo(
-    () => isNonGovEmailInput && whitelistError,
-    [isNonGovEmailInput, whitelistError],
+    () => isNonGovEmailInput || hasWhitelistError,
+    [isNonGovEmailInput, hasWhitelistError],
   )
 
   const { mutate: createUser, isLoading } = trpc.user.create.useMutation({
@@ -88,10 +88,7 @@ export const AddUserModal = () => {
       await utils.user.count.invalidate()
       toast({
         status: "success",
-        description:
-          createdUsers.length === 1
-            ? `Sent invite to ${createdUsers[0]?.email}. They'll receive an email in a few minutes.`
-            : `Sent invite to ${createdUsers.length} users. They'll receive an email in a few minutes.`,
+        description: `Sent invite to ${createdUsers.length === 1 ? createdUsers[0]?.email : createdUsers.length + " users"}. They'll receive an email in a few minutes.`,
       })
     },
     onError: (error) => {
@@ -112,11 +109,14 @@ export const AddUserModal = () => {
         onSuccess: (isWhitelisted) => {
           setAddUserModalState((prev) => ({
             ...prev,
-            whitelistError: !isWhitelisted,
+            hasWhitelistError: !isWhitelisted,
           }))
         },
         onError: () => {
-          setAddUserModalState((prev) => ({ ...prev, whitelistError: false }))
+          setAddUserModalState((prev) => ({
+            ...prev,
+            hasWhitelistError: false,
+          }))
         },
       },
     )
@@ -125,12 +125,6 @@ export const AddUserModal = () => {
   useEffect(() => {
     // no need to check whitelist if email is not entered or already invalid
     if (!email || errors.email) return
-
-    // no need to check whitelist if email is gov.sg
-    if (!isNonGovEmailInput) {
-      setAddUserModalState((prev) => ({ ...prev, whitelistError: false }))
-      return
-    }
 
     void checkWhitelist()
   }, [

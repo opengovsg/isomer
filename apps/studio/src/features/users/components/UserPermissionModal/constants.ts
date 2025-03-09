@@ -2,9 +2,9 @@ import type { IconType } from "react-icons/lib"
 import { RoleType } from "~prisma/generated/generatedEnums"
 import { BiCheckShield, BiPencil, BiRocket } from "react-icons/bi"
 
-// TODO: update this placeholder
+// TODO: move this to a official isomer.gov.sg once we migrate that to Isomer Next
 export const ISOMER_GUIDE_URL =
-  "https://guide.isomer.gov.sg/user-management/user-roles"
+  "https://github.com/opengovsg/isomer/blob/main/apps/studio/src/features/users/user-roles.md"
 
 export const ROLES_ICONS: Record<RoleType, IconType> = {
   [RoleType.Editor]: BiPencil,
