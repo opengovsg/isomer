@@ -22,6 +22,7 @@ export const userHandlers = {
             name: "Admin User",
             email: "admin@example.com",
             role: RoleType.Admin,
+            createdAt: new Date(),
             lastLoginAt: new Date(),
           },
           {
@@ -29,6 +30,7 @@ export const userHandlers = {
             name: "Editor User",
             email: "editor@example.com",
             role: RoleType.Editor,
+            createdAt: new Date(),
             lastLoginAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
           },
           {
@@ -36,6 +38,7 @@ export const userHandlers = {
             name: "Publisher User",
             email: "publisher@example.com",
             role: RoleType.Publisher,
+            createdAt: new Date(),
             lastLoginAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
           },
           {
@@ -43,6 +46,7 @@ export const userHandlers = {
             name: "User who last logged in 1 month ago",
             email: "last-login-1-month-ago@example.com",
             role: RoleType.Editor,
+            createdAt: new Date(),
             lastLoginAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           },
           {
@@ -50,6 +54,7 @@ export const userHandlers = {
             name: "User who last logged in 6 months ago",
             email: "last-login-6-months-ago@example.com",
             role: RoleType.Editor,
+            createdAt: new Date(),
             lastLoginAt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
           },
           {
@@ -57,6 +62,7 @@ export const userHandlers = {
             name: "User who has never logged in",
             email: "never-logged-in@example.com",
             role: RoleType.Editor,
+            createdAt: new Date(),
             lastLoginAt: null,
           },
         ]
@@ -70,6 +76,7 @@ export const userHandlers = {
             name: "Should not show action menu",
             email: "admin@open.gov.sg",
             role: RoleType.Admin,
+            createdAt: new Date(),
             lastLoginAt: new Date(),
           },
         ]
@@ -118,6 +125,7 @@ export const userHandlers = {
           name: "Admin User",
           email: "admin@example.com",
           role: RoleType.Admin,
+          createdAt: new Date(),
           lastLoginAt: new Date(),
         }
       })
