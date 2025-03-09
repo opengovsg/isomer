@@ -78,7 +78,7 @@ export const AddUserModal = () => {
   // Reason we are not using zodForm build-in schema is because the checking of whitelist
   // is an async operation requiring an API call, and combining them will be less readable
   const additionalEmailError = useMemo(
-    () => isNonGovEmailInput && whitelistError,
+    () => isNonGovEmailInput || whitelistError,
     [isNonGovEmailInput, whitelistError],
   )
 
@@ -122,12 +122,6 @@ export const AddUserModal = () => {
   useEffect(() => {
     // no need to check whitelist if email is not entered or already invalid
     if (!email || errors.email) return
-
-    // no need to check whitelist if email is gov.sg
-    if (!isNonGovEmailInput) {
-      setAddUserModalState((prev) => ({ ...prev, whitelistError: false }))
-      return
-    }
 
     void checkWhitelist()
   }, [
