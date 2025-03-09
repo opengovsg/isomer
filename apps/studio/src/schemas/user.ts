@@ -45,6 +45,7 @@ export const getUserOutputSchema = z.object({
   name: z.string(),
   email: z.string().email(),
   role: z.nativeEnum(RoleType),
+  createdAt: z.date().nullable(),
   lastLoginAt: z.date().nullable(),
 })
 
@@ -60,6 +61,7 @@ export const listOutputSchema = z.array(
     email: z.string().email(),
     name: z.string().optional().nullable(),
     lastLoginAt: z.date().nullable(),
+    createdAt: z.date().nullable(),
     role: z.nativeEnum(RoleType),
   }),
 )

@@ -141,6 +141,7 @@ export const userRouter = router({
           "ActiveUser.id",
           "ActiveUser.email",
           "ActiveUser.name",
+          "ActiveUser.createdAt",
           "ActiveUser.lastLoginAt",
           eb.ref("ActiveResourcePermission.role").as("role"),
         ])
@@ -174,6 +175,7 @@ export const userRouter = router({
             "ActiveUser.email",
             "ActiveUser.name",
             "ActiveUser.lastLoginAt",
+            "ActiveUser.createdAt",
             eb.ref("ActiveResourcePermission.role").as("role"),
           ])
           .limit(limit)

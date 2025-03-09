@@ -1,8 +1,8 @@
 import { Suspense } from "react"
 import { Badge, Box, HStack, Skeleton, Text, VStack } from "@chakra-ui/react"
-import { differenceInDays } from "date-fns"
 
 import { trpc } from "~/utils/trpc"
+import { getLastLoginText } from "../../utils"
 
 interface UserInfoContentProps {
   siteId: number
@@ -13,20 +13,12 @@ const SuspendableUserInfoContent = ({
   siteId,
   userId,
 }: UserInfoContentProps) => {
-  const [{ name, email, role, lastLoginAt }] =
+  const [{ name, email, role, createdAt, lastLoginAt }] =
     trpc.user.getUser.useSuspenseQuery({ siteId, userId })
 
-  let lastLoginAtText = "Waiting to accept invite"
+  let lastLoginAtText = getLastLoginText({ createdAt, lastLoginAt })
   if (lastLoginAt) {
-    const daysFromLastLogin = differenceInDays(new Date(), lastLoginAt)
-    lastLoginAtText = "Last logged in "
-    if (daysFromLastLogin > 90) {
-      lastLoginAtText += "more than 90 days ago"
-    } else if (daysFromLastLogin === 0) {
-      lastLoginAtText += "today"
-    } else {
-      lastLoginAtText += `${daysFromLastLogin} ${daysFromLastLogin === 1 ? "day" : "days"} ago`
-    }
+    lastLoginAtText = `Last logged in ${lastLoginAtText.toLocaleLowerCase()}`
   }
 
   return (
