@@ -1435,6 +1435,18 @@ describe("user.router", () => {
         email: TEST_EMAIL,
         isDeleted: false,
       })
+      // If deletedAt is set, it should not be overwritten
+      const originalDeletedPermission = await setupEditorPermissions({
+        userId: userToUpdate.id,
+        siteId,
+      })
+      const originalDeletedPermissionDeletedAt = new Date()
+      await db
+        .updateTable("ResourcePermission")
+        .where("id", "=", originalDeletedPermission.id)
+        .set({ deletedAt: originalDeletedPermissionDeletedAt })
+        .execute()
+      // original active permission
       const originalPermission = await setupEditorPermissions({
         userId: userToUpdate.id,
         siteId,
@@ -1463,9 +1475,14 @@ describe("user.router", () => {
         .where("siteId", "=", siteId)
         .selectAll()
         .execute()
-      expect(userPermissions).toHaveLength(2) // 1 old + 1 new
+      expect(userPermissions).toHaveLength(3) // 1 old (deleted) + 1 old (active) + 1 new
       expect(userPermissions).toEqual(
         expect.arrayContaining([
+          expect.objectContaining({
+            id: originalDeletedPermission.id,
+            role: RoleType.Editor,
+            deletedAt: originalDeletedPermissionDeletedAt,
+          }),
           expect.objectContaining({
             id: originalPermission.id,
             role: RoleType.Editor,

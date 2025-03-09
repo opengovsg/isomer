@@ -267,16 +267,17 @@ export const userRouter = router({
       const updatedUserPermission = await db
         .transaction()
         .execute(async (trx) => {
-          const oldPermissions = await trx
+          const oldPermission = await trx
             .updateTable("ResourcePermission")
             .where("userId", "=", userId)
             .where("siteId", "=", siteId)
             .where("resourceId", "is", null) // because we are updating site-wide permissions
+            .where("deletedAt", "is", null) // ensure deleted persmission deletedAt is not overwritten
             .set({ deletedAt: new Date() }) // soft delete the old permission
             .returningAll()
             .executeTakeFirst()
 
-          if (!oldPermissions) {
+          if (!oldPermission) {
             throw new TRPCError({
               code: "NOT_FOUND",
               message: "User permissions not found",
