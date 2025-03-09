@@ -3,6 +3,7 @@ import wretch from "wretch"
 
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
+import { isEmailWhitelisted } from "~/server/modules/whitelist/whitelist.service"
 
 interface SendMailParams {
   recipient: string
@@ -19,6 +20,12 @@ if (env.SENDGRID_API_KEY) {
 export const sgClient = env.SENDGRID_API_KEY ? sendgrid : null
 
 export const sendMail = async (params: SendMailParams): Promise<void> => {
+  // Safe guard to prevent sending emails to non-whitelisted emails
+  const isWhitelisted = await isEmailWhitelisted(params.recipient)
+  if (!isWhitelisted) {
+    throw new Error("Email not whitelisted")
+  }
+
   if (env.POSTMAN_API_KEY) {
     try {
       const response = await wretch(
