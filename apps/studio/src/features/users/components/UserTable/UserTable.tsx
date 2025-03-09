@@ -35,7 +35,9 @@ const getColumns = ({
       header: () => <TableHeader>Collaborator</TableHeader>,
       cell: ({ row }) => (
         <VStack gap="0.25rem" align="start">
-          <Text textStyle="subhead-2">{row.original.name}</Text>
+          <Text textStyle="subhead-2" textColor="base.content.strong">
+            {row.original.name}
+          </Text>
           <Text textStyle="caption-2" textColor="base.content.medium">
             {row.original.email}
           </Text>
