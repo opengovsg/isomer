@@ -22,6 +22,7 @@ export const userHandlers = {
             name: "Government Admin",
             email: "example_admin@isomer.gov.sg",
             role: RoleType.Admin,
+            createdAt: new Date(),
             lastLoginAt: new Date(),
           },
           {
@@ -29,6 +30,7 @@ export const userHandlers = {
             name: "Government Editor",
             email: "example_editor@isomer.gov.sg",
             role: RoleType.Editor,
+            createdAt: new Date(),
             lastLoginAt: new Date(),
           },
           {
