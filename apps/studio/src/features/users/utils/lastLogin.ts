@@ -6,7 +6,7 @@ import { differenceInDays, isBefore } from "date-fns"
 // So we need to check if the user was created before that date
 // and display a different message in order not to be misleading
 export const isBeforeUserMgmtLaunch = (createdAt: Date | null) =>
-  isBefore(createdAt ?? new Date(), new Date("2025-03-09"))
+  isBefore(createdAt ?? new Date(), new Date("2025-03-07"))
 
 export const getDaysFromLastLogin = (lastLoginAt: Date) =>
   differenceInDays(new Date(), lastLoginAt)

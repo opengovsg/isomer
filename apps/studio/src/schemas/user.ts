@@ -117,3 +117,12 @@ export const updateUserDetailsOutputSchema = z.object({
   name: z.string().nullable(),
   phone: z.string().nullable(),
 })
+
+export const resendInviteInputSchema = z.object({
+  siteId: z.number().min(1),
+  userId: z.string(),
+})
+
+export const resendInviteOutputSchema = z.object({
+  email: z.string().email(),
+})
