@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
+import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 
 import { sendInvitation } from "~/features/mail/service"
 import { canResendInviteToUser } from "~/features/users/utils"
@@ -119,9 +119,9 @@ export const userRouter = router({
       }
 
       const isRequestingUserIsomerAdmin =
-        ISOMER_ADMINS_AND_MIGRATORS_EMAILS.includes(ctx.user.email)
+        PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS.includes(ctx.user.email)
       const isUserToDeleteIsomerAdmin =
-        ISOMER_ADMINS_AND_MIGRATORS_EMAILS.includes(
+        PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS.includes(
           userToDeletePermissionsFrom.email,
         )
       if (!isRequestingUserIsomerAdmin && isUserToDeleteIsomerAdmin) {
