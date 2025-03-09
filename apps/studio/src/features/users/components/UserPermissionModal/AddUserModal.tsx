@@ -180,7 +180,9 @@ export const AddUserModal = () => {
                 placeholder="example@agency.gov.sg"
               />
               {errors.email && (
-                <FormErrorMessage>{errors.email.message}</FormErrorMessage>
+                <FormErrorMessage>
+                  This doesn't look like a valid email address.
+                </FormErrorMessage>
               )}
               {!errors.email && additionalEmailError && (
                 <FormErrorMessage>
