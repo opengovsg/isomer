@@ -73,20 +73,20 @@ export const RoleBox = ({
           boxSize={5}
           as={ROLES_ICONS[value]}
           color={
-            isSelected
-              ? "base.divider.brand"
-              : isDisabled
-                ? "interaction.support.disabled-content"
+            isDisabled
+              ? "interaction.support.disabled-content"
+              : isSelected
+                ? "base.divider.brand"
                 : undefined
           }
         />
         <Text
           textStyle="subhead-1"
           color={
-            isSelected
-              ? "base.divider.brand"
-              : isDisabled
-                ? "interaction.support.disabled-content"
+            isDisabled
+              ? "interaction.support.disabled-content"
+              : isSelected
+                ? "base.divider.brand"
                 : undefined
           }
         >
