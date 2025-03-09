@@ -1,4 +1,5 @@
 import { resetTables } from "tests/integration/helpers/db"
+import { setUpWhitelist } from "tests/integration/helpers/seed"
 import { describe, expect, it } from "vitest"
 
 import { prisma } from "~/server/prisma"
@@ -11,6 +12,7 @@ describe("sgid.service", () => {
 
   beforeEach(async () => {
     await resetTables("User")
+    await setUpWhitelist({ email: TEST_EMAIL })
   })
 
   describe("upsertSgidAccountAndUser", () => {
