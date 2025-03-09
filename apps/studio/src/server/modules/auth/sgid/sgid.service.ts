@@ -1,5 +1,8 @@
 import { type PrismaClient } from "@prisma/client"
+import { TRPCError } from "@trpc/server"
 
+import { isUserDeleted } from "~/server/modules/user/user.service"
+import { isEmailWhitelisted } from "~/server/modules/whitelist/whitelist.service"
 import { createPocdexAccountProviderId } from "../auth.util"
 import { type SgidSessionProfile } from "./sgid.utils"
 
@@ -14,6 +17,16 @@ export const upsertSgidAccountAndUser = async ({
   name: SgidSessionProfile["name"]
   sub: SgidSessionProfile["sub"]
 }) => {
+  const isWhitelisted = await isEmailWhitelisted(pocdexEmail)
+  const isDeleted = await isUserDeleted(pocdexEmail)
+
+  if (!isWhitelisted || isDeleted) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Unauthorized. Contact Isomer support.",
+    })
+  }
+
   return prisma.$transaction(async (tx) => {
     // Create user from email
 
