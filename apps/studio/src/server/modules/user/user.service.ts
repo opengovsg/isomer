@@ -78,7 +78,7 @@ export const createUser = async ({
       .values({
         id: cuid2.createId(),
         email,
-        name,
+        name: name || email.split("@")[0] || "",
         phone,
       })
       .onConflict((oc) =>

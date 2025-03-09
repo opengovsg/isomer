@@ -241,7 +241,7 @@ describe("user.service", () => {
       expect(dbUserResult[0]).toMatchObject({
         id: user.id,
         email: TEST_EMAIL,
-        name: "",
+        name: TEST_EMAIL.split("@")[0],
         phone: "",
       })
 
