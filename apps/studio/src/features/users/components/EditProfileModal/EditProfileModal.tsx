@@ -80,6 +80,14 @@ export const EditProfileModal = () => {
     reValidateMode: "onChange",
   })
 
+  // Reset form when user data changes
+  useEffect(() => {
+    reset({
+      name: me.name,
+      phone: me.phone,
+    })
+  }, [me, reset])
+
   const handleClose = useCallback(() => {
     reset()
     setIsOpen(false)
