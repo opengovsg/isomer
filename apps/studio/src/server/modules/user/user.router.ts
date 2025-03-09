@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 
 import { sendInvitation } from "~/features/mail/service"
 import {
@@ -99,6 +100,19 @@ export const userRouter = router({
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
+        })
+      }
+
+      const isRequestingUserIsomerAdmin =
+        ISOMER_ADMINS_AND_MIGRATORS_EMAILS.includes(ctx.user.email)
+      const isUserToDeleteIsomerAdmin =
+        ISOMER_ADMINS_AND_MIGRATORS_EMAILS.includes(
+          userToDeletePermissionsFrom.email,
+        )
+      if (!isRequestingUserIsomerAdmin && isUserToDeleteIsomerAdmin) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have permission to delete this user",
         })
       }
 

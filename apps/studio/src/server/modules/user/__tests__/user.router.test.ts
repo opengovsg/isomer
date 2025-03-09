@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,
@@ -456,6 +457,28 @@ describe("user.router", () => {
         new TRPCError({
           code: "FORBIDDEN",
           message: "You cannot delete your own account",
+        }),
+      )
+    })
+
+    it("should throw 403 if non-isomer admins try to delete isomer admins", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const isomerAdmin = await setupUser({
+        email: ISOMER_ADMINS_AND_MIGRATORS_EMAILS[0]!,
+        isDeleted: false,
+      })
+      await setupAdminPermissions({ userId: isomerAdmin.id, siteId })
+
+      // Act
+      const result = caller.delete({ siteId, userId: isomerAdmin.id })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have permission to delete this user",
         }),
       )
     })
