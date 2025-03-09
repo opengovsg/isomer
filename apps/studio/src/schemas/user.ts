@@ -8,12 +8,14 @@ const emailSchema = createEmailSchema()
 
 export const createUserInputSchema = z.object({
   siteId: z.number().min(1),
-  users: z.array(
-    z.object({
-      email: emailSchema,
-      role: z.nativeEnum(RoleType).optional().default(RoleType.Editor),
-    }),
-  ),
+  users: z
+    .array(
+      z.object({
+        email: emailSchema,
+        role: z.nativeEnum(RoleType).optional().default(RoleType.Editor),
+      }),
+    )
+    .max(100),
 })
 
 export const createUserOutputSchema = z.array(
