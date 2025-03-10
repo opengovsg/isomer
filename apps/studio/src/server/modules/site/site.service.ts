@@ -8,11 +8,16 @@ import type {
 import { db, jsonb, sql } from "../database"
 import { definePermissionsForSite } from "../permissions/permissions.service"
 
+export interface SitePermissionsProps
+  extends Omit<PermissionsProps, "resourceId"> {
+  action: CrudResourceActions
+}
+
 export const validateUserPermissionsForSite = async ({
   siteId,
   userId,
   action,
-}: Omit<PermissionsProps, "resourceId"> & { action: CrudResourceActions }) => {
+}: SitePermissionsProps) => {
   const perms = await definePermissionsForSite({
     siteId,
     userId,

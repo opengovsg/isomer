@@ -6,12 +6,19 @@ import {
   getFileKey,
   getPresignedPutUrl,
   markFileAsDeleted,
+  validateUserPermissionsForAsset,
 } from "./asset.service"
 
 export const assetRouter = router({
   getPresignedPutUrl: protectedProcedure
     .input(getPresignedPutUrlSchema)
     .mutation(async ({ ctx, input: { siteId, fileName } }) => {
+      await validateUserPermissionsForAsset({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
       const fileKey = getFileKey({
         siteId,
         fileName,
@@ -39,8 +46,12 @@ export const assetRouter = router({
 
   deleteAssets: protectedProcedure
     .input(deleteAssetsSchema)
-    .mutation(async ({ ctx, input }) => {
-      const { fileKeys } = input
+    .mutation(async ({ ctx, input: { siteId, fileKeys } }) => {
+      await validateUserPermissionsForAsset({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
 
       await Promise.allSettled(
         fileKeys.map((fileKey) => markFileAsDeleted({ key: fileKey })),

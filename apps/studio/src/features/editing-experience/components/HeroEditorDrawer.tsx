@@ -124,7 +124,7 @@ export default function HeroEditorDrawer(): JSX.Element {
           return acc
         }, [])
 
-      deleteAssets({ fileKeys: assetsToDelete })
+      deleteAssets({ siteId, fileKeys: assetsToDelete })
     }
 
     mutate(
