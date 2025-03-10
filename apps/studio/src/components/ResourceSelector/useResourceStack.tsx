@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import type { ResourceItemContent } from "~/schemas/resource"
 import { trpc } from "~/utils/trpc"
@@ -27,6 +27,10 @@ export const useResourceStack = ({
   const [resourceStack, setResourceStack] = useState<ResourceItemContent[]>(
     pendingMovedItemAncestryStack ?? [],
   )
+
+  useEffect(() => {
+    return () => setResourceStack([])
+  }, [pendingMovedItemAncestryStack])
 
   const [isResourceHighlighted, setIsResourceHighlighted] =
     useState<boolean>(!!selectedResourceId)
