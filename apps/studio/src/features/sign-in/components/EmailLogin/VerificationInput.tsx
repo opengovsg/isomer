@@ -116,6 +116,7 @@ export const VerificationInput = (): JSX.Element | null => {
           id="email"
           isInvalid={!!errors.token}
           isReadOnly={verifyOtpMutation.isLoading}
+          isRequired
         >
           <FormLabel htmlFor="email">
             Enter the OTP sent to {vfnStepData.email}
