@@ -14,7 +14,19 @@ import { vi } from "vitest"
 
 import { createCallerFactory } from "~/server/trpc"
 import { assetRouter } from "../asset.router"
-import * as assetService from "../asset.service"
+
+// Mock the S3 client to prevent credential loading issues in CI
+// Workaround as we do not really want to set up a full integration test here with S3
+vi.mock("~/lib/s3", () => ({
+  storage: {
+    send: vi.fn().mockResolvedValue({ TagSet: [] }),
+  },
+  generateSignedPutUrl: vi
+    .fn()
+    .mockResolvedValue("https://example.com/signed-url"),
+  markFileAsDeleted: vi.fn().mockResolvedValue(undefined),
+  deleteFile: vi.fn().mockResolvedValue(undefined),
+}))
 
 const createCaller = createCallerFactory(assetRouter)
 
@@ -172,10 +184,6 @@ describe("asset.router", async () => {
         userId: session.userId,
       })
 
-      // Mock the markFileAsDeleted function to resolve successfully
-      // Workaround as we do not really want to set up a full integration test here with S3
-      vi.spyOn(assetService, "markFileAsDeleted").mockResolvedValue(undefined)
-
       // Act
       const result = caller.deleteAssets({
         siteId: site.id,
@@ -183,7 +191,6 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      // The function doesn't return a value, so we just check that it resolves without error
       await expect(result).resolves.not.toThrow()
     })
   })
