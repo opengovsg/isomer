@@ -11,8 +11,6 @@ import {
   deleteUserOutputSchema,
   getUserInputSchema,
   getUserOutputSchema,
-  hasInactiveUsersInputSchema,
-  hasInactiveUsersOutputSchema,
   listUsersInputSchema,
   listUsersOutputSchema,
   updateUserInputSchema,
@@ -197,40 +195,28 @@ export const userRouter = router({
   count: protectedProcedure
     .input(countUsersInputSchema)
     .output(countUsersOutputSchema)
-    .query(async ({ ctx, input: { siteId, adminType } }) => {
+    .query(async ({ ctx, input: { siteId, adminType, activityType } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
         action: "read",
       })
 
-      const result = await getUsersQuery({ siteId, adminType })
+      let query = getUsersQuery({ siteId, adminType })
+
+      if (activityType === "inactive") {
+        const ninetyDaysAgo = new Date()
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
+        query = query
+          .where("ActiveUser.lastLoginAt", "is not", null)
+          .where("ActiveUser.lastLoginAt", "<", ninetyDaysAgo)
+      }
+
+      const result = await query
         .select((eb) => [eb.fn.countAll().as("count")])
         .executeTakeFirstOrThrow()
 
       return Number(result.count)
-    }),
-
-  hasInactiveUsers: protectedProcedure
-    .input(hasInactiveUsersInputSchema)
-    .output(hasInactiveUsersOutputSchema)
-    .query(async ({ ctx, input: { siteId } }) => {
-      await validatePermissionsForManagingUsers({
-        siteId,
-        userId: ctx.user.id,
-        action: "read",
-      })
-
-      const ninetyDaysAgo = new Date()
-      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
-
-      const result = await getUsersQuery({ siteId, adminType: "agency" })
-        .select((eb) => [eb.fn.countAll().as("count")])
-        .where("ActiveUser.lastLoginAt", "is not", null)
-        .where("ActiveUser.lastLoginAt", "<", ninetyDaysAgo)
-        .executeTakeFirstOrThrow()
-
-      return Number(result.count) > 0
     }),
 
   update: protectedProcedure
