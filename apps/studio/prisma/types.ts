@@ -36,7 +36,4 @@ declare global {
     >
     type AuditLogJsonContent = {
       before: Record<string, unknown>
-      after: Record<string, unknown>
-    }
-  }
-}
+      after: Record<string, unknown> 

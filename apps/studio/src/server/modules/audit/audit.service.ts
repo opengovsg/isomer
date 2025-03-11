@@ -1,3 +1,5 @@
+import { VerificationToken } from "~prisma/generated/generatedTypes"
+
 import type {
   AuditLogEvent,
   Blob,
@@ -19,19 +21,45 @@ interface ResourceEventLogProps {
   }
   by: User
   ip?: string
-  metadata: {
-    sessionId?: string
-  }
 }
 
-export const logResourceEvent = async (
-  tx: Transaction<DB>,
-  { eventType, delta, by, metadata, ip }: ResourceEventLogProps,
+// NOTE: Type to force every logger method to have a tx
+type AuditLogger<T> = (tx: Transaction<DB>, props: T) => Promise<void>
+
+export const logResourceEvent: AuditLogger<ResourceEventLogProps> = async (
+  tx,
+  { eventType, delta, by, ip },
 ) => {
   await tx
     .insertInto("AuditLog")
-    .values({ eventType, delta, userId: by.id, ipAddress: ip, metadata })
+    .values({ eventType, delta, userId: by.id, ipAddress: ip })
     .execute()
 }
 
-export const logAuthEvent = async () => {}
+interface LoginDelta {
+  before: VerificationToken
+  after: VerificationToken
+}
+
+// NOTE: logout just calls `session.destroy` and we only have
+// `userId` or sgid info in session.
+interface LogoutDelta {
+  before: User
+  after: {}
+}
+
+interface AuthEventLogProps {
+  eventType: Extract<AuditLogEvent, "Login" | "Logout">
+  delta: LoginDelta | LogoutDelta
+  by: User
+  ip?: string
+}
+export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
+  tx,
+  { eventType, delta, by, ip },
+) => {
+  await tx
+    .insertInto("AuditLog")
+    .values({ eventType, delta, userId: by.id, ipAddress: ip })
+    .execute()
+}
