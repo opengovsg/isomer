@@ -1,8 +1,9 @@
 import cuid2 from "@paralleldrive/cuid2"
 
 import { db, RoleType } from "~/server/modules/database"
+import { readCsv } from "./utils"
 
-interface User {
+export interface User {
   email: string
   name?: string
   phone?: string
@@ -35,7 +36,7 @@ export const addUsersToSite = async ({
           })
           .onConflict((oc) =>
             oc
-              .columns(["email", "deletedAt"])
+              .columns(["email"])
               .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
           )
           .returning(["id", "name", "email"])
@@ -57,7 +58,7 @@ export const addUsersToSite = async ({
 }
 
 // NOTE: Update the list of users and siteId here before executing!
-const users: User[] = []
+const users: User[] = await readCsv()
 const siteId = -1
 
 await addUsersToSite({ siteId, users })
