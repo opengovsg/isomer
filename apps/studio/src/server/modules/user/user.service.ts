@@ -47,7 +47,7 @@ interface CreateUserProps {
   trx?: SafeKysely // allows for transaction to be passed in from parent transaction
 }
 
-export const createUser = async ({
+export const createUserWithPermission = async ({
   email,
   name = "",
   phone = "",

@@ -23,7 +23,7 @@ import { db, sql } from "../database"
 import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import {
-  createUser,
+  createUserWithPermission,
   getUsersQuery,
   validateEmailRoleCombination,
 } from "./user.service"
@@ -42,12 +42,13 @@ export const userRouter = router({
       const createdUsers = await db.transaction().execute(async (trx) => {
         return await Promise.all(
           users.map(async (user) => {
-            const { user: createdUser, resourcePermission } = await createUser({
-              ...user,
-              email: user.email.toLowerCase(),
-              siteId,
-              trx,
-            })
+            const { user: createdUser, resourcePermission } =
+              await createUserWithPermission({
+                ...user,
+                email: user.email.toLowerCase(),
+                siteId,
+                trx,
+              })
             return {
               id: createdUser.id,
               email: createdUser.email,
