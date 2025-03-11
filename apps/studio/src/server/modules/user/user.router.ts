@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
+import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 
 import { sendInvitation } from "~/features/mail/service"
 import {
@@ -12,8 +12,6 @@ import {
   getPermissionsInputSchema,
   getUserInputSchema,
   getUserOutputSchema,
-  hasInactiveUsersInputSchema,
-  hasInactiveUsersOutputSchema,
   listUsersInputSchema,
   listUsersOutputSchema,
   updateUserDetailsInputSchema,
@@ -29,7 +27,7 @@ import {
 } from "../permissions/permissions.service"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import {
-  createUser,
+  createUserWithPermission,
   getUsersQuery,
   validateEmailRoleCombination,
 } from "./user.service"
@@ -54,12 +52,13 @@ export const userRouter = router({
       const createdUsers = await db.transaction().execute(async (trx) => {
         return await Promise.all(
           users.map(async (user) => {
-            const { user: createdUser, resourcePermission } = await createUser({
-              ...user,
-              email: user.email.toLowerCase(),
-              siteId,
-              trx,
-            })
+            const { user: createdUser, resourcePermission } =
+              await createUserWithPermission({
+                ...user,
+                email: user.email.toLowerCase(),
+                siteId,
+                trx,
+              })
             return {
               id: createdUser.id,
               email: createdUser.email,
@@ -116,9 +115,9 @@ export const userRouter = router({
       }
 
       const isRequestingUserIsomerAdmin =
-        ISOMER_ADMINS_AND_MIGRATORS_EMAILS.includes(ctx.user.email)
+        PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS.includes(ctx.user.email)
       const isUserToDeleteIsomerAdmin =
-        ISOMER_ADMINS_AND_MIGRATORS_EMAILS.includes(
+        PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS.includes(
           userToDeletePermissionsFrom.email,
         )
       if (!isRequestingUserIsomerAdmin && isUserToDeleteIsomerAdmin) {
@@ -208,40 +207,28 @@ export const userRouter = router({
   count: protectedProcedure
     .input(countUsersInputSchema)
     .output(countUsersOutputSchema)
-    .query(async ({ ctx, input: { siteId, adminType } }) => {
+    .query(async ({ ctx, input: { siteId, adminType, activityType } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
         action: "read",
       })
 
-      const result = await getUsersQuery({ siteId, adminType })
+      let query = getUsersQuery({ siteId, adminType })
+
+      if (activityType === "inactive") {
+        const ninetyDaysAgo = new Date()
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
+        query = query
+          .where("ActiveUser.lastLoginAt", "is not", null)
+          .where("ActiveUser.lastLoginAt", "<", ninetyDaysAgo)
+      }
+
+      const result = await query
         .select((eb) => [eb.fn.countAll().as("count")])
         .executeTakeFirstOrThrow()
 
       return Number(result.count)
-    }),
-
-  hasInactiveUsers: protectedProcedure
-    .input(hasInactiveUsersInputSchema)
-    .output(hasInactiveUsersOutputSchema)
-    .query(async ({ ctx, input: { siteId } }) => {
-      await validatePermissionsForManagingUsers({
-        siteId,
-        userId: ctx.user.id,
-        action: "read",
-      })
-
-      const ninetyDaysAgo = new Date()
-      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
-
-      const result = await getUsersQuery({ siteId, adminType: "agency" })
-        .select((eb) => [eb.fn.countAll().as("count")])
-        .where("ActiveUser.lastLoginAt", "is not", null)
-        .where("ActiveUser.lastLoginAt", "<", ninetyDaysAgo)
-        .executeTakeFirstOrThrow()
-
-      return Number(result.count) > 0
     }),
 
   update: protectedProcedure
@@ -264,6 +251,7 @@ export const userRouter = router({
       const user = await db
         .selectFrom("User")
         .where("id", "=", userId)
+        .where("deletedAt", "is", null)
         .selectAll()
         .executeTakeFirst()
 
