@@ -20,6 +20,7 @@ import {
   FormLabel,
   useToast,
 } from "@opengovsg/design-system-react"
+import { useDebounce } from "@uidotdev/usehooks"
 import { RoleType } from "~prisma/generated/generatedEnums"
 import { useAtomValue, useSetAtom } from "jotai"
 
@@ -69,6 +70,7 @@ export const AddUserModal = () => {
   })
 
   const email = watch("email")
+  const debouncedEmail = useDebounce(email, 1000)
 
   const isNonGovEmailInput = useMemo(
     () => !!(!errors.email && email && !isGovEmail(email)),
@@ -103,7 +105,7 @@ export const AddUserModal = () => {
 
   const { refetch: checkWhitelist } =
     trpc.whitelist.isEmailWhitelisted.useQuery(
-      { siteId, email: email || "" },
+      { siteId, email: debouncedEmail || "" },
       {
         enabled: false,
         onSuccess: (isWhitelisted) => {
@@ -124,11 +126,11 @@ export const AddUserModal = () => {
   // Check whitelist when email changes
   useEffect(() => {
     // no need to check whitelist if email is not entered or already invalid
-    if (!email || errors.email) return
+    if (!debouncedEmail || errors.email) return
 
     void checkWhitelist()
   }, [
-    email,
+    debouncedEmail,
     isNonGovEmailInput,
     errors.email,
     checkWhitelist,
