@@ -56,7 +56,7 @@ export const isValidMapEmbedUrl = (url: string) => {
 // that is supported inside the JSON schema. Components rely on the URL object
 // validation for better security.
 export const MAPS_EMBED_URL_REGEXES = {
-  googlemaps: "^https://www\\.google\\.com/maps/embed?.*$",
+  googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed?.*$",
   onemap: "^https://www\\.onemap\\.gov\\.sg/minimap/minimap\\.html.*$",
 } as const
 

@@ -110,6 +110,17 @@ describe("validation", () => {
       })
     })
 
+    it("should allow Google My Maps embed URLs", () => {
+      const testCases = [
+        "https://www.google.com/maps/d/embed?mid=1Mgnp3R1e7rYXGY2Vn1efD-AWXlfZa8o&ehbc=2E312F",
+      ]
+
+      testCases.forEach((testCase) => {
+        const result = new RegExp(MAPS_EMBED_URL_PATTERN).test(testCase)
+        expect(result).toBe(true)
+      })
+    })
+
     it("should allow OneMap embed URLs", () => {
       const testCases = [
         "https://www.onemap.gov.sg/minimap/minimap.html?mapStyle=Default&zoomLevel=15&latLng=1.29793747849037,103.850182257356&ewt=JTNDcCUzRSUzQ3N0cm9uZyUzRU9wZW4lMjBHb3Zlcm5tZW50JTIwUHJvZHVjdHMlMjBvZmZpY2UlM0MlMkZzdHJvbmclM0UlM0MlMkZwJTNF&popupWidth=200&showPopup=true",
