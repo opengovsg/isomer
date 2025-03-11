@@ -56,6 +56,7 @@ export const AddUserModal = () => {
     reset,
     handleSubmit,
     setValue,
+    getValues,
     formState: { errors },
   } = useZodForm({
     // Create a simplified schema that only accept 1 user with email and role
@@ -150,7 +151,7 @@ export const AddUserModal = () => {
         users: [
           {
             email: data.email,
-            role: watch("role"),
+            role: getValues("role"),
           },
         ],
       },
