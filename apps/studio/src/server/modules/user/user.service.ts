@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server"
 import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 import isEmail from "validator/lib/isEmail"
 
-import type { SafeKysely } from "../database"
+import type { DB, Transaction } from "../database"
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { isGovEmail } from "~/utils/email"
@@ -44,7 +44,7 @@ interface CreateUserProps {
   phone?: User["phone"]
   role: ResourcePermission["role"]
   siteId: ResourcePermission["siteId"]
-  trx?: SafeKysely // allows for transaction to be passed in from parent transaction
+  tx?: Transaction<DB> // allows for transaction to be passed in from parent transaction
 }
 
 export const createUserWithPermission = async ({
@@ -53,7 +53,7 @@ export const createUserWithPermission = async ({
   phone = "",
   role = RoleType.Editor,
   siteId,
-  trx,
+  tx,
 }: CreateUserProps) => {
   if (!isEmail(email)) {
     throw new TRPCError({
@@ -72,7 +72,7 @@ export const createUserWithPermission = async ({
     })
   }
 
-  const executeInTransaction = async (tx: SafeKysely) => {
+  const executeInTransaction = async (tx: Transaction<DB>) => {
     const user = await tx
       .insertInto("User")
       .values({
@@ -105,8 +105,8 @@ export const createUserWithPermission = async ({
     }
   }
 
-  if (trx) {
-    return await executeInTransaction(trx)
+  if (tx) {
+    return await executeInTransaction(tx)
   }
 
   return await db.transaction().execute(executeInTransaction)
