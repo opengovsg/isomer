@@ -12,6 +12,11 @@ export type AuditLog = {
     eventType: AuditLogEvent;
     createdAt: Generated<Timestamp>;
     metadata: unknown;
+    /**
+     * @kyselyType(PrismaJson.AuditLogJsonContent)
+     * [AuditLogJsonContent]
+     */
+    delta: PrismaJson.AuditLogJsonContent;
     ipAddress: string | null;
 };
 export type Blob = {
