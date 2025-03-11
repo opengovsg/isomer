@@ -244,10 +244,11 @@ enum AuditLogEvent {
 
 model AuditLog {
   id        Int           @id @default(autoincrement())
-  user      User?         @relation(fields: [userId], references: [id])
-  userId    String?
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String
   eventType AuditLogEvent
   createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now()) @updatedAt
   metadata  Json
   /// @kyselyType(PrismaJson.AuditLogJsonContent)
   /// [AuditLogJsonContent]
