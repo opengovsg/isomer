@@ -124,6 +124,7 @@ describe("validation", () => {
     it("should allow OneMap embed URLs", () => {
       const testCases = [
         "https://www.onemap.gov.sg/minimap/minimap.html?mapStyle=Default&zoomLevel=15&latLng=1.29793747849037,103.850182257356&ewt=JTNDcCUzRSUzQ3N0cm9uZyUzRU9wZW4lMjBHb3Zlcm5tZW50JTIwUHJvZHVjdHMlMjBvZmZpY2UlM0MlMkZzdHJvbmclM0UlM0MlMkZwJTNF&popupWidth=200&showPopup=true",
+        "https://www.onemap.gov.sg/amm/amm.html?mapStyle=Default&zoomLevel=15&marker=postalcode:189554!colour:darkblue&marker=postalcode:068877!colour:red&marker=postalcode:179097!colour:red&popupWidth=200",
       ]
 
       testCases.forEach((testCase) => {
@@ -136,7 +137,9 @@ describe("validation", () => {
       const testCases = [
         "https://www.example.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.473373876674!2d103.8486973142665!3d1.3035969990313745!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da19b8b4c6e1e1%3A0x2f1f6b8f0a1b2a7d!2sMinistry%20of%20Communications%20and%20Information!5e0!3m2!1sen!2ssg!4v1632291134655!5m2!1en!2sg",
         "https://www.google.com/maps?pb=!1m18!1m12!1m3!1d3961.473373876674!2d103.8486973142665!3d1.3035969990313745!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da19b8b4c6e1e1%3A0x2f1f6b8f0a1b2a7d!2sMinistry%20of%20Communications%20and%20Information!5e0!3m2!1en!2sg!4v1632291134655!5m2!1en!2sg",
+        "https://www.google.com/maps/eee/embed?mid=1Mgnp3R1e7rYXGY2Vn1efD-AWXlfZa8o&ehbc=2E312F",
         "https://www.google.fakesite.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.473373876674!2d103.8486973142665!3d1.3035969990313745!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da19b8b4c6e1e1%3A0x2f1f6b8f0a1b2a7d!2sMinistry%20of%20Communications%20and%20Information!5e0!3m2!1sen!2ssg!4v1632291134655!5m2!1en!2sg",
+        "https://www.onemap.gov.sg/minimap/amm.html?mapStyle=Default&zoomLevel=15&marker=postalcode:189554!colour:darkblue&marker=postalcode:068877!colour:red&marker=postalcode:179097!colour:red&popupWidth=200",
       ]
 
       testCases.forEach((testCase) => {

@@ -57,7 +57,8 @@ export const isValidMapEmbedUrl = (url: string) => {
 // validation for better security.
 export const MAPS_EMBED_URL_REGEXES = {
   googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed?.*$",
-  onemap: "^https://www\\.onemap\\.gov\\.sg/minimap/minimap\\.html.*$",
+  onemap:
+    "^https://www\\.onemap\\.gov\\.sg(/minimap/minimap\\.html|/amm/amm\\.html).*$",
 } as const
 
 export const MAPS_EMBED_URL_PATTERN = Object.values(MAPS_EMBED_URL_REGEXES)
