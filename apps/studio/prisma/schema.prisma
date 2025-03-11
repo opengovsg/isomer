@@ -249,5 +249,8 @@ model AuditLog {
   eventType AuditLogEvent
   createdAt DateTime      @default(now())
   metadata  Json
+  /// @kyselyType(PrismaJson.AuditLogJsonContent)
+  /// [AuditLogJsonContent]
+  delta     Json
   ipAddress String?       @db.Inet
 }
