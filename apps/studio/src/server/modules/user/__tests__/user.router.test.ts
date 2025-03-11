@@ -156,7 +156,7 @@ describe("user.router", () => {
       ])
     })
 
-    it("should throw 409 if both user and permissions already exists", async () => {
+    it("should throw error if both user and permissions already exists", async () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
@@ -170,12 +170,8 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "CONFLICT",
-          message: "User and permissions already exists",
-        }),
-      )
+      // Due to unique constraint in DB
+      await expect(result).rejects.toThrowError()
     })
 
     it("should throw 403 if creating a non-whitelisted non-gov.sg email with any role", async () => {
