@@ -14,12 +14,6 @@ export const updateUserModalAtom = atom<UpdateUserModalState>(
   DEFAULT_UPDATE_USER_MODAL_STATE,
 )
 
-export const DEFAULT_ADD_USER_MODAL_OPEN_STATE = false
-
-export const addUserModalOpenAtom = atom<boolean>(
-  DEFAULT_ADD_USER_MODAL_OPEN_STATE,
-)
-
 export const DEFAULT_ADD_USER_MODAL_STATE = {
   siteId: 0,
   hasWhitelistError: false,

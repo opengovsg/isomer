@@ -29,12 +29,7 @@ import { useZodForm } from "~/lib/form"
 import { createUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
-import {
-  addUserModalAtom,
-  addUserModalOpenAtom,
-  DEFAULT_ADD_USER_MODAL_OPEN_STATE,
-  DEFAULT_ADD_USER_MODAL_STATE,
-} from "../../atoms"
+import { addUserModalAtom, DEFAULT_ADD_USER_MODAL_STATE } from "../../atoms"
 import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
 import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
@@ -42,9 +37,6 @@ import { RoleBox } from "./RoleBox"
 export const AddUserModal = () => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const utils = trpc.useUtils()
-
-  const isOpen = useAtomValue(addUserModalOpenAtom)
-  const setAddUserModalOpen = useSetAtom(addUserModalOpenAtom)
 
   const addUserModalState = useAtomValue(addUserModalAtom)
   const { siteId, hasWhitelistError } = addUserModalState
@@ -140,9 +132,8 @@ export const AddUserModal = () => {
 
   const handleOnClose = useCallback(() => {
     reset()
-    setAddUserModalOpen(DEFAULT_ADD_USER_MODAL_OPEN_STATE)
     setAddUserModalState(DEFAULT_ADD_USER_MODAL_STATE)
-  }, [reset, setAddUserModalOpen, setAddUserModalState])
+  }, [reset, setAddUserModalState])
 
   const onSendInvite = handleSubmit((data) => {
     createUser(
@@ -165,7 +156,7 @@ export const AddUserModal = () => {
   })
 
   return (
-    <Modal isOpen={isOpen} onClose={handleOnClose}>
+    <Modal isOpen={!!siteId} onClose={handleOnClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader mr="3.5rem">Invite to collaborate</ModalHeader>
