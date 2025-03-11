@@ -126,6 +126,7 @@ model User {
 
   ResourcePermission ResourcePermission[]
   versions           Version[]
+  AuditLog           AuditLog[]
 
   @@index([lastLoginAt])
 
@@ -223,4 +224,30 @@ model Whitelist {
   updatedAt DateTime  @default(now()) @updatedAt
 
   @@index([email])
+}
+
+enum AuditLogEvent {
+  ResourceCreate
+  ResourceUpdate
+  ResourceDelete
+  ResourceMove
+  UserCreate
+  UserUpdate
+  UserDelete
+  Publish
+  Login
+  Logout
+  PermissionCreate
+  PermissionUpdate
+  PermissionDelete
+}
+
+model AuditLog {
+  id        Int           @id @default(autoincrement())
+  user      User?         @relation(fields: [userId], references: [id])
+  userId    String?
+  eventType AuditLogEvent
+  createdAt DateTime      @default(now())
+  metadata  Json
+  ipAddress String?       @db.Inet
 }
