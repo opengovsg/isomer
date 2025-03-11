@@ -253,6 +253,7 @@ export const userRouter = router({
       const user = await db
         .selectFrom("User")
         .where("id", "=", userId)
+        .where("deletedAt", "is", null)
         .selectAll()
         .executeTakeFirst()
 

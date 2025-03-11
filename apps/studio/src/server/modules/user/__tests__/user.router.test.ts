@@ -1281,7 +1281,7 @@ describe("user.router", () => {
       )
     })
 
-    it("should throw 404 if user exists but onlt has non-null deletedAt", async () => {
+    it("should throw 404 if user exists but only has non-null deletedAt", async () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
@@ -1298,7 +1298,7 @@ describe("user.router", () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "NOT_FOUND",
-          message: "User permissions not found",
+          message: "User not found",
         }),
       )
     })
