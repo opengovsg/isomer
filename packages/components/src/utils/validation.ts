@@ -23,14 +23,16 @@ export const REF_HREF_PATTERN =
 const isValidGoogleMapsEmbedUrl = (urlObject: URL) => {
   return (
     urlObject.hostname === "www.google.com" &&
-    urlObject.pathname === "/maps/embed"
+    (urlObject.pathname === "/maps/embed" ||
+      urlObject.pathname === "/maps/d/embed")
   )
 }
 
 const isValidOneMapEmbedUrl = (urlObject: URL) => {
   return (
     urlObject.hostname === "www.onemap.gov.sg" &&
-    urlObject.pathname === "/minimap/minimap.html"
+    (urlObject.pathname === "/minimap/minimap.html" ||
+      urlObject.pathname === "/amm/amm.html")
   )
 }
 
