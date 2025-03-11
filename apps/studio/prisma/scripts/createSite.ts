@@ -3,7 +3,8 @@ import { ISOMER_ADMINS, ISOMER_MIGRATORS } from "~prisma/constants"
 
 import type { Navbar } from "~/server/modules/resource/resource.types"
 import { db, jsonb, RoleType } from "~/server/modules/database"
-import { addUsersToSite } from "./addUsersToSite"
+import { addUsersToSite, User } from "./addUsersToSite"
+import { readCsv } from "./utils"
 
 const PAGE_BLOB: IsomerSchema = {
   version: "0.1.0",
@@ -233,6 +234,10 @@ export const createSite = async ({ siteName }: CreateSiteProps) => {
       role: RoleType.Admin,
     })),
   })
+
+  const users = await readCsv<User>()
+
+  await addUsersToSite({ siteId, users })
 
   return siteId
 }
