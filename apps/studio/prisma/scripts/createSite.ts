@@ -238,4 +238,4 @@ export const createSite = async ({ siteName }: CreateSiteProps) => {
 }
 
 // NOTE: Update the site name here before executing!
-await createSite({ siteName: "" })
+// await createSite({ siteName: "" })
