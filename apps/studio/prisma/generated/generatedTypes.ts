@@ -8,9 +8,10 @@ import type { ResourceState, ResourceType, RoleType, AuditLogEvent } from "./gen
 
 export type AuditLog = {
     id: GeneratedAlways<number>;
-    userId: string | null;
+    userId: string;
     eventType: AuditLogEvent;
     createdAt: Generated<Timestamp>;
+    updatedAt: Generated<Timestamp>;
     metadata: unknown;
     /**
      * @kyselyType(PrismaJson.AuditLogJsonContent)
