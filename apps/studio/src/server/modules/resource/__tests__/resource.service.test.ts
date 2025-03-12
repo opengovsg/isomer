@@ -377,7 +377,7 @@ describe("resource.service", () => {
       )
 
       // Assert
-      expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrowError()
     })
   })
   describe("updateBlobById", () => {
@@ -403,7 +403,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrowError()
     })
 
     it("should create a draft blob if the page is already published", async () => {
@@ -440,7 +440,7 @@ describe("resource.service", () => {
       const actualPublishedBlob = await db
         .selectFrom("Version")
         .innerJoin("Blob", "Version.blobId", "Blob.id")
-        .where("Version.id", "=", result?.publishedVersionId!)
+        .where("Version.id", "=", result!.publishedVersionId)
         .select("content")
         .executeTakeFirstOrThrow()
       expect(result?.content).toStrictEqual(PAGE_BLOB)
@@ -490,7 +490,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrowError()
     })
   })
 
@@ -505,11 +505,11 @@ describe("resource.service", () => {
       expect(result.siteId).toBe(site.id)
     })
 
-    it("should throw an error if the `siteId` is not found", () => {
+    it("should throw an error if the `siteId` is not found", async () => {
       // Act
       const result = getNavBar(99999)
       // Assert
-      expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrowError()
     })
   })
 
@@ -524,11 +524,11 @@ describe("resource.service", () => {
       expect(result.siteId).toBe(site.id)
     })
 
-    it("should throw an error if the `siteId` is not found", () => {
+    it("should throw an error if the `siteId` is not found", async () => {
       // Act
       const result = getNavBar(99999)
       // Assert
-      expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrowError()
     })
   })
   describe("getLocalisedSitemap", () => {
@@ -540,7 +540,7 @@ describe("resource.service", () => {
       const result = getLocalisedSitemap(9999, Number(page.id))
 
       // Assert
-      expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrowError()
     })
 
     it("should throw an error if the `resourceId` doesn't exist", async () => {
@@ -549,7 +549,7 @@ describe("resource.service", () => {
       // Act
       const result = getLocalisedSitemap(site.id, 99999)
       // Assert
-      expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrowError()
     })
 
     it("should return the path from ancestor to the page, together with its siblings", async () => {
@@ -659,5 +659,4 @@ const linkPublishedBlobToPage = async ({
       blobId,
     })
     .executeTakeFirstOrThrow()
-  n
 }
