@@ -1,15 +1,12 @@
-import {
-  ResourcePermission,
-  VerificationToken,
-} from "~prisma/generated/generatedTypes"
-
 import type {
   AuditLogEvent,
   Blob,
   DB,
   Resource,
+  ResourcePermission,
   Transaction,
   User,
+  VerificationToken,
 } from "../database"
 
 type FullResource = Resource & (Blob | undefined)
@@ -59,7 +56,7 @@ interface LoginDelta {
 // `userId` or sgid info in session.
 interface LogoutDelta {
   before: User
-  after: {}
+  after: null
 }
 
 interface AuthEventLogProps {
