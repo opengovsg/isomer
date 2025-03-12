@@ -34,9 +34,18 @@ declare global {
       _IsomerSiteWideComponentsProps["footerItems"],
       "JSONB"
     >
-    type AuditLogJsonContent = Tagged<
-      { before: Record<string, unknown>; after: Record<string, unknown> },
-      "JSONB"
-    >
+    interface NewLogEvent {
+      before: null
+      after: Record<string, unknown>
+    }
+    interface DeleteLogEvent {
+      before: Record<string, unknown>
+      after: null
+    }
+    interface FullLogEvent {
+      before: Record<string, unknown>
+      after: Record<string, unknown>
+    }
+    type AuditLogJsonContent = FullLogEvent | NewLogEvent | DeleteLogEvent
   }
 }
