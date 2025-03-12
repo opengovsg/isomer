@@ -34,15 +34,15 @@ declare global {
       _IsomerSiteWideComponentsProps["footerItems"],
       "JSONB"
     >
-    type NewLogEvent = {
+    interface NewLogEvent {
       before: null
       after: Record<string, unknown>
     }
-    type DeleteLogEvent = {
+    interface DeleteLogEvent {
       before: Record<string, unknown>
       after: null
     }
-    type FullLogEvent = {
+    interface FullLogEvent {
       before: Record<string, unknown>
       after: Record<string, unknown>
     }
