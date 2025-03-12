@@ -103,3 +103,40 @@ export const logPublishEvent: AuditLogger<PublishEventLogProps> = async (
     })
     .execute()
 }
+
+interface CreateUserDelta {
+  before: null
+  after: User
+}
+
+interface DeleteUserDelta {
+  before: User
+  after: null
+}
+
+interface UpdateUserDelta {
+  before: User
+  after: User
+}
+
+interface UserEventLogProps {
+  by: User
+  delta: CreateUserDelta | DeleteUserDelta | UpdateUserDelta
+  eventType: Extract<AuditLogEvent, "UserCreate" | "UserUpdate" | "UserDelete">
+  ip?: string
+}
+
+export const logUserEvent: AuditLogger<UserEventLogProps> = async (
+  tx,
+  { by, delta, eventType, ip },
+) => {
+  await tx
+    .insertInto("AuditLog")
+    .values({
+      eventType,
+      delta,
+      userId: by.id,
+      ipAddress: ip,
+    })
+    .execute()
+}
