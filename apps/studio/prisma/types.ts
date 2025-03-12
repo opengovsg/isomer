@@ -34,9 +34,18 @@ declare global {
       _IsomerSiteWideComponentsProps["footerItems"],
       "JSONB"
     >
-    interface AuditLogDeltaJsonContent {
-      before: Record<string, unknown> | null
-      after: Record<string, unknown> | null
+    interface NewLogEvent {
+      before: null
+      after: Record<string, unknown>
     }
+    interface DeleteLogEvent {
+      before: Record<string, unknown>
+      after: null
+    }
+    interface FullLogEvent {
+      before: Record<string, unknown>
+      after: Record<string, unknown>
+    }
+    type AuditLogDeltaJsonContent = FullLogEvent | NewLogEvent | DeleteLogEvent
   }
 }

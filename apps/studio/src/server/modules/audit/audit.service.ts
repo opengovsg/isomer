@@ -7,18 +7,30 @@ import type {
   Resource,
   Transaction,
   User,
+  Version,
 } from "../database"
+
+type FullResource = Resource & (Blob | undefined)
+
+interface CreateDelta {
+  before: null
+  after: FullResource
+}
+interface DeleteDelta {
+  before: FullResource
+  after: null
+}
+interface UpdateDelta {
+  before: FullResource
+  after: FullResource
+}
 
 interface ResourceEventLogProps {
   eventType: Extract<
     AuditLogEvent,
     "ResourceCreate" | "ResourceUpdate" | "ResourceDelete" | "ResourceMove"
   >
-  delta: {
-    // NOTE: Can be undefined because folders/collections don't have blobs
-    before: Resource & (Blob | undefined)
-    after: Resource & (Blob | undefined)
-  }
+  delta: CreateDelta | DeleteDelta | UpdateDelta
   by: User
   ip?: string
 }
@@ -61,5 +73,30 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
   await tx
     .insertInto("AuditLog")
     .values({ eventType, delta, userId: by.id, ipAddress: ip })
+    .execute()
+}
+
+interface PublishEventLogProps {
+  by: User
+  delta: {
+    // NOTE: `null` if this is the first publish
+    before: (FullResource & { versionNumber: number }) | null
+    after: FullResource & { versionNumber: number }
+  }
+  eventType: Extract<AuditLogEvent, "Publish">
+  ip?: string
+}
+export const logPublishEvent: AuditLogger<PublishEventLogProps> = async (
+  tx,
+  { by, delta, eventType, ip },
+) => {
+  await tx
+    .insertInto("AuditLog")
+    .values({
+      eventType,
+      delta,
+      userId: by.id,
+      ipAddress: ip,
+    })
     .execute()
 }
