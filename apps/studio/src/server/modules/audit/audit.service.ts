@@ -1,4 +1,7 @@
-import { VerificationToken } from "~prisma/generated/generatedTypes"
+import {
+  ResourcePermission,
+  VerificationToken,
+} from "~prisma/generated/generatedTypes"
 
 import type {
   AuditLogEvent,
@@ -7,7 +10,6 @@ import type {
   Resource,
   Transaction,
   User,
-  Version,
 } from "../database"
 
 type FullResource = Resource & (Blob | undefined)
@@ -129,6 +131,46 @@ interface UserEventLogProps {
 export const logUserEvent: AuditLogger<UserEventLogProps> = async (
   tx,
   { by, delta, eventType, ip },
+) => {
+  await tx
+    .insertInto("AuditLog")
+    .values({
+      eventType,
+      delta,
+      userId: by.id,
+      ipAddress: ip,
+    })
+    .execute()
+}
+
+interface CreatePermissionDelta {
+  before: null
+  after: ResourcePermission
+}
+
+interface DeletePermissionDelta {
+  before: null
+  after: ResourcePermission
+}
+
+interface UpdatePermissionDelta {
+  before: ResourcePermission
+  after: ResourcePermission
+}
+
+interface PermissionEventLogProps {
+  eventType: Extract<
+    AuditLogEvent,
+    "PermissionUpdate" | "PermissionDelete" | "PermissionCreate"
+  >
+  by: User
+  delta: CreatePermissionDelta | DeletePermissionDelta | UpdatePermissionDelta
+  ip?: string
+}
+
+export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
+  tx,
+  { eventType, by, delta, ip },
 ) => {
   await tx
     .insertInto("AuditLog")
