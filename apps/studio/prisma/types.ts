@@ -35,5 +35,8 @@ declare global {
       "JSONB"
     >
     type AuditLogJsonContent = {
-      before: Record<string, unknown>
-      after: Record<string, unknown> 
+      before: Record<string, unknown> | null
+      after: Record<string, unknown> | null
+    }
+  }
+}
