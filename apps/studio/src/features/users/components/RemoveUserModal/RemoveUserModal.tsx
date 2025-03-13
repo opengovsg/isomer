@@ -33,7 +33,6 @@ export const RemoveUserModal = () => {
     onSuccess: async (result) => {
       await utils.user.list.invalidate()
       await utils.user.count.invalidate()
-      await utils.user.hasInactiveUsers.invalidate()
       toast({
         status: "success",
         title: `Removed ${result.email} from site.`,
