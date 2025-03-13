@@ -74,18 +74,15 @@ export const listUsersOutputSchema = z.array(
   }),
 )
 
+const ACTIVITY_TYPE = z.enum(["all", "inactive"] as const)
+
 export const countUsersInputSchema = z.object({
   siteId: z.number().min(1),
   adminType: ADMIN_TYPE.optional().default("agency"),
+  activityType: ACTIVITY_TYPE.optional().default("all"),
 })
 
 export const countUsersOutputSchema = z.number()
-
-export const hasInactiveUsersInputSchema = z.object({
-  siteId: z.number().min(1),
-})
-
-export const hasInactiveUsersOutputSchema = z.boolean()
 
 export const updateUserInputSchema = z.object({
   siteId: z.number().min(1),
