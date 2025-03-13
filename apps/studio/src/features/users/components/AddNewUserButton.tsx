@@ -7,7 +7,6 @@ import { BiPlus } from "react-icons/bi"
 import { UserManagementContext } from "~/features/users"
 import {
   addUserModalAtom,
-  addUserModalOpenAtom,
   DEFAULT_ADD_USER_MODAL_STATE,
 } from "~/features/users/atoms"
 
@@ -22,17 +21,15 @@ export const AddNewUserButton = ({
   const ability = useContext(UserManagementContext)
   const canManageUsers = ability.can("manage", "UserManagement")
 
-  const setAddUserModalOpen = useSetAtom(addUserModalOpenAtom)
   const setAddUserModalState = useSetAtom(addUserModalAtom)
 
   const button = (
     <Button
       variant="solid"
       leftIcon={<BiPlus />}
-      onClick={() => {
-        setAddUserModalOpen(true)
+      onClick={() =>
         setAddUserModalState({ ...DEFAULT_ADD_USER_MODAL_STATE, siteId })
-      }}
+      }
       isDisabled={!canManageUsers}
       {...buttonProps}
     >

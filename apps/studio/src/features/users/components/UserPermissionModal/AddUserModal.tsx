@@ -20,6 +20,7 @@ import {
   FormLabel,
   useToast,
 } from "@opengovsg/design-system-react"
+import { useDebounce } from "@uidotdev/usehooks"
 import { RoleType } from "~prisma/generated/generatedEnums"
 import { useAtomValue, useSetAtom } from "jotai"
 
@@ -28,12 +29,7 @@ import { useZodForm } from "~/lib/form"
 import { createUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
-import {
-  addUserModalAtom,
-  addUserModalOpenAtom,
-  DEFAULT_ADD_USER_MODAL_OPEN_STATE,
-  DEFAULT_ADD_USER_MODAL_STATE,
-} from "../../atoms"
+import { addUserModalAtom, DEFAULT_ADD_USER_MODAL_STATE } from "../../atoms"
 import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
 import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
@@ -41,9 +37,6 @@ import { RoleBox } from "./RoleBox"
 export const AddUserModal = () => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const utils = trpc.useUtils()
-
-  const isOpen = useAtomValue(addUserModalOpenAtom)
-  const setAddUserModalOpen = useSetAtom(addUserModalOpenAtom)
 
   const addUserModalState = useAtomValue(addUserModalAtom)
   const { siteId, hasWhitelistError } = addUserModalState
@@ -55,6 +48,7 @@ export const AddUserModal = () => {
     reset,
     handleSubmit,
     setValue,
+    getValues,
     formState: { errors },
   } = useZodForm({
     // Create a simplified schema that only accept 1 user with email and role
@@ -69,6 +63,7 @@ export const AddUserModal = () => {
   })
 
   const email = watch("email")
+  const debouncedEmail = useDebounce(email, 1000)
 
   const isNonGovEmailInput = useMemo(
     () => !!(!errors.email && email && !isGovEmail(email)),
@@ -103,7 +98,7 @@ export const AddUserModal = () => {
 
   const { refetch: checkWhitelist } =
     trpc.whitelist.isEmailWhitelisted.useQuery(
-      { siteId, email: email || "" },
+      { siteId, email: debouncedEmail || "" },
       {
         enabled: false,
         onSuccess: (isWhitelisted) => {
@@ -124,11 +119,11 @@ export const AddUserModal = () => {
   // Check whitelist when email changes
   useEffect(() => {
     // no need to check whitelist if email is not entered or already invalid
-    if (!email || errors.email) return
+    if (!debouncedEmail || errors.email) return
 
     void checkWhitelist()
   }, [
-    email,
+    debouncedEmail,
     isNonGovEmailInput,
     errors.email,
     checkWhitelist,
@@ -137,9 +132,8 @@ export const AddUserModal = () => {
 
   const handleOnClose = useCallback(() => {
     reset()
-    setAddUserModalOpen(DEFAULT_ADD_USER_MODAL_OPEN_STATE)
     setAddUserModalState(DEFAULT_ADD_USER_MODAL_STATE)
-  }, [reset, setAddUserModalOpen, setAddUserModalState])
+  }, [reset, setAddUserModalState])
 
   const onSendInvite = handleSubmit((data) => {
     createUser(
@@ -148,7 +142,7 @@ export const AddUserModal = () => {
         users: [
           {
             email: data.email,
-            role: watch("role"),
+            role: getValues("role"),
           },
         ],
       },
@@ -162,7 +156,7 @@ export const AddUserModal = () => {
   })
 
   return (
-    <Modal isOpen={isOpen} onClose={handleOnClose}>
+    <Modal isOpen={!!siteId} onClose={handleOnClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader mr="3.5rem">Invite to collaborate</ModalHeader>
@@ -251,6 +245,7 @@ export const AddUserModal = () => {
               Object.keys(errors).length > 0 ||
               email === "" ||
               additionalEmailError ||
+              email !== debouncedEmail || // check if email has changed
               (watch("role") === RoleType.Admin && isNonGovEmailInput)
             }
           >

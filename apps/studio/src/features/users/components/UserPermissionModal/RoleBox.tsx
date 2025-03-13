@@ -42,6 +42,10 @@ export const RoleBox = ({
       _selected={{
         bg: "interaction.muted.main.active",
         borderColor: "base.divider.brand",
+        _hover: {
+          bg: "interaction.muted.main.active",
+          borderColor: "base.divider.brand",
+        },
       }}
       _disabled={{
         color: "interaction.support.disabled-content",
@@ -49,23 +53,15 @@ export const RoleBox = ({
         borderColor: "interaction.support.disabled",
         opacity: 0.6,
         cursor: "not-allowed",
+        _hover: {
+          bg: "interaction.support.disabled",
+          borderColor: "interaction.support.disabled",
+        },
       }}
-      _hover={
-        isDisabled
-          ? {
-              bg: "interaction.support.disabled",
-              borderColor: "interaction.support.disabled",
-            }
-          : isSelected
-            ? {
-                bg: "interaction.muted.main.active",
-                borderColor: "base.divider.brand",
-              }
-            : {
-                bg: "interaction.muted.main.hover",
-                borderColor: "base.divider.medium",
-              }
-      }
+      _hover={{
+        bg: "interaction.muted.main.hover",
+        borderColor: "base.divider.medium",
+      }}
       aria-label={`${value} role`}
     >
       <VStack gap={2} alignItems="flex-start">

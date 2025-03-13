@@ -4,8 +4,6 @@ import { useSetAtom } from "jotai"
 
 import {
   addUserModalAtom,
-  addUserModalOpenAtom,
-  DEFAULT_ADD_USER_MODAL_OPEN_STATE,
   DEFAULT_ADD_USER_MODAL_STATE,
   DEFAULT_REMOVE_USER_MODAL_STATE,
   DEFAULT_UPDATE_PROFILE_MODAL_STATE,
@@ -65,14 +63,12 @@ export const ResetUpdateProfileModalDecorator: Decorator = (Story) => {
  * Use this to ensure the add user modal doesn't persist between stories
  */
 export const ResetAddUserModalDecorator: Decorator = (Story) => {
-  const setAddUserModalOpen = useSetAtom(addUserModalOpenAtom)
   const setAddUserModalState = useSetAtom(addUserModalAtom)
 
   // Reset modal state when the decorator mounts
   useEffect(() => {
-    setAddUserModalOpen(DEFAULT_ADD_USER_MODAL_OPEN_STATE)
     setAddUserModalState(DEFAULT_ADD_USER_MODAL_STATE)
-  }, [setAddUserModalOpen, setAddUserModalState])
+  }, [setAddUserModalState])
 
   return <Story />
 }

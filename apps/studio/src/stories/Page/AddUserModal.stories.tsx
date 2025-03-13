@@ -176,6 +176,10 @@ export const Loading: Story = {
     // Find the Send invite button
     const sendInviteButton = await screen.findByText("Send invite")
 
+    // Wait for 1 seconds before proceeding
+    // As there is a 500ms debounce on the email input
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
     // Wait for the button to be enabled
     await expect(sendInviteButton).not.toBeDisabled()
 
@@ -210,6 +214,10 @@ export const ToastAfterAddingUser: Story = {
 
     // Find the Send invite button
     const sendInviteButton = await screen.findByText("Send invite")
+
+    // Wait for 1 seconds before proceeding
+    // As there is a 500ms debounce on the email input
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
     // Wait for the button to be enabled
     await expect(sendInviteButton).not.toBeDisabled()
