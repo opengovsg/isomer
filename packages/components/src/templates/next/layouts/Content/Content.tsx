@@ -20,7 +20,7 @@ const createContentLayoutStyles = tv({
     container:
       "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-6 xl:gap-10",
     siderailContainer: "relative col-span-3 hidden lg:block",
-    content: "col-span-12 flex flex-col gap-16",
+    content: "col-span-12 flex flex-col gap-16 break-words",
   },
   variants: {
     isSideRailPresent: {

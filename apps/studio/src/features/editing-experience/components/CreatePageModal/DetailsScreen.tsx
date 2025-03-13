@@ -118,7 +118,7 @@ export const CreatePageDetailsScreen = () => {
               </Stack>
               <Stack gap="1.5rem">
                 {/* Section 1: Page Title */}
-                <FormControl isInvalid={!!errors.title}>
+                <FormControl isRequired isInvalid={!!errors.title}>
                   <FormLabel color="base.content.strong">
                     Page title
                     <FormHelperText color="base.content.default">
@@ -141,7 +141,7 @@ export const CreatePageDetailsScreen = () => {
                 </FormControl>
 
                 {/* Section 2: Page URL */}
-                <FormControl isInvalid={!!errors.permalink}>
+                <FormControl isRequired isInvalid={!!errors.permalink}>
                   <FormLabel>
                     Page URL
                     <FormHelperText>
