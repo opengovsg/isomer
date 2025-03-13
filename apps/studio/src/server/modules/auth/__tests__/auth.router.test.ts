@@ -39,7 +39,7 @@ describe("auth.email", () => {
 
       // Assert
       expect(spy).not.toHaveBeenCalled()
-      expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrowError(
         new TRPCError({ code: "BAD_REQUEST" }),
       )
     })
