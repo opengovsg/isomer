@@ -6,6 +6,7 @@ import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Resource, SafeKysely, Transaction } from "../database"
 import type { SearchResultResource } from "./resource.types"
+import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { getSitemapTree } from "~/utils/sitemap"
 import { publishSite } from "../aws/codebuild.service"
@@ -383,6 +384,62 @@ export const publishResource = async (
   return addedVersionResult
 }
 
+export const getBatchAncestryWithSelfQuery = async ({
+  siteId,
+  resourceIds,
+}: {
+  siteId: number
+  resourceIds: string[]
+}): Promise<ResourceItemContent[][]> => {
+  const resourceObject = sql<ResourceItemContent>`jsonb_build_object(
+    'title', "Resource"."title",
+    'permalink', "Resource"."permalink",
+    'type', "Resource"."type",
+    'id', "Resource"."id"::text,
+    'parentId', "Resource"."parentId"::text
+  )`
+
+  const result = await db
+    .withRecursive("recursiveResources", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .select([
+          "Resource.id",
+          "Resource.parentId",
+          sql<ResourceItemContent[]>`jsonb_build_array(${resourceObject})`.as(
+            "groupedByPath",
+          ),
+        ])
+        .where("Resource.siteId", "=", Number(siteId))
+        .where("Resource.id", "in", resourceIds)
+        .where("Resource.type", "!=", ResourceType.RootPage)
+        .unionAll(
+          eb
+            .selectFrom("Resource")
+            .innerJoin(
+              "recursiveResources",
+              "recursiveResources.parentId",
+              "Resource.id",
+            )
+            .select([
+              "Resource.id",
+              "Resource.parentId",
+              sql<
+                ResourceItemContent[]
+              >`jsonb_build_array(${resourceObject}) || "recursiveResources"."groupedByPath"`.as(
+                "groupedByPath",
+              ),
+            ]),
+        ),
+    )
+    .selectFrom("recursiveResources")
+    .select("recursiveResources.groupedByPath")
+    .where("recursiveResources.parentId", "is", null)
+    .execute()
+
+  return result.map((r) => r.groupedByPath)
+}
+
 export const getWithFullPermalink = async ({
   resourceId,
 }: {
@@ -460,11 +517,13 @@ export const getSearchResults = async ({
   query,
   offset,
   limit,
+  resourceTypes,
 }: {
   siteId: number
   query: string
   offset: number
   limit: number
+  resourceTypes: ResourceType[]
 }): Promise<{
   totalCount: number | null
   resources: SearchResultResource[]
@@ -476,14 +535,7 @@ export const getSearchResults = async ({
   const queriedResources = getResourcesWithLastUpdatedAt({
     siteId: Number(siteId),
   })
-    .where("Resource.type", "in", [
-      // only show user-viewable resources (excluding root page, folder meta etc.)
-      ResourceType.Page,
-      ResourceType.Folder,
-      ResourceType.Collection,
-      ResourceType.CollectionLink,
-      ResourceType.CollectionPage,
-    ])
+    .where("Resource.type", "in", resourceTypes)
     .where((eb) =>
       eb.or(
         searchTerms.map((searchTerm) =>

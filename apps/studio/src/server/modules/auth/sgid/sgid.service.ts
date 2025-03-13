@@ -16,18 +16,24 @@ export const upsertSgidAccountAndUser = async ({
 }) => {
   return prisma.$transaction(async (tx) => {
     // Create user from email
-    const user = await tx.user.upsert({
-      where: {
-        email: pocdexEmail,
-      },
-      update: {},
-      create: {
-        email: pocdexEmail,
-        name,
-        // TODO: add later
-        phone: "",
-      },
-    })
+
+    // Not using Prisma's `upsert` because Prisma's unique constraint with nullable fields
+    // like `deletedAt` causes type issues. Prisma expects `deletedAt` to be `string|Date`
+    // even when `null` is valid in the database schema.
+    const user =
+      (await tx.user.findFirst({
+        where: {
+          email: pocdexEmail,
+          deletedAt: null,
+        },
+      })) ??
+      (await tx.user.create({
+        data: {
+          email: pocdexEmail,
+          phone: "", // TODO: add the phone in later, this is a wip
+          name,
+        },
+      }))
 
     // Link user to account
     // TODO: Remnant of unused code, to remove
