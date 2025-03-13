@@ -1,9 +1,14 @@
 import type { ButtonProps } from "@chakra-ui/react"
 import { useContext } from "react"
 import { Button, Tooltip } from "@chakra-ui/react"
+import { useSetAtom } from "jotai"
 import { BiPlus } from "react-icons/bi"
 
 import { UserManagementContext } from "~/features/users"
+import {
+  addUserModalAtom,
+  DEFAULT_ADD_USER_MODAL_STATE,
+} from "~/features/users/atoms"
 
 interface AddNewUserButtonProps extends Omit<ButtonProps, "onClick"> {
   siteId: number
@@ -16,11 +21,15 @@ export const AddNewUserButton = ({
   const ability = useContext(UserManagementContext)
   const canManageUsers = ability.can("manage", "UserManagement")
 
+  const setAddUserModalState = useSetAtom(addUserModalAtom)
+
   const button = (
     <Button
       variant="solid"
       leftIcon={<BiPlus />}
-      onClick={() => console.log(`TODO: add new user for site ${siteId}`)}
+      onClick={() =>
+        setAddUserModalState({ ...DEFAULT_ADD_USER_MODAL_STATE, siteId })
+      }
       isDisabled={!canManageUsers}
       {...buttonProps}
     >

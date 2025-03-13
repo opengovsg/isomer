@@ -7,6 +7,8 @@ import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { UserManagementProvider } from "~/features/users"
 import {
   AddNewUserButton,
+  AddUserModal,
+  EditUserModal,
   RemoveUserModal,
   UserTableTabs,
 } from "~/features/users/components"
@@ -69,6 +71,8 @@ const SiteUsersPage: NextPageWithLayout = () => {
         </VStack>
         <UserTableTabs siteId={siteId} />
       </VStack>
+      <AddUserModal />
+      <EditUserModal />
       <RemoveUserModal />
     </>
   )

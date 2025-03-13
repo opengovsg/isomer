@@ -91,7 +91,7 @@ describe("user.service", () => {
       await expect(result).rejects.toThrowError()
     })
 
-    it("should throw error if user and permissions already exists", async () => {
+    it("should throw error if both user and permission already exists", async () => {
       // Arrange
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
       await setupAdminPermissions({ userId: user.id, siteId })
@@ -104,8 +104,12 @@ describe("user.service", () => {
       })
 
       // Assert
-      // Due to unique constraint in DB
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "User already has permission for this site",
+        }),
+      )
     })
 
     it("should create user if user already exists but has non-null deletedAt", async () => {

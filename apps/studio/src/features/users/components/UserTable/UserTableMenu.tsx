@@ -21,12 +21,12 @@ import { MenuItem } from "~/components/Menu"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UserManagementContext } from "~/features/users"
 import { trpc } from "~/utils/trpc"
-import { removeUserModalAtom } from "../../atoms"
+import { removeUserModalAtom, updateUserModalAtom } from "../../atoms"
 import { canResendInviteToUser } from "../../utils"
 
 interface UserTableMenuProps
   extends Pick<UserTableProps, "siteId">,
-    Pick<UserTableData, "createdAt" | "lastLoginAt"> {
+    Pick<UserTableData, "createdAt" | "lastLoginAt" | "email" | "role"> {
   userId: UserTableData["id"]
   userName: UserTableData["name"]
 }
@@ -35,6 +35,8 @@ export const UserTableMenu = ({
   siteId,
   userId,
   userName,
+  email,
+  role,
   createdAt,
   lastLoginAt,
 }: UserTableMenuProps) => {
@@ -42,6 +44,7 @@ export const UserTableMenu = ({
 
   const ability = useContext(UserManagementContext)
 
+  const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
 
   const { mutate: resendInvite, isLoading: isResendingInvite } =
@@ -73,10 +76,11 @@ export const UserTableMenu = ({
           {ability.can("manage", "UserManagement") && (
             <>
               <MenuItem
-                onClick={() => {
-                  console.log(`TODO: Edit user: ${userId} ${siteId}`)
-                }}
+                onClick={() =>
+                  setUpdateUserModalState({ siteId, userId, email, role })
+                }
                 icon={<BiPencil fontSize="1rem" />}
+                aria-label={`Edit user ${userName}`}
               >
                 Edit user
               </MenuItem>

@@ -14,7 +14,7 @@ const COMMON_HANDLERS = [
   sitesHandlers.getSiteName.default(),
   userHandlers.count.default(),
   userHandlers.getPermissions.admin(),
-  userHandlers.list.users(),
+  userHandlers.list.removeUserModal(),
   userHandlers.getUser.default(),
 ]
 

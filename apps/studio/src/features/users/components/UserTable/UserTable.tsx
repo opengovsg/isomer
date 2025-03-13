@@ -77,6 +77,8 @@ const getColumns = ({
           siteId={siteId}
           userId={row.original.id}
           userName={row.original.name}
+          email={row.original.email}
+          role={row.original.role}
           createdAt={row.original.createdAt}
           lastLoginAt={row.original.lastLoginAt}
         />
