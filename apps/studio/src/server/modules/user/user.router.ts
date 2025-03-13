@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server"
 import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 
 import { sendInvitation } from "~/features/mail/service"
+import { canResendInviteToUser } from "~/features/users/utils"
 import {
   countUsersInputSchema,
   countUsersOutputSchema,
@@ -14,15 +15,17 @@ import {
   getUserOutputSchema,
   listUsersInputSchema,
   listUsersOutputSchema,
+  resendInviteInputSchema,
+  resendInviteOutputSchema,
   updateUserDetailsInputSchema,
   updateUserDetailsOutputSchema,
   updateUserInputSchema,
   updateUserOutputSchema,
 } from "~/schemas/user"
 import { protectedProcedure, router } from "../../trpc"
-import { db, sql } from "../database"
+import { db, RoleType, sql } from "../database"
 import {
-  sitePermissions,
+  getSitePermissions,
   validatePermissionsForManagingUsers,
 } from "../permissions/permissions.service"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
@@ -36,7 +39,7 @@ export const userRouter = router({
   getPermissions: protectedProcedure
     .input(getPermissionsInputSchema)
     .query(async ({ ctx, input: { siteId } }) => {
-      return await sitePermissions({ userId: ctx.user.id, siteId })
+      return await getSitePermissions({ userId: ctx.user.id, siteId })
     }),
 
   create: protectedProcedure
@@ -165,6 +168,7 @@ export const userRouter = router({
           "ActiveUser.id",
           "ActiveUser.email",
           "ActiveUser.name",
+          "ActiveUser.createdAt",
           "ActiveUser.lastLoginAt",
           eb.ref("ActiveResourcePermission.role").as("role"),
         ])
@@ -197,6 +201,7 @@ export const userRouter = router({
           "ActiveUser.email",
           "ActiveUser.name",
           "ActiveUser.lastLoginAt",
+          "ActiveUser.createdAt",
           eb.ref("ActiveResourcePermission.role").as("role"),
         ])
         .limit(limit)
@@ -310,5 +315,63 @@ export const userRouter = router({
         .executeTakeFirstOrThrow()
 
       return { name: updatedUser.name, phone: updatedUser.phone }
+    }),
+
+  resendInvite: protectedProcedure
+    .input(resendInviteInputSchema)
+    .output(resendInviteOutputSchema)
+    .mutation(async ({ ctx, input: { siteId, userId } }) => {
+      await validatePermissionsForManagingUsers({
+        siteId,
+        userId: ctx.user.id,
+        action: "manage",
+      })
+
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", userId)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        })
+      }
+
+      if (
+        !canResendInviteToUser({
+          createdAt: user.createdAt,
+          lastLoginAt: user.lastLoginAt,
+        })
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User has already logged in",
+        })
+      }
+
+      // Defensive programming to check if the user has permissions to receive invite
+      const userPermission = await getSitePermissions({
+        userId: user.id,
+        siteId,
+      })
+      if (userPermission.length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User has no permissions",
+        })
+      }
+
+      // Send invite
+      const { name: siteName } = await getSiteNameAndCodeBuildId(siteId)
+      await sendInvitation({
+        recipientEmail: user.email,
+        siteName,
+        role: userPermission[0]?.role ?? RoleType.Editor,
+      })
+
+      return { email: user.email }
     }),
 })
