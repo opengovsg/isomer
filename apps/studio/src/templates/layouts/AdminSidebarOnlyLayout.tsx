@@ -2,6 +2,7 @@ import type { PropsWithChildren } from "react"
 import { useRouter } from "next/router"
 import { Flex } from "@chakra-ui/react"
 import { BiCog, BiFolder, BiLogOut, BiStar } from "react-icons/bi"
+import { PiUsersBold } from "react-icons/pi"
 import { z } from "zod"
 
 import type { CmsSidebarItem } from "~/components/CmsSidebar/CmsSidebarItems"
@@ -52,7 +53,11 @@ const CmsSidebarWrapper = ({ children }: PropsWithChildren) => {
         router.asPath === `/sites/${siteId}` ||
         router.asPath.startsWith(`/sites/${siteId}/pages`),
     },
-    // TODO(ISOM-1552): Add back manage users functionality when implemented
+    {
+      icon: PiUsersBold,
+      label: "Collaborators",
+      href: `/sites/${siteId}/users`,
+    },
     { icon: BiCog, label: "Settings", href: `/sites/${siteId}/settings` },
     ...(isUserIsomerAdmin
       ? [
