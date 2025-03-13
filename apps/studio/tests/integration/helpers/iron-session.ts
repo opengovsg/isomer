@@ -2,7 +2,11 @@ import type { RequestOptions, ResponseOptions } from "node-mocks-http"
 import { type NextApiRequest, type NextApiResponse } from "next"
 import { nanoid } from "nanoid"
 import { createMocks } from "node-mocks-http"
-import { MOCK_STORY_DATE, MOCK_TEST_USER_NAME } from "tests/msw/constants"
+import {
+  MOCK_STORY_DATE,
+  MOCK_TEST_PHONE,
+  MOCK_TEST_USER_NAME,
+} from "tests/msw/constants"
 
 import type { Context } from "~/server/context"
 import type { User } from "~server/db"
@@ -101,7 +105,7 @@ export const createTestUser = () => ({
   name: MOCK_TEST_USER_NAME,
   createdAt: MOCK_STORY_DATE,
   updatedAt: MOCK_STORY_DATE,
-  phone: "123456789",
+  phone: MOCK_TEST_PHONE,
   deletedAt: null,
   lastLoginAt: null,
 })

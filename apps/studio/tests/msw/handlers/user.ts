@@ -88,6 +88,23 @@ export const userHandlers = {
       })
     },
   },
+  updateDetails: {
+    success: () => {
+      return trpcMsw.user.updateDetails.mutation(() => {
+        return {
+          name: "Test User",
+          phone: "91234567",
+        }
+      })
+    },
+    loading: () => {
+      return trpcMsw.user.updateDetails.mutation(() => {
+        return new Promise(() => {
+          // Never resolve to simulate infinite loading
+        })
+      })
+    },
+  },
   getPermissions: {
     admin: () => {
       return trpcMsw.user.getPermissions.query(() => {

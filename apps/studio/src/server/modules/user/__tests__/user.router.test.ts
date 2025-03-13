@@ -1535,6 +1535,25 @@ describe("user.router", () => {
         }
       })
 
+      it("should remove +65 country code if present", async () => {
+        // Arrange
+        const phone = "+6581234567"
+
+        // Act
+        const result = await caller.updateDetails({ name: testUserName, phone })
+
+        // Assert
+        expect(result).toEqual({ name: testUserName, phone: "81234567" })
+
+        // Verify in database
+        const updatedUser = await db
+          .selectFrom("User")
+          .where("id", "=", session.userId!)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        expect(updatedUser).toMatchObject(result)
+      })
+
       it("should accept valid Singapore phone numbers", async () => {
         // Arrange
         const validPhones = ["61234567", "81234567", "91234567"]
