@@ -71,7 +71,7 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
 ) => {
   await tx
     .insertInto("AuditLog")
-    .values({ eventType, delta, userId: by.id, ipAddress: ip })
+    .values({ eventType, delta, userId: by.id, ipAddress: ip, metadata: {} })
     .execute()
 }
 
