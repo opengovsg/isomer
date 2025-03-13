@@ -9,7 +9,7 @@ import {
 } from "tests/integration/helpers/seed"
 
 import { db } from "~/server/modules/database"
-import { createUser, isUserDeleted } from "../user.service"
+import { createUserWithPermission, isUserDeleted } from "../user.service"
 
 describe("user.service", () => {
   describe("isUserDeleted", () => {
@@ -48,7 +48,7 @@ describe("user.service", () => {
     })
   })
 
-  describe("createUser", () => {
+  describe("createUserWithPermission", () => {
     const TEST_EMAIL = "test@open.gov.sg"
     let siteId: number
 
@@ -64,7 +64,7 @@ describe("user.service", () => {
 
     it("should throw error if email is invalid", async () => {
       // Act
-      const result = createUser({
+      const result = createUserWithPermission({
         email: "invalid-email",
         role: RoleType.Editor,
         siteId,
@@ -81,7 +81,7 @@ describe("user.service", () => {
 
     it("should throw error if site does not exist", async () => {
       // Act
-      const result = createUser({
+      const result = createUserWithPermission({
         email: TEST_EMAIL,
         role: RoleType.Editor,
         siteId: 9999,
@@ -91,25 +91,21 @@ describe("user.service", () => {
       await expect(result).rejects.toThrowError()
     })
 
-    it("should throw 409 if user and permissions already exists", async () => {
+    it("should throw error if user and permissions already exists", async () => {
       // Arrange
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
       await setupAdminPermissions({ userId: user.id, siteId })
 
       // Act
-      const result = createUser({
+      const result = createUserWithPermission({
         email: TEST_EMAIL,
         role: RoleType.Editor,
         siteId,
       })
 
       // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "CONFLICT",
-          message: "User and permissions already exists",
-        }),
-      )
+      // Due to unique constraint in DB
+      await expect(result).rejects.toThrowError()
     })
 
     it("should create user if user already exists but has non-null deletedAt", async () => {
@@ -119,7 +115,7 @@ describe("user.service", () => {
 
       // Act
       const roleToCreate = RoleType.Editor
-      const { user: createdUser } = await createUser({
+      const { user: createdUser } = await createUserWithPermission({
         email: TEST_EMAIL,
         role: roleToCreate,
         siteId,
@@ -167,7 +163,7 @@ describe("user.service", () => {
       const nonGovSgEmail = "test@coolvendor.com"
 
       // Act
-      const result = createUser({
+      const result = createUserWithPermission({
         email: nonGovSgEmail,
         role: RoleType.Editor,
         siteId,
@@ -188,7 +184,7 @@ describe("user.service", () => {
       await setUpWhitelist({ email: nonGovSgEmail })
 
       // Act
-      const result = createUser({
+      const result = createUserWithPermission({
         email: nonGovSgEmail,
         role: RoleType.Admin,
         siteId,
@@ -210,7 +206,7 @@ describe("user.service", () => {
       await setUpWhitelist({ email: nonGovSgEmail })
 
       // Act
-      const result = await createUser({
+      const result = await createUserWithPermission({
         email: nonGovSgEmail,
         role: RoleType.Editor,
         siteId,
@@ -222,7 +218,7 @@ describe("user.service", () => {
 
     it("should create a new user with default values", async () => {
       // Act
-      const { user } = await createUser({
+      const { user } = await createUserWithPermission({
         email: TEST_EMAIL,
         name: "",
         phone: "",
@@ -241,7 +237,7 @@ describe("user.service", () => {
       expect(dbUserResult[0]).toMatchObject({
         id: user.id,
         email: TEST_EMAIL,
-        name: "",
+        name: TEST_EMAIL.split("@")[0],
         phone: "",
       })
 
@@ -268,7 +264,7 @@ describe("user.service", () => {
       const role = RoleType.Admin
 
       // Act
-      const { user } = await createUser({
+      const { user } = await createUserWithPermission({
         email: TEST_EMAIL,
         name,
         phone,
@@ -312,7 +308,7 @@ describe("user.service", () => {
       await setupUser({ email: TEST_EMAIL, isDeleted: false })
 
       // Act
-      await createUser({
+      await createUserWithPermission({
         email: TEST_EMAIL,
         name: "",
         phone: "",
@@ -342,7 +338,11 @@ describe("user.service", () => {
       })
 
       // Act
-      await createUser({ email: TEST_EMAIL, role: RoleType.Admin, siteId })
+      await createUserWithPermission({
+        email: TEST_EMAIL,
+        role: RoleType.Admin,
+        siteId,
+      })
 
       // Assert: Verify resource permission in database
       const dbResourcePermissionResult = await db

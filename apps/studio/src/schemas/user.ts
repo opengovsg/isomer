@@ -1,7 +1,10 @@
+import { createEmailSchema } from "@opengovsg/starter-kitty-validators/email"
 import { RoleType } from "~prisma/generated/generatedEnums"
 import { z } from "zod"
 
 import { offsetPaginationSchema } from "./pagination"
+
+const emailSchema = createEmailSchema().pipe(z.string().toLowerCase())
 
 export const getPermissionsInputSchema = z.object({
   siteId: z.number().min(1),
@@ -9,18 +12,20 @@ export const getPermissionsInputSchema = z.object({
 
 export const createUserInputSchema = z.object({
   siteId: z.number().min(1),
-  users: z.array(
-    z.object({
-      email: z.string().email(),
-      role: z.nativeEnum(RoleType).optional().default(RoleType.Editor),
-    }),
-  ),
+  users: z
+    .array(
+      z.object({
+        email: emailSchema,
+        role: z.nativeEnum(RoleType).optional().default(RoleType.Editor),
+      }),
+    )
+    .max(100),
 })
 
 export const createUserOutputSchema = z.array(
   z.object({
     id: z.string(),
-    email: z.string().email(),
+    email: emailSchema,
     role: z.nativeEnum(RoleType),
   }),
 )
@@ -32,7 +37,7 @@ export const deleteUserInputSchema = z.object({
 
 export const deleteUserOutputSchema = z.object({
   id: z.string(),
-  email: z.string().email(),
+  email: emailSchema,
 })
 
 export const getUserInputSchema = z.object({
@@ -43,7 +48,7 @@ export const getUserInputSchema = z.object({
 export const getUserOutputSchema = z.object({
   id: z.string(),
   name: z.string(),
-  email: z.string().email(),
+  email: emailSchema,
   role: z.nativeEnum(RoleType),
   lastLoginAt: z.date().nullable(),
 })
@@ -60,25 +65,23 @@ export const listUsersInputSchema = z.object({
 export const listUsersOutputSchema = z.array(
   z.object({
     id: z.string(),
-    email: z.string().email(),
+    email: emailSchema,
     name: z.string().optional().nullable(),
     lastLoginAt: z.date().nullable(),
     role: z.nativeEnum(RoleType),
   }),
 )
 
+const ACTIVITY_TYPE = z.enum(["all", "inactive"] as const)
+export type ActivityType = z.infer<typeof ACTIVITY_TYPE>
+
 export const countUsersInputSchema = z.object({
   siteId: z.number().min(1),
   adminType: ADMIN_TYPE.optional().default("agency"),
+  activityType: ACTIVITY_TYPE.optional().default("all"),
 })
 
 export const countUsersOutputSchema = z.number()
-
-export const hasInactiveUsersInputSchema = z.object({
-  siteId: z.number().min(1),
-})
-
-export const hasInactiveUsersOutputSchema = z.boolean()
 
 export const updateUserInputSchema = z.object({
   siteId: z.number().min(1),
