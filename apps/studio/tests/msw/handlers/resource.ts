@@ -27,6 +27,7 @@ export const resourceHandlers = {
         const items = DEFAULT_COLLECTION_ITEMS.map((item) => ({
           title: item.title,
           permalink: item.permalink,
+          parentId: item.parentId,
           type: item.type as
             | "Page"
             | "Folder"
