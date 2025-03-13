@@ -75,6 +75,7 @@ export const listUsersOutputSchema = z.array(
 )
 
 const ACTIVITY_TYPE = z.enum(["all", "inactive"] as const)
+export type ActivityType = z.infer<typeof ACTIVITY_TYPE>
 
 export const countUsersInputSchema = z.object({
   siteId: z.number().min(1),

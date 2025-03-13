@@ -104,18 +104,6 @@ export const userHandlers = {
       })
     },
   },
-  hasInactiveUsers: {
-    true: () => {
-      return trpcMsw.user.hasInactiveUsers.query(() => {
-        return true
-      })
-    },
-    false: () => {
-      return trpcMsw.user.hasInactiveUsers.query(() => {
-        return false
-      })
-    },
-  },
   updateDetails: {
     success: () => {
       return trpcMsw.user.updateDetails.mutation(() => {

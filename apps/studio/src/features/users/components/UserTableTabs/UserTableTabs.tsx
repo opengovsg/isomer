@@ -42,10 +42,11 @@ export const UserTableTabs = ({
     adminType: "isomer",
   })
 
-  const { data: hasInactiveUsers = false } =
-    trpc.user.hasInactiveUsers.useQuery({
-      siteId,
-    })
+  const { data: inactiveUsersCount = 0 } = trpc.user.count.useQuery({
+    siteId,
+    adminType: "agency",
+    activityType: "inactive",
+  })
 
   return (
     <Box w="100%">
@@ -66,9 +67,10 @@ export const UserTableTabs = ({
         </TabList>
         <TabPanels __css={styles.tabpanels}>
           <TabPanel>
-            {hasInactiveUsers && ability.can("manage", "UserManagement") && (
-              <InactiveUsersBanner />
-            )}
+            {inactiveUsersCount > 0 &&
+              ability.can("manage", "UserManagement") && (
+                <InactiveUsersBanner />
+              )}
             <UserTable siteId={siteId} adminType="agency" />
           </TabPanel>
           <TabPanel>
