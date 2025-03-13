@@ -63,7 +63,7 @@ export const AddUserModal = () => {
   })
 
   const email = watch("email")
-  const debouncedEmail = useDebounce(email, 1000)
+  const debouncedEmail = useDebounce(email, 300)
 
   const isNonGovEmailInput = useMemo(
     () => !!(!errors.email && email && !isGovEmail(email)),
