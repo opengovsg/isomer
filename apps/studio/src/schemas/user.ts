@@ -50,6 +50,7 @@ export const getUserOutputSchema = z.object({
   name: z.string(),
   email: emailSchema,
   role: z.nativeEnum(RoleType),
+  createdAt: z.date().nullable(),
   lastLoginAt: z.date().nullable(),
 })
 
@@ -68,6 +69,7 @@ export const listUsersOutputSchema = z.array(
     email: emailSchema,
     name: z.string().optional().nullable(),
     lastLoginAt: z.date().nullable(),
+    createdAt: z.date().nullable(),
     role: z.nativeEnum(RoleType),
   }),
 )
@@ -103,6 +105,7 @@ export const updateUserDetailsInputSchema = z.object({
     .trim()
     .min(1, "Phone number is required")
     .transform((phone) => phone.replace(/\s+/g, ""))
+    .transform((phone) => (phone.startsWith("+65") ? phone.slice(3) : phone)) // Remove country code if present
     .refine(
       (phone) => !isNaN(Number(phone)) && phone.length === 8,
       "Phone number must be exactly 8 digits",
@@ -117,4 +120,13 @@ export const updateUserDetailsInputSchema = z.object({
 export const updateUserDetailsOutputSchema = z.object({
   name: z.string().nullable(),
   phone: z.string().nullable(),
+})
+
+export const resendInviteInputSchema = z.object({
+  siteId: z.number().min(1),
+  userId: z.string(),
+})
+
+export const resendInviteOutputSchema = z.object({
+  email: z.string().email(),
 })

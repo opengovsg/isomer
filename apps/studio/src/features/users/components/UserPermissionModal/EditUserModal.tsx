@@ -61,7 +61,6 @@ export const EditUserModal = () => {
     onSuccess: async () => {
       await utils.user.list.invalidate()
       await utils.user.count.invalidate()
-      await utils.user.hasInactiveUsers.invalidate()
       toast({
         status: "success",
         title: `Changes saved!`,

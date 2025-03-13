@@ -114,7 +114,7 @@ export const validateUserPermissionsForResource = async ({
   }
 }
 
-export const sitePermissions = async ({
+export const getSitePermissions = async ({
   userId,
   siteId,
 }: Omit<PermissionsProps, "resourceId">) => {
@@ -135,7 +135,7 @@ export const validatePermissionsForManagingUsers = async ({
 }: Omit<PermissionsProps, "resourceId"> & {
   action: UserManagementActions
 }) => {
-  const roles = await sitePermissions({ userId, siteId })
+  const roles = await getSitePermissions({ userId, siteId })
   const perms = buildUserManagementPermissions(roles)
 
   if (perms.cannot(action, "UserManagement")) {

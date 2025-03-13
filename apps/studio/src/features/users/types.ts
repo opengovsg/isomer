@@ -11,3 +11,7 @@ export interface AddUserModalState {
   siteId: number
   hasWhitelistError: boolean
 }
+export interface RemoveUserModalState {
+  siteId: number
+  userId: string
+}

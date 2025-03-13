@@ -7,11 +7,12 @@ import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { UserManagementProvider } from "~/features/users"
 import {
   AddNewUserButton,
+  AddUserModal,
   EditUserModal,
+  RemoveUserModal,
   UserTableTabs,
 } from "~/features/users/components"
 import { CollaboratorsDescription } from "~/features/users/components/CollaboratorsDescription"
-import { AddUserModal } from "~/features/users/components/UserPermissionModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AdminSidebarOnlyLayout } from "~/templates/layouts/AdminSidebarOnlyLayout"
@@ -72,6 +73,7 @@ const SiteUsersPage: NextPageWithLayout = () => {
       </VStack>
       <AddUserModal />
       <EditUserModal />
+      <RemoveUserModal />
     </>
   )
 }

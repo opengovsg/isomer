@@ -1539,6 +1539,25 @@ describe("user.router", () => {
         }
       })
 
+      it("should remove +65 country code if present", async () => {
+        // Arrange
+        const phone = "+6581234567"
+
+        // Act
+        const result = await caller.updateDetails({ name: testUserName, phone })
+
+        // Assert
+        expect(result).toEqual({ name: testUserName, phone: "81234567" })
+
+        // Verify in database
+        const updatedUser = await db
+          .selectFrom("User")
+          .where("id", "=", session.userId!)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        expect(updatedUser).toMatchObject(result)
+      })
+
       it("should accept valid Singapore phone numbers", async () => {
         // Arrange
         const validPhones = ["61234567", "81234567", "91234567"]
@@ -1579,6 +1598,155 @@ describe("user.router", () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(updatedUser).toMatchObject(result)
+    })
+  })
+
+  describe("resendInvite", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.resendInvite({
+        siteId,
+        userId: "123",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have any permissions to the site", async () => {
+      // Act
+      const result = caller.resendInvite({ siteId, userId: "123" })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw 404 if user does not exist", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      // Act
+      const result = caller.resendInvite({ siteId, userId: "123" })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        }),
+      )
+    })
+
+    it("should throw 400 if user has already logged in", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({
+        email: TEST_EMAIL,
+        isDeleted: false,
+        hasLoggedIn: true,
+      })
+      await setupEditorPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = caller.resendInvite({ siteId, userId: user.id })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User has already logged in",
+        }),
+      )
+    })
+
+    it("should throw 400 if user has not logged in and was created before user management launch", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({
+        email: TEST_EMAIL,
+        isDeleted: false,
+        hasLoggedIn: false,
+      })
+      await db
+        .updateTable("User")
+        .where("id", "=", user.id)
+        .set({ createdAt: new Date("2025-03-01") })
+        .execute()
+      await setupEditorPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = caller.resendInvite({ siteId, userId: user.id })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User has already logged in",
+        }),
+      )
+    })
+
+    it("should throw 400 if user does not have any permissions to the site", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({
+        email: TEST_EMAIL,
+        isDeleted: false,
+        hasLoggedIn: false,
+      })
+      await db
+        .updateTable("User")
+        .where("id", "=", user.id)
+        .set({ createdAt: new Date("2025-03-10") })
+        .execute()
+
+      // Act
+      const result = caller.resendInvite({ siteId, userId: user.id })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User has no permissions",
+        }),
+      )
+    })
+
+    it("should send invite successfully", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const user = await setupUser({
+        email: TEST_EMAIL,
+        isDeleted: false,
+        hasLoggedIn: false,
+      })
+      await db
+        .updateTable("User")
+        .where("id", "=", user.id)
+        .set({ createdAt: new Date("2025-03-10") })
+        .execute()
+      await setupEditorPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = await caller.resendInvite({ siteId, userId: user.id })
+
+      // Assert
+      expect(result).toEqual({ email: user.email })
     })
   })
 })
