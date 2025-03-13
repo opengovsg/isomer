@@ -1,11 +1,29 @@
 import { ResourceType } from "@prisma/client"
+import { pick } from "lodash"
 import {
+  setupBlob,
+  setupCollectionMeta,
   setupFolder,
+  setupFolderMeta,
+  setupFullSite,
   setupPageResource,
   setupSite,
+  setupUser,
 } from "tests/integration/helpers/seed"
 
-import { getBatchAncestryWithSelfQuery } from "../resource.service"
+import type { Resource } from "../../database"
+import { db, ResourceState } from "../../database"
+import {
+  getBatchAncestryWithSelfQuery,
+  getFullPageById,
+  getLocalisedSitemap,
+  getNavBar,
+  getPageById,
+  getSiteResourceById,
+  updateBlobById,
+  updatePageById,
+} from "../resource.service"
+import { PAGE_BLOB } from "./constants"
 
 describe("resource.service", () => {
   describe("getBatchAncestryWithSelfQuery", () => {
@@ -233,33 +251,7 @@ describe("resource.service", () => {
       ])
     })
   })
-})
-import { pick } from "lodash"
-import {
-  setupBlob,
-  setupCollectionMeta,
-  setupFolder,
-  setupFolderMeta,
-  setupFullSite,
-  setupPageResource,
-  setupSite,
-  setupUser,
-} from "tests/integration/helpers/seed"
 
-import type { Resource } from "../../database"
-import { db, ResourceState, ResourceType } from "../../database"
-import {
-  getFullPageById,
-  getLocalisedSitemap,
-  getNavBar,
-  getPageById,
-  getSiteResourceById,
-  updateBlobById,
-  updatePageById,
-} from "../resource.service"
-import { PAGE_BLOB } from "./constants"
-
-describe("resource.service", () => {
   describe("getSiteResourceById", () => {
     let actualPage: Resource
     let actualSiteId: number
