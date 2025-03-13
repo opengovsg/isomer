@@ -16,7 +16,11 @@ export type ResourceAbility = PureAbility<ResourcePermissionTuple>
 export type SitePermissionTuple = [CrudResourceActions, "Site"]
 export type SiteAbility = PureAbility<SitePermissionTuple>
 
-export type UserManagementTuple = [CrudResourceActions, "UserManagement"]
+// Only 2 actions are allowed for UserManagement
+// because Admins can update, delete and create users
+export const USER_MANAGEMENT_ACTIONS = ["read", "manage"] as const
+export type UserManagementActions = (typeof USER_MANAGEMENT_ACTIONS)[number]
+export type UserManagementTuple = [UserManagementActions, "UserManagement"]
 export type UserManagementAbility = PureAbility<UserManagementTuple>
 
 export interface PermissionsProps {

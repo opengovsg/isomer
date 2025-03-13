@@ -9,6 +9,7 @@ import {
   createUserOutputSchema,
   deleteUserInputSchema,
   deleteUserOutputSchema,
+  getPermissionsInputSchema,
   getUserInputSchema,
   getUserOutputSchema,
   listUsersInputSchema,
@@ -20,7 +21,10 @@ import {
 } from "~/schemas/user"
 import { protectedProcedure, router } from "../../trpc"
 import { db, sql } from "../database"
-import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
+import {
+  sitePermissions,
+  validatePermissionsForManagingUsers,
+} from "../permissions/permissions.service"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import {
   createUserWithPermission,
@@ -29,6 +33,12 @@ import {
 } from "./user.service"
 
 export const userRouter = router({
+  getPermissions: protectedProcedure
+    .input(getPermissionsInputSchema)
+    .query(async ({ ctx, input: { siteId } }) => {
+      return await sitePermissions({ userId: ctx.user.id, siteId })
+    }),
+
   create: protectedProcedure
     .input(createUserInputSchema)
     .output(createUserOutputSchema)
@@ -36,7 +46,7 @@ export const userRouter = router({
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
-        action: "create",
+        action: "manage",
       })
 
       const createdUsers = await db.transaction().execute(async (tx) => {
@@ -80,7 +90,7 @@ export const userRouter = router({
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
-        action: "delete",
+        action: "manage",
       })
 
       if (userId === ctx.user.id) {
@@ -228,7 +238,7 @@ export const userRouter = router({
       await validatePermissionsForManagingUsers({
         siteId,
         userId: ctx.user.id,
-        action: "update",
+        action: "manage",
       })
 
       if (userId === ctx.user.id) {

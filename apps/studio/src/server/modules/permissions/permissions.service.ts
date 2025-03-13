@@ -7,11 +7,14 @@ import type {
   PermissionsProps,
   ResourceAbility,
   SiteAbility,
-  UserManagementAbility,
+  UserManagementActions,
 } from "./permissions.type"
 import { db } from "../database"
 import { CRUD_ACTIONS } from "./permissions.type"
-import { buildPermissionsForResource } from "./permissions.util"
+import {
+  buildPermissionsForResource,
+  buildUserManagementPermissions,
+} from "./permissions.util"
 
 // NOTE: Fetches roles for the given resource
 // and returns the permissions wihch the user has for the given resource.
@@ -111,12 +114,11 @@ export const validateUserPermissionsForResource = async ({
   }
 }
 
-const definePermissionsForManagingUsers = async ({
+export const sitePermissions = async ({
   userId,
   siteId,
 }: Omit<PermissionsProps, "resourceId">) => {
-  const builder = new AbilityBuilder<UserManagementAbility>(createMongoAbility)
-  const roles = await db
+  return await db
     .selectFrom("ResourcePermission")
     .where("userId", "=", userId)
     .where("siteId", "=", siteId)
@@ -124,31 +126,17 @@ const definePermissionsForManagingUsers = async ({
     .where("deletedAt", "is", null)
     .select("role")
     .execute()
-
-  // NOTE: Any role should be able to read the list of user permissions
-  if (roles.length === 1) {
-    builder.can("read", "UserManagement")
-  }
-
-  // Only Admin role can manage permissions
-  if (roles.some(({ role }) => role === RoleType.Admin)) {
-    CRUD_ACTIONS.map((action) => {
-      builder.can(action, "UserManagement")
-    })
-  }
-
-  return builder.build({ detectSubjectType: () => "UserManagement" })
 }
 
 export const validatePermissionsForManagingUsers = async ({
   siteId,
   userId,
   action,
-}: Omit<PermissionsProps, "resourceId"> & { action: CrudResourceActions }) => {
-  const perms = await definePermissionsForManagingUsers({
-    siteId,
-    userId,
-  })
+}: Omit<PermissionsProps, "resourceId"> & {
+  action: UserManagementActions
+}) => {
+  const roles = await sitePermissions({ userId, siteId })
+  const perms = buildUserManagementPermissions(roles)
 
   if (perms.cannot(action, "UserManagement")) {
     throw new TRPCError({
