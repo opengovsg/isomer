@@ -122,9 +122,12 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now()) @updatedAt
   deletedAt DateTime?
+  lastLoginAt DateTime?
 
   ResourcePermission ResourcePermission[]
   versions           Version[]
+
+  @@index([lastLoginAt])
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.

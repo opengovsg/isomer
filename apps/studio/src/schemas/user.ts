@@ -1,0 +1,92 @@
+import { createEmailSchema } from "@opengovsg/starter-kitty-validators/email"
+import { RoleType } from "~prisma/generated/generatedEnums"
+import { z } from "zod"
+
+import { offsetPaginationSchema } from "./pagination"
+
+const emailSchema = createEmailSchema()
+
+export const createUserInputSchema = z.object({
+  siteId: z.number().min(1),
+  users: z
+    .array(
+      z.object({
+        email: emailSchema,
+        role: z.nativeEnum(RoleType).optional().default(RoleType.Editor),
+      }),
+    )
+    .max(100),
+})
+
+export const createUserOutputSchema = z.array(
+  z.object({
+    id: z.string(),
+    email: emailSchema,
+    role: z.nativeEnum(RoleType),
+  }),
+)
+
+export const deleteUserInputSchema = z.object({
+  siteId: z.number().min(1),
+  userId: z.string(),
+})
+
+export const deleteUserOutputSchema = z.object({
+  id: z.string(),
+  email: emailSchema,
+})
+
+export const getUserInputSchema = z.object({
+  siteId: z.number().min(1),
+  userId: z.string(),
+})
+
+export const getUserOutputSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: emailSchema,
+  role: z.nativeEnum(RoleType),
+  lastLoginAt: z.date().nullable(),
+})
+
+const ADMIN_TYPE = z.enum(["agency", "isomer"] as const)
+export type AdminType = z.infer<typeof ADMIN_TYPE>
+
+export const listUsersInputSchema = z.object({
+  siteId: z.number().min(1),
+  adminType: ADMIN_TYPE.optional().default("agency"),
+  ...offsetPaginationSchema.shape,
+})
+
+export const listUsersOutputSchema = z.array(
+  z.object({
+    id: z.string(),
+    email: emailSchema,
+    name: z.string().optional().nullable(),
+    lastLoginAt: z.date().nullable(),
+    role: z.nativeEnum(RoleType),
+  }),
+)
+
+const ACTIVITY_TYPE = z.enum(["all", "inactive"] as const)
+
+export const countUsersInputSchema = z.object({
+  siteId: z.number().min(1),
+  adminType: ADMIN_TYPE.optional().default("agency"),
+  activityType: ACTIVITY_TYPE.optional().default("all"),
+})
+
+export const countUsersOutputSchema = z.number()
+
+export const updateUserInputSchema = z.object({
+  siteId: z.number().min(1),
+  userId: z.string(),
+  role: z.nativeEnum(RoleType),
+})
+
+export const updateUserOutputSchema = z.object({
+  id: z.string().min(1),
+  siteId: z.number().min(1),
+  userId: z.string(),
+  role: z.nativeEnum(RoleType),
+})
