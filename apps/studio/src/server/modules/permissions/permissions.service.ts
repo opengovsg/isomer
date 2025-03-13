@@ -7,10 +7,14 @@ import type {
   PermissionsProps,
   ResourceAbility,
   SiteAbility,
+  UserManagementActions,
 } from "./permissions.type"
 import { db } from "../database"
 import { CRUD_ACTIONS } from "./permissions.type"
-import { buildPermissionsForResource } from "./permissions.util"
+import {
+  buildPermissionsForResource,
+  buildUserManagementPermissions,
+} from "./permissions.util"
 
 // NOTE: Fetches roles for the given resource
 // and returns the permissions wihch the user has for the given resource.
@@ -56,7 +60,7 @@ export const definePermissionsForSite = async ({
     .execute()
 
   // NOTE: Any role should be able to read site
-  if (roles.length > 0) {
+  if (roles.length === 1) {
     builder.can("read", "Site")
   }
 
@@ -103,6 +107,38 @@ export const validateUserPermissionsForResource = async ({
 
   // TODO: create should check against the current resource id
   if (perms.cannot(action, resource)) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You do not have sufficient permissions to perform this action",
+    })
+  }
+}
+
+export const getSitePermissions = async ({
+  userId,
+  siteId,
+}: Omit<PermissionsProps, "resourceId">) => {
+  return await db
+    .selectFrom("ResourcePermission")
+    .where("userId", "=", userId)
+    .where("siteId", "=", siteId)
+    .where("resourceId", "is", null)
+    .where("deletedAt", "is", null)
+    .select("role")
+    .execute()
+}
+
+export const validatePermissionsForManagingUsers = async ({
+  siteId,
+  userId,
+  action,
+}: Omit<PermissionsProps, "resourceId"> & {
+  action: UserManagementActions
+}) => {
+  const roles = await getSitePermissions({ userId, siteId })
+  const perms = buildUserManagementPermissions(roles)
+
+  if (perms.cannot(action, "UserManagement")) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "You do not have sufficient permissions to perform this action",
