@@ -12,7 +12,6 @@ const COMMON_HANDLERS = [
   resourceHandlers.getRolesFor.default(),
   sitesHandlers.getSiteName.default(),
   userHandlers.count.default(),
-  userHandlers.hasInactiveUsers.true(),
 ]
 
 const meta: Meta<typeof UsersPage> = {
@@ -119,7 +118,6 @@ export const NoUsers: Story = {
         userHandlers.getPermissions.admin(),
         userHandlers.list.noUsers(),
         userHandlers.count.noUsers(),
-        userHandlers.hasInactiveUsers.false(),
       ],
     },
   },

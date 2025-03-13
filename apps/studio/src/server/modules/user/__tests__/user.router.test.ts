@@ -1044,6 +1044,48 @@ describe("user.router", () => {
       expect(result).toBe(1) // only the current admin user
     })
 
+    describe("activityType", () => {
+      it("if inactive, do not count users who have not logged in at all", async () => {
+        // Arrange
+        await setupEditorPermissions({ userId: session.userId, siteId })
+
+        const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+        await setupEditorPermissions({ userId: user.id, siteId })
+
+        // Act
+        const result = await caller.count({ siteId, activityType: "inactive" })
+
+        // Assert
+        expect(result).toBe(0)
+      })
+
+      it("if inactive, do not count active users (logged in within 90 days)", async () => {
+        // Arrange
+        await setupEditorPermissions({ userId: session.userId, siteId })
+
+        const user = await setupUser({
+          email: TEST_EMAIL,
+          isDeleted: false,
+          hasLoggedIn: true,
+        })
+        await setupEditorPermissions({ userId: user.id, siteId })
+
+        // Set last login to be within 90 days
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        await db
+          .updateTable("User")
+          .set({ lastLoginAt: thirtyDaysAgo })
+          .execute()
+
+        // Act
+        const result = await caller.count({ siteId, activityType: "inactive" })
+
+        // Assert
+        expect(result).toBe(0)
+      })
+    })
+
     it("should only return isomer admins if adminType is set as isomer", async () => {
       // Arrange
       await setupEditorPermissions({ userId: session.userId, siteId })
@@ -1054,120 +1096,6 @@ describe("user.router", () => {
 
       // Assert
       expect(result).toBe(isomerAdminsCount)
-    })
-  })
-
-  describe("hasInactiveUsers", () => {
-    it("should throw 401 if not logged in", async () => {
-      const unauthedSession = applySession()
-      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
-
-      // Act
-      const result = unauthedCaller.hasInactiveUsers({ siteId })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "UNAUTHORIZED" }),
-      )
-    })
-
-    it("should throw 403 if user does not have any permissions to the site", async () => {
-      // Act
-      const result = caller.hasInactiveUsers({ siteId })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
-        }),
-      )
-    })
-
-    it("should not count users who have not logged in at all", async () => {
-      // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
-
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-      await setupEditorPermissions({ userId: user.id, siteId })
-
-      // Act
-      const result = await caller.hasInactiveUsers({ siteId })
-
-      // Assert
-      expect(result).toBe(false)
-    })
-
-    it("should return false if there are no inactive users", async () => {
-      // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
-
-      const user = await setupUser({
-        email: TEST_EMAIL,
-        isDeleted: false,
-        hasLoggedIn: true,
-      })
-      await setupEditorPermissions({ userId: user.id, siteId })
-
-      // Set last login to be within 90 days
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-      await db
-        .updateTable("User")
-        .where("id", "=", user.id)
-        .set({ lastLoginAt: thirtyDaysAgo })
-        .execute()
-
-      // Act
-      const result = await caller.hasInactiveUsers({ siteId })
-
-      // Assert
-      expect(result).toBe(false)
-    })
-
-    it("should return true if there are inactive users", async () => {
-      // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
-
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-      await setupEditorPermissions({ userId: user.id, siteId })
-
-      // Set last login to be more than 90 days ago
-      const hundredDaysAgo = new Date()
-      hundredDaysAgo.setDate(hundredDaysAgo.getDate() - 100)
-      await db
-        .updateTable("User")
-        .where("id", "=", user.id)
-        .set({ lastLoginAt: hundredDaysAgo })
-        .execute()
-
-      // Act
-      const result = await caller.hasInactiveUsers({ siteId })
-
-      // Assert
-      expect(result).toBe(true)
-    })
-
-    it("should not count isomer admins when checking for inactive users", async () => {
-      // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
-      await setupIsomerAdmins({ siteId, hasLoggedIn: true })
-
-      // Set all isomer admins' last login to be more than 90 days ago
-      const hundredDaysAgo = new Date()
-      hundredDaysAgo.setDate(hundredDaysAgo.getDate() - 100)
-      await db
-        .updateTable("User")
-        .where("id", "!=", session.userId!)
-        .set({ lastLoginAt: hundredDaysAgo })
-        .execute()
-
-      // Act
-      const result = await caller.hasInactiveUsers({ siteId })
-
-      // Assert
-      expect(result).toBe(false)
     })
   })
 
@@ -1281,7 +1209,7 @@ describe("user.router", () => {
       )
     })
 
-    it("should throw 404 if user exists but onlt has non-null deletedAt", async () => {
+    it("should throw 404 if user exists but only has non-null deletedAt", async () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
@@ -1298,7 +1226,7 @@ describe("user.router", () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "NOT_FOUND",
-          message: "User permissions not found",
+          message: "User not found",
         }),
       )
     })

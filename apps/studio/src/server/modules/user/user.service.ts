@@ -1,9 +1,9 @@
 import cuid2 from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
-import { ISOMER_ADMINS_AND_MIGRATORS_EMAILS } from "~prisma/constants"
+import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 import isEmail from "validator/lib/isEmail"
 
-import type { SafeKysely } from "../database"
+import type { DB, Transaction } from "../database"
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { isGovEmail } from "~/utils/email"
@@ -44,16 +44,16 @@ interface CreateUserProps {
   phone?: User["phone"]
   role: ResourcePermission["role"]
   siteId: ResourcePermission["siteId"]
-  trx?: SafeKysely // allows for transaction to be passed in from parent transaction
+  tx?: Transaction<DB> // allows for transaction to be passed in from parent transaction
 }
 
-export const createUser = async ({
+export const createUserWithPermission = async ({
   email,
   name = "",
   phone = "",
   role = RoleType.Editor,
   siteId,
-  trx,
+  tx,
 }: CreateUserProps) => {
   if (!isEmail(email)) {
     throw new TRPCError({
@@ -72,7 +72,7 @@ export const createUser = async ({
     })
   }
 
-  const executeInTransaction = async (tx: SafeKysely) => {
+  const executeInTransaction = async (tx: Transaction<DB>) => {
     const user = await tx
       .insertInto("User")
       .values({
@@ -88,24 +88,6 @@ export const createUser = async ({
       )
       .returning(["id", "email", "name", "phone", "deletedAt"])
       .executeTakeFirstOrThrow()
-
-    // unique constraint (@@unique([userId, siteId, resourceId, role]))
-    // does not work if one column is NULL e.g. resourceId
-    // Thus we have to check on the application layer
-    const existingResourcePermission = await tx
-      .selectFrom("ResourcePermission")
-      .where("userId", "=", user.id)
-      .where("siteId", "=", siteId)
-      .where("resourceId", "is", null) // because we are granting site-wide permissions
-      .selectAll()
-      .executeTakeFirst()
-
-    if (existingResourcePermission) {
-      throw new TRPCError({
-        code: "CONFLICT",
-        message: "User and permissions already exists",
-      })
-    }
 
     const resourcePermission = await tx
       .insertInto("ResourcePermission")
@@ -133,8 +115,8 @@ export const createUser = async ({
     }
   }
 
-  if (trx) {
-    return await executeInTransaction(trx)
+  if (tx) {
+    return await executeInTransaction(tx)
   }
 
   return await db.transaction().execute(executeInTransaction)
@@ -162,7 +144,7 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
         .where(
           "email",
           adminType === "isomer" ? "in" : "not in",
-          ISOMER_ADMINS_AND_MIGRATORS_EMAILS,
+          PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS,
         ),
     )
     .selectFrom("ActiveUser")
