@@ -114,8 +114,18 @@ export const createUser = async ({
         siteId,
         role,
       })
+      .onConflict((oc) =>
+        oc.columns(["userId", "siteId", "resourceId", "deletedAt"]).doNothing(),
+      )
       .returning(["userId", "siteId", "role"])
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
+
+    if (!resourcePermission) {
+      throw new TRPCError({
+        code: "CONFLICT",
+        message: "User already has permission for this site",
+      })
+    }
 
     return {
       user,

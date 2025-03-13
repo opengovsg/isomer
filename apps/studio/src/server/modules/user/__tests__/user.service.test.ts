@@ -91,7 +91,7 @@ describe("user.service", () => {
       await expect(result).rejects.toThrowError()
     })
 
-    it("should throw 409 if user and permissions already exists", async () => {
+    it("should throw error if both user and permission already exists", async () => {
       // Arrange
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
       await setupAdminPermissions({ userId: user.id, siteId })
@@ -104,10 +104,10 @@ describe("user.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow(
+      await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "CONFLICT",
-          message: "User and permissions already exists",
+          message: "User already has permission for this site",
         }),
       )
     })

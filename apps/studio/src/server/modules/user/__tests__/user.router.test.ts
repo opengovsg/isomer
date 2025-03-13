@@ -156,7 +156,7 @@ describe("user.router", () => {
       ])
     })
 
-    it("should throw 409 if both user and permissions already exists", async () => {
+    it("should throw error if both user and permission already exists", async () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
@@ -173,7 +173,7 @@ describe("user.router", () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "CONFLICT",
-          message: "User and permissions already exists",
+          message: "User already has permission for this site",
         }),
       )
     })
