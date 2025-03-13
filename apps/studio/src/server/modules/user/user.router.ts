@@ -39,7 +39,7 @@ export const userRouter = router({
         action: "create",
       })
 
-      const createdUsers = await db.transaction().execute(async (trx) => {
+      const createdUsers = await db.transaction().execute(async (tx) => {
         return await Promise.all(
           users.map(async (user) => {
             const { user: createdUser, resourcePermission } =
@@ -47,7 +47,7 @@ export const userRouter = router({
                 ...user,
                 email: user.email.toLowerCase(),
                 siteId,
-                trx,
+                tx,
               })
             return {
               id: createdUser.id,
@@ -256,8 +256,8 @@ export const userRouter = router({
 
       const updatedUserPermission = await db
         .transaction()
-        .execute(async (trx) => {
-          const oldPermission = await trx
+        .execute(async (tx) => {
+          const oldPermission = await tx
             .updateTable("ResourcePermission")
             .where("userId", "=", userId)
             .where("siteId", "=", siteId)
@@ -274,7 +274,7 @@ export const userRouter = router({
             })
           }
 
-          return await trx
+          return await tx
             .insertInto("ResourcePermission")
             .values({ userId, siteId, role, resourceId: null }) // because we are updating site-wide permissions
             .returning(["id", "userId", "siteId", "role"])
