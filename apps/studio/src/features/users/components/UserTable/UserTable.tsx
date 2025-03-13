@@ -54,7 +54,10 @@ const getColumns = ({
       id: "user_last_login",
       header: () => <TableHeader>Last login</TableHeader>,
       cell: ({ row }) => (
-        <LastLoginCell lastLoginAt={row.original.lastLoginAt} />
+        <LastLoginCell
+          createdAt={row.original.createdAt}
+          lastLoginAt={row.original.lastLoginAt}
+        />
       ),
       size: 80,
     }),
@@ -74,6 +77,8 @@ const getColumns = ({
           siteId={siteId}
           userId={row.original.id}
           userName={row.original.name}
+          createdAt={row.original.createdAt}
+          lastLoginAt={row.original.lastLoginAt}
         />
       ),
       size: 24,
