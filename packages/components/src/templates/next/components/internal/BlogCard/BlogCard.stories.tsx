@@ -109,6 +109,13 @@ export const ShortDescription: Story = {
   }),
 }
 
+export const DescriptionWithOnlyWhitespace: Story = {
+  args: generateArgs({
+    title: "Short title",
+    description: "   ",
+  }),
+}
+
 export const TagsWithImage: Story = {
   args: generateArgs({
     title: "Collection card with tags",
