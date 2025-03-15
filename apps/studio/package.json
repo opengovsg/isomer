@@ -68,7 +68,7 @@
     "@hookform/resolvers": "^3.8.0",
     "@intercom/messenger-js-sdk": "^0.0.14",
     "@jsonforms/core": "^3.3.0",
-    "@jsonforms/react": "^3.3.0",
+    "@jsonforms/react": "^3.5.1",
     "@opengovsg/design-system-react": "^1.15.0",
     "@opengovsg/isomer-components": "*",
     "@opengovsg/sgid-client": "^2.2.0",
