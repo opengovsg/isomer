@@ -172,6 +172,45 @@ export const updatePageById = (
     .executeTakeFirstOrThrow()
 }
 
+export const getBlobOfResource = async (
+  tx: Transaction<DB>,
+  resourceId: string,
+) => {
+  const { draftBlobId, publishedVersionId } = await tx
+    .selectFrom("Resource")
+    .where("id", "=", resourceId)
+    .select(["draftBlobId", "publishedVersionId"])
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "The specified resource could not be found",
+        }),
+    )
+
+  if (draftBlobId) {
+    return (
+      tx
+        .selectFrom("Blob")
+        .where("id", "=", draftBlobId)
+        .selectAll()
+        // NOTE: Guaranteed to exist since this is a foreign key
+        .executeTakeFirstOrThrow()
+    )
+  }
+
+  return tx
+    .selectFrom("Blob")
+    .selectAll()
+    .where("Blob.id", "=", (eb) =>
+      eb
+        .selectFrom("Version")
+        .where("id", "=", publishedVersionId)
+        .select("blobId"),
+    )
+    .executeTakeFirstOrThrow()
+}
+
 export const updateBlobById = async (
   tx: Transaction<DB>,
   {
@@ -200,6 +239,8 @@ export const updateBlobById = async (
     })
   }
 
+  let blobIdToUpdate = page.draftBlobId
+
   if (!page.draftBlobId) {
     // NOTE: no draft for this yet, need to create a new one
     const newBlob = await tx
@@ -207,6 +248,7 @@ export const updateBlobById = async (
       .values({ content: jsonb(content) })
       .returning("id")
       .executeTakeFirstOrThrow()
+    blobIdToUpdate = newBlob.id
     await tx
       .updateTable("Resource")
       .where("id", "=", String(pageId))
@@ -219,7 +261,8 @@ export const updateBlobById = async (
       .updateTable("Blob")
       // NOTE: This works because a page has a 1-1 relation with a blob
       .set({ content: jsonb(content) })
-      .where("Blob.id", "=", page.draftBlobId)
+      .where("Blob.id", "=", blobIdToUpdate)
+      .returningAll()
       .executeTakeFirstOrThrow()
   )
 }

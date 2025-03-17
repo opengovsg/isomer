@@ -45,6 +45,7 @@ interface ResourceEventLogProps {
   delta: ResourceCreateDelta | ResourceDeleteDelta | ResourceUpdateDelta
   by: User
   ip?: string
+  metadata?: Record<string, unknown>
 }
 
 // NOTE: Type to force every logger method to have a tx
@@ -52,11 +53,11 @@ type AuditLogger<T> = (tx: Transaction<DB>, props: T) => Promise<void>
 
 export const logResourceEvent: AuditLogger<ResourceEventLogProps> = async (
   tx,
-  { eventType, delta, by, ip },
+  { eventType, delta, by, ip, metadata = {} },
 ) => {
   await tx
     .insertInto("AuditLog")
-    .values({ eventType, delta, userId: by.id, ipAddress: ip, metadata: {} })
+    .values({ eventType, delta, userId: by.id, ipAddress: ip, metadata })
     .execute()
 }
 

@@ -10,16 +10,17 @@ import {
 import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
+import { logResourceEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import {
   defaultResourceSelect,
+  getBlobOfResource,
   getSiteResourceById,
   updateBlobById,
 } from "../resource/resource.service"
-import { defaultCollectionSelect } from "./collection.select"
 import {
   createCollectionLinkJson,
   createCollectionPageJson,
@@ -62,27 +63,69 @@ export const collectionRouter = router({
           resourceId: !!parentFolderId ? String(parentFolderId) : null,
         })
 
-        const result = await db
-          .insertInto("Resource")
-          .values({
-            permalink,
-            siteId,
-            type: ResourceType.Collection,
-            title: collectionTitle,
-            parentId: parentFolderId ? String(parentFolderId) : null,
-            state: ResourceState.Published,
-          })
-          .returning(defaultCollectionSelect)
-          .executeTakeFirstOrThrow()
-          .catch((err) => {
-            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+        const result = await db.transaction().execute(async (tx) => {
+          const user = await db
+            .selectFrom("User")
+            .where("id", "=", ctx.user.id)
+            .selectAll()
+            .executeTakeFirstOrThrow(
+              () => new TRPCError({ code: "BAD_REQUEST" }),
+            )
+
+          if (parentFolderId) {
+            const parentFolder = await db
+              .selectFrom("Resource")
+              .where("Resource.id", "=", String(parentFolderId))
+              .where("Resource.siteId", "=", siteId)
+              .select(["Resource.type", "Resource.id"])
+              .executeTakeFirst()
+
+            if (!parentFolder) {
               throw new TRPCError({
-                code: "CONFLICT",
-                message: "A resource with the same permalink already exists",
+                code: "NOT_FOUND",
+                message: "Parent folder does not exist",
               })
             }
-            throw err
+
+            if (parentFolder.type !== "Folder") {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message:
+                  "Collections can only be created inside other folders or at the root",
+              })
+            }
+          }
+
+          const collection = await tx
+            .insertInto("Resource")
+            .values({
+              permalink,
+              siteId,
+              type: ResourceType.Collection,
+              title: collectionTitle,
+              parentId: parentFolderId ? String(parentFolderId) : null,
+              state: ResourceState.Published,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow()
+            .catch((err) => {
+              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw err
+            })
+
+          await logResourceEvent(tx, {
+            eventType: "ResourceCreate",
+            delta: { before: null, after: collection },
+            by: user,
           })
+
+          return collection
+        })
 
         // TODO: Create the index page for the collection and publish it
         await publishSite(ctx.logger, siteId)
@@ -108,17 +151,35 @@ export const collectionRouter = router({
         newPage = createCollectionLinkJson({ type })
       }
 
-      // TODO: Validate whether folderId actually is a folder instead of a page
-      // TODO: Validate whether siteId is a valid site
-      // TODO: Validate user has write-access to the site
       const resource = await db.transaction().execute(async (tx) => {
+        const parentCollection = await db
+          .selectFrom("Resource")
+          .where("Resource.id", "=", String(collectionId))
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "=", ResourceType.Collection)
+          .select(["Resource.type", "Resource.id"])
+          .executeTakeFirst()
+
+        if (!parentCollection) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Parent collection does not exist",
+          })
+        }
+
         const blob = await tx
           .insertInto("Blob")
           .values({
             content: jsonb(newPage),
           })
-          .returning("Blob.id")
+          .returningAll()
           .executeTakeFirstOrThrow()
+
+        const user = await db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
 
         const addedResource = await tx
           .insertInto("Resource")
@@ -130,7 +191,7 @@ export const collectionRouter = router({
             draftBlobId: blob.id,
             type,
           })
-          .returning("Resource.id")
+          .returningAll()
           .executeTakeFirstOrThrow()
           .catch((err) => {
             if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
@@ -141,6 +202,16 @@ export const collectionRouter = router({
             }
             throw err
           })
+
+        await logResourceEvent(tx, {
+          eventType: "ResourceCreate",
+          by: user,
+          delta: {
+            before: null,
+            after: { resource: addedResource, blob },
+          },
+        })
+
         return addedResource
       })
       return { pageId: resource.id }
@@ -263,8 +334,32 @@ export const collectionRouter = router({
           type: ResourceType.CollectionLink,
         })
 
-        await db.transaction().execute(async (tx) => {
-          return updateBlobById(tx, {
+        return await db.transaction().execute(async (tx) => {
+          const user = await tx
+            .selectFrom("User")
+            .where("id", "=", ctx.user.id)
+            .selectAll()
+            .executeTakeFirstOrThrow(
+              () => new TRPCError({ code: "BAD_REQUEST" }),
+            )
+
+          const resource = await tx
+            .selectFrom("Resource")
+            .where("Resource.id", "=", String(linkId))
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.type", "=", ResourceType.CollectionLink)
+            .selectAll()
+            .executeTakeFirstOrThrow(
+              () =>
+                new TRPCError({
+                  code: "NOT_FOUND",
+                  message: "Unable to find the requested collection link",
+                }),
+            )
+
+          const oldBlob = await getBlobOfResource(tx, resource.id)
+
+          const blob = await updateBlobById(tx, {
             content: {
               ...content,
               page: { description, ref, date, category },
@@ -272,32 +367,17 @@ export const collectionRouter = router({
             pageId: linkId,
             siteId,
           })
-        })
 
-        return await db.transaction().execute(async (tx) => {
-          const { draftBlobId } = await tx
-            .selectFrom("Resource")
-            .where("Resource.id", "=", String(linkId))
-            .where("Resource.siteId", "=", siteId)
-            .select("Resource.draftBlobId")
-            .executeTakeFirstOrThrow()
+          await logResourceEvent(tx, {
+            eventType: "ResourceUpdate",
+            delta: {
+              before: { blob: oldBlob, resource },
+              after: { blob, resource },
+            },
+            by: user,
+          })
 
-          const { content } = await tx
-            .selectFrom("Blob")
-            .where("Blob.id", "=", draftBlobId)
-            .select("Blob.content")
-            .executeTakeFirstOrThrow()
-
-          await tx
-            .updateTable("Blob")
-            .where("Blob.id", "=", draftBlobId)
-            .set({
-              content: {
-                ...content,
-                page: { description, ref, date, category },
-              },
-            })
-            .execute()
+          return blob
         })
       },
     ),
