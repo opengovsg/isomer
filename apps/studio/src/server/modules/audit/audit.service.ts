@@ -13,16 +13,7 @@ import type {
   Version,
 } from "../database"
 
-type WithoutMeta<T> = Omit<T, "createdAt" | "updatedAt">
-
-// NOTE: Either a folder/collection that doesn't have a blob
-// or a page w/ blob
-type FullResource =
-  | WithoutMeta<Resource>
-  | {
-      blob: WithoutMeta<Blob>
-      resource: WithoutMeta<Resource>
-    }
+type FullResource = Resource & (Blob | undefined)
 
 interface ResourceCreateDelta {
   before: null

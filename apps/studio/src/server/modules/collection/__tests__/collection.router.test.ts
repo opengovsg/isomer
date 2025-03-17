@@ -1,3 +1,4 @@
+import type { MockInstance } from "vitest"
 import { TRPCError } from "@trpc/server"
 import _, { omit } from "lodash"
 import { auth } from "tests/integration/helpers/auth"
@@ -16,7 +17,6 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { MockInstance } from "vitest"
 
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
@@ -578,7 +578,7 @@ describe("collection.router", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(auditEntry).toBeDefined()
-      expect(auditEntry!.delta.after!).toMatchObject({
+      expect(auditEntry.delta.after!).toMatchObject({
         resource: omit(actualCollectionPage, ["updatedAt", "createdAt"]),
       })
     })

@@ -21,7 +21,6 @@ import {
   getSiteResourceById,
   updateBlobById,
 } from "../resource/resource.service"
-import { defaultCollectionSelect } from "./collection.select"
 import {
   createCollectionLinkJson,
   createCollectionPageJson,
@@ -179,6 +178,12 @@ export const collectionRouter = router({
           })
           .returningAll()
           .executeTakeFirstOrThrow()
+
+        const user = await db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
 
         const addedResource = await tx
           .insertInto("Resource")
