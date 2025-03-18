@@ -1,39 +1,38 @@
 export const ResourceState = {
-    Draft: "Draft",
-    Published: "Published"
-} as const;
-export type ResourceState = (typeof ResourceState)[keyof typeof ResourceState];
+  Draft: "Draft",
+  Published: "Published",
+} as const
+export type ResourceState = (typeof ResourceState)[keyof typeof ResourceState]
 export const ResourceType = {
-    RootPage: "RootPage",
-    Page: "Page",
-    Folder: "Folder",
-    Collection: "Collection",
-    CollectionMeta: "CollectionMeta",
-    CollectionLink: "CollectionLink",
-    CollectionPage: "CollectionPage",
-    IndexPage: "IndexPage",
-    FolderMeta: "FolderMeta"
-} as const;
-export type ResourceType = (typeof ResourceType)[keyof typeof ResourceType];
+  RootPage: "RootPage",
+  Page: "Page",
+  Folder: "Folder",
+  Collection: "Collection",
+  CollectionMeta: "CollectionMeta",
+  CollectionLink: "CollectionLink",
+  CollectionPage: "CollectionPage",
+  IndexPage: "IndexPage",
+  FolderMeta: "FolderMeta",
+} as const
+export type ResourceType = (typeof ResourceType)[keyof typeof ResourceType]
 export const RoleType = {
-    Admin: "Admin",
-    Editor: "Editor",
-    Publisher: "Publisher"
-} as const;
-export type RoleType = (typeof RoleType)[keyof typeof RoleType];
+  Admin: "Admin",
+  Editor: "Editor",
+  Publisher: "Publisher",
+} as const
+export type RoleType = (typeof RoleType)[keyof typeof RoleType]
 export const AuditLogEvent = {
-    ResourceCreate: "ResourceCreate",
-    ResourceUpdate: "ResourceUpdate",
-    ResourceDelete: "ResourceDelete",
-    ResourceMove: "ResourceMove",
-    UserCreate: "UserCreate",
-    UserUpdate: "UserUpdate",
-    UserDelete: "UserDelete",
-    Publish: "Publish",
-    Login: "Login",
-    Logout: "Logout",
-    PermissionCreate: "PermissionCreate",
-    PermissionUpdate: "PermissionUpdate",
-    PermissionDelete: "PermissionDelete"
-} as const;
-export type AuditLogEvent = (typeof AuditLogEvent)[keyof typeof AuditLogEvent];
+  ResourceCreate: "ResourceCreate",
+  ResourceUpdate: "ResourceUpdate",
+  ResourceDelete: "ResourceDelete",
+  UserCreate: "UserCreate",
+  UserUpdate: "UserUpdate",
+  UserDelete: "UserDelete",
+  Publish: "Publish",
+  Login: "Login",
+  Logout: "Logout",
+  PermissionCreate: "PermissionCreate",
+  PermissionUpdate: "PermissionUpdate",
+  PermissionDelete: "PermissionDelete",
+} as const
+export type AuditLogEvent = (typeof AuditLogEvent)[keyof typeof AuditLogEvent]

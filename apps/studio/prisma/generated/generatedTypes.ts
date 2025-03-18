@@ -14,11 +14,17 @@ export type Generated<T> =
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
 export interface AuditLog {
-  id: GeneratedAlways<number>
-  userId: string | null
+  id: GeneratedAlways<string>
+  userId: string
   eventType: AuditLogEvent
   createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
   metadata: unknown
+  /**
+   * @kyselyType(PrismaJson.AuditLogDeltaJsonContent)
+   * [AuditLogDeltaJsonContent]
+   */
+  delta: PrismaJson.AuditLogDeltaJsonContent
   ipAddress: string | null
 }
 export interface Blob {
@@ -106,6 +112,7 @@ export interface User {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
   deletedAt: Timestamp | null
+  lastLoginAt: Timestamp | null
 }
 export interface VerificationToken {
   identifier: string
