@@ -3,6 +3,7 @@ import type {
   Blob,
   DB,
   Footer,
+  Navbar,
   Resource,
   ResourcePermission,
   Site,
@@ -133,6 +134,12 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
     .execute()
 }
 
+type PublishEvents =
+  | (FullResource & { versionNumber: number })
+  | Site
+  | Navbar
+  | Footer
+
 interface PublishEventLogProps {
   by: User
   delta: {
@@ -140,8 +147,8 @@ interface PublishEventLogProps {
     // We don't want to store the `version` because it is a pointer
     // to the blob/resource
     // we will instead store the full data here so it is an accurate snapshot
-    before: (FullResource & { versionNumber: number }) | null
-    after: FullResource & { versionNumber: number }
+    before: PublishEvents | null
+    after: PublishEvents
   }
   eventType: Extract<AuditLogEvent, "Publish">
   ip?: string
