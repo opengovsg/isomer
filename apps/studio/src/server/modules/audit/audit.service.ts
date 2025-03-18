@@ -12,7 +12,16 @@ import type {
   VerificationToken,
 } from "../database"
 
-type FullResource = Resource & (Blob | undefined)
+type WithoutMeta<T> = Omit<T, "createdAt" | "updatedAt">
+
+// NOTE: Either a folder/collection that doesn't have a blob
+// or a page w/ blob
+type FullResource =
+  | WithoutMeta<Resource>
+  | {
+      blob: WithoutMeta<Blob>
+      resource: WithoutMeta<Resource>
+    }
 
 interface ResourceCreateDelta {
   before: null
@@ -46,7 +55,7 @@ export const logResourceEvent: AuditLogger<ResourceEventLogProps> = async (
 ) => {
   await tx
     .insertInto("AuditLog")
-    .values({ eventType, delta, userId: by.id, ipAddress: ip })
+    .values({ eventType, delta, userId: by.id, ipAddress: ip, metadata: {} })
     .execute()
 }
 

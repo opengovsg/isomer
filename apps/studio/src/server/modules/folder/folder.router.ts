@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { get } from "lodash"
+import pick from "lodash/pick"
 
 import {
   createFolderSchema,
@@ -7,8 +8,9 @@ import {
   readFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
+import { logResourceEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
-import { db, ResourceState, ResourceType } from "../database"
+import { AuditLogEvent, db, ResourceState, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
 import { defaultFolderSelect } from "./folder.select"
@@ -65,27 +67,46 @@ export const folderRouter = router({
           }
         }
 
-        const folder = await db
-          .insertInto("Resource")
-          .values({
-            permalink,
-            siteId,
-            type: ResourceType.Folder,
-            title: folderTitle,
-            parentId: parentFolderId ? String(parentFolderId) : null,
-            state: ResourceState.Published,
+        const folder = await db.transaction().execute(async (tx) => {
+          const user = await tx
+            .selectFrom("User")
+            .where("id", "=", ctx.user.id)
+            .selectAll()
+            .executeTakeFirstOrThrow(() => new TRPCError({ code: "NOT_FOUND" }))
+
+          const folder = await tx
+            .insertInto("Resource")
+            .values({
+              permalink,
+              siteId,
+              type: ResourceType.Folder,
+              title: folderTitle,
+              parentId: parentFolderId ? String(parentFolderId) : null,
+              state: ResourceState.Published,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow()
+            .catch((err) => {
+              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw err
+            })
+
+          await logResourceEvent(tx, {
+            eventType: AuditLogEvent.ResourceCreate,
+            delta: {
+              before: null,
+              after: folder,
+            },
+            by: user,
           })
-          .returning(["id"])
-          .executeTakeFirstOrThrow()
-          .catch((err) => {
-            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-              throw new TRPCError({
-                code: "CONFLICT",
-                message: "A resource with the same permalink already exists",
-              })
-            }
-            throw err
-          })
+
+          return folder
+        })
 
         // TODO: Create the index page for the folder and publish it
         await publishSite(ctx.logger, siteId)
@@ -105,7 +126,7 @@ export const folderRouter = router({
       // 1. Last Edited user and time
       // 2. Page status(draft, published)
 
-      const data = await ctx.db
+      const data = await db
         .selectFrom("Resource")
         .select(["Resource.title", "Resource.permalink", "Resource.parentId"])
         .where("id", "=", String(input.resourceId))
@@ -130,33 +151,71 @@ export const folderRouter = router({
           userId: ctx.user.id,
         })
 
-        const result = await db
-          .updateTable("Resource")
-          .where("Resource.id", "=", resourceId)
-          .where("Resource.siteId", "=", Number(siteId))
-          .where("Resource.type", "in", [
-            ResourceType.Folder,
-            ResourceType.Collection,
-          ])
-          .set({
-            permalink,
-            title,
+        const result = await db.transaction().execute(async (tx) => {
+          const user = await tx
+            .selectFrom("User")
+            .where("id", "=", ctx.user.id)
+            .selectAll()
+            .executeTakeFirstOrThrow(() => new TRPCError({ code: "NOT_FOUND" }))
+
+          const oldResource = await db
+            .selectFrom("Resource")
+            .selectAll()
+            .where("Resource.id", "=", resourceId)
+            .where("Resource.siteId", "=", Number(siteId))
+            .where("Resource.type", "in", [
+              ResourceType.Folder,
+              ResourceType.Collection,
+            ])
+            .executeTakeFirst()
+
+          if (!oldResource) {
+            return undefined
+          }
+
+          const newResource = await db
+            .updateTable("Resource")
+            .where("Resource.id", "=", resourceId)
+            .where("Resource.siteId", "=", Number(siteId))
+            .where("Resource.type", "in", [
+              ResourceType.Folder,
+              ResourceType.Collection,
+            ])
+            .set({
+              permalink,
+              title,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow()
+            .catch((err) => {
+              if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A resource with the same permalink already exists",
+                })
+              }
+              throw err
+            })
+
+          await logResourceEvent(tx, {
+            eventType: AuditLogEvent.ResourceUpdate,
+            delta: {
+              before: oldResource,
+              after: newResource,
+            },
+            by: user,
           })
-          .returning(defaultFolderSelect)
-          .executeTakeFirst()
-          .catch((err) => {
-            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-              throw new TRPCError({
-                code: "CONFLICT",
-                message: "A resource with the same permalink already exists",
-              })
-            }
-            throw err
-          })
+
+          return newResource
+        })
+
+        if (!result) {
+          return undefined
+        }
 
         await publishSite(ctx.logger, Number(siteId))
 
-        return result
+        return pick(result, defaultFolderSelect)
       },
     ),
 })
