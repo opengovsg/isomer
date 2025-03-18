@@ -2,8 +2,10 @@ import type {
   AuditLogEvent,
   Blob,
   DB,
+  Footer,
   Resource,
   ResourcePermission,
+  Site,
   Transaction,
   User,
   VerificationToken,
@@ -11,15 +13,15 @@ import type {
 
 type FullResource = Resource & (Blob | undefined)
 
-interface CreateDelta {
+interface ResourceCreateDelta {
   before: null
   after: FullResource
 }
-interface DeleteDelta {
+interface ResourceDeleteDelta {
   before: FullResource
   after: null
 }
-interface UpdateDelta {
+interface ResourceUpdateDelta {
   before: FullResource
   after: FullResource
 }
@@ -29,7 +31,7 @@ interface ResourceEventLogProps {
     AuditLogEvent,
     "ResourceCreate" | "ResourceUpdate" | "ResourceDelete" | "ResourceMove"
   >
-  delta: CreateDelta | DeleteDelta | UpdateDelta
+  delta: ResourceCreateDelta | ResourceDeleteDelta | ResourceUpdateDelta
   by: User
   ip?: string
 }
@@ -47,9 +49,65 @@ export const logResourceEvent: AuditLogger<ResourceEventLogProps> = async (
     .execute()
 }
 
+interface SiteConfigUpdateDelta {
+  before: Site
+  after: Site
+}
+
+interface FooterUpdateDelta {
+  before: Footer
+  after: Footer
+}
+
+interface NavbarUpdateDelta {
+  before: Footer
+  after: Footer
+}
+
+type ConfigEventLogProps =
+  | FooterUpdateEventLogProps
+  | SiteConfigUpdateEventLogProps
+  | NavbarUpdateEventLogProps
+
+interface FooterUpdateEventLogProps {
+  eventType: Extract<AuditLogEvent, "FooterUpdate">
+  delta: FooterUpdateDelta
+  by: User
+  ip?: string
+}
+
+interface NavbarUpdateEventLogProps {
+  eventType: Extract<AuditLogEvent, "NavbarUpdate">
+  delta: NavbarUpdateDelta
+  by: User
+  ip?: string
+}
+
+interface SiteConfigUpdateEventLogProps {
+  eventType: Extract<AuditLogEvent, "SiteConfigUpdate">
+  delta: SiteConfigUpdateDelta
+  by: User
+  ip?: string
+}
+
+export const logConfigEvent: AuditLogger<ConfigEventLogProps> = async (
+  tx,
+  { eventType, delta, by, ip },
+) => {
+  await tx
+    .insertInto("AuditLog")
+    .values({
+      eventType,
+      delta,
+      userId: by.id,
+      ipAddress: ip,
+    })
+    .execute()
+}
+
 interface LoginDelta {
-  before: VerificationToken
-  after: VerificationToken
+  before: { token: VerificationToken }
+  after: { token: VerificationToken; user: User }
 }
 
 // NOTE: logout just calls `session.destroy` and we only have
