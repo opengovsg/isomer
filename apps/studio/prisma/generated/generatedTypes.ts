@@ -13,7 +13,7 @@ export type Generated<T> =
     : ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
-export type AuditLog = {
+export interface AuditLog {
   id: GeneratedAlways<string>
   userId: string
   eventType: AuditLogEvent
@@ -27,7 +27,7 @@ export type AuditLog = {
   delta: PrismaJson.AuditLogDeltaJsonContent
   ipAddress: string | null
 }
-export type Blob = {
+export interface Blob {
   id: GeneratedAlways<string>
   /**
    * @kyselyType(PrismaJson.BlobJsonContent)
@@ -37,7 +37,7 @@ export type Blob = {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type Footer = {
+export interface Footer {
   id: GeneratedAlways<number>
   siteId: number
   /**
@@ -48,7 +48,7 @@ export type Footer = {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type Navbar = {
+export interface Navbar {
   id: GeneratedAlways<number>
   siteId: number
   /**
@@ -59,12 +59,12 @@ export type Navbar = {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type RateLimiterFlexible = {
+export interface RateLimiterFlexible {
   key: string
   points: number
   expire: Timestamp | null
 }
-export type Resource = {
+export interface Resource {
   id: GeneratedAlways<string>
   title: string
   permalink: string
@@ -77,7 +77,7 @@ export type Resource = {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type ResourcePermission = {
+export interface ResourcePermission {
   id: GeneratedAlways<string>
   userId: string
   siteId: number
@@ -87,7 +87,7 @@ export type ResourcePermission = {
   updatedAt: Generated<Timestamp>
   deletedAt: Timestamp | null
 }
-export type Site = {
+export interface Site {
   id: GeneratedAlways<number>
   name: string
   /**
@@ -104,7 +104,7 @@ export type Site = {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type User = {
+export interface User {
   id: string
   name: string
   email: string
@@ -114,13 +114,13 @@ export type User = {
   deletedAt: Timestamp | null
   lastLoginAt: Timestamp | null
 }
-export type VerificationToken = {
+export interface VerificationToken {
   identifier: string
   token: string
   attempts: Generated<number>
   expires: Timestamp
 }
-export type Version = {
+export interface Version {
   id: GeneratedAlways<string>
   versionNum: number
   resourceId: string
@@ -129,14 +129,14 @@ export type Version = {
   publishedBy: string
   updatedAt: Generated<Timestamp>
 }
-export type Whitelist = {
+export interface Whitelist {
   id: GeneratedAlways<number>
   email: string
   expiry: Timestamp | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
-export type DB = {
+export interface DB {
   AuditLog: AuditLog
   Blob: Blob
   Footer: Footer
