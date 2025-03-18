@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "AuditLogEvent" AS ENUM ('ResourceCreate', 'ResourceUpdate', 'ResourceDelete', 'UserCreate', 'UserUpdate', 'UserDelete', 'Publish', 'Login', 'Logout', 'PermissionCreate', 'PermissionUpdate', 'PermissionDelete');
+CREATE TYPE "AuditLogEvent" AS ENUM ('ResourceCreate', 'ResourceUpdate', 'ResourceDelete', 'UserCreate', 'UserUpdate', 'UserDelete', 'Publish', 'Login', 'Logout', 'PermissionCreate', 'PermissionUpdate', 'PermissionDelete', 'SiteConfigUpdate', 'FooterUpdate', 'NavbarUpdate');
 
 -- CreateTable
 CREATE TABLE "AuditLog" (

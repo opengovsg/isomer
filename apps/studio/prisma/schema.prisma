@@ -119,21 +119,20 @@ model User {
   email String
   phone String
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
-  deletedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  deletedAt   DateTime?
   lastLoginAt DateTime?
 
   ResourcePermission ResourcePermission[]
   versions           Version[]
   AuditLog           AuditLog[]
 
-  @@index([lastLoginAt])
-
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
   // This is required so prisma does not attempt to drop the custom index.
   @@unique([email, deletedAt])
+  @@index([lastLoginAt])
 }
 
 model Site {
@@ -239,6 +238,9 @@ enum AuditLogEvent {
   PermissionCreate
   PermissionUpdate
   PermissionDelete
+  SiteConfigUpdate
+  FooterUpdate
+  NavbarUpdate
 }
 
 model AuditLog {

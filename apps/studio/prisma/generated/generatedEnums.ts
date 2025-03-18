@@ -34,5 +34,8 @@ export const AuditLogEvent = {
   PermissionCreate: "PermissionCreate",
   PermissionUpdate: "PermissionUpdate",
   PermissionDelete: "PermissionDelete",
+  SiteConfigUpdate: "SiteConfigUpdate",
+  FooterUpdate: "FooterUpdate",
+  NavbarUpdate: "NavbarUpdate",
 } as const
 export type AuditLogEvent = (typeof AuditLogEvent)[keyof typeof AuditLogEvent]
