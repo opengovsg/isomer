@@ -14,7 +14,11 @@ import {
   setupUser,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
-import { MOCK_STORY_DATE, MOCK_TEST_USER_NAME } from "tests/msw/constants"
+import {
+  MOCK_STORY_DATE,
+  MOCK_TEST_PHONE,
+  MOCK_TEST_USER_NAME,
+} from "tests/msw/constants"
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 
 import { db, RoleType } from "~/server/modules/database"
@@ -1594,20 +1598,29 @@ describe("user.router", () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     describe("name validation", () => {
-      it("should throw error if name is empty", async () => {
-        // Arrange
-        const emptyNames = ["", " ", "  "]
-
-        // Act & Assert
-        for (const name of emptyNames) {
+      const emptyNames = ["", " ", "  "]
+      for (const emptyName of emptyNames) {
+        it(`should throw error if name is empty: ${emptyName}`, async () => {
+          // Act & Assert
           await expect(
-            caller.updateDetails({ name, phone: "81234567" }),
+            caller.updateDetails({ name: emptyName, phone: "81234567" }),
           ).rejects.toThrow("Name is required")
-        }
-      })
+
+          // Assert DB - audit logs
+          const auditLogs = await db
+            .selectFrom("AuditLog")
+            .selectAll()
+            .execute()
+          expect(auditLogs).toHaveLength(0)
+        })
+      }
 
       it("should trim whitespace from name", async () => {
         // Arrange
@@ -1624,59 +1637,95 @@ describe("user.router", () => {
           .selectAll()
           .executeTakeFirstOrThrow()
         expect(updatedUser.name).toBe("John Doe")
+
+        // Assert DB - audit logs
+        const auditLogs = await db
+          .selectFrom("AuditLog")
+          .where("eventType", "=", "UserUpdate")
+          .selectAll()
+          .execute()
+        expect(auditLogs).toHaveLength(1)
+        expect(auditLogs[0]).toMatchObject({
+          eventType: "UserUpdate",
+          delta: expect.objectContaining({
+            before: expect.objectContaining({
+              name: MOCK_TEST_USER_NAME,
+              phone: MOCK_TEST_PHONE,
+            }),
+            after: expect.objectContaining(
+              _.omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
+            ),
+          }),
+        })
       })
     })
 
     describe("phone validation", () => {
       const testUserName = "Test User"
 
-      it("should throw error if phone is empty", async () => {
-        // Arrange
-        const emptyPhones = ["", " ", "  "]
-
-        // Act & Assert
-        for (const phone of emptyPhones) {
+      const emptyPhones = ["", " ", "  "]
+      for (const emptyPhone of emptyPhones) {
+        it(`should throw error if phone is empty: ${emptyPhone}`, async () => {
+          // Act & Assert
           await expect(
-            caller.updateDetails({ name: "Test User", phone }),
+            caller.updateDetails({ name: testUserName, phone: emptyPhone }),
           ).rejects.toThrow("Phone number is required")
-        }
-      })
 
-      it("should throw error if phone number has incorrect length", async () => {
-        // Arrange
-        const invalidPhones = ["1234567", "123456789", "812345"]
+          // Assert DB - audit logs
+          const auditLogs = await db
+            .selectFrom("AuditLog")
+            .where("eventType", "=", "UserUpdate")
+            .selectAll()
+            .execute()
+          expect(auditLogs).toHaveLength(0)
+        })
+      }
 
-        // Act & Assert
-        for (const phone of invalidPhones) {
+      const incorrectLengthPhones = ["1234567", "123456789", "812345"]
+      for (const phone of incorrectLengthPhones) {
+        it(`should throw error if phone number has incorrect length: ${phone}`, async () => {
+          // Act & Assert
           await expect(
-            caller.updateDetails({ name: "Test User", phone }),
+            caller.updateDetails({ name: testUserName, phone }),
           ).rejects.toThrow("Phone number must be exactly 8 digits")
-        }
-      })
 
-      it("should throw error if phone number starts with invalid digit", async () => {
-        // Arrange
-        const invalidPhones = ["12345678", "23456789", "45678901", "78901234"]
+          // Assert DB - audit logs
+          const auditLogs = await db
+            .selectFrom("AuditLog")
+            .where("eventType", "=", "UserUpdate")
+            .selectAll()
+            .execute()
+          expect(auditLogs).toHaveLength(0)
+        })
+      }
 
-        // Act & Assert
-        for (const phone of invalidPhones) {
+      const invalidPhones = ["12345678", "23456789", "45678901", "78901234"]
+      for (const phone of invalidPhones) {
+        it(`should throw error if phone number starts with invalid digit: ${phone}`, async () => {
+          // Act & Assert
           await expect(
-            caller.updateDetails({ name: "Test User", phone }),
+            caller.updateDetails({ name: testUserName, phone }),
           ).rejects.toThrow("Phone number must start with 6, 8, or 9")
-        }
-      })
 
-      it("should handle phone numbers with whitespace", async () => {
-        // Arrange
-        const validPhonesWithSpaces = [
-          " 81234567 ",
-          "8123 4567",
-          " 8123 4567 ",
-          "  81234567  ",
-        ]
+          // Assert DB - audit logs
+          const auditLogs = await db
+            .selectFrom("AuditLog")
+            .where("eventType", "=", "UserUpdate")
+            .selectAll()
+            .execute()
+          expect(auditLogs).toHaveLength(0)
+        })
+      }
 
-        // Act & Assert
-        for (const phone of validPhonesWithSpaces) {
+      const validPhonesWithSpaces = [
+        " 81234567 ",
+        "8123 4567",
+        " 8123 4567 ",
+        "  81234567  ",
+      ]
+      for (const phone of validPhonesWithSpaces) {
+        it(`should handle phone numbers with whitespace: ${phone}`, async () => {
+          // Act & Assert
           const result = await caller.updateDetails({
             name: testUserName,
             phone,
@@ -1689,9 +1738,28 @@ describe("user.router", () => {
             .selectAll()
             .executeTakeFirstOrThrow()
           expect(updatedUser).toMatchObject(result)
-        }
-      })
 
+          // Assert DB - audit logs
+          const auditLogs = await db
+            .selectFrom("AuditLog")
+            .where("eventType", "=", "UserUpdate")
+            .selectAll()
+            .execute()
+          expect(auditLogs).toHaveLength(1)
+          expect(auditLogs[0]).toMatchObject({
+            eventType: "UserUpdate",
+            delta: expect.objectContaining({
+              before: expect.objectContaining({
+                name: MOCK_TEST_USER_NAME,
+                phone: MOCK_TEST_PHONE,
+              }),
+              after: expect.objectContaining(
+                _.omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
+              ),
+            }),
+          })
+        })
+      }
       it("should remove +65 country code if present", async () => {
         // Arrange
         const phone = "+6581234567"
@@ -1709,14 +1777,32 @@ describe("user.router", () => {
           .selectAll()
           .executeTakeFirstOrThrow()
         expect(updatedUser).toMatchObject(result)
+
+        // Assert DB - audit logs
+        const auditLogs = await db
+          .selectFrom("AuditLog")
+          .where("eventType", "=", "UserUpdate")
+          .selectAll()
+          .execute()
+        expect(auditLogs).toHaveLength(1)
+        expect(auditLogs[0]).toMatchObject({
+          eventType: "UserUpdate",
+          delta: expect.objectContaining({
+            before: expect.objectContaining({
+              name: MOCK_TEST_USER_NAME,
+              phone: MOCK_TEST_PHONE,
+            }),
+            after: expect.objectContaining(
+              _.omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
+            ),
+          }),
+        })
       })
 
-      it("should accept valid Singapore phone numbers", async () => {
-        // Arrange
-        const validPhones = ["61234567", "81234567", "91234567"]
-
-        // Act & Assert
-        for (const phone of validPhones) {
+      const validSingaporePhones = ["61234567", "81234567", "91234567"]
+      for (const phone of validSingaporePhones) {
+        it(`should accept valid Singapore phone numbers: ${phone}`, async () => {
+          // Act & Assert
           const result = await caller.updateDetails({
             name: testUserName,
             phone,
@@ -1729,8 +1815,28 @@ describe("user.router", () => {
             .selectAll()
             .executeTakeFirstOrThrow()
           expect(updatedUser).toMatchObject(result)
-        }
-      })
+
+          // Assert DB - audit logs
+          const auditLogs = await db
+            .selectFrom("AuditLog")
+            .where("eventType", "=", "UserUpdate")
+            .selectAll()
+            .execute()
+          expect(auditLogs).toHaveLength(1)
+          expect(auditLogs[0]).toMatchObject({
+            eventType: "UserUpdate",
+            delta: expect.objectContaining({
+              before: expect.objectContaining({
+                name: MOCK_TEST_USER_NAME,
+                phone: MOCK_TEST_PHONE,
+              }),
+              after: expect.objectContaining(
+                _.omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
+              ),
+            }),
+          })
+        })
+      }
     })
 
     it("should update user details successfully", async () => {
@@ -1751,6 +1857,26 @@ describe("user.router", () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(updatedUser).toMatchObject(result)
+
+      // Assert DB - audit logs
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserUpdate")
+        .selectAll()
+        .execute()
+      expect(auditLogs).toHaveLength(1)
+      expect(auditLogs[0]).toMatchObject({
+        eventType: "UserUpdate",
+        delta: expect.objectContaining({
+          before: expect.objectContaining({
+            name: MOCK_TEST_USER_NAME,
+            phone: MOCK_TEST_PHONE,
+          }),
+          after: expect.objectContaining(
+            _.omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
+          ),
+        }),
+      })
     })
   })
 
