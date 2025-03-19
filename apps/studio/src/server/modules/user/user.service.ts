@@ -45,6 +45,7 @@ interface CreateUserProps {
   phone?: User["phone"]
   role: ResourcePermission["role"]
   siteId: ResourcePermission["siteId"]
+  byUserId: User["id"]
   tx?: Transaction<DB> // allows for transaction to be passed in from parent transaction
 }
 
@@ -54,6 +55,7 @@ export const createUserWithPermission = async ({
   phone = "",
   role = RoleType.Editor,
   siteId,
+  byUserId,
   tx,
 }: CreateUserProps) => {
   if (!isEmail(email)) {
@@ -73,6 +75,12 @@ export const createUserWithPermission = async ({
     })
   }
 
+  const byUser = await db
+    .selectFrom("User")
+    .where("id", "=", byUserId)
+    .selectAll()
+    .executeTakeFirstOrThrow()
+
   const executeInTransaction = async (tx: Transaction<DB>) => {
     const user = await tx
       .insertInto("User")
@@ -87,8 +95,14 @@ export const createUserWithPermission = async ({
           .columns(["email", "deletedAt"])
           .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
       )
-      .returning(["id", "email", "name", "phone", "deletedAt"])
+      .returningAll()
       .executeTakeFirstOrThrow()
+
+    await logUserEvent(tx, {
+      eventType: "UserCreate",
+      by: byUser,
+      delta: { before: null, after: user },
+    })
 
     const resourcePermission = await tx
       .insertInto("ResourcePermission")
@@ -100,7 +114,7 @@ export const createUserWithPermission = async ({
       .onConflict((oc) =>
         oc.columns(["userId", "siteId", "resourceId", "deletedAt"]).doNothing(),
       )
-      .returning(["userId", "siteId", "role"])
+      .returningAll()
       .executeTakeFirst()
 
     if (!resourcePermission) {
@@ -110,10 +124,13 @@ export const createUserWithPermission = async ({
       })
     }
 
-    return {
-      user,
-      resourcePermission,
-    }
+    await logPermissionEvent(tx, {
+      eventType: "PermissionCreate",
+      by: byUser,
+      delta: { before: null, after: resourcePermission },
+    })
+
+    return { user, resourcePermission }
   }
 
   if (tx) {

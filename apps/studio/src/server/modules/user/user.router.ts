@@ -63,6 +63,7 @@ export const userRouter = router({
                 ...user,
                 email: user.email.toLowerCase(),
                 siteId,
+                byUserId: ctx.user.id,
                 tx,
               })
             return {

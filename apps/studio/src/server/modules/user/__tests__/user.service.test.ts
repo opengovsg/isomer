@@ -51,6 +51,7 @@ describe("user.service", () => {
   describe("createUserWithPermission", () => {
     const TEST_EMAIL = "test@open.gov.sg"
     let siteId: number
+    let creatorUserId: string
 
     beforeAll(async () => {
       await setUpWhitelist({ email: TEST_EMAIL })
@@ -60,11 +61,19 @@ describe("user.service", () => {
       await resetTables("User", "ResourcePermission", "Site")
       const { site } = await setupSite()
       siteId = site.id
+
+      const creator = await setupUser({
+        name: "creator",
+        email: "creator@open.gov.sg",
+        isDeleted: false,
+      })
+      creatorUserId = creator.id
     })
 
     it("should throw error if email is invalid", async () => {
       // Act
       const result = createUserWithPermission({
+        byUserId: creatorUserId,
         email: "invalid-email",
         role: RoleType.Editor,
         siteId,
@@ -82,6 +91,7 @@ describe("user.service", () => {
     it("should throw error if site does not exist", async () => {
       // Act
       const result = createUserWithPermission({
+        byUserId: creatorUserId,
         email: TEST_EMAIL,
         role: RoleType.Editor,
         siteId: 9999,
@@ -98,6 +108,7 @@ describe("user.service", () => {
 
       // Act
       const result = createUserWithPermission({
+        byUserId: creatorUserId,
         email: TEST_EMAIL,
         role: RoleType.Editor,
         siteId,
@@ -120,6 +131,7 @@ describe("user.service", () => {
       // Act
       const roleToCreate = RoleType.Editor
       const { user: createdUser } = await createUserWithPermission({
+        byUserId: creatorUserId,
         email: TEST_EMAIL,
         role: roleToCreate,
         siteId,
@@ -168,6 +180,7 @@ describe("user.service", () => {
 
       // Act
       const result = createUserWithPermission({
+        byUserId: creatorUserId,
         email: nonGovSgEmail,
         role: RoleType.Editor,
         siteId,
@@ -189,6 +202,7 @@ describe("user.service", () => {
 
       // Act
       const result = createUserWithPermission({
+        byUserId: creatorUserId,
         email: nonGovSgEmail,
         role: RoleType.Admin,
         siteId,
@@ -211,6 +225,7 @@ describe("user.service", () => {
 
       // Act
       const result = await createUserWithPermission({
+        byUserId: creatorUserId,
         email: nonGovSgEmail,
         role: RoleType.Editor,
         siteId,
@@ -223,6 +238,7 @@ describe("user.service", () => {
     it("should create a new user with default values", async () => {
       // Act
       const { user } = await createUserWithPermission({
+        byUserId: creatorUserId,
         email: TEST_EMAIL,
         name: "",
         phone: "",
@@ -269,6 +285,7 @@ describe("user.service", () => {
 
       // Act
       const { user } = await createUserWithPermission({
+        byUserId: creatorUserId,
         email: TEST_EMAIL,
         name,
         phone,
@@ -313,6 +330,7 @@ describe("user.service", () => {
 
       // Act
       await createUserWithPermission({
+        byUserId: creatorUserId,
         email: TEST_EMAIL,
         name: "",
         phone: "",
@@ -343,6 +361,7 @@ describe("user.service", () => {
 
       // Act
       await createUserWithPermission({
+        byUserId: creatorUserId,
         email: TEST_EMAIL,
         role: RoleType.Admin,
         siteId,
