@@ -7,6 +7,7 @@ import type { DB, Transaction } from "../database"
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { isGovEmail } from "~/utils/email"
+import { logUserEvent } from "../audit/audit.service"
 import { db, RoleType } from "../database"
 import { isEmailWhitelisted } from "../whitelist/whitelist.service"
 
@@ -153,4 +154,50 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
       "ActiveUser.id",
       "ActiveResourcePermission.userId",
     )
+}
+
+interface UpdateUserDetailsProps {
+  byUserId: string
+  userId: string
+  name?: string
+  phone?: string
+}
+
+export const updateUserDetails = async ({
+  byUserId, // just a sanity reminder in case it's called from outside the router
+  userId,
+  name,
+  phone,
+}: UpdateUserDetailsProps) => {
+  if (byUserId !== userId) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You are not allowed to update this user's details",
+    })
+  }
+
+  const updatedUser = await db.transaction().execute(async (tx) => {
+    const user = await tx
+      .selectFrom("User")
+      .where("id", "=", userId)
+      .selectAll()
+      .executeTakeFirstOrThrow()
+
+    const updatedUser = await db
+      .updateTable("User")
+      .where("id", "=", userId)
+      .set({ name, phone })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+
+    await logUserEvent(tx, {
+      eventType: "UserUpdate",
+      by: user,
+      delta: { before: user, after: updatedUser },
+    })
+
+    return updatedUser
+  })
+
+  return updatedUser
 }
