@@ -226,6 +226,8 @@ interface DeletePermissionDelta {
   after: ResourcePermission
 }
 
+// Note: This is not used anywhere at the moment as we only soft-delete
+// the ResourcePermission record, nevertheless, we keep it here for future use (if any)
 interface UpdatePermissionDelta {
   before: ResourcePermission
   after: ResourcePermission
