@@ -30,7 +30,7 @@ export const useResourceStack = ({
 
   useEffect(() => {
     return () => setResourceStack([])
-  }, [pendingMovedItemAncestryStack])
+  }, [])
 
   const [isResourceHighlighted, setIsResourceHighlighted] =
     useState<boolean>(!!selectedResourceId)
