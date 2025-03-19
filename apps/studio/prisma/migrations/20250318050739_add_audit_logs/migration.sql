@@ -17,3 +17,6 @@ CREATE TABLE "AuditLog" (
 
 -- AddForeignKey
 ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddTrigger
+CREATE TRIGGER update_timestamp BEFORE UPDATE ON "AuditLog" FOR EACH ROW EXECUTE PROCEDURE moddatetime("updatedAt"); 
