@@ -194,12 +194,13 @@ interface UserEventLogProps {
   by: User
   delta: CreateUserDelta | DeleteUserDelta | UpdateUserDelta
   eventType: Extract<AuditLogEvent, "UserCreate" | "UserUpdate" | "UserDelete">
+  metadata?: Record<string, unknown>
   ip?: string
 }
 
 export const logUserEvent: AuditLogger<UserEventLogProps> = async (
   tx,
-  { by, delta, eventType, ip },
+  { by, delta, eventType, ip, metadata = {} },
 ) => {
   await tx
     .insertInto("AuditLog")
@@ -208,7 +209,7 @@ export const logUserEvent: AuditLogger<UserEventLogProps> = async (
       delta,
       userId: by.id,
       ipAddress: ip,
-      metadata: {},
+      metadata,
     })
     .execute()
 }
