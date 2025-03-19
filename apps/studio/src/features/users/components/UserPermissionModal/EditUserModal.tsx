@@ -38,9 +38,12 @@ export const EditUserModal = () => {
 
   const { siteId, userId, email, role } = useAtomValue(updateUserModalAtom)
   const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
-  const onClose = () => setUpdateUserModalState(DEFAULT_UPDATE_USER_MODAL_STATE)
+  const onClose = () => {
+    reset()
+    setUpdateUserModalState(DEFAULT_UPDATE_USER_MODAL_STATE)
+  }
 
-  const { watch, handleSubmit, setValue } = useZodForm({
+  const { watch, handleSubmit, setValue, reset } = useZodForm({
     schema: zod.object({
       role: updateUserInputSchema.shape.role,
     }),
