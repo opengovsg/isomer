@@ -7,7 +7,7 @@ import type { DB, Transaction } from "../database"
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { isGovEmail } from "~/utils/email"
-import { logUserEvent } from "../audit/audit.service"
+import { logPermissionEvent, logUserEvent } from "../audit/audit.service"
 import { db, RoleType } from "../database"
 import { isEmailWhitelisted } from "../whitelist/whitelist.service"
 
@@ -154,6 +154,65 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
       "ActiveUser.id",
       "ActiveResourcePermission.userId",
     )
+}
+
+interface DeleteUserPermissionProps {
+  byUserId: string
+  userId: string
+  siteId: number
+}
+
+export const deleteUserPermission = async ({
+  byUserId,
+  userId,
+  siteId,
+}: DeleteUserPermissionProps) => {
+  // Putting outside the tx to reduce unnecessary extended DB locks
+  const byUser = await db
+    .selectFrom("User")
+    .where("id", "=", byUserId)
+    .selectAll()
+    .executeTakeFirstOrThrow()
+
+  await db.transaction().execute(async (tx) => {
+    const userPermissionToDelete = await tx
+      .selectFrom("ResourcePermission")
+      .where("userId", "=", userId)
+      .where("siteId", "=", siteId)
+      .where("deletedAt", "is", null)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!userPermissionToDelete) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "User permissions not found",
+      })
+    }
+
+    const deletedUserPermission = await tx
+      .updateTable("ResourcePermission")
+      .where("id", "=", userPermissionToDelete.id)
+      .set({ deletedAt: new Date() })
+      .returningAll()
+      .executeTakeFirst()
+
+    // NOTE: this is technically impossible because we're executing
+    // inside a tx and this is the same resource which was fetched earlier
+    if (!deletedUserPermission) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message:
+          "Something went wrong while attempting to move your resource, please try again later",
+      })
+    }
+
+    await logPermissionEvent(tx, {
+      eventType: "PermissionDelete",
+      by: byUser,
+      delta: { before: userPermissionToDelete, after: deletedUserPermission },
+    })
+  })
 }
 
 interface UpdateUserDetailsProps {

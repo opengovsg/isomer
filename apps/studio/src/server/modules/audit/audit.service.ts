@@ -219,8 +219,10 @@ interface CreatePermissionDelta {
   after: ResourcePermission
 }
 
+// There's ResourcePermission for "before" and "after"
+// as we are only soft-deleting the record
 interface DeletePermissionDelta {
-  before: null
+  before: ResourcePermission
   after: ResourcePermission
 }
 

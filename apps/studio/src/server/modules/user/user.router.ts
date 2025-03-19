@@ -31,6 +31,7 @@ import {
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import {
   createUserWithPermission,
+  deleteUserPermission,
   getUsersQuery,
   updateUserDetails,
   validateEmailRoleCombination,
@@ -131,21 +132,11 @@ export const userRouter = router({
         })
       }
 
-      const deletedUserPermissions = await db
-        .updateTable("ResourcePermission")
-        .where("userId", "=", userId)
-        .where("siteId", "=", siteId)
-        .where("deletedAt", "is", null)
-        .set({ deletedAt: new Date() })
-        .returningAll()
-        .executeTakeFirst()
-
-      if (!deletedUserPermissions) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User permissions not found",
-        })
-      }
+      await deleteUserPermission({
+        byUserId: ctx.user.id,
+        userId,
+        siteId,
+      })
 
       return {
         id: userToDeletePermissionsFrom.id,
