@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
+import { pick } from "lodash"
 
 import { sendInvitation } from "~/features/mail/service"
 import { canResendInviteToUser } from "~/features/users/utils"
@@ -266,9 +267,7 @@ export const userRouter = router({
         role,
       })
 
-      return (({ id, userId, siteId, role }) => ({ id, userId, siteId, role }))(
-        updatedUserPermission,
-      )
+      return pick(updatedUserPermission, ["id", "userId", "siteId", "role"])
     }),
 
   updateDetails: protectedProcedure
@@ -286,7 +285,7 @@ export const userRouter = router({
         phone,
       })
 
-      return { name: updatedUser.name, phone: updatedUser.phone }
+      return pick(updatedUser, ["name", "phone"])
     }),
 
   resendInvite: protectedProcedure
@@ -344,6 +343,6 @@ export const userRouter = router({
         role: userPermission[0]?.role ?? RoleType.Editor,
       })
 
-      return { email: user.email }
+      return pick(user, ["email"])
     }),
 })
