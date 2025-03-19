@@ -514,6 +514,10 @@ describe("user.router", () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 403 if user is not admin of the site", async () => {
@@ -540,6 +544,10 @@ describe("user.router", () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 404 if user does not exist", async () => {
@@ -559,6 +567,10 @@ describe("user.router", () => {
           message: "User not found",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 404 if user exist but the permissions do not exist", async () => {
@@ -577,6 +589,10 @@ describe("user.router", () => {
           message: "User permissions not found",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 404 if user to delete is not from the same site", async () => {
@@ -603,6 +619,10 @@ describe("user.router", () => {
           message: "User permissions not found",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 403 if user tries to delete their own account", async () => {
@@ -622,6 +642,10 @@ describe("user.router", () => {
           message: "You cannot delete your own account",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 403 if non-isomer admins try to delete isomer admins", async () => {
@@ -644,6 +668,10 @@ describe("user.router", () => {
           message: "You do not have permission to delete this user",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should soft delete an existing user's permissions successfully", async () => {
@@ -679,6 +707,44 @@ describe("user.router", () => {
         .execute()
       expect(deletedUserPermissions).toHaveLength(1) // ensure it's not hard deleted
       expect(deletedUserPermissions[0]?.deletedAt).not.toBeNull()
+
+      // Assert DB - audit logs (user)
+      // Should not have any audit logs as user is not being deleted
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserDelete")
+        .selectAll()
+        .execute()
+      expect(auditLogs).toHaveLength(0)
+
+      // Assert DB - audit logs (permissions)
+      const permissionsAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(permissionsAuditLogs).toHaveLength(1)
+      expect(permissionsAuditLogs[0]).toMatchObject({
+        eventType: "PermissionDelete",
+        delta: expect.objectContaining({
+          before: expect.objectContaining({
+            ..._.omit(deletedUserPermissions[0], [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: null,
+          }),
+          after: expect.objectContaining({
+            ..._.omit(deletedUserPermissions[0], [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: expect.anything(),
+          }),
+        }),
+      })
     })
 
     // User might have permissions to multiple sites
@@ -715,6 +781,50 @@ describe("user.router", () => {
         .execute()
       expect(dbUsers).toHaveLength(1)
       expect(dbUsers[0]?.deletedAt).toBeNull()
+
+      // Assert DB - audit logs (user)
+      // Should not have any audit logs as user is not being deleted
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserDelete")
+        .selectAll()
+        .execute()
+      expect(auditLogs).toHaveLength(0)
+
+      // Assert DB - audit logs (permissions)
+      const deletedUserPermission = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToDelete.id)
+        .where("siteId", "=", siteId)
+        .select("deletedAt")
+        .executeTakeFirst()
+      const permissionsAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(permissionsAuditLogs).toHaveLength(1)
+      expect(permissionsAuditLogs[0]).toMatchObject({
+        eventType: "PermissionDelete",
+        delta: expect.objectContaining({
+          before: expect.objectContaining({
+            ..._.omit(deletedUserPermission, [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: null,
+          }),
+          after: expect.objectContaining({
+            ..._.omit(deletedUserPermission, [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: expect.anything(),
+          }),
+        }),
+      })
     })
   })
 
