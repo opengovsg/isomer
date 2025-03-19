@@ -81,7 +81,7 @@ export const createUserWithPermission = async ({
     .selectAll()
     .executeTakeFirstOrThrow()
 
-  const executeInTransaction = async (tx: Transaction<DB>) => {
+  const createUserInTransaction = async (tx: Transaction<DB>) => {
     const user = await tx
       .insertInto("User")
       .values({
@@ -90,24 +90,38 @@ export const createUserWithPermission = async ({
         name: name || email.split("@")[0] || "",
         phone,
       })
-      .onConflict((oc) =>
-        oc
-          .columns(["email", "deletedAt"])
-          .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
-      )
+      .onConflict((oc) => oc.columns(["email", "deletedAt"]).doNothing())
       .returningAll()
+      .executeTakeFirst()
+
+    // if user is defined, it means it's newly created and there's no conflict
+    if (user) {
+      await logUserEvent(tx, {
+        eventType: "UserCreate",
+        by: byUser,
+        delta: { before: null, after: user },
+      })
+      return user
+    }
+
+    // if user is undefined, it means there's a conflict
+    // Nothing happened but we need to return the existing user
+    return await tx
+      .selectFrom("User")
+      .where("email", "=", email)
+      .where("deletedAt", "is", null)
+      .selectAll()
       .executeTakeFirstOrThrow()
+  }
 
-    await logUserEvent(tx, {
-      eventType: "UserCreate",
-      by: byUser,
-      delta: { before: null, after: user },
-    })
-
+  const createPermissionInTransaction = async (
+    tx: Transaction<DB>,
+    userId: User["id"],
+  ) => {
     const resourcePermission = await tx
       .insertInto("ResourcePermission")
       .values({
-        userId: user.id,
+        userId,
         siteId,
         role,
       })
@@ -130,7 +144,13 @@ export const createUserWithPermission = async ({
       delta: { before: null, after: resourcePermission },
     })
 
-    return { user, resourcePermission }
+    return resourcePermission
+  }
+
+  const executeInTransaction = async (tx: Transaction<DB>) => {
+    const user = await createUserInTransaction(tx)
+    const permission = await createPermissionInTransaction(tx, user.id)
+    return { user, resourcePermission: permission }
   }
 
   if (tx) {
