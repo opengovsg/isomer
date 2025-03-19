@@ -394,8 +394,9 @@ describe("user.router", () => {
         .selectFrom("AuditLog")
         .where("eventType", "=", "PermissionCreate")
         .selectAll()
-        .executeTakeFirstOrThrow()
-      expect(permissionAuditEntry).toMatchObject({
+        .execute()
+      expect(permissionAuditEntry).toHaveLength(1)
+      expect(permissionAuditEntry[0]).toMatchObject({
         eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
@@ -476,8 +477,9 @@ describe("user.router", () => {
         .selectFrom("AuditLog")
         .where("eventType", "=", "PermissionCreate")
         .selectAll()
-        .executeTakeFirstOrThrow()
-      expect(permissionAuditEntry).toMatchObject({
+        .execute()
+      expect(permissionAuditEntry).toHaveLength(1)
+      expect(permissionAuditEntry[0]).toMatchObject({
         eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
