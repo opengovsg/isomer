@@ -1382,6 +1382,10 @@ describe("user.router", () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 403 if user is not admin of the site", async () => {
@@ -1405,6 +1409,10 @@ describe("user.router", () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 404 if user does not exist", async () => {
@@ -1425,6 +1433,10 @@ describe("user.router", () => {
           message: "User not found",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 404 if user exist but the permissions do not exist", async () => {
@@ -1447,6 +1459,10 @@ describe("user.router", () => {
           message: "User permissions not found",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 404 if user to update is not from the same site", async () => {
@@ -1474,6 +1490,10 @@ describe("user.router", () => {
           message: "User permissions not found",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 404 if user exists but only has non-null deletedAt", async () => {
@@ -1496,6 +1516,10 @@ describe("user.router", () => {
           message: "User not found",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 403 if user tries to update their own role", async () => {
@@ -1516,6 +1540,10 @@ describe("user.router", () => {
           message: "You cannot update your own role",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 403 if assigning a non-gov.sg email with admin role", async () => {
@@ -1543,6 +1571,10 @@ describe("user.router", () => {
             "Non-gov.sg emails cannot be added as admin. Select another role.",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should update a non-gov.sg email with non-admin role successfully", async () => {
@@ -1553,7 +1585,10 @@ describe("user.router", () => {
         email: "test@coolvendor.com",
         isDeleted: false,
       })
-      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+      const currentPermission = await setupEditorPermissions({
+        userId: userToUpdate.id,
+        siteId,
+      })
       const newRole = RoleType.Publisher
 
       // Act
@@ -1581,6 +1616,59 @@ describe("user.router", () => {
         .select("role")
         .executeTakeFirst()
       expect(updatedUser).not.toBeNull()
+
+      // Assert DB - audit logs (soft-deleted permission)
+      const deletedPermissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(deletedPermissionAuditLogs).toHaveLength(1)
+      expect(deletedPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionDelete",
+        delta: expect.objectContaining({
+          before: expect.objectContaining({
+            ..._.omit(currentPermission, [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: null,
+          }),
+          after: expect.objectContaining({
+            ..._.omit(currentPermission, [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: expect.anything(),
+          }),
+        }),
+      })
+
+      // Assert DB - audit logs (new permission)
+      const newPermission = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToUpdate.id)
+        .where("siteId", "=", siteId)
+        .where("role", "=", newRole)
+        .selectAll()
+        .executeTakeFirst()
+      const newPermissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(newPermissionAuditLogs).toHaveLength(1)
+      expect(newPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining({
+            ..._.omit(newPermission, ["createdAt", "updatedAt"]),
+          }),
+        }),
+      })
     })
 
     it("should update a user's role successfully", async () => {
@@ -1591,7 +1679,10 @@ describe("user.router", () => {
         email: TEST_EMAIL,
         isDeleted: false,
       })
-      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+      const currentPermission = await setupEditorPermissions({
+        userId: userToUpdate.id,
+        siteId,
+      })
       const newRole = RoleType.Admin
 
       // Act
@@ -1620,6 +1711,59 @@ describe("user.router", () => {
         .select("role")
         .executeTakeFirst()
       expect(updatedUser?.role).toBe(newRole)
+
+      // Assert DB - audit logs (soft-deleted permission)
+      const deletedPermissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(deletedPermissionAuditLogs).toHaveLength(1)
+      expect(deletedPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionDelete",
+        delta: expect.objectContaining({
+          before: expect.objectContaining({
+            ..._.omit(currentPermission, [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: null,
+          }),
+          after: expect.objectContaining({
+            ..._.omit(currentPermission, [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: expect.anything(), // should be set to a new date
+          }),
+        }),
+      })
+
+      // Assert DB - audit logs (new permission)
+      const newPermission = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToUpdate.id)
+        .where("siteId", "=", siteId)
+        .where("role", "=", newRole)
+        .selectAll()
+        .executeTakeFirst()
+      const newPermissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(newPermissionAuditLogs).toHaveLength(1)
+      expect(newPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining({
+            ..._.omit(newPermission, ["createdAt", "updatedAt"]),
+          }),
+        }),
+      })
     })
 
     it("when updating a user's role, create a new permission for the user and update the old permission's deletedAt", async () => {
@@ -1690,6 +1834,55 @@ describe("user.router", () => {
           }),
         ]),
       )
+
+      // Assert DB - audit logs (soft-deleted permission)
+      const deletedPermissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(deletedPermissionAuditLogs).toHaveLength(1)
+      expect(deletedPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionDelete",
+        delta: expect.objectContaining({
+          before: expect.objectContaining({
+            ..._.omit(originalPermission, [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: null,
+          }),
+          after: expect.objectContaining({
+            ..._.omit(originalPermission, [
+              "createdAt",
+              "updatedAt",
+              "deletedAt",
+            ]),
+            deletedAt: expect.anything(), // should be set to a new date
+          }),
+        }),
+      })
+
+      // Assert DB - audit logs (new permission)
+      const createdPermissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(createdPermissionAuditLogs).toHaveLength(1)
+      expect(createdPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining({
+            ..._.omit(
+              userPermissions.find((p) => p.deletedAt === null),
+              ["createdAt", "updatedAt"],
+            ),
+          }),
+        }),
+      })
     })
   })
 
