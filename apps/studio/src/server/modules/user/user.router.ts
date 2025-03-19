@@ -26,6 +26,7 @@ import { protectedProcedure, router } from "../../trpc"
 import { db, RoleType, sql } from "../database"
 import {
   getSitePermissions,
+  updateUserSitewidePermission,
   validatePermissionsForManagingUsers,
 } from "../permissions/permissions.service"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
@@ -132,11 +133,7 @@ export const userRouter = router({
         })
       }
 
-      await deleteUserPermission({
-        byUserId: ctx.user.id,
-        userId,
-        siteId,
-      })
+      await deleteUserPermission({ byUserId: ctx.user.id, userId, siteId })
 
       return {
         id: userToDeletePermissionsFrom.id,
@@ -261,34 +258,16 @@ export const userRouter = router({
 
       validateEmailRoleCombination({ email: user.email, role })
 
-      const updatedUserPermission = await db
-        .transaction()
-        .execute(async (tx) => {
-          const oldPermission = await tx
-            .updateTable("ResourcePermission")
-            .where("userId", "=", userId)
-            .where("siteId", "=", siteId)
-            .where("resourceId", "is", null) // because we are updating site-wide permissions
-            .where("deletedAt", "is", null) // ensure deleted persmission deletedAt is not overwritten
-            .set({ deletedAt: new Date() }) // soft delete the old permission
-            .returningAll()
-            .executeTakeFirst()
+      const updatedUserPermission = await updateUserSitewidePermission({
+        byUserId: ctx.user.id,
+        userId,
+        siteId,
+        role,
+      })
 
-          if (!oldPermission) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "User permissions not found",
-            })
-          }
-
-          return await tx
-            .insertInto("ResourcePermission")
-            .values({ userId, siteId, role, resourceId: null }) // because we are updating site-wide permissions
-            .returning(["id", "userId", "siteId", "role"])
-            .executeTakeFirstOrThrow()
-        })
-
-      return updatedUserPermission
+      return (({ id, userId, siteId, role }) => ({ id, userId, siteId, role }))(
+        updatedUserPermission,
+      )
     }),
 
   updateDetails: protectedProcedure

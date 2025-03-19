@@ -9,6 +9,7 @@ import type {
   SiteAbility,
   UserManagementActions,
 } from "./permissions.type"
+import { logPermissionEvent } from "../audit/audit.service"
 import { db } from "../database"
 import { CRUD_ACTIONS } from "./permissions.type"
 import {
@@ -144,4 +145,80 @@ export const validatePermissionsForManagingUsers = async ({
       message: "You do not have sufficient permissions to perform this action",
     })
   }
+}
+
+interface UpdateUserSitewidePermissionProps {
+  byUserId: string
+  userId: string
+  siteId: number
+  role: RoleType
+}
+
+export const updateUserSitewidePermission = async ({
+  byUserId,
+  userId,
+  siteId,
+  role,
+}: UpdateUserSitewidePermissionProps) => {
+  // Putting outside the tx to reduce unnecessary extended DB locks
+  const byUser = await db
+    .selectFrom("User")
+    .where("id", "=", byUserId)
+    .selectAll()
+    .executeTakeFirstOrThrow()
+
+  return await db.transaction().execute(async (tx) => {
+    const sitePermissionToRemove = await tx
+      .selectFrom("ResourcePermission")
+      .where("userId", "=", userId)
+      .where("siteId", "=", siteId)
+      .where("resourceId", "is", null) // because we are updating site-wide permissions
+      .where("deletedAt", "is", null) // ensure deleted persmission deletedAt is not overwritten
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!sitePermissionToRemove) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "User permissions not found",
+      })
+    }
+
+    const deletedSitePermission = await tx
+      .updateTable("ResourcePermission")
+      .where("id", "=", sitePermissionToRemove.id)
+      .set({ deletedAt: new Date() }) // soft delete the old permission
+      .returningAll()
+      .executeTakeFirst()
+
+    // NOTE: this is technically impossible because we're executing
+    // inside a tx and this is the same resource which was fetched earlier
+    if (!deletedSitePermission) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message:
+          "Something went wrong while attempting to move your resource, please try again later",
+      })
+    }
+
+    await logPermissionEvent(tx, {
+      eventType: "PermissionDelete",
+      by: byUser,
+      delta: { before: sitePermissionToRemove, after: deletedSitePermission },
+    })
+
+    const createdSitePermission = await tx
+      .insertInto("ResourcePermission")
+      .values({ userId, siteId, role, resourceId: null }) // because we are updating site-wide permissions
+      .returningAll()
+      .executeTakeFirstOrThrow()
+
+    await logPermissionEvent(tx, {
+      eventType: "PermissionCreate",
+      by: byUser,
+      delta: { before: null, after: createdSitePermission },
+    })
+
+    return createdSitePermission
+  })
 }
