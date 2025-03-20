@@ -1,6 +1,6 @@
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
-import { get } from "lodash"
+import { get, pick } from "lodash"
 
 import {
   createCollectionSchema,
@@ -21,6 +21,7 @@ import {
   getSiteResourceById,
   updateBlobById,
 } from "../resource/resource.service"
+import { defaultCollectionSelect } from "./collection.select"
 import {
   createCollectionLinkJson,
   createCollectionPageJson,
@@ -122,7 +123,7 @@ export const collectionRouter = router({
             by: user,
           })
 
-          return collection
+          return pick(collection, defaultCollectionSelect)
         })
 
         // TODO: Create the index page for the collection and publish it
@@ -156,7 +157,7 @@ export const collectionRouter = router({
       }
 
       const resource = await db.transaction().execute(async (tx) => {
-        const parentCollection = await db
+        const parentCollection = await tx
           .selectFrom("Resource")
           .where("Resource.id", "=", String(collectionId))
           .where("Resource.siteId", "=", siteId)
@@ -332,7 +333,7 @@ export const collectionRouter = router({
           type: ResourceType.CollectionLink,
         })
 
-        const user = await tx
+        const user = await db
           .selectFrom("User")
           .where("id", "=", ctx.user.id)
           .selectAll()
