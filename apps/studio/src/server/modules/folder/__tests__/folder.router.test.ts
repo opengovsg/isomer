@@ -62,7 +62,7 @@ describe("folder.router", async () => {
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
-      ).resolves.toEqual([])
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw 409 if permalink already exists", async () => {
@@ -90,7 +90,7 @@ describe("folder.router", async () => {
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
-      ).resolves.toEqual([])
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw 404 if `siteId` does not exist", async () => {
@@ -145,7 +145,7 @@ describe("folder.router", async () => {
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
-      ).resolves.toEqual([])
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw 400 if `parentFolderId` is not a folder", async () => {
@@ -175,7 +175,7 @@ describe("folder.router", async () => {
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
-      ).resolves.toEqual([])
+      ).resolves.toHaveLength(0)
     })
 
     it("should create a folder even with duplicate permalink if `siteId` is different", async () => {
@@ -299,7 +299,7 @@ describe("folder.router", async () => {
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
-      ).resolves.toEqual([])
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw 403 if user does not have access to the site", async () => {
@@ -325,7 +325,7 @@ describe("folder.router", async () => {
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
-      ).resolves.toEqual([])
+      ).resolves.toHaveLength(0)
     })
 
     it.skip("should throw 403 if user does not have write access to the parent folder", async () => {})
@@ -452,7 +452,7 @@ describe("folder.router", async () => {
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
-      ).resolves.toEqual([])
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw 409 if permalink already exists", async () => {
@@ -484,7 +484,7 @@ describe("folder.router", async () => {
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
-      ).resolves.toEqual([])
+      ).resolves.toHaveLength(0)
     })
 
     it("should allow duplicate permalinks if the site is different", async () => {
@@ -547,7 +547,7 @@ describe("folder.router", async () => {
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
-      ).resolves.toEqual([])
+      ).resolves.toHaveLength(0)
     })
 
     it("should allow edits onto a folder regardless of the parent", async () => {
@@ -615,7 +615,7 @@ describe("folder.router", async () => {
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
-      ).resolves.toEqual([])
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw 404 if the resourceId is not a folder", async () => {
@@ -641,7 +641,7 @@ describe("folder.router", async () => {
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
-      ).resolves.toEqual([])
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw 404 if the resourceId does not exist", async () => {
@@ -666,7 +666,7 @@ describe("folder.router", async () => {
       )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
-      ).resolves.toEqual([])
+      ).resolves.toHaveLength(0)
     })
 
     it("should allow edits on a root level folder regardless of the role", async () => {

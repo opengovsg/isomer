@@ -30,6 +30,13 @@ export const folderRouter = router({
           resourceId: !!parentFolderId ? String(parentFolderId) : null,
         })
 
+        // Get user information
+        const user = await db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(() => new TRPCError({ code: "NOT_FOUND" }))
+
         // Validate site is valid
         const site = await db
           .selectFrom("Site")
@@ -68,12 +75,6 @@ export const folderRouter = router({
         }
 
         const folder = await db.transaction().execute(async (tx) => {
-          const user = await tx
-            .selectFrom("User")
-            .where("id", "=", ctx.user.id)
-            .selectAll()
-            .executeTakeFirstOrThrow(() => new TRPCError({ code: "NOT_FOUND" }))
-
           const folder = await tx
             .insertInto("Resource")
             .values({
@@ -151,13 +152,13 @@ export const folderRouter = router({
           userId: ctx.user.id,
         })
 
-        const result = await db.transaction().execute(async (tx) => {
-          const user = await tx
-            .selectFrom("User")
-            .where("id", "=", ctx.user.id)
-            .selectAll()
-            .executeTakeFirstOrThrow(() => new TRPCError({ code: "NOT_FOUND" }))
+        const user = await db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(() => new TRPCError({ code: "NOT_FOUND" }))
 
+        const result = await db.transaction().execute(async (tx) => {
           const oldResource = await db
             .selectFrom("Resource")
             .selectAll()
@@ -178,8 +179,8 @@ export const folderRouter = router({
 
           const newResource = await db
             .updateTable("Resource")
-            .where("Resource.id", "=", resourceId)
-            .where("Resource.siteId", "=", Number(siteId))
+            .where("Resource.id", "=", oldResource.id)
+            .where("Resource.siteId", "=", oldResource.siteId)
             .where("Resource.type", "in", [
               ResourceType.Folder,
               ResourceType.Collection,
