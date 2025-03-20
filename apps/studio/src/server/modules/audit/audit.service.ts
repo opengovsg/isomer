@@ -10,6 +10,7 @@ import type {
   Transaction,
   User,
   VerificationToken,
+  Version,
 } from "../database"
 
 type WithoutMeta<T> = Omit<T, "createdAt" | "updatedAt">
@@ -144,11 +145,7 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
     .execute()
 }
 
-type PublishEvents =
-  | (FullResource & { versionNumber: number })
-  | Site
-  | Navbar
-  | Footer
+type PublishEvent = WithoutMeta<Version>
 
 interface PublishEventLogProps {
   by: User
@@ -157,8 +154,8 @@ interface PublishEventLogProps {
     // We don't want to store the `version` because it is a pointer
     // to the blob/resource
     // we will instead store the full data here so it is an accurate snapshot
-    before: PublishEvents | null
-    after: PublishEvents
+    before: PublishEvent | null
+    after: PublishEvent
   }
   eventType: Extract<AuditLogEvent, "Publish">
   ip?: string
