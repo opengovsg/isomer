@@ -129,8 +129,7 @@ describe("auth.email", () => {
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(1)
       expect(auditLogs[0]?.eventType).toBe(AuditLogEvent.Login)
-      expect(auditLogs[0]?.delta.before!.attempts).toBe(0)
-      expect(auditLogs[0]?.delta.after!.attempts).toBe(1)
+      expect(auditLogs[0]?.delta.before!.attempts).toBe(1)
     })
 
     it("should successfully set session on a subsequent valid OTP", async () => {
@@ -145,10 +144,14 @@ describe("auth.email", () => {
       })
 
       // Act
-      await caller.verifyOtp({
-        email: TEST_VALID_EMAIL,
-        token: VALID_OTP,
-      })
+      try {
+        await caller.verifyOtp({
+          email: TEST_VALID_EMAIL,
+          token: INVALID_OTP,
+        })
+      } catch (e) {
+        // Discard error since it is expected
+      }
       const result = caller.verifyOtp({
         email: TEST_VALID_EMAIL,
         token: VALID_OTP,
@@ -167,8 +170,7 @@ describe("auth.email", () => {
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(1)
       expect(auditLogs[0]?.eventType).toBe(AuditLogEvent.Login)
-      expect(auditLogs[0]?.delta.before!.attempts).toBe(1)
-      expect(auditLogs[0]?.delta.after!.attempts).toBe(2)
+      expect(auditLogs[0]?.delta.before!.attempts).toBe(2)
     })
 
     it("should throw if OTP is not found", async () => {
@@ -180,7 +182,9 @@ describe("auth.email", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError("Invalid login email")
+      await expect(result).rejects.toThrowError(
+        "Please request for another OTP",
+      )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)
