@@ -486,7 +486,7 @@ export const setupUser = async ({
   userId?: string
   email: string
   phone?: string
-  isDeleted: boolean
+  isDeleted?: boolean
   hasLoggedIn?: boolean
 }) => {
   return db

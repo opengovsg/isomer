@@ -201,6 +201,7 @@ export const logUserEvent: AuditLogger<UserEventLogProps> = async (
       delta,
       userId: by.id,
       ipAddress: ip,
+      metadata: {},
     })
     .execute()
 }
