@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import _ from "lodash"
+import _, { omit } from "lodash"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -579,7 +579,7 @@ describe("collection.router", async () => {
         .executeTakeFirstOrThrow()
       expect(auditEntry).toBeDefined()
       expect(auditEntry!.delta.after!).toMatchObject({
-        resource: result,
+        resource: omit(actualCollectionPage, ["updatedAt", "createdAt"]),
       })
     })
 
