@@ -10,9 +10,19 @@ import type {
   Transaction,
   User,
   VerificationToken,
+  Version,
 } from "../database"
 
-type FullResource = Resource & (Blob | undefined)
+type WithoutMeta<T> = Omit<T, "createdAt" | "updatedAt">
+
+// NOTE: Either a folder/collection that doesn't have a blob
+// or a page w/ blob
+type FullResource =
+  | WithoutMeta<Resource>
+  | {
+      blob: WithoutMeta<Blob>
+      resource: WithoutMeta<Resource>
+    }
 
 interface ResourceCreateDelta {
   before: null
@@ -46,7 +56,7 @@ export const logResourceEvent: AuditLogger<ResourceEventLogProps> = async (
 ) => {
   await tx
     .insertInto("AuditLog")
-    .values({ eventType, delta, userId: by.id, ipAddress: ip })
+    .values({ eventType, delta, userId: by.id, ipAddress: ip, metadata: {} })
     .execute()
 }
 
@@ -135,11 +145,7 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
     .execute()
 }
 
-type PublishEvents =
-  | (FullResource & { versionNumber: number })
-  | Site
-  | Navbar
-  | Footer
+type PublishEvent = WithoutMeta<Version>
 
 interface PublishEventLogProps {
   by: User
@@ -148,8 +154,8 @@ interface PublishEventLogProps {
     // We don't want to store the `version` because it is a pointer
     // to the blob/resource
     // we will instead store the full data here so it is an accurate snapshot
-    before: PublishEvents | null
-    after: PublishEvents
+    before: PublishEvent | null
+    after: PublishEvent
   }
   eventType: Extract<AuditLogEvent, "Publish">
   ip?: string
