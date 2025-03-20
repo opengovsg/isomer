@@ -144,14 +144,13 @@ describe("auth.email", () => {
       })
 
       // Act
-      try {
-        await caller.verifyOtp({
+      await expect(
+        caller.verifyOtp({
           email: TEST_VALID_EMAIL,
           token: INVALID_OTP,
-        })
-      } catch (e) {
-        // Discard error since it is expected
-      }
+        }),
+      ).rejects.toThrowError()
+
       const result = caller.verifyOtp({
         email: TEST_VALID_EMAIL,
         token: VALID_OTP,
