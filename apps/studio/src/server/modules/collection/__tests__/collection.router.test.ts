@@ -578,7 +578,7 @@ describe("collection.router", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(auditEntry).toBeDefined()
-      expect(auditEntry!.delta.after!).toMatchObject({
+      expect(auditEntry.delta.after!).toMatchObject({
         resource: omit(actualCollectionPage, ["updatedAt", "createdAt"]),
       })
     })

@@ -41,49 +41,6 @@ export const getCollectionItemByPermalink = (
 }
 
 export const assertAuditLogRows = async (numRows = 0) => {
-  // Test util functions
-  const getCollectionWithPermalink = ({
-    siteId,
-    permalink,
-  }: {
-    siteId: number
-    permalink: string
-  }) => {
-    return db
-      .selectFrom("Resource")
-      .where("type", "=", ResourceType.Collection)
-      .where("siteId", "=", siteId)
-      .where("permalink", "=", permalink)
-      .selectAll()
-      .executeTakeFirstOrThrow()
-  }
-
-  const getCollectionItemByPermalink = (
-    permalink: string,
-    parentId?: string | null,
-  ) => {
-    if (parentId) {
-      return db
-        .selectFrom("Resource")
-        .where("parentId", "=", parentId)
-        .where("permalink", "=", permalink)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-    }
-
-    return db
-      .selectFrom("Resource")
-      .where("parentId", "is", null)
-      .where("permalink", "=", permalink)
-      .selectAll()
-      .executeTakeFirstOrThrow()
-  }
-
-  const assertAuditLogRows = async (numRows = 0) => {
-    const actual = await db.selectFrom("AuditLog").selectAll().execute()
-
-    expect(actual).toHaveLength(numRows)
-  }
   const actual = await db.selectFrom("AuditLog").selectAll().execute()
 
   expect(actual).toHaveLength(numRows)
