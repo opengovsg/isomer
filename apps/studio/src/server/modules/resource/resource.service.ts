@@ -172,10 +172,13 @@ export const updatePageById = (
     .executeTakeFirstOrThrow()
 }
 
-export const getBlobOfResource = async (
-  tx: Transaction<DB>,
-  resourceId: string,
-) => {
+export const getBlobOfResource = async ({
+  tx,
+  resourceId,
+}: {
+  tx: Transaction<DB>
+  resourceId: string
+}) => {
   const { draftBlobId, publishedVersionId } = await tx
     .selectFrom("Resource")
     .where("id", "=", resourceId)

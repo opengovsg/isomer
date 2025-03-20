@@ -86,7 +86,7 @@ export const collectionRouter = router({
               })
             }
 
-            if (parentFolder.type !== "Folder") {
+            if (parentFolder.type !== ResourceType.Folder) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
                 message:
@@ -354,7 +354,10 @@ export const collectionRouter = router({
                 }),
             )
 
-          const oldBlob = await getBlobOfResource(tx, resource.id)
+          const oldBlob = await getBlobOfResource({
+            tx,
+            resourceId: resource.id,
+          })
 
           const blob = await updateBlobById(tx, {
             content: {
