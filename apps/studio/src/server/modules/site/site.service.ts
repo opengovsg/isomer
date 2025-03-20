@@ -98,13 +98,28 @@ export const setSiteNotification = async ({
     .selectFrom("User")
     .where("id", "=", userId)
     .selectAll()
-    .executeTakeFirstOrThrow()
+    .executeTakeFirst()
+
+  if (!user) {
+    // NOTE: This shouldn't happen as the user is already logged in
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "The user could not be found",
+    })
+  }
 
   const oldSite = await tx
     .selectFrom("Site")
     .where("id", "=", siteId)
     .selectAll()
-    .executeTakeFirstOrThrow()
+    .executeTakeFirst()
+
+  if (!oldSite) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "The site could not be found",
+    })
+  }
 
   const newSite = await tx
     .updateTable("Site")
@@ -114,7 +129,14 @@ export const setSiteNotification = async ({
     }))
     .where("id", "=", siteId)
     .returningAll()
-    .executeTakeFirstOrThrow()
+    .executeTakeFirst()
+
+  if (!newSite) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to update site configuration",
+    })
+  }
 
   await logConfigEvent(tx, {
     eventType: AuditLogEvent.SiteConfigUpdate,
@@ -141,20 +163,42 @@ export const clearSiteNotification = async ({
     .selectFrom("User")
     .where("id", "=", userId)
     .selectAll()
-    .executeTakeFirstOrThrow()
+    .executeTakeFirst()
+
+  if (!user) {
+    // NOTE: This shouldn't happen as the user is already logged in
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "The user could not be found",
+    })
+  }
 
   const oldSite = await tx
     .selectFrom("Site")
     .where("id", "=", siteId)
     .selectAll()
-    .executeTakeFirstOrThrow()
+    .executeTakeFirst()
+
+  if (!oldSite) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "The site could not be found",
+    })
+  }
 
   const newSite = await tx
     .updateTable("Site")
     .set({ config: sql`config - 'notification'` })
     .where("id", "=", siteId)
     .returningAll()
-    .executeTakeFirstOrThrow()
+    .executeTakeFirst()
+
+  if (!newSite) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to update site configuration",
+    })
+  }
 
   await logConfigEvent(tx, {
     eventType: AuditLogEvent.SiteConfigUpdate,

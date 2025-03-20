@@ -3,6 +3,7 @@ import type {
   IsomerSiteThemeProps,
   IsomerSiteWideComponentsProps,
 } from "@opengovsg/isomer-components"
+import { TRPCError } from "@trpc/server"
 
 import {
   getConfigSchema,
@@ -174,14 +175,29 @@ export const siteRouter = router({
           .selectFrom("User")
           .where("id", "=", ctx.user.id)
           .selectAll()
-          .executeTakeFirstOrThrow()
+          .executeTakeFirst()
+
+        if (!user) {
+          // NOTE: This shouldn't happen as the user is already logged in
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The user could not be found.",
+          })
+        }
 
         // Update site-level configuration
         const oldSite = await tx
           .selectFrom("Site")
           .where("id", "=", siteId)
           .selectAll()
-          .executeTakeFirstOrThrow()
+          .executeTakeFirst()
+
+        if (!oldSite) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The site could not be found.",
+          })
+        }
 
         const newSite = await tx
           .updateTable("Site")
@@ -191,7 +207,14 @@ export const siteRouter = router({
           })
           .where("id", "=", siteId)
           .returningAll()
-          .executeTakeFirstOrThrow()
+          .executeTakeFirst()
+
+        if (!newSite) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update site configuration.",
+          })
+        }
 
         await logConfigEvent(tx, {
           eventType: AuditLogEvent.SiteConfigUpdate,
@@ -207,7 +230,14 @@ export const siteRouter = router({
           .selectFrom("Navbar")
           .where("siteId", "=", siteId)
           .selectAll()
-          .executeTakeFirstOrThrow()
+          .executeTakeFirst()
+
+        if (!oldNavbar) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The navbar for the site could not be found.",
+          })
+        }
 
         const newNavbar = await tx
           .updateTable("Navbar")
@@ -220,7 +250,14 @@ export const siteRouter = router({
           })
           .where("siteId", "=", siteId)
           .returningAll()
-          .executeTakeFirstOrThrow()
+          .executeTakeFirst()
+
+        if (!newNavbar) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update site navbar.",
+          })
+        }
 
         await logConfigEvent(tx, {
           eventType: AuditLogEvent.NavbarUpdate,
@@ -236,7 +273,14 @@ export const siteRouter = router({
           .selectFrom("Footer")
           .where("siteId", "=", siteId)
           .selectAll()
-          .executeTakeFirstOrThrow()
+          .executeTakeFirst()
+
+        if (!oldFooter) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The footer for the site could not be found.",
+          })
+        }
 
         const newFooter = await tx
           .updateTable("Footer")
@@ -249,7 +293,14 @@ export const siteRouter = router({
           })
           .where("siteId", "=", siteId)
           .returningAll()
-          .executeTakeFirstOrThrow()
+          .executeTakeFirst()
+
+        if (!newFooter) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update site footer.",
+          })
+        }
 
         await logConfigEvent(tx, {
           eventType: AuditLogEvent.FooterUpdate,

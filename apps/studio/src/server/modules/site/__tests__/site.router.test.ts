@@ -180,7 +180,7 @@ describe("site.router", async () => {
 
   describe("setNotification", () => {
     beforeEach(async () => {
-      await resetTables("AuditLog", "Site")
+      await resetTables("AuditLog")
     })
 
     it("should throw 401 if user is not logged in", async () => {
@@ -356,7 +356,7 @@ describe("site.router", async () => {
 
   describe("setSiteConfigByAdmin", () => {
     beforeEach(async () => {
-      await resetTables("AuditLog", "Site", "Navbar", "Footer")
+      await resetTables("AuditLog", "Navbar", "Footer")
     })
 
     it("should throw 401 if user is not logged in", async () => {
