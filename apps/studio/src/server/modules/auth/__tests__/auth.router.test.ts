@@ -1,8 +1,8 @@
+import type { applySession } from "tests/integration/helpers/iron-session"
 import { TRPCError } from "@trpc/server"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,
-  applySession,
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import { setUpWhitelist } from "tests/integration/helpers/seed"

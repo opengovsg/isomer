@@ -1,11 +1,13 @@
 import { protectedProcedure, router } from "~/server/trpc"
-import { defaultMeSelect } from "./me.select"
+import { db } from "../database"
+import { defaultUserSelect } from "./me.select"
 
 export const meRouter = router({
   get: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.user.findUniqueOrThrow({
-      where: { id: ctx.user.id },
-      select: defaultMeSelect,
-    })
+    return db
+      .selectFrom("User")
+      .select(defaultUserSelect)
+      .where("id", "=", ctx.user.id)
+      .executeTakeFirstOrThrow()
   }),
 })

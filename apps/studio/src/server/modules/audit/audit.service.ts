@@ -108,8 +108,8 @@ export const logConfigEvent: AuditLogger<ConfigEventLogProps> = async (
 }
 
 interface LoginDelta {
-  before: { token: VerificationToken }
-  after: { token: VerificationToken; user: User }
+  before: VerificationToken
+  after: null
 }
 
 // NOTE: logout just calls `session.destroy` and we only have
