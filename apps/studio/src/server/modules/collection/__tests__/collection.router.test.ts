@@ -20,9 +20,14 @@ import { MockInstance } from "vitest"
 
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
-import { db, ResourceType } from "../../database"
+import { db } from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"
 import { collectionRouter } from "../collection.router"
+import {
+  assertAuditLogRows,
+  getCollectionItemByPermalink,
+  getCollectionWithPermalink,
+} from "./utils"
 
 const createCaller = createCallerFactory(collectionRouter)
 
@@ -947,47 +952,3 @@ describe("collection.router", async () => {
     it.skip("should throw when trying to update to an invalid `ref`")
   })
 })
-
-// Test util functions
-const getCollectionWithPermalink = ({
-  siteId,
-  permalink,
-}: {
-  siteId: number
-  permalink: string
-}) => {
-  return db
-    .selectFrom("Resource")
-    .where("type", "=", ResourceType.Collection)
-    .where("siteId", "=", siteId)
-    .where("permalink", "=", permalink)
-    .selectAll()
-    .executeTakeFirstOrThrow()
-}
-
-const getCollectionItemByPermalink = (
-  permalink: string,
-  parentId?: string | null,
-) => {
-  if (parentId) {
-    return db
-      .selectFrom("Resource")
-      .where("parentId", "=", parentId)
-      .where("permalink", "=", permalink)
-      .selectAll()
-      .executeTakeFirstOrThrow()
-  }
-
-  return db
-    .selectFrom("Resource")
-    .where("parentId", "is", null)
-    .where("permalink", "=", permalink)
-    .selectAll()
-    .executeTakeFirstOrThrow()
-}
-
-const assertAuditLogRows = async (numRows = 0) => {
-  const actual = await db.selectFrom("AuditLog").selectAll().execute()
-
-  expect(actual).toHaveLength(numRows)
-}
