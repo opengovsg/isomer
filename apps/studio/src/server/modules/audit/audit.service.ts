@@ -61,8 +61,8 @@ interface FooterUpdateDelta {
 }
 
 interface NavbarUpdateDelta {
-  before: Footer
-  after: Footer
+  before: Navbar
+  after: Navbar
 }
 
 type ConfigEventLogProps =
@@ -102,6 +102,7 @@ export const logConfigEvent: AuditLogger<ConfigEventLogProps> = async (
       delta,
       userId: by.id,
       ipAddress: ip,
+      metadata: {},
     })
     .execute()
 }

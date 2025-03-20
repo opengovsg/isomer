@@ -1,11 +1,12 @@
-import { type IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 
+import type { DB, Transaction } from "../database"
 import type {
   CrudResourceActions,
   PermissionsProps,
 } from "../permissions/permissions.type"
-import { db, jsonb, sql } from "../database"
+import { logConfigEvent } from "../audit/audit.service"
+import { AuditLogEvent, db, jsonb, sql } from "../database"
 import { definePermissionsForSite } from "../permissions/permissions.service"
 
 export const validateUserPermissionsForSite = async ({
@@ -54,18 +55,6 @@ export const getSiteNameAndCodeBuildId = async (siteId: number) => {
     .executeTakeFirstOrThrow()
 }
 
-// Note: This overwrites the full site config
-// TODO: Should trigger immediate re-publish of site
-export const setSiteConfig = async (
-  siteId: number,
-  config: IsomerSiteConfigProps,
-) => {
-  return db
-    .updateTable("Site")
-    .set({ config: jsonb(config) })
-    .where("id", "=", siteId)
-    .executeTakeFirstOrThrow()
-}
 export const getNotification = async (siteId: number) => {
   const result = await db
     .selectFrom("Site")
@@ -85,11 +74,19 @@ export const getNotification = async (siteId: number) => {
   return result.content?.[0]?.text ?? ""
 }
 
-// TODO: Should trigger immediate re-publish of site
-export const setSiteNotification = async (
-  siteId: number,
-  notification: string,
-) => {
+interface SetSiteNotificationParams {
+  tx: Transaction<DB>
+  siteId: number
+  userId: string
+  notification: string // TODO: Replace this with Tiptap schema once frontend refactored
+}
+
+export const setSiteNotification = async ({
+  tx,
+  siteId,
+  userId,
+  notification,
+}: SetSiteNotificationParams): Promise<void> => {
   // TODO: Remove tiptap schema coercion when tiptap editor is used on the frontend.
   const notificationSchema = {
     notification: {
@@ -97,21 +94,118 @@ export const setSiteNotification = async (
     },
   }
 
-  return db
+  const user = await tx
+    .selectFrom("User")
+    .where("id", "=", userId)
+    .selectAll()
+    .executeTakeFirst()
+
+  if (!user) {
+    // NOTE: This shouldn't happen as the user is already logged in
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "The user could not be found",
+    })
+  }
+
+  const oldSite = await tx
+    .selectFrom("Site")
+    .where("id", "=", siteId)
+    .selectAll()
+    .executeTakeFirst()
+
+  if (!oldSite) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "The site could not be found",
+    })
+  }
+
+  const newSite = await tx
     .updateTable("Site")
     .set((eb) => ({
       // @ts-expect-error JSON concat operator replaces the entire notification object if it exists, but Kysely does not have types for this.
       config: eb("Site.config", "||", jsonb(notificationSchema)),
     }))
     .where("id", "=", siteId)
-    .executeTakeFirstOrThrow()
+    .returningAll()
+    .executeTakeFirst()
+
+  if (!newSite) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to update site configuration",
+    })
+  }
+
+  await logConfigEvent(tx, {
+    eventType: AuditLogEvent.SiteConfigUpdate,
+    delta: {
+      before: oldSite,
+      after: newSite,
+    },
+    by: user,
+  })
 }
 
-// TODO: Should trigger immediate re-publish of site
-export const clearSiteNotification = async (siteId: number) => {
-  return db
+interface ClearSiteNotificationParams {
+  tx: Transaction<DB>
+  siteId: number
+  userId: string
+}
+
+export const clearSiteNotification = async ({
+  tx,
+  siteId,
+  userId,
+}: ClearSiteNotificationParams) => {
+  const user = await tx
+    .selectFrom("User")
+    .where("id", "=", userId)
+    .selectAll()
+    .executeTakeFirst()
+
+  if (!user) {
+    // NOTE: This shouldn't happen as the user is already logged in
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "The user could not be found",
+    })
+  }
+
+  const oldSite = await tx
+    .selectFrom("Site")
+    .where("id", "=", siteId)
+    .selectAll()
+    .executeTakeFirst()
+
+  if (!oldSite) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "The site could not be found",
+    })
+  }
+
+  const newSite = await tx
     .updateTable("Site")
     .set({ config: sql`config - 'notification'` })
     .where("id", "=", siteId)
-    .executeTakeFirstOrThrow()
+    .returningAll()
+    .executeTakeFirst()
+
+  if (!newSite) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to update site configuration",
+    })
+  }
+
+  await logConfigEvent(tx, {
+    eventType: AuditLogEvent.SiteConfigUpdate,
+    delta: {
+      before: oldSite,
+      after: newSite,
+    },
+    by: user,
+  })
 }

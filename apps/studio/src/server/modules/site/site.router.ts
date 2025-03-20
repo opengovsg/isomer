@@ -3,6 +3,7 @@ import type {
   IsomerSiteThemeProps,
   IsomerSiteWideComponentsProps,
 } from "@opengovsg/isomer-components"
+import { TRPCError } from "@trpc/server"
 
 import {
   getConfigSchema,
@@ -14,8 +15,9 @@ import {
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
+import { logConfigEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
-import { db, jsonb } from "../database"
+import { AuditLogEvent, db, jsonb } from "../database"
 import {
   getFooter,
   getLocalisedSitemap,
@@ -136,11 +138,23 @@ export const siteRouter = router({
         userId: ctx.user.id,
         action: "update",
       })
-      if (notificationEnabled) {
-        await setSiteNotification(siteId, notification)
-      } else {
-        await clearSiteNotification(siteId)
-      }
+
+      await db.transaction().execute(async (tx) => {
+        if (notificationEnabled) {
+          await setSiteNotification({
+            tx,
+            siteId,
+            userId: ctx.user.id,
+            notification,
+          })
+        } else {
+          await clearSiteNotification({
+            tx,
+            siteId,
+            userId: ctx.user.id,
+          })
+        }
+      })
 
       await publishSite(ctx.logger, siteId)
 
@@ -157,16 +171,75 @@ export const siteRouter = router({
       })
 
       await db.transaction().execute(async (tx) => {
-        await tx
+        const user = await tx
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!user) {
+          // NOTE: This shouldn't happen as the user is already logged in
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The user could not be found.",
+          })
+        }
+
+        // Update site-level configuration
+        const oldSite = await tx
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!oldSite) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The site could not be found.",
+          })
+        }
+
+        const newSite = await tx
           .updateTable("Site")
           .set({
             config: jsonb(safeJsonParse(config) as IsomerSiteConfigProps),
             theme: jsonb(safeJsonParse(theme) as IsomerSiteThemeProps),
           })
           .where("id", "=", siteId)
-          .execute()
+          .returningAll()
+          .executeTakeFirst()
 
-        await tx
+        if (!newSite) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update site configuration.",
+          })
+        }
+
+        await logConfigEvent(tx, {
+          eventType: AuditLogEvent.SiteConfigUpdate,
+          delta: {
+            before: oldSite,
+            after: newSite,
+          },
+          by: user,
+        })
+
+        // Update Navbar contents
+        const oldNavbar = await tx
+          .selectFrom("Navbar")
+          .where("siteId", "=", siteId)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!oldNavbar) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The navbar for the site could not be found.",
+          })
+        }
+
+        const newNavbar = await tx
           .updateTable("Navbar")
           .set({
             content: jsonb(
@@ -176,9 +249,40 @@ export const siteRouter = router({
             ),
           })
           .where("siteId", "=", siteId)
-          .execute()
+          .returningAll()
+          .executeTakeFirst()
 
-        await tx
+        if (!newNavbar) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update site navbar.",
+          })
+        }
+
+        await logConfigEvent(tx, {
+          eventType: AuditLogEvent.NavbarUpdate,
+          delta: {
+            before: oldNavbar,
+            after: newNavbar,
+          },
+          by: user,
+        })
+
+        // Update Footer contents
+        const oldFooter = await tx
+          .selectFrom("Footer")
+          .where("siteId", "=", siteId)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!oldFooter) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The footer for the site could not be found.",
+          })
+        }
+
+        const newFooter = await tx
           .updateTable("Footer")
           .set({
             content: jsonb(
@@ -188,7 +292,24 @@ export const siteRouter = router({
             ),
           })
           .where("siteId", "=", siteId)
-          .execute()
+          .returningAll()
+          .executeTakeFirst()
+
+        if (!newFooter) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update site footer.",
+          })
+        }
+
+        await logConfigEvent(tx, {
+          eventType: AuditLogEvent.FooterUpdate,
+          delta: {
+            before: oldFooter,
+            after: newFooter,
+          },
+          by: user,
+        })
       })
 
       await publishSite(ctx.logger, siteId)
