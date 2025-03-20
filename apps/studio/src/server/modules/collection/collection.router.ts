@@ -123,13 +123,13 @@ export const collectionRouter = router({
             by: user,
           })
 
-          return pick(collection, defaultCollectionSelect)
+          return collection
         })
 
         // TODO: Create the index page for the collection and publish it
         await publishSite(ctx.logger, siteId)
 
-        return result
+        return pick(result, defaultCollectionSelect)
       },
     ),
   createCollectionPage: protectedProcedure
