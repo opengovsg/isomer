@@ -1,4 +1,5 @@
 import cuid2 from "@paralleldrive/cuid2"
+import { TRPCError } from "@trpc/server"
 
 import type { DB, Transaction, User } from "../../database"
 import { logUserEvent } from "../../audit/audit.service"
@@ -46,7 +47,14 @@ export const upsertUser = async ({
       lastLoginAt: new Date(),
     })
     .returningAll()
-    .executeTakeFirstOrThrow()
+    .executeTakeFirst()
+
+  if (!newUser) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to create user",
+    })
+  }
 
   await logUserEvent(tx, {
     by: newUser,

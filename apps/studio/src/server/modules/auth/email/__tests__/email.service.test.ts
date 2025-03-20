@@ -23,10 +23,11 @@ describe("email.service", () => {
       })
 
       // Assert
-      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(user).toBeDefined()
       expect(user.email).toBe(TEST_EMAIL)
-      expect(auditLogs).toHaveLength(0)
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it("should create a new user if it does not exist in the database", async () => {
@@ -39,15 +40,12 @@ describe("email.service", () => {
       })
 
       // Assert
-      const auditLogs = await db
-        .selectFrom("AuditLog")
-        .selectAll()
-        .executeTakeFirst()
       expect(user).toBeDefined()
       expect(user.email).toBe(TEST_EMAIL)
-      expect(auditLogs).toBeDefined()
-      expect(auditLogs?.userId).toBe(user.id)
-      expect(auditLogs?.eventType).toBe(AuditLogEvent.UserCreate)
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(1)
+      expect(auditLogs[0]?.userId).toBe(user.id)
+      expect(auditLogs[0]?.eventType).toBe(AuditLogEvent.UserCreate)
     })
   })
 })

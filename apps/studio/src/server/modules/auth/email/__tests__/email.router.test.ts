@@ -99,7 +99,7 @@ describe("auth.email", () => {
     const INVALID_OTP = "987643"
     const TEST_OTP_FINGERPRINT = getIpFingerprint(TEST_VALID_EMAIL, LOCALHOST)
 
-    it("should successfully set session on valid OTP", async () => {
+    it("should successfully set session on first valid OTP", async () => {
       // Arrange
       await setupUser({ email: TEST_VALID_EMAIL })
       await prisma.verificationToken.create({
@@ -126,12 +126,49 @@ describe("auth.email", () => {
       // Session should have been set with logged in user.
       expect(session.userId).toEqual(expectedUser.id)
       // Audit log should have been created.
-      const auditLogs = await db
-        .selectFrom("AuditLog")
-        .selectAll()
-        .executeTakeFirst()
-      expect(auditLogs).toBeDefined()
-      expect(auditLogs?.eventType).toBe(AuditLogEvent.Login)
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(1)
+      expect(auditLogs[0]?.eventType).toBe(AuditLogEvent.Login)
+      expect(auditLogs[0]?.delta.before!.attempts).toBe(0)
+      expect(auditLogs[0]?.delta.after!.attempts).toBe(1)
+    })
+
+    it("should successfully set session on a subsequent valid OTP", async () => {
+      // Arrange
+      await setupUser({ email: TEST_VALID_EMAIL })
+      await prisma.verificationToken.create({
+        data: {
+          expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
+          identifier: TEST_OTP_FINGERPRINT,
+          token: VALID_TOKEN_HASH,
+        },
+      })
+
+      // Act
+      await caller.verifyOtp({
+        email: TEST_VALID_EMAIL,
+        token: VALID_OTP,
+      })
+      const result = caller.verifyOtp({
+        email: TEST_VALID_EMAIL,
+        token: VALID_OTP,
+      })
+
+      // Assert
+      const expectedUser = {
+        id: expect.any(String),
+        email: TEST_VALID_EMAIL,
+      }
+      // Should return logged in user.
+      await expect(result).resolves.toMatchObject(expectedUser)
+      // Session should have been set with logged in user.
+      expect(session.userId).toEqual(expectedUser.id)
+      // Audit log should have been created.
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(1)
+      expect(auditLogs[0]?.eventType).toBe(AuditLogEvent.Login)
+      expect(auditLogs[0]?.delta.before!.attempts).toBe(1)
+      expect(auditLogs[0]?.delta.after!.attempts).toBe(2)
     })
 
     it("should throw if OTP is not found", async () => {

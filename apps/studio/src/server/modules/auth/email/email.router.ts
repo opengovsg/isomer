@@ -97,7 +97,7 @@ export const emailSessionRouter = router({
       if (!oldVerificationToken) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Invalid login email",
+          message: "Please request for another OTP",
         })
       }
 
@@ -127,15 +127,10 @@ export const emailSessionRouter = router({
           by: user,
           delta: {
             before: {
-              token: oldVerificationToken,
+              ...oldVerificationToken,
+              attempts: oldVerificationToken.attempts + 1,
             },
-            after: {
-              token: {
-                ...oldVerificationToken,
-                attempts: oldVerificationToken.attempts + 1,
-              },
-              user,
-            },
+            after: null,
           },
           eventType: AuditLogEvent.Login,
         })
