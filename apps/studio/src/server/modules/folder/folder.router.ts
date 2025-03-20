@@ -170,7 +170,10 @@ export const folderRouter = router({
             .executeTakeFirst()
 
           if (!oldResource) {
-            return undefined
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Resource does not exist",
+            })
           }
 
           const newResource = await db
@@ -208,10 +211,6 @@ export const folderRouter = router({
 
           return newResource
         })
-
-        if (!result) {
-          return undefined
-        }
 
         await publishSite(ctx.logger, Number(siteId))
 

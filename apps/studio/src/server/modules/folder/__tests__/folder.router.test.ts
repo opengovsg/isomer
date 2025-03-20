@@ -618,14 +618,14 @@ describe("folder.router", async () => {
       ).resolves.toEqual([])
     })
 
-    it("should return undefined if the resourceId is not a folder", async () => {
+    it("should throw 404 if the resourceId is not a folder", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({ siteId: site.id, userId: session.userId })
       const { page } = await setupPageResource({ resourceType: "Page" })
 
       // Act
-      const result = await caller.editFolder({
+      const result = caller.editFolder({
         siteId: String(site.id),
         resourceId: page.id,
         title: "fake",
@@ -633,7 +633,37 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual(undefined)
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource does not exist",
+        }),
+      )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toEqual([])
+    })
+
+    it("should throw 404 if the resourceId does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
+
+      // Act
+      const result = caller.editFolder({
+        siteId: String(site.id),
+        resourceId: "0",
+        title: "fake",
+        permalink: "news",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource does not exist",
+        }),
+      )
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toEqual([])
