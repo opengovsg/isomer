@@ -63,15 +63,13 @@ export const collectionRouter = router({
           resourceId: !!parentFolderId ? String(parentFolderId) : null,
         })
 
-        const result = await db.transaction().execute(async (tx) => {
-          const user = await db
-            .selectFrom("User")
-            .where("id", "=", ctx.user.id)
-            .selectAll()
-            .executeTakeFirstOrThrow(
-              () => new TRPCError({ code: "BAD_REQUEST" }),
-            )
+        const user = await db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
 
+        const result = await db.transaction().execute(async (tx) => {
           if (parentFolderId) {
             const parentFolder = await db
               .selectFrom("Resource")
@@ -143,6 +141,12 @@ export const collectionRouter = router({
         resourceId: !!input.collectionId ? String(input.collectionId) : null,
       })
 
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
+
       let newPage: UnwrapTagged<PrismaJson.BlobJsonContent>
       const { title, type, permalink, siteId, collectionId } = input
       if (type === ResourceType.CollectionPage) {
@@ -174,12 +178,6 @@ export const collectionRouter = router({
           })
           .returningAll()
           .executeTakeFirstOrThrow()
-
-        const user = await db
-          .selectFrom("User")
-          .where("id", "=", ctx.user.id)
-          .selectAll()
-          .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
 
         const addedResource = await tx
           .insertInto("Resource")
@@ -334,15 +332,13 @@ export const collectionRouter = router({
           type: ResourceType.CollectionLink,
         })
 
-        return await db.transaction().execute(async (tx) => {
-          const user = await tx
-            .selectFrom("User")
-            .where("id", "=", ctx.user.id)
-            .selectAll()
-            .executeTakeFirstOrThrow(
-              () => new TRPCError({ code: "BAD_REQUEST" }),
-            )
+        const user = await tx
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
 
+        return await db.transaction().execute(async (tx) => {
           const resource = await tx
             .selectFrom("Resource")
             .where("Resource.id", "=", String(linkId))
