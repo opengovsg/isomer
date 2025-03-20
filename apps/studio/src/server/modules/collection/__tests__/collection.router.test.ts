@@ -792,6 +792,7 @@ describe("collection.router", async () => {
         }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should throw 404 if the resource type is not a `CollectionLink`", async () => {
@@ -815,6 +816,7 @@ describe("collection.router", async () => {
         }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should throw 403 if the site does not exist", async () => {
@@ -840,6 +842,7 @@ describe("collection.router", async () => {
         }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should throw 403 if the user does not have `update` permissions", async () => {
@@ -865,6 +868,7 @@ describe("collection.router", async () => {
         }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should create a new `draftBlob` if it is currently `null`", async () => {
@@ -891,6 +895,7 @@ describe("collection.router", async () => {
       })
 
       expect(auditSpy).toHaveBeenCalled()
+      await assertAuditLogRows(1)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceUpdate")
@@ -929,6 +934,7 @@ describe("collection.router", async () => {
 
       // Assert
       expect(auditSpy).toHaveBeenCalled()
+      await assertAuditLogRows(1)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceUpdate")
