@@ -450,10 +450,6 @@ export const resourceRouter = router({
             throw err
           })
 
-        if (!result) {
-          throw new TRPCError({ code: "NOT_FOUND" })
-        }
-
         await publishSite(ctx.logger, result.siteId)
         return result
       },
