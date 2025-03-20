@@ -16,6 +16,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { MockInstance } from "vitest"
 
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
@@ -29,6 +30,9 @@ describe("collection.router", async () => {
   let caller: ReturnType<typeof createCaller>
   let unauthedCaller: ReturnType<typeof createCaller>
   const session = await applyAuthedSession()
+  let auditSpy: MockInstance<
+    auditService.AuditLogger<auditService.ResourceEventLogProps>
+  >
 
   beforeEach(async () => {
     await resetTables(
@@ -49,6 +53,7 @@ describe("collection.router", async () => {
       isDeleted: false,
     })
     await auth(user)
+    auditSpy = vitest.spyOn(auditService, "logResourceEvent")
   })
 
   describe("create", () => {
@@ -59,13 +64,13 @@ describe("collection.router", async () => {
         siteId: 1,
         permalink: "test-collection",
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should throw 409 if permalink already exists", async () => {
@@ -76,7 +81,6 @@ describe("collection.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.create({
@@ -93,6 +97,7 @@ describe("collection.router", async () => {
         }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should throw 404 if `siteId` does not exist", async () => {
@@ -104,7 +109,6 @@ describe("collection.router", async () => {
         siteId: site.id,
       })
       expect(site.id).not.toEqual(invalidSiteId)
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.create({
@@ -122,6 +126,7 @@ describe("collection.router", async () => {
         }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should throw 404 if `parentFolderId` does not exist", async () => {
@@ -131,7 +136,6 @@ describe("collection.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.create({
@@ -149,6 +153,7 @@ describe("collection.router", async () => {
         }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should throw 400 if `parentFolderId` is not a folder", async () => {
@@ -160,7 +165,6 @@ describe("collection.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.create({
@@ -179,6 +183,7 @@ describe("collection.router", async () => {
         }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should create a collection even with duplicate permalink if `siteId` is different", async () => {
@@ -192,7 +197,6 @@ describe("collection.router", async () => {
         userId: session.userId,
         siteId: secondSite.id,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = await caller.create({
@@ -208,20 +212,21 @@ describe("collection.router", async () => {
       })
       expect(result).toMatchObject({ id: actualCollection.id })
       expect(auditSpy).toHaveBeenCalled()
+      await assertAuditLogRows(1)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditEntry.delta.after!).toMatchObject({ id: result.id })
+      expect(auditEntry.delta.after!).toMatchObject(result)
       expect(auditEntry.userId).toBe(session.userId)
     })
 
-    it("should create a collection", async () => {
+    it("should create a collection at root when no `parentId` is specified", async () => {
       // Arrange
       const permalinkToUse = "test-collection-999"
       const { site } = await setupSite()
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -241,16 +246,17 @@ describe("collection.router", async () => {
       })
       expect(result).toMatchObject({ id: actualCollection.id })
       expect(auditSpy).toHaveBeenCalled()
+      await assertAuditLogRows(1)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditEntry.delta.after!).toMatchObject({ id: result.id })
+      expect(auditEntry.delta.after!).toMatchObject(result)
       expect(auditEntry.userId).toBe(session.userId)
     })
 
-    it("should create a nested collection if `parentFolderId` is provided", async () => {
+    it("should create a nested collection if `parentFolderId` is provided and the user is an admin", async () => {
       // Arrange
       const permalinkToUse = "test-collection-777"
       const { folder: parent, site } = await setupFolder()
@@ -258,7 +264,6 @@ describe("collection.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = await caller.create({
@@ -275,13 +280,49 @@ describe("collection.router", async () => {
       })
       expect(actualCollection.parentId).toEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
+      await assertAuditLogRows(1)
       expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
         .selectAll()
         .executeTakeFirstOrThrow()
-      expect(auditEntry.delta.after!).toMatchObject({ id: result.id })
+      expect(auditEntry.delta.after!).toMatchObject(result)
+      expect(auditEntry.userId).toBe(session.userId)
+    })
+
+    it("should create a nested collection if `parentFolderId` is provided and hte user is not an admin", async () => {
+      // Arrange
+      const permalinkToUse = "test-collection-777"
+      const { folder: parent, site } = await setupFolder()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.create({
+        collectionTitle: "test collection",
+        siteId: site.id,
+        permalink: permalinkToUse,
+        parentFolderId: Number(parent.id),
+      })
+
+      // Assert
+      const actualCollection = await getCollectionWithPermalink({
+        permalink: permalinkToUse,
+        siteId: site.id,
+      })
+      expect(actualCollection.parentId).toEqual(parent.id)
+      expect(result).toMatchObject({ id: actualCollection.id })
+      await assertAuditLogRows(1)
+      expect(auditSpy).toHaveBeenCalled()
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceCreate")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditEntry.delta.after!).toMatchObject(result)
       expect(auditEntry.userId).toBe(session.userId)
     })
 
@@ -306,6 +347,7 @@ describe("collection.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should throw 403 if user does not have access to the site", async () => {
@@ -329,6 +371,7 @@ describe("collection.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it.skip("should throw 403 if user does not have write access to the parent folder", async () => {})
@@ -347,13 +390,13 @@ describe("collection.router", async () => {
         collectionId: Number(collection.id),
         permalink: "test-collection",
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should throw 409 if permalink already exists", async () => {
@@ -366,15 +409,13 @@ describe("collection.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      // NOTE: first call, now there's an existing page with `duplicatePermalink`
-      await caller.createCollectionPage({
+      await setupPageResource({
         title: "test folder",
-        type: "CollectionPage",
+        resourceType: "CollectionPage",
         siteId: site.id,
-        collectionId: Number(collection.id),
+        parentId: collection.id,
         permalink: duplicatePermalink,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.createCollectionPage({
@@ -393,6 +434,7 @@ describe("collection.router", async () => {
         }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should throw 404 if `siteId` does not exist", async () => {
@@ -404,7 +446,6 @@ describe("collection.router", async () => {
         siteId: site.id,
       })
       expect(site.id).not.toEqual(invalidSiteId)
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.createCollectionPage({
@@ -424,6 +465,7 @@ describe("collection.router", async () => {
         }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should throw 404 if `collectionId` does not exist", async () => {
@@ -433,7 +475,6 @@ describe("collection.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.createCollectionPage({
@@ -452,6 +493,7 @@ describe("collection.router", async () => {
         }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should throw 404 if `collectionId` is not a collection", async () => {
@@ -463,7 +505,6 @@ describe("collection.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.createCollectionPage({
@@ -482,6 +523,7 @@ describe("collection.router", async () => {
         }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
     })
 
     it("should create a collection page even with duplicate permalink if `siteId` is different", async () => {
@@ -490,9 +532,6 @@ describe("collection.router", async () => {
       const { site, collection } = await setupCollection({
         permalink: duplicatePermalink,
       })
-      // NOTE: order matters here - this spy must be setup before
-      // the first call out to `createCollectionPage`
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { site: secondSite, collection: secondCollection } =
         await setupCollection({ permalink: duplicatePermalink })
       await setupAdminPermissions({
@@ -503,11 +542,11 @@ describe("collection.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      await caller.createCollectionPage({
+      await setupPageResource({
         title: "test collection",
-        type: "CollectionPage",
+        resourceType: "CollectionPage",
         siteId: secondSite.id,
-        collectionId: Number(secondCollection.id),
+        parentId: secondCollection.id,
         permalink: "test-collection",
       })
 
@@ -526,18 +565,16 @@ describe("collection.router", async () => {
         collection.id,
       )
       expect(result).toMatchObject({ pageId: actualCollectionPage.id })
-      expect(auditSpy).toHaveBeenCalledTimes(2)
+      expect(auditSpy).toHaveBeenCalledTimes(1)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
         .orderBy("AuditLog.createdAt desc")
         .selectAll()
-        .execute()
-      // NOTE: 2 pages created via the router method - expect 2 entries in our audit logs
-      expect(auditEntry).toHaveLength(2)
-      expect(auditEntry[0]).toBeDefined()
-      expect(auditEntry[0]!.delta.after!).toMatchObject({
-        resource: { id: result.pageId },
+        .executeTakeFirstOrThrow()
+      expect(auditEntry).toBeDefined()
+      expect(auditEntry!.delta.after!).toMatchObject({
+        resource: result,
       })
     })
 
@@ -545,7 +582,7 @@ describe("collection.router", async () => {
       // Arrange
       const permalink = "test-collection-999"
       const { collection, site } = await setupCollection()
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -600,10 +637,12 @@ describe("collection.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it.skip("should throw 403 if user does not have write access to the parent collection", async () => {})
   })
+
   describe("getMetadata", () => {
     it("should throw 401 if not logged in", async () => {
       // Act
@@ -687,7 +726,7 @@ describe("collection.router", async () => {
       )
     })
 
-    it("should return 200 ", async () => {
+    it("should return 200", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
       await setupAdminPermissions({ userId: session.userId, siteId: site.id })
@@ -709,11 +748,30 @@ describe("collection.router", async () => {
   })
 
   describe("updateCollectionLink", () => {
-    it("should fail to update a non-existent `linkId`", async () => {
+    it("should throw 401 if not logged in", async () => {
+      // Act
+      const { site } = await setupCollection()
+      const result = unauthedCaller.updateCollectionLink({
+        siteId: site.id,
+        category: "category",
+        ref: "1",
+        linkId: 999,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+      expect(auditSpy).not.toHaveBeenCalled()
+      await assertAuditLogRows()
+    })
+
+    it("should throw 404 if updating a non-existent `linkId`", async () => {
+      // Arrange
       const { site } = await setupCollection()
       await setupAdminPermissions({ userId: session.userId, siteId: site.id })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
+      // Act
       const expected = caller.updateCollectionLink({
         siteId: site.id,
         category: "category",
@@ -721,6 +779,7 @@ describe("collection.router", async () => {
         linkId: 999,
       })
 
+      // Assert
       await expect(expected).rejects.toThrowError(
         new TRPCError({
           code: "NOT_FOUND",
@@ -729,11 +788,13 @@ describe("collection.router", async () => {
       )
       expect(auditSpy).not.toHaveBeenCalled()
     })
-    it("should fail to update if the resource type is not a `CollectionLink`", async () => {
+
+    it("should throw 404 if the resource type is not a `CollectionLink`", async () => {
+      // Arrange
       const { site, collection } = await setupCollection()
       await setupAdminPermissions({ userId: session.userId, siteId: site.id })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
+      // Act
       const expected = caller.updateCollectionLink({
         siteId: site.id,
         category: "category",
@@ -741,6 +802,7 @@ describe("collection.router", async () => {
         linkId: Number(collection.id),
       })
 
+      // Assert
       await expect(expected).rejects.toThrowError(
         new TRPCError({
           code: "NOT_FOUND",
@@ -749,12 +811,14 @@ describe("collection.router", async () => {
       )
       expect(auditSpy).not.toHaveBeenCalled()
     })
-    it("should fail to update if the site does not exist", async () => {
+
+    it("should throw 403 if the site does not exist", async () => {
+      // Arrange
       const { page } = await setupPageResource({
         resourceType: "CollectionLink",
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
+      // Act
       const expected = caller.updateCollectionLink({
         siteId: 999,
         category: "category",
@@ -762,6 +826,7 @@ describe("collection.router", async () => {
         linkId: Number(page.id),
       })
 
+      // Assert
       await expect(expected).rejects.toThrowError(
         new TRPCError({
           code: "FORBIDDEN",
@@ -771,12 +836,14 @@ describe("collection.router", async () => {
       )
       expect(auditSpy).not.toHaveBeenCalled()
     })
-    it("should fail to update if the user does not have `update` permissions", async () => {
+
+    it("should throw 403 if the user does not have `update` permissions", async () => {
+      // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "CollectionLink",
       })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
+      // Act
       const expected = caller.updateCollectionLink({
         siteId: site.id,
         category: "category",
@@ -784,6 +851,7 @@ describe("collection.router", async () => {
         linkId: Number(page.id),
       })
 
+      // Assert
       await expect(expected).rejects.toThrowError(
         new TRPCError({
           code: "FORBIDDEN",
@@ -793,19 +861,23 @@ describe("collection.router", async () => {
       )
       expect(auditSpy).not.toHaveBeenCalled()
     })
+
     it("should create a new `draftBlob` if it is currently `null`", async () => {
+      // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "CollectionLink",
         state: "Published",
         userId: session.userId,
       })
       await setupAdminPermissions({ userId: session.userId, siteId: site.id })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       expect(page.draftBlobId).toBe(null)
+
+      // Act
       const originalBlob = await db
         .transaction()
         .execute((tx) => getBlobOfResource(tx, page.id))
 
+      // Assert
       const expected = await caller.updateCollectionLink({
         siteId: site.id,
         category: "category",
@@ -831,7 +903,9 @@ describe("collection.router", async () => {
       const actual = getCollectionItemByPermalink(page.permalink, page.parentId)
       expect(expected).toMatchObject(actual)
     })
+
     it("should update the collection link successfully", async () => {
+      // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "CollectionLink",
       })
@@ -839,8 +913,8 @@ describe("collection.router", async () => {
         .transaction()
         .execute((tx) => getBlobOfResource(tx, page.id))
       await setupAdminPermissions({ userId: session.userId, siteId: site.id })
-      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
+      // Act
       const expected = await caller.updateCollectionLink({
         siteId: site.id,
         category: "category",
@@ -848,6 +922,7 @@ describe("collection.router", async () => {
         linkId: Number(page.id),
       })
 
+      // Assert
       expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -866,8 +941,10 @@ describe("collection.router", async () => {
       const actual = getCollectionItemByPermalink(page.permalink, page.parentId)
       expect(expected).toMatchObject(actual)
     })
-    it.skip("should fail to update to a deleted `ref`")
-    it.skip("should fail to update to an invalid `ref`")
+
+    it.skip("should throw when trying to update to a deleted `ref`")
+
+    it.skip("should throw when trying to update to an invalid `ref`")
   })
 })
 
@@ -907,4 +984,10 @@ const getCollectionItemByPermalink = (
     .where("permalink", "=", permalink)
     .selectAll()
     .executeTakeFirstOrThrow()
+}
+
+const assertAuditLogRows = async (numRows = 0) => {
+  const actual = await db.selectFrom("AuditLog").selectAll().execute()
+
+  expect(actual).toHaveLength(numRows)
 }

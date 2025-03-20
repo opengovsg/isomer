@@ -37,7 +37,7 @@ interface ResourceUpdateDelta {
   after: FullResource
 }
 
-interface ResourceEventLogProps {
+export interface ResourceEventLogProps {
   eventType: Extract<
     AuditLogEvent,
     "ResourceCreate" | "ResourceUpdate" | "ResourceDelete" | "ResourceMove"
@@ -49,7 +49,7 @@ interface ResourceEventLogProps {
 }
 
 // NOTE: Type to force every logger method to have a tx
-type AuditLogger<T> = (tx: Transaction<DB>, props: T) => Promise<void>
+export type AuditLogger<T> = (tx: Transaction<DB>, props: T) => Promise<void>
 
 export const logResourceEvent: AuditLogger<ResourceEventLogProps> = async (
   tx,
