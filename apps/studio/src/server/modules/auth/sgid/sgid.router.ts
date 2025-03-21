@@ -9,6 +9,7 @@ import { env } from "~/env.mjs"
 import { SGID } from "~/lib/errors/auth.sgid"
 import { SIGN_IN, SIGN_IN_SELECT_PROFILE_SUBROUTE } from "~/lib/routes"
 import { APP_SGID_SCOPE, sgid } from "~/lib/sgid"
+import { SessionData } from "~/lib/types/session"
 import { callbackUrlSchema } from "~/schemas/url"
 import { publicProcedure, router } from "~/server/trpc"
 import { trpcAssert } from "~/utils/trpcAssert"
@@ -179,7 +180,7 @@ export const sgidRouter = router({
       })
 
       ctx.session.destroy()
-      ctx.session.userId = user.id
+      ctx.session.userId = user.id as SessionData["userId"]
       await ctx.session.save()
 
       return {
@@ -248,7 +249,7 @@ export const sgidRouter = router({
         sub: profiles.sub,
       })
 
-      ctx.session.userId = user.id
+      ctx.session.userId = user.id as SessionData["userId"]
       await ctx.session.save()
       return
     }),
