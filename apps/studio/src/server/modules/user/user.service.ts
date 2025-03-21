@@ -46,7 +46,7 @@ interface CreateUserProps {
   role: ResourcePermission["role"]
   siteId: ResourcePermission["siteId"]
   byUserId: User["id"]
-  tx?: Transaction<DB> // allows for transaction to be passed in from parent transaction
+  tx: Transaction<DB> // allows for transaction to be passed in from parent transaction
 }
 
 export const createUserWithPermission = async ({
@@ -81,7 +81,7 @@ export const createUserWithPermission = async ({
     .selectAll()
     .executeTakeFirstOrThrow()
 
-  const createUserInTransaction = async (tx: Transaction<DB>) => {
+  const createUserInTransaction = async () => {
     const user = await tx
       .insertInto("User")
       .values({
@@ -114,10 +114,7 @@ export const createUserWithPermission = async ({
       .executeTakeFirstOrThrow()
   }
 
-  const createPermissionInTransaction = async (
-    tx: Transaction<DB>,
-    userId: User["id"],
-  ) => {
+  const createPermissionInTransaction = async (userId: User["id"]) => {
     const resourcePermission = await tx
       .insertInto("ResourcePermission")
       .values({
@@ -147,17 +144,9 @@ export const createUserWithPermission = async ({
     return resourcePermission
   }
 
-  const executeInTransaction = async (tx: Transaction<DB>) => {
-    const user = await createUserInTransaction(tx)
-    const permission = await createPermissionInTransaction(tx, user.id)
-    return { user, resourcePermission: permission }
-  }
-
-  if (tx) {
-    return await executeInTransaction(tx)
-  }
-
-  return await db.transaction().execute(executeInTransaction)
+  const user = await createUserInTransaction()
+  const permission = await createPermissionInTransaction(user.id)
+  return { user, resourcePermission: permission }
 }
 
 interface GetUsersQueryProps {
