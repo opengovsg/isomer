@@ -52,3 +52,5 @@ dist/
 # built sites from jekyll
 **/_site
 **/_repo
+
+**/.gitignore
