@@ -286,6 +286,12 @@ export const setupPageResource = async ({
     .returningAll()
     .executeTakeFirstOrThrow()
 
+  if (state === ResourceState.Published && !userId) {
+    throw new Error(
+      "Precondition failed, we need a valid `userId` in order to publish",
+    )
+  }
+
   if (state === ResourceState.Published && userId) {
     const version = await db
       .insertInto("Version")
@@ -364,7 +370,7 @@ export const setupCollection = async ({
   permalink?: string
   parentId?: string | null
   title?: string
-}) => {
+} = {}) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
 
   const collection = await db
