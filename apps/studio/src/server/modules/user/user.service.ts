@@ -6,6 +6,7 @@ import isEmail from "validator/lib/isEmail"
 import type { DB, Transaction } from "../database"
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
+import { SessionData } from "~/lib/types/session"
 import { isGovEmail } from "~/utils/email"
 import { logPermissionEvent, logUserEvent } from "../audit/audit.service"
 import { db, RoleType } from "../database"
@@ -183,20 +184,18 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
 }
 
 interface DeleteUserPermissionProps {
-  byUserId: string
-  userId: string
+  userId: NonNullable<SessionData["userId"]>
   siteId: number
 }
 
 export const deleteUserPermission = async ({
-  byUserId,
   userId,
   siteId,
 }: DeleteUserPermissionProps) => {
   // Putting outside the tx to reduce unnecessary extended DB locks
   const byUser = await db
     .selectFrom("User")
-    .where("id", "=", byUserId)
+    .where("id", "=", userId)
     .selectAll()
     .executeTakeFirstOrThrow()
 
@@ -242,33 +241,31 @@ export const deleteUserPermission = async ({
 }
 
 interface UpdateUserDetailsProps {
-  byUserId: string
-  userId: string
+  userId: NonNullable<SessionData["userId"]>
   name?: string
   phone?: string
 }
 
 export const updateUserDetails = async ({
-  byUserId, // just a sanity reminder in case it's called from outside the router
   userId,
   name,
   phone,
 }: UpdateUserDetailsProps) => {
-  if (byUserId !== userId) {
+  if (userId !== userId) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "You are not allowed to update this user's details",
     })
   }
 
-  const updatedUser = await db.transaction().execute(async (tx) => {
+  return await db.transaction().execute(async (tx) => {
     const user = await tx
       .selectFrom("User")
       .where("id", "=", userId)
       .selectAll()
       .executeTakeFirstOrThrow()
 
-    const updatedUser = await db
+    const updatedUser = await tx
       .updateTable("User")
       .where("id", "=", userId)
       .set({ name, phone })
@@ -283,6 +280,4 @@ export const updateUserDetails = async ({
 
     return updatedUser
   })
-
-  return updatedUser
 }
