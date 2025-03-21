@@ -115,7 +115,7 @@ export const createTestUser = () => ({
 export const applyAuthedSession = async (user?: User) => {
   const authedUser = await auth(user ?? createTestUser())
   const session = applySession()
-  session.userId = authedUser.id
+  session.userId = authedUser.id as typeof session.userId
   await session.save()
   return session
 }

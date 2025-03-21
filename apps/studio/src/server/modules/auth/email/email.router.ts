@@ -5,6 +5,7 @@ import pick from "lodash/pick"
 
 import { env } from "~/env.mjs"
 import { sendMail } from "~/lib/mail"
+import { SessionData } from "~/lib/types/session"
 import {
   emailSignInSchema,
   emailVerifyOtpSchema,
@@ -135,7 +136,7 @@ export const emailSessionRouter = router({
           eventType: AuditLogEvent.Login,
         })
 
-        ctx.session.userId = user.id
+        ctx.session.userId = user.id as SessionData["userId"]
         await ctx.session.save()
         return pick(user, defaultUserSelect)
       })
