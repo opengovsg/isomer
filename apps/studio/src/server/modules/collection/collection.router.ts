@@ -72,7 +72,7 @@ export const collectionRouter = router({
 
         const result = await db.transaction().execute(async (tx) => {
           if (parentFolderId) {
-            const parentFolder = await db
+            const parentFolder = await tx
               .selectFrom("Resource")
               .where("Resource.id", "=", String(parentFolderId))
               .where("Resource.siteId", "=", siteId)
