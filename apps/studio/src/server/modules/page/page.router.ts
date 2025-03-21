@@ -36,7 +36,7 @@ import {
   getPageById,
   getResourceFullPermalink,
   getResourcePermalinkTree,
-  publishResource,
+  publishPageResource,
   updateBlobById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
@@ -416,7 +416,7 @@ export const pageRouter = router({
   publishPage: protectedProcedure
     .input(publishPageSchema)
     .mutation(async ({ ctx, input: { siteId, pageId } }) =>
-      publishResource(ctx.logger, siteId, String(pageId), ctx.user.id),
+      publishPageResource(ctx.logger, siteId, String(pageId), ctx.user.id),
     ),
 
   updateMeta: protectedProcedure
