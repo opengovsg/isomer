@@ -177,7 +177,7 @@
     "@vitest/coverage-istanbul": "^2.1.2",
     "autoprefixer": "^10.4.20",
     "clean-webpack-plugin": "^4.0.0",
-    "dotenv-cli": "^7.3.0",
+    "dotenv-cli": "^8.0.0",
     "eslint": "^9.10.0",
     "k6-trpc": "^1.0.0",
     "mockdate": "^3.0.5",
