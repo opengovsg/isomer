@@ -111,13 +111,11 @@ export const isCollectionPost = (
 };
 
 export const parseCollectionDateFromString = (possibleDateString: string) => {
-  const year = possibleDateString.slice(0, 4);
-  const month = possibleDateString.slice(5, 7);
-  const day = possibleDateString.slice(8, 10);
+  const date = new Date(possibleDateString);
 
-  if (year.length !== 4 || month.length !== 2 || day.length !== 2) {
-    throw new Error("Invalid date format");
-  }
+  const year = date.getFullYear().toString();
+  const month = date.getMonth().toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
 
   return { year, month, day };
 };
@@ -172,6 +170,10 @@ export const getValidPermalink = (rawPermalink: string) => {
     .toLowerCase();
 };
 
+const getStudioPermalinkFromJekyll = (rawPermalink: string) => {
+  return getValidPermalink(rawPermalink.split("/").filter(Boolean).pop() || "");
+};
+
 export const jekyllPost2CollectionPage = async (
   name: CollectionPostName,
   post: JekyllFile,
@@ -190,7 +192,7 @@ export const jekyllPost2CollectionPage = async (
     title:
       (frontmatter.title as CollectionPageName) ??
       getCollectionPageNameFromPost(rawFileName),
-    permalink: getValidPermalink(rawFileName),
+    permalink: getStudioPermalinkFromJekyll(frontmatter.permalink || ""),
     content: output,
     lastModified,
   });
@@ -215,7 +217,7 @@ export const jekyllPage2CollectionPage = async (
   return generateCollectionArticlePage({
     category,
     title,
-    permalink: getValidPermalink(title),
+    permalink: getStudioPermalinkFromJekyll(frontmatter.permalink || ""),
     content: output,
     lastModified,
   });

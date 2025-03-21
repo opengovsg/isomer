@@ -4,7 +4,6 @@ import {
 } from "@opengovsg/isomer-components";
 import { copyFile } from "node:fs/promises";
 import { mkdirp } from "mkdirp";
-import { getSanitisedAssetName } from "~/utils";
 import path from "node:path";
 import { WithoutSite } from "~/types/pages";
 import { SITE_DIR } from "~/constants";
@@ -65,12 +64,17 @@ export const copyToAssetsFolder = async (
   from: string,
   to: string,
 ): Promise<string> => {
-  const _from = `${__dirname}/${SITE_DIR}${from}`;
-  const _to = `${__dirname}${to}`;
+  const _from = `${__dirname}/${SITE_DIR}${decodeURIComponent(from)}`;
+  const _to = `${__dirname}${decodeURIComponent(to)}`;
 
-  await copy(_from, _to);
+  try {
+    await copy(_from, _to);
 
-  return _to;
+    return _to;
+  } catch (e) {
+    console.error(e);
+    return `ERROR: ${_from} skipped, error message was: ${e.message}`;
+  }
 };
 
 export const copy = async (from: string, to: string) => {

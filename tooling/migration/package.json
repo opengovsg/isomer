@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified& exit 1",
-    "start": "source .env && npx tsx ./index.ts"
+    "start": "source .env && npx tsx ./index.ts",
+    "start:prod": "source .env.prod && npx tsx ./index.ts"
   },
   "author": "",
   "license": "ISC",
@@ -18,6 +19,7 @@
     "@sinclair/typebox": "^0.34.13",
     "@tiptap/extension-image": "^2.5.7",
     "@tiptap/html": "^2.5.7",
+    "front-matter": "^4.0.2",
     "jsdom": "^25.0.1",
     "lodash": "^4.17.21",
     "markdown-it": "^14.1.0",

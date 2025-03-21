@@ -27,7 +27,6 @@ export const generateFilesInOutMappings = (path: string) => {
     .map(({ path, content }) => {
       const frontmatter = extractFrontmatter(content);
       if (hasValidFileUrl(frontmatter["file_url"])) {
-        console.log(frontmatter);
         return {
           title: frontmatter["title"],
           date: frontmatter["date"],

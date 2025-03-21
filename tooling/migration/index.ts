@@ -34,8 +34,10 @@ import { generateFilesInOutMappings } from "./generate/files";
 const { Client } = pg;
 const OUTPUT_DIR = "output";
 
-// const SITE_ID = 23; // NOTE: this is the mse site
-const SITE_ID = 1;
+const SITE_ID = -1;
+// const SITE_ID = 1;
+const jekyllCollection = `${REPO_DIR}/media-centre`;
+const parentPermalink = "media-centre";
 
 const __dirname = path.resolve();
 
@@ -187,8 +189,8 @@ export const walkAndSeedCollection = async (dir: string, siteId: number) => {
 
   const rootId = await createResource(client, {
     parentId: null,
-    title: "Latest news",
-    permalink: "latest-news",
+    title: "Media centre",
+    permalink: parentPermalink,
     type: "Collection",
     siteId,
   });
@@ -198,8 +200,8 @@ export const walkAndSeedCollection = async (dir: string, siteId: number) => {
 };
 
 const main = async () => {
-  const mappings = generateCollectionInOutMapping(`${REPO_DIR}/news`);
-  const filesToShift = generateFilesInOutMappings(`${REPO_DIR}/news`);
+  const mappings = generateCollectionInOutMapping(jekyllCollection);
+  const filesToShift = generateFilesInOutMappings(jekyllCollection);
 
   fs.writeFileSync("migration.csv", `${JSON.stringify(mappings, null, 2)}`);
 
@@ -245,7 +247,7 @@ const main = async () => {
       });
 
       // TODO: need a deterministic way of getting the redirects
-      return { from: permalink, to: `/latest-news/${dbPermalink}` };
+      return { from: permalink, to: `/${parentPermalink}/${dbPermalink}` };
     }),
   );
 
@@ -258,7 +260,7 @@ const main = async () => {
 
   const filesToMigrate = await migrateCollection(
     fileContents,
-    `${REPO_DIR}/news`,
+    jekyllCollection,
   );
 
   fileRedirects.forEach(({ from, to }) => {
@@ -268,7 +270,7 @@ const main = async () => {
   const files = filesToMigrate.map(({ inpath, outpath, ...rest }) => {
     fs.appendFileSync(
       "redirects.csv",
-      `${outpath},/latest-news/${rest.content.page.permalink}\n`,
+      `${outpath},/${parentPermalink}/${rest.content.page.permalink}\n`,
     );
     return rest;
   });
