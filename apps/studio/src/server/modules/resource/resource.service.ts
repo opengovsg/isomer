@@ -9,6 +9,7 @@ import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { getSitemapTree } from "~/utils/sitemap"
+import { logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType, sql } from "../database"
 import { incrementVersion } from "../version/version.service"
@@ -441,18 +442,60 @@ export const getResourceFullPermalink = async (
   return `/${permalinkTree.join("/")}`
 }
 
-export const publishResource = async (
+export const publishPageResource = async (
   logger: Logger<string>,
   siteId: number,
   resourceId: string,
   userId: string,
 ) => {
   // Step 1: Create a new version
-  const addedVersionResult = await incrementVersion({
-    siteId,
-    resourceId,
-    userId,
-  })
+  const by = await db
+    .selectFrom("User")
+    .selectAll()
+    .where("id", "=", userId)
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Please ensure that you have logged in",
+        }),
+    )
+
+  const addedVersionResult = await db
+    .transaction()
+    .setIsolationLevel("serializable")
+    .execute(async (tx) => {
+      const fullResource = await getFullPageById(tx, {
+        resourceId: Number(resourceId),
+        siteId,
+      })
+
+      if (!fullResource) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "Please ensure you are attempting to publish a page that exists",
+        })
+      }
+
+      const version = await incrementVersion({
+        tx,
+        siteId,
+        resourceId,
+        userId,
+      })
+
+      await logPublishEvent(tx, {
+        by,
+        delta: {
+          before: null,
+          after: { ...fullResource, ...version },
+        },
+        eventType: "Publish",
+      })
+
+      return version
+    })
 
   // Step 2: Trigger a publish of the site
   await publishSite(logger, siteId)
