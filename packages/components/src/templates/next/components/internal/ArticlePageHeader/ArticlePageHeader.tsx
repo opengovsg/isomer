@@ -9,7 +9,7 @@ const ArticleSummaryContent = ({
   site,
   LinkComponent,
 }: Pick<ArticlePageHeaderProps, "summary" | "site" | "LinkComponent">) => {
-  if (summary.length === 0) {
+  if (summary.trim().length === 0) {
     return <></>
   }
   return (
