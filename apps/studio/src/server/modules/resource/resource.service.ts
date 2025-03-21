@@ -9,6 +9,7 @@ import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { getSitemapTree } from "~/utils/sitemap"
+import { logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType, sql } from "../database"
 import { incrementVersion } from "../version/version.service"
@@ -441,23 +442,120 @@ export const getResourceFullPermalink = async (
   return `/${permalinkTree.join("/")}`
 }
 
-export const publishResource = async (
+export const publishPageResource = async (
   logger: Logger<string>,
   siteId: number,
   resourceId: string,
   userId: string,
 ) => {
   // Step 1: Create a new version
-  const addedVersionResult = await incrementVersion({
-    siteId,
-    resourceId,
-    userId,
-  })
+  const by = await db
+    .selectFrom("User")
+    .selectAll()
+    .where("id", "=", userId)
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Please ensure that you have logged in",
+        }),
+    )
+
+  const addedVersionResult = await db
+    .transaction()
+    .setIsolationLevel("serializable")
+    .execute(async (tx) => {
+      const fullResource = await getFullPageById(tx, {
+        resourceId: Number(resourceId),
+        siteId,
+      })
+
+      if (!fullResource) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "Please ensure you are attempting to publish a page that exists",
+        })
+      }
+
+      const version = await incrementVersion({
+        tx,
+        siteId,
+        resourceId,
+        userId,
+      })
+
+      const previousVersion = await tx
+        .selectFrom("Version")
+        .where("Version.versionNum", "=", Number(version.versionId) - 1)
+        .where("Version.resourceId", "=", resourceId)
+        .select("Version.id")
+        .executeTakeFirst()
+
+      await logPublishEvent(tx, {
+        by,
+        delta: {
+          before: previousVersion?.id
+            ? { versionId: previousVersion?.id }
+            : null,
+          after: { ...fullResource, ...version },
+        },
+        eventType: "Publish",
+      })
+
+      return version
+    })
 
   // Step 2: Trigger a publish of the site
   await publishSite(logger, siteId)
 
   return addedVersionResult
+}
+
+// NOTE: The distinction here between `publishResource` and `publishPageResource` is that
+// this should be used for publishes that do not incur a change to `Blob.content`
+// and hence, don't incur a log to the `Version` table
+export const publishResource = async (
+  by: string,
+  resourceId: string,
+  logger: Logger<string>,
+) => {
+  const byUser = await db
+    .selectFrom("User")
+    .selectAll()
+    .where("id", "=", by)
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please ensure that you are logged in!",
+        }),
+    )
+
+  return db.transaction().execute(async (tx) => {
+    const resource = await tx
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .selectAll()
+      .executeTakeFirstOrThrow(
+        () =>
+          new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Unable to publish the specified resource",
+          }),
+      )
+
+    await logPublishEvent(tx, {
+      by: byUser,
+      delta: {
+        before: null,
+        after: resource,
+      },
+      eventType: "Publish",
+    })
+
+    await publishSite(logger, resource.siteId)
+  })
 }
 
 export const getBatchAncestryWithSelfQuery = async ({

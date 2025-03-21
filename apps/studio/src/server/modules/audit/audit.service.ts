@@ -146,25 +146,35 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
     .execute()
 }
 
-type PublishEvent = WithoutMeta<Version>
+type VersionPointer = { versionId: Version["id"] }
 
-interface PublishEventLogProps {
+type BlobPublishEvent = WithoutMeta<Resource & Blob & VersionPointer>
+type ResourcePublishEvent = WithoutMeta<Resource>
+type ConfigPublishEvent = WithoutMeta<Site | Navbar | Footer>
+
+interface PublishEventLogProps<T> {
   by: User
   delta: {
     // NOTE: `null` if this is the first publish
     // We don't want to store the `version` because it is a pointer
     // to the blob/resource
     // we will instead store the full data here so it is an accurate snapshot
-    before: PublishEvent | null
-    after: PublishEvent
+    before: WithoutMeta<VersionPointer> | null
+    after: T & { versionId?: string }
   }
   eventType: Extract<AuditLogEvent, "Publish">
   ip?: string
 }
-export const logPublishEvent: AuditLogger<PublishEventLogProps> = async (
-  tx,
-  { by, delta, eventType, ip },
-) => {
+
+type BlobPublishEventLogProps = PublishEventLogProps<BlobPublishEvent>
+type ResourcePublishEventLogProps = PublishEventLogProps<ResourcePublishEvent>
+type ConfigPublishEventLogProps = PublishEventLogProps<ConfigPublishEvent>
+
+export const logPublishEvent: AuditLogger<
+  | BlobPublishEventLogProps
+  | ResourcePublishEventLogProps
+  | ConfigPublishEventLogProps
+> = async (tx, { by, delta, eventType, ip }) => {
   await tx
     .insertInto("AuditLog")
     .values({
