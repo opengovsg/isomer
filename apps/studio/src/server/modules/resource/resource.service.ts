@@ -485,10 +485,19 @@ export const publishPageResource = async (
         userId,
       })
 
+      const previousVersion = await tx
+        .selectFrom("Version")
+        .where("Version.versionNum", "=", Number(version.versionId) - 1)
+        .where("Version.resourceId", "=", resourceId)
+        .select("Version.id")
+        .executeTakeFirst()
+
       await logPublishEvent(tx, {
         by,
         delta: {
-          before: null,
+          before: previousVersion?.id
+            ? { versionId: previousVersion?.id }
+            : null,
           after: { ...fullResource, ...version },
         },
         eventType: "Publish",
@@ -501,6 +510,52 @@ export const publishPageResource = async (
   await publishSite(logger, siteId)
 
   return addedVersionResult
+}
+
+// NOTE: The distinction here between `publishResource` and `publishPageResource` is that
+// this should be used for publishes that do not incur a change to `Blob.content`
+// and hence, don't incur a log to the `Version` table
+export const publishResource = async (
+  by: string,
+  resourceId: string,
+  logger: Logger<string>,
+) => {
+  const byUser = await db
+    .selectFrom("User")
+    .selectAll()
+    .where("id", "=", by)
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please ensure that you are logged in!",
+        }),
+    )
+
+  return db.transaction().execute(async (tx) => {
+    const resource = await tx
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .selectAll()
+      .executeTakeFirstOrThrow(
+        () =>
+          new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Unable to publish the specified resource",
+          }),
+      )
+
+    await logPublishEvent(tx, {
+      by: byUser,
+      delta: {
+        before: null,
+        after: resource,
+      },
+      eventType: "Publish",
+    })
+
+    await publishSite(logger, resource.siteId)
+  })
 }
 
 export const getBatchAncestryWithSelfQuery = async ({
