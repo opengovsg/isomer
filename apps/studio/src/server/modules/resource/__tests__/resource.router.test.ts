@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash"
+import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,
   applySession,
@@ -15,6 +16,7 @@ import {
   setupFolderMeta,
   setupPageResource,
   setupSite,
+  setUpWhitelist,
 } from "tests/integration/helpers/seed"
 
 import { createCallerFactory } from "~/server/trpc"
@@ -28,19 +30,29 @@ describe("resource.router", async () => {
   let caller: ReturnType<typeof createCaller>
   const session = await applyAuthedSession()
 
+  const TEST_VALID_EMAIL = "test@open.gov.sg"
+
   beforeAll(() => {
     caller = createCaller(createMockRequest(session))
   })
 
+  beforeEach(async () => {
+    await resetTables("Site", "ResourcePermission", "Resource")
+    await setUpWhitelist({ email: TEST_VALID_EMAIL })
+  })
+
   describe("getMetadataById", () => {
     it("should throw 401 if not logged in", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
+      // Act
       const result = unauthedCaller.getMetadataById({
         resourceId: "1",
       })
 
+      // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
@@ -54,14 +66,21 @@ describe("resource.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "NOT_FOUND" }),
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        }),
       )
     })
 
     it("should return metadata if page resource exists", async () => {
       // Arrange
-      const { page } = await setupPageResource({
+      const { site, page } = await setupPageResource({
         resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -80,28 +99,38 @@ describe("resource.router", async () => {
       await expect(result).resolves.toMatchObject(expected)
     })
 
+    it("should throw 403 if user does not have read access to site", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = caller.getMetadataById({
+        resourceId: page.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
     it.skip("should throw 403 if user does not have read access to resource", async () => {})
   })
 
   describe("getFolderChildrenOf", () => {
     it("should throw 401 if not logged in", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.getFolderChildrenOf({
-        resourceId: "1",
-        siteId: "1",
-        limit: 25,
-      })
-
-      await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "UNAUTHORIZED" }),
-      )
-    })
-
-    it("should return 404 if resource does not exist", async () => {
       // Act
-      const result = caller.getFolderChildrenOf({
+      const result = unauthedCaller.getFolderChildrenOf({
         resourceId: "1",
         siteId: "1",
         limit: 25,
@@ -109,7 +138,31 @@ describe("resource.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "NOT_FOUND" }),
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 404 if resource does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.getFolderChildrenOf({
+        resourceId: "1",
+        siteId: String(site.id),
+        limit: 25,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        }),
       )
     })
 
@@ -117,6 +170,10 @@ describe("resource.router", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
         resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -139,6 +196,10 @@ describe("resource.router", async () => {
         parentId: null,
         permalink: "parent-folder",
         title: "Parent folder",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -180,6 +241,10 @@ describe("resource.router", async () => {
         parentId: rootLevelFolders[3]!.id,
         resourceType: "Page",
       })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = caller.getFolderChildrenOf({
@@ -217,6 +282,10 @@ describe("resource.router", async () => {
           return pick(folder, ["title", "permalink", "type", "id"])
         }),
       )
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = caller.getFolderChildrenOf({
@@ -255,6 +324,10 @@ describe("resource.router", async () => {
           return pick(folder, ["title", "permalink", "type", "id"])
         }),
       )
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = caller.getFolderChildrenOf({
@@ -295,6 +368,10 @@ describe("resource.router", async () => {
           return pick(folder, ["title", "permalink", "type", "id"])
         }),
       )
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = await caller.getFolderChildrenOf({
@@ -336,6 +413,10 @@ describe("resource.router", async () => {
           return pick(folder, ["title", "permalink", "type", "id"])
         }),
       )
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = await caller.getFolderChildrenOf({
@@ -352,28 +433,37 @@ describe("resource.router", async () => {
       expect(result).toMatchObject(expected)
     })
 
+    it("should throw 403 if user does not have read access to site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.getFolderChildrenOf({
+        siteId: String(site.id),
+        resourceId: null,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
     it.skip("should throw 403 if user does not have read access to resource", async () => {})
   })
 
   describe("getChildrenOf", () => {
     it("should throw 401 if not logged in", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
-      const result = unauthedCaller.getChildrenOf({
-        resourceId: "1",
-        siteId: "1",
-        limit: 25,
-      })
-
-      await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "UNAUTHORIZED" }),
-      )
-    })
-
-    it("should return 404 if resource does not exist", async () => {
       // Act
-      const result = caller.getChildrenOf({
+      const result = unauthedCaller.getChildrenOf({
         resourceId: "1",
         siteId: "1",
         limit: 25,
@@ -381,7 +471,31 @@ describe("resource.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "NOT_FOUND" }),
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return 404 if resource does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.getChildrenOf({
+        resourceId: "1",
+        siteId: String(site.id),
+        limit: 25,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        }),
       )
     })
 
@@ -389,6 +503,10 @@ describe("resource.router", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
         resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -424,6 +542,10 @@ describe("resource.router", async () => {
           return pick(page, ["title", "permalink", "type", "id"])
         }),
       )
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = await caller.getChildrenOf({
@@ -448,6 +570,10 @@ describe("resource.router", async () => {
         parentId: null,
         permalink: "parent-folder",
         title: "Parent folder",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -492,6 +618,10 @@ describe("resource.router", async () => {
         title: "__this should not return",
         parentId: rootLevelFolders[3]!.id,
         resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -558,6 +688,10 @@ describe("resource.router", async () => {
           return pick(folder, ["title", "permalink", "type", "id"])
         }),
       )
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = caller.getChildrenOf({
@@ -608,6 +742,10 @@ describe("resource.router", async () => {
           return pick(page, ["title", "permalink", "type", "id"])
         }),
       )
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = caller.getChildrenOf({
@@ -660,6 +798,10 @@ describe("resource.router", async () => {
           return pick(page, ["title", "permalink", "type", "id"])
         }),
       )
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = await caller.getChildrenOf({
@@ -716,6 +858,10 @@ describe("resource.router", async () => {
           return pick(page, ["title", "permalink", "type", "id"])
         }),
       )
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = await caller.getChildrenOf({
@@ -734,6 +880,26 @@ describe("resource.router", async () => {
       expect(result).toMatchObject(expected)
     })
 
+    it("should throw 403 if user does not have read access to site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.getChildrenOf({
+        siteId: String(site.id),
+        resourceId: null,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
     it.skip("should throw 403 if user does not have read access to resource", async () => {})
   })
 
@@ -747,14 +913,17 @@ describe("resource.router", async () => {
     ] as const
 
     it("should throw 401 if not logged in", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
+      // Act
       const result = unauthedCaller.getNestedFolderChildrenOf({
         resourceId: "1",
         siteId: "1",
       })
 
+      // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
@@ -763,7 +932,7 @@ describe("resource.router", async () => {
     it("should return 404 if resource does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId,
         siteId: site.id,
       })
@@ -776,14 +945,17 @@ describe("resource.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "NOT_FOUND" }),
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        }),
       )
     })
 
     it("should return 404 if resource is not a folder", async () => {
       // Arrange
       const { site } = await setupSite()
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId,
         siteId: site.id,
       })
@@ -829,7 +1001,7 @@ describe("resource.router", async () => {
     it("should return nested folder children (e.g. folders within folders)", async () => {
       // Arrange
       const { site } = await setupSite()
-      await setupAdminPermissions({
+      await setupEditorPermissions({
         userId: session.userId,
         siteId: site.id,
       })
@@ -876,16 +1048,19 @@ describe("resource.router", async () => {
 
   describe("move", () => {
     it("should throw 401 if not logged in", async () => {
+      // Arrange
       const unauthedSession = applySession()
-      const { site } = await setupSite()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+      const { site } = await setupSite()
 
+      // Act
       const result = unauthedCaller.move({
         siteId: site.id,
         movedResourceId: "1",
         destinationResourceId: "1",
       })
 
+      // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
@@ -1178,46 +1353,69 @@ describe("resource.router", async () => {
 
   describe("countWithoutRoot", () => {
     it("should throw 401 if not logged in", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
+      // Act
       const result = unauthedCaller.countWithoutRoot({
         resourceId: 1,
         siteId: 1,
       })
 
+      // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
 
-    it("should return 0 if resource does not exist", async () => {
+    it("should return 404 if resource does not exist", async () => {
+      // Arrange
       const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
       // Act
-      const result = await caller.countWithoutRoot({
+      const result = caller.countWithoutRoot({
         resourceId: 99999, // should not exist
         siteId: site.id,
       })
 
       // Assert
-      expect(result).toEqual(0)
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        }),
+      )
     })
 
-    it("should return 0 if site does not exist", async () => {
+    it("should return 404 if site does not exist", async () => {
       // Act
-      const result = await caller.countWithoutRoot({
+      const result = caller.countWithoutRoot({
         resourceId: 99999, // should not exist
         siteId: 99999, // should not exist also
       })
 
       // Assert
-      expect(result).toEqual(0)
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        }),
+      )
     })
 
     it("should return 0 if resource is a page", async () => {
       // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -1233,6 +1431,10 @@ describe("resource.router", async () => {
     it("should return 0 if resource is a folder with no children", async () => {
       // Arrange
       const { folder, site } = await setupFolder()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = await caller.countWithoutRoot({
@@ -1286,6 +1488,10 @@ describe("resource.router", async () => {
           })
         }),
       )
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.countWithoutRoot({
@@ -1340,6 +1546,10 @@ describe("resource.router", async () => {
           })
         }),
       )
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.countWithoutRoot({
@@ -1349,6 +1559,25 @@ describe("resource.router", async () => {
 
       // Assert
       expect(result).toEqual(numberOfPages + numberOfFolders)
+    })
+
+    it("should throw 403 if user does not have read access to site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.countWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
     })
 
     it.skip("should throw 403 if user does not have read access to resource", async () => {})
@@ -1377,33 +1606,46 @@ describe("resource.router", async () => {
     }
 
     it("should throw 401 if not logged in", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
+      // Act
       const result = unauthedCaller.listWithoutRoot({
         siteId: 1,
         limit: 25,
       })
 
+      // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
 
-    it("should return empty array if site does not exist", async () => {
+    it("should return 403 if site does not exist", async () => {
       // Act
-      const result = await caller.listWithoutRoot({
+      const result = caller.listWithoutRoot({
         siteId: 99999, // should not exist
         limit: 25,
       })
 
       // Assert
-      expect(result).toEqual([])
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
     })
 
     it("should return empty array if site has no resources", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = await caller.listWithoutRoot({
@@ -1420,6 +1662,10 @@ describe("resource.router", async () => {
       const { site } = await setupPageResource({
         resourceType: "RootPage",
       })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = await caller.listWithoutRoot({
@@ -1431,25 +1677,35 @@ describe("resource.router", async () => {
       expect(result).toEqual([])
     })
 
-    it("should return empty array if resource does not exist", async () => {
+    it("should return 404 if resource does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const result = caller.listWithoutRoot({
         siteId: site.id,
         resourceId: 99999, // should not exist
         limit: 25,
       })
 
       // Assert
-      expect(result).toEqual([])
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
+      )
     })
 
     it("should return empty array if resource is not a folder", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
         resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -1466,6 +1722,10 @@ describe("resource.router", async () => {
     it("should return empty array if resource is a folder with no children", async () => {
       // Arrange
       const { folder, site } = await setupFolder()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = await caller.listWithoutRoot({
@@ -1509,6 +1769,10 @@ describe("resource.router", async () => {
           return pick(folder, RESOURCE_FIELDS_TO_PICK)
         }),
       )
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = await caller.listWithoutRoot({
@@ -1555,6 +1819,10 @@ describe("resource.router", async () => {
           return pick(folder, RESOURCE_FIELDS_TO_PICK)
         }),
       )
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
 
       // Act
       const result = await caller.listWithoutRoot({
@@ -1569,14 +1837,35 @@ describe("resource.router", async () => {
       expect(expected).toMatchObject(result)
     })
 
+    it("should throw 403 if user does not have read access to site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+
+      // Act
+      const result = caller.listWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
   })
 
   describe("delete", () => {
     it("should throw 401 if not logged in", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
+      // Act
       const result = unauthedCaller.delete({
         resourceId: "1",
         siteId: 1,
@@ -1718,19 +2007,47 @@ describe("resource.router", async () => {
       )
     })
 
-    it.skip("should throw 403 if user does not have delete access to the resource", async () => {})
+    it("should throw 403 if user does not have delete access to the resource", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+      // Editor has no delete permissions
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: page.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
   })
 
   describe("getParentOf", () => {
     it("should throw 401 if not logged in", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
+      // Act
       const result = unauthedCaller.getParentOf({
         resourceId: "1",
         siteId: 1,
       })
 
+      // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
@@ -1739,6 +2056,10 @@ describe("resource.router", async () => {
     it("should return 404 if resource does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = caller.getParentOf({
@@ -1748,7 +2069,7 @@ describe("resource.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "NOT_FOUND" }),
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
 
@@ -1756,6 +2077,10 @@ describe("resource.router", async () => {
       // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "RootPage",
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
       })
 
       // Act
@@ -1785,6 +2110,10 @@ describe("resource.router", async () => {
         parentId: parentFolder.id,
         resourceType: "Page",
       })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.getParentOf({
@@ -1808,6 +2137,10 @@ describe("resource.router", async () => {
       const { page, site } = await setupPageResource({
         resourceType: "Page",
       })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.getParentOf({
@@ -1825,27 +2158,49 @@ describe("resource.router", async () => {
       expect(result).toEqual(expected)
     })
 
+    it("should throw 403 if user does not have read access to the resource", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = caller.getParentOf({
+        resourceId: page.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
   })
 
   describe("getWithFullPermalink", () => {
     it("should throw 401 if not logged in", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
+      // Act
       const result = unauthedCaller.getWithFullPermalink({
         resourceId: "1",
       })
 
+      // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
 
     it("should return 404 if resource does not exist", async () => {
-      // Arrange
-      await setupSite()
-
       // Act
       const result = caller.getWithFullPermalink({
         resourceId: "99999",
@@ -1853,14 +2208,18 @@ describe("resource.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "NOT_FOUND" }),
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
 
     it("should return the details with full permalink of a first-level resource", async () => {
       // Arrange
-      const { page } = await setupPageResource({
+      const { site, page } = await setupPageResource({
         resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
       })
 
       // Act
@@ -1893,6 +2252,10 @@ describe("resource.router", async () => {
         parentId: nestedFolder.id,
         resourceType: "Page",
       })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.getWithFullPermalink({
@@ -1905,6 +2268,27 @@ describe("resource.router", async () => {
         title: nestedPage.title,
         fullPermalink: `${parentFolder.permalink}/${nestedFolder.permalink}/${nestedPage.permalink}`,
       })
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = caller.getWithFullPermalink({
+        resourceId: page.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
     })
 
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
@@ -1920,37 +2304,50 @@ describe("resource.router", async () => {
     ] as const
 
     it("should throw 401 if not logged in", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
+      // Act
       const result = unauthedCaller.getAncestryStack({
         resourceId: "1",
         siteId: "1",
       })
 
+      // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
 
-    it("should return empty array if resource does not exist", async () => {
+    it("should throw 404 if resource does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
-      const result = await caller.getAncestryStack({
+      const result = caller.getAncestryStack({
         siteId: String(site.id),
         resourceId: "99999",
       })
 
       // Assert
-      expect(result).toEqual([])
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
+      )
     })
 
     it("should return empty array if resource is a root page", async () => {
       // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "RootPage",
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
       })
 
       // Act
@@ -1966,6 +2363,10 @@ describe("resource.router", async () => {
     it("should return empty array if `resourceId` is not provided", async () => {
       // Arrange
       const { site } = await setupSite()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.getAncestryStack({
@@ -1996,6 +2397,10 @@ describe("resource.router", async () => {
         parentId: nestedFolder.id,
         resourceType: "Page",
       })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.getAncestryStack({
@@ -2017,6 +2422,10 @@ describe("resource.router", async () => {
       // Arrange
       const { page, site } = await setupPageResource({
         resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
       })
 
       // Act
@@ -2050,6 +2459,10 @@ describe("resource.router", async () => {
         parentId: nestedFolder.id,
         resourceType: "Page",
       })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
 
       // Act
       const result = await caller.getAncestryStack({
@@ -2065,7 +2478,123 @@ describe("resource.router", async () => {
       ])
     })
 
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = caller.getAncestryStack({
+        resourceId: page.id,
+        siteId: String(site.id),
+        includeSelf: true,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
+  })
+
+  describe("getBatchAncestryWithSelf", () => {
+    const RESOURCE_FIELDS_TO_PICK = [
+      "id",
+      "title",
+      "parentId",
+      "permalink",
+      "type",
+    ] as const
+
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.getBatchAncestryWithSelf({
+        resourceIds: ["1", "2", "3"],
+        siteId: "1",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return correct ancestry for a nested resource", async () => {
+      // Arrange
+      const { site } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+      const { folder: parentFolder } = await setupFolder({
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const { folder: nestedFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: parentFolder.id,
+        permalink: "nested-folder",
+        title: "Nested folder",
+      })
+      const { page: nestedPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: nestedFolder.id,
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getBatchAncestryWithSelf({
+        resourceIds: [nestedPage.id],
+        siteId: String(site.id),
+      })
+
+      // Assert
+      const expected = [
+        [
+          pick(parentFolder, RESOURCE_FIELDS_TO_PICK),
+          pick(nestedFolder, RESOURCE_FIELDS_TO_PICK),
+          pick(nestedPage, RESOURCE_FIELDS_TO_PICK),
+        ],
+      ]
+      expect(result).toEqual(expected)
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "RootPage",
+      })
+
+      // Act
+      const result = caller.getBatchAncestryWithSelf({
+        resourceIds: [page.id],
+        siteId: String(site.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it.skip("should throw 403 if user does not have read access to the resources", async () => {})
   })
 
   describe("search", () => {
@@ -2078,14 +2607,17 @@ describe("resource.router", async () => {
     ] as const
 
     it("should throw 401 if not logged in", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
+      // Act
       const result = unauthedCaller.search({
         siteId: "1",
         query: "test",
       })
 
+      // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
@@ -3050,6 +3582,169 @@ describe("resource.router", async () => {
         }
         expect(result).toEqual(expected)
       })
+    })
+  })
+
+  describe("searchWithResourceIds", () => {
+    const RESOURCE_FIELDS_TO_PICK = ["id", "title", "parentId", "type"] as const
+
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.searchWithResourceIds({
+        resourceIds: ["1", "2", "3"],
+        siteId: "1",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return the resources if user has read access to the resources", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.searchWithResourceIds({
+        resourceIds: [page.id],
+        siteId: String(site.id),
+      })
+
+      // Assert
+      expect(result).toEqual([
+        {
+          ...pick(page, RESOURCE_FIELDS_TO_PICK),
+          fullPermalink: `${page.permalink}`,
+          lastUpdatedAt: null,
+        },
+      ])
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+
+      // Act
+      const result = caller.searchWithResourceIds({
+        resourceIds: [page.id],
+        siteId: String(site.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it.skip("should throw 403 if user does not have read access to the resources", async () => {})
+  })
+
+  describe("getIndexPage", () => {
+    const RESOURCE_FIELDS_TO_PICK = ["id"] as const
+
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.getIndexPage({
+        siteId: 1,
+        parentId: "1",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 404 if index page does not exist", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getIndexPage({
+        siteId: site.id,
+        parentId: folder.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "NOT_FOUND" }),
+      )
+    })
+
+    it("should return the index page if user has read access to the site", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+      const { page } = await setupPageResource({
+        resourceType: "IndexPage",
+        siteId: site.id,
+        parentId: folder.id,
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getIndexPage({
+        siteId: site.id,
+        parentId: folder.id,
+      })
+
+      // Assert
+      const expected = {
+        ...pick(page, RESOURCE_FIELDS_TO_PICK),
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+      const { page } = await setupPageResource({
+        resourceType: "IndexPage",
+        siteId: site.id,
+        parentId: folder.id,
+      })
+
+      // Act
+      const result = caller.getIndexPage({
+        siteId: site.id,
+        parentId: page.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
     })
   })
 })
