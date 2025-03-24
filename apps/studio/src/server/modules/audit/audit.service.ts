@@ -146,7 +146,9 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
     .execute()
 }
 
-type VersionPointer = { versionId: Version["id"] }
+interface VersionPointer {
+  versionId: Version["id"]
+}
 
 type BlobPublishEvent = WithoutMeta<Resource & Blob & VersionPointer>
 type ResourcePublishEvent = WithoutMeta<Resource>

@@ -496,7 +496,7 @@ export const publishPageResource = async (
         by,
         delta: {
           before: previousVersion?.id
-            ? { versionId: previousVersion?.id }
+            ? { versionId: previousVersion.id }
             : null,
           after: { ...fullResource, ...version },
         },
