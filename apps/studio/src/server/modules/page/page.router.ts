@@ -25,7 +25,6 @@ import {
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
@@ -37,6 +36,7 @@ import {
   getResourceFullPermalink,
   getResourcePermalinkTree,
   publishPageResource,
+  publishResource,
   updateBlobById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
@@ -526,7 +526,7 @@ export const pageRouter = router({
 
             // We do an implicit publish so that we can make the changes to the
             // page settings immediately visible on the end site
-            await publishSite(ctx.logger, siteId)
+            await publishResource(ctx.user.id, updatedResource.id, ctx.logger)
 
             return updatedResource
           } catch (err) {

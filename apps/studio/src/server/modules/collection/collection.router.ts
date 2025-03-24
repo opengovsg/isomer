@@ -11,7 +11,6 @@ import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
 import { protectedProcedure, router } from "~/server/trpc"
 import { logResourceEvent } from "../audit/audit.service"
-import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
@@ -19,6 +18,7 @@ import {
   defaultResourceSelect,
   getBlobOfResource,
   getSiteResourceById,
+  publishResource,
   updateBlobById,
 } from "../resource/resource.service"
 import { defaultCollectionSelect } from "./collection.select"
@@ -127,7 +127,7 @@ export const collectionRouter = router({
         })
 
         // TODO: Create the index page for the collection and publish it
-        await publishSite(ctx.logger, siteId)
+        await publishResource(user.id, result.id, ctx.logger)
 
         return pick(result, defaultCollectionSelect)
       },
