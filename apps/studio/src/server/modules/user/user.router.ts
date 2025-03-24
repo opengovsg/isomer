@@ -141,7 +141,11 @@ export const userRouter = router({
           message: "Please ensure you are logged in!",
         })
 
-      await deleteUserPermission({ userId: ctx.session.userId, siteId })
+      await deleteUserPermission({
+        byUserId: ctx.session.userId,
+        userId,
+        siteId,
+      })
 
       return {
         id: userToDeletePermissionsFrom.id,

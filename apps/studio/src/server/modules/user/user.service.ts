@@ -184,18 +184,20 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
 }
 
 interface DeleteUserPermissionProps {
-  userId: NonNullable<SessionData["userId"]>
+  byUserId: NonNullable<SessionData["userId"]>
+  userId: string
   siteId: number
 }
 
 export const deleteUserPermission = async ({
+  byUserId,
   userId,
   siteId,
 }: DeleteUserPermissionProps) => {
   // Putting outside the tx to reduce unnecessary extended DB locks
   const byUser = await db
     .selectFrom("User")
-    .where("id", "=", userId)
+    .where("id", "=", byUserId)
     .selectAll()
     .executeTakeFirstOrThrow()
 
