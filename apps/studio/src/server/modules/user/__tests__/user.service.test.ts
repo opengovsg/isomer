@@ -10,7 +10,6 @@ import {
 } from "tests/integration/helpers/seed"
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 
-import { SessionData } from "~/lib/types/session"
 import { db } from "~/server/modules/database"
 import { createUserWithPermission, isUserDeleted } from "../user.service"
 
