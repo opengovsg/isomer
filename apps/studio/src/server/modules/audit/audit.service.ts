@@ -166,6 +166,7 @@ interface PublishEventLogProps<T> {
   }
   eventType: Extract<AuditLogEvent, "Publish">
   ip?: string
+  metadata?: Record<string, unknown>
 }
 
 type BlobPublishEventLogProps = PublishEventLogProps<BlobPublishEvent>
@@ -176,7 +177,7 @@ export const logPublishEvent: AuditLogger<
   | BlobPublishEventLogProps
   | ResourcePublishEventLogProps
   | ConfigPublishEventLogProps
-> = async (tx, { by, delta, eventType, ip }) => {
+> = async (tx, { by, delta, eventType, ip, metadata = {} }) => {
   await tx
     .insertInto("AuditLog")
     .values({
@@ -184,6 +185,7 @@ export const logPublishEvent: AuditLogger<
       delta,
       userId: by.id,
       ipAddress: ip,
+      metadata,
     })
     .execute()
 }
