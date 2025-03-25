@@ -4,9 +4,9 @@
   "description": "Script to run Unlighthouse CI with specified parameters",
   "main": "dist/run-unlighthouse-ci.js",
   "scripts": {
-    "run-benchmark": "tsx run-benchmark.ts",
-    "upload-results": "tsx upload-results.ts",
-    "generate-overview": "tsx utils/generate-overview-table.ts"
+    "run-benchmark": "tsx runBenchmark.ts",
+    "upload-results": "tsx uploadResults.ts",
+    "generate-overview": "tsx utils/generateOverviewTable.ts"
   },
   "dependencies": {
     "csv-parser": "^3.0.0",

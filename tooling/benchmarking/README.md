@@ -4,7 +4,7 @@ This directory contains utilities for benchmarking Isomer sites.
 
 ## Generate Sites from Infrastructure
 
-The `generate-sites-from-infra.ts` script processes a CSV file containing information about Isomer sites and generates a filtered list of sites for benchmarking.
+The `generateSites.ts` script processes a CSV file containing information about Isomer sites and generates a filtered list of sites for benchmarking.
 
 ### Setup
 

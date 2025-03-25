@@ -4,7 +4,7 @@
   "description": "Benchmarking tools for Isomer sites",
   "main": "index.js",
   "scripts": {
-    "generate-sites": "tsx utils/generate-sites-from-infra.ts",
+    "generate-sites": "tsx utils/generateSites.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
