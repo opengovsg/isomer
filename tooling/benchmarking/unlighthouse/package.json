@@ -4,7 +4,7 @@
   "description": "Script to run Unlighthouse CI with specified parameters",
   "main": "dist/run-unlighthouse-ci.js",
   "scripts": {
-    "run-benchmark": "tsx index.ts",
+    "run-benchmark": "tsx run-benchmark.ts",
     "upload-results": "tsx upload-results.ts",
     "generate-sites": "tsx utils/generate-sites-from-infra.ts",
     "generate-overview": "tsx utils/generate-overview-table.ts"
