@@ -4,9 +4,9 @@ import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 import isEmail from "validator/lib/isEmail"
 
 import type { DB, Transaction } from "../database"
+import type { SessionData } from "~/lib/types/session"
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
-import { SessionData } from "~/lib/types/session"
 import { isGovEmail } from "~/utils/email"
 import { logPermissionEvent, logUserEvent } from "../audit/audit.service"
 import { db, RoleType } from "../database"
@@ -189,6 +189,9 @@ interface DeleteUserPermissionProps {
   siteId: number
 }
 
+// FYI this might be a performance bottleneck once we start having resource-level
+// permissions. However, this is not a problem for the current use case because
+// we only have site-level permissions.
 export const deleteUserPermission = async ({
   byUserId,
   userId,
@@ -202,31 +205,35 @@ export const deleteUserPermission = async ({
     .executeTakeFirstOrThrow()
 
   await db.transaction().execute(async (tx) => {
-    const userPermissionToDelete = await tx
+    const userPermissionsToDelete = await tx
       .selectFrom("ResourcePermission")
       .where("userId", "=", userId)
       .where("siteId", "=", siteId)
       .where("deletedAt", "is", null)
       .selectAll()
-      .executeTakeFirst()
+      .execute()
 
-    if (!userPermissionToDelete) {
+    if (userPermissionsToDelete.length === 0) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "User permissions not found",
       })
     }
 
-    const deletedUserPermission = await tx
+    const deletedUserPermissions = await tx
       .updateTable("ResourcePermission")
-      .where("id", "=", userPermissionToDelete.id)
+      .where(
+        "id",
+        "in",
+        userPermissionsToDelete.map((p) => p.id),
+      )
       .set({ deletedAt: new Date() })
       .returningAll()
-      .executeTakeFirst()
+      .execute()
 
     // NOTE: this is technically impossible because we're executing
     // inside a tx and this is the same resource which was fetched earlier
-    if (!deletedUserPermission) {
+    if (deletedUserPermissions.length !== userPermissionsToDelete.length) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message:
@@ -234,11 +241,27 @@ export const deleteUserPermission = async ({
       })
     }
 
-    await logPermissionEvent(tx, {
-      eventType: "PermissionDelete",
-      by: byUser,
-      delta: { before: userPermissionToDelete, after: deletedUserPermission },
-    })
+    for (const deletedUserPermission of deletedUserPermissions) {
+      const before = userPermissionsToDelete.find(
+        (p) => p.id === deletedUserPermission.id,
+      )
+
+      // Note: this is technically impossible because we're executing
+      // inside a tx and we have checked previously that the user permission existed
+      if (!before) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "Something went wrong while attempting to move your resource, please try again later",
+        })
+      }
+
+      await logPermissionEvent(tx, {
+        eventType: "PermissionDelete",
+        by: byUser,
+        delta: { before, after: deletedUserPermission },
+      })
+    }
   })
 }
 
