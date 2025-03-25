@@ -11,7 +11,7 @@
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
-import { OUTPUT_DIRECTORY } from "./constants";
+import { OUTPUT_DIRECTORY, SITES_FILE } from "./constants";
 interface Site {
   name: string;
   url: string;
@@ -34,7 +34,7 @@ function loadSitesFromCSV(filePath: string): Site[] {
 }
 
 // Load sites from CSV file
-const csvFilePath = path.resolve(__dirname, "sites.csv");
+const csvFilePath = path.resolve(__dirname, SITES_FILE);
 const SITES: Site[] = loadSitesFromCSV(csvFilePath);
 
 if (SITES.length === 0) {

@@ -1,11 +1,12 @@
 import { createReadStream, writeFileSync } from "fs";
 import { join, dirname } from "path";
 import csvParser from "csv-parser";
+import { SITES_FILE } from "../constants";
 
 // Define the path to the input and output files
 const currentDir = __dirname;
 const inputFilePath = join(currentDir, "sites.production.csv");
-const outputFilePath = join(dirname(currentDir), "sites.csv");
+const outputFilePath = join(dirname(currentDir), SITES_FILE);
 
 // Array to store filtered data
 const extractedData: { shortName: string; domainAliases: string }[] = [];
