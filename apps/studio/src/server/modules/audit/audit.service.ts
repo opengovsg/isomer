@@ -151,7 +151,12 @@ interface VersionPointer {
 }
 
 type BlobPublishEvent = Resource & Blob
-type ConfigPublishEvent = Site | Navbar | Footer
+// NOTE: Only 2 kinds of config changes atm
+// first, we allow users to set site notif
+// next, admins can wholesale update site + footer + navbar
+type ConfigPublishEvent = { site: Site } & { navbar?: Navbar } & {
+  footer?: Footer
+}
 
 interface PublishEventLogProps<
   Before,

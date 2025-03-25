@@ -3,8 +3,16 @@ import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { type DB } from "~prisma/generated/generatedTypes"
+import _ from "lodash"
 
-import type { Resource, SafeKysely, Transaction } from "../database"
+import type {
+  Footer,
+  Navbar,
+  Resource,
+  SafeKysely,
+  Site,
+  Transaction,
+} from "../database"
 import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -545,6 +553,41 @@ export const publishResource = async (
     })
 
     await publishSite(logger, resource.siteId)
+  })
+}
+
+export const publishSiteConfig = async (
+  by: string,
+  {
+    site,
+    ...rest
+  }: { site: Site } | { site: Site; footer: Footer; navbar: Navbar },
+  logger: Logger<string>,
+) => {
+  const byUser = await db
+    .selectFrom("User")
+    .selectAll()
+    .where("id", "=", by)
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please ensure that you are logged in!",
+        }),
+    )
+
+  return db.transaction().execute(async (tx) => {
+    await logPublishEvent(tx, {
+      by: byUser,
+      delta: {
+        before: null,
+        after: null,
+      },
+      eventType: "Publish",
+      metadata: { site, ...rest },
+    })
+
+    await publishSite(logger, site.id)
   })
 }
 

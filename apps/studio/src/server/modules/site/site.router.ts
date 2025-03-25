@@ -22,6 +22,7 @@ import {
   getFooter,
   getLocalisedSitemap,
   getNavBar,
+  publishSiteConfig,
 } from "../resource/resource.service"
 import {
   clearSiteNotification,
@@ -139,16 +140,16 @@ export const siteRouter = router({
         action: "update",
       })
 
-      await db.transaction().execute(async (tx) => {
+      const site = await db.transaction().execute(async (tx) => {
         if (notificationEnabled) {
-          await setSiteNotification({
+          return await setSiteNotification({
             tx,
             siteId,
             userId: ctx.user.id,
             notification,
           })
         } else {
-          await clearSiteNotification({
+          return await clearSiteNotification({
             tx,
             siteId,
             userId: ctx.user.id,
@@ -156,7 +157,7 @@ export const siteRouter = router({
         }
       })
 
-      await publishSite(ctx.logger, siteId)
+      await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
 
       return input
     }),
@@ -310,8 +311,12 @@ export const siteRouter = router({
           },
           by: user,
         })
-      })
 
-      await publishSite(ctx.logger, siteId)
+        await publishSiteConfig(
+          ctx.user.id,
+          { site: newSite, navbar: newNavbar, footer: newFooter },
+          ctx.logger,
+        )
+      })
     }),
 })
