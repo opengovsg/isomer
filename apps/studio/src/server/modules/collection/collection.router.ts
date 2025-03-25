@@ -127,7 +127,7 @@ export const collectionRouter = router({
         })
 
         // TODO: Create the index page for the collection and publish it
-        await publishResource(user.id, result.id, ctx.logger)
+        await publishResource(user.id, result, ctx.logger)
 
         return pick(result, defaultCollectionSelect)
       },
