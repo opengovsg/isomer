@@ -1,5 +1,3 @@
-#!/usr/bin/env ts-node
-
 /**
  * Unlighthouse CI Runner
  * Simple script to run Unlighthouse CI for predefined sites
