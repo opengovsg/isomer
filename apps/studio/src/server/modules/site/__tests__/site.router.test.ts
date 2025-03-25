@@ -266,13 +266,23 @@ describe("site.router", async () => {
       expect(newSite.config.notification).toEqual({
         content: [{ type: "text", text: "foo" }],
       })
-      const auditLog = await db
-        .selectFrom("AuditLog")
-        .selectAll()
-        .executeTakeFirst()
-      expect(auditLog).toBeDefined()
-      expect(auditLog?.eventType).toEqual(AuditLogEvent.SiteConfigUpdate)
-      expect(auditLog?.userId).toEqual(session.userId)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(2)
+      expect(
+        auditLog?.some(({ eventType }) => {
+          return eventType === AuditLogEvent.SiteConfigUpdate
+        }),
+      ).toEqual(true)
+      expect(
+        auditLog?.some(({ eventType }) => {
+          return eventType === AuditLogEvent.Publish
+        }),
+      ).toEqual(true)
+      expect(
+        auditLog?.every(({ userId }) => {
+          return userId === session.userId
+        }),
+      ).toEqual(true)
     })
 
     it("should add the site notification successfully if one did exist before", async () => {
@@ -451,7 +461,7 @@ describe("site.router", async () => {
       expect(newSite.theme).toEqual(NEW_THEME.replaceAll(`"`, ""))
       expect(newNavbar.content).toEqual(NEW_NAVBAR.replaceAll(`"`, ""))
       expect(newFooter.content).toEqual(NEW_FOOTER.replaceAll(`"`, ""))
-      expect(auditLogs).toHaveLength(3)
+      expect(auditLogs).toHaveLength(4)
       expect(
         auditLogs.some(
           (log) => log.eventType === AuditLogEvent.SiteConfigUpdate,
@@ -462,6 +472,9 @@ describe("site.router", async () => {
       ).toBe(true)
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.FooterUpdate),
+      ).toBe(true)
+      expect(
+        auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
       ).toBe(true)
       expect(auditLogs.every((log) => log.userId === session.userId)).toBe(true)
     })
