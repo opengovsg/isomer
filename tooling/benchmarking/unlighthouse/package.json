@@ -6,7 +6,8 @@
   "scripts": {
     "run-benchmark": "tsx index.ts",
     "upload-results": "tsx upload-results.ts",
-    "generate-sites": "tsx utils/generate-sites-from-infra.ts"
+    "generate-sites": "tsx utils/generate-sites-from-infra.ts",
+    "generate-overview": "tsx utils/generate-overview-table.ts"
   },
   "dependencies": {
     "csv-parser": "^3.0.0"

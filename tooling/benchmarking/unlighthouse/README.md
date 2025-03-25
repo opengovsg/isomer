@@ -10,6 +10,7 @@ The Unlighthouse benchmarking tool provides:
 - Output of comprehensive performance, accessibility, and SEO metrics
 - Deployment of results to Cloudflare Pages for easy sharing
 - Generation of site lists from infrastructure data
+- Creation of overview performance reports across all sites
 
 ## Prerequisites
 
@@ -35,8 +36,14 @@ The Unlighthouse benchmarking tool provides:
    ```
 
 4. Upload results to Cloudflare Pages:
+
    ```bash
    npm run upload-results
+   ```
+
+5. Generate an overview report of all sites:
+   ```bash
+   npm run generate-overview
    ```
 
 ## Available Scripts
@@ -44,6 +51,7 @@ The Unlighthouse benchmarking tool provides:
 - `npm run run-benchmark` - Runs Unlighthouse CI for all sites in sites.csv
 - `npm run upload-results` - Uploads the generated results to Cloudflare Pages
 - `npm run generate-sites` - Generates sites.csv from infrastructure data
+- `npm run generate-overview` - Generates an overview markdown table of performance metrics for all sites
 
 ## Site Configuration
 
@@ -73,6 +81,29 @@ This script reads from `utils/sites.production.csv` and:
 5. Outputs the results to `sites.csv`
 
 `sites.production.csv` can be taken from our infrastructure repository.
+
+## Generating Overview Report
+
+After running benchmarks for multiple sites, you can generate a comprehensive overview report:
+
+```bash
+npm run generate-overview
+```
+
+This script:
+
+1. Reads all `ci-result.json` files from each site's directory in the `results/` folder
+2. Calculates averages for key metrics:
+   - Overall score
+   - Performance
+   - Accessibility
+   - Best Practices
+   - SEO
+   - Site Quality (average of accessibility, best practices, and SEO)
+3. Generates a markdown table with these metrics
+4. Saves the report to `overview-report.md`
+
+The overview report provides a quick comparison of all sites' performance at a glance.
 
 ## Results
 
@@ -119,6 +150,7 @@ If you encounter issues:
 1. Make sure sites.csv is properly formatted
 2. Check Cloudflare authentication for upload issues
 3. Verify that all URLs in sites.csv are accessible
+4. Ensure the `results/` directory contains the expected site subdirectories with ci-result.json files
 
 ## Next Steps
 
