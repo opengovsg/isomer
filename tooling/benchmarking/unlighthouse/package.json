@@ -1,0 +1,15 @@
+{
+  "name": "unlighthouse-runner",
+  "version": "1.0.0",
+  "description": "Script to run Unlighthouse CI with specified parameters",
+  "main": "dist/run-unlighthouse-ci.js",
+  "scripts": {
+    "run-benchmark": "ts-node index.ts",
+    "upload-results": "ts-node upload-results.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
