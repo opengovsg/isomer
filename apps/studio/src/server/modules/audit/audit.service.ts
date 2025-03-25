@@ -161,7 +161,7 @@ type ConfigPublishEvent = { site: Site } & { navbar?: Navbar } & {
 interface PublishEventLogProps<
   Before,
   After,
-  Meta extends Record<string, unknown> = {},
+  Meta extends Record<string, unknown>,
 > {
   by: User
   delta: {

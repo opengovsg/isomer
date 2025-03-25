@@ -269,17 +269,17 @@ describe("site.router", async () => {
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(2)
       expect(
-        auditLog?.some(({ eventType }) => {
+        auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.SiteConfigUpdate
         }),
       ).toEqual(true)
       expect(
-        auditLog?.some(({ eventType }) => {
+        auditLog.some(({ eventType }) => {
           return eventType === AuditLogEvent.Publish
         }),
       ).toEqual(true)
       expect(
-        auditLog?.every(({ userId }) => {
+        auditLog.every(({ userId }) => {
           return userId === session.userId
         }),
       ).toEqual(true)

@@ -28,8 +28,7 @@ import {
   searchWithResourceIdsSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
-import { logPublishEvent, logResourceEvent } from "../audit/audit.service"
-import { publishSite } from "../aws/codebuild.service"
+import { logResourceEvent } from "../audit/audit.service"
 import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {

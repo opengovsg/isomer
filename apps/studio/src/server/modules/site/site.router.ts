@@ -16,7 +16,6 @@ import {
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { logConfigEvent } from "../audit/audit.service"
-import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db, jsonb } from "../database"
 import {
   getFooter,
