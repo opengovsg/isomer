@@ -11,7 +11,7 @@
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
-
+import { OUTPUT_DIRECTORY } from "./constants";
 interface Site {
   name: string;
   url: string;
@@ -52,7 +52,7 @@ function runUnlighthouseCI(site: Site): void {
 
   try {
     // Execute the unlighthouse-ci command
-    const command: string = `npx unlighthouse-ci --no-cache --build-static --output-path "${site.name}" --site ${site.url}`;
+    const command: string = `npx unlighthouse-ci --no-cache --build-static --output-path "${OUTPUT_DIRECTORY}/${site.name}" --site ${site.url}`;
     console.log(`Executing: ${command}`);
 
     execSync(command, { stdio: "inherit" });
