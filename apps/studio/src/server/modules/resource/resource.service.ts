@@ -498,9 +498,10 @@ export const publishPageResource = async (
           before: previousVersion?.id
             ? { versionId: previousVersion.id }
             : null,
-          after: { ...fullResource, ...version },
+          after: version,
         },
         eventType: "Publish",
+        metadata: fullResource,
       })
 
       return version
@@ -517,7 +518,7 @@ export const publishPageResource = async (
 // and hence, don't incur a log to the `Version` table
 export const publishResource = async (
   by: string,
-  resourceId: string,
+  resource: Resource,
   logger: Logger<string>,
 ) => {
   const byUser = await db
@@ -533,25 +534,14 @@ export const publishResource = async (
     )
 
   return db.transaction().execute(async (tx) => {
-    const resource = await tx
-      .selectFrom("Resource")
-      .where("id", "=", resourceId)
-      .selectAll()
-      .executeTakeFirstOrThrow(
-        () =>
-          new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Unable to publish the specified resource",
-          }),
-      )
-
     await logPublishEvent(tx, {
       by: byUser,
       delta: {
         before: null,
-        after: resource,
+        after: null,
       },
       eventType: "Publish",
+      metadata: resource,
     })
 
     await publishSite(logger, resource.siteId)
@@ -820,4 +810,14 @@ export const getSearchWithResourceIds = async ({
       lastUpdatedAt: null,
     })),
   })
+}
+
+export const getFullResourceByVersion = (versionId: string) => {
+  return db
+    .selectFrom("Version")
+    .innerJoin("Blob", "Version.blobId", "Blob.id")
+    .innerJoin("Resource", "Version.resourceId", "Resource.id")
+    .where("Version.id", "=", versionId)
+    .select(defaultResourceWithBlobSelect)
+    .executeTakeFirst()
 }

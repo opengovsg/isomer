@@ -150,28 +150,40 @@ interface VersionPointer {
   versionId: Version["id"]
 }
 
-type BlobPublishEvent = WithoutMeta<Resource & Blob & VersionPointer>
-type ResourcePublishEvent = WithoutMeta<Resource>
-type ConfigPublishEvent = WithoutMeta<Site | Navbar | Footer>
+type BlobPublishEvent = Resource & Blob
+type ConfigPublishEvent = Site | Navbar | Footer
 
-interface PublishEventLogProps<T> {
+interface PublishEventLogProps<
+  Before,
+  After,
+  Meta extends Record<string, unknown> = {},
+> {
   by: User
   delta: {
-    // NOTE: `null` if this is the first publish
-    // We don't want to store the `version` because it is a pointer
-    // to the blob/resource
-    // we will instead store the full data here so it is an accurate snapshot
-    before: WithoutMeta<VersionPointer> | null
-    after: T & { versionId?: string }
+    before: Before extends null ? null : WithoutMeta<Before>
+    after: After extends null ? null : WithoutMeta<After>
   }
   eventType: Extract<AuditLogEvent, "Publish">
   ip?: string
-  metadata?: Record<string, unknown>
+  metadata: Meta
 }
 
-type BlobPublishEventLogProps = PublishEventLogProps<BlobPublishEvent>
-type ResourcePublishEventLogProps = PublishEventLogProps<ResourcePublishEvent>
-type ConfigPublishEventLogProps = PublishEventLogProps<ConfigPublishEvent>
+// NOTE: First publish of a blob will have no `versionId`
+// but every subsequent publish will have
+type BlobPublishEventLogProps = PublishEventLogProps<
+  null | VersionPointer,
+  VersionPointer,
+  BlobPublishEvent
+>
+
+type ResourcePublishEventLogProps = PublishEventLogProps<null, null, Resource>
+
+// NOTE: users cannot delete config - so this will forever be an update
+type ConfigPublishEventLogProps = PublishEventLogProps<
+  null,
+  null,
+  ConfigPublishEvent
+>
 
 export const logPublishEvent: AuditLogger<
   | BlobPublishEventLogProps

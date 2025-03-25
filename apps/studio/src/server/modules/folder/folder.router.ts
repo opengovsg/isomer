@@ -110,7 +110,7 @@ export const folderRouter = router({
         })
 
         // TODO: Create the index page for the folder and publish it
-        await publishResource(user.id, folder.id, ctx.logger)
+        await publishResource(user.id, folder, ctx.logger)
 
         return { folderId: folder.id }
       },
@@ -213,7 +213,7 @@ export const folderRouter = router({
           return newResource
         })
 
-        await publishResource(user.id, result.id, ctx.logger)
+        await publishResource(user.id, result, ctx.logger)
 
         return pick(result, defaultFolderSelect)
       },

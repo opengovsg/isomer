@@ -39,7 +39,7 @@ declare global {
       after: Record<string, unknown>
     }
     interface DeleteLogEvent {
-      before: Record<string, unknown>
+      before: Record<string, unknown> | null
       after: null
     }
     interface FullLogEvent {

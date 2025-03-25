@@ -28,7 +28,8 @@ import {
   searchWithResourceIdsSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
-import { logResourceEvent } from "../audit/audit.service"
+import { logPublishEvent, logResourceEvent } from "../audit/audit.service"
+import { publishSite } from "../aws/codebuild.service"
 import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
@@ -450,7 +451,7 @@ export const resourceRouter = router({
             throw err
           })
 
-        await publishResource(user.id, result.id, ctx.logger)
+        await publishResource(user.id, result, ctx.logger)
         return result
       },
     ),
@@ -569,7 +570,7 @@ export const resourceRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST" })
       }
 
-      await publishResource(user.id, result.id, ctx.logger)
+      await publishResource(user.id, result, ctx.logger)
 
       // NOTE: We need to do this cast as the property is a `bigint`
       // and trpc cannot serialise it, which leads to errors
