@@ -13,7 +13,7 @@ import { Site } from "../types";
 import { loadSitesFromCSV } from "../utils/loadSitesFromCsv";
 
 // Load sites from CSV file
-const csvFilePath = path.resolve(__dirname, SITES_FILE);
+const csvFilePath = path.resolve(__dirname, `../${SITES_FILE}`);
 const SITES: Site[] = loadSitesFromCSV(csvFilePath);
 
 if (SITES.length === 0) {
@@ -31,7 +31,7 @@ function runUnlighthouseCI(site: Site): void {
 
   try {
     // Execute the unlighthouse-ci command
-    const command: string = `npx unlighthouse-ci --no-cache --build-static --output-path "${OUTPUT_DIRECTORY}/${site.name}" --site ${site.url}`;
+    const command: string = `unlighthouse-ci --no-cache --build-static --output-path "${OUTPUT_DIRECTORY}/${site.name}" --site ${site.url}`;
     console.log(`Executing: ${command}`);
 
     execSync(command, { stdio: "inherit" });
