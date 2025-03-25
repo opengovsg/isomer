@@ -1234,12 +1234,6 @@ describe("user.router", () => {
       await setupEditorPermissions({ userId: session.userId, siteId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-      await setupEditorPermissions({
-        userId: user.id,
-        siteId,
-        isDeleted: true,
-        useCurrentTime: true,
-      })
       await setupAdminPermissions({
         userId: user.id,
         siteId,
