@@ -28,6 +28,10 @@ createReadStream(inputFilePath)
     });
   })
   .on("end", () => {
+    // Sort extractedData alphabetically by shortName
+    // For ease of debugging, we sort the data alphabetically by shortName
+    extractedData.sort((a, b) => a.shortName.localeCompare(b.shortName));
+
     // Generate output CSV without header
     let outputCsvContent = "";
     extractedData.forEach((record) => {
