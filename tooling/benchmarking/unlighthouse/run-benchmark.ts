@@ -7,26 +7,10 @@
  */
 
 import { execSync } from "child_process";
-import * as fs from "fs";
 import * as path from "path";
 import { OUTPUT_DIRECTORY, SITES_FILE } from "../constants";
 import { Site } from "../types";
-
-// Function to read sites from CSV file
-function loadSitesFromCSV(filePath: string): Site[] {
-  try {
-    const csvContent = fs.readFileSync(filePath, "utf8");
-    const lines = csvContent.split("\n").filter((line) => line.trim() !== "");
-
-    return lines.map((line) => {
-      const [name, url] = line.split(",");
-      return { name, url } as Site;
-    });
-  } catch (error) {
-    console.error(`Error reading CSV file: ${(error as Error).message}`);
-    return [];
-  }
-}
+import { loadSitesFromCSV } from "../utils/loadSitesFromCsv";
 
 // Load sites from CSV file
 const csvFilePath = path.resolve(__dirname, SITES_FILE);
