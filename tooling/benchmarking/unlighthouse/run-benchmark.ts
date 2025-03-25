@@ -9,8 +9,8 @@
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
-import { OUTPUT_DIRECTORY, SITES_FILE } from "./constants";
-import { Site } from "./types";
+import { OUTPUT_DIRECTORY, SITES_FILE } from "../constants";
+import { Site } from "../types";
 
 // Function to read sites from CSV file
 function loadSitesFromCSV(filePath: string): Site[] {

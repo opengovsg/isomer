@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { OUTPUT_DIRECTORY } from "../constants";
+import { OUTPUT_DIRECTORY } from "../../constants";
 
 interface SiteResult {
   path: string;
