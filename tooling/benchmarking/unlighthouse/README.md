@@ -50,7 +50,6 @@ The Unlighthouse benchmarking tool provides:
 
 - `npm run run-benchmark` - Runs Unlighthouse CI for all sites in sites.csv
 - `npm run upload-results` - Uploads the generated results to Cloudflare Pages
-- `npm run generate-sites` - Generates sites.csv from infrastructure data
 - `npm run generate-overview` - Generates an overview markdown table of performance metrics for all sites
 
 ## Site Configuration
@@ -64,23 +63,11 @@ another-site,https://another-example.com
 
 Each line contains a site name (used for the output directory) and the URL to test.
 
-## Generating Sites List
+## Sites List
 
-You can automatically generate the sites list from your infrastructure data using:
+You'll need to create or obtain a `sites.csv` file containing the list of sites to benchmark. This file should be located in the root directory of the benchmarking tool.
 
-```bash
-npm run generate-sites
-```
-
-This script reads from `utils/sites.production.csv` and:
-
-1. Filters for sites in "LAUNCHED" state
-2. Excludes sites with domain aliases starting with "test-"
-3. Adds "https://" prefix to all domain aliases
-4. Adds "-next" suffix to all shortNames
-5. Outputs the results to `sites.csv`
-
-`sites.production.csv` can be taken from our infrastructure repository.
+The sites list should contain site names and their corresponding URLs, with each site on a separate line in CSV format.
 
 ## Generating Overview Report
 

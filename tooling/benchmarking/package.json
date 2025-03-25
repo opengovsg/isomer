@@ -1,0 +1,17 @@
+{
+  "name": "isomer-benchmarking",
+  "version": "1.0.0",
+  "description": "Benchmarking tools for Isomer sites",
+  "main": "index.js",
+  "scripts": {
+    "generate-sites": "tsx utils/generate-sites-from-infra.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "csv-parser": "^3.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^4.9.5"
+  }
+}

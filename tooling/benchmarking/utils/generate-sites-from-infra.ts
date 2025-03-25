@@ -36,13 +36,6 @@ createReadStream(inputFilePath)
 
     // Write the output to sites.csv in the parent directory
     writeFileSync(outputFilePath, outputCsvContent);
-
-    console.log(`Extraction complete. Output written to ${outputFilePath}`);
-    console.log(
-      `Excluded sites that are not in LAUNCHED state or have domainAliases starting with "test-"`
-    );
-    console.log(`Added "https://" prefix to all domain aliases`);
-    console.log(`Added "-next" suffix to all shortNames`);
   })
   .on("error", (error) => {
     console.error("Error parsing CSV:", error);
