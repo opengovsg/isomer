@@ -1456,7 +1456,7 @@ describe("user.router", () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "NOT_FOUND",
-          message: "User permissions not found",
+          message: "User permission not found",
         }),
       )
 
@@ -1487,7 +1487,7 @@ describe("user.router", () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "NOT_FOUND",
-          message: "User permissions not found",
+          message: "User permission not found",
         }),
       )
 

@@ -180,7 +180,7 @@ export const updateUserSitewidePermission = async ({
     if (!sitePermissionToRemove) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "User permissions not found",
+        message: "User permission not found",
       })
     }
 
