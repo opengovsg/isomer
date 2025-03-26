@@ -14,6 +14,7 @@ import {
   UnsupportedBrowserBanner,
   VicaStylesheet,
   VicaWidget,
+  WizgovWidgetClient,
   Wogaa,
 } from "../../components/internal"
 import { SKIP_TO_CONTENT_ANCHOR_ID } from "../../constants"
@@ -111,7 +112,9 @@ export const Skeleton = ({
       )}
 
       {/* Ensures that the webchat widget only loads after the page has loaded */}
+      {/* Note: did not account for both being added to the config as it's a very unlikely scenario and there's "correct" way to handle this */}
       {site.vica && <VicaWidget site={site} {...site.vica} />}
+      {site.wizgov && <WizgovWidgetClient {...site.wizgov} />}
     </>
   )
 }
