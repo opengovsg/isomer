@@ -12,6 +12,7 @@ import type {
   SafeKysely,
   Site,
   Transaction,
+  User,
 } from "../database"
 import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
@@ -525,7 +526,7 @@ export const publishPageResource = async (
 // this should be used for publishes that do not incur a change to `Blob.content`
 // and hence, don't incur a log to the `Version` table
 export const publishResource = async (
-  by: string,
+  by: User["id"],
   resource: Resource,
   logger: Logger<string>,
 ) => {
