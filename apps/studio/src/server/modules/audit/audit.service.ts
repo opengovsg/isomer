@@ -195,12 +195,13 @@ interface UserEventLogProps {
   by: User
   delta: CreateUserDelta | DeleteUserDelta | UpdateUserDelta
   eventType: Extract<AuditLogEvent, "UserCreate" | "UserUpdate" | "UserDelete">
+  metadata?: Record<string, unknown>
   ip?: string
 }
 
 export const logUserEvent: AuditLogger<UserEventLogProps> = async (
   tx,
-  { by, delta, eventType, ip },
+  { by, delta, eventType, ip, metadata = {} },
 ) => {
   await tx
     .insertInto("AuditLog")
@@ -209,7 +210,7 @@ export const logUserEvent: AuditLogger<UserEventLogProps> = async (
       delta,
       userId: by.id,
       ipAddress: ip,
-      metadata: {},
+      metadata,
     })
     .execute()
 }
@@ -219,11 +220,15 @@ interface CreatePermissionDelta {
   after: ResourcePermission
 }
 
+// There's ResourcePermission for "before" and "after"
+// as we are only soft-deleting the record
 interface DeletePermissionDelta {
-  before: null
+  before: ResourcePermission
   after: ResourcePermission
 }
 
+// Note: This is not used anywhere at the moment as we only soft-delete
+// the ResourcePermission record, nevertheless, we keep it here for future use (if any)
 interface UpdatePermissionDelta {
   before: ResourcePermission
   after: ResourcePermission
@@ -236,12 +241,13 @@ interface PermissionEventLogProps {
   >
   by: User
   delta: CreatePermissionDelta | DeletePermissionDelta | UpdatePermissionDelta
+  metadata?: Record<string, unknown>
   ip?: string
 }
 
 export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
   tx,
-  { eventType, by, delta, ip },
+  { eventType, by, delta, ip, metadata = {} },
 ) => {
   await tx
     .insertInto("AuditLog")
@@ -250,6 +256,7 @@ export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
       delta,
       userId: by.id,
       ipAddress: ip,
+      metadata,
     })
     .execute()
 }
