@@ -18,7 +18,9 @@ import {
 
 import type { reorderBlobSchema, updatePageBlobSchema } from "~/schemas/page"
 import { createCallerFactory } from "~/server/trpc"
+import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db } from "../../database"
+import { getBlobOfResource } from "../../resource/resource.service"
 import { pageRouter } from "../page.router"
 import { createDefaultPage } from "../page.service"
 
@@ -328,7 +330,7 @@ describe("page.router", async () => {
       pageToReorder = await setupPageResource({ resourceType: "Page" })
     })
 
-    it("should throw 401 if not logged in", async () => {
+    it("should throw 401 if not logged in reorder", async () => {
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
@@ -343,6 +345,7 @@ describe("page.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
+      await assertAuditLogRows()
     })
 
     it("should return 404 if page does not exist", async () => {
@@ -399,6 +402,7 @@ describe("page.router", async () => {
       })
 
       // Assert
+      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "CONFLICT",
@@ -426,6 +430,7 @@ describe("page.router", async () => {
       })
 
       // Assert
+      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "UNPROCESSABLE_CONTENT",
@@ -450,6 +455,7 @@ describe("page.router", async () => {
       })
 
       // Assert
+      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         "Number must be greater than or equal to 0",
       )
@@ -473,6 +479,7 @@ describe("page.router", async () => {
       })
 
       // Assert
+      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "UNPROCESSABLE_CONTENT",
@@ -497,6 +504,7 @@ describe("page.router", async () => {
       })
 
       // Assert
+      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         "Number must be greater than or equal to 0",
       )
@@ -508,6 +516,10 @@ describe("page.router", async () => {
         userId: session.userId ?? undefined,
         siteId: pageToReorder.site.id,
       })
+      const oldBlob = db
+        .selectFrom("Blob")
+        .where("id", "=", pageToReorder.blob.id)
+        .executeTakeFirstOrThrow()
 
       // Act
       const result = await caller.reorderBlock({
@@ -527,6 +539,21 @@ describe("page.router", async () => {
       const expectedBlocks = pageToReorder.blob.content.content.reverse()
       expect(actual.content.content).toEqual(expectedBlocks)
       expect(result).toEqual(expectedBlocks)
+      await assertAuditLogRows(1)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog[0]).toMatchObject({
+        eventType: "ResourceUpdate",
+        delta: {
+          before: {
+            blob: oldBlob,
+            resource: omit(pageToReorder.page, ["updatedAt", "createdAt"]),
+          },
+          after: {
+            blob: actual,
+            resource: omit(pageToReorder.page, ["updatedAt", "createdAt"]),
+          },
+        },
+      })
     })
   })
 
@@ -582,19 +609,25 @@ describe("page.router", async () => {
     }
 
     beforeEach(async () => {
+      await resetTables("Site", "AuditLog")
       const { page } = await setupPageResource({ resourceType: "Page" })
       pageToUpdate = page
     })
 
-    it("should throw 401 if not logged in", async () => {
+    it("should throw 401 if not logged in update", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
       const pageUpdateArgs = createPageUpdateArgs(pageToUpdate)
+
+      // Act
       const result = unauthedCaller.updatePageBlob(pageUpdateArgs)
 
+      // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
+      await assertAuditLogRows()
     })
 
     it("should return 404 if page does not exist", async () => {
@@ -618,6 +651,7 @@ describe("page.router", async () => {
           message: "Resource not found",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should return 422 if content is not valid", async () => {
@@ -636,6 +670,7 @@ describe("page.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrowError("Schema validation failed")
+      await assertAuditLogRows()
     })
 
     it("should update draft page blob if args are valid and has current draft", async () => {
@@ -645,17 +680,35 @@ describe("page.router", async () => {
         userId: session.userId ?? undefined,
         siteId: pageToUpdate.siteId,
       })
+      const oldBlob = await db
+        .transaction()
+        .execute((tx) => getBlobOfResource({ tx, resourceId: pageToUpdate.id }))
 
       // Act
       const result = await caller.updatePageBlob(pageUpdateArgs)
 
       // Assert
+      await assertAuditLogRows(1)
       const actual = await db
         .selectFrom("Blob")
         .where("id", "=", pageToUpdate.draftBlobId)
         .select("content")
         .executeTakeFirstOrThrow()
       expect(actual.content).toEqual(result.content)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog[0]).toMatchObject({
+        eventType: "ResourceUpdate",
+        delta: {
+          before: {
+            blob: omit(oldBlob, ["updatedAt", "createdAt"]),
+            resource: omit(pageToUpdate, ["updatedAt", "createdAt"]),
+          },
+          after: {
+            blob: omit(actual, ["publishedVersionId", "draftBlobId"]),
+            resource: omit(pageToUpdate, ["updatedAt", "createdAt"]),
+          },
+        },
+      })
     })
 
     it("should create draft page blob if args are valid and without current draft", async () => {
@@ -672,6 +725,11 @@ describe("page.router", async () => {
       expect(publishedPageToUpdate.publishedVersionId).not.toBeNull()
       expect(publishedPageToUpdate.draftBlobId).toBeNull()
       const pageUpdateArgs = createPageUpdateArgs(publishedPageToUpdate)
+      const oldBlob = await db
+        .transaction()
+        .execute((tx) =>
+          getBlobOfResource({ tx, resourceId: publishedPageToUpdate.id }),
+        )
 
       // Act
       const result = await caller.updatePageBlob(pageUpdateArgs)
@@ -692,14 +750,34 @@ describe("page.router", async () => {
         publishedVersionId: publishedPageToUpdate.publishedVersionId,
         draftBlobId: expect.any(String),
       })
+      await assertAuditLogRows(1)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog[0]).toMatchObject({
+        eventType: "ResourceUpdate",
+        delta: {
+          before: {
+            blob: omit(oldBlob, ["updatedAt", "createdAt"]),
+            resource: omit(publishedPageToUpdate, ["updatedAt", "createdAt"]),
+          },
+          after: {
+            blob: omit(actual, ["publishedVersionId", "draftBlobId"]),
+            resource: omit(publishedPageToUpdate, ["updatedAt", "createdAt"]),
+          },
+        },
+      })
     })
   })
 
   describe("createPage", () => {
-    it("should throw 401 if not logged in", async () => {
+    beforeEach(async () => {
+      await resetTables("Site", "AuditLog")
+    })
+    it("should throw 401 if not logged in create", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
+      // Act
       const result = unauthedCaller.createPage({
         siteId: 1,
         title: "Test Page",
@@ -707,9 +785,11 @@ describe("page.router", async () => {
         layout: "content",
       })
 
+      // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
+      await assertAuditLogRows()
     })
 
     it("should return 404 if site does not exist", async () => {
@@ -722,6 +802,7 @@ describe("page.router", async () => {
       })
 
       // Assert
+      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "FORBIDDEN",
@@ -748,6 +829,7 @@ describe("page.router", async () => {
       })
 
       // Assert
+      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "CONFLICT",
@@ -789,6 +871,12 @@ describe("page.router", async () => {
         ...expectedPageArgs,
         content: createDefaultPage({ layout: "content" }),
       })
+      await assertAuditLogRows(1)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(1)
+      expect(auditLog[0]).toMatchObject({
+        delta: { before: null, after: { blob: { content: actual.content } } },
+      })
     })
 
     it("should create a new page with Article layout successfully", async () => {
@@ -824,6 +912,12 @@ describe("page.router", async () => {
         ...expectedPageArgs,
         content: createDefaultPage({ layout: "article" }),
       })
+      await assertAuditLogRows(1)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(1)
+      expect(auditLog[0]).toMatchObject({
+        delta: { before: null, after: { blob: { content: actual.content } } },
+      })
     })
 
     it("should create a new page with default Content layout if layout is not provided", async () => {
@@ -857,6 +951,12 @@ describe("page.router", async () => {
       expect(actual).toMatchObject({
         ...expectedPageArgs,
         content: createDefaultPage({ layout: "content" }),
+      })
+      await assertAuditLogRows(1)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(1)
+      expect(auditLog[0]).toMatchObject({
+        delta: { before: null, after: { blob: { content: actual.content } } },
       })
     })
 
@@ -902,6 +1002,12 @@ describe("page.router", async () => {
         parentId: folder.id,
         content: createDefaultPage({ layout: "content" }),
       })
+      await assertAuditLogRows(1)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog).toHaveLength(1)
+      expect(auditLog[0]).toMatchObject({
+        delta: { before: null, after: { blob: { content: actual.content } } },
+      })
     })
 
     it("should throw 400 if folderId does not exist", async () => {
@@ -924,6 +1030,7 @@ describe("page.router", async () => {
       })
 
       // Assert
+      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "BAD_REQUEST",
@@ -952,6 +1059,7 @@ describe("page.router", async () => {
       })
 
       // Assert
+      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "BAD_REQUEST",
@@ -1041,26 +1149,13 @@ describe("page.router", async () => {
     it.skip("should throw 403 if user does not have read access to root", async () => {})
   })
 
-  // TODO: Implement tests when publish works
-  describe.skip("publishPage", () => {
-    it.skip("should trigger a publish automatically on creation of a folder", () => {})
-    it.skip("should trigger a publish automatically on deletion of a folder", () => {})
-    it.skip("should trigger a publish automatically on move of a folder", () => {})
-    it.skip("should trigger a publish automatically on update of a folder's title", () => {})
-    it.skip("should trigger a publish automatically on update of a folder's permalink", () => {})
-    it.skip("should trigger a publish automatically on creation of a collection", () => {})
-    it.skip("should trigger a publish automatically on deletion of a collection", () => {})
-    it.skip("should trigger a publish automatically on update of a collection's title", () => {})
-    it.skip("should trigger a publish automatically on update of a collection's permalink", () => {})
-    it.skip("should trigger a publish automatically on move of a page", () => {})
-    it.skip("should not trigger a publish if there is a currently running publish witin the past minute", () => {})
-  })
-
   describe("updateSettings", () => {
-    it("should throw 401 if not logged in", async () => {
+    it("should throw 401 if not logged in update", async () => {
+      // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
+      // Act
       const result = unauthedCaller.updateSettings({
         siteId: 1,
         pageId: 1,
@@ -1069,6 +1164,7 @@ describe("page.router", async () => {
         type: "Page",
       })
 
+      // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
@@ -1076,15 +1172,18 @@ describe("page.router", async () => {
 
     it("should return 404 if page does not exist", async () => {
       // Act
+      const { site } = await setupSite()
       const result = caller.updateSettings({
-        siteId: 1,
+        siteId: site.id,
         pageId: 1,
         title: "Test Page",
         permalink: "test-page",
         type: "Page",
       })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
 
       // Assert
+      await assertAuditLogRows()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "NOT_FOUND",
@@ -1117,6 +1216,7 @@ describe("page.router", async () => {
       })
 
       // Assert
+      await assertAuditLogRows(2)
       const actualResource = await db
         .selectFrom("Resource")
         .where("id", "=", page.id)
@@ -1130,6 +1230,7 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
       expect(result).toMatchObject(actualResource)
       expect(result).toMatchObject(expectedSettings)
+      await assertAuditLogRows(2)
     })
 
     it("should update root page settings successfully", async () => {
@@ -1227,10 +1328,12 @@ describe("page.router", async () => {
 
     it("should return 404 if page does not exist", async () => {
       // Act
+      const { site } = await setupSite()
       const result = caller.getFullPermalink({
-        siteId: 1,
+        siteId: site.id,
         pageId: 99999,
       })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
 
       // Assert
       await expect(result).rejects.toThrowError(
