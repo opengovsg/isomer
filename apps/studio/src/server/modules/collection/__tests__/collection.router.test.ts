@@ -20,11 +20,11 @@ import {
 
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
+import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db } from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"
 import { collectionRouter } from "../collection.router"
 import {
-  assertAuditLogRows,
   getCollectionItemByPermalink,
   getCollectionWithPermalink,
 } from "./utils"
