@@ -1,0 +1,1 @@
+export { WizgovWidgetClient } from "./WizgovWidgetClient"
