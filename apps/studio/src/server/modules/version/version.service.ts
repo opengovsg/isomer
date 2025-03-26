@@ -41,10 +41,10 @@ const createVersion = async (
       publishedAt: new Date(),
       publishedBy: publisherId,
     })
-    .returning("Version.id")
+    .returning(["Version.id", "Version.versionNum"])
     .executeTakeFirstOrThrow()
 
-  return { versionId: addedVersion.id }
+  return { versionId: addedVersion.id, versionNum: addedVersion.versionNum }
 }
 
 export const incrementVersion = async ({

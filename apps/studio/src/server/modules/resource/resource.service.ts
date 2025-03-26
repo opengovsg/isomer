@@ -495,7 +495,7 @@ export const publishPageResource = async (
 
       const previousVersion = await tx
         .selectFrom("Version")
-        .where("Version.versionNum", "=", Number(version.versionId) - 1)
+        .where("Version.versionNum", "=", Number(version.versionNum) - 1)
         .where("Version.resourceId", "=", resourceId)
         .select("Version.id")
         .executeTakeFirst()
