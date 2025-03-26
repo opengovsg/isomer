@@ -1,1 +1,1 @@
-export { WizgovWidgetClient } from "./WizgovWidgetClient"
+export { WizgovWidget } from "./WizgovWidget"

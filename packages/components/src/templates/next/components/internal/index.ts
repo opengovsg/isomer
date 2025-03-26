@@ -32,4 +32,4 @@ export {
 export { BlogCard } from "./BlogCard"
 export { FontPreload } from "./FontPreload"
 export { ScrollToTop } from "./ScrollToTop"
-export { WizgovWidgetClient } from "./Wizgov"
+export { WizgovWidget } from "./Wizgov"
