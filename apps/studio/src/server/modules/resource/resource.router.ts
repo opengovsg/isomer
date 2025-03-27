@@ -29,7 +29,6 @@ import {
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
 import { logResourceEvent } from "../audit/audit.service"
-import { publishSite } from "../aws/codebuild.service"
 import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
@@ -44,6 +43,7 @@ import {
   getSearchResults,
   getSearchWithResourceIds,
   getWithFullPermalink,
+  publishResource,
 } from "./resource.service"
 
 const fetchResource = async (resourceId: string | null) => {
@@ -450,7 +450,7 @@ export const resourceRouter = router({
             throw err
           })
 
-        await publishSite(ctx.logger, result.siteId)
+        await publishResource(user.id, result, ctx.logger)
         return result
       },
     ),
@@ -561,18 +561,19 @@ export const resourceRouter = router({
           .where("Resource.id", "=", String(resourceId))
           .where("Resource.siteId", "=", siteId)
           .where("Resource.type", "!=", ResourceType.RootPage)
+          .returningAll()
           .executeTakeFirst()
       })
 
-      if (Number(result.numDeletedRows) === 0) {
+      if (!result) {
         throw new TRPCError({ code: "BAD_REQUEST" })
       }
 
-      await publishSite(ctx.logger, siteId)
+      await publishResource(user.id, result, ctx.logger)
 
       // NOTE: We need to do this cast as the property is a `bigint`
       // and trpc cannot serialise it, which leads to errors
-      return Number(result.numDeletedRows)
+      return result
     }),
 
   getParentOf: protectedProcedure

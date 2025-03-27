@@ -1725,7 +1725,7 @@ describe("resource.router", async () => {
         .where("id", "=", page.id)
         .executeTakeFirst()
       expect(actual).toBeUndefined()
-      expect(result).toEqual(1)
+      expect(result).toEqual(page)
     })
 
     it("should delete a folder and all its children (recursively) successfully", async () => {
@@ -1790,7 +1790,7 @@ describe("resource.router", async () => {
         ])
         .execute()
       expect(actual).toHaveLength(0)
-      expect(result).toEqual(1)
+      expect(result).toEqual(folderToUse)
       expect(auditSpy).toHaveBeenCalledTimes(1)
       const auditEntry = await db
         .selectFrom("AuditLog")

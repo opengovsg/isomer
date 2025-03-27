@@ -6,7 +6,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
-import { get, isEmpty, isEqual } from "lodash"
+import _, { get, isEmpty, isEqual } from "lodash"
 import { z } from "zod"
 
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -25,7 +25,6 @@ import {
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
@@ -36,6 +35,7 @@ import {
   getPageById,
   getResourceFullPermalink,
   getResourcePermalinkTree,
+  publishPageResource,
   publishResource,
   updateBlobById,
 } from "../resource/resource.service"
@@ -416,7 +416,7 @@ export const pageRouter = router({
   publishPage: protectedProcedure
     .input(publishPageSchema)
     .mutation(async ({ ctx, input: { siteId, pageId } }) =>
-      publishResource(ctx.logger, siteId, String(pageId), ctx.user.id),
+      publishPageResource(ctx.logger, siteId, String(pageId), ctx.user.id),
     ),
 
   updateMeta: protectedProcedure
@@ -505,13 +505,7 @@ export const pageRouter = router({
                 ResourceType.RootPage,
               ])
               .set({ title, ...settings })
-              .returning([
-                "Resource.id",
-                "Resource.type",
-                "Resource.title",
-                "Resource.permalink",
-                "Resource.draftBlobId",
-              ])
+              .returningAll()
               .executeTakeFirstOrThrow()
               .catch((err) => {
                 if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
@@ -526,9 +520,15 @@ export const pageRouter = router({
 
             // We do an implicit publish so that we can make the changes to the
             // page settings immediately visible on the end site
-            await publishSite(ctx.logger, siteId)
+            await publishResource(ctx.user.id, updatedResource, ctx.logger)
 
-            return updatedResource
+            return _.pick(updatedResource, [
+              "id",
+              "type",
+              "title",
+              "permalink",
+              "draftBlobId",
+            ])
           } catch (err) {
             if (err instanceof TRPCError) {
               throw err
