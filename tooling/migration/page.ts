@@ -61,7 +61,9 @@ export const getIsomerSchemaFromJekyll = async ({
   // review (e.g. long/missing alt text, missing table captions, etc)
   const { content: updatedContent, reviewItems } = getManualReviewItems(
     convertedContent,
-    content
+    content,
+    description,
+    layout
   );
 
   const status = reviewItems.length === 0 ? "converted" : "manual_review";
@@ -127,7 +129,7 @@ export const getIsomerSchemaFromJekyll = async ({
       page: {
         title,
         contentPageHeader: {
-          summary: "This is the page summary",
+          summary: description || "This is the page summary",
         },
       },
       ...((description || image) && {

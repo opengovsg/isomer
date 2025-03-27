@@ -656,6 +656,7 @@ const getCleanedSchema = (schema: any) => {
 
             if (
               mark.attrs.target === "_blank" &&
+              mark.attrs.href &&
               !mark.attrs.href.startsWith("/")
             ) {
               newAttrs.target = "_blank";

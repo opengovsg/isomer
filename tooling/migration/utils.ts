@@ -2,6 +2,7 @@ import { Octokit } from "@octokit/rest";
 import { getFileContents, getRecursiveTree } from "./github";
 import fm from "front-matter";
 import {
+  NON_CONTENT_LAYOUTS,
   PLACEHOLDER_ALT_TEXT,
   PLACEHOLDER_GOOGLE_SLIDES_TEXT,
   PLACEHOLDER_IMAGE_IN_TABLE_TEXT,
@@ -105,7 +106,9 @@ export const getLegalPermalink = (permalink: string) => {
 
 export const getManualReviewItems = (
   content: any[],
-  originalContent: any
+  originalContent: any,
+  description: any,
+  layout: any
 ): {
   content: any[];
   reviewItems: string[];
@@ -239,6 +242,22 @@ export const getManualReviewItems = (
     reviewItems.push("Contains FormSG embeds");
   } else if (content.some((block) => block.type === "iframe")) {
     reviewItems.push("Contains Iframes");
+  }
+
+  // Flag pages with descriptions that are too long
+  // For content pages, 300 characters
+  if (
+    description &&
+    layout &&
+    !NON_CONTENT_LAYOUTS.includes(layout) &&
+    description.length > 300
+  ) {
+    reviewItems.push("Page summary is longer than 300 characters");
+  }
+
+  // For article pages, 250 characters
+  if (description && layout && layout === "post" && description.length > 250) {
+    reviewItems.push("Article summary is longer than 250 characters");
   }
 
   return {

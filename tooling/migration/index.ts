@@ -189,10 +189,7 @@ const migrate = async ({
     `(https://github.com/isomerpages/${site})`
   );
 
-  const migrationFolders =
-    folders && folders.length > 0
-      ? folders
-      : await getAllFolders({ site, octokit });
+  const migrationFolders = folders ?? (await getAllFolders({ site, octokit }));
   const resourceRoomName = isResourceRoomIncluded
     ? await getResourceRoomName({ site, octokit })
     : null;
