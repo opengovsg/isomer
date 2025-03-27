@@ -116,9 +116,9 @@ export const Skeleton = ({
       {site.vica && <VicaWidget site={site} {...site.vica} />}
       {site.wizgov && (
         <WizgovWidget
-          site={site}
-          {...site.wizgov}
+          environment={site.environment}
           ScriptComponent={ScriptComponent}
+          {...site.wizgov}
         />
       )}
     </>

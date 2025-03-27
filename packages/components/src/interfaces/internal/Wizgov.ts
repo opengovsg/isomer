@@ -5,6 +5,6 @@ export interface WizgovProps {
 }
 
 export interface WizgovWidgetProps extends WizgovProps {
-  site: IsomerSiteProps
+  environment: IsomerSiteProps["environment"]
   ScriptComponent?: ScriptComponentType
 }

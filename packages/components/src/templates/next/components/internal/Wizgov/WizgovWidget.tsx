@@ -2,7 +2,7 @@ import type { WizgovWidgetProps } from "~/interfaces"
 
 // Reference: https://github.com/opengovsg/wizgov
 export const WizgovWidget = ({
-  site,
+  environment,
   ScriptComponent = "script",
   ...rest
 }: WizgovWidgetProps) => {
@@ -11,7 +11,7 @@ export const WizgovWidget = ({
       <div id="wizgov-widget" data-agency={rest["data-agency"]} />
       <ScriptComponent
         src={
-          site.environment === "production"
+          environment === "production"
             ? "https://script.wiz.gov.sg/widget.js"
             : "https://script-staging.wiz.gov.sg/widget.js"
         }
