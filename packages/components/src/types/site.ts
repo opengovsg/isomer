@@ -3,6 +3,7 @@ import type {
   NavbarProps,
   NotificationProps,
   VicaWidgetProps,
+  WizgovProps,
 } from "~/interfaces"
 import type { SiteConfigFooterProps } from "~/interfaces/internal/Footer"
 
@@ -31,6 +32,7 @@ export interface IsomerSiteConfigProps {
   notification?: Omit<NotificationProps, "LinkComponent" | "site">
   siteGtmId?: string
   vica?: VicaWidgetProps
+  wizgov?: WizgovProps
 }
 
 export type IsomerSiteProps = IsomerGeneratedSiteProps &
