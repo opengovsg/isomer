@@ -23,9 +23,10 @@ const reloadWizgovScript = (
   document.body.appendChild(scriptTag)
 }
 
-export const WizgovWidgetClient = (props: WizgovWidgetClientProps) => {
-  const { "data-agency": dataAgency, scriptUrl } = props
-
+export const WizgovWidgetClient = ({
+  "data-agency": dataAgency,
+  scriptUrl,
+}: WizgovWidgetClientProps) => {
   useEffect(() => {
     // to not render during static site generation on the server
     if (typeof window === "undefined") return
