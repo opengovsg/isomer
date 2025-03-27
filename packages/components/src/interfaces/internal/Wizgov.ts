@@ -7,7 +7,3 @@ export interface WizgovProps {
 export interface WizgovWidgetProps extends WizgovProps {
   environment: IsomerSiteProps["environment"]
 }
-
-export interface WizgovWidgetClientProps extends WizgovProps {
-  scriptUrl: string
-}
