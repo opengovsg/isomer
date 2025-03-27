@@ -1173,6 +1173,7 @@ describe("page.router", async () => {
     it("should return 404 if page does not exist", async () => {
       // Act
       const { site } = await setupSite()
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
       const result = caller.updateSettings({
         siteId: site.id,
         pageId: 1,
@@ -1180,7 +1181,6 @@ describe("page.router", async () => {
         permalink: "test-page",
         type: "Page",
       })
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
 
       // Assert
       await assertAuditLogRows()
@@ -1327,13 +1327,15 @@ describe("page.router", async () => {
     })
 
     it("should return 404 if page does not exist", async () => {
-      // Act
+      // Arrange
       const { site } = await setupSite()
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
       const result = caller.getFullPermalink({
         siteId: site.id,
         pageId: 99999,
       })
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
 
       // Assert
       await expect(result).rejects.toThrowError(
