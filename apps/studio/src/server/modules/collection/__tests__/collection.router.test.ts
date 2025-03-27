@@ -1,3 +1,4 @@
+import type { MockInstance } from "vitest"
 import { TRPCError } from "@trpc/server"
 import _, { omit } from "lodash"
 import { auth } from "tests/integration/helpers/auth"
@@ -16,7 +17,6 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import type { MockInstance } from "vitest"
 
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
