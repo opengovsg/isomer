@@ -1,4 +1,4 @@
-import type { IsomerSiteProps } from "~/types"
+import type { IsomerSiteProps, ScriptComponentType } from "~/types"
 
 export interface WizgovProps {
   "data-agency": string
@@ -6,8 +6,5 @@ export interface WizgovProps {
 
 export interface WizgovWidgetProps extends WizgovProps {
   site: IsomerSiteProps
-}
-
-export interface WizgovWidgetClientProps extends WizgovProps {
-  scriptUrl: string
+  ScriptComponent?: ScriptComponentType
 }
