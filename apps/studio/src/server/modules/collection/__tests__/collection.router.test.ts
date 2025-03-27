@@ -16,7 +16,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { MockInstance } from "vitest"
+import type { MockInstance } from "vitest"
 
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
