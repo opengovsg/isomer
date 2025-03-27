@@ -39,16 +39,21 @@ declare global {
       after: Record<string, unknown>
     }
     interface DeleteLogEvent {
-      before: Record<string, unknown> | null
+      before: Record<string, unknown>
       after: null
     }
     interface FullLogEvent {
       before: Record<string, unknown>
       after: Record<string, unknown>
     }
+    interface PublishLogEvent {
+      before: Record<string, unknown> | null
+      after: Record<string, unknown> | null
+    }
     type AuditLogDeltaJsonContent =
       | FullLogEvent
       | CreateLogEvent
       | DeleteLogEvent
+      | PublishLogEvent
   }
 }
