@@ -33,14 +33,15 @@ const retry = async (
   return retryWithBackoff(0)
 }
 
-interface UseImageProps {
+interface UseAssetUploadProps {
   retries?: number
   baseTimeoutMs?: number
 }
-export const useImageUpload = ({
+export const useAssetUpload = ({
   retries = 3,
   baseTimeoutMs = 500,
-}: UseImageProps) => {
+}: UseAssetUploadProps) => {
+  const assetsBaseUrl = `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
   const [isLoading, setIsLoading] = useState(false)
   const handleImageUpload = async (src: string) => {
     setIsLoading(true)
