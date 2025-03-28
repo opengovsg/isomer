@@ -99,6 +99,8 @@ const LinkEditorModalContent = ({
 
   const isEditingLink = !!linkText && !!linkHref
 
+  console.log("errors", errors)
+
   const onSubmit = handleSubmit(
     // TODO: Refactor to not have to check for !!linkHref
     // Context: quick hack to ensure error message don't shown for empty linkHref for FileAttachment
@@ -139,13 +141,15 @@ const LinkEditorModalContent = ({
             <LinkEditorContextProvider
               linkTypes={linkTypes}
               linkHref={linkHref ?? ""}
-              onChange={(href) => setValue("linkHref", href)}
+              onChange={(href) =>
+                setValue("linkHref", href, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
               error={errors.linkHref?.message}
             >
-              <ModalLinkEditor
-                onChange={(value) => setValue("linkHref", value)}
-              />
-
+              <ModalLinkEditor />
               {errors.linkHref?.message && (
                 <FormErrorMessage>{errors.linkHref.message}</FormErrorMessage>
               )}
@@ -212,17 +216,9 @@ export const LinkEditorModal = ({
   </Modal>
 )
 
-const ModalLinkEditor = ({
-  onChange,
-}: {
-  onChange: (value: string) => void
-}) => {
+const ModalLinkEditor = () => {
   const { error, curHref, setHref } = useLinkEditor()
   const { siteId } = useQueryParse(editSiteSchema)
-  const handleChange = (value: string) => {
-    onChange(value)
-    setHref(value)
-  }
 
   return (
     <LinkHrefEditor
@@ -230,9 +226,7 @@ const ModalLinkEditor = ({
       description="When this is clicked, open:"
       isRequired
       isInvalid={!!error}
-      pageLinkElement={
-        <PageLinkElement value={curHref} onChange={handleChange} />
-      }
+      pageLinkElement={<PageLinkElement value={curHref} onChange={setHref} />}
       fileLinkElement={
         curHref ? (
           <AttachmentData data={curHref} onClick={() => setHref("")} />
@@ -241,7 +235,7 @@ const ModalLinkEditor = ({
             maxSizeInBytes={MAX_FILE_SIZE_BYTES}
             acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
             siteId={siteId}
-            setHref={(href) => handleChange(href ?? "")}
+            setHref={(href) => setHref(href ?? "")}
           />
         )
       }

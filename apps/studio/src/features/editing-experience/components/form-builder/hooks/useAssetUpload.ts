@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { backOff } from "exponential-backoff"
 
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
@@ -18,7 +19,8 @@ const retry = async (
         const timeToWait = baseTimeoutMs * 2 ** retries
         await waitFor(timeToWait)
       }
-      return await promise()
+      const result = await promise()
+      return result
     } catch (e) {
       // NOTE: only retry if we didn't reach the limit
       // otherwise, let the caller handle the error
@@ -43,7 +45,7 @@ export const useAssetUpload = ({
 }: UseAssetUploadProps) => {
   const assetsBaseUrl = `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
   const [isLoading, setIsLoading] = useState(false)
-  const handleImageUpload = async (src: string) => {
+  const handleAssetUpload = async (src: string) => {
     setIsLoading(true)
     try {
       const res = await retry(
@@ -65,5 +67,5 @@ export const useAssetUpload = ({
     }
   }
 
-  return { handleImageUpload, isLoading }
+  return { handleAssetUpload, isLoading }
 }

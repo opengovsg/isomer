@@ -44,7 +44,7 @@ export function JsonFormsMetaImageControl(
   const { label, handleChange, path, required, errors, description, data } =
     props
   const { image } = useS3Image(data)
-  const { handleImageUpload, isLoading } = useAssetUpload({})
+  const { handleAssetUpload, isLoading } = useAssetUpload({})
   const { siteId } = useQueryParse(schema)
   const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
@@ -83,7 +83,7 @@ export function JsonFormsMetaImageControl(
               { file },
               {
                 onSuccess: ({ path: imagePath }) => {
-                  void handleImageUpload(imagePath).then((src) => {
+                  void handleAssetUpload(imagePath).then((src) => {
                     handleChange(path, src)
                   })
                 },
