@@ -92,8 +92,10 @@ export const trimNonAlphaNum = (category: string): CleanedString => {
 };
 
 // NOTE: A collection post name is the date in YYYY-MM-DD- followed by the page name
+// and it must also be rooted inside a `_posts` folder
 type CollectionPostName = Tagged<string, "CollectionPostName">;
 export const isCollectionPost = (
+  dir: string,
   filename: string,
 ): filename is CollectionPostName => {
   const year = filename.slice(0, 4);
@@ -106,8 +108,17 @@ export const isCollectionPost = (
     month.length === 2 &&
     !!parseInt(month) &&
     day.length === 2 &&
-    !!parseInt(day)
+    !!parseInt(day) &&
+    dir.split("/").some((s) => s === "_posts")
   );
+};
+
+const getCollectionPostDate = (collectionPostName: string) => {
+  const year = collectionPostName.slice(0, 4);
+  const month = collectionPostName.slice(5, 7);
+  const day = collectionPostName.slice(8, 10);
+
+  return { year, month, day };
 };
 
 export const parseCollectionDateFromString = (possibleDateString: string) => {
@@ -152,8 +163,8 @@ export const getCollectionCategory = (category: string) => {
   );
 };
 
-export const extractMetadataFromName = (name: CollectionPostName) => {
-  const { year, month, day } = parseCollectionDateFromString(name);
+const extractMetadataFromName = (name: CollectionPostName) => {
+  const { year, month, day } = getCollectionPostDate(name);
   const lastModified = `${day}/${month}/${year}`;
   const rawFileName = extractCollectionPostName(name);
 
