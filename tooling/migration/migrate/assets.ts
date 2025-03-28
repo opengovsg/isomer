@@ -64,7 +64,8 @@ export const copyToAssetsFolder = async (
   from: string,
   to: string,
 ): Promise<string> => {
-  const _from = `${__dirname}/${SITE_DIR}${decodeURIComponent(from)}`;
+  const initialFrom = `${__dirname}/${SITE_DIR}${decodeURIComponent(from)}`;
+  const _from = initialFrom.replace(/\/$/g, "");
   const _to = `${__dirname}${decodeURIComponent(to)}`;
 
   try {
