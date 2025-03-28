@@ -32,6 +32,7 @@ import {
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
+import { AttachmentData } from "../AttachmentData"
 import { ResourceSelector } from "../ResourceSelector"
 import { FileAttachment } from "./FileAttachment"
 
@@ -233,12 +234,16 @@ const ModalLinkEditor = ({
         <PageLinkElement value={curHref} onChange={handleChange} />
       }
       fileLinkElement={
-        <FileAttachment
-          maxSizeInBytes={MAX_FILE_SIZE_BYTES}
-          acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
-          siteId={siteId}
-          setHref={(href) => handleChange(href ?? "")}
-        />
+        curHref ? (
+          <AttachmentData data={curHref} onClick={() => setHref("")} />
+        ) : (
+          <FileAttachment
+            maxSizeInBytes={MAX_FILE_SIZE_BYTES}
+            acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
+            siteId={siteId}
+            setHref={(href) => handleChange(href ?? "")}
+          />
+        )
       }
     />
   )
