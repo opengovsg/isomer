@@ -1,3 +1,4 @@
+import type { MockInstance } from "vitest"
 import { TRPCError } from "@trpc/server"
 import _, { omit } from "lodash"
 import { auth } from "tests/integration/helpers/auth"
@@ -16,15 +17,14 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { MockInstance } from "vitest"
 
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
+import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db } from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"
 import { collectionRouter } from "../collection.router"
 import {
-  assertAuditLogRows,
   getCollectionItemByPermalink,
   getCollectionWithPermalink,
 } from "./utils"
@@ -217,7 +217,7 @@ describe("collection.router", async () => {
       })
       expect(result).toMatchObject({ id: actualCollection.id })
       expect(auditSpy).toHaveBeenCalled()
-      await assertAuditLogRows(1)
+      await assertAuditLogRows(2)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -251,7 +251,7 @@ describe("collection.router", async () => {
       })
       expect(result).toMatchObject({ id: actualCollection.id })
       expect(auditSpy).toHaveBeenCalled()
-      await assertAuditLogRows(1)
+      await assertAuditLogRows(2)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -285,7 +285,7 @@ describe("collection.router", async () => {
       })
       expect(actualCollection.parentId).toEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
-      await assertAuditLogRows(1)
+      await assertAuditLogRows(2)
       expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -320,7 +320,7 @@ describe("collection.router", async () => {
       })
       expect(actualCollection.parentId).toEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
-      await assertAuditLogRows(1)
+      await assertAuditLogRows(2)
       expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")

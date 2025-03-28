@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { RoleType } from "~prisma/generated/generatedEnums"
+import _ from "lodash"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
@@ -7,6 +8,7 @@ import {
   setupUser,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
+import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 
 import { db } from "~/server/modules/database"
 import { createUserWithPermission, isUserDeleted } from "../user.service"
@@ -51,25 +53,36 @@ describe("user.service", () => {
   describe("createUserWithPermission", () => {
     const TEST_EMAIL = "test@open.gov.sg"
     let siteId: number
+    let creatorUserId: string
 
     beforeAll(async () => {
       await setUpWhitelist({ email: TEST_EMAIL })
     })
 
     beforeEach(async () => {
-      await resetTables("User", "ResourcePermission", "Site")
+      await resetTables("User", "ResourcePermission", "Site", "AuditLog")
       const { site } = await setupSite()
       siteId = site.id
+
+      const creator = await setupUser({
+        name: "creator",
+        email: "creator@open.gov.sg",
+        isDeleted: false,
+      })
+      creatorUserId = creator.id
     })
 
     it("should throw error if email is invalid", async () => {
       // Act
-      const result = createUserWithPermission({
-        email: "invalid-email",
-        role: RoleType.Editor,
-        siteId,
+      const result = db.transaction().execute((tx) => {
+        return createUserWithPermission({
+          byUserId: creatorUserId,
+          email: "invalid-email",
+          role: RoleType.Editor,
+          siteId,
+          tx,
+        })
       })
-
       // Assert
       await expect(result).rejects.toThrow(
         new TRPCError({
@@ -77,18 +90,30 @@ describe("user.service", () => {
           message: "Invalid email",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw error if site does not exist", async () => {
       // Act
-      const result = createUserWithPermission({
-        email: TEST_EMAIL,
-        role: RoleType.Editor,
-        siteId: 9999,
+      const result = db.transaction().execute((tx) => {
+        return createUserWithPermission({
+          byUserId: creatorUserId,
+          email: TEST_EMAIL,
+          role: RoleType.Editor,
+          siteId: 9999,
+          tx,
+        })
       })
 
       // Assert
       await expect(result).rejects.toThrowError()
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw error if both user and permission already exists", async () => {
@@ -97,12 +122,16 @@ describe("user.service", () => {
       await setupAdminPermissions({ userId: user.id, siteId })
 
       // Act
-      const result = createUserWithPermission({
-        email: TEST_EMAIL,
-        role: RoleType.Editor,
-        siteId,
-      })
 
+      const result = db.transaction().execute((tx) => {
+        return createUserWithPermission({
+          byUserId: creatorUserId,
+          email: TEST_EMAIL,
+          role: RoleType.Editor,
+          siteId,
+          tx,
+        })
+      })
       // Assert
       await expect(result).rejects.toThrowError(
         new TRPCError({
@@ -110,6 +139,10 @@ describe("user.service", () => {
           message: "User already has permission for this site",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should create user if user already exists but has non-null deletedAt", async () => {
@@ -119,11 +152,17 @@ describe("user.service", () => {
 
       // Act
       const roleToCreate = RoleType.Editor
-      const { user: createdUser } = await createUserWithPermission({
-        email: TEST_EMAIL,
-        role: roleToCreate,
-        siteId,
-      })
+      const { user: createdUser, resourcePermission } = await db
+        .transaction()
+        .execute((tx) => {
+          return createUserWithPermission({
+            byUserId: creatorUserId,
+            email: TEST_EMAIL,
+            role: roleToCreate,
+            siteId,
+            tx,
+          })
+        })
 
       // Assert: Verify user in database
       const dbUserResult = await db
@@ -160,6 +199,41 @@ describe("user.service", () => {
           role: roleToCreate,
         }),
       ])
+
+      // Assert DB - audit logs (user)
+      const userAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserCreate")
+        .selectAll()
+        .execute()
+      expect(userAuditLogs).toHaveLength(1)
+      expect(userAuditLogs[0]).toMatchObject({
+        eventType: "UserCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining({
+            id: createdUser.id,
+            email: TEST_EMAIL,
+          }),
+        }),
+      })
+
+      // Assert DB - audit logs (permission)
+      const permissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(permissionAuditLogs).toHaveLength(1)
+      expect(permissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining(
+            _.omit(resourcePermission, ["createdAt", "updatedAt"]),
+          ),
+        }),
+      })
     })
 
     it("should throw 403 if creating a non-whitelisted non-gov.sg email with any role", async () => {
@@ -167,12 +241,15 @@ describe("user.service", () => {
       const nonGovSgEmail = "test@coolvendor.com"
 
       // Act
-      const result = createUserWithPermission({
-        email: nonGovSgEmail,
-        role: RoleType.Editor,
-        siteId,
+      const result = db.transaction().execute((tx) => {
+        return createUserWithPermission({
+          byUserId: creatorUserId,
+          email: nonGovSgEmail,
+          role: RoleType.Editor,
+          siteId,
+          tx,
+        })
       })
-
       // Assert
       await expect(result).rejects.toThrow(
         new TRPCError({
@@ -180,6 +257,10 @@ describe("user.service", () => {
           message: "There are non-gov.sg domains that need to be whitelisted.",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should throw 403 if assigning a non-gov.sg email with admin role", async () => {
@@ -188,10 +269,14 @@ describe("user.service", () => {
       await setUpWhitelist({ email: nonGovSgEmail })
 
       // Act
-      const result = createUserWithPermission({
-        email: nonGovSgEmail,
-        role: RoleType.Admin,
-        siteId,
+      const result = db.transaction().execute((tx) => {
+        return createUserWithPermission({
+          byUserId: creatorUserId,
+          email: nonGovSgEmail,
+          role: RoleType.Admin,
+          siteId,
+          tx,
+        })
       })
 
       // Assert
@@ -202,6 +287,10 @@ describe("user.service", () => {
             "Non-gov.sg emails cannot be added as admin. Select another role.",
         }),
       )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should create a non-gov.sg email with non-admin role", async () => {
@@ -210,26 +299,68 @@ describe("user.service", () => {
       await setUpWhitelist({ email: nonGovSgEmail })
 
       // Act
-      const result = await createUserWithPermission({
-        email: nonGovSgEmail,
-        role: RoleType.Editor,
-        siteId,
+      const result = await db.transaction().execute((tx) => {
+        return createUserWithPermission({
+          byUserId: creatorUserId,
+          email: nonGovSgEmail,
+          role: RoleType.Editor,
+          siteId,
+          tx,
+        })
       })
-
       // Assert
       expect(result).toEqual(expect.anything())
+
+      // Assert DB - audit logs (user)
+      const userAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserCreate")
+        .selectAll()
+        .execute()
+      expect(userAuditLogs).toHaveLength(1)
+      expect(userAuditLogs[0]).toMatchObject({
+        eventType: "UserCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining(
+            _.omit(result.user, ["createdAt", "updatedAt"]),
+          ),
+        }),
+      })
+
+      // Assert DB - audit logs (permission)
+      const permissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(permissionAuditLogs).toHaveLength(1)
+      expect(permissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining(
+            _.omit(result.resourcePermission, ["createdAt", "updatedAt"]),
+          ),
+        }),
+      })
     })
 
     it("should create a new user with default values", async () => {
       // Act
-      const { user } = await createUserWithPermission({
-        email: TEST_EMAIL,
-        name: "",
-        phone: "",
-        role: RoleType.Editor,
-        siteId,
-      })
-
+      const { user, resourcePermission } = await db
+        .transaction()
+        .execute((tx) => {
+          return createUserWithPermission({
+            byUserId: creatorUserId,
+            email: TEST_EMAIL,
+            name: "",
+            phone: "",
+            role: RoleType.Editor,
+            siteId,
+            tx,
+          })
+        })
       // Assert: Verify user in database
       const dbUserResult = await db
         .selectFrom("User")
@@ -259,6 +390,40 @@ describe("user.service", () => {
         siteId,
         role: RoleType.Editor,
       })
+
+      // Assert DB - audit logs (user)
+      const userAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserCreate")
+        .selectAll()
+        .execute()
+      expect(userAuditLogs).toHaveLength(1)
+      expect(userAuditLogs[0]).toMatchObject({
+        eventType: "UserCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining(
+            _.omit(user, ["createdAt", "updatedAt"]),
+          ),
+        }),
+      })
+
+      // Assert DB - audit logs (permission)
+      const permissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(permissionAuditLogs).toHaveLength(1)
+      expect(permissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining(
+            _.omit(resourcePermission, ["createdAt", "updatedAt"]),
+          ),
+        }),
+      })
     })
 
     it("should create a new user with provided values", async () => {
@@ -268,14 +433,19 @@ describe("user.service", () => {
       const role = RoleType.Admin
 
       // Act
-      const { user } = await createUserWithPermission({
-        email: TEST_EMAIL,
-        name,
-        phone,
-        role,
-        siteId,
-      })
-
+      const { user, resourcePermission } = await db
+        .transaction()
+        .execute((tx) => {
+          return createUserWithPermission({
+            byUserId: creatorUserId,
+            email: TEST_EMAIL,
+            name,
+            phone,
+            role,
+            siteId,
+            tx,
+          })
+        })
       // Assert: Verify user in database
       const dbUserResult = await db
         .selectFrom("User")
@@ -305,32 +475,39 @@ describe("user.service", () => {
         siteId,
         role,
       })
-    })
 
-    it("should update existing user's email if there's a conflict", async () => {
-      // Arrange
-      await setupUser({ email: TEST_EMAIL, isDeleted: false })
-
-      // Act
-      await createUserWithPermission({
-        email: TEST_EMAIL,
-        name: "",
-        phone: "",
-        role: RoleType.Editor,
-        siteId,
-      })
-
-      // Assert: Verify user in database
-      const dbUserResult = await db
-        .selectFrom("User")
-        .where("email", "=", TEST_EMAIL)
+      // Assert DB - audit logs (user)
+      const userAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserCreate")
         .selectAll()
         .execute()
+      expect(userAuditLogs).toHaveLength(1)
+      expect(userAuditLogs[0]).toMatchObject({
+        eventType: "UserCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining(
+            _.omit(user, ["createdAt", "updatedAt"]),
+          ),
+        }),
+      })
 
-      // Should only have one user with this email
-      expect(dbUserResult).toHaveLength(1)
-      expect(dbUserResult[0]).toMatchObject({
-        email: TEST_EMAIL,
+      // Assert DB - audit logs (permission)
+      const permissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(permissionAuditLogs).toHaveLength(1)
+      expect(permissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining(
+            _.omit(resourcePermission, ["createdAt", "updatedAt"]),
+          ),
+        }),
       })
     })
 
@@ -342,10 +519,14 @@ describe("user.service", () => {
       })
 
       // Act
-      await createUserWithPermission({
-        email: TEST_EMAIL,
-        role: RoleType.Admin,
-        siteId,
+      const { resourcePermission } = await db.transaction().execute((tx) => {
+        return createUserWithPermission({
+          byUserId: creatorUserId,
+          email: TEST_EMAIL,
+          role: RoleType.Admin,
+          siteId,
+          tx,
+        })
       })
 
       // Assert: Verify resource permission in database
@@ -361,6 +542,32 @@ describe("user.service", () => {
         userId: existingUser.id,
         siteId,
         role: RoleType.Admin,
+      })
+
+      // Assert DB - audit logs (user)
+      // should not create audit log for user create as user already exists
+      const userAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserCreate")
+        .selectAll()
+        .execute()
+      expect(userAuditLogs).toHaveLength(0)
+
+      // Assert DB - audit logs (permission)
+      const permissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(permissionAuditLogs).toHaveLength(1)
+      expect(permissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining(
+            _.omit(resourcePermission, ["createdAt", "updatedAt"]),
+          ),
+        }),
       })
     })
   })

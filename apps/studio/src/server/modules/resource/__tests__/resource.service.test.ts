@@ -8,6 +8,21 @@ import {
 import { getBatchAncestryWithSelfQuery } from "../resource.service"
 
 describe("resource.service", () => {
+  // TODO: Implement tests when publish works
+  describe.skip("publishPage", () => {
+    it.skip("should trigger a publish automatically on creation of a folder", () => {})
+    it.skip("should trigger a publish automatically on deletion of a folder", () => {})
+    it.skip("should trigger a publish automatically on move of a folder", () => {})
+    it.skip("should trigger a publish automatically on update of a folder's title", () => {})
+    it.skip("should trigger a publish automatically on update of a folder's permalink", () => {})
+    it.skip("should trigger a publish automatically on creation of a collection", () => {})
+    it.skip("should trigger a publish automatically on deletion of a collection", () => {})
+    it.skip("should trigger a publish automatically on update of a collection's title", () => {})
+    it.skip("should trigger a publish automatically on update of a collection's permalink", () => {})
+    it.skip("should trigger a publish automatically on move of a page", () => {})
+    it.skip("should not trigger a publish if there is a currently running publish witin the past minute", () => {})
+  })
+
   describe("getBatchAncestryWithSelfQuery", () => {
     it("should return empty array if no resources exist", async () => {
       // Arrange

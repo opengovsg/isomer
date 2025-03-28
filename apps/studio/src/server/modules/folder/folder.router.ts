@@ -9,10 +9,10 @@ import {
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 import { logResourceEvent } from "../audit/audit.service"
-import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db, ResourceState, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { validateUserPermissionsForResource } from "../permissions/permissions.service"
+import { publishResource } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
@@ -110,7 +110,7 @@ export const folderRouter = router({
         })
 
         // TODO: Create the index page for the folder and publish it
-        await publishSite(ctx.logger, siteId)
+        await publishResource(user.id, folder, ctx.logger)
 
         return { folderId: folder.id }
       },
@@ -213,7 +213,7 @@ export const folderRouter = router({
           return newResource
         })
 
-        await publishSite(ctx.logger, Number(siteId))
+        await publishResource(user.id, result, ctx.logger)
 
         return pick(result, defaultFolderSelect)
       },

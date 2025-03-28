@@ -4,7 +4,7 @@ import { BiCheckShield, BiPencil, BiRocket } from "react-icons/bi"
 
 // TODO: move this to a official isomer.gov.sg once we migrate that to Isomer Next
 export const ISOMER_GUIDE_URL =
-  "https://github.com/opengovsg/isomer/blob/main/apps/studio/src/features/users/user-roles.md"
+  "https://support.isomer.gov.sg/en/articles/10425945-adding-and-removing-collaborators"
 
 export const ROLES_ICONS: Record<RoleType, IconType> = {
   [RoleType.Editor]: BiPencil,

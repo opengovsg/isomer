@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
+import { pick } from "lodash"
 
 import { sendInvitation } from "~/features/mail/service"
 import { canResendInviteToUser } from "~/features/users/utils"
@@ -26,12 +27,15 @@ import { protectedProcedure, router } from "../../trpc"
 import { db, RoleType, sql } from "../database"
 import {
   getSitePermissions,
+  updateUserSitewidePermission,
   validatePermissionsForManagingUsers,
 } from "../permissions/permissions.service"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
 import {
   createUserWithPermission,
+  deleteUserPermission,
   getUsersQuery,
+  updateUserDetails,
   validateEmailRoleCombination,
 } from "./user.service"
 
@@ -60,6 +64,7 @@ export const userRouter = router({
                 ...user,
                 email: user.email.toLowerCase(),
                 siteId,
+                byUserId: ctx.user.id,
                 tx,
               })
             return {
@@ -130,21 +135,17 @@ export const userRouter = router({
         })
       }
 
-      const deletedUserPermissions = await db
-        .updateTable("ResourcePermission")
-        .where("userId", "=", userId)
-        .where("siteId", "=", siteId)
-        .where("deletedAt", "is", null)
-        .set({ deletedAt: new Date() })
-        .returningAll()
-        .executeTakeFirst()
-
-      if (!deletedUserPermissions) {
+      if (!ctx.session?.userId)
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User permissions not found",
+          code: "PRECONDITION_FAILED",
+          message: "Please ensure you are logged in!",
         })
-      }
+
+      await deleteUserPermission({
+        byUserId: ctx.session.userId,
+        userId,
+        siteId,
+      })
 
       return {
         id: userToDeletePermissionsFrom.id,
@@ -269,34 +270,14 @@ export const userRouter = router({
 
       validateEmailRoleCombination({ email: user.email, role })
 
-      const updatedUserPermission = await db
-        .transaction()
-        .execute(async (tx) => {
-          const oldPermission = await tx
-            .updateTable("ResourcePermission")
-            .where("userId", "=", userId)
-            .where("siteId", "=", siteId)
-            .where("resourceId", "is", null) // because we are updating site-wide permissions
-            .where("deletedAt", "is", null) // ensure deleted persmission deletedAt is not overwritten
-            .set({ deletedAt: new Date() }) // soft delete the old permission
-            .returningAll()
-            .executeTakeFirst()
+      const updatedUserPermission = await updateUserSitewidePermission({
+        byUserId: ctx.user.id,
+        userId,
+        siteId,
+        role,
+      })
 
-          if (!oldPermission) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "User permissions not found",
-            })
-          }
-
-          return await tx
-            .insertInto("ResourcePermission")
-            .values({ userId, siteId, role, resourceId: null }) // because we are updating site-wide permissions
-            .returning(["id", "userId", "siteId", "role"])
-            .executeTakeFirstOrThrow()
-        })
-
-      return updatedUserPermission
+      return pick(updatedUserPermission, ["id", "userId", "siteId", "role"])
     }),
 
   updateDetails: protectedProcedure
@@ -307,14 +288,19 @@ export const userRouter = router({
       // because we only allow users to update their own details
       // They should be able to update their own details even without any resource permissions
 
-      const updatedUser = await db
-        .updateTable("User")
-        .where("id", "=", ctx.user.id)
-        .set({ name, phone })
-        .returning(["name", "phone"])
-        .executeTakeFirstOrThrow()
+      if (!ctx.session?.userId)
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Please ensure you are logged in!",
+        })
 
-      return { name: updatedUser.name, phone: updatedUser.phone }
+      const updatedUser = await updateUserDetails({
+        userId: ctx.session.userId,
+        name,
+        phone,
+      })
+
+      return pick(updatedUser, ["name", "phone"])
     }),
 
   resendInvite: protectedProcedure
@@ -372,6 +358,6 @@ export const userRouter = router({
         role: userPermission[0]?.role ?? RoleType.Editor,
       })
 
-      return { email: user.email }
+      return pick(user, ["email"])
     }),
 })
