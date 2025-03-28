@@ -45,14 +45,10 @@ export const singpassRouter = router({
         userId,
       })
 
-      ctx.session.singpass.sessionState = {
-        ...session,
-        userId,
-      }
       await ctx.session.save()
 
       return {
-        redirectUri: authorizationUrl,
+        redirectUrl: authorizationUrl,
       }
     }),
 
@@ -85,9 +81,9 @@ export const singpassRouter = router({
       const { codeVerifier, nonce, userId } = ctx.session.singpass.sessionState
       ctx.session.destroy()
 
-      if (!codeVerifier || !nonce || !userId) {
+      if (!code || !codeVerifier || !nonce || !userId) {
         ctx.logger.error(
-          { codeVerifier, nonce, userId },
+          { code, codeVerifier, nonce, userId },
           "Invalid Singpass session state",
         )
 
