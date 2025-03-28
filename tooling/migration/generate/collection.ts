@@ -163,14 +163,14 @@ export const extractMetadataFromName = (name: CollectionPostName) => {
   };
 };
 
-export const getValidPermalink = (rawPermalink: string) => {
+const getValidPermalink = (rawPermalink: string) => {
   return rawPermalink
     .replaceAll(/[_ ]+/g, "-")
     .replaceAll(/[^a-zA-Z0-9-]+/g, "")
     .toLowerCase();
 };
 
-const getStudioPermalinkFromJekyll = (rawPermalink: string) => {
+export const getStudioPermalinkFromJekyll = (rawPermalink: string) => {
   return getValidPermalink(rawPermalink.split("/").filter(Boolean).pop() || "");
 };
 
@@ -209,7 +209,9 @@ export const jekyllPage2CollectionPage = async (
   const html = md2html(jekyllContent);
   const output = await html2schema(html, "");
 
-  const lastModified = new Date().toLocaleDateString("en-GB");
+  const lastModified = new Date(frontmatter.date || "").toLocaleDateString(
+    "en-GB",
+  );
   const title =
     (frontmatter.title as CollectionPageName) ??
     getCollectionPageNameFromPage(name);
