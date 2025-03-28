@@ -55,8 +55,8 @@ export const FileAttachment = ({
             uploadFile(
               { file },
               {
-                onSuccess: ({ path }) => {
-                  void handleAssetUpload(path).then((src) => setHref(src))
+                onSuccess: async ({ path }) => {
+                  await handleAssetUpload(path).then((src) => setHref(src))
                 },
               },
             )
