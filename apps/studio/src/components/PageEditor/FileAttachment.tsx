@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
 
-import { useImageUpload } from "~/features/editing-experience/components/form-builder/hooks/useImage"
+import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { ONE_MB_IN_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
@@ -29,7 +29,7 @@ export const FileAttachment = ({
   const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
   })
-  const { handleImageUpload, isLoading } = useImageUpload({})
+  const { handleImageUpload, isLoading } = useAssetUpload({})
 
   useEffect(() => {
     // NOTE: The outer link modal uses this to disable the button

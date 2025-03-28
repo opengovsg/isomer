@@ -13,7 +13,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { getPresignedPutUrlSchema } from "~/schemas/asset"
-import { useImageUpload } from "../../hooks/useImage"
+import { useAssetUpload } from "../../hooks/useAssetUpload"
 import { useS3Image } from "../../hooks/useS3Image"
 import {
   ACCEPTED_IMAGE_TYPES_MESSAGE,
@@ -44,7 +44,7 @@ export function JsonFormsMetaImageControl(
   const { label, handleChange, path, required, errors, description, data } =
     props
   const { image } = useS3Image(data)
-  const { handleImageUpload, isLoading } = useImageUpload({})
+  const { handleImageUpload, isLoading } = useAssetUpload({})
   const { siteId } = useQueryParse(schema)
   const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
