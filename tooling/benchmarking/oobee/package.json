@@ -1,0 +1,12 @@
+{
+  "name": "oobee",
+  "version": "1.0.0",
+  "description": "Script to run Oobee CI with specified parameters",
+  "main": "dist/run-oobee.js",
+  "scripts": {
+    "run-benchmark": "bash run_benchmark.sh"
+  },
+  "dependencies": {
+    "@govtechsg/oobee": "^0.10.39"
+  }
+}
