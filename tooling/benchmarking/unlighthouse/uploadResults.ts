@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
-import { OUTPUT_DIRECTORY } from "../constants";
+import { OUTPUT_DIRECTORY, CLOUDFLARE_PAGES_BRANCH } from "../constants";
 
 /**
  * Script to deploy all result directories to Cloudflare Pages.
@@ -63,7 +63,7 @@ function run() {
       // and that the project already exists in Cloudflare Pages.
       console.log("=== Deploying Pages project ===");
       execSync(
-        `npx wrangler pages deploy "${directoryPath}" --project-name "${projectName}"`,
+        `npx wrangler pages deploy --branch "${CLOUDFLARE_PAGES_BRANCH}" "${directoryPath}" --project-name "${projectName}"`,
         { stdio: "inherit" }
       );
 
