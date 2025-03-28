@@ -29,7 +29,7 @@ export const FileAttachment = ({
   const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
   })
-  const { handleImageUpload, isLoading } = useAssetUpload({})
+  const { handleAssetUpload, isLoading } = useAssetUpload({})
 
   useEffect(() => {
     // NOTE: The outer link modal uses this to disable the button
@@ -56,7 +56,7 @@ export const FileAttachment = ({
               { file },
               {
                 onSuccess: ({ path }) => {
-                  void handleImageUpload(path).then((src) => setHref(src))
+                  void handleAssetUpload(path).then((src) => setHref(src))
                 },
               },
             )
