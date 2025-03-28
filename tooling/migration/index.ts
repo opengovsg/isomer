@@ -9,7 +9,7 @@ import {
   jekyllPage2CollectionPage,
   generateCollectionLink,
   parseCollectionDateFromString,
-  getValidPermalink,
+  getStudioPermalinkFromJekyll,
 } from "./generate/collection";
 import { generateCollectionInOutMapping } from "./migrate/collection";
 import {
@@ -35,7 +35,6 @@ const { Client } = pg;
 const OUTPUT_DIR = "output";
 
 const SITE_ID = -1;
-// const SITE_ID = 1;
 const jekyllCollection = `${REPO_DIR}/media-centre`;
 const parentPermalink = "media-centre";
 
@@ -231,7 +230,7 @@ const main = async () => {
       // first, we copy the file over to our assets folder
       await copyToAssetsFolder(permalink, assetsPath);
 
-      const dbPermalink = getValidPermalink(title!);
+      const dbPermalink = getStudioPermalinkFromJekyll(title!);
 
       // next, we have to copy it over to our collection as well
       // so that it gets picked up later when we are seeding our database

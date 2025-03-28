@@ -17,8 +17,11 @@ export const readAllFiles = (path: string): string[] => {
 type SanitisedAssetName = Tagged<string, "SanitisedAssetName">;
 export const getSanitisedAssetName = (name: string): SanitisedAssetName => {
   const withoutLeadingSlash = name.startsWith("/") ? name.slice(1) : name;
+  const withoutTrailingSlash = withoutLeadingSlash.endsWith("/")
+    ? withoutLeadingSlash.slice(0, -1)
+    : withoutLeadingSlash;
 
-  return withoutLeadingSlash.replaceAll("/", "-") as SanitisedAssetName;
+  return withoutTrailingSlash.replaceAll("/", "-") as SanitisedAssetName;
 };
 
 // FIXME: We should use kysely and extract db into its own package
