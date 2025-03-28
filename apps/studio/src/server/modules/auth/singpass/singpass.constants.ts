@@ -8,7 +8,7 @@ export const SINGPASS_SCOPES = ["openid"]
 
 export const SINGPASS_REDIRECT_URI =
   env.SINGPASS_REDIRECT_URI ??
-  new URL("/auth/singpass/callback", getBaseUrl()).href
+  new URL("/sign-in/singpass/callback", getBaseUrl()).href
 
 const SINGPASS_SIGNING_KEY = await exportJWK(
   await importPKCS8(
