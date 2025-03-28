@@ -63,6 +63,16 @@ const sgidServerSchema = z.discriminatedUnion("NEXT_PUBLIC_ENABLE_SGID", [
   }),
 ])
 
+const singpassSchema = z.object({
+  SINGPASS_CLIENT_ID: z.string().min(1),
+  SINGPASS_ISSUER_ENDPOINT: z.string().url().min(1),
+  SINGPASS_REDIRECT_URI: z.string().url().optional(),
+  SINGPASS_ENCRYPTION_PRIVATE_KEY: z.string().min(1),
+  SINGPASS_ENCRYPTION_KEY_ALG: z.string().min(1).default("ECDH-ES+A256KW"),
+  SINGPASS_SIGNING_PRIVATE_KEY: z.string().min(1),
+  SINGPASS_SIGNING_KEY_ALG: z.string().min(1).default("ES512"),
+})
+
 /**
  * Specify your server-side environment variables schema here. This way you can ensure the app isn't
  * built with invalid env vars.
@@ -82,6 +92,7 @@ const server = z
     GROWTHBOOK_CLIENT_KEY: z.string().optional(),
   })
   .merge(s3Schema)
+  .merge(singpassSchema)
   // Add on schemas as needed that requires conditional validation.
   .merge(baseSgidSchema)
   .merge(client)
@@ -127,6 +138,13 @@ const processEnv = {
     process.env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
   NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME:
     process.env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+  SINGPASS_CLIENT_ID: process.env.SINGPASS_CLIENT_ID,
+  SINGPASS_ISSUER_ENDPOINT: process.env.SINGPASS_ISSUER_ENDPOINT,
+  SINGPASS_REDIRECT_URI: process.env.SINGPASS_REDIRECT_URI,
+  SINGPASS_ENCRYPTION_PRIVATE_KEY: process.env.SINGPASS_ENCRYPTION_PRIVATE_KEY,
+  SINGPASS_ENCRYPTION_KEY_ALG: process.env.SINGPASS_ENCRYPTION_KEY_ALG,
+  SINGPASS_SIGNING_PRIVATE_KEY: process.env.SINGPASS_SIGNING_PRIVATE_KEY,
+  SINGPASS_SIGNING_KEY_ALG: process.env.SINGPASS_SIGNING_KEY_ALG,
   SGID_CLIENT_ID: process.env.SGID_CLIENT_ID,
   SGID_CLIENT_SECRET: process.env.SGID_CLIENT_SECRET,
   SGID_PRIVATE_KEY: process.env.SGID_PRIVATE_KEY,
