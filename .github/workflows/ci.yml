@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Optimize CI
         id: check_skip
-        uses: withgraphite/graphite-ci-action@main
+        uses: withgraphite/graphite-ci-action@9bc969adfd43bb790da3b64b543c78c75cef9689
         with:
           graphite_token: ${{ secrets.GRAPHITE_CI_OPTIMIZER_TOKEN }}
   build:
@@ -112,7 +112,7 @@ jobs:
       - name: Install Playwright (Chromium)
         run: npx playwright install chromium
       - name: Load .env file
-        uses: xom9ikk/dotenv@v2
+        uses: opengovsg/dotenv@v2
         with:
           path: apps/studio
           mode: test
