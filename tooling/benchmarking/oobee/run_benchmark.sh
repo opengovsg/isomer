@@ -88,3 +88,30 @@ while IFS=, read -r SITE_NAME SITE_URL || [ -n "$SITE_NAME" ]; do
 done < "$SITES_CSV"
 
 echo "Benchmark completed successfully!"
+
+echo "Extracting zip files..."
+cd "$RESULTS_DIR"
+
+# For each zip file in the directory
+for zipfile in *.zip; do
+  # Check if the file exists (in case there are no zip files)
+  if [ -f "$zipfile" ]; then    
+    # Create a directory with the same name as the zip file (without the .zip extension)
+    mkdir -p "${zipfile%.zip}"
+
+    # Extract the zip file into the newly created directory
+    unzip -o "$zipfile" -d "${zipfile%.zip}"
+
+    echo "Extracted $zipfile to ${zipfile%.zip}/"
+
+    # Move scanItems.json from the extracted folder to the results directory with the name of the zip file
+    if [ -f "${zipfile%.zip}/scanItems.json" ]; then
+      echo "Moving ${zipfile%.zip}/scanItems.json to $RESULTS_DIR/${zipfile%.zip}.json"
+      cp "${zipfile%.zip}/scanItems.json" "$RESULTS_DIR/${zipfile%.zip}.json"
+    else
+      echo "Warning: scanItems.json not found in ${zipfile%.zip}/"
+    fi
+  fi
+done
+
+echo "All zip files have been extracted!"
