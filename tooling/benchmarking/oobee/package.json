@@ -5,7 +5,8 @@
   "main": "dist/run-oobee.js",
   "scripts": {
     "run-benchmark": "bash run_benchmark.sh",
-    "run-benchmark:local": "cp ../sites.csv . && npm run run-benchmark"
+    "run-benchmark:local": "cp ../sites.csv . && npm run run-benchmark",
+    "generate-report": "bash generate_report.sh"
   },
   "dependencies": {
     "@govtechsg/oobee": "^0.10.39"
