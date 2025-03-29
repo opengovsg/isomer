@@ -4,11 +4,8 @@
   "description": "Benchmarking tools for Isomer sites",
   "main": "index.js",
   "scripts": {
-    "generate-sites": "tsx utils/generateSites.ts",
+    "generate-sites": "bash generate_sites.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "dependencies": {
-    "csv-parser": "^3.0.0"
   },
   "devDependencies": {
     "tsx": "^4.16.0",
