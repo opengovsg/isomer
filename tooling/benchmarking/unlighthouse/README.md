@@ -1,154 +1,112 @@
 # Unlighthouse Benchmarking Tool
 
-This tool enables automated website performance benchmarking for Isomer websites using [Unlighthouse](https://unlighthouse.dev/), a Lighthouse-based website scanning tool. It allows for batch processing of multiple sites and deploying the results to Cloudflare Pages.
+This tool provides a systematic way to benchmark multiple websites using [Unlighthouse](https://unlighthouse.dev/), a Lighthouse-based site-wide auditing tool. It allows batch processing of websites, result analysis, and deployment of reports to Cloudflare Pages.
 
 ## Overview
 
-The Unlighthouse benchmarking tool provides:
+The Unlighthouse Benchmarking Tool consists of three main scripts:
 
-- Automated scanning of multiple websites using Lighthouse
-- Output of comprehensive performance, accessibility, and SEO metrics
-- Deployment of results to Cloudflare Pages for easy sharing
-- Generation of site lists from infrastructure data
-- Creation of overview performance reports across all sites
+1. `run_benchmark.sh` - Runs Lighthouse tests on websites listed in a CSV file
+2. `generate_report.sh` - Analyzes results and generates a CSV report
+3. `upload_result.sh` - Deploys the results to Cloudflare Pages for easy viewing
 
 ## Prerequisites
 
-- On OGP VPN to avoid triggering WAF
-- Node.js (v16 or higher)
-- Cloudflare Wrangler CLI (for results upload)
-- Proper authentication for Cloudflare Pages deployment
+- [Unlighthouse CI](https://unlighthouse.dev/ci) (`unlighthouse-ci`)
+- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) (for Cloudflare Pages deployments)
 
-## Getting Started
+## Setup
 
-1. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-2. Create or update the sites list in `sites.csv` (or generate it - see below)
-
-3. Run the benchmark:
-
-   ```bash
-   npm run run-benchmark
-   ```
-
-4. Upload results to Cloudflare Pages:
-
-   ```bash
-   npm run upload-results
-   ```
-
-5. Generate an overview report of all sites:
-   ```bash
-   npm run generate-overview
-   ```
-
-## Available Scripts
-
-- `npm run run-benchmark` - Runs Unlighthouse CI for all sites in sites.csv
-- `npm run upload-results` - Uploads the generated results to Cloudflare Pages
-- `npm run generate-overview` - Generates an overview markdown table of performance metrics for all sites
-
-## Site Configuration
-
-Sites are defined in the `sites.csv` file with the following format:
-
-```
-site-name,https://www.example.com
-another-site,https://another-example.com
-```
-
-Each line contains a site name (used for the output directory) and the URL to test.
-
-## Sites List
-
-You'll need to create or obtain a `sites.csv` file containing the list of sites to benchmark. This file should be located in the root directory of the benchmarking tool.
-
-The sites list should contain site names and their corresponding URLs, with each site on a separate line in CSV format.
-
-## Generating Overview Report
-
-After running benchmarks for multiple sites, you can generate a comprehensive overview report:
+1. Install the required packages:
 
 ```bash
-npm run generate-overview
+npm install
 ```
 
-This script:
+2. Create a CSV file named `sites.csv` with the following format:
 
-1. Reads all `ci-result.json` files from each site's directory in the `results/` folder
-2. Calculates averages for key metrics:
-   - Overall score
-   - Performance
-   - Accessibility
-   - Best Practices
-   - SEO
-   - Site Quality (average of accessibility, best practices, and SEO)
-3. Generates a markdown table with these metrics
-4. Saves the report to `overview-report.md`
+```
+site_name,site_url
+example1,https://example1.com
+example2,https://example2.com
+```
 
-The overview report provides a quick comparison of all sites' performance at a glance.
+## Usage
 
-## Results
+You can run the scripts individually or use the npm scripts provided in the package.json file.
 
-After running the benchmark, results will be stored in the `results/` directory, with each site having its own subdirectory. The results include:
+### Run Benchmarks
 
-- Performance metrics
-- Lighthouse scores
-- Detailed reports for each page
-- Aggregated statistics
-
-## Deploying Results
-
-Results can be automatically deployed to Cloudflare Pages, with each site's results getting its own project:
+Runs Lighthouse tests on all sites listed in sites.csv:
 
 ```bash
-npm run upload-results
+npm run run-benchmark
 ```
 
-This script:
+This will:
 
-1. Finds all subdirectories in the `results/` folder
-2. Uses the directory name as the Cloudflare Pages project name
-3. Deploys each directory to its respective project
+- Process each site from the CSV file
+- Run Unlighthouse CI with 3 samples per page (as configured)
+- Store results in the `./results/{site_name}` directory
+
+### Generate Report
+
+Analyzes the benchmarking results and creates a summary report:
+
+```bash
+npm run generate-report
+```
+
+This will:
+
+- Calculate average scores for each site across all tested pages
+- Generate a CSV report with scores for:
+  - Overall score
+  - Performance
+  - Accessibility
+  - Best Practices
+  - SEO
+  - Site Quality (average of accessibility, best practices, and SEO)
+
+### Upload Results
+
+Deploys the results to Cloudflare Pages for easy viewing:
+
+```bash
+npm run upload-result
+```
+
+This will:
+
+- Deploy each site's results to a separate Cloudflare Pages project
+- The project name will match the site's name used in the CSV file
+- Results will be deployed to the "production" branch
 
 ## Configuration
 
-You can customize the Unlighthouse configuration in `unlighthouse.config.ts`:
+The tool uses a TypeScript configuration file `unlighthouse.config.ts` to configure Unlighthouse:
 
 ```typescript
 export default {
-  puppeteerClusterOptions: {
-    maxConcurrency: 1, // Run sites one at a time for accuracy
-  },
   scanner: {
-    samples: 1, // Number of samples per page
+    samples: 3, // Run the CI 3 times for each page to improve accuracy
   },
 };
 ```
+
+You can modify this file to adjust Unlighthouse settings as needed.
+
+## Results
+
+- Individual site results are stored in the `./results/{site_name}` directory
+- A summary report is generated as `./report.csv`
+- Results are also deployed to Cloudflare Pages for visual inspection
 
 ## Troubleshooting
 
 If you encounter issues:
 
-1. Make sure sites.csv is properly formatted
-2. Check Cloudflare authentication for upload issues
-3. Verify that all URLs in sites.csv are accessible
-4. Ensure the `results/` directory contains the expected site subdirectories with ci-result.json files
-
-## Next Steps
-
-The current implementation requires manual execution to generate reports. Future improvements include:
-
-1. **Automated Cron Job**: Integrate this benchmarking tool into the infrastructure as a scheduled cron job to run periodically (e.g., weekly or monthly).
-
-2. **Historical Trend Analysis**: Store and analyze performance metrics over time to track improvements or regressions.
-
-3. **Automated Notifications**: Send alerts or reports when performance metrics fall below certain thresholds.
-
-4. **Dashboard Integration**: Create a dashboard to visualize performance trends across all sites.
-
-In the meantime, the current scripts can be used to manually generate and publish reports as needed.
+1. Ensure all prerequisites are installed
+2. Check that the `sites.csv` file exists and is properly formatted
+3. Verify that you have proper permissions for Cloudflare Pages deployments
+4. Examine the logs for specific error messages
