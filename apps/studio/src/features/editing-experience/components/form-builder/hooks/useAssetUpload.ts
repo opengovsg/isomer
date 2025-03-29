@@ -16,7 +16,7 @@ export const useAssetUpload = ({
   const handleAssetUpload = async (src: string) => {
     setIsLoading(true)
     try {
-      const res = await backOff(
+      await backOff(
         async () => {
           const response = await fetch(`${ASSETS_BASE_URL}${src}`)
           if (!response.ok) {
@@ -31,7 +31,7 @@ export const useAssetUpload = ({
         },
       )
       setIsLoading(false)
-      return res
+      return src
     } catch (e) {
       console.error(e)
       setIsLoading(false)
