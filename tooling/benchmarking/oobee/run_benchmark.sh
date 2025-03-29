@@ -10,6 +10,13 @@ if [ ! -f "$SITES_CSV" ]; then
     exit 1
 fi
 
+# Create results directory if it doesn't exist
+RESULTS_DIR="$SCRIPT_DIR/results"
+if [ ! -d "$RESULTS_DIR" ]; then
+  echo "Creating results directory at: $RESULTS_DIR"
+  mkdir -p "$RESULTS_DIR"
+fi
+
 echo "Installing dependencies..."
 npm ci
 
@@ -67,13 +74,15 @@ while IFS=, read -r SITE_NAME SITE_URL || [ -n "$SITE_NAME" ]; do
 	
 	# Construct the full command with maxpages parameter
   # Also set an arbitrarily large maxpages to ensure all pages are scanned (default is 100)
-	CMD="npm run cli -- --scanner intelligent --url ${SITE_URL} --nameEmail isomer:admin@isomer.gov.sg --generateJsonFiles yes --maxpages 100000"
+	CMD="npm run cli -- --scanner intelligent --url ${SITE_URL} --zip ${SITE_NAME}.zip --nameEmail isomer:admin@isomer.gov.sg --generateJsonFiles yes --maxpages 100000"
 	
 	echo "Executing: $CMD"
 	echo "----------------------------------------"
 	eval "$CMD"
 	echo "----------------------------------------"
 	echo "Successfully processed $SITE_NAME"
+	echo "Moving ${SITE_NAME}.zip to $RESULTS_DIR/"
+	mv "${SITE_NAME}.zip" "$RESULTS_DIR/"
 	echo ""
     
 done < "$SITES_CSV"
