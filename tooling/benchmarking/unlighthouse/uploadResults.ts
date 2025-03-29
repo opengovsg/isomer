@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
-import { OUTPUT_DIRECTORY, CLOUDFLARE_PAGES_BRANCH } from "../constants";
+import { OUTPUT_DIRECTORY } from "../constants";
 
 /**
  * Script to deploy all result directories to Cloudflare Pages.
@@ -17,6 +17,8 @@ import { OUTPUT_DIRECTORY, CLOUDFLARE_PAGES_BRANCH } from "../constants";
  *     - "results/site-a" to project "site-a"
  *     - "results/site-b" to project "site-b"
  */
+
+const CLOUDFLARE_PAGES_BRANCH = "production";
 
 // Path to the results directory
 const RESULTS_DIR = path.resolve(OUTPUT_DIRECTORY);
