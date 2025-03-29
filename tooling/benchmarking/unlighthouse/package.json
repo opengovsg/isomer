@@ -6,7 +6,7 @@
   "scripts": {
     "run-benchmark": "bash run_benchmark.sh",
     "upload-results": "tsx uploadResults.ts",
-    "generate-overview": "tsx utils/generateOverviewTable.ts"
+    "generate-report": "bash generate_report.sh"
   },
   "dependencies": {
     "unlighthouse-ci": "^0.16.2"
