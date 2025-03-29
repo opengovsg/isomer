@@ -4,7 +4,8 @@
   "description": "Script to run Oobee CI with specified parameters",
   "main": "dist/run-oobee.js",
   "scripts": {
-    "run-benchmark": "bash run_benchmark.sh"
+    "run-benchmark": "bash run_benchmark.sh",
+    "run-benchmark:local": "cp ../sites.csv . && npm run run-benchmark"
   },
   "dependencies": {
     "@govtechsg/oobee": "^0.10.39"

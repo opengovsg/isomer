@@ -1,11 +1,8 @@
 #!/bin/bash
 
-# Set the path to the sites.csv file
-SITES_CSV="/Users/adriangohjw/isomer/tooling/benchmarking/sites.csv"
-
-# Create a results directory
-RESULTS_DIR="/Users/adriangohjw/isomer/tooling/benchmarking/oobee/results"
-mkdir -p "$RESULTS_DIR"
+# Get the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SITES_CSV="$SCRIPT_DIR/sites.csv"
 
 # Check if the file exists
 if [ ! -f "$SITES_CSV" ]; then
@@ -40,7 +37,7 @@ echo "----------------------------------------"
 # However, the documentation is lacking and it doesn't quite work
 # Thus, we resort to this hacky way of running the script from the node_modules directory directly
 echo "Navigating to Oobee directory..."
-cd /Users/adriangohjw/isomer/tooling/benchmarking/oobee/node_modules/@govtechsg/oobee || {
+cd "$SCRIPT_DIR/node_modules/@govtechsg/oobee" || {
 	echo "Error: Could not navigate to Oobee directory"
 	exit 1
 }
@@ -69,9 +66,8 @@ while IFS=, read -r SITE_NAME SITE_URL || [ -n "$SITE_NAME" ]; do
 	SITE_URL=$(echo "$SITE_URL" | xargs)
 	
 	# Construct the full command with maxpages parameter
-	# Assume only running on Isomer Next sites so there is a sitemap.xml
   # Also set an arbitrarily large maxpages to ensure all pages are scanned (default is 100)
-	CMD="npm run cli -- --scanner sitemap --url ${SITE_URL}/sitemap.xml --nameEmail isomer:admin@isomer.gov.sg --generateJsonFiles yes --maxpages 100000"
+	CMD="npm run cli -- --scanner intelligent --url ${SITE_URL} --nameEmail isomer:admin@isomer.gov.sg --generateJsonFiles yes --maxpages 100000"
 	
 	echo "Executing: $CMD"
 	echo "----------------------------------------"
@@ -82,4 +78,4 @@ while IFS=, read -r SITE_NAME SITE_URL || [ -n "$SITE_NAME" ]; do
     
 done < "$SITES_CSV"
 
-echo "Benchmark completed successfully!" 
+echo "Benchmark completed successfully!"
