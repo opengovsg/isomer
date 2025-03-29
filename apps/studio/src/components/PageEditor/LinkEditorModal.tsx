@@ -25,10 +25,12 @@ import {
   MAX_FILE_SIZE_BYTES,
 } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
+import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
 import {
   LinkEditorContextProvider,
   useLinkEditor,
 } from "~/features/editing-experience/components/LinkEditor/LinkEditorContext"
+import { getLinkHrefType } from "~/features/editing-experience/components/LinkEditor/utils"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink, getResourceIdFromReferenceLink } from "~/utils/link"
@@ -228,7 +230,7 @@ const ModalLinkEditor = () => {
       isInvalid={!!error}
       pageLinkElement={<PageLinkElement value={curHref} onChange={setHref} />}
       fileLinkElement={
-        curHref ? (
+        getLinkHrefType(curHref) === LINK_TYPES.File ? (
           <AttachmentData data={curHref} onClick={() => setHref("")} />
         ) : (
           <FileAttachment
@@ -236,6 +238,7 @@ const ModalLinkEditor = () => {
             acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
             siteId={siteId}
             setHref={(href) => setHref(href ?? "")}
+            shouldFetchResource={false}
           />
         )
       }
