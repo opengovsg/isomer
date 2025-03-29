@@ -13,6 +13,9 @@ if [ ! -f "$SITES_CSV" ]; then
     exit 1
 fi
 
+echo "Installing dependencies..."
+npm ci
+
 echo "Starting Oobee benchmark..."
 
 # Count the number of sites
