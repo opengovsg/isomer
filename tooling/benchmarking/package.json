@@ -1,8 +1,0 @@
-{
-  "name": "isomer-benchmarking",
-  "version": "1.0.0",
-  "description": "Benchmarking tools for Isomer sites",
-  "scripts": {
-    "generate-sites": "bash generate_sites.sh"
-  }
-}
