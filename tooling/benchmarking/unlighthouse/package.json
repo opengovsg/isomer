@@ -9,7 +9,6 @@
     "generate-overview": "tsx utils/generateOverviewTable.ts"
   },
   "dependencies": {
-    "csv-parser": "^3.0.0",
     "unlighthouse-ci": "^0.16.2"
   },
   "devDependencies": {
