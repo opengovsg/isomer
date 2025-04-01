@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest"
 
-import type { SortableCardProps } from "../getCollectionItems"
+import type { SortableCardProps } from "../sortCollectionItems"
 import { sortCollectionItems } from "../sortCollectionItems"
 
 describe("sortCollectionItems", () => {
