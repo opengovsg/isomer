@@ -8,11 +8,17 @@ export type SortableCardProps = AllCardProps & {
   rawDate?: Date
 }
 
+export interface SortCollectionItemsProps {
+  items: SortableCardProps[]
+  sortBy?: "date" | "title"
+  sortDirection?: "asc" | "desc"
+}
+
 export const sortCollectionItems = ({
   items,
-}: {
-  items: SortableCardProps[]
-}): AllCardProps[] => {
+  sortBy = "date",
+  sortDirection = "asc",
+}: SortCollectionItemsProps): AllCardProps[] => {
   return items.sort((a, b) => {
     // Sort by last updated date, tiebreaker by title
     if (a.rawDate && b.rawDate && a.rawDate.getTime() === b.rawDate.getTime()) {

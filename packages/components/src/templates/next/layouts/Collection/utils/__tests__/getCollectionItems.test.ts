@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { beforeAll, describe, expect, it } from "vitest"
 
 import type { SortableCardProps } from "../getCollectionItems"
 import { sortCollectionItems } from "../getCollectionItems"
@@ -8,16 +8,18 @@ describe("sortCollectionItems", () => {
     title,
     date,
     variant = "article",
+    url = "",
   }: {
     title: string
     date?: Date
     variant?: "file" | "link" | "article"
+    url?: string
   }): SortableCardProps => {
     return {
       title,
       rawDate: date,
       variant,
-      url: "",
+      url,
       description: "",
       category: "Others",
       site: {
@@ -100,5 +102,119 @@ describe("sortCollectionItems", () => {
     expect(sorted[0]?.title).toBe("Alice")
     expect(sorted[1]?.title).toBe("Bob")
     expect(sorted[2]?.title).toBe("Charlie")
+  })
+
+  describe("should sort by title with date as tiebreaker (newest first) when sortBy is title and", () => {
+    let items: SortableCardProps[]
+
+    beforeAll(() => {
+      const sameDate = new Date("2023-01-01")
+      items = [
+        createItem({
+          title: "Charlie",
+          date: new Date("2023-12-30"),
+          url: "/charlie-2023-12-30",
+        }),
+        createItem({
+          title: "Charlie",
+          date: new Date("2023-12-31"),
+          url: "/charlie-2023-12-31",
+        }),
+        createItem({ title: "Alice", date: new Date("2022-01-01") }),
+        createItem({ title: "Bob", date: sameDate }),
+        createItem({ title: "David", date: sameDate }),
+      ]
+    })
+
+    it("sortDirection is desc", () => {
+      const sorted = sortCollectionItems({
+        items,
+        sortBy: "title",
+        sortDirection: "desc",
+      })
+
+      expect(sorted[0]?.title).toBe("David")
+      expect(sorted[1]).toEqual(
+        expect.objectContaining({
+          title: "Charlie",
+          url: "/charlie-2023-12-31",
+        }),
+      )
+      expect(sorted[2]).toEqual(
+        expect.objectContaining({
+          title: "Charlie",
+          url: "/charlie-2023-12-30",
+        }),
+      )
+      expect(sorted[3]?.title).toBe("Bob")
+      expect(sorted[4]?.title).toBe("Alice")
+    })
+
+    it("sortDirection is asc", () => {
+      const sorted = sortCollectionItems({
+        items,
+        sortBy: "title",
+        sortDirection: "asc",
+      })
+
+      expect(sorted[0]?.title).toBe("Alice")
+      expect(sorted[1]?.title).toBe("Bob")
+      expect(sorted[2]).toEqual(
+        expect.objectContaining({
+          title: "Charlie",
+          url: "/charlie-2023-12-31",
+        }),
+      )
+      expect(sorted[3]).toEqual(
+        expect.objectContaining({
+          title: "Charlie",
+          url: "/charlie-2023-12-30",
+        }),
+      )
+      expect(sorted[1]?.title).toBe("David")
+    })
+  })
+
+  describe("should sort by date with title as tiebreaker (alphabetically) when sortBy is date and", () => {
+    let items: SortableCardProps[]
+
+    beforeAll(() => {
+      const sameDate = new Date("2023-01-01")
+      items = [
+        createItem({ title: "Newest", date: new Date("2023-12-31") }),
+        createItem({ title: "Charlie", date: sameDate }),
+        createItem({ title: "Alice", date: sameDate }),
+        createItem({ title: "Bob", date: sameDate }),
+        createItem({ title: "Oldest", date: new Date("2022-01-01") }),
+      ]
+    })
+
+    it("sortDirection is desc", () => {
+      const sorted = sortCollectionItems({
+        items,
+        sortBy: "date",
+        sortDirection: "desc",
+      })
+
+      expect(sorted[0]?.title).toBe("Oldest")
+      expect(sorted[1]?.title).toBe("Alice")
+      expect(sorted[2]?.title).toBe("Bob")
+      expect(sorted[3]?.title).toBe("Charlie")
+      expect(sorted[4]?.title).toBe("Newest")
+    })
+
+    it("sortDirection is asc", () => {
+      const sorted = sortCollectionItems({
+        items,
+        sortBy: "date",
+        sortDirection: "asc",
+      })
+
+      expect(sorted[0]?.title).toBe("Newest")
+      expect(sorted[1]?.title).toBe("Alice")
+      expect(sorted[2]?.title).toBe("Bob")
+      expect(sorted[3]?.title).toBe("Charlie")
+      expect(sorted[4]?.title).toBe("Oldest")
+    })
   })
 })
