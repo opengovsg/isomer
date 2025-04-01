@@ -4,8 +4,12 @@ import { getParsedDate, getSitemapAsArray } from "~/utils"
 
 const CATEGORY_OTHERS = "Others"
 
+export type SortableCardProps = AllCardProps & {
+  rawDate?: Date
+}
+
 export const sortCollectionItems = (
-  items: (AllCardProps & { rawDate?: Date })[],
+  items: SortableCardProps[],
 ): AllCardProps[] => {
   return items.sort((a, b) => {
     // Sort by last updated date, tiebreaker by title
