@@ -4,9 +4,7 @@ export * from "./LoginStep"
 
 export * from "./EmailLogin"
 
-export * from "./SgidLogin"
-export * from "./SgidCallback"
-
 export * from "./SignInContext"
 
+export * from "./SingpassLogin"
 export * from "./SingpassCallback"

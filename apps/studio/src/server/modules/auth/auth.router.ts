@@ -5,12 +5,10 @@ import getIP from "~/utils/getClientIp"
 import { logAuthEvent } from "../audit/audit.service"
 import { db } from "../database"
 import { emailSessionRouter } from "./email/email.router"
-import { sgidRouter } from "./sgid/sgid.router"
 import { singpassRouter } from "./singpass/singpass.router"
 
 export const authRouter = router({
   email: emailSessionRouter,
-  sgid: sgidRouter,
   singpass: singpassRouter,
   logout: publicProcedure.mutation(async ({ ctx }) => {
     ctx.session.destroy()

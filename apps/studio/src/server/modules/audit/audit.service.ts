@@ -124,7 +124,7 @@ interface LoginDelta {
 }
 
 // NOTE: logout just calls `session.destroy` and we only have
-// `userId` or sgid info in session.
+// `userId` info in session.
 interface LogoutDelta {
   before: User
   after: null

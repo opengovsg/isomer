@@ -3,7 +3,6 @@ import { type User } from "@prisma/client"
 import { type IronSession } from "iron-session"
 
 import type { VerificationToken } from "~/server/modules/database"
-import { type SgidSessionProfile } from "~/server/modules/auth/sgid/sgid.utils"
 
 type CurrentUserId = Tagged<User["id"], "CurrentUserId">
 
@@ -16,13 +15,6 @@ export interface SessionData {
       codeVerifier: string
       nonce?: string
     }
-  }
-  sgid?: {
-    sessionState?: {
-      codeVerifier: string
-      nonce?: string
-    }
-    profiles?: SgidSessionProfile
   }
 }
 
