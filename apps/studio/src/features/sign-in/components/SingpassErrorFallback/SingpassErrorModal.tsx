@@ -12,19 +12,18 @@ import {
   useDisclosure,
 } from "@chakra-ui/react"
 
-import { SGID } from "~/lib/errors/auth.sgid"
 import { SIGN_IN } from "~/lib/routes"
 import { appendWithRedirect } from "~/utils/url"
 
-interface SgidErrorModalProps {
+interface SingpassErrorModalProps {
   message: string
   redirectUrl: string
 }
 
-export const SgidErrorModal = ({
+export const SingpassErrorModal = ({
   message,
   redirectUrl,
-}: SgidErrorModalProps) => {
+}: SingpassErrorModalProps) => {
   const { onClose } = useDisclosure()
   const modalSize = useBreakpointValue({
     base: "mobile",
@@ -33,11 +32,6 @@ export const SgidErrorModal = ({
 
   const modalText = useMemo(() => {
     switch (message) {
-      case SGID.noPocdex:
-        return {
-          header: "You do not have a valid government email address",
-          body: "You must be a government employee to sign in with Singpass. Please sign in using your email address instead.",
-        }
       default:
         return {
           header: "An unknown error has occurred",
