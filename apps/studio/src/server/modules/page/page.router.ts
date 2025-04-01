@@ -812,7 +812,7 @@ export const pageRouter = router({
                 title: parent.title,
                 subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
                 defaultSortBy: "date",
-                defaultSortDirection: "asc",
+                defaultSortDirection: "desc",
               } as CollectionPagePageProps,
               content: [],
               version: "0.1.0",
