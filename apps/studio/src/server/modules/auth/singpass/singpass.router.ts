@@ -11,6 +11,7 @@ import {
 import { publicProcedure, router } from "~/server/trpc"
 import { safeSchemaJsonParse } from "~/utils/zod"
 import { logUserEvent } from "../../audit/audit.service"
+import { recordUserLogin } from "../auth.service"
 import { getAuthorizationUrl, login } from "./singpass.service"
 
 export const singpassRouter = router({
@@ -28,7 +29,7 @@ export const singpassRouter = router({
         })
       }
 
-      const { userId } = ctx.session.singpass.sessionState
+      const { userId, verificationToken } = ctx.session.singpass.sessionState
 
       ctx.logger.info(
         { landingUrl },
@@ -43,6 +44,7 @@ export const singpassRouter = router({
       set(ctx.session, "singpass.sessionState", {
         ...session,
         userId,
+        verificationToken,
       })
 
       await ctx.session.save()
@@ -78,7 +80,8 @@ export const singpassRouter = router({
         })
       }
 
-      const { codeVerifier, nonce, userId } = ctx.session.singpass.sessionState
+      const { codeVerifier, nonce, userId, verificationToken } =
+        ctx.session.singpass.sessionState
       ctx.session.destroy()
 
       if (!code || !codeVerifier || !nonce || !userId) {
@@ -93,7 +96,12 @@ export const singpassRouter = router({
         })
       }
 
-      const { uuid } = await login({ code, codeVerifier, nonce })
+      const { uuid } = await login({
+        code,
+        codeVerifier,
+        nonce,
+        state: parsedState.data,
+      })
 
       if (!uuid) {
         throw new TRPCError({
@@ -141,6 +149,14 @@ export const singpassRouter = router({
           message: "Singpass profile does not match user",
         })
       }
+
+      await ctx.db.transaction().execute(async (tx) => {
+        await recordUserLogin({
+          tx,
+          userId,
+          verificationToken,
+        })
+      })
 
       ctx.session.destroy()
       ctx.session.userId = userId

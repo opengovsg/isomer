@@ -1,6 +1,10 @@
 import type { NextApiRequest } from "next"
 import { type Prisma, type PrismaClient } from "@prisma/client"
+import { TRPCError } from "@trpc/server"
 
+import type { DB, Transaction, VerificationToken } from "../database"
+import { logAuthEvent } from "../audit/audit.service"
+import { AuditLogEvent } from "../database"
 import { VerificationError } from "./auth.error"
 import { compareHash } from "./auth.util"
 import { getOtpFingerPrint } from "./email/utils"
@@ -47,4 +51,45 @@ export const verifyToken = async (
     }
     throw error
   }
+}
+
+interface RecordUserLoginParams {
+  tx: Transaction<DB>
+  userId: string
+  verificationToken: VerificationToken
+}
+
+export const recordUserLogin = async ({
+  tx,
+  userId,
+  verificationToken,
+}: RecordUserLoginParams) => {
+  const newUser = await tx
+    .updateTable("User")
+    .set({
+      // NOTE: We are not logging the UserUpdate event here, as that is already
+      // captured under the UserLogin event
+      lastLoginAt: new Date(),
+    })
+    .where("id", "=", userId)
+    .returningAll()
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        }),
+    )
+
+  await logAuthEvent(tx, {
+    eventType: AuditLogEvent.Login,
+    by: newUser,
+    delta: {
+      before: {
+        ...verificationToken,
+        attempts: verificationToken.attempts + 1,
+      },
+      after: null,
+    },
+  })
 }
