@@ -5,6 +5,7 @@ import set from "lodash/set"
 
 import type { SessionData } from "~/lib/types/session"
 import { env } from "~/env.mjs"
+import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { sendMail } from "~/lib/mail"
 import {
   emailSignInSchema,
@@ -117,8 +118,7 @@ export const emailSessionRouter = router({
         throw e
       }
 
-      // TODO: Replace this with the Growthbook feature flag
-      const isSingpassActivated = false
+      const isSingpassActivated = ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)
 
       if (!isSingpassActivated) {
         return db.transaction().execute(async (tx) => {
