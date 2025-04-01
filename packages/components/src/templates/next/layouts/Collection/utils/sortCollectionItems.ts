@@ -5,10 +5,9 @@ export type SortableCardProps = AllCardProps & {
   rawDate?: Date
 }
 
-export interface SortCollectionItemsProps {
+export interface SortCollectionItemsProps
+  extends Pick<GetCollectionItemsProps, "sortBy" | "sortDirection"> {
   items: SortableCardProps[]
-  sortBy?: GetCollectionItemsProps["sortBy"]
-  sortDirection?: GetCollectionItemsProps["sortDirection"]
 }
 
 // Sort by last updated date, tiebreaker by title
