@@ -171,7 +171,7 @@ describe("sortCollectionItems", () => {
           url: "/charlie-2023-12-30",
         }),
       )
-      expect(sorted[1]?.title).toBe("David")
+      expect(sorted[4]?.title).toBe("David")
     })
   })
 
