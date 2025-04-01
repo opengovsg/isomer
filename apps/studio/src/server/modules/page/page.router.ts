@@ -1,4 +1,7 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type {
+  CollectionPagePageProps,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
 import {
   getLayoutMetadataSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
@@ -810,7 +813,7 @@ export const pageRouter = router({
                 subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
                 defaultSortBy: "date",
                 defaultSortDirection: "asc",
-              },
+              } as CollectionPagePageProps,
               content: [],
               version: "0.1.0",
             }
