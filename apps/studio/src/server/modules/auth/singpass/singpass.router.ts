@@ -111,12 +111,11 @@ export const singpassRouter = router({
           () => new TRPCError({ code: "NOT_FOUND", message: "User not found" }),
         )
 
-      // TODO: Change phone to UUID once the column is available
-      if (!possibleUser.phone) {
+      if (!possibleUser.uuid) {
         await ctx.db.transaction().execute(async (tx) => {
           const newUser = await tx
             .updateTable("User")
-            .set({ phone: uuid }) // TODO: Change to UUID
+            .set({ uuid })
             .where("id", "=", userId)
             .returningAll()
             .executeTakeFirstOrThrow(
@@ -136,8 +135,7 @@ export const singpassRouter = router({
             },
           })
         })
-        // TODO: Change to UUID
-      } else if (possibleUser.phone !== uuid) {
+      } else if (possibleUser.uuid !== uuid) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Singpass profile does not match user",
