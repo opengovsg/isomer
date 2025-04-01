@@ -89,6 +89,14 @@ export const CollectionPagePageSchema = Type.Intersect([
     }),
   }),
   TagsSchema,
+  Type.Object({
+    defaultSortBy: Type.Optional(
+      Type.Union([Type.Literal("date"), Type.Literal("title")]),
+    ),
+    defaultSortDirection: Type.Optional(
+      Type.Union([Type.Literal("asc"), Type.Literal("desc")]),
+    ),
+  }),
 ])
 
 export const ContentPagePageSchema = Type.Object({
