@@ -1,14 +1,24 @@
 import type { IsomerSiteProps } from "~/engine"
 import type { AllCardProps } from "~/interfaces"
+import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate, getSitemapAsArray } from "~/utils"
 import { sortCollectionItems } from "./sortCollectionItems"
 
 const CATEGORY_OTHERS = "Others"
 
-export const getCollectionItems = (
-  site: IsomerSiteProps,
-  permalink: string,
-): AllCardProps[] => {
+export interface GetCollectionItemsProps {
+  site: IsomerSiteProps
+  permalink: string
+  sortBy: CollectionPagePageProps["defaultSortBy"]
+  sortDirection: CollectionPagePageProps["defaultSortDirection"]
+}
+
+export const getCollectionItems = ({
+  site,
+  permalink,
+  sortBy,
+  sortDirection,
+}: GetCollectionItemsProps): AllCardProps[] => {
   let currSitemap = site.siteMap
   const permalinkParts = permalink.split("/")
 
@@ -83,5 +93,9 @@ export const getCollectionItems = (
       }
     }) satisfies AllCardProps[]
 
-  return sortCollectionItems({ items: transformedItems })
+  return sortCollectionItems({
+    items: transformedItems,
+    sortBy,
+    sortDirection,
+  })
 }

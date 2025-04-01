@@ -1,3 +1,4 @@
+import type { GetCollectionItemsProps } from "./getCollectionItems"
 import type { AllCardProps } from "~/interfaces"
 
 export type SortableCardProps = AllCardProps & {
@@ -6,8 +7,8 @@ export type SortableCardProps = AllCardProps & {
 
 export interface SortCollectionItemsProps {
   items: SortableCardProps[]
-  sortBy?: "date" | "title"
-  sortDirection?: "asc" | "desc"
+  sortBy?: GetCollectionItemsProps["sortBy"]
+  sortDirection?: GetCollectionItemsProps["sortDirection"]
 }
 
 // Sort by last updated date, tiebreaker by title
