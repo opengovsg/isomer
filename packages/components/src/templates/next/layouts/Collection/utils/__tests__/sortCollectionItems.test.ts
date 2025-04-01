@@ -50,19 +50,24 @@ describe("sortCollectionItems", () => {
   }
 
   it("should sort items by date (newest first)", () => {
+    // Arrange
     const items = [
       createItem({ title: "Oldest", date: new Date("2023-01-01") }),
       createItem({ title: "Newest", date: new Date("2023-12-31") }),
       createItem({ title: "Middle", date: new Date("2023-06-15") }),
     ]
 
+    // Act
     const sorted = sortCollectionItems({ items })
+
+    // Assert
     expect(sorted[0]?.title).toBe("Newest")
     expect(sorted[1]?.title).toBe("Middle")
     expect(sorted[2]?.title).toBe("Oldest")
   })
 
   it("should sort by title when dates are equal", () => {
+    // Arrange
     const sameDate = new Date("2023-01-01")
     const items = [
       createItem({ title: "Charlie", date: sameDate }),
@@ -70,13 +75,17 @@ describe("sortCollectionItems", () => {
       createItem({ title: "Bob", date: sameDate }),
     ]
 
+    // Act
     const sorted = sortCollectionItems({ items })
+
+    // Assert
     expect(sorted[0]?.title).toBe("Alice")
     expect(sorted[1]?.title).toBe("Bob")
     expect(sorted[2]?.title).toBe("Charlie")
   })
 
   it("should place items without dates at the end", () => {
+    // Arrange
     const items = [
       createItem({ title: "No Date" }),
       createItem({ title: "Newest", date: new Date("2023-12-31") }),
@@ -84,7 +93,10 @@ describe("sortCollectionItems", () => {
       createItem({ title: "Oldest", date: new Date("2023-01-01") }),
     ]
 
+    // Act
     const sorted = sortCollectionItems({ items })
+
+    // Assert
     expect(sorted[0]?.title).toBe("Newest")
     expect(sorted[1]?.title).toBe("Oldest")
     expect(sorted[2]?.title).toBe("Also No Date")
@@ -92,13 +104,17 @@ describe("sortCollectionItems", () => {
   })
 
   it("should sort items without dates by title", () => {
+    // Arrange
     const items = [
       createItem({ title: "Charlie" }),
       createItem({ title: "Alice" }),
       createItem({ title: "Bob" }),
     ]
 
+    // Act
     const sorted = sortCollectionItems({ items })
+
+    // Assert
     expect(sorted[0]?.title).toBe("Alice")
     expect(sorted[1]?.title).toBe("Bob")
     expect(sorted[2]?.title).toBe("Charlie")
@@ -108,6 +124,7 @@ describe("sortCollectionItems", () => {
     let items: SortableCardProps[]
 
     beforeAll(() => {
+      // Arrange
       const sameDate = new Date("2023-01-01")
       items = [
         createItem({
@@ -127,12 +144,14 @@ describe("sortCollectionItems", () => {
     })
 
     it("sortDirection is desc", () => {
+      // Act
       const sorted = sortCollectionItems({
         items,
         sortBy: "title",
         sortDirection: "desc",
       })
 
+      // Assert
       expect(sorted[0]?.title).toBe("David")
       expect(sorted[1]).toEqual(
         expect.objectContaining({
@@ -151,12 +170,14 @@ describe("sortCollectionItems", () => {
     })
 
     it("sortDirection is asc", () => {
+      // Act
       const sorted = sortCollectionItems({
         items,
         sortBy: "title",
         sortDirection: "asc",
       })
 
+      // Assert
       expect(sorted[0]?.title).toBe("Alice")
       expect(sorted[1]?.title).toBe("Bob")
       expect(sorted[2]).toEqual(
@@ -179,6 +200,7 @@ describe("sortCollectionItems", () => {
     let items: SortableCardProps[]
 
     beforeAll(() => {
+      // Arrange
       const sameDate = new Date("2023-01-01")
       items = [
         createItem({ title: "Newest", date: new Date("2023-12-31") }),
@@ -190,12 +212,14 @@ describe("sortCollectionItems", () => {
     })
 
     it("sortDirection is desc", () => {
+      // Act
       const sorted = sortCollectionItems({
         items,
         sortBy: "date",
         sortDirection: "desc",
       })
 
+      // Assert
       expect(sorted[0]?.title).toBe("Oldest")
       expect(sorted[1]?.title).toBe("Alice")
       expect(sorted[2]?.title).toBe("Bob")
@@ -204,12 +228,14 @@ describe("sortCollectionItems", () => {
     })
 
     it("sortDirection is asc", () => {
+      // Act
       const sorted = sortCollectionItems({
         items,
         sortBy: "date",
         sortDirection: "asc",
       })
 
+      // Assert
       expect(sorted[0]?.title).toBe("Newest")
       expect(sorted[1]?.title).toBe("Alice")
       expect(sorted[2]?.title).toBe("Bob")
