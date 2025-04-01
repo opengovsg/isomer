@@ -11,11 +11,9 @@ calculate_duration() {
   echo "Time taken: $duration seconds"
 }
 
-# Use the latest release tag unless one was provided in the env var
-# NOTE: jq is not available in the Amplify build image, hence we use python
+# Use the release branch unless one was provided in the env var
 if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
-  ISOMER_BUILD_REPO_BRANCH=$(curl https://api.github.com/repos/opengovsg/isomer/releases/latest | \
-    python3 -c "import sys, json; print(json.load(sys.stdin)['tag_name'])")
+  ISOMER_BUILD_REPO_BRANCH="release"
 fi
 
 # Store the current directory
