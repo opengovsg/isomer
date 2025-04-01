@@ -6,9 +6,11 @@ import { z } from "zod"
 
 import { DASHBOARD } from "~/lib/routes"
 import { safeSchemaJsonParse } from "~/utils/zod"
-import { SgidErrorModal } from "./SgidErrorModal"
+import { SingpassErrorModal } from "./SingpassErrorModal"
 
-export const SgidErrorFallback: ComponentType<FallbackProps> = ({ error }) => {
+export const SingpassErrorFallback: ComponentType<FallbackProps> = ({
+  error,
+}) => {
   const router = useRouter()
   const redirectUrl = useMemo(() => {
     const parsed = safeSchemaJsonParse(
@@ -24,5 +26,7 @@ export const SgidErrorFallback: ComponentType<FallbackProps> = ({ error }) => {
   }, [router.query.state])
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-  return <SgidErrorModal message={error.message} redirectUrl={redirectUrl} />
+  return (
+    <SingpassErrorModal message={error.message} redirectUrl={redirectUrl} />
+  )
 }

@@ -13,7 +13,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { ErrorBoundary } from "react-error-boundary"
 
 import { AppBanner } from "~/components/AppBanner"
-import { EnvProvider, FeatureProvider } from "~/components/AppProviders"
+import { EnvProvider } from "~/components/AppProviders"
 import { DefaultFallback } from "~/components/ErrorBoundary/DefaultFallback"
 import Suspense from "~/components/Suspense"
 import { VersionWrapper } from "~/components/VersionWrapper"
@@ -62,23 +62,21 @@ const MyApp = ((props: AppPropsWithAuthAndLayout) => {
     <EnvProvider env={env}>
       <LoginStateProvider>
         <ThemeProvider theme={theme}>
-          <FeatureProvider>
-            <GrowthBookProvider growthbook={gb}>
-              <ErrorBoundary FallbackComponent={DefaultFallback}>
-                <Suspense fallback={<Skeleton width="100%" height="$100vh" />}>
-                  <Stack spacing={0} height="$100vh" flexDirection="column">
-                    <AppBanner />
-                    <VersionWrapper />
-                    <ChildWithLayout {...props} />
-                    {/* eslint-disable-next-line no-restricted-properties */}
-                    {process.env.NODE_ENV !== "production" && (
-                      <ReactQueryDevtools initialIsOpen={false} />
-                    )}
-                  </Stack>
-                </Suspense>
-              </ErrorBoundary>
-            </GrowthBookProvider>
-          </FeatureProvider>
+          <GrowthBookProvider growthbook={gb}>
+            <ErrorBoundary FallbackComponent={DefaultFallback}>
+              <Suspense fallback={<Skeleton width="100%" height="$100vh" />}>
+                <Stack spacing={0} height="$100vh" flexDirection="column">
+                  <AppBanner />
+                  <VersionWrapper />
+                  <ChildWithLayout {...props} />
+                  {/* eslint-disable-next-line no-restricted-properties */}
+                  {process.env.NODE_ENV !== "production" && (
+                    <ReactQueryDevtools initialIsOpen={false} />
+                  )}
+                </Stack>
+              </Suspense>
+            </ErrorBoundary>
+          </GrowthBookProvider>
         </ThemeProvider>
       </LoginStateProvider>
     </EnvProvider>

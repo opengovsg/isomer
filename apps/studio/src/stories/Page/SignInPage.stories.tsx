@@ -35,15 +35,6 @@ export const Default: Story = {
   },
 }
 
-export const WithSgidLogin: Story = {
-  parameters: {
-    chromatic: withChromaticModes(["gsib", "mobile"]),
-    features: {
-      sgid: true,
-    },
-  },
-}
-
 export const InputValidation: Story = {
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement)
