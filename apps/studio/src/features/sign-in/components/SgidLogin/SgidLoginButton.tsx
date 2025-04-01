@@ -8,7 +8,7 @@ import { getRedirectUrl } from "~/utils/url"
 
 export const SgidLoginButton = (): JSX.Element | null => {
   const router = useRouter()
-  const sgidLoginMutation = trpc.auth.singpass.login.useMutation({
+  const sgidLoginMutation = trpc.auth.sgid.login.useMutation({
     onSuccess: async ({ redirectUrl }) => {
       await router.push(redirectUrl)
     },
