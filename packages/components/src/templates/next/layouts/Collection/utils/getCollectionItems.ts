@@ -9,8 +9,8 @@ const CATEGORY_OTHERS = "Others"
 export interface GetCollectionItemsProps {
   site: IsomerSiteProps
   permalink: string
-  sortBy: CollectionPagePageProps["defaultSortBy"]
-  sortDirection: CollectionPagePageProps["defaultSortDirection"]
+  sortBy?: CollectionPagePageProps["defaultSortBy"]
+  sortDirection?: CollectionPagePageProps["defaultSortDirection"]
 }
 
 export const getCollectionItems = ({
