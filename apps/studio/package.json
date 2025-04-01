@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "generate": "prisma generate && tsx prisma/generate.cts && eslint --fix prisma/generated && npx prettier --write prisma/generated",
+    "generate:jwks": "tsx scripts/generateJwks.ts",
     "db:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
     "db:sleep": "sleep 3",
     "db:seed": "prisma db seed",

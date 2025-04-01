@@ -6,6 +6,7 @@ import {
   MOCK_STORY_DATE,
   MOCK_TEST_PHONE,
   MOCK_TEST_USER_NAME,
+  MOCK_TEST_UUID,
 } from "tests/msw/constants"
 
 import type { Context } from "~/server/context"
@@ -106,6 +107,7 @@ export const createTestUser = () => ({
   createdAt: MOCK_STORY_DATE,
   updatedAt: MOCK_STORY_DATE,
   phone: MOCK_TEST_PHONE,
+  uuid: MOCK_TEST_UUID,
   deletedAt: null,
   lastLoginAt: null,
 })
