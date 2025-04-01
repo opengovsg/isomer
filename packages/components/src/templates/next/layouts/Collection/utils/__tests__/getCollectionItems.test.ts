@@ -54,7 +54,7 @@ describe("sortCollectionItems", () => {
       createItem({ title: "Middle", date: new Date("2023-06-15") }),
     ]
 
-    const sorted = sortCollectionItems(items)
+    const sorted = sortCollectionItems({ items })
     expect(sorted[0]?.title).toBe("Newest")
     expect(sorted[1]?.title).toBe("Middle")
     expect(sorted[2]?.title).toBe("Oldest")
@@ -68,7 +68,7 @@ describe("sortCollectionItems", () => {
       createItem({ title: "Bob", date: sameDate }),
     ]
 
-    const sorted = sortCollectionItems(items)
+    const sorted = sortCollectionItems({ items })
     expect(sorted[0]?.title).toBe("Alice")
     expect(sorted[1]?.title).toBe("Bob")
     expect(sorted[2]?.title).toBe("Charlie")
@@ -82,7 +82,7 @@ describe("sortCollectionItems", () => {
       createItem({ title: "Oldest", date: new Date("2023-01-01") }),
     ]
 
-    const sorted = sortCollectionItems(items)
+    const sorted = sortCollectionItems({ items })
     expect(sorted[0]?.title).toBe("Newest")
     expect(sorted[1]?.title).toBe("Oldest")
     expect(sorted[2]?.title).toBe("Also No Date")
@@ -96,7 +96,7 @@ describe("sortCollectionItems", () => {
       createItem({ title: "Bob" }),
     ]
 
-    const sorted = sortCollectionItems(items)
+    const sorted = sortCollectionItems({ items })
     expect(sorted[0]?.title).toBe("Alice")
     expect(sorted[1]?.title).toBe("Bob")
     expect(sorted[2]?.title).toBe("Charlie")
