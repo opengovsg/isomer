@@ -91,10 +91,22 @@ export const CollectionPagePageSchema = Type.Intersect([
   TagsSchema,
   Type.Object({
     defaultSortBy: Type.Optional(
-      Type.Union([Type.Literal("date"), Type.Literal("title")]),
+      Type.Union([Type.Literal("date"), Type.Literal("title")], {
+        title: "Default sort by",
+        description: "The default sort order of the collection",
+        format: "hidden",
+        type: "string",
+        default: "date",
+      }),
     ),
     defaultSortDirection: Type.Optional(
-      Type.Union([Type.Literal("asc"), Type.Literal("desc")]),
+      Type.Union([Type.Literal("asc"), Type.Literal("desc")], {
+        title: "Default sort direction",
+        description: "The default sort direction of the collection",
+        format: "hidden",
+        type: "string",
+        default: "desc",
+      }),
     ),
   }),
 ])
