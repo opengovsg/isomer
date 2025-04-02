@@ -8,6 +8,9 @@ on:
   push:
     branches:
       - uat
+  release:
+    types:
+      - released # we should deploy to `uat` on every release so that the environment will stay up to date
 
 jobs:
   deploy_uat:
