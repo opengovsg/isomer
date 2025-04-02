@@ -55,6 +55,32 @@ export const singpassRouter = router({
       }
     }),
 
+  getName: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.session.singpass?.sessionState) {
+      ctx.logger.warn("No Singpass session state found")
+
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Invalid login flow",
+      })
+    }
+
+    const { userId } = ctx.session.singpass.sessionState
+
+    const user = await ctx.db
+      .selectFrom("User")
+      .selectAll()
+      .where("User.id", "=", userId)
+      .executeTakeFirstOrThrow(
+        () => new TRPCError({ code: "NOT_FOUND", message: "User not found" }),
+      )
+
+    return {
+      name: user.name || user.email,
+      isNewUser: !user.uuid,
+    }
+  }),
+
   callback: publicProcedure
     .input(singpassCallbackSchema)
     .query(async ({ ctx, input: { state, code } }) => {
@@ -164,6 +190,7 @@ export const singpassRouter = router({
       await ctx.session.save()
 
       return {
+        isNewUser: !possibleUser.uuid,
         redirectUrl: DASHBOARD,
       }
     }),

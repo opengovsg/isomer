@@ -6,14 +6,16 @@ import { meHandlers } from "tests/msw/handlers/me"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import SignInPage from "~/pages/sign-in"
+import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
 
 const VALID_AUTH_EMAIL = "test@example.gov.sg"
 
 const meta: Meta<typeof SignInPage> = {
-  title: "Pages/Sign In Page",
+  title: "Pages/Sign In Page/Email with Singpass Sign In Page",
   component: SignInPage,
   parameters: {
     loginState: false,
+    growthbook: [createSingpassEnabledGbParameters(true)],
     msw: {
       handlers: [
         meHandlers.unauthorized(),
@@ -21,6 +23,7 @@ const meta: Meta<typeof SignInPage> = {
           email: VALID_AUTH_EMAIL,
           otpPrefix: "TST",
         }),
+        authEmailHandlers.verifyOtp.default(),
       ],
     },
   },
@@ -44,11 +47,8 @@ export const InputValidation: Story = {
     })
 
     await step("Attempt log in", async () => {
-      await userEvent.click(await canvas.findByText(/get otp/i))
-      const error = await canvas.findByText(
-        /please enter a valid email address/i,
-      )
-      await expect(error).toBeInTheDocument()
+      const submitBtn = await canvas.findByText(/send/i)
+      await expect(submitBtn).toBeDisabled()
     })
   },
 }
@@ -65,9 +65,11 @@ export const VerifyOTP: Story = {
     })
 
     await step("Attempt log in", async () => {
-      await userEvent.click(await canvas.findByText(/get otp/i))
-      const expectedLabel = await canvas.findByText(/enter the otp sent to/i)
+      await userEvent.click(await canvas.findByText(/send/i))
+      const expectedLabel = await canvas.findByText(/sent an OTP to/i)
+      const otpSubmitBtn = await canvas.findByText(/sign in/i)
       await expect(expectedLabel).toBeInTheDocument()
+      await expect(otpSubmitBtn).toBeDisabled()
     })
   },
 }
