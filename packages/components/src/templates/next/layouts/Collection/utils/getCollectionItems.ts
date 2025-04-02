@@ -87,12 +87,12 @@ export const getCollectionItems = (
     if (a.rawDate && b.rawDate && a.rawDate.getTime() === b.rawDate.getTime()) {
       // localeCompare better than > operator as
       // it properly handles international and special characters
-      return a.title.localeCompare(b.title)
+      return a.title.localeCompare(b.title, undefined, { numeric: true })
     }
 
     // If both items have no dates, sort by title
     if (a.rawDate === undefined && b.rawDate === undefined) {
-      return a.title.localeCompare(b.title)
+      return a.title.localeCompare(b.title, undefined, { numeric: true })
     }
 
     // Rank items with no dates last
