@@ -14,6 +14,9 @@ const SINGPASS_SIGNING_KEY = await exportJWK(
   await importPKCS8(
     env.SINGPASS_SIGNING_PRIVATE_KEY,
     env.SINGPASS_SIGNING_KEY_ALG,
+    {
+      extractable: true,
+    },
   ),
 )
 
@@ -21,6 +24,9 @@ const SINGPASS_ENCRYPTION_KEY = await exportJWK(
   await importPKCS8(
     env.SINGPASS_ENCRYPTION_PRIVATE_KEY,
     env.SINGPASS_ENCRYPTION_KEY_ALG,
+    {
+      extractable: true,
+    },
   ),
 )
 

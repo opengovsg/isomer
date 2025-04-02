@@ -1,5 +1,5 @@
 export const SIGN_IN = "/sign-in"
-export const SIGN_IN_SELECT_PROFILE_SUBROUTE = "/select-profile"
+export const SIGN_IN_SINGPASS = "/sign-in/singpass"
 
 export const DASHBOARD = "/"
 export const PROFILE = "/profile"

@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react"
-import Router from "next/router"
+import { useRouter } from "next/router"
 
 import { useLoginState } from "~/features/auth"
 import { trpc } from "~/utils/trpc"
@@ -7,6 +7,7 @@ import { isUserOnboarded } from "./isUserOnboarded"
 
 export const useMe = () => {
   const [me] = trpc.me.get.useSuspenseQuery()
+  const router = useRouter()
 
   const { removeLoginStateFlag } = useLoginState()
   const logoutMutation = trpc.auth.logout.useMutation()
@@ -17,12 +18,12 @@ export const useMe = () => {
         onSuccess: () => {
           removeLoginStateFlag()
           if (redirectToSignIn) {
-            void Router.push("/sign-in")
+            void router.push("/sign-in")
           }
         },
       })
     },
-    [logoutMutation, removeLoginStateFlag],
+    [logoutMutation, removeLoginStateFlag, router],
   )
 
   const isOnboarded = useMemo(() => isUserOnboarded(me), [me])
