@@ -4,9 +4,11 @@ import { PAST_AND_FORMER_ISOMER_MEMBERS_EMAILS } from "~prisma/constants"
 import isEmail from "validator/lib/isEmail"
 
 import type { DB, Transaction } from "../database"
+import type { SessionData } from "~/lib/types/session"
 import type { AdminType } from "~/schemas/user"
 import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { isGovEmail } from "~/utils/email"
+import { logPermissionEvent, logUserEvent } from "../audit/audit.service"
 import { db, RoleType } from "../database"
 import { isEmailWhitelisted } from "../whitelist/whitelist.service"
 
@@ -44,7 +46,8 @@ interface CreateUserProps {
   phone?: User["phone"]
   role: ResourcePermission["role"]
   siteId: ResourcePermission["siteId"]
-  tx?: Transaction<DB> // allows for transaction to be passed in from parent transaction
+  byUserId: User["id"]
+  tx: Transaction<DB> // allows for transaction to be passed in from parent transaction
 }
 
 export const createUserWithPermission = async ({
@@ -53,6 +56,7 @@ export const createUserWithPermission = async ({
   phone = "",
   role = RoleType.Editor,
   siteId,
+  byUserId,
   tx,
 }: CreateUserProps) => {
   if (!isEmail(email)) {
@@ -72,7 +76,13 @@ export const createUserWithPermission = async ({
     })
   }
 
-  const executeInTransaction = async (tx: Transaction<DB>) => {
+  const byUser = await db
+    .selectFrom("User")
+    .where("id", "=", byUserId)
+    .selectAll()
+    .executeTakeFirstOrThrow()
+
+  const createUserInTransaction = async () => {
     const user = await tx
       .insertInto("User")
       .values({
@@ -81,25 +91,42 @@ export const createUserWithPermission = async ({
         name: name || email.split("@")[0] || "",
         phone,
       })
-      .onConflict((oc) =>
-        oc
-          .columns(["email", "deletedAt"])
-          .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
-      )
-      .returning(["id", "email", "name", "phone", "deletedAt"])
-      .executeTakeFirstOrThrow()
+      .onConflict((oc) => oc.columns(["email", "deletedAt"]).doNothing())
+      .returningAll()
+      .executeTakeFirst()
 
+    // if user is defined, it means it's newly created and there's no conflict
+    if (user) {
+      await logUserEvent(tx, {
+        eventType: "UserCreate",
+        by: byUser,
+        delta: { before: null, after: user },
+      })
+      return user
+    }
+
+    // if user is undefined, it means there's a conflict
+    // Nothing happened but we need to return the existing user
+    return await tx
+      .selectFrom("User")
+      .where("email", "=", email)
+      .where("deletedAt", "is", null)
+      .selectAll()
+      .executeTakeFirstOrThrow()
+  }
+
+  const createPermissionInTransaction = async (userId: User["id"]) => {
     const resourcePermission = await tx
       .insertInto("ResourcePermission")
       .values({
-        userId: user.id,
+        userId,
         siteId,
         role,
       })
       .onConflict((oc) =>
         oc.columns(["userId", "siteId", "resourceId", "deletedAt"]).doNothing(),
       )
-      .returning(["userId", "siteId", "role"])
+      .returningAll()
       .executeTakeFirst()
 
     if (!resourcePermission) {
@@ -109,17 +136,18 @@ export const createUserWithPermission = async ({
       })
     }
 
-    return {
-      user,
-      resourcePermission,
-    }
+    await logPermissionEvent(tx, {
+      eventType: "PermissionCreate",
+      by: byUser,
+      delta: { before: null, after: resourcePermission },
+    })
+
+    return resourcePermission
   }
 
-  if (tx) {
-    return await executeInTransaction(tx)
-  }
-
-  return await db.transaction().execute(executeInTransaction)
+  const user = await createUserInTransaction()
+  const permission = await createPermissionInTransaction(user.id)
+  return { user, resourcePermission: permission }
 }
 
 interface GetUsersQueryProps {
@@ -153,4 +181,128 @@ export const getUsersQuery = ({ siteId, adminType }: GetUsersQueryProps) => {
       "ActiveUser.id",
       "ActiveResourcePermission.userId",
     )
+}
+
+interface DeleteUserPermissionProps {
+  byUserId: NonNullable<SessionData["userId"]>
+  userId: string
+  siteId: number
+}
+
+// FYI this might be a performance bottleneck once we start having resource-level
+// permissions. However, this is not a problem for the current use case because
+// we only have site-level permissions.
+export const deleteUserPermission = async ({
+  byUserId,
+  userId,
+  siteId,
+}: DeleteUserPermissionProps) => {
+  // Putting outside the tx to reduce unnecessary extended DB locks
+  const byUser = await db
+    .selectFrom("User")
+    .where("id", "=", byUserId)
+    .selectAll()
+    .executeTakeFirstOrThrow()
+
+  await db.transaction().execute(async (tx) => {
+    const userPermissionsToDelete = await tx
+      .selectFrom("ResourcePermission")
+      .where("userId", "=", userId)
+      .where("siteId", "=", siteId)
+      .where("deletedAt", "is", null)
+      .selectAll()
+      .execute()
+
+    if (userPermissionsToDelete.length === 0) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "User permissions not found",
+      })
+    }
+
+    const deletedUserPermissions = await tx
+      .updateTable("ResourcePermission")
+      .where(
+        "id",
+        "in",
+        userPermissionsToDelete.map((p) => p.id),
+      )
+      .set({ deletedAt: new Date() })
+      .returningAll()
+      .execute()
+
+    // NOTE: this is technically impossible because we're executing
+    // inside a tx and this is the same resource which was fetched earlier
+    if (deletedUserPermissions.length !== userPermissionsToDelete.length) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message:
+          "Something went wrong while attempting to move your resource, please try again later",
+      })
+    }
+
+    for (const deletedUserPermission of deletedUserPermissions) {
+      const before = userPermissionsToDelete.find(
+        (p) => p.id === deletedUserPermission.id,
+      )
+
+      // Note: this is technically impossible because we're executing
+      // inside a tx and we have checked previously that the user permission existed
+      if (!before) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "Something went wrong while attempting to move your resource, please try again later",
+        })
+      }
+
+      await logPermissionEvent(tx, {
+        eventType: "PermissionDelete",
+        by: byUser,
+        delta: { before, after: deletedUserPermission },
+      })
+    }
+  })
+}
+
+interface UpdateUserDetailsProps {
+  userId: NonNullable<SessionData["userId"]>
+  name?: string
+  phone?: string
+}
+
+export const updateUserDetails = async ({
+  userId,
+  name,
+  phone,
+}: UpdateUserDetailsProps) => {
+  if (userId !== userId) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You are not allowed to update this user's details",
+    })
+  }
+
+  return await db.transaction().execute(async (tx) => {
+    const user = await tx
+      .selectFrom("User")
+      .where("id", "=", userId)
+      .selectAll()
+      .executeTakeFirstOrThrow()
+
+    const updatedUser = await tx
+      .updateTable("User")
+      .where("id", "=", userId)
+      .set({ name, phone })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+
+    await logUserEvent(tx, {
+      eventType: "UserUpdate",
+      by: user,
+      delta: { before: user, after: updatedUser },
+    })
+
+    return updatedUser
+  })
 }

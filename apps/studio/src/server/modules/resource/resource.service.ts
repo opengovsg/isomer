@@ -3,12 +3,22 @@ import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { type DB } from "~prisma/generated/generatedTypes"
+import _ from "lodash"
 
-import type { Resource, SafeKysely, Transaction } from "../database"
+import type {
+  Footer,
+  Navbar,
+  Resource,
+  SafeKysely,
+  Site,
+  Transaction,
+  User,
+} from "../database"
 import type { SearchResultResource } from "./resource.types"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { getSitemapTree } from "~/utils/sitemap"
+import { logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceType, sql } from "../database"
 import { incrementVersion } from "../version/version.service"
@@ -172,6 +182,48 @@ export const updatePageById = (
     .executeTakeFirstOrThrow()
 }
 
+export const getBlobOfResource = async ({
+  tx,
+  resourceId,
+}: {
+  tx: Transaction<DB>
+  resourceId: string
+}) => {
+  const { draftBlobId, publishedVersionId } = await tx
+    .selectFrom("Resource")
+    .where("id", "=", resourceId)
+    .select(["draftBlobId", "publishedVersionId"])
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "The specified resource could not be found",
+        }),
+    )
+
+  if (draftBlobId) {
+    return (
+      tx
+        .selectFrom("Blob")
+        .where("id", "=", draftBlobId)
+        .selectAll()
+        // NOTE: Guaranteed to exist since this is a foreign key
+        .executeTakeFirstOrThrow()
+    )
+  }
+
+  return tx
+    .selectFrom("Blob")
+    .selectAll()
+    .where("Blob.id", "=", (eb) =>
+      eb
+        .selectFrom("Version")
+        .where("id", "=", publishedVersionId)
+        .select("blobId"),
+    )
+    .executeTakeFirstOrThrow()
+}
+
 export const updateBlobById = async (
   tx: Transaction<DB>,
   {
@@ -200,6 +252,8 @@ export const updateBlobById = async (
     })
   }
 
+  let blobIdToUpdate = page.draftBlobId
+
   if (!page.draftBlobId) {
     // NOTE: no draft for this yet, need to create a new one
     const newBlob = await tx
@@ -207,6 +261,7 @@ export const updateBlobById = async (
       .values({ content: jsonb(content) })
       .returning("id")
       .executeTakeFirstOrThrow()
+    blobIdToUpdate = newBlob.id
     await tx
       .updateTable("Resource")
       .where("id", "=", String(pageId))
@@ -219,7 +274,8 @@ export const updateBlobById = async (
       .updateTable("Blob")
       // NOTE: This works because a page has a 1-1 relation with a blob
       .set({ content: jsonb(content) })
-      .where("Blob.id", "=", page.draftBlobId)
+      .where("Blob.id", "=", blobIdToUpdate)
+      .returningAll()
       .executeTakeFirstOrThrow()
   )
 }
@@ -395,23 +451,145 @@ export const getResourceFullPermalink = async (
   return `/${permalinkTree.join("/")}`
 }
 
-export const publishResource = async (
+export const publishPageResource = async (
   logger: Logger<string>,
   siteId: number,
   resourceId: string,
   userId: string,
 ) => {
   // Step 1: Create a new version
-  const addedVersionResult = await incrementVersion({
-    siteId,
-    resourceId,
-    userId,
-  })
+  const by = await db
+    .selectFrom("User")
+    .selectAll()
+    .where("id", "=", userId)
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Please ensure that you have logged in",
+        }),
+    )
+
+  const addedVersionResult = await db
+    .transaction()
+    .setIsolationLevel("serializable")
+    .execute(async (tx) => {
+      const fullResource = await getFullPageById(tx, {
+        resourceId: Number(resourceId),
+        siteId,
+      })
+
+      if (!fullResource) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "Please ensure you are attempting to publish a page that exists",
+        })
+      }
+
+      const version = await incrementVersion({
+        tx,
+        siteId,
+        resourceId,
+        userId,
+      })
+
+      const previousVersion = await tx
+        .selectFrom("Version")
+        .where("Version.versionNum", "=", Number(version.versionNum) - 1)
+        .where("Version.resourceId", "=", resourceId)
+        .select("Version.id")
+        .executeTakeFirst()
+
+      await logPublishEvent(tx, {
+        by,
+        delta: {
+          before: previousVersion?.id
+            ? { versionId: previousVersion.id }
+            : null,
+          after: version,
+        },
+        eventType: "Publish",
+        metadata: fullResource,
+      })
+
+      return version
+    })
 
   // Step 2: Trigger a publish of the site
   await publishSite(logger, siteId)
 
   return addedVersionResult
+}
+
+// NOTE: The distinction here between `publishResource` and `publishPageResource` is that
+// this should be used for publishes that do not incur a change to `Blob.content`
+// and hence, don't incur a log to the `Version` table
+export const publishResource = async (
+  by: User["id"],
+  resource: Resource,
+  logger: Logger<string>,
+) => {
+  const byUser = await db
+    .selectFrom("User")
+    .selectAll()
+    .where("id", "=", by)
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please ensure that you are logged in!",
+        }),
+    )
+
+  return db.transaction().execute(async (tx) => {
+    await logPublishEvent(tx, {
+      by: byUser,
+      delta: {
+        before: null,
+        after: null,
+      },
+      eventType: "Publish",
+      metadata: resource,
+    })
+
+    await publishSite(logger, resource.siteId)
+  })
+}
+
+export const publishSiteConfig = async (
+  by: string,
+  {
+    site,
+    ...rest
+  }: { site: Site } | { site: Site; footer: Footer; navbar: Navbar },
+  logger: Logger<string>,
+) => {
+  const byUser = await db
+    .selectFrom("User")
+    .selectAll()
+    .where("id", "=", by)
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please ensure that you are logged in!",
+        }),
+    )
+
+  return db.transaction().execute(async (tx) => {
+    await logPublishEvent(tx, {
+      by: byUser,
+      delta: {
+        before: null,
+        after: null,
+      },
+      eventType: "Publish",
+      metadata: { site, ...rest },
+    })
+
+    await publishSite(logger, site.id)
+  })
 }
 
 export const getBatchAncestryWithSelfQuery = async ({
@@ -676,4 +854,14 @@ export const getSearchWithResourceIds = async ({
       lastUpdatedAt: null,
     })),
   })
+}
+
+export const getFullResourceByVersion = (versionId: string) => {
+  return db
+    .selectFrom("Version")
+    .innerJoin("Blob", "Version.blobId", "Blob.id")
+    .innerJoin("Resource", "Version.resourceId", "Resource.id")
+    .where("Version.id", "=", versionId)
+    .select(defaultResourceWithBlobSelect)
+    .executeTakeFirst()
 }

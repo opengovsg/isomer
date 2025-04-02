@@ -3,9 +3,9 @@ import type { SelectExpression } from "kysely"
 import type { DB } from "../database"
 
 export const defaultCollectionSelect = [
-  "Resource.id",
-  "Resource.siteId",
-  "Resource.title",
-  "Resource.type",
-  "Resource.permalink",
+  "id",
+  "siteId",
+  "title",
+  "type",
+  "permalink",
 ] satisfies SelectExpression<DB, "Resource">[]

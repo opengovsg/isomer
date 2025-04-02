@@ -8,13 +8,14 @@ on:
   push:
     branches:
       - uat
+  release:
+    types:
+      - released # we should deploy to `uat` on every release so that the environment will stay up to date
 
-# NOTE: This is actually using our federated isomer-staging account
 jobs:
-  deploy_staging:
+  deploy_uat:
     name: Deploy app to uat
     uses: ./.github/workflows/aws_deploy.yml
-    # NOTE: deploy in `staging` env to set env specific secrets
     with:
       aws-region: "ap-southeast-1"
       aws-account-id: "343218177745"

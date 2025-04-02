@@ -42,3 +42,4 @@ export type {
   GoogleTagManagerBodyProps,
 } from "./GoogleTagManager"
 export type { AttrsDirProps } from "./AttrsDir"
+export type { WizgovWidgetProps, WizgovProps } from "./Wizgov"

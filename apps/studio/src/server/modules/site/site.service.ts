@@ -86,7 +86,7 @@ export const setSiteNotification = async ({
   siteId,
   userId,
   notification,
-}: SetSiteNotificationParams): Promise<void> => {
+}: SetSiteNotificationParams) => {
   // TODO: Remove tiptap schema coercion when tiptap editor is used on the frontend.
   const notificationSchema = {
     notification: {
@@ -146,6 +146,8 @@ export const setSiteNotification = async ({
     },
     by: user,
   })
+
+  return newSite
 }
 
 interface ClearSiteNotificationParams {
@@ -208,4 +210,6 @@ export const clearSiteNotification = async ({
     },
     by: user,
   })
+
+  return newSite
 }

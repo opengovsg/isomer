@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Optimize CI
         id: check_skip
-        uses: withgraphite/graphite-ci-action@main
+        uses: withgraphite/graphite-ci-action@9bc969adfd43bb790da3b64b543c78c75cef9689
         with:
           graphite_token: ${{ secrets.GRAPHITE_CI_OPTIMIZER_TOKEN }}
   # JOB to run change detection
@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # For pull requests it's not necessary to checkout the code
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
         id: filter
         with:
           filters: |

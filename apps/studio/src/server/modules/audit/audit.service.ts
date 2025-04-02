@@ -37,7 +37,7 @@ interface ResourceUpdateDelta {
   after: FullResource
 }
 
-interface ResourceEventLogProps {
+export interface ResourceEventLogProps {
   eventType: Extract<
     AuditLogEvent,
     "ResourceCreate" | "ResourceUpdate" | "ResourceDelete" | "ResourceMove"
@@ -45,18 +45,19 @@ interface ResourceEventLogProps {
   delta: ResourceCreateDelta | ResourceDeleteDelta | ResourceUpdateDelta
   by: User
   ip?: string
+  metadata?: Record<string, unknown>
 }
 
 // NOTE: Type to force every logger method to have a tx
-type AuditLogger<T> = (tx: Transaction<DB>, props: T) => Promise<void>
+export type AuditLogger<T> = (tx: Transaction<DB>, props: T) => Promise<void>
 
 export const logResourceEvent: AuditLogger<ResourceEventLogProps> = async (
   tx,
-  { eventType, delta, by, ip },
+  { eventType, delta, by, ip, metadata = {} },
 ) => {
   await tx
     .insertInto("AuditLog")
-    .values({ eventType, delta, userId: by.id, ipAddress: ip, metadata: {} })
+    .values({ eventType, delta, userId: by.id, ipAddress: ip, metadata })
     .execute()
 }
 
@@ -145,25 +146,55 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
     .execute()
 }
 
-type PublishEvent = WithoutMeta<Version>
+interface VersionPointer {
+  versionId: Version["id"]
+}
 
-interface PublishEventLogProps {
+type BlobPublishEvent = Resource & Blob
+// NOTE: Only 2 kinds of config changes atm
+// first, we allow users to set site notif
+// next, admins can wholesale update site + footer + navbar
+type ConfigPublishEvent = { site: Site } & { navbar?: Navbar } & {
+  footer?: Footer
+}
+
+interface PublishEventLogProps<
+  Before,
+  After,
+  Meta extends Record<string, unknown>,
+> {
   by: User
   delta: {
-    // NOTE: `null` if this is the first publish
-    // We don't want to store the `version` because it is a pointer
-    // to the blob/resource
-    // we will instead store the full data here so it is an accurate snapshot
-    before: PublishEvent | null
-    after: PublishEvent
+    before: Before extends null ? null : WithoutMeta<Before>
+    after: After extends null ? null : WithoutMeta<After>
   }
   eventType: Extract<AuditLogEvent, "Publish">
   ip?: string
+  metadata: Meta
 }
-export const logPublishEvent: AuditLogger<PublishEventLogProps> = async (
-  tx,
-  { by, delta, eventType, ip },
-) => {
+
+// NOTE: First publish of a blob will have no `versionId`
+// but every subsequent publish will have
+type BlobPublishEventLogProps = PublishEventLogProps<
+  null | VersionPointer,
+  VersionPointer,
+  BlobPublishEvent
+>
+
+type ResourcePublishEventLogProps = PublishEventLogProps<null, null, Resource>
+
+// NOTE: users cannot delete config - so this will forever be an update
+type ConfigPublishEventLogProps = PublishEventLogProps<
+  null,
+  null,
+  ConfigPublishEvent
+>
+
+export const logPublishEvent: AuditLogger<
+  | BlobPublishEventLogProps
+  | ResourcePublishEventLogProps
+  | ConfigPublishEventLogProps
+> = async (tx, { by, delta, eventType, ip, metadata = {} }) => {
   await tx
     .insertInto("AuditLog")
     .values({
@@ -171,6 +202,7 @@ export const logPublishEvent: AuditLogger<PublishEventLogProps> = async (
       delta,
       userId: by.id,
       ipAddress: ip,
+      metadata,
     })
     .execute()
 }
@@ -194,12 +226,13 @@ interface UserEventLogProps {
   by: User
   delta: CreateUserDelta | DeleteUserDelta | UpdateUserDelta
   eventType: Extract<AuditLogEvent, "UserCreate" | "UserUpdate" | "UserDelete">
+  metadata?: Record<string, unknown>
   ip?: string
 }
 
 export const logUserEvent: AuditLogger<UserEventLogProps> = async (
   tx,
-  { by, delta, eventType, ip },
+  { by, delta, eventType, ip, metadata = {} },
 ) => {
   await tx
     .insertInto("AuditLog")
@@ -208,7 +241,7 @@ export const logUserEvent: AuditLogger<UserEventLogProps> = async (
       delta,
       userId: by.id,
       ipAddress: ip,
-      metadata: {},
+      metadata,
     })
     .execute()
 }
@@ -218,11 +251,15 @@ interface CreatePermissionDelta {
   after: ResourcePermission
 }
 
+// There's ResourcePermission for "before" and "after"
+// as we are only soft-deleting the record
 interface DeletePermissionDelta {
-  before: null
+  before: ResourcePermission
   after: ResourcePermission
 }
 
+// Note: This is not used anywhere at the moment as we only soft-delete
+// the ResourcePermission record, nevertheless, we keep it here for future use (if any)
 interface UpdatePermissionDelta {
   before: ResourcePermission
   after: ResourcePermission
@@ -235,12 +272,13 @@ interface PermissionEventLogProps {
   >
   by: User
   delta: CreatePermissionDelta | DeletePermissionDelta | UpdatePermissionDelta
+  metadata?: Record<string, unknown>
   ip?: string
 }
 
 export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
   tx,
-  { eventType, by, delta, ip },
+  { eventType, by, delta, ip, metadata = {} },
 ) => {
   await tx
     .insertInto("AuditLog")
@@ -249,6 +287,7 @@ export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
       delta,
       userId: by.id,
       ipAddress: ip,
+      metadata,
     })
     .execute()
 }
