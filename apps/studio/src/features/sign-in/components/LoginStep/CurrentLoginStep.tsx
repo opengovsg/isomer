@@ -4,6 +4,7 @@ import { Flex } from "@chakra-ui/react"
 import { useSignInContext } from "../SignInContext"
 import { EmailLoginStep } from "./EmailLoginStep"
 import { InitialLoginStep } from "./InitialLoginStep"
+import { SingpassLoginStep } from "./SingpassLoginStep"
 
 export const CurrentLoginStep = (): JSX.Element => {
   const { state } = useSignInContext()
@@ -14,6 +15,11 @@ export const CurrentLoginStep = (): JSX.Element => {
         return <InitialLoginStep />
       case "email":
         return <EmailLoginStep />
+      case "singpass":
+        return <SingpassLoginStep />
+      default:
+        const _: never = state
+        return <></>
     }
   }, [state])
 

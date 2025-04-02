@@ -18,6 +18,7 @@ import { useInterval } from "usehooks-ts"
 
 import { CALLBACK_URL_KEY } from "~/constants/params"
 import { useLoginState } from "~/features/auth"
+import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { OTP_LENGTH } from "~/lib/auth"
 import { useZodForm } from "~/lib/form"
 import { emailVerifyOtpSchema } from "~/schemas/auth/email/sign-in"
@@ -30,9 +31,12 @@ export const VerificationInput = (): JSX.Element | null => {
   const [showOtpDelayMessage, setShowOtpDelayMessage] = useState(false)
   const { setHasLoginStateFlag } = useLoginState()
   const router = useRouter()
-  const utils = trpc.useContext()
+  const utils = trpc.useUtils()
 
-  const { vfnStepData, timer, setVfnStepData, resetTimer } = useSignInContext()
+  const { vfnStepData, timer, setVfnStepData, resetTimer, proceedToSingpass } =
+    useSignInContext()
+
+  const isSingpassEnabled = useIsSingpassEnabled()
 
   useInterval(
     () => setShowOtpDelayMessage(true),
@@ -57,11 +61,17 @@ export const VerificationInput = (): JSX.Element | null => {
 
   const verifyOtpMutation = trpc.auth.email.verifyOtp.useMutation({
     onSuccess: async () => {
-      setHasLoginStateFlag()
-      await utils.me.get.invalidate()
-      // accessing router.query values returns decoded URI params automatically,
-      // so there's no need to call decodeURIComponent manually when accessing the callback url.
-      await router.push(callbackUrlSchema.parse(router.query[CALLBACK_URL_KEY]))
+      if (isSingpassEnabled) {
+        proceedToSingpass()
+      } else {
+        setHasLoginStateFlag()
+        await utils.me.get.invalidate()
+        // accessing router.query values returns decoded URI params automatically,
+        // so there's no need to call decodeURIComponent manually when accessing the callback url.
+        await router.push(
+          callbackUrlSchema.parse(router.query[CALLBACK_URL_KEY]),
+        )
+      }
     },
     onError: (error) => {
       switch (error.message) {

@@ -8,3 +8,5 @@ export * from "./SgidLogin"
 export * from "./SgidCallback"
 
 export * from "./SignInContext"
+
+export * from "./SingpassCallback"

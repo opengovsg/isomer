@@ -1,24 +1,24 @@
 import { TRPCError } from "@trpc/server"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { formatInTimeZone } from "date-fns-tz"
 import pick from "lodash/pick"
+import set from "lodash/set"
 
+import type { SessionData } from "~/lib/types/session"
 import { env } from "~/env.mjs"
+import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { sendMail } from "~/lib/mail"
-import { SessionData } from "~/lib/types/session"
 import {
   emailSignInSchema,
   emailVerifyOtpSchema,
 } from "~/schemas/auth/email/sign-in"
 import { publicProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
-import { logAuthEvent } from "../../audit/audit.service"
 import { db } from "../../database"
 import { defaultUserSelect } from "../../me/me.select"
 import { isUserDeleted } from "../../user/user.service"
 import { isEmailWhitelisted } from "../../whitelist/whitelist.service"
 import { VerificationError } from "../auth.error"
-import { verifyToken } from "../auth.service"
+import { recordUserLogin, verifyToken } from "../auth.service"
 import { createTokenHash, createVfnPrefix, createVfnToken } from "../auth.util"
 import { upsertUser } from "./email.service"
 import { getOtpFingerPrint } from "./utils"
@@ -118,25 +118,38 @@ export const emailSessionRouter = router({
         throw e
       }
 
+      const isSingpassActivated = ctx.gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)
+
+      if (!isSingpassActivated) {
+        return db.transaction().execute(async (tx) => {
+          const user = await upsertUser({
+            tx,
+            email,
+          })
+
+          await recordUserLogin({
+            tx,
+            userId: user.id,
+            verificationToken: oldVerificationToken,
+          })
+
+          ctx.session.userId = user.id as SessionData["userId"]
+          await ctx.session.save()
+          return pick(user, defaultUserSelect)
+        })
+      }
+
       return db.transaction().execute(async (tx) => {
         const user = await upsertUser({
           tx,
           email,
         })
 
-        await logAuthEvent(tx, {
-          by: user,
-          delta: {
-            before: {
-              ...oldVerificationToken,
-              attempts: oldVerificationToken.attempts + 1,
-            },
-            after: null,
-          },
-          eventType: AuditLogEvent.Login,
+        ctx.session.destroy()
+        set(ctx.session, "singpass.sessionState", {
+          userId: user.id,
+          verificationToken: oldVerificationToken,
         })
-
-        ctx.session.userId = user.id as SessionData["userId"]
         await ctx.session.save()
         return pick(user, defaultUserSelect)
       })
