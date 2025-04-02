@@ -1,0 +1,25 @@
+name: Update release branch
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  release:
+    types:
+      - released
+
+jobs:
+  update_release_branch:
+    name: Update release branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update release branch
+        run: |
+          git push -f origin ${{ github.event.release.tag_name }}:release
