@@ -25,8 +25,8 @@ export const SingpassErrorFallback: ComponentType<FallbackProps> = ({
     return DASHBOARD
   }, [router.query.state])
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   return (
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     <SingpassErrorModal message={error.message} redirectUrl={redirectUrl} />
   )
 }

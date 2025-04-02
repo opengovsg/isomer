@@ -22,7 +22,7 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
     register,
     handleSubmit,
     setError,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useZodForm({
     schema: emailSignInSchema,
   })
@@ -46,16 +46,14 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
 
   return (
     <form onSubmit={handleSignIn} noValidate>
-      <Stack spacing="1rem">
+      <Stack spacing="1.5rem">
         <FormControl
           id="email"
           isRequired
           isInvalid={!!errors.email}
           isReadOnly={loginMutation.isLoading}
         >
-          <FormLabel>
-            Log in with a .gov.sg or whitelisted email address
-          </FormLabel>
+          <FormLabel mb="0.5rem">Email address</FormLabel>
           <Input
             placeholder="e.g. jane@open.gov.sg"
             autoFocus
@@ -64,12 +62,13 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
           <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
         </FormControl>
         <Button
-          size="xs"
+          size="sm"
           height="2.75rem"
           type="submit"
           isLoading={loginMutation.isLoading}
+          isDisabled={!isValid}
         >
-          Get OTP
+          Send One-Time Password (OTP)
         </Button>
       </Stack>
     </form>

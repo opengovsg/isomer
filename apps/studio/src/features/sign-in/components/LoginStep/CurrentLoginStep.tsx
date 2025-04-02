@@ -2,9 +2,8 @@ import { useMemo } from "react"
 import { Flex } from "@chakra-ui/react"
 
 import { useSignInContext } from "../SignInContext"
-import { EmailLoginStep } from "./EmailLoginStep"
 import { InitialLoginStep } from "./InitialLoginStep"
-import { SingpassLoginStep } from "./SingpassLoginStep"
+import { VerificationLoginStep } from "./VerificationLoginStep"
 
 export const CurrentLoginStep = (): JSX.Element => {
   const { state } = useSignInContext()
@@ -13,10 +12,8 @@ export const CurrentLoginStep = (): JSX.Element => {
     switch (state) {
       case "initial":
         return <InitialLoginStep />
-      case "email":
-        return <EmailLoginStep />
-      case "singpass":
-        return <SingpassLoginStep />
+      case "verification":
+        return <VerificationLoginStep />
       default:
         const _: never = state
         return <></>

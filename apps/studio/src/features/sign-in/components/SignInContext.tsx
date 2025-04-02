@@ -2,7 +2,7 @@ import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { createContext, useCallback, useContext, useState } from "react"
 import { useInterval } from "usehooks-ts"
 
-type SignInStateType = "initial" | "email" | "singpass"
+type SignInStateType = "initial" | "verification"
 
 interface SignInState {
   timer: number
@@ -10,8 +10,7 @@ interface SignInState {
   state: SignInStateType
   vfnStepData: VfnStepData | undefined
   setVfnStepData: Dispatch<SetStateAction<VfnStepData | undefined>>
-  proceedToEmail: () => void
-  proceedToSingpass: () => void
+  proceedToVerification: () => void
   backToInitial: () => void
 }
 
@@ -55,12 +54,8 @@ export const SignInContextProvider = ({
     [delayForResendSeconds],
   )
 
-  const proceedToEmail = useCallback(() => {
-    setState("email")
-  }, [])
-
-  const proceedToSingpass = useCallback(() => {
-    setState("singpass")
+  const proceedToVerification = useCallback(() => {
+    setState("verification")
   }, [])
 
   const backToInitial = useCallback(() => {
@@ -82,8 +77,7 @@ export const SignInContextProvider = ({
         setVfnStepData,
         timer,
         resetTimer,
-        proceedToEmail,
-        proceedToSingpass,
+        proceedToVerification,
         backToInitial,
         state,
       }}

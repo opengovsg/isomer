@@ -21,6 +21,7 @@ import { useLoginState } from "~/features/auth"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { OTP_LENGTH } from "~/lib/auth"
 import { useZodForm } from "~/lib/form"
+import { SIGN_IN_SINGPASS } from "~/lib/routes"
 import { emailVerifyOtpSchema } from "~/schemas/auth/email/sign-in"
 import { callbackUrlSchema } from "~/schemas/url"
 import { trpc } from "~/utils/trpc"
@@ -33,8 +34,7 @@ export const VerificationInput = (): JSX.Element | null => {
   const router = useRouter()
   const utils = trpc.useUtils()
 
-  const { vfnStepData, timer, setVfnStepData, resetTimer, proceedToSingpass } =
-    useSignInContext()
+  const { vfnStepData, timer, setVfnStepData, resetTimer } = useSignInContext()
 
   const isSingpassEnabled = useIsSingpassEnabled()
 
@@ -47,7 +47,7 @@ export const VerificationInput = (): JSX.Element | null => {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
     resetField,
     setFocus,
     setError,
@@ -62,7 +62,7 @@ export const VerificationInput = (): JSX.Element | null => {
   const verifyOtpMutation = trpc.auth.email.verifyOtp.useMutation({
     onSuccess: async () => {
       if (isSingpassEnabled) {
-        proceedToSingpass()
+        await router.push(SIGN_IN_SINGPASS)
       } else {
         setHasLoginStateFlag()
         await utils.me.get.invalidate()
@@ -128,15 +128,18 @@ export const VerificationInput = (): JSX.Element | null => {
           isReadOnly={verifyOtpMutation.isLoading}
           isRequired
         >
-          <FormLabel htmlFor="email">
-            Enter the OTP sent to {vfnStepData.email}
-          </FormLabel>
+          <FormLabel htmlFor="email">Enter OTP</FormLabel>
           <Controller
             control={control}
             name="token"
             render={({ field: { onChange, value, ...field } }) => (
               <InputGroup>
-                <InputLeftAddon>{vfnStepData.otpPrefix}-</InputLeftAddon>
+                <InputLeftAddon
+                  bgColor="interaction.support.disabled"
+                  color="interaction.support.disabled-content"
+                >
+                  {vfnStepData.otpPrefix}-
+                </InputLeftAddon>
                 <Input
                   autoFocus
                   autoCapitalize="true"
@@ -155,13 +158,14 @@ export const VerificationInput = (): JSX.Element | null => {
         </FormControl>
         <Stack direction="column" spacing="0.75rem">
           <Button
-            size="xs"
+            size="sm"
             height="2.75rem"
             type="submit"
             // Want to keep loading state until redirection is complete.
             isLoading={
               verifyOtpMutation.isLoading || verifyOtpMutation.isSuccess
             }
+            isDisabled={!isValid}
           >
             Sign in
           </Button>
