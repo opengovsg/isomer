@@ -50,6 +50,7 @@ export const getCollectionItems = (
 
       const baseItem = {
         type: "collectionCard" as const,
+        id: item.permalink,
         rawDate: date,
         lastUpdated: date?.toISOString(),
         category: item.category || CATEGORY_OTHERS,
@@ -105,5 +106,5 @@ export const getCollectionItems = (
     }
 
     return a.rawDate.getTime() < b.rawDate.getTime() ? 1 : -1
-  }) as AllCardProps[]
+  }) satisfies AllCardProps[]
 }
