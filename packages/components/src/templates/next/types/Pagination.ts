@@ -1,10 +1,8 @@
-import type { Dispatch, SetStateAction } from "react"
-
 export interface PaginationProps {
   totalItems: number
   itemsPerPage: number
   currPage: number
-  setCurrPage: Dispatch<SetStateAction<number>>
+  setCurrPage: (previousState: number) => void
 }
 
 export default PaginationProps
