@@ -3,9 +3,9 @@ import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { formatInTimeZone } from "date-fns-tz"
 import pick from "lodash/pick"
 
+import type { SessionData } from "~/lib/types/session"
 import { env } from "~/env.mjs"
 import { sendMail } from "~/lib/mail"
-import type { SessionData } from "~/lib/types/session"
 import {
   emailSignInSchema,
   emailVerifyOtpSchema,
