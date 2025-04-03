@@ -6,7 +6,6 @@ import type { SessionData } from "~/lib/types/session"
 import { env } from "~/env.mjs"
 import { IS_SINGPASS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { sendMail } from "~/lib/mail"
-import type { SessionData } from "~/lib/types/session"
 import {
   emailSignInSchema,
   emailVerifyOtpSchema,
