@@ -118,6 +118,7 @@ export const collectionRouter = router({
             })
 
           await logResourceEvent(tx, {
+            siteId,
             eventType: "ResourceCreate",
             delta: { before: null, after: collection },
             by: user,
@@ -203,6 +204,7 @@ export const collectionRouter = router({
           })
 
         await logResourceEvent(tx, {
+          siteId,
           eventType: "ResourceCreate",
           by: user,
           delta: {
@@ -369,6 +371,7 @@ export const collectionRouter = router({
           })
 
           await logResourceEvent(tx, {
+            siteId,
             eventType: "ResourceUpdate",
             delta: {
               before: { blob: oldBlob, resource },
