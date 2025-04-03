@@ -1,6 +1,6 @@
+import type { Tagged } from "type-fest"
 import { type User } from "@prisma/client"
 import { type IronSession } from "iron-session"
-import { Tagged } from "type-fest"
 
 import { type SgidSessionProfile } from "~/server/modules/auth/sgid/sgid.utils"
 
