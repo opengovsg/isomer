@@ -57,10 +57,10 @@ export const FileAttachment = ({
             uploadFile(
               { file },
               {
-                onSuccess: async ({ path }) => {
-                  shouldFetchResource
-                    ? await handleAssetUpload(path).then((src) => setHref(src))
-                    : setHref(path)
+                onSuccess: ({ path }) => {
+                  if (shouldFetchResource) {
+                    void handleAssetUpload(path).then((src) => setHref(src))
+                  } else setHref(path)
                 },
               },
             )
