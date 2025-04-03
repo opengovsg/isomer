@@ -231,6 +231,7 @@ export const siteRouter = router({
         }
 
         await logConfigEvent(tx, {
+          siteId,
           eventType: AuditLogEvent.SiteConfigUpdate,
           delta: {
             before: oldSite,
@@ -274,6 +275,7 @@ export const siteRouter = router({
         }
 
         await logConfigEvent(tx, {
+          siteId,
           eventType: AuditLogEvent.NavbarUpdate,
           delta: {
             before: oldNavbar,
@@ -317,6 +319,7 @@ export const siteRouter = router({
         }
 
         await logConfigEvent(tx, {
+          siteId,
           eventType: AuditLogEvent.FooterUpdate,
           delta: {
             before: oldFooter,

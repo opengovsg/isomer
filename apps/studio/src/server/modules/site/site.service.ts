@@ -143,6 +143,7 @@ export const setSiteNotification = async ({
   }
 
   await logConfigEvent(tx, {
+    siteId,
     eventType: AuditLogEvent.SiteConfigUpdate,
     delta: {
       before: oldSite,
@@ -207,6 +208,7 @@ export const clearSiteNotification = async ({
   }
 
   await logConfigEvent(tx, {
+    siteId,
     eventType: AuditLogEvent.SiteConfigUpdate,
     delta: {
       before: oldSite,
