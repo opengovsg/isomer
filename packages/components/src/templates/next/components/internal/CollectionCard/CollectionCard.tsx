@@ -53,15 +53,13 @@ export const CollectionCard = ({
             })}
           </>
         )}
-        {description && (
-          <p className="prose-body-base line-clamp-3 whitespace-pre-wrap">
+        {description && description.trim() !== "" && (
+          <p className="prose-body-base mb-3 line-clamp-3 whitespace-pre-wrap md:mb-2">
             {description}
           </p>
         )}
         {/* TODO: Feature enhancement? Filter by category when clicked */}
-        <p className="prose-label-md mt-3 text-base-content-subtle md:mt-2">
-          {category}
-        </p>
+        <p className="prose-label-md text-base-content-subtle">{category}</p>
       </div>
       {image && (
         <div className="relative mt-3 h-[160px] w-[200px] shrink-0 md:ml-4 md:mt-0">
