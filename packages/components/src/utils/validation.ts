@@ -23,14 +23,16 @@ export const REF_HREF_PATTERN =
 const isValidGoogleMapsEmbedUrl = (urlObject: URL) => {
   return (
     urlObject.hostname === "www.google.com" &&
-    urlObject.pathname === "/maps/embed"
+    (urlObject.pathname === "/maps/embed" ||
+      urlObject.pathname === "/maps/d/embed")
   )
 }
 
 const isValidOneMapEmbedUrl = (urlObject: URL) => {
   return (
     urlObject.hostname === "www.onemap.gov.sg" &&
-    urlObject.pathname === "/minimap/minimap.html"
+    (urlObject.pathname === "/minimap/minimap.html" ||
+      urlObject.pathname === "/amm/amm.html")
   )
 }
 
@@ -56,8 +58,9 @@ export const isValidMapEmbedUrl = (url: string) => {
 // that is supported inside the JSON schema. Components rely on the URL object
 // validation for better security.
 export const MAPS_EMBED_URL_REGEXES = {
-  googlemaps: "^https://www\\.google\\.com/maps/embed?.*$",
-  onemap: "^https://www\\.onemap\\.gov\\.sg/minimap/minimap\\.html.*$",
+  googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed?.*$",
+  onemap:
+    "^https://www\\.onemap\\.gov\\.sg(/minimap/minimap\\.html|/amm/amm\\.html).*$",
 } as const
 
 export const MAPS_EMBED_URL_PATTERN = Object.values(MAPS_EMBED_URL_REGEXES)

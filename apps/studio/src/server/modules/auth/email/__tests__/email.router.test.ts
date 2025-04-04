@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest"
 
 import { env } from "~/env.mjs"
 import * as mailLib from "~/lib/mail"
+import { AuditLogEvent, db } from "~/server/modules/database"
 import { prisma } from "~/server/prisma"
 import { createTokenHash } from "../../auth.util"
 import { emailSessionRouter } from "../email.router"
@@ -19,7 +20,7 @@ describe("auth.email", () => {
   const TEST_VALID_EMAIL = "test@open.gov.sg"
 
   beforeEach(async () => {
-    await resetTables("User", "VerificationToken", "Whitelist")
+    await resetTables("AuditLog", "User", "VerificationToken", "Whitelist")
     await setUpWhitelist({ email: TEST_VALID_EMAIL })
     session = applySession()
     const ctx = createMockRequest(session)
@@ -98,8 +99,9 @@ describe("auth.email", () => {
     const INVALID_OTP = "987643"
     const TEST_OTP_FINGERPRINT = getIpFingerprint(TEST_VALID_EMAIL, LOCALHOST)
 
-    it("should successfully set session on valid OTP", async () => {
+    it("should successfully set session on first valid OTP", async () => {
       // Arrange
+      await setupUser({ email: TEST_VALID_EMAIL })
       await prisma.verificationToken.create({
         data: {
           expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
@@ -123,6 +125,51 @@ describe("auth.email", () => {
       await expect(result).resolves.toMatchObject(expectedUser)
       // Session should have been set with logged in user.
       expect(session.userId).toEqual(expectedUser.id)
+      // Audit log should have been created.
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(1)
+      expect(auditLogs[0]?.eventType).toBe(AuditLogEvent.Login)
+      expect(auditLogs[0]?.delta.before!.attempts).toBe(1)
+    })
+
+    it("should successfully set session on a subsequent valid OTP", async () => {
+      // Arrange
+      await setupUser({ email: TEST_VALID_EMAIL })
+      await prisma.verificationToken.create({
+        data: {
+          expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
+          identifier: TEST_OTP_FINGERPRINT,
+          token: VALID_TOKEN_HASH,
+        },
+      })
+
+      // Act
+      await expect(
+        caller.verifyOtp({
+          email: TEST_VALID_EMAIL,
+          token: INVALID_OTP,
+        }),
+      ).rejects.toThrowError()
+
+      const result = caller.verifyOtp({
+        email: TEST_VALID_EMAIL,
+        token: VALID_OTP,
+      })
+
+      // Assert
+      const expectedUser = {
+        id: expect.any(String),
+        email: TEST_VALID_EMAIL,
+      }
+      // Should return logged in user.
+      await expect(result).resolves.toMatchObject(expectedUser)
+      // Session should have been set with logged in user.
+      expect(session.userId).toEqual(expectedUser.id)
+      // Audit log should have been created.
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(1)
+      expect(auditLogs[0]?.eventType).toBe(AuditLogEvent.Login)
+      expect(auditLogs[0]?.delta.before!.attempts).toBe(2)
     })
 
     it("should throw if OTP is not found", async () => {
@@ -134,7 +181,12 @@ describe("auth.email", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError("Invalid login email")
+      await expect(result).rejects.toThrowError(
+        "Please request for another OTP",
+      )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw if OTP is invalid", async () => {
@@ -158,6 +210,9 @@ describe("auth.email", () => {
       await expect(result).rejects.toThrowError(
         "Token is invalid or has expired",
       )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw if OTP is expired", async () => {
@@ -180,6 +235,9 @@ describe("auth.email", () => {
       await expect(result).rejects.toThrowError(
         "Token is invalid or has expired",
       )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw if max verification attempts has been reached", async () => {
@@ -201,10 +259,14 @@ describe("auth.email", () => {
 
       // Assert
       await expect(result).rejects.toThrowError("Too many attempts")
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
-    it("should set lastLoginAt to null when creating a new user", async () => {
+    it("should set lastLoginAt when creating a new user", async () => {
       // Arrange
+      const beforeLogin = new Date()
       await prisma.verificationToken.create({
         data: {
           expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
@@ -223,7 +285,10 @@ describe("auth.email", () => {
       const user = await prisma.user.findFirst({
         where: { email: TEST_VALID_EMAIL },
       })
-      expect(user?.lastLoginAt).toBe(null)
+      expect(user?.lastLoginAt).toBeInstanceOf(Date)
+      expect(user?.lastLoginAt!.getTime()).toBeGreaterThan(
+        beforeLogin.getTime(),
+      )
     })
 
     it("should update lastLoginAt when user logs in", async () => {

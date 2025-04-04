@@ -8,12 +8,12 @@ import { env } from "~/env.mjs"
 import { type Session, type SessionData } from "~/lib/types/session"
 import { sessionOptions } from "./modules/auth/session"
 import { db } from "./modules/database"
-import { type defaultMeSelect } from "./modules/me/me.select"
+import { type defaultUserSelect } from "./modules/me/me.select"
 import { prisma } from "./prisma"
 
 interface CreateContextOptions {
   session?: Session
-  user?: Pick<User, keyof typeof defaultMeSelect>
+  user?: Pick<User, (typeof defaultUserSelect)[number]>
 }
 
 /**

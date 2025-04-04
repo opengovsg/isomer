@@ -73,7 +73,7 @@ export const AddUserModal = () => {
   // Reason we are not using zodForm build-in schema is because the checking of whitelist
   // is an async operation requiring an API call, and combining them will be less readable
   const additionalEmailError = useMemo(
-    () => isNonGovEmailInput || hasWhitelistError,
+    () => isNonGovEmailInput && hasWhitelistError,
     [isNonGovEmailInput, hasWhitelistError],
   )
 

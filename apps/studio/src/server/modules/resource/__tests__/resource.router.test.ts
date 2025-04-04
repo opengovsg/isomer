@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
-import { pick } from "lodash"
+import _, { pick } from "lodash"
+import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   applyAuthedSession,
@@ -16,13 +17,16 @@ import {
   setupFolderMeta,
   setupPageResource,
   setupSite,
+  setupUser,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 
+import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 import { getUserViewableResourceTypes } from "~/utils/resources"
 import { db } from "../../database"
 import { resourceRouter } from "../resource.router"
+import { getFullPageById } from "../resource.service"
 
 const createCaller = createCallerFactory(resourceRouter)
 
@@ -32,13 +36,27 @@ describe("resource.router", async () => {
 
   const TEST_VALID_EMAIL = "test@open.gov.sg"
 
-  beforeAll(() => {
+  beforeAll(async () => {
     caller = createCaller(createMockRequest(session))
+    await setUpWhitelist({ email: TEST_VALID_EMAIL })
   })
 
   beforeEach(async () => {
-    await resetTables("Site", "ResourcePermission", "Resource")
-    await setUpWhitelist({ email: TEST_VALID_EMAIL })
+    await resetTables(
+      "Blob",
+      "AuditLog",
+      "Resource",
+      "Site",
+      "Version",
+      "User",
+      "ResourcePermission",
+    )
+    const user = await setupUser({
+      userId: session.userId,
+      email: "test@mock.com",
+      isDeleted: false,
+    })
+    await auth(user)
   })
 
   describe("getMetadataById", () => {
@@ -59,6 +77,13 @@ describe("resource.router", async () => {
     })
 
     it("should return 404 if resource does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
       // Act
       const result = caller.getMetadataById({
         resourceId: "1",
@@ -1050,6 +1075,7 @@ describe("resource.router", async () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
       const { site } = await setupSite()
 
@@ -1064,6 +1090,7 @@ describe("resource.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
+      expect(auditSpy).not.toHaveBeenCalled()
     })
 
     it("should return 400 if moved resource does not exist", async () => {
@@ -1074,6 +1101,7 @@ describe("resource.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.move({
@@ -1086,6 +1114,7 @@ describe("resource.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "BAD_REQUEST" }),
       )
+      expect(auditSpy).not.toHaveBeenCalled()
     })
 
     it("should return 400 if destination resource does not exist", async () => {
@@ -1096,6 +1125,7 @@ describe("resource.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.move({
@@ -1105,6 +1135,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "BAD_REQUEST",
@@ -1128,6 +1159,7 @@ describe("resource.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.move({
@@ -1137,6 +1169,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "BAD_REQUEST",
@@ -1156,6 +1189,7 @@ describe("resource.router", async () => {
         siteId: site.id,
         parentId: originFolder.id,
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
         userId: session.userId,
         siteId: pageToMove.siteId,
@@ -1169,6 +1203,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "BAD_REQUEST",
@@ -1182,6 +1217,7 @@ describe("resource.router", async () => {
       const { folder: originFolder, site } = await setupFolder({
         permalink: "origin-folder",
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupPageResource({
         resourceType: "RootPage",
         siteId: site.id,
@@ -1204,6 +1240,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "FORBIDDEN",
@@ -1215,6 +1252,7 @@ describe("resource.router", async () => {
 
     it("should return 403 if source and destination resources belong to different sites", async () => {
       // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { page: originPage, site: originSite } = await setupPageResource({
         resourceType: "Page",
       })
@@ -1234,6 +1272,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "FORBIDDEN",
@@ -1251,6 +1290,7 @@ describe("resource.router", async () => {
         resourceType: "RootPage",
         siteId: site.id,
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { page: pageToMove } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
@@ -1274,10 +1314,21 @@ describe("resource.router", async () => {
         parentId: null,
       }
       expect(result).toMatchObject(expected)
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceUpdate")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditSpy).toHaveBeenCalled()
+      expect(auditEntry.delta.after!).toMatchObject(
+        _.omit(result, ["createdAt", "updatedAt"]),
+      )
+      expect(auditEntry.userId).toBe(session.userId)
     })
 
     it("should move nested resource to destination folder", async () => {
       // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { folder: originFolder, site } = await setupFolder({
         permalink: "origin-folder",
       })
@@ -1314,10 +1365,21 @@ describe("resource.router", async () => {
         .executeTakeFirstOrThrow()
       expect(actual.parentId).toEqual(destinationFolder.id)
       expect(result).toMatchObject(expected)
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceUpdate")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditSpy).toHaveBeenCalled()
+      expect(auditEntry.delta.after!).toMatchObject(
+        _.omit(result, ["createdAt", "updatedAt"]),
+      )
+      expect(auditEntry.userId).toBe(session.userId)
     })
 
     it("should move root-level resource to destination folder", async () => {
       // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { page: pageToMove, site } = await setupPageResource({
         resourceType: "Page",
         parentId: null,
@@ -1344,6 +1406,16 @@ describe("resource.router", async () => {
         parentId: destinationFolder.id,
       }
       expect(result).toMatchObject(expected)
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceUpdate")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditSpy).toHaveBeenCalled()
+      expect(auditEntry.delta.after!).toMatchObject(
+        _.omit(result, ["createdAt", "updatedAt"]),
+      )
+      expect(auditEntry.userId).toBe(session.userId)
     })
 
     it.skip("should throw 403 if user does not have write access to destination resource", async () => {})
@@ -1864,6 +1936,7 @@ describe("resource.router", async () => {
       // Arrange
       const unauthedSession = applySession()
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = unauthedCaller.delete({
@@ -1871,6 +1944,7 @@ describe("resource.router", async () => {
         siteId: 1,
       })
 
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
@@ -1883,6 +1957,7 @@ describe("resource.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
 
       // Act
       const result = caller.delete({
@@ -1891,6 +1966,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
       )
@@ -1901,8 +1977,13 @@ describe("resource.router", async () => {
       const { page, site } = await setupPageResource({
         resourceType: "Page",
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
         userId: session.userId,
+        siteId: site.id,
+      })
+      const fullPage = getFullPageById(db, {
+        resourceId: Number(page.id),
         siteId: site.id,
       })
 
@@ -1913,17 +1994,28 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceDelete")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditSpy).toHaveBeenCalled()
+      expect(auditEntry.delta.before!).toMatchObject(
+        _.omit(fullPage, ["createdAt", "updatedAt"]),
+      )
+      expect(auditEntry.userId).toBe(session.userId)
       const actual = await db
         .selectFrom("Resource")
         .where("id", "=", page.id)
         .executeTakeFirst()
       expect(actual).toBeUndefined()
-      expect(result).toEqual(1)
+      expect(result).toEqual(page)
     })
 
     it("should delete a folder and all its children (recursively) successfully", async () => {
       // Arrange
       const { folder: folderToUse, site } = await setupFolder()
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -1982,7 +2074,18 @@ describe("resource.router", async () => {
         ])
         .execute()
       expect(actual).toHaveLength(0)
-      expect(result).toEqual(1)
+      expect(result).toEqual(folderToUse)
+      expect(auditSpy).toHaveBeenCalledTimes(1)
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceDelete")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditSpy).toHaveBeenCalled()
+      expect(auditEntry.delta.before!).toMatchObject(
+        _.omit(folderToUse, ["createdAt", "updatedAt"]),
+      )
+      expect(auditEntry.userId).toBe(session.userId)
     })
 
     it("should return 400 if resource to delete is a root page", async () => {
@@ -1990,6 +2093,7 @@ describe("resource.router", async () => {
       const { page, site } = await setupPageResource({
         resourceType: "RootPage",
       })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
@@ -2002,6 +2106,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "BAD_REQUEST" }),
       )

@@ -16,7 +16,7 @@ import {
 } from "tests/integration/helpers/seed"
 
 import { createCallerFactory } from "~/server/trpc"
-import { db, ResourceType } from "../../database"
+import { AuditLogEvent, db, ResourceType } from "../../database"
 import { folderRouter } from "../folder.router"
 
 const createCaller = createCallerFactory(folderRouter)
@@ -28,6 +28,7 @@ describe("folder.router", async () => {
 
   beforeEach(async () => {
     await resetTables(
+      "AuditLog",
       "Blob",
       "Resource",
       "Site",
@@ -59,6 +60,9 @@ describe("folder.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw 409 if permalink already exists", async () => {
@@ -84,6 +88,9 @@ describe("folder.router", async () => {
           message: "A resource with the same permalink already exists",
         }),
       )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw 404 if `siteId` does not exist", async () => {
@@ -136,6 +143,9 @@ describe("folder.router", async () => {
           message: "Parent folder does not exist",
         }),
       )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw 400 if `parentFolderId` is not a folder", async () => {
@@ -163,6 +173,9 @@ describe("folder.router", async () => {
           message: "Resource ID does not point to a folder",
         }),
       )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it("should create a folder even with duplicate permalink if `siteId` is different", async () => {
@@ -190,6 +203,13 @@ describe("folder.router", async () => {
         permalink: duplicatePermalink,
       })
       expect(result).toEqual({ folderId: actualFolder.id })
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .executeTakeFirst()
+      expect(auditLogs).toBeDefined()
+      expect(auditLogs?.userId).toEqual(session.userId)
+      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceCreate)
     })
 
     it("should create a folder", async () => {
@@ -214,6 +234,13 @@ describe("folder.router", async () => {
         siteId: site.id,
       })
       expect(result).toEqual({ folderId: actualFolder.id })
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .executeTakeFirst()
+      expect(auditLogs).toBeDefined()
+      expect(auditLogs?.userId).toEqual(session.userId)
+      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceCreate)
     })
 
     it("should create a nested folder if `parentFolderId` is provided", async () => {
@@ -240,6 +267,13 @@ describe("folder.router", async () => {
       })
       expect(actualFolder.parentId).toEqual(parentFolder.id)
       expect(result).toEqual({ folderId: actualFolder.id })
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .executeTakeFirst()
+      expect(auditLogs).toBeDefined()
+      expect(auditLogs?.userId).toEqual(session.userId)
+      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceCreate)
     })
 
     it("should throw 403 if user does not have admin access to the site and tries to create a root level folder", async () => {
@@ -263,6 +297,9 @@ describe("folder.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw 403 if user does not have access to the site", async () => {
@@ -286,6 +323,9 @@ describe("folder.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it.skip("should throw 403 if user does not have write access to the parent folder", async () => {})
@@ -374,7 +414,7 @@ describe("folder.router", async () => {
       )
     })
 
-    it("should return 200 ", async () => {
+    it("should return 200 if the folder exists", async () => {
       // Arrange
       const { folder, site } = await setupFolder()
       await setupAdminPermissions({ userId: session.userId, siteId: site.id })
@@ -410,6 +450,9 @@ describe("folder.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it("should throw 409 if permalink already exists", async () => {
@@ -439,6 +482,9 @@ describe("folder.router", async () => {
           message: "A resource with the same permalink already exists",
         }),
       )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it("should allow duplicate permalinks if the site is different", async () => {
@@ -464,6 +510,13 @@ describe("folder.router", async () => {
 
       // Assert
       expect(result).toMatchObject(expected)
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .executeTakeFirst()
+      expect(auditLogs).toBeDefined()
+      expect(auditLogs?.userId).toEqual(session.userId)
+      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
     })
 
     it("should throw 404 if `siteId` does not exist", async () => {
@@ -492,6 +545,9 @@ describe("folder.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it("should allow edits onto a folder regardless of the parent", async () => {
@@ -527,6 +583,13 @@ describe("folder.router", async () => {
         permalink: expected.permalink,
         parentId: page.id,
       })
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .executeTakeFirst()
+      expect(auditLogs).toBeDefined()
+      expect(auditLogs?.userId).toEqual(session.userId)
+      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
     })
 
     it("should throw 403 if user does not have access to the site", async () => {
@@ -550,16 +613,19 @@ describe("folder.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
-    it("should return undefined if the resourceId is not a folder", async () => {
+    it("should throw 404 if the resourceId is not a folder", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({ siteId: site.id, userId: session.userId })
       const { page } = await setupPageResource({ resourceType: "Page" })
 
       // Act
-      const result = await caller.editFolder({
+      const result = caller.editFolder({
         siteId: String(site.id),
         resourceId: page.id,
         title: "fake",
@@ -567,7 +633,40 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual(undefined)
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource does not exist",
+        }),
+      )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
+    })
+
+    it("should throw 404 if the resourceId does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
+
+      // Act
+      const result = caller.editFolder({
+        siteId: String(site.id),
+        resourceId: "0",
+        title: "fake",
+        permalink: "news",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource does not exist",
+        }),
+      )
+      await expect(
+        db.selectFrom("AuditLog").selectAll().execute(),
+      ).resolves.toHaveLength(0)
     })
 
     it("should allow edits on a root level folder regardless of the role", async () => {
@@ -593,6 +692,13 @@ describe("folder.router", async () => {
         permalink: expected.permalink,
         id: expected.id,
       })
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .executeTakeFirst()
+      expect(auditLogs).toBeDefined()
+      expect(auditLogs?.userId).toEqual(session.userId)
+      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
     })
 
     it("should allow edits on a nested folder regardless of the role", async () => {
@@ -622,6 +728,13 @@ describe("folder.router", async () => {
         permalink: expected.permalink,
         id: expected.id,
       })
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .executeTakeFirst()
+      expect(auditLogs).toBeDefined()
+      expect(auditLogs?.userId).toEqual(session.userId)
+      expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
     })
   })
 })

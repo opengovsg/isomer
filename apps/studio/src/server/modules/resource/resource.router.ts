@@ -28,7 +28,7 @@ import {
   searchWithResourceIdsSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
-import { publishSite } from "../aws/codebuild.service"
+import { logResourceEvent } from "../audit/audit.service"
 import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
@@ -37,11 +37,13 @@ import {
 } from "../permissions/permissions.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
+  defaultResourceSelect,
   getBatchAncestryWithSelfQuery,
   getSearchRecentlyEdited,
   getSearchResults,
   getSearchWithResourceIds,
   getWithFullPermalink,
+  publishResource,
 } from "./resource.service"
 
 const fetchResource = async (resourceId: string | null) => {
@@ -336,13 +338,25 @@ export const resourceRouter = router({
           })
         }
 
+        const user = await db
+          .selectFrom("User")
+          .selectAll()
+          .where("id", "=", ctx.user.id)
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Please ensure that you are logged in",
+              }),
+          )
+
         const result = await db
           .transaction()
           .execute(async (tx) => {
             const toMove = await tx
               .selectFrom("Resource")
               .where("id", "=", movedResourceId)
-              .select(["id", "siteId", "type", "parentId"])
+              .selectAll()
               .executeTakeFirst()
 
             if (!toMove) {
@@ -433,18 +447,29 @@ export const resourceRouter = router({
               })
               .execute()
 
-            return tx
+            const moved = await tx
               .selectFrom("Resource")
-              .where("id", "=", String(movedResourceId))
-              .select([
-                "Resource.siteId",
-                "Resource.parentId",
-                "Resource.id",
-                "Resource.type",
-                "Resource.permalink",
-                "Resource.title",
-              ])
+              .where("id", "=", movedResourceId)
+              .select(defaultResourceSelect)
               .executeTakeFirst()
+
+            // NOTE: this is technically impossible because we're executing
+            // inside a tx and this is the same resource which was fetched earlier
+            if (!moved) {
+              throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message:
+                  "Something went wrong while attempting to move your resource, please try again later",
+              })
+            }
+
+            await logResourceEvent(tx, {
+              eventType: "ResourceUpdate",
+              delta: { before: toMove, after: moved },
+              by: user,
+            })
+
+            return moved
           })
           .catch((err) => {
             if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
@@ -456,11 +481,7 @@ export const resourceRouter = router({
             throw err
           })
 
-        if (!result) {
-          throw new TRPCError({ code: "NOT_FOUND" })
-        }
-
-        await publishSite(ctx.logger, result.siteId)
+        await publishResource(user.id, result, ctx.logger)
         return result
       },
     ),
@@ -546,22 +567,58 @@ export const resourceRouter = router({
         resourceId,
       })
 
-      const result = await db
-        .deleteFrom("Resource")
-        .where("Resource.id", "=", String(resourceId))
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "!=", ResourceType.RootPage)
-        .executeTakeFirst()
+      const user = await db
+        .selectFrom("User")
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Please ensure that you are logged in",
+            }),
+        )
 
-      if (Number(result.numDeletedRows) === 0) {
+      const result = await db.transaction().execute(async (tx) => {
+        const before = await tx
+          .selectFrom("Resource")
+          .where("id", "=", resourceId)
+          .select(defaultResourceSelect)
+          .executeTakeFirst()
+
+        if (!before) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "The resource to be deleted could not be found",
+          })
+        }
+
+        await logResourceEvent(tx, {
+          delta: {
+            after: null,
+            before,
+          },
+          by: user,
+          eventType: "ResourceDelete",
+        })
+
+        return tx
+          .deleteFrom("Resource")
+          .where("Resource.id", "=", String(resourceId))
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "!=", ResourceType.RootPage)
+          .returningAll()
+          .executeTakeFirst()
+      })
+
+      if (!result) {
         throw new TRPCError({ code: "BAD_REQUEST" })
       }
 
-      await publishSite(ctx.logger, siteId)
+      await publishResource(user.id, result, ctx.logger)
 
       // NOTE: We need to do this cast as the property is a `bigint`
       // and trpc cannot serialise it, which leads to errors
-      return Number(result.numDeletedRows)
+      return result
     }),
 
   getParentOf: protectedProcedure

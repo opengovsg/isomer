@@ -17,7 +17,7 @@
   "dependencies": {
     "@opengovsg/isomer-components": "*",
     "dompurify": "^3.0.10",
-    "next": "^15.0.2",
+    "next": "^15.2.3",
     "postcss": "^8.4.39",
     "postcss-preset-env": "^10.0.8",
     "tailwindcss": "^3.4.4",
