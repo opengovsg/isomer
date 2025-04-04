@@ -168,6 +168,9 @@ export const MockDateDecorator: Decorator<Args> = (story, { parameters }) => {
   mockdate.reset()
 
   if (!parameters.mockdate) {
+    const defaultDate = "2025-08-09T12:00:00.000Z"
+    mockdate.set(defaultDate)
+
     return story()
   }
 
