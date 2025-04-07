@@ -61,9 +61,8 @@ describe("sortCollectionItems", () => {
     const sorted = sortCollectionItems({ items })
 
     // Assert
-    expect(sorted[0]?.title).toBe("Newest")
-    expect(sorted[1]?.title).toBe("Middle")
-    expect(sorted[2]?.title).toBe("Oldest")
+    const expectedTitles = ["Newest", "Middle", "Oldest"]
+    expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
   })
 
   it("should sort by title when dates are equal", () => {
@@ -79,9 +78,8 @@ describe("sortCollectionItems", () => {
     const sorted = sortCollectionItems({ items })
 
     // Assert
-    expect(sorted[0]?.title).toBe("Alice")
-    expect(sorted[1]?.title).toBe("Bob")
-    expect(sorted[2]?.title).toBe("Charlie")
+    const expectedTitles = ["Alice", "Bob", "Charlie"]
+    expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
   })
 
   it("should place items without dates at the end", () => {
@@ -97,10 +95,8 @@ describe("sortCollectionItems", () => {
     const sorted = sortCollectionItems({ items })
 
     // Assert
-    expect(sorted[0]?.title).toBe("Newest")
-    expect(sorted[1]?.title).toBe("Oldest")
-    expect(sorted[2]?.title).toBe("Also No Date")
-    expect(sorted[3]?.title).toBe("No Date")
+    const expectedTitles = ["Newest", "Oldest", "Also No Date", "No Date"]
+    expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
   })
 
   it("should sort items without dates by title", () => {
@@ -115,9 +111,8 @@ describe("sortCollectionItems", () => {
     const sorted = sortCollectionItems({ items })
 
     // Assert
-    expect(sorted[0]?.title).toBe("Alice")
-    expect(sorted[1]?.title).toBe("Bob")
-    expect(sorted[2]?.title).toBe("Charlie")
+    const expectedTitles = ["Alice", "Bob", "Charlie"]
+    expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
   })
 
   describe("should sort by title with date as tiebreaker (newest first) when sortBy is title and", () => {
@@ -152,21 +147,10 @@ describe("sortCollectionItems", () => {
       })
 
       // Assert
-      expect(sorted[0]?.title).toBe("David")
-      expect(sorted[1]).toEqual(
-        expect.objectContaining({
-          title: "Charlie",
-          url: "/charlie-2023-12-31",
-        }),
-      )
-      expect(sorted[2]).toEqual(
-        expect.objectContaining({
-          title: "Charlie",
-          url: "/charlie-2023-12-30",
-        }),
-      )
-      expect(sorted[3]?.title).toBe("Bob")
-      expect(sorted[4]?.title).toBe("Alice")
+      const expectedTitles = ["David", "Charlie", "Charlie", "Bob", "Alice"]
+      expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
+      expect(sorted[1]?.url).toEqual("/charlie-2023-12-31")
+      expect(sorted[2]?.url).toEqual("/charlie-2023-12-30")
     })
 
     it("sortDirection is asc", () => {
@@ -178,21 +162,10 @@ describe("sortCollectionItems", () => {
       })
 
       // Assert
-      expect(sorted[0]?.title).toBe("Alice")
-      expect(sorted[1]?.title).toBe("Bob")
-      expect(sorted[2]).toEqual(
-        expect.objectContaining({
-          title: "Charlie",
-          url: "/charlie-2023-12-31",
-        }),
-      )
-      expect(sorted[3]).toEqual(
-        expect.objectContaining({
-          title: "Charlie",
-          url: "/charlie-2023-12-30",
-        }),
-      )
-      expect(sorted[4]?.title).toBe("David")
+      const expectedTitles = ["Alice", "Bob", "Charlie", "Charlie", "David"]
+      expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
+      expect(sorted[2]?.url).toEqual("/charlie-2023-12-31")
+      expect(sorted[3]?.url).toEqual("/charlie-2023-12-30")
     })
   })
 
@@ -220,11 +193,8 @@ describe("sortCollectionItems", () => {
       })
 
       // Assert
-      expect(sorted[0]?.title).toBe("Oldest")
-      expect(sorted[1]?.title).toBe("Alice")
-      expect(sorted[2]?.title).toBe("Bob")
-      expect(sorted[3]?.title).toBe("Charlie")
-      expect(sorted[4]?.title).toBe("Newest")
+      const expectedTitles = ["Oldest", "Alice", "Bob", "Charlie", "Newest"]
+      expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
     })
 
     it("sortDirection is asc", () => {
@@ -236,11 +206,8 @@ describe("sortCollectionItems", () => {
       })
 
       // Assert
-      expect(sorted[0]?.title).toBe("Newest")
-      expect(sorted[1]?.title).toBe("Alice")
-      expect(sorted[2]?.title).toBe("Bob")
-      expect(sorted[3]?.title).toBe("Charlie")
-      expect(sorted[4]?.title).toBe("Oldest")
+      const expectedTitles = ["Newest", "Alice", "Bob", "Charlie", "Oldest"]
+      expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
     })
   })
 })
