@@ -6,7 +6,6 @@ const getQueryParams = (params: URLSearchParams) => {
 }
 
 interface UpdateQueryParams {
-  oldParams: Record<string, string>
   newParams: Record<string, string | undefined>
 }
 
@@ -24,8 +23,8 @@ export const useQueryParams = (): [
     setQueryParams(getQueryParams(params))
   }, [])
 
-  const updateQueryParams = ({ oldParams, newParams }: UpdateQueryParams) => {
-    const params = new URLSearchParams(oldParams)
+  const updateQueryParams = ({ newParams }: UpdateQueryParams) => {
+    const params = new URLSearchParams(queryParams)
     for (const key in newParams) {
       if (newParams[key] == undefined || newParams[key] === "") {
         params.delete(key)

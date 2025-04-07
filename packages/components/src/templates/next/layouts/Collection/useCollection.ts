@@ -26,11 +26,10 @@ export const useCollection = ({
   const setCurrPage = useCallback(
     (page: number) => {
       updateQueryParams({
-        oldParams: queryParams,
         newParams: { page: page.toString() },
       })
     },
-    [queryParams, updateQueryParams],
+    [updateQueryParams],
   )
 
   const appliedFilters = useMemo(() => {
@@ -43,11 +42,10 @@ export const useCollection = ({
   const setAppliedFilters = useCallback(
     (filters: AppliedFilter[]) => {
       updateQueryParams({
-        oldParams: queryParams,
         newParams: { filters: JSON.stringify(filters), page: "1" },
       })
     },
-    [queryParams, updateQueryParams],
+    [updateQueryParams],
   )
 
   const searchValue = useMemo(
@@ -57,11 +55,10 @@ export const useCollection = ({
   const handleSearchValueChange = useCallback(
     (value: string) => {
       updateQueryParams({
-        oldParams: queryParams,
         newParams: { search: value, page: "1" },
       })
     },
-    [queryParams, updateQueryParams],
+    [updateQueryParams],
   )
 
   const handleFilterToggle = useCallback(
