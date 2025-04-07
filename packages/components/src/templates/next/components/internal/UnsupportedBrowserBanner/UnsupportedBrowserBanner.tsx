@@ -36,7 +36,7 @@ export const UnsupportedBrowserBanner = ({
 
   return (
     <div className="bg-utility-feedback-warning">
-      <div className="relative mx-auto flex max-w-screen-xl flex-row gap-4 px-6 py-4 text-base-content md:px-10 md:py-4">
+      <div className="relative mx-auto flex max-w-screen-xl flex-row gap-4 px-6 py-8 text-base-content md:px-10 md:py-6">
         <BiInfoCircle className="mt-0.5 h-6 w-6 shrink-0" />
         <div className="flex flex-1 flex-col gap-0.5">
           <div className="prose-headline-base-medium text-base-content-strong [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0">
