@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react"
 
+const getQueryParams = (params: URLSearchParams) => {
+  const entries = Array.from(params.entries())
+  return Object.fromEntries(entries)
+}
+
 interface UpdateQueryParams {
   oldParams: Record<string, string>
   newParams: Record<string, string | undefined>
@@ -16,8 +21,7 @@ export const useQueryParams = (): [
   // Parse initial query params from the URL when component mounts
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const entries = Array.from(params.entries())
-    setQueryParams(Object.fromEntries(entries))
+    setQueryParams(getQueryParams(params))
   }, [])
 
   const updateQueryParams = ({ oldParams, newParams }: UpdateQueryParams) => {
@@ -30,11 +34,13 @@ export const useQueryParams = (): [
       }
     }
 
-    const newUrl = window.location.pathname + "?" + params.toString()
+    const url = new URL(window.location.pathname, window.location.origin)
+    url.search = params.toString()
+    const newUrl = url.toString()
+
     // NOTE: We do not want to add a new entry to the history stack
     window.history.replaceState({}, "", newUrl)
-
-    setQueryParams(Object.fromEntries(Array.from(params.entries())))
+    setQueryParams(getQueryParams(params))
   }
 
   return [queryParams, updateQueryParams]
