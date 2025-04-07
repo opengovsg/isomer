@@ -15,7 +15,7 @@ export const useQueryParams = (): [
   Record<string, string>,
   (params: UpdateQueryParams) => void,
 ] => {
-  const [queryParams, setQueryParams] = useState({})
+  const [queryParams, setQueryParams] = useState<Record<string, string>>({})
 
   // Parse initial query params from the URL when component mounts
   useEffect(() => {
