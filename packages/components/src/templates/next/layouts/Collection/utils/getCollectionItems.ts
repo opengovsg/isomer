@@ -50,6 +50,7 @@ export const getCollectionItems = (
 
       const baseItem = {
         type: "collectionCard" as const,
+        id: item.permalink,
         rawDate: date,
         lastUpdated: date?.toISOString(),
         category: item.category || CATEGORY_OTHERS,
@@ -87,12 +88,12 @@ export const getCollectionItems = (
     if (a.rawDate && b.rawDate && a.rawDate.getTime() === b.rawDate.getTime()) {
       // localeCompare better than > operator as
       // it properly handles international and special characters
-      return a.title.localeCompare(b.title)
+      return a.title.localeCompare(b.title, undefined, { numeric: true })
     }
 
     // If both items have no dates, sort by title
     if (a.rawDate === undefined && b.rawDate === undefined) {
-      return a.title.localeCompare(b.title)
+      return a.title.localeCompare(b.title, undefined, { numeric: true })
     }
 
     // Rank items with no dates last
@@ -105,5 +106,5 @@ export const getCollectionItems = (
     }
 
     return a.rawDate.getTime() < b.rawDate.getTime() ? 1 : -1
-  }) as AllCardProps[]
+  }) satisfies AllCardProps[]
 }
