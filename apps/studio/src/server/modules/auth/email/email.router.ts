@@ -5,7 +5,7 @@ import pick from "lodash/pick"
 
 import { env } from "~/env.mjs"
 import { sendMail } from "~/lib/mail"
-import { SessionData } from "~/lib/types/session"
+import type { SessionData } from "~/lib/types/session"
 import {
   emailSignInSchema,
   emailVerifyOtpSchema,
