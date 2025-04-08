@@ -46,5 +46,5 @@ export const WizgovWidget = ({
     }
   }, [])
 
-  return <div id="wizgov-widget" data-agency={wizgovProps["data-agency"]} />
+  return <div id="wizgov-widget" {...wizgovProps} />
 }
