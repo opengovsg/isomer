@@ -20,6 +20,7 @@ const processedCollectionItems = (
 ): ProcessedCollectionCardProps[] => {
   return items.map((item) => {
     const {
+      id,
       site,
       variant,
       lastUpdated,
@@ -32,6 +33,7 @@ const processedCollectionItems = (
     } = item
     const file = variant === "file" ? item.fileDetails : null
     return {
+      id,
       lastUpdated,
       category,
       title,

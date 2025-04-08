@@ -119,7 +119,6 @@ const generateArgs = ({
         type: "localSearch",
         searchUrl: "/search",
       },
-      assetsBaseUrl: "https://isomer-user-content.by.gov.sg",
     },
     meta: {
       description: "A Next.js starter for Isomer",
