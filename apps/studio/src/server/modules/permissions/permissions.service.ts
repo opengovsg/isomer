@@ -1,6 +1,7 @@
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { RoleType } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type {
   CrudResourceActions,
@@ -31,7 +32,6 @@ export const definePermissionsForResource = async ({
     .selectFrom("ResourcePermission")
     .where("userId", "=", userId)
     .where("siteId", "=", siteId)
-    .where("deletedAt", "is", null)
 
   if (!resourceId) {
     query = query.where("resourceId", "is", null)
@@ -56,7 +56,6 @@ export const definePermissionsForSite = async ({
     .where("userId", "=", userId)
     .where("siteId", "=", siteId)
     .where("resourceId", "is", null)
-    .where("deletedAt", "is", null)
     .select("role")
     .execute()
 
@@ -124,7 +123,6 @@ export const getSitePermissions = async ({
     .where("userId", "=", userId)
     .where("siteId", "=", siteId)
     .where("resourceId", "is", null)
-    .where("deletedAt", "is", null)
     .select("role")
     .execute()
 }
@@ -169,12 +167,11 @@ export const updateUserSitewidePermission = async ({
 
   return await db.transaction().execute(async (tx) => {
     const sitePermissionToRemove = await tx
-      .selectFrom("ResourcePermission")
+      .deleteFrom("ResourcePermission")
       .where("userId", "=", userId)
       .where("siteId", "=", siteId)
       .where("resourceId", "is", null) // because we are updating site-wide permissions
-      .where("deletedAt", "is", null) // ensure deleted persmission deletedAt is not overwritten
-      .selectAll()
+      .returningAll()
       .executeTakeFirst()
 
     if (!sitePermissionToRemove) {
@@ -184,27 +181,10 @@ export const updateUserSitewidePermission = async ({
       })
     }
 
-    const deletedSitePermission = await tx
-      .updateTable("ResourcePermission")
-      .where("id", "=", sitePermissionToRemove.id)
-      .set({ deletedAt: new Date() }) // soft delete the old permission
-      .returningAll()
-      .executeTakeFirst()
-
-    // NOTE: this is technically impossible because we're executing
-    // inside a tx and this is the same resource which was fetched earlier
-    if (!deletedSitePermission) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message:
-          "Something went wrong while attempting to move your resource, please try again later",
-      })
-    }
-
     await logPermissionEvent(tx, {
-      eventType: "PermissionDelete",
+      eventType: AuditLogEvent.PermissionDelete,
       by: byUser,
-      delta: { before: sitePermissionToRemove, after: deletedSitePermission },
+      delta: { before: sitePermissionToRemove, after: null },
     })
 
     const createdSitePermission = await tx
@@ -214,7 +194,7 @@ export const updateUserSitewidePermission = async ({
       .executeTakeFirstOrThrow()
 
     await logPermissionEvent(tx, {
-      eventType: "PermissionCreate",
+      eventType: AuditLogEvent.PermissionCreate,
       by: byUser,
       delta: { before: null, after: createdSitePermission },
     })

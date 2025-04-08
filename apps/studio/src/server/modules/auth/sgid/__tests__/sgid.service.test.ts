@@ -32,30 +32,6 @@ describe("sgid.service", () => {
       expect(user?.lastLoginAt).toBe(null)
     })
 
-    it("should throw if email is deleted", async () => {
-      // Arrange
-      await setupUser({
-        name: "Deleted",
-        userId: "deleted123",
-        email: TEST_EMAIL,
-        phone: "123",
-        isDeleted: true,
-      })
-
-      // Act
-      const result = upsertSgidAccountAndUser({
-        prisma,
-        pocdexEmail: TEST_EMAIL,
-        name: TEST_NAME,
-        sub: TEST_SUB,
-      })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        "Unauthorized. Contact Isomer support.",
-      )
-    })
-
     it("should update lastLoginAt when user logs in", async () => {
       // Arrange
       const beforeLogin = new Date()

@@ -10,7 +10,6 @@ import { MOCK_STORY_DATE } from "tests/msw/constants"
 interface SetupPermissionsProps {
   userId?: string
   siteId: number
-  isDeleted?: boolean
   role: (typeof RoleType)[keyof typeof RoleType]
   useCurrentTime?: boolean
 }
@@ -19,7 +18,6 @@ const setupPermissions = async ({
   userId,
   siteId,
   role,
-  isDeleted = false,
   useCurrentTime = false,
 }: SetupPermissionsProps) => {
   if (!userId) throw new Error("userId is a required field")
@@ -32,7 +30,6 @@ const setupPermissions = async ({
       siteId,
       role,
       resourceId: null,
-      deletedAt: isDeleted ? time : null,
       createdAt: time,
       updatedAt: time,
     })
@@ -485,24 +482,21 @@ export const setupUser = async ({
   userId = nanoid(),
   email,
   phone = "",
-  isDeleted,
   hasLoggedIn = false,
 }: {
   name?: string
   userId?: string
   email: string
   phone?: string
-  isDeleted?: boolean
   hasLoggedIn?: boolean
 }) => {
-  return db
+  return await db
     .insertInto("User")
     .values({
       id: userId,
       name,
       email,
       phone: phone,
-      deletedAt: isDeleted ? MOCK_STORY_DATE : null,
       lastLoginAt: hasLoggedIn ? MOCK_STORY_DATE : null,
     })
     .returningAll()

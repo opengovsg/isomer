@@ -55,7 +55,6 @@ describe("collection.router", async () => {
     const user = await setupUser({
       userId: session.userId,
       email: "test@mock.com",
-      isDeleted: false,
     })
     await auth(user)
     auditSpy = vitest.spyOn(auditService, "logResourceEvent")

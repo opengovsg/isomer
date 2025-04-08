@@ -20,7 +20,6 @@ export const upsertUser = async ({
     .selectFrom("User")
     .selectAll()
     .where("email", "=", email)
-    .where("deletedAt", "is", null)
     .executeTakeFirst()
 
   if (possibleUser) {

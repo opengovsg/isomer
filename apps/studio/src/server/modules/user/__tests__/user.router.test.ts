@@ -113,106 +113,11 @@ describe("user.router", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
-    it("should create user if user already exists but has non-null deletedAt", async () => {
-      // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
-
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
-
-      // Act
-      const roleToCreate = RoleType.Editor
-      const createdUsers = await caller.create({
-        siteId,
-        users: [{ email: user.email, role: roleToCreate }],
-      })
-
-      // Assert
-      expect(createdUsers).toHaveLength(1)
-      const createdUser = createdUsers[0]
-      expect(createdUser).toEqual(
-        expect.objectContaining({
-          email: TEST_EMAIL,
-          id: expect.any(String),
-        }),
-      )
-
-      // Assert: Verify user in database
-      const dbUserResult = await db
-        .selectFrom("User")
-        .where("email", "=", TEST_EMAIL)
-        .selectAll()
-        .execute()
-      expect(dbUserResult).toHaveLength(2) // original + newly created record
-      expect(dbUserResult).toEqual([
-        expect.objectContaining({
-          email: TEST_EMAIL,
-          id: user.id, // original record
-          deletedAt: expect.any(Date),
-        }),
-        expect.objectContaining({
-          email: TEST_EMAIL,
-          id: expect.any(String),
-          deletedAt: null,
-        }),
-      ])
-
-      // Assert: Verify permissions in database
-      const resourcePermissions = await db
-        .selectFrom("ResourcePermission")
-        .where("userId", "=", createdUser?.id ?? "")
-        .where("siteId", "=", siteId)
-        .selectAll()
-        .execute()
-      expect(resourcePermissions).toHaveLength(1)
-      expect(resourcePermissions).toEqual([
-        expect.objectContaining({
-          userId: expect.any(String),
-          siteId,
-          role: roleToCreate,
-        }),
-      ])
-
-      // Assert DB - audit logs (user)
-      const userAuditEntry = await db
-        .selectFrom("AuditLog")
-        .where("eventType", "=", "UserCreate")
-        .selectAll()
-        .execute()
-      expect(userAuditEntry).toHaveLength(1)
-      expect(userAuditEntry[0]).toMatchObject({
-        eventType: "UserCreate",
-        delta: expect.objectContaining({
-          before: null,
-          after: expect.objectContaining({
-            id: createdUser?.id,
-            email: TEST_EMAIL,
-          }),
-        }),
-      })
-
-      // Assert DB - audit logs (permission)
-      const permissionAuditEntry = await db
-        .selectFrom("AuditLog")
-        .where("eventType", "=", "PermissionCreate")
-        .selectAll()
-        .execute()
-      expect(permissionAuditEntry).toHaveLength(1)
-      expect(permissionAuditEntry[0]).toMatchObject({
-        eventType: "PermissionCreate",
-        delta: expect.objectContaining({
-          before: null,
-          after: expect.objectContaining(
-            _.omit(resourcePermissions[0], ["createdAt", "updatedAt"]),
-          ),
-        }),
-      })
-    })
-
     it("should throw error if both user and permission already exists", async () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      const user = await setupUser({ email: TEST_EMAIL })
       await setupAdminPermissions({ userId: user.id, siteId })
 
       // Act
@@ -342,7 +247,7 @@ describe("user.router", () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      const user = await setupUser({ email: TEST_EMAIL })
 
       // Act
       const result = await caller.create({
@@ -440,7 +345,6 @@ describe("user.router", () => {
       expect(user).toMatchObject({
         email: TEST_EMAIL,
         id: createdUser?.id,
-        deletedAt: null,
       })
 
       // Assert: Verify permissions in database
@@ -525,10 +429,7 @@ describe("user.router", () => {
       await setupAdminPermissions({ userId: session.userId, siteId })
 
       const { site: newSite } = await setupSite()
-      const newUser = await setupUser({
-        email: TEST_EMAIL,
-        isDeleted: false,
-      })
+      const newUser = await setupUser({ email: TEST_EMAIL })
 
       // Act
       const result = caller.delete({
@@ -577,7 +478,7 @@ describe("user.router", () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      const user = await setupUser({ email: TEST_EMAIL })
 
       // Act
       const result = caller.delete({ siteId, userId: user.id })
@@ -600,10 +501,7 @@ describe("user.router", () => {
       await setupAdminPermissions({ userId: session.userId, siteId })
 
       const { site: newSite } = await setupSite()
-      const newUser = await setupUser({
-        email: TEST_EMAIL,
-        isDeleted: false,
-      })
+      const newUser = await setupUser({ email: TEST_EMAIL })
       await setupAdminPermissions({ userId: newUser.id, siteId: newSite.id })
 
       // Act
@@ -654,7 +552,6 @@ describe("user.router", () => {
 
       const isomerAdmin = await setupUser({
         email: ISOMER_ADMINS_AND_MIGRATORS_EMAILS[0]!,
-        isDeleted: false,
       })
       await setupAdminPermissions({ userId: isomerAdmin.id, siteId })
 
@@ -678,10 +575,7 @@ describe("user.router", () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
-      const userToDelete = await setupUser({
-        email: TEST_EMAIL,
-        isDeleted: false,
-      })
+      const userToDelete = await setupUser({ email: TEST_EMAIL })
       await setupEditorPermissions({ userId: userToDelete.id, siteId })
 
       // Act
@@ -703,10 +597,8 @@ describe("user.router", () => {
         .selectFrom("ResourcePermission")
         .where("userId", "=", userToDelete.id)
         .where("siteId", "=", siteId)
-        .select("deletedAt")
         .execute()
-      expect(deletedUserPermissions).toHaveLength(1) // ensure it's not hard deleted
-      expect(deletedUserPermissions[0]?.deletedAt).not.toBeNull()
+      expect(deletedUserPermissions).toHaveLength(0)
 
       // Assert DB - audit logs (user)
       // Should not have any audit logs as user is not being deleted
@@ -728,35 +620,20 @@ describe("user.router", () => {
         eventType: "PermissionDelete",
         delta: expect.objectContaining({
           before: expect.objectContaining({
-            ..._.omit(deletedUserPermissions[0], [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
-            deletedAt: null,
+            ..._.omit(deletedUserPermissions[0], ["createdAt", "updatedAt"]),
           }),
-          after: expect.objectContaining({
-            ..._.omit(deletedUserPermissions[0], [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
-            deletedAt: expect.anything(),
-          }),
+          after: null,
         }),
       })
     })
 
     // User might have permissions to multiple sites
-    // We should only soft delete the permissions for the site that the user is being deleted from
-    it("should soft delete a user's permissions and not their account", async () => {
+    // We should only delete the permissions for the site that the user is being deleted from
+    it("should delete a user's permissions and not their account", async () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
-      const userToDelete = await setupUser({
-        email: TEST_EMAIL,
-        isDeleted: false,
-      })
+      const userToDelete = await setupUser({ email: TEST_EMAIL })
       await setupEditorPermissions({ userId: userToDelete.id, siteId })
 
       // Act
@@ -777,10 +654,15 @@ describe("user.router", () => {
       const dbUsers = await db
         .selectFrom("User")
         .where("id", "=", userToDelete.id)
-        .select("deletedAt")
         .execute()
       expect(dbUsers).toHaveLength(1)
-      expect(dbUsers[0]?.deletedAt).toBeNull()
+
+      const dbPermissions = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userToDelete.id)
+        .where("siteId", "=", siteId)
+        .execute()
+      expect(dbPermissions).toHaveLength(0)
 
       // Assert DB - audit logs (user)
       // Should not have any audit logs as user is not being deleted
@@ -796,7 +678,6 @@ describe("user.router", () => {
         .selectFrom("ResourcePermission")
         .where("userId", "=", userToDelete.id)
         .where("siteId", "=", siteId)
-        .select("deletedAt")
         .executeTakeFirst()
       const permissionsAuditLogs = await db
         .selectFrom("AuditLog")
@@ -808,21 +689,9 @@ describe("user.router", () => {
         eventType: "PermissionDelete",
         delta: expect.objectContaining({
           before: expect.objectContaining({
-            ..._.omit(deletedUserPermission, [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
-            deletedAt: null,
+            ..._.omit(deletedUserPermission, ["createdAt", "updatedAt"]),
           }),
-          after: expect.objectContaining({
-            ..._.omit(deletedUserPermission, [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
-            deletedAt: expect.anything(),
-          }),
+          after: null,
         }),
       })
     })
@@ -886,30 +755,8 @@ describe("user.router", () => {
       await setupAdminPermissions({ userId: session.userId, siteId })
 
       const { site: newSite } = await setupSite()
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      const user = await setupUser({ email: TEST_EMAIL })
       await setupEditorPermissions({ userId: user.id, siteId: newSite.id })
-
-      // Act
-      const result = caller.getUser({
-        siteId,
-        userId: user.id,
-      })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "User not found",
-        }),
-      )
-    })
-
-    it("should not return user if all their permissions are deleted", async () => {
-      // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
-
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-      await setupEditorPermissions({ userId: user.id, siteId, isDeleted: true })
 
       // Act
       const result = caller.getUser({
@@ -929,7 +776,7 @@ describe("user.router", () => {
     it("should return user with their last login date", async () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      const user = await setupUser({ email: TEST_EMAIL })
       await setupEditorPermissions({ userId: user.id, siteId })
       await db
         .updateTable("User")
@@ -979,79 +826,6 @@ describe("user.router", () => {
           message:
             "You do not have sufficient permissions to perform this action",
         }),
-      )
-    })
-
-    it("should not return users with deletedAt set", async () => {
-      // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
-
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
-      await setupEditorPermissions({ userId: user.id, siteId })
-
-      // Act
-      const result = await caller.list({ siteId })
-
-      // Assert
-      expect(result).toHaveLength(1) // only the current admin user
-      expect(result).not.toContain(
-        expect.objectContaining({
-          id: user.id,
-        }),
-      )
-    })
-
-    it("should not return users with all permissions deleted", async () => {
-      // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
-
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-      await setupAdminPermissions({
-        userId: user.id,
-        siteId,
-        isDeleted: true,
-        useCurrentTime: true,
-      })
-
-      // Act
-      const result = await caller.list({ siteId })
-
-      // Assert
-      expect(result).toHaveLength(1) // only the current admin user
-      expect(result).not.toContain(
-        expect.objectContaining({
-          id: user.id,
-        }),
-      )
-    })
-
-    it("should return users with at least one non-deleted permission", async () => {
-      // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
-
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-      await setupEditorPermissions({
-        userId: user.id,
-        siteId,
-        isDeleted: true, // assuming previously soft deleted
-      })
-      await setupEditorPermissions({
-        userId: user.id,
-        siteId,
-        isDeleted: false, // assuming being granted new permissions
-      })
-
-      // Act
-      const result = await caller.list({ siteId })
-
-      // Assert
-      expect(result).toHaveLength(2)
-      expect(result).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: user.id,
-          }),
-        ]),
       )
     })
 
@@ -1155,7 +929,6 @@ describe("user.router", () => {
       for (let i = 0; i < 15; i++) {
         const editorUser = await setupUser({
           email: `editor.user.${i}@open.gov.sg`,
-          isDeleted: false,
         })
         await setupEditorPermissions({ userId: editorUser.id, siteId })
       }
@@ -1174,7 +947,6 @@ describe("user.router", () => {
       for (let i = 0; i < 15; i++) {
         const editorUser = await setupUser({
           email: `editor.user.${i}@open.gov.sg`,
-          isDeleted: false,
         })
         await setupEditorPermissions({ userId: editorUser.id, siteId })
       }
@@ -1215,54 +987,13 @@ describe("user.router", () => {
       )
     })
 
-    it("should not return users with deletedAt set", async () => {
+    it("should return users with at least one permission", async () => {
       // Arrange
       await setupEditorPermissions({ userId: session.userId, siteId })
 
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
-      await setupEditorPermissions({ userId: user.id, siteId })
+      const user = await setupUser({ email: TEST_EMAIL })
+      await setupAdminPermissions({ userId: user.id, siteId })
 
-      // Act
-      const result = await caller.count({ siteId })
-
-      // Assert
-      expect(result).toBe(1) // only the current admin user
-    })
-
-    it("should not return users with all permissions deleted", async () => {
-      // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
-
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-      await setupAdminPermissions({
-        userId: user.id,
-        siteId,
-        isDeleted: true,
-        useCurrentTime: true,
-      })
-
-      // Act
-      const result = await caller.count({ siteId })
-
-      // Assert
-      expect(result).toBe(1) // only the current admin user
-    })
-
-    it("should return users with at least one non-deleted permission", async () => {
-      // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
-
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-      await setupEditorPermissions({
-        userId: user.id,
-        siteId,
-        isDeleted: true, // assuming previously soft deleted
-      })
-      await setupAdminPermissions({
-        userId: user.id,
-        siteId,
-        isDeleted: false, // assuming being granted new permissions
-      })
       // Act
       const result = await caller.count({ siteId })
 
@@ -1310,7 +1041,7 @@ describe("user.router", () => {
         // Arrange
         await setupEditorPermissions({ userId: session.userId, siteId })
 
-        const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+        const user = await setupUser({ email: TEST_EMAIL })
         await setupEditorPermissions({ userId: user.id, siteId })
 
         // Act
@@ -1324,11 +1055,7 @@ describe("user.router", () => {
         // Arrange
         await setupEditorPermissions({ userId: session.userId, siteId })
 
-        const user = await setupUser({
-          email: TEST_EMAIL,
-          isDeleted: false,
-          hasLoggedIn: true,
-        })
+        const user = await setupUser({ email: TEST_EMAIL, hasLoggedIn: true })
         await setupEditorPermissions({ userId: user.id, siteId })
 
         // Set last login to be within 90 days
@@ -1437,7 +1164,7 @@ describe("user.router", () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
+      const user = await setupUser({ email: TEST_EMAIL })
 
       // Act
       const result = caller.update({
@@ -1464,10 +1191,7 @@ describe("user.router", () => {
       await setupAdminPermissions({ userId: session.userId, siteId })
 
       const { site: newSite } = await setupSite()
-      const newUser = await setupUser({
-        email: TEST_EMAIL,
-        isDeleted: false,
-      })
+      const newUser = await setupUser({ email: TEST_EMAIL })
       await setupAdminPermissions({ userId: newUser.id, siteId: newSite.id })
 
       // Act
@@ -1482,32 +1206,6 @@ describe("user.router", () => {
         new TRPCError({
           code: "NOT_FOUND",
           message: "User permission not found",
-        }),
-      )
-
-      // Assert DB - audit logs
-      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
-      expect(auditLogs).toHaveLength(0)
-    })
-
-    it("should throw 404 if user exists but only has non-null deletedAt", async () => {
-      // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
-
-      const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
-
-      // Act
-      const result = caller.update({
-        siteId,
-        userId: user.id,
-        role: RoleType.Editor,
-      })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "User not found",
         }),
       )
 
@@ -1544,10 +1242,7 @@ describe("user.router", () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
-      const userToUpdate = await setupUser({
-        email: "test@coolvendor.com",
-        isDeleted: false,
-      })
+      const userToUpdate = await setupUser({ email: "test@coolvendor.com" })
       await setupEditorPermissions({ userId: userToUpdate.id, siteId })
 
       // Act
@@ -1575,10 +1270,7 @@ describe("user.router", () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
-      const userToUpdate = await setupUser({
-        email: "test@coolvendor.com",
-        isDeleted: false,
-      })
+      const userToUpdate = await setupUser({ email: "test@coolvendor.com" })
       const currentPermission = await setupEditorPermissions({
         userId: userToUpdate.id,
         siteId,
@@ -1611,7 +1303,7 @@ describe("user.router", () => {
         .executeTakeFirst()
       expect(updatedUser).not.toBeNull()
 
-      // Assert DB - audit logs (soft-deleted permission)
+      // Assert DB - audit logs (deleted permission)
       const deletedPermissionAuditLogs = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "PermissionDelete")
@@ -1622,21 +1314,9 @@ describe("user.router", () => {
         eventType: "PermissionDelete",
         delta: expect.objectContaining({
           before: expect.objectContaining({
-            ..._.omit(currentPermission, [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
-            deletedAt: null,
+            ..._.omit(currentPermission, ["createdAt", "updatedAt"]),
           }),
-          after: expect.objectContaining({
-            ..._.omit(currentPermission, [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
-            deletedAt: expect.anything(),
-          }),
+          after: null,
         }),
       })
 
@@ -1669,10 +1349,7 @@ describe("user.router", () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
-      const userToUpdate = await setupUser({
-        email: TEST_EMAIL,
-        isDeleted: false,
-      })
+      const userToUpdate = await setupUser({ email: TEST_EMAIL })
       const currentPermission = await setupEditorPermissions({
         userId: userToUpdate.id,
         siteId,
@@ -1701,12 +1378,11 @@ describe("user.router", () => {
         .where("userId", "=", userToUpdate.id)
         .where("siteId", "=", siteId)
         .where("resourceId", "is", null)
-        .where("deletedAt", "is", null)
         .select("role")
         .executeTakeFirst()
       expect(updatedUser?.role).toBe(newRole)
 
-      // Assert DB - audit logs (soft-deleted permission)
+      // Assert DB - audit logs (deleted permission)
       const deletedPermissionAuditLogs = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "PermissionDelete")
@@ -1717,21 +1393,9 @@ describe("user.router", () => {
         eventType: "PermissionDelete",
         delta: expect.objectContaining({
           before: expect.objectContaining({
-            ..._.omit(currentPermission, [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
-            deletedAt: null,
+            ..._.omit(currentPermission, ["createdAt", "updatedAt"]),
           }),
-          after: expect.objectContaining({
-            ..._.omit(currentPermission, [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
-            deletedAt: expect.anything(), // should be set to a new date
-          }),
+          after: null,
         }),
       })
 
@@ -1755,125 +1419,6 @@ describe("user.router", () => {
           before: null,
           after: expect.objectContaining({
             ..._.omit(newPermission, ["createdAt", "updatedAt"]),
-          }),
-        }),
-      })
-    })
-
-    it("when updating a user's role, create a new permission for the user and update the old permission's deletedAt", async () => {
-      // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
-
-      const userToUpdate = await setupUser({
-        email: TEST_EMAIL,
-        isDeleted: false,
-      })
-      // If deletedAt is set, it should not be overwritten
-      const originalDeletedPermission = await setupEditorPermissions({
-        userId: userToUpdate.id,
-        siteId,
-      })
-      const originalDeletedPermissionDeletedAt = new Date()
-      await db
-        .updateTable("ResourcePermission")
-        .where("id", "=", originalDeletedPermission.id)
-        .set({ deletedAt: originalDeletedPermissionDeletedAt })
-        .execute()
-      // original active permission
-      const originalPermission = await setupEditorPermissions({
-        userId: userToUpdate.id,
-        siteId,
-      })
-      const newRole = RoleType.Publisher
-
-      // Act
-      const result = await caller.update({
-        siteId,
-        userId: userToUpdate.id,
-        role: newRole,
-      })
-
-      // Assert
-      expect(result).toEqual({
-        id: expect.not.stringContaining(originalPermission.id),
-        siteId,
-        userId: userToUpdate.id,
-        role: newRole,
-      })
-
-      // Assert: Verify in DB
-      const userPermissions = await db
-        .selectFrom("ResourcePermission")
-        .where("userId", "=", userToUpdate.id)
-        .where("siteId", "=", siteId)
-        .selectAll()
-        .execute()
-      expect(userPermissions).toHaveLength(3) // 1 old (deleted) + 1 old (active) + 1 new
-      expect(userPermissions).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: originalDeletedPermission.id,
-            role: RoleType.Editor,
-            deletedAt: originalDeletedPermissionDeletedAt,
-          }),
-          expect.objectContaining({
-            id: originalPermission.id,
-            role: RoleType.Editor,
-            deletedAt: expect.any(Date),
-          }),
-          expect.objectContaining({
-            id: result.id,
-            role: RoleType.Publisher,
-            deletedAt: null,
-          }),
-        ]),
-      )
-
-      // Assert DB - audit logs (soft-deleted permission)
-      const deletedPermissionAuditLogs = await db
-        .selectFrom("AuditLog")
-        .where("eventType", "=", "PermissionDelete")
-        .selectAll()
-        .execute()
-      expect(deletedPermissionAuditLogs).toHaveLength(1)
-      expect(deletedPermissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionDelete",
-        delta: expect.objectContaining({
-          before: expect.objectContaining({
-            ..._.omit(originalPermission, [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
-            deletedAt: null,
-          }),
-          after: expect.objectContaining({
-            ..._.omit(originalPermission, [
-              "createdAt",
-              "updatedAt",
-              "deletedAt",
-            ]),
-            deletedAt: expect.anything(), // should be set to a new date
-          }),
-        }),
-      })
-
-      // Assert DB - audit logs (new permission)
-      const createdPermissionAuditLogs = await db
-        .selectFrom("AuditLog")
-        .where("eventType", "=", "PermissionCreate")
-        .selectAll()
-        .execute()
-      expect(createdPermissionAuditLogs).toHaveLength(1)
-      expect(createdPermissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionCreate",
-        delta: expect.objectContaining({
-          before: null,
-          after: expect.objectContaining({
-            ..._.omit(
-              userPermissions.find((p) => p.deletedAt === null),
-              ["createdAt", "updatedAt"],
-            ),
           }),
         }),
       })
@@ -1950,7 +1495,7 @@ describe("user.router", () => {
               phone: MOCK_TEST_PHONE,
             }),
             after: expect.objectContaining(
-              _.omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
+              _.omit(updatedUser, ["createdAt", "updatedAt"]),
             ),
           }),
         })
@@ -2051,7 +1596,7 @@ describe("user.router", () => {
                 phone: MOCK_TEST_PHONE,
               }),
               after: expect.objectContaining(
-                _.omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
+                _.omit(updatedUser, ["createdAt", "updatedAt"]),
               ),
             }),
           })
@@ -2090,7 +1635,7 @@ describe("user.router", () => {
               phone: MOCK_TEST_PHONE,
             }),
             after: expect.objectContaining(
-              _.omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
+              _.omit(updatedUser, ["createdAt", "updatedAt"]),
             ),
           }),
         })
@@ -2128,7 +1673,7 @@ describe("user.router", () => {
                 phone: MOCK_TEST_PHONE,
               }),
               after: expect.objectContaining(
-                _.omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
+                _.omit(updatedUser, ["createdAt", "updatedAt"]),
               ),
             }),
           })
@@ -2170,7 +1715,7 @@ describe("user.router", () => {
             phone: MOCK_TEST_PHONE,
           }),
           after: expect.objectContaining(
-            _.omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
+            _.omit(updatedUser, ["createdAt", "updatedAt"]),
           ),
         }),
       })
@@ -2228,11 +1773,7 @@ describe("user.router", () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
-      const user = await setupUser({
-        email: TEST_EMAIL,
-        isDeleted: false,
-        hasLoggedIn: true,
-      })
+      const user = await setupUser({ email: TEST_EMAIL, hasLoggedIn: true })
       await setupEditorPermissions({ userId: user.id, siteId })
 
       // Act
@@ -2251,11 +1792,7 @@ describe("user.router", () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
-      const user = await setupUser({
-        email: TEST_EMAIL,
-        isDeleted: false,
-        hasLoggedIn: false,
-      })
+      const user = await setupUser({ email: TEST_EMAIL, hasLoggedIn: false })
       await db
         .updateTable("User")
         .where("id", "=", user.id)
@@ -2279,11 +1816,7 @@ describe("user.router", () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
-      const user = await setupUser({
-        email: TEST_EMAIL,
-        isDeleted: false,
-        hasLoggedIn: false,
-      })
+      const user = await setupUser({ email: TEST_EMAIL, hasLoggedIn: false })
       await db
         .updateTable("User")
         .where("id", "=", user.id)
@@ -2306,11 +1839,7 @@ describe("user.router", () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
-      const user = await setupUser({
-        email: TEST_EMAIL,
-        isDeleted: false,
-        hasLoggedIn: false,
-      })
+      const user = await setupUser({ email: TEST_EMAIL, hasLoggedIn: false })
       await db
         .updateTable("User")
         .where("id", "=", user.id)
