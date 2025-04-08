@@ -56,7 +56,7 @@ export const Skeleton = ({
 
       {!isStaging && <DatadogRum />}
 
-      {site.vica && <VicaStylesheet />}
+      {site.vica && <VicaStylesheet environment={site.environment} />}
 
       <ScrollToTop />
 

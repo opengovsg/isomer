@@ -122,6 +122,7 @@ export const getRobotsTxt = (props: IsomerPageSchemaType) => {
     {
       userAgent: "*",
       allow: "/",
+      disallow: ["/search"],
     },
   ]
 
