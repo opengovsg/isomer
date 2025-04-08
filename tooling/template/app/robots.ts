@@ -18,7 +18,6 @@ const lastUpdated =
 export default function robots(): MetadataRoute.Robots {
   return getRobotsTxt({
     // TODO: fixup all the typing errors
-    // @ts-expect-error to fix when types are proper
     site: {
       ...config.site,
       environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,

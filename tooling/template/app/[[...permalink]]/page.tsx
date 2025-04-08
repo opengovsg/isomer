@@ -138,7 +138,6 @@ const Page = async (props: DynamicPageProps) => {
       }}
       meta={{
         // TODO: fixup all the typing errors
-        // @ts-expect-error to fix when types are proper
         noIndex: shouldBlockIndexing(
           process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
         ),
