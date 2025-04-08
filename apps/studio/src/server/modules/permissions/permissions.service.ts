@@ -166,39 +166,34 @@ export const updateUserSitewidePermission = async ({
     .executeTakeFirstOrThrow()
 
   return await db.transaction().execute(async (tx) => {
-    const sitePermissionToRemove = await tx
-      .deleteFrom("ResourcePermission")
+    const permissionToUpdate = await tx
+      .selectFrom("ResourcePermission")
       .where("userId", "=", userId)
       .where("siteId", "=", siteId)
       .where("resourceId", "is", null) // because we are updating site-wide permissions
-      .returningAll()
+      .selectAll()
       .executeTakeFirst()
 
-    if (!sitePermissionToRemove) {
+    if (!permissionToUpdate) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "User permission not found",
       })
     }
 
-    await logPermissionEvent(tx, {
-      eventType: AuditLogEvent.PermissionDelete,
-      by: byUser,
-      delta: { before: sitePermissionToRemove, after: null },
-    })
-
-    const createdSitePermission = await tx
-      .insertInto("ResourcePermission")
-      .values({ userId, siteId, role, resourceId: null }) // because we are updating site-wide permissions
+    const updatedPermission = await tx
+      .updateTable("ResourcePermission")
+      .where("id", "=", permissionToUpdate.id)
+      .set({ role })
       .returningAll()
       .executeTakeFirstOrThrow()
 
     await logPermissionEvent(tx, {
-      eventType: AuditLogEvent.PermissionCreate,
+      eventType: AuditLogEvent.PermissionUpdate,
       by: byUser,
-      delta: { before: null, after: createdSitePermission },
+      delta: { before: permissionToUpdate, after: updatedPermission },
     })
 
-    return createdSitePermission
+    return updatedPermission
   })
 }

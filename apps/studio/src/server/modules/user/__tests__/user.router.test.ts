@@ -1303,43 +1303,30 @@ describe("user.router", () => {
         .executeTakeFirst()
       expect(updatedUser).not.toBeNull()
 
-      // Assert DB - audit logs (deleted permission)
-      const deletedPermissionAuditLogs = await db
+      // Assert DB - audit logs (count)
+      const updatedPermissionAuditLogs = await db
         .selectFrom("AuditLog")
-        .where("eventType", "=", "PermissionDelete")
+        .where("eventType", "=", "PermissionUpdate")
         .selectAll()
         .execute()
-      expect(deletedPermissionAuditLogs).toHaveLength(1)
-      expect(deletedPermissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionDelete",
-        delta: expect.objectContaining({
-          before: expect.objectContaining({
-            ..._.omit(currentPermission, ["createdAt", "updatedAt"]),
-          }),
-          after: null,
-        }),
-      })
+      expect(updatedPermissionAuditLogs).toHaveLength(1)
 
-      // Assert DB - audit logs (new permission)
-      const newPermission = await db
+      // Assert DB - audit logs (content)
+      const updatedPermission = await db
         .selectFrom("ResourcePermission")
         .where("userId", "=", userToUpdate.id)
         .where("siteId", "=", siteId)
         .where("role", "=", newRole)
         .selectAll()
         .executeTakeFirst()
-      const newPermissionAuditLogs = await db
-        .selectFrom("AuditLog")
-        .where("eventType", "=", "PermissionCreate")
-        .selectAll()
-        .execute()
-      expect(newPermissionAuditLogs).toHaveLength(1)
-      expect(newPermissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionCreate",
+      expect(updatedPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionUpdate",
         delta: expect.objectContaining({
-          before: null,
+          before: expect.objectContaining({
+            ..._.omit(currentPermission, ["createdAt", "updatedAt"]),
+          }),
           after: expect.objectContaining({
-            ..._.omit(newPermission, ["createdAt", "updatedAt"]),
+            ..._.omit(updatedPermission, ["createdAt", "updatedAt"]),
           }),
         }),
       })
@@ -1382,43 +1369,30 @@ describe("user.router", () => {
         .executeTakeFirst()
       expect(updatedUser?.role).toBe(newRole)
 
-      // Assert DB - audit logs (deleted permission)
-      const deletedPermissionAuditLogs = await db
+      // Assert DB - audit logs (count)
+      const updatedPermissionAuditLogs = await db
         .selectFrom("AuditLog")
-        .where("eventType", "=", "PermissionDelete")
+        .where("eventType", "=", "PermissionUpdate")
         .selectAll()
         .execute()
-      expect(deletedPermissionAuditLogs).toHaveLength(1)
-      expect(deletedPermissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionDelete",
-        delta: expect.objectContaining({
-          before: expect.objectContaining({
-            ..._.omit(currentPermission, ["createdAt", "updatedAt"]),
-          }),
-          after: null,
-        }),
-      })
+      expect(updatedPermissionAuditLogs).toHaveLength(1)
 
-      // Assert DB - audit logs (new permission)
-      const newPermission = await db
+      // Assert DB - audit logs (content)
+      const updatedPermission = await db
         .selectFrom("ResourcePermission")
         .where("userId", "=", userToUpdate.id)
         .where("siteId", "=", siteId)
         .where("role", "=", newRole)
         .selectAll()
         .executeTakeFirst()
-      const newPermissionAuditLogs = await db
-        .selectFrom("AuditLog")
-        .where("eventType", "=", "PermissionCreate")
-        .selectAll()
-        .execute()
-      expect(newPermissionAuditLogs).toHaveLength(1)
-      expect(newPermissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionCreate",
+      expect(updatedPermissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionUpdate",
         delta: expect.objectContaining({
-          before: null,
+          before: expect.objectContaining({
+            ..._.omit(currentPermission, ["createdAt", "updatedAt"]),
+          }),
           after: expect.objectContaining({
-            ..._.omit(newPermission, ["createdAt", "updatedAt"]),
+            ..._.omit(updatedPermission, ["createdAt", "updatedAt"]),
           }),
         }),
       })
